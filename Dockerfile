@@ -5,9 +5,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["BoardGameTracker.Host/BoardGameTracker.Host.csproj", "BoardGameTracker.Host/"]
-RUN dotnet restore "BoardGameTracker.Host/BoardGameTracker.Host.csproj"
+
 COPY . .
+RUN dotnet restore "BoardGameTracker.Host/BoardGameTracker.Host.csproj"
+
 WORKDIR "/src/BoardGameTracker.Host"
 RUN dotnet build "BoardGameTracker.Host.csproj" -c Release -o /app/build
 

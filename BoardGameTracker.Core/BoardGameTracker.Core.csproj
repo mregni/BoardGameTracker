@@ -7,8 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="12.0.1" />
       <PackageReference Include="MediatR" Version="12.0.1" />
       <PackageReference Include="MediatR.Contracts" Version="2.0.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.2.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
+      <PackageReference Include="Refit" Version="6.3.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\BoardGameTracker.Common\BoardGameTracker.Common.csproj" />
+    </ItemGroup>
 </Project>

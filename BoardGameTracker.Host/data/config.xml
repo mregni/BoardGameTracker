@@ -1,0 +1,7 @@
+<Config>
+  <PostgresHost>192.168.72.181</PostgresHost>
+  <PostgresUser>admin</PostgresUser>
+  <PostgresPassword>azerty</PostgresPassword>
+  <PostgresMainDb>boardgametracker-main</PostgresMainDb>
+  <PostgresPort>5431</PostgresPort>
+</Config>

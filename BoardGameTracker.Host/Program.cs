@@ -1,11 +1,19 @@
+using System.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exeptions;
 using BoardGameTracker.Common.Helpers;
+using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Commands;
+using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Core.Disk.Interfaces;
+using BoardGameTracker.Core.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
+using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +40,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Allow",
         policyBuilder =>
-            policyBuilder.AllowAnyOrigin()
+            policyBuilder
+                .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader());
 });
@@ -54,8 +63,21 @@ builder.Services
     })
     .AddControllersAsServices();
 
+builder.Services.AddCoreService();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(MapProfiles));
+
+var refitSettings = new RefitSettings
+{
+    ContentSerializer = new XmlContentSerializer()
+};
+builder.Services.AddRefitClient<IBggApi>(refitSettings)
+    .ConfigureHttpClient(options =>
+    {
+        options.BaseAddress = new Uri("https://boardgamegeek.com/xmlapi2");
+    });
 
 builder.Services.AddSpaStaticFiles(configuration =>
 {
@@ -77,7 +99,7 @@ else
 }
 
 app.UseSpaStaticFiles();
-
+app.UseCors("Allow");
 app.UseRouting();
 
 app.UseEndpoints(endpoints =>
@@ -90,29 +112,60 @@ app.UseSpa(spa =>
     spa.Options.SourcePath = "ClientApp";
 });
 
-var mediator = app.Services.GetService<IMediator>();
-if (mediator == null)
-{
-    throw new ServiceNotResolvedException("Can't resolve IMediator");
-}
-mediator.Publish(new ApplicationStartedCommand());
+
+CreateFolders(app.Services);
+SendStartApplicationCommand(app.Services);
+await RunDbMigrations(app.Services);
 
 app.Run();
 
 static void SetConfiguration(WebApplicationBuilder builder)
 {
-    var configPath = PathHelper.ConfigFilePath;
+    var configFile = PathHelper.ConfigFile;
     try
     {
         builder.Configuration
-            .AddXmlFile(configPath, optional: true, reloadOnChange: false)
+            .AddXmlFile(configFile, optional: true, reloadOnChange: false)
             .AddEnvironmentVariables()
             .Build();
     }
     catch (InvalidDataException ex)
     {
-        throw new InvalidConfigFileException($"{configPath} is corrupt or invalid. Please delete the config file and Radarr will recreate it.", ex);
+        throw new InvalidConfigFileException($"{configFile} is corrupt or invalid. Please delete the config file and Radarr will recreate it.", ex);
     }
+}
+
+static Task RunDbMigrations(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<MainContext>();
+
+    if (context == null)
+    {
+        throw new ServiceNotResolvedException("Can't resolve MainContext");
+    }
+    return context.Database.MigrateAsync();
+}
+
+static void CreateFolders(IServiceProvider serviceProvider)
+{
+    var diskProvider = serviceProvider.GetService<IDiskProvider>();
+    if (diskProvider == null)
+    {
+        throw new ServiceNotResolvedException("Can't resolve IDiskProvider");
+    }
+    diskProvider.EnsureFolder(PathHelper.ConfigFilePath);
+    diskProvider.EnsureFolder(PathHelper.TempFilePath);
+}
+
+static void SendStartApplicationCommand(IServiceProvider serviceProvider)
+{
+    var mediator = serviceProvider.GetService<IMediator>();
+    if (mediator == null)
+    {
+        throw new ServiceNotResolvedException("Can't resolve IMediator");
+    }
+    mediator.Send(new ApplicationStartedCommand());
 }
 
 static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)

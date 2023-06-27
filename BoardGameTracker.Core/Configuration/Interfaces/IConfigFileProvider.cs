@@ -10,4 +10,5 @@ public interface IConfigFileProvider: IRequestHandler<ApplicationStartedCommand>
     string PostgresUser { get; }
     string PostgresPassword { get; }
     string PostgresMainDb { get; }
+    string GetPostgresConnectionString(string dbName);
 }

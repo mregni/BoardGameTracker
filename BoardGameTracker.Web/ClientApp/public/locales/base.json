@@ -1,0 +1,58 @@
+{
+  "intro": "Hello from i18next",
+  "menu": {
+    "games": "Games",
+    "users": "Users"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "published": "Published",
+    "year": "Year",
+    "players": "Players",
+    "min": "Min",
+    "max": "Max",
+    "playtime": "Play time",
+    "minage": "Minimum age",
+    "rating": "Rating",
+    "description": "Description",
+    "title": "Title",
+    "bbgid":"BGG id",
+    "upload": "Upload",
+    "state": "State"
+  },
+  "games": {
+    "state":{
+      "wanted": "Wanted",
+      "owned": "Owned",
+      "sold": "Sold"
+    },
+    "manual": "Manual import",
+    "bgg": "Import from BGG",
+    "new": {
+      "title": "Add new game",
+      "bgg": {
+        "label": "BGG id",
+        "placeholder": "Please enter the BGG id",
+        "required": "BGG id is required",
+        "search": "Search on BGG"
+      },
+      "failed": {
+        "message": "Game adding failed",
+        "description": "Could not add game with id {{id}}. Check logs for more info."
+      },
+      "success": {
+        "message": "Game added",
+        "description": "{{name}} is added successfully."
+      },
+      "notfound": {
+        "message": "Game not found",
+        "description": "Could not find game with id {{id}}."
+      },
+      "duplicate": {
+        "message": "Duplicate game",
+        "description": "{{name}} is already in the database."
+      }
+    }
+  }
+}

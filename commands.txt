@@ -1,0 +1,2 @@
+cd ./BoardGameTracker.Core
+dotnet ef migrations add <NAME> --startup-project ../BoardGameTracker.Host --output-dir DataStore/Migrations/Postgres
