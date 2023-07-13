@@ -14,9 +14,15 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
       <PackageReference Include="Refit" Version="6.3.2" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\BoardGameTracker.Common\BoardGameTracker.Common.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Datastore\Migrations" />
+    </ItemGroup>
+
 </Project>

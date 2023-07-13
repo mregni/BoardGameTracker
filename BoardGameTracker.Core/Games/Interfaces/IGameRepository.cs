@@ -9,4 +9,7 @@ public interface IGameRepository
     Task AddPeopleIfNotExists(IEnumerable<Person> people);
     Task<Game> InsertGame(Game game);
     Task<Game?> GetGameByBggId(int bggId);
+    Task<List<Game>> GetGamesOverviewList();
+    Task<Game?> GetGameById(int id);
+    Task DeleteGame(Game game);
 }

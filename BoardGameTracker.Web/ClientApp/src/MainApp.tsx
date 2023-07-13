@@ -1,12 +1,12 @@
 import './MainApp.css';
 
-import {Layout, theme, Typography} from 'antd';
-import React, {useState} from 'react';
+import {Layout} from 'antd';
+import React from 'react';
 import {BrowserRouter} from 'react-router-dom';
 
-import {GcContent} from './shared/components/Gc/GcContent';
-import {GcHeader} from './shared/components/Gc/GcHeader';
-import {GcMenu} from './shared/components/Gc/GcMenu';
+import {GcContent} from './shared/components/GcContent';
+import {GcHeader} from './shared/components/GcHeader';
+import {GcMenu} from './shared/components/GcMenu';
 
 function MainApp() {
   return (

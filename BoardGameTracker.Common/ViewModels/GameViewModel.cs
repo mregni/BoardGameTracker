@@ -4,6 +4,7 @@ namespace BoardGameTracker.Common.ViewModels;
 
 public class GameViewModel
 {
+    public int Id { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
     public int? YearPublished { get; set; }
@@ -14,9 +15,10 @@ public class GameViewModel
     public int? MaxPlayTime { get; set; }
     public int? MinAge { get; set; }
     public double? Rating { get; set; }
+    public double? Weight { get; set; }
     public int? BggId { get; set; }
-    public GameType Type { get; set; }
-    public GameState State { get; set; }
+    public int Type { get; set; }
+    public int State { get; set; }
     public int? BaseGameId { get; set; }
     public GameViewModel BaseGame { get; set; }
     public List<GameViewModel> Expansions { get; set; }

@@ -55,4 +55,28 @@ public class GameRepository : IGameRepository
         return _context.Games
             .SingleOrDefaultAsync(x => x.BggId == bggId);
     }
+
+    public Task<List<Game>> GetGamesOverviewList()
+    {
+        return _context.Games
+            .OrderBy(x => x.Title)
+            .ToListAsync();
+    }
+
+    public Task<Game?> GetGameById(int id)
+    {
+        return _context.Games
+            .Include(x => x.Accessories)
+            .Include(x => x.Categories)
+            .Include(x => x.Expansions)
+            .Include(x => x.Mechanics)
+            .Include(x => x.People)
+            .SingleOrDefaultAsync(x => x.Id == id);
+    }
+
+    public Task DeleteGame(Game game)
+    {
+        _context.Remove(game);
+        return _context.SaveChangesAsync();
+    }
 }

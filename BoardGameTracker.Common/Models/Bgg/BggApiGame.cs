@@ -84,11 +84,21 @@ public class Average {
 	public double Value { get; set; } 
 }
 
+[XmlRoot(ElementName="averageweight")]
+public class AverageWeight { 
+
+	[XmlAttribute(AttributeName="value")] 
+	public double Value { get; set; } 
+}
+
 [XmlRoot(ElementName="ratings")]
 public class Ratings { 
 
 	[XmlElement(ElementName="average")] 
 	public Average Average { get; set; } 
+	
+	[XmlElement(ElementName="averageweight")] 
+	public AverageWeight AverageWeight { get; set; } 
 }
 
 [XmlRoot(ElementName="statistics")]

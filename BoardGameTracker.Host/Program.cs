@@ -13,6 +13,7 @@ using BoardGameTracker.Core.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -86,6 +87,8 @@ builder.Services.AddSpaStaticFiles(configuration =>
 
 var app = builder.Build();
 
+CreateFolders(app.Services);
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -97,6 +100,18 @@ else
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(PathHelper.FullCoverImagePath),
+    RequestPath = "/images/cover"
+});
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(PathHelper.FullProfileImagePath),
+    RequestPath = "/images/profile"
+});
 
 app.UseSpaStaticFiles();
 app.UseCors("Allow");
@@ -112,8 +127,6 @@ app.UseSpa(spa =>
     spa.Options.SourcePath = "ClientApp";
 });
 
-
-CreateFolders(app.Services);
 SendStartApplicationCommand(app.Services);
 await RunDbMigrations(app.Services);
 
@@ -121,7 +134,7 @@ app.Run();
 
 static void SetConfiguration(WebApplicationBuilder builder)
 {
-    var configFile = PathHelper.ConfigFile;
+    var configFile = PathHelper.FullConfigFile;
     try
     {
         builder.Configuration
@@ -154,8 +167,10 @@ static void CreateFolders(IServiceProvider serviceProvider)
     {
         throw new ServiceNotResolvedException("Can't resolve IDiskProvider");
     }
-    diskProvider.EnsureFolder(PathHelper.ConfigFilePath);
-    diskProvider.EnsureFolder(PathHelper.TempFilePath);
+    diskProvider.EnsureFolder(PathHelper.FullConfigFilePath);
+    diskProvider.EnsureFolder(PathHelper.FullRootImagePath);
+    diskProvider.EnsureFolder(PathHelper.FullCoverImagePath);
+    diskProvider.EnsureFolder(PathHelper.FullProfileImagePath);
 }
 
 static void SendStartApplicationCommand(IServiceProvider serviceProvider)

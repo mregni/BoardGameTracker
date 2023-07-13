@@ -4,5 +4,7 @@ public enum GameState
 {
     Wanted = 0,
     Owned = 1,
-    Sold = 2
+    PreviouslyOwned = 2,
+    NotOwned = 3,
+    ForTrade = 4,
 }

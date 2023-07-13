@@ -11,6 +11,7 @@ public class MainContext : DbContext
     public DbSet<GameCategory> GameCategories { get; set; }
     public DbSet<GameMechanic> GameMechanics { get; set; }
     public DbSet<Person> People { get; set; }
+    public DbSet<Player> Players { get; set; }
     public MainContext(DbContextOptions<MainContext> options): base(options)
     {
         
@@ -29,6 +30,12 @@ public class MainContext : DbContext
         BuildGameCategories(builder);
         BuildGameMechanics(builder);
         BuildGamePeople(builder);
+        BuildPlayers(builder);
+    }
+
+    private void BuildPlayers(ModelBuilder builder)
+    {
+        builder.Entity<Player>().HasKey(x => x.Id);
     }
 
     private static void BuildGameAccessories(ModelBuilder builder)

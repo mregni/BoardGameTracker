@@ -7,6 +7,10 @@ using BoardGameTracker.Core.Disk;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Images;
+using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Players;
+using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,8 +26,11 @@ public static class ServiceCollectionExtensions
         
         serviceCollection.AddTransient<IBggService, BggService>();
         serviceCollection.AddTransient<IGameService, GameService>();
+        serviceCollection.AddTransient<IImageService, ImageService>();
+        serviceCollection.AddTransient<IPlayerService, PlayerService>();
         
         serviceCollection.AddTransient<IGameRepository, GameRepository>();
+        serviceCollection.AddTransient<IPlayerRepository, PlayerRepository>();
 
         serviceCollection.AddDbContext<MainContext>((serviceProvider, options) =>
         {

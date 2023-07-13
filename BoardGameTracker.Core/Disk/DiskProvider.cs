@@ -1,12 +1,22 @@
-﻿using BoardGameTracker.Common.Helpers;
+﻿using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Commands;
 using BoardGameTracker.Core.Disk.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Disk;
 
 public class DiskProvider : IDiskProvider
 {
+    private readonly ILogger<DiskProvider> _logger;
+
+    public DiskProvider(ILogger<DiskProvider> logger)
+    {
+        _logger = logger;
+    }
+
     public bool FileExists(string path)
     {
         return File.Exists(path);
@@ -26,9 +36,10 @@ public class DiskProvider : IDiskProvider
         writer.WriteAsync(contents);
     }
 
-    public async Task<string> WriteFile(IFormFile file, string path)
+    public async Task<string> WriteFile(IFormFile file, UploadFileType type)
     {
-        var uniqueFileName = Path.GetFileNameWithoutExtension(file.FileName) + "_" + Path.GetRandomFileName() + Path.GetExtension(file.FileName);
+        var uniqueFileName = file.FileName.GenerateUniqueFileName();
+        var path = type.ConvertToPath();
         var filePath = Path.Combine(path, uniqueFileName);
 
         await using var stream = new FileStream(filePath, FileMode.Create);
@@ -37,6 +48,32 @@ public class DiskProvider : IDiskProvider
         return uniqueFileName;
     }
 
+    public async Task<string> WriteFile(Image image, string fileName, string path)
+    {
+        var uniqueFileName = fileName.GenerateUniqueFileName();
+        var filePath = Path.Combine(path, uniqueFileName);
+    
+        await image.SaveAsync(filePath);
+        return uniqueFileName;
+    }
+
+    public void DeleteFile(string path)
+    {
+        try
+        {
+            _logger.LogInformation("Removing file {Path}", path);
+            File.Delete(path);
+        }
+        catch (IOException)
+        {
+            _logger.LogError("Can't delete file because it seems to be in use");
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Unknow error occured while deleting file {Path}: {Message}", path, e.Message);
+        }
+    }
+   
     public void EnsureFolder(string path)
     {
         if (!Directory.Exists(path))

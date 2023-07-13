@@ -3,9 +3,9 @@ import {axiosInstance} from './axiosInstance';
 
 const domain = 'bgg';
 
-export const searchGame = (id: string): Promise<GameSearchResult> => {
+export const addGame = (id: string, state: string): Promise<GameSearchResult> => {
   return axiosInstance
-    .get<GameSearchResult>(`${domain}/search/${id}`)
+    .get<GameSearchResult>(`${domain}/add/${id}?state=${state}`)
     .then((response) => {
       return response.data;
     });

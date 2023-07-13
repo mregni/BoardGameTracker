@@ -72,6 +72,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
+                    b.Property<double?>("Weight")
+                        .HasColumnType("double precision");
+
                     b.Property<int?>("YearPublished")
                         .HasColumnType("integer");
 
@@ -160,6 +163,27 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.HasKey("Id");
 
                     b.ToTable("People");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Player", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Players");
                 });
 
             modelBuilder.Entity("GameGameCategory", b =>

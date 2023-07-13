@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Core.Bgg.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -22,24 +23,25 @@ public class BggController
         _gameService = gameService;
     }
 
-    [HttpGet("search/{id}")]
-    public async Task<IActionResult> SearchOnBgg(int id)
+    [HttpGet("add/{id}")]
+    public async Task<IActionResult> SearchOnBgg(int id, string state)
     {
         var existingGame = await _gameService.GetGameByBggId(id);
         if (existingGame != null)
         {
             var existingGameViewModel = _mapper.Map<GameViewModel>(existingGame);
-            return new OkObjectResult(GameSearchResultViewModel.CreateDuplicateResult(existingGameViewModel));
+            return new OkObjectResult(SearchResultViewModel<GameViewModel>.CreateDuplicateResult(existingGameViewModel));
         }
 
         var game = await _bggService.SearchGame(id);
         if (game == null)
         {
-            return new OkObjectResult(GameSearchResultViewModel.CreateSearchResult(null));
+            return new OkObjectResult(SearchResultViewModel<GameViewModel>.CreateSearchResult(null));
         }
 
-        var dbGame = await _gameService.ProcessBggGameData(game);
+        var gameState = state.ToEnum<GameState>();
+        var dbGame = await _gameService.ProcessBggGameData(game, gameState);
         var result = _mapper.Map<GameViewModel>(dbGame);
-        return new OkObjectResult(GameSearchResultViewModel.CreateSearchResult(result));
+        return new OkObjectResult(SearchResultViewModel<GameViewModel>.CreateSearchResult(result));
     }
 }

@@ -21,6 +21,7 @@ public class MapProfiles : Profile
             .ForMember(x => x.MaxPlayTime, x => x.MapFrom(y => y.MaxPlayTime.Value))
             .ForMember(x => x.MinAge, x => x.MapFrom(y => y.MinAge.Value))
             .ForMember(x => x.Rating, x => x.MapFrom(y => y.Statistics.Ratings.Average.Value))
+            .ForMember(x => x.Weight, x => x.MapFrom(y => y.Statistics.Ratings.AverageWeight.Value))
             .ForMember(x => x.People, x => x.MapFrom(y => y.Links.Where(IsPersonType)))
             .ForMember(x => x.Categories, x => x.MapFrom(y => y.Links.Where(z => z.Type == Constants.Bgg.Category)))
             .ForMember(x => x.Mechanics, x => x.MapFrom(y => y.Links.Where(z => z.Type == Constants.Bgg.Mechanic)));
@@ -28,7 +29,8 @@ public class MapProfiles : Profile
         CreateMap<BggRawLink, BggLink>();
 
         CreateMap<BggRawLink, BggPerson>()
-            .ForMember(x => x.Type, x => x.MapFrom(y => y.Type.StringToPersonTypeEnum()));
+            .ForMember(x => x.Type, x => x.MapFrom(y => y.Type.StringToPersonTypeEnum()))
+            .ForMember(x => x.Id, x => x.Ignore());
 
         CreateMap<BggLink, GameCategory>()
             .ForMember(x => x.Name, x => x.MapFrom(y => y.Value));
@@ -40,7 +42,8 @@ public class MapProfiles : Profile
             .ForMember(x => x.Name, x => x.MapFrom(y => y.Value));
 
         CreateMap<BggGame, Game>()
-            .ForMember(x => x.Title, x => x.MapFrom(y => y.Names.FirstOrDefault()));
+            .ForMember(x => x.Title, x => x.MapFrom(y => y.Names.FirstOrDefault()))
+            .ForMember(x => x.Image, x => x.Ignore());
         
         
         //ViewModels
@@ -48,6 +51,9 @@ public class MapProfiles : Profile
         CreateMap<GameCategory, GameLinkViewModel>();
         CreateMap<GameMechanic, GameLinkViewModel>();
         CreateMap<Person, GamePersonViewModel>();
+        CreateMap<Player, PlayerViewModel>();
+        CreateMap<PlayerCreationViewModel, Player>()
+            .ForMember(x => x.Id, x => x.MapFrom(y => (int?)null));
     }
     
     private static bool IsPersonType(BggRawLink link)

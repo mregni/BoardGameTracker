@@ -17,6 +17,7 @@ public class Game : HasId
     public int? MaxPlayTime { get; set; }
     public int? MinAge { get; set; }
     public double? Rating { get; set; }
+    public double? Weight { get; set; }
     public int? BggId { get; set; }
     public GameType Type { get; set; }
     public GameState State { get; set; }

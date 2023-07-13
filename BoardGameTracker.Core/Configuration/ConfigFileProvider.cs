@@ -1,6 +1,7 @@
 ﻿using System.Xml;
 using System.Xml.Linq;
 using BoardGameTracker.Common.Exeptions;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Commands;
 using BoardGameTracker.Core.Configuration.Interfaces;
@@ -27,7 +28,7 @@ public class ConfigFileProvider : IConfigFileProvider
     public ConfigFileProvider(IDiskProvider diskProvider)
     {
         _diskProvider = diskProvider;
-        _configFile = PathHelper.ConfigFile;
+        _configFile = PathHelper.FullConfigFile;
     }
     
     public string GetPostgresConnectionString(string dbName)

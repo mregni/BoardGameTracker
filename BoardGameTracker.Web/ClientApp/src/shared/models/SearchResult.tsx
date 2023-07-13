@@ -1,6 +1,6 @@
-export enum SearchResult {
-  Found = "found",
-  NotFound = "notFound",
-  Duplicate = "duplicate",
-  Failed = "failed"
+import {SearchResultType} from './';
+
+export interface SearchResult<T> {
+  model: T | null;
+  result: SearchResultType;
 }
