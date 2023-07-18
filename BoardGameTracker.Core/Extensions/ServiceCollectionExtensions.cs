@@ -32,7 +32,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddTransient<IGameRepository, GameRepository>();
         serviceCollection.AddTransient<IPlayerRepository, PlayerRepository>();
 
-        serviceCollection.AddDbContext<MainContext>((serviceProvider, options) =>
+        serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
         {
             var fileConfigProvider = serviceProvider.GetService<IConfigFileProvider>();
             var connectionString = fileConfigProvider.GetPostgresConnectionString(fileConfigProvider.PostgresMainDb);

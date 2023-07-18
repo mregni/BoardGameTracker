@@ -7,34 +7,34 @@ namespace BoardGameTracker.Core.Players;
 
 public class PlayerRepository : IPlayerRepository
 {
-    private readonly MainContext _context;
+    private readonly MainDbContext _dbContext;
 
-    public PlayerRepository(MainContext context)
+    public PlayerRepository(MainDbContext dbContext)
     {
-        _context = context;
+        _dbContext = dbContext;
     }
 
     public Task<List<Player>> GetPlayers()
     {
-        return _context.Players
+        return _dbContext.Players
             .OrderBy(x => x.Name)
             .ToListAsync();
     }
 
     public async Task CreatePlayer(Player player)
     {
-        await _context.Players.AddAsync(player);
-        await _context.SaveChangesAsync();
+        await _dbContext.Players.AddAsync(player);
+        await _dbContext.SaveChangesAsync();
     }
     
     public Task<Player?> GetPlayerById(int id)
     {
-        return _context.Players.SingleOrDefaultAsync(x => x.Id == id);
+        return _dbContext.Players.SingleOrDefaultAsync(x => x.Id == id);
     }
 
     public Task DeletePlayer(Player player)
     {
-        _context.Remove(player);
-        return _context.SaveChangesAsync();
+        _dbContext.Remove(player);
+        return _dbContext.SaveChangesAsync();
     }
 }

@@ -15,8 +15,7 @@ const GcBackButton = (props: Props) => {
   return (
     <Button
       style={{ position: 'absolute', top: 0, right: 0 }}
-      type="text"
-      ghost
+      type="dashed"
       icon={<ArrowLeftOutlined />}
       size="small"
       onClick={onClick}

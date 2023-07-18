@@ -22,12 +22,12 @@ export const AddNewPlayerDrawer = (props: Props) => {
   const [form] = Form.useForm();
 
   const onClose = () => {
+    form.resetFields();
     setOpen(false);
   };
 
   const triggerUserCreation = async (player: PlayerCreation) => {
     const result = await addNewPlayer(player, profileImage);
-    console.log(result)
     if (result === CreationResultType.Success) {
       loadPlayers();
       onClose();

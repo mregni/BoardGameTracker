@@ -11,7 +11,12 @@ export const GcNoDataLoader = (props: ListLoaderProps) => {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100%'
+        }}>
         <Empty />
       </div>
     )

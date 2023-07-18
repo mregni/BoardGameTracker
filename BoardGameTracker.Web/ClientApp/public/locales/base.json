@@ -3,7 +3,7 @@
     "bbgid": "BGG id",
     "cancel": "Cancel",
     "description": "Description",
-    "edit": "edit",
+    "edit": "Edit",
     "less": "less",
     "max": "Max",
     "min": "Min",
@@ -25,7 +25,7 @@
     "back": "Back"
   },
   "game": {
-    "new-play": "new play",
+    "new-play": "New play",
     "notfound": {
       "description": "Cound not find game with id {{id}}. Please check the URL and try again.",
       "title": "Game not found"

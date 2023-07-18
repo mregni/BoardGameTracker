@@ -1,6 +1,6 @@
 import './MainApp.css';
 
-import {Layout} from 'antd';
+import {Layout, theme} from 'antd';
 import React from 'react';
 import {BrowserRouter} from 'react-router-dom';
 
@@ -9,13 +9,14 @@ import {GcHeader} from './shared/components/GcHeader';
 import {GcMenu} from './shared/components/GcMenu';
 
 function MainApp() {
+  const {token: { colorBgContainer }} = theme.useToken();
   return (
     <BrowserRouter future={{ v7_startTransition: true }}>
-      <Layout style={{ minHeight: '100vh' }}>
+      <Layout style={{ minHeight: '100vh', background: colorBgContainer }}>
         <GcHeader />
-        <Layout>
+        <Layout hasSider>
           <GcMenu />
-          <Layout style={{ padding: '24px 24px 24px' }}>
+          <Layout>
             <GcContent />
           </Layout>
         </Layout>

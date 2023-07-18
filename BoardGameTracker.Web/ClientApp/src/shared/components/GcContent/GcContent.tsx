@@ -9,18 +9,8 @@ import {PlayerContainer} from '../../pages/Players';
 const { Content } = Layout;
 
 export const GcContent = () => {
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
-
   return (
-    <Content
-      style={{
-        padding: 24,
-        margin: 0,
-        background: colorBgContainer
-      }}
-    >
+    <Content style={{ margin: 0 }} >
       <Routes>
         <Route
           element={<GameContainer />}

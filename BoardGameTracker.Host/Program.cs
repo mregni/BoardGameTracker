@@ -151,7 +151,7 @@ static void SetConfiguration(WebApplicationBuilder builder)
 static Task RunDbMigrations(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<MainContext>();
+    var context = scope.ServiceProvider.GetRequiredService<MainDbContext>();
 
     if (context == null)
     {

@@ -61,7 +61,7 @@ const GameHeader = (props: Props) => {
                 disabled
                 style={{ fontSize: 10, paddingTop: 10 }}
                 allowHalf
-                defaultValue={roundToDecimals(game.rating, 1)/2}/>
+                value={roundToDecimals(game.rating, 1)/2}/>
             </Tooltip>
           </Col>
         </Row>
