@@ -1,5 +1,6 @@
 import {Button, Col, ConfigProvider, Layout, Row, Typography} from 'antd';
 import React, {Children, ReactElement, ReactNode} from 'react';
+import {useNavigate} from 'react-router-dom';
 
 import {purple} from '@ant-design/colors';
 import {ArrowLeftOutlined} from '@ant-design/icons';
@@ -19,13 +20,15 @@ interface HeaderProps {
 
 export const GcPageContainerHeader = (props: HeaderProps) => {
   const { isLoading, children, title, hasBack = false, backNavigation = '' } = props;
+  const navigate = useNavigate();
+  
   return (
     <Row justify="space-between">
       <Row gutter={8} align="middle">
         {
           hasBack && (
             <Col>
-              <Button type="text" icon={<ArrowLeftOutlined />} />
+              <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(backNavigation)} />
             </Col>
           )
         }
