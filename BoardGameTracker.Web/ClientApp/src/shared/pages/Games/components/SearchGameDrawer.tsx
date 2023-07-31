@@ -1,5 +1,4 @@
-import {Button, Drawer, Form, Input, Select, Space} from 'antd';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
+import {Button, Form, Input, Select} from 'antd';
 import React, {useContext} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -21,7 +20,6 @@ const SearchGameDrawer = (props: Props) => {
   const { t } = useTranslation();
   const { search, searching } = useSearchGame();
   const [form] = Form.useForm();
-  const screens = useBreakpoint();
 
   const onClose = () => {
     form.resetFields();
@@ -45,11 +43,11 @@ const SearchGameDrawer = (props: Props) => {
     <GcDrawer
       title={t('games.new.title')}
       open={open} 
-      setOpen={setOpen}>
+      onClose={onClose}>
       <Form
         form={form}
         labelCol={{ span: 4 }}
-        wrapperCol={{ span: 19 }}
+        wrapperCol={{ span: 20 }}
         layout="horizontal"
         autoComplete='off'
         hideRequiredMark

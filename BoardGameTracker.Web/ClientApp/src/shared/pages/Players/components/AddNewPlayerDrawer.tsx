@@ -55,12 +55,12 @@ export const AddNewPlayerDrawer = (props: Props) => {
     <GcDrawer
       title={t('player.new.title')}
       open={open}
-      setOpen={setOpen}
+      onClose={onClose}
     >
       <Form
         form={form}
         labelCol={{ span: 4 }}
-        wrapperCol={{ span: 19 }}
+        wrapperCol={{ span: 20 }}
         layout="horizontal"
         autoComplete='off'
         hideRequiredMark

@@ -6,7 +6,6 @@ using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Commands;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Disk.Interfaces;
-using BoardGameTracker.Core.Extensions;
 using Npgsql;
 
 namespace BoardGameTracker.Core.Configuration;
@@ -16,7 +15,12 @@ public class ConfigFileProvider : IConfigFileProvider
     private readonly string _configFile;
     private static readonly object Mutex = new object();
     public const string CONFIG_ELEMENT_NAME = "Config";
-    
+
+    public string TimeZone => GetValue("TZ", "Europe/Londen");
+    public string ShortDateFormat => GetValue("ShortDateFormat", "YY-MM-DD");
+    public string LongDateFormat => GetValue("LongDateFormat", "YYYY-MM-DD");
+    public string TimeFormat => GetValue("TimeFormat", "HH:mm:ss");
+    public string UILanguage => GetValue("UILanguage", "nl-be");
     public string PostgresHost => GetValue("PostgresHost", string.Empty);
     public string PostgresUser => GetValue("PostgresUser", string.Empty);
     public string PostgresPassword => GetValue("PostgresPassword", string.Empty);
@@ -54,6 +58,12 @@ public class ConfigFileProvider : IConfigFileProvider
     
     private string GetValue(string key, object defaultValue, bool persist = true)
     {
+        var value = Environment.GetEnvironmentVariable(key);
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return value.Trim();
+        }
+        
         var xDoc = LoadConfigFile();
         var config = xDoc.Descendants(CONFIG_ELEMENT_NAME).Single();
 

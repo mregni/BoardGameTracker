@@ -1,9 +1,6 @@
 ﻿using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Core.Images;
 using BoardGameTracker.Core.Images.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;

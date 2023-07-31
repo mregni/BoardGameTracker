@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
-using BoardGameTracker.Core.Configuration.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Datastore;

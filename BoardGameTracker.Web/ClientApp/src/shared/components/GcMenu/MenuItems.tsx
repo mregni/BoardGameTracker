@@ -25,7 +25,7 @@ function getItem(
 
 export const getMenuItems = (t: TFunction<"translation", undefined>): MenuItem[] =>{
   return [
-    getItem(t('menu.games'), '0', "games", <Icon component={DiceIcon} />),
-    getItem(t('menu.players'), '1', "players", <Icon component={DiceIcon} />),
+    getItem(t('common.games'), '0', "games", <Icon component={DiceIcon} />),
+    getItem(t('common.players'), '1', "players", <Icon component={DiceIcon} />),
   ];
 } 

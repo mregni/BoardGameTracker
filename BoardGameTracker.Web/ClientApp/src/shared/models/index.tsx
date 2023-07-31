@@ -12,3 +12,6 @@ export * from './Games/PersonType';
 
 export * from './Player/Player';
 export * from './Player/PlayerCreation';
+export * from './Player/ActivePlayer';
+
+export * from './settings/Settings';

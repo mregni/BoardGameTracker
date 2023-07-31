@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using BoardGameTracker.Common.Entities.Helpers;
+﻿using BoardGameTracker.Common.Entities.Helpers;
 
 namespace BoardGameTracker.Common.Entities;
 

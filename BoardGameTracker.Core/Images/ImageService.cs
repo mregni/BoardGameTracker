@@ -1,6 +1,4 @@
-﻿using System.Net;
-using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Extensions;
+﻿using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;

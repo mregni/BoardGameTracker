@@ -1,5 +1,4 @@
-﻿using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Models.Bgg;
+﻿using BoardGameTracker.Common.Models.Bgg;
 
 namespace BoardGameTracker.Core.Bgg.Interfaces;
 

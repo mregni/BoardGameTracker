@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
-using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Bgg.Interfaces;
-using BoardGameTracker.Core.Games.Interfaces;
 
 namespace BoardGameTracker.Core.Bgg;
 

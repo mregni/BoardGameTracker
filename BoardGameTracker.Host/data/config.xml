@@ -4,4 +4,9 @@
   <PostgresPassword>azerty</PostgresPassword>
   <PostgresMainDb>boardgametracker-main</PostgresMainDb>
   <PostgresPort>5431</PostgresPort>
+  <TZ>Europe/Londen</TZ>
+  <TimeFormat>HH:mm</TimeFormat>
+  <LongDateFormat>YYYY-MM-DD</LongDateFormat>
+  <ShortDateFormat>YY-MM-DD</ShortDateFormat>
+  <UILanguage>nl-be</UILanguage>
 </Config>

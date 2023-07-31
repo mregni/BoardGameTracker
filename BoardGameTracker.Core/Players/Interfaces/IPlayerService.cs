@@ -1,5 +1,4 @@
 ﻿using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.ViewModels;
 
 namespace BoardGameTracker.Core.Players.Interfaces;
 

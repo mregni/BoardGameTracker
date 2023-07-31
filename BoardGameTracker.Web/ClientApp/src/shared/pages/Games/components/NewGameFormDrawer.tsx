@@ -5,7 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {PlusOutlined} from '@ant-design/icons';
 
 import {GcSelectWithAdd} from '../../../components/GcSelectWithAdd';
-import {BggGame, Game} from '../../../models';
+import {Game} from '../../../models';
 
 type Props = {
   rawGame: BggGame;
@@ -40,8 +40,6 @@ const NewGameFormDrawer = (props: Props) => {
     if (rawGame.names.length > 0) {
       newGame.title = game.title;
     }
-
-    console.log(newGame);
   };
 
   return (

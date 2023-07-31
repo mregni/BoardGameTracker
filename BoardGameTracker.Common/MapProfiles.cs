@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Common.ViewModels;

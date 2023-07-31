@@ -1,4 +1,5 @@
 import {Button, Col, ConfigProvider, Layout, Row, Typography} from 'antd';
+import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {Children, ReactElement, ReactNode} from 'react';
 import {useNavigate} from 'react-router-dom';
 
@@ -21,7 +22,8 @@ interface HeaderProps {
 export const GcPageContainerHeader = (props: HeaderProps) => {
   const { isLoading, children, title, hasBack = false, backNavigation = '' } = props;
   const navigate = useNavigate();
-  
+  const screens = useBreakpoint();
+
   return (
     <Row justify="space-between">
       <Row gutter={8} align="middle">
@@ -33,10 +35,12 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
           )
         }
         <Col>
-          <Title level={3} style={{ margin: 0 }}>{title}</Title>
+          <Title level={screens.md ? 3 : 5} style={{ margin: 0 }}>{title}</Title>
         </Col>
       </Row>
-      <div>{children}</div>
+      <div>
+        {children}
+      </div>
     </Row>
   )
 };
@@ -69,7 +73,6 @@ export const GcPageContainer = (props: Props) => {
   let _content, _header;
 
   Children.forEach(children, child => {
-    console.log(child.type);
     if (checkComponentName(child, GcPageContainerHeader.name)) {
       return _header = child
     }

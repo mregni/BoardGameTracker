@@ -25,7 +25,7 @@ export const useGamesContext = (): GamesContextProps => {
   useEffect(() => {
     loadGames();
   }, [loadGames]);
-  
+
   return {
     loading, games, loadGames
   };

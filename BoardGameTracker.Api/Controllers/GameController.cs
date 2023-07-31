@@ -1,13 +1,8 @@
 ﻿using AutoMapper;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Core.Configuration.Interfaces;
-using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.FileProviders;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -15,13 +10,11 @@ namespace BoardGameTracker.Api.Controllers;
 [Route("api/game")]
 public class GameController
 {
-    private readonly IDiskProvider _diskProvider;
     private readonly IGameService _gameService;
     private readonly IMapper _mapper;
 
-    public GameController(IDiskProvider diskProvider, IGameService gameService, IMapper mapper)
+    public GameController(IGameService gameService, IMapper mapper)
     {
-        _diskProvider = diskProvider;
         _gameService = gameService;
         _mapper = mapper;
     }

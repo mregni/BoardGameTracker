@@ -1,5 +1,6 @@
 import {Button, Col, Image, Row, Space, Typography} from 'antd';
-import React, {useContext} from 'react';
+import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
+import React, {useContext, useEffect, useState} from 'react';
 import {Trans, useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 
@@ -7,8 +8,9 @@ import {ArrowLeftOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons
 
 import GcBackButton from '../../../components/GcBackButton/GcBackButton';
 import {Player} from '../../../models';
-import {createDeleteModal} from '../../../utils';
+import {useModals} from '../../../utils';
 import {PlayerContext} from '../../Players/context';
+import {NewPlayFormDrawer} from '../../Plays';
 import {PlayerDetailContext} from '../context/PlayerDetailState';
 
 const { Title } = Typography;
@@ -23,10 +25,11 @@ const PlayerHeader = (props: Props) => {
   const { loadPlayers } = useContext(PlayerContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const {deleteModal} = useModals();
   const { player } = props;
 
   const showDeleteModal = () => {
-    createDeleteModal(
+    deleteModal(
       t('player.delete.title', { title: player.name }),
       <Trans
         i18nKey="player.delete.description"

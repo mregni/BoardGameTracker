@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom/client';
 import {purple} from '@ant-design/colors';
 
 import MainApp from './MainApp';
+import {SettingsContextProvider} from './shared/context/settingsContext';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -27,7 +28,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         }}
       >
         <App>
-          <MainApp />
+          <SettingsContextProvider>
+            <MainApp />
+          </SettingsContextProvider>
         </App>
       </ConfigProvider>
     </Suspense>

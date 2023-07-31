@@ -1,6 +1,4 @@
-﻿
-using BoardGameTracker.Common.Enums;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace BoardGameTracker.Core.Images.Interfaces;
 
