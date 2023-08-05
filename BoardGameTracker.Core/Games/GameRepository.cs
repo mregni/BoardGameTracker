@@ -63,15 +63,25 @@ public class GameRepository : IGameRepository
             .ToListAsync();
     }
 
-    public Task<Game?> GetGameById(int id)
+    public Task<Game?> GetGameById(int id, bool includePlays)
     {
-        return _dbContext.Games
+        var query = _dbContext.Games
             .Include(x => x.Accessories)
             .Include(x => x.Categories)
             .Include(x => x.Expansions)
             .Include(x => x.Mechanics)
             .Include(x => x.People)
-            .SingleOrDefaultAsync(x => x.Id == id);
+            .AsQueryable();
+        
+         if (includePlays)
+        {
+            query = query
+                .Include(x => x.Plays)
+                .ThenInclude(x => x.Sessions)
+                .Include(x => x.Plays)
+                .ThenInclude(x => x.Players);
+        }
+        return query.SingleOrDefaultAsync(x => x.Id == id);
     }
 
     public Task DeleteGame(Game game)

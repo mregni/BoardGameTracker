@@ -11,6 +11,8 @@ using BoardGameTracker.Core.Images;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Players;
 using BoardGameTracker.Core.Players.Interfaces;
+using BoardGameTracker.Core.Plays;
+using BoardGameTracker.Core.Plays.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,9 +30,11 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddTransient<IGameService, GameService>();
         serviceCollection.AddTransient<IImageService, ImageService>();
         serviceCollection.AddTransient<IPlayerService, PlayerService>();
+        serviceCollection.AddTransient<IPlayService, PlayService>();
         
         serviceCollection.AddTransient<IGameRepository, GameRepository>();
         serviceCollection.AddTransient<IPlayerRepository, PlayerRepository>();
+        serviceCollection.AddTransient<IPlayRepository, PlayRepository>();
 
         serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
         {

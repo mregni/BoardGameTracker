@@ -43,7 +43,7 @@ export const usePlayerContext = (): PlayerContextProps => {
       createErrorNotification(
         notification,
         t('player.new.failed.message'),
-        t('player.new.failed.description', { name: name })
+        t('player.new.failed.description', { name })
       )
       return Promise.reject("Failed to upload image");
     }
@@ -56,18 +56,17 @@ export const usePlayerContext = (): PlayerContextProps => {
 
     return await addPlayer(player)
       .then((result: CreationResult<Player>) => {
-        console.log(result)
         if (result.type === CreationResultType.Failed) {
           createErrorNotification(
             notification,
             t('player.new.failed.message'),
-            t('player.new.failed.description', { name: name })
+            t('player.new.failed.description', { name })
           )
         } else if (result.type === CreationResultType.Success) {
           createSuccessNotification(
             notification,
             t('player.new.success.message'),
-            t('player.new.success.description', { name: name })
+            t('player.new.success.description', { name })
           )
         }
 
@@ -76,7 +75,7 @@ export const usePlayerContext = (): PlayerContextProps => {
         createErrorNotification(
           notification,
           t('player.new.failed.message'),
-          t('player.new.failed.description', { name: name })
+          t('player.new.failed.description', { name })
         )
         return CreationResultType.Failed;
       }).finally(() => {

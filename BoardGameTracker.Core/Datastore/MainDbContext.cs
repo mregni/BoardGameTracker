@@ -13,6 +13,8 @@ public class MainDbContext : DbContext
     public DbSet<GameMechanic> GameMechanics { get; set; }
     public DbSet<Person> People { get; set; }
     public DbSet<Player> Players { get; set; }
+    public DbSet<Play> Plays { get; set; }
+    
     public MainDbContext(DbContextOptions<MainDbContext> options): base(options)
     {
         
@@ -90,6 +92,7 @@ public class MainDbContext : DbContext
         builder.Entity<Play>()
             .HasOne(x => x.Location)
             .WithMany(x => x.Plays)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.Entity<Play>()

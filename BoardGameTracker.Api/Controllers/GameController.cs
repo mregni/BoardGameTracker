@@ -31,9 +31,9 @@ public class GameController
 
      [HttpGet]
      [Route("{id:int}")]
-     public async Task<IActionResult> GetGameById(int id)
+     public async Task<IActionResult> GetGameById(int id, bool includePlays = false)
      {
-         var game = await _gameService.GetGame(id);
+         var game = await _gameService.GetGameById(id, includePlays);
          if (game == null)
          {
              return new OkObjectResult(SearchResultViewModel<GameViewModel>.CreateSearchResult(null));

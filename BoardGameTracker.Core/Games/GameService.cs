@@ -47,14 +47,14 @@ public class GameService : IGameService
         return _gameRepository.GetGamesOverviewList();
     }
 
-    public Task<Game?> GetGame(int id)
+    public Task<Game?> GetGameById(int id, bool includePlays)
     {
-        return _gameRepository.GetGameById(id);
+        return _gameRepository.GetGameById(id, includePlays);
     }
 
     public async Task Delete(int id)
     {
-        var game = await _gameRepository.GetGameById(id);
+        var game = await _gameRepository.GetGameById(id, true);
         if (game == null)
         {
             return;

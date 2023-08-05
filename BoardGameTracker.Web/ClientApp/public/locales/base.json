@@ -30,6 +30,7 @@
   },
   "play": {
     "new": {
+      "button": "Add player",
       "title": "Add new play",
       "ended": {
         "description": "Game is finished",
@@ -41,14 +42,15 @@
       },
       "player": {
         "placeholder": "Select players",
-        "required": "Please select at least one player"
+        "required": "Please add at least one player"
       },
       "session": {
         "title": "Speel sessies",
         "start-placeholder":"Session start",
         "end-placeholder":"Session end",
         "extra": "Add extra play session"
-      }
+      },
+      "save": "Save game"
     }
   },
   "game": {

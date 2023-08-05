@@ -15,3 +15,5 @@ export * from './Player/PlayerCreation';
 export * from './Player/ActivePlayer';
 
 export * from './settings/Settings';
+
+export * from './Play/Play';

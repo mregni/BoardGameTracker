@@ -25,7 +25,7 @@ const PlayerSelectorDrawer = (props: Props) => {
 
   useEffect(() => {
     if(edit !== undefined) {
-      form.setFieldValue('id', edit.id);
+      form.setFieldValue('playerId', edit.playerId);
       form.setFieldValue('won', edit.won);
       form.setFieldValue('firstPlay', edit.firstPlay);
       form.setFieldValue('color', edit.color);
@@ -67,7 +67,7 @@ const PlayerSelectorDrawer = (props: Props) => {
       >
         <Form.Item
           style={{ marginBottom: 10 }}
-          name="id"
+          name="playerId"
           label={t('common.players')}
           valuePropName="value"
           rules={[{ required: true, message: t('play.new.player.required') }]}

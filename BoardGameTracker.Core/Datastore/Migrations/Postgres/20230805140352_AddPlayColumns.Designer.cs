@@ -3,6 +3,7 @@ using System;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 {
     [DbContext(typeof(MainDbContext))]
-    partial class MainDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230805140352_AddPlayColumns")]
+    partial class AddPlayColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -368,6 +371,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .HasColumnType("integer");
 
                     b.Property<int?>("LocationId")
+                        .IsRequired()
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -541,7 +545,8 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.HasOne("BoardGameTracker.Common.Entities.Location", "Location")
                         .WithMany("Plays")
                         .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.Navigation("Game");
 

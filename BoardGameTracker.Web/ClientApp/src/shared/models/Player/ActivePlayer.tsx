@@ -1,10 +1,5 @@
-export interface ActivePlayer {
+import {PlayPlayer} from '../';
+
+export interface ActivePlayer extends PlayPlayer {
   uiId: number;
-  id: number;
-  won: boolean;
-  firstPlay: boolean;
-  color?: string;
-  score?: number;
-  team?: string;
-  characterName?: string;
 }

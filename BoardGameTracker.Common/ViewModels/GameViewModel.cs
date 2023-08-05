@@ -25,6 +25,7 @@ public class GameViewModel
     public List<GameLinkViewModel> Categories { get; set; }
     public List<GameLinkViewModel> Mechanics { get; set; }
     public List<GamePersonViewModel> People { get; set; }
+    public List<PlayViewModel> Plays { get; set; }
 }
 
 public class GameLinkViewModel

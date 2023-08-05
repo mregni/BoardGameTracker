@@ -8,11 +8,19 @@ import {
 
 import {GcDrawer} from '../../../components/GcDrawer';
 import {SettingsContext} from '../../../context/settingsContext';
-import {ActivePlayer, Game} from '../../../models';
+import {ActivePlayer, Game, Play} from '../../../models';
 import {GamesContext, GamesContextProvider} from '../../Games/context';
 import {PlayerContext, PlayerContextProvider} from '../../Players/context';
+import {PlayContextProvider} from '../context/PlayProvider';
+import {PlayContext} from '../context/PlayState';
 import PlayerSelectorDrawer from './PlayerSelectorDrawer';
 
+interface FormContent {
+  comment: string;
+  endend: boolean;
+  gameId: number;
+  sessions: any[];
+}
 interface Props {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   open: boolean;
@@ -24,6 +32,7 @@ export const NewPlayFormDrawerContainer = (props: Props) => {
   const { games, loading: loadingGames } = useContext(GamesContext);
   const { players } = useContext(PlayerContext);
   const { settings } = useContext(SettingsContext);
+  const { addPlay } = useContext(PlayContext);
   const { t } = useTranslation();
   const [form] = Form.useForm();
   const [openPlayerSelector, setOpenPLayerSelector] = useState(false);
@@ -38,9 +47,15 @@ export const NewPlayFormDrawerContainer = (props: Props) => {
   }, [playerToEdit])
 
 
-  const triggerPlaySave = async (values: any) => {
-    console.log(values)
-    return '';
+  const triggerPlaySave = async (values: FormContent) => {
+    const { sessions, ...rest } = values;
+    const viewModel: Play = {
+      ...rest,
+      players: activePlayers,
+      sessions: sessions.map(x => ({ start: x[0].$d, end: x[1].$d }))
+    }
+
+    addPlay(viewModel);
   }
 
   const onClose = () => {
@@ -70,7 +85,7 @@ export const NewPlayFormDrawerContainer = (props: Props) => {
   }
 
   const closeNewPlayerDrawer = (player: ActivePlayer | null) => {
-    if(playerToEdit == undefined && player !== null){
+    if (playerToEdit == undefined && player !== null) {
       setActivePlayers((prev) => [...prev, player]);
     }
     if (playerToEdit !== undefined && player !== null) {
@@ -143,35 +158,44 @@ export const NewPlayFormDrawerContainer = (props: Props) => {
         <Form.Item
           name="players"
           label={t('common.players')}
-          valuePropName="value"
-          rules={[{ required: true, message: t('play.new.player.required'), type: 'array' }]}
         >
-          <Button type="primary" onClick={() => createNewPlayer()} icon={<PlusOutlined />}>Add player</Button>
-          <List
-            itemLayout="horizontal"
-            dataSource={activePlayers}
-            renderItem={(item: ActivePlayer) => {
-              const player = players.find(p => p.id === item.id);
-              return (
-                <List.Item
-                  actions={[
-                    <Button type='text' onClick={() => editPlayer(item.uiId)}>edit</Button>,
-                    <Button type='text' onClick={() => removePlayer(item.uiId)}>delete</Button>]}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <Badge count={item.firstPlay ? <ClockCircleTwoTone twoToneColor='green' /> : 0} style={{ marginTop: 30 }} >
-                        <Badge count={item.won ? <CrownTwoTone twoToneColor='orange' /> : 0}>
-                          <Avatar src={`https://localhost:7178/${player?.image ?? ""}`} />
-                        </Badge>
-                      </Badge>}
-                    title={<a href="https://ant.design">{player?.name}</a>}
-                    description={createDescription(item)}
-                  />
-                </List.Item>
-              )
-            }}
-          />
+          <Space direction='vertical' style={{ width: '100%' }}>
+            <Button
+              type="primary"
+              onClick={() => createNewPlayer()}
+              icon={<PlusOutlined />}
+            >
+              {t('play.new.button')}
+            </Button>
+            <List
+              itemLayout="horizontal"
+              dataSource={activePlayers}
+              renderItem={(item: ActivePlayer) => {
+                const player = players.find(p => p.id === item.playerId);
+                return (
+                  <List.Item
+                    actions={[
+                      <Button type='text' onClick={() => editPlayer(item.uiId)}>edit</Button>,
+                      <Button type='text' onClick={() => removePlayer(item.uiId)}>delete</Button>]}
+                  >
+                    <List.Item.Meta
+                      avatar={
+                        <Badge
+                          count={item.firstPlay ? <ClockCircleTwoTone twoToneColor='green' /> : 0}
+                          style={{ marginTop: 30 }}
+                        >
+                          <Badge count={item.won ? <CrownTwoTone twoToneColor='orange' /> : 0}>
+                            <Avatar src={`https://localhost:7178/${player?.image ?? ""}`} />
+                          </Badge>
+                        </Badge>}
+                      title={player?.name}
+                      description={createDescription(item)}
+                    />
+                  </List.Item>
+                )
+              }}
+            />
+          </Space>
         </Form.Item>
         <Form.List name="sessions">
           {(fields, { add, remove }, { errors }) => {
@@ -199,7 +223,8 @@ export const NewPlayFormDrawerContainer = (props: Props) => {
                         style={{ width: 'calc(100% - 30px)' }}
                         placeholder={[t('play.new.session.start-placeholder'), t('play.new.session.end-placeholder')]}
                         format={`${settings.longDateFormat} ${settings.timeFormat}`}
-                        showTime />
+                        showTime
+                        minuteStep={5} />
                     </Form.Item>
                     {fields.length > 1 ? (
                       <MinusCircleOutlined
@@ -236,7 +261,7 @@ export const NewPlayFormDrawerContainer = (props: Props) => {
             htmlType="submit"
             block
           >
-            {t('player.new.add')}
+            {t('play.new.save')}
           </Button>
         </Form.Item>
       </Form>
@@ -250,7 +275,9 @@ export const NewPlayFormDrawer = (props: Props) => {
   return (
     <GamesContextProvider>
       <PlayerContextProvider>
-        <NewPlayFormDrawerContainer {...props} />
+        <PlayContextProvider>
+          <NewPlayFormDrawerContainer {...props} />
+        </PlayContextProvider>
       </PlayerContextProvider>
     </GamesContextProvider>
   )

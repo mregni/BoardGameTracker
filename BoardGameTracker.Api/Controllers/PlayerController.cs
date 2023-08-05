@@ -4,6 +4,7 @@ using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -13,11 +14,13 @@ public class PlayerController
 {
     private readonly IPlayerService _playerService;
     private readonly IMapper _mapper;
+    private readonly ILogger<PlayerController> _logger;
 
-    public PlayerController(IPlayerService playerService, IMapper mapper)
+    public PlayerController(IPlayerService playerService, IMapper mapper, ILogger<PlayerController> logger)
     {
         _playerService = playerService;
         _mapper = mapper;
+        _logger = logger;
     }
     
     [HttpGet]
@@ -40,7 +43,17 @@ public class PlayerController
         }
 
         var player = _mapper.Map<Player>(playerViewModel);
-        await _playerService.CreatePlayer(player);
+
+        try
+        {
+            await _playerService.CreatePlayer(player);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e.Message);
+            var failedViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Failed, null, "Creation failed because of backend error, check logs for details");
+            return new OkObjectResult(failedViewModel);
+        }    
         
         var resultViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Success, null);
         return new OkObjectResult(resultViewModel);
