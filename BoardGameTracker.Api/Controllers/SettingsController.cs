@@ -20,10 +20,9 @@ public class SettingsController
     {
         var uiResources = new UIResourceViewModel
         {
-            TimeFormat = _configFileProvider.TimeFormat,
             TimeZone = _configFileProvider.TimeZone,
-            LongDateFormat = _configFileProvider.LongDateFormat,
-            ShortDateFormat = _configFileProvider.ShortDateFormat,
+            DateTimeFormat = _configFileProvider.DateTimeFormat,
+            DateFormat = _configFileProvider.DateFormat,
             UILanguage = _configFileProvider.UILanguage
         };
 

@@ -12,8 +12,18 @@ public class PlayService : IPlayService
         _playRepository = playRepository;
     }
 
-    public Task CreatePlay(Play play)
+    public Task Create(Play play)
     {
-        return _playRepository.CreatePlay(play);
+        return _playRepository.Create(play);
+    }
+
+    public Task Delete(int id)
+    {
+        return _playRepository.Delete(id);
+    }
+
+    public Task Update(Play play)
+    {
+        return _playRepository.Update(play);
     }
 }

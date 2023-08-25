@@ -2,6 +2,7 @@
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Common.ViewModels;
 
@@ -55,9 +56,14 @@ public class MapProfiles : Profile
         CreateMap<PlayerCreationViewModel, Player>()
             .ForMember(x => x.Id, x => x.MapFrom(y => (int?)null));
 
-        CreateMap<PlayViewModel, Play>().ReverseMap();
-        CreateMap<GameSessionViewModel, GameSession>().ReverseMap();
+        CreateMap<PlayViewModel, Play>()
+            .ForMember(x => x.End, x => x.MapFrom(y => y.Start.AddMinutes(y.Minutes)))
+            .ReverseMap()
+            .ForMember(x => x.Minutes, x => x.MapFrom(y => (y.End - y.Start).TotalMinutes));
         CreateMap<PlayerPlayViewModel, PlayerPlay>().ReverseMap();
+
+        CreateMap<GameStatistics, GameStatisticsViewModel>()
+            .ForMember(x => x.TotalPlayedTime, x => x.MapFrom(y => y.TotalPlayedTime.TotalMinutes));
     }
     
     private static bool IsPersonType(BggRawLink link)

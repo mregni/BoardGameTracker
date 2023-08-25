@@ -1,12 +1,15 @@
 export interface Play {
+  id: number;
   comment: string;
-  endend: boolean;
+  ended: boolean;
   gameId: number;
+  start: Date;
+  minutes: number;
   players: PlayPlayer[];
-  sessions: PlaySessions[];
 }
 
 export interface PlayPlayer {
+  id: number;
   playerId: number;
   won: boolean;
   firstPlay: boolean;
@@ -14,9 +17,4 @@ export interface PlayPlayer {
   score?: number;
   team?: string;
   characterName?: string;
-}
-
-export interface PlaySessions {
-  start: Date;
-  end: Date;
 }

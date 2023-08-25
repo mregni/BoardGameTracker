@@ -17,6 +17,8 @@
     "rating": "Rating",
     "save": "Save",
     "state": "State",
+    "Start": "Start",
+    "Length": "Length",
     "title": "Title",
     "upload": "Upload",
     "year": "Year",
@@ -28,9 +30,42 @@
     "player": "Player",
     "games": "Games"
   },
+  "form":{
+    "placeholders":{
+      "end-scoring": "End scoring",
+      "color": "Player color",
+      "team": "Team name"
+    }
+  },
+  "labels":{
+    "first-play": "First play",
+    "won": "Won",
+    "character-name": "Character name",
+    "team": "Team",
+    "color": "Color",
+    "scoring": "Scoring"
+  },
   "play": {
+    "edit": {
+      "title": "Edit play"
+    },
+    "update":{
+      "notification":{
+        "title": "Session updated",
+        "description":"Game session updated",
+        "title-failed": "Failed updating session",
+        "description-failed":"Failed to update the game session"
+      }
+    },
     "new": {
+      "notification":{
+        "title": "Session added",
+        "description":"New game session added",
+        "title-failed": "Failed adding session",
+        "description-failed":"Failed to add new game session"
+      },
       "button": "Add player",
+      "button-edit":"Edit player",
       "title": "Add new play",
       "ended": {
         "description": "Game is finished",
@@ -42,15 +77,25 @@
       },
       "player": {
         "placeholder": "Select players",
-        "required": "Please add at least one player"
+        "required": "Please add at least one player",
+        "empty": "No players added"
       },
-      "session": {
-        "title": "Speel sessies",
-        "start-placeholder":"Session start",
-        "end-placeholder":"Session end",
-        "extra": "Add extra play session"
+      "start": {
+        "title": "Game start",
+        "start-placeholder": "Start datetime",
+        "length-placeholder": "Length in minutes",
+        "datetime-required": "Please enter the start of the game session",
+        "length-required": "Please enter the game length in minutes"
       },
-      "save": "Save game"
+      "save": "Save play"
+    },
+    "deleted":{
+      "title": "Play Removed",
+      "description": "Play is removed successfully."
+    },
+    "delete":{
+      "title": "Remove play",
+      "description": "Are you sure you wanty to delete this play?"
     }
   },
   "game": {

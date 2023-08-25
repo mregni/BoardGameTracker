@@ -1,7 +1,6 @@
 export interface Settings {
   timeZone: string;
-  shortDateFormat: string;
-  longDateFormat: string;
-  timeFormat: string;
+  dateFormat: string;
+  dateTimeFormat: string;
   uiLanguage: string;
 }

@@ -31,9 +31,9 @@ public class GameController
 
      [HttpGet]
      [Route("{id:int}")]
-     public async Task<IActionResult> GetGameById(int id, bool includePlays = false)
+     public async Task<IActionResult> GetGameById(int id)
      {
-         var game = await _gameService.GetGameById(id, includePlays);
+         var game = await _gameService.GetGameById(id);
          if (game == null)
          {
              return new OkObjectResult(SearchResultViewModel<GameViewModel>.CreateSearchResult(null));
@@ -49,5 +49,26 @@ public class GameController
      {
          await _gameService.Delete(id);
          return new OkObjectResult(new CreationResultViewModel<string>(CreationResultType.Success, null));
+     }
+
+     [HttpGet]
+     [Route("{id:int}/plays")]
+     public async Task<IActionResult> GetGamePlays(int id, [FromQuery] int skip, [FromQuery] int take)
+     {
+         var plays = await _gameService.GetPlays(id);
+
+         var playViewModel = _mapper.Map<IList<PlayViewModel>>(plays);
+         return new OkObjectResult(SearchResultViewModel<IList<PlayViewModel>>.CreateSearchResult(playViewModel)); 
+     }
+     
+     
+     [HttpGet]
+     [Route("{id:int}/stats")]
+     public async Task<IActionResult> GetGameStats(int id)
+     {
+         var stats = await _gameService.GetStats(id);
+
+         var statsViewModel = _mapper.Map<GameStatisticsViewModel>(stats);
+         return new OkObjectResult(SearchResultViewModel<GameStatisticsViewModel>.CreateSearchResult(statsViewModel)); 
      }
 }

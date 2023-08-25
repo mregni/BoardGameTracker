@@ -56,7 +56,7 @@ const PlayerSelectorDrawer = (props: Props) => {
     <GcDrawer
       open={open}
       onClose={() => onClose(null)}
-      title="Add player">
+      title={t('play.new.button')}>
       <Form
         form={form}
         {...formItemLayout}
@@ -83,38 +83,38 @@ const PlayerSelectorDrawer = (props: Props) => {
         </Form.Item>
         <Form.Item
           style={{ marginBottom: 10 }}
-          label="Scoring"
+          label={t('labels.scoring')}
           name="score"
           wrapperCol={{ span: 7 }}
         >
-          <Input placeholder="End scoring" />
+          <Input placeholder={t('form.placeholders.end-scoring')} />
         </Form.Item>
         <Form.Item
           style={{ marginBottom: 10 }}
-          label="Color"
+          label={t('labels.color')}
           name="color"
           wrapperCol={{ span: 7 }}
         >
-          <Input placeholder="Player Color" />
+          <Input placeholder={t('form.placeholders.color')} />
         </Form.Item>
         <Form.Item
           style={{ marginBottom: 10 }}
-          label="Team"
+          label={t('labels.team')}
           name="team"
           wrapperCol={{ span: 7 }}
         >
-          <Input placeholder="Team name" />
+          <Input placeholder={t('form.placeholders.team')} />
         </Form.Item>
         <Form.Item
           style={{ marginBottom: 10 }}
-          label="Character name"
+          label={t('labels.character-name')}
           name="characterName"
         >
           <Input />
         </Form.Item>
         <Form.Item
           style={{ marginBottom: 5 }}
-          label="Won"
+          label={t('labels.won')}
           name="won"
           valuePropName="checked"
         >
@@ -122,14 +122,14 @@ const PlayerSelectorDrawer = (props: Props) => {
         </Form.Item>
         <Form.Item
           style={{ marginBottom: 5 }}
-          label="First play"
+          label={t('labels.first-play')}
           name="firstPlay"
           valuePropName="checked"
         >
           <Checkbox />
         </Form.Item>
         <Row justify="end">
-          <Button type="primary" htmlType="submit">{edit === undefined ? "Add player": "Edit player"}</Button>
+          <Button type="primary" htmlType="submit">{edit === undefined ? t('play.new.button'): t('play.new.button-edit')}</Button>
         </Row>
       </Form>
     </GcDrawer>

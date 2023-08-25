@@ -10,6 +10,14 @@ public interface IGameRepository
     Task<Game> InsertGame(Game game);
     Task<Game?> GetGameByBggId(int bggId);
     Task<List<Game>> GetGamesOverviewList();
-    Task<Game?> GetGameById(int id, bool includePlays);
+    Task<Game?> GetGameById(int id);
     Task DeleteGame(Game game);
+    Task<List<Play>> GetPlays(int id);
+    Task<int> GetPlayCount(int id);
+    Task<TimeSpan> GetTotalPlayedTime(int id);
+    Task<double?> GetPricePerPlay(int id);
+    Task<int> GetUniquePlayerCount(int id);
+    Task<double?> GetHighestScore(int id);
+    Task<Player?> GetMostWins(int id);
+    Task<double?> GetAverageScore(int id);
 }

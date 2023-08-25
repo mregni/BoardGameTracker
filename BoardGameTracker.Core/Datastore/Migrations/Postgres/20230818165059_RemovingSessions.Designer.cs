@@ -3,6 +3,7 @@ using System;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 {
     [DbContext(typeof(MainDbContext))]
-    partial class MainDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230818165059_RemovingSessions")]
+    partial class RemovingSessions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -212,11 +215,11 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Helpers.PlayerPlay", b =>
                 {
-                    b.Property<int?>("PlayerId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    b.Property<int>("PlayId")
-                        .HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CharacterName")
                         .HasColumnType("text");
@@ -230,6 +233,13 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<bool>("IsBot")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("PlayId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PlayerId")
+                        .IsRequired()
+                        .HasColumnType("integer");
+
                     b.Property<double?>("Score")
                         .HasColumnType("double precision");
 
@@ -239,9 +249,11 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<bool>("Won")
                         .HasColumnType("boolean");
 
-                    b.HasKey("PlayerId", "PlayId");
+                    b.HasKey("Id");
 
                     b.HasIndex("PlayId");
+
+                    b.HasIndex("PlayerId");
 
                     b.ToTable("PlayerPlay");
                 });

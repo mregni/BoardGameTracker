@@ -17,9 +17,8 @@ public class ConfigFileProvider : IConfigFileProvider
     public const string CONFIG_ELEMENT_NAME = "Config";
 
     public string TimeZone => GetValue("TZ", "Europe/Londen");
-    public string ShortDateFormat => GetValue("ShortDateFormat", "YY-MM-DD");
-    public string LongDateFormat => GetValue("LongDateFormat", "YYYY-MM-DD");
-    public string TimeFormat => GetValue("TimeFormat", "HH:mm:ss");
+    public string DateFormat => GetValue("DateFormat", "yy-MM-dd");
+    public string DateTimeFormat => GetValue("DateTimeFormat", "yy-MM-dd HH:mm");
     public string UILanguage => GetValue("UILanguage", "nl-be");
     public string PostgresHost => GetValue("PostgresHost", string.Empty);
     public string PostgresUser => GetValue("PostgresUser", string.Empty);

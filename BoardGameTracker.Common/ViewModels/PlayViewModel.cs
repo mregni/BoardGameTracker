@@ -2,21 +2,18 @@
 
 public class PlayViewModel
 {
+    public int? id { get; set; }
     public string? Comment { get; set; }
     public bool Ended { get; set; }
     public int GameId { get; set; }
     public List<PlayerPlayViewModel> Players { get; set; }
-    public List<GameSessionViewModel> Sessions { get; set; }
-}
-
-public class GameSessionViewModel
-{
     public DateTime Start { get; set; }
-    public DateTime End { get; set; }
+    public double Minutes { get; set; }
 }
 
 public class PlayerPlayViewModel
 {
+    public int Id { get; set; }
     public int PlayerId { get; set; }
     public bool Won { get; set; }
     public bool FirstPlay { get; set; }

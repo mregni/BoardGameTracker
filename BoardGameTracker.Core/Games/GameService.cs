@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
@@ -47,14 +48,14 @@ public class GameService : IGameService
         return _gameRepository.GetGamesOverviewList();
     }
 
-    public Task<Game?> GetGameById(int id, bool includePlays)
+    public Task<Game?> GetGameById(int id)
     {
-        return _gameRepository.GetGameById(id, includePlays);
+        return _gameRepository.GetGameById(id);
     }
 
     public async Task Delete(int id)
     {
-        var game = await _gameRepository.GetGameById(id, true);
+        var game = await _gameRepository.GetGameById(id);
         if (game == null)
         {
             return;
@@ -62,5 +63,24 @@ public class GameService : IGameService
         
         _imageService.DeleteImage(game.Image);
         await _gameRepository.DeleteGame(game);
+    }
+
+    public Task<List<Play>> GetPlays(int id)
+    {
+        return _gameRepository.GetPlays(id);
+    }
+
+    public async Task<GameStatistics> GetStats(int id)
+    {
+        return new GameStatistics
+        {
+            PlayCount = await _gameRepository.GetPlayCount(id),
+            TotalPlayedTime = await _gameRepository.GetTotalPlayedTime(id),
+            PricePerPlay = await _gameRepository.GetPricePerPlay(id),
+            UniquePlayerCount = await _gameRepository.GetUniquePlayerCount(id),
+            HighScore = await _gameRepository.GetHighestScore(id),
+            MostWinsPlayer = await _gameRepository.GetMostWins(id),
+            AverageScore = await _gameRepository.GetAverageScore(id)
+        };
     }
 }

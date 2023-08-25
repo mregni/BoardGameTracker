@@ -4,5 +4,7 @@ namespace BoardGameTracker.Core.Plays.Interfaces;
 
 public interface IPlayService
 {
-    Task CreatePlay(Play play);
+    Task Create(Play play);
+    Task Delete(int id);
+    Task Update(Play play);
 }

@@ -85,11 +85,6 @@ public class MainDbContext : DbContext
     private static void BuildGamePlays(ModelBuilder builder)
     {
         builder.Entity<Play>()
-            .HasMany(x => x.Sessions)
-            .WithOne(x => x.Play)
-            .OnDelete(DeleteBehavior.Cascade);
-        
-        builder.Entity<Play>()
             .HasOne(x => x.Location)
             .WithMany(x => x.Plays)
             .IsRequired(false)
@@ -109,6 +104,9 @@ public class MainDbContext : DbContext
             .WithOne(x => x.Play)
             .HasForeignKey(x => x.PlayId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<PlayerPlay>()
+            .HasKey(x => new {x.PlayerId, x.PlayId});
     }
 
     private static void BuildPlayer(ModelBuilder builder)

@@ -9,6 +9,7 @@ export * from './Games/Game';
 export * from './Games/GameState';
 export * from './Games/GameType';
 export * from './Games/PersonType';
+export * from './Games/GameStatistics';
 
 export * from './Player/Player';
 export * from './Player/PlayerCreation';

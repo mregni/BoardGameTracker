@@ -5,8 +5,7 @@
   <PostgresMainDb>boardgametracker-main</PostgresMainDb>
   <PostgresPort>5431</PostgresPort>
   <TZ>Europe/Londen</TZ>
-  <TimeFormat>HH:mm</TimeFormat>
-  <LongDateFormat>YYYY-MM-DD</LongDateFormat>
-  <ShortDateFormat>YY-MM-DD</ShortDateFormat>
   <UILanguage>nl-be</UILanguage>
+  <DateTimeFormat>yy-MM-dd HH:mm</DateTimeFormat>
+  <DateFormat>yy-MM-dd</DateFormat>
 </Config>

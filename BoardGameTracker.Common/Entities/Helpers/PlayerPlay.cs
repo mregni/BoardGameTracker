@@ -2,7 +2,7 @@
 
 namespace BoardGameTracker.Common.Entities.Helpers;
 
-public class PlayerPlay: HasId
+public class PlayerPlay
 {
     public int? PlayerId { get; set; }
     public Player Player { get; set; }

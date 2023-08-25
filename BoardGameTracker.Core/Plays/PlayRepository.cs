@@ -1,6 +1,7 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Plays.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Plays;
 
@@ -13,9 +14,37 @@ public class PlayRepository : IPlayRepository
         _context = context;
     }
 
-    public async Task CreatePlay(Play play)
+    public async Task Create(Play play)
     {
         await _context.Plays.AddAsync(play);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task Delete(int id)
+    {
+        var play = await _context.Plays.FirstOrDefaultAsync(x => x.Id == id);
+        if (play == null)
+        {
+            return;
+        }
+        
+        _context.Remove(play);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task Update(Play play)
+    {
+        var dbPlay = await _context.Plays
+            .Include(x => x.Players)
+            .SingleOrDefaultAsync(x => x.Id == play.Id);
+        if (dbPlay != null)
+        {
+            dbPlay.Players = play.Players;
+            dbPlay.Comment = play.Comment;
+            dbPlay.End = play.End;
+            dbPlay.Start = play.Start;
+            dbPlay.Ended = play.Ended;
+            await _context.SaveChangesAsync();
+        }
     }
 }
