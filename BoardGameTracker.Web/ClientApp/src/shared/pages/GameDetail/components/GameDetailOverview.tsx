@@ -6,7 +6,7 @@ import {
 } from 'antd';
 import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import {addMinutes, format, formatDuration, intervalToDuration, minutesToHours} from 'date-fns';
-import React, {ReactElement, ReactNode, useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Trans, useTranslation} from 'react-i18next';
 import {Link, useNavigate} from 'react-router-dom';
 
@@ -221,14 +221,12 @@ const GameStatistics = () => {
     return (<></>);
   }
 
-  console.log(cards)
-
   return (
     <Row gutter={[16, 16]}>
       {
         cards.map(card => (
           card.value !== null &&
-          <Col xs={24} md={12} xl={8} xxl={6}>
+          <Col xs={24} md={12} xl={8} xxl={6} key={card.title}>
             <Card bordered={false}>
               <Statistic
                 title={card.title}
