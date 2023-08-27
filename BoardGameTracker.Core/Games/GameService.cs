@@ -20,7 +20,7 @@ public class GameService : IGameService
         _imageService = imageService;
     }
 
-    public async Task<Game> ProcessBggGameData(BggGame rawGame, GameState gameState)
+    public async Task<Game> ProcessBggGameData(BggGame rawGame, BggSearch search)
     {
         var categories = _mapper.Map<IList<GameCategory>>(rawGame.Categories);
         await _gameRepository.AddGameCategoriesIfNotExists(categories);
@@ -33,7 +33,9 @@ public class GameService : IGameService
 
         var game = _mapper.Map<Game>(rawGame);
         game.Image = await _imageService.DownloadImage(rawGame.Image, rawGame.BggId.ToString());
-        game.State = gameState;
+        game.State = search.State;
+        game.BuyingPrice = search.Price;
+        game.AdditionDate = search.AdditionDate;
         
         return await _gameRepository.InsertGame(game);
     }

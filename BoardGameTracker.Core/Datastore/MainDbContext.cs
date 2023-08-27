@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Datastore;
 
+// dotnet ef migrations add <NAME> --startup-project ../BoardGameTracker.Host --output-dir DataStore/Migrations/Postgres
 public class MainDbContext : DbContext
 {
     public DbSet<Game> Games { get; set; }

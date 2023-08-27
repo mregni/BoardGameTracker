@@ -221,11 +221,13 @@ const GameStatistics = () => {
     return (<></>);
   }
 
+  console.log(cards)
+
   return (
     <Row gutter={[16, 16]}>
       {
         cards.map(card => (
-          card.value &&
+          card.value !== null &&
           <Col xs={24} md={12} xl={8} xxl={6}>
             <Card bordered={false}>
               <Statistic

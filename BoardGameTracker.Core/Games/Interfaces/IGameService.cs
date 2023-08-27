@@ -7,7 +7,7 @@ namespace BoardGameTracker.Core.Games.Interfaces;
 
 public interface IGameService
 {
-    Task<Game> ProcessBggGameData(BggGame rawGame, GameState gameState);
+    Task<Game> ProcessBggGameData(BggGame rawGame, BggSearch gameState);
     Task<Game?> GetGameByBggId(int bggId);
     Task<List<Game>> GetGames();
     Task<Game?> GetGameById(int id);

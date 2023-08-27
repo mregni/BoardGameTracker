@@ -3,7 +3,7 @@ export * from './ListResult';
 export * from './CreationResult';
 export * from './SearchResult';
 
-export * from './bgg/BggIdSearch';
+export * from './bgg/BggSearch';
 
 export * from './Games/Game';
 export * from './Games/GameState';

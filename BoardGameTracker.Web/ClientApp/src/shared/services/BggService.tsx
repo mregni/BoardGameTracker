@@ -1,11 +1,11 @@
-import {GameSearchResult} from '../models';
+import {BggSearch, Game, SearchResult} from '../models';
 import {axiosInstance} from './axiosInstance';
 
 const domain = 'bgg';
 
-export const addGame = (id: string, state: string): Promise<GameSearchResult> => {
+export const addGame = (search: BggSearch): Promise<SearchResult<Game>> => {
   return axiosInstance
-    .get<GameSearchResult>(`${domain}/add/${id}?state=${state}`)
+    .post<SearchResult<Game>>(`${domain}/search`, {...search})
     .then((response) => {
       return response.data;
     });

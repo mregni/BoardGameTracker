@@ -16,7 +16,7 @@ export const GcContent = () => {
         <Routes>
           <Route
             element={<GameContainer />}
-            path="">
+            path="*">
           </Route>
           <Route
             element={<GameContainer />}

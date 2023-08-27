@@ -1,11 +1,11 @@
-import {Button, Form, Input, Select} from 'antd';
+import {Button, DatePicker, Form, Input, InputNumber, Select} from 'antd';
 import React, {useContext} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {GcDrawer} from '../../../components/GcDrawer';
-import {
-  BggIdSearch, GameState, getItemStateTranslationKey, SearchResultType,
-} from '../../../models';
+import {SettingsContext} from '../../../context/settingsContext';
+import {BggSearch, GameState, getItemStateTranslationKey, SearchResultType} from '../../../models';
+import {convertToAntdFormat} from '../../../utils';
 import {GamesContext} from '../context';
 import useSearchGame from '../useSearchGame';
 
@@ -16,6 +16,7 @@ interface Props {
 
 const SearchGameDrawer = (props: Props) => {
   const { loadGames } = useContext(GamesContext);
+  const { settings} = useContext(SettingsContext);
   const { setOpen, open } = props;
   const { t } = useTranslation();
   const { search, searching } = useSearchGame();
@@ -26,8 +27,8 @@ const SearchGameDrawer = (props: Props) => {
     setOpen(false);
   };
 
-  const triggerGameSearch = async (values: BggIdSearch) => {
-    const result = await search(values.bggId, values.state);
+  const triggerGameSearch = async (values: BggSearch) => {
+    const result = await search(values);
     if (![SearchResultType.Failed, SearchResultType.NotFound].includes(result)) {
       loadGames();
       onClose();
@@ -36,13 +37,15 @@ const SearchGameDrawer = (props: Props) => {
 
   const initialValues = {
     bggId: '',
-    state: GameState.Owned
+    state: GameState.Owned,
+    price: null,
+    dateAdded: null
   }
 
   return (
     <GcDrawer
       title={t('games.new.title')}
-      open={open} 
+      open={open}
       onClose={onClose}>
       <Form
         form={form}
@@ -75,6 +78,27 @@ const SearchGameDrawer = (props: Props) => {
               .map((value) => ({ label: t(getItemStateTranslationKey(value)), value: Number(value) }))}
           >
           </Select>
+        </Form.Item>
+        <Form.Item
+          label={t('game.price')}
+          style={{ width: '100%' }}
+          name="price"
+        >
+          <InputNumber 
+            addonAfter="$" 
+            placeholder={t('game.price-placeholder')}
+            controls={false}
+            />
+        </Form.Item>
+        <Form.Item
+          label={t('game.added-date')}
+          style={{ width: '100%' }}
+          name="additionDate"
+        >
+          <DatePicker
+            style={{ width: 'calc(100% - 30px)' }}
+            format={`${convertToAntdFormat(settings?.dateFormat)}`}
+          />
         </Form.Item>
         <Form.Item wrapperCol={{ offset: 1, span: 22 }}>
           <Button

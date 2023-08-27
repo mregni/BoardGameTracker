@@ -2,7 +2,7 @@ import {App} from 'antd';
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
-import {Game, SearchResult, SearchResultType} from '../../models';
+import {BggSearch, Game, SearchResult, SearchResultType} from '../../models';
 import {addGame} from '../../services/BggService';
 import {
   createErrorNotification, createInfoNotification, createSuccessNotification,
@@ -10,7 +10,7 @@ import {
 } from '../../utils';
 
 interface Props {
-  search: (bggId: string, state: string) => Promise<SearchResultType>;
+  search: (model: BggSearch) => Promise<SearchResultType>;
   searching: boolean;
 }
 
@@ -19,10 +19,10 @@ export default function useSearchGame(): Props {
   const { t } = useTranslation();
   const { notification } = App.useApp();
 
-  const search = async (bggId: string, state: string): Promise<SearchResultType> => {
+  const search = async (model: BggSearch): Promise<SearchResultType> => {
     setSearching(true);
     let searchResult = SearchResultType.Failed;
-    await addGame(bggId, state)
+    await addGame(model)
       .then((result: SearchResult<Game>) => {
         if (result.result === SearchResultType.Found) {
           createSuccessNotification(
@@ -34,7 +34,7 @@ export default function useSearchGame(): Props {
           createWarningNotification(
             notification,
             t('games.new.notfound.message'),
-            t('games.new.notfound.description', { id: bggId })
+            t('games.new.notfound.description', { id: model.bggId })
           );
         } else if (result.result === SearchResultType.Duplicate) {
           createInfoNotification(
@@ -48,7 +48,7 @@ export default function useSearchGame(): Props {
         createErrorNotification(
           notification,
           t('games.new.failed.message'),
-          t('games.new.failed.description', { id: bggId })
+          t('games.new.failed.description', { id: model.bggId })
         )
       }).finally(() => {
         setSearching(false);

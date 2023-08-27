@@ -95,10 +95,13 @@
     },
     "delete":{
       "title": "Remove play",
-      "description": "Are you sure you wanty to delete this play?"
+      "description": "Are you sure you want to delete this play?"
     }
   },
   "game": {
+    "price": "Price",
+    "price-placeholder": "Game price",
+    "added-date": "Addition date",
     "new-play": "New play",
     "notfound": {
       "description": "Cound not find game with id {{id}}. Please check the URL and try again.",
