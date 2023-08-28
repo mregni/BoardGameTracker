@@ -294,7 +294,7 @@ const GameDetailOverview = () => {
       >
         {!screens.lg &&
           <Dropdown menu={{ items }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
-            <MoreOutlined />
+            <Button icon={<MoreOutlined />} type='ghost'></Button>
           </Dropdown>
         }
         {screens.lg &&

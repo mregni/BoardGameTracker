@@ -1,34 +1,43 @@
-import {Button, Col, Image, Row, Space, Typography} from 'antd';
+import {Button, Col, Divider, Dropdown, Image, MenuProps, Row, Space, Typography} from 'antd';
 import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
+import {t} from 'i18next';
 import React, {useContext, useEffect, useState} from 'react';
 import {Trans, useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 
-import {ArrowLeftOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons';
+import {DeleteOutlined, EditOutlined, MoreOutlined} from '@ant-design/icons';
 
 import GcBackButton from '../../../components/GcBackButton/GcBackButton';
-import {Player} from '../../../models';
+import {
+  GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
+} from '../../../components/GcPageContainer';
 import {useModals} from '../../../utils';
 import {PlayerContext} from '../../Players/context';
-import {NewPlayFormDrawer} from '../../Plays';
 import {PlayerDetailContext} from '../context/PlayerDetailState';
 
-const { Title } = Typography;
-
-interface Props {
-  player: Player;
+const PlayerHeader = () => {
+  return (
+    <div style={{ position: 'relative' }}>
+      <Space direction='vertical' align='start'>
+        Test
+      </Space>
+    </div>
+  )
 }
 
-
-const PlayerHeader = (props: Props) => {
-  const { deletePlayer, loading } = useContext(PlayerDetailContext);
+export const PlayerDetailOverview = () => {
+  const { deletePlayer, player, loading } = useContext(PlayerDetailContext);
   const { loadPlayers } = useContext(PlayerContext);
-  const { t } = useTranslation();
+  const screens = useBreakpoint();
   const navigate = useNavigate();
-  const {deleteModal} = useModals();
-  const { player } = props;
+  const { deleteModal } = useModals();
+
+  if (player === null) {
+    return (<></>);
+  }
 
   const showDeleteModal = () => {
+    console.log("boe")
     deleteModal(
       t('player.delete.title', { title: player.name }),
       <Trans
@@ -45,41 +54,59 @@ const PlayerHeader = (props: Props) => {
     navigate('/players');
   }
 
+  const items: MenuProps['items'] = [
+    {
+      key: '1',
+      icon: <EditOutlined />,
+      label: <Link to={''}>{t('common.edit')}</Link>,
+    },
+    {
+      key: '2',
+      icon: <DeleteOutlined />,
+      label: <Link to={''} onClick={() => showDeleteModal()}>{t('common.delete')}</Link>,
+    }
+  ];
+
+  if (player === null) {
+    return (<></>);
+  }
+
   return (
-    <div style={{ position: 'relative' }}>
-      <GcBackButton onClick={() => navigate('/players')} disabled={loading} />
-      <Space direction='vertical' align='start'>
-        <Row gutter={8}>
-          <Col flex="auto">
-            <Title level={2} style={{ margin: 0 }}>
-              {player.name}
-            </Title>
+    <GcPageContainer>
+      <GcPageContainerHeader
+        hasBack
+        backNavigation='/players'
+        isLoading={loading}
+        title={player.name}
+      >
+        {!screens.lg &&
+          <Dropdown menu={{ items }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
+            <Button icon={<MoreOutlined />} type='ghost'></Button>
+          </Dropdown>
+        }
+        {screens.lg &&
+          <>
+            <Button type='ghost' disabled icon={<EditOutlined />}>{t('common.edit')}</Button>
+            <Divider type="vertical" />
+            <Button type='ghost' icon={<DeleteOutlined />} onClick={() => showDeleteModal()}>{t('common.delete')}</Button>
+          </>
+        }
+      </GcPageContainerHeader>
+      <GcPageContainerContent isLoading={loading}>
+        <Row gutter={[16, 16]}>
+          <Col xxl={3} xl={4} md={5} xs={24}>
+              <Image
+                preview={false}
+                width={'100%'}
+                src={`https://localhost:7178/${player.image}`}
+                className="image"
+              />
+          </Col>
+          <Col xxl={21} xl={20} md={19} xs={24}>
+            <PlayerHeader />
           </Col>
         </Row>
-        <Space direction='horizontal' align='start'>
-          <Button size='small' type='primary' disabled icon={<EditOutlined />}>{t('common.edit')}</Button>
-          <Button size='small' type='primary' icon={<DeleteOutlined />} danger onClick={() => showDeleteModal()}>{t('common.delete')}</Button>
-        </Space>
-      </Space>
-    </div>
-  )
-}
-
-export const PlayerDetailOverview = (props: Props) => {
-  const { player } = props;
-  return (
-    <Row gutter={[16, 16]}>
-      <Col xxl={3} xl={4} md={5} xs={24}>
-        <Image
-          preview={false}
-          width={'100%'}
-          src={`https://localhost:7178/${player.image}`}
-          className="image"
-        />
-      </Col>
-      <Col xxl={21} xl={20} md={19} xs={24}>
-        <PlayerHeader player={player} />
-      </Col>
-    </Row>
+      </GcPageContainerContent>
+    </GcPageContainer>
   )
 }

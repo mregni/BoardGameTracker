@@ -28,7 +28,8 @@
     "comment": "Comment",
     "game": "Game",
     "player": "Player",
-    "games": "Games"
+    "games": "Games",
+    "create": "Create"
   },
   "form":{
     "placeholders":{

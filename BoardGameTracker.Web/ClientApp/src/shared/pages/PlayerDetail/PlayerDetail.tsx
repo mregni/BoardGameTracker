@@ -16,7 +16,7 @@ export const PlayerDetailContainer = () => {
 
   return (
     <GcNoDataLoader isLoading={loading || player == null}>
-      {player !== null && <PlayerDetailOverview player={player} />}
+      {player !== null && <PlayerDetailOverview />}
     </GcNoDataLoader>
   )
 }
