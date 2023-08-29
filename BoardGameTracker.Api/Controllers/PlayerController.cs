@@ -80,4 +80,14 @@ public class PlayerController
         await _playerService.Delete(id);
         return new OkObjectResult(new CreationResultViewModel<string>(CreationResultType.Success, null));
     }
+    
+    [HttpGet]
+    [Route("{id:int}/stats")]
+    public async Task<IActionResult> GetGameStats(int id)
+    {
+        var stats = await _playerService.GetStats(id);
+
+        var statsViewModel = _mapper.Map<PlayerStatisticsViewModel>(stats);
+        return new OkObjectResult(SearchResultViewModel<PlayerStatisticsViewModel>.CreateSearchResult(statsViewModel)); 
+    }
 }

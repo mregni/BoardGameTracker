@@ -14,12 +14,13 @@ import {
 import {useModals} from '../../../utils';
 import {PlayerContext} from '../../Players/context';
 import {PlayerDetailContext} from '../context/PlayerDetailState';
+import {PlayerStatistics} from './PlayerStatistics';
 
 const PlayerHeader = () => {
   return (
     <div style={{ position: 'relative' }}>
       <Space direction='vertical' align='start'>
-        Test
+
       </Space>
     </div>
   )
@@ -37,7 +38,6 @@ export const PlayerDetailOverview = () => {
   }
 
   const showDeleteModal = () => {
-    console.log("boe")
     deleteModal(
       t('player.delete.title', { title: player.name }),
       <Trans
@@ -95,15 +95,18 @@ export const PlayerDetailOverview = () => {
       <GcPageContainerContent isLoading={loading}>
         <Row gutter={[16, 16]}>
           <Col xxl={3} xl={4} md={5} xs={24}>
-              <Image
-                preview={false}
-                width={'100%'}
-                src={`https://localhost:7178/${player.image}`}
-                className="image"
-              />
+            <Image
+              preview={false}
+              width={'100%'}
+              src={`https://localhost:7178/${player.image}`}
+              className="image"
+            />
           </Col>
           <Col xxl={21} xl={20} md={19} xs={24}>
             <PlayerHeader />
+          </Col>
+          <Col xs={24}>
+            <PlayerStatistics />
           </Col>
         </Row>
       </GcPageContainerContent>

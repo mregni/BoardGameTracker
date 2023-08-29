@@ -43,7 +43,7 @@ export const useGameDetailContext = (): GameDetailContextProps => {
   const refreshData = async (id: number) => {
     await loadPlays(id);
     const statistics = await getGameStatistics(id);
-      setStatistics(statistics.model);
+    setStatistics(statistics.model);
   }
 
   const loadGame = useCallback(async (id: string): Promise<void> => {
@@ -126,7 +126,7 @@ export const useGameDetailContext = (): GameDetailContextProps => {
   }
 
   return {
-    loading, game, loadGame, deleteGame, plays, 
+    loading, game, loadGame, deleteGame, plays,
     deletePlay, addPlay, updatePlay, statistics
   };
 };

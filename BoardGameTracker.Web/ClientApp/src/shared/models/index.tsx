@@ -14,6 +14,7 @@ export * from './Games/GameStatistics';
 export * from './Player/Player';
 export * from './Player/PlayerCreation';
 export * from './Player/ActivePlayer';
+export * from './Player/PlayerStatistics';
 
 export * from './settings/Settings';
 

@@ -2,13 +2,14 @@ import {App} from 'antd';
 import {createContext, useCallback, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
-import {Player, SearchResultType} from '../../../models';
-import {deletePlayerCall, getPlayer} from '../../../services/PlayerService';
+import {Player, PlayerStatistics, SearchResultType} from '../../../models';
+import {deletePlayerCall, getPlayer, getPlayerStatistics} from '../../../services/PlayerService';
 import {createInfoNotification} from '../../../utils';
 
 export interface PlayerDetailContextProps {
   loading: boolean;
   player: Player | null;
+  statistics: PlayerStatistics | null;
   loadPlayer: (id: string) => Promise<void>;
   deletePlayer: () => Promise<void>;
 }
@@ -18,6 +19,8 @@ export const PlayerDetailContext = createContext<PlayerDetailContextProps>(null!
 export const usePlayerDetailContext = (): PlayerDetailContextProps => {
   const [loading, setLoading] = useState(false);
   const [player, setPlayer] = useState<Player | null>(null);
+  const [statistics, setStatistics] = useState<PlayerStatistics | null>(null)
+
   const { notification } = App.useApp();
   const { t } = useTranslation();
 
@@ -27,6 +30,8 @@ export const usePlayerDetailContext = (): PlayerDetailContextProps => {
 
     if (result.result === SearchResultType.Found) {
       setPlayer(result.model);
+      const statistics = result.model && await getPlayerStatistics(result.model?.id);
+      statistics && setStatistics(statistics?.model);
     }
 
     if (result.result === SearchResultType.NotFound) {
@@ -41,17 +46,17 @@ export const usePlayerDetailContext = (): PlayerDetailContextProps => {
   }, []);
 
   const deletePlayer = async (): Promise<void> => {
-    if(player !== null) {
+    if (player !== null) {
       await deletePlayerCall(player.id)
       createInfoNotification(
         notification,
         t('player.deleted.title'),
-        t('player.deleted.description', {name: player.name})
+        t('player.deleted.description', { name: player.name })
       );
     }
   }
 
   return {
-    loading, player, loadPlayer, deletePlayer
+    loading, player, loadPlayer, deletePlayer, statistics
   };
 };

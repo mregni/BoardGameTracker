@@ -1,4 +1,4 @@
-import {CreationResult, ListResult, Player, SearchResult} from '../models';
+import {CreationResult, ListResult, Player, PlayerStatistics, SearchResult} from '../models';
 import {axiosInstance} from './axiosInstance';
 
 const domain = 'player';
@@ -29,4 +29,12 @@ export const getPlayer = (id: string): Promise<SearchResult<Player>> => {
 
 export const deletePlayerCall = (id: number): Promise<void> => {
   return axiosInstance.delete(`${domain}/${id}`);
+}
+
+export const getPlayerStatistics = (id: number): Promise<SearchResult<PlayerStatistics>> => {
+  return axiosInstance
+    .get<SearchResult<PlayerStatistics>>(`${domain}/${id}/stats`)
+    .then((response) => {
+      return response.data;
+    });
 }

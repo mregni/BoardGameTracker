@@ -1,4 +1,5 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 
@@ -40,5 +41,19 @@ public class PlayerService : IPlayerService
         
         _imageService.DeleteImage(player.Image);
         await _playerRepository.DeletePlayer(player);
+    }
+
+    public async Task<PlayerStatistics> GetStats(int id)
+    {
+        var stats =  new PlayerStatistics
+        {
+            PlayCount = await _playerRepository.GetPlayCount(id),
+            BestGameId = await _playerRepository.GetBestGameId(id),
+            FavoriteColor = await _playerRepository.GetFavoriteColor(id),
+            WinCount = await _playerRepository.GetTotalWinCount(id),
+            TotalPlayedTime = await _playerRepository.GetPlayLengthInMinutes(id)
+        };
+        
+        return stats;
     }
 }
