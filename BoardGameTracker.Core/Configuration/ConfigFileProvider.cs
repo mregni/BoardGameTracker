@@ -16,6 +16,7 @@ public class ConfigFileProvider : IConfigFileProvider
     private static readonly object Mutex = new object();
     public const string CONFIG_ELEMENT_NAME = "Config";
 
+    public string Currency => GetValue("Currency", "€");
     public string TimeZone => GetValue("TZ", "Europe/Londen");
     public string DateFormat => GetValue("DateFormat", "yy-MM-dd");
     public string DateTimeFormat => GetValue("DateTimeFormat", "yy-MM-dd HH:mm");
@@ -181,7 +182,6 @@ public class ConfigFileProvider : IConfigFileProvider
         foreach (var propertyInfo in properties)
         {
             var value = propertyInfo.GetValue(this, null);
-
             dict.Add(propertyInfo.Name, value);
         }
 

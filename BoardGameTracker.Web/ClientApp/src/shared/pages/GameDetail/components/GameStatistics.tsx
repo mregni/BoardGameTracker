@@ -2,17 +2,19 @@ import {addMinutes, formatDuration, intervalToDuration} from 'date-fns';
 import {useContext, useEffect, useState} from 'react';
 
 import {GcStatisticsRow, StatisticsCard} from '../../../components/GcStatistics';
+import {SettingsContext} from '../../../context/settingsContext';
 import {GameDetailContext} from '../context/GameDetailState';
 
 export const GameStatistics = () => {
   const { statistics } = useContext(GameDetailContext);
+  const {settings} = useContext(SettingsContext);
   const [cards, setCards] = useState<StatisticsCard[]>([]);
 
   useEffect(() => {
     if (statistics !== null) {
       setCards([
         { title: "Play count", value: statistics.playCount },
-        { title: "Price per play", value: statistics.pricePerPlay, suffix: "€", precision: 2 },
+        { title: "Price per play", value: statistics.pricePerPlay, suffix: settings.currency, precision: 2 },
         { title: "Unique players", value: statistics.uniquePlayerCount },
         {
           title: "Total play time", value: formatDuration(

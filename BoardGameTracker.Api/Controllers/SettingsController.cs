@@ -23,7 +23,8 @@ public class SettingsController
             TimeZone = _configFileProvider.TimeZone,
             DateTimeFormat = _configFileProvider.DateTimeFormat,
             DateFormat = _configFileProvider.DateFormat,
-            UILanguage = _configFileProvider.UILanguage
+            UILanguage = _configFileProvider.UILanguage,
+            Currency = _configFileProvider.Currency
         };
 
         return new OkObjectResult(uiResources);

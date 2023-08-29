@@ -85,7 +85,7 @@ const SearchGameDrawer = (props: Props) => {
           name="price"
         >
           <InputNumber 
-            addonAfter="$" 
+            addonAfter={settings.currency}
             placeholder={t('game.price-placeholder')}
             controls={false}
             />
