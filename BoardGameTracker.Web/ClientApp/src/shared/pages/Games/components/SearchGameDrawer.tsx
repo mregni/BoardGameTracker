@@ -42,6 +42,10 @@ const SearchGameDrawer = (props: Props) => {
     dateAdded: null
   }
 
+  if(settings === null){
+    return (<></>)
+  }
+
   return (
     <GcDrawer
       title={t('games.new.title')}

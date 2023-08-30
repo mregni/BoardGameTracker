@@ -29,7 +29,8 @@
     "game": "Game",
     "player": "Player",
     "games": "Games",
-    "create": "Create"
+    "create": "Create",
+    "loading": "Loading"
   },
   "form":{
     "placeholders":{

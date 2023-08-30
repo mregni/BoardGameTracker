@@ -12,7 +12,7 @@ export interface SettingsContextProps {
 export const SettingsContext = createContext<SettingsContextProps>(null!);
 
 export const useSettingsContext = (): SettingsContextProps => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<Settings>(null!);
 
   const loadSettings = useCallback(async (): Promise<void> => {

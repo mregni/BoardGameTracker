@@ -1,5 +1,5 @@
 import {Avatar, Popconfirm, Space, Table, Tooltip} from 'antd';
-import {ColumnsType} from 'antd/es/table';
+import {ColumnsType, TablePaginationConfig} from 'antd/es/table';
 import {format, formatDuration, minutesToHours} from 'date-fns';
 import {useContext, useState} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -126,9 +126,18 @@ export const GameContent = () => {
     }
   ];
 
+  const pagination: TablePaginationConfig = {
+    position: ['bottomRight'],
+    total: plays.length,
+    defaultCurrent: 1,
+    hideOnSinglePage: false,
+    showSizeChanger: true,
+    showTitle: true
+  }
+
   return (
     <Space direction='vertical' style={{ display: 'flex' }}>
-      <Table columns={columns} dataSource={plays} size="small" rowKey={(play: Play) => play.id} />
+      <Table columns={columns} dataSource={plays} size="small" rowKey={(play: Play) => play.id} pagination={pagination} />
       {playToEdit && <EditPlayDrawer open={openPlayEdit} setOpen={setOpenPlayEdit} play={playToEdit as Play} />}
     </Space>
   )
