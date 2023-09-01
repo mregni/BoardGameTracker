@@ -4,7 +4,11 @@ export function decodeHtmlEntities(text: string): string {
   return decoded || "";
 }
 
-export function limitStringLength(inputString: string, maxLength = 20): string {
+export function limitStringLength(inputString: string |undefined, maxLength = 20): string {
+  if(inputString === undefined){
+    return "";
+  }
+  
   if (inputString.length <= maxLength) {
       return inputString;
   } else {

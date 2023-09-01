@@ -1,5 +1,5 @@
 import {Layout, Menu, theme} from 'antd';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useLocation} from 'react-router-dom';
 
@@ -10,7 +10,13 @@ export const GcMenu = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
-  const result = getMenuItems(t).find(item => location.pathname.startsWith(`/${item.label.props.to}`));
+  const [openPage, setOpenPage] = useState("0");
+
+  useEffect(() => {
+    const result = getMenuItems(t).find(item => location.pathname.startsWith(`/${item.label.props.to}`));
+    setOpenPage(result?.key?.toString() ?? "0");
+  }, [location.pathname, t])
+  
   const { token: { colorBgContainer } } = theme.useToken();
 
   return (
@@ -21,7 +27,7 @@ export const GcMenu = () => {
       onCollapse={(value) => setCollapsed(value)}>
       <Menu
         style={{ height: '100%' }}
-        defaultSelectedKeys={[result?.key?.toString() ?? "0"]}
+        selectedKeys={[openPage]}
         mode="inline"
         items={getMenuItems(t)} />
     </Sider>

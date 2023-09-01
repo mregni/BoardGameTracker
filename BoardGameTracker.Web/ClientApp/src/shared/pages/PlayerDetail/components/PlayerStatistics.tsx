@@ -2,6 +2,7 @@ import {addMinutes, formatDuration, intervalToDuration} from 'date-fns';
 import {useContext, useEffect, useState} from 'react';
 
 import {GcStatisticsRow, StatisticsCard} from '../../../components/GcStatistics';
+import {limitStringLength} from '../../../utils';
 import {GamesContext} from '../../Games/context';
 import {PlayerDetailContext} from '../context/PlayerDetailState';
 
@@ -17,7 +18,7 @@ export const PlayerStatistics = () => {
       setCards([
         { title: "Play count", value: statistics.playCount },
         { title: "Total wins", value: statistics.winCount },
-        { title: "Best game", value: game?.title ?? null },
+        { title: "Best game", value: limitStringLength(game?.title) ?? null },
         {
           title: "Total play time", value: formatDuration(
             intervalToDuration({
@@ -30,7 +31,7 @@ export const PlayerStatistics = () => {
         { title: 'Favorite color', value: statistics.favoriteColor }
       ]);
     }
-  }, [statistics])
+  }, [games, statistics])
 
   return (
     statistics && <GcStatisticsRow cards={cards} />
