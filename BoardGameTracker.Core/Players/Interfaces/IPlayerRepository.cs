@@ -13,4 +13,5 @@ public interface IPlayerRepository
     Task<string?> GetFavoriteColor(int id);
     Task<int> GetTotalWinCount(int id);
     Task<double> GetPlayLengthInMinutes(int id);
+    Task<List<Play>> GetPlaysForPlayer(int id);
 }

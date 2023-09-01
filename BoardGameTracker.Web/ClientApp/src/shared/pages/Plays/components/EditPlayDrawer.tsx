@@ -12,11 +12,11 @@ interface Props {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   open: boolean;
   play: Play;
+  edit: (play: Play) => Promise<void>;
 }
 
 export const EditPlayDrawer = (props: Props) => {
-  const { setOpen, open, play } = props;
-  const { updatePlay } = useContext(GameDetailContext);
+  const { setOpen, open, play, edit } = props;
 
   const { t } = useTranslation();
   const [form] = Form.useForm();
@@ -27,7 +27,7 @@ export const EditPlayDrawer = (props: Props) => {
   };
 
   const finish = async (play: Play): Promise<void> => {
-    await updatePlay(play);
+    await edit(play);
     onClose();
   }
 

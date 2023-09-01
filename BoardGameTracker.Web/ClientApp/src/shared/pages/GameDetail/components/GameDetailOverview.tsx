@@ -15,8 +15,8 @@ import {GcStateRibbon} from '../../../components/GcStateRibbon';
 import {useModals} from '../../../utils';
 import {GamesContext} from '../../Games/context';
 import {GameDetailContext} from '../context/GameDetailState';
-import {GameContent} from './GameContent';
 import {GameHeader} from './GameHeader';
+import {GamePlaysTable} from './GamePlaysTable';
 import {GameStatistics} from './GameStatistics';
 
 const GameDetailOverview = () => {
@@ -101,7 +101,7 @@ const GameDetailOverview = () => {
             <GameStatistics />
           </Col>
           <Col xs={24}>
-            <GameContent />
+            <GamePlaysTable />
           </Col>
         </Row>
       </GcPageContainerContent>

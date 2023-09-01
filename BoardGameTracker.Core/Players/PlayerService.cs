@@ -56,4 +56,9 @@ public class PlayerService : IPlayerService
         
         return stats;
     }
+
+    public Task<List<Play>> GetPlays(int id)
+    {
+        return _playerRepository.GetPlaysForPlayer(id);
+    }
 }

@@ -2,14 +2,10 @@ import {App} from 'antd';
 import {createContext, useCallback, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
-import {CreationResultType, Game, GameStatistics, Play, SearchResultType} from '../../../models';
-import {
-  deleteGameCall, getGame, getGamePlays, getGameStatistics,
-} from '../../../services/GameService';
-import {
-  AddPlay as AddPlayCall, deletePlay as deletePlayCall, UpdatePlay as UpdatePlayCall,
-} from '../../../services/PlayService';
-import {createErrorNotification, createInfoNotification} from '../../../utils';
+import {usePlays} from '../../../hooks';
+import {Game, GameStatistics, Play, SearchResultType} from '../../../models';
+import {deleteGameCall, getGame, getGameStatistics} from '../../../services/GameService';
+import {createInfoNotification} from '../../../utils';
 
 export interface GameDetailContextProps {
   loading: boolean;
@@ -18,9 +14,9 @@ export interface GameDetailContextProps {
   statistics: GameStatistics | null;
   loadGame: (id: string) => Promise<void>;
   deleteGame: () => Promise<void>;
-  deletePlay: (id: number) => Promise<void>;
-  addPlay(play: Play): Promise<void>;
-  updatePlay: (play: Play) => Promise<void>;
+  deleteGamePlay: (id: number) => Promise<void>;
+  addGamePlay(play: Play): Promise<void>;
+  updateGamePlay: (play: Play) => Promise<void>;
 }
 
 export const GameDetailContext = createContext<GameDetailContextProps>(null!);
@@ -31,10 +27,11 @@ export const useGameDetailContext = (): GameDetailContextProps => {
   const [plays, setPlays] = useState<Play[]>([]);
   const [statistics, setStatistics] = useState<GameStatistics | null>(null)
   const { notification } = App.useApp();
+  const {deletePlay, addPlay, updatePlay, getPlays } = usePlays();
   const { t } = useTranslation();
 
   const loadPlays = async (id: number): Promise<void> => {
-    const playsResult = await getGamePlays(id, 0, 10);
+    const playsResult = await await getPlays(id, 'game');
     if (playsResult.result === SearchResultType.Found) {
       setPlays(playsResult.model !== null ? playsResult.model : []);
     }
@@ -43,7 +40,7 @@ export const useGameDetailContext = (): GameDetailContextProps => {
   const refreshData = async (id: number) => {
     await loadPlays(id);
     const statistics = await getGameStatistics(id);
-    setStatistics(statistics.model);
+    statistics && setStatistics(statistics?.model);
   }
 
   const loadGame = useCallback(async (id: string): Promise<void> => {
@@ -77,56 +74,23 @@ export const useGameDetailContext = (): GameDetailContextProps => {
     }
   }
 
-  const deletePlay = async (id: number): Promise<void> => {
-    await deletePlayCall(id);
-    game != null && await refreshData(game.id);
-    createInfoNotification(
-      notification,
-      t('play.deleted.title'),
-      t('play.deleted.description')
-    );
-  }
-
-  const addPlay = async (play: Play): Promise<void> => {
-    const result = await AddPlayCall(play);
-    if (result.type === CreationResultType.Success) {
-      createInfoNotification(
-        notification,
-        t('play.new.notification.title'),
-        t('play.new.notification.description')
-      );
-    } else {
-      createErrorNotification(
-        notification,
-        t('play.new.notification.title-failed'),
-        t('play.new.notification.description-failed')
-      );
-    }
-
+  const addGamePlay = async (play: Play): Promise<void> => {
+    await addPlay(play);
     game != null && await refreshData(game.id);
   }
 
-  const updatePlay = async (play: Play): Promise<void> => {
-    const result = await UpdatePlayCall(play);
-    if (result.type === CreationResultType.Success) {
-      createInfoNotification(
-        notification,
-        t('play.update.notification.title'),
-        t('play.update.notification.description')
-      );
-    } else {
-      createErrorNotification(
-        notification,
-        t('play.update.notification.title-failed'),
-        t('play.update.notification.description-failed')
-      );
-    }
+  const deleteGamePlay = async (id: number): Promise<void> => {
+    await deletePlay(id);
+    game != null && await refreshData(game.id);
+  }
 
+  const updateGamePlay = async (play: Play): Promise<void> => {
+    await updatePlay(play);
     game != null && await refreshData(game.id);
   }
 
   return {
     loading, game, loadGame, deleteGame, plays,
-    deletePlay, addPlay, updatePlay, statistics
+    deleteGamePlay, addGamePlay, updateGamePlay, statistics
   };
 };

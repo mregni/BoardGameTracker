@@ -82,6 +82,16 @@ public class PlayerController
     }
     
     [HttpGet]
+    [Route("{id:int}/plays")]
+    public async Task<IActionResult> GetGamePlays(int id, [FromQuery] int skip, [FromQuery] int take)
+    {
+        var plays = await _playerService.GetPlays(id);
+
+        var playViewModel = _mapper.Map<IList<PlayViewModel>>(plays);
+        return new OkObjectResult(SearchResultViewModel<IList<PlayViewModel>>.CreateSearchResult(playViewModel)); 
+    }
+    
+    [HttpGet]
     [Route("{id:int}/stats")]
     public async Task<IActionResult> GetGameStats(int id)
     {

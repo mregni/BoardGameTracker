@@ -1,8 +1,8 @@
-import {Button, Col, Divider, Dropdown, Image, MenuProps, Row, Space, Typography} from 'antd';
+import {Button, Col, Divider, Dropdown, Image, MenuProps, Row, Space} from 'antd';
 import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import {t} from 'i18next';
-import React, {useContext, useEffect, useState} from 'react';
-import {Trans, useTranslation} from 'react-i18next';
+import React, {useContext} from 'react';
+import {Trans} from 'react-i18next';
 import {Link, useNavigate} from 'react-router-dom';
 
 import {DeleteOutlined, EditOutlined, MoreOutlined} from '@ant-design/icons';
@@ -14,6 +14,7 @@ import {
 import {useModals} from '../../../utils';
 import {PlayerContext} from '../../Players/context';
 import {PlayerDetailContext} from '../context/PlayerDetailState';
+import {PlayerPlaysTable} from './PlayerPlaysTable';
 import {PlayerStatistics} from './PlayerStatistics';
 
 const PlayerHeader = () => {
@@ -107,6 +108,9 @@ export const PlayerDetailOverview = () => {
           </Col>
           <Col xs={24}>
             <PlayerStatistics />
+          </Col>
+          <Col xs={24}>
+            <PlayerPlaysTable />
           </Col>
         </Row>
       </GcPageContainerContent>

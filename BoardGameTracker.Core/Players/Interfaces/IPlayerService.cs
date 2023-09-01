@@ -10,4 +10,5 @@ public interface IPlayerService
     Task<Player?> GetPlayer(int id);
     Task Delete(int id);
     Task<PlayerStatistics> GetStats(int id);
+    Task<List<Play>> GetPlays(int id);
 }

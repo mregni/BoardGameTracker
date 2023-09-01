@@ -91,4 +91,14 @@ public class PlayerRepository : IPlayerRepository
             .SelectMany(x => x.Plays)
             .SumAsync(x => (x.Play.End - x.Play.Start).TotalMinutes);
     }
+
+    public Task<List<Play>> GetPlaysForPlayer(int id)
+    {
+        return _dbContext.Plays
+            .Include(x => x.Location)
+            .Include(x => x.Players)
+            .Where(x => x.Players.Any(y => y.PlayerId == id))
+            .OrderByDescending(x => x.Start)
+            .ToListAsync();
+    }
 }

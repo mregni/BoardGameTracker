@@ -1,4 +1,4 @@
-import {CreationResult, ListResult, Player, PlayerStatistics, SearchResult} from '../models';
+import {CreationResult, ListResult, Play, Player, PlayerStatistics, SearchResult} from '../models';
 import {axiosInstance} from './axiosInstance';
 
 const domain = 'player';

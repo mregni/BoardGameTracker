@@ -53,7 +53,7 @@ public class GameController
 
      [HttpGet]
      [Route("{id:int}/plays")]
-     public async Task<IActionResult> GetGamePlays(int id, [FromQuery] int skip, [FromQuery] int take)
+     public async Task<IActionResult> GetGamePlays(int id)
      {
          var plays = await _gameService.GetPlays(id);
 
