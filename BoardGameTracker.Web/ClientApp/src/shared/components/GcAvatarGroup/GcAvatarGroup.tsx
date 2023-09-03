@@ -1,5 +1,6 @@
 import {Avatar, Tooltip} from 'antd';
 import React, {useContext} from 'react';
+import {Link} from 'react-router-dom';
 
 import {PlayPlayer} from '../../models';
 import {PlayerContext} from '../../pages/Players/context';
@@ -9,7 +10,7 @@ type Props = {
 }
 
 export const GcAvatarGroup = (props: Props) => {
-  const {playData} = props;
+  const { playData } = props;
   const { players } = useContext(PlayerContext);
 
   return (
@@ -20,7 +21,9 @@ export const GcAvatarGroup = (props: Props) => {
           if (index !== undefined) {
             return (
               <Tooltip title={players[index].name} placement="top" key={player.playerId}>
-                <Avatar style={{ backgroundColor: '#87d068' }} src={`https://localhost:7178/${players[index].image}`} />
+                <Link to={`/players/${players[index].id}`}>
+                  <Avatar style={{ backgroundColor: '#87d068' }} src={`https://localhost:7178/${players[index].image}`} />
+                </Link>
               </Tooltip>
             )
           }
