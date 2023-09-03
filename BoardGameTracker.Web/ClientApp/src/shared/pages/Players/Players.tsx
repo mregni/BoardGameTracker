@@ -1,4 +1,4 @@
-import {Button, Col, FloatButton, Row} from 'antd';
+import {Button, Col, Row} from 'antd';
 import React, {useContext, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -19,7 +19,7 @@ export const Players = () => {
   return (
     <GcPageContainer>
       <GcPageContainerHeader
-        title='Players'
+        title={t('common.players')}
         isLoading={loading || players.length === 0}>
         <Button
           icon={<PlusOutlined />}

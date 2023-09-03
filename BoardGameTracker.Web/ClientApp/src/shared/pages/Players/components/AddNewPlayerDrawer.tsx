@@ -6,7 +6,6 @@ import {UploadOutlined} from '@ant-design/icons';
 
 import {GcDrawer} from '../../../components/GcDrawer';
 import {CreationResultType, PlayerCreation} from '../../../models';
-import {uploadImage} from '../../../services/ImageService';
 import {PlayerContext} from '../context';
 
 interface Props {

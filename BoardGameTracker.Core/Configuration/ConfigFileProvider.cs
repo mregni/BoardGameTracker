@@ -17,6 +17,7 @@ public class ConfigFileProvider : IConfigFileProvider
     public const string CONFIG_ELEMENT_NAME = "Config";
 
     public string Currency => GetValue("Currency", "€");
+    public string DecimalSeparator => GetValue("DecimalSeparator", ",");
     public string TimeZone => GetValue("TZ", "Europe/Londen");
     public string DateFormat => GetValue("DateFormat", "yy-MM-dd");
     public string DateTimeFormat => GetValue("DateTimeFormat", "yy-MM-dd HH:mm");

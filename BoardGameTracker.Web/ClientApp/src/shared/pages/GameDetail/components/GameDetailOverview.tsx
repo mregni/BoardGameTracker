@@ -76,9 +76,9 @@ const GameDetailOverview = () => {
         }
         {screens.lg &&
           <>
-            <Button type='ghost' disabled icon={<EditOutlined />}>{t('common.edit')}</Button>
+            <Button type='primary' disabled icon={<EditOutlined />}>{t('common.edit')}</Button>
             <Divider type="vertical" />
-            <Button type='ghost' icon={<DeleteOutlined />} onClick={showDeleteModal} >{t('common.delete')}</Button>
+            <Button icon={<DeleteOutlined />} danger onClick={showDeleteModal}>{t('common.delete')}</Button>
           </>
         }
       </GcPageContainerHeader>

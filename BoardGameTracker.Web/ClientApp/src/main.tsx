@@ -10,7 +10,7 @@ import {SettingsContextProvider} from './shared/context/settingsContext';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <Suspense fallback={<GcLoader />}>
+    <Suspense fallback={<GcLoader loading={true} />}>
       <SettingsContextProvider>
         <MainApp />
       </SettingsContextProvider>

@@ -1,5 +1,7 @@
 import {Card, Statistic} from 'antd';
-import React from 'react';
+import React, {useContext} from 'react';
+
+import {SettingsContext} from '../../context/settingsContext';
 
 export interface StatisticsCard {
   title: string;
@@ -14,6 +16,7 @@ type Props = {
 
 export const GcStatisticsCard = (props: Props) => {
   const {card} = props;
+  const {settings} = useContext(SettingsContext);
   
   return (
     <Card bordered={false}>
@@ -22,6 +25,8 @@ export const GcStatisticsCard = (props: Props) => {
         value={card.value}
         suffix={card.suffix}
         precision={card.precision}
+        groupSeparator=" "
+        decimalSeparator={settings.decimalSeparator}
       />
     </Card>
   )

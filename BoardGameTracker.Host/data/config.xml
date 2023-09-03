@@ -9,4 +9,5 @@
   <UILanguage>nl-be</UILanguage>
   <DateTimeFormat>yy-MM-dd HH:mm</DateTimeFormat>
   <DateFormat>yy-MM-dd</DateFormat>
+  <DecimalSeparator>,</DecimalSeparator>
 </Config>

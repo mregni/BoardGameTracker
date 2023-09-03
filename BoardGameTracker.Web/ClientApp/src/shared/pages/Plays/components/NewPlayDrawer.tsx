@@ -11,24 +11,24 @@ import {PlayerContextProvider} from '../../Players/context';
 import {FormPlay, PlayForm} from './PlayForm';
 
 interface Props {
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  close: () => void;
   open: boolean;
   game?: Game;
 }
 
 const NewPlayDrawerContainer = (props: Props) => {
-  const { setOpen, open, game = null } = props;
-  const { addPlay } = useContext(GameDetailContext);
+  const { close, open, game = null } = props;
+  const { addGamePlay } = useContext(GameDetailContext);
   const { t } = useTranslation();
   const [form] = Form.useForm();
 
   const onClose = () => {
     form.resetFields();
-    setOpen(false);
+    close();
   };
 
   const finish = async (play: Play): Promise<void> => {
-    await addPlay(play);
+    await addGamePlay(play);
     onClose();
   }
 

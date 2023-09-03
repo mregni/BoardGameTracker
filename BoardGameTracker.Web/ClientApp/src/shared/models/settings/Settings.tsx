@@ -4,4 +4,5 @@ export interface Settings {
   dateTimeFormat: string;
   uiLanguage: string;
   currency: string;
+  decimalSeparator: string;
 }

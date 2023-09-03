@@ -24,7 +24,8 @@ public class SettingsController
             DateTimeFormat = _configFileProvider.DateTimeFormat,
             DateFormat = _configFileProvider.DateFormat,
             UILanguage = _configFileProvider.UILanguage,
-            Currency = _configFileProvider.Currency
+            Currency = _configFileProvider.Currency,
+            DecimalSeparator = _configFileProvider.DecimalSeparator
         };
 
         return new OkObjectResult(uiResources);

@@ -41,6 +41,6 @@ export const GameHeader = () => {
           allowHalf
           value={roundToDecimals(game.rating, 1) / 2} />
       </Tooltip>
-      <NewPlayDrawer open={open} setOpen={setOpen} game={game} />
+      <NewPlayDrawer open={open} close={() => setOpen(false)} game={game} />
     </Space>)
 }

@@ -30,7 +30,9 @@
     "player": "Player",
     "games": "Games",
     "create": "Create",
-    "loading": "Loading"
+    "loading": "Loading",
+    "add-new": "Add new",
+    "refresh": "Refresh"
   },
   "form":{
     "placeholders":{

@@ -5,9 +5,9 @@ import React, {useContext} from 'react';
 import {Trans} from 'react-i18next';
 import {Link, useNavigate} from 'react-router-dom';
 
+import {red} from '@ant-design/colors';
 import {DeleteOutlined, EditOutlined, MoreOutlined} from '@ant-design/icons';
 
-import GcBackButton from '../../../components/GcBackButton/GcBackButton';
 import {
   GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
 } from '../../../components/GcPageContainer';
@@ -87,9 +87,9 @@ export const PlayerDetailOverview = () => {
         }
         {screens.lg &&
           <>
-            <Button type='ghost' disabled icon={<EditOutlined />}>{t('common.edit')}</Button>
+            <Button disabled icon={<EditOutlined />} type="primary">{t('common.edit')}</Button>
             <Divider type="vertical" />
-            <Button type='ghost' icon={<DeleteOutlined />} onClick={() => showDeleteModal()}>{t('common.delete')}</Button>
+            <Button icon={<DeleteOutlined />} danger onClick={() => showDeleteModal()}>{t('common.delete')}</Button>
           </>
         }
       </GcPageContainerHeader>

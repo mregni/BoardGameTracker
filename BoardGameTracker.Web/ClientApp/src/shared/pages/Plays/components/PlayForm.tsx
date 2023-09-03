@@ -36,8 +36,6 @@ export const PlayForm = (props: FormProps) => {
   const { players } = useContext(PlayerContext);
   const { settings } = useContext(SettingsContext);
 
-  console.log(initialValues);
-
   const [openPlayerSelector, setOpenPLayerSelector] = useState(false);
   const [activePlayers, setActivePlayers] = useState<ActivePlayer[]>([]);
   const [nextId, setNextId] = useState(0);
