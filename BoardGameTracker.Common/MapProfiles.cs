@@ -53,6 +53,7 @@ public class MapProfiles : Profile
         CreateMap<GameMechanic, GameLinkViewModel>();
         CreateMap<Person, GamePersonViewModel>();
         CreateMap<Player, PlayerViewModel>();
+        CreateMap<Location, LocationViewModel>();
         CreateMap<PlayerCreationViewModel, Player>()
             .ForMember(x => x.Id, x => x.MapFrom(y => (int?)null));
 

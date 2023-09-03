@@ -1,8 +1,9 @@
-import {Layout, theme} from 'antd';
+import {Layout} from 'antd';
 import React from 'react';
 import {Route, Routes} from 'react-router-dom';
 
 import {GameContainer} from '../../pages/Games';
+import {LocationContainer} from '../../pages/Location';
 import {PlayerContainer} from '../../pages/Players';
 import {PlayerContextProvider} from '../../pages/Players/context';
 
@@ -24,6 +25,10 @@ export const GcContent = () => {
           <Route
             element={<PlayerContainer />}
             path="/players/*">
+          </Route>
+          <Route
+            element={<LocationContainer />}
+            path="/locations/*">
           </Route>
         </Routes>
       </PlayerContextProvider>

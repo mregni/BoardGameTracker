@@ -32,7 +32,8 @@
     "create": "Create",
     "loading": "Loading",
     "add-new": "Add new",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "locations": "Locations"
   },
   "form":{
     "placeholders":{

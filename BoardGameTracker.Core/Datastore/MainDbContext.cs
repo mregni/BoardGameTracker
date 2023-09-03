@@ -15,7 +15,8 @@ public class MainDbContext : DbContext
     public DbSet<Person> People { get; set; }
     public DbSet<Player> Players { get; set; }
     public DbSet<Play> Plays { get; set; }
-    
+    public DbSet<Location> Locations { get; set; }
+
     public MainDbContext(DbContextOptions<MainDbContext> options): base(options)
     {
         
