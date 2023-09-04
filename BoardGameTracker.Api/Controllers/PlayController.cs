@@ -52,7 +52,7 @@ public class PlayController
     [HttpPut]
     public async Task<IActionResult> UpdatePlay([FromBody] PlayViewModel? viewModel)
     {
-        if (viewModel is not {id: { }})
+        if (viewModel is not {Id: { }})
         {
             var failedViewModel = new CreationResultViewModel<PlayViewModel>(CreationResultType.Failed, null, "No data provided");
             return new OkObjectResult(failedViewModel);
@@ -66,7 +66,7 @@ public class PlayController
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            var failedViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Failed, null, "Update failed because of backend error, check logs for details");
+            var failedViewModel = new CreationResultViewModel<PlayViewModel>(CreationResultType.Failed, null, "Update failed because of backend error, check logs for details");
             return new OkObjectResult(failedViewModel);
         }
         

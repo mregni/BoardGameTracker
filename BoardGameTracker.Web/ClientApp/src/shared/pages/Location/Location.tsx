@@ -1,17 +1,19 @@
 import {Button} from 'antd';
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {
   GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
 } from '../../components/GcPageContainer';
+import {LocationTable} from './components/LocationTable';
+import {NewLocationDrawer} from './components/NewLocationDrawer';
 import {LocationContext} from './context/LocationState';
 
 export const Location = () => {
   const { locations, loading } = useContext(LocationContext);
   const { t } = useTranslation();
+  const [openNewLocation, setOpenNewLocation] = useState(false);
 
-  console.log(locations);
   return (
     <GcPageContainer>
       <GcPageContainerHeader
@@ -20,14 +22,14 @@ export const Location = () => {
       >
         <Button
           type="primary"
+          onClick={() => setOpenNewLocation(true)}
         >
           {t('common.add-new')}
         </Button>
       </GcPageContainerHeader>
       <GcPageContainerContent isLoading={loading || locations.length === 0}>
-        <>
-          {locations.map(location => <span>{location.name}</span>)}
-        </>
+        <LocationTable />
+        <NewLocationDrawer open={openNewLocation} setOpen={setOpenNewLocation} />
       </GcPageContainerContent>
     </GcPageContainer>
   )

@@ -21,3 +21,4 @@ export * from './Settings/Settings';
 export * from './Play/Play';
 
 export * from './Location/Location';
+export * from './Location/FormLocation';

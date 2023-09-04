@@ -7,25 +7,27 @@ import {DeleteOutlined, EditOutlined} from '@ant-design/icons';
 import {Play} from '../../../models';
 
 type Props = {
-  play: Play
-  editPlay: (id: number) => void
-  deletePlay: (id: number) => void
+  id: number;
+  title: string;
+  description: string;
+  edit: (id: number) => void
+  remove: (id: number) => void
 }
 
 export const GcActionButtons = (props: Props) => {
-  const { play, editPlay, deletePlay } = props;
-  const {t} = useTranslation();
-   
+  const { id, title, description, edit, remove } = props;
+  const { t } = useTranslation();
+
   return (
     <Space>
       <Tooltip title="Edit" placement="topRight">
-        <EditOutlined onClick={() => editPlay(play.id)} />
+        <EditOutlined onClick={() => edit(id)} />
       </Tooltip>
       <Popconfirm
         placement="left"
-        title={t('play.delete.title')}
-        description={t('play.delete.description')}
-        onConfirm={() => deletePlay(play.id)}
+        title={title}
+        description={description}
+        onConfirm={() => remove(id)}
         okText={t('common.yes')}
         cancelText={t('common.no')}
       >

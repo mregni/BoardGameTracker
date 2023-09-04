@@ -9,6 +9,7 @@ import {GcAvatarGroup} from '../../../components/GcAvatarGroup/GcAvatarGroup';
 import GcBooleanIcon from '../../../components/GcBooleanIcon/GcBooleanIcon';
 import {GcActionButtons} from '../../../components/GcTable/GcActionButtons';
 import {SettingsContext} from '../../../context/settingsContext';
+import {usePagination} from '../../../hooks';
 import {Play, PlayPlayer} from '../../../models';
 import {limitStringLength} from '../../../utils';
 import {GamesContext} from '../../Games/context';
@@ -21,6 +22,7 @@ export const PlayerPlaysTable = () => {
   const { games } = useContext(GamesContext);
   const [openPlayEdit, setOpenPlayEdit] = useState(false);
   const [playToEdit, setPlayToEdit] = useState<Play | null>(null);
+  const { getPagination } = usePagination();
   const { t } = useTranslation();
 
   const editPlay = (id: number): void => {
@@ -50,9 +52,9 @@ export const PlayerPlaysTable = () => {
       dataIndex: 'gameId',
       render: (id: number) => {
         return (
-        <Link to={`/games/${id}`}>
-          {games.filter((game) => game.id === id)[0]?.title}
-        </Link>)
+          <Link to={`/games/${id}`}>
+            {games.filter((game) => game.id === id)[0]?.title}
+          </Link>)
       }
     },
     {
@@ -94,14 +96,26 @@ export const PlayerPlaysTable = () => {
       key: 'actions',
       align: 'right',
       width: 70,
-      render: (data: Play) => <GcActionButtons play={data} editPlay={editPlay} deletePlay={deletePlayerPlay} />
+      render: (data: Play) => <GcActionButtons
+        id={data.id}
+        title={t('play.delete.title')}
+        description={t('play.delete.description')}
+        edit={editPlay}
+        remove={deletePlayerPlay}
+      />
     }
   ];
 
 
   return (
     <Space direction='vertical' style={{ display: 'flex' }}>
-      <Table columns={columns} dataSource={plays} size="small" rowKey={(play: Play) => play.id} pagination={pagination} />
+      <Table
+        columns={columns}
+        dataSource={plays}
+        size="small"
+        rowKey={(play: Play) => play.id}
+        pagination={getPagination(plays.length)}
+      />
       {
         playToEdit && <EditPlayDrawer
           open={openPlayEdit}

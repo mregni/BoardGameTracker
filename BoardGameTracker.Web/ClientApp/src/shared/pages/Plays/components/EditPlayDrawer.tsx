@@ -1,11 +1,9 @@
 import {Form} from 'antd';
 import dayjs from 'dayjs';
-import {useContext} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {GcDrawer} from '../../../components/GcDrawer';
 import {Play} from '../../../models';
-import {GameDetailContext} from '../../GameDetail/context/GameDetailState';
 import {PlayForm} from './PlayForm';
 
 interface Props {
@@ -17,7 +15,6 @@ interface Props {
 
 export const EditPlayDrawer = (props: Props) => {
   const { setOpen, open, play, edit } = props;
-
   const { t } = useTranslation();
   const [form] = Form.useForm();
 

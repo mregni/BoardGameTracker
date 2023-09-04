@@ -2,7 +2,7 @@
 
 public class PlayViewModel
 {
-    public int? id { get; set; }
+    public int? Id { get; set; }
     public string? Comment { get; set; }
     public bool Ended { get; set; }
     public int GameId { get; set; }

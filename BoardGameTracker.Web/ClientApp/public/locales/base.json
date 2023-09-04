@@ -35,6 +35,37 @@
     "refresh": "Refresh",
     "locations": "Locations"
   },
+  "location": {
+    "new": {
+      "title":"Add new location",
+      "name": {
+        "required": "Location name is required"
+      },
+      "save": "Save location",
+      "notification":{
+        "title": "Location added",
+        "description":"New location session added",
+        "title-failed": "Failed adding location",
+        "description-failed":"Failed to add new location"
+      }
+    },
+    "deleted":{
+      "title": "Location Removed",
+      "description": "Location is removed successfully."
+    },
+    "update":{
+      "notification":{
+        "title": "Location updated",
+        "description":"Location is updated",
+        "title-failed": "Failed updating location",
+        "description-failed":"Failed to update the location"
+      }
+    },
+    "delete":{
+      "title": "Remove location",
+      "description": "Are you sure you want to delete this location?"
+    }
+  },
   "form":{
     "placeholders":{
       "end-scoring": "End scoring",

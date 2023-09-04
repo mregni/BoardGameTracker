@@ -1,4 +1,4 @@
-import {Avatar, Popconfirm, Space, Table, Tooltip} from 'antd';
+import {Space, Table} from 'antd';
 import {ColumnsType, TablePaginationConfig} from 'antd/es/table';
 import {format, formatDuration, minutesToHours} from 'date-fns';
 import {useContext, useState} from 'react';
@@ -8,18 +8,18 @@ import {GcAvatarGroup} from '../../../components/GcAvatarGroup/GcAvatarGroup';
 import GcBooleanIcon from '../../../components/GcBooleanIcon/GcBooleanIcon';
 import {GcActionButtons} from '../../../components/GcTable/GcActionButtons';
 import {SettingsContext} from '../../../context/settingsContext';
+import {usePagination} from '../../../hooks';
 import {Play, PlayPlayer} from '../../../models';
 import {limitStringLength} from '../../../utils';
-import {PlayerContext} from '../../Players/context';
 import {EditPlayDrawer} from '../../Plays';
 import {GameDetailContext} from '../context/GameDetailState';
 
 export const GamePlaysTable = () => {
   const { plays, deleteGamePlay, updateGamePlay } = useContext(GameDetailContext);
   const { settings } = useContext(SettingsContext);
-  const { players } = useContext(PlayerContext);
   const [openPlayEdit, setOpenPlayEdit] = useState(false);
   const [playToEdit, setPlayToEdit] = useState<Play | null>(null);
+  const { getPagination} = usePagination();
   const { t } = useTranslation();
 
   const editPlay = (id: number): void => {
@@ -68,35 +68,38 @@ export const GamePlaysTable = () => {
       key: 'comment',
       dataIndex: 'comment',
       render: ((comment: string) => limitStringLength(comment))
-    }, 
+    },
     {
       title: 'Actions',
       key: 'actions',
       align: 'right',
       width: 70,
-      render: (data: Play) => <GcActionButtons play={data} editPlay={editPlay} deletePlay={deleteGamePlay} />
+      render: (data: Play) => <GcActionButtons
+        id={data.id}
+        title={t('play.delete.title')}
+        description={t('play.delete.description')}
+        edit={editPlay}
+        remove={deleteGamePlay}
+      />
     }
   ];
 
-  const pagination: TablePaginationConfig = {
-    position: ['bottomRight'],
-    total: plays.length,
-    defaultCurrent: 1,
-    hideOnSinglePage: false,
-    showSizeChanger: true,
-    showTitle: true
-  }
-
   return (
     <Space direction='vertical' style={{ display: 'flex' }}>
-      <Table columns={columns} dataSource={plays} size="small" rowKey={(play: Play) => play.id} pagination={pagination} />
+      <Table
+        columns={columns}
+        dataSource={plays}
+        size="small"
+        rowKey={(play: Play) => play.id}
+        pagination={getPagination(plays.length)}
+      />
       {
-      playToEdit && <EditPlayDrawer 
-      open={openPlayEdit} 
-      setOpen={setOpenPlayEdit} 
-      play={playToEdit as Play} 
-      edit={updateGamePlay} 
-      />}
+        playToEdit && <EditPlayDrawer
+          open={openPlayEdit}
+          setOpen={setOpenPlayEdit}
+          play={playToEdit as Play}
+          edit={updateGamePlay}
+        />}
     </Space>
   )
 }
