@@ -33,7 +33,8 @@
     "loading": "Loading",
     "add-new": "Add new",
     "refresh": "Refresh",
-    "locations": "Locations"
+    "locations": "Locations",
+    "location": "Location"
   },
   "location": {
     "new": {
@@ -99,6 +100,9 @@
         "description":"New game session added",
         "title-failed": "Failed adding session",
         "description-failed":"Failed to add new game session"
+      },
+      "location": {
+        "placeholder": "Select location"
       },
       "button": "Add player",
       "button-edit":"Edit player",

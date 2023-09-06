@@ -10,7 +10,6 @@ export interface AntdLanguage {
 
 export const useAntdLanguage = (): AntdLanguage => {
   const getLocale = (language: string): Locale => {
-    console.log(language)
     switch (language) {
       case 'nl':
       case 'nl-nl': return nlNL;

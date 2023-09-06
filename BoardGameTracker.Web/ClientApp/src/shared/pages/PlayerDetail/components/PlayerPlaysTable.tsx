@@ -30,15 +30,6 @@ export const PlayerPlaysTable = () => {
     setOpenPlayEdit(true);
   }
 
-  const pagination: TablePaginationConfig = {
-    position: ['bottomRight'],
-    total: plays.length,
-    defaultCurrent: 1,
-    hideOnSinglePage: false,
-    showSizeChanger: true,
-    showTitle: true
-  }
-
   const columns: ColumnsType<Play> = [
     {
       title: 'Date',

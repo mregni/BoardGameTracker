@@ -9,9 +9,7 @@ import {Location} from '../../../models';
 import {LocationContext} from '../context/LocationState';
 import {EditLocationDrawer} from './EditLocationDrawer';
 
-type Props = {}
-
-export const LocationTable = (props: Props) => {
+export const LocationTable = () => {
   const { locations, loading, deleteLocation, updateLocation } = useContext(LocationContext);
   const { getPagination } = usePagination();
   const { t } = useTranslation();
@@ -26,11 +24,14 @@ export const LocationTable = (props: Props) => {
   const columns: ColumnsType<Location> = [
     {
       title: 'Name',
-      dataIndex: 'name'
+      dataIndex: 'name',
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => a.name.localeCompare(b.name)
     },
     {
       title: 'Plays',
       dataIndex: 'playCount',
+      sorter: (a, b) => a.playCount - b.playCount
     },
     {
       title: 'Actions',
@@ -50,6 +51,7 @@ export const LocationTable = (props: Props) => {
   return (
     <Space direction='vertical' style={{ display: 'flex' }}>
       <Table
+        loading={loading}
         columns={columns}
         dataSource={locations}
         size="small"

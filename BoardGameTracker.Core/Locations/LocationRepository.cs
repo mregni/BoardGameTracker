@@ -21,10 +21,11 @@ public class LocationRepository : ILocationRepository
             .ToListAsync();
     }
 
-    public async Task Create(Location location)
+    public async Task<Location> Create(Location location)
     {
         await _context.Locations.AddAsync(location);
         await _context.SaveChangesAsync();
+        return location;
     }
 
     public async Task Delete(int id)

@@ -12,8 +12,9 @@ import {createErrorNotification, createInfoNotification} from '../../../utils';
 export interface LocationContextProps {
   loading: boolean;
   locations: Location[];
+  loadLocations: () => Promise<void>;
   deleteLocation: (id: number) => Promise<void>;
-  addLocation: (location: FormLocation) => Promise<void>;
+  addLocation: (location: FormLocation) => Promise<Location | null>;
   updateLocation: (location: FormLocation) => Promise<void>;
 }
 
@@ -25,16 +26,16 @@ export const useLocationContext = (): LocationContextProps => {
   const { t } = useTranslation();
   const { notification } = App.useApp();
 
-  const loadLocation = useCallback(async (): Promise<void> => {
+  const loadLocations = useCallback(async (): Promise<void> => {
     setLoading(true);
     const result = await getLocations();
     setLocations(result.list);
     setLoading(false);
   }, []);
-  
+
   useEffect(() => {
-    loadLocation();
-  }, [loadLocation]);
+    loadLocations();
+  }, [loadLocations]);
 
   const deleteLocation = async (id: number): Promise<void> => {
     await deleteLocationCall(id);
@@ -43,10 +44,10 @@ export const useLocationContext = (): LocationContextProps => {
       t('location.deleted.title'),
       t('location.deleted.description')
     );
-    await loadLocation();
+    await loadLocations();
   }
 
-  const addLocation = async (location: FormLocation): Promise<void> => {
+  const addLocation = async (location: FormLocation): Promise<Location | null> => {
     const result = await AddLocationCall(location);
     if (result.type === CreationResultType.Success) {
       createInfoNotification(
@@ -61,7 +62,8 @@ export const useLocationContext = (): LocationContextProps => {
         t('location.new.notification.description-failed')
       );
     }
-    await loadLocation();
+    await loadLocations();
+    return result.data;
   }
 
   const updateLocation = async (location: FormLocation): Promise<void> => {
@@ -79,10 +81,10 @@ export const useLocationContext = (): LocationContextProps => {
         t('location.update.notification.description-failed')
       );
     }
-    await loadLocation();
+    await loadLocations();
   }
 
   return {
-    loading, locations, deleteLocation, addLocation, updateLocation
+    loading, locations, deleteLocation, addLocation, updateLocation, loadLocations
   };
 };

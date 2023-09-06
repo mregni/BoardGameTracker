@@ -45,7 +45,7 @@ public class LocationController
         var location = _mapper.Map<Location>(viewModel);
         try
         {
-            await _locationService.Create(location);
+            location = await _locationService.Create(location);
         }
         catch (Exception e)
         {
@@ -53,8 +53,9 @@ public class LocationController
             var failedViewModel = new CreationResultViewModel<LocationViewModel>(CreationResultType.Failed, null, "Creation failed because of backend error, check logs for details");
             return new OkObjectResult(failedViewModel);
         }
-        
-        var resultViewModel = new CreationResultViewModel<LocationViewModel>(CreationResultType.Success, null);
+
+        var result = _mapper.Map<LocationViewModel>(location);
+        var resultViewModel = new CreationResultViewModel<LocationViewModel>(CreationResultType.Success, result);
         return new OkObjectResult(resultViewModel);
     }
     

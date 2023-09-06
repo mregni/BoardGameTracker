@@ -4,6 +4,7 @@ import {useTranslation} from 'react-i18next';
 
 import {GcDrawer} from '../../../components/GcDrawer';
 import {Play} from '../../../models';
+import {LocationContextProvider} from '../../Location/context/LocationProvider';
 import {PlayForm} from './PlayForm';
 
 interface Props {
@@ -19,7 +20,6 @@ export const EditPlayDrawer = (props: Props) => {
   const [form] = Form.useForm();
 
   const onClose = () => {
-    form.resetFields();
     setOpen(false);
   };
 
@@ -33,7 +33,9 @@ export const EditPlayDrawer = (props: Props) => {
       title={t('play.edit.title')}
       open={open}
       onClose={onClose}>
-      <PlayForm form={form} submitAction={finish} initialValues={{...play, start: dayjs(play.start)}} />
+      <LocationContextProvider>
+        <PlayForm form={form} submitAction={finish} initialValues={{ ...play, start: dayjs(play.start) }} />
+      </LocationContextProvider>
     </GcDrawer>
   )
 }

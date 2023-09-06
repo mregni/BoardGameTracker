@@ -14,6 +14,9 @@ export const Location = () => {
   const { t } = useTranslation();
   const [openNewLocation, setOpenNewLocation] = useState(false);
 
+  const closeDrawer = () => {
+    setOpenNewLocation(false);
+  }
   return (
     <GcPageContainer>
       <GcPageContainerHeader
@@ -29,7 +32,7 @@ export const Location = () => {
       </GcPageContainerHeader>
       <GcPageContainerContent isLoading={loading || locations.length === 0}>
         <LocationTable />
-        <NewLocationDrawer open={openNewLocation} setOpen={setOpenNewLocation} />
+        <NewLocationDrawer open={openNewLocation} onClose={closeDrawer} />
       </GcPageContainerContent>
     </GcPageContainer>
   )

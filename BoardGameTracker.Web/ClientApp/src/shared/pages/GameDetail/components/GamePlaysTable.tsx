@@ -19,7 +19,7 @@ export const GamePlaysTable = () => {
   const { settings } = useContext(SettingsContext);
   const [openPlayEdit, setOpenPlayEdit] = useState(false);
   const [playToEdit, setPlayToEdit] = useState<Play | null>(null);
-  const { getPagination} = usePagination();
+  const { getPagination } = usePagination();
   const { t } = useTranslation();
 
   const editPlay = (id: number): void => {

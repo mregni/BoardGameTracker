@@ -17,7 +17,7 @@ public class LocationService : ILocationService
         return _locationRepository.GetLocations();
     }
 
-    public Task Create(Location location)
+    public Task<Location> Create(Location location)
     {
         return _locationRepository.Create(location);
     }

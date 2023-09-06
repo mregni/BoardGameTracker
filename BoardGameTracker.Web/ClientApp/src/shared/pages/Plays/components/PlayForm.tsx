@@ -7,10 +7,13 @@ import {useTranslation} from 'react-i18next';
 
 import {ClockCircleTwoTone, CrownTwoTone, PlusOutlined} from '@ant-design/icons';
 
+import {GcSelectWithAdd} from '../../../components/GcSelectWithAdd';
 import {SettingsContext} from '../../../context/settingsContext';
 import {ActivePlayer, Play, PlayPlayer} from '../../../models';
 import {convertToAntdFormat} from '../../../utils';
 import {GamesContext} from '../../Games/context';
+import {NewLocationDrawer} from '../../Location/components/NewLocationDrawer';
+import {LocationContext} from '../../Location/context/LocationState';
 import {PlayerContext} from '../../Players/context';
 import PlayerSelectorDrawer from './PlayerSelectorDrawer';
 
@@ -22,6 +25,7 @@ export interface FormPlay {
   start: Dayjs;
   minutes: number;
   players: PlayPlayer[];
+  locationId: number;
 }
 
 interface FormProps {
@@ -35,12 +39,14 @@ export const PlayForm = (props: FormProps) => {
   const { games, loading: loadingGames } = useContext(GamesContext);
   const { players } = useContext(PlayerContext);
   const { settings } = useContext(SettingsContext);
+  const { locations, loading: loadingLocations, loadLocations } = useContext(LocationContext);
+  const { t } = useTranslation();
 
   const [openPlayerSelector, setOpenPLayerSelector] = useState(false);
   const [activePlayers, setActivePlayers] = useState<ActivePlayer[]>([]);
   const [nextId, setNextId] = useState(0);
   const [playerToEdit, setPlayerToEdit] = useState<ActivePlayer | undefined>(undefined);
-  const { t } = useTranslation();
+  const [openNewLocationDrawer, setOpenNewLocationDrawer] = useState(false);
 
   useEffect(() => {
     if (playerToEdit !== undefined) {
@@ -49,7 +55,6 @@ export const PlayForm = (props: FormProps) => {
   }, [playerToEdit]);
 
   useEffect(() => {
-    form.resetFields()
     setActivePlayers(initialValues.players.map((player, i) => ({ ...player, uiId: i })));
   }, [initialValues, form]);
 
@@ -60,7 +65,7 @@ export const PlayForm = (props: FormProps) => {
       players: activePlayers,
     }
 
-    if(initialValues.id !== undefined) {
+    if (initialValues.id !== undefined) {
       viewModel.id = initialValues.id;
     }
 
@@ -68,7 +73,6 @@ export const PlayForm = (props: FormProps) => {
   }
 
   const closeNewPlayerDrawer = (player: ActivePlayer | null) => {
-    console.log(player);
     if (playerToEdit == undefined && player !== null) {
       setActivePlayers((prev) => [...prev, player]);
     }
@@ -113,6 +117,12 @@ export const PlayForm = (props: FormProps) => {
     return result.substring(0, result.length - 2);
   }
 
+  const closeNewLocationDrawer = async (id: number | null) => {
+    await loadLocations();
+    form.setFieldValue('locationId', id);
+    setOpenNewLocationDrawer(false);
+  }
+
   return (
     <Form
       form={form}
@@ -138,6 +148,25 @@ export const PlayForm = (props: FormProps) => {
         >
           {games.map(x => <Option key={x.id} value={x.id} >{x.title}</Option>)}
         </Select>
+      </Form.Item>
+      <Form.Item label={t('common.location')}>
+        <Space.Compact style={{ width: '100%' }}>
+          <Form.Item
+            name="locationId"
+            valuePropName="value"
+            noStyle
+          >
+            <Select
+              placeholder={t('play.new.location.placeholder')}
+              loading={loadingLocations}
+              showSearch
+              filterOption={(input, option) => ((option?.children ?? '') as string).toLowerCase().includes(input.toLowerCase())}
+            >
+              {locations.map(x => <Option key={x.id} value={x.id} >{x.name}</Option>)}
+            </Select>
+          </Form.Item>
+          <Button icon={<PlusOutlined />} type="primary" onClick={() => setOpenNewLocationDrawer(true)}>Add new</Button>
+        </Space.Compact>
       </Form.Item>
       <Form.Item
         name="players"
@@ -222,6 +251,7 @@ export const PlayForm = (props: FormProps) => {
           {t('play.new.save')}
         </Button>
       </Form.Item>
+      <NewLocationDrawer open={openNewLocationDrawer} onClose={closeNewLocationDrawer} />
       <PlayerSelectorDrawer open={openPlayerSelector} close={closeNewPlayerDrawer} edit={playerToEdit} nextId={nextId} />
     </Form >
   )

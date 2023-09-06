@@ -32,7 +32,6 @@ export const useSettingsContext = (): SettingsContextProps => {
   }, []);
 
   useEffect(() => {
-    console.log("load");
     loadSettings();
   }, [loadSettings]);
 

@@ -4,7 +4,6 @@ import {axiosInstance} from './axiosInstance';
 const domain = 'image';
 
 export const uploadImage = (file: File | null, type: number): Promise<CreationResult<string>> => {
-  console.log(file)
   const formData = new FormData();
   if(file !== null){
     formData.append('file', file);

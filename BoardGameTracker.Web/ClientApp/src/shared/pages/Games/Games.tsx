@@ -64,7 +64,7 @@ export const Games = () => {
           )}
         </Row>
         <GameDetailContextProvider>
-          <NewPlayDrawer open={open} close={closeDrawer} game={game} />
+          <NewPlayDrawer open={open} close={closeDrawer} game={game}/>
         </GameDetailContextProvider>
         <SearchGameDrawer setOpen={setOpenNewBggGame} open={openNewBggGame} />
         <FloatButton.Group

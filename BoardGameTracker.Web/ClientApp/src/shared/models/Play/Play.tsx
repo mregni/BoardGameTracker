@@ -6,6 +6,7 @@ export interface Play {
   start: Date;
   minutes: number;
   players: PlayPlayer[];
+  locationId: number;
 }
 
 export interface PlayPlayer {

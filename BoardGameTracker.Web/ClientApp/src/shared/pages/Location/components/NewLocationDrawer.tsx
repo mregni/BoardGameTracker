@@ -8,24 +8,26 @@ import {LocationContext} from '../context/LocationState';
 import {LocationForm} from './LocationForm';
 
 interface Props {
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onClose: (id: number | null) => void;
   open: boolean;
 }
 
 export const NewLocationDrawer = (props: Props) => {
-  const { setOpen, open } = props;
+  const { onClose, open } = props;
   const { addLocation } = useContext(LocationContext);
   const [form] = Form.useForm();
   const { t } = useTranslation();
 
-  const onClose = () => {
+  const closeDrawer = () => {
     form.resetFields();
-    setOpen(false);
+    onClose(null);
   };
 
   const saveForm = async (location: FormLocation) => {
-    await addLocation(location);
-    onClose();
+    const result = await addLocation(location);
+    console.log(result);
+    form.resetFields();
+    onClose(result?.id ?? null);
   }
 
   const initialValues: FormLocation = {
@@ -37,7 +39,7 @@ export const NewLocationDrawer = (props: Props) => {
     <GcDrawer
       title={t('location.new.title')}
       open={open}
-      onClose={onClose}
+      onClose={closeDrawer}
     >
       <LocationForm form={form} submitAction={saveForm} initialValues={initialValues} />
     </GcDrawer>

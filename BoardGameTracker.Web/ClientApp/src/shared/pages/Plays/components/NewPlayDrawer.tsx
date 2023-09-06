@@ -7,6 +7,7 @@ import {GcDrawer} from '../../../components/GcDrawer';
 import {Game, Play} from '../../../models';
 import {GameDetailContext} from '../../GameDetail/context/GameDetailState';
 import {GamesContextProvider} from '../../Games/context';
+import {LocationContextProvider} from '../../Location/context/LocationProvider';
 import {PlayerContextProvider} from '../../Players/context';
 import {FormPlay, PlayForm} from './PlayForm';
 
@@ -39,7 +40,8 @@ const NewPlayDrawerContainer = (props: Props) => {
     comment: '',
     players: [],
     minutes: 0,
-    start: dayjs()
+    start: dayjs(),
+    locationId: 0
   }
 
   return (
@@ -56,7 +58,9 @@ export const NewPlayDrawer = (props: Props) => {
   return (
     <GamesContextProvider>
       <PlayerContextProvider>
-        <NewPlayDrawerContainer {...props} />
+        <LocationContextProvider>
+          <NewPlayDrawerContainer {...props} />
+        </LocationContextProvider>
       </PlayerContextProvider>
     </GamesContextProvider>
   )

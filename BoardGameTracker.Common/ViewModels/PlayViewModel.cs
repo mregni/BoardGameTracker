@@ -9,6 +9,7 @@ public class PlayViewModel
     public List<PlayerPlayViewModel> Players { get; set; }
     public DateTime Start { get; set; }
     public double Minutes { get; set; }
+    public int? LocationId  { get; set; }
 }
 
 public class PlayerPlayViewModel
