@@ -23,18 +23,18 @@ export const LocationTable = () => {
 
   const columns: ColumnsType<Location> = [
     {
-      title: 'Name',
+      title: t('common.name'),
       dataIndex: 'name',
       defaultSortOrder: 'descend',
       sorter: (a, b) => a.name.localeCompare(b.name)
     },
     {
-      title: 'Plays',
+      title: t('common.plays'),
       dataIndex: 'playCount',
       sorter: (a, b) => a.playCount - b.playCount
     },
     {
-      title: 'Actions',
+      title: t('common.actions'),
       key: 'actions',
       align: 'right',
       width: 70,

@@ -36,7 +36,14 @@
     "locations": "Locations",
     "location": "Location",
     "new-play": "Add Play",
-    "new-location": "Add Location"
+    "new-location": "Add Location",
+    "date": "Date",
+    "time-played": "Time played",
+    "winners": "Winners",
+    "ended": "Ended",
+    "actions": "Actions",
+    "won": "Won",
+    "plays": "Plays"
   },
   "location": {
     "new": {

@@ -29,20 +29,20 @@ export const GamePlaysTable = () => {
 
   const columns: ColumnsType<Play> = [
     {
-      title: 'Date',
+      title: t('common.date'),
       key: 'date',
       render: (data: Play) => {
         return format(data.start, settings.dateTimeFormat);
       }
     },
     {
-      title: 'Players',
+      title: t('common.players'),
       key: 'players',
       dataIndex: 'players',
       render: (data: PlayPlayer[]) => <GcAvatarGroup playData={data} />
     },
     {
-      title: 'Time played',
+      title: t('common.time-played'),
       key: 'length',
       render: (data: Play) => {
         const hours = minutesToHours(data.minutes);
@@ -51,26 +51,26 @@ export const GamePlaysTable = () => {
       }
     },
     {
-      title: 'Winners',
+      title: t('common.winners'),
       key: 'won',
       dataIndex: 'players',
       render: (data: PlayPlayer[]) => <GcAvatarGroup playData={data.filter(x => x.won)} />
     },
     {
-      title: 'Ended',
+      title: t('common.ended'),
       key: 'ended',
       dataIndex: 'ended',
       width: 80,
       render: (x: boolean) => <GcBooleanIcon value={x} />
     },
     {
-      title: 'Comment',
+      title: t('common.comment'),
       key: 'comment',
       dataIndex: 'comment',
       render: ((comment: string) => limitStringLength(comment))
     },
     {
-      title: 'Actions',
+      title: t('common.actions'),
       key: 'actions',
       align: 'right',
       width: 70,
