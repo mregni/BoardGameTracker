@@ -1,7 +1,7 @@
 import React from 'react';
 import {Route, Routes} from 'react-router-dom';
 
-import {PlayerDetail} from '../PlayerDetail';
+import {PlayerDetail} from './PlayerDetail';
 import {Players} from './Players';
 
 export const PlayerContainer = () => {

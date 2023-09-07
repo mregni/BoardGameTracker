@@ -4,8 +4,7 @@ import {useParams} from 'react-router-dom';
 import {GcNoDataLoader} from '../../components/GcNoDataLoader';
 import {GamesContextProvider} from '../Games/context';
 import {PlayerDetailOverview} from './components/PlayerDetailOverview';
-import {PlayerDetailContextProvider} from './context/PlayerDetailProvider';
-import {PlayerDetailContext} from './context/PlayerDetailState';
+import {PlayerDetailContext, PlayerDetailContextProvider} from './context';
 
 export const PlayerDetailContainer = () => {
   const { id } = useParams();

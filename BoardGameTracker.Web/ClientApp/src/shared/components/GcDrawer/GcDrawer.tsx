@@ -8,10 +8,11 @@ interface Props {
   open: boolean;
   title: string;
   children: ReactNode | ReactNode[]
+  extraButtons?: ReactNode | ReactNode[];
 }
 
 export const GcDrawer = (props: Props) => {
-  const { onClose, open, children, title } = props;
+  const { onClose, open, children, title, extraButtons } = props;
   const screens = useBreakpoint();
 
   const getDrawerWith = () => {
@@ -29,6 +30,7 @@ export const GcDrawer = (props: Props) => {
       extra={
         <Space>
           <Button onClick={onClose}>{t('common.cancel')}</Button>
+          {extraButtons}
         </Space>
       }
     >

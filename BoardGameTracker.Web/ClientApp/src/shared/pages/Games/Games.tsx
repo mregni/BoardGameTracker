@@ -44,7 +44,17 @@ export const Games = () => {
           type="primary"
           onClick={() => setOpenNewBggGame(true)}
         >
-          {t('common.add-new')}
+          {t('common.new-game')}
+        </Button>
+        <Button
+          icon={<PlusOutlined />}
+          type="primary"
+          onClick={() => {
+            setGame(undefined);
+            setOpen(true)
+          }}
+        >
+          {t('common.new-play')}
         </Button>
       </GcPageContainerHeader>
       <GcPageContainerContent isLoading={loading || games.length === 0}>
@@ -64,21 +74,9 @@ export const Games = () => {
           )}
         </Row>
         <GameDetailContextProvider>
-          <NewPlayDrawer open={open} close={closeDrawer} game={game}/>
+          <NewPlayDrawer open={open} close={closeDrawer} game={game} key={game?.id}/>
         </GameDetailContextProvider>
         <SearchGameDrawer setOpen={setOpenNewBggGame} open={openNewBggGame} />
-        <FloatButton.Group
-          trigger="hover"
-          style={{ right: 48 }}
-          icon={<PlusOutlined />}
-          type="primary"
-        >
-          <FloatButton tooltip={t('games.manual')} icon={<PlusOutlined />} />
-          <FloatButton
-            tooltip={t('games.bgg')}
-            icon={<GlobalOutlined />}
-            onClick={() => setOpenNewBggGame(true)} />
-        </FloatButton.Group>
       </GcPageContainerContent>
     </GcPageContainer>
   )

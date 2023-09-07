@@ -1,4 +1,4 @@
-import {Space, Table, TablePaginationConfig} from 'antd';
+import {Space, Table} from 'antd';
 import {ColumnsType} from 'antd/es/table';
 import {format, formatDuration, minutesToHours} from 'date-fns';
 import React, {useContext, useState} from 'react';

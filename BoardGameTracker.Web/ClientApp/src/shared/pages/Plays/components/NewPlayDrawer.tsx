@@ -34,14 +34,14 @@ const NewPlayDrawerContainer = (props: Props) => {
   }
 
   const initialValues: FormPlay = {
-    gameId: game?.id ?? 0,
+    gameId: game?.id ?? null,
     id: 0,
     ended: true,
     comment: '',
     players: [],
     minutes: 0,
     start: dayjs(),
-    locationId: 0
+    locationId: null
   }
 
   return (

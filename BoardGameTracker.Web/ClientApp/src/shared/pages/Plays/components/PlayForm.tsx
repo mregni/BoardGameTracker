@@ -18,14 +18,14 @@ import {PlayerContext} from '../../Players/context';
 import PlayerSelectorDrawer from './PlayerSelectorDrawer';
 
 export interface FormPlay {
-  gameId: number;
+  gameId: number | null;
   id: number;
   ended: boolean;
   comment: string;
   start: Dayjs;
   minutes: number;
   players: PlayPlayer[];
-  locationId: number;
+  locationId: number | null;
 }
 
 interface FormProps {

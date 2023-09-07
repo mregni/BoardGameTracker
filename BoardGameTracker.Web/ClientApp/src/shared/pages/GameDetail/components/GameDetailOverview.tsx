@@ -77,7 +77,6 @@ const GameDetailOverview = () => {
         {screens.lg &&
           <>
             <Button type='primary' disabled icon={<EditOutlined />}>{t('common.edit')}</Button>
-            <Divider type="vertical" />
             <Button icon={<DeleteOutlined />} danger onClick={showDeleteModal}>{t('common.delete')}</Button>
           </>
         }

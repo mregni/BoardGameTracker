@@ -1,4 +1,4 @@
-import {Button, Col, ConfigProvider, Layout, Row, Typography} from 'antd';
+import {Button, Col, ConfigProvider, Layout, Row, Space, Typography} from 'antd';
 import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {Children, ReactElement, ReactNode} from 'react';
 import {useNavigate} from 'react-router-dom';
@@ -38,9 +38,9 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
           <Title level={screens.md ? 3 : 5} style={{ margin: 0 }}>{title}</Title>
         </Col>
       </Row>
-      <div>
+      <Space wrap>
         {children}
-      </div>
+      </Space>
     </Row>
   )
 };

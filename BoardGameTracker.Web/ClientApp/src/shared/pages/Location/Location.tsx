@@ -27,7 +27,7 @@ export const Location = () => {
           type="primary"
           onClick={() => setOpenNewLocation(true)}
         >
-          {t('common.add-new')}
+          {t('common.new-location')}
         </Button>
       </GcPageContainerHeader>
       <GcPageContainerContent isLoading={loading || locations.length === 0}>

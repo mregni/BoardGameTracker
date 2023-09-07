@@ -1,18 +1,17 @@
-import {Button, Col, Divider, Dropdown, Image, MenuProps, Row, Space} from 'antd';
+import {Button, Col, Dropdown, Image, MenuProps, Row, Space} from 'antd';
 import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import {t} from 'i18next';
 import React, {useContext} from 'react';
 import {Trans} from 'react-i18next';
 import {Link, useNavigate} from 'react-router-dom';
 
-import {red} from '@ant-design/colors';
 import {DeleteOutlined, EditOutlined, MoreOutlined} from '@ant-design/icons';
 
 import {
   GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
 } from '../../../components/GcPageContainer';
 import {useModals} from '../../../utils';
-import {PlayerContext} from '../../Players/context';
+import {PlayerContext} from '../context';
 import {PlayerDetailContext} from '../context/PlayerDetailState';
 import {PlayerPlaysTable} from './PlayerPlaysTable';
 import {PlayerStatistics} from './PlayerStatistics';
@@ -88,7 +87,6 @@ export const PlayerDetailOverview = () => {
         {screens.lg &&
           <>
             <Button disabled icon={<EditOutlined />} type="primary">{t('common.edit')}</Button>
-            <Divider type="vertical" />
             <Button icon={<DeleteOutlined />} danger onClick={() => showDeleteModal()}>{t('common.delete')}</Button>
           </>
         }
