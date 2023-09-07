@@ -5,8 +5,7 @@ import {useTranslation} from 'react-i18next';
 
 import {GcDrawer} from '../../../components/GcDrawer';
 import {Game, Play} from '../../../models';
-import {GameDetailContext} from '../../GameDetail/context/GameDetailState';
-import {GamesContextProvider} from '../../Games/context';
+import {GameDetailContext, GamesContextProvider} from '../../Games/context';
 import {LocationContextProvider} from '../../Location/context/LocationProvider';
 import {PlayerContextProvider} from '../../Players/context';
 import {FormPlay, PlayForm} from './PlayForm';

@@ -1,8 +1,8 @@
 import React from 'react';
 import {Route, Routes} from 'react-router-dom';
 
-import GameDetail from '../GameDetail/GameDetail';
 import {GamesContextProvider} from './context';
+import GameDetail from './GameDetail';
 import {Games} from './Games';
 
 export const GameContainer = () => {

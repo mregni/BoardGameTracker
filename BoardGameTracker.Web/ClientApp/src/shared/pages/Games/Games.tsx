@@ -1,18 +1,18 @@
-import {Button, Col, FloatButton, Row} from 'antd';
+import {Button, Col, Row} from 'antd';
 import React, {useContext, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
-import {GlobalOutlined, PlusOutlined} from '@ant-design/icons';
+import {PlusOutlined} from '@ant-design/icons';
 
 import {GcCard} from '../../components/GcCard';
 import {
   GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
 } from '../../components/GcPageContainer';
 import {Game} from '../../models';
-import {GameDetailContextProvider} from '../GameDetail/context/GameDetailProvider';
 import {NewPlayDrawer} from '../Plays';
 import SearchGameDrawer from './components/SearchGameDrawer';
 import {GamesContext} from './context';
+import {GameDetailContextProvider} from './context/GameDetailProvider';
 
 export const Games = () => {
   const { t } = useTranslation();

@@ -1,6 +1,4 @@
-import '../styles.css';
-
-import {Button, Col, Divider, Dropdown, Image, MenuProps, Row} from 'antd';
+import {Button, Col, Dropdown, Image, MenuProps, Row} from 'antd';
 import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import {useContext} from 'react';
 import {Trans, useTranslation} from 'react-i18next';
@@ -13,8 +11,7 @@ import {
 } from '../../../components/GcPageContainer';
 import {GcStateRibbon} from '../../../components/GcStateRibbon';
 import {useModals} from '../../../utils';
-import {GamesContext} from '../../Games/context';
-import {GameDetailContext} from '../context/GameDetailState';
+import {GameDetailContext, GamesContext} from '../context';
 import {GameHeader} from './GameHeader';
 import {GamePlaysTable} from './GamePlaysTable';
 import {GameStatistics} from './GameStatistics';
