@@ -29,14 +29,10 @@
     "game": "Game",
     "player": "Player",
     "games": "Games",
-    "create": "Create",
     "loading": "Loading",
-    "new-game": "Add game",
     "refresh": "Refresh",
     "locations": "Locations",
     "location": "Location",
-    "new-play": "Add Play",
-    "new-location": "Add Location",
     "date": "Date",
     "time-played": "Time played",
     "winners": "Winners",
@@ -57,7 +53,8 @@
         "description":"New location session added",
         "title-failed": "Failed adding location",
         "description-failed":"Failed to add new location"
-      }
+      },
+      "button": "New Location"
     },
     "deleted":{
       "title": "Location Removed",
@@ -113,8 +110,7 @@
       "location": {
         "placeholder": "Select location"
       },
-      "button": "Add player",
-      "button-edit":"Edit player",
+      "button": "New Play",
       "title": "Add new play",
       "ended": {
         "description": "Game is finished",
@@ -191,7 +187,8 @@
         "description": "{{name}} is added successfully.",
         "message": "Game added"
       },
-      "title": "Add new game"
+      "title": "Add new game",
+      "button": "New Game"
     },
     "state": {
       "for-trade": "For trade",
@@ -204,6 +201,7 @@
   "player": {
     "new": {
       "add": "Add new player",
+      "edit":"Edit player",
       "failed": {
         "description": "Could not add player with name {{name}}. Check logs for more info.",
         "message": "Player adding failed"
@@ -215,7 +213,8 @@
         "description": "{{name}} is added successfully.",
         "message": "Player added"
       },
-      "title": "Add new player"
+      "title": "Add new player",
+      "button": "New Player"
     },
     "delete": {
       "title": "Delete {{title}}",

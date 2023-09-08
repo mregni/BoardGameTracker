@@ -8,7 +8,7 @@ import {Link, useNavigate} from 'react-router-dom';
 import {DeleteOutlined, EditOutlined, MoreOutlined} from '@ant-design/icons';
 
 import {
-  GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
 } from '../../../components/GcPageContainer';
 import {useModals} from '../../../utils';
 import {PlayerContext} from '../context';
@@ -29,7 +29,6 @@ const PlayerHeader = () => {
 export const PlayerDetailOverview = () => {
   const { deletePlayer, player, loading } = useContext(PlayerDetailContext);
   const { loadPlayers } = useContext(PlayerContext);
-  const screens = useBreakpoint();
   const navigate = useNavigate();
   const { deleteModal } = useModals();
 
@@ -54,16 +53,18 @@ export const PlayerDetailOverview = () => {
     navigate('/players');
   }
 
-  const items: MenuProps['items'] = [
+  const items: GcMenuItem[] = [
     {
-      key: '1',
+      buttonType: 'primary',
       icon: <EditOutlined />,
-      label: <Link to={''}>{t('common.edit')}</Link>,
+      onClick: () => console.log("edit"),
+      content: t('common.edit')
     },
     {
-      key: '2',
+      buttonType: 'primary',
       icon: <DeleteOutlined />,
-      label: <Link to={''} onClick={() => showDeleteModal()}>{t('common.delete')}</Link>,
+      onClick: () => showDeleteModal(),
+      content: t('common.delete')
     }
   ];
 
@@ -78,19 +79,8 @@ export const PlayerDetailOverview = () => {
         backNavigation='/players'
         isLoading={loading}
         title={player.name}
-      >
-        {!screens.lg &&
-          <Dropdown menu={{ items }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
-            <Button icon={<MoreOutlined />} type='ghost'></Button>
-          </Dropdown>
-        }
-        {screens.lg &&
-          <>
-            <Button disabled icon={<EditOutlined />} type="primary">{t('common.edit')}</Button>
-            <Button icon={<DeleteOutlined />} danger onClick={() => showDeleteModal()}>{t('common.delete')}</Button>
-          </>
-        }
-      </GcPageContainerHeader>
+        items={items}
+      />
       <GcPageContainerContent isLoading={loading}>
         <Row gutter={[16, 16]}>
           <Col xxl={3} xl={4} md={5} xs={24}>

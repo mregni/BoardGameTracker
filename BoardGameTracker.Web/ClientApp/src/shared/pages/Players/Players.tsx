@@ -1,4 +1,4 @@
-import {Button, Col, Row} from 'antd';
+import {Col, Row} from 'antd';
 import React, {useContext, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -6,7 +6,7 @@ import {PlusOutlined} from '@ant-design/icons';
 
 import {GcCard} from '../../components/GcCard';
 import {
-  GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
 } from '../../components/GcPageContainer';
 import {AddNewPlayerDrawer} from './components/AddNewPlayerDrawer';
 import {PlayerContext} from './context';
@@ -16,19 +16,22 @@ export const Players = () => {
   const { t } = useTranslation();
   const [openNewPlayer, setOpenNewPlayer] = useState(false);
 
+  const items: GcMenuItem[] = [
+    {
+      buttonType: 'primary',
+      icon: <PlusOutlined />,
+      onClick: () => setOpenNewPlayer(true),
+      content: t('player.new.button')
+    }
+  ];
+
   return (
     <GcPageContainer>
       <GcPageContainerHeader
         title={t('common.players')}
-        isLoading={loading || players.length === 0}>
-        <Button
-          icon={<PlusOutlined />}
-          type="primary"
-          onClick={() => setOpenNewPlayer(true)}
-        >
-          {t('common.create')}
-        </Button>
-      </GcPageContainerHeader>
+        isLoading={loading || players.length === 0}
+        items={items}
+      />
       <GcPageContainerContent isLoading={loading || players.length === 0}>
         <Row gutter={[10, 10]}>
           {players.map(player =>

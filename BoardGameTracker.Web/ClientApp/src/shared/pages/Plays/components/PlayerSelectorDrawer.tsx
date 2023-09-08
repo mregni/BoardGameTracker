@@ -56,7 +56,7 @@ const PlayerSelectorDrawer = (props: Props) => {
     <GcDrawer
       open={open}
       onClose={() => onClose(null)}
-      title={t('play.new.button')}>
+      title={t('player.new.add')}>
       <Form
         form={form}
         {...formItemLayout}
@@ -129,7 +129,7 @@ const PlayerSelectorDrawer = (props: Props) => {
           <Checkbox />
         </Form.Item>
         <Row justify="end">
-          <Button type="primary" htmlType="submit">{edit === undefined ? t('play.new.button'): t('play.new.button-edit')}</Button>
+          <Button type="primary" htmlType="submit">{edit === undefined ? t('player.new.button'): t('player.new.button-edit')}</Button>
         </Row>
       </Form>
     </GcDrawer>

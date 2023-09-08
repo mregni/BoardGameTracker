@@ -1,12 +1,13 @@
-import {Button, Col, Row} from 'antd';
+import {Button, Col, MenuProps, Row} from 'antd';
 import React, {useContext, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
+import {Link} from 'react-router-dom';
 
 import {PlusOutlined} from '@ant-design/icons';
 
 import {GcCard} from '../../components/GcCard';
 import {
-  GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
 } from '../../components/GcPageContainer';
 import {Game} from '../../models';
 import {NewPlayDrawer} from '../Plays';
@@ -34,29 +35,29 @@ export const Games = () => {
     setGameId(null);
   }
 
+
+  const items: GcMenuItem[] = [
+    {
+      buttonType: 'primary',
+      icon: <PlusOutlined />,
+      onClick: () => setOpenNewBggGame(true),
+      content: t('games.new.button')
+    },
+    {
+      buttonType: 'primary',
+      icon: <PlusOutlined />,
+      onClick: () => { setGame(undefined); setOpen(true) },
+      content: t('play.new.button')
+    }
+  ];
+
   return (
     <GcPageContainer>
       <GcPageContainerHeader
         title={t('common.games')}
-        isLoading={loading || games.length === 0}>
-        <Button
-          icon={<PlusOutlined />}
-          type="primary"
-          onClick={() => setOpenNewBggGame(true)}
-        >
-          {t('common.new-game')}
-        </Button>
-        <Button
-          icon={<PlusOutlined />}
-          type="primary"
-          onClick={() => {
-            setGame(undefined);
-            setOpen(true)
-          }}
-        >
-          {t('common.new-play')}
-        </Button>
-      </GcPageContainerHeader>
+        isLoading={loading || games.length === 0}
+        items={items}
+        />
       <GcPageContainerContent isLoading={loading || games.length === 0}>
         <Row gutter={[10, 10]}>
           {games.map(game =>
@@ -74,7 +75,7 @@ export const Games = () => {
           )}
         </Row>
         <GameDetailContextProvider>
-          <NewPlayDrawer open={open} close={closeDrawer} game={game} key={game?.id}/>
+          <NewPlayDrawer open={open} close={closeDrawer} game={game} key={game?.id} />
         </GameDetailContextProvider>
         <SearchGameDrawer setOpen={setOpenNewBggGame} open={openNewBggGame} />
       </GcPageContainerContent>

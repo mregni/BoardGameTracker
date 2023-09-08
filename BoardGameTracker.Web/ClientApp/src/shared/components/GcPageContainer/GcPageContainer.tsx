@@ -1,28 +1,42 @@
-import {Button, Col, ConfigProvider, Layout, Row, Space, Typography} from 'antd';
+import {
+  Button, Col, ConfigProvider, Dropdown, Layout, MenuProps, Row, Space, Typography,
+} from 'antd';
+import {ItemType} from 'antd/es/breadcrumb/Breadcrumb';
+import {MenuItemType} from 'antd/es/menu/hooks/useItems';
 import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {Children, ReactElement, ReactNode} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 
 import {purple} from '@ant-design/colors';
-import {ArrowLeftOutlined} from '@ant-design/icons';
+import {ArrowLeftOutlined, MoreOutlined} from '@ant-design/icons';
 
 import {GcNoDataLoader} from '../GcNoDataLoader';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
+export interface GcMenuItem {
+  buttonType: 'link' | 'text' | 'ghost' | 'default' | 'primary' | 'dashed' | undefined;
+  icon: ReactNode;
+  onClick?: () => void;
+  to?: string;
+  content: string;
+}
+
 interface HeaderProps {
-  children: ReactNode;
   isLoading: boolean;
   title: string;
   hasBack?: boolean;
   backNavigation?: string;
+  items: GcMenuItem[];
 }
 
 export const GcPageContainerHeader = (props: HeaderProps) => {
-  const { isLoading, children, title, hasBack = false, backNavigation = '' } = props;
+  const { isLoading, title, items, hasBack = false, backNavigation = '' } = props;
   const navigate = useNavigate();
   const screens = useBreakpoint();
+
+  const dropdownItems: MenuProps['items'] = items.map((item, i) => { return { key: i, icon: item.icon, label: <Link to={item.to ?? ''} onClick={item.onClick}>{item.content}</Link> } })
 
   return (
     <Row justify="space-between">
@@ -30,7 +44,7 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
         {
           hasBack && (
             <Col>
-              <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(backNavigation)} />
+              <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(backNavigation)} disabled={isLoading} />
             </Col>
           )
         }
@@ -39,7 +53,14 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
         </Col>
       </Row>
       <Space wrap>
-        {children}
+        {!screens.lg &&
+          <Dropdown menu={{ items: dropdownItems }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
+            <Button icon={<MoreOutlined />} type='ghost'></Button>
+          </Dropdown>
+        }
+        {screens.lg &&
+          (items.map((item) => <Button icon={item.icon} type={item.buttonType} onClick={item.onClick}>{item.content}</Button>))
+        }
       </Space>
     </Row>
   )
