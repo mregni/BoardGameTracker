@@ -87,7 +87,7 @@ export const PlayerDetailOverview = () => {
             <Image
               preview={false}
               width={'100%'}
-              src={`https://localhost:7178/${player.image}`}
+              src={`/${player.image}`}
               className="image"
             />
           </Col>

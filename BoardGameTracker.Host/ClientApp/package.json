@@ -11,7 +11,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@types/antd": "^1.0.0",
     "antd": "^5.6.0",
     "axios": "^1.4.0",
     "date-fns": "^2.30.0",

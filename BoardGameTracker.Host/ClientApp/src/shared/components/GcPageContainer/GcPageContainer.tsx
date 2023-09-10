@@ -36,6 +36,8 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
 
+  console.log(screens.lg)
+
   const dropdownItems: MenuProps['items'] = items.map((item, i) => { return { key: i, icon: item.icon, label: <Link to={item.to ?? ''} onClick={item.onClick}>{item.content}</Link> } })
 
   return (
@@ -52,16 +54,20 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
           <Title level={screens.md ? 3 : 5} style={{ margin: 0 }}>{title}</Title>
         </Col>
       </Row>
-      <Space wrap>
-        {!screens.lg &&
-          <Dropdown menu={{ items: dropdownItems }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
-            <Button icon={<MoreOutlined />} type='ghost'></Button>
-          </Dropdown>
-        }
-        {screens.lg &&
-          (items.map((item) => <Button icon={item.icon} type={item.buttonType} onClick={item.onClick}>{item.content}</Button>))
-        }
-      </Space>
+      {
+        screens.lg !== undefined && (
+          <Space wrap>
+            {!screens.lg &&
+              <Dropdown menu={{ items: dropdownItems }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
+                <Button icon={<MoreOutlined />} type='ghost'></Button>
+              </Dropdown>
+            }
+            {screens.lg &&
+              (items.map((item) => <Button key={item.content} icon={item.icon} type={item.buttonType} onClick={item.onClick} disabled={isLoading}>{item.content}</Button>))
+            }
+          </Space>
+        )
+      }
     </Row>
   )
 };

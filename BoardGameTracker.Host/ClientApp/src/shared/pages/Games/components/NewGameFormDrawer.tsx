@@ -110,7 +110,7 @@ const NewGameFormDrawer = (props: Props) => {
       </Form.Item>
 
       <Form.Item label='Upload' valuePropName='fileList' name='test' getValueFromEvent={normFile}>
-        <Upload action="https://localhost:7178/api/game/image" listType="picture-card" maxCount={1} accept="image/*">
+        <Upload action="/api/game/image" listType="picture-card" maxCount={1} accept="image/*">
           <div>
             <PlusOutlined />
             <div style={{ marginTop: 8 }}>{t('common.upload')}</div>

@@ -200,7 +200,7 @@ export const PlayForm = (props: FormProps) => {
                         style={{ marginTop: 30 }}
                       >
                         <Badge count={item.won ? <CrownTwoTone twoToneColor='orange' /> : 0}>
-                          <Avatar src={`https://localhost:7178/${player?.image ?? ""}`} />
+                          <Avatar src={`/${player?.image ?? ""}`} />
                         </Badge>
                       </Badge>}
                     title={player?.name}

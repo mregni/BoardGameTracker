@@ -76,7 +76,7 @@ const GameDetailOverview = () => {
               <Image
                 preview={false}
                 width={'100%'}
-                src={`https://localhost:7178/${game.image}`}
+                src={`/${game.image}`}
                 className="image"
               />
             </GcStateRibbon>
