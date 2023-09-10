@@ -1,1 +1,1 @@
-export * from 'GcAvatarGroup';
+export * from './GcAvatarGroup';

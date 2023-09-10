@@ -7,7 +7,6 @@ import {useTranslation} from 'react-i18next';
 
 import {ClockCircleTwoTone, CrownTwoTone, PlusOutlined} from '@ant-design/icons';
 
-import {GcSelectWithAdd} from '../../../components/GcSelectWithAdd';
 import {SettingsContext} from '../../../context/settingsContext';
 import {ActivePlayer, Play, PlayPlayer} from '../../../models';
 import {convertToAntdFormat} from '../../../utils';

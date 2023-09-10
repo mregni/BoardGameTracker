@@ -21,12 +21,15 @@ builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 
 SetConfiguration(builder);
 
+builder.WebHost.UseUrls("http://localhost:7178");
+
 builder.Services.AddLogging(b =>
 {
     b.ClearProviders();
     b.SetMinimumLevel(LogLevel.Trace);
     b.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
     b.AddFilter("Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager", LogLevel.Error);
+    b.AddConsole();
 });
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -79,19 +82,18 @@ builder.Services.AddRefitClient<IBggApi>(refitSettings)
         options.BaseAddress = new Uri("https://boardgamegeek.com/xmlapi2");
     });
 
-builder.Services.AddSpaStaticFiles(configuration =>
-{
-    configuration.RootPath =Path.Combine("..", "BoardGameTracker.Web", "ClientApp");
-});
+builder.Services.AddSpaStaticFiles(x => x.RootPath = "wwwroot");
 
 var app = builder.Build();
 
 CreateFolders(app.Services);
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    
     app.UseDeveloperExceptionPage();
 }
 else
@@ -100,11 +102,17 @@ else
     app.UseHsts();
 }
 
+app.UseStaticFiles();
+app.UseSpaStaticFiles();
+app.UseDefaultFiles();
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(PathHelper.FullCoverImagePath),
     RequestPath = "/images/cover"
 });
+
+Console.WriteLine(PathHelper.FullProfileImagePath);
 
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -112,7 +120,7 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/images/profile"
 });
 
-app.UseSpaStaticFiles();
+
 app.UseCors("Allow");
 app.UseRouting();
 
@@ -121,10 +129,13 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
-app.UseSpa(spa =>
+if (builder.Environment.IsProduction())
 {
-    spa.Options.SourcePath = "ClientApp";
-});
+    app.UseSpa(x =>
+    {
+        x.Options.SourcePath = "wwwroot";
+    });
+}
 
 SendStartApplicationCommand(app.Services);
 await RunDbMigrations(app.Services);

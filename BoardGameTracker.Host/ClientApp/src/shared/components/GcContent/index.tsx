@@ -1,0 +1,1 @@
+export {GcContent} from './GcContent';
