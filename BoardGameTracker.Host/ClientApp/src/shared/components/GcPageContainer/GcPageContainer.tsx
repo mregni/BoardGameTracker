@@ -77,6 +77,7 @@ interface ContentProps {
 
 export const GcPageContainerContent = (props: ContentProps) => {
   const { isLoading, children } = props;
+  console.log("boe")
   return (
     <GcNoDataLoader isLoading={isLoading}>
       {children}
@@ -84,7 +85,7 @@ export const GcPageContainerContent = (props: ContentProps) => {
   )
 };
 
-interface DrawerProps {
+interface DrawerProps { 
   children: ReactNode | ReactNode[];
 }
 
@@ -117,7 +118,7 @@ export const  GcPageContainer = (props: Props) => {
     }
 
     if (checkComponentName(child, GcPageContainerDrawers.name)) {
-      return _content = child
+      return _drawers = child
     }
   })
 
