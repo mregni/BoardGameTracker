@@ -6,7 +6,8 @@ import {PlusOutlined} from '@ant-design/icons';
 
 import {GcCard} from '../../components/GcCard';
 import {
-  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerDrawers,
+  GcPageContainerHeader,
 } from '../../components/GcPageContainer';
 import {AddNewPlayerDrawer} from './components/AddNewPlayerDrawer';
 import {PlayerContext} from './context';
@@ -43,8 +44,10 @@ export const Players = () => {
                 detailPage="players" />
             </Col>)}
         </Row>
-        <AddNewPlayerDrawer open={openNewPlayer} setOpen={setOpenNewPlayer} />
       </GcPageContainerContent>
+      <GcPageContainerDrawers>
+        <AddNewPlayerDrawer open={openNewPlayer} setOpen={setOpenNewPlayer} />
+      </GcPageContainerDrawers>
     </GcPageContainer>
   )
 }

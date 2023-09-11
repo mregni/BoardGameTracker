@@ -19,8 +19,6 @@ export const GcDrawer = (props: Props) => {
     return screens.md ? 700 : '100%';
   }
 
-  console.log(title + ' => title')
-
   return (
     <Drawer
       title={title}

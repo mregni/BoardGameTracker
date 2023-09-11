@@ -7,7 +7,8 @@ import {PlusOutlined} from '@ant-design/icons';
 
 import {GcCard} from '../../components/GcCard';
 import {
-  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerDrawers,
+  GcPageContainerHeader,
 } from '../../components/GcPageContainer';
 import {Game} from '../../models';
 import {NewPlayDrawer} from '../Plays';
@@ -35,13 +36,11 @@ export const Games = () => {
     setGameId(null);
   }
 
-  console.log(openNewBggGame + ' => openNewBggGame')
-
   const items: GcMenuItem[] = [
     {
       buttonType: 'primary',
       icon: <PlusOutlined />,
-      onClick: () => { console.log("trigered games drawer"); setOpenNewBggGame(true)},
+      onClick: () => { console.log("trigered games drawer"); setOpenNewBggGame(true) },
       content: t('games.new.button')
     },
     {
@@ -58,7 +57,7 @@ export const Games = () => {
         title={t('common.games')}
         isLoading={loading}
         items={items}
-        />
+      />
       <GcPageContainerContent isLoading={loading || games.length === 0}>
         <Row gutter={[10, 10]}>
           {games.map(game =>
@@ -75,11 +74,13 @@ export const Games = () => {
             </Col>
           )}
         </Row>
+      </GcPageContainerContent>
+      <GcPageContainerDrawers>
         <GameDetailContextProvider>
           <NewPlayDrawer open={open} close={closeDrawer} game={game} key={game?.id} />
         </GameDetailContextProvider>
         <SearchGameDrawer setOpen={setOpenNewBggGame} open={openNewBggGame} />
-      </GcPageContainerContent>
+      </GcPageContainerDrawers>
     </GcPageContainer>
   )
 }

@@ -84,6 +84,16 @@ export const GcPageContainerContent = (props: ContentProps) => {
   )
 };
 
+interface DrawerProps {
+  children: ReactNode | ReactNode[];
+}
+
+export const GcPageContainerDrawers = (props: DrawerProps) => {
+  const { children } = props;
+  return (<>{children}</>);
+};
+
+
 
 interface Props {
   children: ReactElement | ReactElement[];
@@ -93,9 +103,9 @@ const checkComponentName = (child: React.ReactElement<any, string | React.JSXEle
   return (child.type as (props: Props) => JSX.Element)?.name === elementName;
 }
 
-export const GcPageContainer = (props: Props) => {
+export const  GcPageContainer = (props: Props) => {
   const { children } = props;
-  let _content, _header;
+  let _content, _header, _drawers;
 
   Children.forEach(children, child => {
     if (checkComponentName(child, GcPageContainerHeader.name)) {
@@ -103,6 +113,10 @@ export const GcPageContainer = (props: Props) => {
     }
 
     if (checkComponentName(child, GcPageContainerContent.name)) {
+      return _content = child
+    }
+
+    if (checkComponentName(child, GcPageContainerDrawers.name)) {
       return _content = child
     }
   })
@@ -124,6 +138,7 @@ export const GcPageContainer = (props: Props) => {
       </ConfigProvider>
       <Content style={{ padding: 12, height: '100%' }}>
         {_content}
+        {_drawers}
       </Content>
     </Layout>
   )

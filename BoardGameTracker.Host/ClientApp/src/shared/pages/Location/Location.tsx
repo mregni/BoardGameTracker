@@ -6,7 +6,8 @@ import {Link} from 'react-router-dom';
 import {PlusOutlined} from '@ant-design/icons';
 
 import {
-  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerDrawers,
+  GcPageContainerHeader,
 } from '../../components/GcPageContainer';
 import {LocationTable} from './components/LocationTable';
 import {NewLocationDrawer} from './components/NewLocationDrawer';
@@ -40,8 +41,10 @@ export const Location = () => {
       />
       <GcPageContainerContent isLoading={loading || locations.length === 0}>
         <LocationTable />
-        <NewLocationDrawer open={openNewLocation} onClose={closeDrawer} />
       </GcPageContainerContent>
+      <GcPageContainerDrawers>
+        <NewLocationDrawer open={openNewLocation} onClose={closeDrawer} />
+      </GcPageContainerDrawers>
     </GcPageContainer>
   )
 }

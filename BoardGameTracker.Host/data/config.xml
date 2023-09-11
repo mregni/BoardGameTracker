@@ -3,7 +3,7 @@
   <PostgresHost>192.168.72.181</PostgresHost>
   <PostgresUser>admin</PostgresUser>
   <PostgresPassword>azerty</PostgresPassword>
-  <PostgresMainDb>boardgametracker-main</PostgresMainDb>
+  <PostgresMainDb>boardgametracker-dev</PostgresMainDb>
   <PostgresPort>5431</PostgresPort>
   <TZ>Europe/Londen</TZ>
   <UILanguage>nl-be</UILanguage>
