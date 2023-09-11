@@ -35,7 +35,7 @@ export const Location = () => {
     <GcPageContainer>
       <GcPageContainerHeader
         title={t('common.locations')}
-        isLoading={loading || locations.length === 0}
+        isLoading={loading}
         items={items}
       />
       <GcPageContainerContent isLoading={loading || locations.length === 0}>

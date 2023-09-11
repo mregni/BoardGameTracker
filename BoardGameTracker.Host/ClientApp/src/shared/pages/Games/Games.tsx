@@ -55,7 +55,7 @@ export const Games = () => {
     <GcPageContainer>
       <GcPageContainerHeader
         title={t('common.games')}
-        isLoading={loading || games.length === 0}
+        isLoading={loading}
         items={items}
         />
       <GcPageContainerContent isLoading={loading || games.length === 0}>
