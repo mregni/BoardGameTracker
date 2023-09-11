@@ -163,6 +163,7 @@
   },
   "games": {
     "bgg": "Import from BGG",
+    "open-bgg": "Open BGG",
     "manual": "Manual import",
     "new": {
       "bgg": {

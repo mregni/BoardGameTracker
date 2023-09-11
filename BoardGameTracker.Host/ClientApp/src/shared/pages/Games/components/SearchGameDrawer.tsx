@@ -1,6 +1,8 @@
-import {Button, DatePicker, Form, Input, InputNumber, Select} from 'antd';
+import {Button, DatePicker, Form, Input, InputNumber, Select, Space} from 'antd';
 import React, {useContext} from 'react';
 import {useTranslation} from 'react-i18next';
+
+import {ExportOutlined} from '@ant-design/icons';
 
 import {GcDrawer} from '../../../components/GcDrawer';
 import {SettingsContext} from '../../../context/settingsContext';
@@ -16,7 +18,7 @@ interface Props {
 
 const SearchGameDrawer = (props: Props) => {
   const { loadGames } = useContext(GamesContext);
-  const { settings} = useContext(SettingsContext);
+  const { settings } = useContext(SettingsContext);
   const { setOpen, open } = props;
   const { t } = useTranslation();
   const { search, searching } = useSearchGame();
@@ -42,7 +44,11 @@ const SearchGameDrawer = (props: Props) => {
     dateAdded: null
   }
 
-  if(settings === null){
+  const openBgg = () => {
+    window.open('https://boardgamegeek.com/browse/boardgame', '_blank');
+  }
+
+  if (settings === null) {
     return (<></>)
   }
 
@@ -67,7 +73,11 @@ const SearchGameDrawer = (props: Props) => {
           name="bggId"
           rules={[{ required: true, message: t('games.new.bgg.required') }]}
         >
-          <Input placeholder={t('games.new.bgg.placeholder')} disabled={searching} />
+          <Space.Compact style={{ width: '100%' }}>
+            <Input placeholder={t('games.new.bgg.placeholder')} disabled={searching} />
+            <Button type="primary" icon={<ExportOutlined />} onClick={openBgg}>{t('games.open-bgg')}</Button>
+          </Space.Compact>
+
         </Form.Item>
         <Form.Item
           label={t('common.state')}
@@ -88,11 +98,12 @@ const SearchGameDrawer = (props: Props) => {
           style={{ width: '100%' }}
           name="price"
         >
-          <InputNumber 
+          <InputNumber
             addonAfter={settings.currency}
+            disabled={searching}
             placeholder={t('game.price-placeholder')}
             controls={false}
-            />
+          />
         </Form.Item>
         <Form.Item
           label={t('game.added-date')}
@@ -101,6 +112,7 @@ const SearchGameDrawer = (props: Props) => {
         >
           <DatePicker
             style={{ width: 'calc(100% - 30px)' }}
+            disabled={searching}
             format={`${convertToAntdFormat(settings?.dateFormat)}`}
           />
         </Form.Item>
