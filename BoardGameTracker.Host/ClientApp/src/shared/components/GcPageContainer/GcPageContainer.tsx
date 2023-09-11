@@ -36,8 +36,6 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
 
-  console.log(screens.lg)
-
   const dropdownItems: MenuProps['items'] = items.map((item, i) => { return { key: i, icon: item.icon, label: <Link to={item.to ?? ''} onClick={item.onClick}>{item.content}</Link> } })
 
   return (

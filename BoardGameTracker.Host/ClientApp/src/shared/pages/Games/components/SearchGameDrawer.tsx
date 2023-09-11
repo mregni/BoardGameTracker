@@ -22,6 +22,8 @@ const SearchGameDrawer = (props: Props) => {
   const { search, searching } = useSearchGame();
   const [form] = Form.useForm();
 
+  console.log(open + ' => open')
+
   const onClose = () => {
     form.resetFields();
     setOpen(false);

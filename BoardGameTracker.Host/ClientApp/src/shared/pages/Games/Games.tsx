@@ -35,12 +35,13 @@ export const Games = () => {
     setGameId(null);
   }
 
+  console.log(openNewBggGame + ' => openNewBggGame')
 
   const items: GcMenuItem[] = [
     {
       buttonType: 'primary',
       icon: <PlusOutlined />,
-      onClick: () => setOpenNewBggGame(true),
+      onClick: () => { console.log("trigered games drawer"); setOpenNewBggGame(true)},
       content: t('games.new.button')
     },
     {
