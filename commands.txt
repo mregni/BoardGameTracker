@@ -1,2 +1,7 @@
 cd ./BoardGameTracker.Core
 dotnet ef migrations add <NAME> --startup-project ../BoardGameTracker.Host --output-dir DataStore/Migrations/Postgres
+
+
+
+docker build -f .pipelines/win.dockerfile -t tracker:latest .
+docker run -e PostgresHost=192.168.72.181 -e PostgresUser=admin -e PostgresPassword=azerty -e PostgresMainDb=boardgametracker-main -e PostgresPort=5431 -p 7000:7178 tracker:latest

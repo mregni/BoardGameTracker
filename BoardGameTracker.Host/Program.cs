@@ -21,7 +21,7 @@ builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 
 SetConfiguration(builder);
 
-builder.WebHost.UseUrls("http://localhost:7178");
+builder.WebHost.UseUrls("http://*:7178");
 
 builder.Services.AddLogging(b =>
 {
