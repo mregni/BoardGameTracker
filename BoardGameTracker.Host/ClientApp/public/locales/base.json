@@ -123,7 +123,8 @@
       "player": {
         "placeholder": "Select players",
         "required": "Please add at least one player",
-        "empty": "No players added"
+        "empty": "No players added",
+        "add": "Add player"
       },
       "start": {
         "title": "Game start",

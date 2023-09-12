@@ -183,7 +183,7 @@ export const PlayForm = (props: FormProps) => {
             onClick={() => createNewPlayer()}
             icon={<PlusOutlined />}
           >
-            {t('play.new.button')}
+            {t('play.new.player.add')}
           </Button>
           <List
             locale={{ emptyText: t('play.new.player.empty') }}
