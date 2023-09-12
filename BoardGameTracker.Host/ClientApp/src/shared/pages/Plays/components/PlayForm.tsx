@@ -136,6 +136,7 @@ export const PlayForm = (props: FormProps) => {
     >
       <Form.Item
         name="gameId"
+        style={{ marginBottom: 10 }}
         label={t('common.game')}
         valuePropName="value"
         rules={[{ required: true, message: t('play.new.game.required') }]}
@@ -149,7 +150,10 @@ export const PlayForm = (props: FormProps) => {
           {games.map(x => <Option key={x.id} value={x.id} >{x.title}</Option>)}
         </Select>
       </Form.Item>
-      <Form.Item label={t('common.location')}>
+      <Form.Item
+        label={t('common.location')}
+        style={{ marginBottom: 10 }}
+      >
         <Space.Compact style={{ width: '100%' }}>
           <Form.Item
             name="locationId"
@@ -171,6 +175,7 @@ export const PlayForm = (props: FormProps) => {
       <Form.Item
         name="players"
         label={t('common.players')}
+        style={{ marginBottom: 10 }}
       >
         <Space direction='vertical' style={{ width: '100%' }}>
           <Button
@@ -212,7 +217,10 @@ export const PlayForm = (props: FormProps) => {
           />
         </Space>
       </Form.Item>
-      <Form.Item label={t('play.new.start.title')}>
+      <Form.Item
+        label={t('play.new.start.title')}
+        style={{ marginBottom: 10 }}
+      >
         <Space.Compact>
           <Form.Item
             name="start"
@@ -236,13 +244,22 @@ export const PlayForm = (props: FormProps) => {
           </Form.Item>
         </Space.Compact>
       </Form.Item>
-      <Form.Item label={t('play.new.ended.title')} name="ended" valuePropName="checked">
+      <Form.Item 
+      label={t('play.new.ended.title')} 
+      name="ended" 
+      valuePropName="checked"
+      style={{ marginBottom: 10 }}
+      >
         <Checkbox>{t('play.new.ended.description')}</Checkbox>
       </Form.Item>
-      <Form.Item label={t('common.comment')} name="comment">
+      <Form.Item 
+      label={t('common.comment')} 
+      name="comment"
+      style={{ marginBottom: 10 }}
+      >
         <Input.TextArea rows={4} />
       </Form.Item>
-      <Form.Item wrapperCol={{ offset: 1, span: 22 }}>
+      <Form.Item wrapperCol={{ offset: 4, span: 20 }}>
         <Button
           type="primary"
           htmlType="submit"

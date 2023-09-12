@@ -31,7 +31,7 @@ export const LocationForm = (props: Props) => {
     >
       <Form.Item
         label={t('common.name')}
-        style={{ width: '100%' }}
+        style={{ marginBottom: 10 }}
         name="name"
         rules={[{ required: true, message: t('location.new.name.required') }]}
       >

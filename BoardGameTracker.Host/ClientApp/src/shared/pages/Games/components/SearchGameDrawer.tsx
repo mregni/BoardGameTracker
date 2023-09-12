@@ -69,8 +69,8 @@ const SearchGameDrawer = (props: Props) => {
       >
         <Form.Item
           label={t('games.new.bgg.label')}
-          style={{ width: '100%' }}
           name="bggId"
+          style={{ marginBottom: 10 }}
           rules={[{ required: true, message: t('games.new.bgg.required') }]}
         >
           <Space.Compact style={{ width: '100%' }}>
@@ -80,8 +80,8 @@ const SearchGameDrawer = (props: Props) => {
         </Form.Item>
         <Form.Item
           label={t('common.state')}
-          style={{ width: '100%' }}
           name="state"
+          style={{ marginBottom: 10 }}
         >
           <Select
             disabled={searching}
@@ -94,8 +94,8 @@ const SearchGameDrawer = (props: Props) => {
         </Form.Item>
         <Form.Item
           label={t('game.price')}
-          style={{ width: '100%' }}
           name="price"
+          style={{ marginBottom: 10 }}
         >
           <InputNumber
             addonAfter={settings.currency}
@@ -106,16 +106,16 @@ const SearchGameDrawer = (props: Props) => {
         </Form.Item>
         <Form.Item
           label={t('game.added-date')}
-          style={{ width: '100%' }}
           name="additionDate"
+          style={{ marginBottom: 10 }}
         >
           <DatePicker
-            style={{ width: 'calc(100% - 30px)' }}
+            style={{ width: '100%' }}
             disabled={searching}
             format={`${convertToAntdFormat(settings?.dateFormat)}`}
           />
         </Form.Item>
-        <Form.Item wrapperCol={{ offset: 1, span: 22 }}>
+        <Form.Item wrapperCol={{ offset: 4, span: 22 }}>
           <Button
             type="primary"
             htmlType="submit"

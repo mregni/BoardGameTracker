@@ -68,7 +68,7 @@ export const AddNewPlayerDrawer = (props: Props) => {
       >
         <Form.Item
           label={t('common.name')}
-          style={{ width: '100%' }}
+          style={{ width: '100%', marginBottom: 10 }}
           name="name"
           rules={[{ required: true, message: t('player.new.name.required') }]}
         >
@@ -77,6 +77,7 @@ export const AddNewPlayerDrawer = (props: Props) => {
 
         <Form.Item
           name="imageList"
+          style={{ marginBottom: 10 }}
           label="Profile picture"
           valuePropName="fileList"
           getValueFromEvent={getFile}
@@ -89,7 +90,7 @@ export const AddNewPlayerDrawer = (props: Props) => {
             <Button icon={<UploadOutlined />}>Select profile picture</Button>
           </Upload>
         </Form.Item>
-        <Form.Item wrapperCol={{ offset: 1, span: 22 }}>
+        <Form.Item wrapperCol={{ offset: 4, span: 20 }}>
           <Button
             type="primary"
             htmlType="submit"

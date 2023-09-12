@@ -1,4 +1,4 @@
-import {Button, Checkbox, Col, Divider, Form, Input, Row, Select, Space} from 'antd';
+import {Button, Checkbox, Col, Divider, Form, Input, InputNumber, Row, Select, Space} from 'antd';
 import React, {useContext, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -24,7 +24,7 @@ const PlayerSelectorDrawer = (props: Props) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if(edit !== undefined) {
+    if (edit !== undefined) {
       form.setFieldValue('playerId', edit.playerId);
       form.setFieldValue('won', edit.won);
       form.setFieldValue('firstPlay', edit.firstPlay);
@@ -34,11 +34,11 @@ const PlayerSelectorDrawer = (props: Props) => {
       form.setFieldValue('characterName', edit.characterName);
     }
   }, [edit, form]);
-  
+
 
   const formItemLayout = {
     labelCol: { span: 4 },
-    wrapperCol: { span: 18 }
+    wrapperCol: { span: 20 }
   };
 
   const onClose = (player: ActivePlayer | null) => {
@@ -87,7 +87,7 @@ const PlayerSelectorDrawer = (props: Props) => {
           name="score"
           wrapperCol={{ span: 7 }}
         >
-          <Input placeholder={t('form.placeholders.end-scoring')} />
+          <InputNumber placeholder={t('form.placeholders.end-scoring')} style={{width: '100%'}} />
         </Form.Item>
         <Form.Item
           style={{ marginBottom: 10 }}
@@ -129,7 +129,7 @@ const PlayerSelectorDrawer = (props: Props) => {
           <Checkbox />
         </Form.Item>
         <Row justify="end">
-          <Button type="primary" htmlType="submit">{edit === undefined ? t('player.new.button'): t('player.new.button-edit')}</Button>
+          <Button type="primary" htmlType="submit">{edit === undefined ? t('player.new.button') : t('player.new.button-edit')}</Button>
         </Row>
       </Form>
     </GcDrawer>

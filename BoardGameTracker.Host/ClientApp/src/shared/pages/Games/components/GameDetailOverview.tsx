@@ -22,7 +22,6 @@ const GameDetailOverview = () => {
   const navigate = useNavigate();
   const { deleteModal } = useModals();
   const { t } = useTranslation();
-  const screens = useBreakpoint();
 
   if (game === null) {
     return (<></>);
@@ -56,7 +55,7 @@ const GameDetailOverview = () => {
       buttonType: 'primary',
       icon: <DeleteOutlined />,
       onClick: () => showDeleteModal(),
-      content: t('common.delete')
+      content: t('common.delete'),
     }
   ];
 
