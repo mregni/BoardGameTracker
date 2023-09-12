@@ -40,30 +40,35 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
 
   return (
     <Row justify="space-between">
-      <Row gutter={8} align="middle">
-        {
-          hasBack && (
-            <Col>
-              <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(backNavigation)} disabled={isLoading} />
-            </Col>
-          )
-        }
-        <Col>
+      <Col>
+        <Space wrap>
+          {
+            hasBack && (
+              <Button
+                type="text"
+                icon={<ArrowLeftOutlined />}
+                onClick={() => navigate(backNavigation)}
+                disabled={isLoading}
+              />
+            )
+          }
           <Title level={screens.md ? 3 : 5} style={{ margin: 0 }}>{title}</Title>
-        </Col>
-      </Row>
+        </Space>
+      </Col>
       {
         screens.lg !== undefined && (
-          <Space wrap>
-            {!screens.lg &&
-              <Dropdown menu={{ items: dropdownItems }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
-                <Button icon={<MoreOutlined />} type='ghost'></Button>
-              </Dropdown>
-            }
-            {screens.lg &&
-              (items.map((item) => <Button key={item.content} icon={item.icon} type={item.buttonType} onClick={item.onClick} disabled={isLoading}>{item.content}</Button>))
-            }
-          </Space>
+          <Col>
+            <Space wrap>
+              {!screens.lg &&
+                <Dropdown menu={{ items: dropdownItems }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
+                  <Button icon={<MoreOutlined />} type='ghost'></Button>
+                </Dropdown>
+              }
+              {screens.lg &&
+                (items.map((item) => <Button key={item.content} icon={item.icon} type={item.buttonType} onClick={item.onClick} disabled={isLoading}>{item.content}</Button>))
+              }
+            </Space>
+          </Col>
         )
       }
     </Row>
@@ -84,7 +89,7 @@ export const GcPageContainerContent = (props: ContentProps) => {
   )
 };
 
-interface DrawerProps { 
+interface DrawerProps {
   children: ReactNode | ReactNode[];
 }
 
@@ -101,7 +106,7 @@ const checkComponentName = (child: React.ReactElement<any, string | React.JSXEle
   return (child.type as (props: Props) => JSX.Element)?.name === elementName;
 }
 
-export const  GcPageContainer = (props: Props) => {
+export const GcPageContainer = (props: Props) => {
   const { children } = props;
   let _content, _header, _drawers;
 
