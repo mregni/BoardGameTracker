@@ -1,4 +1,4 @@
-import {Button, Drawer, Menu} from 'antd';
+import {Button, Drawer, Menu, Space} from 'antd';
 import {t} from 'i18next';
 import React, {useEffect, useState} from 'react';
 
@@ -18,19 +18,26 @@ export const GcSmallMenu = () => {
 
   return (
     <>
-      <Button icon={<MenuOutlined />} onClick={() => setOpen(true)} type="ghost" />
+      <Button
+        icon={<MenuOutlined />}
+        className="custom-button"
+        size="large"
+        onClick={() => setOpen(true)}
+        type="ghost"
+      />
       <Drawer
         closable={false}
-        width={150}
+        onClose={() => setOpen(false)}
+        width={200}
         open={open}
         placement='left'
-        bodyStyle={{padding: 0}}
+        bodyStyle={{ padding: 0 }}
       >
         <Menu
           selectedKeys={[openPage]}
           onClick={updateState}
           mode="inline"
-          style={{height: '100%'}}
+          style={{ height: '100%' }}
           items={getMenuItems(t)} />
       </Drawer>
     </>
