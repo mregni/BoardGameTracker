@@ -51,9 +51,6 @@ export const Games = () => {
     }
   ];
 
-  console.log(games.length)
-  console.log(loading)
-
   return (
     <GcPageContainer>
       <GcPageContainerHeader

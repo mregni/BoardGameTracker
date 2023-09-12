@@ -75,9 +75,8 @@ const SearchGameDrawer = (props: Props) => {
         >
           <Space.Compact style={{ width: '100%' }}>
             <Input placeholder={t('games.new.bgg.placeholder')} disabled={searching} />
-            <Button type="primary" icon={<ExportOutlined />} onClick={openBgg}>{t('games.open-bgg')}</Button>
+            <Button type="primary" icon={<ExportOutlined />} disabled={searching} onClick={openBgg}>{t('games.open-bgg')}</Button>
           </Space.Compact>
-
         </Form.Item>
         <Form.Item
           label={t('common.state')}

@@ -13,6 +13,7 @@ export const GcMenu = () => {
   const [openPage, setOpenPage] = useState("0");
 
   useEffect(() => {
+    console.log(location)
     const result = getMenuItems(t).find(item => location.pathname.startsWith(`/${item.label.props.to}`));
     setOpenPage(result?.key?.toString() ?? "0");
   }, [location.pathname, t])

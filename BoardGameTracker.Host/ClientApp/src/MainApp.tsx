@@ -1,6 +1,7 @@
 import './MainApp.css';
 
 import {App, ConfigProvider, Layout, theme} from 'antd';
+import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {useContext} from 'react';
 import {BrowserRouter} from 'react-router-dom';
 
@@ -17,6 +18,7 @@ function MainApp() {
   const { token: { colorBgContainer } } = theme.useToken();
   const { settings, loading, failed } = useContext(SettingsContext);
   const { getLocale } = useAntdLanguage();
+  const screens = useBreakpoint();
 
   return (
     <GcLoader loading={loading} failed={failed} failedMessage="Failed loading settings, is the backend running?">
@@ -39,8 +41,8 @@ function MainApp() {
           <BrowserRouter future={{ v7_startTransition: true }}>
             <Layout style={{ minHeight: '100vh', background: colorBgContainer }}>
               <GcHeader />
-              <Layout hasSider>
-                <GcMenu />
+              <Layout hasSider={screens.lg}>
+                {screens.lg && (<GcMenu />)}
                 <Layout>
                   <GcContent />
                 </Layout>

@@ -49,7 +49,6 @@ interface Props {
 
 export const GcCard = (props: Props) => {
   const { title, id, image, state, detailPage, setGameId, showPlayLink = false } = props;
-  console.log("boesfd")
   return (
     <>
       <GcStateRibbon state={state}>
