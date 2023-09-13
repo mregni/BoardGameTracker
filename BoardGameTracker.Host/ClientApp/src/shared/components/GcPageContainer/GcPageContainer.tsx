@@ -38,8 +38,39 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
     items.map((item, i) => { return { key: i, icon: item.icon, label: <Link to={item.to ?? ''} onClick={item.onClick}>{item.content}</Link> } })
 
   return (
-    //TODO: Fix layout here!!!
-    <>Test</>
+    <Row justify="space-between" align='middle' style={{ width: '100%' }}>
+      <Col>
+        <Space wrap>
+          {
+            hasBack && (
+              <Button
+                type="text"
+                icon={<ArrowLeftOutlined />}
+                onClick={() => navigate(backNavigation)}
+                disabled={isLoading}
+              />
+            )
+          }
+          <Title level={screens.lg ? 3 : 5} style={{ margin: 0 }}>{title}</Title>
+        </Space>
+      </Col>
+      {
+        screens.lg !== undefined && (
+          <Col>
+            <Space wrap>
+              {!screens.lg &&
+                <Dropdown menu={{ items: dropdownItems }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
+                  <Button icon={<MoreOutlined />} type='ghost'></Button>
+                </Dropdown>
+              }
+              {screens.lg &&
+                (items.map((item) => <Button key={item.content} icon={item.icon} type={item.buttonType} onClick={item.onClick} disabled={isLoading}>{item.content}</Button>))
+              }
+            </Space>
+          </Col>
+        )
+      }
+    </Row>
   )
 };
 
@@ -76,6 +107,8 @@ const checkComponentName = (child: React.ReactElement<any, string | React.JSXEle
 
 export const GcPageContainer = (props: Props) => {
   const { children } = props;
+  const screens = useBreakpoint();
+
   let _content, _header, _drawers;
 
   Children.forEach(children, child => {
@@ -92,6 +125,8 @@ export const GcPageContainer = (props: Props) => {
     }
   })
 
+  const height = screens.lg ? '64px' : '40px';
+
   return (
     <Layout style={{ height: '100%' }}>
       <ConfigProvider
@@ -103,7 +138,7 @@ export const GcPageContainer = (props: Props) => {
           }
         }}
       >
-        <Header style={{ paddingInline: 20 }}>
+        <Header style={{ paddingInline: screens.lg ? 20 : 10, height: height, lineHeight: height }}>
           {_header}
         </Header>
       </ConfigProvider>

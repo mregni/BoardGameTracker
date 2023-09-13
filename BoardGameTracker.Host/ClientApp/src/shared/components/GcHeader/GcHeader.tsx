@@ -8,7 +8,7 @@ export const GcHeader = () => {
   const screens = useBreakpoint();
 
   return (
-    <Header style={{ display: 'flex', alignItems: 'center', paddingLeft: 20 }}>
+    <Header style={{ display: 'flex', alignItems: 'center', paddingInline: screens.lg ? 20 : 10 }}>
       <Space>
         {!screens.lg && (<GcSmallMenu />)}
       </Space>
