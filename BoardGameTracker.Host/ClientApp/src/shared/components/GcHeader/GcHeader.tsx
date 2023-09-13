@@ -11,6 +11,7 @@ export const GcHeader = () => {
     <Header style={{ display: 'flex', alignItems: 'center', paddingInline: screens.lg ? 20 : 10 }}>
       <Space>
         {!screens.lg && (<GcSmallMenu />)}
+        Test header
       </Space>
     </Header>
   )
