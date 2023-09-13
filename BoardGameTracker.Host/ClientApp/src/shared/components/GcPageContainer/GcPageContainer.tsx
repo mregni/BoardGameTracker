@@ -38,19 +38,40 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
     items.map((item, i) => { return { key: i, icon: item.icon, label: <Link to={item.to ?? ''} onClick={item.onClick}>{item.content}</Link> } })
 
   return (
-    <Space wrap>
+    <Row justify="space-between" align='middle' style={{ width: '100%' }}>
+      <Col>
+        <Space wrap>
+          {
+            hasBack && (
+              <Button
+                type="text"
+                size='large'
+                icon={<ArrowLeftOutlined />}
+                onClick={() => navigate(backNavigation)}
+                disabled={isLoading}
+              />
+            )
+          }
+          <Title level={screens.lg ? 3 : 5} style={{ margin: 0 }}>{title}</Title>
+        </Space>
+      </Col>
       {
-        hasBack && (
-          <Button
-            type="text"
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(backNavigation)}
-            disabled={isLoading}
-          />
+        screens.lg !== undefined && (
+          <Col>
+            <Space wrap>
+              {!screens.lg &&
+                <Dropdown menu={{ items: dropdownItems }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
+                  <Button icon={<MoreOutlined />} size='large' type='ghost'></Button>
+                </Dropdown>
+              }
+              {screens.lg &&
+                (items.map((item) => <Button key={item.content} icon={item.icon} type={item.buttonType} onClick={item.onClick} disabled={isLoading}>{item.content}</Button>))
+              }
+            </Space>
+          </Col>
         )
       }
-      <Title level={screens.lg ? 3 : 5} style={{ margin: 0 }}>{title}</Title>
-    </Space>
+    </Row>
   )
 };
 
