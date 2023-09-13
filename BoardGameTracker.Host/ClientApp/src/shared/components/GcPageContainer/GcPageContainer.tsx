@@ -1,8 +1,6 @@
 import {
   Button, Col, ConfigProvider, Dropdown, Layout, MenuProps, Row, Space, Typography,
 } from 'antd';
-import {ItemType} from 'antd/es/breadcrumb/Breadcrumb';
-import {MenuItemType} from 'antd/es/menu/hooks/useItems';
 import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {Children, ReactElement, ReactNode} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
@@ -36,42 +34,12 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
   const navigate = useNavigate();
   const screens = useBreakpoint();
 
-  const dropdownItems: MenuProps['items'] = items.map((item, i) => { return { key: i, icon: item.icon, label: <Link to={item.to ?? ''} onClick={item.onClick}>{item.content}</Link> } })
+  const dropdownItems: MenuProps['items'] =
+    items.map((item, i) => { return { key: i, icon: item.icon, label: <Link to={item.to ?? ''} onClick={item.onClick}>{item.content}</Link> } })
 
   return (
-    <Row justify="space-between">
-      <Col>
-        <Space wrap>
-          {
-            hasBack && (
-              <Button
-                type="text"
-                icon={<ArrowLeftOutlined />}
-                onClick={() => navigate(backNavigation)}
-                disabled={isLoading}
-              />
-            )
-          }
-          <Title level={screens.md ? 3 : 5} style={{ margin: 0 }}>{title}</Title>
-        </Space>
-      </Col>
-      {
-        screens.lg !== undefined && (
-          <Col>
-            <Space wrap>
-              {!screens.lg &&
-                <Dropdown menu={{ items: dropdownItems }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
-                  <Button icon={<MoreOutlined />} type='ghost'></Button>
-                </Dropdown>
-              }
-              {screens.lg &&
-                (items.map((item) => <Button key={item.content} icon={item.icon} type={item.buttonType} onClick={item.onClick} disabled={isLoading}>{item.content}</Button>))
-              }
-            </Space>
-          </Col>
-        )
-      }
-    </Row>
+    //TODO: Fix layout here!!!
+    <>Test</>
   )
 };
 

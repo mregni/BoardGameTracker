@@ -1,6 +1,6 @@
-import {Button, Drawer, Menu, Space} from 'antd';
+import {Button, Drawer, Menu} from 'antd';
 import {t} from 'i18next';
-import React, {useEffect, useState} from 'react';
+import {useState} from 'react';
 
 import {MenuOutlined} from '@ant-design/icons';
 
