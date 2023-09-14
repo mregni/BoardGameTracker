@@ -20,7 +20,6 @@ export const GcSmallMenu = () => {
     <>
       <Button
         icon={<MenuOutlined />}
-        className="custom-button"
         size="large"
         onClick={() => setOpen(true)}
         type="ghost"

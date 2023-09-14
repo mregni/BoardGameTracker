@@ -34,6 +34,6 @@
   color: #888;
 }
 
-.custom-button:focus {
+:focus:not(:focus-visible) {
   outline: 0 !important;
 }

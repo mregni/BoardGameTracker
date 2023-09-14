@@ -52,7 +52,7 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
               />
             )
           }
-          <Title level={screens.lg ? 3 : 5} style={{ margin: 0 }}>{title}</Title>
+          <Title level={screens.lg ? 3 : 5} style={{ margin: 0, paddingLeft: (hasBack ? 0 :10) }}>{title}</Title>
         </Space>
       </Col>
       {

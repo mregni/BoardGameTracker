@@ -16,7 +16,7 @@ export const GcStatisticsRow = (props: Props) => {
       {
         cards.map(card => (
           card.value !== null &&
-          <Col xs={24} md={12} xl={8} xxl={6} key={card.title}>
+          <Col xs={24} sm={12} md={12} xl={8} xxl={6} key={card.title}>
             <GcStatisticsCard card={card} />
           </Col>
         ))

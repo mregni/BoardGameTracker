@@ -33,7 +33,10 @@ function MainApp() {
             Layout: {
               colorBgHeader: purple[6],
               colorBgTrigger: purple[6]
-            }
+            },
+            Button: {
+              linkFocusDecoration: "#ffffff"
+            },
           }
         }}
       >

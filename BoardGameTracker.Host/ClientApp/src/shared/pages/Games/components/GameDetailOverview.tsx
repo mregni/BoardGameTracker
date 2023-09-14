@@ -70,7 +70,7 @@ const GameDetailOverview = () => {
       />
       <GcPageContainerContent isLoading={loading}>
         <Row gutter={[16, 16]}>
-          <Col xxl={3} xl={4} md={5} xs={24}>
+          <Col xxl={3} xl={4} md={5} xs={12}>
             <GcStateRibbon state={game.state}>
               <Image
                 preview={false}
@@ -80,7 +80,7 @@ const GameDetailOverview = () => {
               />
             </GcStateRibbon>
           </Col>
-          <Col xxl={21} xl={20} md={19} xs={24}>
+          <Col xxl={21} xl={20} md={19} sm={12} xs={12}>
             <GameHeader />
           </Col>
           <Col xs={24}>
