@@ -78,12 +78,13 @@ export const GcPageContainerHeader = (props: HeaderProps) => {
 interface ContentProps {
   children: ReactNode;
   isLoading: boolean;
+  hasData: boolean;
 }
 
 export const GcPageContainerContent = (props: ContentProps) => {
-  const { isLoading, children } = props;
+  const { isLoading, children, hasData } = props;
   return (
-    <GcNoDataLoader isLoading={isLoading}>
+    <GcNoDataLoader isLoading={isLoading} hasData={hasData}>
       {children}
     </GcNoDataLoader>
   )
@@ -143,7 +144,7 @@ export const GcPageContainer = (props: Props) => {
           {_header}
         </Header>
       </ConfigProvider>
-      <Content style={{ padding: 12, height: '100%' }}>
+      <Content style={{ padding: 12 }}>
         {_content}
         {_drawers}
       </Content>

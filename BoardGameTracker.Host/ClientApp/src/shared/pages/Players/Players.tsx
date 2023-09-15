@@ -33,7 +33,7 @@ export const Players = () => {
         isLoading={loading}
         items={items}
       />
-      <GcPageContainerContent isLoading={loading || players.length === 0}>
+      <GcPageContainerContent isLoading={loading} hasData={players.length !== 0}>
         <Row gutter={[10, 10]}>
           {players.map(player =>
             <Col xxl={2} xl={4} md={6} sm={12} xs={12} key={player.id}>

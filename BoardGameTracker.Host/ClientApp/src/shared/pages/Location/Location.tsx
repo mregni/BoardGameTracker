@@ -39,7 +39,7 @@ export const Location = () => {
         isLoading={loading}
         items={items}
       />
-      <GcPageContainerContent isLoading={loading || locations.length === 0}>
+      <GcPageContainerContent isLoading={loading} hasData={locations.length !== 0}>
         <LocationTable />
       </GcPageContainerContent>
       <GcPageContainerDrawers>

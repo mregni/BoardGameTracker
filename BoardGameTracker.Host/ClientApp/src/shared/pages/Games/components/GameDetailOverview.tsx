@@ -68,7 +68,7 @@ const GameDetailOverview = () => {
         title={game.title}
         items={items}
       />
-      <GcPageContainerContent isLoading={loading}>
+      <GcPageContainerContent isLoading={loading} hasData={game !== null}>
         <Row gutter={[16, 16]}>
           <Col xxl={3} xl={4} md={5} xs={12}>
             <GcStateRibbon state={game.state}>

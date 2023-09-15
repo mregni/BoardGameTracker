@@ -33,10 +33,7 @@ function MainApp() {
             Layout: {
               colorBgHeader: purple[6],
               colorBgTrigger: purple[6]
-            },
-            Button: {
-              linkFocusDecoration: "#ffffff"
-            },
+            }
           }
         }}
       >
@@ -44,11 +41,9 @@ function MainApp() {
           <BrowserRouter future={{ v7_startTransition: true }}>
             <Layout style={{ minHeight: '100vh', background: colorBgContainer }}>
               <GcHeader />
-              <Layout hasSider={screens.lg}>
+              <Layout hasSider={screens.lg} style={{ height: '100%' }}>
                 {screens.lg && (<GcMenu />)}
-                <Layout>
-                  <GcContent />
-                </Layout>
+                <GcContent />
               </Layout>
             </Layout>
           </BrowserRouter>
