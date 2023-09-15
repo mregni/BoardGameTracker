@@ -13,7 +13,7 @@ RUN dotnet publish -c Release -o out --nologo ./BoardGameTracker.Host/BoardGameT
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
-WORKDIR /App
+WORKDIR /tracker
 COPY --from=build-env /App/out .
 EXPOSE 7178/tcp
 
