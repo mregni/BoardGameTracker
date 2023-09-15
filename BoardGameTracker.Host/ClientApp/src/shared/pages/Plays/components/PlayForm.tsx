@@ -1,15 +1,14 @@
 import {
   Avatar, Badge, Button, Checkbox, DatePicker, Form, FormInstance, Input, List, Select, Space,
 } from 'antd';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import {Dayjs} from 'dayjs';
 import {useContext, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {ClockCircleTwoTone, CrownTwoTone, PlusOutlined} from '@ant-design/icons';
 
-import {GcSelectWithAdd} from '../../../components/GcSelectWithAdd';
 import {SettingsContext} from '../../../context/settingsContext';
+import {useScreenInfo} from '../../../hooks/useScreenInfo';
 import {ActivePlayer, Play, PlayPlayer} from '../../../models';
 import {convertToAntdFormat} from '../../../utils';
 import {GamesContext} from '../../Games/context';
@@ -42,7 +41,7 @@ export const PlayForm = (props: FormProps) => {
   const { settings } = useContext(SettingsContext);
   const { locations, loading: loadingLocations, loadLocations } = useContext(LocationContext);
   const { t } = useTranslation();
-  const screens = useBreakpoint();
+  const { screenMap } = useScreenInfo();
 
   const [openPlayerSelector, setOpenPLayerSelector] = useState(false);
   const [activePlayers, setActivePlayers] = useState<ActivePlayer[]>([]);
@@ -126,7 +125,7 @@ export const PlayForm = (props: FormProps) => {
   }
 
   const buttonlayout = {
-    offset: screens.sm ? 4 : 0,
+    offset: screenMap.sm ? 4 : 0,
     span: 22
   };
 
@@ -239,12 +238,12 @@ export const PlayForm = (props: FormProps) => {
         />
       </Form.Item>
       <Form.Item
-        label="Play length"
+        label={t('play.new.length.title')}
         name='minutes'
         style={{ marginBottom: 10 }}
-        rules={[{ required: true, message: t('play.new.start.length-required') }]}
+        rules={[{ required: true, message: t('play.new.length.required') }]}
       >
-        <Input placeholder={t('play.new.start.length-placeholder')} suffix="minutes" />
+        <Input placeholder={t('play.new.length.placeholder')} suffix={t('common.minutes')} />
       </Form.Item>
       <Form.Item
         label={t('play.new.ended.title')}

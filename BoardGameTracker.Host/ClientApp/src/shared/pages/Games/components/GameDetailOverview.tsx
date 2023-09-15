@@ -1,13 +1,12 @@
-import {Button, Col, Dropdown, Image, MenuProps, Row} from 'antd';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
+import {Col, Image, Row} from 'antd';
 import {useContext} from 'react';
 import {Trans, useTranslation} from 'react-i18next';
-import {Link, useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 
-import {DeleteOutlined, EditOutlined, MoreOutlined} from '@ant-design/icons';
+import {DeleteOutlined, EditOutlined} from '@ant-design/icons';
 
 import {
-  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContent, GcPageHeader,
 } from '../../../components/GcPageContainer';
 import {GcStateRibbon} from '../../../components/GcStateRibbon';
 import {useModals} from '../../../utils';
@@ -61,14 +60,14 @@ const GameDetailOverview = () => {
 
   return (
     <GcPageContainer>
-      <GcPageContainerHeader
+      <GcPageHeader
         hasBack
         backNavigation='/games'
         isLoading={loading}
         title={game.title}
         items={items}
       />
-      <GcPageContainerContent isLoading={loading} hasData={game !== null}>
+      <GcPageContent isLoading={loading} hasData={game !== null}>
         <Row gutter={[16, 16]}>
           <Col xxl={3} xl={4} md={5} xs={12}>
             <GcStateRibbon state={game.state}>
@@ -90,7 +89,7 @@ const GameDetailOverview = () => {
             <GamePlaysTable />
           </Col>
         </Row>
-      </GcPageContainerContent>
+      </GcPageContent>
     </GcPageContainer>
   )
 }

@@ -1,7 +1,6 @@
 import './MainApp.css';
 
 import {App, ConfigProvider, Layout, theme} from 'antd';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {useContext} from 'react';
 import {BrowserRouter} from 'react-router-dom';
 
@@ -12,13 +11,14 @@ import {GcHeader} from './shared/components/GcHeader';
 import {GcLoader} from './shared/components/GcLoader';
 import {GcMenu} from './shared/components/GcMenu';
 import {SettingsContext} from './shared/context/settingsContext';
+import {useScreenInfo} from './shared/hooks/useScreenInfo';
 import {useAntdLanguage} from './shared/utils';
 
 function MainApp() {
   const { token: { colorBgContainer } } = theme.useToken();
   const { settings, loading, failed } = useContext(SettingsContext);
   const { getLocale } = useAntdLanguage();
-  const screens = useBreakpoint();
+  const { screenMap } = useScreenInfo();
 
   return (
     <GcLoader loading={loading} failed={failed} failedMessage="Failed loading settings, is the backend running?">
@@ -41,8 +41,8 @@ function MainApp() {
           <BrowserRouter future={{ v7_startTransition: true }}>
             <Layout style={{ minHeight: '100vh', background: colorBgContainer }}>
               <GcHeader />
-              <Layout hasSider={screens.lg} style={{ height: '100%' }}>
-                {screens.lg && (<GcMenu />)}
+              <Layout hasSider={screenMap.lg} style={{ height: '100%' }}>
+                {screenMap.lg && (<GcMenu />)}
                 <GcContent />
               </Layout>
             </Layout>

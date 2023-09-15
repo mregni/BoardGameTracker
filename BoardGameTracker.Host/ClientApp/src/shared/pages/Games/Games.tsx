@@ -1,14 +1,12 @@
-import {Button, Col, MenuProps, Row} from 'antd';
+import {Col, Row} from 'antd';
 import React, {useContext, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Link} from 'react-router-dom';
 
 import {PlusOutlined} from '@ant-design/icons';
 
 import {GcCard} from '../../components/GcCard';
 import {
-  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerDrawers,
-  GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContent, GcPageDrawer, GcPageHeader,
 } from '../../components/GcPageContainer';
 import {Game} from '../../models';
 import {NewPlayDrawer} from '../Plays';
@@ -53,12 +51,12 @@ export const Games = () => {
 
   return (
     <GcPageContainer>
-      <GcPageContainerHeader
+      <GcPageHeader
         title={t('common.games')}
         isLoading={loading}
         items={items}
       />
-      <GcPageContainerContent isLoading={loading} hasData={games.length !== 0}>
+      <GcPageContent isLoading={loading} hasData={games.length !== 0}>
         <Row gutter={[10, 10]}>
           {games.map(game =>
             <Col xxl={2} xl={4} md={6} sm={12} xs={12} key={game.id}>
@@ -74,13 +72,13 @@ export const Games = () => {
             </Col>
           )}
         </Row>
-      </GcPageContainerContent>
-      <GcPageContainerDrawers>
+      </GcPageContent>
+      <GcPageDrawer>
         <GameDetailContextProvider>
           <NewPlayDrawer open={open} close={closeDrawer} game={game} key={game?.id} />
         </GameDetailContextProvider>
         <SearchGameDrawer setOpen={setOpenNewBggGame} open={openNewBggGame} />
-      </GcPageContainerDrawers>
+      </GcPageDrawer>
     </GcPageContainer>
   )
 }

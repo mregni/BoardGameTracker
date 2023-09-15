@@ -1,11 +1,11 @@
 import {Button, Form, Input, Upload} from 'antd';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {useContext, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {UploadOutlined} from '@ant-design/icons';
 
 import {GcDrawer} from '../../../components/GcDrawer';
+import {useScreenInfo} from '../../../hooks/useScreenInfo';
 import {CreationResultType, PlayerCreation} from '../../../models';
 import {PlayerContext} from '../context';
 
@@ -20,7 +20,7 @@ export const AddNewPlayerDrawer = (props: Props) => {
   const { t } = useTranslation();
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [form] = Form.useForm();
-  const screens = useBreakpoint();
+  const { screenMap } = useScreenInfo();
 
   const onClose = () => {
     form.resetFields();
@@ -53,7 +53,7 @@ export const AddNewPlayerDrawer = (props: Props) => {
   }
 
   const buttonlayout = { 
-    offset: screens.sm ? 4 :0, 
+    offset: screenMap.sm ? 4 :0, 
     span: 22 
   };
 

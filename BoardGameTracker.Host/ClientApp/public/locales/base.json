@@ -39,7 +39,8 @@
     "ended": "Ended",
     "actions": "Actions",
     "won": "Won",
-    "plays": "Plays"
+    "plays": "Plays",
+    "minutes": "minutes"
   },
   "location": {
     "new": {
@@ -129,9 +130,12 @@
       "start": {
         "title": "Game start",
         "start-placeholder": "Start datetime",
-        "length-placeholder": "Length in minutes",
-        "datetime-required": "Please enter the start of the game session",
-        "length-required": "Please enter the game length in minutes"
+        "datetime-required": "Please enter the start of the game session"
+      },
+      "length":{
+        "title": "Game length",
+        "placeholder": "Length in minutes",
+        "required": "Please enter the game length in minutes"
       },
       "save": "Save play"
     },

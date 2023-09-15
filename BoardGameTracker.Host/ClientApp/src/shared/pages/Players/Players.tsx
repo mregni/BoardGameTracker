@@ -6,8 +6,7 @@ import {PlusOutlined} from '@ant-design/icons';
 
 import {GcCard} from '../../components/GcCard';
 import {
-  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerDrawers,
-  GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContent, GcPageDrawer, GcPageHeader,
 } from '../../components/GcPageContainer';
 import {AddNewPlayerDrawer} from './components/AddNewPlayerDrawer';
 import {PlayerContext} from './context';
@@ -28,12 +27,12 @@ export const Players = () => {
 
   return (
     <GcPageContainer>
-      <GcPageContainerHeader
+      <GcPageHeader
         title={t('common.players')}
         isLoading={loading}
         items={items}
       />
-      <GcPageContainerContent isLoading={loading} hasData={players.length !== 0}>
+      <GcPageContent isLoading={loading} hasData={players.length !== 0}>
         <Row gutter={[10, 10]}>
           {players.map(player =>
             <Col xxl={2} xl={4} md={6} sm={12} xs={12} key={player.id}>
@@ -44,10 +43,10 @@ export const Players = () => {
                 detailPage="players" />
             </Col>)}
         </Row>
-      </GcPageContainerContent>
-      <GcPageContainerDrawers>
+      </GcPageContent>
+      <GcPageDrawer>
         <AddNewPlayerDrawer open={openNewPlayer} setOpen={setOpenNewPlayer} />
-      </GcPageContainerDrawers>
+      </GcPageDrawer>
     </GcPageContainer>
   )
 }

@@ -1,8 +1,8 @@
 import {Button, Form, FormInstance, Input} from 'antd';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 
+import {useScreenInfo} from '../../../hooks/useScreenInfo';
 import {FormLocation} from '../../../models';
 
 type Props = {
@@ -14,14 +14,14 @@ type Props = {
 export const LocationForm = (props: Props) => {
   const { form, submitAction, initialValues } = props;
   const { t } = useTranslation();
-  const screens = useBreakpoint();
+  const { screenMap } = useScreenInfo();
 
   useEffect(() => {
     form.resetFields()
   }, [initialValues, form]);
 
   const buttonlayout = { 
-    offset: screens.sm ? 4 :0, 
+    offset: screenMap.sm ? 4 :0, 
     span: 22 
   };
 

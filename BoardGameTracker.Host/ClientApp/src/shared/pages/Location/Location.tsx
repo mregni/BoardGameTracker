@@ -1,13 +1,10 @@
-import {Button, MenuProps} from 'antd';
 import React, {useContext, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Link} from 'react-router-dom';
 
 import {PlusOutlined} from '@ant-design/icons';
 
 import {
-  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerDrawers,
-  GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContent, GcPageDrawer, GcPageHeader,
 } from '../../components/GcPageContainer';
 import {LocationTable} from './components/LocationTable';
 import {NewLocationDrawer} from './components/NewLocationDrawer';
@@ -34,17 +31,17 @@ export const Location = () => {
 
   return (
     <GcPageContainer>
-      <GcPageContainerHeader
+      <GcPageHeader
         title={t('common.locations')}
         isLoading={loading}
         items={items}
       />
-      <GcPageContainerContent isLoading={loading} hasData={locations.length !== 0}>
+      <GcPageContent isLoading={loading} hasData={locations.length !== 0}>
         <LocationTable />
-      </GcPageContainerContent>
-      <GcPageContainerDrawers>
+      </GcPageContent>
+      <GcPageDrawer>
         <NewLocationDrawer open={openNewLocation} onClose={closeDrawer} />
-      </GcPageContainerDrawers>
+      </GcPageDrawer>
     </GcPageContainer>
   )
 }

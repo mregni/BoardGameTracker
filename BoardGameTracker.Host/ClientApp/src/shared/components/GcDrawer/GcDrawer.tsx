@@ -1,7 +1,8 @@
 import {Button, Drawer, Space} from 'antd';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import {t} from 'i18next';
 import React, {ReactNode} from 'react';
+
+import {useScreenInfo} from '../../hooks/useScreenInfo';
 
 interface Props {
   onClose: () => void;
@@ -13,10 +14,10 @@ interface Props {
 
 export const GcDrawer = (props: Props) => {
   const { onClose, open, children, title, extraButtons } = props;
-  const screens = useBreakpoint();
+  const { screenMap } = useScreenInfo();
 
   const getDrawerWith = () => {
-    return screens.md ? 700 : '100%';
+    return screenMap.md ? 700 : '100%';
   }
 
   return (

@@ -1,5 +1,4 @@
 import {Button, DatePicker, Form, Input, InputNumber, Select, Space} from 'antd';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {useContext} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -7,6 +6,7 @@ import {ExportOutlined} from '@ant-design/icons';
 
 import {GcDrawer} from '../../../components/GcDrawer';
 import {SettingsContext} from '../../../context/settingsContext';
+import {useScreenInfo} from '../../../hooks/useScreenInfo';
 import {BggSearch, GameState, getItemStateTranslationKey, SearchResultType} from '../../../models';
 import {convertToAntdFormat} from '../../../utils';
 import {GamesContext} from '../context';
@@ -24,7 +24,7 @@ const SearchGameDrawer = (props: Props) => {
   const { t } = useTranslation();
   const { search, searching } = useSearchGame();
   const [form] = Form.useForm();
-  const screens = useBreakpoint();
+  const { screenMap } = useScreenInfo();
 
   const onClose = () => {
     form.resetFields();
@@ -55,7 +55,7 @@ const SearchGameDrawer = (props: Props) => {
   }
 
   const buttonlayout = { 
-    offset: screens.sm ? 4 :0, 
+    offset: screenMap.sm ? 4 :0, 
     span: 22 
   };
 

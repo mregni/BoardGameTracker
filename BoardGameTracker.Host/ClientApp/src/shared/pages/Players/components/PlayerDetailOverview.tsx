@@ -1,14 +1,13 @@
-import {Button, Col, Dropdown, Image, MenuProps, Row, Space} from 'antd';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
+import {Col, Image, Row, Space} from 'antd';
 import {t} from 'i18next';
 import React, {useContext} from 'react';
 import {Trans} from 'react-i18next';
-import {Link, useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 
-import {DeleteOutlined, EditOutlined, MoreOutlined} from '@ant-design/icons';
+import {DeleteOutlined, EditOutlined} from '@ant-design/icons';
 
 import {
-  GcMenuItem, GcPageContainer, GcPageContainerContent, GcPageContainerHeader,
+  GcMenuItem, GcPageContainer, GcPageContent, GcPageHeader,
 } from '../../../components/GcPageContainer';
 import {useModals} from '../../../utils';
 import {PlayerContext} from '../context';
@@ -74,14 +73,14 @@ export const PlayerDetailOverview = () => {
 
   return (
     <GcPageContainer>
-      <GcPageContainerHeader
+      <GcPageHeader
         hasBack
         backNavigation='/players'
         isLoading={loading}
         title={player.name}
         items={items}
       />
-      <GcPageContainerContent isLoading={loading}>
+      <GcPageContent isLoading={loading} hasData={player !== null}>
         <Row gutter={[16, 16]}>
           <Col xxl={3} xl={4} md={5} xs={24}>
             <Image
@@ -101,7 +100,7 @@ export const PlayerDetailOverview = () => {
             <PlayerPlaysTable />
           </Col>
         </Row>
-      </GcPageContainerContent>
+      </GcPageContent>
     </GcPageContainer>
   )
 }

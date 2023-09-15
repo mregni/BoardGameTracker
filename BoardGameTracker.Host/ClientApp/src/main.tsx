@@ -7,12 +7,15 @@ import ReactDOM from 'react-dom/client';
 import MainApp from './MainApp';
 import {GcLoader} from './shared/components/GcLoader';
 import {SettingsContextProvider} from './shared/context/settingsContext';
+import {ResponsiveGate} from './shared/hooks/useScreenInfo';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <Suspense fallback={<GcLoader loading={true} />}>
       <SettingsContextProvider>
-        <MainApp />
+        <ResponsiveGate>
+          <MainApp />
+        </ResponsiveGate>
       </SettingsContextProvider>
     </Suspense>
   </React.StrictMode >,
