@@ -1,4 +1,5 @@
 import {Button, Form, FormInstance, Input} from 'antd';
+import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -13,10 +14,17 @@ type Props = {
 export const LocationForm = (props: Props) => {
   const { form, submitAction, initialValues } = props;
   const { t } = useTranslation();
+  const screens = useBreakpoint();
 
   useEffect(() => {
     form.resetFields()
   }, [initialValues, form]);
+
+  const buttonlayout = { 
+    offset: screens.sm ? 4 :0, 
+    span: 22 
+  };
+
 
   return (
     <Form
@@ -25,7 +33,6 @@ export const LocationForm = (props: Props) => {
       wrapperCol={{ span: 20 }}
       layout="horizontal"
       autoComplete='off'
-      hideRequiredMark
       onFinish={submitAction}
       initialValues={initialValues}
     >
@@ -37,7 +44,7 @@ export const LocationForm = (props: Props) => {
       >
         <Input />
       </Form.Item>
-      <Form.Item wrapperCol={{ offset: 2, span: 22 }}>
+      <Form.Item wrapperCol={buttonlayout}>
         <Button
           type="primary"
           htmlType="submit"

@@ -1,4 +1,5 @@
 import {Button, DatePicker, Form, Input, InputNumber, Select, Space} from 'antd';
+import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {useContext} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -23,6 +24,7 @@ const SearchGameDrawer = (props: Props) => {
   const { t } = useTranslation();
   const { search, searching } = useSearchGame();
   const [form] = Form.useForm();
+  const screens = useBreakpoint();
 
   const onClose = () => {
     form.resetFields();
@@ -52,6 +54,11 @@ const SearchGameDrawer = (props: Props) => {
     return (<></>)
   }
 
+  const buttonlayout = { 
+    offset: screens.sm ? 4 :0, 
+    span: 22 
+  };
+
   return (
     <GcDrawer
       title={t('games.new.title')}
@@ -63,7 +70,6 @@ const SearchGameDrawer = (props: Props) => {
         wrapperCol={{ span: 20 }}
         layout="horizontal"
         autoComplete='off'
-        hideRequiredMark
         onFinish={triggerGameSearch}
         initialValues={initialValues}
       >
@@ -115,7 +121,7 @@ const SearchGameDrawer = (props: Props) => {
             format={`${convertToAntdFormat(settings?.dateFormat)}`}
           />
         </Form.Item>
-        <Form.Item wrapperCol={{ offset: 4, span: 22 }}>
+        <Form.Item wrapperCol={buttonlayout}>
           <Button
             type="primary"
             htmlType="submit"

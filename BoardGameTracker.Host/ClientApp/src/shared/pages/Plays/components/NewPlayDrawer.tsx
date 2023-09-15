@@ -38,7 +38,7 @@ const NewPlayDrawerContainer = (props: Props) => {
     ended: true,
     comment: '',
     players: [],
-    minutes: 0,
+    minutes: null,
     start: dayjs(),
     locationId: null
   }

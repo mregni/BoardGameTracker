@@ -1,6 +1,7 @@
 import {
   Avatar, Badge, Button, Checkbox, DatePicker, Form, FormInstance, Input, List, Select, Space,
 } from 'antd';
+import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import {Dayjs} from 'dayjs';
 import {useContext, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -23,7 +24,7 @@ export interface FormPlay {
   ended: boolean;
   comment: string;
   start: Dayjs;
-  minutes: number;
+  minutes: number | null;
   players: PlayPlayer[];
   locationId: number | null;
 }
@@ -41,6 +42,7 @@ export const PlayForm = (props: FormProps) => {
   const { settings } = useContext(SettingsContext);
   const { locations, loading: loadingLocations, loadLocations } = useContext(LocationContext);
   const { t } = useTranslation();
+  const screens = useBreakpoint();
 
   const [openPlayerSelector, setOpenPLayerSelector] = useState(false);
   const [activePlayers, setActivePlayers] = useState<ActivePlayer[]>([]);
@@ -123,6 +125,12 @@ export const PlayForm = (props: FormProps) => {
     setOpenNewLocationDrawer(false);
   }
 
+  const buttonlayout = {
+    offset: screens.sm ? 4 : 0,
+    span: 22
+  };
+
+
   return (
     <Form
       form={form}
@@ -130,7 +138,6 @@ export const PlayForm = (props: FormProps) => {
       wrapperCol={{ span: 20 }}
       layout="horizontal"
       autoComplete='off'
-      hideRequiredMark
       onFinish={triggerSubmit}
       initialValues={initialValues}
     >
@@ -218,48 +225,43 @@ export const PlayForm = (props: FormProps) => {
         </Space>
       </Form.Item>
       <Form.Item
+        name="start"
         label={t('play.new.start.title')}
         style={{ marginBottom: 10 }}
+        rules={[{ required: true, message: t('play.new.start.datetime-required') }]}
       >
-        <Space.Compact>
-          <Form.Item
-            name="start"
-            noStyle
-            rules={[{ required: true, message: t('play.new.start.datetime-required') }]}
-          >
-            <DatePicker
-              style={{ width: 'calc(100% - 30px)' }}
-              placeholder={t('play.new.start.start-placeholder')}
-              format={`${convertToAntdFormat(settings.dateTimeFormat)}`}
-              showTime
-              minuteStep={5}
-            />
-          </Form.Item>
-          <Form.Item
-            name='minutes'
-            noStyle
-            rules={[{ required: true, message: t('play.new.start.length-required') }]}
-          >
-            <Input style={{ width: '70%' }} placeholder={t('play.new.start.length-placeholder')} />
-          </Form.Item>
-        </Space.Compact>
+        <DatePicker
+          style={{ width: '100%' }}
+          placeholder={t('play.new.start.start-placeholder')}
+          format={`${convertToAntdFormat(settings.dateTimeFormat)}`}
+          showTime
+          minuteStep={5}
+        />
       </Form.Item>
-      <Form.Item 
-      label={t('play.new.ended.title')} 
-      name="ended" 
-      valuePropName="checked"
-      style={{ marginBottom: 10 }}
+      <Form.Item
+        label="Play length"
+        name='minutes'
+        style={{ marginBottom: 10 }}
+        rules={[{ required: true, message: t('play.new.start.length-required') }]}
+      >
+        <Input placeholder={t('play.new.start.length-placeholder')} suffix="minutes" />
+      </Form.Item>
+      <Form.Item
+        label={t('play.new.ended.title')}
+        name="ended"
+        valuePropName="checked"
+        style={{ marginBottom: 10 }}
       >
         <Checkbox>{t('play.new.ended.description')}</Checkbox>
       </Form.Item>
-      <Form.Item 
-      label={t('common.comment')} 
-      name="comment"
-      style={{ marginBottom: 10 }}
+      <Form.Item
+        label={t('common.comment')}
+        name="comment"
+        style={{ marginBottom: 10 }}
       >
         <Input.TextArea rows={4} />
       </Form.Item>
-      <Form.Item wrapperCol={{ offset: 4, span: 20 }}>
+      <Form.Item wrapperCol={buttonlayout}>
         <Button
           type="primary"
           htmlType="submit"

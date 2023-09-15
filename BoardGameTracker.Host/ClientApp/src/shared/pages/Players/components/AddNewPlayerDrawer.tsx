@@ -1,4 +1,5 @@
 import {Button, Form, Input, Upload} from 'antd';
+import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import React, {useContext, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -19,6 +20,7 @@ export const AddNewPlayerDrawer = (props: Props) => {
   const { t } = useTranslation();
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [form] = Form.useForm();
+  const screens = useBreakpoint();
 
   const onClose = () => {
     form.resetFields();
@@ -50,6 +52,11 @@ export const AddNewPlayerDrawer = (props: Props) => {
     image: ''
   }
 
+  const buttonlayout = { 
+    offset: screens.sm ? 4 :0, 
+    span: 22 
+  };
+
   return (
     <GcDrawer
       title={t('player.new.title')}
@@ -62,7 +69,6 @@ export const AddNewPlayerDrawer = (props: Props) => {
         wrapperCol={{ span: 20 }}
         layout="horizontal"
         autoComplete='off'
-        hideRequiredMark
         onFinish={triggerUserCreation}
         initialValues={initialValues}
       >
@@ -90,7 +96,7 @@ export const AddNewPlayerDrawer = (props: Props) => {
             <Button icon={<UploadOutlined />}>Select profile picture</Button>
           </Upload>
         </Form.Item>
-        <Form.Item wrapperCol={{ offset: 4, span: 20 }}>
+        <Form.Item wrapperCol={buttonlayout}>
           <Button
             type="primary"
             htmlType="submit"
