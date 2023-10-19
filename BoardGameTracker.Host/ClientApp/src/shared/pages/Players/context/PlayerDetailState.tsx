@@ -1,19 +1,30 @@
 import {App} from 'antd';
+import {RcFile} from 'antd/es/upload';
 import {createContext, useCallback, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {usePlays} from '../../../hooks';
-import {Play, Player, PlayerStatistics, SearchResultType} from '../../../models';
-import {deletePlayerCall, getPlayer, getPlayerStatistics} from '../../../services/PlayerService';
-import {createInfoNotification} from '../../../utils';
+import {
+  CreationResult, CreationResultType, Play, Player, PlayerStatistics, SearchResultType,
+} from '../../../models';
+import {uploadImage} from '../../../services/ImageService';
+import {
+  deletePlayer as deletePlayerCall, getPlayer, getPlayerStatistics,
+  updatePlayer as updatePlayerCall,
+} from '../../../services/PlayerService';
+import {
+  createErrorNotification, createInfoNotification, createSuccessNotification,
+} from '../../../utils';
+import {FormPlayer} from '../components/PlayerForm';
 
 export interface PlayerDetailContextProps {
   loading: boolean;
   player: Player | null;
   statistics: PlayerStatistics | null;
   plays: Play[];
-  loadPlayer: (id: string) => Promise<void>;
-  deletePlayer: () => Promise<void>;
+  loadPlayer: (id: number) => Promise<void>;
+  deletePlayer: (id: number, name: string) => Promise<void>;
+  updatePlayer: (player: FormPlayer) => Promise<CreationResultType>;
   deletePlayerPlay: (id: number) => Promise<void>;
   addPlayerPlay(play: Play): Promise<void>;
   updatePlayerPlay: (play: Play) => Promise<void>;
@@ -30,7 +41,7 @@ export const usePlayerDetailContext = (): PlayerDetailContextProps => {
   const { notification } = App.useApp();
   const { t } = useTranslation();
 
-  const loadPlayer = useCallback(async (id: string): Promise<void> => {
+  const loadPlayer = useCallback(async (id: number): Promise<void> => {
     setLoading(true);
     const result = await getPlayer(id);
 
@@ -50,15 +61,13 @@ export const usePlayerDetailContext = (): PlayerDetailContextProps => {
     setLoading(false);
   }, []);
 
-  const deletePlayer = async (): Promise<void> => {
-    if (player !== null) {
-      await deletePlayerCall(player.id)
-      createInfoNotification(
-        notification,
-        t('player.deleted.title'),
-        t('player.deleted.description', { name: player.name })
-      );
-    }
+  const deletePlayer = async (id: number, name: string): Promise<void> => {
+    await deletePlayerCall(id)
+    createInfoNotification(
+      notification,
+      t('player.deleted.title'),
+      t('player.deleted.description', { name: name })
+    );
   }
 
   const refreshData = async (id: number) => {
@@ -84,6 +93,70 @@ export const usePlayerDetailContext = (): PlayerDetailContextProps => {
     player != null && await refreshData(player.id);
   }
 
+  const updatePlayer = async (editPlayer: FormPlayer): Promise<CreationResultType> => {
+    setLoading(true);
+
+    if (player === null) {
+      return CreationResultType.Failed;
+    }
+
+    const tempPlayer: Player = {
+      ...editPlayer,
+      image: player.image
+    };
+
+    console.log(editPlayer);
+
+    let image = null;
+    if (editPlayer.fileList.length > 0) {
+      image = editPlayer.fileList[0]?.originFileObj === undefined
+        ? null : editPlayer.fileList[0].originFileObj;
+    }
+
+    const imageResult = await uploadImage(image, 0);
+    if (imageResult.type === CreationResultType.Failed || imageResult.data === null) {
+      createErrorNotification(
+        notification,
+        t('player.update.failed.message'),
+        t('player.update.failed.description', { name: player.name })
+      )
+      return Promise.reject("Failed to upload image");
+    }
+
+    tempPlayer.image = imageResult.data;
+    return await updatePlayerCall(tempPlayer)
+      .then((result: CreationResult<Player>) => {
+        if (result.type === CreationResultType.Failed) {
+          createErrorNotification(
+            notification,
+            t('player.update.failed.message'),
+            t('player.update.failed.description', { name: player.name })
+          )
+        } else if (result.type === CreationResultType.Success) {
+          loadPlayer(player.id);
+          createSuccessNotification(
+            notification,
+            t('player.update.success.message'),
+            t('player.update.success.description', { name: player.name })
+          )
+        }
+
+        return result.type;
+      }).catch(() => {
+        createErrorNotification(
+          notification,
+          t('player.update.failed.message'),
+          t('player.update.failed.description', { name: player.name })
+        )
+        return CreationResultType.Failed;
+      }).finally(() => {
+        setLoading(false);
+      });
+
+    
+    
+  }
+
   const updatePlayerPlay = async (play: Play): Promise<void> => {
     await updatePlay(play);
     player != null && await refreshData(player.id);
@@ -92,6 +165,6 @@ export const usePlayerDetailContext = (): PlayerDetailContextProps => {
 
   return {
     loading, player, loadPlayer, deletePlayer, statistics, plays,
-    addPlayerPlay, deletePlayerPlay, updatePlayerPlay
+    addPlayerPlay, deletePlayerPlay, updatePlayerPlay, updatePlayer
   };
 };

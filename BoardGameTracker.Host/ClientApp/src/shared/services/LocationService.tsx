@@ -18,7 +18,7 @@ export const AddLocation = (location: FormLocation): Promise<CreationResult<Loca
     });
 };
 
-export const UpdateLocation = (location: FormLocation): Promise<CreationResult<Location>> => {
+export const updateLocation = (location: FormLocation): Promise<CreationResult<Location>> => {
   return axiosInstance
     .put<CreationResult<Location>>(domain, { ...location })
     .then((response) => {

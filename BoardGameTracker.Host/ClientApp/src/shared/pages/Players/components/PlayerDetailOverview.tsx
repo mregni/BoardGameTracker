@@ -1,17 +1,18 @@
 import {Col, Image, Row, Space} from 'antd';
 import {t} from 'i18next';
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import {Trans} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 
 import {DeleteOutlined, EditOutlined} from '@ant-design/icons';
 
 import {
-  GcMenuItem, GcPageContainer, GcPageContent, GcPageHeader,
+  GcMenuItem, GcPageContainer, GcPageContent, GcPageDrawer, GcPageHeader,
 } from '../../../components/GcPageContainer';
 import {useModals} from '../../../utils';
 import {PlayerContext} from '../context';
 import {PlayerDetailContext} from '../context/PlayerDetailState';
+import {EditPlayerDrawer} from './EditPlayerDrawer';
 import {PlayerPlaysTable} from './PlayerPlaysTable';
 import {PlayerStatistics} from './PlayerStatistics';
 
@@ -27,6 +28,7 @@ const PlayerHeader = () => {
 
 export const PlayerDetailOverview = () => {
   const { deletePlayer, player, loading } = useContext(PlayerDetailContext);
+  const [openEditPlayer, setOpenEditPlayer] = useState(false);
   const { loadPlayers } = useContext(PlayerContext);
   const navigate = useNavigate();
   const { deleteModal } = useModals();
@@ -47,7 +49,7 @@ export const PlayerDetailOverview = () => {
   }
 
   const localDeletePlayer = async () => {
-    await deletePlayer();
+    await deletePlayer(player.id, player.name);
     await loadPlayers();
     navigate('/players');
   }
@@ -56,7 +58,7 @@ export const PlayerDetailOverview = () => {
     {
       buttonType: 'primary',
       icon: <EditOutlined />,
-      onClick: () => console.log("edit"),
+      onClick: () => setOpenEditPlayer(true),
       content: t('common.edit')
     },
     {
@@ -101,6 +103,14 @@ export const PlayerDetailOverview = () => {
           </Col>
         </Row>
       </GcPageContent>
+      <GcPageDrawer>
+        <EditPlayerDrawer
+          key={player.id}
+          open={openEditPlayer}
+          player={player}
+          setOpen={setOpenEditPlayer}
+        />
+      </GcPageDrawer>
     </GcPageContainer>
   )
 }

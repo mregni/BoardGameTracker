@@ -50,7 +50,7 @@ public class ImageService : IImageService
         }
         
         using var image = await Image.LoadAsync(file.OpenReadStream());
-        image.Mutate(x => x.Resize(500, 500));
+        image.Mutate(x => x.Resize(512, 512));
         var newFileName = await _diskProvider.WriteFile(image, file.FileName, PathHelper.FullProfileImagePath);
         return Path.Combine(PathHelper.ProfileImagePath, newFileName);
     }

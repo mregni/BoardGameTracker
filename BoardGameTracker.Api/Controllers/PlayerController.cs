@@ -26,7 +26,7 @@ public class PlayerController
     [HttpGet]
     public async Task<IActionResult> GetPlayers()
     {
-        var games = await _playerService.GetPlayers();
+        var games = await _playerService.GetList();
         var mappedGames = _mapper.Map<IList<PlayerViewModel>>(games);
 
         var resultViewModel = new ListResultViewModel<PlayerViewModel>(mappedGames);
@@ -46,7 +46,7 @@ public class PlayerController
 
         try
         {
-            await _playerService.CreatePlayer(player);
+            await _playerService.Create(player);
         }
         catch (Exception e)
         {
@@ -59,11 +59,37 @@ public class PlayerController
         return new OkObjectResult(resultViewModel);
     }
     
+    [HttpPut]
+    public async Task<IActionResult> UpdatePlayer([FromBody] PlayerViewModel? viewModel)
+    {
+        if (viewModel is not {Id: { }})
+        {
+            var failedViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Failed, null, "No data provided");
+            return new OkObjectResult(failedViewModel);
+        }
+
+        var player = _mapper.Map<Player>(viewModel);
+        try
+        {
+            await _playerService.Update(player);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e.Message);
+            var failedViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Failed, null, "Update failed because of backend error, check logs for details");
+            return new OkObjectResult(failedViewModel);
+        }
+        
+        var resultViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Success, viewModel);
+        return new OkObjectResult(resultViewModel);
+    }
+
+    
     [HttpGet]
     [Route("{id:int}")]
-    public async Task<IActionResult> GetGameById(int id)
+    public async Task<IActionResult> GetPlayerById(int id)
     {
-        var player = await _playerService.GetPlayer(id);
+        var player = await _playerService.Get(id);
         if (player == null)
         {
             return new OkObjectResult(SearchResultViewModel<PlayerViewModel>.CreateSearchResult(null));

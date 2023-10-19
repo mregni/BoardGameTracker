@@ -14,20 +14,20 @@ public class PlayerRepository : IPlayerRepository
         _dbContext = dbContext;
     }
 
-    public Task<List<Player>> GetPlayers()
+    public Task<List<Player>> GetList()
     {
         return _dbContext.Players
             .OrderBy(x => x.Name)
             .ToListAsync();
     }
 
-    public async Task CreatePlayer(Player player)
+    public async Task Create(Player player)
     {
         await _dbContext.Players.AddAsync(player);
         await _dbContext.SaveChangesAsync();
     }
     
-    public Task<Player?> GetPlayerById(int id)
+    public Task<Player?> GetById(int id)
     {
         return _dbContext.Players.SingleOrDefaultAsync(x => x.Id == id);
     }
@@ -100,5 +100,17 @@ public class PlayerRepository : IPlayerRepository
             .Where(x => x.Players.Any(y => y.PlayerId == id))
             .OrderByDescending(x => x.Start)
             .ToListAsync();
+    }
+
+    public async Task Update(Player player)
+    {
+        var dbPlayer = await _dbContext.Players
+            .SingleOrDefaultAsync(x => x.Id == player.Id);
+        if (dbPlayer != null)
+        {
+            dbPlayer.Name = player.Name;
+            dbPlayer.Image = player.Image;
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

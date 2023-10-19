@@ -11,7 +11,7 @@ export const PlayerDetailContainer = () => {
   const { loading, loadPlayer, player } = useContext(PlayerDetailContext);
 
   useEffect(() => {
-    loadPlayer(id ?? '');
+    loadPlayer(Number(id));
   }, [id, loadPlayer]);
 
   return (

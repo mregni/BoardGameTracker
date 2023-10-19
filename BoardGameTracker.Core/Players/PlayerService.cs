@@ -16,36 +16,52 @@ public class PlayerService : IPlayerService
         _imageService = imageService;
     }
 
-    public Task<List<Player>> GetPlayers()
+    public Task<List<Player>> GetList()
     {
-        return _playerRepository.GetPlayers();
+        return _playerRepository.GetList();
     }
 
-    public Task CreatePlayer(Player player)
+    public Task Create(Player player)
     {
-        return _playerRepository.CreatePlayer(player);
+        if (player.Image == null)
+        {
+            _imageService.SaveProfileImage(null);
+        }
+
+        return _playerRepository.Create(player);
     }
 
-    public Task<Player?> GetPlayer(int id)
+    public Task<Player?> Get(int id)
     {
-        return _playerRepository.GetPlayerById(id);
+        return _playerRepository.GetById(id);
+    }
+
+    public async Task Update(Player player)
+    {
+        var dbPlayer = await _playerRepository.GetById(player.Id);
+        if (dbPlayer != null && player.Image != dbPlayer.Image)
+        {
+            _imageService.DeleteImage(dbPlayer.Image);
+        }
+
+        await _playerRepository.Update(player);
     }
 
     public async Task Delete(int id)
     {
-        var player = await _playerRepository.GetPlayerById(id);
+        var player = await _playerRepository.GetById(id);
         if (player == null)
         {
             return;
         }
-        
+
         _imageService.DeleteImage(player.Image);
         await _playerRepository.DeletePlayer(player);
     }
 
     public async Task<PlayerStatistics> GetStats(int id)
     {
-        var stats =  new PlayerStatistics
+        var stats = new PlayerStatistics
         {
             PlayCount = await _playerRepository.GetPlayCount(id),
             BestGameId = await _playerRepository.GetBestGameId(id),
@@ -53,7 +69,7 @@ public class PlayerService : IPlayerService
             WinCount = await _playerRepository.GetTotalWinCount(id),
             TotalPlayedTime = await _playerRepository.GetPlayLengthInMinutes(id)
         };
-        
+
         return stats;
     }
 

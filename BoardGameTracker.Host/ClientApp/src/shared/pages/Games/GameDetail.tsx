@@ -15,7 +15,7 @@ const GameDetailContainer = () => {
 
   return (
     <GcNoDataLoader isLoading={loading} hasData={game !== null}>
-      {game !== null && <GameDetailOverview />}
+      {game !== null && <GameDetailOverview key={game.id} />}
     </GcNoDataLoader>
   )
 }

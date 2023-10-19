@@ -4,8 +4,8 @@ import {useTranslation} from 'react-i18next';
 
 import {CreationResultType, FormLocation, Location} from '../../../models';
 import {
-  AddLocation as AddLocationCall, deleteLocation as deleteLocationCall, getLocations,
-  UpdateLocation as UpdateLocationCall,
+  AddLocation as addLocationCall, deleteLocation as deleteLocationCall, getLocations,
+  updateLocation as updateLocationCall,
 } from '../../../services/LocationService';
 import {createErrorNotification, createInfoNotification} from '../../../utils';
 
@@ -48,7 +48,7 @@ export const useLocationContext = (): LocationContextProps => {
   }
 
   const addLocation = async (location: FormLocation): Promise<Location | null> => {
-    const result = await AddLocationCall(location);
+    const result = await addLocationCall(location);
     if (result.type === CreationResultType.Success) {
       createInfoNotification(
         notification,
@@ -67,7 +67,7 @@ export const useLocationContext = (): LocationContextProps => {
   }
 
   const updateLocation = async (location: FormLocation): Promise<void> => {
-    const result = await UpdateLocationCall(location);
+    const result = await updateLocationCall(location);
     if (result.type === CreationResultType.Success) {
       createInfoNotification(
         notification,

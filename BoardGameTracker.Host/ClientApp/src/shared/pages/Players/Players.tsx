@@ -8,7 +8,7 @@ import {GcCard} from '../../components/GcCard';
 import {
   GcMenuItem, GcPageContainer, GcPageContent, GcPageDrawer, GcPageHeader,
 } from '../../components/GcPageContainer';
-import {AddNewPlayerDrawer} from './components/AddNewPlayerDrawer';
+import {NewPlayerDrawer} from './components/NewPlayerDrawer';
 import {PlayerContext} from './context';
 
 export const Players = () => {
@@ -39,13 +39,13 @@ export const Players = () => {
               <GcCard
                 id={player.id}
                 title={player.name}
-                image={player.image}
+                image={player.image ?? ''}
                 detailPage="players" />
             </Col>)}
         </Row>
       </GcPageContent>
       <GcPageDrawer>
-        <AddNewPlayerDrawer open={openNewPlayer} setOpen={setOpenNewPlayer} />
+        <NewPlayerDrawer open={openNewPlayer} setOpen={setOpenNewPlayer} />
       </GcPageDrawer>
     </GcPageContainer>
   )

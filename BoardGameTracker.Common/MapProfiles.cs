@@ -52,7 +52,7 @@ public class MapProfiles : Profile
         CreateMap<GameCategory, GameLinkViewModel>();
         CreateMap<GameMechanic, GameLinkViewModel>();
         CreateMap<Person, GamePersonViewModel>();
-        CreateMap<Player, PlayerViewModel>();
+        CreateMap<Player, PlayerViewModel>().ReverseMap();
         CreateMap<Location, LocationViewModel>()
             .ForMember(x => x.PlayCount, x => x.MapFrom(y => y.Plays.Count))
             .ReverseMap()

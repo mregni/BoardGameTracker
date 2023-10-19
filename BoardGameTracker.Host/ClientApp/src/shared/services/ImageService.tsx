@@ -1,9 +1,11 @@
+import {RcFile} from 'antd/es/upload';
+
 import {CreationResult} from '../models';
 import {axiosInstance} from './axiosInstance';
 
 const domain = 'image';
 
-export const uploadImage = (file: File | null, type: number): Promise<CreationResult<string>> => {
+export const uploadImage = (file: RcFile | null, type: number): Promise<CreationResult<string>> => {
   const formData = new FormData();
   if(file !== null){
     formData.append('file', file);

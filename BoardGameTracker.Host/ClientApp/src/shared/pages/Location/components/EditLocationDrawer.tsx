@@ -2,7 +2,7 @@ import {Button, Form} from 'antd';
 import React, {useContext} from 'react';
 import {Trans, useTranslation} from 'react-i18next';
 
-import {DeleteOutlined, EditOutlined, MoreOutlined} from '@ant-design/icons';
+import {DeleteOutlined} from '@ant-design/icons';
 
 import {GcDrawer} from '../../../components/GcDrawer';
 import {FormLocation, Location} from '../../../models';
@@ -23,7 +23,7 @@ export const EditLocationDrawer = (props: Props) => {
   const [form] = Form.useForm();
   const { t } = useTranslation();
   const { deleteModal } = useModals();
-  
+
   const onClose = () => {
     form.resetFields();
     setOpen(false);
@@ -45,18 +45,20 @@ export const EditLocationDrawer = (props: Props) => {
       <Trans
         i18nKey="location.delete.description"
         components={{ strong: <strong />, newline: <br /> }} />,
-        localDeleteLocation
+      localDeleteLocation
     );
   }
-  
+
   return (
     <GcDrawer
       title={t('location.new.title')}
       open={open}
       onClose={onClose}
-      extraButtons={<Button icon={<DeleteOutlined />} danger onClick={() => showDeleteModal()}>{t('common.delete')}</Button>}
+      extraButtons={<Button icon={<DeleteOutlined />} danger onClick={() => showDeleteModal()}>
+        {t('common.delete')}
+      </Button>}
     >
-      <LocationForm form={form} submitAction={finish} initialValues={{...location}} />
+      <LocationForm form={form} submitAction={finish} initialValues={{ ...location }} />
     </GcDrawer>
   )
 }
