@@ -4,4 +4,5 @@ export interface PlayerStatistics {
   bestGameId: number;
   favoriteColor: string | null;
   totalPlayedTime: number;
+  distinctGameCount: number;
 }

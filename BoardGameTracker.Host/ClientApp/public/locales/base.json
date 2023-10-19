@@ -206,6 +206,19 @@
       }
     }
   },
+  "statistics":{
+    "play-count": "Play count",
+    "total-wins": "Total wins",
+    "games-played": "Games played",
+    "best-game": "Best game",
+    "Total-play-time": "Total play time",
+    "favorite-color": "Favorite color",
+    "price-per-play": "Price per play",
+    "unique-players": "Unique players",
+    "high-score": "High score",
+    "average-score": "Average score",
+    "most-wint": "Most wins"
+  },
   "player": {
     "delete": {
       "description": "Are you sure you want to delete player with name <strong>{{title}}</strong>? You will lose all the player data and plays logged for this player! <newline /><newline /><strong>This action is not reversable!</strong>",

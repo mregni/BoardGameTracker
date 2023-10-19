@@ -7,4 +7,5 @@ public class PlayerStatisticsViewModel
     public int BestGameId { get; set; }
     public string? FavoriteColor { get; set; }
     public double TotalPlayedTime { get; set; }
+    public int DistinctGameCount { get; set; }
 }

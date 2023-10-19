@@ -22,7 +22,7 @@ export const GcAvatarGroup = (props: Props) => {
             return (
               <Tooltip title={players[index].name} placement="top" key={player.playerId}>
                 <Link to={`/players/${players[index].id}`}>
-                  <Avatar style={{ backgroundColor: '#87d068' }} src={`/${players[index].image}`} />
+                  <Avatar src={`/${players[index].image}`} />
                 </Link>
               </Tooltip>
             )

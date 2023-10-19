@@ -67,7 +67,8 @@ public class PlayerService : IPlayerService
             BestGameId = await _playerRepository.GetBestGameId(id),
             FavoriteColor = await _playerRepository.GetFavoriteColor(id),
             WinCount = await _playerRepository.GetTotalWinCount(id),
-            TotalPlayedTime = await _playerRepository.GetPlayLengthInMinutes(id)
+            TotalPlayedTime = await _playerRepository.GetPlayLengthInMinutes(id),
+            DistinctGameCount = await _playerRepository.GetDistinctGameCount(id)
         };
 
         return stats;

@@ -113,4 +113,14 @@ public class PlayerRepository : IPlayerRepository
             await _dbContext.SaveChangesAsync();
         }
     }
+
+    public Task<int> GetDistinctGameCount(int id)
+    {
+        return _dbContext.Plays
+            .Include(x => x.Players)
+            .Where(x => x.Players.Any(y => y.PlayerId == id))
+            .Select(x => x.GameId)
+            .Distinct()
+            .CountAsync();
+    }
 }

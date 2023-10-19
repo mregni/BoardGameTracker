@@ -15,4 +15,5 @@ public interface IPlayerRepository
     Task<double> GetPlayLengthInMinutes(int id);
     Task<List<Play>> GetPlaysForPlayer(int id);
     Task Update(Player player);
+    Task<int> GetDistinctGameCount(int id);
 }

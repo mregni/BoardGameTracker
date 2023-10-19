@@ -5,6 +5,7 @@ import React, {useContext, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
 
+import {GcAvatar} from '../../../components/GcAvatar';
 import {GcAvatarGroup} from '../../../components/GcAvatarGroup/GcAvatarGroup';
 import GcBooleanIcon from '../../../components/GcBooleanIcon/GcBooleanIcon';
 import {GcActionButtons} from '../../../components/GcTable/GcActionButtons';
@@ -43,9 +44,12 @@ export const PlayerPlaysTable = () => {
       dataIndex: 'gameId',
       render: (id: number) => {
         return (
-          <Link to={`/games/${id}`}>
-            {games.filter((game) => game.id === id)[0]?.title}
-          </Link>)
+          <GcAvatar
+            image={games.filter((game) => game.id === id)[0]?.image}
+            link={games.filter((game) => game.id === id)[0]?.id}
+            label={games.filter((game) => game.id === id)[0]?.title}
+          />
+        )
       }
     },
     {
