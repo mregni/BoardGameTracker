@@ -5,11 +5,11 @@ import {GcNoDataLoader} from '../GcNoDataLoader';
 interface Props {
   children: ReactNode;
   isLoading: boolean;
-  hasData: boolean;
+  hasData?: boolean;
 }
 
 export const GcPageContent = (props: Props) => {
-  const { isLoading, children, hasData } = props;
+  const { isLoading, children, hasData = true } = props;
   return (
     <GcNoDataLoader isLoading={isLoading} hasData={hasData}>
       {children}

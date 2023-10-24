@@ -1,4 +1,5 @@
-﻿using BoardGameTracker.Common.ViewModels;
+﻿using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,11 +7,11 @@ namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/settings")]
-public class SettingsController
+public class ConfigController
 {
     private readonly IConfigFileProvider _configFileProvider;
 
-    public SettingsController(IConfigFileProvider configFileProvider)
+    public ConfigController(IConfigFileProvider configFileProvider)
     {
         _configFileProvider = configFileProvider;
     }
@@ -29,5 +30,15 @@ public class SettingsController
         };
 
         return new OkObjectResult(uiResources);
+    }
+
+    [HttpPut]
+    public IActionResult Update([FromBody] UIResourceViewModel model)
+    {
+        _configFileProvider.Currency = model.Currency;
+        _configFileProvider.DecimalSeparator = model.DecimalSeparator;
+        
+        var resultViewModel = new CreationResultViewModel<UIResourceViewModel>(CreationResultType.Success, model);
+        return new OkObjectResult(resultViewModel);
     }
 }

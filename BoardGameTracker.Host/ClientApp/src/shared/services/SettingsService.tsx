@@ -1,4 +1,4 @@
-import {Settings} from '../models';
+import {CreationResult, Settings} from '../models';
 import {axiosInstance} from './axiosInstance';
 
 const domain = 'settings';
@@ -11,3 +11,10 @@ export const getSettings = (): Promise<Settings> => {
     });
 };
 
+export const saveSettings = (settings: Settings): Promise<CreationResult<Settings>> => {
+  return axiosInstance
+    .put<CreationResult<Settings>>(domain, { ...settings })
+    .then((response) => {
+      return response.data;
+    });
+};

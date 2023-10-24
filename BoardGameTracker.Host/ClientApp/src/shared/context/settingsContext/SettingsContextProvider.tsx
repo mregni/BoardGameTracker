@@ -1,4 +1,4 @@
-import React, {ReactElement, useEffect} from 'react';
+import {ReactElement} from 'react';
 
 import {SettingsContext, useSettingsContext} from './';
 

@@ -42,7 +42,9 @@
     "winners": "Winners",
     "won": "Won",
     "year": "Year",
-    "yes": "Yes"
+    "yes": "Yes",
+    "settings": "Settings",
+    "dashboard": "Dashboard"
   },
   "form": {
     "placeholders": {
@@ -211,7 +213,7 @@
     "total-wins": "Total wins",
     "games-played": "Games played",
     "best-game": "Best game",
-    "Total-play-time": "Total play time",
+    "total-play-time": "Total play time",
     "favorite-color": "Favorite color",
     "price-per-play": "Price per play",
     "unique-players": "Unique players",
@@ -257,5 +259,10 @@
         "message": "Player updated"
       }
     }
+  },
+  "settings": {
+    "save": "Save settings",
+    "currency": "Currency",
+    "decimal-separator": "Decimal point"
   }
 }

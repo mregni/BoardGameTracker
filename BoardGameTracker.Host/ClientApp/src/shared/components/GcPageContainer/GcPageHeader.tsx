@@ -21,11 +21,11 @@ interface HeaderProps {
   title: string;
   hasBack?: boolean;
   backNavigation?: string;
-  items: GcMenuItem[];
+  items?: GcMenuItem[];
 }
 
 export const GcPageHeader = (props: HeaderProps) => {
-  const { isLoading, title, items, hasBack = false, backNavigation = '' } = props;
+  const { isLoading, title, items = [], hasBack = false, backNavigation = '' } = props;
   const navigate = useNavigate();
   const { screenMap } = useScreenInfo();
 

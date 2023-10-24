@@ -14,8 +14,8 @@ public interface IConfigFileProvider : IRequestHandler<ApplicationStartedCommand
     string DateFormat { get; }
     string DateTimeFormat { get; }
     string UILanguage { get; }
-    string Currency { get; }
-    string DecimalSeparator { get; }
+    string Currency { get; set; }
+    string DecimalSeparator { get; set; }
 
     string GetPostgresConnectionString(string dbName);
 }
