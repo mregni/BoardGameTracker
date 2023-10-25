@@ -32,7 +32,7 @@ export const GamePlaysTable = () => {
       title: t('common.date'),
       key: 'date',
       render: (data: Play) => {
-        return format(data.start, settings.dateTimeFormat);
+        return format(data.start, `${settings.dateFormat} ${settings.timeFormat}`);
       }
     },
     {

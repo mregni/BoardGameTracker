@@ -27,9 +27,21 @@ public class ConfigFileProvider : IConfigFileProvider
         get => GetValue("DecimalSeparator", ",");
         set => SetValue("DecimalSeparator", value);
     }
+
     public string TimeZone => GetValue("TZ", "Europe/Londen");
-    public string DateFormat => GetValue("DateFormat", "yy-MM-dd");
-    public string DateTimeFormat => GetValue("DateTimeFormat", "yy-MM-dd HH:mm");
+
+    public string DateFormat
+    {
+        get => GetValue("DateFormat", "yy-MM-dd");
+        set => SetValue("DateFormat", value);
+    }
+
+    public string TimeFormat
+    {
+        get => GetValue("TimeFormat", "HH:mm");
+        set => SetValue("TimeFormat", value);
+    }
+
     public string UILanguage => GetValue("UILanguage", "nl-be");
     public string PostgresHost => GetValue("PostgresHost", string.Empty);
     public string PostgresUser => GetValue("PostgresUser", string.Empty);

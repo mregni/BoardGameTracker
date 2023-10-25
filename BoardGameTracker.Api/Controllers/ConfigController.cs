@@ -22,7 +22,7 @@ public class ConfigController
         var uiResources = new UIResourceViewModel
         {
             TimeZone = _configFileProvider.TimeZone,
-            DateTimeFormat = _configFileProvider.DateTimeFormat,
+            TimeFormat = _configFileProvider.TimeFormat,
             DateFormat = _configFileProvider.DateFormat,
             UILanguage = _configFileProvider.UILanguage,
             Currency = _configFileProvider.Currency,
@@ -37,6 +37,8 @@ public class ConfigController
     {
         _configFileProvider.Currency = model.Currency;
         _configFileProvider.DecimalSeparator = model.DecimalSeparator;
+        _configFileProvider.TimeFormat = model.TimeFormat;
+        _configFileProvider.DateFormat = model.DateFormat;
         
         var resultViewModel = new CreationResultViewModel<UIResourceViewModel>(CreationResultType.Success, model);
         return new OkObjectResult(resultViewModel);

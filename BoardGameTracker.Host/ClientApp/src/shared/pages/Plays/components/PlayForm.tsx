@@ -232,7 +232,7 @@ export const PlayForm = (props: FormProps) => {
         <DatePicker
           style={{ width: '100%' }}
           placeholder={t('play.new.start.start-placeholder')}
-          format={`${convertToAntdFormat(settings.dateTimeFormat)}`}
+          format={`${convertToAntdFormat(`${settings.dateFormat} ${settings.timeFormat}`)}`}
           showTime
           minuteStep={5}
         />
