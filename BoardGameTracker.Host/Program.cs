@@ -13,20 +13,22 @@ using MediatR;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 
-SetConfiguration(builder);
+var port = Environment.GetEnvironmentVariable("PORT") ?? "7178";
+var logLevel = GetLogLevel();
 
-builder.WebHost.UseUrls("http://*:7178");
+builder.WebHost.UseUrls($"http://*:{port}");
 
 builder.Services.AddLogging(b =>
 {
     b.ClearProviders();
-    b.SetMinimumLevel(LogLevel.Trace);
+    b.SetMinimumLevel(logLevel);
     b.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
     b.AddFilter("Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager", LogLevel.Error);
     b.AddConsole();
@@ -38,6 +40,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
+
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
+builder.Services.AddResponseCompression();
 
 builder.Services.AddCors(options =>
 {
@@ -142,22 +148,6 @@ await RunDbMigrations(app.Services);
 
 app.Run();
 
-static void SetConfiguration(WebApplicationBuilder builder)
-{
-    var configFile = PathHelper.FullConfigFile;
-    try
-    {
-        builder.Configuration
-            .AddXmlFile(configFile, optional: true, reloadOnChange: false)
-            .AddEnvironmentVariables()
-            .Build();
-    }
-    catch (InvalidDataException ex)
-    {
-        throw new InvalidConfigFileException($"{configFile} is corrupt or invalid. Please delete the config file and Radarr will recreate it.", ex);
-    }
-}
-
 static Task RunDbMigrations(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
@@ -203,4 +193,16 @@ static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)
     serializerSettings.WriteIndented = true;
 
     serializerSettings.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, true));
+}
+
+static LogLevel GetLogLevel()
+{
+    var logLevelString = Environment.GetEnvironmentVariable("LOGLEVEL") ?? "WARNING";
+    return logLevelString switch
+    {
+        "ERROR" => LogLevel.Error,
+        "INFO" => LogLevel.Information,
+        "DEBUG" => LogLevel.Debug,
+        _ => LogLevel.Warning
+    };
 }

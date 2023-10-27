@@ -12,7 +12,6 @@ export const LocalisationForm = () => {
   const [form] = Form.useForm();
 
   const onFinish = async (values: Settings) => {
-    console.log(values);
     await saveSettings({
       ...settings,
       ...values
@@ -20,7 +19,7 @@ export const LocalisationForm = () => {
   }
   return (
     <div style={{ width: 400 }}>
-      <h3>Localisation</h3>
+      <h3>{t('settings.localisation')}</h3>
       <Form
         labelCol={{ span: 10 }}
         wrapperCol={{ span: 20 }}
