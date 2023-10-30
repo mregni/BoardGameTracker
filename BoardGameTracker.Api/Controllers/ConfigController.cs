@@ -2,6 +2,7 @@
 using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Sentry;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -10,10 +11,12 @@ namespace BoardGameTracker.Api.Controllers;
 public class ConfigController
 {
     private readonly IConfigFileProvider _configFileProvider;
-
-    public ConfigController(IConfigFileProvider configFileProvider)
+    private readonly IHub _sentryHub;
+    
+    public ConfigController(IConfigFileProvider configFileProvider, IHub sentryHub)
     {
         _configFileProvider = configFileProvider;
+        _sentryHub = sentryHub;
     }
 
     [HttpGet]

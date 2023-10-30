@@ -1,4 +1,5 @@
-﻿using BoardGameTracker.Core.Bgg;
+﻿using BoardGameTracker.Common.Exeptions;
+using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Bgg.Interfaces;
 using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Configuration.Interfaces;
@@ -43,8 +44,16 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
         {
             var fileConfigProvider = serviceProvider.GetService<IConfigFileProvider>();
+            if (fileConfigProvider == null)
+            {
+                throw new ServiceNotResolvedException("fileConfigProvider could not be resolved");
+            }
+            
             var connectionString = fileConfigProvider.GetPostgresConnectionString(fileConfigProvider.PostgresMainDb);
-            options.UseNpgsql(connectionString);
+            var environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "development";
+            options
+                .EnableSensitiveDataLogging(environment == "development")
+                .UseNpgsql(connectionString);
         });
 
         return serviceCollection;

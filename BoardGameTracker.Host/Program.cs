@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exeptions;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Commands;
@@ -13,17 +14,18 @@ using MediatR;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using Refit;
+using Sentry;
+
+var port = Environment.GetEnvironmentVariable("PORT") ?? "7178";
+var logLevel = LogLevelExtensions.GetEnvironmentLogLevel();
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
-
-var port = Environment.GetEnvironmentVariable("PORT") ?? "7178";
-var logLevel = GetLogLevel();
-
 builder.WebHost.UseUrls($"http://*:{port}");
+builder.WebHost.UseConfiguredSentry();
+
+builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 
 builder.Services.AddLogging(b =>
 {
@@ -118,8 +120,6 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/images/cover"
 });
 
-Console.WriteLine(PathHelper.FullProfileImagePath);
-
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(PathHelper.FullProfileImagePath),
@@ -129,6 +129,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseCors("Allow");
 app.UseRouting();
+app.UseSentryTracing();
 
 app.UseEndpoints(endpoints =>
 {
@@ -193,16 +194,4 @@ static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)
     serializerSettings.WriteIndented = true;
 
     serializerSettings.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, true));
-}
-
-static LogLevel GetLogLevel()
-{
-    var logLevelString = Environment.GetEnvironmentVariable("LOGLEVEL") ?? "WARNING";
-    return logLevelString switch
-    {
-        "ERROR" => LogLevel.Error,
-        "INFO" => LogLevel.Information,
-        "DEBUG" => LogLevel.Debug,
-        _ => LogLevel.Warning
-    };
 }

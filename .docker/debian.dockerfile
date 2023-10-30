@@ -17,6 +17,7 @@ WORKDIR /tracker
 COPY --from=build-env /App/out .
 EXPOSE 7178/tcp
 
+ENV ENVIRONMENT=production
 ENV DOTNET_EnableDiagnostics=0
 ENV ASPNETCORE_URLS=http://*
 ENTRYPOINT ["dotnet", "BoardGameTracker.Host.dll"]
