@@ -44,7 +44,8 @@
     "year": "Year",
     "yes": "Yes",
     "settings": "Settings",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "value": "Value"
   },
   "form": {
     "placeholders": {
@@ -266,6 +267,7 @@
     "decimal-separator": "Decimal point",
     "date-format": "Date format",
     "time-format": "Time format",
-    "localisation": "Localisation"
+    "localisation": "Localisation",
+    "environment-variables": "Environment variables"
   }
 }

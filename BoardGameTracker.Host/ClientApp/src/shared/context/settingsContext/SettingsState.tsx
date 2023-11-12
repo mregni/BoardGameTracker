@@ -1,12 +1,15 @@
 import {createContext, useCallback, useEffect, useState} from 'react';
 
-import {CreationResultType, Settings} from '../../models';
-import {getSettings, saveSettings as SaveSettingsCall} from '../../services/SettingsService';
+import {CreationResultType, Environment, Settings} from '../../models';
+import {
+  getEnvironment, getSettings, saveSettings as SaveSettingsCall,
+} from '../../services/SettingsService';
 
 export interface SettingsContextProps {
   loading: boolean;
   failed: boolean;
   settings: Settings;
+  environment: Environment;
   loadSettings: () => Promise<void>;
   saveSettings: (values: Settings) => Promise<void>;
 }
@@ -16,6 +19,7 @@ export const SettingsContext = createContext<SettingsContextProps>(null!);
 export const useSettingsContext = (): SettingsContextProps => {
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<Settings>(null!);
+  const [environment, setEnvironment] = useState<Environment>(null!)
   const [failed, setFailed] = useState(false);
 
   const loadSettings = useCallback(async (): Promise<void> => {
@@ -28,6 +32,11 @@ export const useSettingsContext = (): SettingsContextProps => {
       .catch(() => {
         setFailed(true);
         setLoading(false);
+      });
+
+      getEnvironment()
+      .then((result) => {
+        setEnvironment(result);
       });
 
   }, []);
@@ -47,6 +56,6 @@ export const useSettingsContext = (): SettingsContextProps => {
   }
 
   return {
-    loading, settings, loadSettings, failed, saveSettings
+    loading, settings, loadSettings, failed, saveSettings, environment
   };
 };

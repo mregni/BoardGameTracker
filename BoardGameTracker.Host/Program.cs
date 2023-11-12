@@ -15,12 +15,12 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Refit;
-using Sentry;
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "7178";
 var logLevel = LogLevelExtensions.GetEnvironmentLogLevel();
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCoreService();
 
 builder.WebHost.UseUrls($"http://*:{port}");
 builder.WebHost.UseConfiguredSentry();
@@ -73,8 +73,6 @@ builder.Services
         ApplySerializerSettings(options.JsonSerializerOptions);
     })
     .AddControllersAsServices();
-
-builder.Services.AddCoreService();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

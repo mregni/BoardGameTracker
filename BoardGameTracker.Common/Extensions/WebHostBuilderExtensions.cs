@@ -1,5 +1,4 @@
-﻿using BoardGameTracker.Core.Extensions;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Sentry;
 
@@ -22,7 +21,7 @@ public static class WebHostBuilderExtensions
                 return @event;
             });
 
-            var stateString = Environment.GetEnvironmentVariable("STATISTICS_LOGGING") ?? "0";
+            var stateString = Environment.GetEnvironmentVariable("STATISTICS") ?? "0";
             if (stateString == "1")
             {
                 o.Dsn = "https://3d89aa9317b0a7b3108edbafd31da95a@o4506121302573056.ingest.sentry.io/4506121326559232";

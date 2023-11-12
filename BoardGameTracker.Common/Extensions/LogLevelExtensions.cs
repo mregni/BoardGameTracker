@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace BoardGameTracker.Core.Extensions;
+namespace BoardGameTracker.Common.Extensions;
 
 public static class LogLevelExtensions
 {

@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddTransient<IDiskProvider, DiskProvider>();
         
         serviceCollection.AddTransient<IConfigFileProvider, ConfigFileProvider>();
+        serviceCollection.AddTransient<IEnvironmentProvider, EnvironmentProvider>();
         
         serviceCollection.AddTransient<IBggService, BggService>();
         serviceCollection.AddTransient<IGameService, GameService>();
@@ -49,10 +50,15 @@ public static class ServiceCollectionExtensions
                 throw new ServiceNotResolvedException("fileConfigProvider could not be resolved");
             }
             
+            var environmentProvider = serviceProvider.GetService<IEnvironmentProvider>();
+            if (environmentProvider == null)
+            {
+                throw new ServiceNotResolvedException("environmentProvider could not be resolved");
+            }
+            
             var connectionString = fileConfigProvider.GetPostgresConnectionString(fileConfigProvider.PostgresMainDb);
-            var environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "development";
             options
-                .EnableSensitiveDataLogging(environment == "development")
+                .EnableSensitiveDataLogging(environmentProvider.IsDevelopment)
                 .UseNpgsql(connectionString);
         });
 

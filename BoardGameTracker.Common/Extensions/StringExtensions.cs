@@ -4,7 +4,7 @@ namespace BoardGameTracker.Common.Extensions;
 
 public static class StringExtensions
 {
-    public static PersonType StringToPersonTypeEnum(this string type)
+    public static PersonType ToPersonTypeEnum(this string type)
     {
         return type switch
         {
@@ -12,11 +12,6 @@ public static class StringExtensions
             Constants.Bgg.Designer => PersonType.Designer,
             _ => PersonType.Publisher
         };
-    }
-    
-    public static T ToEnum<T>(this string value, bool ignoreCase = true) where T : Enum
-    {
-        return (T)Enum.Parse(typeof(T), value, ignoreCase);
     }
 
     public static string GenerateUniqueFileName(this string fileName)
@@ -36,14 +31,5 @@ public static class StringExtensions
         }
 
         return char.ToUpperInvariant(input.First()) + input[1..];
-    }
-    
-    public static string AddFileNameSuffix(this string fileName, string suffix)
-    {
-        var directory = Path.GetDirectoryName(fileName) ?? "";
-        var extension = Path.GetExtension(fileName);
-        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-        var newFileName = $"{fileNameWithoutExtension}-{suffix}{extension}";
-        return Path.Combine(directory, newFileName);
     }
 }

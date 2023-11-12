@@ -1,14 +1,15 @@
-import {Divider, Space} from 'antd';
+import {Space} from 'antd';
 import React, {useContext} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {GcPageContainer, GcPageContent, GcPageHeader} from '../../components/GcPageContainer';
 import {SettingsContext} from '../../context/settingsContext';
+import {EnvironmentTable} from './components/EnvironmentTable';
 import {LocalisationForm} from './components/LocalisationForm';
 
 export const Settings = () => {
   const { t } = useTranslation();
-  const { settings, loading } = useContext(SettingsContext);
+  const { loading } = useContext(SettingsContext);
 
   return (
     <GcPageContainer>
@@ -19,8 +20,7 @@ export const Settings = () => {
       <GcPageContent isLoading={loading}>
         <Space direction="vertical">
           <LocalisationForm />
-          <h3>Dates</h3>
-          <h3>Environment variables</h3>
+          <EnvironmentTable />
         </Space>
       </GcPageContent>
     </GcPageContainer>

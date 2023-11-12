@@ -30,7 +30,7 @@ public class MapProfiles : Profile
         CreateMap<BggRawLink, BggLink>();
 
         CreateMap<BggRawLink, BggPerson>()
-            .ForMember(x => x.Type, x => x.MapFrom(y => y.Type.StringToPersonTypeEnum()))
+            .ForMember(x => x.Type, x => x.MapFrom(y => y.Type.ToPersonTypeEnum()))
             .ForMember(x => x.Id, x => x.Ignore());
 
         CreateMap<BggLink, GameCategory>()

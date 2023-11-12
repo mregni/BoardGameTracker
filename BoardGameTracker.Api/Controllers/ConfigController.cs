@@ -11,12 +11,12 @@ namespace BoardGameTracker.Api.Controllers;
 public class ConfigController
 {
     private readonly IConfigFileProvider _configFileProvider;
-    private readonly IHub _sentryHub;
+    private readonly IEnvironmentProvider _environmentProvider;
     
-    public ConfigController(IConfigFileProvider configFileProvider, IHub sentryHub)
+    public ConfigController(IConfigFileProvider configFileProvider, IEnvironmentProvider environmentProvider)
     {
         _configFileProvider = configFileProvider;
-        _sentryHub = sentryHub;
+        _environmentProvider = environmentProvider;
     }
 
     [HttpGet]
@@ -29,7 +29,8 @@ public class ConfigController
             DateFormat = _configFileProvider.DateFormat,
             UILanguage = _configFileProvider.UILanguage,
             Currency = _configFileProvider.Currency,
-            DecimalSeparator = _configFileProvider.DecimalSeparator
+            DecimalSeparator = _configFileProvider.DecimalSeparator,
+            Statistics = _environmentProvider.EnableStatistics
         };
 
         return new OkObjectResult(uiResources);
@@ -45,5 +46,20 @@ public class ConfigController
         
         var resultViewModel = new CreationResultViewModel<UIResourceViewModel>(CreationResultType.Success, model);
         return new OkObjectResult(resultViewModel);
+    }
+
+    [HttpGet]
+    [Route("environment")]
+    public IActionResult GetEnvironment()
+    {
+        var resources = new UIEnvironmentViewModel
+        {
+            EnableStatistics = _environmentProvider.EnableStatistics,
+            LogLevel = _environmentProvider.LogLevel,
+            EnvironmentName = _environmentProvider.EnvironmentName,
+            Port = _environmentProvider.Port
+        };
+        
+        return new OkObjectResult(resources);
     }
 }
