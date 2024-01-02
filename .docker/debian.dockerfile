@@ -20,4 +20,5 @@ EXPOSE 7178/tcp
 ENV ENVIRONMENT=production
 ENV DOTNET_EnableDiagnostics=0
 ENV ASPNETCORE_URLS=http://*
+ENV APP_VERSION=VERSION
 ENTRYPOINT ["dotnet", "BoardGameTracker.Host.dll"]
