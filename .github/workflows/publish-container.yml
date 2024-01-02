@@ -42,6 +42,6 @@ jobs:
           platforms: linux/amd64
           push: true
           file: .docker/debian.dockerfile
-          tags: uping/boardgametracker:${{ versioning.version }}
+          tags: uping/boardgametracker:${{ steps.versioning.outputs.version }}
           build-args: |
-            VERSION=${{ versioning.version }}
+            VERSION=${{ steps.versioning.outputs.version }}
