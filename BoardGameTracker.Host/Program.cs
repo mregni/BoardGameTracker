@@ -22,7 +22,7 @@ var logLevel = LogLevelExtensions.GetEnvironmentLogLevel();
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCoreService();
 
-builder.WebHost.UseUrls($"https://*:{port}");
+builder.WebHost.UseUrls($"http://*:{port}");
 builder.WebHost.UseConfiguredSentry();
 
 builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
