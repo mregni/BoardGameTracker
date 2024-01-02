@@ -16,6 +16,7 @@ jobs:
 
       - name: Git Semantic Version
         uses: PaulHatch/semantic-version@v5.3.0
+        id: versioning
         with:
           enable_prerelease_mode: true
           namespace: beta
@@ -41,6 +42,6 @@ jobs:
           platforms: linux/amd64
           push: true
           file: .docker/debian.dockerfile
-          tags: uping/boardgametracker:${{version}}
+          tags: uping/boardgametracker:$versioning.version
           build-args: |
-            VERSION=${{version}}
+            VERSION=$versioning.version
