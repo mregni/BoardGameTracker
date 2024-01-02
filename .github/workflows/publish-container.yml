@@ -21,7 +21,7 @@ jobs:
           enable_prerelease_mode: true
           namespace: beta
           bump_each_commit: true
-          bump_each_commit_patch_pattern: "*,bump version"
+          bump_each_commit_patch_pattern: "*bump version*"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2

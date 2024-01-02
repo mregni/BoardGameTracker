@@ -22,7 +22,7 @@ var logLevel = LogLevelExtensions.GetEnvironmentLogLevel();
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCoreService();
 
-builder.WebHost.UseUrls($"http://*:{port}");
+builder.WebHost.UseUrls($"https://*:{port}");
 builder.WebHost.UseConfiguredSentry();
 
 builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
@@ -99,7 +99,6 @@ app.UseSwaggerUI();
 
 if (app.Environment.IsDevelopment())
 {
-    
     app.UseDeveloperExceptionPage();
 }
 else
@@ -123,7 +122,6 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(PathHelper.FullProfileImagePath),
     RequestPath = "/images/profile"
 });
-
 
 app.UseCors("Allow");
 app.UseRouting();

@@ -42,10 +42,9 @@ public class PlayerController
             return new OkObjectResult(failedViewModel);
         }
 
-        var player = _mapper.Map<Player>(playerViewModel);
-
         try
         {
+            var player = _mapper.Map<Player>(playerViewModel);
             await _playerService.Create(player);
         }
         catch (Exception e)

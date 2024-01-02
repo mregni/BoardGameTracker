@@ -1,165 +1,76 @@
 {
   "common": {
+    "Length": "Length",
+    "Start": "Start",
+    "actions": "Actions",
+    "back": "Back",
     "bbgid": "BGG id",
     "cancel": "Cancel",
+    "comment": "Comment",
+    "date": "Date",
+    "delete": "Delete",
     "description": "Description",
     "edit": "Edit",
+    "ended": "Ended",
+    "game": "Game",
+    "games": "Games",
     "less": "less",
+    "loading": "Loading",
+    "location": "Location",
+    "locations": "Locations",
     "max": "Max",
     "min": "Min",
     "minage": "Minimum age",
+    "minutes": "minutes",
     "more": "more",
     "name": "Name",
     "no": "No",
+    "player": "Player",
     "players": "Players",
+    "plays": "Plays",
     "playtime": "Play time",
+    "profile-picture": "Profile picture",
     "published": "Published",
     "rating": "Rating",
+    "refresh": "Refresh",
     "save": "Save",
+    "select": "Select",
     "state": "State",
-    "Start": "Start",
-    "Length": "Length",
+    "time-played": "Time played",
     "title": "Title",
     "upload": "Upload",
+    "winners": "Winners",
+    "won": "Won",
     "year": "Year",
     "yes": "Yes",
-    "delete": "Delete",
-    "back": "Back",
-    "comment": "Comment",
-    "game": "Game",
-    "player": "Player",
-    "games": "Games",
-    "loading": "Loading",
-    "refresh": "Refresh",
-    "locations": "Locations",
-    "location": "Location",
-    "date": "Date",
-    "time-played": "Time played",
-    "winners": "Winners",
-    "ended": "Ended",
-    "actions": "Actions",
-    "won": "Won",
-    "plays": "Plays"
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "value": "Value"
   },
-  "location": {
-    "new": {
-      "title":"Add new location",
-      "name": {
-        "required": "Location name is required"
-      },
-      "save": "Save location",
-      "notification":{
-        "title": "Location added",
-        "description":"New location session added",
-        "title-failed": "Failed adding location",
-        "description-failed":"Failed to add new location"
-      },
-      "button": "New Location"
-    },
-    "deleted":{
-      "title": "Location Removed",
-      "description": "Location is removed successfully."
-    },
-    "update":{
-      "notification":{
-        "title": "Location updated",
-        "description":"Location is updated",
-        "title-failed": "Failed updating location",
-        "description-failed":"Failed to update the location"
-      }
-    },
-    "delete":{
-      "title": "Remove location",
-      "description": "Are you sure you want to delete this location?"
-    }
-  },
-  "form":{
-    "placeholders":{
-      "end-scoring": "End scoring",
+  "form": {
+    "placeholders": {
       "color": "Player color",
+      "end-scoring": "End scoring",
       "team": "Team name"
     }
   },
-  "labels":{
-    "first-play": "First play",
-    "won": "Won",
-    "character-name": "Character name",
-    "team": "Team",
-    "color": "Color",
-    "scoring": "Scoring"
-  },
-  "play": {
-    "edit": {
-      "title": "Edit play"
-    },
-    "update":{
-      "notification":{
-        "title": "Session updated",
-        "description":"Game session updated",
-        "title-failed": "Failed updating session",
-        "description-failed":"Failed to update the game session"
-      }
-    },
-    "new": {
-      "notification":{
-        "title": "Session added",
-        "description":"New game session added",
-        "title-failed": "Failed adding session",
-        "description-failed":"Failed to add new game session"
-      },
-      "location": {
-        "placeholder": "Select location"
-      },
-      "button": "New Play",
-      "title": "Add new play",
-      "ended": {
-        "description": "Game is finished",
-        "title": "Ended"
-      },
-      "game": {
-        "placeholder": "Select played game",
-        "required": "Please select the played game"
-      },
-      "player": {
-        "placeholder": "Select players",
-        "required": "Please add at least one player",
-        "empty": "No players added"
-      },
-      "start": {
-        "title": "Game start",
-        "start-placeholder": "Start datetime",
-        "length-placeholder": "Length in minutes",
-        "datetime-required": "Please enter the start of the game session",
-        "length-required": "Please enter the game length in minutes"
-      },
-      "save": "Save play"
-    },
-    "deleted":{
-      "title": "Play Removed",
-      "description": "Play is removed successfully."
-    },
-    "delete":{
-      "title": "Remove play",
-      "description": "Are you sure you want to delete this play?"
-    }
-  },
   "game": {
-    "price": "Price",
-    "price-placeholder": "Game price",
     "added-date": "Addition date",
+    "delete": {
+      "description": "Are you sure you want to delete <strong>{{title}}</strong>? You will lose all the game data and plays logged for this game! <newline /><newline /><strong>This action is not reversable!</strong>",
+      "title": "Delete {{title}}"
+    },
+    "deleted": {
+      "description": "{{title}} is removed successfully.",
+      "title": "Game removed"
+    },
     "new-play": "New play",
     "notfound": {
       "description": "Cound not find game with id {{id}}. Please check the URL and try again.",
       "title": "Game not found"
     },
-    "delete": {
-      "title": "Delete {{title}}",
-      "description": "Are you sure you want to delete <strong>{{title}}</strong>? You will lose all the game data and plays logged for this game! <newline /><newline /><strong>This action is not reversable!</strong>"
-    },
-    "deleted": {
-      "title": "Game removed",
-      "description": "{{title}} is removed successfully."
-    }
+    "price": "Price",
+    "price-placeholder": "Game price"
   },
   "games": {
     "bgg": "Import from BGG",
@@ -171,6 +82,7 @@
         "required": "BGG id is required",
         "search": "Search on BGG"
       },
+      "button": "New Game",
       "duplicate": {
         "description": "{{name}} is already in the database.",
         "message": "Duplicate game"
@@ -187,9 +99,9 @@
         "description": "{{name}} is added successfully.",
         "message": "Game added"
       },
-      "title": "Add new game",
-      "button": "New Game"
+      "title": "Add new game"
     },
+    "open-bgg": "Open BGG",
     "state": {
       "for-trade": "For trade",
       "not-owned": "Not self owned",
@@ -198,10 +110,132 @@
       "wanted": "Wanted"
     }
   },
-  "player": {
+  "labels": {
+    "character-name": "Character name",
+    "color": "Color",
+    "first-play": "First play",
+    "scoring": "Scoring",
+    "team": "Team",
+    "won": "Won"
+  },
+  "location": {
+    "delete": {
+      "description": "Are you sure you want to delete this location?",
+      "title": "Remove location"
+    },
+    "deleted": {
+      "description": "Location is removed successfully.",
+      "title": "Location Removed"
+    },
     "new": {
-      "add": "Add new player",
-      "edit":"Edit player",
+      "button": "New Location",
+      "name": {
+        "required": "Location name is required"
+      },
+      "notification": {
+        "description": "New location session added",
+        "description-failed": "Failed to add new location",
+        "title": "Location added",
+        "title-failed": "Failed adding location"
+      },
+      "save": "Save location",
+      "title": "Add new location"
+    },
+    "update": {
+      "notification": {
+        "description": "Location is updated",
+        "description-failed": "Failed to update the location",
+        "title": "Location updated",
+        "title-failed": "Failed updating location"
+      }
+    }
+  },
+  "play": {
+    "delete": {
+      "description": "Are you sure you want to delete this play?",
+      "title": "Remove play"
+    },
+    "deleted": {
+      "description": "Play is removed successfully.",
+      "title": "Play Removed"
+    },
+    "edit": {
+      "title": "Edit play"
+    },
+    "new": {
+      "button": "New Play",
+      "ended": {
+        "description": "Game is finished",
+        "title": "Ended"
+      },
+      "game": {
+        "placeholder": "Select played game",
+        "required": "Please select the played game"
+      },
+      "length": {
+        "placeholder": "Length in minutes",
+        "required": "Please enter the game length in minutes",
+        "title": "Game length"
+      },
+      "location": {
+        "placeholder": "Select location"
+      },
+      "notification": {
+        "description": "New game session added",
+        "description-failed": "Failed to add new game session",
+        "title": "Session added",
+        "title-failed": "Failed adding session"
+      },
+      "player": {
+        "add": "Add player",
+        "empty": "No players added",
+        "placeholder": "Select players",
+        "required": "Please add at least one player"
+      },
+      "save": "Save play",
+      "start": {
+        "datetime-required": "Please enter the start of the game session",
+        "start-placeholder": "Start datetime",
+        "title": "Game start"
+      },
+      "title": "Add new play"
+    },
+    "update": {
+      "notification": {
+        "description": "Game session updated",
+        "description-failed": "Failed to update the game session",
+        "title": "Session updated",
+        "title-failed": "Failed updating session"
+      }
+    }
+  },
+  "statistics":{
+    "play-count": "Play count",
+    "total-wins": "Total wins",
+    "games-played": "Games played",
+    "best-game": "Best game",
+    "total-play-time": "Total play time",
+    "favorite-color": "Favorite color",
+    "price-per-play": "Price per play",
+    "unique-players": "Unique players",
+    "high-score": "High score",
+    "average-score": "Average score",
+    "most-wint": "Most wins"
+  },
+  "player": {
+    "delete": {
+      "description": "Are you sure you want to delete player with name <strong>{{title}}</strong>? You will lose all the player data and plays logged for this player! <newline /><newline /><strong>This action is not reversable!</strong>",
+      "title": "Delete {{title}}"
+    },
+    "deleted": {
+      "description": "{{name}} is removed successfully.",
+      "title": "Player removed"
+    },
+    "edit": {
+      "title": "Edit player"
+    },
+    "new": {
+      "button": "New Player",
       "failed": {
         "description": "Could not add player with name {{name}}. Check logs for more info.",
         "message": "Player adding failed"
@@ -213,16 +247,27 @@
         "description": "{{name}} is added successfully.",
         "message": "Player added"
       },
-      "title": "Add new player",
-      "button": "New Player"
+      "title": "Add new player"
     },
-    "delete": {
-      "title": "Delete {{title}}",
-      "description": "Are you sure you want to delete player with name <strong>{{title}}</strong>? You will lose all the player data and plays logged for this player! <newline /><newline /><strong>This action is not reversable!</strong>"
-    },
-    "deleted": {
-      "title": "Player removed",
-      "description": "{{name}} is removed successfully."
+    "save": "Save player",
+    "update": {
+      "failed": {
+        "description": "Could not update player with name {{name}}. Check logs for more info.",
+        "message": "Player update failed"
+      },
+      "success": {
+        "description": "{{name}} is updated successfully.",
+        "message": "Player updated"
+      }
     }
+  },
+  "settings": {
+    "save": "Save settings",
+    "currency": "Currency",
+    "decimal-separator": "Decimal point",
+    "date-format": "Date format",
+    "time-format": "Time format",
+    "localisation": "Localisation",
+    "environment-variables": "Environment variables"
   }
 }
