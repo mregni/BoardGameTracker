@@ -2,6 +2,7 @@
 using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Core.Images.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -10,10 +11,12 @@ namespace BoardGameTracker.Api.Controllers;
 public class ImageController
 {
     private readonly IImageService _imageService;
+    private readonly ILogger<ImageController> _logger;
 
-    public ImageController(IImageService imageService)
+    public ImageController(IImageService imageService, ILogger<ImageController> logger)
     {
         _imageService = imageService;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -33,7 +36,8 @@ public class ImageController
         }
         catch (Exception e)
         {
-            var result = new CreationResultViewModel<string>(CreationResultType.Failed, string.Empty);
+            _logger.LogError(e, "Error while uploading image");
+            var result = new CreationResultViewModel<string>(CreationResultType.Failed, string.Empty, "Error while uploading image");
             return new OkObjectResult(result);
         }
     }
