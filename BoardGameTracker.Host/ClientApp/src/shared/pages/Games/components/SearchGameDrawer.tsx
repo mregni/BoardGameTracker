@@ -108,6 +108,7 @@ const SearchGameDrawer = (props: Props) => {
             disabled={searching}
             placeholder={t('game.price-placeholder')}
             controls={false}
+            style={{ width: '100%' }}
           />
         </Form.Item>
         <Form.Item

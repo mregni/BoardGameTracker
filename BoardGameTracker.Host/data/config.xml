@@ -1,6 +1,6 @@
 <Config>
   <Currency>€</Currency>
-  <PostgresHost>192.168.72.181</PostgresHost>
+  <PostgresHost>192.168.72.183</PostgresHost>
   <PostgresUser>admin</PostgresUser>
   <PostgresPassword>azerty</PostgresPassword>
   <PostgresMainDb>boardgametracker-dev</PostgresMainDb>

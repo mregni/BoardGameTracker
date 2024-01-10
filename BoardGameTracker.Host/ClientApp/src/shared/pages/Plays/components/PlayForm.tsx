@@ -191,36 +191,40 @@ export const PlayForm = (props: FormProps) => {
           >
             {t('play.new.player.add')}
           </Button>
-          <List
-            locale={{ emptyText: t('play.new.player.empty') }}
-            size="small"
-            itemLayout="horizontal"
-            dataSource={activePlayers}
-            renderItem={(item: ActivePlayer) => {
-              const player = players.find(p => p.id === item.playerId);
-              return (
-                <List.Item
-                  actions={[
-                    <Button type='text' onClick={() => editPlayer(item.uiId)}>edit</Button>,
-                    <Button type='text' onClick={() => removePlayer(item.uiId)}>delete</Button>]}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <Badge
-                        count={item.firstPlay ? <ClockCircleTwoTone twoToneColor='green' /> : 0}
-                        style={{ marginTop: 30 }}
-                      >
-                        <Badge count={item.won ? <CrownTwoTone twoToneColor='orange' /> : 0}>
-                          <Avatar src={`/${player?.image ?? ""}`} />
-                        </Badge>
-                      </Badge>}
-                    title={player?.name}
-                    description={createDescription(item)}
-                  />
-                </List.Item>
-              )
-            }}
-          />
+          {
+            activePlayers.length !== 0 && (
+              <List
+                locale={{ emptyText: t('play.new.player.empty') }}
+                size="small"
+                itemLayout="horizontal"
+                dataSource={activePlayers}
+                renderItem={(item: ActivePlayer) => {
+                  const player = players.find(p => p.id === item.playerId);
+                  return (
+                    <List.Item
+                      actions={[
+                        <Button type='text' onClick={() => editPlayer(item.uiId)}>edit</Button>,
+                        <Button type='text' onClick={() => removePlayer(item.uiId)}>delete</Button>]}
+                    >
+                      <List.Item.Meta
+                        avatar={
+                          <Badge
+                            count={item.firstPlay ? <ClockCircleTwoTone twoToneColor='green' /> : 0}
+                            style={{ marginTop: 30 }}
+                          >
+                            <Badge count={item.won ? <CrownTwoTone twoToneColor='orange' /> : 0}>
+                              <Avatar src={`/${player?.image ?? ""}`} />
+                            </Badge>
+                          </Badge>}
+                        title={player?.name}
+                        description={createDescription(item)}
+                      />
+                    </List.Item>
+                  )
+                }}
+              />
+            )
+          }
         </Space>
       </Form.Item>
       <Form.Item

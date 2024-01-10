@@ -146,6 +146,7 @@ SendStartApplicationCommand(app.Services);
 await RunDbMigrations(app.Services);
 
 app.Run();
+return;
 
 static Task RunDbMigrations(IServiceProvider serviceProvider)
 {

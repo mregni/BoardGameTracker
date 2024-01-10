@@ -2,6 +2,7 @@ export * from './SearchResultType';
 export * from './ListResult';
 export * from './CreationResult';
 export * from './SearchResult';
+export * from './NameValuePair';
 
 export * from './bgg/BggSearch';
 

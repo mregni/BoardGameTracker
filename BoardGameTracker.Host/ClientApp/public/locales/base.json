@@ -45,7 +45,9 @@
     "yes": "Yes",
     "settings": "Settings",
     "dashboard": "Dashboard",
-    "value": "Value"
+    "value": "Value",
+    "weight": "Weight",
+    "complexity": "Game complexity"
   },
   "form": {
     "placeholders": {
@@ -70,7 +72,13 @@
       "title": "Game not found"
     },
     "price": "Price",
-    "price-placeholder": "Game price"
+    "price-placeholder": "Game price",
+    "save": "Save game",
+    "new": {
+      "name": {
+        "required": "User name is required"
+      }
+    }
   },
   "games": {
     "bgg": "Import from BGG",
@@ -82,7 +90,8 @@
         "required": "BGG id is required",
         "search": "Search on BGG"
       },
-      "button": "New Game",
+      "bgg-button": "Import from BGG",
+      "manual-button": "Add game manually",
       "duplicate": {
         "description": "{{name}} is already in the database.",
         "message": "Duplicate game"

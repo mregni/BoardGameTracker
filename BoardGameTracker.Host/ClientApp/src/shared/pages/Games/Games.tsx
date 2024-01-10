@@ -10,6 +10,7 @@ import {
 } from '../../components/GcPageContainer';
 import {Game} from '../../models';
 import {NewPlayDrawer} from '../Plays';
+import {NewGameDrawer} from './components/NewGameDrawer';
 import SearchGameDrawer from './components/SearchGameDrawer';
 import {GamesContext} from './context';
 import {GameDetailContextProvider} from './context/GameDetailProvider';
@@ -17,6 +18,7 @@ import {GameDetailContextProvider} from './context/GameDetailProvider';
 export const Games = () => {
   const { t } = useTranslation();
   const [openNewBggGame, setOpenNewBggGame] = useState(false);
+  const [openNewGameForm, setOpenNewGameForm] = useState(false);
   const { games, loading } = useContext(GamesContext);
   const [open, setOpen] = useState(false);
   const [game, setGame] = useState<Game | undefined>(undefined);
@@ -38,8 +40,14 @@ export const Games = () => {
     {
       buttonType: 'primary',
       icon: <PlusOutlined />,
-      onClick: () => { console.log("trigered games drawer"); setOpenNewBggGame(true) },
-      content: t('games.new.button')
+      onClick: () => setOpenNewBggGame(true),
+      content: t('games.new.bgg-button')
+    },
+    {
+      buttonType: 'primary',
+      icon: <PlusOutlined />,
+      onClick: () => setOpenNewGameForm(true),
+      content: t('games.new.manual-button')
     },
     {
       buttonType: 'primary',
@@ -78,6 +86,7 @@ export const Games = () => {
           <NewPlayDrawer open={open} close={closeDrawer} game={game} key={game?.id} />
         </GameDetailContextProvider>
         <SearchGameDrawer setOpen={setOpenNewBggGame} open={openNewBggGame} />
+        <NewGameDrawer setOpen={setOpenNewGameForm} open={openNewGameForm} />
       </GcPageDrawer>
     </GcPageContainer>
   )
