@@ -41,7 +41,7 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          file: .docker/debian.dockerfile
+          file: BoardGameTracker.Host/Dockerfile
           tags: uping/boardgametracker:dev
           build-args: |
             VERSION=${{ steps.versioning.outputs.version }}
