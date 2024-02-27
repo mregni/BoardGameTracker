@@ -8,7 +8,6 @@ export default defineConfig({
   plugins: [react(), svgr()],
   base: '/',
   server: {
-    https: false,
     port: 5443,
     strictPort: true,
     proxy: {
