@@ -1,5 +1,6 @@
 ﻿using BoardGameTracker.Common.Enums;
 using Microsoft.AspNetCore.Http;
+using SixLabors.ImageSharp;
 
 namespace BoardGameTracker.Core.Disk.Interfaces;
 

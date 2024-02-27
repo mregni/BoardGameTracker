@@ -1,46 +1,46 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Host", "BoardGameTracker.Host\BoardGameTracker.Host.csproj", "{E0CBF377-CD1F-4BD0-9967-A79AC39F228C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Host", "BoardGameTracker.Host\BoardGameTracker.Host.csproj", "{DEEC5D85-5AAD-4BF7-B375-9EC6C4D5AF2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Api", "BoardGameTracker.Api\BoardGameTracker.Api.csproj", "{618A1F19-A40C-4220-B840-3985276D5783}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Api", "BoardGameTracker.Api\BoardGameTracker.Api.csproj", "{D491C99B-6EEE-4FF2-8684-CCA74F382602}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Common", "BoardGameTracker.Common\BoardGameTracker.Common.csproj", "{FF7A2EE7-C88E-4DE2-9F76-644069D8AFB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Common", "BoardGameTracker.Common\BoardGameTracker.Common.csproj", "{49B64BD5-E62C-4A5D-B940-CD00958322F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Core", "BoardGameTracker.Core\BoardGameTracker.Core.csproj", "{6863E117-4901-441B-87E9-534FF1AF2E23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Core", "BoardGameTracker.Core\BoardGameTracker.Core.csproj", "{2BC5B87E-E3AE-4BD7-9462-009F0E042EBC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Tests", "BoardGameTracker.Tests\BoardGameTracker.Tests.csproj", "{DE0CEDEB-DBE9-4142-A1FD-3EBB4DF80F9E}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "boardgametracker.client", "boardgametracker.client\boardgametracker.client.esproj", "{ABDAAD65-B4A3-43FD-BBD2-6F56269B553D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Tests", "BoardGameTracker.Tests\BoardGameTracker.Tests.csproj", "{8586726E-20A3-496E-B6F5-46F8F6A9CA35}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E0CBF377-CD1F-4BD0-9967-A79AC39F228C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E0CBF377-CD1F-4BD0-9967-A79AC39F228C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E0CBF377-CD1F-4BD0-9967-A79AC39F228C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E0CBF377-CD1F-4BD0-9967-A79AC39F228C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{618A1F19-A40C-4220-B840-3985276D5783}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{618A1F19-A40C-4220-B840-3985276D5783}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{618A1F19-A40C-4220-B840-3985276D5783}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{618A1F19-A40C-4220-B840-3985276D5783}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FF7A2EE7-C88E-4DE2-9F76-644069D8AFB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FF7A2EE7-C88E-4DE2-9F76-644069D8AFB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FF7A2EE7-C88E-4DE2-9F76-644069D8AFB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FF7A2EE7-C88E-4DE2-9F76-644069D8AFB2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6863E117-4901-441B-87E9-534FF1AF2E23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6863E117-4901-441B-87E9-534FF1AF2E23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6863E117-4901-441B-87E9-534FF1AF2E23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6863E117-4901-441B-87E9-534FF1AF2E23}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DE0CEDEB-DBE9-4142-A1FD-3EBB4DF80F9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DE0CEDEB-DBE9-4142-A1FD-3EBB4DF80F9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DE0CEDEB-DBE9-4142-A1FD-3EBB4DF80F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DE0CEDEB-DBE9-4142-A1FD-3EBB4DF80F9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEEC5D85-5AAD-4BF7-B375-9EC6C4D5AF2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEEC5D85-5AAD-4BF7-B375-9EC6C4D5AF2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEEC5D85-5AAD-4BF7-B375-9EC6C4D5AF2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEEC5D85-5AAD-4BF7-B375-9EC6C4D5AF2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D491C99B-6EEE-4FF2-8684-CCA74F382602}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D491C99B-6EEE-4FF2-8684-CCA74F382602}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D491C99B-6EEE-4FF2-8684-CCA74F382602}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D491C99B-6EEE-4FF2-8684-CCA74F382602}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49B64BD5-E62C-4A5D-B940-CD00958322F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49B64BD5-E62C-4A5D-B940-CD00958322F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49B64BD5-E62C-4A5D-B940-CD00958322F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49B64BD5-E62C-4A5D-B940-CD00958322F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BC5B87E-E3AE-4BD7-9462-009F0E042EBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BC5B87E-E3AE-4BD7-9462-009F0E042EBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BC5B87E-E3AE-4BD7-9462-009F0E042EBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BC5B87E-E3AE-4BD7-9462-009F0E042EBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABDAAD65-B4A3-43FD-BBD2-6F56269B553D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABDAAD65-B4A3-43FD-BBD2-6F56269B553D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABDAAD65-B4A3-43FD-BBD2-6F56269B553D}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABDAAD65-B4A3-43FD-BBD2-6F56269B553D}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{8586726E-20A3-496E-B6F5-46F8F6A9CA35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8586726E-20A3-496E-B6F5-46F8F6A9CA35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8586726E-20A3-496E-B6F5-46F8F6A9CA35}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8586726E-20A3-496E-B6F5-46F8F6A9CA35}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

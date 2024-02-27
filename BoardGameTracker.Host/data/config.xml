@@ -1,13 +1,13 @@
 <Config>
-  <Currency>€</Currency>
-  <DecimalSeparator>,</DecimalSeparator>
+  <CURRENCY>€</CURRENCY>
+  <DECIMAL_SEPARATOR>,</DECIMAL_SEPARATOR>
   <TZ>Europe/Londen</TZ>
-  <DateFormat>yy-MM-dd</DateFormat>
-  <TimeFormat>HH:mm</TimeFormat>
-  <UILanguage>nl-be</UILanguage>
-  <PostgresHost>192.168.72.66</PostgresHost>
-  <PostgresUser>dev</PostgresUser>
-  <PostgresPassword>dev</PostgresPassword>
-  <PostgresMainDb>boardgametracker-dev</PostgresMainDb>
-  <PostgresPort>5432</PostgresPort>
+  <DATE_FORMAT>yy-MM-dd</DATE_FORMAT>
+  <TIME_FORMAT>HH:mm</TIME_FORMAT>
+  <UI_LANGUAGE>nl-be</UI_LANGUAGE>
+  <DB_HOST>192.168.72.66</DB_HOST>
+  <DB_USER>dev</DB_USER>
+  <DB_PASSWORD>dev</DB_PASSWORD>
+  <DB_NAME>boardgametracker-dev</DB_NAME>
+  <DB_PORT>5432</DB_PORT>
 </Config>

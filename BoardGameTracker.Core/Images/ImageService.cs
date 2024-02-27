@@ -3,6 +3,8 @@ using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using Microsoft.AspNetCore.Http;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 
 namespace BoardGameTracker.Core.Images;

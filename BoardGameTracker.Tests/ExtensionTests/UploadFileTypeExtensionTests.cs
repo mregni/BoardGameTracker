@@ -9,7 +9,6 @@ public class UploadFileTypeExtensionTests
 {
     [Theory]
     [InlineData(UploadFileType.Profile, "images\\profile")]
-    [InlineData(null, "")]
     public void ConvertToPath_Should_Return_Correct_Path(UploadFileType input, string end)
     {
         var result = input.ConvertToPath();

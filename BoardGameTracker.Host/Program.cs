@@ -1,6 +1,6 @@
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exeptions;
 using BoardGameTracker.Common.Extensions;
@@ -14,17 +14,15 @@ using MediatR;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Net.Http.Headers;
 using Refit;
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "7178";
 var logLevel = LogLevelExtensions.GetEnvironmentLogLevel();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCoreService();
 
-builder.WebHost.UseUrls($"http://*:{port}");
 builder.WebHost.UseConfiguredSentry();
-
 builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 
 builder.Services.AddLogging(b =>
@@ -44,9 +42,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
-
 builder.Services.AddResponseCompression();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Allow",
@@ -67,7 +63,6 @@ builder.Services
     {
         options.ReturnHttpNotAcceptable = true;
     })
-    .AddApplicationPart(typeof(GameController).Assembly)
     .AddJsonOptions(options =>
     {
         ApplySerializerSettings(options.JsonSerializerOptions);
@@ -80,7 +75,7 @@ builder.Services.AddAutoMapper(typeof(MapProfiles));
 
 var refitSettings = new RefitSettings
 {
-    ContentSerializer = new XmlContentSerializer()
+    ContentSerializer = new SystemTextJsonContentSerializer()
 };
 builder.Services.AddRefitClient<IBggApi>(refitSettings)
     .ConfigureHttpClient(options =>
@@ -88,28 +83,21 @@ builder.Services.AddRefitClient<IBggApi>(refitSettings)
         options.BaseAddress = new Uri("https://boardgamegeek.com/xmlapi2");
     });
 
-builder.Services.AddSpaStaticFiles(x => x.RootPath = "wwwroot");
+builder.Services.AddSpaStaticFiles(configuration => {
+    configuration.RootPath = "wwwroot";
+});
 
 var app = builder.Build();
-
 CreateFolders(app.Services);
+
+app.UseRouting();
+app.MapControllers();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
-else
-{
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
-}
-
-app.UseStaticFiles();
-app.UseSpaStaticFiles();
-app.UseDefaultFiles();
+app.UseCors("Allow");
+app.UseSentryTracing();
 
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -122,21 +110,33 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(PathHelper.FullProfileImagePath),
     RequestPath = "/images/profile"
 });
+var logger = app.Services.GetService<ILogger<Program>>();
+logger.LogError("TEST");
+logger.LogError(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
+logger.LogError(Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS"));
+logger.LogError(app.Environment.IsDevelopment().ToString());
 
-app.UseCors("Allow");
-app.UseRouting();
-app.UseSentryTracing();
-
-app.UseEndpoints(endpoints =>
+if (!app.Environment.IsDevelopment())
 {
-    endpoints.MapControllers();
-});
-
-if (builder.Environment.IsProduction())
-{
-    app.UseSpa(x =>
-    {
-        x.Options.SourcePath = "wwwroot";
+    logger.LogError("PRODUCTION");
+    app.UseExceptionHandler("/Error");
+    app.UseSpaStaticFiles();
+    app.UseStaticFiles();
+    app.UseSpa(config => {
+        config.Options.SourcePath = "wwwroot";
+        config.Options.DefaultPageStaticFileOptions = new StaticFileOptions
+        {
+            OnPrepareResponse = ctx =>
+            {
+                var headers = ctx.Context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue
+                {
+                    NoCache = true,
+                    NoStore = true,
+                    MustRevalidate = true
+                };
+            }
+        };
     });
 }
 

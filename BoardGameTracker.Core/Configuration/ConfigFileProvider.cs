@@ -18,38 +18,37 @@ public class ConfigFileProvider : IConfigFileProvider
 
     public string Currency
     {
-        get => GetValue("Currency", "€");
-        set => SetValue("Currency", value);
+        get => GetValue("CURRENCY", "€");
+        set => SetValue("CURRENCY", value);
     }
 
     public string DecimalSeparator
     {
-        get => GetValue("DecimalSeparator", ",");
-        set => SetValue("DecimalSeparator", value);
+        get => GetValue("DECIMAL_SEPARATOR", ",");
+        set => SetValue("DECIMAL_SEPARATOR", value);
     }
 
     public string TimeZone => GetValue("TZ", "Europe/Londen");
 
     public string DateFormat
     {
-        get => GetValue("DateFormat", "yy-MM-dd");
-        set => SetValue("DateFormat", value);
+        get => GetValue("DATE_FORMAT", "yy-MM-dd");
+        set => SetValue("DATE_FORMAT", value);
     }
 
     public string TimeFormat
     {
-        get => GetValue("TimeFormat", "HH:mm");
-        set => SetValue("TimeFormat", value);
+        get => GetValue("TIME_FORMAT", "HH:mm");
+        set => SetValue("TIME_FORMAT", value);
     }
 
-    public string UILanguage => GetValue("UILanguage", "nl-be");
-    public string PostgresHost => GetValue("PostgresHost", string.Empty);
-    public string PostgresUser => GetValue("PostgresUser", string.Empty);
-    public string PostgresPassword => GetValue("PostgresPassword", string.Empty);
-    public string PostgresMainDb => GetValue("PostgresMainDb", "boardgametracker");
-    public int PostgresPort => GetValueInt("PostgresPort", 5432);
+    public string UILanguage => GetValue("UI_LANGUAGE", "nl-be");
+    public string PostgresHost => GetValue("DB_HOST", string.Empty);
+    public string PostgresUser => GetValue("DB_USER", string.Empty);
+    public string PostgresPassword => GetValue("DB_PASSWORD", string.Empty);
+    public string PostgresMainDb => GetValue("DB_NAME", "boardgametracker");
+    public int PostgresPort => GetValueInt("DB_PORT", 5432);
     private readonly IDiskProvider _diskProvider;
-
 
     public ConfigFileProvider(IDiskProvider diskProvider)
     {
