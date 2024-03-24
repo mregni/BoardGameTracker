@@ -1,6 +1,4 @@
 ﻿using BoardGameTracker.Common.Exeptions;
-using BoardGameTracker.Core.Bgg;
-using BoardGameTracker.Core.Bgg.Interfaces;
 using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
@@ -30,7 +28,6 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddTransient<IConfigFileProvider, ConfigFileProvider>();
         serviceCollection.AddTransient<IEnvironmentProvider, EnvironmentProvider>();
         
-        serviceCollection.AddTransient<IBggService, BggService>();
         serviceCollection.AddTransient<IGameService, GameService>();
         serviceCollection.AddTransient<IImageService, ImageService>();
         serviceCollection.AddTransient<IPlayerService, PlayerService>();

@@ -1,4 +1,5 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Entities.Helpers;
 
 namespace BoardGameTracker.Core.Games.Interfaces;
 
@@ -20,4 +21,5 @@ public interface IGameRepository
     Task<double?> GetHighestScore(int id);
     Task<Player?> GetMostWins(int id);
     Task<double?> GetAverageScore(int id);
+    Task<int> CountAsync();
 }

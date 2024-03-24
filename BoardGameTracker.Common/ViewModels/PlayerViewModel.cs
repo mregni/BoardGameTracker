@@ -3,5 +3,4 @@
 public class PlayerViewModel : PlayerCreationViewModel
 {
     public int Id { get; set; }
-    
 }

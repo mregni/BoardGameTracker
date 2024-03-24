@@ -8,4 +8,5 @@ public interface ILocationService
     Task<Location> Create(Location location);
     Task Delete(int id);
     Task Update(Location location);
+    Task<int> CountAsync();
 }

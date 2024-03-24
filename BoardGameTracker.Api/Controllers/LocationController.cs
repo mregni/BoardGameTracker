@@ -2,6 +2,7 @@
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
+using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Locations.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,7 @@ namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/location")]
-public class LocationController
+public class LocationController : ControllerBase
 {
     private readonly ILocationService _locationService;
     private readonly IMapper _mapper;
@@ -29,8 +30,7 @@ public class LocationController
         var games = await _locationService.GetLocations();
         var mappedGames = _mapper.Map<IList<LocationViewModel>>(games);
 
-        var resultViewModel = new ListResultViewModel<LocationViewModel>(mappedGames);
-        return new OkObjectResult(resultViewModel);
+        return ListResultViewModel<LocationViewModel>.CreateResult(mappedGames);
     }
     
     [HttpPost]
@@ -38,50 +38,52 @@ public class LocationController
     {
         if (viewModel == null)
         {
-            var failedViewModel = new CreationResultViewModel<LocationViewModel>(CreationResultType.Failed, null, "No data provided");
-            return new OkObjectResult(failedViewModel);
+            //TODO: move to translation file
+            var failedViewModel = new FailResultViewModel("No data provided");
+            return new BadRequestObjectResult(failedViewModel);
         }
-
-        var location = _mapper.Map<Location>(viewModel);
+        
         try
         {
+            var location = _mapper.Map<Location>(viewModel);
             location = await _locationService.Create(location);
+            
+            var result = _mapper.Map<LocationViewModel>(location);
+            return ResultViewModel<LocationViewModel>.CreateCreatedResult(result);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            var failedViewModel = new CreationResultViewModel<LocationViewModel>(CreationResultType.Failed, null, "Creation failed because of backend error, check logs for details");
-            return new OkObjectResult(failedViewModel);
+            //TODO: move to translation file
+            var failViewModel = new FailResultViewModel("Creation failed because of backend error, check logs for details");
+            return StatusCode(500, failViewModel);
         }
-
-        var result = _mapper.Map<LocationViewModel>(location);
-        var resultViewModel = new CreationResultViewModel<LocationViewModel>(CreationResultType.Success, result);
-        return new OkObjectResult(resultViewModel);
     }
     
     [HttpPut]
     public async Task<IActionResult> UpdateLocation([FromBody] LocationViewModel? viewModel)
     {
-        if (viewModel is not {Id: { }})
+        if (viewModel is null)
         {
-            var failedViewModel = new CreationResultViewModel<LocationViewModel>(CreationResultType.Failed, null, "No data provided");
+            //TODO: move to translation file
+            var failedViewModel = new FailResultViewModel("No data provided");
             return new OkObjectResult(failedViewModel);
         }
 
-        var location = _mapper.Map<Location>(viewModel);
         try
         {
+            var location = _mapper.Map<Location>(viewModel);
             await _locationService.Update(location);
+            
+            return ResultViewModel<LocationViewModel>.CreateUpdatedResult(viewModel);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            var failedViewModel = new CreationResultViewModel<LocationViewModel>(CreationResultType.Failed, null, "Update failed because of backend error, check logs for details");
-            return new OkObjectResult(failedViewModel);
+            //TODO: move to translation file
+            var failViewModel = new FailResultViewModel("Update failed because of backend error, check logs for details");
+            return StatusCode(500, failViewModel);
         }
-        
-        var resultViewModel = new CreationResultViewModel<LocationViewModel>(CreationResultType.Success, null);
-        return new OkObjectResult(resultViewModel);
     }
     
     [HttpDelete]
@@ -89,6 +91,6 @@ public class LocationController
     public async Task<IActionResult> DeleteLocation(int id)
     {
         await _locationService.Delete(id);
-        return new OkObjectResult(new CreationResultViewModel<string>(CreationResultType.Success, null));
+        return new OkObjectResult(new DeletionResultViewModel(ResultState.Success));
     }
 }

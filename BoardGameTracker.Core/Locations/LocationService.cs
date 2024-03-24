@@ -31,4 +31,9 @@ public class LocationService : ILocationService
     {
         return _locationRepository.Update(location);
     }
+
+    public Task<int> CountAsync()
+    {
+        return _locationRepository.CountAsync();
+    }
 }

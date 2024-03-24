@@ -12,7 +12,7 @@ public class PlayService : IPlayService
         _playRepository = playRepository;
     }
 
-    public Task Create(Play play)
+    public Task<Play> Create(Play play)
     {
         return _playRepository.Create(play);
     }
@@ -22,7 +22,7 @@ public class PlayService : IPlayService
         return _playRepository.Delete(id);
     }
 
-    public Task Update(Play play)
+    public Task<Play> Update(Play play)
     {
         return _playRepository.Update(play);
     }

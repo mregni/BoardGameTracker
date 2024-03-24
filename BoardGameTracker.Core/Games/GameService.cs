@@ -3,6 +3,7 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
+using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 
@@ -11,13 +12,15 @@ namespace BoardGameTracker.Core.Games;
 public class GameService : IGameService
 {
     private readonly IGameRepository _gameRepository;
+    private readonly IBggApi _bggApi;
     private readonly IMapper _mapper;
     private readonly IImageService _imageService;
-    public GameService(IGameRepository gameRepository, IMapper mapper, IImageService imageService)
+    public GameService(IGameRepository gameRepository, IMapper mapper, IImageService imageService, IBggApi bggApi)
     {
         _gameRepository = gameRepository;
         _mapper = mapper;
         _imageService = imageService;
+        _bggApi = bggApi;
     }
 
     public async Task<Game> ProcessBggGameData(BggGame rawGame, BggSearch search)
@@ -84,5 +87,38 @@ public class GameService : IGameService
             MostWinsPlayer = await _gameRepository.GetMostWins(id),
             AverageScore = await _gameRepository.GetAverageScore(id)
         };
+    }
+
+    public Task<int> CountAsync()
+    {
+        return _gameRepository.CountAsync();
+    }
+
+    public async Task<BggGame?> SearchAndCreateGame(int id)
+    {
+        var response = await _bggApi.SearchGame(id,"boardgame", 1 );
+        var firstResult = response.Content?.Games?.FirstOrDefault();
+        if (!response.IsSuccessStatusCode || firstResult == null)
+        {
+            return null;
+        }
+
+        return _mapper.Map<BggGame>(firstResult);
+    }
+
+    public async Task<List<TopPlayer>> GetTopPlayers(int id)
+    {
+        var plays = await _gameRepository.GetPlays(id);
+        var playerPlays = plays
+            .SelectMany(x => x.Players)
+            .GroupBy(x => x.PlayerId)
+            .ToList();
+
+        return playerPlays
+            .Select(TopPlayer.CreateTopPlayer)
+            .Where(x => x.Wins > 0)
+            .OrderByDescending(x => x.Wins)
+            .Take(5)
+            .ToList();
     }
 }

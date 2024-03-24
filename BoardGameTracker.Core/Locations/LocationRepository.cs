@@ -50,4 +50,9 @@ public class LocationRepository : ILocationRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public Task<int> CountAsync()
+    {
+        return _context.Locations.CountAsync();
+    }
 }

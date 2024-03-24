@@ -1,0 +1,101 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "dashboard": "Dashboard",
+    "games": "Games",
+    "items_one": "{{count}} item",
+    "items_other": "{{count}} items",
+    "locations": "Locations",
+    "name": "Name",
+    "players": "Players",
+    "profile-picture": "Profile picture",
+    "settings": "Settings",
+    "unknown-error": "Unknown error",
+    "winner_one": "Winner",
+    "winner_other": "Winners",
+    "other_one": "Other",
+    "other_other": "Others",
+    "play-time": "Play time",
+    "rating": "rating",
+    "weight": "weight",
+    "age": "age",
+    "minutes_abbreviation": "min"
+  },
+  "game": {
+    "notifications": {
+      "created": "Game is succesfully created",
+      "not-found": "Could not find game",
+      "duplicate": "Game already exists"
+    },
+    "added-date": {
+      "label": "Date added",
+      "required": "date is required"
+    },
+    "bgg": {
+      "label": "BGG id",
+      "placeholder": "BoardGameGeek game id",
+      "required": "BGG id is required",
+      "external-page": "Open BoardGameGeek website"
+    },
+    "new": {
+      "description": "Choose a method to create a new game.",
+      "save": "Create game",
+      "title": "Create new game",
+      "bgg-title": "Import game",
+      "bgg-subtext": "Import game data from BoardGameGeek",
+      "bgg-description": "Enter required fields to import a game from BoardGameGeek",
+      "manual-title": "Manual input",
+      "manual-subtext": "Manual input data to create a game"
+    },
+    "price": {
+      "label": "Price",
+      "placeholder": "Game price"
+    },
+    "state": {
+      "for-trade": "For trade",
+      "label": "Game state",
+      "not-owned": "Not self owned",
+      "owned": "Owned",
+      "previously-owned": "Previously owned",
+      "wanted": "Wanted"
+    }
+  },
+  "images": {
+    "drag-and-drop": " or drag and drop",
+    "types": "png or jpg",
+    "upload": "Click to upload"
+  },
+  "player": {
+    "notifications": {
+      "created": "Player is succesfully created",
+      "not-found": "Could not find player"
+    },
+    "new": {
+      "description": "Fill out the form to create a new player",
+      "name": {
+        "placeholder": "Enter name of the player",
+        "required": "player name is required"
+      },
+      "save": "Create player",
+      "title": "Create player"
+    }
+  },
+  "error":{
+    "bgg":{
+      "id-not-found": "Could not find game on BoardGameGeek"
+    },
+    "image": {
+      "type-not-supported": "Image type not supported",
+      "error": "Error while uploading image, check logs"
+    }
+  },
+  "statistics": {
+    "average-score": "Average score",
+    "high-score": "High score",
+    "most-wint": "Most wins",
+    "play-count": "Plays",
+    "price-per-play": "Price / play",
+    "total-play-time": "Play time",
+    "unique-players": "Unique players"
+  }
+}

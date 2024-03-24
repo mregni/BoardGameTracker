@@ -5,7 +5,7 @@ namespace BoardGameTracker.Core.Players.Interfaces;
 public interface IPlayerRepository
 {
     Task<List<Player>> GetList();
-    Task Create(Player player);
+    Task<Player> Create(Player player);
     Task<Player?> GetById(int id);
     Task DeletePlayer(Player player);
     Task<int> GetPlayCount(int id);
@@ -14,6 +14,7 @@ public interface IPlayerRepository
     Task<int> GetTotalWinCount(int id);
     Task<double> GetPlayLengthInMinutes(int id);
     Task<List<Play>> GetPlaysForPlayer(int id);
-    Task Update(Player player);
+    Task<Player> Update(Player player);
     Task<int> GetDistinctGameCount(int id);
+    Task<int> CountAsync();
 }

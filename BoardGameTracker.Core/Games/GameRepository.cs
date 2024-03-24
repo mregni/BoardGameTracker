@@ -1,4 +1,5 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -85,6 +86,7 @@ public class GameRepository : IGameRepository
         return _context.Plays
             .Include(x => x.Location)
             .Include(x => x.Players)
+            .ThenInclude(x => x.Player)
             .Where(x => x.GameId == id)
             .OrderByDescending(x => x.Start)
             .ToListAsync();
@@ -166,5 +168,10 @@ public class GameRepository : IGameRepository
             .Where(x => x.GameId == id)
             .SelectMany(x => x.Players)
             .AverageAsync(x => x.Score);
+    }
+
+    public Task<int> CountAsync()
+    {
+        return _context.Games.CountAsync();
     }
 }

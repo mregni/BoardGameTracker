@@ -75,7 +75,7 @@ builder.Services.AddAutoMapper(typeof(MapProfiles));
 
 var refitSettings = new RefitSettings
 {
-    ContentSerializer = new SystemTextJsonContentSerializer()
+    ContentSerializer = new XmlContentSerializer()
 };
 builder.Services.AddRefitClient<IBggApi>(refitSettings)
     .ConfigureHttpClient(options =>
@@ -110,6 +110,7 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(PathHelper.FullProfileImagePath),
     RequestPath = "/images/profile"
 });
+
 var logger = app.Services.GetService<ILogger<Program>>();
 logger.LogError("TEST");
 logger.LogError(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
@@ -188,6 +189,4 @@ static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)
     serializerSettings.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     serializerSettings.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     serializerSettings.WriteIndented = true;
-
-    serializerSettings.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, true));
 }

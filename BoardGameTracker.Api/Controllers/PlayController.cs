@@ -2,6 +2,7 @@
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
+using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Plays.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/play")]
-public class PlayController
+public class PlayController : ControllerBase
 {
     private readonly IPlayService _playService;
     private readonly IMapper _mapper;
@@ -29,49 +30,52 @@ public class PlayController
     {
         if (viewModel == null)
         {
-            var failedViewModel = new CreationResultViewModel<PlayViewModel>(CreationResultType.Failed, null, "No data provided");
+            //TODO: Add to translation file
+            var failedViewModel = new FailResultViewModel("No data provided");
             return new OkObjectResult(failedViewModel);
         }
 
-        var play = _mapper.Map<Play>(viewModel);
         try
         {
-            await _playService.Create(play);
+            var play = _mapper.Map<Play>(viewModel);
+            play = await _playService.Create(play);
+
+            var result = _mapper.Map<PlayViewModel>(play);
+            return ResultViewModel<PlayViewModel>.CreateCreatedResult( result);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            var failedViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Failed, null, "Creation failed because of backend error, check logs for details");
-            return new OkObjectResult(failedViewModel);
+            //TODO: Add to translation file
+            var failedViewModel = new FailResultViewModel("Creation failed because of backend error, check logs for details");
+            return StatusCode(500, failedViewModel);
         }
-        
-        var resultViewModel = new CreationResultViewModel<PlayViewModel>(CreationResultType.Success, null);
-        return new OkObjectResult(resultViewModel);
     }
     
     [HttpPut]
-    public async Task<IActionResult> UpdatePlay([FromBody] PlayViewModel? viewModel)
+    public async Task<IActionResult> UpdatePlay([FromBody] PlayViewModel? updateViewModel)
     {
-        if (viewModel is not {Id: { }})
+        if (updateViewModel is not {Id: not null})
         {
-            var failedViewModel = new CreationResultViewModel<PlayViewModel>(CreationResultType.Failed, null, "No data provided");
+            //TODO: Add to translation file
+            var failedViewModel = new FailResultViewModel("No data provided");
             return new OkObjectResult(failedViewModel);
         }
 
-        var play = _mapper.Map<Play>(viewModel);
+        var play = _mapper.Map<Play>(updateViewModel);
         try
         {
-            await _playService.Update(play);
+            var result = await _playService.Update(play);
+            var viewModel = _mapper.Map<PlayViewModel>(result);
+            return ResultViewModel<PlayViewModel>.CreateUpdatedResult(viewModel);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            var failedViewModel = new CreationResultViewModel<PlayViewModel>(CreationResultType.Failed, null, "Update failed because of backend error, check logs for details");
-            return new OkObjectResult(failedViewModel);
+            //TODO: Add to translation file
+            var failedViewModel = new FailResultViewModel("Update failed because of backend error, check logs for details");
+            return StatusCode(500, failedViewModel);
         }
-        
-        var resultViewModel = new CreationResultViewModel<PlayViewModel>(CreationResultType.Success, null);
-        return new OkObjectResult(resultViewModel);
     }
     
     [HttpDelete]
@@ -79,6 +83,6 @@ public class PlayController
     public async Task<IActionResult> DeletePlay(int id)
     {
         await _playService.Delete(id);
-        return new OkObjectResult(new CreationResultViewModel<string>(CreationResultType.Success, null));
+        return new OkObjectResult(new DeletionResultViewModel(ResultState.Success));
     }
 }

@@ -14,10 +14,11 @@ public class PlayRepository : IPlayRepository
         _context = context;
     }
 
-    public async Task Create(Play play)
+    public async Task<Play> Create(Play play)
     {
         await _context.Plays.AddAsync(play);
         await _context.SaveChangesAsync();
+        return play;
     }
 
     public async Task Delete(int id)
@@ -32,7 +33,7 @@ public class PlayRepository : IPlayRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task Update(Play play)
+    public async Task<Play> Update(Play play)
     {
         var dbPlay = await _context.Plays
             .Include(x => x.Players)
@@ -47,5 +48,7 @@ public class PlayRepository : IPlayRepository
             dbPlay.LocationId = play.LocationId;
             await _context.SaveChangesAsync();
         }
+
+        return play;
     }
 }

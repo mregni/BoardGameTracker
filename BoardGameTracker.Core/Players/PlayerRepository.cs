@@ -21,10 +21,11 @@ public class PlayerRepository : IPlayerRepository
             .ToListAsync();
     }
 
-    public async Task Create(Player player)
+    public async Task<Player> Create(Player player)
     {
         await _dbContext.Players.AddAsync(player);
         await _dbContext.SaveChangesAsync();
+        return player;
     }
     
     public Task<Player?> GetById(int id)
@@ -102,7 +103,7 @@ public class PlayerRepository : IPlayerRepository
             .ToListAsync();
     }
 
-    public async Task Update(Player player)
+    public async Task<Player> Update(Player player)
     {
         var dbPlayer = await _dbContext.Players
             .SingleOrDefaultAsync(x => x.Id == player.Id);
@@ -112,6 +113,8 @@ public class PlayerRepository : IPlayerRepository
             dbPlayer.Image = player.Image;
             await _dbContext.SaveChangesAsync();
         }
+
+        return player;
     }
 
     public Task<int> GetDistinctGameCount(int id)
@@ -122,5 +125,10 @@ public class PlayerRepository : IPlayerRepository
             .Select(x => x.GameId)
             .Distinct()
             .CountAsync();
+    }
+
+    public Task<int> CountAsync()
+    {
+        return _dbContext.Players.CountAsync();
     }
 }

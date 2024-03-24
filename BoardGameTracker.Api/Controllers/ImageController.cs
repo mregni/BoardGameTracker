@@ -1,6 +1,10 @@
-﻿using BoardGameTracker.Common.Enums;
+﻿using System.Net;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
+using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Images.Interfaces;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -8,7 +12,7 @@ namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/image")]
-public class ImageController
+public class ImageController : ControllerBase
 {
     private readonly IImageService _imageService;
     private readonly ILogger<ImageController> _logger;
@@ -27,18 +31,17 @@ public class ImageController
             if (upload.Type == UploadFileType.Profile)
             {
                 var name = await _imageService.SaveProfileImage(upload.File);
-                var result = new CreationResultViewModel<string>(CreationResultType.Success, name);
-                return new OkObjectResult(result);
+                return ResultViewModel<string>.CreateCreatedResult(name);
             }
             
-            var failedResult = new CreationResultViewModel<string>(CreationResultType.Failed, string.Empty, "Type not supported");
-            return new OkObjectResult(failedResult);
+            var failedResult = new FailResultViewModel("error.image.type-not-supported");
+            return new BadRequestObjectResult(failedResult);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Error while uploading image");
-            var result = new CreationResultViewModel<string>(CreationResultType.Failed, string.Empty, "Error while uploading image");
-            return new OkObjectResult(result);
+            var result = new FailResultViewModel("error.image.error");
+            return StatusCode(500, result);
         }
     }
 }

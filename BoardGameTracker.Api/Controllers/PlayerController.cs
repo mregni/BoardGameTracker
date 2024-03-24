@@ -1,7 +1,9 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using AutoMapper;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
+using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -10,7 +12,7 @@ namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/player")]
-public class PlayerController
+public class PlayerController : ControllerBase
 {
     private readonly IPlayerService _playerService;
     private readonly IMapper _mapper;
@@ -29,33 +31,34 @@ public class PlayerController
         var games = await _playerService.GetList();
         var mappedGames = _mapper.Map<IList<PlayerViewModel>>(games);
 
-        var resultViewModel = new ListResultViewModel<PlayerViewModel>(mappedGames);
-        return new OkObjectResult(resultViewModel);
+        return ListResultViewModel<PlayerViewModel>.CreateResult(mappedGames);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreatePlayer([FromBody] PlayerCreationViewModel? playerViewModel)
+    public async Task<IActionResult> CreatePlayer([FromBody] PlayerCreationViewModel? playerCreationViewModel)
     {
-        if (playerViewModel == null)
+        if (playerCreationViewModel == null)
         {
-            var failedViewModel = new CreationResultViewModel<PlayerCreationViewModel>(CreationResultType.Failed, null, "No data provided");
+            //TODO: Add to translation file
+            var failedViewModel = new FailResultViewModel("No data provided");
             return new OkObjectResult(failedViewModel);
         }
 
         try
         {
-            var player = _mapper.Map<Player>(playerViewModel);
-            await _playerService.Create(player);
+            var player = _mapper.Map<Player>(playerCreationViewModel);
+            player = await _playerService.Create(player);
+
+            var playerViewModel = _mapper.Map<PlayerViewModel>(player);
+            return ResultViewModel<PlayerViewModel>.CreateCreatedResult(playerViewModel);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            var failedViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Failed, null, "Creation failed because of backend error, check logs for details");
-            return new OkObjectResult(failedViewModel);
+            //TODO: Add to translation file
+            var failedViewModel = new FailResultViewModel("Creation failed because of backend error, check logs for details");
+            return StatusCode(500, failedViewModel);
         }    
-        
-        var resultViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Success, null);
-        return new OkObjectResult(resultViewModel);
     }
     
     [HttpPut]
@@ -63,24 +66,25 @@ public class PlayerController
     {
         if (viewModel is not {Id: { }})
         {
-            var failedViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Failed, null, "No data provided");
+            //TODO: Add to translation file
+            var failedViewModel = new FailResultViewModel("No data provided");
             return new OkObjectResult(failedViewModel);
         }
-
-        var player = _mapper.Map<Player>(viewModel);
+        
         try
         {
-            await _playerService.Update(player);
+            var player = _mapper.Map<Player>(viewModel);
+            player = await _playerService.Update(player);
+            var result = _mapper.Map<PlayerViewModel>(player);
+            return ResultViewModel<PlayerViewModel>.CreateUpdatedResult(result);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            var failedViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Failed, null, "Update failed because of backend error, check logs for details");
-            return new OkObjectResult(failedViewModel);
+            //TODO: Add to translation file
+            var failedViewModel = new FailResultViewModel("Update failed because of backend error, check logs for details");
+            return StatusCode(500, failedViewModel);
         }
-        
-        var resultViewModel = new CreationResultViewModel<PlayerViewModel>(CreationResultType.Success, viewModel);
-        return new OkObjectResult(resultViewModel);
     }
 
     
@@ -91,11 +95,11 @@ public class PlayerController
         var player = await _playerService.Get(id);
         if (player == null)
         {
-            return new OkObjectResult(SearchResultViewModel<PlayerViewModel>.CreateSearchResult(null));
+            return new NotFoundObjectResult(new FailResultViewModel("player.notifications.not-found"));
         }
 
         var viewModel = _mapper.Map<PlayerViewModel>(player);
-        return new OkObjectResult(SearchResultViewModel<PlayerViewModel>.CreateSearchResult(viewModel));
+        return new OkObjectResult(ResultViewModel<PlayerViewModel>.CreateFoundResult(viewModel));
     }
      
     [HttpDelete]
@@ -103,7 +107,7 @@ public class PlayerController
     public async Task<IActionResult> DeleteGameById(int id)
     {
         await _playerService.Delete(id);
-        return new OkObjectResult(new CreationResultViewModel<string>(CreationResultType.Success, null));
+        return new OkObjectResult(new DeletionResultViewModel(ResultState.Success));
     }
     
     [HttpGet]
@@ -113,7 +117,7 @@ public class PlayerController
         var plays = await _playerService.GetPlays(id);
 
         var playViewModel = _mapper.Map<IList<PlayViewModel>>(plays);
-        return new OkObjectResult(SearchResultViewModel<IList<PlayViewModel>>.CreateSearchResult(playViewModel)); 
+        return ResultViewModel<IList<PlayViewModel>>.CreateFoundResult(playViewModel); 
     }
     
     [HttpGet]
@@ -123,6 +127,6 @@ public class PlayerController
         var stats = await _playerService.GetStats(id);
 
         var statsViewModel = _mapper.Map<PlayerStatisticsViewModel>(stats);
-        return new OkObjectResult(SearchResultViewModel<PlayerStatisticsViewModel>.CreateSearchResult(statsViewModel)); 
+        return ResultViewModel<PlayerStatisticsViewModel>.CreateFoundResult(statsViewModel); 
     }
 }

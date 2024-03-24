@@ -14,4 +14,7 @@ public interface IGameService
     Task Delete(int id);
     Task<List<Play>> GetPlays(int id);
     Task<GameStatistics> GetStats(int id);
+    Task<int> CountAsync();
+    Task<BggGame?> SearchAndCreateGame(int searchBggId);
+    Task<List<TopPlayer>> GetTopPlayers(int id);
 }

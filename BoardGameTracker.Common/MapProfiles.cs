@@ -67,6 +67,8 @@ public class MapProfiles : Profile
             .ForMember(x => x.Minutes, x => x.MapFrom(y => (y.End - y.Start).TotalMinutes));
         CreateMap<PlayerPlayViewModel, PlayerPlay>().ReverseMap();
 
+        CreateMap<TopPlayer, TopPlayerViewModel>();
+        
         CreateMap<PlayerStatistics, PlayerStatisticsViewModel>();
         CreateMap<GameStatistics, GameStatisticsViewModel>()
             .ForMember(x => x.TotalPlayedTime, x => x.MapFrom(y => y.TotalPlayedTime.TotalMinutes));
