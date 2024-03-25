@@ -122,7 +122,7 @@ export const BgtPlayerModal = (props: Props) => {
                   <div>
                     <img alt="preview image" src={URL.createObjectURL(image)} className='w-28 h-28 rounded-md mb-1' />
                     <Button color='red' onClick={() => setImage(undefined)} className='w-28'>
-                      <BgtIcon icon={<TrashIcon />} height={18} width={18} />
+                      <BgtIcon icon={<TrashIcon />} size={18} />
                     </Button>
                   </div>
                 )}

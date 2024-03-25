@@ -59,19 +59,5 @@ export const GameDetails = () => {
         <BgtStatistic content={statistics.mostWinsPlayer?.name} title={t('statistics.most-wint')} />
       </BgtCard>
     </div>
-    // <div className='flex flex-col justify-center items-center gap-6 flex-nowrap h-full divide-y divide-sky-600'>
-    //   <div className='justify-center gap-3 divide-x divide-sky-600 flex-wrap'>
-    //     <BgtStatistic content={sanitiseValues(game.minPlayTime, game.maxPlayTime)} title={t('common.play-time')} />
-    //     {/* <BgtStatistic content={sanitiseValues(game.minPlayers, game.maxPlayers)} title={t('common.players')} />
-    //     <BgtStatistic content={game.rating?.toFixed(1)} suffix='/10' title={t('common.rating')} />
-    //     <BgtStatistic content={RoundDecimal(game.weight)} suffix='/5' title={t('common.weight')} />
-    //     <BgtStatistic content={game.minAge} title={t('common.age')} />
-    //     <BgtStatistic content={statistics.highScore} title={t('statistics.high-score')} />
-    //     <BgtStatistic content={statistics.playCount} title={t('statistics.play-count')} />
-    //     <BgtStatistic content={statistics.pricePerPlay} title={t('statistics.price-per-play')} suffix={settings.currency} />
-    //     <BgtStatistic content={statistics.mostWinsPlayer?.name} title={t('statistics.most-wint')} /> */}
-    //   </div>
-    // </div>
-
   )
 }

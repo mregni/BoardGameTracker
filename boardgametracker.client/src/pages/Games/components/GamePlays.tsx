@@ -30,15 +30,15 @@ const DesktopDetails = (props: Props) => {
   return (
     <div className='hidden md:block'>
       <div key={play.id} className='rounded-md bg-sky-900 p-3 flex flex-row justify-between gap-3 divide-x divide-sky-600'>
-        <div className='flex flex-col justify-center'>
+        <div className='flex flex-col justify-center flex-none'>
           <div className='font-bold'>{format(play.start, settings.dateFormat)}</div>
           <div className='text-xs'>{format(play.start, settings.timeFormat)}</div>
         </div>
-        <div className='flex flex-col gap-1 px-3'>
+        <div className='flex flex-col gap-1 px-3 flex-none'>
           <div className='font-bold'>
             {t('common.winner', { count: play.players.filter(x => x.won).length })}
           </div>
-          <div className='flex flex-row gap-1'>
+          <div className='flex flex-row grow gap-1'>
             {
               play.players
                 .filter(x => x.won)
@@ -50,7 +50,7 @@ const DesktopDetails = (props: Props) => {
             }
           </div>
         </div>
-        <div className='flex flex-col gap-1 px-3'>
+        <div className='flex flex-col gap-1 px-3 flex-none'>
           <div className='font-bold'>
             {t('common.other', { count: play.players.filter(x => !x.won).length })}
           </div>
@@ -66,13 +66,13 @@ const DesktopDetails = (props: Props) => {
             }
           </div>
         </div>
-        <div className='px-3 flex flex-row content-center flex-wrap'>
+        <div className='px-3 flex flex-row grow content-center flex-wrap'>
           <Text as='span' size="8">{play.minutes}</Text>
           <div className='flex content-end flex-wrap'>
             <Text as='span' size="3">&nbsp;{t('common.minutes_abbreviation')}</Text>
           </div>
         </div>
-        <div className='px-3 flex flex-col justify-center gap-3'>
+        <div className='px-3 flex flex-col justify-center gap-3 flex-none'>
           <BgtIconButton
             size={17}
             icon={<PencilIcon />}

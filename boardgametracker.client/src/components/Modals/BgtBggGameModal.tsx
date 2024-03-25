@@ -52,7 +52,7 @@ export const BgtBggGameModal = (props: Props) => {
         <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className='flex flex-col gap-4 mt-3 mb-6' >
             <Button onClick={openBgg}>
-              <BgtIcon icon={<ArrowTopRightOnSquareIcon />} width={18} height={18} />
+              <BgtIcon icon={<ArrowTopRightOnSquareIcon />} size={18} />
               {t('game.bgg.external-page')}
             </Button>
             <BgtInputField

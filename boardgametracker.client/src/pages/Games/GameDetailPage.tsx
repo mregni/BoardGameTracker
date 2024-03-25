@@ -1,11 +1,8 @@
-import clsx from 'clsx';
-import {useNavigate, useParams} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import {useParams} from 'react-router-dom';
 
-import {ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIcon} from '@heroicons/react/24/outline';
-import {Button, Text} from '@radix-ui/themes';
+import {Button} from '@radix-ui/themes';
 
-import {BgtAvatar} from '../../components/BgtAvatar/BgtAvatar';
-import {BgtIcon} from '../../components/BgtIcon/BgtIcon';
 import {BgtCard} from '../../components/BgtLayout/BgtCard';
 import {BgtPage} from '../../components/BgtLayout/BgtPage';
 import {BgtPageContent} from '../../components/BgtLayout/BgtPageContent';
@@ -20,6 +17,7 @@ import {GameTopPlayers} from './components/GameTopPlayers';
 export const GameDetailPage = () => {
   const { id } = useParams();
   const { game } = useGame(id);
+  const { t } = useTranslation();
 
   if (game === undefined) return null;
 
@@ -38,21 +36,21 @@ export const GameDetailPage = () => {
         </BgtCard>
         <GameDetails />
         <div className='flex flex-col gap-3 md:col-span-3 xl:col-span-2'>
-          <BgtCard title='Categories'>
+          <BgtCard title={t('games.cards.categories')}>
             <GameCategories />
           </BgtCard>
-          <BgtCard title='Mechanics'>
+          <BgtCard title={t('games.cards.mechanics')}>
             <GameMechanics />
           </BgtCard>
         </div>
         <BgtCard
-          title='Games'
+          title={t('games.cards.games')}
           transparant
           cardStyle='md:col-span-3 xl:col-span-3'>
           <GamePlays />
         </BgtCard>
         <BgtCard
-          title='Top Players'
+          title={t('games.cards.top-players')}
           cardStyle='md:col-span-3 lg:col-span-2 3xl:col-span-1'
           contentStyle='bg-gradient-to-b from-sky-600 to-sky-900'>
           <GameTopPlayers />

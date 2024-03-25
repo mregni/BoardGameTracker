@@ -3,11 +3,10 @@ import clsx from 'clsx';
 interface Props {
   src: string;
   onClick?: () => void;
-  withName?: boolean;
 }
 
 export const BgtAvatar = (props: Props) => {
-  const { src, onClick, withName = false } = props;
+  const { src, onClick } = props;
   return (
     <>
       <img
@@ -20,9 +19,6 @@ export const BgtAvatar = (props: Props) => {
         onClick={onClick}
         src={src}
       />
-      {
-        withName && {player}
-    }
     </>
   )
 }

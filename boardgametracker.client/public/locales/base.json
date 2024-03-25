@@ -60,6 +60,14 @@
       "wanted": "Wanted"
     }
   },
+  "games": {
+    "cards": {
+      "games": "Games",
+      "top-players": "Top players",
+      "mechanics": "Mechanics",
+      "categories": "Categories"
+    }
+  },
   "images": {
     "drag-and-drop": " or drag and drop",
     "types": "png or jpg",
