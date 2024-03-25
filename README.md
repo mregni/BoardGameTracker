@@ -50,3 +50,7 @@ You can also download the docker compose example [here](docker-compose.yml)
 ## Disclaimer
 
 - ⚠️ The project is still in alpha.
+
+# Tooling
+- This project is tested with BrowserStack.
+- Translations are managed with Crowdin
