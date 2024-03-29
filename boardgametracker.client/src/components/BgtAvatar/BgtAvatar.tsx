@@ -5,8 +5,16 @@ interface Props {
   onClick?: () => void;
 }
 
+interface boe {
+  blub: string;
+}
+
 export const BgtAvatar = (props: Props) => {
   const { src, onClick } = props;
+
+  const obj: boe = JSON.parse('{ "myString": "string", "myNumber": 4 }') as boe;
+
+  console.log(obj)
   return (
     <>
       <img

@@ -8,7 +8,7 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <SpaRoot>..\boardgametracker.client\</SpaRoot>
         <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
-        <SpaProxyServerUrl>http://localhost:5443</SpaProxyServerUrl>
+        <SpaProxyServerUrl>http://127.0.0.1:5443</SpaProxyServerUrl>
     </PropertyGroup>
 
     <ItemGroup>
