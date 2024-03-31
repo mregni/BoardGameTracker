@@ -1,0 +1,3 @@
+files:
+  - source: /boardgametracker.client/public/locales/base.json
+    translation: /boardgametracker.client/public/locales/%locale%.json
