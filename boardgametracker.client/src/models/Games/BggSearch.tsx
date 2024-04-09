@@ -7,6 +7,7 @@ export interface BggSearch {
   price: number;
   date: Date;
   state: GameState;
+  hasScoring: boolean;
 }
 
 export const BggSearchSchema = z.object({
@@ -17,5 +18,6 @@ export const BggSearchSchema = z.object({
       message: 'game.added-date.required'
     })
   }),
-  state: z.preprocess((value) => Number(value), z.nativeEnum(GameState))
+  state: z.preprocess((value) => Number(value), z.nativeEnum(GameState)),
+  hasScoring: z.boolean()
 });

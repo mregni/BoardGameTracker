@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
@@ -64,7 +65,8 @@ public class MapProfiles : Profile
         CreateMap<PlayViewModel, Play>()
             .ForMember(x => x.End, x => x.MapFrom(y => y.Start.AddMinutes(y.Minutes)))
             .ReverseMap()
-            .ForMember(x => x.Minutes, x => x.MapFrom(y => (y.End - y.Start).TotalMinutes));
+            .ForMember(x => x.Minutes, x => x.MapFrom(y => (y.End - y.Start).TotalMinutes))
+            .ForMember(x => x.PlayFlags, x => x.MapFrom(y => new List<PlayFlag>()));
         CreateMap<PlayerPlayViewModel, PlayerPlay>().ReverseMap();
 
         CreateMap<TopPlayer, TopPlayerViewModel>();

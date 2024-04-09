@@ -17,4 +17,5 @@ public interface IGameService
     Task<int> CountAsync();
     Task<BggGame?> SearchAndCreateGame(int searchBggId);
     Task<List<TopPlayer>> GetTopPlayers(int id);
+    Task<Dictionary<PlayFlag, int?>> GetPlayFlags(int id);
 }

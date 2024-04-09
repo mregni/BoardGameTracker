@@ -14,10 +14,18 @@ void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    debug: true,
-    fallbackLng: 'en',
+    debug: false,
+    supportedLngs: [
+      'en-US',
+      'nl-NL',
+    ],
+    fallbackLng: 'en-US',
     interpolation: {
       escapeValue: false,
+      format: (value: string, format) => {
+        if (format === 'capitalize') return `${value.substring(0, 1).toUpperCase()}${value.substring(1)}`;
+        return value;
+      },
     },
     backend: {
       loadPath: translationFilePath,

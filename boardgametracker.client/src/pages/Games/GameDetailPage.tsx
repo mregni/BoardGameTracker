@@ -1,60 +1,79 @@
+import i18next from 'i18next';
+import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useParams} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 
-import {Button} from '@radix-ui/themes';
+import {ArrowLeftCircleIcon} from '@heroicons/react/24/outline';
+import {Button, Text} from '@radix-ui/themes';
 
+import {BgtIcon} from '../../components/BgtIcon/BgtIcon';
 import {BgtCard} from '../../components/BgtLayout/BgtCard';
 import {BgtPage} from '../../components/BgtLayout/BgtPage';
 import {BgtPageContent} from '../../components/BgtLayout/BgtPageContent';
-import BgtPageHeader from '../../components/BgtLayout/BgtPageHeader';
+import {BgtDeleteModal} from '../../components/Modals/BgtDeleteModal';
 import {useGame} from '../../hooks/useGame';
-import {GameCategories} from './components/GameCategories';
-import {GameDetails} from './components/GameDetails';
-import {GameMechanics} from './components/GameMechanics';
+import {GameDetailsPopup} from './components/GameDetailsPopup';
 import {GamePlays} from './components/GamePlays';
+import {GameStatistics} from './components/GameStatistics';
 import {GameTopPlayers} from './components/GameTopPlayers';
 
 export const GameDetailPage = () => {
   const { id } = useParams();
-  const { game } = useGame(id);
+  const { game, deleteGame } = useGame(id);
   const { t } = useTranslation();
+  const [openDetailsModal, setOpenDetailsModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const navigate = useNavigate();
+
+  const deleteGameInternal = () => {
+    void deleteGame()
+      .then(() => {
+        navigate('/games');
+      })
+      .finally(() => {
+        setOpenDeleteModal(false);
+      })
+  }
 
   if (game === undefined) return null;
 
   return (
     <BgtPage>
-      <BgtPageHeader
-        header={game.title}
-        hasBackButton
-        backUrl='/games'
-      >
-        <Button variant='classic' disabled color='red' onClick={() => prompt("boe")}>Edit</Button>
-      </BgtPageHeader>
-      <BgtPageContent className='grid gap-3 grid-cols-1 md:grid-cols-3 xl:grid-cols-5'>
-        <BgtCard transparant cardStyle='md:col-span-1'>
-          <img src={`/${game.image}`} className='rounded-md object-fill w-full' />
-        </BgtCard>
-        <GameDetails />
-        <div className='flex flex-col gap-3 md:col-span-3 xl:col-span-2'>
-          <BgtCard title={t('games.cards.categories')}>
-            <GameCategories />
-          </BgtCard>
-          <BgtCard title={t('games.cards.mechanics')}>
-            <GameMechanics />
-          </BgtCard>
+      <BgtPageContent className='flex flex-col gap-3'>
+        <div className='fixed z-50 top-18 md:top-4'>
+          <Button size="2" variant="soft" className='hover:cursor-pointer' onClick={() => navigate('/games')}>
+            <BgtIcon icon={<ArrowLeftCircleIcon />} size={22} />
+          </Button>
         </div>
-        <BgtCard
-          title={t('games.cards.games')}
-          transparant
-          cardStyle='md:col-span-3 xl:col-span-3'>
-          <GamePlays />
-        </BgtCard>
-        <BgtCard
-          title={t('games.cards.top-players')}
-          cardStyle='md:col-span-3 lg:col-span-2 3xl:col-span-1'
-          contentStyle='bg-gradient-to-b from-sky-600 to-sky-900'>
+        <div className='flex items-center justify-start gap-3 flex-col'>
+          <div className='max-w-24 md:max-w-56'>
+            <img src={`/${game.image}`} className='rounded-md object-fill md:border-orange-600 md:border-2 w-60 mt-4' />
+          </div>
+          <div className='flex flex-col gap-3 items-center'>
+            <Text size="8" weight="bold">{game.title}</Text>
+          </div>
+          <div className='flex flex-row justify-center md:justify-end items-end gap-3 flex-grow h-full'>
+            <Button variant='outline'>{i18next.format(t('game.add'), 'capitalize')}</Button>
+            <Button variant='outline' onClick={() => setOpenDetailsModal(true)}>{i18next.format(t('common.details'), 'capitalize')}</Button>
+            <Button variant='outline'>{i18next.format(t('common.edit'), 'capitalize')}</Button>
+            <Button variant='outline' color='red' onClick={() => setOpenDeleteModal(true)}>{i18next.format(t('common.delete'), 'capitalize')}</Button>
+          </div>
+        </div>
+
+        <GameStatistics />
+
+        <div className='flex flex-col 2xl:flex-row gap-3'>
           <GameTopPlayers />
-        </BgtCard>
+          <GamePlays />
+        </div>
+        <GameDetailsPopup open={openDetailsModal} setOpen={setOpenDetailsModal} id={id} />
+        <BgtDeleteModal
+          title={t('game.delete.title', { title: game.title })}
+          content={t('game.delete.description', { title: game.title })}
+          open={openDeleteModal}
+          setOpen={setOpenDeleteModal}
+          onDelete={deleteGameInternal}
+        />
       </BgtPageContent>
     </BgtPage>
   )

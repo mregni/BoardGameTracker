@@ -15,6 +15,7 @@ public class GameService : IGameService
     private readonly IBggApi _bggApi;
     private readonly IMapper _mapper;
     private readonly IImageService _imageService;
+
     public GameService(IGameRepository gameRepository, IMapper mapper, IImageService imageService, IBggApi bggApi)
     {
         _gameRepository = gameRepository;
@@ -27,7 +28,7 @@ public class GameService : IGameService
     {
         var categories = _mapper.Map<IList<GameCategory>>(rawGame.Categories);
         await _gameRepository.AddGameCategoriesIfNotExists(categories);
-        
+
         var mechanics = _mapper.Map<IList<GameMechanic>>(rawGame.Mechanics);
         await _gameRepository.AddGameMechanicsIfNotExists(mechanics);
 
@@ -39,7 +40,8 @@ public class GameService : IGameService
         game.State = search.State;
         game.BuyingPrice = search.Price;
         game.AdditionDate = search.AdditionDate;
-        
+        game.HasScoring = search.HasScoring;
+
         return await _gameRepository.InsertGame(game);
     }
 
@@ -65,7 +67,7 @@ public class GameService : IGameService
         {
             return;
         }
-        
+
         _imageService.DeleteImage(game.Image);
         await _gameRepository.DeleteGame(game);
     }
@@ -75,6 +77,32 @@ public class GameService : IGameService
         return _gameRepository.GetPlays(id);
     }
 
+    public async Task<Dictionary<PlayFlag, int?>> GetPlayFlags(int id)
+    {
+        var shortestPlay = await _gameRepository.GetShortestPlay(id);
+        var longestPlay = await _gameRepository.GetLongestPlay(id);
+        var highestScore = await _gameRepository.GetHighScorePlay(id);
+        var lowestScore = await _gameRepository.GetLowestScorePlay(id);
+
+        var dict = new Dictionary<PlayFlag, int?>
+        {
+            {PlayFlag.ShortestGame, shortestPlay},
+            {PlayFlag.HighestScore, highestScore}
+        };
+
+        if (shortestPlay != longestPlay)
+        {
+            dict.Add(PlayFlag.LongestGame, longestPlay);
+        }
+
+        if (highestScore != lowestScore)
+        {
+            dict.Add(PlayFlag.LowestScore, lowestScore);
+        }
+
+        return dict;
+    }
+
     public async Task<GameStatistics> GetStats(int id)
     {
         return new GameStatistics
@@ -82,10 +110,10 @@ public class GameService : IGameService
             PlayCount = await _gameRepository.GetPlayCount(id),
             TotalPlayedTime = await _gameRepository.GetTotalPlayedTime(id),
             PricePerPlay = await _gameRepository.GetPricePerPlay(id),
-            UniquePlayerCount = await _gameRepository.GetUniquePlayerCount(id),
             HighScore = await _gameRepository.GetHighestScore(id),
             MostWinsPlayer = await _gameRepository.GetMostWins(id),
-            AverageScore = await _gameRepository.GetAverageScore(id)
+            AverageScore = await _gameRepository.GetAverageScore(id),
+            LastPlayed = await _gameRepository.GetLastPlayedDateTime(id)
         };
     }
 
@@ -96,7 +124,7 @@ public class GameService : IGameService
 
     public async Task<BggGame?> SearchAndCreateGame(int id)
     {
-        var response = await _bggApi.SearchGame(id,"boardgame", 1 );
+        var response = await _bggApi.SearchGame(id, "boardgame", 1);
         var firstResult = response.Content?.Games?.FirstOrDefault();
         if (!response.IsSuccessStatusCode || firstResult == null)
         {

@@ -6,5 +6,6 @@ export const QUERY_KEYS = {
   game: 'game',
   gameStatistics: 'game-statistics',
   gamePlays: 'game-plays',
-  gameTopPlayers: 'game-top-players'
+  gameTopPlayers: 'game-top-players',
+  locations: 'locations'
 }

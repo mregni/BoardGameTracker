@@ -20,3 +20,5 @@ export * from './constants';
 
 export * from './Plays/Play';
 export * from './Plays/PlayPlayer';
+
+export * from './Location/Location';

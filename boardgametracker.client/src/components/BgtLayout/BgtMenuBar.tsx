@@ -22,10 +22,19 @@ const MobileMenu = () => {
     setOpen(false);
   }, [location])
 
+useEffect(() => {
+  const closeMenu = () => setOpen(false);
+  window.addEventListener("scroll", closeMenu);
+
+  return () => {
+    window.removeEventListener("scroll", closeMenu);
+  };
+}, []);
+
   if (!counts) return null
 
   return (
-    <div className='flex-col flex justify-between sm:hidden'>
+    <div className='flex-col flex justify-between md:hidden'>
       <div className=" bg-gray-950 z-50">
         <div className="px-4 pt-2 grow flex flex-row justify-between items-center">
           <BgtMenuLogo />
@@ -55,7 +64,7 @@ const BgtMenuBar = () => {
     <>
       <div className={
         clsx(
-          "hidden relative sm:flex bg-gray-950  h-full flex-col justify-between ",
+          "hidden relative md:flex bg-gray-950  h-full flex-col justify-between ",
           !fullSizeMenu && "w-20",
           fullSizeMenu && "w-64"
         )

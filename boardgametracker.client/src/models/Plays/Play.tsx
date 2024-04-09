@@ -1,4 +1,5 @@
 import {PlayPlayer} from '../';
+import {PlayFlag} from '../Games/PlayFlag';
 
 export interface Play {
   id: number;
@@ -9,4 +10,5 @@ export interface Play {
   minutes: number;
   players: PlayPlayer[];
   locationId: number;
+  playFlags: PlayFlag[];
 }

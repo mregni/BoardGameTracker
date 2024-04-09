@@ -44,9 +44,9 @@ function App() {
   if (!settings) return null;
 
   return (
-    <div className='flex flex-col sm:flex-row h-screen text-white'>
+    <div className='flex flex-col md:flex-row h-screen text-white'>
       <BgtMenuBar />
-      <div className='flex-1 bg-gray-950 py-3 pr-3 pl-3 sm:pl-0'>
+      <div className='flex-1 bg-gray-950 py-3 pr-3 pl-3 md:pl-0'>
         <Routes>
           <Route element={<GameRoutes />} path='/games/*' />
           <Route element={<PlayerRoutes />} path='/players/*' />

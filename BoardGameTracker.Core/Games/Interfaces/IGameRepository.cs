@@ -17,9 +17,13 @@ public interface IGameRepository
     Task<int> GetPlayCount(int id);
     Task<TimeSpan> GetTotalPlayedTime(int id);
     Task<double?> GetPricePerPlay(int id);
-    Task<int> GetUniquePlayerCount(int id);
+    Task<DateTime?> GetLastPlayedDateTime(int id);
     Task<double?> GetHighestScore(int id);
     Task<Player?> GetMostWins(int id);
     Task<double?> GetAverageScore(int id);
     Task<int> CountAsync();
+    Task<int?> GetShortestPlay(int id);
+    Task<int?> GetLongestPlay(int id);
+    Task<int?> GetHighScorePlay(int id);
+    Task<int?> GetLowestScorePlay(int id);
 }

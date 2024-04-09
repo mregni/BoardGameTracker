@@ -8,4 +8,5 @@ public class BggSearch
     public GameState State { get; set; }
     public double? Price { get; set; }
     public DateTime? AdditionDate { get; set; }
+    public bool HasScoring { get; set; }
 }

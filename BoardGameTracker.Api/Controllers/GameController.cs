@@ -61,8 +61,15 @@ public class GameController
     public async Task<IActionResult> GetGamePlays(int id)
     {
         var plays = await _gameService.GetPlays(id);
+        var flags = await _gameService.GetPlayFlags(id);
 
         var playViewModel = _mapper.Map<IList<PlayViewModel>>(plays);
+        foreach (var flag in flags.Where(x => x.Value != null))
+        {
+            var viewModel = playViewModel.Single(x => x.Id == flag.Value);
+            viewModel.PlayFlags ??= [];
+            viewModel.PlayFlags.Add(flag.Key);
+        }
         return ResultViewModel<IList<PlayViewModel>>.CreateFoundResult(playViewModel);
     }
 

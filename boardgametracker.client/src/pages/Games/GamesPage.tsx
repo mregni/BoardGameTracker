@@ -44,7 +44,7 @@ export const GamesPage = () => {
         <Button variant='solid' onClick={() => setOpenModal(true)}>New</Button>
       </BgtPageHeader>
       <BgtPageContent>
-        <BgtCard>
+        <BgtCard transparant>
           <div className='grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12'>
             {
               games.map(x =>

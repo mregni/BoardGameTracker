@@ -51,3 +51,7 @@ export const getTopPlayers = (id: string, signal: AbortSignal): Promise<Result<T
       return response.data;
     });
 }
+
+export const deleteGame = (id: number): Promise<void> => {
+  return axiosInstance.delete(`${domain}/${id}`);
+}

@@ -11,13 +11,14 @@ export interface Props {
   isPending: boolean
   isError: boolean
   save: (player: Player) => Promise<Result<Player>>
+  byId: (id: number | undefined) => Player | null
 }
 
 export const usePlayers = (): Props => {
   const queryClient = useQueryClient();
   const { showInfoToast } = useToast();
 
-  const { mutateAsync: save} = useMutation<Result<Player>, AxiosError<FailResult>, Player>({
+  const { mutateAsync: save } = useMutation<Result<Player>, AxiosError<FailResult>, Player>({
     mutationFn: addPlayer,
     async onSuccess() {
       showInfoToast("player.notifications.created")
@@ -29,17 +30,30 @@ export const usePlayers = (): Props => {
       })
     },
   });
-  
+
   const { data, isError, isPending } = useQuery<ListResult<Player>>({
     queryKey: [QUERY_KEYS.players],
     queryFn: ({ signal }) => getPlayers(signal)
   });
 
+  const byId = (id: number | undefined): Player | null => {
+    if (data === undefined || id === undefined)
+      return null;
+
+    const index = data.list.findIndex(x => x.id === id);
+    if (index !== -1) {
+      return data.list[index];
+    }
+
+    return null;
+  }
+
   return {
     players: data?.list,
     isPending,
     isError,
-    save
+    save,
+    byId
   }
 }
 

@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {ArrowTopRightOnSquareIcon} from '@heroicons/react/24/outline';
 import {zodResolver} from '@hookform/resolvers/zod';
 import * as Form from '@radix-ui/react-form';
-import {Button, Dialog} from '@radix-ui/themes';
+import {Button, Dialog, Switch} from '@radix-ui/themes';
 
 import {useGames} from '../../hooks/useGames';
 import {useSettings} from '../../hooks/useSettings';
@@ -13,6 +13,7 @@ import {getItemStateTranslationKeyByString} from '../../utils/getItemStateTransl
 import {BgtInputField} from '../BgtForm/BgtInputField';
 import {BgtSelect} from '../BgtForm/BgtSelect';
 import {BgtIcon} from '../BgtIcon/BgtIcon';
+import {BgtSwitch} from '../BgtSwitch/BgtSwitch';
 
 interface Props {
   open: boolean;
@@ -32,7 +33,8 @@ export const BgtBggGameModal = (props: Props) => {
   const { register, handleSubmit, formState: { errors }, control, getValues } = useForm<BggSearch>({
     resolver: zodResolver(BggSearchSchema),
     defaultValues: {
-      state: GameState.Owned
+      state: GameState.Owned,
+      hasScoring: true
     }
   });
 
@@ -94,6 +96,13 @@ export const BgtBggGameModal = (props: Props) => {
                 .filter(value => !isNaN(Number(value)))
                 .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value }))}
             />
+            <BgtSwitch
+              label='Game has scoring'
+              disabled={saveIsPending}
+              control={control}
+              name='hasScoring'
+              defaultValue={getValues('hasScoring')}
+            />
           </div>
           <div className='flex justify-end gap-3'>
             <Dialog.Close>
@@ -111,6 +120,6 @@ export const BgtBggGameModal = (props: Props) => {
           </div>
         </form>
       </Dialog.Content>
-    </Dialog.Root >
+    </Dialog.Root>
   )
 }

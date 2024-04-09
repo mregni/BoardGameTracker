@@ -27,9 +27,12 @@ export const BgtPage = (props: Props) => {
 
   return (
     <div className="w-full h-full flex flex-col gap-3 ">
-      <div className='rounded-md bg-sky-900 p-3'>
-        {_header}
-      </div>
+      {_header && (
+        <div className='rounded-md bg-sky-900 p-3'>
+          {_header}
+        </div>
+      )}
+
       <div className='overflow-y-auto'>
         {_content}
       </div>

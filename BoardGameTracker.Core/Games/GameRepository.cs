@@ -123,14 +123,18 @@ public class GameRepository : IGameRepository
         return game.BuyingPrice.Value / game.Plays.Count;
     }
 
-    public Task<int> GetUniquePlayerCount(int id)
+    public async Task<DateTime?> GetLastPlayedDateTime(int id)
     {
-        return _context.Plays
-            .Include(x => x.Players)
-            .Where(x => x.GameId == id)
-            .SelectMany(x => x.Players)
-            .GroupBy(x => x.PlayerId)
-            .CountAsync();
+        if (await _context.Plays.AnyAsync(x => x.GameId == id))
+        {
+            return await _context.Plays
+                .Where(x => x.GameId == id)
+                .OrderByDescending(x => x.Start)
+                .Select(x => x.Start)
+                .FirstOrDefaultAsync();
+        }
+
+        return null;
     }
 
     public Task<double?> GetHighestScore(int id)
@@ -173,5 +177,51 @@ public class GameRepository : IGameRepository
     public Task<int> CountAsync()
     {
         return _context.Games.CountAsync();
+    }
+
+    public async Task<int?> GetShortestPlay(int id)
+    {
+        var result = await _context.Plays
+            .Where(x => x.GameId == id)
+            .OrderBy(x => (x.End - x.Start).TotalSeconds)
+            .FirstOrDefaultAsync();
+
+        return result?.Id;
+    }
+    
+    public async Task<int?> GetLongestPlay(int id)
+    {
+        var result = await _context.Plays
+            .Where(x => x.GameId == id)
+            .OrderByDescending(x => (x.End - x.Start).TotalSeconds)
+            .FirstOrDefaultAsync();
+
+        return result?.Id;
+    }
+
+    public async Task<int?> GetHighScorePlay(int id)
+    {
+        var result = await _context.Plays
+            .Include(x => x.Players)
+            .Include(x => x.Game)
+            .Where(x => x.GameId == id && x.Game.HasScoring)
+            .SelectMany(x => x.Players)
+            .OrderByDescending(x => x.Score)
+            .FirstOrDefaultAsync();
+            
+        return result?.PlayId; 
+    }
+    
+    public async Task<int?> GetLowestScorePlay(int id)
+    {
+        var result = await _context.Plays
+            .Include(x => x.Players)
+            .Include(x => x.Game)
+            .Where(x => x.GameId == id && x.Game.HasScoring)
+            .SelectMany(x => x.Players)
+            .OrderBy(x => x.Score)
+            .FirstOrDefaultAsync();
+            
+        return result?.PlayId; 
     }
 }

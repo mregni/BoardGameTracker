@@ -1,4 +1,6 @@
-﻿namespace BoardGameTracker.Common.ViewModels;
+﻿using BoardGameTracker.Common.Enums;
+
+namespace BoardGameTracker.Common.ViewModels;
 
 public class PlayViewModel
 {
@@ -10,6 +12,7 @@ public class PlayViewModel
     public DateTime Start { get; set; }
     public double Minutes { get; set; }
     public int? LocationId  { get; set; }
+    public List<PlayFlag>? PlayFlags { get; set; }
 }
 
 public class PlayerPlayViewModel
