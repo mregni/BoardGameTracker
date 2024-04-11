@@ -31,7 +31,7 @@ public class ImageController : ControllerBase
             if (upload.Type == UploadFileType.Profile)
             {
                 var name = await _imageService.SaveProfileImage(upload.File);
-                return ResultViewModel<string>.CreateCreatedResult(name);
+                return ResultViewModel<string>.CreateCreatedResult($"/{name}");
             }
             
             var failedResult = new FailResultViewModel("error.image.type-not-supported");

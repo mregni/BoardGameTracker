@@ -52,7 +52,7 @@ export const useGame = (id: string | undefined): ReturnProps => {
       try {
         await deleteGameCall(data?.model.id);
         showInfoToast("game.delete.successfull");
-        await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, id] });
+        //await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, id] });
         await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
       }
       catch {

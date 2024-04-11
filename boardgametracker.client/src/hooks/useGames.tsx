@@ -13,6 +13,7 @@ export interface Props {
   isError: boolean;
   save: (search: BggSearch) => Promise<Result<Game>>;
   saveIsPending: boolean;
+  byId: (id: number | undefined) => Game | null
 }
 
 export const useGames = (): Props => {
@@ -40,12 +41,25 @@ export const useGames = (): Props => {
     },
   });
 
+  const byId = (id: number | undefined): Game | null => {
+    if (data === undefined || id === undefined)
+      return null;
+
+    const index = data.list.findIndex(x => x.id === id);
+    if (index !== -1) {
+      return data.list[index];
+    }
+
+    return null;
+  }
+
   return {
     games: data?.list,
     isPending,
     isError,
     save,
-    saveIsPending
+    saveIsPending,
+    byId
   }
 }
 

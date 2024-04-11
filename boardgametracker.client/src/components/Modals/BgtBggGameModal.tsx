@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {ArrowTopRightOnSquareIcon} from '@heroicons/react/24/outline';
 import {zodResolver} from '@hookform/resolvers/zod';
 import * as Form from '@radix-ui/react-form';
-import {Button, Dialog, Switch} from '@radix-ui/themes';
+import {Button, Dialog} from '@radix-ui/themes';
 
 import {useGames} from '../../hooks/useGames';
 import {useSettings} from '../../hooks/useSettings';

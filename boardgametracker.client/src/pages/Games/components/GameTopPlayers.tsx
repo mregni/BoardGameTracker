@@ -36,7 +36,8 @@ export const GameTopPlayers = () => {
             <div className='flex gap-1 items-center col-span-2 md:col-span-3'>
               <BgtAvatar
                 onClick={() => navigate(`/players/${player.playerId}`)}
-                player={byId(player.playerId)}
+                title={byId(player.playerId)?.name}
+                image={byId(player.playerId)?.image}
                 key={player.playerId}
               />
               <div>{byId(player.playerId)?.name}</div>

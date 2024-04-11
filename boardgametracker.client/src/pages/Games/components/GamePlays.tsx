@@ -56,7 +56,8 @@ const DesktopDetails = () => {
       cell: info => (<div className='flex gap-1 justify-center flex-wrap'>
         {info.getValue().map((player) => <BgtAvatar
           onClick={() => navigate(`/players/${player.playerId}`)}
-          player={playerById(player.playerId)}
+          title={playerById(player.playerId)?.name}
+          image={playerById(player.playerId)?.image}
           key={player.playerId}
         />)}
       </div>)
@@ -67,7 +68,8 @@ const DesktopDetails = () => {
       cell: info => (<div className='flex gap-1 justify-center flex-wrap'>
         {info.getValue().map((player) => <BgtAvatar
           onClick={() => navigate(`/players/${player.playerId}`)}
-          player={playerById(player.playerId)}
+          title={playerById(player.playerId)?.name}
+          image={playerById(player.playerId)?.image}
           key={player.playerId}
         />)}
       </div>)
@@ -231,7 +233,8 @@ const MobileDetails = () => {
                 <div className='flex gap-1 justify-start'>
                   {play.players.filter(x => x.won).map((player) => <BgtAvatar
                     onClick={() => navigate(`/players/${player.playerId}`)}
-                    player={playerById(player.playerId)}
+                    title={playerById(player.playerId)?.name}
+                    image={playerById(player.playerId)?.image}
                     key={player.playerId}
                   />
                   )}
@@ -242,7 +245,8 @@ const MobileDetails = () => {
                 <div className='flex gap-1 justify-end'>
                   {play.players.filter(x => !x.won).map((player) => <BgtAvatar
                     onClick={() => navigate(`/players/${player.playerId}`)}
-                    player={playerById(player.playerId)}
+                    title={playerById(player.playerId)?.name}
+                    image={playerById(player.playerId)?.image}
                     key={player.playerId}
                   />
                   )}

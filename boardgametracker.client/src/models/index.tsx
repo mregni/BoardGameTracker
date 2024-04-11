@@ -15,6 +15,7 @@ export * from './Games/GameType';
 export * from './Games/PersonType';
 
 export * from './Player/Player';
+export * from './Player/PlayerStatistics';
 
 export * from './constants';
 

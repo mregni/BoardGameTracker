@@ -99,7 +99,7 @@ public class PlayerController : ControllerBase
         }
 
         var viewModel = _mapper.Map<PlayerViewModel>(player);
-        return new OkObjectResult(ResultViewModel<PlayerViewModel>.CreateFoundResult(viewModel));
+        return ResultViewModel<PlayerViewModel>.CreateFoundResult(viewModel);
     }
      
     [HttpDelete]

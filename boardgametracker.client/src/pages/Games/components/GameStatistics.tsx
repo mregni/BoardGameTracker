@@ -4,6 +4,7 @@ import {useParams} from 'react-router-dom';
 
 import {BgtCard} from '../../../components/BgtLayout/BgtCard';
 import {BgtStatistic} from '../../../components/BgtStatistic/BgtStatistic';
+import {BgtStatisticsContainer} from '../../../components/BgtStatistics/BgtStatisticsContainer';
 import {useGame} from '../../../hooks/useGame';
 import {usePlayers} from '../../../hooks/usePlayers';
 import {useSettings} from '../../../hooks/useSettings';
@@ -20,7 +21,7 @@ export const GameStatistics = () => {
   if (game === undefined || statistics === undefined || settings === undefined) return null;
 
   return (
-    <div className='grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3'>
+    <BgtStatisticsContainer>
       <BgtCard hide={!statistics.highScore}>
         <BgtStatistic content={statistics.highScore} title={t('statistics.high-score')} />
       </BgtCard>
@@ -42,6 +43,6 @@ export const GameStatistics = () => {
       <BgtCard hide={!statistics.mostWinsPlayer}>
         <BgtStatistic content={statistics?.mostWinsPlayer?.name} title={t('statistics.most-wint')} player={byId(statistics.mostWinsPlayer?.id)} />
       </BgtCard>
-    </div>
+    </BgtStatisticsContainer>
   )
 }

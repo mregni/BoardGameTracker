@@ -8,12 +8,12 @@ export const GameRoutes = () => {
     <Routes>
       <Route
         element={<GamesPage />}
-        path="">
-      </Route>
+        path=""
+      />
       <Route
         element={<GameDetailPage />}
-        path="/:id">
-      </Route>
+        path="/:id"
+        />
     </Routes>
   )
 }

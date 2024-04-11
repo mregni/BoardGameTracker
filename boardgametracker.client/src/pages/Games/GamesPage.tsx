@@ -24,6 +24,7 @@ export const GamesPage = () => {
   const { games } = useGames();
 
   const openManual = () => {
+    //TODO: implement
     console.log("open manual => TODO")
   }
 
@@ -48,9 +49,10 @@ export const GamesPage = () => {
           <div className='grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12'>
             {
               games.map(x =>
-                <Link key={x.id} to={`/games/${x.id}`} >
+                <Link key={x.id} to={`/games/${x.id}`}>
                   <BgtImageCard title={x.title} image={x.image} state={x.state} />
-                </Link>)
+                </Link>
+              )
             }
           </div>
         </BgtCard>

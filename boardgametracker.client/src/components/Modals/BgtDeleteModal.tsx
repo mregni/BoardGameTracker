@@ -7,27 +7,26 @@ interface Props {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   onDelete: () => void;
   title: string;
-  content: string;
 }
 
 export const BgtDeleteModal = (props: Props) => {
-  const { open, setOpen, onDelete, title, content } = props;
+  const { open, setOpen, onDelete, title } = props;
   const { t } = useTranslation();
 
   return (
     <Dialog.Root open={open}>
       <Dialog.Content>
         <Dialog.Title>
-          {title}
+        {t('common.delete.title', { title: title })}
         </Dialog.Title>
         <Dialog.Description>
-          {content}
+          {t('common.delete.description', { title: title })}
         </Dialog.Description>
-        <div className='flex justify-end gap-3'>
+        <div className='flex justify-end gap-3 mt-3'>
           <Dialog.Close>
             <>
               <Button type='submit' variant='solid' color='red' onClick={onDelete}>
-                {t('common.delete')}
+                {t('common.delete.button')}
               </Button>
               <Button variant='surface' color='gray' onClick={() => setOpen(false)}>
                 {t('common.cancel')}
