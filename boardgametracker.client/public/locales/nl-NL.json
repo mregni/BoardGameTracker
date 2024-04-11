@@ -1,27 +1,44 @@
 {
   "common": {
+    "actions": "Actions",
+    "start": "Start",
     "cancel": "Annuleren",
     "dashboard": "Dashboard",
     "games": "Spellen",
     "items_one": "{{count}} item",
     "items_other": "{{count}} items",
     "locations": "Locaties",
+    "location": "Location",
+    "duration": "Duration",
     "name": "Naam",
     "players": "Spelers",
     "profile-picture": "Profiel foto",
     "settings": "Instellingen",
     "unknown-error": "Onbekende fout",
-    "winner_one": "Winnaar",
-    "winner_other": "Winnaars",
-    "other_one": "Overige",
-    "other_other": "Anderen",
+    "winners": "Winners",
+    "loosers": "Loosers",
     "play-time": "Speeltijd",
-    "rating": "beoordeling",
-    "weight": "gewicht",
-    "age": "leeftijd",
-    "minutes_abbreviation": "min"
+    "rating": "Rating",
+    "weight": "Weight",
+    "age": "Age",
+    "minutes_abbreviation": "min",
+    "edit": "edit",
+    "delete": "delete",
+    "close": "close",
+    "details": "details",
+    "categories": "categories",
+    "mechanics": "mechanics",
+    "no-data": "No data yet",
+    "flags": {
+      "header": "Tags",
+      "shortest-game": "Shortest",
+      "longest-game": "Longest",
+      "highest-score": "High score",
+      "lowest-score": "Lowest score"
+    }
   },
   "game": {
+    "add": "add game",
     "notifications": {
       "created": "Spel is succesvol aangemaakt",
       "not-found": "Kan spel niet vinden",
@@ -58,14 +75,21 @@
       "owned": "In bezit",
       "previously-owned": "In bezit",
       "wanted": "Gezocht"
+    },
+    "details": {
+      "title": "{{title}} details"
+    },
+    "delete": {
+      "title": "Delete {{title}}",
+      "description": "Are you sure you want to delete {{title}} with all it's content. This cannot be reversed!",
+      "successfull": "Game is successfully deleted.",
+      "failed": "Game deletion failed, check logs for more details."
     }
   },
   "games": {
     "cards": {
       "games": "Spellen",
-      "top-players": "Topspelers",
-      "mechanics": "Mechanics",
-      "categories": "Categorieën"
+      "top-players": "Topspelers"
     }
   },
   "images": {
@@ -103,7 +127,8 @@
     "most-wint": "Most wins",
     "play-count": "Plays",
     "price-per-play": "Price / play",
-    "total-play-time": "Play time",
-    "unique-players": "Unique players"
+    "total-play-time": "Total play time",
+    "unique-players": "Unique players",
+    "last-played": "Last played"
   }
 }
