@@ -31,7 +31,7 @@ export const BgtDetailHeader = (props: Props) => {
           <BgtImageFallback display={!imageSrc} title={title} />
         </div>
         <div className='flex flex-col gap-3 items-center'>
-          <Text size="8" weight="bold">{title}</Text>
+          <Text size="8" weight="bold" align="center">{title}</Text>
         </div>
         <div className='flex flex-row flex-wrap justify-center md:justify-end items-end gap-3 flex-grow h-full'>
           {actions}

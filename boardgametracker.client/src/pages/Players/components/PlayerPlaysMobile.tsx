@@ -4,7 +4,9 @@ import {useParams} from 'react-router-dom';
 
 import {Button} from '@radix-ui/themes';
 
+import {BgtCard} from '../../../components/BgtCard/BgtCard';
 import {BgtMobilePlayCard} from '../../../components/BgtCard/BgtMobilePlayCard';
+import {BgtNoData} from '../../../components/BgtNoData/BgtNoData';
 import {usePlayerPlays} from '../../../hooks/usePlays';
 import {Play} from '../../../models';
 
@@ -21,8 +23,18 @@ export const PlayerPlaysMobile = () => {
     setFullPlayList((old) => [...new Set([old, plays].flat())])
   }, [plays]);
 
+  if (plays.length === 0) {
+    return (
+      <BgtCard
+        title={t('games.cards.games')}
+        contentStyle='bg-sky-800'>
+        <BgtNoData />
+      </BgtCard>
+    )
+  }
+
   return (
-    <div className='md:hidden rounded-md flex flex-col gap-3'>
+    <div className='rounded-md flex flex-col gap-3'>
       {fullPlayList.map((play, i) => <BgtMobilePlayCard key={play.id} index={i} play={play} showGame />)}
       <Button
         size="2"

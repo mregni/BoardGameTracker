@@ -27,7 +27,7 @@ const editPlay = (id: number) => {
   console.log("edit: " + id)
 }
 
-const pageCount = 1;
+const pageCount = 10;
 
 export const DesktopDetails = () => {
   const { id } = useParams();
@@ -98,7 +98,6 @@ export const DesktopDetails = () => {
 
   return (
     <BgtTableCard
-      className="hidden md:flex md:flex-1"
       columns={columns}
       plays={plays}
       title={t('player.cards.games')}

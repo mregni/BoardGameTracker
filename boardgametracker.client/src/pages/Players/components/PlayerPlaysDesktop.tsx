@@ -102,7 +102,6 @@ export const PlayerPlaysDesktop = () => {
 
   return (
     <BgtTableCard
-      className="hidden md:flex md:flex-1"
       columns={columns}
       plays={plays}
       title={t('games.cards.games')}

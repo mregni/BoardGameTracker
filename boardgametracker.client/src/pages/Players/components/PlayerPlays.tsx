@@ -4,8 +4,12 @@ import {PlayerPlaysMobile} from './PlayerPlaysMobile';
 export const PlayerPlays = () => {
   return (
     <>
-      <PlayerPlaysDesktop />
-      <PlayerPlaysMobile />
+      <div className="hidden md:flex md:flex-1">
+        <PlayerPlaysDesktop />
+      </div>
+      <div className="md:hidden">
+        <PlayerPlaysMobile />
+      </div>
     </>
   )
 }
