@@ -28,6 +28,7 @@
     "categories": "categories",
     "mechanics": "mechanics",
     "no-data": "No data yet",
+    "load-more": "Load more",
     "flags": {
       "header": "Tags",
       "shortest-game": "Shortest",
@@ -116,6 +117,9 @@
     "delete": {
       "successfull": "Player is successfully deleted.",
       "failed": "Player deletion failed, check logs for more details."
+    },
+    "cards": {
+      "games": "Games"
     }
   },
   "error": {
