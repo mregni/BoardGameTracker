@@ -4,13 +4,13 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIcon} from '@heroicons/react/24/outline';
 
 import {BgtAvatar} from '../../../components/BgtAvatar/BgtAvatar';
+import {BgtCard} from '../../../components/BgtCard/BgtCard';
 import {BgtIcon} from '../../../components/BgtIcon/BgtIcon';
-import {BgtCard} from '../../../components/BgtLayout/BgtCard';
 import {BgtNoData} from '../../../components/BgtNoData/BgtNoData';
 import {useGame} from '../../../hooks/useGame';
 import {usePlayers} from '../../../hooks/usePlayers';
 import {Trend} from '../../../models/Games/TopPlayer';
-import {RoundDecimal} from '../../../utils/roundDecimal';
+import {RoundDecimal} from '../../../utils/numberUtils';
 
 export const GameTopPlayers = () => {
   const { id } = useParams();

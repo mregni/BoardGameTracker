@@ -1,8 +1,8 @@
 import {AxiosError} from 'axios';
 
-import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {keepPreviousData, useQuery, useQueryClient} from '@tanstack/react-query';
 
-import {FailResult, Player, QUERY_KEYS, Result} from '../models';
+import {FailResult, ListResult, Play, Player, QUERY_KEYS, Result} from '../models';
 import {PlayerStatistics} from '../models/Player/PlayerStatistics';
 import {useToast} from '../providers/BgtToastProvider';
 import {
@@ -18,7 +18,7 @@ interface ReturnProps {
 export const usePlayer = (id: string | undefined): ReturnProps => {
   const queryClient = useQueryClient();
   const { showInfoToast, showErrorToast } = useToast();
-  
+
   const { data } = useQuery<Result<Player>, AxiosError<FailResult>>({
     queryKey: [QUERY_KEYS.player, id],
     queryFn: ({ signal }) => getPlayer(id!, signal),
@@ -26,7 +26,7 @@ export const usePlayer = (id: string | undefined): ReturnProps => {
   });
 
   const { data: statistics } = useQuery<Result<PlayerStatistics>, AxiosError<FailResult>>({
-    queryKey: [QUERY_KEYS.game, id, QUERY_KEYS.gameStatistics],
+    queryKey: [QUERY_KEYS.player, id, QUERY_KEYS.playerStatistics],
     queryFn: ({ signal }) => getPlayerStatistics(id!, signal),
     enabled: id !== undefined
   });

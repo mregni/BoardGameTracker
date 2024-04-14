@@ -12,10 +12,11 @@ public interface IGameService
     Task<List<Game>> GetGames();
     Task<Game?> GetGameById(int id);
     Task Delete(int id);
-    Task<List<Play>> GetPlays(int id);
+    Task<List<Play>> GetPlays(int id, int skip, int? take);
     Task<GameStatistics> GetStats(int id);
     Task<int> CountAsync();
     Task<BggGame?> SearchAndCreateGame(int searchBggId);
     Task<List<TopPlayer>> GetTopPlayers(int id);
     Task<Dictionary<PlayFlag, int?>> GetPlayFlags(int id);
+    Task<int> GetTotalPlayCount(int id);
 }

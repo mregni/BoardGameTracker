@@ -72,9 +72,9 @@ public class GameService : IGameService
         await _gameRepository.DeleteGame(game);
     }
 
-    public Task<List<Play>> GetPlays(int id)
+    public Task<List<Play>> GetPlays(int id, int skip, int? take)
     {
-        return _gameRepository.GetPlays(id);
+        return _gameRepository.GetPlays(id, skip, take);
     }
 
     public async Task<Dictionary<PlayFlag, int?>> GetPlayFlags(int id)
@@ -101,6 +101,11 @@ public class GameService : IGameService
         }
 
         return dict;
+    }
+
+    public Task<int> GetTotalPlayCount(int id)
+    {
+        return _gameRepository.GetTotalPlayCount(id);
     }
 
     public async Task<GameStatistics> GetStats(int id)
@@ -136,7 +141,7 @@ public class GameService : IGameService
 
     public async Task<List<TopPlayer>> GetTopPlayers(int id)
     {
-        var plays = await _gameRepository.GetPlays(id);
+        var plays = await _gameRepository.GetPlays(id, 0, null);
         var playerPlays = plays
             .SelectMany(x => x.Players)
             .GroupBy(x => x.PlayerId)

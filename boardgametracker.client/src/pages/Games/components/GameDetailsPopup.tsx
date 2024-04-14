@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {Badge, Button, Dialog, Text} from '@radix-ui/themes';
 
 import {useGame} from '../../../hooks/useGame';
-import {RoundDecimal} from '../../../utils/roundDecimal';
+import {RoundDecimal} from '../../../utils/numberUtils';
 
 interface Props {
   id: string | undefined;

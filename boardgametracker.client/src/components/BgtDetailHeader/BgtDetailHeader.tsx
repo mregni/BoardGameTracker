@@ -20,7 +20,7 @@ export const BgtDetailHeader = (props: Props) => {
 
   return (
     <>
-      <div className='fixed z-50 top-18 md:top-4'>
+      <div className='absolute z-50 top-18 md:top-4'>
         <Button size="2" variant="soft" className='hover:cursor-pointer' onClick={() => navigate(navigateBackUrl)}>
           <BgtIcon icon={<ArrowLeftCircleIcon />} size={22} />
         </Button>

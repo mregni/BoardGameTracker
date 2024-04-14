@@ -41,9 +41,6 @@ public class GameController
             return new NotFoundObjectResult(new FailResultViewModel("game.notifications.not-found"));
         }
         
-        var plays = await _gameService.GetPlays(id);
-        var stats = await _gameService.GetStats(id);
-
         var viewModel = _mapper.Map<GameViewModel>(game);
         return ResultViewModel<GameViewModel>.CreateFoundResult(viewModel);
     }
@@ -58,21 +55,26 @@ public class GameController
 
     [HttpGet]
     [Route("{id:int}/plays")]
-    public async Task<IActionResult> GetGamePlays(int id)
+    public async Task<IActionResult> GetGamePlays(int id, [FromQuery] int? skip, [FromQuery] int? take)
     {
-        var plays = await _gameService.GetPlays(id);
+        skip ??= 0;
+        take ??= null;
+        
+        var plays = await _gameService.GetPlays(id, skip.Value, take);
         var flags = await _gameService.GetPlayFlags(id);
 
         var playViewModel = _mapper.Map<IList<PlayViewModel>>(plays);
-        foreach (var flag in flags.Where(x => x.Value != null))
+        foreach (var flag in flags
+                     .Where(x => playViewModel.Any(y => y.Id == x.Value)))
         {
             var viewModel = playViewModel.Single(x => x.Id == flag.Value);
             viewModel.PlayFlags ??= [];
             viewModel.PlayFlags.Add(flag.Key);
         }
-        return ResultViewModel<IList<PlayViewModel>>.CreateFoundResult(playViewModel);
+        
+        var totalCount = await _gameService.GetTotalPlayCount(id);
+        return ListResultViewModel<PlayViewModel>.CreateResult(playViewModel, totalCount);
     }
-
 
     [HttpGet]
     [Route("{id:int}/stats")]

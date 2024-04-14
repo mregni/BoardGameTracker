@@ -9,7 +9,7 @@ import {Button, Dialog} from '@radix-ui/themes';
 import {useGames} from '../../hooks/useGames';
 import {useSettings} from '../../hooks/useSettings';
 import {BggSearch, BggSearchSchema, GameState} from '../../models';
-import {getItemStateTranslationKeyByString} from '../../utils/getItemStateTranslationKey';
+import {getItemStateTranslationKeyByString} from '../../utils/ItemStateUtils';
 import {BgtInputField} from '../BgtForm/BgtInputField';
 import {BgtSelect} from '../BgtForm/BgtSelect';
 import {BgtIcon} from '../BgtIcon/BgtIcon';

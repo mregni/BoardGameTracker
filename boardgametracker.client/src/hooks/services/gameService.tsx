@@ -36,9 +36,10 @@ export const getGameStatistics = (id: string, signal: AbortSignal): Promise<Resu
     });
 }
 
-export const getGamePlays = (id: string, signal: AbortSignal): Promise<Result<Play[]>> => {
+export const getGamePlays = (id: string, page: number, pageCount: number, signal: AbortSignal): Promise<ListResult<Play>> => {
+  const skip = page * pageCount;
   return axiosInstance
-    .get<Result<Play[]>>(`${domain}/${id}/plays`, { signal })
+    .get<ListResult<Play>>(`${domain}/${id}/plays`, { params: { skip: skip, take: pageCount }, signal })
     .then((response) => {
       return response.data;
     });

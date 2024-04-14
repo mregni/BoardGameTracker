@@ -44,7 +44,7 @@ export const GameDetailPage = () => {
           navigateBackUrl={'/games'}
           actions={
             <>
-              <Button variant='outline' >{i18next.format(t('game.add'), 'capitalize')}</Button>
+              <Button variant='outline'>{i18next.format(t('game.add'), 'capitalize')}</Button>
               <Button variant='outline' onClick={() => setOpenDetailsModal(true)}>{i18next.format(t('common.details'), 'capitalize')}</Button>
               <Button variant='outline'>{i18next.format(t('common.edit'), 'capitalize')}</Button>
               <Button variant='outline' color='red' onClick={() => setOpenDeleteModal(true)}>{i18next.format(t('common.delete.button'), 'capitalize')}</Button>

@@ -25,6 +25,7 @@ export interface Game {
   categories: GameLink[];
   mechanics: GameLink[];
   people: GamePerson[];
+  hasScoring: boolean;
 }
 
 export interface GameLink {

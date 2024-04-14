@@ -93,14 +93,21 @@ public class PlayerRepository : IPlayerRepository
             .SumAsync(x => (x.Play.End - x.Play.Start).TotalMinutes);
     }
 
-    public Task<List<Play>> GetPlaysForPlayer(int id)
+    public Task<List<Play>> GetPlaysForPlayer(int id, int skip, int? take)
     {
-        return _dbContext.Plays
+        var query = _dbContext.Plays
             .Include(x => x.Location)
             .Include(x => x.Players)
             .Where(x => x.Players.Any(y => y.PlayerId == id))
             .OrderByDescending(x => x.Start)
-            .ToListAsync();
+            .Skip(skip);
+
+        if (take.HasValue)
+        {
+            query = query.Take(take.Value);
+        }
+        
+        return query.ToListAsync();
     }
 
     public async Task<Player> Update(Player player)
@@ -130,5 +137,12 @@ public class PlayerRepository : IPlayerRepository
     public Task<int> CountAsync()
     {
         return _dbContext.Players.CountAsync();
+    }
+
+    public Task<int> GetTotalPlayCount(int id)
+    {
+        return _dbContext.Plays
+            .Include(x => x.Players)
+            .CountAsync(x => x.Players.Any(y => y.PlayerId == id));
     }
 }

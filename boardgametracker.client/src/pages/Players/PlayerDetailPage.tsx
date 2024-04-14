@@ -10,6 +10,7 @@ import {BgtPage} from '../../components/BgtLayout/BgtPage';
 import {BgtPageContent} from '../../components/BgtLayout/BgtPageContent';
 import {BgtDeleteModal} from '../../components/Modals/BgtDeleteModal';
 import {usePlayer} from '../../hooks/usePlayer';
+import {PlayerPlays} from './components/PlayerPlays';
 import {PlayerStatistics} from './components/PlayerStatistics';
 
 export const PlayerDetailpage = () => {
@@ -51,6 +52,8 @@ export const PlayerDetailpage = () => {
         />
 
         <PlayerStatistics />
+
+        <PlayerPlays />
         
         <BgtDeleteModal
           title={player.name}

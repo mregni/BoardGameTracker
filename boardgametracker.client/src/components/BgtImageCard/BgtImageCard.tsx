@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {Text} from '@radix-ui/themes';
 
 import {GameState} from '../../models';
-import {getItemStateTranslationKey} from '../../utils/getItemStateTranslationKey';
+import {getItemStateTranslationKey} from '../../utils/ItemStateUtils';
 import {BgtImageFallback} from './BgtImageFallback';
 
 interface Props {

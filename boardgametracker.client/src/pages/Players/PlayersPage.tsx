@@ -4,8 +4,8 @@ import {Link} from 'react-router-dom';
 
 import {Button} from '@radix-ui/themes';
 
+import {BgtCard} from '../../components/BgtCard/BgtCard';
 import {BgtImageCard} from '../../components/BgtImageCard/BgtImageCard';
-import {BgtCard} from '../../components/BgtLayout/BgtCard';
 import {BgtPage} from '../../components/BgtLayout/BgtPage';
 import {BgtPageContent} from '../../components/BgtLayout/BgtPageContent';
 import BgtPageHeader from '../../components/BgtLayout/BgtPageHeader';

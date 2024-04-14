@@ -81,15 +81,22 @@ public class GameRepository : IGameRepository
         return _context.SaveChangesAsync();
     }
 
-    public Task<List<Play>> GetPlays(int id)
+    public Task<List<Play>> GetPlays(int id, int skip, int? take)
     {
-        return _context.Plays
+        var query = _context.Plays
             .Include(x => x.Location)
             .Include(x => x.Players)
             .ThenInclude(x => x.Player)
             .Where(x => x.GameId == id)
             .OrderByDescending(x => x.Start)
-            .ToListAsync();
+            .Skip(skip);
+
+        if (take.HasValue)
+        {
+            query = query.Take(take.Value);
+        }
+        
+        return query.ToListAsync();
     }
 
     public Task<int> GetPlayCount(int id)
@@ -223,5 +230,11 @@ public class GameRepository : IGameRepository
             .FirstOrDefaultAsync();
             
         return result?.PlayId; 
+    }
+
+    public Task<int> GetTotalPlayCount(int id)
+    {
+        return _context.Plays
+            .CountAsync(x => x.GameId == id);
     }
 }

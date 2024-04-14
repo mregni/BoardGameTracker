@@ -18,4 +18,15 @@ public class ListResultViewModel<T>
         
         return new OkObjectResult(data);
     }
+    
+    public static OkObjectResult CreateResult(ICollection<T> list, int totalCount)
+    {
+        var data = new ListResultViewModel<T>
+        {
+            List = list,
+            Count = totalCount
+        };
+        
+        return new OkObjectResult(data);
+    }
 }

@@ -13,7 +13,7 @@ public interface IGameRepository
     Task<List<Game>> GetGamesOverviewList();
     Task<Game?> GetGameById(int id);
     Task DeleteGame(Game game);
-    Task<List<Play>> GetPlays(int id);
+    Task<List<Play>> GetPlays(int id, int skip, int? take);
     Task<int> GetPlayCount(int id);
     Task<TimeSpan> GetTotalPlayedTime(int id);
     Task<double?> GetPricePerPlay(int id);
@@ -26,4 +26,5 @@ public interface IGameRepository
     Task<int?> GetLongestPlay(int id);
     Task<int?> GetHighScorePlay(int id);
     Task<int?> GetLowestScorePlay(int id);
+    Task<int> GetTotalPlayCount(int id);
 }
