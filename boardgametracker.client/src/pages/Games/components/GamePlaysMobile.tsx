@@ -14,15 +14,17 @@ import {Play} from '../../../models';
 export const MobileDetails = () => {
   const { id } = useParams();
   const [page, setPage] = useState(0);
-  const { plays, totalCount } = useGamePlays(id, page, 10);
+  const { plays, totalCount, isFetching } = useGamePlays(id, page, 10);
   const { t } = useTranslation();
   const { settings } = useSettings();
 
   const [fullPlayList, setFullPlayList] = useState<Play[]>([]);
 
   useEffect(() => {
-    setFullPlayList((old) => [...new Set([old, plays].flat())])
-  }, [plays]);
+    if(!isFetching) {
+      setFullPlayList((old) => [...new Set([old, plays].flat())])
+    }
+  }, [plays, isFetching]);
   
   if (settings === undefined) return null;
 
@@ -44,7 +46,7 @@ export const MobileDetails = () => {
         variant="outline"
         className='hover:cursor-pointer'
         onClick={() => setPage((old) => old + 1)}
-        disabled={fullPlayList.length >= totalCount}
+        disabled={fullPlayList.length >= totalCount || isFetching}
       >
         {t('common.load-more')}
       </Button>

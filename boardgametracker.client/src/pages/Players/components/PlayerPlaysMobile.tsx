@@ -16,12 +16,14 @@ export const PlayerPlaysMobile = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const [page, setPage] = useState(0);
-  const { plays, totalCount } = usePlayerPlays(id, page, pageCount);
+  const { plays, totalCount, isFetching } = usePlayerPlays(id, page, pageCount);
   const [fullPlayList, setFullPlayList] = useState<Play[]>([]);
 
   useEffect(() => {
-    setFullPlayList((old) => [...new Set([old, plays].flat())])
-  }, [plays]);
+    if(!isFetching) {
+      setFullPlayList((old) => [...new Set([old, plays].flat())])
+    }
+  }, [isFetching, plays]);
 
   if (plays.length === 0) {
     return (

@@ -9,6 +9,7 @@ import {getPlays} from './services/playerService';
 interface ReturnProps {
   plays: Play[];
   totalCount: number;
+  isFetching: boolean;
 }
 
 export const usePlayerPlays = (playerId: string | undefined, page: number, pageCount: number): ReturnProps => {
@@ -36,7 +37,7 @@ interface Props<T> {
 const usePlays = <T,>(props: Props<T>) => {
   const { queryKey, queryFn, enabled } = props;
 
-  const { data } = useQuery<ListResult<T>, AxiosError<FailResult>>({
+  const { data, isFetching } = useQuery<ListResult<T>, AxiosError<FailResult>>({
     queryKey: queryKey,
     queryFn: queryFn,
     enabled: enabled,
@@ -46,5 +47,6 @@ const usePlays = <T,>(props: Props<T>) => {
   return {
     plays: data !== undefined ? data?.list : [] as Play[],
     totalCount: data !== undefined ? data?.count : 0,
+    isFetching
   }
 }
