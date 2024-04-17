@@ -36,6 +36,10 @@
       "highest-score": "High score",
       "lowest-score": "Lowest score"
     },
+    "game_one": "{{count}} game",
+    "game_other": "{{count}} games",
+    "player_one": "{{count}} player",
+    "player_other": "{{count}} players",
     "delete": {
       "title": "Delete {{title}}",
       "description": "Are you sure you want to delete {{title}} with all it's content. This cannot be reversed!",
@@ -87,6 +91,19 @@
     "delete": {
       "successfull": "Game is successfully deleted.",
       "failed": "Game deletion failed, check logs for more details."
+    },
+    "charts": {
+      "player-count": "Games by player count",
+      "games-week-day": "Games by day of the week",
+      "scoring": "Scoring per game/player",
+      "top-scoring": {
+        "title": "Scoring results",
+        "top-score": "Top score",
+        "highest-losing": "Highest losing",
+        "average": "Average",
+        "lowest-winning": "Lowest winning",
+        "lowest": "Lowest"
+      }
     }
   },
   "games": {
