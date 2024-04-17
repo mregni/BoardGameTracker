@@ -3,7 +3,9 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
+using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Core.Bgg;
+using BoardGameTracker.Core.Extensions;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 
@@ -108,6 +110,21 @@ public class GameService : IGameService
         return _gameRepository.GetTotalPlayCount(id);
     }
 
+    public async Task<IEnumerable<PlayByDay>> GetPlayByDayChart(int id)
+    {
+        var list = await _gameRepository.GetPlayByDayChart(id);
+        return Enum.GetValues(typeof(DayOfWeek))
+            .Cast<DayOfWeek>()
+            .ToDictionary(day => day, day => list.SingleOrDefault(y => y.Key == day)?.Count() ?? 0)
+            .Select(x => new PlayByDay {DayOfWeek = x.Key, PlayCount = x.Value});
+    }
+
+    public async Task<IEnumerable<PlayerCount>> GetPlayerCountChart(int id)
+    {
+        var list = await _gameRepository.GetPlayerCountChart(id);
+        return list.Select(x => new PlayerCount() {PlayCount = x.Count(), Players = x.Key});
+    }
+
     public async Task<GameStatistics> GetStats(int id)
     {
         return new GameStatistics
@@ -153,5 +170,64 @@ public class GameService : IGameService
             .OrderByDescending(x => x.Wins)
             .Take(5)
             .ToList();
+    }
+
+    public async Task<Dictionary<DateTime, XValue[]>> GetPlayerScoringChart(int id)
+    {
+        var plays = await _gameRepository.GetPlays(id, -200);
+        var uniquePlayers = plays
+            .SelectMany(x => x.Players)
+            .GroupBy(x => x.PlayerId)
+            .Select(x => x.Key)
+            .ToList();
+
+        var dict = new Dictionary<DateTime, XValue[]>();
+        foreach (var play in plays)
+        {
+            var players = play.Players.Select(x =>
+                new XValue
+                {
+                    Id = x.PlayerId!.Value,
+                    Value = x.Score ?? null
+                }
+            );
+
+            var missingPlayers = uniquePlayers
+                .Where(x => x.HasValue && !play.Players.Select(y => y.PlayerId).Contains(x))
+                .Select(x => new XValue
+                {
+                    Id = x!.Value,
+                    Value = null
+                });
+
+
+            var xValues = new List<XValue>();
+            xValues.AddRange(players);
+            xValues.AddRange(missingPlayers);
+            dict.TryAdd(play.Start, xValues.ToArray());
+        }
+
+        return dict;
+    }
+
+    public async Task<List<ScoreRank>> GetScoringRankedChart(int id)
+    {
+        var list = new List<ScoreRank>();
+        var highestScoring = await _gameRepository.GetHighestScoringPlayer(id);
+        list.AddIfNotNull(ScoreRank.MakeHighestScoreRank(highestScoring));
+
+        var highestLosing = await _gameRepository.GetHighestLosingPlayer(id);
+        list.AddIfNotNull(ScoreRank.MakeHighestLosingRank(highestLosing));
+
+        var average = await _gameRepository.GetAverageScore(id);
+        list.AddIfNotNull(ScoreRank.MakeAverageRank(average));
+
+        var lowestWinning = await _gameRepository.GetLowestWinning(id);
+        list.AddIfNotNull(ScoreRank.MakeLowestWinningRank(lowestWinning));
+
+        var lowest = await _gameRepository.GetLowestScoringPlayer(id);
+        list.AddIfNotNull(ScoreRank.MakeLowestScoreRank(lowest));
+
+        return list;
     }
 }

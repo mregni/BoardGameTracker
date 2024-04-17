@@ -2,6 +2,7 @@
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
+using BoardGameTracker.Common.Models.Charts;
 
 namespace BoardGameTracker.Core.Games.Interfaces;
 
@@ -19,4 +20,8 @@ public interface IGameService
     Task<List<TopPlayer>> GetTopPlayers(int id);
     Task<Dictionary<PlayFlag, int?>> GetPlayFlags(int id);
     Task<int> GetTotalPlayCount(int id);
+    Task<IEnumerable<PlayByDay>> GetPlayByDayChart(int id);
+    Task<IEnumerable<PlayerCount>> GetPlayerCountChart(int id);
+    Task<Dictionary<DateTime, XValue[]>> GetPlayerScoringChart(int id);
+    Task<List<ScoreRank>> GetScoringRankedChart(int id);
 }

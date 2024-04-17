@@ -98,6 +98,7 @@ export const DesktopDetails = () => {
 
   return (
     <BgtTableCard
+    className='w-full'
       columns={columns}
       plays={plays}
       title={t('player.cards.games')}

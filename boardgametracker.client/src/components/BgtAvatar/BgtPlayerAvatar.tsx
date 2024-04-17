@@ -2,6 +2,7 @@ import {useNavigate} from 'react-router-dom';
 
 import {usePlayers} from '../../hooks/usePlayers';
 import {PlayPlayer} from '../../models';
+import {StringToHsl} from '../../utils/stringUtils';
 import {BgtAvatar} from './BgtAvatar';
 
 interface Props {
@@ -18,6 +19,7 @@ export const BgtPLayerAvatar = (props: Props) => {
       onClick={() => navigate(`/players/${player.playerId}`)}
       title={playerById(player.playerId)?.name + (player.score ? `: ${player.score}` : '')}
       image={playerById(player.playerId)?.image}
+      color={StringToHsl(playerById(player.playerId)?.name)}
     />
   )
 }

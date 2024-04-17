@@ -117,4 +117,43 @@ public class GameController
         var result = _mapper.Map<GameViewModel>(dbGame);
         return ResultViewModel<GameViewModel>.CreateCreatedResult(result);
     }
+
+    [HttpGet("{id:int}/chart/playsbyday")]
+    public async Task<IActionResult> PlayByDayChart(int id)
+    {
+        var data = await _gameService.GetPlayByDayChart(id);
+        var dataViewModel = _mapper.Map<IList<PlayByDayChartViewModel>>(data);
+        return ResultViewModel<IList<PlayByDayChartViewModel>>.CreateCreatedResult(dataViewModel);
+    }
+    
+    [HttpGet("{id:int}/chart/playercounts")]
+    public async Task<IActionResult> PlayerCounts(int id)
+    {
+        var data = await _gameService.GetPlayerCountChart(id);
+        var dataViewModel = _mapper.Map<IList<PlayerCountChartViewModel>>(data);
+        return ResultViewModel<IList<PlayerCountChartViewModel>>.CreateCreatedResult(dataViewModel);
+    }
+        
+    [HttpGet("{id:int}/chart/playerscoring")]
+    public async Task<IActionResult> PlayerScoring(int id)
+    {
+        var game = await _gameService.GetGameById(id);
+        if (game is {HasScoring: false})
+        {
+            var failedViewModel = new FailResultViewModel("Game has no scoring");
+            return new BadRequestObjectResult(failedViewModel);
+        }
+        
+        var data = await _gameService.GetPlayerScoringChart(id);
+        var dataViewModel = _mapper.Map<IList<PlayerScoringChartViewModel>>(data);
+        return ResultViewModel<IList<PlayerScoringChartViewModel>>.CreateCreatedResult(dataViewModel);
+    }
+    
+    [HttpGet("{id:int}/chart/scorerank")]
+    public async Task<IActionResult> ScoringRanked(int id)
+    {
+        var data = await _gameService.GetScoringRankedChart(id);
+        var dataViewModel = _mapper.Map<IList<ScoreRankChartViewModel>>(data);
+        return ResultViewModel<IList<ScoreRankChartViewModel>>.CreateCreatedResult(dataViewModel);
+    }
 }

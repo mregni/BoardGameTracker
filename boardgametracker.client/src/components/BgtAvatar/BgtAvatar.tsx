@@ -2,17 +2,16 @@ import clsx from 'clsx';
 
 import {Text} from '@radix-ui/themes';
 
-import {StringToColor} from '../../utils/stringUtils';
-
 interface Props {
   title?: string | undefined;
   image: string | undefined;
+  color?: string | undefined;
   onClick?: () => void;
   noTooltip?: boolean;
 }
 
 export const BgtAvatar = (props: Props) => {
-  const { title, image, onClick, noTooltip = false } = props;
+  const { title, image, color, onClick, noTooltip = false } = props;
 
   if (!image && title === undefined) return null;
 
@@ -34,7 +33,7 @@ export const BgtAvatar = (props: Props) => {
       }
       {
         !image && (
-          <div style={{ backgroundColor: StringToColor(title!) }}
+          <div style={{ backgroundColor: color }}
             onClick={onClick}
             className={
               clsx(

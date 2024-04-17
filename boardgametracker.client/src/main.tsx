@@ -1,6 +1,7 @@
 import './index.css';
 import './utils/i18n';
 import '@radix-ui/themes/styles.css';
+import 'react-perfect-scrollbar/dist/css/styles.css';
 
 import React, {Suspense} from 'react';
 import ReactDOM from 'react-dom/client';

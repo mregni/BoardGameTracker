@@ -12,7 +12,6 @@ export const BgtDateTimeCell = (props: Props) => {
 
   if(settings === undefined) return null;
 
-  const { } = props;
   return (
     <div className='flex flex-col justify-center flex-none'>
       <div className='font-bold'>{format(dateTime, settings?.dateFormat ?? '')}</div>

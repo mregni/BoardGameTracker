@@ -7,7 +7,7 @@ import {BgtNoData} from '../BgtNoData/BgtNoData';
 import {BgtBody, BgtHead, BgtPagination, BgtTable, BgtTableContainer} from '../BgtTable/BgtTable';
 import {BgtCard} from './BgtCard';
 
-interface Props extends ComponentPropsWithoutRef<'div'>{
+interface Props extends ComponentPropsWithoutRef<'div'> {
   title: string;
   plays: Play[];
   columns: ColumnDef<Play, any>[];

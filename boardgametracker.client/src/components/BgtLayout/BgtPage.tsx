@@ -1,4 +1,5 @@
 import {Children, ReactElement} from 'react';
+import PerfectScrollbar from 'react-perfect-scrollbar';
 
 import {BgtPageContent} from './BgtPageContent';
 import BgtPageHeader from './BgtPageHeader';
@@ -33,9 +34,15 @@ export const BgtPage = (props: Props) => {
         </div>
       )}
 
-      <div className='overflow-y-auto'>
+      <PerfectScrollbar
+        options={{
+          wheelSpeed: 0.7,
+          suppressScrollX: true,
+
+        }}
+        className='md:pr-4'>
         {_content}
-      </div>
+      </PerfectScrollbar>
     </div>
   )
 }

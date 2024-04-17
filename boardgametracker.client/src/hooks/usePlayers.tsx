@@ -11,7 +11,7 @@ export interface Props {
   isPending: boolean
   isError: boolean
   save: (player: Player) => Promise<Result<Player>>
-  byId: (id: number | undefined) => Player | null
+  byId: (id: number | string | undefined) => Player | null
 }
 
 export const usePlayers = (): Props => {
@@ -36,11 +36,11 @@ export const usePlayers = (): Props => {
     queryFn: ({ signal }) => getPlayers(signal)
   });
 
-  const byId = (id: number | undefined): Player | null => {
+  const byId = (id: number | string | undefined): Player | null => {
     if (data === undefined || id === undefined)
       return null;
 
-    const index = data.list.findIndex(x => x.id === id);
+    const index = data.list.findIndex(x => x.id === +id);
     if (index !== -1) {
       return data.list[index];
     }

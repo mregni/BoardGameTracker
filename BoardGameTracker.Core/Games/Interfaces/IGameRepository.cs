@@ -1,5 +1,6 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
+using BoardGameTracker.Common.Models.Charts;
 
 namespace BoardGameTracker.Core.Games.Interfaces;
 
@@ -14,6 +15,7 @@ public interface IGameRepository
     Task<Game?> GetGameById(int id);
     Task DeleteGame(Game game);
     Task<List<Play>> GetPlays(int id, int skip, int? take);
+    Task<List<Play>> GetPlays(int id, int dayCount);
     Task<int> GetPlayCount(int id);
     Task<TimeSpan> GetTotalPlayedTime(int id);
     Task<double?> GetPricePerPlay(int id);
@@ -27,4 +29,10 @@ public interface IGameRepository
     Task<int?> GetHighScorePlay(int id);
     Task<int?> GetLowestScorePlay(int id);
     Task<int> GetTotalPlayCount(int id);
+    Task<List<IGrouping<DayOfWeek,Play>>> GetPlayByDayChart(int id);
+    Task<List<IGrouping<int, int>>> GetPlayerCountChart(int id);
+    Task<PlayerPlay?> GetHighestScoringPlayer(int id);
+    Task<PlayerPlay?> GetHighestLosingPlayer(int id);
+    Task<PlayerPlay?> GetLowestWinning(int id);
+    Task<PlayerPlay?> GetLowestScoringPlayer(int id);
 }

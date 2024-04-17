@@ -5,7 +5,9 @@ using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
+using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Common.ViewModels;
+using BoardGameTracker.Common.ViewModels.Results;
 
 namespace BoardGameTracker.Common;
 
@@ -70,6 +72,13 @@ public class MapProfiles : Profile
         CreateMap<PlayerPlayViewModel, PlayerPlay>().ReverseMap();
 
         CreateMap<TopPlayer, TopPlayerViewModel>();
+
+        CreateMap<PlayByDay, PlayByDayChartViewModel>();
+        CreateMap<PlayerCount, PlayerCountChartViewModel>();
+        CreateMap<ScoreRank, ScoreRankChartViewModel>();
+        CreateMap<KeyValuePair<DateTime, XValue[]>, PlayerScoringChartViewModel>()
+            .ForMember(x => x.DateTime, x => x.MapFrom(y => y.Key))
+            .ForMember(x => x.Series, x => x.MapFrom(y =>y.Value));
         
         CreateMap<PlayerStatistics, PlayerStatisticsViewModel>();
         CreateMap<GameStatistics, GameStatisticsViewModel>()

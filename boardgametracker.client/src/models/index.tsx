@@ -13,6 +13,8 @@ export * from './Games/GameState';
 export * from './Games/GameStatistics';
 export * from './Games/GameType';
 export * from './Games/PersonType';
+export * from './Games/PlaysByDayChart';
+export * from './Games/PlayerCountChart';
 
 export * from './Player/Player';
 export * from './Player/PlayerStatistics';

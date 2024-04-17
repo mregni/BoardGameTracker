@@ -1,6 +1,7 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -236,5 +237,73 @@ public class GameRepository : IGameRepository
     {
         return _context.Plays
             .CountAsync(x => x.GameId == id);
+    }
+
+    public Task<List<IGrouping<DayOfWeek,Play>>> GetPlayByDayChart(int id)
+    {
+        return _context.Plays
+            .Where(x => x.GameId == id)
+            .GroupBy(x => x.Start.DayOfWeek)
+            .ToListAsync();
+    }
+
+    public Task<List<IGrouping<int, int>>> GetPlayerCountChart(int id)
+    {
+        return  _context.Plays
+            .Where(x => x.GameId == id)
+            .Select(x => x.Players.Count())
+            .GroupBy(x => x)
+            .ToListAsync();
+    }
+
+    public Task<PlayerPlay?> GetHighestScoringPlayer(int id)
+    {
+        return _context.Plays
+            .Include(x => x.Players)
+            .Where(x => x.GameId == id)
+            .SelectMany(x => x.Players)
+            .OrderByDescending(x => x.Score)
+            .FirstOrDefaultAsync();
+    }
+
+    public Task<PlayerPlay?> GetHighestLosingPlayer(int id)
+    {
+        return _context.Plays
+            .Include(x => x.Players)
+            .Where(x => x.GameId == id)
+            .SelectMany(x => x.Players)
+            .Where(x => !x.Won)
+            .OrderByDescending(x => x.Score)
+            .FirstOrDefaultAsync();
+    }
+
+    public Task<PlayerPlay?> GetLowestWinning(int id)
+    {
+        return _context.Plays
+            .Include(x => x.Players)
+            .Where(x => x.GameId == id)
+            .SelectMany(x => x.Players)
+            .Where(x => x.Won)
+            .OrderBy(x => x.Score)
+            .FirstOrDefaultAsync();
+    }
+
+    public Task<PlayerPlay?> GetLowestScoringPlayer(int id)
+    {
+        return _context.Plays
+            .Include(x => x.Players)
+            .Where(x => x.GameId == id)
+            .SelectMany(x => x.Players)
+            .OrderBy(x => x.Score)
+            .FirstOrDefaultAsync();
+    }
+
+    public Task<List<Play>> GetPlays(int id, int dayCount)
+    {
+        return _context.Plays
+            .Include(x => x.Players)
+            .Where(x => x.GameId == id && x.Start > DateTime.UtcNow.AddDays(dayCount))
+            .OrderBy(x => x.Start)
+            .ToListAsync();
     }
 }

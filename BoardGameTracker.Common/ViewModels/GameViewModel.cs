@@ -19,6 +19,7 @@ public class GameViewModel
     public int Type { get; set; }
     public int State { get; set; }
     public int? BaseGameId { get; set; }
+    public bool HasScoring { get; set; }
     public GameViewModel BaseGame { get; set; }
     public List<GameViewModel> Expansions { get; set; }
     public List<GameLinkViewModel> Categories { get; set; }

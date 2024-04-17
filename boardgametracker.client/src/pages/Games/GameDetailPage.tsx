@@ -10,6 +10,11 @@ import {BgtPage} from '../../components/BgtLayout/BgtPage';
 import {BgtPageContent} from '../../components/BgtLayout/BgtPageContent';
 import {BgtDeleteModal} from '../../components/Modals/BgtDeleteModal';
 import {useGame} from '../../hooks/useGame';
+import {PlayerCountChart} from './components/charts/PlayerCountChart';
+import {PlayerScoringChart} from './components/charts/PlayerScoringChart';
+import {PlaysByWeekDayChart} from './components/charts/PlaysByWeekDayChart';
+import {ScoringRankChart} from './components/charts/ScoringRankChart';
+import {GameCharts} from './components/GameCharts';
 import {GameDetailsPopup} from './components/GameDetailsPopup';
 import {GamePlays} from './components/GamePlays';
 import {GameStatistics} from './components/GameStatistics';
@@ -37,24 +42,29 @@ export const GameDetailPage = () => {
 
   return (
     <BgtPage>
-      <BgtPageContent className='flex flex-col gap-3'>
+      <BgtPageContent className='flex flex-col gap-8'>
         <BgtDetailHeader
           title={game.title}
           imageSrc={game.image}
           navigateBackUrl={'/games'}
           actions={
             <>
-              <Button variant='outline'>{i18next.format(t('game.add'), 'capitalize')}</Button>
+              <Button disabled variant='outline'>{i18next.format(t('game.add'), 'capitalize')}</Button>
               <Button variant='outline' onClick={() => setOpenDetailsModal(true)}>{i18next.format(t('common.details'), 'capitalize')}</Button>
-              <Button variant='outline'>{i18next.format(t('common.edit'), 'capitalize')}</Button>
+              <Button disabled variant='outline'>{i18next.format(t('common.edit'), 'capitalize')}</Button>
               <Button variant='outline' color='red' onClick={() => setOpenDeleteModal(true)}>{i18next.format(t('common.delete.button'), 'capitalize')}</Button>
             </>
           }
         />
-
         <GameStatistics />
 
-        <div className='flex flex-col 2xl:flex-row gap-3'>
+        <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8'>
+          <PlaysByWeekDayChart />
+          <PlayerCountChart />
+          <PlayerScoringChart />
+          <ScoringRankChart />
+        </div>
+        <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8'>
           <GameTopPlayers />
           <GamePlays />
         </div>
@@ -66,6 +76,6 @@ export const GameDetailPage = () => {
           onDelete={deleteGameInternal}
         />
       </BgtPageContent>
-    </BgtPage>
+    </BgtPage >
   )
 }
