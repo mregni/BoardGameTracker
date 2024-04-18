@@ -5,6 +5,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 
 import {Button} from '@radix-ui/themes';
 
+import {BgtCard} from '../../components/BgtCard/BgtCard';
 import {BgtDetailHeader} from '../../components/BgtDetailHeader/BgtDetailHeader';
 import {BgtPage} from '../../components/BgtLayout/BgtPage';
 import {BgtPageContent} from '../../components/BgtLayout/BgtPageContent';
@@ -56,6 +57,7 @@ export const GameDetailPage = () => {
             </>
           }
         />
+
         <GameStatistics />
 
         <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8'>

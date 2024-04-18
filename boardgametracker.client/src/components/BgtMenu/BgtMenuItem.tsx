@@ -22,7 +22,7 @@ const ItemContent = (props: Props) => {
   return (
     <Link to={item.path}>
       <div className={clsx(
-        "h-10 flex w-full text-white rounded-md cursor-pointer items-center my-2 hover:bg-sky-900",
+        "h-10 flex w-full text-white cursor-pointer items-center my-2 hover:bg-sky-900",
         fullSize && "justify-between px-2",
         !fullSize && "justify-center px-4",
         activePage == item.path && "bg-sky-900"
@@ -55,7 +55,7 @@ export const BgtMenuItem = (props: Props) => {
           <ItemContent {...props} />
         </Trigger>
         <Content
-          className="rounded-md bg-gray-950 px-3 py-2"
+          className="bg-gray-950 px-3 py-2"
           sideOffset={10}
           side="right">
           {t(item.label)}

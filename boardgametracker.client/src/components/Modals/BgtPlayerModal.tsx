@@ -120,7 +120,7 @@ export const BgtPlayerModal = (props: Props) => {
               <div className='flex flex-row justify-start gap-3'>
                 {image && (
                   <div>
-                    <img alt="preview image" src={URL.createObjectURL(image)} className='w-28 h-28 rounded-md mb-1' />
+                    <img alt="preview image" src={URL.createObjectURL(image)} className='w-28 h-28 mb-1' />
                     <Button color='red' onClick={() => setImage(undefined)} className='w-28'>
                       <BgtIcon icon={<TrashIcon />} size={18} />
                     </Button>
@@ -128,7 +128,7 @@ export const BgtPlayerModal = (props: Props) => {
                 )}
                 {!image && (
                   <>
-                    <div className="flex flex-col items-center justify-center w-28 h-28 rounded-md shadow-2xl border-gray-500 border-2 border-dashed">
+                    <div className="flex flex-col items-center justify-center w-28 h-28 shadow-2xl border-gray-500 border-2 border-dashed">
                       <div className="flex flex-col items-center justify-center" >
                         <BgtIcon
                           icon={<PhotoIcon />}
@@ -145,7 +145,7 @@ export const BgtPlayerModal = (props: Props) => {
                   onDragEnter={onDragEnter}
                   onDragLeave={onDragLeave}
                   className={clsx(
-                    "flex flex-col items-center justify-center grow h-28 border-2 border-gray-500 hover:border-gray-400 hover:bg-gray-800 border-dashed rounded-md cursor-pointer",
+                    "flex flex-col items-center justify-center grow h-28 border-2 border-gray-500 hover:border-gray-400 hover:bg-gray-800 border-dashed cursor-pointer",
                     isDragging && "border-gray-400 bg-gray-800")}>
                   <div className="flex flex-col items-center justify-center" >
                     <BgtIcon

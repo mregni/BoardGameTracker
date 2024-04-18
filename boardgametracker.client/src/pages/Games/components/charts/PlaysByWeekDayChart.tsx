@@ -14,7 +14,7 @@ export const PlaysByWeekDayChart = () => {
   if (playsByDayChart === undefined) return null;
 
   return (
-    <BgtCard title='Charts' noTitleSpacing>
+    <BgtCard>
       <AgChartsReact options={{
         data: playsByDayChart,
         series: [{

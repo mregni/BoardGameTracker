@@ -47,7 +47,7 @@ export const BgtAvatar = (props: Props) => {
       }
       {
         !noTooltip && title && (
-          <span className="group-hover:opacity-100 group-hover:block bg-black py-1 px-1.5 text-sm text-white rounded-md absolute hidden left-1/2 z-50
+          <span className="group-hover:opacity-100 group-hover:block bg-black py-1 px-1.5 text-sm text-white absolute hidden left-1/2 z-50
     -translate-x-1/2 -translate-y-full -top-2 opacity-0 mx-auto font-sans font-normal focus:outline-none shadow-black shadow-md">{title}</span>
         )
       }

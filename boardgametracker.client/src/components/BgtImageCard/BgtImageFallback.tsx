@@ -20,8 +20,8 @@ export const BgtImageFallback = (props: Props) => {
     <div style={{ backgroundColor: StringToHsl(title) }}
       className={
         clsx("shadow-black drop-shadow-md flex justify-center items-center h-full aspect-square",
-          !roundBottom && "rounded-t-md",
-          roundBottom && "rounded-md",
+          !roundBottom && "rounded-t-sm",
+          roundBottom && "rounded-sm",
           fullWidth && "w-full",
           !fullWidth && "w-24 md:w-56"
         )

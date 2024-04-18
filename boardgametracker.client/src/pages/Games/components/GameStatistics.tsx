@@ -2,7 +2,6 @@ import {formatDistanceToNowStrict} from 'date-fns';
 import {useTranslation} from 'react-i18next';
 import {useParams} from 'react-router-dom';
 
-import {BgtCard} from '../../../components/BgtCard/BgtCard';
 import {BgtStatistic} from '../../../components/BgtStatistic/BgtStatistic';
 import {BgtStatisticsContainer} from '../../../components/BgtStatistics/BgtStatisticsContainer';
 import {useGame} from '../../../hooks/useGame';
@@ -22,27 +21,13 @@ export const GameStatistics = () => {
 
   return (
     <BgtStatisticsContainer>
-      <BgtCard hide={!statistics.highScore}>
-        <BgtStatistic content={statistics.highScore} title={t('statistics.high-score')} />
-      </BgtCard>
-      <BgtCard hide={!statistics.averageScore}>
-        <BgtStatistic content={RoundDecimal(statistics.averageScore)} title={t('statistics.average-score')} />
-      </BgtCard>
-      <BgtCard hide={!statistics.playCount}>
-        <BgtStatistic content={statistics.playCount} title={t('statistics.play-count')} />
-      </BgtCard>
-      <BgtCard hide={!statistics.lastPlayed}>
-        <BgtStatistic content={formatDistanceToNowStrict(new Date(statistics.lastPlayed ?? '01-01-1970'), {addSuffix: true})} title={t('statistics.last-played')} />
-      </BgtCard>
-      <BgtCard hide={!statistics.totalPlayedTime}>
-        <BgtStatistic content={statistics.totalPlayedTime} title={t('statistics.total-play-time')} suffix={t('common.minutes_abbreviation')} />
-      </BgtCard>
-      <BgtCard hide={!statistics.pricePerPlay}>
-        <BgtStatistic content={statistics.pricePerPlay} title={t('statistics.price-per-play')} suffix={settings.currency} />
-      </BgtCard>
-      <BgtCard hide={!statistics.mostWinsPlayer}>
-        <BgtStatistic content={statistics?.mostWinsPlayer?.name} title={t('statistics.most-wint')} player={byId(statistics.mostWinsPlayer?.id)} />
-      </BgtCard>
+      <BgtStatistic content={statistics.highScore} title={t('statistics.high-score')} />
+      <BgtStatistic content={RoundDecimal(statistics.averageScore)} title={t('statistics.average-score')} />
+      <BgtStatistic content={statistics.playCount} title={t('statistics.play-count')} />
+      <BgtStatistic content={formatDistanceToNowStrict(new Date(statistics.lastPlayed ?? '01-01-1970'), {addSuffix: true})} title={t('statistics.last-played')} />
+      <BgtStatistic content={statistics.totalPlayedTime} title={t('statistics.total-play-time')} suffix={t('common.minutes_abbreviation')} />
+      <BgtStatistic content={statistics.pricePerPlay} title={t('statistics.price-per-play')} suffix={settings.currency} />
+      <BgtStatistic content={statistics?.mostWinsPlayer?.name} title={t('statistics.most-wint')} player={byId(statistics.mostWinsPlayer?.id)} />
     </BgtStatisticsContainer>
   )
 }

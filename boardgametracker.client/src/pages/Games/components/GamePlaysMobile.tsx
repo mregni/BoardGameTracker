@@ -39,7 +39,7 @@ export const MobileDetails = () => {
   }
 
   return (
-    <div className='rounded-md flex flex-col gap-3'>
+    <div className='flex flex-col gap-3'>
       {fullPlayList.map((play, i) => <BgtMobilePlayCard key={play.id} index={i} play={play} />)}
       <Button
         size="2"

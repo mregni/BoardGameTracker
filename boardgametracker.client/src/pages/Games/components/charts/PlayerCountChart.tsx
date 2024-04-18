@@ -11,7 +11,7 @@ export const PlayerCountChart = () => {
   const { t } = useTranslation();
 
   return (
-    <BgtCard noTitleSpacing>
+    <BgtCard>
       <AgChartsReact options={{
         data: playerCountChart,
         series: [{

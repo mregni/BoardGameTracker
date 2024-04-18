@@ -27,7 +27,7 @@ export const BgtDetailHeader = (props: Props) => {
       </div>
       <div className='flex items-center justify-start gap-3 flex-col'>
         <div className='max-w-24 md:max-w-56'>
-          { imageSrc && <img src={imageSrc} className='rounded-md object-fill md:border-orange-600 md:border-2 w-60 mt-4' />}
+          { imageSrc && <img src={imageSrc} className='rounded-sm object-fill md:border-orange-600 md:border-2 w-60 mt-4' />}
           <BgtImageFallback display={!imageSrc} title={title} />
         </div>
         <div className='flex flex-col gap-3 items-center'>

@@ -34,8 +34,10 @@ export const PlayerScoringChart = () => {
       return data;
     });
 
+    console.log(transformedSeries)
+
   return (
-    <BgtCard noTitleSpacing>
+    <BgtCard>
       <AgChartsReact options={{
         data: transformedSeries,
         theme: {
@@ -54,7 +56,7 @@ export const PlayerScoringChart = () => {
         },
         series:
           Object
-            .keys(transformedSeries[0])
+            .keys(transformedSeries[0] ?? [])
             .filter(x => x !== 'date')
             .map(x => (
               {

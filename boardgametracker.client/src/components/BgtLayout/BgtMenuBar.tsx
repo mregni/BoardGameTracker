@@ -64,7 +64,7 @@ const BgtMenuBar = () => {
     <>
       <div className={
         clsx(
-          "hidden relative md:flex bg-gray-950  h-full flex-col justify-between ",
+          "hidden relative md:flex bg-gray-950 h-full flex-col justify-between ",
           !fullSizeMenu && "w-20",
           fullSizeMenu && "w-64"
         )
@@ -78,7 +78,7 @@ const BgtMenuBar = () => {
           </div>
         </div>
         <div className={
-          clsx("flex justify-center place-content-center bg-sky-900 rounded-md m-3",
+          clsx("flex justify-center place-content-center bg-sky-900",
             { "flex-row": fullSizeMenu },
             { "flex-col": !fullSizeMenu },)
         }>

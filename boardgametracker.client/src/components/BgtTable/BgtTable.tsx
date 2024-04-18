@@ -34,7 +34,7 @@ interface PaginationProps {
 export const BgtTableContainer = (props: ContainerProps) => {
   const { children } = props;
   return (
-    <div className='rounded-md -mx-3 -mb-3'>
+    <div className='-mx-3 -mb-3'>
       {children}
     </div>
   )

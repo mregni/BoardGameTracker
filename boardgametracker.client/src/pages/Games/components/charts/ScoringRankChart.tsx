@@ -29,7 +29,7 @@ export const ScoringRankChart = () => {
   if (scoreRankChart === undefined || !game?.hasScoring) return null;
 
   return (
-    <BgtCard noTitleSpacing>
+    <BgtCard>
       <AgChartsReact options={{
         data: scoreRankChart,
         series: [

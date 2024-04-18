@@ -28,7 +28,7 @@ export const GameTopPlayers = () => {
   return (
     <BgtCard
       title={t('games.cards.top-players')}
-      contentStyle='bg-sky-800'
+      contentStyle='bg-sky-800 min-h-[300px]'
     >
       <div className='flex flex-col gap-3 divide-y divide-sky-600'>
         {topPlayers.map((player) =>

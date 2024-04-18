@@ -44,8 +44,8 @@ export const BgtImageCard = (props: Props) => {
               alt={`poster for ${title}`}
               className={
                 clsx("shadow-black drop-shadow-md w-full",
-                  state !== null && "rounded-t-md",
-                  state === null && "rounded-md"
+                  state !== null && "rounded-t-sm",
+                  state === null && "rounded-sm"
                 )
               }
             />
@@ -57,7 +57,7 @@ export const BgtImageCard = (props: Props) => {
           as='div'
           size="1"
           className={
-            clsx("rounded-b-md", getColorFromGameState(state))
+            clsx("rounded-b-sm", getColorFromGameState(state))
           }>
           {t(getItemStateTranslationKey(state))}
         </Text>}

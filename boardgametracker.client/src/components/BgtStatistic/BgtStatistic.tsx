@@ -21,13 +21,13 @@ export const BgtStatistic = (props: Props) => {
   if (content === null || content === undefined) return null;
 
   return (
-    <div className='flex flex-col justify-center gap-1 pl-3'>
-      <Text size="1" className='uppercase'>{title}</Text>
+    <div className='flex flex-col justify-center items-center min-w-24 p-3'>
       <div className={clsx('flex flex-row', (player ?? game) && 'gap-1 items-center')}>
         {player && <BgtAvatar title={player.name} image={player.image} onClick={() => navigate(`/players/${player.id}`)} />}
         {game && <BgtAvatar title={game.title} image={game.image} onClick={() => navigate(`/games/${game.id}`)} />}
         <div className='text-xl font-bold line-clamp-1'>{content}{suffix && <span className='text-sm'>&nbsp;{suffix}</span>}</div>
       </div>
+      <Text size="1">{title}</Text>
     </div>
   )
 }

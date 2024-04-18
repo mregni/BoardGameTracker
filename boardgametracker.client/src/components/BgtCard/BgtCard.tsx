@@ -1,12 +1,15 @@
 import clsx from 'clsx';
 import {ComponentPropsWithoutRef} from 'react';
 
+import {Text} from '@radix-ui/themes';
+
 interface Props extends ComponentPropsWithoutRef<'div'> {
   contentStyle?: string;
   transparant?: boolean;
   title?: string;
   hide?: boolean;
   noTitleSpacing?: boolean;
+  noPadding?: boolean;
 }
 
 export const BgtCard = (props: Props) => {
@@ -15,21 +18,20 @@ export const BgtCard = (props: Props) => {
     className,
     contentStyle = '',
     transparant = false,
-    title, 
+    title,
     hide = false,
-    noTitleSpacing = false
+    noPadding = false,
   } = props;
-  
+
   return (
     <div className={clsx('flex flex-col gap-1', className, hide && 'hidden')}>
-      { title && <div className='pl-2 text-gray-400 font-bold text-sm'>{title}</div> }
-      { !title && <div className={clsx(noTitleSpacing && title === undefined && 'md:h-5')}></div>}
       <div className={
         clsx(
-          'rounded-md',
           contentStyle,
-          !transparant && 'border-blue-500 border bg-gray-900 p-3'
+          !transparant && 'border-blue-500 border bg-gray-900',
+          !noPadding && 'p-3'
         )}>
+        {title && <Text size="3" align="center" weight="bold">{title}</Text>}
         {children}
       </div>
     </div>
