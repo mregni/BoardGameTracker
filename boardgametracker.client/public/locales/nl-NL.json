@@ -92,6 +92,9 @@
       "successfull": "Game is successfully deleted.",
       "failed": "Game deletion failed, check logs for more details."
     },
+    "scoring": {
+      "label": "Game has scoring"
+    },
     "charts": {
       "player-count": "Games by player count",
       "games-week-day": "Games by day of the week",
@@ -148,6 +151,21 @@
       "error": "Error while uploading image, check logs"
     }
   },
+  "location": {
+    "new": {
+      "title": "Create new location",
+      "description": "Enter the location name to create a new one.",
+      "name": {
+        "placeholder": "Location name",
+        "required": "Location name is required"
+      },
+      "save": "Create location"
+    },
+    "notifications": {
+      "created": "Location is succesfully created",
+      "failed": "Failed creating location"
+    }
+  },
   "statistics": {
     "average-score": "Average score",
     "high-score": "High score",
@@ -161,5 +179,60 @@
     "distinct-game-count": "Different games",
     "favorite-color": "Favorite color",
     "best-game": "Best game"
+  },
+  "playplayer": {
+    "save": "Create game play",
+    "new": {
+      "save": "Add player",
+      "title": "Add player",
+      "description": "Fill in the form to add a new player to this game play.",
+      "player": {
+        "label": "Player",
+        "required": "Player is required"
+      },
+      "players": {
+        "label": "Players",
+        "sub-label": "Select all players that where in the game and put in their details.",
+        "add": "+ add player",
+        "minimum": "Add at least one player to this game"
+      },
+      "duration": {
+        "label": "Duration",
+        "sub-label": "Total amount of played minutes. Will default to max game minutes or 30.",
+        "required": "Duration is required"
+      },
+      "game": {
+        "label": "Game",
+        "sub-label": "Select the corect game",
+        "required": "Game is required"
+      },
+      "won": {
+        "label": "Player has won the game"
+      },
+      "bot": {
+        "label": "Player is a bot"
+      },
+      "start": {
+        "label": "Start",
+        "sub-label": "Start date and time of the game.",
+        "required": "Start date is required"
+      },
+      "score": {
+        "label": "End scoring",
+        "required": "Score is required"
+      },
+      "first-play": {
+        "label": "Played game for the first time"
+      },
+      "location": {
+        "label": "Select your location",
+        "sub-label": "Select the corect location you played this game.",
+        "create-new": "Create location '{{name}}'"
+      },
+      "comment": {
+        "label": "Comment",
+        "sub-label": "Extra comment on the game."
+      }
+    }
   }
 }
