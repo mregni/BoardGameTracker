@@ -44,7 +44,6 @@ public class PlayRepository : IPlayRepository
             dbPlay.Comment = play.Comment;
             dbPlay.End = play.End;
             dbPlay.Start = play.Start;
-            dbPlay.Ended = play.Ended;
             dbPlay.LocationId = play.LocationId;
             await _context.SaveChangesAsync();
         }

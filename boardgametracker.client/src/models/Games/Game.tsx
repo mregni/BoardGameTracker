@@ -1,6 +1,6 @@
-import {GameState} from './GameState';
-import {GameType} from './GameType';
-import {PersonType} from './PersonType';
+import { GameState } from './GameState';
+import { GameType } from './GameType';
+import { PersonType } from './PersonType';
 
 export interface Game {
   id: number;

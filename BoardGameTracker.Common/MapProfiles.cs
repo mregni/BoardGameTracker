@@ -7,6 +7,7 @@ using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Common.ViewModels;
+using BoardGameTracker.Common.ViewModels.Location;
 using BoardGameTracker.Common.ViewModels.Results;
 
 namespace BoardGameTracker.Common;

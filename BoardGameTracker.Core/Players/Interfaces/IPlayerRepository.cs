@@ -10,7 +10,6 @@ public interface IPlayerRepository
     Task DeletePlayer(Player player);
     Task<int> GetPlayCount(int id);
     Task<int> GetBestGameId(int id);
-    Task<string?> GetFavoriteColor(int id);
     Task<int> GetTotalWinCount(int id);
     Task<double> GetPlayLengthInMinutes(int id);
     Task<List<Play>> GetPlaysForPlayer(int id, int skip, int? take);

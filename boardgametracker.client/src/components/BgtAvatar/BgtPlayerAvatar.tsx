@@ -1,9 +1,9 @@
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-import {usePlayers} from '../../hooks/usePlayers';
-import {PlayPlayer} from '../../models';
-import {StringToHsl} from '../../utils/stringUtils';
-import {BgtAvatar} from './BgtAvatar';
+import { usePlayers } from '../../hooks/usePlayers';
+import { PlayPlayer } from '../../models';
+import { StringToHsl } from '../../utils/stringUtils';
+import { BgtAvatar } from './BgtAvatar';
 
 interface Props {
   player: PlayPlayer;
@@ -21,5 +21,5 @@ export const BgtPLayerAvatar = (props: Props) => {
       image={playerById(player.playerId)?.image}
       color={StringToHsl(playerById(player.playerId)?.name)}
     />
-  )
-}
+  );
+};

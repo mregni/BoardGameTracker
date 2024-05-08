@@ -1,5 +1,5 @@
-import {DesktopDetails} from './GamePlaysDesktop';
-import {MobileDetails} from './GamePlaysMobile';
+import { DesktopDetails } from './GamePlaysDesktop';
+import { MobileDetails } from './GamePlaysMobile';
 
 export const GamePlays = () => {
   return (
@@ -11,5 +11,5 @@ export const GamePlays = () => {
         <MobileDetails />
       </div>
     </>
-  )
-}
+  );
+};

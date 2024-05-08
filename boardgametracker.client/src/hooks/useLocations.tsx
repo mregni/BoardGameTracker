@@ -1,34 +1,64 @@
-import {useQuery} from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 
-import {ListResult, Location, QUERY_KEYS} from '../models';
-import {getLocations} from './services/locationService';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { CreateLocation, FailResult, ListResult, Location, QUERY_KEYS, Result } from '../models';
+import { useToast } from '../providers/BgtToastProvider';
+import { addLocation, getLocations } from './services/locationService';
 
 export interface Props {
-  location: Location[] | undefined
+  locations: Location[] | undefined;
   byId: (id: number) => Location | null;
+  save: (location: CreateLocation) => Promise<Result<Location>>;
+  isSaving: boolean;
 }
 
 export const useLocations = (): Props => {
+  const queryClient = useQueryClient();
+  const { showInfoToast, showErrorToast } = useToast();
+
   const { data } = useQuery<ListResult<Location>>({
     queryKey: [QUERY_KEYS.locations],
-    queryFn: ({ signal }) => getLocations(signal)
+    queryFn: ({ signal }) => getLocations(signal),
+  });
+
+  const { mutateAsync: save, isPending: isSaving } = useMutation<Result<Location>, AxiosError<FailResult>, CreateLocation>({
+    mutationFn: addLocation,
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.locations] });
+    },
+    onSettled: () => queryClient.fetchQuery({ queryKey: [QUERY_KEYS.locations] }),
+    onSuccess(data) {
+      const previousLocations = queryClient.getQueryData<ListResult<Location>>([QUERY_KEYS.locations]);
+
+      if (previousLocations !== undefined) {
+        previousLocations.count++;
+        previousLocations.list = [...previousLocations.list, data.model];
+        queryClient.setQueryData([QUERY_KEYS.locations], previousLocations);
+      }
+
+      showInfoToast('location.notifications.created');
+    },
+    onError: () => {
+      showErrorToast('location.notifications.failed');
+    },
   });
 
   const byId = (id: number): Location | null => {
-    if (data === undefined)
-      return null;
+    if (data === undefined) return null;
 
-    const index = data.list.findIndex(x => x.id === id);
+    const index = data.list.findIndex((x) => x.id === id);
     if (index !== -1) {
       return data.list[index];
     }
 
     return null;
-  }
+  };
 
   return {
-    location: data?.list,
-    byId
-  }
-}
-
+    locations: data?.list,
+    byId,
+    save,
+    isSaving,
+  };
+};

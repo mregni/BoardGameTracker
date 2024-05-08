@@ -1,25 +1,23 @@
 import i18next from 'i18next';
-import {useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useNavigate, useParams} from 'react-router-dom';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import {Button} from '@radix-ui/themes';
+import { Button } from '@radix-ui/themes';
 
-import {BgtCard} from '../../components/BgtCard/BgtCard';
-import {BgtDetailHeader} from '../../components/BgtDetailHeader/BgtDetailHeader';
-import {BgtPage} from '../../components/BgtLayout/BgtPage';
-import {BgtPageContent} from '../../components/BgtLayout/BgtPageContent';
-import {BgtDeleteModal} from '../../components/Modals/BgtDeleteModal';
-import {useGame} from '../../hooks/useGame';
-import {PlayerCountChart} from './components/charts/PlayerCountChart';
-import {PlayerScoringChart} from './components/charts/PlayerScoringChart';
-import {PlaysByWeekDayChart} from './components/charts/PlaysByWeekDayChart';
-import {ScoringRankChart} from './components/charts/ScoringRankChart';
-import {GameCharts} from './components/GameCharts';
-import {GameDetailsPopup} from './components/GameDetailsPopup';
-import {GamePlays} from './components/GamePlays';
-import {GameStatistics} from './components/GameStatistics';
-import {GameTopPlayers} from './components/GameTopPlayers';
+import { BgtDetailHeader } from '../../components/BgtDetailHeader/BgtDetailHeader';
+import { BgtPage } from '../../components/BgtLayout/BgtPage';
+import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
+import { BgtDeleteModal } from '../../components/Modals/BgtDeleteModal';
+import { useGame } from '../../hooks/useGame';
+import { PlayerCountChart } from './components/charts/PlayerCountChart';
+import { PlayerScoringChart } from './components/charts/PlayerScoringChart';
+import { PlaysByWeekDayChart } from './components/charts/PlaysByWeekDayChart';
+import { ScoringRankChart } from './components/charts/ScoringRankChart';
+import { GameDetailsPopup } from './components/GameDetailsPopup';
+import { GamePlays } from './components/GamePlays';
+import { GameStatistics } from './components/GameStatistics';
+import { GameTopPlayers } from './components/GameTopPlayers';
 
 export const GameDetailPage = () => {
   const { id } = useParams();
@@ -36,48 +34,51 @@ export const GameDetailPage = () => {
       })
       .finally(() => {
         setOpenDeleteModal(false);
-      })
-  }
+      });
+  };
 
   if (game === undefined) return null;
 
   return (
     <BgtPage>
-      <BgtPageContent className='flex flex-col gap-8'>
+      <BgtPageContent className="flex flex-col gap-8">
         <BgtDetailHeader
           title={game.title}
           imageSrc={game.image}
           navigateBackUrl={'/games'}
           actions={
             <>
-              <Button disabled variant='outline'>{i18next.format(t('game.add'), 'capitalize')}</Button>
-              <Button variant='outline' onClick={() => setOpenDetailsModal(true)}>{i18next.format(t('common.details'), 'capitalize')}</Button>
-              <Button disabled variant='outline'>{i18next.format(t('common.edit'), 'capitalize')}</Button>
-              <Button variant='outline' color='red' onClick={() => setOpenDeleteModal(true)}>{i18next.format(t('common.delete.button'), 'capitalize')}</Button>
+              <Button variant="outline" onClick={() => navigate(`/play/create/${game.id}`)}>
+                {i18next.format(t('game.add'), 'capitalize')}
+              </Button>
+              <Button variant="outline" onClick={() => setOpenDetailsModal(true)}>
+                {i18next.format(t('common.details'), 'capitalize')}
+              </Button>
+              <Button disabled variant="outline">
+                {i18next.format(t('common.edit'), 'capitalize')}
+              </Button>
+              <Button variant="outline" color="red" onClick={() => setOpenDeleteModal(true)}>
+                {i18next.format(t('common.delete.button'), 'capitalize')}
+              </Button>
             </>
           }
         />
 
         <GameStatistics />
 
-        <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8'>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
           <PlaysByWeekDayChart />
           <PlayerCountChart />
           <PlayerScoringChart />
           <ScoringRankChart />
         </div>
-        <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8'>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
           <GameTopPlayers />
           <GamePlays />
         </div>
         <GameDetailsPopup open={openDetailsModal} setOpen={setOpenDetailsModal} id={id} />
-        <BgtDeleteModal
-          title={game.title}
-          open={openDeleteModal}
-          setOpen={setOpenDeleteModal}
-          onDelete={deleteGameInternal}
-        />
+        <BgtDeleteModal title={game.title} open={openDeleteModal} setOpen={setOpenDeleteModal} onDelete={deleteGameInternal} />
       </BgtPageContent>
-    </BgtPage >
-  )
-}
+    </BgtPage>
+  );
+};

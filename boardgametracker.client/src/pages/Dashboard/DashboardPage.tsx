@@ -1,5 +1,3 @@
 export const DashboardPage = () => {
-  return (
-    <>dashboard</>
-  )
-}
+  return <>dashboard</>;
+};

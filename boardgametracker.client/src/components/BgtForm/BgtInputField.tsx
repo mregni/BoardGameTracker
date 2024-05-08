@@ -1,57 +1,39 @@
-import {DeepMap, FieldError, FieldValues, Path, UseFormRegister} from 'react-hook-form';
-import {useTranslation} from 'react-i18next';
-
-import {TextField} from '@radix-ui/themes';
+import { Control, FieldValues, Path, useController, UseFormRegister } from 'react-hook-form';
+import clsx from 'clsx';
+import { TextField } from '@radix-ui/themes';
+ 
+import { BgtFormErrors } from './BgtFormErrors';
 
 export interface Props<T extends FieldValues> {
   type: 'text' | 'number' | 'date';
   placeholder?: string;
   name: Path<T>;
   register?: UseFormRegister<T>;
-  errors?: Partial<DeepMap<T, FieldError>>;
+  control: Control<T>;
   valueAsNumber?: boolean;
-  label: string;
+  label?: string;
   prefixLabel?: string;
   className?: string;
   disabled?: boolean;
 }
 
-export const BgtInputField = <TFormValues extends FieldValues>(props: Props<TFormValues>) => {
+export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
+  const { type, placeholder = '', name, valueAsNumber, label, register, control, prefixLabel = null, className = '', disabled = false } = props;
+
   const {
-    type,
-    placeholder = '',
-    name,
-    valueAsNumber,
-    label,
-    register,
-    errors,
-    prefixLabel = null,
-    className = '',
-    disabled = false
-  } = props;
-  const { t } = useTranslation();
+    fieldState: { error },
+  } = useController({ name, control });
 
   return (
-    <div className="grid">
-      <div className="flex items-baseline justify-between">
-        <div className="text-[15px] font-medium leading-[35px]">
-          {label}
+    <div className="grid gap-1">
+      {label && (
+        <div className="flex items-baseline justify-between">
+          <div className="text-[15px] font-medium leading-[35px]">{label}</div>
+          <BgtFormErrors error={error} />
         </div>
-        {
-          errors?.[name] && (
-            <div className="text-[13px] text-red-500 opacity-[0.8]">
-              {t(errors?.[name].message as string)}
-            </div>)
-        }
-      </div>
-      <TextField.Root className={className}>
-        {
-          prefixLabel && (
-            <TextField.Slot>
-              {prefixLabel}
-            </TextField.Slot>
-          )
-        }
+      )}
+      <TextField.Root className={clsx(className, (type === 'number' || type === 'date') && 'pr-2')}>
+        {prefixLabel && <TextField.Slot>{prefixLabel}</TextField.Slot>}
         <TextField.Input
           disabled={disabled}
           type={type}
@@ -61,6 +43,11 @@ export const BgtInputField = <TFormValues extends FieldValues>(props: Props<TFor
           {...register?.(name, { valueAsNumber })}
         />
       </TextField.Root>
+      {!label && (
+        <div className="flex items-baseline">
+          <BgtFormErrors error={error} />
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};

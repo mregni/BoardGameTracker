@@ -18,6 +18,7 @@ public class LocationRepository : ILocationRepository
     {
         return _context.Locations
             .Include(x => x.Plays)
+            .OrderBy(x => x.Name)
             .ToListAsync();
     }
 

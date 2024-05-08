@@ -1,4 +1,4 @@
-import {ReactNode} from 'react';
+import { ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -8,9 +8,5 @@ interface Props {
 export const BgtPageContent = (props: Props) => {
   const { children, className = '' } = props;
 
-  return (
-    <div className={className}>
-      {children}
-    </div>
-  )
+  return <div className={className}>{children}</div>;
 };

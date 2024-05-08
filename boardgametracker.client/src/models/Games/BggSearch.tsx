@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import {GameState} from './GameState';
+import { GameState } from './GameState';
 
 export interface BggSearch {
   bggId: string;
@@ -15,9 +15,9 @@ export const BggSearchSchema = z.object({
   price: z.coerce.number(),
   date: z.coerce.date({
     errorMap: () => ({
-      message: 'game.added-date.required'
-    })
+      message: 'game.added-date.required',
+    }),
   }),
   state: z.preprocess((value) => Number(value), z.nativeEnum(GameState)),
-  hasScoring: z.boolean()
+  hasScoring: z.boolean(),
 });

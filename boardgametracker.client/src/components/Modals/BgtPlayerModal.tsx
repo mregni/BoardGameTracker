@@ -1,23 +1,27 @@
 import clsx from 'clsx';
-import {ChangeEvent, DragEvent, useState} from 'react';
-import {useForm} from 'react-hook-form';
-import {useTranslation} from 'react-i18next';
+import { ChangeEvent, DragEvent, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import * as z from 'zod';
 
-import {ArrowUpTrayIcon, PhotoIcon, TrashIcon} from '@heroicons/react/24/outline';
-import {zodResolver} from '@hookform/resolvers/zod';
+import { ArrowUpTrayIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { zodResolver } from '@hookform/resolvers/zod';
 import * as Form from '@radix-ui/react-form';
-import {Button, Dialog} from '@radix-ui/themes';
+import { Button, Dialog } from '@radix-ui/themes';
 
-import {useImages} from '../../hooks/useImages';
-import {usePlayers} from '../../hooks/usePlayers';
-import {Player} from '../../models';
-import {BgtInputField} from '../BgtForm/BgtInputField';
-import {BgtIcon} from '../BgtIcon/BgtIcon';
+import { useImages } from '../../hooks/useImages';
+import { usePlayers } from '../../hooks/usePlayers';
+import { Player } from '../../models';
+import { BgtInputField } from '../BgtForm/BgtInputField';
+import { BgtIcon } from '../BgtIcon/BgtIcon';
 
 interface Props {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface FormProps {
+  name: string;
 }
 
 export const BgtPlayerModal = (props: Props) => {
@@ -35,7 +39,7 @@ export const BgtPlayerModal = (props: Props) => {
     }
 
     return false;
-  }
+  };
 
   const onImageChangeViaDrop = (event: DragEvent<HTMLLabelElement>) => {
     setIsDragging(false);
@@ -47,36 +51,32 @@ export const BgtPlayerModal = (props: Props) => {
     }
 
     return false;
-  }
+  };
 
   const onDragOver = (event: DragEvent<HTMLLabelElement>) => {
     event.stopPropagation();
     event.preventDefault();
 
     return false;
-  }
+  };
 
   const onDragEnter = (event: DragEvent<HTMLLabelElement>) => {
     event.stopPropagation();
     event.preventDefault();
     setIsDragging(true);
-  }
+  };
 
   const onDragLeave = (event: DragEvent<HTMLLabelElement>) => {
     event.stopPropagation();
     event.preventDefault();
     setIsDragging(false);
-  }
-
-  interface FormProps {
-    name: string
-  }
+  };
 
   const schema = z.object({
-    name: z.string().min(1, { message: t('player.new.name.required') })
+    name: z.string().min(1, { message: t('player.new.name.required') }),
   });
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormProps>({
+  const { register, handleSubmit, control } = useForm<FormProps>({
     resolver: zodResolver(schema),
   });
 
@@ -87,7 +87,7 @@ export const BgtPlayerModal = (props: Props) => {
     const player: Player = {
       id: 0,
       name: data.name,
-      image: savedImage?.model ?? ''
+      image: savedImage?.model ?? '',
     };
 
     await save(player);
@@ -97,31 +97,25 @@ export const BgtPlayerModal = (props: Props) => {
   return (
     <Dialog.Root open={open}>
       <Dialog.Content>
-        <Dialog.Title>
-          {t('player.new.title')}
-        </Dialog.Title>
-        <Dialog.Description>
-          {t('player.new.description')}
-        </Dialog.Description>
+        <Dialog.Title>{t('player.new.title')}</Dialog.Title>
+        <Dialog.Description>{t('player.new.description')}</Dialog.Description>
         <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
-          <div className='flex flex-col gap-3 mt-3 mb-6' >
+          <div className="flex flex-col gap-3 mt-3 mb-6">
             <BgtInputField
-              type='text'
+              type="text"
               placeholder={t('player.new.name.placeholder')}
-              name='name'
+              name="name"
               label={t('common.name')}
               register={register}
-              errors={errors}
+              control={control}
             />
             <div className="flex justify-start w-full flex-col h-44">
-              <div className="text-[15px] font-medium leading-[35px]">
-                {t('common.profile-picture')}
-              </div>
-              <div className='flex flex-row justify-start gap-3'>
+              <div className="text-[15px] font-medium leading-[35px]">{t('common.profile-picture')}</div>
+              <div className="flex flex-row justify-start gap-3">
                 {image && (
                   <div>
-                    <img alt="preview image" src={URL.createObjectURL(image)} className='w-28 h-28 mb-1' />
-                    <Button color='red' onClick={() => setImage(undefined)} className='w-28'>
+                    <img alt="preview image" src={URL.createObjectURL(image)} className="w-28 h-28 mb-1" />
+                    <Button color="red" onClick={() => setImage(undefined)} className="w-28">
                       <BgtIcon icon={<TrashIcon />} size={18} />
                     </Button>
                   </div>
@@ -129,11 +123,8 @@ export const BgtPlayerModal = (props: Props) => {
                 {!image && (
                   <>
                     <div className="flex flex-col items-center justify-center w-28 h-28 shadow-2xl border-gray-500 border-2 border-dashed">
-                      <div className="flex flex-col items-center justify-center" >
-                        <BgtIcon
-                          icon={<PhotoIcon />}
-                          className='text-gray-500'
-                        />
+                      <div className="flex flex-col items-center justify-center">
+                        <BgtIcon icon={<PhotoIcon />} className="text-gray-500" />
                       </div>
                     </div>
                   </>
@@ -145,14 +136,16 @@ export const BgtPlayerModal = (props: Props) => {
                   onDragEnter={onDragEnter}
                   onDragLeave={onDragLeave}
                   className={clsx(
-                    "flex flex-col items-center justify-center grow h-28 border-2 border-gray-500 hover:border-gray-400 hover:bg-gray-800 border-dashed cursor-pointer",
-                    isDragging && "border-gray-400 bg-gray-800")}>
-                  <div className="flex flex-col items-center justify-center" >
-                    <BgtIcon
-                      icon={<ArrowUpTrayIcon />}
-                      className='text-gray-500'
-                    />
-                    <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">{t('images.upload')}</span><span className='hidden sm:inline'>{t('images.drag-and-drop')}</span></p>
+                    'flex flex-col items-center justify-center grow h-28 border-2 border-gray-500 hover:border-gray-400 hover:bg-gray-800 border-dashed cursor-pointer',
+                    isDragging && 'border-gray-400 bg-gray-800'
+                  )}
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    <BgtIcon icon={<ArrowUpTrayIcon />} className="text-gray-500" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">{t('images.upload')}</span>
+                      <span className="hidden sm:inline">{t('images.drag-and-drop')}</span>
+                    </p>
                     <p className="text-xs text-gray-500">{t('images.types')}</p>
                   </div>
                   <input id="dropzone-file" onChange={onImageChangeViaInput} type="file" className="hidden" />
@@ -161,15 +154,15 @@ export const BgtPlayerModal = (props: Props) => {
             </div>
           </div>
 
-          <div className='flex justify-end gap-3'>
+          <div className="flex justify-end gap-3">
             <Dialog.Close>
               <>
                 <Form.Submit asChild>
-                  <Button type='submit' variant='surface' color='orange' disabled={isPending}>
+                  <Button type="submit" variant="surface" color="orange" disabled={isPending}>
                     {t('player.new.save')}
                   </Button>
                 </Form.Submit>
-                <Button variant='surface' color='gray' onClick={() => setOpen(false)}>
+                <Button variant="surface" color="gray" onClick={() => setOpen(false)}>
                   {t('common.cancel')}
                 </Button>
               </>
@@ -177,6 +170,6 @@ export const BgtPlayerModal = (props: Props) => {
           </div>
         </form>
       </Dialog.Content>
-    </Dialog.Root >
-  )
-}
+    </Dialog.Root>
+  );
+};

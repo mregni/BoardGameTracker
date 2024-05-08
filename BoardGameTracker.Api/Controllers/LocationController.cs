@@ -2,6 +2,7 @@
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
+using BoardGameTracker.Common.ViewModels.Location;
 using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Locations.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,7 @@ public class LocationController : ControllerBase
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreateLocation([FromBody] LocationViewModel? viewModel)
+    public async Task<IActionResult> CreateLocation([FromBody] CreateLocationViewModel? viewModel)
     {
         if (viewModel == null)
         {
@@ -45,7 +46,10 @@ public class LocationController : ControllerBase
         
         try
         {
-            var location = _mapper.Map<Location>(viewModel);
+            var location = new Location
+            {
+                Name = viewModel.Name
+            };
             location = await _locationService.Create(location);
             
             var result = _mapper.Map<LocationViewModel>(location);

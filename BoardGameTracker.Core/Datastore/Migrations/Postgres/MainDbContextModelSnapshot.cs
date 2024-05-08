@@ -237,12 +237,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int>("PlayId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("CharacterName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Color")
-                        .HasColumnType("text");
-
                     b.Property<bool>("FirstPlay")
                         .HasColumnType("boolean");
 
@@ -251,9 +245,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.Property<double?>("Score")
                         .HasColumnType("double precision");
-
-                    b.Property<string>("Team")
-                        .HasColumnType("text");
 
                     b.Property<bool>("Won")
                         .HasColumnType("boolean");
@@ -346,9 +337,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.Property<DateTime>("End")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Ended")
-                        .HasColumnType("boolean");
 
                     b.Property<int>("GameId")
                         .HasColumnType("integer");

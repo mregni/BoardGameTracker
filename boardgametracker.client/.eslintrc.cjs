@@ -3,19 +3,32 @@ module.exports = {
   env: { browser: true, es2020: true },
   extends: [
     'eslint:recommended',
-    'plugin:@typescript-eslint/recommended-type-checked',
-    'plugin:@typescript-eslint/stylistic-type-checked',
-    'plugin:react-hooks/recommended',
-    'plugin:react/recommended',
-    'plugin:react/jsx-runtime'
+    'plugin:import/recommended',
+    'plugin:import/typescript',
+    // 'plugin:@typescript-eslint/recommended-type-checked',
+    // 'plugin:@typescript-eslint/stylistic-type-checked',
+    // 'plugin:react-hooks/recommended',
+    // 'plugin:react/recommended',
+    // 'plugin:react/jsx-runtime',
+    'prettier',
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs'],
   parser: '@typescript-eslint/parser',
-  plugins: ['react-refresh'],
+  plugins: ['react-refresh', 'import', 'autofix'],
   rules: {
-    'react-refresh/only-export-components': [
+    'no-plusplus': 'error',
+    'no-console': 'error',
+    'autofix/no-debugger': 'error',
+    'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    'import/order': [
       'warn',
-      { allowConstantExport: true },
+      {
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'desc',
+          caseInsensitive: true,
+        },
+      },
     ],
   },
   parserOptions: {
@@ -24,4 +37,4 @@ module.exports = {
     project: ['./tsconfig.json', './tsconfig.node.json'],
     tsconfigRootDir: __dirname,
   },
-}
+};

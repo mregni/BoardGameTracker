@@ -1,5 +1,5 @@
-import {PlayPlayer} from '../';
-import {PlayFlag} from '../Games/PlayFlag';
+import { PlayPlayer } from '../';
+import { PlayFlag } from '../Games/PlayFlag';
 
 export interface Play {
   id: number;

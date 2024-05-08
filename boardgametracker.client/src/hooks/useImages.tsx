@@ -1,9 +1,9 @@
-import {AxiosError} from 'axios';
+import { AxiosError } from 'axios';
 
-import {useMutation} from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 
-import {FailResult, Result} from '../models';
-import {uploadImages} from './services/imageService';
+import { FailResult, Result } from '../models';
+import { uploadImages } from './services/imageService';
 
 export interface RemoteImages {
   isPending: boolean;
@@ -17,16 +17,15 @@ export interface ImageUpload {
 
 export const useImages = (): RemoteImages => {
   const { mutateAsync, isPending } = useMutation<Result<string>, AxiosError<FailResult>, ImageUpload>({
-    mutationFn: uploadImages
+    mutationFn: uploadImages,
   });
 
   const uploadPlayerImage = (file: File | undefined): Promise<Result<string> | undefined> => {
     return mutateAsync({ type: 0, file });
-  }
+  };
 
   return {
     isPending,
-    uploadPlayerImage
-  }
-}
-
+    uploadPlayerImage,
+  };
+};

@@ -5,7 +5,6 @@ namespace BoardGameTracker.Common.Entities;
 public class Play: HasId
 {
     public string Comment { get; set; }
-    public bool Ended { get; set; }
     public int GameId { get; set; }
     public DateTime Start { get; set; }
     public DateTime End { get; set; }

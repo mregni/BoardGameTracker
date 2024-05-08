@@ -1,18 +1,18 @@
-import {useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {Link} from 'react-router-dom';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
-import {Button} from '@radix-ui/themes';
+import { Button } from '@radix-ui/themes';
 
-import {BgtCard} from '../../components/BgtCard/BgtCard';
-import {BgtImageCard} from '../../components/BgtImageCard/BgtImageCard';
-import {BgtPage} from '../../components/BgtLayout/BgtPage';
-import {BgtPageContent} from '../../components/BgtLayout/BgtPageContent';
+import { BgtCard } from '../../components/BgtCard/BgtCard';
+import { BgtImageCard } from '../../components/BgtImageCard/BgtImageCard';
+import { BgtPage } from '../../components/BgtLayout/BgtPage';
+import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import BgtPageHeader from '../../components/BgtLayout/BgtPageHeader';
-import {BgtPlayerModal} from '../../components/Modals/BgtPlayerModal';
-import {useCounts} from '../../hooks/useCounts';
-import {usePage} from '../../hooks/usePage';
-import {usePlayers} from '../../hooks/usePlayers';
+import { BgtPlayerModal } from '../../components/Modals/BgtPlayerModal';
+import { useCounts } from '../../hooks/useCounts';
+import { usePage } from '../../hooks/usePage';
+import { usePlayers } from '../../hooks/usePlayers';
 
 export const PlayersPage = () => {
   const { t } = useTranslation();
@@ -23,31 +23,30 @@ export const PlayersPage = () => {
 
   if (!counts || !players) return null;
 
-  const itemCount = counts.find(x => x.key == activePage)?.value;
+  const itemCount = counts.find((x) => x.key == activePage)?.value;
 
   return (
     <BgtPage>
-      <BgtPageHeader
-        header={t(pageTitle)}
-        subHeader={t('common.items', { count: itemCount })}
-      >
-        <Button variant='solid' onClick={() => setOpenModal(true)}>New</Button>
-        <Button variant='classic' disabled color='red' onClick={() => prompt("boe")} className='radix-disabled:cursor-not-allowed'>Edit</Button>
+      <BgtPageHeader header={t(pageTitle)} subHeader={t('common.items', { count: itemCount })}>
+        <Button variant="solid" onClick={() => setOpenModal(true)}>
+          New
+        </Button>
+        <Button variant="classic" disabled color="red" onClick={() => prompt('boe')} className="radix-disabled:cursor-not-allowed">
+          Edit
+        </Button>
       </BgtPageHeader>
       <BgtPageContent>
         <BgtCard transparant>
-          <div className='grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-9 2xl:grid-cols-12'>
-            {
-              players.map(x =>
-                <Link key={x.id} to={`/players/${x.id}`}>
-                  <BgtImageCard title={x.name} image={x.image} />
-                </Link>
-              )
-            }
+          <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-9 2xl:grid-cols-12">
+            {players.map((x) => (
+              <Link key={x.id} to={`/players/${x.id}`}>
+                <BgtImageCard title={x.name} image={x.image} />
+              </Link>
+            ))}
           </div>
         </BgtCard>
         <BgtPlayerModal open={openModal} setOpen={setOpenModal} />
       </BgtPageContent>
-    </BgtPage >
-  )
-}
+    </BgtPage>
+  );
+};

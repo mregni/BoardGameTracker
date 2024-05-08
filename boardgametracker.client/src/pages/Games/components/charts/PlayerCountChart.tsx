@@ -1,9 +1,11 @@
-import {AgChartsReact} from 'ag-charts-react';
-import {useTranslation} from 'react-i18next';
-import {useParams} from 'react-router-dom';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/dot-notation */
+import { AgChartsReact } from 'ag-charts-react';
+import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 
-import {BgtCard} from '../../../../components/BgtCard/BgtCard';
-import {useGame} from '../../../../hooks/useGame';
+import { BgtCard } from '../../../../components/BgtCard/BgtCard';
+import { useGame } from '../../../../hooks/useGame';
 
 export const PlayerCountChart = () => {
   const { id } = useParams();
@@ -12,32 +14,34 @@ export const PlayerCountChart = () => {
 
   return (
     <BgtCard>
-      <AgChartsReact options={{
-        data: playerCountChart,
-        series: [{
-          type: 'pie',
-          angleKey: 'playCount',
-          legendItemKey: 'players',
-          showInLegend: false,
-          tooltip: {
-            renderer: (params) => {
-              return (
-                `<div class="ag-chart-tooltip-title" style="background-color: ${params.color}">
-                  ${t('common.game', { count: +params.datum['playCount']})} with ${t('common.player', { count: +params.datum['players']})}
-                </div>`
-              )
+      <AgChartsReact
+        options={{
+          data: playerCountChart,
+          series: [
+            {
+              type: 'pie',
+              angleKey: 'playCount',
+              legendItemKey: 'players',
+              showInLegend: false,
+              tooltip: {
+                renderer: (params) => {
+                  return `<div class="ag-chart-tooltip-title" style="background-color: ${params.color}">
+                  ${t('common.game', { count: +params.datum['playCount'] })} with ${t('common.player', { count: +params.datum['players'] })}
+                </div>`;
+                },
+              },
+              calloutLabelKey: 'playCount',
+              calloutLabel: {
+                color: 'white',
+                formatter: (params) => t('common.game', { count: +params.value }),
+              },
             },
-          },
-          calloutLabelKey: 'playCount',
-          calloutLabel: {
-            color: 'white',
-            formatter: (params) => t('common.game', { count: +params.value }),
-          }
-        }],
-        background: { visible: false },
-        title: { text: t('game.charts.player-count') },
-        height: 300
-      }} />
+          ],
+          background: { visible: false },
+          title: { text: t('game.charts.player-count') },
+          height: 300,
+        }}
+      />
     </BgtCard>
-  )
-}
+  );
+};

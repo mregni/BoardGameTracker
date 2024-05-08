@@ -1,19 +1,13 @@
-import {Route, Routes} from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 
-import {PlayerDetailpage} from './PlayerDetailPage';
-import {PlayersPage} from './PlayersPage';
+import { PlayerDetailpage } from './PlayerDetailPage';
+import { PlayersPage } from './PlayersPage';
 
 export const PlayerRoutes = () => {
   return (
     <Routes>
-      <Route
-        element={<PlayersPage />}
-        path=""
-      />
-      <Route
-        element={<PlayerDetailpage />}
-        path='/:id'
-      />
+      <Route element={<PlayersPage />} path="" />
+      <Route element={<PlayerDetailpage />} path="/:id" />
     </Routes>
-  )
-}
+  );
+};

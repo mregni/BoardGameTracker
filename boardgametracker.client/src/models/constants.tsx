@@ -14,12 +14,12 @@ export const QUERY_KEYS = {
   gamePlayerCountChart: 'game-player-count',
   gamePlayerScoringChart: 'game-player-scoring',
   gameScoreRankChart: 'game-score-rank',
-  locations: 'locations'
-}
+  locations: 'locations',
+};
 
 export const GAME_CHARTS = {
   playsByDay: 'playsbyday',
   playerCount: 'playercounts',
   playerScoring: 'playerscoring',
   scoreRank: 'scorerank',
-}
+};

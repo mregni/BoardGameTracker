@@ -61,19 +61,6 @@ public class PlayerRepository : IPlayerRepository
             .FirstOrDefaultAsync();
     }
 
-    public Task<string?> GetFavoriteColor(int id)
-    {
-        return _dbContext.Players
-            .Include(x => x.Plays)
-            .Where(x => x.Id == id)
-            .SelectMany(x => x.Plays)
-            .Where(x => x.Color != "" && x.Color != null)
-            .GroupBy(x => x.Color)
-            .OrderByDescending(x => x.Count())
-            .Select(x => x.Key)
-            .FirstOrDefaultAsync();
-    }
-
     public Task<int> GetTotalWinCount(int id)
     {
         return _dbContext.Players

@@ -1,5 +1,5 @@
-import {PlayerPlaysDesktop} from './PlayerPlaysDesktop';
-import {PlayerPlaysMobile} from './PlayerPlaysMobile';
+import { PlayerPlaysDesktop } from './PlayerPlaysDesktop';
+import { PlayerPlaysMobile } from './PlayerPlaysMobile';
 
 export const PlayerPlays = () => {
   return (
@@ -11,5 +11,5 @@ export const PlayerPlays = () => {
         <PlayerPlaysMobile />
       </div>
     </>
-  )
-}
+  );
+};

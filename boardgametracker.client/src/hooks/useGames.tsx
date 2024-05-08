@@ -1,11 +1,11 @@
-import {AxiosError} from 'axios';
-import {useNavigate} from 'react-router-dom';
+import { AxiosError } from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import {BggSearch, FailResult, Game, ListResult, QUERY_KEYS, Result, ResultState} from '../models';
-import {useToast} from '../providers/BgtToastProvider';
-import {addGameWithBgg, getGames} from './services/gameService';
+import { BggSearch, FailResult, Game, ListResult, QUERY_KEYS, Result, ResultState } from '../models';
+import { useToast } from '../providers/BgtToastProvider';
+import { addGameWithBgg, getGames } from './services/gameService';
 
 export interface Props {
   games: Game[] | undefined;
@@ -13,7 +13,7 @@ export interface Props {
   isError: boolean;
   save: (search: BggSearch) => Promise<Result<Game>>;
   saveIsPending: boolean;
-  byId: (id: number | undefined) => Game | null
+  byId: (id: number | undefined) => Game | null;
 }
 
 export const useGames = (): Props => {
@@ -23,16 +23,16 @@ export const useGames = (): Props => {
 
   const { data, isError, isPending } = useQuery<ListResult<Game>>({
     queryKey: [QUERY_KEYS.games],
-    queryFn: ({ signal }) => getGames(signal)
+    queryFn: ({ signal }) => getGames(signal),
   });
 
   const { mutateAsync: save, isPending: saveIsPending } = useMutation<Result<Game>, AxiosError<FailResult>, BggSearch>({
     mutationFn: addGameWithBgg,
     async onSuccess(data) {
       if (data.state === ResultState.Duplicate) {
-        showWarningToast("game.notifications.duplicate");
+        showWarningToast('game.notifications.duplicate');
       } else {
-        showInfoToast("game.notifications.created");
+        showInfoToast('game.notifications.created');
         await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
         await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
       }
@@ -42,16 +42,15 @@ export const useGames = (): Props => {
   });
 
   const byId = (id: number | undefined): Game | null => {
-    if (data === undefined || id === undefined)
-      return null;
+    if (data === undefined || id === undefined) return null;
 
-    const index = data.list.findIndex(x => x.id === id);
+    const index = data.list.findIndex((x) => x.id === id);
     if (index !== -1) {
       return data.list[index];
     }
 
     return null;
-  }
+  };
 
   return {
     games: data?.list,
@@ -59,7 +58,6 @@ export const useGames = (): Props => {
     isError,
     save,
     saveIsPending,
-    byId
-  }
-}
-
+    byId,
+  };
+};

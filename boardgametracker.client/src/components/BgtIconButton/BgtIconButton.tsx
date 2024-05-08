@@ -1,26 +1,28 @@
-import {ReactNode} from 'react';
+import clsx from 'clsx';
+import { ReactNode } from 'react';
 
-import {BgtIcon} from '../BgtIcon/BgtIcon';
+import { BgtIcon } from '../BgtIcon/BgtIcon';
 
 interface Props {
   icon: ReactNode;
   onClick: () => void;
-  color?: string;
-  hoverColor?: string;
   size?: number;
+  type?: 'normal' | 'danger';
 }
 
 export const BgtIconButton = (props: Props) => {
-  const { icon, onClick, color = 'text-white', hoverColor = 'text-gray-800', size = 20 } = props;
+  const { icon, onClick, size = 20, type = 'normal' } = props;
   return (
     <button
       onClick={onClick}
       type="button"
-      className={`-mx-1.5 -my-1.5 ${color} hover:${hoverColor} rounded-lg p-1.5 inline-flex items-center justify-center h-8 w-8`}>
-      <BgtIcon
-        size={size}
-        icon={icon}
-      />
+      className={clsx(
+        '-mx-1.5 -my-1.5 rounded-lg p-1.5 inline-flex items-center justify-center h-8 w-8',
+        type === 'normal' && 'text-gray-400 hover:text-gray-600',
+        type === 'danger' && 'text-red-600 hover:text-red-800'
+      )}
+    >
+      <BgtIcon size={size} icon={icon} />
     </button>
-  )
-}
+  );
+};

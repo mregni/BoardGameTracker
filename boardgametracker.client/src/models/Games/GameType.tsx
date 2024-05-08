@@ -1,4 +1,4 @@
 export enum GameType {
   Base = 0,
-  Expansion = 1
+  Expansion = 1,
 }

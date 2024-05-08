@@ -1,4 +1,4 @@
-import {PlayFlag} from '../models/Games/PlayFlag';
+import { PlayFlag } from '../models/Games/PlayFlag';
 
 export const StringToHsl = (value: string | undefined): string => {
   if (value === undefined) {
@@ -24,7 +24,7 @@ export const StringToRgb = (value: string | undefined): string => {
   const b = hueToRgb(p, q, h - 1 / 3);
 
   return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
-}
+};
 
 const calculateHash = (input: string): number => {
   let hash = 0;
@@ -33,7 +33,7 @@ const calculateHash = (input: string): number => {
   }
 
   return hash % 360;
-}
+};
 
 const hueToRgb = (p: number, q: number, t: number): number => {
   if (t < 0) t += 1;
@@ -42,7 +42,7 @@ const hueToRgb = (p: number, q: number, t: number): number => {
   if (t < 1 / 2) return q;
   if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
   return p;
-}
+};
 
 export const PlayFlagToString = (flag: PlayFlag): string => {
   switch (flag) {
@@ -55,4 +55,4 @@ export const PlayFlagToString = (flag: PlayFlag): string => {
     case PlayFlag.LowestScore:
       return 'common.flags.lowest-score';
   }
-}
+};

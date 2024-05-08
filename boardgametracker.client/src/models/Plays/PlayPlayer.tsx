@@ -3,8 +3,6 @@ export interface PlayPlayer {
   playerId: number;
   won: boolean;
   firstPlay: boolean;
-  color?: string;
+  isBot: boolean;
   score?: number;
-  team?: string;
-  characterName?: string;
 }

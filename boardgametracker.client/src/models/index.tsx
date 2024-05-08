@@ -25,3 +25,4 @@ export * from './Plays/Play';
 export * from './Plays/PlayPlayer';
 
 export * from './Location/Location';
+export * from './Location/CreateLocation';

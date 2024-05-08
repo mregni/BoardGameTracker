@@ -1,4 +1,4 @@
-import {GameState} from '../models';
+import { GameState } from '../models';
 
 export const getItemStateTranslationKey = (value: GameState): string => {
   switch (value) {
@@ -13,7 +13,7 @@ export const getItemStateTranslationKey = (value: GameState): string => {
     case GameState.ForTrade:
       return 'game.state.for-trade';
     default:
-      return ''
+      return '';
   }
 };
 
