@@ -1,51 +1,36 @@
+import { ArrayPath, Control, FieldArrayWithId, UseFieldArrayRemove, useController } from 'react-hook-form';
 import { t } from 'i18next';
-import { useState } from 'react';
-import { ArrayPath, Control, useController, useFieldArray } from 'react-hook-form';
-
-import { ClockIcon, PencilIcon, RocketLaunchIcon, TrashIcon, TrophyIcon } from '@heroicons/react/24/outline';
 import { Badge, Button, Text } from '@radix-ui/themes';
+import { ClockIcon, PencilIcon, RocketLaunchIcon, TrashIcon, TrophyIcon } from '@heroicons/react/24/outline';
 
-import { usePlayers } from '../../hooks/usePlayers';
-import { CreatePlay, CreatePlayPlayer, CreatePlayPlayerNoScoring } from '../../models/Plays/CreatePlay';
-import { StringToHsl } from '../../utils/stringUtils';
-import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
 import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
-import { BgtCreatePlayerModal } from '../Modals/BgtCreatePlayerModal';
+import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
+import { StringToHsl } from '../../utils/stringUtils';
+import { CreatePlay } from '../../models/Plays/CreatePlay';
+import { usePlayers } from '../../hooks/usePlayers';
+
 import { BgtFormErrors } from './BgtFormErrors';
 
 interface Props {
   name: ArrayPath<CreatePlay>;
   control: Control<CreatePlay>;
-  hasScoring: boolean;
+  setModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  remove: UseFieldArrayRemove;
+  players: FieldArrayWithId<CreatePlay>[];
 }
 
 export const BgtPlayerSelector = (props: Props) => {
-  const { name, control, hasScoring } = props;
+  const { name, control, setModalOpen, remove, players } = props;
   const { byId } = usePlayers();
-  const [openCreateNewPlayerModal, setOpenCreateNewPlayerModal] = useState(false);
 
   const {
     fieldState: { error },
   } = useController({ name, control });
 
-  const {
-    fields: players,
-    append,
-    remove,
-  } = useFieldArray<CreatePlay>({
-    name: name,
-    control,
-  });
-
-  const closeNewPlayPlayer = (player: CreatePlayPlayer | CreatePlayPlayerNoScoring) => {
-    append(player);
-    setOpenCreateNewPlayerModal(false);
-  };
-
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <Button className="w-fit" type="button" onClick={() => setOpenCreateNewPlayerModal(true)}>
+        <Button className="w-fit" type="button" onClick={() => setModalOpen(true)}>
           {t('playplayer.new.players.add')}
         </Button>
         <BgtFormErrors error={error} />
@@ -72,14 +57,6 @@ export const BgtPlayerSelector = (props: Props) => {
           </div>
         </div>
       ))}
-      {openCreateNewPlayerModal && (
-        <BgtCreatePlayerModal
-          open={openCreateNewPlayerModal}
-          setOpen={setOpenCreateNewPlayerModal}
-          hasScoring={hasScoring}
-          onClose={closeNewPlayPlayer}
-        />
-      )}
     </div>
   );
 };

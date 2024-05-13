@@ -1,9 +1,9 @@
 import { AxiosError } from 'axios';
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { FailResult, ListResult, Player, QUERY_KEYS, Result } from '../models';
 import { useToast } from '../providers/BgtToastProvider';
+import { FailResult, ListResult, Player, QUERY_KEYS, Result } from '../models';
+
 import { addPlayer, getPlayers } from './services/playerService';
 
 export interface Props {

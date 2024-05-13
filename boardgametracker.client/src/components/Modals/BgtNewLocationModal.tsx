@@ -1,12 +1,14 @@
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as Form from '@radix-ui/react-form';
+import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
 import { Button, Dialog } from '@radix-ui/themes';
-import { useLocations } from '../../hooks/useLocations';
-import { Location } from '../../models';
+import * as Form from '@radix-ui/react-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
 import { BgtInputField } from '../BgtForm/BgtInputField';
+import { Location } from '../../models';
+import { useLocations } from '../../hooks/useLocations';
 
 interface Props {
   open: boolean;
@@ -27,8 +29,9 @@ export const BgtNewLocationModal = (props: Props) => {
     name: z.string().min(1, { message: t('location.new.name.required') }),
   });
 
-  const { register, handleSubmit, control, reset } = useForm<FormProps>({
+  const { register, handleSubmit, control, reset, trigger } = useForm<FormProps>({
     resolver: zodResolver(schema),
+    mode: 'onSubmit',
   });
 
   const onSubmit = async (data: FormProps) => {
@@ -51,7 +54,7 @@ export const BgtNewLocationModal = (props: Props) => {
       <Dialog.Content>
         <Dialog.Title>{t('location.new.title')}</Dialog.Title>
         <Dialog.Description>{t('location.new.description')}</Dialog.Description>
-        <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
+        <form onSubmit={handleSubmit(onSubmit, onError)}>
           <div className="flex flex-col gap-3 mt-3">
             <div className="flex flex-col gap-4 mt-3 mb-3">
               <BgtInputField
@@ -67,7 +70,7 @@ export const BgtNewLocationModal = (props: Props) => {
               <Dialog.Close>
                 <>
                   <Form.Submit asChild>
-                    <Button type="submit" variant="surface" color="orange" disabled={isSaving}>
+                    <Button type="button" variant="surface" color="orange" disabled={isSaving} onClick={() => trigger()}>
                       {t('location.new.save')}
                     </Button>
                   </Form.Submit>

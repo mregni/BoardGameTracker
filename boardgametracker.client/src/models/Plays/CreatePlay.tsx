@@ -20,7 +20,10 @@ export const CreatePlayPlayerSchema = CreatePlayPlayerNoScoringSchema.extend({
 
 export const CreatePlaySchema = z.object({
   gameId: z.string({ required_error: 'playplayer.new.game.required' }),
-  locationId: z.string(),
+  locationId: z.string({
+    required_error: 'playplayer.new.location.required',
+    invalid_type_error: 'playplayer.new.location.required',
+  }),
   start: z.coerce.date({
     errorMap: () => {
       return { message: 'playplayer.new.start.required' };

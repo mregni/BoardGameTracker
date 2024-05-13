@@ -227,7 +227,8 @@
       "location": {
         "label": "Select your location",
         "sub-label": "Select the corect location you played this game.",
-        "create-new": "Create location '{{name}}'"
+        "create-new": "Create location '{{name}}'",
+        "required": "Location is required"
       },
       "comment": {
         "label": "Comment",

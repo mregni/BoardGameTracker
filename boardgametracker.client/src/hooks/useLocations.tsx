@@ -1,9 +1,9 @@
 import { AxiosError } from 'axios';
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { CreateLocation, FailResult, ListResult, Location, QUERY_KEYS, Result } from '../models';
 import { useToast } from '../providers/BgtToastProvider';
+import { CreateLocation, FailResult, ListResult, Location, QUERY_KEYS, Result } from '../models';
+
 import { addLocation, getLocations } from './services/locationService';
 
 export interface Props {
@@ -17,7 +17,7 @@ export const useLocations = (): Props => {
   const queryClient = useQueryClient();
   const { showInfoToast, showErrorToast } = useToast();
 
-  const { data } = useQuery<ListResult<Location>>({
+  const { data, refetch } = useQuery<ListResult<Location>>({
     queryKey: [QUERY_KEYS.locations],
     queryFn: ({ signal }) => getLocations(signal),
   });
@@ -27,12 +27,14 @@ export const useLocations = (): Props => {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.locations] });
     },
-    onSettled: () => queryClient.fetchQuery({ queryKey: [QUERY_KEYS.locations] }),
+    onSettled: async () => {
+      await refetch();
+    },
     onSuccess(data) {
       const previousLocations = queryClient.getQueryData<ListResult<Location>>([QUERY_KEYS.locations]);
 
       if (previousLocations !== undefined) {
-        previousLocations.count++;
+        previousLocations.count = previousLocations.count + 1;
         previousLocations.list = [...previousLocations.list, data.model];
         queryClient.setQueryData([QUERY_KEYS.locations], previousLocations);
       }

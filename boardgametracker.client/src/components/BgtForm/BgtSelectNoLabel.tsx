@@ -1,10 +1,10 @@
 import { Control, Controller, FieldValues, Path, useController } from 'react-hook-form';
-
 import { Select } from '@radix-ui/themes';
 
-import { BgtSelectImageItem } from '../../models/Common/BgtSelectItem';
-import { StringToHsl } from '../../utils/stringUtils';
 import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
+import { StringToHsl } from '../../utils/stringUtils';
+import { BgtSelectImageItem } from '../../models/Common/BgtSelectItem';
+
 import { BgtFormErrors } from './BgtFormErrors';
 
 interface Props<T extends FieldValues> {
