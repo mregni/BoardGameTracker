@@ -20,7 +20,7 @@ interface Props {
   selectedPlayerIds: string[];
 }
 
-export const BgtCreatePlayerModal = (props: Props) => {
+const CreatePlayerForm = (props: Props) => {
   const { open, setOpen, hasScoring, onClose, selectedPlayerIds } = props;
   const { t } = useTranslation();
   const { players } = usePlayers();
@@ -87,4 +87,8 @@ export const BgtCreatePlayerModal = (props: Props) => {
       </Dialog.Content>
     </Dialog.Root>
   );
+};
+
+export const BgtCreatePlayerModal = (props: Props) => {
+  return props.open && <CreatePlayerForm {...props} />;
 };

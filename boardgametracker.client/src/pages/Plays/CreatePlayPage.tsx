@@ -9,7 +9,6 @@ import { CreatePlay, CreatePlayPlayer, CreatePlayPlayerNoScoring, CreatePlaySche
 import { useLocations } from '../../hooks/useLocations';
 import { useGames } from '../../hooks/useGames';
 import { useGame } from '../../hooks/useGame';
-import { BgtNewLocationModal } from '../../components/Modals/BgtNewLocationModal';
 import { BgtCreatePlayerModal } from '../../components/Modals/BgtCreatePlayerModal';
 import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import { BgtPage } from '../../components/BgtLayout/BgtPage';
@@ -27,16 +26,9 @@ export const CreatePlayPage = () => {
   const { games } = useGames();
   const { locations, save: saveLocation, isSaving } = useLocations();
 
-  const [openNewLocationModal, setOpenNewLocationModal] = useState(false);
   const [openCreateNewPlayerModal, setOpenCreateNewPlayerModal] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    formState: { errors },
-  } = useForm<CreatePlay>({
+  const { register, handleSubmit, control, setValue } = useForm<CreatePlay>({
     resolver: zodResolver(CreatePlaySchema),
     defaultValues: {
       gameId: gameId,
@@ -45,7 +37,6 @@ export const CreatePlayPage = () => {
       comment: '',
       players: [],
     },
-    mode: 'onSubmit',
   });
 
   const {
@@ -66,10 +57,6 @@ export const CreatePlayPage = () => {
 
   const onSubmit = (data: CreatePlay) => {
     console.log(data);
-  };
-
-  const onError = () => {
-    console.log('error');
   };
 
   return (
@@ -129,31 +116,28 @@ export const CreatePlayPage = () => {
             <BgtFormRow
               title={t('playplayer.new.start.label')}
               subTitle={t('playplayer.new.start.sub-label')}
-              right={<BgtInputField name="start" type="date" register={register} className="max-w-64" control={control} />}
+              right={<BgtInputField name="start" type="datetime-local" register={register} className="md:max-w-64" control={control} />}
             />
             <BgtFormRow
               title={t('playplayer.new.duration.label')}
               subTitle={t('playplayer.new.duration.sub-label')}
-              right={<BgtInputField valueAsNumber name="minutes" type="number" register={register} className="max-w-64" control={control} />}
+              right={<BgtInputField valueAsNumber name="minutes" type="number" register={register} className="md:max-w-64" control={control} />}
             />
             <BgtFormRow
               title={t('playplayer.new.comment.label')}
               subTitle={t('playplayer.new.comment.sub-label')}
-              right={<BgtTextArea name="comment" register={register} disabled={false} className="max-w-80" />}
+              right={<BgtTextArea name="comment" register={register} disabled={false} className="md:max-w-96" />}
             />
-            <BgtEmptyFormRow right={<Button type="submit">{t('playplayer.save')}</Button>} />
+            <BgtEmptyFormRow alignRight right={<Button type="submit">{t('playplayer.save')}</Button>} />
           </div>
         </form>
-        <BgtNewLocationModal open={openNewLocationModal} setOpen={setOpenNewLocationModal} />
-        {openCreateNewPlayerModal && (
-          <BgtCreatePlayerModal
-            open={openCreateNewPlayerModal}
-            setOpen={setOpenCreateNewPlayerModal}
-            hasScoring={game?.hasScoring ?? true}
-            onClose={closeNewPlayPlayer}
-            selectedPlayerIds={players.map((x) => x.playerId)}
-          />
-        )}
+        <BgtCreatePlayerModal
+          open={openCreateNewPlayerModal}
+          setOpen={setOpenCreateNewPlayerModal}
+          hasScoring={game?.hasScoring ?? true}
+          onClose={closeNewPlayPlayer}
+          selectedPlayerIds={players.map((x) => x.playerId)}
+        />
       </BgtPageContent>
     </BgtPage>
   );

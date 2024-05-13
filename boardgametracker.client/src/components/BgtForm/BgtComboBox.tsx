@@ -4,10 +4,10 @@ import { CommandList } from 'cmdk';
 import { Button, Text } from '@radix-ui/themes';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
+import { BgtPopover, BgtPopoverContent, BgtPopoverTrigger } from '../BgtPopover/BgtPopover';
+import { BgtCommand, BgtCommandCreate, BgtCommandGroup, BgtCommandInput, BgtCommandItem } from '../BgtCommand/BgtCommand';
 import { BgtSelectItem } from '../../models/Common/BgtSelectItem';
 
-import { Popover, PopoverContent, PopoverTrigger } from './Popover';
-import { Command, CommandCreate, CommandGroup, CommandInput, CommandItem } from './Command';
 import { BgtFormErrors } from './BgtFormErrors';
 
 interface ComboboxProps<T1 extends FieldValues, T2> {
@@ -34,31 +34,31 @@ export const BgtComboBox = <T1 extends FieldValues, T2>(props: ComboboxProps<T1,
   } = useController({ name, control });
 
   return (
-    <div className="grid">
-      <Popover open={open} onOpenChange={setOpen}>
+    <div className="grid w-full">
+      <BgtPopover open={open} onOpenChange={setOpen}>
         <div className="space-y-1">
           {label && <Text>{label}</Text>}
-          <PopoverTrigger asChild>
+          <BgtPopoverTrigger asChild>
             <Button
               size="2"
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-full min-w-96 flex rt-variant-surface rt-reset rt-SelectTrigger rt-r-size-2 rt-variant-surface !font-normal"
+              className="w-full md:max-w-96 flex rt-variant-surface rt-reset rt-SelectTrigger rt-r-size-2 rt-variant-surface !font-normal"
             >
               {selected ? options.find((option) => option.value === selected)?.label ?? selected : placeholder}
               <ChevronDownIcon className="ml-auto size-3 shrink-0 opacity-50" />
             </Button>
-          </PopoverTrigger>
+          </BgtPopoverTrigger>
         </div>
 
-        <PopoverContent>
-          <Command className="max-h-64 overflow-y-auto">
-            <CommandInput placeholder={placeholder} value={query} onValueChange={(value: string) => setQuery(value)} />
+        <BgtPopoverContent>
+          <BgtCommand className="max-h-64 overflow-y-auto">
+            <BgtCommandInput placeholder={placeholder} value={query} onValueChange={(value: string) => setQuery(value)} />
             <CommandList>
-              <CommandGroup>
+              <BgtCommandGroup>
                 {options.map((option) => (
-                  <CommandItem
+                  <BgtCommandItem
                     key={option.value}
                     value={option.label}
                     onSelect={(currentValue: string) => {
@@ -68,11 +68,11 @@ export const BgtComboBox = <T1 extends FieldValues, T2>(props: ComboboxProps<T1,
                     }}
                   >
                     {option.label}
-                  </CommandItem>
+                  </BgtCommandItem>
                 ))}
-              </CommandGroup>
+              </BgtCommandGroup>
               {query && (
-                <CommandCreate
+                <BgtCommandCreate
                   isLoading={isSaving}
                   onSelect={() => {
                     onCreate(query)
@@ -88,12 +88,12 @@ export const BgtComboBox = <T1 extends FieldValues, T2>(props: ComboboxProps<T1,
                   }}
                 >
                   {addOptionText(query)}
-                </CommandCreate>
+                </BgtCommandCreate>
               )}
             </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+          </BgtCommand>
+        </BgtPopoverContent>
+      </BgtPopover>
       <div className="flex items-baseline">
         <BgtFormErrors error={error} />
       </div>

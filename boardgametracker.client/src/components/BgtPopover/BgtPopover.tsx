@@ -1,15 +1,14 @@
-import clsx from 'clsx';
 import { ComponentPropsWithoutRef, ElementRef, forwardRef } from 'react';
-
+import clsx from 'clsx';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 
-const Popover = PopoverPrimitive.Root;
+export const BgtPopover = PopoverPrimitive.Root;
 
-const PopoverTrigger = PopoverPrimitive.Trigger;
+export const BgtPopoverTrigger = PopoverPrimitive.Trigger;
 
-const PopoverAnchor = PopoverPrimitive.Anchor;
+export const BgtPopoverAnchor = PopoverPrimitive.Anchor;
 
-const PopoverContent = forwardRef<ElementRef<typeof PopoverPrimitive.Content>, ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>>(
+export const BgtPopoverContent = forwardRef<ElementRef<typeof PopoverPrimitive.Content>, ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>>(
   ({ className, align = 'end', sideOffset = 4, ...props }, ref) => (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
@@ -26,6 +25,5 @@ const PopoverContent = forwardRef<ElementRef<typeof PopoverPrimitive.Content>, C
     </PopoverPrimitive.Portal>
   )
 );
-PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };
+BgtPopoverContent.displayName = PopoverPrimitive.Content.displayName;

@@ -1,11 +1,11 @@
 import { Control, FieldValues, Path, useController, UseFormRegister } from 'react-hook-form';
 import clsx from 'clsx';
 import { TextField } from '@radix-ui/themes';
- 
+
 import { BgtFormErrors } from './BgtFormErrors';
 
 export interface Props<T extends FieldValues> {
-  type: 'text' | 'number' | 'date';
+  type: 'text' | 'number' | 'datetime-local';
   placeholder?: string;
   name: Path<T>;
   register?: UseFormRegister<T>;
@@ -32,7 +32,7 @@ export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
           <BgtFormErrors error={error} />
         </div>
       )}
-      <TextField.Root className={clsx(className, (type === 'number' || type === 'date') && 'pr-2')}>
+      <TextField.Root className={clsx(className, (type === 'number' || type === 'datetime-local') && 'pr-2')}>
         {prefixLabel && <TextField.Slot>{prefixLabel}</TextField.Slot>}
         <TextField.Input
           disabled={disabled}
