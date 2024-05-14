@@ -1,15 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 
-import { usePlayers } from '../../hooks/usePlayers';
-import { PlayPlayer } from '../../models';
 import { StringToHsl } from '../../utils/stringUtils';
+import { PlayPlayer } from '../../models';
+import { usePlayers } from '../../hooks/usePlayers';
+
 import { BgtAvatar } from './BgtAvatar';
 
 interface Props {
   player: PlayPlayer;
 }
 
-export const BgtPLayerAvatar = (props: Props) => {
+export const BgtPlayerAvatar = (props: Props) => {
   const { player } = props;
   const { byId: playerById } = usePlayers();
   const navigate = useNavigate();

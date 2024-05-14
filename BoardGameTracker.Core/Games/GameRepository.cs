@@ -128,7 +128,7 @@ public class GameRepository : IGameRepository
             return null;
         }
 
-        return game.BuyingPrice.Value / game.Plays.Count;
+        return Math.Round(game.BuyingPrice.Value / game.Plays.Count, 2);
     }
 
     public async Task<DateTime?> GetLastPlayedDateTime(int id)

@@ -1,19 +1,18 @@
-import clsx from 'clsx';
-import { ChangeEvent, DragEvent, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
 import * as z from 'zod';
-
-import { ArrowUpTrayIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as Form from '@radix-ui/react-form';
+import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
+import { ChangeEvent, DragEvent, useState } from 'react';
+import clsx from 'clsx';
 import { Button, Dialog } from '@radix-ui/themes';
+import * as Form from '@radix-ui/react-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowUpTrayIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-import { useImages } from '../../hooks/useImages';
-import { usePlayers } from '../../hooks/usePlayers';
-import { Player } from '../../models';
-import { BgtInputField } from '../BgtForm/BgtInputField';
 import { BgtIcon } from '../BgtIcon/BgtIcon';
+import { BgtInputField } from '../BgtForm/BgtInputField';
+import { Player } from '../../models';
+import { usePlayers } from '../../hooks/usePlayers';
+import { useImages } from '../../hooks/useImages';
 
 interface Props {
   open: boolean;
@@ -76,13 +75,12 @@ export const BgtPlayerModal = (props: Props) => {
     name: z.string().min(1, { message: t('player.new.name.required') }),
   });
 
-  const { register, handleSubmit, control } = useForm<FormProps>({
+  const { handleSubmit, control } = useForm<FormProps>({
     resolver: zodResolver(schema),
   });
 
   const onSubmit = async (data: FormProps) => {
     const savedImage = await uploadPlayerImage(image);
-    console.log(savedImage);
 
     const player: Player = {
       id: 0,
@@ -101,14 +99,7 @@ export const BgtPlayerModal = (props: Props) => {
         <Dialog.Description>{t('player.new.description')}</Dialog.Description>
         <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className="flex flex-col gap-3 mt-3 mb-6">
-            <BgtInputField
-              type="text"
-              placeholder={t('player.new.name.placeholder')}
-              name="name"
-              label={t('common.name')}
-              register={register}
-              control={control}
-            />
+            <BgtInputField type="text" placeholder={t('player.new.name.placeholder')} name="name" label={t('common.name')} control={control} />
             <div className="flex justify-start w-full flex-col h-44">
               <div className="text-[15px] font-medium leading-[35px]">{t('common.profile-picture')}</div>
               <div className="flex flex-row justify-start gap-3">

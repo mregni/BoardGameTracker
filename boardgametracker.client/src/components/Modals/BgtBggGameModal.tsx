@@ -30,7 +30,7 @@ export const BgtBggGameModal = (props: Props) => {
     window.open('https://boardgamegeek.com/browse/boardgame', '_blank');
   };
 
-  const { register, handleSubmit, control, getValues } = useForm<BggSearch>({
+  const { handleSubmit, control } = useForm<BggSearch>({
     resolver: zodResolver(BggSearchSchema),
     defaultValues: {
       state: GameState.Owned,
@@ -59,7 +59,6 @@ export const BgtBggGameModal = (props: Props) => {
               name="bggId"
               type="text"
               placeholder={t('game.bgg.placeholder')}
-              register={register}
               control={control}
             />
             <BgtInputField
@@ -68,14 +67,12 @@ export const BgtBggGameModal = (props: Props) => {
               name="price"
               type="number"
               placeholder={t('game.price.placeholder')}
-              register={register}
               control={control}
               prefixLabel={settings?.currency}
             />
             <BgtInputField disabled={saveIsPending} label={t('game.added-date.label')} name="date" type="date" control={control} className="pr-2" />
             <BgtSelect
               disabled={saveIsPending}
-              defaultValue={getValues('state').toString()}
               control={control}
               label={t('game.state.label')}
               name="state"
@@ -83,13 +80,7 @@ export const BgtBggGameModal = (props: Props) => {
                 .filter((value) => !isNaN(Number(value)))
                 .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value }))}
             />
-            <BgtSwitch
-              label={t('game.scoring.label')}
-              disabled={saveIsPending}
-              control={control}
-              name="hasScoring"
-              defaultValue={getValues('hasScoring')}
-            />
+            <BgtSwitch label={t('game.scoring.label')} disabled={saveIsPending} control={control} name="hasScoring" />
           </div>
           <div className="flex justify-end gap-3">
             <Dialog.Close>

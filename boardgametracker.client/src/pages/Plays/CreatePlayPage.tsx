@@ -1,13 +1,15 @@
-import { useParams } from 'react-router-dom';
-import { FieldArrayWithId, useFieldArray, useForm } from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Bars } from 'react-loading-icons';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { t } from 'i18next';
 import { addMinutes } from 'date-fns';
-import { Button, TextField } from '@radix-ui/themes';
+import { Button } from '@radix-ui/themes';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { CreatePlay, CreatePlayPlayer, CreatePlayPlayerNoScoring, CreatePlaySchema } from '../../models/Plays/CreatePlay';
-import { useCreatePlays, usePlayerPlays } from '../../hooks/usePlays';
+import { ResultState } from '../../models';
+import { usePlay } from '../../hooks/usePlays';
 import { useLocations } from '../../hooks/useLocations';
 import { useGames } from '../../hooks/useGames';
 import { useGame } from '../../hooks/useGame';
@@ -28,7 +30,8 @@ export const CreatePlayPage = () => {
   const { game } = useGame(gameId);
   const { games } = useGames();
   const { locations, save: saveLocation, isSaving } = useLocations();
-  const { save } = useCreatePlays();
+  const navigate = useNavigate();
+  const { save, isPending } = usePlay();
 
   const [openCreateNewPlayerModal, setOpenCreateNewPlayerModal] = useState(false);
   const [openUpdateNewPlayerModal, setOpenUpdateNewPlayerModal] = useState(false);
@@ -72,7 +75,10 @@ export const CreatePlayPage = () => {
   if (locations === undefined || games === undefined) return null;
 
   const onSubmit = async (data: CreatePlay) => {
-    await save(data);
+    const result = await save(data);
+    if (result.state === ResultState.Success) {
+      navigate(`/games/${result.model.gameId}`);
+    }
   };
 
   return (
@@ -95,6 +101,7 @@ export const CreatePlayPage = () => {
                   }
                   control={control}
                   name="gameId"
+                  disabled={isPending}
                 />
               }
             />
@@ -112,6 +119,7 @@ export const CreatePlayPage = () => {
                         label: x.name,
                       })) ?? []
                     }
+                    disabled={isPending}
                     placeholder={''}
                     addOptionText={(value) => t('playplayer.new.location.create-new', { name: value })}
                     onChange={(value) => setValue('locationId', value?.value ?? '')}
@@ -134,25 +142,34 @@ export const CreatePlayPage = () => {
                   remove={remove}
                   players={players}
                   setPlayerIdToEdit={setPlayerIdToEdit}
+                  disabled={isPending}
                 />
               }
             />
             <BgtFormRow
               title={t('playplayer.new.duration.label')}
               subTitle={t('playplayer.new.duration.sub-label')}
-              right={<BgtInputField valueAsNumber name="minutes" type="number" register={register} className="md:max-w-64" control={control} />}
+              right={<BgtInputField valueAsNumber name="minutes" type="number" className="md:max-w-64" control={control} disabled={isPending} />}
             />
             <BgtFormRow
               title={t('playplayer.new.start.label')}
               subTitle={t('playplayer.new.start.sub-label')}
-              right={<BgtInputField name="start" type="datetime-local" register={register} className="md:max-w-64" control={control} />}
+              right={<BgtInputField name="start" type="datetime-local" className="md:max-w-64" control={control} disabled={isPending} />}
             />
             <BgtFormRow
               title={t('playplayer.new.comment.label')}
               subTitle={t('playplayer.new.comment.sub-label')}
-              right={<BgtTextArea name="comment" register={register} disabled={false} className="md:max-w-96" />}
+              right={<BgtTextArea name="comment" register={register} className="md:max-w-96" disabled={isPending} />}
             />
-            <BgtEmptyFormRow alignRight right={<Button type="submit">{t('playplayer.save')}</Button>} />
+            <BgtEmptyFormRow
+              alignRight
+              right={
+                <Button type="submit" disabled={isPending}>
+                  {isPending && <Bars className="size-4" />}
+                  {t('playplayer.save')}
+                </Button>
+              }
+            />
           </div>
         </form>
         <BgtCreatePlayerModal

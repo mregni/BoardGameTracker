@@ -20,10 +20,11 @@ interface Props {
   setUpdateModalOpen: Dispatch<SetStateAction<boolean>>;
   remove: UseFieldArrayRemove;
   players: FieldArrayWithId<CreatePlay>[];
+  disabled: boolean;
 }
 
 export const BgtPlayerSelector = (props: Props) => {
-  const { name, control, setCreateModalOpen, remove, players, setPlayerIdToEdit, setUpdateModalOpen } = props;
+  const { name, control, setCreateModalOpen, remove, players, setPlayerIdToEdit, setUpdateModalOpen, disabled } = props;
   const { byId } = usePlayers();
 
   const {
@@ -38,7 +39,7 @@ export const BgtPlayerSelector = (props: Props) => {
   return (
     <div className="flex flex-col gap-3 md:max-w-96">
       <div className="flex flex-col gap-1">
-        <Button className="w-fit" type="button" onClick={() => setCreateModalOpen(true)}>
+        <Button className="w-fit" type="button" onClick={() => setCreateModalOpen(true)} disabled={disabled}>
           {t('playplayer.new.players.add')}
         </Button>
         <BgtFormErrors error={error} />
@@ -60,8 +61,8 @@ export const BgtPlayerSelector = (props: Props) => {
             {'score' in x && x.score !== undefined && <Badge>{x.score}</Badge>}
           </div>
           <div className="flex items-center gap-1">
-            <BgtIconButton size={17} icon={<PencilIcon />} onClick={() => editPlayer(x.id)} />
-            <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => remove(index)} type="danger" />
+            <BgtIconButton size={17} icon={<PencilIcon />} onClick={() => editPlayer(x.id)} disabled={disabled} />
+            <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => remove(index)} type="danger" disabled={disabled} />
           </div>
         </div>
       ))}

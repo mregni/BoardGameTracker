@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { AgChartsReact } from 'ag-charts-react';
-import { format } from 'date-fns';
-import { renderToString } from 'react-dom/server';
-import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { renderToString } from 'react-dom/server';
+import { format } from 'date-fns';
+import { AgChartsReact } from 'ag-charts-react';
 
-import { BgtAvatar } from '../../../../components/BgtAvatar/BgtAvatar';
-import { BgtCard } from '../../../../components/BgtCard/BgtCard';
-import { useGame } from '../../../../hooks/useGame';
-import { usePlayers } from '../../../../hooks/usePlayers';
-import { useSettings } from '../../../../hooks/useSettings';
 import { StringToRgb } from '../../../../utils/stringUtils';
+import { useSettings } from '../../../../hooks/useSettings';
+import { usePlayers } from '../../../../hooks/usePlayers';
+import { useGame } from '../../../../hooks/useGame';
+import { BgtCard } from '../../../../components/BgtCard/BgtCard';
+import { BgtAvatar } from '../../../../components/BgtAvatar/BgtAvatar';
 
 interface SeriesData {
   date: string;
@@ -33,8 +33,6 @@ export const PlayerScoringChart = () => {
     });
     return data;
   });
-
-  console.log(transformedSeries);
 
   return (
     <BgtCard>

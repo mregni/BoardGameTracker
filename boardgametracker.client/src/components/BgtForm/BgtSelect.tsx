@@ -18,7 +18,6 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
 
   const {
     fieldState: { error },
-    field: { value },
   } = useController({ name, control });
 
   return (
@@ -31,7 +30,7 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
         name={name}
         control={control}
         render={({ field }) => (
-          <Select.Root disabled={disabled} onValueChange={field.onChange} value={value}>
+          <Select.Root disabled={disabled} onValueChange={field.onChange} value={field.value} defaultValue={control?._defaultValues[name]}>
             <Select.Trigger />
             <Select.Content>
               {items.map((item) => (

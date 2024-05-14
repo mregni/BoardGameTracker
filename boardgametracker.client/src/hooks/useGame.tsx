@@ -1,12 +1,12 @@
 import { AxiosError } from 'axios';
-
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { FailResult, Game, GAME_CHARTS, GameStatistics, PlayerCountChart, PlaysByDayChart, QUERY_KEYS, Result } from '../models';
-import { ScoreRank } from '../models/Games/ScoringRank';
-import { TopPlayer } from '../models/Games/TopPlayer';
-import { PlayerScoring } from '../models/Games/XValue';
 import { useToast } from '../providers/BgtToastProvider';
+import { PlayerScoring } from '../models/Games/XValue';
+import { TopPlayer } from '../models/Games/TopPlayer';
+import { ScoreRank } from '../models/Games/ScoringRank';
+import { FailResult, Game, GAME_CHARTS, GameStatistics, PlayerCountChart, PlaysByDayChart, QUERY_KEYS, Result } from '../models';
+
 import { deleteGame as deleteGameCall, getChart, getGame, getGameStatistics, getTopPlayers } from './services/gameService';
 
 interface ReturnProps {

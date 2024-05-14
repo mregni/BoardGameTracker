@@ -1,19 +1,18 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-
-import { InformationCircleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
+import { InformationCircleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-import { BgtAvatar } from '../../../components/BgtAvatar/BgtAvatar';
-import { BgtPLayerAvatar } from '../../../components/BgtAvatar/BgtPlayerAvatar';
-import { BgtTableCard } from '../../../components/BgtCard/BgtTableCard';
-import { BgtIconButton } from '../../../components/BgtIconButton/BgtIconButton';
-import { BgtDateTimeCell } from '../../../components/BgtTable/BgtDateTimeCell';
-import { useGames } from '../../../hooks/useGames';
-import { useLocations } from '../../../hooks/useLocations';
-import { usePlayerPlays } from '../../../hooks/usePlays';
 import { Play } from '../../../models';
+import { usePlayerPlays } from '../../../hooks/usePlays';
+import { useLocations } from '../../../hooks/useLocations';
+import { useGames } from '../../../hooks/useGames';
+import { BgtDateTimeCell } from '../../../components/BgtTable/BgtDateTimeCell';
+import { BgtIconButton } from '../../../components/BgtIconButton/BgtIconButton';
+import { BgtTableCard } from '../../../components/BgtCard/BgtTableCard';
+import { BgtPlayerAvatar } from '../../../components/BgtAvatar/BgtPlayerAvatar';
+import { BgtAvatar } from '../../../components/BgtAvatar/BgtAvatar';
 
 const columnHelper = createColumnHelper<Play>();
 
@@ -63,7 +62,7 @@ export const PlayerPlaysDesktop = () => {
       cell: (info) => (
         <div className="flex gap-1 justify-center flex-wrap">
           {info.getValue().map((player) => (
-            <BgtPLayerAvatar key={player.playerId} player={player} />
+            <BgtPlayerAvatar key={player.playerId} player={player} />
           ))}
         </div>
       ),
@@ -74,7 +73,7 @@ export const PlayerPlaysDesktop = () => {
       cell: (info) => (
         <div className="flex gap-1 justify-center flex-wrap">
           {info.getValue().map((player) => (
-            <BgtPLayerAvatar key={player.playerId} player={player} />
+            <BgtPlayerAvatar key={player.playerId} player={player} />
           ))}
         </div>
       ),

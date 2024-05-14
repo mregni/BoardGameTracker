@@ -1,13 +1,13 @@
-import { formatDistanceToNowStrict } from 'date-fns';
-import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { formatDistanceToNowStrict } from 'date-fns';
 
-import { BgtStatistic } from '../../../components/BgtStatistic/BgtStatistic';
-import { BgtStatisticsContainer } from '../../../components/BgtStatistics/BgtStatisticsContainer';
-import { useGame } from '../../../hooks/useGame';
-import { usePlayers } from '../../../hooks/usePlayers';
-import { useSettings } from '../../../hooks/useSettings';
 import { RoundDecimal } from '../../../utils/numberUtils';
+import { useSettings } from '../../../hooks/useSettings';
+import { usePlayers } from '../../../hooks/usePlayers';
+import { useGame } from '../../../hooks/useGame';
+import { BgtStatisticsContainer } from '../../../components/BgtStatistics/BgtStatisticsContainer';
+import { BgtStatistic } from '../../../components/BgtStatistic/BgtStatistic';
 
 export const GameStatistics = () => {
   const { id } = useParams();

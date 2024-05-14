@@ -21,10 +21,11 @@ interface ComboboxProps<T1 extends FieldValues, T2> {
   getSelectedItem: (value: T2) => BgtSelectItem;
   name: Path<T1>;
   control?: Control<T1>;
+  disabled: boolean;
 }
 
 export const BgtComboBox = <T1 extends FieldValues, T2>(props: ComboboxProps<T1, T2>) => {
-  const { options, placeholder, addOptionText, onChange, label, onCreate, isSaving, getSelectedItem, name, control } = props;
+  const { options, placeholder, addOptionText, onChange, label, onCreate, isSaving, getSelectedItem, name, control, disabled } = props;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState<string>('');
   const [selected, setSelected] = useState<string>('');
@@ -35,7 +36,7 @@ export const BgtComboBox = <T1 extends FieldValues, T2>(props: ComboboxProps<T1,
 
   return (
     <div className="grid w-full md:max-w-96">
-      <BgtPopover open={open} onOpenChange={setOpen}>
+      <BgtPopover open={open && !disabled} onOpenChange={setOpen}>
         {label && <Text>{label}</Text>}
         <BgtPopoverTrigger asChild>
           <Button
@@ -43,6 +44,7 @@ export const BgtComboBox = <T1 extends FieldValues, T2>(props: ComboboxProps<T1,
             variant="outline"
             role="combobox"
             aria-expanded={open}
+            disabled={disabled}
             className="flex rt-variant-surface rt-reset rt-SelectTrigger rt-r-size-2 rt-variant-surface !font-normal"
           >
             {selected ? options.find((option) => option.value === selected)?.label ?? selected : placeholder}

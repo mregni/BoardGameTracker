@@ -29,7 +29,7 @@ export const BgtNewLocationModal = (props: Props) => {
     name: z.string().min(1, { message: t('location.new.name.required') }),
   });
 
-  const { register, handleSubmit, control, reset, trigger } = useForm<FormProps>({
+  const { handleSubmit, control, reset, trigger } = useForm<FormProps>({
     resolver: zodResolver(schema),
     mode: 'onSubmit',
   });
@@ -54,17 +54,10 @@ export const BgtNewLocationModal = (props: Props) => {
       <Dialog.Content>
         <Dialog.Title>{t('location.new.title')}</Dialog.Title>
         <Dialog.Description>{t('location.new.description')}</Dialog.Description>
-        <form onSubmit={handleSubmit(onSubmit, onError)}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-3 mt-3">
             <div className="flex flex-col gap-4 mt-3 mb-3">
-              <BgtInputField
-                type="text"
-                placeholder={t('location.new.name.placeholder')}
-                name="name"
-                label={t('common.name')}
-                register={register}
-                control={control}
-              />
+              <BgtInputField type="text" placeholder={t('location.new.name.placeholder')} name="name" label={t('common.name')} control={control} />
             </div>
             <div className="flex justify-end gap-3">
               <Dialog.Close>

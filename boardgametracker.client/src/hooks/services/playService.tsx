@@ -9,3 +9,7 @@ export const addPlay = (play: CreatePlay): Promise<Result<Play>> => {
     return response.data;
   });
 };
+
+export const deletePlay = (id: number): Promise<void> => {
+  return axiosInstance.delete(`${domain}/${id}`);
+};

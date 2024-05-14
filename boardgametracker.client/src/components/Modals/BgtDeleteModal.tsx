@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-
 import { Button, Dialog } from '@radix-ui/themes';
 
 interface Props {

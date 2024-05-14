@@ -11,10 +11,11 @@ interface Props<T extends FieldValues> {
   items: BgtSelectImageItem[];
   name: Path<T>;
   control?: Control<T>;
+  disabled: boolean;
 }
 
 export const BgtSelectNoLabel = <T extends FieldValues>(props: Props<T>) => {
-  const { items, name, control } = props;
+  const { items, name, control, disabled } = props;
 
   const {
     fieldState: { error },
@@ -26,7 +27,7 @@ export const BgtSelectNoLabel = <T extends FieldValues>(props: Props<T>) => {
         name={name}
         control={control}
         render={({ field }) => (
-          <Select.Root onValueChange={field.onChange} value={field.value} size="2" defaultValue={control?._defaultValues[name]}>
+          <Select.Root onValueChange={field.onChange} value={field.value} size="2" defaultValue={control?._defaultValues[name]} disabled={disabled}>
             <Select.Trigger className="line-clamp-1" />
             <Select.Content>
               {items?.map((x) => (

@@ -1,23 +1,23 @@
-import i18next from 'i18next';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import i18next from 'i18next';
 import { Button } from '@radix-ui/themes';
 
-import { BgtDetailHeader } from '../../components/BgtDetailHeader/BgtDetailHeader';
-import { BgtPage } from '../../components/BgtLayout/BgtPage';
-import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
-import { BgtDeleteModal } from '../../components/Modals/BgtDeleteModal';
 import { useGame } from '../../hooks/useGame';
-import { PlayerCountChart } from './components/charts/PlayerCountChart';
-import { PlayerScoringChart } from './components/charts/PlayerScoringChart';
-import { PlaysByWeekDayChart } from './components/charts/PlaysByWeekDayChart';
-import { ScoringRankChart } from './components/charts/ScoringRankChart';
-import { GameDetailsPopup } from './components/GameDetailsPopup';
-import { GamePlays } from './components/GamePlays';
-import { GameStatistics } from './components/GameStatistics';
+import { BgtDeleteModal } from '../../components/Modals/BgtDeleteModal';
+import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
+import { BgtPage } from '../../components/BgtLayout/BgtPage';
+import { BgtDetailHeader } from '../../components/BgtDetailHeader/BgtDetailHeader';
+
 import { GameTopPlayers } from './components/GameTopPlayers';
+import { GameStatistics } from './components/GameStatistics';
+import { GamePlays } from './components/GamePlays';
+import { GameDetailsPopup } from './components/GameDetailsPopup';
+import { ScoringRankChart } from './components/charts/ScoringRankChart';
+import { PlaysByWeekDayChart } from './components/charts/PlaysByWeekDayChart';
+import { PlayerScoringChart } from './components/charts/PlayerScoringChart';
+import { PlayerCountChart } from './components/charts/PlayerCountChart';
 
 export const GameDetailPage = () => {
   const { id } = useParams();

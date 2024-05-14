@@ -6,7 +6,6 @@ import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { BgtSwitch } from '../BgtSwitch/BgtSwitch';
-import { BgtSelect } from '../BgtForm/BgtSelect';
 import { BgtInputField } from '../BgtForm/BgtInputField';
 import {
   CreatePlay,
@@ -37,7 +36,7 @@ const UpdatePlayerForm = (props: Props) => {
   type PlayType<T extends boolean> = T extends true ? CreatePlayPlayer : CreatePlayPlayerNoScoring;
   type CreatePlayType = PlayType<typeof hasScoring>;
 
-  const { register, handleSubmit, control } = useForm<CreatePlayType>({
+  const { handleSubmit, control } = useForm<CreatePlayType>({
     resolver: zodResolver(hasScoring ? CreatePlayPlayerSchema : CreatePlayPlayerNoScoringSchema),
     defaultValues: {
       firstPlay: playerToEdit?.firstPlay,
@@ -61,9 +60,7 @@ const UpdatePlayerForm = (props: Props) => {
         <Dialog.Description>{t('playplayer.update.description', { name: byId(playerToEdit?.playerId)?.name })}</Dialog.Description>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-4 mt-3 mb-6">
-            {hasScoring && (
-              <BgtInputField name="score" type="number" valueAsNumber register={register} control={control} label={t('playplayer.score.label')} />
-            )}
+            {hasScoring && <BgtInputField name="score" type="number" valueAsNumber control={control} label={t('playplayer.score.label')} />}
             <BgtSwitch label={t('playplayer.won.label')} control={control} name="won" className="mt-2" />
             <BgtSwitch label={t('playplayer.first-play.label')} control={control} name="firstPlay" className="mt-2" />
             <BgtSwitch label={t('playplayer.bot.label')} control={control} name="isBot" className="mt-2" />

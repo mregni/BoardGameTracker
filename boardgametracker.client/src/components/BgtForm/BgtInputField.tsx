@@ -1,4 +1,4 @@
-import { Control, Controller, FieldValues, Form, Path, useController, UseFormRegister } from 'react-hook-form';
+import { Control, Controller, FieldValues, Path, useController } from 'react-hook-form';
 import { formatISO } from 'date-fns';
 import clsx from 'clsx';
 import { TextField } from '@radix-ui/themes';
@@ -6,10 +6,9 @@ import { TextField } from '@radix-ui/themes';
 import { BgtFormErrors } from './BgtFormErrors';
 
 export interface Props<T extends FieldValues> {
-  type: 'text' | 'number' | 'datetime-local';
+  type: 'text' | 'number' | 'datetime-local' | 'date';
   name: Path<T>;
   placeholder?: string;
-  register?: UseFormRegister<T>;
   control: Control<T>;
   valueAsNumber?: boolean;
   label?: string;
@@ -19,7 +18,7 @@ export interface Props<T extends FieldValues> {
 }
 
 export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
-  const { type, name, placeholder = '', valueAsNumber, label, register, control, prefixLabel = null, className = '', disabled = false } = props;
+  const { type, name, placeholder = '', valueAsNumber, label, control, prefixLabel = null, className = '', disabled = false } = props;
 
   const {
     fieldState: { error },

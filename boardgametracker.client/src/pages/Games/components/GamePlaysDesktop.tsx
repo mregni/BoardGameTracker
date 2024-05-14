@@ -1,26 +1,21 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-
-import { InformationCircleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { Badge } from '@radix-ui/themes';
+import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
+import { Badge } from '@radix-ui/themes';
+import { InformationCircleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-import { BgtPLayerAvatar } from '../../../components/BgtAvatar/BgtPlayerAvatar';
-import { BgtTableCard } from '../../../components/BgtCard/BgtTableCard';
-import { BgtIconButton } from '../../../components/BgtIconButton/BgtIconButton';
-import { BgtDateTimeCell } from '../../../components/BgtTable/BgtDateTimeCell';
-import { useLocations } from '../../../hooks/useLocations';
-import { useGamePlays } from '../../../hooks/usePlays';
-import { Play } from '../../../models';
 import { PlayFlagToString } from '../../../utils/stringUtils';
+import { Play } from '../../../models';
+import { useGamePlays } from '../../../hooks/usePlays';
+import { useLocations } from '../../../hooks/useLocations';
+import { BgtDeleteModal } from '../../../components/Modals/BgtDeleteModal';
+import { BgtDateTimeCell } from '../../../components/BgtTable/BgtDateTimeCell';
+import { BgtIconButton } from '../../../components/BgtIconButton/BgtIconButton';
+import { BgtTableCard } from '../../../components/BgtCard/BgtTableCard';
+import { BgtPlayerAvatar } from '../../../components/BgtAvatar/BgtPlayerAvatar';
 
 const columnHelper = createColumnHelper<Play>();
-
-const deletePlay = (id: number) => {
-  //TODO: Implement
-  console.log('delete: ' + id);
-};
 
 const editPlay = (id: number) => {
   //TODO: Implement
@@ -32,9 +27,16 @@ const pageCount = 10;
 export const DesktopDetails = () => {
   const { id } = useParams();
   const [page, setPage] = useState(0);
-  const { plays, totalCount } = useGamePlays(id, page, pageCount);
+  const { plays, totalCount, deletePlay } = useGamePlays(id, page, pageCount);
   const { t } = useTranslation();
   const { byId: locationById } = useLocations();
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+
+  const deletePlayInternal = (id: number) => {
+    void deletePlay(id).finally(() => {
+      setOpenDeleteModal(false);
+    });
+  };
 
   const columns = [
     columnHelper.accessor((row) => row.start, {
@@ -49,7 +51,7 @@ export const DesktopDetails = () => {
       cell: (info) => (
         <div className="flex gap-1 justify-center flex-wrap">
           {info.getValue().map((player) => (
-            <BgtPLayerAvatar key={player.playerId} player={player} />
+            <BgtPlayerAvatar key={player.playerId} player={player} />
           ))}
         </div>
       ),
@@ -60,7 +62,7 @@ export const DesktopDetails = () => {
       cell: (info) => (
         <div className="flex gap-1 justify-center flex-wrap">
           {info.getValue().map((player) => (
-            <BgtPLayerAvatar key={player.playerId} player={player} />
+            <BgtPlayerAvatar key={player.playerId} player={player} />
           ))}
         </div>
       ),
@@ -103,7 +105,7 @@ export const DesktopDetails = () => {
         <div className="flex flex-row justify-center gap-1">
           <BgtIconButton size={17} icon={<InformationCircleIcon />} onClick={() => editPlay(info.getValue())} />
           <BgtIconButton size={17} icon={<PencilIcon />} onClick={() => editPlay(info.getValue())} />
-          <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => deletePlay(info.getValue())} type="danger" />
+          <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => deletePlayInternal(info.getValue())} type="danger" />
         </div>
       ),
       footer: (info) => info.column.id,
@@ -111,15 +113,18 @@ export const DesktopDetails = () => {
   ];
 
   return (
-    <BgtTableCard
-      className="w-full"
-      columns={columns}
-      plays={plays}
-      title={t('player.cards.games')}
-      setPage={setPage}
-      hasMore={(page + 1) * pageCount < totalCount}
-      currentPage={page}
-      totalPages={Math.ceil(totalCount / pageCount)}
-    />
+    <>
+      <BgtTableCard
+        className="w-full"
+        columns={columns}
+        plays={plays}
+        title={t('player.cards.games')}
+        setPage={setPage}
+        hasMore={(page + 1) * pageCount < totalCount}
+        currentPage={page}
+        totalPages={Math.ceil(totalCount / pageCount)}
+      />
+      <BgtDeleteModal title={t('common.game-play')} open={openDeleteModal} setOpen={setOpenDeleteModal} onDelete={deletePlayInternal} />
+    </>
   );
 };

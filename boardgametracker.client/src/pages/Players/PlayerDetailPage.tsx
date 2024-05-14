@@ -1,17 +1,17 @@
-import i18next from 'i18next';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import i18next from 'i18next';
 import { Button } from '@radix-ui/themes';
 
-import { BgtDetailHeader } from '../../components/BgtDetailHeader/BgtDetailHeader';
-import { BgtPage } from '../../components/BgtLayout/BgtPage';
-import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
-import { BgtDeleteModal } from '../../components/Modals/BgtDeleteModal';
 import { usePlayer } from '../../hooks/usePlayer';
-import { PlayerPlays } from './components/PlayerPlays';
+import { BgtDeleteModal } from '../../components/Modals/BgtDeleteModal';
+import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
+import { BgtPage } from '../../components/BgtLayout/BgtPage';
+import { BgtDetailHeader } from '../../components/BgtDetailHeader/BgtDetailHeader';
+
 import { PlayerStatistics } from './components/PlayerStatistics';
+import { PlayerPlays } from './components/PlayerPlays';
 
 export const PlayerDetailpage = () => {
   const { id } = useParams();
