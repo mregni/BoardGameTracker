@@ -1,14 +1,17 @@
 import { useParams } from 'react-router-dom';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { FieldArrayWithId, useFieldArray, useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { t } from 'i18next';
-import { Button } from '@radix-ui/themes';
+import { addMinutes } from 'date-fns';
+import { Button, TextField } from '@radix-ui/themes';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { CreatePlay, CreatePlayPlayer, CreatePlayPlayerNoScoring, CreatePlaySchema } from '../../models/Plays/CreatePlay';
+import { useCreatePlays, usePlayerPlays } from '../../hooks/usePlays';
 import { useLocations } from '../../hooks/useLocations';
 import { useGames } from '../../hooks/useGames';
 import { useGame } from '../../hooks/useGame';
+import { BgtUpdatePlayerModal } from '../../components/Modals/BgtUpdatePlayerModal';
 import { BgtCreatePlayerModal } from '../../components/Modals/BgtCreatePlayerModal';
 import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import { BgtPage } from '../../components/BgtLayout/BgtPage';
@@ -25,8 +28,11 @@ export const CreatePlayPage = () => {
   const { game } = useGame(gameId);
   const { games } = useGames();
   const { locations, save: saveLocation, isSaving } = useLocations();
+  const { save } = useCreatePlays();
 
   const [openCreateNewPlayerModal, setOpenCreateNewPlayerModal] = useState(false);
+  const [openUpdateNewPlayerModal, setOpenUpdateNewPlayerModal] = useState(false);
+  const [playerIdToEdit, setPlayerIdToEdit] = useState<string | null>(null);
 
   const { register, handleSubmit, control, setValue } = useForm<CreatePlay>({
     resolver: zodResolver(CreatePlaySchema),
@@ -35,6 +41,7 @@ export const CreatePlayPage = () => {
       locationId: undefined,
       minutes: game?.maxPlayTime ?? 30,
       comment: '',
+      start: addMinutes(new Date(), -(game?.maxPlayTime ?? 30)),
       players: [],
     },
   });
@@ -43,20 +50,29 @@ export const CreatePlayPage = () => {
     fields: players,
     append,
     remove,
+    update,
   } = useFieldArray<CreatePlay>({
     name: 'players',
     control,
   });
 
   const closeNewPlayPlayer = (player: CreatePlayPlayer | CreatePlayPlayerNoScoring) => {
+    setPlayerIdToEdit(null);
     append(player);
     setOpenCreateNewPlayerModal(false);
   };
 
+  const closeUpdatePlayPlayer = (player: CreatePlayPlayer | CreatePlayPlayerNoScoring) => {
+    const index = players.findIndex((x) => x.playerId === player.playerId);
+    if (index !== -1) {
+      update(index, player);
+    }
+  };
+
   if (locations === undefined || games === undefined) return null;
 
-  const onSubmit = (data: CreatePlay) => {
-    console.log(data);
+  const onSubmit = async (data: CreatePlay) => {
+    await save(data);
   };
 
   return (
@@ -69,7 +85,7 @@ export const CreatePlayPage = () => {
               title={t('playplayer.new.game.label')}
               subTitle={t('playplayer.new.game.sub-label')}
               right={
-                <BgtSelectNoLabel<CreatePlay>
+                <BgtSelectNoLabel
                   items={
                     games?.map((x) => ({
                       value: x.id.toString(),
@@ -110,18 +126,26 @@ export const CreatePlayPage = () => {
               title={t('playplayer.new.players.label')}
               subTitle={t('playplayer.new.players.sub-label')}
               right={
-                <BgtPlayerSelector name="players" control={control} setModalOpen={setOpenCreateNewPlayerModal} remove={remove} players={players} />
+                <BgtPlayerSelector
+                  name="players"
+                  control={control}
+                  setCreateModalOpen={setOpenCreateNewPlayerModal}
+                  setUpdateModalOpen={setOpenUpdateNewPlayerModal}
+                  remove={remove}
+                  players={players}
+                  setPlayerIdToEdit={setPlayerIdToEdit}
+                />
               }
-            />
-            <BgtFormRow
-              title={t('playplayer.new.start.label')}
-              subTitle={t('playplayer.new.start.sub-label')}
-              right={<BgtInputField name="start" type="datetime-local" register={register} className="md:max-w-64" control={control} />}
             />
             <BgtFormRow
               title={t('playplayer.new.duration.label')}
               subTitle={t('playplayer.new.duration.sub-label')}
               right={<BgtInputField valueAsNumber name="minutes" type="number" register={register} className="md:max-w-64" control={control} />}
+            />
+            <BgtFormRow
+              title={t('playplayer.new.start.label')}
+              subTitle={t('playplayer.new.start.sub-label')}
+              right={<BgtInputField name="start" type="datetime-local" register={register} className="md:max-w-64" control={control} />}
             />
             <BgtFormRow
               title={t('playplayer.new.comment.label')}
@@ -133,10 +157,18 @@ export const CreatePlayPage = () => {
         </form>
         <BgtCreatePlayerModal
           open={openCreateNewPlayerModal}
-          setOpen={setOpenCreateNewPlayerModal}
           hasScoring={game?.hasScoring ?? true}
           onClose={closeNewPlayPlayer}
+          onCancel={() => setOpenCreateNewPlayerModal(false)}
           selectedPlayerIds={players.map((x) => x.playerId)}
+        />
+        <BgtUpdatePlayerModal
+          open={openUpdateNewPlayerModal}
+          hasScoring={game?.hasScoring ?? true}
+          onClose={closeUpdatePlayPlayer}
+          onCancel={() => setOpenUpdateNewPlayerModal(false)}
+          selectedPlayerIds={players.map((x) => x.playerId)}
+          playerToEdit={players.find((x) => x.id === playerIdToEdit)}
         />
       </BgtPageContent>
     </BgtPage>

@@ -1,4 +1,5 @@
 import { ArrayPath, Control, FieldArrayWithId, UseFieldArrayRemove, useController } from 'react-hook-form';
+import { Dispatch, SetStateAction } from 'react';
 import { t } from 'i18next';
 import { Badge, Button, Text } from '@radix-ui/themes';
 import { ClockIcon, PencilIcon, RocketLaunchIcon, TrashIcon, TrophyIcon } from '@heroicons/react/24/outline';
@@ -14,23 +15,30 @@ import { BgtFormErrors } from './BgtFormErrors';
 interface Props {
   name: ArrayPath<CreatePlay>;
   control: Control<CreatePlay>;
-  setModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setCreateModalOpen: Dispatch<SetStateAction<boolean>>;
+  setPlayerIdToEdit: Dispatch<SetStateAction<string | null>>;
+  setUpdateModalOpen: Dispatch<SetStateAction<boolean>>;
   remove: UseFieldArrayRemove;
   players: FieldArrayWithId<CreatePlay>[];
 }
 
 export const BgtPlayerSelector = (props: Props) => {
-  const { name, control, setModalOpen, remove, players } = props;
+  const { name, control, setCreateModalOpen, remove, players, setPlayerIdToEdit, setUpdateModalOpen } = props;
   const { byId } = usePlayers();
 
   const {
     fieldState: { error },
   } = useController({ name, control });
 
+  const editPlayer = (playerId: string): void => {
+    setPlayerIdToEdit(playerId);
+    setUpdateModalOpen(true);
+  };
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 md:max-w-96">
       <div className="flex flex-col gap-1">
-        <Button className="w-fit" type="button" onClick={() => setModalOpen(true)}>
+        <Button className="w-fit" type="button" onClick={() => setCreateModalOpen(true)}>
           {t('playplayer.new.players.add')}
         </Button>
         <BgtFormErrors error={error} />
@@ -52,7 +60,7 @@ export const BgtPlayerSelector = (props: Props) => {
             {'score' in x && x.score !== undefined && <Badge>{x.score}</Badge>}
           </div>
           <div className="flex items-center gap-1">
-            <BgtIconButton size={17} icon={<PencilIcon />} onClick={() => console.log('boe')} />
+            <BgtIconButton size={17} icon={<PencilIcon />} onClick={() => editPlayer(x.id)} />
             <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => remove(index)} type="danger" />
           </div>
         </div>

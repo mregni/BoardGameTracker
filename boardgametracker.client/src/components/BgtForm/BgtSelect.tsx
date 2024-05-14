@@ -1,12 +1,11 @@
 import { Control, Controller, FieldValues, Path, useController } from 'react-hook-form';
-
 import { Select } from '@radix-ui/themes';
 
 import { BgtSelectItem } from '../../models/Common/BgtSelectItem';
+
 import { BgtFormErrors } from './BgtFormErrors';
 
 interface Props<T extends FieldValues> {
-  defaultValue?: string;
   label: string;
   items: BgtSelectItem[];
   name: Path<T>;
@@ -15,10 +14,11 @@ interface Props<T extends FieldValues> {
 }
 
 export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
-  const { defaultValue, items, label, control, name, disabled = false } = props;
+  const { items, label, control, name, disabled = false } = props;
 
   const {
     fieldState: { error },
+    field: { value },
   } = useController({ name, control });
 
   return (
@@ -31,7 +31,7 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
         name={name}
         control={control}
         render={({ field }) => (
-          <Select.Root disabled={disabled} onValueChange={field.onChange} defaultValue={defaultValue}>
+          <Select.Root disabled={disabled} onValueChange={field.onChange} value={value}>
             <Select.Trigger />
             <Select.Content>
               {items.map((item) => (

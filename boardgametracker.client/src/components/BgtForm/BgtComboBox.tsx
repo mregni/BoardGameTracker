@@ -34,23 +34,21 @@ export const BgtComboBox = <T1 extends FieldValues, T2>(props: ComboboxProps<T1,
   } = useController({ name, control });
 
   return (
-    <div className="grid w-full">
+    <div className="grid w-full md:max-w-96">
       <BgtPopover open={open} onOpenChange={setOpen}>
-        <div className="space-y-1">
-          {label && <Text>{label}</Text>}
-          <BgtPopoverTrigger asChild>
-            <Button
-              size="2"
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full md:max-w-96 flex rt-variant-surface rt-reset rt-SelectTrigger rt-r-size-2 rt-variant-surface !font-normal"
-            >
-              {selected ? options.find((option) => option.value === selected)?.label ?? selected : placeholder}
-              <ChevronDownIcon className="ml-auto size-3 shrink-0 opacity-50" />
-            </Button>
-          </BgtPopoverTrigger>
-        </div>
+        {label && <Text>{label}</Text>}
+        <BgtPopoverTrigger asChild>
+          <Button
+            size="2"
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="flex rt-variant-surface rt-reset rt-SelectTrigger rt-r-size-2 rt-variant-surface !font-normal"
+          >
+            {selected ? options.find((option) => option.value === selected)?.label ?? selected : placeholder}
+            <ChevronDownIcon className="ml-auto size-3 shrink-0 opacity-50" />
+          </Button>
+        </BgtPopoverTrigger>
 
         <BgtPopoverContent>
           <BgtCommand className="max-h-64 overflow-y-auto">

@@ -1,5 +1,5 @@
-import { ListResult, Play, Player, PlayerStatistics, Result } from '../../models';
 import { axiosInstance } from '../../utils/axiosInstance';
+import { ListResult, Play, Player, PlayerStatistics, Result } from '../../models';
 
 const domain = 'player';
 

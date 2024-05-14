@@ -24,13 +24,15 @@ interface Props {
   onClose: (player: CreatePlayPlayer | CreatePlayPlayerNoScoring) => void;
   onCancel: () => void;
   selectedPlayerIds: string[];
+  playerToEdit: FieldArrayWithId<CreatePlay> | undefined;
 }
 
-const CreatePlayerForm = (props: Props) => {
-  const { open, hasScoring, onClose, selectedPlayerIds, onCancel } = props;
+const UpdatePlayerForm = (props: Props) => {
+  const { open, hasScoring, onClose, playerToEdit, onCancel } = props;
   const { t } = useTranslation();
   const { players } = usePlayers();
   const { locations } = useLocations();
+  const { byId } = usePlayers();
 
   type PlayType<T extends boolean> = T extends true ? CreatePlayPlayer : CreatePlayPlayerNoScoring;
   type CreatePlayType = PlayType<typeof hasScoring>;
@@ -38,9 +40,11 @@ const CreatePlayerForm = (props: Props) => {
   const { register, handleSubmit, control } = useForm<CreatePlayType>({
     resolver: zodResolver(hasScoring ? CreatePlayPlayerSchema : CreatePlayPlayerNoScoringSchema),
     defaultValues: {
-      firstPlay: false,
-      won: false,
-      isBot: false,
+      firstPlay: playerToEdit?.firstPlay,
+      won: playerToEdit?.won,
+      isBot: playerToEdit?.isBot,
+      score: playerToEdit !== undefined && 'score' in playerToEdit ? playerToEdit?.score : undefined,
+      playerId: playerToEdit?.playerId,
     },
   });
 
@@ -53,21 +57,10 @@ const CreatePlayerForm = (props: Props) => {
   return (
     <Dialog.Root open={open}>
       <Dialog.Content>
-        <Dialog.Title>{t('playplayer.new.title')}</Dialog.Title>
-        <Dialog.Description>{t('playplayer.new.description')}</Dialog.Description>
+        <Dialog.Title>{t('playplayer.update.title')}</Dialog.Title>
+        <Dialog.Description>{t('playplayer.update.description', { name: byId(playerToEdit?.playerId)?.name })}</Dialog.Description>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-4 mt-3 mb-6">
-            <BgtSelect
-              control={control}
-              label={t('playplayer.new.player.label')}
-              name="playerId"
-              items={players
-                .filter((player) => !selectedPlayerIds.includes(player.id.toString()))
-                .map((value) => ({
-                  label: value.name,
-                  value: value.id.toString(),
-                }))}
-            />
             {hasScoring && (
               <BgtInputField name="score" type="number" valueAsNumber register={register} control={control} label={t('playplayer.score.label')} />
             )}
@@ -80,7 +73,7 @@ const CreatePlayerForm = (props: Props) => {
               <>
                 <Form.Submit asChild>
                   <Button type="submit" variant="surface" color="orange">
-                    {t('playplayer.new.save')}
+                    {t('playplayer.update.save')}
                   </Button>
                 </Form.Submit>
                 <Button type="button" variant="surface" color="gray" onClick={() => onCancel()}>
@@ -95,6 +88,6 @@ const CreatePlayerForm = (props: Props) => {
   );
 };
 
-export const BgtCreatePlayerModal = (props: Props) => {
-  return props.open && <CreatePlayerForm {...props} />;
+export const BgtUpdatePlayerModal = (props: Props) => {
+  return props.open && props.playerToEdit && <UpdatePlayerForm {...props} />;
 };

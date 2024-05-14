@@ -10,11 +10,11 @@ export const CreatePlayPlayerNoScoringSchema = z.object({
 export const CreatePlayPlayerSchema = CreatePlayPlayerNoScoringSchema.extend({
   score: z
     .number({
-      required_error: 'playplayer.new.score.required',
-      invalid_type_error: 'playplayer.new.score.required',
+      required_error: 'playplayer.score.required',
+      invalid_type_error: 'playplayer.score.required',
     })
     .positive({
-      message: 'playplayer.new.score.required',
+      message: 'playplayer.score.required',
     }),
 });
 

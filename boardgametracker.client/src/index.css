@@ -10,3 +10,7 @@
 .mobile-menu.hidden-menu {
   transform: translateY(-130%);
 }
+
+.rt-TextFieldInput {
+  display: block !important;
+}

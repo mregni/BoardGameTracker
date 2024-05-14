@@ -21,18 +21,18 @@ export const BgtSelectNoLabel = <T extends FieldValues>(props: Props<T>) => {
   } = useController({ name, control });
 
   return (
-    <div className="grid w-full">
+    <div className="grid w-full md:max-w-96">
       <Controller
         name={name}
         control={control}
         render={({ field }) => (
-          <Select.Root onValueChange={field.onChange} value={field.value} size="3" defaultValue={control?._defaultValues[name]}>
-            <Select.Trigger className="w-full md:max-w-96 line-clamp-1" />
+          <Select.Root onValueChange={field.onChange} value={field.value} size="2" defaultValue={control?._defaultValues[name]}>
+            <Select.Trigger className="line-clamp-1" />
             <Select.Content>
               {items?.map((x) => (
                 <Select.Item key={x.value} value={x.value}>
                   <div className="flex flex-row gap-1 items-center">
-                    {x.image && <BgtAvatar image={x.image} color={StringToHsl(x.label)} title={x.label} size="small" />}
+                    <BgtAvatar image={x.image} color={StringToHsl(x.label)} title={x.label} size="small" />
                     {x.label}
                   </div>
                 </Select.Item>
