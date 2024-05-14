@@ -183,6 +183,10 @@
   "playplayer": {
     "save": "Create game play",
     "new": {
+      "notifications": {
+        "created": "Game play is succesfully created",
+        "failed": "Failed creating game play"
+      },
       "save": "Add player",
       "title": "Add player",
       "description": "Fill in the form to add a new player to this game play.",
@@ -206,23 +210,10 @@
         "sub-label": "Select the corect game",
         "required": "Game is required"
       },
-      "won": {
-        "label": "Player has won the game"
-      },
-      "bot": {
-        "label": "Player is a bot"
-      },
       "start": {
         "label": "Start",
         "sub-label": "Start date and time of the game.",
         "required": "Start date is required"
-      },
-      "score": {
-        "label": "End scoring",
-        "required": "Score is required"
-      },
-      "first-play": {
-        "label": "Played game for the first time"
       },
       "location": {
         "label": "Select your location",
@@ -234,6 +225,24 @@
         "label": "Comment",
         "sub-label": "Extra comment on the game."
       }
+    },
+    "update": {
+      "save": "Update player",
+      "title": "Update player",
+      "description": "Update the form to change the details of {{name}}."
+    },
+    "won": {
+      "label": "Player has won the game"
+    },
+    "bot": {
+      "label": "Player is a bot"
+    },
+    "score": {
+      "label": "End scoring",
+      "required": "Score is required"
+    },
+    "first-play": {
+      "label": "Played game for the first time"
     }
   }
 }
