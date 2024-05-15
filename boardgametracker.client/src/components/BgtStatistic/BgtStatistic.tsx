@@ -18,7 +18,7 @@ export const BgtStatistic = (props: Props) => {
   const { title, content, suffix, player = null, game = null } = props;
   const navigate = useNavigate();
 
-  if (content === null || content === undefined) return null;
+  if (content === null || content === undefined || Number.isNaN(content)) return null;
 
   return (
     <div className="flex flex-col justify-center items-center min-w-24 p-3">

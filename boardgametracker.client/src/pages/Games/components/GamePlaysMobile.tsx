@@ -6,6 +6,7 @@ import { Button } from '@radix-ui/themes';
 import { Play } from '../../../models';
 import { useSettings } from '../../../hooks/useSettings';
 import { useGamePlays } from '../../../hooks/usePlays';
+import { BgtDeleteModal } from '../../../components/Modals/BgtDeleteModal';
 import { BgtNoData } from '../../../components/BgtNoData/BgtNoData';
 import { BgtMobilePlayCard } from '../../../components/BgtCard/BgtMobilePlayCard';
 import { BgtCard } from '../../../components/BgtCard/BgtCard';
@@ -13,9 +14,26 @@ import { BgtCard } from '../../../components/BgtCard/BgtCard';
 export const MobileDetails = () => {
   const { id } = useParams();
   const [page, setPage] = useState(0);
-  const { plays, totalCount, isFetching } = useGamePlays(id, page, 10);
+  const { plays, totalCount, isFetching, deletePlay } = useGamePlays(id, page, 10);
   const { t } = useTranslation();
   const { settings } = useSettings();
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [playIdToDelete, setPlayIdToDelete] = useState<number | null>(null);
+
+  const deletePlayInternal = () => {
+    if (playIdToDelete !== null) {
+      void deletePlay(playIdToDelete).finally(() => {
+        setFullPlayList([]);
+        setOpenDeleteModal(false);
+        setPlayIdToDelete(null);
+      });
+    }
+  };
+
+  const openDeleteModalInternal = (id: number) => {
+    setOpenDeleteModal(true);
+    setPlayIdToDelete(id);
+  };
 
   const [fullPlayList, setFullPlayList] = useState<Play[]>([]);
 
@@ -35,12 +53,10 @@ export const MobileDetails = () => {
     );
   }
 
-  console.log(plays);
-
   return (
     <div className="flex flex-col gap-3">
       {fullPlayList.map((play, i) => (
-        <BgtMobilePlayCard key={play.id} index={i} play={play} />
+        <BgtMobilePlayCard key={play.id} index={i} play={play} onDelete={openDeleteModalInternal} />
       ))}
       <Button
         size="2"
@@ -51,6 +67,7 @@ export const MobileDetails = () => {
       >
         {t('common.load-more')}
       </Button>
+      <BgtDeleteModal title={t('common.game-play')} open={openDeleteModal} setOpen={setOpenDeleteModal} onDelete={deletePlayInternal} />
     </div>
   );
 };

@@ -1,30 +1,26 @@
-import { format } from 'date-fns';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-
-import { InformationCircleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
+import { format } from 'date-fns';
 import { Badge, Text } from '@radix-ui/themes';
+import { InformationCircleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-import { useGames } from '../../hooks/useGames';
-import { useLocations } from '../../hooks/useLocations';
-import { usePlayers } from '../../hooks/usePlayers';
-import { useSettings } from '../../hooks/useSettings';
-import { Play } from '../../models';
-import { PlayFlagToString } from '../../utils/stringUtils';
-import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
 import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
+import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
+import { PlayFlagToString } from '../../utils/stringUtils';
+import { Play } from '../../models';
+import { useSettings } from '../../hooks/useSettings';
+import { usePlayers } from '../../hooks/usePlayers';
+import { useLocations } from '../../hooks/useLocations';
+import { useGames } from '../../hooks/useGames';
+
 import { BgtCard } from './BgtCard';
 
 interface Props {
   play: Play;
   index: number;
   showGame?: boolean;
+  onDelete: (id: number) => void;
 }
-
-const deletePlay = (id: number) => {
-  //TODO: Implement
-  console.log('delete: ' + id);
-};
 
 const editPlay = (id: number) => {
   //TODO: Implement
@@ -32,7 +28,7 @@ const editPlay = (id: number) => {
 };
 
 export const BgtMobilePlayCard = (props: Props) => {
-  const { play, index, showGame = false } = props;
+  const { play, index, showGame = false, onDelete } = props;
   const { t } = useTranslation();
   const { settings } = useSettings();
   const navigate = useNavigate();
@@ -53,7 +49,7 @@ export const BgtMobilePlayCard = (props: Props) => {
           <div className="flex flex-row justify-center gap-1">
             <BgtIconButton size={17} icon={<InformationCircleIcon />} onClick={() => editPlay(play.id)} />
             <BgtIconButton size={17} icon={<PencilIcon />} onClick={() => editPlay(play.id)} />
-            <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => deletePlay(play.id)} type="danger" />
+            <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => onDelete(play.id)} type="danger" />
           </div>
         </div>
         {play.playFlags.length > 0 && (

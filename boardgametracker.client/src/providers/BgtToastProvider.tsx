@@ -1,11 +1,10 @@
-import clsx from 'clsx';
-import { AnimatePresence, motion } from 'framer-motion';
-import { createContext, ElementRef, forwardRef, ReactNode, useContext, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { v4 } from 'uuid';
-
-import { ExclamationTriangleIcon, InformationCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
+import { createContext, ElementRef, forwardRef, ReactNode, useContext, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import clsx from 'clsx';
 import * as RadixToast from '@radix-ui/react-toast';
+import { ExclamationTriangleIcon, InformationCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 import { BgtIcon } from '../components/BgtIcon/BgtIcon';
 
@@ -100,7 +99,7 @@ const Toast = forwardRef<
   const { t } = useTranslation();
 
   return (
-    <RadixToast.Root ref={forwardedRef} asChild forceMount onOpenChange={onClose} duration={25000}>
+    <RadixToast.Root ref={forwardedRef} asChild forceMount onOpenChange={onClose} duration={2000}>
       <motion.li
         layout
         initial={{ x: width + margin }}

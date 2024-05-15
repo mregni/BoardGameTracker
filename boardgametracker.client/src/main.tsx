@@ -3,14 +3,13 @@ import './utils/i18n';
 import '@radix-ui/themes/styles.css';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 
-import React, { Suspense } from 'react';
-import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-
+import ReactDOM from 'react-dom/client';
+import React, { Suspense } from 'react';
 import { Theme } from '@radix-ui/themes';
 
-import AppContainer from './App.tsx';
 import { BgtToastProvider } from './providers/BgtToastProvider.tsx';
+import AppContainer from './App.tsx';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

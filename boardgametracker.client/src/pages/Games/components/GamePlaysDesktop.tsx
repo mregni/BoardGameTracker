@@ -31,11 +31,20 @@ export const DesktopDetails = () => {
   const { t } = useTranslation();
   const { byId: locationById } = useLocations();
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [playIdToDelete, setPlayIdToDelete] = useState<number | null>(null);
 
-  const deletePlayInternal = (id: number) => {
-    void deletePlay(id).finally(() => {
-      setOpenDeleteModal(false);
-    });
+  const deletePlayInternal = () => {
+    if (playIdToDelete !== null) {
+      void deletePlay(playIdToDelete).finally(() => {
+        setOpenDeleteModal(false);
+        setPlayIdToDelete(null);
+      });
+    }
+  };
+
+  const openDeleteModalInternal = (id: number) => {
+    setOpenDeleteModal(true);
+    setPlayIdToDelete(id);
   };
 
   const columns = [
@@ -105,7 +114,7 @@ export const DesktopDetails = () => {
         <div className="flex flex-row justify-center gap-1">
           <BgtIconButton size={17} icon={<InformationCircleIcon />} onClick={() => editPlay(info.getValue())} />
           <BgtIconButton size={17} icon={<PencilIcon />} onClick={() => editPlay(info.getValue())} />
-          <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => deletePlayInternal(info.getValue())} type="danger" />
+          <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => openDeleteModalInternal(info.getValue())} type="danger" />
         </div>
       ),
       footer: (info) => info.column.id,
