@@ -84,7 +84,8 @@
       "not-owned": "Niet in eigen bezit",
       "owned": "In bezit",
       "previously-owned": "In bezit",
-      "wanted": "Gezocht"
+      "wanted": "Gezocht",
+      "on-loan": "On loan"
     },
     "details": {
       "title": "{{title}} details"
