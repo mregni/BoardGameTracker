@@ -1,14 +1,13 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 import { Button } from '@radix-ui/themes';
 
-import { BgtCard } from '../../../components/BgtCard/BgtCard';
-import { BgtMobilePlayCard } from '../../../components/BgtCard/BgtMobilePlayCard';
-import { BgtNoData } from '../../../components/BgtNoData/BgtNoData';
-import { usePlayerPlays } from '../../../hooks/usePlays';
 import { Play } from '../../../models';
+import { usePlayerPlays } from '../../../hooks/usePlays';
+import { BgtNoData } from '../../../components/BgtNoData/BgtNoData';
+import { BgtMobilePlayCard } from '../../../components/BgtCard/BgtMobilePlayCard';
+import { BgtCard } from '../../../components/BgtCard/BgtCard';
 
 const pageCount = 10;
 

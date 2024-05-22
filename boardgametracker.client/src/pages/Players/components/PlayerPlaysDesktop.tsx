@@ -2,7 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
-import { InformationCircleIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { InformationCircleIcon, PencilIcon } from '@heroicons/react/24/outline';
 
 import { Play } from '../../../models';
 import { usePlayerPlays } from '../../../hooks/usePlays';
@@ -15,11 +15,6 @@ import { BgtPlayerAvatar } from '../../../components/BgtAvatar/BgtPlayerAvatar';
 import { BgtAvatar } from '../../../components/BgtAvatar/BgtAvatar';
 
 const columnHelper = createColumnHelper<Play>();
-
-const deletePlay = (id: number) => {
-  //TODO: Implement
-  console.log('delete: ' + id);
-};
 
 const editPlay = (id: number) => {
   //TODO: Implement
@@ -102,7 +97,6 @@ export const PlayerPlaysDesktop = () => {
         <div className="flex flex-row justify-center gap-1">
           <BgtIconButton size={17} icon={<InformationCircleIcon />} onClick={() => editPlay(info.getValue())} />
           <BgtIconButton size={17} icon={<PencilIcon />} onClick={() => editPlay(info.getValue())} />
-          <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => deletePlay(info.getValue())} type="danger" />
         </div>
       ),
       footer: (info) => info.column.id,

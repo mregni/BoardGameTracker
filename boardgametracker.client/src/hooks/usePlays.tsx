@@ -1,5 +1,3 @@
-import { cpSync } from 'fs';
-
 import { AxiosError } from 'axios';
 import { keepPreviousData, QueryFunction, QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -43,7 +41,6 @@ interface Props<T> {
 const usePlays = <T,>(props: Props<T>) => {
   const { queryKey, queryFn, enabled } = props;
   const { showInfoToast, showErrorToast } = useToast();
-  const queryClient = useQueryClient();
 
   const { data, isFetching, refetch } = useQuery<ListResult<T>, AxiosError<FailResult>>({
     queryKey: queryKey,
@@ -55,7 +52,6 @@ const usePlays = <T,>(props: Props<T>) => {
   const deletePlay = async (id: number) => {
     try {
       await deletePlayCall(id);
-      await queryClient.invalidateQueries({ queryKey: queryKey });
       await refetch();
       showInfoToast('playplayer.delete.successfull');
     } catch {

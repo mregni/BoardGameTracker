@@ -1,10 +1,10 @@
-import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
-
+import clsx from 'clsx';
 import { Text } from '@radix-ui/themes';
 
-import { GameState } from '../../models';
 import { getItemStateTranslationKey } from '../../utils/ItemStateUtils';
+import { GameState } from '../../models';
+
 import { BgtImageFallback } from './BgtImageFallback';
 
 interface Props {
@@ -25,6 +25,8 @@ const getColorFromGameState = (state: GameState): string => {
       return 'bg-orange-900';
     case GameState.ForTrade:
       return 'bg-blue-600';
+    case GameState.OnLoan:
+      return 'bg-yellow-600';
     default:
       return '';
   }

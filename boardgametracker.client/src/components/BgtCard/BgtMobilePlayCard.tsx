@@ -19,7 +19,6 @@ interface Props {
   play: Play;
   index: number;
   showGame?: boolean;
-  onDelete: (id: number) => void;
 }
 
 const editPlay = (id: number) => {
@@ -28,7 +27,7 @@ const editPlay = (id: number) => {
 };
 
 export const BgtMobilePlayCard = (props: Props) => {
-  const { play, index, showGame = false, onDelete } = props;
+  const { play, index, showGame = false } = props;
   const { t } = useTranslation();
   const { settings } = useSettings();
   const navigate = useNavigate();
@@ -49,7 +48,6 @@ export const BgtMobilePlayCard = (props: Props) => {
           <div className="flex flex-row justify-center gap-1">
             <BgtIconButton size={17} icon={<InformationCircleIcon />} onClick={() => editPlay(play.id)} />
             <BgtIconButton size={17} icon={<PencilIcon />} onClick={() => editPlay(play.id)} />
-            <BgtIconButton size={17} icon={<TrashIcon />} onClick={() => onDelete(play.id)} type="danger" />
           </div>
         </div>
         {play.playFlags.length > 0 && (

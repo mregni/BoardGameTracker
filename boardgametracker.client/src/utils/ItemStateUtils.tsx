@@ -12,6 +12,8 @@ export const getItemStateTranslationKey = (value: GameState): string => {
       return 'game.state.not-owned';
     case GameState.ForTrade:
       return 'game.state.for-trade';
+    case GameState.OnLoan:
+      return 'game.state.on-loan';
     default:
       return '';
   }
