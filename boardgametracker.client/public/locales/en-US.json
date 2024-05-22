@@ -84,7 +84,8 @@
       "not-owned": "Not self owned",
       "owned": "Owned",
       "previously-owned": "Previously owned",
-      "wanted": "Wanted"
+      "wanted": "Wanted",
+      "on-loan": "On loan"
     },
     "details": {
       "title": "{{title}} details"
