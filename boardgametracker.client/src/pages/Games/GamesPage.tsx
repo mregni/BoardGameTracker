@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import { Button } from '@radix-ui/themes';
 
 import { usePage } from '../../hooks/usePage';
 import { useGames } from '../../hooks/useGames';
@@ -37,14 +36,14 @@ export const GamesPage = () => {
   const itemCount = counts.find((x) => x.key == activePage)?.value;
   return (
     <BgtPage>
-      <BgtPageHeader header={t(pageTitle)} subHeader={t('common.items', { count: itemCount })}>
-        <Button variant="solid" onClick={() => setOpenModal(true)}>
-          New
-        </Button>
-      </BgtPageHeader>
+      <BgtPageHeader
+        header={t(pageTitle)}
+        subHeader={t('common.items', { count: itemCount })}
+        actions={[{ onClick: () => setOpenModal(true), variant: 'solid', content: 'games.new' }]}
+      />
       <BgtPageContent>
         <BgtCard transparant>
-          <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12">
+          <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-11">
             {games.map((x) => (
               <Link key={x.id} to={`/games/${x.id}`}>
                 <BgtImageCard title={x.title} image={x.image} state={x.state} />

@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 
-import { GameDetailPage } from './GameDetailPage';
 import { GamesPage } from './GamesPage';
+import { GameDetailPage } from './GameDetailPage';
 
 export const GameRoutes = () => {
   return (

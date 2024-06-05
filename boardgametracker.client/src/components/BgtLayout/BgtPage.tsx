@@ -1,8 +1,8 @@
-import { Children, ReactElement } from 'react';
 import PerfectScrollbar from 'react-perfect-scrollbar';
+import { Children, ReactElement } from 'react';
 
-import { BgtPageContent } from './BgtPageContent';
 import BgtPageHeader from './BgtPageHeader';
+import { BgtPageContent } from './BgtPageContent';
 
 interface Props {
   children: ReactElement | ReactElement[];
@@ -27,8 +27,8 @@ export const BgtPage = (props: Props) => {
   });
 
   return (
-    <div className="w-full h-full flex flex-col gap-3 ">
-      {_header && <div className=" bg-sky-900 p-3">{_header}</div>}
+    <div className="w-full h-full flex flex-col   ">
+      {_header && <div className="p-3">{_header}</div>}
 
       <PerfectScrollbar
         options={{

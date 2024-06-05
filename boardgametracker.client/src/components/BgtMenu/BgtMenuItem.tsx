@@ -1,12 +1,11 @@
-import clsx from 'clsx';
-import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-
-import { Content, Root, TooltipProvider, Trigger } from '@radix-ui/react-tooltip';
+import { useTranslation } from 'react-i18next';
+import clsx from 'clsx';
 import { Text } from '@radix-ui/themes';
+import { Content, Root, TooltipProvider, Trigger } from '@radix-ui/react-tooltip';
 
-import { usePage } from '../../hooks/usePage';
 import { MenuItem } from '../../models';
+import { usePage } from '../../hooks/usePage';
 
 interface Props {
   item: MenuItem;
@@ -23,23 +22,23 @@ const ItemContent = (props: Props) => {
     <Link to={item.path}>
       <div
         className={clsx(
-          'h-10 flex w-full text-white cursor-pointer items-center my-2 hover:bg-sky-900',
+          'h-8 flex w-full text-white cursor-pointer items-center my-1 hover:bg-violet-50 hover:text-black rounded-lg font-semibold',
           fullSize && 'justify-between px-2',
           !fullSize && 'justify-center px-4',
           activePage == item.path && 'bg-sky-900'
         )}
       >
         <div className="flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18} className="text-orange-600">
+          <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18}>
             {item.icon}
           </svg>
           {fullSize && (
             <Text as="span" size="3">
-              {t(item.label)}
+              {t(item.menuLabel)}
             </Text>
           )}
         </div>
-        {count && fullSize && <div className="py-1 px-3 text-white flex items-center justify-center text-xs">{count}</div>}
+        {count && fullSize && <div className="py-1 px-3  flex items-center justify-center text-xs">{count}</div>}
       </div>
     </Link>
   );
@@ -58,7 +57,7 @@ export const BgtMenuItem = (props: Props) => {
           <ItemContent {...props} />
         </Trigger>
         <Content className="bg-gray-950 px-3 py-2" sideOffset={10} side="right">
-          {t(item.label)}
+          {t(item.menuLabel)}
         </Content>
       </Root>
     </TooltipProvider>

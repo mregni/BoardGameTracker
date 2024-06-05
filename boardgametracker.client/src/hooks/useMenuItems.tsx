@@ -3,17 +3,17 @@ import { Cog8ToothIcon, HomeIcon, InformationCircleIcon, MapPinIcon, PuzzlePiece
 import { MenuItem } from '../models';
 
 const menuItems: MenuItem[] = [
-  { label: 'common.dashboard', path: 'home', icon: <HomeIcon /> },
-  { label: 'common.games', path: 'games', icon: <PuzzlePieceIcon /> },
-  { label: 'common.players', path: 'players', icon: <UserGroupIcon /> },
-  { label: 'common.locations', path: 'locations', icon: <MapPinIcon /> },
-  { label: 'common.settings', path: 'settings', icon: <Cog8ToothIcon /> },
-  { label: 'Info for nerds', path: 'info', icon: <InformationCircleIcon /> },
+  { menuLabel: 'common.dashboard', pageLabel: 'common.dashboard', path: 'home', icon: <HomeIcon /> },
+  { menuLabel: 'common.games', pageLabel: 'games.title', path: 'games', icon: <PuzzlePieceIcon /> },
+  { menuLabel: 'common.players', pageLabel: 'common.players', path: 'players', icon: <UserGroupIcon /> },
+  { menuLabel: 'common.locations', pageLabel: 'common.locations', path: 'locations', icon: <MapPinIcon /> },
+  { menuLabel: 'common.settings', pageLabel: 'common.settings', path: 'settings', icon: <Cog8ToothIcon /> },
+  { menuLabel: 'Info for nerds', pageLabel: 'Info for nerds', path: 'info', icon: <InformationCircleIcon /> },
 ];
 
 const bottomMenuItems: MenuItem[] = [
-  { label: 'common.info', path: 'info', icon: <InformationCircleIcon /> },
-  { label: 'common.settings', path: 'settings', icon: <Cog8ToothIcon /> },
+  { menuLabel: 'common.info', pageLabel: 'common.info', path: 'info', icon: <InformationCircleIcon /> },
+  { menuLabel: 'common.settings', pageLabel: 'common.settings', path: 'settings', icon: <Cog8ToothIcon /> },
 ];
 
 export interface MenuItems {

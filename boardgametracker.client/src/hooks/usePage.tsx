@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom';
 
 import { MenuItem } from '../models';
+
 import { useMenuItems } from './useMenuItems';
 
 export interface Props {
@@ -17,7 +18,7 @@ const extractPathName = (pathname: string): string => {
 const getPageTitle = (items: MenuItem[], currentPath: string): string => {
   const index = items.findIndex((x: MenuItem) => x.path === extractPathName(currentPath));
   if (index !== -1) {
-    return items[index].label;
+    return items[index].pageLabel;
   }
 
   return '';

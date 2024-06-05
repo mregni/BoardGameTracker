@@ -1,14 +1,13 @@
-import { clsx } from 'clsx';
-import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-
+import { useEffect, useState } from 'react';
+import { clsx } from 'clsx';
 import { Bars3Icon, ChevronDoubleLeftIcon, ChevronDoubleRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
-import { useCounts } from '../../hooks/useCounts';
-import { useMenuItems } from '../../hooks/useMenuItems';
-import { BgtBottomButton } from '../BgtMenu/BgtBottomButton';
-import { BgtMenuItem } from '../BgtMenu/BgtMenuItem';
 import { BgtMenuLogo } from '../BgtMenu/BgtMenuLogo';
+import { BgtMenuItem } from '../BgtMenu/BgtMenuItem';
+import { BgtBottomButton } from '../BgtMenu/BgtBottomButton';
+import { useMenuItems } from '../../hooks/useMenuItems';
+import { useCounts } from '../../hooks/useCounts';
 
 const MobileMenu = () => {
   const [open, setOpen] = useState(false);
@@ -58,7 +57,7 @@ const BgtMenuBar = () => {
 
   return (
     <>
-      <div className={clsx('hidden relative md:flex bg-gray-950 h-full flex-col justify-between ', !fullSizeMenu && 'w-20', fullSizeMenu && 'w-64')}>
+      <div className={clsx('hidden relative md:flex bg-gray-900 h-full flex-col justify-between ', !fullSizeMenu && 'w-20', fullSizeMenu && 'w-64')}>
         <div className="px-4 flex flex-col">
           <BgtMenuLogo fullSize={fullSizeMenu} />
           <div className="mt-6">

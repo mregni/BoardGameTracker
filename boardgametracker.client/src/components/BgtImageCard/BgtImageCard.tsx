@@ -1,34 +1,32 @@
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
-import { Text } from '@radix-ui/themes';
+import { Badge, Heading } from '@radix-ui/themes';
 
+import { StringToRgb } from '../../utils/stringUtils';
 import { getItemStateTranslationKey } from '../../utils/ItemStateUtils';
 import { GameState } from '../../models';
 
-import { BgtImageFallback } from './BgtImageFallback';
-
 interface Props {
   title: string;
-  image: string | null;
   state?: GameState;
+  image: string | null;
 }
 
-const getColorFromGameState = (state: GameState): string => {
+const getColorFromGameState = (state: GameState): 'amber' | 'orange' | 'red' | 'purple' | 'blue' | 'green' => {
   switch (state) {
     case GameState.Wanted:
-      return 'bg-red-700';
+      return 'amber';
     case GameState.Owned:
-      return 'bg-green-600';
+      return 'green';
     case GameState.PreviouslyOwned:
-      return 'bg-violet-600';
+      return 'red';
     case GameState.NotOwned:
-      return 'bg-orange-900';
+      return 'purple';
     case GameState.ForTrade:
-      return 'bg-blue-600';
+      return 'blue';
     case GameState.OnLoan:
-      return 'bg-yellow-600';
     default:
-      return '';
+      return 'orange';
   }
 };
 
@@ -37,26 +35,29 @@ export const BgtImageCard = (props: Props) => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col justify-center transition-transform hover:scale-95 cursor-pointer gap-1 flex-nowrap">
-      <div>
-        {image && (
-          <img
-            src={image}
-            alt={`poster for ${title}`}
-            className={clsx('shadow-black drop-shadow-md w-full', state !== null && 'rounded-t-sm', state === null && 'rounded-sm')}
-          />
+    <div className="flex flex-col justify-center cursor-pointer flex-nowrap relative items-center">
+      <div
+        style={{ '--image-url': `url(${image})`, '--fallback-color': StringToRgb(title) }}
+        className={clsx(
+          'w-full relative overflow-hidden aspect-square z-10 rounded-xl flex justify-end flex-col gap-3 pb-4 px-3',
+          'before:absolute before:inset-0 before:block before:bg-gradient-to-t before:from-black before:z-[-5] before:hover:from-gray-900',
+          `bg-cover bg-no-repeat bg-center`,
+          image && 'bg-[image:var(--image-url)]',
+          !image && `bg-[var(--fallback-color)]`
         )}
-        <BgtImageFallback display={!image} title={title} roundBottom={state === null} fullWidth />
+      >
         {state !== null && (
-          <Text align="center" as="div" size="1" className={clsx('rounded-b-sm', getColorFromGameState(state))}>
-            {t(getItemStateTranslationKey(state))}
-          </Text>
+          <div className="flex justify-center">
+            <Badge variant="surface" radius="full" size="2" color={getColorFromGameState(state)}>
+              {t(getItemStateTranslationKey(state))}
+            </Badge>
+          </div>
         )}
-      </div>
 
-      <Text align="center" as="p" size="1" className="line-clamp-1">
-        {title}
-      </Text>
+        <Heading align="center" as="h4" size="4" className="line-clamp-1" trim="start">
+          {title}
+        </Heading>
+      </div>
     </div>
   );
 };

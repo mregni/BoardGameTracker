@@ -1,18 +1,17 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { Button } from '@radix-ui/themes';
 
-import { BgtCard } from '../../components/BgtCard/BgtCard';
-import { BgtImageCard } from '../../components/BgtImageCard/BgtImageCard';
-import { BgtPage } from '../../components/BgtLayout/BgtPage';
-import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
-import BgtPageHeader from '../../components/BgtLayout/BgtPageHeader';
-import { BgtPlayerModal } from '../../components/Modals/BgtPlayerModal';
-import { useCounts } from '../../hooks/useCounts';
-import { usePage } from '../../hooks/usePage';
 import { usePlayers } from '../../hooks/usePlayers';
+import { usePage } from '../../hooks/usePage';
+import { useCounts } from '../../hooks/useCounts';
+import { BgtPlayerModal } from '../../components/Modals/BgtPlayerModal';
+import BgtPageHeader from '../../components/BgtLayout/BgtPageHeader';
+import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
+import { BgtPage } from '../../components/BgtLayout/BgtPage';
+import { BgtImageCard } from '../../components/BgtImageCard/BgtImageCard';
+import { BgtCard } from '../../components/BgtCard/BgtCard';
 
 export const PlayersPage = () => {
   const { t } = useTranslation();
@@ -27,14 +26,14 @@ export const PlayersPage = () => {
 
   return (
     <BgtPage>
-      <BgtPageHeader header={t(pageTitle)} subHeader={t('common.items', { count: itemCount })}>
-        <Button variant="solid" onClick={() => setOpenModal(true)}>
-          New
-        </Button>
-        <Button variant="classic" disabled color="red" onClick={() => prompt('boe')} className="radix-disabled:cursor-not-allowed">
-          Edit
-        </Button>
-      </BgtPageHeader>
+      <BgtPageHeader
+        header={t(pageTitle)}
+        subHeader={t('common.items', { count: itemCount })}
+        actions={[
+          { content: 'player.new.button', variant: 'solid', onClick: () => setOpenModal(true) },
+          { content: 'player.edit', variant: 'classic', onClick: () => prompt('boe') },
+        ]}
+      />
       <BgtPageContent>
         <BgtCard transparant>
           <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-9 2xl:grid-cols-12">

@@ -15,7 +15,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Suspense>
       <BrowserRouter future={{ v7_startTransition: true }}>
-        <Theme appearance="dark" accentColor="orange" grayColor="gray" panelBackground="solid" scaling="95%">
+        <Theme appearance="dark" accentColor="purple" grayColor="gray" panelBackground="solid" scaling="95%">
           <BgtToastProvider>
             <AppContainer />
           </BgtToastProvider>

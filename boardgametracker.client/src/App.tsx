@@ -1,16 +1,15 @@
-import { AxiosError } from 'axios';
 import { Route, Routes } from 'react-router-dom';
-
+import { AxiosError } from 'axios';
 import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import BgtMenuBar from './components/BgtLayout/BgtMenuBar';
-import { useSettings } from './hooks/useSettings';
-import { FailResult } from './models';
-import { DashboardPage } from './pages/Dashboard/DashboardPage';
-import { GameRoutes } from './pages/Games/GameRoutes';
-import { PlayerRoutes } from './pages/Players/PlayerRoutes';
-import { PlayRoutes } from './pages/Plays/PlayRoutes';
 import { useToast } from './providers/BgtToastProvider';
+import { PlayRoutes } from './pages/Plays/PlayRoutes';
+import { PlayerRoutes } from './pages/Players/PlayerRoutes';
+import { GameRoutes } from './pages/Games/GameRoutes';
+import { DashboardPage } from './pages/Dashboard/DashboardPage';
+import { FailResult } from './models';
+import { useSettings } from './hooks/useSettings';
+import BgtMenuBar from './components/BgtLayout/BgtMenuBar';
 
 function AppContainer() {
   const { showErrorToast } = useToast();
