@@ -112,6 +112,8 @@
     }
   },
   "games": {
+    "title": "Your games",
+    "new": "Add new game",
     "cards": {
       "games": "Games",
       "top-players": "Top players"
@@ -128,6 +130,7 @@
       "not-found": "Could not find player"
     },
     "new": {
+      "button": "Add new player",
       "description": "Fill out the form to create a new player",
       "name": {
         "placeholder": "Enter name of the player",
