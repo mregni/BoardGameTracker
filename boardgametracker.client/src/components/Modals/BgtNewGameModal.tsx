@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button, Dialog } from '@radix-ui/themes';
 
-import BgtBigButton from '../BgtBigButton/BgtBigButton';
+import BgtBigButton from '../BgtButton/BgtBigButton';
 
 interface Props {
   open: boolean;

@@ -9,4 +9,5 @@ public class GameStatisticsViewModel
     public double? AverageScore { get; set; }
     public DateTime? LastPlayed { get; set; }
     public PlayerViewModel? MostWinsPlayer { get; set; }
+    public double AveragePlayTime { get; set; }
 }

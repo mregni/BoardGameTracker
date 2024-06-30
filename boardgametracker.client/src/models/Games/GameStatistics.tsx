@@ -6,6 +6,7 @@ export interface GameStatistics {
   pricePerPlay: number | null;
   highScore: number | null;
   averageScore: number | null;
+  averagePlayTime: number | null;
   mostWinsPlayer: Player | null;
   lastPlayed: string | null;
 }

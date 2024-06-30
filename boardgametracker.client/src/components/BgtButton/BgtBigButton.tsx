@@ -1,6 +1,7 @@
 import clsx from 'clsx';
-
 import { Button, Text } from '@radix-ui/themes';
+
+import BgtButton from './BgtButton';
 
 interface Props {
   title: string;
@@ -13,16 +14,21 @@ const BgtBigButton = (props: Props) => {
   const { title, subText, onClick, disabled = false } = props;
 
   return (
-    <Button disabled={disabled} variant="surface" onClick={onClick} className={clsx('!h-28', !disabled && 'hover:cursor-pointer')}>
+    <BgtButton
+      disabled={disabled}
+      variant="soft"
+      onClick={onClick}
+      className={clsx('!h-28', !disabled && 'hover:cursor-pointer')}
+    >
       <div className="flex flex-col p-3 gap-3">
         <Text align="center" as="p" size="4">
           {title}
         </Text>
-        <Text align="center" as="p" size="1">
+        <Text align="center" as="p" size="1" className="lowercase first-letter:uppercase">
           {subText}
         </Text>
       </div>
-    </Button>
+    </BgtButton>
   );
 };
 

@@ -10,5 +10,6 @@ public class GameStatistics
     public double? HighScore { get; set; }
     public double? AverageScore { get; set; }
     public Player? MostWinsPlayer { get; set; }
+    public double AveragePlayTime { get; set; }
     public DateTime? LastPlayed { get; set; }
 } 

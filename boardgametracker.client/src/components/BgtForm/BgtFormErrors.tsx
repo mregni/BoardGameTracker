@@ -1,6 +1,6 @@
-import { ComponentPropsWithoutRef } from 'react';
-import { FieldError } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { FieldError } from 'react-hook-form';
+import { ComponentPropsWithoutRef } from 'react';
 
 interface ErrorProps extends ComponentPropsWithoutRef<'div'> {
   error: FieldError | undefined;

@@ -11,8 +11,14 @@ export interface BggSearch {
 }
 
 export const BggSearchSchema = z.object({
-  bggId: z.string().min(1, { message: 'game.bgg.required' }),
-  price: z.coerce.number(),
+  bggId: z
+    .string({
+      required_error: 'game.bgg.required',
+    })
+    .min(1, { message: 'game.bgg.required' }),
+  price: z.coerce.number({
+    invalid_type_error: 'game.price.required',
+  }),
   date: z.coerce.date({
     errorMap: () => ({
       message: 'game.added-date.required',

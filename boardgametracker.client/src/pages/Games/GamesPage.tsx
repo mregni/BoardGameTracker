@@ -43,7 +43,7 @@ export const GamesPage = () => {
       />
       <BgtPageContent>
         <BgtCard transparant>
-          <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-11">
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 2xl:grid-cols-10">
             {games.map((x) => (
               <Link key={x.id} to={`/games/${x.id}`}>
                 <BgtImageCard title={x.title} image={x.image} state={x.state} />

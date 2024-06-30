@@ -13,13 +13,10 @@
     "format": "npm run prettier:fix && npm run lint"
   },
   "dependencies": {
-    "@ariakit/react": "^0.4.6",
     "@floating-ui/react": "^0.26.11",
     "@heroicons/react": "^2.1.1",
     "@hookform/resolvers": "^3.3.4",
     "@kodingdotninja/use-tailwind-breakpoint": "^1.0.0",
-    "@nivo/bar": "^0.85.1",
-    "@nivo/core": "^0.85.1",
     "@radix-ui/react-form": "^0.0.3",
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-tooltip": "^1.0.7",

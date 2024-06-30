@@ -112,13 +112,11 @@ export const BgtPlayerModal = (props: Props) => {
                   </div>
                 )}
                 {!image && (
-                  <>
-                    <div className="flex flex-col items-center justify-center w-28 h-28 shadow-2xl border-gray-500 border-2 border-dashed">
-                      <div className="flex flex-col items-center justify-center">
-                        <BgtIcon icon={<PhotoIcon />} className="text-gray-500" />
-                      </div>
+                  <div className="flex flex-col items-center justify-center w-28 h-28 shadow-2xl border-gray-500 border-2 border-dashed">
+                    <div className="flex flex-col items-center justify-center">
+                      <BgtIcon icon={<PhotoIcon />} className="text-gray-500" />
                     </div>
-                  </>
+                  </div>
                 )}
                 <label
                   htmlFor="dropzone-file"

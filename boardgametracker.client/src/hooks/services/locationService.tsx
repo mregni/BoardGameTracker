@@ -1,5 +1,5 @@
-import { CreateLocation, ListResult, Location, Result } from '../../models';
 import { axiosInstance } from '../../utils/axiosInstance';
+import { CreateLocation, ListResult, Location, Result } from '../../models';
 
 const domain = 'location';
 

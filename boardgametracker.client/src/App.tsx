@@ -10,6 +10,7 @@ import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { FailResult } from './models';
 import { useSettings } from './hooks/useSettings';
 import BgtMenuBar from './components/BgtLayout/BgtMenuBar';
+import { BgtHeader } from './components/BgtHeader/BgtHeader';
 
 function AppContainer() {
   const { showErrorToast } = useToast();
@@ -44,9 +45,10 @@ function App() {
   if (!settings) return null;
 
   return (
-    <div className="flex flex-col md:flex-row h-screen text-white">
+    <div className="flex flex-col md:flex-row h-screen text-white font-chakra-petch">
       <BgtMenuBar />
-      <div className="flex-1 bg-gray-950 py-3 pr-3 pl-3 md:pl-0">
+      <div className="flex-1 bg-custom-gradient flex flex-col">
+        <BgtHeader />
         <Routes>
           <Route element={<GameRoutes />} path="/games/*" />
           <Route element={<PlayerRoutes />} path="/players/*" />

@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
-import { Badge, Heading } from '@radix-ui/themes';
+import { Text } from '@radix-ui/themes';
 
+import { BgtText } from '../BgtText/BgtText';
 import { StringToRgb } from '../../utils/stringUtils';
 import { getItemStateTranslationKey } from '../../utils/ItemStateUtils';
 import { GameState } from '../../models';
@@ -35,28 +36,31 @@ export const BgtImageCard = (props: Props) => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col justify-center cursor-pointer flex-nowrap relative items-center">
+    <div className="flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1">
       <div
         style={{ '--image-url': `url(${image})`, '--fallback-color': StringToRgb(title) }}
         className={clsx(
           'w-full relative overflow-hidden aspect-square z-10 rounded-xl flex justify-end flex-col gap-3 pb-4 px-3',
-          'before:absolute before:inset-0 before:block before:bg-gradient-to-t before:from-black before:z-[-5] before:hover:from-gray-900',
           `bg-cover bg-no-repeat bg-center`,
           image && 'bg-[image:var(--image-url)]',
           !image && `bg-[var(--fallback-color)]`
         )}
-      >
+      ></div>
+      <div className="flex flex-col items-start justify-start">
         {state !== null && (
-          <div className="flex justify-center">
-            <Badge variant="surface" radius="full" size="2" color={getColorFromGameState(state)}>
-              {t(getItemStateTranslationKey(state))}
-            </Badge>
-          </div>
+          <BgtText
+            size="1"
+            className="line-clamp-1 uppercase w-full"
+            weight="medium"
+            color={getColorFromGameState(state)}
+          >
+            {t(getItemStateTranslationKey(state))}
+          </BgtText>
         )}
 
-        <Heading align="center" as="h4" size="4" className="line-clamp-1" trim="start">
+        <BgtText size="4" className="line-clamp-1 uppercase w-full" weight="medium">
           {title}
-        </Heading>
+        </BgtText>
       </div>
     </div>
   );

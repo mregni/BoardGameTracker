@@ -39,6 +39,8 @@ public class GameService : IGameService
 
         var game = _mapper.Map<Game>(rawGame);
         game.Image = await _imageService.DownloadImage(rawGame.Image, rawGame.BggId.ToString());
+        game.BackgroundImage = await _imageService.DownloadBackgroundImage(rawGame.BggId);
+
         game.State = search.State;
         game.BuyingPrice = search.Price;
         game.AdditionDate = search.AdditionDate;
@@ -127,16 +129,19 @@ public class GameService : IGameService
 
     public async Task<GameStatistics> GetStats(int id)
     {
-        return new GameStatistics
+        var stats = new GameStatistics
         {
             PlayCount = await _gameRepository.GetPlayCount(id),
             TotalPlayedTime = await _gameRepository.GetTotalPlayedTime(id),
             PricePerPlay = await _gameRepository.GetPricePerPlay(id),
             HighScore = await _gameRepository.GetHighestScore(id),
             MostWinsPlayer = await _gameRepository.GetMostWins(id),
+            AveragePlayTime = await _gameRepository.GetAveragePlayTime(id),
             AverageScore = await _gameRepository.GetAverageScore(id),
             LastPlayed = await _gameRepository.GetLastPlayedDateTime(id)
         };
+
+        return stats;
     }
 
     public Task<int> CountAsync()

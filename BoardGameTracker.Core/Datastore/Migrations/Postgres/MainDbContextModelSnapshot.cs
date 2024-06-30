@@ -54,6 +54,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<DateTime?>("AdditionDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("BackgroundImage")
+                        .HasColumnType("text");
+
                     b.Property<int?>("BaseGameId")
                         .HasColumnType("integer");
 
@@ -117,6 +120,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.Property<DateTime?>("AdditionDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("BackgroundImage")
+                        .HasColumnType("text");
 
                     b.Property<int?>("BggId")
                         .HasColumnType("integer");

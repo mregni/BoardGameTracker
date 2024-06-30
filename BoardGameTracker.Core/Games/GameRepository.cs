@@ -42,7 +42,7 @@ public class GameRepository : IGameRepository
 
         var mecIds = game.Mechanics.Select(x => x.Id);
         game.Mechanics = await _context.GameMechanics.Where(x => mecIds.Contains(x.Id)).ToListAsync();
-            
+
         var peopleIds = game.People.Select(x => x.Id);
         game.People = await _context.People.Where(x => peopleIds.Contains(x.Id)).ToListAsync();
 
@@ -96,7 +96,7 @@ public class GameRepository : IGameRepository
         {
             query = query.Take(take.Value);
         }
-        
+
         return query.ToListAsync();
     }
 
@@ -122,7 +122,7 @@ public class GameRepository : IGameRepository
             .Include(x => x.Plays)
             .Where(x => x.Id == id)
             .SingleAsync();
-        
+
         if (game.Plays.Count == 0 || !game.BuyingPrice.HasValue)
         {
             return null;
@@ -170,6 +170,7 @@ public class GameRepository : IGameRepository
         {
             return null;
         }
+
         return await _context.Players.FirstAsync(x => x.Id == playerId);
     }
 
@@ -180,6 +181,19 @@ public class GameRepository : IGameRepository
             .Where(x => x.GameId == id)
             .SelectMany(x => x.Players)
             .AverageAsync(x => x.Score);
+    }
+
+    public Task<double> GetAveragePlayTime(int id)
+    {
+        if (_context.Plays.Any(x => x.GameId == id))
+        {
+            return _context.Plays
+                .Include(x => x.Players)
+                .Where(x => x.GameId == id)
+                .AverageAsync(x => (x.End - x.Start).TotalMinutes);
+        }
+
+        return Task.FromResult(0d);
     }
 
     public Task<int> CountAsync()
@@ -196,7 +210,7 @@ public class GameRepository : IGameRepository
 
         return result?.Id;
     }
-    
+
     public async Task<int?> GetLongestPlay(int id)
     {
         var result = await _context.Plays
@@ -216,10 +230,10 @@ public class GameRepository : IGameRepository
             .SelectMany(x => x.Players)
             .OrderByDescending(x => x.Score)
             .FirstOrDefaultAsync();
-            
-        return result?.PlayId; 
+
+        return result?.PlayId;
     }
-    
+
     public async Task<int?> GetLowestScorePlay(int id)
     {
         var result = await _context.Plays
@@ -229,8 +243,8 @@ public class GameRepository : IGameRepository
             .SelectMany(x => x.Players)
             .OrderBy(x => x.Score)
             .FirstOrDefaultAsync();
-            
-        return result?.PlayId; 
+
+        return result?.PlayId;
     }
 
     public Task<int> GetTotalPlayCount(int id)
@@ -239,7 +253,7 @@ public class GameRepository : IGameRepository
             .CountAsync(x => x.GameId == id);
     }
 
-    public Task<List<IGrouping<DayOfWeek,Play>>> GetPlayByDayChart(int id)
+    public Task<List<IGrouping<DayOfWeek, Play>>> GetPlayByDayChart(int id)
     {
         return _context.Plays
             .Where(x => x.GameId == id)
@@ -249,7 +263,7 @@ public class GameRepository : IGameRepository
 
     public Task<List<IGrouping<int, int>>> GetPlayerCountChart(int id)
     {
-        return  _context.Plays
+        return _context.Plays
             .Where(x => x.GameId == id)
             .Select(x => x.Players.Count())
             .GroupBy(x => x)

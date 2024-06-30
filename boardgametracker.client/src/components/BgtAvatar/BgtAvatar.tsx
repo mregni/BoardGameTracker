@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-
 import { Text } from '@radix-ui/themes';
 
 export interface Props {
@@ -15,6 +14,17 @@ export const BgtAvatar = (props: Props) => {
   const { title, image, color, onClick, noTooltip = false, size = 'medium' } = props;
 
   if (!image && title === undefined) return null;
+
+  const getSize = (): '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
+    switch (size) {
+      case 'large':
+        return '5';
+      case 'medium':
+        return '3';
+      default:
+        return '2';
+    }
+  };
 
   return (
     <div className="group flex relative min-w-7">
@@ -43,7 +53,7 @@ export const BgtAvatar = (props: Props) => {
             onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer'
           )}
         >
-          <Text size="2">{title![0]}</Text>
+          <Text size={getSize()}>{title![0]}</Text>
         </div>
       )}
       {!noTooltip && title && (

@@ -1,6 +1,5 @@
-import clsx from 'clsx';
 import { ComponentPropsWithoutRef } from 'react';
-
+import clsx from 'clsx';
 import { Text } from '@radix-ui/themes';
 
 interface Props extends ComponentPropsWithoutRef<'div'> {
@@ -17,7 +16,7 @@ export const BgtCard = (props: Props) => {
 
   return (
     <div className={clsx('flex flex-col gap-1', className, hide && 'hidden')}>
-      <div className={clsx(contentStyle, !transparant && 'border-blue-500 border bg-gray-900', !noPadding && 'p-3')}>
+      <div className={clsx(contentStyle, !transparant && 'border-gray-800 border bg-card-black rounded-lg', !noPadding && 'p-3')}>
         {title && (
           <Text size="3" align="center" weight="bold">
             {title}

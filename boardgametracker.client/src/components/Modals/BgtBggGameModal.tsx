@@ -10,6 +10,7 @@ import { BgtSwitch } from '../BgtSwitch/BgtSwitch';
 import { BgtIcon } from '../BgtIcon/BgtIcon';
 import { BgtSelect } from '../BgtForm/BgtSelect';
 import { BgtInputField } from '../BgtForm/BgtInputField';
+import BgtButton from '../BgtButton/BgtButton';
 import { getItemStateTranslationKeyByString } from '../../utils/ItemStateUtils';
 import { BggSearch, BggSearchSchema, GameState } from '../../models';
 import { useSettings } from '../../hooks/useSettings';
@@ -49,10 +50,10 @@ export const BgtBggGameModal = (props: Props) => {
         <Dialog.Description>{t('game.new.bgg-description')}</Dialog.Description>
         <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className="flex flex-col gap-4 mt-3 mb-6">
-            <Button onClick={openBgg}>
+            <BgtButton onClick={() => openBgg()}>
               <BgtIcon icon={<ArrowTopRightOnSquareIcon />} size={18} />
-              {t('game.bgg.external-page')}
-            </Button>
+              <>{t('game.bgg.external-page')}</>
+            </BgtButton>
             <BgtInputField
               disabled={saveIsPending}
               label={t('game.bgg.label')}
@@ -70,7 +71,14 @@ export const BgtBggGameModal = (props: Props) => {
               control={control}
               prefixLabel={settings?.currency}
             />
-            <BgtInputField disabled={saveIsPending} label={t('game.added-date.label')} name="date" type="date" control={control} className="pr-2" />
+            <BgtInputField
+              disabled={saveIsPending}
+              label={t('game.added-date.label')}
+              name="date"
+              type="date"
+              control={control}
+              className="pr-2"
+            />
             <BgtSelect
               disabled={saveIsPending}
               control={control}
@@ -85,14 +93,14 @@ export const BgtBggGameModal = (props: Props) => {
           <div className="flex justify-end gap-3">
             <Dialog.Close>
               <>
-                <Form.Submit asChild>
-                  <Button type="submit" variant="surface" color="orange" disabled={saveIsPending}>
+                <Form.Submit>
+                  <BgtButton type="submit" variant="soft" disabled={saveIsPending}>
                     {t('game.new.save')}
-                  </Button>
+                  </BgtButton>
                 </Form.Submit>
-                <Button variant="surface" color="gray" onClick={() => setOpen(false)} disabled={saveIsPending}>
+                <BgtButton variant="outline" onClick={() => setOpen(false)} disabled={saveIsPending}>
                   {t('common.cancel')}
-                </Button>
+                </BgtButton>
               </>
             </Dialog.Close>
           </div>

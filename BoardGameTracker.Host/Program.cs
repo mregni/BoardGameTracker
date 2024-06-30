@@ -107,6 +107,12 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseStaticFiles(new StaticFileOptions
 {
+    FileProvider = new PhysicalFileProvider(PathHelper.FullBackgroundImagePath),
+    RequestPath = "/images/background"
+});
+
+app.UseStaticFiles(new StaticFileOptions
+{
     FileProvider = new PhysicalFileProvider(PathHelper.FullProfileImagePath),
     RequestPath = "/images/profile"
 });
@@ -169,6 +175,7 @@ static void CreateFolders(IServiceProvider serviceProvider)
     diskProvider.EnsureFolder(PathHelper.FullRootImagePath);
     diskProvider.EnsureFolder(PathHelper.FullCoverImagePath);
     diskProvider.EnsureFolder(PathHelper.FullProfileImagePath);
+    diskProvider.EnsureFolder(PathHelper.FullBackgroundImagePath);
 }
 
 static void SendStartApplicationCommand(IServiceProvider serviceProvider)

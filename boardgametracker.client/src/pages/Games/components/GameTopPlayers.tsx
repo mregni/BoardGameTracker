@@ -1,17 +1,16 @@
-import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
 import { ArrowTrendingDownIcon, ArrowTrendingUpIcon, MinusIcon } from '@heroicons/react/24/outline';
 
-import { BgtAvatar } from '../../../components/BgtAvatar/BgtAvatar';
-import { BgtCard } from '../../../components/BgtCard/BgtCard';
-import { BgtIcon } from '../../../components/BgtIcon/BgtIcon';
-import { BgtNoData } from '../../../components/BgtNoData/BgtNoData';
-import { useGame } from '../../../hooks/useGame';
-import { usePlayers } from '../../../hooks/usePlayers';
-import { Trend } from '../../../models/Games/TopPlayer';
-import { RoundDecimal } from '../../../utils/numberUtils';
 import { StringToHsl } from '../../../utils/stringUtils';
+import { RoundDecimal } from '../../../utils/numberUtils';
+import { Trend } from '../../../models/Games/TopPlayer';
+import { usePlayers } from '../../../hooks/usePlayers';
+import { useGame } from '../../../hooks/useGame';
+import { BgtNoData } from '../../../components/BgtNoData/BgtNoData';
+import { BgtIcon } from '../../../components/BgtIcon/BgtIcon';
+import { BgtCard } from '../../../components/BgtCard/BgtCard';
+import { BgtAvatar } from '../../../components/BgtAvatar/BgtAvatar';
 
 export const GameTopPlayers = () => {
   const { id } = useParams();

@@ -35,4 +35,5 @@ public interface IGameRepository
     Task<PlayerPlay?> GetHighestLosingPlayer(int id);
     Task<PlayerPlay?> GetLowestWinning(int id);
     Task<PlayerPlay?> GetLowestScoringPlayer(int id);
+    Task<double> GetAveragePlayTime(int id);
 }

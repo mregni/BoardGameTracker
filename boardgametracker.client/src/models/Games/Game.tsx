@@ -1,6 +1,6 @@
-import { GameState } from './GameState';
-import { GameType } from './GameType';
 import { PersonType } from './PersonType';
+import { GameType } from './GameType';
+import { GameState } from './GameState';
 
 export interface Game {
   id: number;
@@ -8,6 +8,7 @@ export interface Game {
   description: string;
   yearPublished: number | null;
   image: string;
+  backgroundImage: string;
   thumbnail: string;
   minPlayers: number | null;
   maxPlayers: number | null;

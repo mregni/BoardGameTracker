@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ReactElement } from 'react';
-import { Button, Heading, IconButton } from '@radix-ui/themes';
+import { IconButton } from '@radix-ui/themes';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
+import { BgtHeading } from '../BgtHeading/BgtHeading';
+import BgtButton from '../BgtButton/BgtButton';
 import { Actions } from '../../models';
 
 interface Props {
@@ -29,21 +31,14 @@ const BgtPageHeader = (props: Props) => {
           </IconButton>
         )}
         <div>
-          <Heading as="h3" size="8" className="line-clamp-1 pr-2">
-            {header}
-          </Heading>
-          {/* {subHeader && (
-            <Text as="p" size="1">
-              <span className="text-orange-600">{subHeader}</span>
-            </Text>
-          )} */}
+          <BgtHeading>{header}</BgtHeading>
         </div>
       </div>
       <div className="flex content-center flex-wrap gap-3">
         {actions.map((x, i) => (
-          <Button key={i} variant={x.variant} size="3" onClick={x.onClick}>
+          <BgtButton key={i} variant={x.variant} size="3" onClick={x.onClick}>
             {t(x.content)}
-          </Button>
+          </BgtButton>
         ))}
       </div>
     </div>
