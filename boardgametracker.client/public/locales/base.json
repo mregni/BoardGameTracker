@@ -56,7 +56,7 @@
     },
     "added-date": {
       "label": "Date added",
-      "required": "date is required"
+      "required": "Date is required"
     },
     "bgg": {
       "label": "BGG id",
@@ -76,7 +76,8 @@
     },
     "price": {
       "label": "Price",
-      "placeholder": "Game price"
+      "placeholder": "Game price",
+      "required": "Price is required"
     },
     "state": {
       "for-trade": "For trade",
@@ -112,7 +113,7 @@
     }
   },
   "games": {
-    "title": "Your games",
+    "title": "Games",
     "new": "Add new game",
     "cards": {
       "games": "Games",
@@ -183,7 +184,8 @@
     "win-count": "Total wins",
     "distinct-game-count": "Different games",
     "favorite-color": "Favorite color",
-    "best-game": "Best game"
+    "best-game": "Best game",
+    "average-playtime": "Average playtime"
   },
   "playplayer": {
     "save": "Create game play",
