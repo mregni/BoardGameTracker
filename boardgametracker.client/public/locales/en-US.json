@@ -29,6 +29,10 @@
     "mechanics": "mechanics",
     "no-data": "No data yet",
     "load-more": "Load more",
+    "total-wins": "Total wins",
+    "days-ago": "Days ago",
+    "read-more": "Read more",
+    "read-less": "Read less",
     "flags": {
       "header": "Tags",
       "shortest-game": "Shortest",
@@ -48,7 +52,8 @@
     }
   },
   "game": {
-    "add": "add game",
+    "add": "Add game session",
+    "sessions": "View sessions",
     "notifications": {
       "created": "Game is succesfully created",
       "not-found": "Could not find game",
@@ -110,14 +115,17 @@
         "lowest-winning": "Lowest winning",
         "lowest": "Lowest"
       }
+    },
+    "titles": {
+      "top-players": "Top players",
+      "analytics": "Analytics"
     }
   },
   "games": {
     "title": "Games",
     "new": "Add new game",
     "cards": {
-      "games": "Games",
-      "top-players": "Top players"
+      "games": "Games"
     }
   },
   "images": {
