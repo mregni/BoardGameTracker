@@ -7,6 +7,10 @@ export interface GameStatistics {
   highScore: number | null;
   averageScore: number | null;
   averagePlayTime: number | null;
-  mostWinsPlayer: Player | null;
+  mostWinsPlayer: MostWinner | null;
   lastPlayed: string | null;
+}
+
+export interface MostWinner extends Player {
+  totalWins: number;
 }

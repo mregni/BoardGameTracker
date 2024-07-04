@@ -27,7 +27,7 @@ public class PlayerRepository : IPlayerRepository
         await _dbContext.SaveChangesAsync();
         return player;
     }
-    
+
     public Task<Player?> GetById(int id)
     {
         return _dbContext.Players.SingleOrDefaultAsync(x => x.Id == id);
@@ -93,7 +93,7 @@ public class PlayerRepository : IPlayerRepository
         {
             query = query.Take(take.Value);
         }
-        
+
         return query.ToListAsync();
     }
 
@@ -131,5 +131,13 @@ public class PlayerRepository : IPlayerRepository
         return _dbContext.Plays
             .Include(x => x.Players)
             .CountAsync(x => x.Players.Any(y => y.PlayerId == id));
+    }
+
+    public Task<int> GetWinCount(int id, int gameId)
+    {
+        return _dbContext.Plays
+            .Include(x => x.Players)
+            .Where(x => x.GameId == gameId && x.Players.Any(y => y.Player.Id == id && y.Won))
+            .CountAsync();
     }
 }

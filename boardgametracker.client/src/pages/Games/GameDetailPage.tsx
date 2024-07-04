@@ -1,62 +1,49 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useMemo, useState } from 'react';
+import { ComponentPropsWithoutRef, useMemo, useState } from 'react';
 import i18next from 'i18next';
 import { formatDistanceToNowStrict } from 'date-fns';
 import clsx from 'clsx';
-import { Badge, Text, Heading, Button, DropdownMenu } from '@radix-ui/themes';
-import { ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-import { StringToHsl } from '../../utils/stringUtils';
+import { StringToRgb } from '../../utils/stringUtils';
 import { RoundDecimal } from '../../utils/numberUtils';
-import { Trend } from '../../models/Games/TopPlayer';
-import { Player } from '../../models';
+import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/ItemStateUtils';
 import { useSettings } from '../../hooks/useSettings';
-import { usePlayers } from '../../hooks/usePlayers';
 import { useGame } from '../../hooks/useGame';
 import { BgtDeleteModal } from '../../components/Modals/BgtDeleteModal';
+import { BgtText } from '../../components/BgtText/BgtText';
 import { BgtTextStatistic } from '../../components/BgtStatistic/BgtTextStatistic';
-import { BgtStatistic } from '../../components/BgtStatistic/BgtStatistic';
 import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import { BgtPage } from '../../components/BgtLayout/BgtPage';
 import { BgtIcon } from '../../components/BgtIcon/BgtIcon';
-import { BgtDetailHeader } from '../../components/BgtDetailHeader/BgtDetailHeader';
-import { BgtHeaderCard } from '../../components/BgtCard/BgtHeaderCard';
+import { BgtHeading } from '../../components/BgtHeading/BgtHeading';
+import { BgtMostWinnerCard } from '../../components/BgtCard/BgtMostWinnerCard';
 import { BgtCard } from '../../components/BgtCard/BgtCard';
-import { BgtPlayerAvatar } from '../../components/BgtAvatar/BgtPlayerAvatar';
-import { BgtAvatar } from '../../components/BgtAvatar/BgtAvatar';
+import BgtButton from '../../components/BgtButton/BgtButton';
+import { BgtBadge } from '../../components/BgtBadge/BgtBadge';
 
-import { GameTopPlayers } from './components/GameTopPlayers';
-import { GameStatistics } from './components/GameStatistics';
-import { GamePlays } from './components/GamePlays';
-import { GameDetailsPopup } from './components/GameDetailsPopup';
-import { ScoringRankChart } from './components/charts/ScoringRankChart';
-import { PlaysByWeekDayChart } from './components/charts/PlaysByWeekDayChart';
-import { PlayerScoringChart } from './components/charts/PlayerScoringChart';
-import { PlayerCountChart } from './components/charts/PlayerCountChart';
+import { TopPlayerCard } from './components/GameTopPlayers';
+import { GameCharts } from './components/GameCharts';
 
-interface Props {
-  player: Player | null;
+interface Props extends ComponentPropsWithoutRef<'div'> {
+  title: string;
+  image: string;
 }
 
-const BgtMostWinsCard = (props: Props) => {
-  const { player } = props;
-  const { t } = useTranslation();
-
-  if (player === undefined) return null;
+const Poster = (props: Props) => {
+  const { className, title, image } = props;
 
   return (
-    <div className="flex flex-row pt-3 gap-2">
-      <BgtAvatar image={player?.image} title={player?.name} color={StringToHsl(player?.name)} size="large" />
-      <div className="flex flex-col justify-center">
-        <Text as="p" weight="medium" size="4">
-          {player?.name}
-        </Text>
-        <Text as="p" size="2">
-          {t('statistics.most-wint')}
-        </Text>
-      </div>
-    </div>
+    <div
+      style={{ '--image-url': `url(${image})`, '--fallback-color': StringToRgb(title) }}
+      className={clsx(
+        className,
+        'relative overflow-hidden aspect-square rounded-xl flex justify-end flex-col px-3 w-full bg-cover bg-no-repeat bg-center',
+        image && 'bg-[image:var(--image-url)]',
+        !image && `bg-[var(--fallback-color)]`
+      )}
+    ></div>
   );
 };
 
@@ -64,8 +51,8 @@ export const GameDetailPage = () => {
   const { id } = useParams();
   const { game, deleteGame, statistics, topPlayers } = useGame(id);
   const { t } = useTranslation();
-  const { byId } = usePlayers();
   const { settings } = useSettings();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const [openDetailsModal, setOpenDetailsModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -108,7 +95,140 @@ export const GameDetailPage = () => {
   return (
     <BgtPage>
       <BgtPageContent>
-        <BgtHeaderCard image={game.backgroundImage}>
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-12 xl:col-span-8 2xl:col-span-9 flex flex-col justify-between gap-3">
+            <div className="flex flex-col gap-6 w-full">
+              <div className="grid grid-cols-12 gap-3">
+                <Poster
+                  className="col-span-4 md:col-span-2 flex xl:hidden aspect-square"
+                  title={game.title}
+                  image={game.image}
+                />
+                <div className="col-span-8 md:col-span-10 xl:col-span-12 flex flex-col gap-2">
+                  <div className="flex flex-row justify-between">
+                    <div className="flex flex-col gap-1">
+                      <BgtText
+                        size="2"
+                        className="line-clamp-1 uppercase w-full"
+                        weight="medium"
+                        color={getColorFromGameState(game.state)}
+                      >
+                        {t(getItemStateTranslationKey(game.state))}
+                      </BgtText>
+                      <BgtHeading className="uppercase">{game.title}</BgtHeading>
+                    </div>
+                    <div>
+                      <BgtButton variant="inline" color="primary" onClick={() => alert('Edit not implemented')}>
+                        <BgtIcon icon={<PencilIcon />} size={19} />
+                      </BgtButton>
+                      <BgtButton variant="inline" color="error" onClick={() => setOpenDeleteModal(true)}>
+                        <BgtIcon icon={<TrashIcon />} />
+                      </BgtButton>
+                    </div>
+                  </div>
+                  <div className="flex-row justify-start gap-2 hidden md:flex">
+                    {game.categories.map((cat) => (
+                      <BgtBadge key={cat.id} color="green" variant="soft">
+                        {cat.name}
+                      </BgtBadge>
+                    ))}
+                  </div>
+                  <BgtButton size="3" className="md:hidden">
+                    {i18next.format(t('game.add'))}
+                  </BgtButton>
+                </div>
+              </div>
+              <div>
+                <BgtText
+                  className={clsx(
+                    'whitespace-pre-line transition-all duration-500 ease-in-out md:max-h-none overflow-hidden',
+                    !isExpanded && 'xl:line-clamp-none transition-max-height max-h-11',
+                    isExpanded && 'transition-max-height max-h-[1000px]'
+                  )}
+                >
+                  {game.description}
+                </BgtText>
+                <div className="flex flex-row justify-end w-full md:hidden pt-2">
+                  {!isExpanded && (
+                    <BgtButton variant="inline" onClick={() => setIsExpanded((old) => !old)}>
+                      {t('common.read-more')}
+                    </BgtButton>
+                  )}
+                  {isExpanded && (
+                    <BgtButton variant="inline" onClick={() => setIsExpanded((old) => !old)}>
+                      {t('common.read-less')}
+                    </BgtButton>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-row justify-start gap-2 hidden md:flex">
+                <BgtButton size="3" onClick={() => alert('Add sessions not implemented')}>
+                  {i18next.format(t('game.add'))}
+                </BgtButton>
+                <BgtButton size="3" variant="outline" onClick={() => alert('Sessions not implemented')}>
+                  {i18next.format(t('game.sessions'))}
+                </BgtButton>
+              </div>
+            </div>
+            <BgtMostWinnerCard player={statistics.mostWinsPlayer} />
+          </div>
+          <Poster className="hidden xl:flex xl:col-span-4 2xl:col-span-3" title={game.title} image={game.image} />
+        </div>
+        <BgtCard>
+          <div className="grid grid-cols-3 p-1 gap-3">
+            <BgtTextStatistic content={statistics.playCount} title={t('statistics.play-count')} />
+            <BgtTextStatistic
+              content={statistics.totalPlayedTime}
+              title={t('statistics.total-play-time')}
+              suffix={t('common.minutes_abbreviation')}
+            />
+            <BgtTextStatistic
+              content={statistics.pricePerPlay}
+              title={t('statistics.price-per-play')}
+              prefix={settings.currency}
+            />
+          </div>
+        </BgtCard>
+        <BgtCard>
+          <div className="grid grid-cols-2 lg:grid-cols-4 p-1 wrap gap-3 ">
+            <BgtTextStatistic content={RoundDecimal(statistics.highScore)} title={t('statistics.high-score')} />
+            <BgtTextStatistic content={RoundDecimal(statistics.averageScore)} title={t('statistics.average-score')} />
+            <BgtTextStatistic
+              content={RoundDecimal(statistics.averagePlayTime)}
+              title={t('statistics.average-playtime')}
+              suffix={t('common.minutes_abbreviation')}
+            />
+            <BgtTextStatistic
+              content={
+                statistics.lastPlayed != null
+                  ? formatDistanceToNowStrict(new Date(statistics.lastPlayed), { unit: 'day' }).split(' ')[0]
+                  : null
+              }
+              suffix={t('common.days-ago')}
+              title={t('statistics.last-played')}
+            />
+          </div>
+        </BgtCard>
+        <BgtHeading className="pt-8 uppercase" size="7">
+          {t('game.titles.top-players')}
+        </BgtHeading>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {topPlayers.map((player, i) => (
+            <TopPlayerCard key={player.playerId} index={i} player={player} />
+          ))}
+        </div>
+        <BgtHeading className="pt-8 uppercase" size="7">
+          {t('game.titles.analytics')}
+        </BgtHeading>
+        <GameCharts />
+        <BgtDeleteModal
+          title={game.title}
+          open={openDeleteModal}
+          setOpen={setOpenDeleteModal}
+          onDelete={deleteGameInternal}
+        />
+        {/* <BgtCard transparant noPadding>
           <div className="flex flex-row justify-between">
             <div className="flex flex-col gap-3">
               <Heading as="h4" weight="medium">
@@ -121,12 +241,9 @@ export const GameDetailPage = () => {
                   </Badge>
                 ))}
               </div>
-              <BgtMostWinsCard player={statistics.mostWinsPlayer} />
             </div>
             <div className="flex flex-row justify-end gap-2">
-              <Button variant="solid" onClick={() => navigate(`/play/create/${game.id}`)} size="3">
-                {i18next.format(t('game.add'), 'capitalize')}
-              </Button>
+              <Button variant="solid" onClick={() => navigate(`/play/create/${game.id}`)} size="3"></Button>
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger>
                   <Button variant="solid" size="3">
@@ -135,7 +252,9 @@ export const GameDetailPage = () => {
                   </Button>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content size="2">
-                  <DropdownMenu.Item onClick={() => setOpenDetailsModal(true)}>{i18next.format(t('common.details'), 'capitalize')}</DropdownMenu.Item>
+                  <DropdownMenu.Item onClick={() => setOpenDetailsModal(true)}>
+                    {i18next.format(t('common.details'), 'capitalize')}
+                  </DropdownMenu.Item>
                   <DropdownMenu.Item disabled>{i18next.format(t('common.edit'), 'capitalize')}</DropdownMenu.Item>
                   <DropdownMenu.Separator />
                   <DropdownMenu.Item color="red" onClick={() => setOpenDeleteModal(true)}>
@@ -183,8 +302,12 @@ export const GameDetailPage = () => {
                             player.trend === Trend.Equal && 'text-orange-400'
                           )}
                         >
-                          {player.trend === Trend.Up && <BgtIcon icon={<ArrowTrendingUpIcon />} className="mt-1" size={17} />}
-                          {player.trend === Trend.Down && <BgtIcon icon={<ArrowTrendingDownIcon />} className="mt-1" size={17} />}
+                          {player.trend === Trend.Up && (
+                            <BgtIcon icon={<ArrowTrendingUpIcon />} className="mt-1" size={17} />
+                          )}
+                          {player.trend === Trend.Down && (
+                            <BgtIcon icon={<ArrowTrendingDownIcon />} className="mt-1" size={17} />
+                          )}
                           {RoundDecimal(player.winPercentage * 100, 0.1)}%
                         </div>
                       </div>
@@ -194,8 +317,15 @@ export const GameDetailPage = () => {
               ))}
             </div>
           </div>
-        </BgtHeaderCard>
-        <div className={clsx('grid gap-4', count <= 4 && 'grid-cols-4', count === 5 && 'grid-cols-5', count === 6 && 'grid-cols-6')}>
+        </BgtCard>
+        <div
+          className={clsx(
+            'grid gap-4',
+            count <= 4 && 'grid-cols-4',
+            count === 5 && 'grid-cols-5',
+            count === 6 && 'grid-cols-6'
+          )}
+        >
           <BgtTextStatistic content={RoundDecimal(statistics.averageScore)} title={t('statistics.average-score')} />
           <BgtTextStatistic
             content={RoundDecimal(statistics.averagePlayTime)}
@@ -204,14 +334,31 @@ export const GameDetailPage = () => {
           />
           <BgtTextStatistic content={statistics.playCount} title={t('statistics.play-count')} />
           <BgtTextStatistic
-            content={statistics.lastPlayed != null ? formatDistanceToNowStrict(new Date(statistics.lastPlayed), { addSuffix: true }) : null}
+            content={
+              statistics.lastPlayed != null
+                ? formatDistanceToNowStrict(new Date(statistics.lastPlayed), { addSuffix: true })
+                : null
+            }
             title={t('statistics.last-played')}
           />
-          <BgtTextStatistic content={statistics.totalPlayedTime} title={t('statistics.total-play-time')} suffix={t('common.minutes_abbreviation')} />
-          <BgtTextStatistic content={statistics.pricePerPlay} title={t('statistics.price-per-play')} suffix={settings.currency} />
+          <BgtTextStatistic
+            content={statistics.totalPlayedTime}
+            title={t('statistics.total-play-time')}
+            suffix={t('common.minutes_abbreviation')}
+          />
+          <BgtTextStatistic
+            content={statistics.pricePerPlay}
+            title={t('statistics.price-per-play')}
+            suffix={settings.currency}
+          />
         </div>
         <GameDetailsPopup open={openDetailsModal} setOpen={setOpenDetailsModal} id={id} />
-        <BgtDeleteModal title={game.title} open={openDeleteModal} setOpen={setOpenDeleteModal} onDelete={deleteGameInternal} />
+        <BgtDeleteModal
+          title={game.title}
+          open={openDeleteModal}
+          setOpen={setOpenDeleteModal}
+          onDelete={deleteGameInternal}
+        /> */}
       </BgtPageContent>
     </BgtPage>
   );

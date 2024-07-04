@@ -35,15 +35,13 @@ export const PlayersPage = () => {
         ]}
       />
       <BgtPageContent>
-        <BgtCard transparant>
-          <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-9 2xl:grid-cols-12">
-            {players.map((x) => (
-              <Link key={x.id} to={`/players/${x.id}`}>
-                <BgtImageCard title={x.name} image={x.image} />
-              </Link>
-            ))}
-          </div>
-        </BgtCard>
+        <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-9 2xl:grid-cols-12">
+          {players.map((x) => (
+            <Link key={x.id} to={`/players/${x.id}`}>
+              <BgtImageCard title={x.name} image={x.image} />
+            </Link>
+          ))}
+        </div>
         <BgtPlayerModal open={openModal} setOpen={setOpenModal} />
       </BgtPageContent>
     </BgtPage>

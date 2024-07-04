@@ -3,9 +3,9 @@ import { MagnifyingGlassIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 
 export const BgtHeader = () => {
   return (
-    <div className="bg-card-black flex flex-row justify-between p-3 m-4 rounded">
+    <div className="bg-card-black flex flex-row justify-between p-3 m-3 rounded">
       <div>
-        <TextField.Root type="text" placeholder="Search item (hardcoded)" className="w-64" radius="full">
+        <TextField.Root type="text" placeholder="Search item (hardcoded)" className="w-64" radius="large">
           <TextField.Slot></TextField.Slot>
           <TextField.Slot>
             <IconButton size="1" variant="ghost">

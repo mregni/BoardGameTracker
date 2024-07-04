@@ -1,10 +1,11 @@
 import { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { Text } from '@radix-ui/themes';
 
-interface Props extends ComponentPropsWithoutRef<'div'> {
+interface Props extends Omit<ComponentPropsWithoutRef<'div'>, 'color'> {
   children: ReactNode | ReactNode[];
   size?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | undefined;
   weight?: 'bold' | 'light' | 'regular' | 'medium' | undefined;
+  color?: 'amber' | 'orange' | 'red' | 'purple' | 'blue' | 'green' | undefined;
 }
 
 export const BgtText = (props: Props) => {

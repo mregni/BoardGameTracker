@@ -2,22 +2,22 @@
   "common": {
     "actions": "Actions",
     "start": "Start",
-    "cancel": "Annuleren",
+    "cancel": "Cancel",
     "dashboard": "Dashboard",
-    "games": "Spellen",
+    "games": "Games",
     "items_one": "{{count}} item",
     "items_other": "{{count}} items",
-    "locations": "Locaties",
+    "locations": "Locations",
     "location": "Location",
     "duration": "Duration",
-    "name": "Naam",
-    "players": "Spelers",
-    "profile-picture": "Profiel foto",
-    "settings": "Instellingen",
-    "unknown-error": "Onbekende fout",
+    "name": "Name",
+    "players": "Players",
+    "profile-picture": "Profile picture",
+    "settings": "Settings",
+    "unknown-error": "Unknown error",
     "winners": "Winners",
     "loosers": "Loosers",
-    "play-time": "Speeltijd",
+    "play-time": "Play time",
     "rating": "Rating",
     "weight": "Weight",
     "age": "Age",
@@ -29,6 +29,8 @@
     "mechanics": "mechanics",
     "no-data": "No data yet",
     "load-more": "Load more",
+    "total-wins": "Total wins",
+    "days-ago": "Days ago",
     "flags": {
       "header": "Tags",
       "shortest-game": "Shortest",
@@ -48,43 +50,46 @@
     }
   },
   "game": {
-    "add": "add game",
+    "add": "Add game session",
+    "sessions": "View sessions",
     "notifications": {
-      "created": "Spel is succesvol aangemaakt",
-      "not-found": "Kan spel niet vinden",
-      "duplicate": "Spel bestaat al"
+      "created": "Game is succesfully created",
+      "not-found": "Could not find game",
+      "duplicate": "Game already exists"
     },
     "added-date": {
-      "label": "Toegevoegd op",
-      "required": "datum is vereist"
+      "label": "Date added",
+      "required": "Date is required"
     },
     "bgg": {
       "label": "BGG id",
-      "placeholder": "BoardGameGeek spel id",
-      "required": "BGG id is vereist",
+      "placeholder": "BoardGameGeek game id",
+      "required": "BGG id is required",
       "external-page": "Open BoardGameGeek website"
     },
     "new": {
-      "description": "Kies een methode om een nieuw spel aan te maken.",
-      "save": "Spel aanmaken",
-      "title": "Nieuw spel aanmaken",
-      "bgg-title": "Spel importeren",
-      "bgg-subtext": "Importeer spelgegevens van BoardGameGeek",
-      "bgg-description": "Voer de vereiste velden in om een spel uit BoardGameGeek te importeren",
-      "manual-title": "Handmatige invoer",
-      "manual-subtext": "Handmatige een spel aanmaken"
+      "description": "Choose a method to create a new game.",
+      "save": "Create game",
+      "title": "Create new game",
+      "bgg-title": "Import game",
+      "bgg-subtext": "Import game data from BoardGameGeek",
+      "bgg-description": "Enter required fields to import a game from BoardGameGeek",
+      "manual-title": "Manual input",
+      "manual-subtext": "Manual input data to create a game"
     },
     "price": {
-      "label": "Prijs",
-      "placeholder": "Spel prijs"
+      "label": "Price",
+      "placeholder": "Game price",
+      "required": "Price is required"
     },
     "state": {
-      "for-trade": "Te verkopen",
-      "label": "Spel status",
-      "not-owned": "Niet in eigen bezit",
-      "owned": "In bezit",
-      "previously-owned": "In bezit",
-      "wanted": "Gezocht"
+      "for-trade": "For trade",
+      "label": "Game state",
+      "not-owned": "Not self owned",
+      "owned": "Owned",
+      "previously-owned": "Previously owned",
+      "wanted": "Wanted",
+      "on-loan": "On loan"
     },
     "details": {
       "title": "{{title}} details"
@@ -108,16 +113,21 @@
         "lowest-winning": "Lowest winning",
         "lowest": "Lowest"
       }
+    },
+    "titles": {
+      "top-players": "Top players",
+      "analytics": "Analytics"
     }
   },
   "games": {
+    "title": "Games",
+    "new": "Add new game",
     "cards": {
-      "games": "Spellen",
-      "top-players": "Topspelers"
+      "games": "Games"
     }
   },
   "images": {
-    "drag-and-drop": " of slepen en neerzetten",
+    "drag-and-drop": " or drag and drop",
     "types": "png or jpg",
     "upload": "Click to upload"
   },
@@ -127,6 +137,7 @@
       "not-found": "Could not find player"
     },
     "new": {
+      "button": "Add new player",
       "description": "Fill out the form to create a new player",
       "name": {
         "placeholder": "Enter name of the player",
@@ -179,7 +190,8 @@
     "win-count": "Total wins",
     "distinct-game-count": "Different games",
     "favorite-color": "Favorite color",
-    "best-game": "Best game"
+    "best-game": "Best game",
+    "average-playtime": "Average playtime"
   },
   "playplayer": {
     "save": "Create game play",
@@ -216,6 +228,7 @@
         "sub-label": "Start date and time of the game.",
         "required": "Start date is required"
       },
+
       "location": {
         "label": "Select your location",
         "sub-label": "Select the corect location you played this game.",

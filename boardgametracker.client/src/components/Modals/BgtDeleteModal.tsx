@@ -1,5 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { Button, Dialog } from '@radix-ui/themes';
+import { Dialog } from '@radix-ui/themes';
+
+import { BgtHeading } from '../BgtHeading/BgtHeading';
+import BgtButton from '../BgtButton/BgtButton';
 
 interface Props {
   open: boolean;
@@ -15,17 +18,21 @@ export const BgtDeleteModal = (props: Props) => {
   return (
     <Dialog.Root open={open}>
       <Dialog.Content>
-        <Dialog.Title>{t('common.delete.title', { title: title })}</Dialog.Title>
+        <Dialog.Title>
+          <BgtHeading size="6" className="uppercase">
+            {t('common.delete.title', { title: title })}
+          </BgtHeading>
+        </Dialog.Title>
         <Dialog.Description>{t('common.delete.description', { title: title })}</Dialog.Description>
         <div className="flex justify-end gap-3 mt-3">
           <Dialog.Close>
             <>
-              <Button type="submit" variant="solid" color="red" onClick={onDelete}>
+              <BgtButton color="error" onClick={onDelete}>
                 {t('common.delete.button')}
-              </Button>
-              <Button variant="surface" color="gray" onClick={() => setOpen(false)}>
+              </BgtButton>
+              <BgtButton color="primary" variant="inline" onClick={() => setOpen(false)}>
                 {t('common.cancel')}
-              </Button>
+              </BgtButton>
             </>
           </Dialog.Close>
         </div>

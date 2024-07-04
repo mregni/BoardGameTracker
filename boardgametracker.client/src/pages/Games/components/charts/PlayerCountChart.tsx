@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/dot-notation */
-import { AgChartsReact } from 'ag-charts-react';
-import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { AgChartsReact } from 'ag-charts-react';
 
-import { BgtCard } from '../../../../components/BgtCard/BgtCard';
 import { useGame } from '../../../../hooks/useGame';
+import { BgtChartCard } from '../../../../components/BgtCard/BgtChartCard';
 
 export const PlayerCountChart = () => {
   const { id } = useParams();
@@ -13,7 +13,7 @@ export const PlayerCountChart = () => {
   const { t } = useTranslation();
 
   return (
-    <BgtCard>
+    <BgtChartCard title={t('game.charts.player-count')}>
       <AgChartsReact
         options={{
           data: playerCountChart,
@@ -33,15 +33,14 @@ export const PlayerCountChart = () => {
               calloutLabelKey: 'playCount',
               calloutLabel: {
                 color: 'white',
-                formatter: (params) => t('common.game', { count: +params.value }),
+                formatter: (params) => t('common.player', { count: +params.datum['players'] }),
               },
             },
           ],
           background: { visible: false },
-          title: { text: t('game.charts.player-count') },
           height: 300,
         }}
       />
-    </BgtCard>
+    </BgtChartCard>
   );
 };

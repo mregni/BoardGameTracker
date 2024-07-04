@@ -8,7 +8,6 @@ export interface Game {
   description: string;
   yearPublished: number | null;
   image: string;
-  backgroundImage: string;
   thumbnail: string;
   minPlayers: number | null;
   maxPlayers: number | null;

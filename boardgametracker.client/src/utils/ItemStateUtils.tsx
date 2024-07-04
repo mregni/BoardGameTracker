@@ -22,3 +22,21 @@ export const getItemStateTranslationKey = (value: GameState): string => {
 export const getItemStateTranslationKeyByString = (value: string): string => {
   return getItemStateTranslationKey(Number(value));
 };
+
+export const getColorFromGameState = (state: GameState): 'amber' | 'orange' | 'red' | 'purple' | 'blue' | 'green' => {
+  switch (state) {
+    case GameState.Wanted:
+      return 'amber';
+    case GameState.Owned:
+      return 'green';
+    case GameState.PreviouslyOwned:
+      return 'red';
+    case GameState.NotOwned:
+      return 'purple';
+    case GameState.ForTrade:
+      return 'blue';
+    case GameState.OnLoan:
+    default:
+      return 'orange';
+  }
+};

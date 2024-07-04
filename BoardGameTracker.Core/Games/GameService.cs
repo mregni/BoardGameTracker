@@ -8,22 +8,25 @@ using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Extensions;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Players.Interfaces;
 
 namespace BoardGameTracker.Core.Games;
 
 public class GameService : IGameService
 {
     private readonly IGameRepository _gameRepository;
+    private readonly IPlayerRepository _playerRepository;
     private readonly IBggApi _bggApi;
     private readonly IMapper _mapper;
     private readonly IImageService _imageService;
 
-    public GameService(IGameRepository gameRepository, IMapper mapper, IImageService imageService, IBggApi bggApi)
+    public GameService(IGameRepository gameRepository, IMapper mapper, IImageService imageService, IBggApi bggApi, IPlayerRepository playerRepository)
     {
         _gameRepository = gameRepository;
         _mapper = mapper;
         _imageService = imageService;
         _bggApi = bggApi;
+        _playerRepository = playerRepository;
     }
 
     public async Task<Game> ProcessBggGameData(BggGame rawGame, BggSearch search)
@@ -39,7 +42,6 @@ public class GameService : IGameService
 
         var game = _mapper.Map<Game>(rawGame);
         game.Image = await _imageService.DownloadImage(rawGame.Image, rawGame.BggId.ToString());
-        game.BackgroundImage = await _imageService.DownloadBackgroundImage(rawGame.BggId);
 
         game.State = search.State;
         game.BuyingPrice = search.Price;
@@ -135,12 +137,24 @@ public class GameService : IGameService
             TotalPlayedTime = await _gameRepository.GetTotalPlayedTime(id),
             PricePerPlay = await _gameRepository.GetPricePerPlay(id),
             HighScore = await _gameRepository.GetHighestScore(id),
-            MostWinsPlayer = await _gameRepository.GetMostWins(id),
             AveragePlayTime = await _gameRepository.GetAveragePlayTime(id),
             AverageScore = await _gameRepository.GetAverageScore(id),
             LastPlayed = await _gameRepository.GetLastPlayedDateTime(id)
         };
-
+        
+        var mostWinPlayer = await _gameRepository.GetMostWins(id);
+        if (mostWinPlayer != null)
+        {
+            var wins = await _playerRepository.GetWinCount(mostWinPlayer.Id, id);
+            stats.MostWinsPlayer = new MostWinner()
+            {
+                Id = mostWinPlayer.Id,
+                Image = mostWinPlayer.Image,
+                Name = mostWinPlayer.Name,
+                TotalWins = wins
+            };
+        }
+        
         return stats;
     }
 

@@ -1,16 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/dot-notation */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { AgChartsReact } from 'ag-charts-react';
-import { renderToString } from 'react-dom/server';
-import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { renderToString } from 'react-dom/server';
+import { AgChartsReact } from 'ag-charts-react';
 
-import { BgtAvatar } from '../../../../components/BgtAvatar/BgtAvatar';
-import { BgtCard } from '../../../../components/BgtCard/BgtCard';
-import { useGame } from '../../../../hooks/useGame';
-import { usePlayers } from '../../../../hooks/usePlayers';
+import { StringToHsl } from '../../../../utils/stringUtils';
 import { RoundDecimal } from '../../../../utils/numberUtils';
+import { usePlayers } from '../../../../hooks/usePlayers';
+import { useGame } from '../../../../hooks/useGame';
+import { BgtChartCard } from '../../../../components/BgtCard/BgtChartCard';
+import { BgtCard } from '../../../../components/BgtCard/BgtCard';
+import { BgtAvatar } from '../../../../components/BgtAvatar/BgtAvatar';
 
 const GetFillColor = (xKey: string, fallback: string | undefined): string | undefined => {
   switch (xKey) {
@@ -38,12 +40,13 @@ export const ScoringRankChart = () => {
   if (scoreRankChart === undefined || !game?.hasScoring) return null;
 
   return (
-    <BgtCard>
+    <BgtChartCard title={t('game.charts.top-scoring.title')}>
       <AgChartsReact
         options={{
           data: scoreRankChart,
           series: [
             {
+              cornerRadius: 7,
               type: 'bar',
               direction: 'horizontal',
               xKey: 'key',
@@ -53,7 +56,8 @@ export const ScoringRankChart = () => {
                 enabled: true,
                 placement: 'inside',
                 fontStyle: 'italic',
-                formatter: (params) => `${byId(params.datum['playerId'])?.name ?? ''} ${RoundDecimal(params.datum[params.yKey])}`,
+                formatter: (params) =>
+                  `${byId(params.datum['playerId'])?.name ?? ''} ${RoundDecimal(params.datum[params.yKey])}`,
               },
               tooltip: {
                 renderer: (params) => {
@@ -64,7 +68,7 @@ export const ScoringRankChart = () => {
                   }
 
                   return `<div class="ag-chart-tooltip-title flex flex-row justify-start gap-2 items-center" style="background-color:${params.color}">
-                  ${renderToString(<BgtAvatar title={byId(params.datum['playerId'])?.name} image={byId(params.datum['playerId'])?.image} noTooltip />)}
+                  ${renderToString(<BgtAvatar title={byId(params.datum['playerId'])?.name} image={byId(params.datum['playerId'])?.image} noTooltip color={StringToHsl(byId(params.datum['playerId'])?.name)} />)}
                   ${byId(params.datum['playerId'])?.name}: ${RoundDecimal(params.datum[params.yKey], 0.1)}
                 </div>`;
                 },
@@ -73,7 +77,6 @@ export const ScoringRankChart = () => {
             },
           ],
           background: { visible: false },
-          title: { text: t('game.charts.top-scoring.title') },
           height: 300,
           axes: [
             {
@@ -90,6 +93,6 @@ export const ScoringRankChart = () => {
           ],
         }}
       />
-    </BgtCard>
+    </BgtChartCard>
   );
 };

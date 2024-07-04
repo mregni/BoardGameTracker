@@ -7,7 +7,7 @@ export interface Props {
   color?: string | undefined;
   onClick?: () => void;
   noTooltip?: boolean;
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large' | 'big';
 }
 
 export const BgtAvatar = (props: Props) => {
@@ -17,6 +17,8 @@ export const BgtAvatar = (props: Props) => {
 
   const getSize = (): '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
     switch (size) {
+      case 'big':
+        return '8';
       case 'large':
         return '5';
       case 'medium':
@@ -31,10 +33,11 @@ export const BgtAvatar = (props: Props) => {
       {image && (
         <img
           className={clsx(
-            'rounded-sm shadow-gray-800 shadow-md',
-            size === 'large' && 'h-11 w-11',
-            size === 'medium' && 'h-7 w-7',
-            size === 'small' && 'h-5 w-5',
+            'shadow-gray-800 shadow-md',
+            size === 'big' && 'h-28 w-28 rounded-full',
+            size === 'large' && 'h-11 w-11 rounded-sm',
+            size === 'medium' && 'h-7 w-7 rounded-sm',
+            size === 'small' && 'h-5 w-5 rounded-sm',
             onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer'
           )}
           onClick={onClick}
@@ -46,10 +49,11 @@ export const BgtAvatar = (props: Props) => {
           style={{ backgroundColor: color }}
           onClick={onClick}
           className={clsx(
-            'rounded-sm shadow-gray-800 shadow-md flex justify-center items-center',
-            size === 'large' && 'h-11 w-11',
-            size === 'medium' && 'h-7 w-7',
-            size === 'small' && 'h-5 w-5',
+            'shadow-gray-800 shadow-md flex justify-center items-center',
+            size === 'big' && 'h-28 w-28 rounded-full',
+            size === 'large' && 'h-11 w-11 rounded-sm',
+            size === 'medium' && 'h-7 w-7 rounded-sm',
+            size === 'small' && 'h-5 w-5 rounded-sm',
             onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer'
           )}
         >

@@ -42,15 +42,11 @@ export const GamesPage = () => {
         actions={[{ onClick: () => setOpenModal(true), variant: 'solid', content: 'games.new' }]}
       />
       <BgtPageContent>
-        <BgtCard transparant>
-          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 2xl:grid-cols-10">
-            {games.map((x) => (
-              <Link key={x.id} to={`/games/${x.id}`}>
-                <BgtImageCard title={x.title} image={x.image} state={x.state} />
-              </Link>
-            ))}
-          </div>
-        </BgtCard>
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 2xl:grid-cols-10">
+          {games.map((x) => (
+            <BgtImageCard key={x.id} title={x.title} image={x.image} state={x.state} link={`/games/${x.id}`} />
+          ))}
+        </div>
         {openBggModal && <BgtBggGameModal open={openBggModal} setOpen={setOpenBggModal} />}
         <BgtNewGameModal open={openModal} setOpen={setOpenModal} openBgg={openBgg} openManual={openManual} />
       </BgtPageContent>

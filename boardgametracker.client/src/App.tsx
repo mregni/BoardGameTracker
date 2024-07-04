@@ -45,7 +45,7 @@ function App() {
   if (!settings) return null;
 
   return (
-    <div className="flex flex-col md:flex-row h-screen text-white font-chakra-petch">
+    <div className="flex flex-col md:flex-row h-screen text-white">
       <BgtMenuBar />
       <div className="flex-1 bg-custom-gradient flex flex-col">
         <BgtHeader />

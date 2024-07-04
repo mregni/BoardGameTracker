@@ -1,6 +1,6 @@
+import '@radix-ui/themes/styles.css';
 import './index.css';
 import './utils/i18n';
-import '@radix-ui/themes/styles.css';
 import 'react-perfect-scrollbar/dist/css/styles.css';
 
 import { BrowserRouter } from 'react-router-dom';

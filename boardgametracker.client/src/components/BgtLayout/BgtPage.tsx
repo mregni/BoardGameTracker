@@ -30,8 +30,8 @@ export const BgtPage = (props: Props) => {
   });
 
   return (
-    <div className="w-full h-full flex flex-col">
-      {_header && <div className="px-4 py-2">{_header}</div>}
+    <div className="w-full h-full flex flex-col p-3 gap-3">
+      {_header && <div>{_header}</div>}
 
       <PerfectScrollbar
         options={{

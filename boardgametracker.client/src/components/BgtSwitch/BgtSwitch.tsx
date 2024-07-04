@@ -1,5 +1,6 @@
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
-import { Switch, Text } from '@radix-ui/themes';
+import { Text } from '@radix-ui/themes';
+import * as Switch from '@radix-ui/react-switch';
 
 interface Props<T extends FieldValues> {
   label: string;
@@ -20,7 +21,14 @@ export const BgtSwitch = <TFormValues extends FieldValues>(props: Props<TFormVal
         render={({ field }) => (
           <Text as="label" size="3">
             <div className="flex gap-2">
-              <Switch size="2" onCheckedChange={field.onChange} disabled={disabled} defaultChecked={field.value} />
+              <Switch.Root
+                onCheckedChange={field.onChange}
+                disabled={disabled}
+                defaultChecked={field.value}
+                className="w-[42px] h-[21px] rounded-full relative data-[state=checked]:bg-primary outline-none cursor-defaul bg-[--gray-10]"
+              >
+                <Switch.Thumb className="block w-[21px] h-[21px] -left-[2px] top-0 absolute bg-white rounded-full transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[23px]" />
+              </Switch.Root>
               {label}
             </div>
           </Text>

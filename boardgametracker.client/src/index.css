@@ -1,6 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.radix-themes {
+  --default-font-family: 'Chakra Petch', sans-serif;
+  --heading-font-family: 'Chakra Petch', sans-serif;
+}
+
+body {
+  font-family: var(--default-font-family);
+}
+
+/* Apply to Radix components */
+[class^="radix-"],
+[class*=" radix-"] {
+  font-family: var(--default-font-family);
+}
 
 .mobile-menu {
   transform: translateY(0);

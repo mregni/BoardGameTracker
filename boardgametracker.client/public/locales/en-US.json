@@ -29,6 +29,8 @@
     "mechanics": "mechanics",
     "no-data": "No data yet",
     "load-more": "Load more",
+    "total-wins": "Total wins",
+    "days-ago": "Days ago",
     "flags": {
       "header": "Tags",
       "shortest-game": "Shortest",
@@ -48,7 +50,8 @@
     }
   },
   "game": {
-    "add": "add game",
+    "add": "Add game session",
+    "sessions": "View sessions",
     "notifications": {
       "created": "Game is succesfully created",
       "not-found": "Could not find game",
@@ -56,7 +59,7 @@
     },
     "added-date": {
       "label": "Date added",
-      "required": "date is required"
+      "required": "Date is required"
     },
     "bgg": {
       "label": "BGG id",
@@ -76,7 +79,8 @@
     },
     "price": {
       "label": "Price",
-      "placeholder": "Game price"
+      "placeholder": "Game price",
+      "required": "Price is required"
     },
     "state": {
       "for-trade": "For trade",
@@ -84,7 +88,8 @@
       "not-owned": "Not self owned",
       "owned": "Owned",
       "previously-owned": "Previously owned",
-      "wanted": "Wanted"
+      "wanted": "Wanted",
+      "on-loan": "On loan"
     },
     "details": {
       "title": "{{title}} details"
@@ -108,12 +113,17 @@
         "lowest-winning": "Lowest winning",
         "lowest": "Lowest"
       }
+    },
+    "titles": {
+      "top-players": "Top players",
+      "analytics": "Analytics"
     }
   },
   "games": {
+    "title": "Games",
+    "new": "Add new game",
     "cards": {
-      "games": "Games",
-      "top-players": "Top players"
+      "games": "Games"
     }
   },
   "images": {
@@ -127,6 +137,7 @@
       "not-found": "Could not find player"
     },
     "new": {
+      "button": "Add new player",
       "description": "Fill out the form to create a new player",
       "name": {
         "placeholder": "Enter name of the player",
@@ -179,7 +190,8 @@
     "win-count": "Total wins",
     "distinct-game-count": "Different games",
     "favorite-color": "Favorite color",
-    "best-game": "Best game"
+    "best-game": "Best game",
+    "average-playtime": "Average playtime"
   },
   "playplayer": {
     "save": "Create game play",
@@ -216,6 +228,7 @@
         "sub-label": "Start date and time of the game.",
         "required": "Start date is required"
       },
+
       "location": {
         "label": "Select your location",
         "sub-label": "Select the corect location you played this game.",

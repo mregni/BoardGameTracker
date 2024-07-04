@@ -17,4 +17,5 @@ public interface IPlayerRepository
     Task<int> GetDistinctGameCount(int id);
     Task<int> CountAsync();
     Task<int> GetTotalPlayCount(int id);
+    Task<int> GetWinCount(int id, int gameId);
 }

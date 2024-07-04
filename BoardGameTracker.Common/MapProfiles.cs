@@ -84,6 +84,7 @@ public class MapProfiles : Profile
         CreateMap<PlayerStatistics, PlayerStatisticsViewModel>();
         CreateMap<GameStatistics, GameStatisticsViewModel>()
             .ForMember(x => x.TotalPlayedTime, x => x.MapFrom(y => y.TotalPlayedTime.TotalMinutes));
+        CreateMap<MostWinner, MostWinnerViewModel>();
     }
     
     private static bool IsPersonType(BggRawLink link)

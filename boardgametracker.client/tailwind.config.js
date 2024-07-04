@@ -8,19 +8,26 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'chakra-petch': ['Chakra Petch', ...defaultTheme.fontFamily.sans],
+        sans: ['"Chakra Petch"', ...defaultTheme.fontFamily.sans],
       },
       colors: {
         'page-black': '#121212',
-        'card-black': '#1D1D1D',
+        'card-black': '#100C1D',
+        'card-light': '#141022',
+        'card-border': '#1E192C',
         primary: '#8502fb',
         'primary-dark': '#8502fb42',
+        'mint-green': '#09FFC4',
+        'lime-green': '#40FA47',
       },
       screens: {
         '2xl': '1700px',
       },
       backgroundImage: {
-        'custom-gradient': 'radial-gradient(ellipse closest-side at 40% 60%, #8502fb, #060214)',
+        'custom-gradient': 'radial-gradient(ellipse closest-side at 40% 60%, #2E004C, #060214)',
+      },
+      transitionProperty: {
+        'max-height': 'max-height',
       },
     },
   },

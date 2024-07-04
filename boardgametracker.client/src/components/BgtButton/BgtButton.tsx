@@ -4,7 +4,7 @@ import clsx from 'clsx';
 interface Props extends ComponentPropsWithoutRef<'button'> {
   children: ReactNode | ReactNode[];
   onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
-  variant?: 'solid' | 'outline' | 'soft' | undefined;
+  variant?: 'solid' | 'outline' | 'soft' | 'inline' | undefined;
   size?: '1' | '2' | '3' | undefined;
   color?: 'primary' | 'error' | undefined;
 }
@@ -38,10 +38,12 @@ const BgtButton = (props: Props) => {
           variant === 'soft' &&
           color === 'error' &&
           'border border-red-500 bg-red-950 text-white hover:bg-red-800',
+        !disabled && variant === 'inline' && color === 'primary' && ' text-white h-7 hover:text-gray-300',
+        !disabled && variant === 'inline' && color === 'error' && 'text-red-800 h-7 hover:text-red-600',
         disabled && 'text-gray-500 border border-gray-500',
         size === '1' && 'py-1 px-2 text-xs',
         size === '2' && 'py-2 px-3',
-        size === '3' && 'py-3 px-4',
+        size === '3' && 'py-3 px-8',
         className
       )}
       type={type}
