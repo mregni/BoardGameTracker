@@ -29,7 +29,6 @@
     "mechanics": "mechanics",
     "no-data": "No data yet",
     "load-more": "Load more",
-    "total-wins": "Total wins",
     "days-ago": "Days ago",
     "read-more": "Read more",
     "read-less": "Read less",
@@ -49,6 +48,11 @@
       "title": "Delete {{title}}",
       "description": "Are you sure you want to delete {{title}} with all it's content. This cannot be reversed!",
       "button": "delete"
+    },
+    "no-sessions": {
+      "title": "No sessions logged yet",
+      "content": "Log your first game session to view analytics",
+      "button": ""
     }
   },
   "game": {
@@ -191,12 +195,14 @@
     "last-played": "Last played",
     "win-count": "Total wins",
     "distinct-game-count": "Different games",
-    "favorite-color": "Favorite color",
     "best-game": "Best game",
-    "average-playtime": "Average playtime"
+    "average-playtime": "Average playtime",
+    "win-percentage": "Win percentage",
+    "buy-price": "Cost"
   },
-  "playplayer": {
+  "player-session": {
     "save": "Create game play",
+    "title": "Add new game session",
     "new": {
       "notifications": {
         "created": "Game play is succesfully created",
@@ -211,29 +217,27 @@
       },
       "players": {
         "label": "Players",
-        "sub-label": "Select all players that where in the game and put in their details.",
         "add": "+ add player",
-        "minimum": "Add at least one player to this game"
+        "minimum": "Add at least one player to this session"
       },
       "duration": {
         "label": "Duration",
-        "sub-label": "Total amount of played minutes. Will default to max game minutes or 30.",
+        "placeholder": "in minutes",
         "required": "Duration is required"
       },
       "game": {
         "label": "Game",
-        "sub-label": "Select the corect game",
+        "placeholder": "Choose game",
         "required": "Game is required"
       },
       "start": {
         "label": "Start",
-        "sub-label": "Start date and time of the game.",
         "required": "Start date is required"
       },
 
       "location": {
-        "label": "Select your location",
-        "sub-label": "Select the corect location you played this game.",
+        "label": "Location",
+        "placeholder": "Choose location",
         "create-new": "Create location '{{name}}'",
         "required": "Location is required"
       },
