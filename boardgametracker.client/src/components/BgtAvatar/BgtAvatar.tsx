@@ -3,7 +3,7 @@ import { Text } from '@radix-ui/themes';
 
 export interface Props {
   title?: string | undefined;
-  image: string | undefined;
+  image: string | undefined | null;
   color?: string | undefined;
   onClick?: () => void;
   noTooltip?: boolean;
@@ -35,8 +35,8 @@ export const BgtAvatar = (props: Props) => {
           className={clsx(
             'shadow-gray-800 shadow-md',
             size === 'big' && 'h-28 w-28 rounded-full',
-            size === 'large' && 'h-11 w-11 rounded-sm',
-            size === 'medium' && 'h-7 w-7 rounded-sm',
+            size === 'large' && 'h-11 w-11 rounded-lg',
+            size === 'medium' && 'h-7 w-7 rounded-md',
             size === 'small' && 'h-5 w-5 rounded-sm',
             onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer'
           )}

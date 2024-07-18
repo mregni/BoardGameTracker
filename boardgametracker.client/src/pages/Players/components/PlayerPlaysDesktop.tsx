@@ -5,7 +5,7 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { InformationCircleIcon, PencilIcon } from '@heroicons/react/24/outline';
 
 import { Play } from '../../../models';
-import { usePlayerPlays } from '../../../hooks/usePlays';
+import { usePlayerSessions } from '../../../hooks/useSessions';
 import { useLocations } from '../../../hooks/useLocations';
 import { useGames } from '../../../hooks/useGames';
 import { BgtDateTimeCell } from '../../../components/BgtTable/BgtDateTimeCell';
@@ -26,7 +26,7 @@ const pageCount = 10;
 export const PlayerPlaysDesktop = () => {
   const { id } = useParams();
   const [page, setPage] = useState(0);
-  const { plays, totalCount } = usePlayerPlays(id, page, pageCount);
+  const { playSessions: plays, totalCount } = usePlayerSessions(id, page, pageCount);
   const { t } = useTranslation();
   const { byId: locationById } = useLocations();
   const { byId: gameById } = useGames();
@@ -43,8 +43,16 @@ export const PlayerPlaysDesktop = () => {
       id: 'game',
       header: () => <>{t('common.game', {})}</>,
       cell: (info) => (
-        <div className="flex gap-2 justify-left flex-row hover:cursor-pointer" onClick={() => navigate(`/games/${gameById(info.getValue())?.id}`)}>
-          <BgtAvatar title={gameById(info.getValue())?.title} image={gameById(info.getValue())?.image} key={info.getValue()} noTooltip />
+        <div
+          className="flex gap-2 justify-left flex-row hover:cursor-pointer"
+          onClick={() => navigate(`/games/${gameById(info.getValue())?.id}`)}
+        >
+          <BgtAvatar
+            title={gameById(info.getValue())?.title}
+            image={gameById(info.getValue())?.image}
+            key={info.getValue()}
+            noTooltip
+          />
           <div>
             <span className="line-clamp-1 text-left">{gameById(info.getValue())?.title}</span>
           </div>
@@ -57,7 +65,7 @@ export const PlayerPlaysDesktop = () => {
       cell: (info) => (
         <div className="flex gap-1 justify-center flex-wrap">
           {info.getValue().map((player) => (
-            <BgtPlayerAvatar key={player.playerId} player={player} />
+            <BgtPlayerAvatar key={player.playerId} playerSession={player} />
           ))}
         </div>
       ),
@@ -68,7 +76,7 @@ export const PlayerPlaysDesktop = () => {
       cell: (info) => (
         <div className="flex gap-1 justify-center flex-wrap">
           {info.getValue().map((player) => (
-            <BgtPlayerAvatar key={player.playerId} player={player} />
+            <BgtPlayerAvatar key={player.playerId} playerSession={player} />
           ))}
         </div>
       ),

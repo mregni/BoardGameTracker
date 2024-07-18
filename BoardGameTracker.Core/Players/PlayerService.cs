@@ -23,11 +23,6 @@ public class PlayerService : IPlayerService
 
     public Task<Player> Create(Player player)
     {
-        if (player.Image == null)
-        {
-            _imageService.SaveProfileImage(null);
-        }
-
         return _playerRepository.Create(player);
     }
 
@@ -69,18 +64,30 @@ public class PlayerService : IPlayerService
         var stats = new PlayerStatistics
         {
             PlayCount = await _playerRepository.GetPlayCount(id),
-            BestGameId = await _playerRepository.GetBestGameId(id),
             WinCount = await _playerRepository.GetTotalWinCount(id),
             TotalPlayedTime = await _playerRepository.GetPlayLengthInMinutes(id),
             DistinctGameCount = await _playerRepository.GetDistinctGameCount(id)
         };
 
+        var game = await _playerRepository.GetBestGame(id);
+        if (game != null)
+        {
+            var wins = await _playerRepository.GetWinCount(id, game.Id);
+            stats.MostWinsGame = new BestWinningGame()
+            {
+                Id = game.Id,
+                Image = game.Image,
+                Title = game.Title,
+                TotalWins = wins
+            };
+        }
+
         return stats;
     }
 
-    public Task<List<Play>> GetPlays(int id, int skip, int? take)
+    public Task<List<Session>> GetSessions(int id, int skip, int? take)
     {
-        return _playerRepository.GetPlaysForPlayer(id, skip, take);
+        return _playerRepository.GetSessionsForPlayer(id, skip, take);
     }
     
     public Task<int> GetTotalPlayCount(int id)

@@ -1,7 +1,8 @@
 import { Control, Controller, FieldValues, Path, useController } from 'react-hook-form';
-import { formatISO } from 'date-fns';
+import { format } from 'date-fns';
 import clsx from 'clsx';
-import { TextField } from '@radix-ui/themes';
+
+import { BgtText } from '../BgtText/BgtText';
 
 import { BgtFormErrors } from './BgtFormErrors';
 
@@ -17,42 +18,62 @@ export interface Props<T extends FieldValues> {
   disabled?: boolean;
 }
 
+const formatDateToLocalInput = (date: Date) => {
+  try {
+    return format(date, "yyyy-MM-dd'T'HH:mm");
+  } catch (error) {
+    return '';
+  }
+};
+
 export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
-  const { type, name, placeholder = '', valueAsNumber, label, control, prefixLabel = null, className = '', disabled = false } = props;
+  const {
+    type,
+    name,
+    placeholder = '',
+    valueAsNumber,
+    label,
+    control,
+    prefixLabel = undefined,
+    className = '',
+    disabled = false,
+  } = props;
 
   const {
     fieldState: { error },
   } = useController({ name, control });
 
   return (
-    <div className="grid gap-1">
-      {label && (
-        <div className="flex items-baseline justify-between">
-          <div className="text-[15px] font-medium leading-[35px]">{label}</div>
-          <BgtFormErrors error={error} />
-        </div>
-      )}
+    <div className="flex flex-col justify-start w-full">
+      <div className="flex items-baseline justify-between">
+        <div className="text-[15px] font-medium leading-[35px] uppercase">{label}</div>
+        {<BgtFormErrors error={error} />}
+      </div>
       <Controller
         name={name}
         control={control}
         render={({ field }) => (
-          <TextField.Root
-            className={clsx(className, (type === 'number' || type === 'datetime-local') && 'pr-2')}
-            disabled={disabled}
-            type={type}
-            onChange={(event) => (valueAsNumber ? field.onChange(+event.target.value) : field.onChange(event.target.value))}
-            defaultValue={type === 'datetime-local' ? formatISO(field.value).substring(0, 16) : field.value}
-            placeholder={placeholder}
+          <div
+            className={clsx(
+              'rounded-lg bg-input active:border-none px-4 flex flex-row gap-2 items-center text-[12px]',
+              className,
+              error && 'border border-red-600 !bg-error-dark'
+            )}
           >
-            {prefixLabel && <TextField.Slot>{prefixLabel}</TextField.Slot>}
-          </TextField.Root>
+            {prefixLabel && <BgtText>{prefixLabel}</BgtText>}
+            <input
+              className="h-[45px] bg-transparent shadow-none focus:outline-none hide-arrow w-full"
+              disabled={disabled}
+              type={type}
+              onChange={(event) =>
+                valueAsNumber ? field.onChange(+event.target.value) : field.onChange(event.target.value)
+              }
+              defaultValue={type === 'datetime-local' ? formatDateToLocalInput(field.value) : field.value}
+              placeholder={placeholder.toUpperCase()}
+            />
+          </div>
         )}
       />
-      {!label && (
-        <div className="flex items-baseline">
-          <BgtFormErrors error={error} />
-        </div>
-      )}
     </div>
   );
 };

@@ -21,12 +21,13 @@ public class GameViewModel
     public int State { get; set; }
     public int? BaseGameId { get; set; }
     public bool HasScoring { get; set; }
+    public double? BuyingPrice { get; set; }
     public GameViewModel BaseGame { get; set; }
     public List<GameViewModel> Expansions { get; set; }
     public List<GameLinkViewModel> Categories { get; set; }
     public List<GameLinkViewModel> Mechanics { get; set; }
     public List<GamePersonViewModel> People { get; set; }
-    public List<PlayViewModel> Plays { get; set; }
+    public List<SessionViewModel> Sessions { get; set; }
 }
 
 public class GameLinkViewModel

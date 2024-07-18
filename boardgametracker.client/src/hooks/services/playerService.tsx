@@ -1,5 +1,5 @@
 import { axiosInstance } from '../../utils/axiosInstance';
-import { ListResult, Play, Player, PlayerStatistics, Result } from '../../models';
+import { ListResult, Player, PlayerStatistics, Result, Session } from '../../models';
 
 const domain = 'player';
 
@@ -21,11 +21,18 @@ export const getPlayer = (id: string, signal: AbortSignal): Promise<Result<Playe
   });
 };
 
-export const getPlays = (id: string, page: number, pageCount: number, signal: AbortSignal): Promise<ListResult<Play>> => {
+export const getSessions = (
+  id: string,
+  page: number,
+  pageCount: number,
+  signal: AbortSignal
+): Promise<ListResult<Session>> => {
   const skip = page * pageCount;
-  return axiosInstance.get<ListResult<Play>>(`${domain}/${id}/plays`, { params: { skip: skip, take: pageCount }, signal }).then((response) => {
-    return response.data;
-  });
+  return axiosInstance
+    .get<ListResult<Session>>(`${domain}/${id}/sessions`, { params: { skip: skip, take: pageCount }, signal })
+    .then((response) => {
+      return response.data;
+    });
 };
 
 export const getPlayerStatistics = (id: string, signal: AbortSignal): Promise<Result<PlayerStatistics>> => {

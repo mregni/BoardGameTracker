@@ -82,11 +82,11 @@ public class GameRepository : IGameRepository
         return _context.SaveChangesAsync();
     }
 
-    public Task<List<Play>> GetPlays(int id, int skip, int? take)
+    public Task<List<Session>> GetSessions(int id, int skip, int? take)
     {
-        var query = _context.Plays
+        var query = _context.Sessions
             .Include(x => x.Location)
-            .Include(x => x.Players)
+            .Include(x => x.PlayerSessions)
             .ThenInclude(x => x.Player)
             .Where(x => x.GameId == id)
             .OrderByDescending(x => x.Start)
@@ -102,14 +102,14 @@ public class GameRepository : IGameRepository
 
     public Task<int> GetPlayCount(int id)
     {
-        return _context.Plays
+        return _context.Sessions
             .Where(x => x.GameId == id)
             .CountAsync();
     }
 
     public async Task<TimeSpan> GetTotalPlayedTime(int id)
     {
-        var totalDurationInMinutes = await _context.Plays
+        var totalDurationInMinutes = await _context.Sessions
             .Where(x => x.GameId == id)
             .SumAsync(session => (session.End - session.Start).TotalMinutes);
 
@@ -118,24 +118,25 @@ public class GameRepository : IGameRepository
 
     public async Task<double?> GetPricePerPlay(int id)
     {
-        var game = await _context.Games
-            .Include(x => x.Plays)
+        var games = await _context.Games
+            .Include(x => x.Sessions)
             .Where(x => x.Id == id)
-            .SingleAsync();
+            .ToListAsync();
 
-        if (game.Plays.Count == 0 || !game.BuyingPrice.HasValue)
+        var game = games.First();
+        if (game.Sessions.Count == 0 || !game.BuyingPrice.HasValue)
         {
             return null;
         }
 
-        return Math.Round(game.BuyingPrice.Value / game.Plays.Count, 2);
+        return Math.Round(game.BuyingPrice.Value / game.Sessions.Count, 2);
     }
 
     public async Task<DateTime?> GetLastPlayedDateTime(int id)
     {
-        if (await _context.Plays.AnyAsync(x => x.GameId == id))
+        if (await _context.Sessions.AnyAsync(x => x.GameId == id))
         {
-            return await _context.Plays
+            return await _context.Sessions
                 .Where(x => x.GameId == id)
                 .OrderByDescending(x => x.Start)
                 .Select(x => x.Start)
@@ -147,48 +148,48 @@ public class GameRepository : IGameRepository
 
     public Task<double?> GetHighestScore(int id)
     {
-        return _context.Plays
-            .Include(x => x.Players)
+        return _context.Sessions
+            .Include(x => x.PlayerSessions)
             .Where(x => x.GameId == id)
-            .SelectMany(x => x.Players)
+            .SelectMany(x => x.PlayerSessions)
             .MaxAsync(x => x.Score);
     }
 
     public async Task<Player?> GetMostWins(int id)
     {
-        var playerId = await _context.Plays
-            .Include(x => x.Players)
-            .Where(x => x.GameId == id)
-            .SelectMany(x => x.Players)
+        var playerSession = await _context.Sessions
+            .Include(x => x.PlayerSessions)
+            .Where(x => x.GameId == id )
+            .SelectMany(x => x.PlayerSessions)
             .Where(x => x.Won)
             .GroupBy(x => x.PlayerId)
-            .OrderByDescending(x => x.Count())
-            .Select(x => x.Key)
+            .Select(x => new { PlayerId = x.Key, Count = x.Count()})
+            .OrderByDescending(x => x.Count)
             .FirstOrDefaultAsync();
 
-        if (!playerId.HasValue)
+        if (playerSession == null)
         {
             return null;
         }
 
-        return await _context.Players.FirstAsync(x => x.Id == playerId);
+        return await _context.Players.FirstAsync(x => x.Id == playerSession.PlayerId);
     }
 
     public Task<double?> GetAverageScore(int id)
     {
-        return _context.Plays
-            .Include(x => x.Players)
+        return _context.Sessions
+            .Include(x => x.PlayerSessions)
             .Where(x => x.GameId == id)
-            .SelectMany(x => x.Players)
+            .SelectMany(x => x.PlayerSessions)
             .AverageAsync(x => x.Score);
     }
 
     public Task<double> GetAveragePlayTime(int id)
     {
-        if (_context.Plays.Any(x => x.GameId == id))
+        if (_context.Sessions.Any(x => x.GameId == id))
         {
-            return _context.Plays
-                .Include(x => x.Players)
+            return _context.Sessions
+                .Include(x => x.PlayerSessions)
                 .Where(x => x.GameId == id)
                 .AverageAsync(x => (x.End - x.Start).TotalMinutes);
         }
@@ -203,7 +204,7 @@ public class GameRepository : IGameRepository
 
     public async Task<int?> GetShortestPlay(int id)
     {
-        var result = await _context.Plays
+        var result = await _context.Sessions
             .Where(x => x.GameId == id)
             .OrderBy(x => (x.End - x.Start).TotalSeconds)
             .FirstOrDefaultAsync();
@@ -213,7 +214,7 @@ public class GameRepository : IGameRepository
 
     public async Task<int?> GetLongestPlay(int id)
     {
-        var result = await _context.Plays
+        var result = await _context.Sessions
             .Where(x => x.GameId == id)
             .OrderByDescending(x => (x.End - x.Start).TotalSeconds)
             .FirstOrDefaultAsync();
@@ -223,39 +224,39 @@ public class GameRepository : IGameRepository
 
     public async Task<int?> GetHighScorePlay(int id)
     {
-        var result = await _context.Plays
-            .Include(x => x.Players)
+        var result = await _context.Sessions
+            .Include(x => x.PlayerSessions)
             .Include(x => x.Game)
             .Where(x => x.GameId == id && x.Game.HasScoring)
-            .SelectMany(x => x.Players)
+            .SelectMany(x => x.PlayerSessions)
             .OrderByDescending(x => x.Score)
             .FirstOrDefaultAsync();
 
-        return result?.PlayId;
+        return result?.SessionId;
     }
 
     public async Task<int?> GetLowestScorePlay(int id)
     {
-        var result = await _context.Plays
-            .Include(x => x.Players)
+        var result = await _context.Sessions
+            .Include(x => x.PlayerSessions)
             .Include(x => x.Game)
             .Where(x => x.GameId == id && x.Game.HasScoring)
-            .SelectMany(x => x.Players)
+            .SelectMany(x => x.PlayerSessions)
             .OrderBy(x => x.Score)
             .FirstOrDefaultAsync();
 
-        return result?.PlayId;
+        return result?.SessionId;
     }
 
     public Task<int> GetTotalPlayCount(int id)
     {
-        return _context.Plays
+        return _context.Sessions
             .CountAsync(x => x.GameId == id);
     }
 
-    public Task<List<IGrouping<DayOfWeek, Play>>> GetPlayByDayChart(int id)
+    public Task<List<IGrouping<DayOfWeek, Session>>> GetPlayByDayChart(int id)
     {
-        return _context.Plays
+        return _context.Sessions
             .Where(x => x.GameId == id)
             .GroupBy(x => x.Start.DayOfWeek)
             .ToListAsync();
@@ -263,59 +264,59 @@ public class GameRepository : IGameRepository
 
     public Task<List<IGrouping<int, int>>> GetPlayerCountChart(int id)
     {
-        return _context.Plays
+        return _context.Sessions
             .Where(x => x.GameId == id)
-            .Select(x => x.Players.Count())
+            .Select(x => x.PlayerSessions.Count())
             .GroupBy(x => x)
             .ToListAsync();
     }
 
-    public Task<PlayerPlay?> GetHighestScoringPlayer(int id)
+    public Task<PlayerSession?> GetHighestScoringPlayer(int id)
     {
-        return _context.Plays
-            .Include(x => x.Players)
+        return _context.Sessions
+            .Include(x => x.PlayerSessions)
             .Where(x => x.GameId == id)
-            .SelectMany(x => x.Players)
+            .SelectMany(x => x.PlayerSessions)
             .OrderByDescending(x => x.Score)
             .FirstOrDefaultAsync();
     }
 
-    public Task<PlayerPlay?> GetHighestLosingPlayer(int id)
+    public Task<PlayerSession?> GetHighestLosingPlayer(int id)
     {
-        return _context.Plays
-            .Include(x => x.Players)
+        return _context.Sessions
+            .Include(x => x.PlayerSessions)
             .Where(x => x.GameId == id)
-            .SelectMany(x => x.Players)
+            .SelectMany(x => x.PlayerSessions)
             .Where(x => !x.Won)
             .OrderByDescending(x => x.Score)
             .FirstOrDefaultAsync();
     }
 
-    public Task<PlayerPlay?> GetLowestWinning(int id)
+    public Task<PlayerSession?> GetLowestWinning(int id)
     {
-        return _context.Plays
-            .Include(x => x.Players)
+        return _context.Sessions
+            .Include(x => x.PlayerSessions)
             .Where(x => x.GameId == id)
-            .SelectMany(x => x.Players)
+            .SelectMany(x => x.PlayerSessions)
             .Where(x => x.Won)
             .OrderBy(x => x.Score)
             .FirstOrDefaultAsync();
     }
 
-    public Task<PlayerPlay?> GetLowestScoringPlayer(int id)
+    public Task<PlayerSession?> GetLowestScoringPlayer(int id)
     {
-        return _context.Plays
-            .Include(x => x.Players)
+        return _context.Sessions
+            .Include(x => x.PlayerSessions)
             .Where(x => x.GameId == id)
-            .SelectMany(x => x.Players)
+            .SelectMany(x => x.PlayerSessions)
             .OrderBy(x => x.Score)
             .FirstOrDefaultAsync();
     }
 
-    public Task<List<Play>> GetPlays(int id, int dayCount)
+    public Task<List<Session>> GetSessions(int id, int dayCount)
     {
-        return _context.Plays
-            .Include(x => x.Players)
+        return _context.Sessions
+            .Include(x => x.PlayerSessions)
             .Where(x => x.GameId == id && x.Start > DateTime.UtcNow.AddDays(dayCount))
             .OrderBy(x => x.Start)
             .ToListAsync();

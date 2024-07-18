@@ -5,7 +5,7 @@ import { Button } from '@radix-ui/themes';
 
 import { Play } from '../../../models';
 import { useSettings } from '../../../hooks/useSettings';
-import { useGamePlays } from '../../../hooks/usePlays';
+import { useGameSessions } from '../../../hooks/useSessions';
 import { BgtNoData } from '../../../components/BgtNoData/BgtNoData';
 import { BgtMobilePlayCard } from '../../../components/BgtCard/BgtMobilePlayCard';
 import { BgtCard } from '../../../components/BgtCard/BgtCard';
@@ -13,7 +13,7 @@ import { BgtCard } from '../../../components/BgtCard/BgtCard';
 export const MobileDetails = () => {
   const { id } = useParams();
   const [page, setPage] = useState(0);
-  const { plays, totalCount, isFetching } = useGamePlays(id, page, 10);
+  const { playSessions: plays, totalCount, isFetching } = useGameSessions(id, page, 10);
   const { t } = useTranslation();
   const { settings } = useSettings();
 
@@ -38,7 +38,7 @@ export const MobileDetails = () => {
   return (
     <div className="flex flex-col gap-3">
       {fullPlayList.map((play, i) => (
-        <BgtMobilePlayCard key={play.id} index={i} play={play} />
+        <BgtMobilePlayCard key={play.id} index={i} session={play} />
       ))}
       <Button
         size="2"

@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
@@ -11,7 +10,6 @@ import BgtPageHeader from '../../components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import { BgtPage } from '../../components/BgtLayout/BgtPage';
 import { BgtImageCard } from '../../components/BgtImageCard/BgtImageCard';
-import { BgtCard } from '../../components/BgtCard/BgtCard';
 
 export const GamesPage = () => {
   const { t } = useTranslation();

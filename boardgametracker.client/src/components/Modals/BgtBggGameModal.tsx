@@ -8,6 +8,7 @@ import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 
 import { BgtSwitch } from '../BgtSwitch/BgtSwitch';
 import { BgtIcon } from '../BgtIcon/BgtIcon';
+import { BgtHeading } from '../BgtHeading/BgtHeading';
 import { BgtSelect } from '../BgtForm/BgtSelect';
 import { BgtInputField } from '../BgtForm/BgtInputField';
 import BgtButton from '../BgtButton/BgtButton';
@@ -45,8 +46,10 @@ export const BgtBggGameModal = (props: Props) => {
 
   return (
     <Dialog.Root open={open}>
-      <Dialog.Content>
-        <Dialog.Title>{t('game.new.title')}</Dialog.Title>
+      <Dialog.Content className="bg-card-black">
+        <BgtHeading size="6" className="uppercase">
+          {t('game.new.title')}
+        </BgtHeading>
         <Dialog.Description>{t('game.new.bgg-description')}</Dialog.Description>
         <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className="flex flex-col gap-4 mt-3 mb-6">

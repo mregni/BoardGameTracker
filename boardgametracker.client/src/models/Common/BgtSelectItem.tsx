@@ -4,5 +4,5 @@ export interface BgtSelectItem {
 }
 
 export interface BgtSelectImageItem extends BgtSelectItem {
-  image?: string;
+  image: string | null;
 }

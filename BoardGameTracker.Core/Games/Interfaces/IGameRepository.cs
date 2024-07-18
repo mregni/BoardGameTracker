@@ -14,8 +14,8 @@ public interface IGameRepository
     Task<List<Game>> GetGamesOverviewList();
     Task<Game?> GetGameById(int id);
     Task DeleteGame(Game game);
-    Task<List<Play>> GetPlays(int id, int skip, int? take);
-    Task<List<Play>> GetPlays(int id, int dayCount);
+    Task<List<Session>> GetSessions(int id, int skip, int? take);
+    Task<List<Session>> GetSessions(int id, int dayCount);
     Task<int> GetPlayCount(int id);
     Task<TimeSpan> GetTotalPlayedTime(int id);
     Task<double?> GetPricePerPlay(int id);
@@ -29,11 +29,11 @@ public interface IGameRepository
     Task<int?> GetHighScorePlay(int id);
     Task<int?> GetLowestScorePlay(int id);
     Task<int> GetTotalPlayCount(int id);
-    Task<List<IGrouping<DayOfWeek,Play>>> GetPlayByDayChart(int id);
+    Task<List<IGrouping<DayOfWeek,Session>>> GetPlayByDayChart(int id);
     Task<List<IGrouping<int, int>>> GetPlayerCountChart(int id);
-    Task<PlayerPlay?> GetHighestScoringPlayer(int id);
-    Task<PlayerPlay?> GetHighestLosingPlayer(int id);
-    Task<PlayerPlay?> GetLowestWinning(int id);
-    Task<PlayerPlay?> GetLowestScoringPlayer(int id);
+    Task<PlayerSession?> GetHighestScoringPlayer(int id);
+    Task<PlayerSession?> GetHighestLosingPlayer(int id);
+    Task<PlayerSession?> GetLowestWinning(int id);
+    Task<PlayerSession?> GetLowestScoringPlayer(int id);
     Task<double> GetAveragePlayTime(int id);
 }

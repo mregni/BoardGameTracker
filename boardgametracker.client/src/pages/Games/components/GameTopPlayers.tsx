@@ -60,7 +60,7 @@ export const TopPlayerCard = (props: Props) => {
         </div>
         <BgtCard className="bg-card-light">
           <div className="flex flex-row gap-2 justify-center items-center">
-            <img src={StarIcon} alt="React Logo" />
+            <img src={StarIcon} />
             <BgtText size="5">
               {player.wins} / {player.playCount}
             </BgtText>

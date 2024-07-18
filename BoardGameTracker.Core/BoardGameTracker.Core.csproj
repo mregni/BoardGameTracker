@@ -22,4 +22,8 @@
         <ProjectReference Include="..\BoardGameTracker.Common\BoardGameTracker.Common.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Datastore\Migrations\Postgres\" />
+    </ItemGroup>
+
 </Project>

@@ -9,10 +9,10 @@ public interface IPlayerRepository
     Task<Player?> GetById(int id);
     Task DeletePlayer(Player player);
     Task<int> GetPlayCount(int id);
-    Task<int> GetBestGameId(int id);
+    Task<Game?> GetBestGame(int id);
     Task<int> GetTotalWinCount(int id);
     Task<double> GetPlayLengthInMinutes(int id);
-    Task<List<Play>> GetPlaysForPlayer(int id, int skip, int? take);
+    Task<List<Session>> GetSessionsForPlayer(int id, int skip, int? take);
     Task<Player> Update(Player player);
     Task<int> GetDistinctGameCount(int id);
     Task<int> CountAsync();

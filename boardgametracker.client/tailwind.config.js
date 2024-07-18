@@ -15,19 +15,45 @@ export default {
         'card-black': '#100C1D',
         'card-light': '#141022',
         'card-border': '#1E192C',
+        input: '#1E1A2D',
         primary: '#8502fb',
         'primary-dark': '#8502fb42',
         'mint-green': '#09FFC4',
         'lime-green': '#40FA47',
+        'error-dark': '#FF1D1D1A',
       },
       screens: {
         '2xl': '1700px',
       },
       backgroundImage: {
-        'custom-gradient': 'radial-gradient(ellipse closest-side at 40% 60%, #2E004C, #060214)',
+        'custom-gradient': 'radial-gradient(ellipse closest-side at 30% 300px, #2E004C, #120A2A)',
       },
       transitionProperty: {
         'max-height': 'max-height',
+      },
+      keyframes: {
+        slideDownAndFade: {
+          from: { opacity: '0', transform: 'translateY(-2px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideLeftAndFade: {
+          from: { opacity: '0', transform: 'translateX(2px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        slideUpAndFade: {
+          from: { opacity: '0', transform: 'translateY(2px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideRightAndFade: {
+          from: { opacity: '0', transform: 'translateX(-2px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+      },
+      animation: {
+        slideDownAndFade: 'slideDownAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1)',
+        slideLeftAndFade: 'slideLeftAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1)',
+        slideUpAndFade: 'slideUpAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1)',
+        slideRightAndFade: 'slideRightAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1)',
       },
     },
   },

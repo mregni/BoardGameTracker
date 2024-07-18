@@ -17,12 +17,10 @@ export const BgtDeleteModal = (props: Props) => {
 
   return (
     <Dialog.Root open={open}>
-      <Dialog.Content>
-        <Dialog.Title>
-          <BgtHeading size="6" className="uppercase">
-            {t('common.delete.title', { title: title })}
-          </BgtHeading>
-        </Dialog.Title>
+      <Dialog.Content className="bg-card-black">
+        <BgtHeading size="6" className="uppercase">
+          {t('common.delete.title', { title: title })}
+        </BgtHeading>
         <Dialog.Description>{t('common.delete.description', { title: title })}</Dialog.Description>
         <div className="flex justify-end gap-3 mt-3">
           <Dialog.Close>

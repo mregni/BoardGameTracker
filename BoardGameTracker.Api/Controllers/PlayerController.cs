@@ -111,16 +111,16 @@ public class PlayerController : ControllerBase
     }
     
     [HttpGet]
-    [Route("{id:int}/plays")]
-    public async Task<IActionResult> GetGamePlays(int id, [FromQuery] int? skip, [FromQuery] int? take)
+    [Route("{id:int}/sessions")]
+    public async Task<IActionResult> GetGameSessions(int id, [FromQuery] int? skip, [FromQuery] int? take)
     {
         skip ??= 0;
         take ??= null;
-        var plays = await _playerService.GetPlays(id, skip.Value, take);
+        var sessions = await _playerService.GetSessions(id, skip.Value, take);
         var totalCount = await _playerService.GetTotalPlayCount(id);
 
-        var playViewModel = _mapper.Map<IList<PlayViewModel>>(plays);
-        return ListResultViewModel<PlayViewModel>.CreateResult(playViewModel, totalCount);
+        var playViewModel = _mapper.Map<IList<SessionViewModel>>(sessions);
+        return ListResultViewModel<SessionViewModel>.CreateResult(playViewModel, totalCount);
     }
     
     [HttpGet]

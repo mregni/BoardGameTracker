@@ -6,6 +6,7 @@ import { Button, Dialog } from '@radix-ui/themes';
 import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { BgtHeading } from '../BgtHeading/BgtHeading';
 import { BgtInputField } from '../BgtForm/BgtInputField';
 import { Location } from '../../models';
 import { useLocations } from '../../hooks/useLocations';
@@ -51,19 +52,33 @@ export const BgtNewLocationModal = (props: Props) => {
 
   return (
     <Dialog.Root open={open}>
-      <Dialog.Content>
-        <Dialog.Title>{t('location.new.title')}</Dialog.Title>
+      <Dialog.Content className="bg-card-black">
+        <BgtHeading size="6" className="uppercase">
+          {t('location.new.title')}
+        </BgtHeading>
         <Dialog.Description>{t('location.new.description')}</Dialog.Description>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-3 mt-3">
             <div className="flex flex-col gap-4 mt-3 mb-3">
-              <BgtInputField type="text" placeholder={t('location.new.name.placeholder')} name="name" label={t('common.name')} control={control} />
+              <BgtInputField
+                type="text"
+                placeholder={t('location.new.name.placeholder')}
+                name="name"
+                label={t('common.name')}
+                control={control}
+              />
             </div>
             <div className="flex justify-end gap-3">
               <Dialog.Close>
                 <>
                   <Form.Submit asChild>
-                    <Button type="button" variant="surface" color="orange" disabled={isSaving} onClick={() => trigger()}>
+                    <Button
+                      type="button"
+                      variant="surface"
+                      color="orange"
+                      disabled={isSaving}
+                      onClick={() => trigger()}
+                    >
                       {t('location.new.save')}
                     </Button>
                   </Form.Submit>

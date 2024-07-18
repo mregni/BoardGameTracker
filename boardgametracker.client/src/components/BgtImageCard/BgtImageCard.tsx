@@ -1,11 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
-import { EllipsisVerticalIcon } from '@heroicons/react/24/outline';
 
 import { BgtText } from '../BgtText/BgtText';
-import { BgtIcon } from '../BgtIcon/BgtIcon';
-import BgtButton from '../BgtButton/BgtButton';
+import { BgtHiddenEditDropdown } from '../BgtDropdown/BgtEditDropdown';
 import { StringToRgb } from '../../utils/stringUtils';
 import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/ItemStateUtils';
 import { GameState } from '../../models';
@@ -52,14 +50,7 @@ export const BgtImageCard = (props: Props) => {
             </BgtText>
           </Link>
         </div>
-        <BgtButton
-          size="1"
-          variant="inline"
-          onClick={() => alert(title)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-        >
-          <BgtIcon icon={<EllipsisVerticalIcon />} size={15} />
-        </BgtButton>
+        <BgtHiddenEditDropdown />
       </div>
     </div>
   );

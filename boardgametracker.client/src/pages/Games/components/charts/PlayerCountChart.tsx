@@ -13,34 +13,41 @@ export const PlayerCountChart = () => {
   const { t } = useTranslation();
 
   return (
-    <BgtChartCard title={t('game.charts.player-count')}>
-      <AgChartsReact
-        options={{
-          data: playerCountChart,
-          series: [
-            {
-              type: 'pie',
-              angleKey: 'playCount',
-              legendItemKey: 'players',
-              showInLegend: false,
-              tooltip: {
-                renderer: (params) => {
-                  return `<div class="ag-chart-tooltip-title" style="background-color: ${params.color}">
+    <>
+      <div className="col-span-1">
+        <BgtChartCard title={t('game.charts.player-count')}></BgtChartCard>
+      </div>
+      <div className="col-span-1">
+        <BgtChartCard title={t('game.charts.player-count')}>
+          <AgChartsReact
+            options={{
+              data: playerCountChart,
+              series: [
+                {
+                  type: 'pie',
+                  angleKey: 'playCount',
+                  legendItemKey: 'players',
+                  showInLegend: false,
+                  tooltip: {
+                    renderer: (params) => {
+                      return `<div class="ag-chart-tooltip-title !rounded-lg" style="background-color: ${params.color}">
                   ${t('common.game', { count: +params.datum['playCount'] })} with ${t('common.player', { count: +params.datum['players'] })}
                 </div>`;
+                    },
+                  },
+                  calloutLabelKey: 'playCount',
+                  calloutLabel: {
+                    color: 'white',
+                    formatter: (params) => t('common.player', { count: +params.datum['players'] }),
+                  },
                 },
-              },
-              calloutLabelKey: 'playCount',
-              calloutLabel: {
-                color: 'white',
-                formatter: (params) => t('common.player', { count: +params.datum['players'] }),
-              },
-            },
-          ],
-          background: { visible: false },
-          height: 300,
-        }}
-      />
-    </BgtChartCard>
+              ],
+              background: { visible: false },
+              height: 300,
+            }}
+          />
+        </BgtChartCard>
+      </div>
+    </>
   );
 };

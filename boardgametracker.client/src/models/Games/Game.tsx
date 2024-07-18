@@ -26,6 +26,7 @@ export interface Game {
   mechanics: GameLink[];
   people: GamePerson[];
   hasScoring: boolean;
+  buyingPrice: number | null;
 }
 
 export interface GameLink {

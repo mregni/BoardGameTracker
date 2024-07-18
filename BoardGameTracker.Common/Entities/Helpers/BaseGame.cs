@@ -20,5 +20,5 @@ public abstract class BaseGame : HasId
     public double? BuyingPrice { get; set; }
     public double? SoldPrice { get; set; }
     public DateTime? AdditionDate { get; set; }
-    public ICollection<Play> Plays { get; set; }
+    public ICollection<Session> Sessions { get; set; }
 }

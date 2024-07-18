@@ -6,16 +6,23 @@ import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { BgtSwitch } from '../BgtSwitch/BgtSwitch';
+import { BgtHeading } from '../BgtHeading/BgtHeading';
 import { BgtSelect } from '../BgtForm/BgtSelect';
 import { BgtInputField } from '../BgtForm/BgtInputField';
-import { CreatePlayPlayer, CreatePlayPlayerNoScoring, CreatePlayPlayerNoScoringSchema, CreatePlayPlayerSchema } from '../../models/Plays/CreatePlay';
+import BgtButton from '../BgtButton/BgtButton';
+import {
+  CreateSessionPlayer,
+  CreatePlayerSessionNoScoring,
+  CreatePlayerSessionNoScoringSchema,
+  CreatePlayerSessionSchema,
+} from '../../models/Session/CreateSession';
 import { usePlayers } from '../../hooks/usePlayers';
 import { useLocations } from '../../hooks/useLocations';
 
 interface Props {
   open: boolean;
   hasScoring: boolean;
-  onClose: (player: CreatePlayPlayer | CreatePlayPlayerNoScoring) => void;
+  onClose: (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void;
   onCancel: () => void;
   selectedPlayerIds: string[];
 }
@@ -26,58 +33,73 @@ const CreatePlayerForm = (props: Props) => {
   const { players } = usePlayers();
   const { locations } = useLocations();
 
-  type PlayType<T extends boolean> = T extends true ? CreatePlayPlayer : CreatePlayPlayerNoScoring;
+  type PlayType<T extends boolean> = T extends true ? CreateSessionPlayer : CreatePlayerSessionNoScoring;
   type CreatePlayType = PlayType<typeof hasScoring>;
 
   const { handleSubmit, control } = useForm<CreatePlayType>({
-    resolver: zodResolver(hasScoring ? CreatePlayPlayerSchema : CreatePlayPlayerNoScoringSchema),
+    resolver: zodResolver(hasScoring ? CreatePlayerSessionSchema : CreatePlayerSessionNoScoringSchema),
     defaultValues: {
       firstPlay: false,
       won: false,
-      isBot: false,
     },
   });
 
   if (players === undefined || locations === undefined) return null;
 
-  const onSubmit = (data: CreatePlayPlayer | CreatePlayPlayerNoScoring) => {
+  const onSubmit = (data: CreateSessionPlayer | CreatePlayerSessionNoScoring) => {
     onClose && onClose(data);
   };
 
   return (
     <Dialog.Root open={open}>
-      <Dialog.Content>
-        <Dialog.Title>{t('playplayer.new.title')}</Dialog.Title>
-        <Dialog.Description>{t('playplayer.new.description')}</Dialog.Description>
+      <Dialog.Content className="bg-card-black">
+        <BgtHeading size="6" className="uppercase">
+          {t('player-session.new.title')}
+        </BgtHeading>
+        <Dialog.Description>{t('player-session.new.description')}</Dialog.Description>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-4 mt-3 mb-6">
             <BgtSelect
               control={control}
-              label={t('playplayer.new.player.label')}
+              label={t('player-session.new.player.label')}
               name="playerId"
+              hasAvatars
               items={players
                 .filter((player) => !selectedPlayerIds.includes(player.id.toString()))
                 .map((value) => ({
                   label: value.name,
                   value: value.id.toString(),
+                  image: value.image,
                 }))}
             />
-            {hasScoring && <BgtInputField name="score" type="number" valueAsNumber control={control} label={t('playplayer.score.label')} />}
-            <BgtSwitch label={t('playplayer.won.label')} control={control} name="won" className="mt-2" />
-            <BgtSwitch label={t('playplayer.first-play.label')} control={control} name="firstPlay" className="mt-2" />
-            <BgtSwitch label={t('playplayer.bot.label')} control={control} name="isBot" className="mt-2" />
+            {hasScoring && (
+              <BgtInputField
+                name="score"
+                type="number"
+                valueAsNumber
+                control={control}
+                label={t('player-session.score.label')}
+              />
+            )}
+            <BgtSwitch label={t('player-session.won.label')} control={control} name="won" className="mt-2" />
+            <BgtSwitch
+              label={t('player-session.first-play.label')}
+              control={control}
+              name="firstPlay"
+              className="mt-2"
+            />
           </div>
           <div className="flex justify-end gap-3">
             <Dialog.Close>
               <>
                 <Form.Submit asChild>
-                  <Button type="submit" variant="surface" color="orange">
-                    {t('playplayer.new.save')}
-                  </Button>
+                  <BgtButton type="submit" variant="soft" color="primary">
+                    {t('player-session.new.save')}
+                  </BgtButton>
                 </Form.Submit>
-                <Button type="button" variant="surface" color="gray" onClick={() => onCancel()}>
+                <BgtButton type="button" variant="soft" color="cancel" onClick={() => onCancel()}>
                   {t('common.cancel')}
-                </Button>
+                </BgtButton>
               </>
             </Dialog.Close>
           </div>

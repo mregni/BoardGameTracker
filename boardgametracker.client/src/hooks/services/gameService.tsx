@@ -1,6 +1,6 @@
-import { BggSearch, Game, GameStatistics, ListResult, Play, Result } from '../../models';
-import { TopPlayer } from '../../models/Games/TopPlayer';
 import { axiosInstance } from '../../utils/axiosInstance';
+import { TopPlayer } from '../../models/Games/TopPlayer';
+import { BggSearch, Game, GameStatistics, ListResult, Session, Result } from '../../models';
 
 const domain = 'game';
 
@@ -28,11 +28,18 @@ export const getGameStatistics = (id: string, signal: AbortSignal): Promise<Resu
   });
 };
 
-export const getGamePlays = (id: string, page: number, pageCount: number, signal: AbortSignal): Promise<ListResult<Play>> => {
+export const getSessions = (
+  id: string,
+  page: number,
+  pageCount: number,
+  signal: AbortSignal
+): Promise<ListResult<Session>> => {
   const skip = page * pageCount;
-  return axiosInstance.get<ListResult<Play>>(`${domain}/${id}/plays`, { params: { skip: skip, take: pageCount }, signal }).then((response) => {
-    return response.data;
-  });
+  return axiosInstance
+    .get<ListResult<Session>>(`${domain}/${id}/sessions`, { params: { skip: skip, take: pageCount }, signal })
+    .then((response) => {
+      return response.data;
+    });
 };
 
 export const getTopPlayers = (id: string, signal: AbortSignal): Promise<Result<TopPlayer[]>> => {

@@ -2,15 +2,15 @@ export const QUERY_KEYS = {
   players: 'players',
   player: 'player',
   playerStatistics: 'player-statistics',
-  playerPlays: 'player-plays',
+  playerSessions: 'player-sessions',
   counts: 'counts',
   settings: 'settings',
   games: 'games',
   game: 'game',
   gameStatistics: 'game-statistics',
-  gamePlays: 'game-plays',
+  gameSessions: 'game-Sessions',
   gameTopPlayers: 'game-top-players',
-  gamePlaysByDayChart: 'game-plays-by-day',
+  gameSessionsByDayChart: 'game-sessions-by-day',
   gamePlayerCountChart: 'game-player-count',
   gamePlayerScoringChart: 'game-player-scoring',
   gameScoreRankChart: 'game-score-rank',
@@ -18,7 +18,7 @@ export const QUERY_KEYS = {
 };
 
 export const GAME_CHARTS = {
-  playsByDay: 'playsbyday',
+  sessionsByDay: 'sessionsbyday',
   playerCount: 'playercounts',
   playerScoring: 'playerscoring',
   scoreRank: 'scorerank',

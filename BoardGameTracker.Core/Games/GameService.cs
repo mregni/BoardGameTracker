@@ -78,32 +78,32 @@ public class GameService : IGameService
         await _gameRepository.DeleteGame(game);
     }
 
-    public Task<List<Play>> GetPlays(int id, int skip, int? take)
+    public Task<List<Session>> GetSessions(int id, int skip, int? take)
     {
-        return _gameRepository.GetPlays(id, skip, take);
+        return _gameRepository.GetSessions(id, skip, take);
     }
 
-    public async Task<Dictionary<PlayFlag, int?>> GetPlayFlags(int id)
+    public async Task<Dictionary<SessionFlag, int?>> GetPlayFlags(int id)
     {
         var shortestPlay = await _gameRepository.GetShortestPlay(id);
         var longestPlay = await _gameRepository.GetLongestPlay(id);
         var highestScore = await _gameRepository.GetHighScorePlay(id);
         var lowestScore = await _gameRepository.GetLowestScorePlay(id);
 
-        var dict = new Dictionary<PlayFlag, int?>
+        var dict = new Dictionary<SessionFlag, int?>
         {
-            {PlayFlag.ShortestGame, shortestPlay},
-            {PlayFlag.HighestScore, highestScore}
+            {SessionFlag.ShortestGame, shortestPlay},
+            {SessionFlag.HighestScore, highestScore}
         };
 
         if (shortestPlay != longestPlay)
         {
-            dict.Add(PlayFlag.LongestGame, longestPlay);
+            dict.Add(SessionFlag.LongestGame, longestPlay);
         }
 
         if (highestScore != lowestScore)
         {
-            dict.Add(PlayFlag.LowestScore, lowestScore);
+            dict.Add(SessionFlag.LowestScore, lowestScore);
         }
 
         return dict;
@@ -146,7 +146,7 @@ public class GameService : IGameService
         if (mostWinPlayer != null)
         {
             var wins = await _playerRepository.GetWinCount(mostWinPlayer.Id, id);
-            stats.MostWinsPlayer = new MostWinner()
+            stats.MostWinsPlayer = new MostWinningPlayer()
             {
                 Id = mostWinPlayer.Id,
                 Image = mostWinPlayer.Image,
@@ -177,13 +177,13 @@ public class GameService : IGameService
 
     public async Task<List<TopPlayer>> GetTopPlayers(int id)
     {
-        var plays = await _gameRepository.GetPlays(id, 0, null);
-        var playerPlays = plays
-            .SelectMany(x => x.Players)
+        var sessions = await _gameRepository.GetSessions(id, 0, null);
+        var playerSessions = sessions
+            .SelectMany(x => x.PlayerSessions)
             .GroupBy(x => x.PlayerId)
             .ToList();
 
-        return playerPlays
+        return playerSessions
             .Select(TopPlayer.CreateTopPlayer)
             .Where(x => x.Wins > 0)
             .OrderByDescending(x => x.Wins)
@@ -193,29 +193,29 @@ public class GameService : IGameService
 
     public async Task<Dictionary<DateTime, XValue[]>> GetPlayerScoringChart(int id)
     {
-        var plays = await _gameRepository.GetPlays(id, -200);
-        var uniquePlayers = plays
-            .SelectMany(x => x.Players)
+        var sessions = await _gameRepository.GetSessions(id, -200);
+        var uniquePlayers = sessions
+            .SelectMany(x => x.PlayerSessions)
             .GroupBy(x => x.PlayerId)
             .Select(x => x.Key)
             .ToList();
 
         var dict = new Dictionary<DateTime, XValue[]>();
-        foreach (var play in plays)
+        foreach (var play in sessions)
         {
-            var players = play.Players.Select(x =>
+            var players = play.PlayerSessions.Select(x =>
                 new XValue
                 {
-                    Id = x.PlayerId!.Value,
+                    Id = x.PlayerId,
                     Value = x.Score ?? null
                 }
             );
 
             var missingPlayers = uniquePlayers
-                .Where(x => x.HasValue && !play.Players.Select(y => y.PlayerId).Contains(x))
+                .Where(x => !play.PlayerSessions.Select(y => y.PlayerId).Contains(x))
                 .Select(x => new XValue
                 {
-                    Id = x!.Value,
+                    Id = x,
                     Value = null
                 });
 

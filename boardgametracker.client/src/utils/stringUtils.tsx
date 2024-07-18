@@ -1,4 +1,4 @@
-import { PlayFlag } from '../models/Games/PlayFlag';
+import { SessionFlag } from '../models/Games/SessionFlag';
 
 export const StringToHsl = (value: string | undefined): string => {
   if (value === undefined) {
@@ -44,15 +44,15 @@ const hueToRgb = (p: number, q: number, t: number): number => {
   return p;
 };
 
-export const PlayFlagToString = (flag: PlayFlag): string => {
+export const SessionFlagToString = (flag: SessionFlag): string => {
   switch (flag) {
-    case PlayFlag.LongestGame:
+    case SessionFlag.LongestGame:
       return 'common.flags.longest-game';
-    case PlayFlag.ShortestGame:
+    case SessionFlag.ShortestGame:
       return 'common.flags.shortest-game';
-    case PlayFlag.HighestScore:
+    case SessionFlag.HighestScore:
       return 'common.flags.highest-score';
-    case PlayFlag.LowestScore:
+    case SessionFlag.LowestScore:
       return 'common.flags.lowest-score';
   }
 };

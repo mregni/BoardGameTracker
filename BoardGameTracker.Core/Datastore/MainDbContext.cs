@@ -14,7 +14,7 @@ public class MainDbContext : DbContext
     public DbSet<GameMechanic> GameMechanics { get; set; }
     public DbSet<Person> People { get; set; }
     public DbSet<Player> Players { get; set; }
-    public DbSet<Play> Plays { get; set; }
+    public DbSet<Session> Sessions { get; set; }
     public DbSet<Location> Locations { get; set; }
     public DbSet<Config> Config { get; set; }
 
@@ -33,7 +33,7 @@ public class MainDbContext : DbContext
     {
         BuildIds(builder);
         BuildGame(builder);
-        BuildGamePlays(builder);
+        BuildGameSessions(builder);
         BuildPlayer(builder);
     }
 
@@ -62,7 +62,7 @@ public class MainDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
         
         builder.Entity<Game>()
-            .HasMany(x => x.Plays)
+            .HasMany(x => x.Sessions)
             .WithOne(x => x.Game)
             .OnDelete(DeleteBehavior.Cascade);
 
@@ -85,37 +85,37 @@ public class MainDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
     }
 
-    private static void BuildGamePlays(ModelBuilder builder)
+    private static void BuildGameSessions(ModelBuilder builder)
     {
-        builder.Entity<Play>()
+        builder.Entity<Session>()
             .HasOne(x => x.Location)
-            .WithMany(x => x.Plays)
+            .WithMany(x => x.Sessions)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.Entity<Play>()
+        builder.Entity<Session>()
             .HasMany(x => x.ExtraImages)
             .WithOne(x => x.Play)
             .OnDelete(DeleteBehavior.Cascade);
         
-        builder.Entity<Play>()
+        builder.Entity<Session>()
             .HasMany(x => x.Expansions)
-            .WithMany(x => x.Plays);
+            .WithMany(x => x.Sessions);
 
-        builder.Entity<Play>()
-            .HasMany(x => x.Players)
-            .WithOne(x => x.Play)
-            .HasForeignKey(x => x.PlayId)
+        builder.Entity<Session>()
+            .HasMany(x => x.PlayerSessions)
+            .WithOne(x => x.Session)
+            .HasForeignKey(x => x.SessionId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Entity<PlayerPlay>()
-            .HasKey(x => new {x.PlayerId, x.PlayId});
+        builder.Entity<PlayerSession>()
+            .HasKey(x => new {x.PlayerId, PlayId = x.SessionId});
     }
 
     private static void BuildPlayer(ModelBuilder builder)
     {
         builder.Entity<Player>()
-            .HasMany(x => x.Plays)
+            .HasMany(x => x.PlayerSessions)
             .WithOne(x => x.Player)
             .HasForeignKey(x => x.PlayerId)
             .OnDelete(DeleteBehavior.Cascade);

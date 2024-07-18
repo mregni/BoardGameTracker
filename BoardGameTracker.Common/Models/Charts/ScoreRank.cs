@@ -6,24 +6,24 @@ public class ScoreRank
 {
     public string Key { get; set; }
     public double Score { get; set; }
-    public int? PlayerId { get; set; }
+    public int PlayerId { get; set; }
 
-    public static ScoreRank? MakeHighestScoreRank(PlayerPlay? play)
+    public static ScoreRank? MakeHighestScoreRank(PlayerSession? play)
     {
         return Make(play, "top-score");
     }
     
-    public static ScoreRank? MakeHighestLosingRank(PlayerPlay? play)
+    public static ScoreRank? MakeHighestLosingRank(PlayerSession? play)
     {
         return Make(play, "highest-losing");
     }
     
-    public static ScoreRank? MakeLowestWinningRank(PlayerPlay? play)
+    public static ScoreRank? MakeLowestWinningRank(PlayerSession? play)
     {
         return Make(play, "lowest-winning");
     }
     
-    public static ScoreRank? MakeLowestScoreRank(PlayerPlay? play)
+    public static ScoreRank? MakeLowestScoreRank(PlayerSession? play)
     {
         return Make(play, "lowest");
     }
@@ -42,9 +42,9 @@ public class ScoreRank
         };
     }
 
-    private static ScoreRank? Make(PlayerPlay? play, string key)
+    private static ScoreRank? Make(PlayerSession? playerSession, string key)
     {
-        if (play == null)
+        if (playerSession == null)
         {
             return null;
         }
@@ -52,8 +52,8 @@ public class ScoreRank
         return new ScoreRank
         {
             Key = key,
-            Score = play.Score ?? 0,
-            PlayerId = play.PlayerId
+            Score = playerSession.Score ?? 0,
+            PlayerId = playerSession.PlayerId
         };
     }
 }

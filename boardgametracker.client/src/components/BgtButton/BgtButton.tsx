@@ -6,7 +6,7 @@ interface Props extends ComponentPropsWithoutRef<'button'> {
   onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
   variant?: 'solid' | 'outline' | 'soft' | 'inline' | undefined;
   size?: '1' | '2' | '3' | undefined;
-  color?: 'primary' | 'error' | undefined;
+  color?: 'primary' | 'error' | 'cancel' | undefined;
 }
 const BgtButton = (props: Props) => {
   const {
@@ -27,9 +27,11 @@ const BgtButton = (props: Props) => {
         'font-bold rounded uppercase',
         !disabled && 'hover:cursor-pointer',
         !disabled && variant === 'solid' && color === 'primary' && 'bg-primary text-white',
+        !disabled && variant === 'solid' && color === 'cancel' && 'bg-[--gray-3] text-white',
         !disabled && variant === 'solid' && color === 'error' && 'bg-red-800 text-white',
         !disabled && variant === 'outline' && color === 'primary' && 'border border-white text-white hover:bg-gray-800',
         !disabled && variant === 'outline' && color === 'error' && 'border border-red-800 text-red-800',
+        !disabled && variant === 'outline' && color === 'cancel' && 'border border-[--gray-6] text-white',
         !disabled &&
           variant === 'soft' &&
           color === 'primary' &&
@@ -38,6 +40,10 @@ const BgtButton = (props: Props) => {
           variant === 'soft' &&
           color === 'error' &&
           'border border-red-500 bg-red-950 text-white hover:bg-red-800',
+        !disabled &&
+          variant === 'soft' &&
+          color === 'cancel' &&
+          'border border-[--gray-6] bg-[--gray-3] text-white hover:bg-[--gray-4]',
         !disabled && variant === 'inline' && color === 'primary' && ' text-white h-7 hover:text-gray-300',
         !disabled && variant === 'inline' && color === 'error' && 'text-red-800 h-7 hover:text-red-600',
         disabled && 'text-gray-500 border border-gray-500',

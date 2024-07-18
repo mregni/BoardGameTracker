@@ -11,18 +11,18 @@ public class TopPlayer
     public double WinPercentage { get; set; }
     public Trend Trend { get; set; }
 
-    public static TopPlayer CreateTopPlayer(IGrouping<int?, PlayerPlay> play)
+    public static TopPlayer CreateTopPlayer(IGrouping<int, PlayerSession> play)
     {
         var topPlayer = new TopPlayer
         {
-            PlayerId = play.First().PlayerId.Value,
+            PlayerId = play.First().PlayerId,
             PlayCount = play.Count(),
             Wins = play.Count(x => x.Won),
             WinPercentage = play.Count(x => x.Won) / (double)play.Count()
         };
 
         var playList = play
-            .OrderByDescending(x => x.Play.Start)
+            .OrderByDescending(x => x.Session.Start)
             .ToList();
         playList.RemoveAt(0);
         var previousWinRate = playList.Count(x => x.Won) / (double)playList.Count();

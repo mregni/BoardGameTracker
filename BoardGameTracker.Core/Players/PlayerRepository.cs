@@ -42,50 +42,52 @@ public class PlayerRepository : IPlayerRepository
     public Task<int> GetPlayCount(int id)
     {
         return _dbContext.Players
-            .Include(x => x.Plays)
+            .Include(x => x.PlayerSessions)
             .Where(x => x.Id == id)
-            .Select(x => x.Plays.Count)
+            .Select(x => x.PlayerSessions.Count)
             .FirstAsync();
     }
 
-    public Task<int> GetBestGameId(int id)
+    public async Task<Game?> GetBestGame(int id)
     {
-        return _dbContext.Players
-            .Include(x => x.Plays)
+        var gameId = await _dbContext.Players
+            .Include(x => x.PlayerSessions)
             .Where(x => x.Id == id)
-            .SelectMany(x => x.Plays)
+            .SelectMany(x => x.PlayerSessions)
             .Where(x => x.Won)
-            .GroupBy(x => x.Play.GameId)
+            .GroupBy(x => x.Session.GameId)
             .OrderByDescending(x => x.Count())
             .Select(x => x.Key)
             .FirstOrDefaultAsync();
+
+        return await _dbContext.Games.FirstOrDefaultAsync(x => x.Id == gameId);
     }
 
     public Task<int> GetTotalWinCount(int id)
     {
         return _dbContext.Players
-            .Include(x => x.Plays)
+            .Include(x => x.PlayerSessions)
             .Where(x => x.Id == id)
-            .SelectMany(x => x.Plays)
+            .SelectMany(x => x.PlayerSessions)
             .CountAsync(x => x.Won);
     }
 
     public Task<double> GetPlayLengthInMinutes(int id)
     {
         return _dbContext.Players
-            .Include(x => x.Plays)
-            .ThenInclude(x => x.Play)
+            .Include(x => x.PlayerSessions)
+            .ThenInclude(x => x.Session)
             .Where(x => x.Id == id)
-            .SelectMany(x => x.Plays)
-            .SumAsync(x => (x.Play.End - x.Play.Start).TotalMinutes);
+            .SelectMany(x => x.PlayerSessions)
+            .SumAsync(x => (x.Session.End - x.Session.Start).TotalMinutes);
     }
 
-    public Task<List<Play>> GetPlaysForPlayer(int id, int skip, int? take)
+    public Task<List<Session>> GetSessionsForPlayer(int id, int skip, int? take)
     {
-        var query = _dbContext.Plays
+        var query = _dbContext.Sessions
             .Include(x => x.Location)
-            .Include(x => x.Players)
-            .Where(x => x.Players.Any(y => y.PlayerId == id))
+            .Include(x => x.PlayerSessions)
+            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == id))
             .OrderByDescending(x => x.Start)
             .Skip(skip);
 
@@ -113,9 +115,9 @@ public class PlayerRepository : IPlayerRepository
 
     public Task<int> GetDistinctGameCount(int id)
     {
-        return _dbContext.Plays
-            .Include(x => x.Players)
-            .Where(x => x.Players.Any(y => y.PlayerId == id))
+        return _dbContext.Sessions
+            .Include(x => x.PlayerSessions)
+            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == id))
             .Select(x => x.GameId)
             .Distinct()
             .CountAsync();
@@ -128,16 +130,16 @@ public class PlayerRepository : IPlayerRepository
 
     public Task<int> GetTotalPlayCount(int id)
     {
-        return _dbContext.Plays
-            .Include(x => x.Players)
-            .CountAsync(x => x.Players.Any(y => y.PlayerId == id));
+        return _dbContext.Sessions
+            .Include(x => x.PlayerSessions)
+            .CountAsync(x => x.PlayerSessions.Any(y => y.PlayerId == id));
     }
 
     public Task<int> GetWinCount(int id, int gameId)
     {
-        return _dbContext.Plays
-            .Include(x => x.Players)
-            .Where(x => x.GameId == gameId && x.Players.Any(y => y.Player.Id == id && y.Won))
+        return _dbContext.Sessions
+            .Include(x => x.PlayerSessions)
+            .Where(x => x.GameId == gameId && x.PlayerSessions.Any(y => y.Player.Id == id && y.Won))
             .CountAsync();
     }
 }

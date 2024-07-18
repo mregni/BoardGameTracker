@@ -16,13 +16,15 @@ export const BgtTextStatistic = (props: Props) => {
   if (content === null || content === undefined) return null;
 
   return (
-    <div className="flex flex-col items-center">
-      <BgtText weight="bold" className="text-mint-green text-lg md:text-3xl">
-        {prefix && <span>{prefix}&nbsp;</span>}
-        {content}
-        {suffix && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
-      </BgtText>
-      <BgtText className="uppercase text-xs md:text-base">{title}</BgtText>
-    </div>
+    <BgtCard className="col-span-1">
+      <div className="flex flex-col items-center">
+        <BgtText weight="bold" className="text-mint-green text-lg md:text-3xl">
+          {prefix && <span>{prefix}&nbsp;</span>}
+          {content}
+          {suffix && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
+        </BgtText>
+        <BgtText className="uppercase text-[10px] md:text-base">{title}</BgtText>
+      </div>
+    </BgtCard>
   );
 };

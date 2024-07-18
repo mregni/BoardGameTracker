@@ -5,9 +5,9 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { Badge } from '@radix-ui/themes';
 import { InformationCircleIcon, PencilIcon } from '@heroicons/react/24/outline';
 
-import { PlayFlagToString } from '../../../utils/stringUtils';
+import { SessionFlagToString } from '../../../utils/stringUtils';
 import { Play } from '../../../models';
-import { useGamePlays } from '../../../hooks/usePlays';
+import { useGameSessions } from '../../../hooks/useSessions';
 import { useLocations } from '../../../hooks/useLocations';
 import { BgtDateTimeCell } from '../../../components/BgtTable/BgtDateTimeCell';
 import { BgtIconButton } from '../../../components/BgtIconButton/BgtIconButton';
@@ -26,7 +26,7 @@ const pageCount = 10;
 export const DesktopDetails = () => {
   const { id } = useParams();
   const [page, setPage] = useState(0);
-  const { plays, totalCount } = useGamePlays(id, page, pageCount);
+  const { playSessions: sessions, totalCount } = useGameSessions(id, page, pageCount);
   const { t } = useTranslation();
   const { byId: locationById } = useLocations();
 
@@ -43,7 +43,7 @@ export const DesktopDetails = () => {
       cell: (info) => (
         <div className="flex gap-1 justify-center flex-wrap">
           {info.getValue().map((player) => (
-            <BgtPlayerAvatar key={player.playerId} player={player} />
+            <BgtPlayerAvatar key={player.playerId} playerSession={player} />
           ))}
         </div>
       ),
@@ -54,7 +54,7 @@ export const DesktopDetails = () => {
       cell: (info) => (
         <div className="flex gap-1 justify-center flex-wrap">
           {info.getValue().map((player) => (
-            <BgtPlayerAvatar key={player.playerId} player={player} />
+            <BgtPlayerAvatar key={player.playerId} playerSession={player} />
           ))}
         </div>
       ),
@@ -82,7 +82,7 @@ export const DesktopDetails = () => {
         <div className="flex flex-row justify-center gap-1 flex-wrap">
           {info.getValue().map((flag) => (
             <Badge key={flag} variant="solid">
-              {t(PlayFlagToString(flag))}
+              {t(SessionFlagToString(flag))}
             </Badge>
           ))}
         </div>

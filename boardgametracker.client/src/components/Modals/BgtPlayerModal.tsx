@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowUpTrayIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 import { BgtIcon } from '../BgtIcon/BgtIcon';
+import { BgtHeading } from '../BgtHeading/BgtHeading';
 import { BgtInputField } from '../BgtForm/BgtInputField';
 import { Player } from '../../models';
 import { usePlayers } from '../../hooks/usePlayers';
@@ -80,13 +81,16 @@ export const BgtPlayerModal = (props: Props) => {
   });
 
   const onSubmit = async (data: FormProps) => {
-    const savedImage = await uploadPlayerImage(image);
-
     const player: Player = {
       id: 0,
       name: data.name,
-      image: savedImage?.model ?? '',
+      image: null,
     };
+
+    if (image !== undefined) {
+      const savedImage = await uploadPlayerImage(image);
+      player.image = savedImage?.model ?? null;
+    }
 
     await save(player);
     setOpen(false);
@@ -94,12 +98,20 @@ export const BgtPlayerModal = (props: Props) => {
 
   return (
     <Dialog.Root open={open}>
-      <Dialog.Content>
-        <Dialog.Title>{t('player.new.title')}</Dialog.Title>
+      <Dialog.Content className="bg-card-black">
+        <BgtHeading size="6" className="uppercase">
+          {t('player.new.title')}
+        </BgtHeading>
         <Dialog.Description>{t('player.new.description')}</Dialog.Description>
         <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className="flex flex-col gap-3 mt-3 mb-6">
-            <BgtInputField type="text" placeholder={t('player.new.name.placeholder')} name="name" label={t('common.name')} control={control} />
+            <BgtInputField
+              type="text"
+              placeholder={t('player.new.name.placeholder')}
+              name="name"
+              label={t('common.name')}
+              control={control}
+            />
             <div className="flex justify-start w-full flex-col h-44">
               <div className="text-[15px] font-medium leading-[35px]">{t('common.profile-picture')}</div>
               <div className="flex flex-row justify-start gap-3">

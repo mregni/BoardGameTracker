@@ -3,7 +3,7 @@ import { AxiosError } from 'axios';
 import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { useToast } from './providers/BgtToastProvider';
-import { PlayRoutes } from './pages/Plays/PlayRoutes';
+import { PlayRoutes } from './pages/Sessions/SessionRoutes';
 import { PlayerRoutes } from './pages/Players/PlayerRoutes';
 import { GameRoutes } from './pages/Games/GameRoutes';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';

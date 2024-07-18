@@ -5,9 +5,24 @@ import { useToast } from '../providers/BgtToastProvider';
 import { PlayerScoring } from '../models/Games/XValue';
 import { TopPlayer } from '../models/Games/TopPlayer';
 import { ScoreRank } from '../models/Games/ScoringRank';
-import { FailResult, Game, GAME_CHARTS, GameStatistics, PlayerCountChart, PlaysByDayChart, QUERY_KEYS, Result } from '../models';
+import {
+  FailResult,
+  Game,
+  GAME_CHARTS,
+  GameStatistics,
+  PlayerCountChart,
+  SessionsByDayChart,
+  QUERY_KEYS,
+  Result,
+} from '../models';
 
-import { deleteGame as deleteGameCall, getChart, getGame, getGameStatistics, getTopPlayers } from './services/gameService';
+import {
+  deleteGame as deleteGameCall,
+  getChart,
+  getGame,
+  getGameStatistics,
+  getTopPlayers,
+} from './services/gameService';
 
 interface ReturnProps {
   game: Game | undefined;
@@ -16,7 +31,7 @@ interface ReturnProps {
   statistics: GameStatistics | undefined;
   topPlayers: TopPlayer[] | undefined;
   deleteGame: () => Promise<void>;
-  playsByDayChart: PlaysByDayChart[] | undefined;
+  sessionsByDayChart: SessionsByDayChart[] | undefined;
   playerCountChart: PlayerCountChart[] | undefined;
   playerScoringChart: PlayerScoring[] | undefined;
   scoreRankChart: ScoreRank[] | undefined;
@@ -44,9 +59,9 @@ export const useGame = (id: string | undefined): ReturnProps => {
     enabled: id !== undefined,
   });
 
-  const { data: chartByDay } = useQuery<Result<PlaysByDayChart[]>, AxiosError<FailResult>>({
-    queryKey: [QUERY_KEYS.game, id, QUERY_KEYS.gamePlaysByDayChart],
-    queryFn: ({ signal }) => getChart<PlaysByDayChart>(id!, GAME_CHARTS.playsByDay, signal),
+  const { data: chartByDay } = useQuery<Result<SessionsByDayChart[]>, AxiosError<FailResult>>({
+    queryKey: [QUERY_KEYS.game, id, QUERY_KEYS.gameSessionsByDayChart],
+    queryFn: ({ signal }) => getChart<SessionsByDayChart>(id!, GAME_CHARTS.sessionsByDay, signal),
     enabled: id !== undefined,
   });
 
@@ -87,7 +102,7 @@ export const useGame = (id: string | undefined): ReturnProps => {
     statistics: statistics?.model,
     topPlayers: topPlayers?.model,
     deleteGame,
-    playsByDayChart: chartByDay?.model,
+    sessionsByDayChart: chartByDay?.model,
     playerCountChart: chartPlayerCount?.model,
     playerScoringChart: playerScoringChart?.model,
     scoreRankChart: scoreRankChart?.model,

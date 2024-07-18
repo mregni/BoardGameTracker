@@ -58,19 +58,19 @@ public class MapProfiles : Profile
         CreateMap<Person, GamePersonViewModel>();
         CreateMap<Player, PlayerViewModel>().ReverseMap();
         CreateMap<Location, LocationViewModel>()
-            .ForMember(x => x.PlayCount, x => x.MapFrom(y => y.Plays.Count))
+            .ForMember(x => x.PlayCount, x => x.MapFrom(y => y.Sessions.Count))
             .ReverseMap()
-            .ForMember(x => x.Plays, x => x.Ignore());
+            .ForMember(x => x.Sessions, x => x.Ignore());
         
         CreateMap<PlayerCreationViewModel, Player>()
             .ForMember(x => x.Id, x => x.MapFrom(y => (int?)null));
 
-        CreateMap<PlayViewModel, Play>()
+        CreateMap<SessionViewModel, Session>()
             .ForMember(x => x.End, x => x.MapFrom(y => y.Start.AddMinutes(y.Minutes)))
             .ReverseMap()
             .ForMember(x => x.Minutes, x => x.MapFrom(y => (y.End - y.Start).TotalMinutes))
-            .ForMember(x => x.PlayFlags, x => x.MapFrom(y => new List<PlayFlag>()));
-        CreateMap<PlayerPlayViewModel, PlayerPlay>().ReverseMap();
+            .ForMember(x => x.Flags, x => x.MapFrom(y => new List<SessionFlag>()));
+        CreateMap<PlayerSessionViewModel, PlayerSession>().ReverseMap();
 
         CreateMap<TopPlayer, TopPlayerViewModel>();
 
@@ -84,7 +84,8 @@ public class MapProfiles : Profile
         CreateMap<PlayerStatistics, PlayerStatisticsViewModel>();
         CreateMap<GameStatistics, GameStatisticsViewModel>()
             .ForMember(x => x.TotalPlayedTime, x => x.MapFrom(y => y.TotalPlayedTime.TotalMinutes));
-        CreateMap<MostWinner, MostWinnerViewModel>();
+        CreateMap<MostWinningPlayer, MostWinnerViewModel>();
+        CreateMap<BestWinningGame, BestWinningGameViewModel>();
     }
     
     private static bool IsPersonType(BggRawLink link)

@@ -54,26 +54,26 @@ public class GameController
     }
 
     [HttpGet]
-    [Route("{id:int}/plays")]
-    public async Task<IActionResult> GetGamePlays(int id, [FromQuery] int? skip, [FromQuery] int? take)
+    [Route("{id:int}/sessions")]
+    public async Task<IActionResult> GetGameSessions(int id, [FromQuery] int? skip, [FromQuery] int? take)
     {
         skip ??= 0;
         take ??= null;
         
-        var plays = await _gameService.GetPlays(id, skip.Value, take);
+        var sessions = await _gameService.GetSessions(id, skip.Value, take);
         var flags = await _gameService.GetPlayFlags(id);
 
-        var playViewModel = _mapper.Map<IList<PlayViewModel>>(plays);
+        var playViewModel = _mapper.Map<IList<SessionViewModel>>(sessions);
         foreach (var flag in flags
                      .Where(x => playViewModel.Any(y => y.Id == x.Value)))
         {
             var viewModel = playViewModel.Single(x => x.Id == flag.Value);
-            viewModel.PlayFlags ??= [];
-            viewModel.PlayFlags.Add(flag.Key);
+            viewModel.Flags ??= [];
+            viewModel.Flags.Add(flag.Key);
         }
         
         var totalCount = await _gameService.GetTotalPlayCount(id);
-        return ListResultViewModel<PlayViewModel>.CreateResult(playViewModel, totalCount);
+        return ListResultViewModel<SessionViewModel>.CreateResult(playViewModel, totalCount);
     }
 
     [HttpGet]
@@ -118,7 +118,7 @@ public class GameController
         return ResultViewModel<GameViewModel>.CreateCreatedResult(result);
     }
 
-    [HttpGet("{id:int}/chart/playsbyday")]
+    [HttpGet("{id:int}/chart/sessionsbyday")]
     public async Task<IActionResult> PlayByDayChart(int id)
     {
         var data = await _gameService.GetPlayByDayChart(id);

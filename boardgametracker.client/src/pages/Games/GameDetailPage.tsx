@@ -1,12 +1,11 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ComponentPropsWithoutRef, useMemo, useState } from 'react';
+import { useState } from 'react';
 import i18next from 'i18next';
 import { formatDistanceToNowStrict } from 'date-fns';
 import clsx from 'clsx';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-import { StringToRgb } from '../../utils/stringUtils';
 import { RoundDecimal } from '../../utils/numberUtils';
 import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/ItemStateUtils';
 import { useSettings } from '../../hooks/useSettings';
@@ -18,34 +17,16 @@ import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import { BgtPage } from '../../components/BgtLayout/BgtPage';
 import { BgtIcon } from '../../components/BgtIcon/BgtIcon';
 import { BgtHeading } from '../../components/BgtHeading/BgtHeading';
+import { BgtEditDropdown, BgtNormalEditDropdown } from '../../components/BgtDropdown/BgtEditDropdown';
 import { BgtMostWinnerCard } from '../../components/BgtCard/BgtMostWinnerCard';
-import { BgtCard } from '../../components/BgtCard/BgtCard';
+import { BgtEditDeleteButtons } from '../../components/BgtButton/BgtEditDeleteButtons';
 import BgtButton from '../../components/BgtButton/BgtButton';
 import { BgtBadge } from '../../components/BgtBadge/BgtBadge';
 
 import { TopPlayerCard } from './components/GameTopPlayers';
 import { GameCharts } from './components/GameCharts';
-
-interface Props extends ComponentPropsWithoutRef<'div'> {
-  title: string;
-  image: string;
-}
-
-const Poster = (props: Props) => {
-  const { className, title, image } = props;
-
-  return (
-    <div
-      style={{ '--image-url': `url(${image})`, '--fallback-color': StringToRgb(title) }}
-      className={clsx(
-        className,
-        'relative overflow-hidden aspect-square rounded-xl flex justify-end flex-col px-3 w-full bg-cover bg-no-repeat bg-center',
-        image && 'bg-[image:var(--image-url)]',
-        !image && `bg-[var(--fallback-color)]`
-      )}
-    ></div>
-  );
-};
+import { BgtPoster } from './components/BgtPoster';
+import { BgtNoSessions } from './components/BgtNoSessions';
 
 export const GameDetailPage = () => {
   const { id } = useParams();
@@ -68,28 +49,6 @@ export const GameDetailPage = () => {
       });
   };
 
-  const count = useMemo(() => {
-    let count = 2;
-    if (statistics == null) {
-      return count;
-    }
-
-    if (statistics.averageScore != undefined) {
-      count = count + 1;
-    }
-    if (statistics.averagePlayTime != undefined) {
-      count = count + 1;
-    }
-    if (statistics.lastPlayed != undefined) {
-      count = count + 1;
-    }
-    if (statistics.pricePerPlay != undefined) {
-      count = count + 1;
-    }
-
-    return count;
-  }, [statistics]);
-
   if (game === undefined || statistics === undefined || topPlayers === undefined || settings === undefined) return null;
 
   return (
@@ -99,7 +58,7 @@ export const GameDetailPage = () => {
           <div className="col-span-12 xl:col-span-8 2xl:col-span-9 flex flex-col justify-between gap-3">
             <div className="flex flex-col gap-6 w-full">
               <div className="grid grid-cols-12 gap-3">
-                <Poster
+                <BgtPoster
                   className="col-span-4 md:col-span-2 flex xl:hidden aspect-square"
                   title={game.title}
                   image={game.image}
@@ -117,14 +76,7 @@ export const GameDetailPage = () => {
                       </BgtText>
                       <BgtHeading className="uppercase">{game.title}</BgtHeading>
                     </div>
-                    <div>
-                      <BgtButton variant="inline" color="primary" onClick={() => alert('Edit not implemented')}>
-                        <BgtIcon icon={<PencilIcon />} size={19} />
-                      </BgtButton>
-                      <BgtButton variant="inline" color="error" onClick={() => setOpenDeleteModal(true)}>
-                        <BgtIcon icon={<TrashIcon />} />
-                      </BgtButton>
-                    </div>
+                    <BgtEditDeleteButtons onDelete={() => alert('deleting')} onEdit={() => alert('editing')} />
                   </div>
                   <div className="flex-row justify-start gap-2 hidden md:flex">
                     {game.categories.map((cat) => (
@@ -133,7 +85,7 @@ export const GameDetailPage = () => {
                       </BgtBadge>
                     ))}
                   </div>
-                  <BgtButton size="3" className="md:hidden">
+                  <BgtButton size="3" className="md:hidden" onClick={() => navigate(`/play/create/${game.id}`)}>
                     {i18next.format(t('game.add'))}
                   </BgtButton>
                 </div>
@@ -161,73 +113,85 @@ export const GameDetailPage = () => {
                   )}
                 </div>
               </div>
-
-              <div className="flex-row justify-start gap-2 hidden md:flex">
-                <BgtButton size="3" onClick={() => alert('Add sessions not implemented')}>
-                  {i18next.format(t('game.add'))}
-                </BgtButton>
-                <BgtButton size="3" variant="outline" onClick={() => alert('Sessions not implemented')}>
-                  {i18next.format(t('game.sessions'))}
-                </BgtButton>
-              </div>
+              {statistics.playCount !== 0 && (
+                <div className="flex-row justify-start gap-2 hidden md:flex">
+                  <BgtButton size="3" onClick={() => navigate(`/play/create/${game.id}`)}>
+                    {i18next.format(t('game.add'))}
+                  </BgtButton>
+                  <BgtButton size="3" variant="outline" onClick={() => alert('Sessions not implemented')}>
+                    {i18next.format(t('game.sessions'))}
+                  </BgtButton>
+                </div>
+              )}
             </div>
-            <BgtMostWinnerCard player={statistics.mostWinsPlayer} />
+            {statistics.playCount === 0 && <BgtNoSessions gameId={game.id} />}
+            <BgtMostWinnerCard
+              image={statistics.mostWinsPlayer?.image}
+              name={statistics.mostWinsPlayer?.name}
+              value={statistics.mostWinsPlayer?.totalWins}
+              nameHeader={t('statistics.most-wint')}
+              valueHeader={t('statistics.win-count')}
+            />
           </div>
-          <Poster className="hidden xl:flex xl:col-span-4 2xl:col-span-3" title={game.title} image={game.image} />
+          <BgtPoster className="hidden xl:flex xl:col-span-4 2xl:col-span-3" title={game.title} image={game.image} />
         </div>
-        <BgtCard>
-          <div className="grid grid-cols-3 p-1 gap-3">
-            <BgtTextStatistic content={statistics.playCount} title={t('statistics.play-count')} />
-            <BgtTextStatistic
-              content={statistics.totalPlayedTime}
-              title={t('statistics.total-play-time')}
-              suffix={t('common.minutes_abbreviation')}
+        {statistics.playCount !== 0 && (
+          <>
+            <div className="grid grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6 gap-1 md:gap-3">
+              <BgtTextStatistic content={statistics.playCount} title={t('statistics.play-count')} />
+              <BgtTextStatistic
+                content={statistics.totalPlayedTime}
+                title={t('statistics.total-play-time')}
+                suffix={t('common.minutes_abbreviation')}
+              />
+              <BgtTextStatistic
+                content={statistics.pricePerPlay}
+                title={t('statistics.price-per-play')}
+                prefix={settings.currency}
+              />
+              <BgtTextStatistic content={RoundDecimal(statistics.highScore)} title={t('statistics.high-score')} />
+              <BgtTextStatistic content={RoundDecimal(statistics.averageScore)} title={t('statistics.average-score')} />
+              <BgtTextStatistic
+                content={RoundDecimal(statistics.averagePlayTime)}
+                title={t('statistics.average-playtime')}
+                suffix={t('common.minutes_abbreviation')}
+              />
+              <BgtTextStatistic
+                content={
+                  statistics.lastPlayed != null
+                    ? formatDistanceToNowStrict(new Date(statistics.lastPlayed), { unit: 'day' }).split(' ')[0]
+                    : null
+                }
+                suffix={t('common.days-ago')}
+                title={t('statistics.last-played')}
+              />
+              <BgtTextStatistic
+                content={game.buyingPrice}
+                title={t('statistics.buy-price')}
+                prefix={settings.currency}
+              />
+            </div>
+            <BgtHeading className="pt-8 uppercase" size="7">
+              {t('game.titles.top-players')}
+            </BgtHeading>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {topPlayers.map((player, i) => (
+                <TopPlayerCard key={player.playerId} index={i} player={player} />
+              ))}
+            </div>
+            <BgtHeading className="pt-8 uppercase" size="7">
+              {t('game.titles.analytics')}
+            </BgtHeading>
+            <GameCharts />
+            <BgtDeleteModal
+              title={game.title}
+              open={openDeleteModal}
+              setOpen={setOpenDeleteModal}
+              onDelete={deleteGameInternal}
             />
-            <BgtTextStatistic
-              content={statistics.pricePerPlay}
-              title={t('statistics.price-per-play')}
-              prefix={settings.currency}
-            />
-          </div>
-        </BgtCard>
-        <BgtCard>
-          <div className="grid grid-cols-2 lg:grid-cols-4 p-1 wrap gap-3 ">
-            <BgtTextStatistic content={RoundDecimal(statistics.highScore)} title={t('statistics.high-score')} />
-            <BgtTextStatistic content={RoundDecimal(statistics.averageScore)} title={t('statistics.average-score')} />
-            <BgtTextStatistic
-              content={RoundDecimal(statistics.averagePlayTime)}
-              title={t('statistics.average-playtime')}
-              suffix={t('common.minutes_abbreviation')}
-            />
-            <BgtTextStatistic
-              content={
-                statistics.lastPlayed != null
-                  ? formatDistanceToNowStrict(new Date(statistics.lastPlayed), { unit: 'day' }).split(' ')[0]
-                  : null
-              }
-              suffix={t('common.days-ago')}
-              title={t('statistics.last-played')}
-            />
-          </div>
-        </BgtCard>
-        <BgtHeading className="pt-8 uppercase" size="7">
-          {t('game.titles.top-players')}
-        </BgtHeading>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {topPlayers.map((player, i) => (
-            <TopPlayerCard key={player.playerId} index={i} player={player} />
-          ))}
-        </div>
-        <BgtHeading className="pt-8 uppercase" size="7">
-          {t('game.titles.analytics')}
-        </BgtHeading>
-        <GameCharts />
-        <BgtDeleteModal
-          title={game.title}
-          open={openDeleteModal}
-          setOpen={setOpenDeleteModal}
-          onDelete={deleteGameInternal}
-        />
+          </>
+        )}
+
         {/* <BgtCard transparant noPadding>
           <div className="flex flex-row justify-between">
             <div className="flex flex-col gap-3">

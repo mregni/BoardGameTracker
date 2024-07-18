@@ -17,7 +17,7 @@ public class LocationRepository : ILocationRepository
     public Task<List<Location>> GetLocations()
     {
         return _context.Locations
-            .Include(x => x.Plays)
+            .Include(x => x.Sessions)
             .OrderBy(x => x.Name)
             .ToListAsync();
     }

@@ -9,7 +9,7 @@ import { StringToRgb } from '../../../../utils/stringUtils';
 import { useSettings } from '../../../../hooks/useSettings';
 import { usePlayers } from '../../../../hooks/usePlayers';
 import { useGame } from '../../../../hooks/useGame';
-import { BgtCard } from '../../../../components/BgtCard/BgtCard';
+import { BgtChartCard } from '../../../../components/BgtCard/BgtChartCard';
 import { BgtAvatar } from '../../../../components/BgtAvatar/BgtAvatar';
 
 interface SeriesData {
@@ -35,66 +35,67 @@ export const PlayerScoringChart = () => {
   });
 
   return (
-    <BgtCard>
-      <AgChartsReact
-        options={{
-          data: transformedSeries,
-          theme: {
-            overrides: {
-              line: {
-                series: {
-                  highlightStyle: {
-                    series: {
-                      dimOpacity: 0.2,
-                      strokeWidth: 4,
+    <div className="col-span-1">
+      <BgtChartCard title={t('game.charts.scoring')}>
+        <AgChartsReact
+          options={{
+            data: transformedSeries,
+            theme: {
+              overrides: {
+                line: {
+                  series: {
+                    highlightStyle: {
+                      series: {
+                        dimOpacity: 0.2,
+                        strokeWidth: 4,
+                      },
                     },
                   },
                 },
               },
             },
-          },
-          series: Object.keys(transformedSeries[0] ?? [])
-            .filter((x) => x !== 'date')
-            .map((x) => ({
-              tooltip: {
-                renderer: (params) =>
-                  `<div class="ag-chart-tooltip-title flex flex-row justify-start gap-2 items-center" style="background-color:${params.color}">
+            series: Object.keys(transformedSeries[0] ?? [])
+              .filter((x) => x !== 'date')
+              .map((x) => ({
+                tooltip: {
+                  renderer: (params) =>
+                    `<div class="ag-chart-tooltip-title !rounded-lg flex flex-row justify-start gap-2 items-center" style="background-color:${params.color}">
                     ${renderToString(<BgtAvatar title={params.title} image={byId(params.yKey)?.image} noTooltip />)}
                     ${params.title}: ${params.datum[params.yKey]}
                   </div>`,
-              },
-              type: 'line',
-              xKey: 'date',
-              yKey: `${x}`,
-              yName: byId(x)?.name,
-              stroke: StringToRgb(byId(x)?.name),
-              marker: {
-                fill: StringToRgb(byId(x)?.name),
+                },
+                type: 'line',
+                xKey: 'date',
+                yKey: `${x}`,
+                yName: byId(x)?.name,
                 stroke: StringToRgb(byId(x)?.name),
+                marker: {
+                  fill: StringToRgb(byId(x)?.name),
+                  stroke: StringToRgb(byId(x)?.name),
+                },
+              })),
+            background: { visible: false },
+            height: 300,
+            axes: [
+              {
+                type: 'number',
+                position: 'left',
+                gridLine: {
+                  style: [
+                    {
+                      stroke: 'lightgray',
+                    },
+                  ],
+                },
               },
-            })),
-          background: { visible: false },
-          title: { text: t('game.charts.scoring') },
-          height: 300,
-          axes: [
-            {
-              type: 'number',
-              position: 'left',
-              gridLine: {
-                style: [
-                  {
-                    stroke: 'lightgray',
-                  },
-                ],
+              {
+                type: 'category',
+                position: 'bottom',
               },
-            },
-            {
-              type: 'category',
-              position: 'bottom',
-            },
-          ],
-        }}
-      />
-    </BgtCard>
+            ],
+          }}
+        />
+      </BgtChartCard>
+    </div>
   );
 };
