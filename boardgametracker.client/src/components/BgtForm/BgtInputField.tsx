@@ -63,12 +63,12 @@ export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
             {prefixLabel && <BgtText>{prefixLabel}</BgtText>}
             <input
               className="h-[45px] bg-transparent shadow-none focus:outline-none hide-arrow w-full"
+              value={type === 'datetime-local' ? formatDateToLocalInput(field.value) : field.value}
               disabled={disabled}
               type={type}
               onChange={(event) =>
                 valueAsNumber ? field.onChange(+event.target.value) : field.onChange(event.target.value)
               }
-              defaultValue={type === 'datetime-local' ? formatDateToLocalInput(field.value) : field.value}
               placeholder={placeholder.toUpperCase()}
             />
           </div>

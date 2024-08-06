@@ -1,10 +1,9 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { Bars } from 'react-loading-icons';
 import { useFieldArray, useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { t } from 'i18next';
 import { addMinutes } from 'date-fns';
-import { Button } from '@radix-ui/themes';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import {
@@ -24,15 +23,11 @@ import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import { BgtPage } from '../../components/BgtLayout/BgtPage';
 import { BgtHeading } from '../../components/BgtHeading/BgtHeading';
 import { BgtTextArea } from '../../components/BgtForm/BgtTextArea';
-import { BgtSelectNoLabel } from '../../components/BgtForm/BgtSelectNoLabel';
 import { BgtSelect } from '../../components/BgtForm/BgtSelect';
 import { BgtPlayerSelector } from '../../components/BgtForm/BgtPlayerSelector';
 import { BgtInputField } from '../../components/BgtForm/BgtInputField';
-import { BgtFormRow } from '../../components/BgtForm/BgtFormRow';
-import { BgtEmptyFormRow } from '../../components/BgtForm/BgtEmptyFormRow';
 import { BgtComboBox } from '../../components/BgtForm/BgtComboBox';
 import { BgtCenteredCard } from '../../components/BgtCard/BgtCenteredCard';
-import { BgtCard } from '../../components/BgtCard/BgtCard';
 import BgtButton from '../../components/BgtButton/BgtButton';
 
 export const CreateSessionPage = () => {
@@ -47,7 +42,7 @@ export const CreateSessionPage = () => {
   const [openUpdateNewPlayerModal, setOpenUpdateNewPlayerModal] = useState(false);
   const [playerIdToEdit, setPlayerIdToEdit] = useState<string | null>(null);
 
-  const { register, handleSubmit, control, setValue, trigger } = useForm<CreateSession>({
+  const { register, handleSubmit, control, setValue, trigger, watch } = useForm<CreateSession>({
     resolver: zodResolver(CreateSessionSchema),
     defaultValues: {
       gameId: gameId,
@@ -58,6 +53,18 @@ export const CreateSessionPage = () => {
       playerSessions: [],
     },
   });
+
+  const selectedGameId = watch('gameId');
+
+  useEffect(() => {
+    if (selectedGameId !== undefined) {
+      const selectedBoardGame = games?.find((game) => game.id.toString() === selectedGameId);
+      if (selectedBoardGame) {
+        setValue('minutes', selectedBoardGame.maxPlayTime ?? 30, { shouldValidate: true });
+        setValue('start', addMinutes(new Date(), -(selectedBoardGame?.maxPlayTime ?? 30)));
+      }
+    }
+  }, [games, selectedGameId, setValue]);
 
   const {
     fields: players,
@@ -176,7 +183,7 @@ export const CreateSessionPage = () => {
                 label={t('player-session.new.comment.label')}
               />
 
-              <BgtButton type="submit" disabled={isPending} className="flex flex-row gap-2">
+              <BgtButton type="submit" disabled={isPending}>
                 {isPending && <Bars className="size-4" />}
                 {t('player-session.save')}
               </BgtButton>

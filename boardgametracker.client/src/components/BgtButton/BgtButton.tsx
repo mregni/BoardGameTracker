@@ -24,7 +24,7 @@ const BgtButton = (props: Props) => {
   return (
     <button
       className={clsx(
-        'font-bold rounded uppercase',
+        'font-bold rounded uppercase flex flex-row gap-2 justify-center',
         !disabled && 'hover:cursor-pointer',
         !disabled && variant === 'solid' && color === 'primary' && 'bg-primary text-white',
         !disabled && variant === 'solid' && color === 'cancel' && 'bg-[--gray-3] text-white',
@@ -57,7 +57,7 @@ const BgtButton = (props: Props) => {
       disabled={disabled}
       {...rest}
     >
-      <div className="flex flex-row justify-center gap-1 items-center">{children}</div>
+      <div className="flex flex-row justify-center gap-1 items-center align-middle">{children}</div>
     </button>
   );
 };

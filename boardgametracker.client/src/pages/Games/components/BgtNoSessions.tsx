@@ -17,16 +17,18 @@ export const BgtNoSessions = (props: Props) => {
 
   return (
     <BgtCard className="p-6">
-      <div className="flex flex-row justify-between">
+      <div className="flex flex-row justify-between items-center">
         <div className=" flex flex-col gap-3">
           <BgtHeading size="6" className="uppercase">
             {t('common.no-sessions.title')}
           </BgtHeading>
           <BgtText> {t('common.no-sessions.content')}</BgtText>
         </div>
-        <BgtButton size="3" onClick={() => navigate(`/play/create/${gameId}`)}>
-          {t('game.add')}
-        </BgtButton>
+        <div>
+          <BgtButton size="3" onClick={() => navigate(`/play/create/${gameId}`)}>
+            {t('game.add')}
+          </BgtButton>
+        </div>
       </div>
     </BgtCard>
   );

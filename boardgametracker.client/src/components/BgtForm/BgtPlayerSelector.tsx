@@ -40,15 +40,18 @@ export const BgtPlayerSelector = (props: Props) => {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-1">
-        <BgtButton
-          className="w-fit"
-          type="button"
-          size="1"
-          onClick={() => setCreateModalOpen(true)}
-          disabled={disabled}
-        >
-          {t('player-session.new.players.add')}
-        </BgtButton>
+        <div className="text-[15px] font-medium leading-[35px] uppercase flex flex-row gap-2 items-center">
+          {t('player-session.new.players.label')}
+          <BgtButton
+            className="w-fit"
+            type="button"
+            size="1"
+            onClick={() => setCreateModalOpen(true)}
+            disabled={disabled}
+          >
+            {t('player-session.new.players.add')}
+          </BgtButton>
+        </div>
         <BgtFormErrors error={error} />
       </div>
       {players.map((x, index) => (

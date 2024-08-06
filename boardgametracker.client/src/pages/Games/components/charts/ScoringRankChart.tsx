@@ -74,6 +74,7 @@ export const ScoringRankChart = () => {
             enableGridX
             enableLabel={false}
             labelSkipWidth={100}
+            tooltip={() => <></>}
             axisLeft={{
               format: (value) => t(`game.charts.top-scoring.${value}`),
             }}
@@ -95,6 +96,7 @@ export const ScoringRankChart = () => {
                           transform={`translate(${width + 10}, ${y + height / 2})`}
                           dominantBaseline="central"
                           className="uppercase"
+                          key={data.data.playerId + y}
                         >
                           {byId(data.data.playerId)
                             ? `${byId(data.data.playerId)?.name} ${data.data.score}`
@@ -107,6 +109,7 @@ export const ScoringRankChart = () => {
                           textAnchor="end"
                           dominantBaseline="central"
                           className="uppercase"
+                          key={data.data.playerId + y}
                         >
                           {' '}
                           {byId(data.data.playerId)

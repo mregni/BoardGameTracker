@@ -89,7 +89,7 @@ export const BgtBggGameModal = (props: Props) => {
               name="state"
               items={Object.keys(GameState)
                 .filter((value) => !isNaN(Number(value)))
-                .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value }))}
+                .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value, image: null }))}
             />
             <BgtSwitch label={t('game.scoring.label')} disabled={saveIsPending} control={control} name="hasScoring" />
           </div>

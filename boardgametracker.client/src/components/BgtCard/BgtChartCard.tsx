@@ -1,6 +1,4 @@
 import { ComponentPropsWithoutRef } from 'react';
-import { t } from 'i18next';
-import { AgChartsReact } from 'ag-charts-react';
 
 import { BgtHeading } from '../BgtHeading/BgtHeading';
 

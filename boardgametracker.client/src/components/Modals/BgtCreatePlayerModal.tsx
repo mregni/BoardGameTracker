@@ -41,6 +41,7 @@ const CreatePlayerForm = (props: Props) => {
     defaultValues: {
       firstPlay: false,
       won: false,
+      score: 0,
     },
   });
 
