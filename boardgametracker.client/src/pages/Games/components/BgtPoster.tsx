@@ -5,7 +5,7 @@ import { StringToRgb } from '../../../utils/stringUtils';
 
 interface Props extends ComponentPropsWithoutRef<'div'> {
   title: string;
-  image: string;
+  image: string | null;
 }
 
 export const BgtPoster = (props: Props) => {

@@ -6,9 +6,33 @@
   <br/>
   
 BoardGameTracker is a self-hosted board game statistics tracker that can be run in a Docker container. This app is ideal for those who want to track how much they've spent on their collection, identify their best game, and find out which of their friends consistently wins.
+<br/>
+<br/>
+⚠️ The project is still in alpha.
 </p>
 
-## Docker command
+
+
+## Roadmap
+| Feature                                 | Status |
+|-----------------------------------------|-------:|
+| Import game from BGG                    | ✅    |
+| User & Game list                        | ✅    |
+| See game details and simple statistics  | ✅    |
+| See dashboard statistics                | 🚧    |
+| Proper logging                          | 🚧    |
+| Implemented settings page               | 🚧    |
+| Add translations                        | 🚧    |
+| Add game manually                       |        |
+| View player VS player statistics        |        |
+| Add more graphs to game details         |        |
+| Add statistics to user details          |        |
+| View game session details               |        |
+
+✅: Done / 🚧: Working on it at the moment
+
+## Setup
+### Docker command
 ```
 docker run \
   --name=boardgametracker \
@@ -24,7 +48,7 @@ docker run \
   uping/boardgametracker
 ```
 
-## Docker compose (recommended)
+### Docker compose (recommended)
 ```
 version: "3.8"
 services:
@@ -58,9 +82,15 @@ services:
 
 You can also download the docker compose example [here](docker-compose.yml)
 
-## Disclaimer
+## Screenshots
+<img src=".github/images/game-list.png" width="800">
 
-- ⚠️ The project is still in alpha.
+<img src=".github/images/game-details.png" width="800">
+
+<img src=".github/images/user-details.png" width="800">
+
+<img src=".github/images/new-session.png" width="800">
+
 
 # Tooling
 - This project is tested with BrowserStack.
