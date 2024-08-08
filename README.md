@@ -1,7 +1,7 @@
 # BoardGameTracker
 
 <p align="center">
-  <img src=".github/images/games.png" width="600" alt="screen preview">
+  <img src=".github/images/games.png" width="800" alt="screen preview">
   <br/>
   <br/>
   BoardGameTracker is a selfhosted board game statistics tracker that can be hosted in a docker container.
