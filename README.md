@@ -4,7 +4,7 @@
   <img src=".github/images/games.png" width="600" alt="screen preview">
   <br/>
   <br/>
-  BoardGameTracker is a selfhosted board game statistics tracker that can be hosted with docker.
+  BoardGameTracker is a selfhosted board game statistics tracker that can be hosted in a docker container.
 </p>
 
 ## Docker command
@@ -17,20 +17,8 @@ docker run -e DB_HOST=<DB_HOST> -e DB_USER=<DB_USER> -e DB_PASSWORD=<DB_PASSWORD
 ```
 version: "3.8"
 services:
-  db:
-    image: postgres:16
-    restart: unless-stopped
-    volumes:
-      - <DB_PATH>:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=boardgametracker
-      - POSTGRES_USER=dev
-      - POSTGRES_PASSWORD=CHANGEME
-    ports:
-      - 5432:5432
-
   boardgametracker:
-    image: uping/boardgametracker:dev
+    image: uping/boardgametracker:latest
     restart: unless-stopped
     volumes:
       - <IMAGE_PATH>:/app/images
@@ -43,9 +31,21 @@ services:
       - DB_PASSWORD=CHANGEME
       - DB_NAME=boardgametracker
       - DB_PORT=5432
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    volumes:
+      - <DB_PATH>:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=boardgametracker
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=CHANGEME
+    ports:
+      - 5432:5432
 ```
 
-You can also download the docker compose example [here](docker-compose.yml)
+You can also download the docker compose example [here](docker-compose.example.yml)
 
 ## Disclaimer
 
