@@ -202,6 +202,7 @@
   },
   "player-session": {
     "save": "Create game play",
+    "title": "Add new game session",
     "new": {
       "notifications": {
         "created": "Game play is succesfully created",
