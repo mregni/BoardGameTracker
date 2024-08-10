@@ -234,7 +234,6 @@
         "label": "Start",
         "required": "Start date is required"
       },
-
       "location": {
         "label": "Location",
         "placeholder": "Choose location",
