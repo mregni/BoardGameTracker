@@ -1,5 +1,6 @@
 import { t } from 'i18next';
 
+import { RoundDecimal } from '../../utils/numberUtils';
 import { useSettings } from '../../hooks/useSettings';
 import { useDashboard } from '../../hooks/useDashboard';
 import { BgtTextStatistic } from '../../components/BgtStatistic/BgtTextStatistic';
@@ -16,6 +17,7 @@ export const DashboardPage = () => {
 
   if (statistics === undefined || settings === undefined) return null;
 
+  console.log(statistics);
   return (
     <BgtPage>
       <BgtPageHeader header={t('common.dashboard')} actions={[]} />
@@ -31,7 +33,7 @@ export const DashboardPage = () => {
             title={t('statistics.total-cost')}
           />
           <BgtTextStatistic
-            content={statistics.meanPayed}
+            content={RoundDecimal(statistics.meanPayed, 0.5)}
             prefix={settings.currency}
             title={t('statistics.mean-cost')}
           />
@@ -42,7 +44,7 @@ export const DashboardPage = () => {
             suffix={t('common.minutes_abbreviation')}
           />
           <BgtTextStatistic
-            content={statistics.meanPlayTime}
+            content={RoundDecimal(statistics.meanPlayTime, 1)}
             title={t('statistics.mean-playtime')}
             suffix={t('common.minutes_abbreviation')}
           />
