@@ -55,6 +55,11 @@
       "button": ""
     }
   },
+  "dashboard": {
+    "charts": {
+      "games": "Games"
+    }
+  },
   "game": {
     "add": "Add game session",
     "sessions": "View sessions",
@@ -187,8 +192,16 @@
   "statistics": {
     "average-score": "Average score",
     "high-score": "High score",
-    "most-wint": "Most wins",
+    "most-wins": "Most wins",
     "play-count": "Plays",
+    "game-count": "Games",
+    "player-count": "Players",
+    "session-count": "Sessions",
+    "location-count": "Locations",
+    "total-cost": "Total cost",
+    "mean-cost": "Average cost",
+    "total-playtime": "Total play time",
+    "mean-playtime": "Average play time",
     "price-per-play": "Price / play",
     "total-play-time": "Total play time",
     "unique-players": "Unique players",
