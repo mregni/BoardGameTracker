@@ -10,7 +10,6 @@ import { Actions } from '../../models';
 
 interface Props {
   header: string;
-  subHeader?: string | null;
   children?: ReactElement | ReactElement[];
   hasBackButton?: boolean;
   backUrl?: string;

@@ -1,6 +1,8 @@
 ﻿using BoardGameTracker.Common.Exeptions;
 using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Configuration.Interfaces;
+using BoardGameTracker.Core.Dashboard;
+using BoardGameTracker.Core.Dashboard.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Disk;
 using BoardGameTracker.Core.Disk.Interfaces;
@@ -33,11 +35,13 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddTransient<IPlayerService, PlayerService>();
         serviceCollection.AddTransient<ISessionService, SessionService>();
         serviceCollection.AddTransient<ILocationService, LocationService>();
+        serviceCollection.AddTransient<IDashboardService, DashboardService>();
         
         serviceCollection.AddTransient<IGameRepository, GameRepository>();
         serviceCollection.AddTransient<IPlayerRepository, PlayerRepository>();
         serviceCollection.AddTransient<ISessionRepository, SessionRepository>();
         serviceCollection.AddTransient<ILocationRepository, LocationRepository>();
+        serviceCollection.AddTransient<IDashboardRepository, DashboardRepository>();
 
         serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
         {

@@ -1,7 +1,7 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
-using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -175,6 +175,25 @@ public class GameRepository : IGameRepository
         return await _context.Players.FirstAsync(x => x.Id == playerSession.PlayerId);
     }
 
+    public async Task<Player?> GetMostWins()
+    {
+        var playerSession = await _context.Sessions
+            .Include(x => x.PlayerSessions)
+            .SelectMany(x => x.PlayerSessions)
+            .Where(x => x.Won)
+            .GroupBy(x => x.PlayerId)
+            .Select(x => new { PlayerId = x.Key, Count = x.Count()})
+            .OrderByDescending(x => x.Count)
+            .FirstOrDefaultAsync();
+
+        if (playerSession == null)
+        {
+            return null;
+        }
+
+        return await _context.Players.FirstAsync(x => x.Id == playerSession.PlayerId);
+    }
+
     public Task<double?> GetAverageScore(int id)
     {
         return _context.Sessions
@@ -195,6 +214,25 @@ public class GameRepository : IGameRepository
         }
 
         return Task.FromResult(0d);
+    }
+
+    public Task<double?> GetMeanPayedAsync()
+    {
+        return _context.Games
+            .AverageAsync(x => x.BuyingPrice);
+    }
+
+    public Task<double?> GetTotalPayedAsync()
+    {
+        return _context.Games.SumAsync(x => x.BuyingPrice);
+    }
+
+    public Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState()
+    {
+        return _context.Games
+            .GroupBy(x => x.State)
+            .ToListAsync();
+            
     }
 
     public Task<int> CountAsync()

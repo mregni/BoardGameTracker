@@ -73,7 +73,7 @@ public class PlayerService : IPlayerService
         if (game != null)
         {
             var wins = await _playerRepository.GetWinCount(id, game.Id);
-            stats.MostWinsGame = new BestWinningGame()
+            stats.MostWinsGame = new BestWinningGame
             {
                 Id = game.Id,
                 Image = game.Image,

@@ -28,3 +28,6 @@ export * from './Location/Location';
 export * from './Location/CreateLocation';
 
 export * from './Common/Actions';
+
+export * from './Dashboard/DashboardStatistics';
+export * from './Dashboard/DashboardCharts';

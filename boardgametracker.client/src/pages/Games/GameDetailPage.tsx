@@ -4,7 +4,6 @@ import { useState } from 'react';
 import i18next from 'i18next';
 import { formatDistanceToNowStrict } from 'date-fns';
 import clsx from 'clsx';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 import { RoundDecimal } from '../../utils/numberUtils';
 import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/ItemStateUtils';
@@ -15,9 +14,7 @@ import { BgtText } from '../../components/BgtText/BgtText';
 import { BgtTextStatistic } from '../../components/BgtStatistic/BgtTextStatistic';
 import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import { BgtPage } from '../../components/BgtLayout/BgtPage';
-import { BgtIcon } from '../../components/BgtIcon/BgtIcon';
 import { BgtHeading } from '../../components/BgtHeading/BgtHeading';
-import { BgtEditDropdown, BgtNormalEditDropdown } from '../../components/BgtDropdown/BgtEditDropdown';
 import { BgtMostWinnerCard } from '../../components/BgtCard/BgtMostWinnerCard';
 import { BgtEditDeleteButtons } from '../../components/BgtButton/BgtEditDeleteButtons';
 import BgtButton from '../../components/BgtButton/BgtButton';
@@ -129,7 +126,7 @@ export const GameDetailPage = () => {
               image={statistics.mostWinsPlayer?.image}
               name={statistics.mostWinsPlayer?.name}
               value={statistics.mostWinsPlayer?.totalWins}
-              nameHeader={t('statistics.most-wint')}
+              nameHeader={t('statistics.most-wins')}
               valueHeader={t('statistics.win-count')}
             />
           </div>
@@ -137,7 +134,7 @@ export const GameDetailPage = () => {
         </div>
         {statistics.playCount !== 0 && (
           <>
-            <div className="grid grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6 gap-1 md:gap-3">
+            <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 md:gap-3">
               <BgtTextStatistic content={statistics.playCount} title={t('statistics.play-count')} />
               <BgtTextStatistic
                 content={statistics.totalPlayedTime}

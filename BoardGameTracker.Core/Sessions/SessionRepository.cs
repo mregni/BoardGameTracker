@@ -50,4 +50,19 @@ public class SessionRepository : ISessionRepository
 
         return session;
     }
+    
+    public Task<int> CountAsync()
+    {
+        return _context.Sessions.CountAsync();
+    }
+
+    public Task<double> GetTotalPlayTime()
+    {
+        return _context.Sessions.SumAsync(x => (x.End - x.Start).TotalMinutes);
+    }
+
+    public Task<double> GetMeanPlayTime()
+    {
+        return _context.Sessions.AverageAsync(x => (x.End - x.Start).TotalMinutes);
+    }
 }

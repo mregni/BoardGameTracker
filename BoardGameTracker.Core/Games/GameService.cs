@@ -126,7 +126,7 @@ public class GameService : IGameService
     public async Task<IEnumerable<PlayerCount>> GetPlayerCountChart(int id)
     {
         var list = await _gameRepository.GetPlayerCountChart(id);
-        return list.Select(x => new PlayerCount() {PlayCount = x.Count(), Players = x.Key});
+        return list.Select(x => new PlayerCount {PlayCount = x.Count(), Players = x.Key});
     }
 
     public async Task<GameStatistics> GetStats(int id)
@@ -146,7 +146,7 @@ public class GameService : IGameService
         if (mostWinPlayer != null)
         {
             var wins = await _playerRepository.GetWinCount(mostWinPlayer.Id, id);
-            stats.MostWinsPlayer = new MostWinningPlayer()
+            stats.MostWinsPlayer = new MostWinningPlayer
             {
                 Id = mostWinPlayer.Id,
                 Image = mostWinPlayer.Image,

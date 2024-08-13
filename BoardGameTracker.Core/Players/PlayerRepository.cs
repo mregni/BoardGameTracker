@@ -142,4 +142,12 @@ public class PlayerRepository : IPlayerRepository
             .Where(x => x.GameId == gameId && x.PlayerSessions.Any(y => y.Player.Id == id && y.Won))
             .CountAsync();
     }
+
+    public Task<int> GetWinCount(int id)
+    {
+        return _dbContext.Sessions
+            .Include(x => x.PlayerSessions)
+            .Where(x => x.PlayerSessions.Any(y => y.Player.Id == id && y.Won))
+            .CountAsync();
+    }
 }

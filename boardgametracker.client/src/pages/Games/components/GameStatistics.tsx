@@ -28,9 +28,21 @@ export const GameStatistics = () => {
         content={formatDistanceToNowStrict(new Date(statistics.lastPlayed ?? '01-01-1970'), { addSuffix: true })}
         title={t('statistics.last-played')}
       />
-      <BgtStatistic content={statistics.totalPlayedTime} title={t('statistics.total-play-time')} suffix={t('common.minutes_abbreviation')} />
-      <BgtStatistic content={statistics.pricePerPlay} title={t('statistics.price-per-play')} suffix={settings.currency} />
-      <BgtStatistic content={statistics?.mostWinsPlayer?.name} title={t('statistics.most-wint')} player={byId(statistics.mostWinsPlayer?.id)} />
+      <BgtStatistic
+        content={statistics.totalPlayedTime}
+        title={t('statistics.total-play-time')}
+        suffix={t('common.minutes_abbreviation')}
+      />
+      <BgtStatistic
+        content={statistics.pricePerPlay}
+        title={t('statistics.price-per-play')}
+        suffix={settings.currency}
+      />
+      <BgtStatistic
+        content={statistics?.mostWinsPlayer?.name}
+        title={t('statistics.most-wins')}
+        player={byId(statistics.mostWinsPlayer?.id)}
+      />
     </BgtStatisticsContainer>
   );
 };

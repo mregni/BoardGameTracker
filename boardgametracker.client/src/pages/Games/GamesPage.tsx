@@ -13,7 +13,7 @@ import { BgtImageCard } from '../../components/BgtImageCard/BgtImageCard';
 
 export const GamesPage = () => {
   const { t } = useTranslation();
-  const { pageTitle, activePage } = usePage();
+  const { pageTitle } = usePage();
   const [openModal, setOpenModal] = useState(false);
   const [openBggModal, setOpenBggModal] = useState(false);
   const { counts } = useCounts();
@@ -31,12 +31,10 @@ export const GamesPage = () => {
 
   if (!counts || !games) return null;
 
-  const itemCount = counts.find((x) => x.key == activePage)?.value;
   return (
     <BgtPage>
       <BgtPageHeader
         header={t(pageTitle)}
-        subHeader={t('common.items', { count: itemCount })}
         actions={[{ onClick: () => setOpenModal(true), variant: 'solid', content: 'games.new' }]}
       />
       <BgtPageContent>

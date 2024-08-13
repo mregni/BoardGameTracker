@@ -42,7 +42,7 @@ public class ConfigFileProvider : IConfigFileProvider
         set => SetValue("TIME_FORMAT", value);
     }
 
-    public string UILanguage => GetValue("UI_LANGUAGE", "nl-be");
+    public string UILanguage => GetValue("UI_LANGUAGE", "en-us");
     public string PostgresHost => GetValue("DB_HOST", string.Empty);
     public string PostgresUser => GetValue("DB_USER", string.Empty);
     public string PostgresPassword => GetValue("DB_PASSWORD", string.Empty);

@@ -1,4 +1,3 @@
-
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using BoardGameTracker.Common;
@@ -150,7 +149,7 @@ if (!app.Environment.IsDevelopment())
 SendStartApplicationCommand(app.Services);
 await RunDbMigrations(app.Services);
 
-app.Run();
+await app.RunAsync();
 
 static Task RunDbMigrations(IServiceProvider serviceProvider)
 {

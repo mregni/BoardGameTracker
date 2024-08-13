@@ -15,6 +15,8 @@ export const QUERY_KEYS = {
   gamePlayerScoringChart: 'game-player-scoring',
   gameScoreRankChart: 'game-score-rank',
   locations: 'locations',
+  dashboardStatistics: 'dashboard-statistics',
+  dashboardCharts: 'dashboard-charts',
 };
 
 export const GAME_CHARTS = {
