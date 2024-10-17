@@ -18,9 +18,12 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    "paths": {
+      "@/*": ["./src/*"],
+    }
   },
-  "include": ["**/*.ts", "**/*.tsx", "src/components/BgtColorPicker"],
-  "exclude": ["node_modules"],
+  "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

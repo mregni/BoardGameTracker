@@ -8,6 +8,25 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
+
+/*
+ * Last played game
+ * Most played game
+ * Longest game session (incl game name)
+ * total games sold (only display IF NOT NULL)
+ * Highest rated game
+ * Most commen game categery played
+ * Most common game mechanic played
+ * Most played location
+ * Player with most sessions
+ *
+ * PIE
+ * Games by category
+ * Most played games
+ * 
+ * BAR
+ * Games by year published (for last 20 years for example)
+ */
 [ApiController]
 [Route("api/dashboard")]
 public class DashboardController

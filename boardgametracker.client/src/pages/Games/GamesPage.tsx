@@ -11,13 +11,14 @@ import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import { BgtPage } from '../../components/BgtLayout/BgtPage';
 import { BgtImageCard } from '../../components/BgtImageCard/BgtImageCard';
 
+import { useGamesPage } from './hooks/useGamesPage';
+
 export const GamesPage = () => {
   const { t } = useTranslation();
   const { pageTitle } = usePage();
   const [openModal, setOpenModal] = useState(false);
   const [openBggModal, setOpenBggModal] = useState(false);
-  const { counts } = useCounts();
-  const { games } = useGames();
+  const { games } = useGamesPage();
 
   const openManual = () => {
     //TODO: implement
@@ -29,7 +30,7 @@ export const GamesPage = () => {
     setOpenBggModal(true);
   };
 
-  if (!counts || !games) return null;
+  if (games.data === undefined) return null;
 
   return (
     <BgtPage>
@@ -39,7 +40,7 @@ export const GamesPage = () => {
       />
       <BgtPageContent>
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 2xl:grid-cols-10">
-          {games.map((x) => (
+          {games.data.list.map((x) => (
             <BgtImageCard key={x.id} title={x.title} image={x.image} state={x.state} link={`/games/${x.id}`} />
           ))}
         </div>

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { Dispatch, SetStateAction } from 'react';
-import { Dialog, Button } from '@radix-ui/themes';
+import { Dialog } from '@radix-ui/themes';
 import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';

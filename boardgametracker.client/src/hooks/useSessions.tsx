@@ -73,36 +73,3 @@ const useSessions = <T,>(props: Props<T>) => {
     deletePlay,
   };
 };
-
-interface SessionProps {
-  save: (session: CreateSession) => Promise<Result<Session>>;
-  isPending: boolean;
-}
-
-export const useSession = (): SessionProps => {
-  const queryClient = useQueryClient();
-  const { showInfoToast } = useToast();
-
-  const { mutateAsync: save, isPending } = useMutation<Result<Session>, AxiosError<FailResult>, CreateSession>({
-    mutationFn: addSession,
-    async onSuccess(sessionResult) {
-      showInfoToast('player-session.new.notifications.created');
-      const maps = sessionResult.model.playerSessions.map(async (x) => {
-        return await queryClient.invalidateQueries({
-          queryKey: [QUERY_KEYS.players, x.id, QUERY_KEYS.playerSessions],
-        });
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.game, sessionResult.model.gameId],
-      });
-
-      await Promise.all(maps);
-    },
-  });
-
-  return {
-    save,
-    isPending,
-  };
-};

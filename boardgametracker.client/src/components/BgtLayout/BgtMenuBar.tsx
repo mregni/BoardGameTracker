@@ -1,18 +1,18 @@
 import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { clsx } from 'clsx';
-import { Bars3Icon, ChevronDoubleLeftIcon, ChevronDoubleRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 import { BgtMenuLogo } from '../BgtMenu/BgtMenuLogo';
 import { BgtMenuItem } from '../BgtMenu/BgtMenuItem';
-import { BgtBottomButton } from '../BgtMenu/BgtBottomButton';
 import { useMenuItems } from '../../hooks/useMenuItems';
-import { useCounts } from '../../hooks/useCounts';
+
+import { useBgtMenuBar } from './hooks/useBgtMenuBar';
 
 const MobileMenu = () => {
   const [open, setOpen] = useState(false);
   const { menuItems } = useMenuItems();
-  const { counts } = useCounts();
+  const { counts } = useBgtMenuBar();
   const location = useLocation();
 
   useEffect(() => {
@@ -28,7 +28,7 @@ const MobileMenu = () => {
     };
   }, []);
 
-  if (!counts) return null;
+  if (counts.data === undefined) return null;
 
   return (
     <div className="flex-col flex justify-between md:hidden">
@@ -41,7 +41,7 @@ const MobileMenu = () => {
       </div>
       <div className={clsx('mobile-menu bg-gray-950 absolute w-full top-16 z-40', !open && 'hidden-menu')}>
         {menuItems.map((x) => (
-          <BgtMenuItem key={x.path} item={x} count={counts.find((y) => y.key == x.path)?.value} />
+          <BgtMenuItem key={x.path} item={x} count={counts.data.model.find((y) => y.key == x.path)?.value} />
         ))}
       </div>
     </div>
@@ -49,10 +49,10 @@ const MobileMenu = () => {
 };
 
 const BgtMenuBar = () => {
-  const { counts } = useCounts();
+  const { counts } = useBgtMenuBar();
   const { menuItems } = useMenuItems();
 
-  if (!counts) return null;
+  if (counts.data === undefined) return null;
 
   return (
     <>
@@ -61,7 +61,7 @@ const BgtMenuBar = () => {
           <BgtMenuLogo />
           <div className="mt-4">
             {menuItems.map((x) => (
-              <BgtMenuItem key={x.path} item={x} count={counts.find((y) => y.key == x.path)?.value} />
+              <BgtMenuItem key={x.path} item={x} count={counts.data.model.find((y) => y.key == x.path)?.value} />
             ))}
           </div>
         </div>

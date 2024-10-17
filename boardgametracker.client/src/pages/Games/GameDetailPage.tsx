@@ -8,7 +8,6 @@ import clsx from 'clsx';
 import { RoundDecimal } from '../../utils/numberUtils';
 import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/ItemStateUtils';
 import { useSettings } from '../../hooks/useSettings';
-import { useGame } from '../../hooks/useGame';
 import { BgtDeleteModal } from '../../components/Modals/BgtDeleteModal';
 import { BgtText } from '../../components/BgtText/BgtText';
 import { BgtTextStatistic } from '../../components/BgtStatistic/BgtTextStatistic';
@@ -20,6 +19,7 @@ import { BgtEditDeleteButtons } from '../../components/BgtButton/BgtEditDeleteBu
 import BgtButton from '../../components/BgtButton/BgtButton';
 import { BgtBadge } from '../../components/BgtBadge/BgtBadge';
 
+import { useGameDetailPage } from './hooks/useGameDetailPage';
 import { TopPlayerCard } from './components/GameTopPlayers';
 import { GameCharts } from './components/GameCharts';
 import { BgtPoster } from './components/BgtPoster';
@@ -27,12 +27,11 @@ import { BgtNoSessions } from './components/BgtNoSessions';
 
 export const GameDetailPage = () => {
   const { id } = useParams();
-  const { game, deleteGame, statistics, topPlayers } = useGame(id);
+  const { game, deleteGame, statistics, topPlayers } = useGameDetailPage(id);
   const { t } = useTranslation();
   const { settings } = useSettings();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const [openDetailsModal, setOpenDetailsModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const navigate = useNavigate();
 
@@ -46,7 +45,13 @@ export const GameDetailPage = () => {
       });
   };
 
-  if (game === undefined || statistics === undefined || topPlayers === undefined || settings === undefined) return null;
+  if (
+    game.data === undefined ||
+    statistics.data === undefined ||
+    topPlayers.data === undefined ||
+    settings === undefined
+  )
+    return null;
 
   return (
     <BgtPage>
@@ -57,8 +62,8 @@ export const GameDetailPage = () => {
               <div className="grid grid-cols-12 gap-3">
                 <BgtPoster
                   className="col-span-4 md:col-span-2 flex xl:hidden aspect-square"
-                  title={game.title}
-                  image={game.image}
+                  title={game.data.model.title}
+                  image={game.data.model.image}
                 />
                 <div className="col-span-8 md:col-span-10 xl:col-span-12 flex flex-col gap-2">
                   <div className="flex flex-row justify-between">
@@ -67,22 +72,26 @@ export const GameDetailPage = () => {
                         size="2"
                         className="line-clamp-1 uppercase w-full"
                         weight="medium"
-                        color={getColorFromGameState(game.state)}
+                        color={getColorFromGameState(game.data.model.state)}
                       >
-                        {t(getItemStateTranslationKey(game.state))}
+                        {t(getItemStateTranslationKey(game.data.model.state))}
                       </BgtText>
-                      <BgtHeading className="uppercase">{game.title}</BgtHeading>
+                      <BgtHeading className="uppercase">{game.data.model.title}</BgtHeading>
                     </div>
                     <BgtEditDeleteButtons onDelete={() => alert('deleting')} onEdit={() => alert('editing')} />
                   </div>
                   <div className="flex-row justify-start gap-2 hidden md:flex">
-                    {game.categories.map((cat) => (
+                    {game.data.model.categories.map((cat) => (
                       <BgtBadge key={cat.id} color="green" variant="soft">
                         {cat.name}
                       </BgtBadge>
                     ))}
                   </div>
-                  <BgtButton size="3" className="md:hidden" onClick={() => navigate(`/play/create/${game.id}`)}>
+                  <BgtButton
+                    size="3"
+                    className="md:hidden"
+                    onClick={() => navigate(`/play/create/${game.data.model.id}`)}
+                  >
                     {i18next.format(t('game.add'))}
                   </BgtButton>
                 </div>
@@ -95,7 +104,7 @@ export const GameDetailPage = () => {
                     isExpanded && 'transition-max-height max-h-[1000px]'
                   )}
                 >
-                  {game.description}
+                  {game.data.model.description}
                 </BgtText>
                 <div className="flex flex-row justify-end w-full md:hidden pt-2">
                   {!isExpanded && (
@@ -110,9 +119,9 @@ export const GameDetailPage = () => {
                   )}
                 </div>
               </div>
-              {statistics.playCount !== 0 && (
+              {statistics.data.model.playCount !== 0 && (
                 <div className="flex-row justify-start gap-2 hidden md:flex">
-                  <BgtButton size="3" onClick={() => navigate(`/play/create/${game.id}`)}>
+                  <BgtButton size="3" onClick={() => navigate(`/play/create/${game.data.model.id}`)}>
                     {i18next.format(t('game.add'))}
                   </BgtButton>
                   <BgtButton size="3" variant="outline" onClick={() => alert('Sessions not implemented')}>
@@ -121,49 +130,61 @@ export const GameDetailPage = () => {
                 </div>
               )}
             </div>
-            {statistics.playCount === 0 && <BgtNoSessions gameId={game.id} />}
+            {statistics.data.model.playCount === 0 && <BgtNoSessions gameId={game.data.model.id} />}
             <BgtMostWinnerCard
-              image={statistics.mostWinsPlayer?.image}
-              name={statistics.mostWinsPlayer?.name}
-              value={statistics.mostWinsPlayer?.totalWins}
+              image={statistics.data.model.mostWinsPlayer?.image}
+              name={statistics.data.model.mostWinsPlayer?.name}
+              value={statistics.data.model.mostWinsPlayer?.totalWins}
               nameHeader={t('statistics.most-wins')}
               valueHeader={t('statistics.win-count')}
             />
           </div>
-          <BgtPoster className="hidden xl:flex xl:col-span-4 2xl:col-span-3" title={game.title} image={game.image} />
+          <BgtPoster
+            className="hidden xl:flex xl:col-span-4 2xl:col-span-3"
+            title={game.data.model.title}
+            image={game.data.model.image}
+          />
         </div>
-        {statistics.playCount !== 0 && (
+        {statistics.data.model.playCount !== 0 && (
           <>
             <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 md:gap-3">
-              <BgtTextStatistic content={statistics.playCount} title={t('statistics.play-count')} />
+              <BgtTextStatistic content={statistics.data.model.playCount} title={t('statistics.play-count')} />
               <BgtTextStatistic
-                content={statistics.totalPlayedTime}
+                content={statistics.data.model.totalPlayedTime}
                 title={t('statistics.total-play-time')}
                 suffix={t('common.minutes_abbreviation')}
               />
               <BgtTextStatistic
-                content={statistics.pricePerPlay}
+                content={statistics.data.model.pricePerPlay}
                 title={t('statistics.price-per-play')}
                 prefix={settings.currency}
               />
-              <BgtTextStatistic content={RoundDecimal(statistics.highScore)} title={t('statistics.high-score')} />
-              <BgtTextStatistic content={RoundDecimal(statistics.averageScore)} title={t('statistics.average-score')} />
               <BgtTextStatistic
-                content={RoundDecimal(statistics.averagePlayTime)}
+                content={RoundDecimal(statistics.data.model.highScore)}
+                title={t('statistics.high-score')}
+              />
+              <BgtTextStatistic
+                content={RoundDecimal(statistics.data.model.averageScore)}
+                title={t('statistics.average-score')}
+              />
+              <BgtTextStatistic
+                content={RoundDecimal(statistics.data.model.averagePlayTime)}
                 title={t('statistics.average-playtime')}
                 suffix={t('common.minutes_abbreviation')}
               />
               <BgtTextStatistic
                 content={
-                  statistics.lastPlayed != null
-                    ? formatDistanceToNowStrict(new Date(statistics.lastPlayed), { unit: 'day' }).split(' ')[0]
+                  statistics.data.model.lastPlayed != null
+                    ? formatDistanceToNowStrict(new Date(statistics.data.model.lastPlayed), { unit: 'day' }).split(
+                        ' '
+                      )[0]
                     : null
                 }
                 suffix={t('common.days-ago')}
                 title={t('statistics.last-played')}
               />
               <BgtTextStatistic
-                content={game.buyingPrice}
+                content={game.data.model.buyingPrice}
                 title={t('statistics.buy-price')}
                 prefix={settings.currency}
               />
@@ -172,7 +193,7 @@ export const GameDetailPage = () => {
               {t('game.titles.top-players')}
             </BgtHeading>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-              {topPlayers.map((player, i) => (
+              {topPlayers.data.model.map((player, i) => (
                 <TopPlayerCard key={player.playerId} index={i} player={player} />
               ))}
             </div>
@@ -181,7 +202,7 @@ export const GameDetailPage = () => {
             </BgtHeading>
             <GameCharts />
             <BgtDeleteModal
-              title={game.title}
+              title={game.data.model.title}
               open={openDeleteModal}
               setOpen={setOpenDeleteModal}
               onDelete={deleteGameInternal}

@@ -13,7 +13,7 @@ namespace BoardGameTracker.Core.Configuration;
 public class ConfigFileProvider : IConfigFileProvider
 {
     private readonly string _configFile;
-    private static readonly object Mutex = new object();
+    private static readonly object Mutex = new ();
     public const string CONFIG_ELEMENT_NAME = "Config";
 
     public string Currency
@@ -92,7 +92,7 @@ public class ConfigFileProvider : IConfigFileProvider
         var valueHolder = parentContainer.Descendants(key).ToList();
         if (valueHolder.Count == 1)
         {
-            return valueHolder.First().Value.Trim();
+            return valueHolder[0].Value.Trim();
         }
 
         if (persist)

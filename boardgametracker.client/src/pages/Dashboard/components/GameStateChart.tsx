@@ -2,13 +2,17 @@ import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 
 import { getItemStateTranslationKey } from '../../../utils/ItemStateUtils';
-import { GameState } from '../../../models';
-import { useDashboard } from '../../../hooks/useDashboard';
 import { BgtPieChart } from '../../../components/BgtCharts/BgtPieChart';
 import { BgtChartCard } from '../../../components/BgtCard/BgtChartCard';
 
-export const GameStateChart = () => {
-  const { charts } = useDashboard();
+import { DashboardCharts, GameState } from '@/models';
+
+interface Props {
+  charts: DashboardCharts;
+}
+
+export const GameStateChart = (props: Props) => {
+  const { charts } = props;
   const { t } = useTranslation();
 
   const pieData = useMemo(() => {

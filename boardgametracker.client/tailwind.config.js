@@ -26,7 +26,7 @@ export default {
         '2xl': '1700px',
       },
       backgroundImage: {
-        'custom-gradient': 'radial-gradient(ellipse closest-side at 30% 300px, #2E004C, #120A2A)',
+        'custom-gradient': 'radial-gradient(ellipse closest-side at 60% 250px, #42005E, #120A2A)',
       },
       transitionProperty: {
         'max-height': 'max-height',

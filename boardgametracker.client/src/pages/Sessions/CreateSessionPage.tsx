@@ -13,10 +13,6 @@ import {
   CreateSessionSchema,
 } from '../../models/Session/CreateSession';
 import { ResultState } from '../../models';
-import { useSession } from '../../hooks/useSessions';
-import { useLocations } from '../../hooks/useLocations';
-import { useGames } from '../../hooks/useGames';
-import { useGame } from '../../hooks/useGame';
 import { BgtUpdatePlayerModal } from '../../components/Modals/BgtUpdatePlayerModal';
 import { BgtCreatePlayerModal } from '../../components/Modals/BgtCreatePlayerModal';
 import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
@@ -30,13 +26,12 @@ import { BgtComboBox } from '../../components/BgtForm/BgtComboBox';
 import { BgtCenteredCard } from '../../components/BgtCard/BgtCenteredCard';
 import BgtButton from '../../components/BgtButton/BgtButton';
 
+import { useCreateSessionPage } from './hooks/useCreateSessionPage';
+
 export const CreateSessionPage = () => {
   const { gameId } = useParams();
-  const { game } = useGame(gameId);
-  const { games } = useGames();
-  const { locations, save: saveLocation, isSaving } = useLocations();
+  const { locations, saveLocation, saveSession, games, game } = useCreateSessionPage(gameId);
   const navigate = useNavigate();
-  const { save, isPending } = useSession();
 
   const [openCreateNewPlayerModal, setOpenCreateNewPlayerModal] = useState(false);
   const [openUpdateNewPlayerModal, setOpenUpdateNewPlayerModal] = useState(false);
@@ -47,9 +42,9 @@ export const CreateSessionPage = () => {
     defaultValues: {
       gameId: gameId,
       locationId: undefined,
-      minutes: game?.maxPlayTime ?? 30,
+      minutes: game.data?.model.maxPlayTime ?? 30,
       comment: '',
-      start: addMinutes(new Date(), -(game?.maxPlayTime ?? 30)),
+      start: addMinutes(new Date(), -(game.data?.model.maxPlayTime ?? 30)),
       playerSessions: [],
     },
   });
@@ -58,7 +53,7 @@ export const CreateSessionPage = () => {
 
   useEffect(() => {
     if (selectedGameId !== undefined) {
-      const selectedBoardGame = games?.find((game) => game.id.toString() === selectedGameId);
+      const selectedBoardGame = games.data?.list.find((game) => game.id.toString() === selectedGameId);
       if (selectedBoardGame) {
         setValue('minutes', selectedBoardGame.maxPlayTime ?? 30, { shouldValidate: true });
         setValue('start', addMinutes(new Date(), -(selectedBoardGame?.maxPlayTime ?? 30)));
@@ -89,10 +84,10 @@ export const CreateSessionPage = () => {
     }
   };
 
-  if (locations === undefined || games === undefined) return null;
+  if (locations.data === undefined || games.data === undefined || game.data === undefined) return null;
 
   const onSubmit = async (data: CreateSession) => {
-    const result = await save(data);
+    const result = await saveSession.mutateAsync(data);
     if (result.state === ResultState.Success) {
       navigate(`/games/${result.model.gameId}`);
     }
@@ -111,7 +106,7 @@ export const CreateSessionPage = () => {
                 label={t('player-session.new.game.label')}
                 hasAvatars
                 items={
-                  games?.map((x) => ({
+                  games.data.list.map((x) => ({
                     value: x.id.toString(),
                     label: x.title,
                     image: x.image,
@@ -119,7 +114,7 @@ export const CreateSessionPage = () => {
                 }
                 name="gameId"
                 control={control}
-                disabled={isPending}
+                disabled={saveSession.isPending}
                 placeholder={t('player-session.new.game.placeholder')}
               />
 
@@ -127,23 +122,21 @@ export const CreateSessionPage = () => {
                 control={control}
                 name="locationId"
                 options={
-                  locations?.map((x) => ({
+                  locations.data.list.map((x) => ({
                     value: x.id.toString(),
                     label: x.name,
                   })) ?? []
                 }
                 label={t('player-session.new.location.label')}
-                disabled={isPending}
+                disabled={saveSession.isPending}
                 placeholder={t('player-session.new.location.placeholder')}
                 addOptionText={(value) => t('player-session.new.location.create-new', { name: value })}
                 onChange={(value) => {
                   setValue('locationId', value?.value ?? '');
                   void trigger('locationId');
                 }}
-                onCreate={async (value) => {
-                  await saveLocation({ name: value });
-                }}
-                isSaving={isSaving}
+                onCreate={async (value) => await saveLocation.mutateAsync({ name: value })}
+                isSaving={saveLocation.isPending}
                 getSelectedItem={(x) => ({ value: x.model.id.toString(), label: x.model.name })}
               />
 
@@ -152,7 +145,7 @@ export const CreateSessionPage = () => {
                 name="minutes"
                 type="number"
                 control={control}
-                disabled={isPending}
+                disabled={saveSession.isPending}
                 label={t('player-session.new.duration.label')}
                 placeholder={t('player-session.new.duration.placeholder')}
               />
@@ -161,7 +154,7 @@ export const CreateSessionPage = () => {
                 name="start"
                 type="datetime-local"
                 control={control}
-                disabled={isPending}
+                disabled={saveSession.isPending}
                 label={t('player-session.new.start.label')}
               />
 
@@ -173,18 +166,18 @@ export const CreateSessionPage = () => {
                 remove={remove}
                 players={players}
                 setPlayerIdToEdit={setPlayerIdToEdit}
-                disabled={isPending}
+                disabled={saveSession.isPending}
               />
 
               <BgtTextArea
                 name="comment"
                 register={register}
-                disabled={isPending}
+                disabled={saveSession.isPending}
                 label={t('player-session.new.comment.label')}
               />
 
-              <BgtButton type="submit" disabled={isPending}>
-                {isPending && <Bars className="size-4" />}
+              <BgtButton type="submit" disabled={saveSession.isPending}>
+                {saveSession.isPending && <Bars className="size-4" />}
                 {t('player-session.save')}
               </BgtButton>
             </div>
@@ -193,14 +186,14 @@ export const CreateSessionPage = () => {
 
         <BgtCreatePlayerModal
           open={openCreateNewPlayerModal}
-          hasScoring={game?.hasScoring ?? true}
+          hasScoring={game.data.model.hasScoring ?? true}
           onClose={closeNewPlayPlayer}
           onCancel={() => setOpenCreateNewPlayerModal(false)}
           selectedPlayerIds={players.map((x) => x.playerId)}
         />
         <BgtUpdatePlayerModal
           open={openUpdateNewPlayerModal}
-          hasScoring={game?.hasScoring ?? true}
+          hasScoring={game.data.model.hasScoring ?? true}
           onClose={closeUpdatePlayPlayer}
           onCancel={() => setOpenUpdateNewPlayerModal(false)}
           selectedPlayerIds={players.map((x) => x.playerId)}

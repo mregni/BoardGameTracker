@@ -3,22 +3,10 @@
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
-import { AgChartsReact } from 'ag-charts-react';
-import { ResponsivePie } from '@nivo/pie';
 
 import { useGame } from '../../../../hooks/useGame';
 import { BgtPieChart } from '../../../../components/BgtCharts/BgtPieChart';
 import { BgtChartCard } from '../../../../components/BgtCard/BgtChartCard';
-
-const theme = {
-  axis: {
-    ticks: {
-      text: {
-        fontFamily: 'Chakra Petch',
-      },
-    },
-  },
-};
 
 export const PlayerCountChart = () => {
   const { id } = useParams();
