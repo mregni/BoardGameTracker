@@ -1,11 +1,11 @@
 import { axiosInstance } from '../../utils/axiosInstance';
 import { CreateSession } from '../../models/Session/CreateSession';
-import { Session, Result } from '../../models';
+import { Session } from '../../models';
 
 const domain = 'session';
 
-export const addSession = (play: CreateSession): Promise<Result<Session>> => {
-  return axiosInstance.post<Result<Session>>(domain, play).then((response) => {
+export const addSession = (play: CreateSession): Promise<Session> => {
+  return axiosInstance.post<Session>(domain, play).then((response) => {
     return response.data;
   });
 };

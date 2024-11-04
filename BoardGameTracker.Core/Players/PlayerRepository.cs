@@ -82,23 +82,6 @@ public class PlayerRepository : IPlayerRepository
             .SumAsync(x => (x.Session.End - x.Session.Start).TotalMinutes);
     }
 
-    public Task<List<Session>> GetSessionsForPlayer(int id, int skip, int? take)
-    {
-        var query = _dbContext.Sessions
-            .Include(x => x.Location)
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == id))
-            .OrderByDescending(x => x.Start)
-            .Skip(skip);
-
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        return query.ToListAsync();
-    }
-
     public async Task<Player> Update(Player player)
     {
         var dbPlayer = await _dbContext.Players

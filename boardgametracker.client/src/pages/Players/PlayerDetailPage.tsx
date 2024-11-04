@@ -14,12 +14,24 @@ import { BgtMostWinnerCard } from '../../components/BgtCard/BgtMostWinnerCard';
 import { BgtEditDeleteButtons } from '../../components/BgtButton/BgtEditDeleteButtons';
 import BgtButton from '../../components/BgtButton/BgtButton';
 
-import { usePlayerDetailPage } from './hooks/usePlayerDetailPage';
+import { usePlayer } from './hooks/usePlayer';
+
+import { useToast } from '@/providers/BgtToastProvider';
 
 export const PlayerDetailpage = () => {
   const { id } = useParams();
   const { t } = useTranslation();
-  const { player, statistics, deletePlayer } = usePlayerDetailPage(id);
+  const { showInfoToast, showErrorToast } = useToast();
+
+  const onDeleteError = () => {
+    showErrorToast('player.delete.failed');
+  };
+
+  const onDeleteSuccess = () => {
+    showInfoToast('player.delete.successfull');
+  };
+
+  const { player, statistics, deletePlayer } = usePlayer({ id, onDeleteError, onDeleteSuccess });
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const navigate = useNavigate();
 
@@ -44,12 +56,12 @@ export const PlayerDetailpage = () => {
               <div className="grid grid-cols-12 gap-3">
                 <BgtPoster
                   className="col-span-4 md:col-span-2 flex xl:hidden aspect-square"
-                  title={player.data.model.name}
-                  image={player.data.model.image}
+                  title={player.data.name}
+                  image={player.data.image}
                 />
                 <div className="col-span-8 md:col-span-10 xl:col-span-12 flex flex-col gap-2">
                   <div className="flex flex-row justify-between">
-                    <BgtHeading className="uppercase">{player.data.model.name}</BgtHeading>
+                    <BgtHeading className="uppercase">{player.data.name}</BgtHeading>
                     <BgtEditDeleteButtons onDelete={() => alert('deleting')} onEdit={() => alert('editing')} />
                   </div>
                   <BgtButton size="3" className="md:hidden">
@@ -57,7 +69,7 @@ export const PlayerDetailpage = () => {
                   </BgtButton>
                 </div>
               </div>
-              {statistics.data.model.playCount !== 0 && (
+              {statistics.data.playCount !== 0 && (
                 <div className="flex-row justify-start gap-2 hidden md:flex">
                   <BgtButton size="3" onClick={() => navigate(`/play/create`)}>
                     {i18next.format(t('game.add'))}
@@ -69,36 +81,36 @@ export const PlayerDetailpage = () => {
               )}
             </div>
             <BgtMostWinnerCard
-              name={statistics.data.model.mostWinsGame?.title}
-              image={statistics.data.model.mostWinsGame?.image}
-              value={statistics.data.model.mostWinsGame?.totalWins}
+              name={statistics.data.mostWinsGame?.title}
+              image={statistics.data.mostWinsGame?.image}
+              value={statistics.data.mostWinsGame?.totalWins}
               nameHeader={t('statistics.best-game')}
               valueHeader={t('statistics.win-count')}
             />
           </div>
           <BgtPoster
             className="hidden xl:flex xl:col-span-4 2xl:col-span-3"
-            title={player.data.model.name}
-            image={player.data.model.image}
+            title={player.data.name}
+            image={player.data.image}
           />
         </div>
-        {statistics.data.model.playCount !== 0 && (
+        {statistics.data.playCount !== 0 && (
           <>
             <div className="grid grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6 gap-1 md:gap-3">
-              <BgtTextStatistic content={statistics.data.model.playCount} title={t('statistics.play-count')} />
+              <BgtTextStatistic content={statistics.data.playCount} title={t('statistics.play-count')} />
               <BgtTextStatistic
-                content={statistics.data.model.totalPlayedTime}
+                content={statistics.data.totalPlayedTime}
                 title={t('statistics.total-play-time')}
                 suffix={t('common.minutes_abbreviation')}
               />
-              <BgtTextStatistic content={statistics.data.model.winCount} title={t('statistics.win-count')} />
+              <BgtTextStatistic content={statistics.data.winCount} title={t('statistics.win-count')} />
               <BgtTextStatistic
-                content={GetPercentage(statistics.data.model.winCount, statistics.data.model.playCount)}
+                content={GetPercentage(statistics.data.winCount, statistics.data.playCount)}
                 title={t('statistics.win-percentage')}
                 suffix={'%'}
               />
               <BgtTextStatistic
-                content={statistics.data.model.distinctGameCount}
+                content={statistics.data.distinctGameCount}
                 title={t('statistics.distinct-game-count')}
               />
             </div>
@@ -107,15 +119,13 @@ export const PlayerDetailpage = () => {
             </BgtHeading>
 
             <BgtDeleteModal
-              title={player.data.model.name}
+              title={player.data.name}
               open={openDeleteModal}
               setOpen={setOpenDeleteModal}
               onDelete={deletePlayerInternal}
             />
           </>
         )}
-
-        {/* <PlayerPlays /> */}
       </BgtPageContent>
     </BgtPage>
   );

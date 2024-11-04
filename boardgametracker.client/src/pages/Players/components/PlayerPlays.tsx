@@ -1,5 +1,5 @@
-import { PlayerPlaysDesktop } from './PlayerPlaysDesktop';
 import { PlayerPlaysMobile } from './PlayerPlaysMobile';
+import { PlayerPlaysDesktop } from './PlayerPlaysDesktop';
 
 export const PlayerPlays = () => {
   return (

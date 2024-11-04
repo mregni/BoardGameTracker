@@ -5,10 +5,10 @@ import { renderToString } from 'react-dom/server';
 import { format } from 'date-fns';
 import { AgChartsReact } from 'ag-charts-react';
 
+import { useGame } from '../../hooks/useGame';
 import { StringToRgb } from '../../../../utils/stringUtils';
 import { useSettings } from '../../../../hooks/useSettings';
-import { usePlayers } from '../../../../hooks/usePlayers';
-import { useGame } from '../../../../hooks/useGame';
+import { usePlayerById } from '../../../../hooks/usePlayerById';
 import { BgtChartCard } from '../../../../components/BgtCard/BgtChartCard';
 import { BgtAvatar } from '../../../../components/BgtAvatar/BgtAvatar';
 
@@ -19,15 +19,15 @@ interface SeriesData {
 
 export const PlayerScoringChart = () => {
   const { id } = useParams();
-  const { playerScoringChart, game } = useGame(id);
+  const { playerScoringChart, game } = useGame({ id });
   const { settings } = useSettings();
-  const { byId } = usePlayers();
+  const { playerById } = usePlayerById();
   const { t } = useTranslation();
 
-  if (playerScoringChart === undefined || settings === undefined || !game?.hasScoring) return null;
+  if (playerScoringChart.data === undefined || settings.data === undefined || !game.data?.hasScoring) return null;
 
-  const transformedSeries: SeriesData[] = playerScoringChart.map(({ dateTime, series }) => {
-    const data: SeriesData = { date: format(dateTime, settings.dateFormat) };
+  const transformedSeries: SeriesData[] = playerScoringChart.data.map(({ dateTime, series }) => {
+    const data: SeriesData = { date: format(dateTime, settings.data.dateFormat) };
     series.forEach(({ id, value }) => {
       data[id] = value;
     });
@@ -60,18 +60,18 @@ export const PlayerScoringChart = () => {
                 tooltip: {
                   renderer: (params) =>
                     `<div class="ag-chart-tooltip-title !rounded-lg flex flex-row justify-start gap-2 items-center" style="background-color:${params.color}">
-                    ${renderToString(<BgtAvatar title={params.title} image={byId(params.yKey)?.image} noTooltip />)}
+                    ${renderToString(<BgtAvatar title={params.title} image={playerById(params.yKey)?.image} noTooltip />)}
                     ${params.title}: ${params.datum[params.yKey]}
                   </div>`,
                 },
                 type: 'line',
                 xKey: 'date',
                 yKey: `${x}`,
-                yName: byId(x)?.name,
-                stroke: StringToRgb(byId(x)?.name),
+                yName: playerById(x)?.name,
+                stroke: StringToRgb(playerById(x)?.name),
                 marker: {
-                  fill: StringToRgb(byId(x)?.name),
-                  stroke: StringToRgb(byId(x)?.name),
+                  fill: StringToRgb(playerById(x)?.name),
+                  stroke: StringToRgb(playerById(x)?.name),
                 },
               })),
             background: { visible: false },

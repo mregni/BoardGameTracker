@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { Dispatch, SetStateAction } from 'react';
@@ -6,27 +7,36 @@ import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 
-import { BgtSwitch } from '../BgtSwitch/BgtSwitch';
-import { BgtIcon } from '../BgtIcon/BgtIcon';
-import { BgtHeading } from '../BgtHeading/BgtHeading';
-import { BgtSelect } from '../BgtForm/BgtSelect';
-import { BgtInputField } from '../BgtForm/BgtInputField';
-import BgtButton from '../BgtButton/BgtButton';
-import { getItemStateTranslationKeyByString } from '../../utils/ItemStateUtils';
-import { BggSearch, BggSearchSchema, GameState } from '../../models';
-import { useSettings } from '../../hooks/useSettings';
-import { useGames } from '../../hooks/useGames';
+import { useBggGameModal } from '../hooks/useBggGameModal';
+import { getItemStateTranslationKeyByString } from '../../../utils/ItemStateUtils';
+import { BggSearch, BggSearchSchema, Game, GameState } from '../../../models';
+import { useSettings } from '../../../hooks/useSettings';
+import { BgtSwitch } from '../../../components/BgtSwitch/BgtSwitch';
+import { BgtIcon } from '../../../components/BgtIcon/BgtIcon';
+import { BgtHeading } from '../../../components/BgtHeading/BgtHeading';
+import { BgtSelect } from '../../../components/BgtForm/BgtSelect';
+import { BgtInputField } from '../../../components/BgtForm/BgtInputField';
+import BgtButton from '../../../components/BgtButton/BgtButton';
+
+import { useToast } from '@/providers/BgtToastProvider';
 
 interface Props {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const BgtBggGameModal = (props: Props) => {
+export const BggGameModal = (props: Props) => {
   const { open, setOpen } = props;
   const { t } = useTranslation();
   const { settings } = useSettings();
-  const { save, saveIsPending } = useGames();
+  const navigate = useNavigate();
+  const { showInfoToast } = useToast();
+
+  const onSuccess = (game: Game) => {
+    showInfoToast('game.notifications.created');
+    navigate(`/games/${game.id}`);
+  };
+  const { save, isPending } = useBggGameModal({ onSuccess });
 
   const openBgg = () => {
     window.open('https://boardgamegeek.com/browse/boardgame', '_blank');
@@ -58,7 +68,7 @@ export const BgtBggGameModal = (props: Props) => {
               <>{t('game.bgg.external-page')}</>
             </BgtButton>
             <BgtInputField
-              disabled={saveIsPending}
+              disabled={isPending}
               label={t('game.bgg.label')}
               name="bggId"
               type="text"
@@ -66,16 +76,16 @@ export const BgtBggGameModal = (props: Props) => {
               control={control}
             />
             <BgtInputField
-              disabled={saveIsPending}
+              disabled={isPending}
               label={t('game.price.label')}
               name="price"
               type="number"
               placeholder={t('game.price.placeholder')}
               control={control}
-              prefixLabel={settings?.currency}
+              prefixLabel={settings.data?.currency}
             />
             <BgtInputField
-              disabled={saveIsPending}
+              disabled={isPending}
               label={t('game.added-date.label')}
               name="date"
               type="date"
@@ -83,7 +93,7 @@ export const BgtBggGameModal = (props: Props) => {
               className="pr-2"
             />
             <BgtSelect
-              disabled={saveIsPending}
+              disabled={isPending}
               control={control}
               label={t('game.state.label')}
               name="state"
@@ -91,17 +101,17 @@ export const BgtBggGameModal = (props: Props) => {
                 .filter((value) => !isNaN(Number(value)))
                 .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value, image: null }))}
             />
-            <BgtSwitch label={t('game.scoring.label')} disabled={saveIsPending} control={control} name="hasScoring" />
+            <BgtSwitch label={t('game.scoring.label')} disabled={isPending} control={control} name="hasScoring" />
           </div>
           <div className="flex justify-end gap-3">
             <Dialog.Close>
               <>
                 <Form.Submit>
-                  <BgtButton type="submit" variant="soft" disabled={saveIsPending}>
+                  <BgtButton type="submit" variant="soft" disabled={isPending}>
                     {t('game.new.save')}
                   </BgtButton>
                 </Form.Submit>
-                <BgtButton variant="outline" onClick={() => setOpen(false)} disabled={saveIsPending}>
+                <BgtButton variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
                   {t('common.cancel')}
                 </BgtButton>
               </>

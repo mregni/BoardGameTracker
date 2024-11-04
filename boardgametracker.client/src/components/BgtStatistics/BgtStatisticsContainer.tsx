@@ -10,7 +10,7 @@ export const BgtStatisticsContainer = (props: Props) => {
 
   return (
     <div className="flex justify-center">
-      <BgtCard noPadding contentStyle="flex flex-row justify-center flex-wrap [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-blue-500">
+      <BgtCard className="flex flex-row justify-center flex-wrap [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-blue-500">
         {children}
       </BgtCard>
     </div>

@@ -4,18 +4,18 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 
-import { useGame } from '../../../../hooks/useGame';
+import { useGame } from '../../hooks/useGame';
 import { BgtPieChart } from '../../../../components/BgtCharts/BgtPieChart';
 import { BgtChartCard } from '../../../../components/BgtCard/BgtChartCard';
 
 export const PlayerCountChart = () => {
   const { id } = useParams();
-  const { playerCountChart } = useGame(id);
+  const { chartPlayerCount } = useGame({ id });
   const { t } = useTranslation();
 
   const pieData = useMemo(() => {
-    if (playerCountChart !== undefined) {
-      return playerCountChart
+    if (chartPlayerCount.data !== undefined) {
+      return chartPlayerCount.data
         .map((rank) => ({
           id: rank.players,
           label: rank.players,
@@ -24,9 +24,9 @@ export const PlayerCountChart = () => {
         .reverse();
     }
     return [];
-  }, [playerCountChart]);
+  }, [chartPlayerCount.data]);
 
-  if (playerCountChart === undefined) return null;
+  if (chartPlayerCount.data === undefined) return null;
 
   return (
     <div className="col-span-1">

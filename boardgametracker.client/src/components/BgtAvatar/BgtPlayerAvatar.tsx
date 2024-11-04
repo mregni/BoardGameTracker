@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { StringToHsl } from '../../utils/stringUtils';
 import { PlayerSession } from '../../models';
-import { usePlayers } from '../../hooks/usePlayers';
+import { usePlayerById } from '../../hooks/usePlayerById';
 
 import { BgtAvatar } from './BgtAvatar';
 
@@ -12,7 +12,7 @@ interface Props {
 
 export const BgtPlayerAvatar = (props: Props) => {
   const { playerSession } = props;
-  const { byId: playerById } = usePlayers();
+  const { playerById } = usePlayerById();
   const navigate = useNavigate();
 
   return (

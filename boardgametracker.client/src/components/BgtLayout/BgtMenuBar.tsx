@@ -41,7 +41,7 @@ const MobileMenu = () => {
       </div>
       <div className={clsx('mobile-menu bg-gray-950 absolute w-full top-16 z-40', !open && 'hidden-menu')}>
         {menuItems.map((x) => (
-          <BgtMenuItem key={x.path} item={x} count={counts.data.model.find((y) => y.key == x.path)?.value} />
+          <BgtMenuItem key={x.path} item={x} count={counts.data.find((y) => y.key == x.path)?.value} />
         ))}
       </div>
     </div>
@@ -61,7 +61,7 @@ const BgtMenuBar = () => {
           <BgtMenuLogo />
           <div className="mt-4">
             {menuItems.map((x) => (
-              <BgtMenuItem key={x.path} item={x} count={counts.data.model.find((y) => y.key == x.path)?.value} />
+              <BgtMenuItem key={x.path} item={x} count={counts.data.find((y) => y.key == x.path)?.value} />
             ))}
           </div>
         </div>

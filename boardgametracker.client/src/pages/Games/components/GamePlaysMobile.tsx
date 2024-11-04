@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Button } from '@radix-ui/themes';
 
 import { Play } from '../../../models';
-import { useSettings } from '../../../hooks/useSettings';
 import { useGameSessions } from '../../../hooks/useSessions';
 import { BgtNoData } from '../../../components/BgtNoData/BgtNoData';
 import { BgtMobilePlayCard } from '../../../components/BgtCard/BgtMobilePlayCard';
@@ -15,7 +14,6 @@ export const MobileDetails = () => {
   const [page, setPage] = useState(0);
   const { playSessions: plays, totalCount, isFetching } = useGameSessions(id, page, 10);
   const { t } = useTranslation();
-  const { settings } = useSettings();
 
   const [fullPlayList, setFullPlayList] = useState<Play[]>([]);
 
@@ -24,8 +22,6 @@ export const MobileDetails = () => {
       setFullPlayList((old) => [...new Set([old, plays].flat())]);
     }
   }, [plays, isFetching]);
-
-  if (settings === undefined) return null;
 
   if (plays.length === 0) {
     return (

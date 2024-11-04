@@ -4,8 +4,6 @@ export * from './Menu/MenuItem';
 
 export * from './Common/FailResult';
 export * from './Common/KeyValuePair';
-export * from './Common/Result';
-export * from './Common/ListResult';
 
 export * from './Games/BggSearch';
 export * from './Games/Game';

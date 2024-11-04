@@ -30,9 +30,7 @@ public class SessionController : ControllerBase
     {
         if (viewModel == null)
         {
-            //TODO: Add to translation file
-            var failedViewModel = new FailResultViewModel("No data provided");
-            return new OkObjectResult(failedViewModel);
+            return new BadRequestResult();
         }
 
         try
@@ -41,14 +39,12 @@ public class SessionController : ControllerBase
             play = await _sessionService.Create(play);
 
             var result = _mapper.Map<SessionViewModel>(play);
-            return ResultViewModel<SessionViewModel>.CreateCreatedResult( result);
+            return new OkObjectResult(result);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            //TODO: Add to translation file
-            var failedViewModel = new FailResultViewModel("Creation failed because of backend error, check logs for details");
-            return StatusCode(500, failedViewModel);
+            return StatusCode(500);
         }
     }
     
@@ -57,9 +53,7 @@ public class SessionController : ControllerBase
     {
         if (updateViewModel is not {Id: not null})
         {
-            //TODO: Add to translation file
-            var failedViewModel = new FailResultViewModel("No data provided");
-            return new OkObjectResult(failedViewModel);
+            return new BadRequestResult();
         }
 
         var play = _mapper.Map<Session>(updateViewModel);
@@ -67,14 +61,12 @@ public class SessionController : ControllerBase
         {
             var result = await _sessionService.Update(play);
             var viewModel = _mapper.Map<SessionViewModel>(result);
-            return ResultViewModel<SessionViewModel>.CreateUpdatedResult(viewModel);
+            return new OkObjectResult(viewModel);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            //TODO: Add to translation file
-            var failedViewModel = new FailResultViewModel("Update failed because of backend error, check logs for details");
-            return StatusCode(500, failedViewModel);
+            return StatusCode(500);
         }
     }
     

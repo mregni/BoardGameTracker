@@ -34,7 +34,7 @@ public class SettingsController
             Statistics = _environmentProvider.EnableStatistics
         };
 
-        return ResultViewModel<UIResourceViewModel>.CreateFoundResult(uiResources);
+        return new OkObjectResult(uiResources);
     }
 
     [HttpPut]
@@ -45,7 +45,7 @@ public class SettingsController
         _configFileProvider.TimeFormat = model.TimeFormat;
         _configFileProvider.DateFormat = model.DateFormat;
         
-        return ResultViewModel<UIResourceViewModel>.CreateCreatedResult(model);
+        return new OkObjectResult(model);
     }
 
     [HttpGet]
@@ -60,6 +60,6 @@ public class SettingsController
             Port = _environmentProvider.Port
         };
         
-        return ResultViewModel<UIEnvironmentViewModel>.CreateFoundResult(resources);
+        return new OkObjectResult(resources);
     }
 }

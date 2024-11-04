@@ -1,21 +1,21 @@
 import { AxiosError } from 'axios';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
-import { Result, DashboardStatistics, QUERY_KEYS, DashboardCharts, FailResult } from '@/models';
+import { DashboardStatistics, QUERY_KEYS, DashboardCharts, FailResult } from '@/models';
 import { getStatistics, getCharts } from '@/hooks/services/dashboardService';
 
 interface Props {
-  statistics: UseQueryResult<Result<DashboardStatistics>, Error>;
-  charts: UseQueryResult<Result<DashboardCharts>, Error>;
+  statistics: UseQueryResult<DashboardStatistics, Error>;
+  charts: UseQueryResult<DashboardCharts, Error>;
 }
 
 export const useDashboardPage = (): Props => {
-  const statistics = useQuery<Result<DashboardStatistics>, AxiosError<FailResult>>({
+  const statistics = useQuery<DashboardStatistics, AxiosError<FailResult>>({
     queryKey: [QUERY_KEYS.dashboardStatistics],
     queryFn: ({ signal }) => getStatistics(signal),
   });
 
-  const charts = useQuery<Result<DashboardCharts>, AxiosError<FailResult>>({
+  const charts = useQuery<DashboardCharts, AxiosError<FailResult>>({
     queryKey: [QUERY_KEYS.dashboardCharts],
     queryFn: ({ signal }) => getCharts(signal),
   });

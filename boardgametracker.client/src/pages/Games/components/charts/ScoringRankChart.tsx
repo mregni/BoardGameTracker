@@ -6,9 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { ResponsiveBar } from '@nivo/bar';
 
+import { useGame } from '../../hooks/useGame';
 import { RoundDecimal } from '../../../../utils/numberUtils';
-import { usePlayers } from '../../../../hooks/usePlayers';
-import { useGame } from '../../../../hooks/useGame';
+import { usePlayerById } from '../../../../hooks/usePlayerById';
 import { BgtChartCard } from '../../../../components/BgtCard/BgtChartCard';
 
 const fillColors: Record<string, string> = {
@@ -28,6 +28,7 @@ const theme = {
   axis: {
     ticks: {
       text: {
+        fontSize: 15,
         fill: '#ffffff',
         fontFamily: 'Chakra Petch',
       },
@@ -37,13 +38,13 @@ const theme = {
 
 export const ScoringRankChart = () => {
   const { id } = useParams();
-  const { scoreRankChart, game } = useGame(id);
-  const { byId } = usePlayers();
+  const { scoreRankChart, game } = useGame({ id });
+  const { playerById } = usePlayerById();
   const { t } = useTranslation();
 
   const barData = useMemo(() => {
-    if (scoreRankChart !== undefined) {
-      return scoreRankChart
+    if (scoreRankChart.data !== undefined) {
+      return scoreRankChart.data
         .map((rank) => ({
           key: rank.key,
           score: rank.score,
@@ -54,7 +55,7 @@ export const ScoringRankChart = () => {
     return [];
   }, [scoreRankChart]);
 
-  if (scoreRankChart === undefined || !game?.hasScoring) return null;
+  if (scoreRankChart.data === undefined || !game.data?.hasScoring) return null;
 
   return (
     <>
@@ -65,7 +66,7 @@ export const ScoringRankChart = () => {
             theme={theme}
             keys={['score']}
             indexBy="key"
-            margin={{ top: 0, right: 20, bottom: 50, left: 100 }}
+            margin={{ top: 0, right: 20, bottom: 50, left: 120 }}
             padding={0.3}
             layout="horizontal"
             colors={(id) => fillColors[id.data.key]}
@@ -98,8 +99,8 @@ export const ScoringRankChart = () => {
                           className="uppercase"
                           key={data.data.playerId + y}
                         >
-                          {byId(data.data.playerId)
-                            ? `${byId(data.data.playerId)?.name} ${data.data.score}`
+                          {playerById(data.data.playerId)
+                            ? `${playerById(data.data.playerId)?.name} ${data.data.score}`
                             : RoundDecimal(data.data.score)}
                         </text>
                       ) : (
@@ -112,8 +113,8 @@ export const ScoringRankChart = () => {
                           key={data.data.playerId + y}
                         >
                           {' '}
-                          {byId(data.data.playerId)
-                            ? `${byId(data.data.playerId)?.name} ${data.data.score}`
+                          {playerById(data.data.playerId)
+                            ? `${playerById(data.data.playerId)?.name} ${data.data.score}`
                             : RoundDecimal(data.data.score)}
                         </text>
                       );

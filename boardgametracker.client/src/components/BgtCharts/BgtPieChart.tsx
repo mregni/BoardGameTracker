@@ -1,14 +1,11 @@
 import { ReactNode } from 'react';
-
 import { MayHaveLabel, ResponsivePie } from '@nivo/pie';
 
 const theme = {
-  axis: {
-    ticks: {
-      text: {
-        fontFamily: 'Chakra Petch',
-      },
-    },
+  text: {
+    fontFamily: 'Chakra Petch',
+    fontSize: 15,
+    stroke: '#ffffff',
   },
 };
 

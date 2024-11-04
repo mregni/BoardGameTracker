@@ -8,12 +8,14 @@ import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowUpTrayIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-import { BgtIcon } from '../BgtIcon/BgtIcon';
-import { BgtHeading } from '../BgtHeading/BgtHeading';
-import { BgtInputField } from '../BgtForm/BgtInputField';
-import { Player } from '../../models';
-import { usePlayers } from '../../hooks/usePlayers';
-import { useImages } from '../../hooks/useImages';
+import { usePlayerModal } from '../hooks/usePlayerModal';
+import { Player } from '../../../models';
+import { useImages } from '../../../hooks/useImages';
+import { BgtIcon } from '../../../components/BgtIcon/BgtIcon';
+import { BgtHeading } from '../../../components/BgtHeading/BgtHeading';
+import { BgtInputField } from '../../../components/BgtForm/BgtInputField';
+
+import { useToast } from '@/providers/BgtToastProvider';
 
 interface Props {
   open: boolean;
@@ -24,14 +26,20 @@ interface FormProps {
   name: string;
 }
 
-export const BgtPlayerModal = (props: Props) => {
+export const PlayerModal = (props: Props) => {
   const { open, setOpen } = props;
   const [isDragging, setIsDragging] = useState(false);
   const { t } = useTranslation();
   const [image, setImage] = useState<File | undefined>(undefined);
+  const { showInfoToast } = useToast();
 
   const { isPending, uploadPlayerImage } = useImages();
-  const { save } = usePlayers();
+
+  const onSuccess = () => {
+    showInfoToast('player.notifications.created');
+  };
+
+  const { save } = usePlayerModal({ onSuccess });
 
   const onImageChangeViaInput = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.[0]) {

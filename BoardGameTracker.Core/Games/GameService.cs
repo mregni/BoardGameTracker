@@ -78,11 +78,6 @@ public class GameService : IGameService
         await _gameRepository.DeleteGame(game);
     }
 
-    public Task<List<Session>> GetSessions(int id, int skip, int? take)
-    {
-        return _gameRepository.GetSessions(id, skip, take);
-    }
-
     public async Task<Dictionary<SessionFlag, int?>> GetPlayFlags(int id)
     {
         var shortestPlay = await _gameRepository.GetShortestPlay(id);

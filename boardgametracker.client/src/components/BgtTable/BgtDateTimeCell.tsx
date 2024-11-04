@@ -10,12 +10,12 @@ export const BgtDateTimeCell = (props: Props) => {
   const { dateTime } = props;
   const { settings } = useSettings();
 
-  if (settings === undefined) return null;
+  if (settings.isLoading || settings.isError === undefined || settings.data === undefined) return null;
 
   return (
     <div className="flex flex-col justify-center flex-none">
-      <div className="font-bold">{format(dateTime, settings?.dateFormat ?? '')}</div>
-      <div className="text-xs">{format(dateTime, settings?.timeFormat ?? '')}</div>
+      <div className="font-bold">{format(dateTime, settings.data.dateFormat ?? '')}</div>
+      <div className="text-xs">{format(dateTime, settings.data.timeFormat ?? '')}</div>
     </div>
   );
 };

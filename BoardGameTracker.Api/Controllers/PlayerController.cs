@@ -31,7 +31,7 @@ public class PlayerController : ControllerBase
         var games = await _playerService.GetList();
         var mappedGames = _mapper.Map<IList<PlayerViewModel>>(games);
 
-        return ListResultViewModel<PlayerViewModel>.CreateResult(mappedGames);
+        return new OkObjectResult(mappedGames);
     }
 
     [HttpPost]
@@ -39,9 +39,7 @@ public class PlayerController : ControllerBase
     {
         if (playerCreationViewModel == null)
         {
-            //TODO: Add to translation file
-            var failedViewModel = new FailResultViewModel("No data provided");
-            return new OkObjectResult(failedViewModel);
+            return new BadRequestResult();
         }
 
         try
@@ -50,14 +48,12 @@ public class PlayerController : ControllerBase
             player = await _playerService.Create(player);
 
             var playerViewModel = _mapper.Map<PlayerViewModel>(player);
-            return ResultViewModel<PlayerViewModel>.CreateCreatedResult(playerViewModel);
+            return new OkObjectResult(playerViewModel);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            //TODO: Add to translation file
-            var failedViewModel = new FailResultViewModel("Creation failed because of backend error, check logs for details");
-            return StatusCode(500, failedViewModel);
+            return StatusCode(500);
         }    
     }
     
@@ -66,9 +62,7 @@ public class PlayerController : ControllerBase
     {
         if (viewModel is not {Id: { }})
         {
-            //TODO: Add to translation file
-            var failedViewModel = new FailResultViewModel("No data provided");
-            return new OkObjectResult(failedViewModel);
+            return new BadRequestResult();
         }
         
         try
@@ -76,14 +70,12 @@ public class PlayerController : ControllerBase
             var player = _mapper.Map<Player>(viewModel);
             player = await _playerService.Update(player);
             var result = _mapper.Map<PlayerViewModel>(player);
-            return ResultViewModel<PlayerViewModel>.CreateUpdatedResult(result);
+            return new OkObjectResult(result);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            //TODO: Add to translation file
-            var failedViewModel = new FailResultViewModel("Update failed because of backend error, check logs for details");
-            return StatusCode(500, failedViewModel);
+            return StatusCode(500);
         }
     }
 
@@ -95,11 +87,11 @@ public class PlayerController : ControllerBase
         var player = await _playerService.Get(id);
         if (player == null)
         {
-            return new NotFoundObjectResult(new FailResultViewModel("player.notifications.not-found"));
+            return new NotFoundResult();
         }
 
         var viewModel = _mapper.Map<PlayerViewModel>(player);
-        return ResultViewModel<PlayerViewModel>.CreateFoundResult(viewModel);
+        return new OkObjectResult(viewModel);
     }
      
     [HttpDelete]
@@ -111,25 +103,12 @@ public class PlayerController : ControllerBase
     }
     
     [HttpGet]
-    [Route("{id:int}/sessions")]
-    public async Task<IActionResult> GetGameSessions(int id, [FromQuery] int? skip, [FromQuery] int? take)
-    {
-        skip ??= 0;
-        take ??= null;
-        var sessions = await _playerService.GetSessions(id, skip.Value, take);
-        var totalCount = await _playerService.GetTotalPlayCount(id);
-
-        var playViewModel = _mapper.Map<IList<SessionViewModel>>(sessions);
-        return ListResultViewModel<SessionViewModel>.CreateResult(playViewModel, totalCount);
-    }
-    
-    [HttpGet]
     [Route("{id:int}/stats")]
     public async Task<IActionResult> GetGameStats(int id)
     {
         var stats = await _playerService.GetStats(id);
 
         var statsViewModel = _mapper.Map<PlayerStatisticsViewModel>(stats);
-        return ResultViewModel<PlayerStatisticsViewModel>.CreateFoundResult(statsViewModel); 
+        return new OkObjectResult(statsViewModel);
     }
 }

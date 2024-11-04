@@ -31,17 +31,15 @@ public class ImageController : ControllerBase
             if (upload.Type == UploadFileType.Profile)
             {
                 var name = await _imageService.SaveProfileImage(upload.File);
-                return ResultViewModel<string>.CreateCreatedResult(name);
+                return new OkObjectResult(name);
             }
             
-            var failedResult = new FailResultViewModel("error.image.type-not-supported");
-            return new BadRequestObjectResult(failedResult);
+            return new BadRequestResult();
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Error while uploading image");
-            var result = new FailResultViewModel("error.image.error");
-            return StatusCode(500, result);
+            return StatusCode(500);
         }
     }
 }

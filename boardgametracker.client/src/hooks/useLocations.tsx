@@ -22,7 +22,11 @@ export const useLocations = (): Props => {
     queryFn: ({ signal }) => getLocations(signal),
   });
 
-  const { mutateAsync: save, isPending: isSaving } = useMutation<Result<Location>, AxiosError<FailResult>, CreateLocation>({
+  const { mutateAsync: save, isPending: isSaving } = useMutation<
+    Result<Location>,
+    AxiosError<FailResult>,
+    CreateLocation
+  >({
     mutationFn: addLocation,
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.locations] });
@@ -58,7 +62,7 @@ export const useLocations = (): Props => {
   };
 
   return {
-    locations: data?.list,
+    locations: data?.list ?? [],
     byId,
     save,
     isSaving,

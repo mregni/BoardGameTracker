@@ -44,7 +44,7 @@ public class DashboardController
     public async Task<IActionResult> GetDashboardStatistics()
     {
         var statistics = await _dashboardService.GetStatistics();
-        return ResultViewModel<DashbardStatistics>.CreateFoundResult(statistics);
+        return new OkObjectResult(statistics);
     }
     
     [HttpGet("charts")]
@@ -53,6 +53,6 @@ public class DashboardController
         var charts = await _dashboardService.GetCharts();
 
         var mappedResult = _mapper.Map<DashboardChartsViewModel>(charts);
-        return ResultViewModel<DashboardChartsViewModel>.CreateFoundResult(mappedResult);
+        return new OkObjectResult(mappedResult);
     }
 }

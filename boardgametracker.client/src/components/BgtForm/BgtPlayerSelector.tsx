@@ -1,15 +1,15 @@
 import { ArrayPath, Control, FieldArrayWithId, UseFieldArrayRemove, useController } from 'react-hook-form';
 import { Dispatch, SetStateAction } from 'react';
 import { t } from 'i18next';
-import { Badge, Button, Text } from '@radix-ui/themes';
-import { ClockIcon, PencilIcon, RocketLaunchIcon, TrashIcon, TrophyIcon } from '@heroicons/react/24/outline';
+import { Badge, Text } from '@radix-ui/themes';
+import { ClockIcon, PencilIcon, TrashIcon, TrophyIcon } from '@heroicons/react/24/outline';
 
 import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
 import BgtButton from '../BgtButton/BgtButton';
 import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
 import { StringToHsl } from '../../utils/stringUtils';
 import { CreateSession } from '../../models/Session/CreateSession';
-import { usePlayers } from '../../hooks/usePlayers';
+import { usePlayerById } from '../../hooks/usePlayerById';
 
 import { BgtFormErrors } from './BgtFormErrors';
 
@@ -26,7 +26,7 @@ interface Props {
 
 export const BgtPlayerSelector = (props: Props) => {
   const { name, control, setCreateModalOpen, remove, players, setPlayerIdToEdit, setUpdateModalOpen, disabled } = props;
-  const { byId } = usePlayers();
+  const { playerById } = usePlayerById();
 
   const {
     fieldState: { error },
@@ -60,11 +60,11 @@ export const BgtPlayerSelector = (props: Props) => {
             <BgtAvatar
               noTooltip
               size="large"
-              title={byId(x.playerId)?.name}
-              image={byId(x.playerId)?.image}
-              color={StringToHsl(byId(x.playerId)?.name)}
+              title={playerById(x.playerId)?.name}
+              image={playerById(x.playerId)?.image}
+              color={StringToHsl(playerById(x.playerId)?.name)}
             />
-            <Text>{byId(x.playerId)?.name}</Text>
+            <Text>{playerById(x.playerId)?.name}</Text>
             {x.won && <TrophyIcon className="w-4  text-yellow-600" />}
             {x.firstPlay && <ClockIcon className="w-4 text-green-600" />}
             {'score' in x && x.score !== undefined && <Badge>{x.score}</Badge>}

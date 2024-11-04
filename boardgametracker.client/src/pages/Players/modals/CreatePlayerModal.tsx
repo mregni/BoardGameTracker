@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { Button, Dialog } from '@radix-ui/themes';
+import { Dialog } from '@radix-ui/themes';
 import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { BgtSwitch } from '../BgtSwitch/BgtSwitch';
-import { BgtHeading } from '../BgtHeading/BgtHeading';
-import { BgtSelect } from '../BgtForm/BgtSelect';
-import { BgtInputField } from '../BgtForm/BgtInputField';
-import BgtButton from '../BgtButton/BgtButton';
+import { usePlayers } from '../hooks/usePlayers';
 import {
   CreateSessionPlayer,
   CreatePlayerSessionNoScoring,
   CreatePlayerSessionNoScoringSchema,
   CreatePlayerSessionSchema,
-} from '../../models/Session/CreateSession';
-import { usePlayers } from '../../hooks/usePlayers';
-import { useLocations } from '../../hooks/useLocations';
+} from '../../../models/Session/CreateSession';
+import { useLocations } from '../../../hooks/useLocations';
+import { BgtSwitch } from '../../../components/BgtSwitch/BgtSwitch';
+import { BgtHeading } from '../../../components/BgtHeading/BgtHeading';
+import { BgtSelect } from '../../../components/BgtForm/BgtSelect';
+import { BgtInputField } from '../../../components/BgtForm/BgtInputField';
+import BgtButton from '../../../components/BgtButton/BgtButton';
 
 interface Props {
   open: boolean;
@@ -45,7 +45,7 @@ const CreatePlayerForm = (props: Props) => {
     },
   });
 
-  if (players === undefined || locations === undefined) return null;
+  if (players.data === undefined || locations === undefined) return null;
 
   const onSubmit = (data: CreateSessionPlayer | CreatePlayerSessionNoScoring) => {
     onClose && onClose(data);
@@ -65,7 +65,7 @@ const CreatePlayerForm = (props: Props) => {
               label={t('player-session.new.player.label')}
               name="playerId"
               hasAvatars
-              items={players
+              items={(players.data ?? [])
                 .filter((player) => !selectedPlayerIds.includes(player.id.toString()))
                 .map((value) => ({
                   label: value.name,
@@ -110,6 +110,6 @@ const CreatePlayerForm = (props: Props) => {
   );
 };
 
-export const BgtCreatePlayerModal = (props: Props) => {
+export const CreatePlayerModal = (props: Props) => {
   return props.open && <CreatePlayerForm {...props} />;
 };

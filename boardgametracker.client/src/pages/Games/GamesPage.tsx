@@ -2,23 +2,21 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
 import { usePage } from '../../hooks/usePage';
-import { useGames } from '../../hooks/useGames';
-import { useCounts } from '../../hooks/useCounts';
 import BgtNewGameModal from '../../components/Modals/BgtNewGameModal';
-import { BgtBggGameModal } from '../../components/Modals/BgtBggGameModal';
 import BgtPageHeader from '../../components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import { BgtPage } from '../../components/BgtLayout/BgtPage';
 import { BgtImageCard } from '../../components/BgtImageCard/BgtImageCard';
 
-import { useGamesPage } from './hooks/useGamesPage';
+import { BggGameModal } from './modals/BggGameModal';
+import { useGames } from './hooks/useGames';
 
 export const GamesPage = () => {
   const { t } = useTranslation();
   const { pageTitle } = usePage();
   const [openModal, setOpenModal] = useState(false);
   const [openBggModal, setOpenBggModal] = useState(false);
-  const { games } = useGamesPage();
+  const { games } = useGames();
 
   const openManual = () => {
     //TODO: implement
@@ -40,11 +38,11 @@ export const GamesPage = () => {
       />
       <BgtPageContent>
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 2xl:grid-cols-10">
-          {games.data.list.map((x) => (
+          {games.data.map((x) => (
             <BgtImageCard key={x.id} title={x.title} image={x.image} state={x.state} link={`/games/${x.id}`} />
           ))}
         </div>
-        {openBggModal && <BgtBggGameModal open={openBggModal} setOpen={setOpenBggModal} />}
+        {openBggModal && <BggGameModal open={openBggModal} setOpen={setOpenBggModal} />}
         <BgtNewGameModal open={openModal} setOpen={setOpenModal} openBgg={openBgg} openManual={openManual} />
       </BgtPageContent>
     </BgtPage>

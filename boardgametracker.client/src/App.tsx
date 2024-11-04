@@ -42,7 +42,7 @@ function AppContainer() {
 function App() {
   const { settings } = useSettings();
 
-  if (!settings) return null;
+  if (settings.isLoading || settings.isError) return null;
 
   return (
     <div className="flex flex-col md:flex-row h-screen text-white">

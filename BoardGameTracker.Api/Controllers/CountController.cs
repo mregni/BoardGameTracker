@@ -32,6 +32,6 @@ public class CountController
             new("locations", await _locationService.CountAsync()),
         };
 
-        return ResultViewModel<KeyValuePairViewModel<string,int>[]>.CreateFoundResult(counts);
+        return new OkObjectResult(counts);
     }
 }

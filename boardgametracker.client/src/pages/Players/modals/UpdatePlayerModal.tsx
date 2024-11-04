@@ -1,23 +1,24 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useTranslation } from 'react-i18next';
 import { FieldArrayWithId, useForm } from 'react-hook-form';
-import { Button, Dialog } from '@radix-ui/themes';
+import { Dialog } from '@radix-ui/themes';
 import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { BgtSwitch } from '../BgtSwitch/BgtSwitch';
-import { BgtHeading } from '../BgtHeading/BgtHeading';
-import { BgtInputField } from '../BgtForm/BgtInputField';
-import BgtButton from '../BgtButton/BgtButton';
+import { usePlayers } from '../hooks/usePlayers';
 import {
   CreateSession,
   CreateSessionPlayer,
   CreatePlayerSessionNoScoring,
   CreatePlayerSessionNoScoringSchema,
   CreatePlayerSessionSchema,
-} from '../../models/Session/CreateSession';
-import { usePlayers } from '../../hooks/usePlayers';
-import { useLocations } from '../../hooks/useLocations';
+} from '../../../models/Session/CreateSession';
+import { usePlayerById } from '../../../hooks/usePlayerById';
+import { useLocations } from '../../../hooks/useLocations';
+import { BgtSwitch } from '../../../components/BgtSwitch/BgtSwitch';
+import { BgtHeading } from '../../../components/BgtHeading/BgtHeading';
+import { BgtInputField } from '../../../components/BgtForm/BgtInputField';
+import BgtButton from '../../../components/BgtButton/BgtButton';
 
 interface Props {
   open: boolean;
@@ -31,9 +32,9 @@ interface Props {
 const UpdatePlayerForm = (props: Props) => {
   const { open, hasScoring, onClose, playerToEdit, onCancel } = props;
   const { t } = useTranslation();
-  const { players } = usePlayers();
   const { locations } = useLocations();
-  const { byId } = usePlayers();
+  const { playerById } = usePlayerById();
+  const { players } = usePlayers();
 
   type PlayType<T extends boolean> = T extends true ? CreateSessionPlayer : CreatePlayerSessionNoScoring;
   type CreatePlayType = PlayType<typeof hasScoring>;
@@ -61,7 +62,7 @@ const UpdatePlayerForm = (props: Props) => {
           {t('player-session.update.title')}
         </BgtHeading>
         <Dialog.Description>
-          {t('player-session.update.description', { name: byId(playerToEdit?.playerId)?.name })}
+          {t('player-session.update.description', { name: playerById(playerToEdit?.playerId)?.name })}
         </Dialog.Description>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-4 mt-3 mb-6">
@@ -102,6 +103,6 @@ const UpdatePlayerForm = (props: Props) => {
   );
 };
 
-export const BgtUpdatePlayerModal = (props: Props) => {
+export const UpdatePlayerModal = (props: Props) => {
   return props.open && props.playerToEdit && <UpdatePlayerForm {...props} />;
 };

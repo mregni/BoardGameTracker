@@ -31,7 +31,7 @@ public class LocationController : ControllerBase
         var games = await _locationService.GetLocations();
         var mappedGames = _mapper.Map<IList<LocationViewModel>>(games);
 
-        return ListResultViewModel<LocationViewModel>.CreateResult(mappedGames);
+        return new ObjectResult(mappedGames);
     }
     
     [HttpPost]
@@ -39,9 +39,7 @@ public class LocationController : ControllerBase
     {
         if (viewModel == null)
         {
-            //TODO: move to translation file
-            var failedViewModel = new FailResultViewModel("No data provided");
-            return new BadRequestObjectResult(failedViewModel);
+            return new BadRequestResult();
         }
         
         try
@@ -53,14 +51,12 @@ public class LocationController : ControllerBase
             location = await _locationService.Create(location);
             
             var result = _mapper.Map<LocationViewModel>(location);
-            return ResultViewModel<LocationViewModel>.CreateCreatedResult(result);
+            return new OkObjectResult(result);
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            //TODO: move to translation file
-            var failViewModel = new FailResultViewModel("Creation failed because of backend error, check logs for details");
-            return StatusCode(500, failViewModel);
+            return StatusCode(500);
         }
     }
     
@@ -69,9 +65,7 @@ public class LocationController : ControllerBase
     {
         if (viewModel is null)
         {
-            //TODO: move to translation file
-            var failedViewModel = new FailResultViewModel("No data provided");
-            return new OkObjectResult(failedViewModel);
+            return new BadRequestResult();
         }
 
         try
@@ -79,14 +73,11 @@ public class LocationController : ControllerBase
             var location = _mapper.Map<Location>(viewModel);
             await _locationService.Update(location);
             
-            return ResultViewModel<LocationViewModel>.CreateUpdatedResult(viewModel);
+            return new OkObjectResult(viewModel);
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
-            //TODO: move to translation file
-            var failViewModel = new FailResultViewModel("Update failed because of backend error, check logs for details");
-            return StatusCode(500, failViewModel);
+            return StatusCode(500);
         }
     }
     

@@ -14,3 +14,5 @@ export const BgtCard = (props: Props) => {
     </div>
   );
 };
+
+

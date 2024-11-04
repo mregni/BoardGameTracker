@@ -13,7 +13,6 @@ public interface IGameService
     Task<List<Game>> GetGames();
     Task<Game?> GetGameById(int id);
     Task Delete(int id);
-    Task<List<Session>> GetSessions(int id, int skip, int? take);
     Task<GameStatistics> GetStats(int id);
     Task<int> CountAsync();
     Task<BggGame?> SearchAndCreateGame(int searchBggId);

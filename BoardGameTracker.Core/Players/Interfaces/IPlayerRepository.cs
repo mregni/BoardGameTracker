@@ -12,7 +12,6 @@ public interface IPlayerRepository
     Task<Game?> GetBestGame(int id);
     Task<int> GetTotalWinCount(int id);
     Task<double> GetPlayLengthInMinutes(int id);
-    Task<List<Session>> GetSessionsForPlayer(int id, int skip, int? take);
     Task<Player> Update(Player player);
     Task<int> GetDistinctGameCount(int id);
     Task<int> CountAsync();

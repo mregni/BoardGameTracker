@@ -1,10 +1,10 @@
 import { ComponentPropsWithoutRef, Dispatch, SetStateAction, useEffect, useState } from 'react';
-
 import { ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 
-import { Play } from '../../models';
-import { BgtNoData } from '../BgtNoData/BgtNoData';
 import { BgtBody, BgtHead, BgtPagination, BgtTable, BgtTableContainer } from '../BgtTable/BgtTable';
+import { BgtNoData } from '../BgtNoData/BgtNoData';
+import { Play } from '../../models';
+
 import { BgtCard } from './BgtCard';
 
 interface Props extends ComponentPropsWithoutRef<'div'> {

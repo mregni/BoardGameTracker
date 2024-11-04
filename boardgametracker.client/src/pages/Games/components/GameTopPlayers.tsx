@@ -5,7 +5,7 @@ import { ArrowTrendingDownIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/
 import { StringToHsl } from '../../../utils/stringUtils';
 import { RoundDecimal } from '../../../utils/numberUtils';
 import { TopPlayer, Trend } from '../../../models/Games/TopPlayer';
-import { usePlayers } from '../../../hooks/usePlayers';
+import { usePlayerById } from '../../../hooks/usePlayerById';
 import { BgtText } from '../../../components/BgtText/BgtText';
 import { BgtIcon } from '../../../components/BgtIcon/BgtIcon';
 import { BgtCard } from '../../../components/BgtCard/BgtCard';
@@ -19,7 +19,7 @@ interface Props {
 
 export const TopPlayerCard = (props: Props) => {
   const { player, index } = props;
-  const { byId } = usePlayers();
+  const { playerById } = usePlayerById();
   const navigate = useNavigate();
 
   return (
@@ -37,13 +37,13 @@ export const TopPlayerCard = (props: Props) => {
         <div className="flex flex-col gap-2 items-center">
           <BgtAvatar
             onClick={() => navigate(`/players/${player.playerId}`)}
-            image={byId(player.playerId)?.image}
-            title={byId(player.playerId)?.name}
-            color={StringToHsl(byId(player.playerId)?.name)}
+            image={playerById(player.playerId)?.image}
+            title={playerById(player.playerId)?.name}
+            color={StringToHsl(playerById(player.playerId)?.name)}
             size="big"
           />
           <BgtText size="4" className="uppercase">
-            {byId(player.playerId)?.name}
+            {playerById(player.playerId)?.name}
           </BgtText>
           <div
             className={clsx(

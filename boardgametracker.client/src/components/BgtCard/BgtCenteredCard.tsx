@@ -1,15 +1,15 @@
-import { ComponentPropsWithoutRef } from 'react';
+import { HTMLAttributes } from 'react';
 import clsx from 'clsx';
 
-interface Props extends ComponentPropsWithoutRef<'div'> {
+interface Props extends HTMLAttributes<HTMLDivElement> {
   hide?: boolean;
 }
 
 export const BgtCenteredCard = (props: Props) => {
-  const { children, className } = props;
+  const { children, className, ...rest } = props;
 
   return (
-    <div className="grid place-items-center md:h-full">
+    <div className="grid place-items-center md:h-full" {...rest}>
       <div
         className={clsx(
           'border-card-border border rounded-lg bg-card-black p-6 md:p-10 flex flex-col items-center gap-6',

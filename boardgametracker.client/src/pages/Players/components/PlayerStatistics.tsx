@@ -1,22 +1,20 @@
-import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
-import { BgtCard } from '../../../components/BgtCard/BgtCard';
-import { BgtStatistic } from '../../../components/BgtStatistic/BgtStatistic';
-import { BgtStatisticsContainer } from '../../../components/BgtStatistics/BgtStatisticsContainer';
-import { useGames } from '../../../hooks/useGames';
-import { usePlayer } from '../../../hooks/usePlayer';
-import { useSettings } from '../../../hooks/useSettings';
 import { GetPercentage } from '../../../utils/numberUtils';
+import { usePlayer } from '../../../hooks/usePlayer';
+import { useGames } from '../../../hooks/useGames';
+import { BgtStatisticsContainer } from '../../../components/BgtStatistics/BgtStatisticsContainer';
+import { BgtStatistic } from '../../../components/BgtStatistic/BgtStatistic';
+import { BgtCard } from '../../../components/BgtCard/BgtCard';
 
 export const PlayerStatistics = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const { player, statistics } = usePlayer(id);
-  const { settings } = useSettings();
   const { byId } = useGames();
 
-  if (player === undefined || statistics === undefined || settings === undefined) return null;
+  if (player === undefined || statistics === undefined) return null;
 
   return (
     <BgtStatisticsContainer>
@@ -31,7 +29,11 @@ export const PlayerStatistics = () => {
         />
       </BgtCard>
       <BgtCard hide={!statistics.totalPlayedTime}>
-        <BgtStatistic content={statistics.totalPlayedTime} title={t('statistics.total-play-time')} suffix={t('common.minutes_abbreviation')} />
+        <BgtStatistic
+          content={statistics.totalPlayedTime}
+          title={t('statistics.total-play-time')}
+          suffix={t('common.minutes_abbreviation')}
+        />
       </BgtCard>
       <BgtCard hide={!statistics.distinctGameCount}>
         <BgtStatistic content={statistics.distinctGameCount} title={t('statistics.distinct-game-count')} />
@@ -40,7 +42,11 @@ export const PlayerStatistics = () => {
         <BgtStatistic content={statistics.favoriteColor} title={t('statistics.favorite-color')} />
       </BgtCard>
       <BgtCard hide={!statistics.bestGameId}>
-        <BgtStatistic content={byId(statistics.bestGameId)?.title} game={byId(statistics.bestGameId)} title={t('statistics.best-game')} />
+        <BgtStatistic
+          content={byId(statistics.bestGameId)?.title}
+          game={byId(statistics.bestGameId)}
+          title={t('statistics.best-game')}
+        />
       </BgtCard>
     </BgtStatisticsContainer>
   );
