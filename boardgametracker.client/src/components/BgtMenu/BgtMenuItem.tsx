@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 import { Text } from '@radix-ui/themes';
 
-import { MenuItem } from '../../models';
-import { usePage } from '../../hooks/usePage';
+import { MenuItem } from '@/models';
+import { usePage } from '@/hooks/usePage';
 
 interface Props {
   item: MenuItem;
@@ -19,7 +19,7 @@ export const BgtMenuItem = (props: Props) => {
   return (
     <Link to={item.path}>
       <div
-        className={clsx(
+        className={cx(
           'flex w-full p-2 text-white cursor-pointer items-center my-1  hover:bg-primary-dark rounded-lg font-semibold justify-between px-2',
           activePage == item.path && 'bg-primary-dark border border-primary'
         )}

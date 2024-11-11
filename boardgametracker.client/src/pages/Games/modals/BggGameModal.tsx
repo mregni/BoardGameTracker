@@ -2,23 +2,28 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { Dispatch, SetStateAction } from 'react';
-import { Dialog } from '@radix-ui/themes';
 import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 
 import { useBggGameModal } from '../hooks/useBggGameModal';
-import { getItemStateTranslationKeyByString } from '../../../utils/ItemStateUtils';
-import { BggSearch, BggSearchSchema, Game, GameState } from '../../../models';
-import { useSettings } from '../../../hooks/useSettings';
-import { BgtSwitch } from '../../../components/BgtSwitch/BgtSwitch';
-import { BgtIcon } from '../../../components/BgtIcon/BgtIcon';
-import { BgtHeading } from '../../../components/BgtHeading/BgtHeading';
-import { BgtSelect } from '../../../components/BgtForm/BgtSelect';
-import { BgtInputField } from '../../../components/BgtForm/BgtInputField';
-import BgtButton from '../../../components/BgtButton/BgtButton';
 
+import { getItemStateTranslationKeyByString } from '@/utils/ItemStateUtils';
 import { useToast } from '@/providers/BgtToastProvider';
+import { BggSearch, BggSearchSchema, Game, GameState } from '@/models';
+import { useSettings } from '@/hooks/useSettings';
+import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
+import { BgtIcon } from '@/components/BgtIcon/BgtIcon';
+import { BgtSelect } from '@/components/BgtForm/BgtSelect';
+import { BgtInputField } from '@/components/BgtForm/BgtInputField';
+import {
+  BgtDialog,
+  BgtDialogClose,
+  BgtDialogContent,
+  BgtDialogDescription,
+  BgtDialogTitle,
+} from '@/components/BgtDialog/BgtDialog';
+import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {
   open: boolean;
@@ -55,15 +60,13 @@ export const BggGameModal = (props: Props) => {
   };
 
   return (
-    <Dialog.Root open={open}>
-      <Dialog.Content className="bg-card-black">
-        <BgtHeading size="6" className="uppercase">
-          {t('game.new.title')}
-        </BgtHeading>
-        <Dialog.Description>{t('game.new.bgg-description')}</Dialog.Description>
+    <BgtDialog open={open}>
+      <BgtDialogContent>
+        <BgtDialogTitle>{t('game.new.title')}</BgtDialogTitle>
+        <BgtDialogDescription>{t('game.new.bgg-description')}</BgtDialogDescription>
         <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className="flex flex-col gap-4 mt-3 mb-6">
-            <BgtButton onClick={() => openBgg()}>
+            <BgtButton onClick={() => openBgg()} disabled={isPending}>
               <BgtIcon icon={<ArrowTopRightOnSquareIcon />} size={18} />
               <>{t('game.bgg.external-page')}</>
             </BgtButton>
@@ -103,22 +106,18 @@ export const BggGameModal = (props: Props) => {
             />
             <BgtSwitch label={t('game.scoring.label')} disabled={isPending} control={control} name="hasScoring" />
           </div>
-          <div className="flex justify-end gap-3">
-            <Dialog.Close>
-              <>
-                <Form.Submit>
-                  <BgtButton type="submit" variant="soft" disabled={isPending}>
-                    {t('game.new.save')}
-                  </BgtButton>
-                </Form.Submit>
-                <BgtButton variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
-                  {t('common.cancel')}
-                </BgtButton>
-              </>
-            </Dialog.Close>
-          </div>
+          <BgtDialogClose>
+            <Form.Submit>
+              <BgtButton type="submit" variant="soft" disabled={isPending}>
+                {t('game.new.save')}
+              </BgtButton>
+            </Form.Submit>
+            <BgtButton variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
+              {t('common.cancel')}
+            </BgtButton>
+          </BgtDialogClose>
         </form>
-      </Dialog.Content>
-    </Dialog.Root>
+      </BgtDialogContent>
+    </BgtDialog>
   );
 };

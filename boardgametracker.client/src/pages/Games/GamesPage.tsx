@@ -1,15 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
-import { usePage } from '../../hooks/usePage';
-import BgtNewGameModal from '../../components/Modals/BgtNewGameModal';
-import BgtPageHeader from '../../components/BgtLayout/BgtPageHeader';
-import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
-import { BgtPage } from '../../components/BgtLayout/BgtPage';
-import { BgtImageCard } from '../../components/BgtImageCard/BgtImageCard';
-
+import NewGameModal from './modals/NewGameModal';
 import { BggGameModal } from './modals/BggGameModal';
 import { useGames } from './hooks/useGames';
+
+import { usePage } from '@/hooks/usePage';
+import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
+import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
+import { BgtPage } from '@/components/BgtLayout/BgtPage';
+import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
 
 export const GamesPage = () => {
   const { t } = useTranslation();
@@ -43,7 +43,7 @@ export const GamesPage = () => {
           ))}
         </div>
         {openBggModal && <BggGameModal open={openBggModal} setOpen={setOpenBggModal} />}
-        <BgtNewGameModal open={openModal} setOpen={setOpenModal} openBgg={openBgg} openManual={openManual} />
+        <NewGameModal open={openModal} setOpen={setOpenModal} openBgg={openBgg} openManual={openManual} />
       </BgtPageContent>
     </BgtPage>
   );

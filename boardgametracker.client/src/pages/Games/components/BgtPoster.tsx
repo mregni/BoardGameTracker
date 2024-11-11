@@ -1,5 +1,5 @@
 import { ComponentPropsWithoutRef } from 'react';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 
 import { StringToRgb } from '../../../utils/stringUtils';
 
@@ -14,7 +14,7 @@ export const BgtPoster = (props: Props) => {
   return (
     <div
       style={{ '--image-url': `url(${image})`, '--fallback-color': StringToRgb(title) }}
-      className={clsx(
+      className={cx(
         className,
         'relative overflow-hidden aspect-square rounded-xl flex justify-end flex-col px-3 w-full bg-cover bg-no-repeat bg-center',
         image && 'bg-[image:var(--image-url)]',

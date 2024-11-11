@@ -1,8 +1,7 @@
-import clsx from 'clsx';
-
+import { cx } from 'class-variance-authority';
 import { Text } from '@radix-ui/themes';
 
-import { StringToHsl } from '../../utils/stringUtils';
+import { StringToHsl } from '@/utils/stringUtils';
 
 interface Props {
   display: boolean;
@@ -19,7 +18,7 @@ export const BgtImageFallback = (props: Props) => {
   return (
     <div
       style={{ backgroundColor: StringToHsl(title) }}
-      className={clsx(
+      className={cx(
         'shadow-black drop-shadow-md flex justify-center items-center h-full aspect-square',
         !roundBottom && 'rounded-t-sm',
         roundBottom && 'rounded-sm',

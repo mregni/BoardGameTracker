@@ -1,9 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { Button, Dialog } from '@radix-ui/themes';
 
-import { BgtHeading } from '../BgtHeading/BgtHeading';
-import BgtButton from '../BgtButton/BgtButton';
-import BgtBigButton from '../BgtButton/BgtBigButton';
+import {
+  BgtDialog,
+  BgtDialogContent,
+  BgtDialogDescription,
+  BgtDialogClose,
+  BgtDialogTitle,
+} from '@/components/BgtDialog/BgtDialog';
+import BgtButton from '@/components/BgtButton/BgtButton';
+import BgtBigButton from '@/components/BgtButton/BgtBigButton';
 
 interface Props {
   open: boolean;
@@ -12,17 +17,15 @@ interface Props {
   openManual: () => void;
 }
 
-const BgtNewGameModal = (props: Props) => {
+const NewGameModal = (props: Props) => {
   const { open, setOpen, openBgg, openManual } = props;
   const { t } = useTranslation();
 
   return (
-    <Dialog.Root open={open}>
-      <Dialog.Content className="bg-card-black">
-        <BgtHeading size="6" className="uppercase">
-          {t('game.new.title')}
-        </BgtHeading>
-        <Dialog.Description>{t('game.new.description')}</Dialog.Description>
+    <BgtDialog open={open}>
+      <BgtDialogContent>
+        <BgtDialogTitle>{t('game.new.title')}</BgtDialogTitle>
+        <BgtDialogDescription>{t('game.new.description')}</BgtDialogDescription>
         <div className="flex flex-col gap-4 mt-3 mb-3">
           <BgtBigButton title={t('game.new.bgg-title')} subText={t('game.new.bgg-subtext')} onClick={openBgg} />
           <BgtBigButton
@@ -32,7 +35,7 @@ const BgtNewGameModal = (props: Props) => {
             onClick={openManual}
           />
         </div>
-        <Dialog.Close>
+        <BgtDialogClose>
           <BgtButton
             variant="soft"
             color="cancel"
@@ -41,10 +44,10 @@ const BgtNewGameModal = (props: Props) => {
           >
             {t('common.cancel')}
           </BgtButton>
-        </Dialog.Close>
-      </Dialog.Content>
-    </Dialog.Root>
+        </BgtDialogClose>
+      </BgtDialogContent>
+    </BgtDialog>
   );
 };
 
-export default BgtNewGameModal;
+export default NewGameModal;

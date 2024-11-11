@@ -1,5 +1,5 @@
 import { ComponentPropsWithoutRef } from 'react';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 import { Heading } from '@radix-ui/themes';
 
 interface Props extends ComponentPropsWithoutRef<'div'> {
@@ -10,7 +10,7 @@ export const BgtHeading = (props: Props) => {
   const { children, className, size = '8' } = props;
 
   return (
-    <Heading as="h3" size={size} className={clsx('line-clamp-1 pr-2', className)}>
+    <Heading as="h3" size={size} className={cx('uppercase line-clamp-1 pr-2', className)}>
       {children}
     </Heading>
   );

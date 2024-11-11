@@ -6,11 +6,12 @@ import { format } from 'date-fns';
 import { AgChartsReact } from 'ag-charts-react';
 
 import { useGame } from '../../hooks/useGame';
-import { StringToRgb } from '../../../../utils/stringUtils';
-import { useSettings } from '../../../../hooks/useSettings';
-import { usePlayerById } from '../../../../hooks/usePlayerById';
-import { BgtChartCard } from '../../../../components/BgtCard/BgtChartCard';
-import { BgtAvatar } from '../../../../components/BgtAvatar/BgtAvatar';
+
+import { StringToRgb } from '@/utils/stringUtils';
+import { useSettings } from '@/hooks/useSettings';
+import { usePlayerById } from '@/hooks/usePlayerById';
+import { BgtChartCard } from '@/components/BgtCard/BgtChartCard';
+import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
 
 interface SeriesData {
   date: string;

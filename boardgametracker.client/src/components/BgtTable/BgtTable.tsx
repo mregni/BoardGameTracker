@@ -1,8 +1,7 @@
-import clsx from 'clsx';
 import { Dispatch, HTMLAttributes, ReactNode, SetStateAction } from 'react';
-
-import { Button } from '@radix-ui/themes';
+import { cx } from 'class-variance-authority';
 import { Cell, flexRender, HeaderGroup, Row } from '@tanstack/react-table';
+import { Button } from '@radix-ui/themes';
 
 interface ContainerProps {
   children: ReactNode;
@@ -37,7 +36,7 @@ export const BgtTableContainer = (props: ContainerProps) => {
 };
 
 export const BgtTable = ({ className, ...props }: HTMLAttributes<HTMLTableElement>) => {
-  return <table className={clsx('table-auto w-full', className)} {...props} />;
+  return <table className={cx('table-auto w-full', className)} {...props} />;
 };
 
 export const BgtHead = <T,>(props: HeadProps<T>) => {
@@ -105,7 +104,13 @@ export const BgtPagination = (props: PaginationProps) => {
       <div>
         {currentPage + 1} / {totalPages}
       </div>
-      <Button size="2" variant="solid" className="hover:cursor-pointer" onClick={() => setPage((old) => old + 1)} disabled={!hasMore}>
+      <Button
+        size="2"
+        variant="solid"
+        className="hover:cursor-pointer"
+        onClick={() => setPage((old) => old + 1)}
+        disabled={!hasMore}
+      >
         Next
       </Button>
     </div>

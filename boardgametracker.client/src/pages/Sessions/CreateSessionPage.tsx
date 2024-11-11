@@ -8,29 +8,30 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { UpdatePlayerModal } from '../Players/modals/UpdatePlayerModal';
 import { CreatePlayerModal } from '../Players/modals/CreatePlayerModal';
+
+import { useCreateSessionPage } from './hooks/useCreateSessionPage';
+
+import { useToast } from '@/providers/BgtToastProvider';
 import {
   CreateSession,
   CreateSessionPlayer,
   CreatePlayerSessionNoScoring,
   CreateSessionSchema,
-} from '../../models/Session/CreateSession';
-import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
-import { BgtPage } from '../../components/BgtLayout/BgtPage';
-import { BgtHeading } from '../../components/BgtHeading/BgtHeading';
-import { BgtTextArea } from '../../components/BgtForm/BgtTextArea';
-import { BgtSelect } from '../../components/BgtForm/BgtSelect';
-import { BgtPlayerSelector } from '../../components/BgtForm/BgtPlayerSelector';
-import { BgtInputField } from '../../components/BgtForm/BgtInputField';
-import { BgtComboBox } from '../../components/BgtForm/BgtComboBox';
-import { BgtCenteredCard } from '../../components/BgtCard/BgtCenteredCard';
-import BgtButton from '../../components/BgtButton/BgtButton';
-
-import { useCreateSessionPage } from './hooks/useCreateSessionPage';
-
-import { useToast } from '@/providers/BgtToastProvider';
+} from '@/models/Session/CreateSession';
+import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
+import { BgtPage } from '@/components/BgtLayout/BgtPage';
+import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
+import { BgtTextArea } from '@/components/BgtForm/BgtTextArea';
+import { BgtSelect } from '@/components/BgtForm/BgtSelect';
+import { BgtPlayerSelector } from '@/components/BgtForm/BgtPlayerSelector';
+import { BgtInputField } from '@/components/BgtForm/BgtInputField';
+import { BgtComboBox } from '@/components/BgtForm/BgtComboBox';
+import { BgtCenteredCard } from '@/components/BgtCard/BgtCenteredCard';
+import BgtButton from '@/components/BgtButton/BgtButton';
 
 export const CreateSessionPage = () => {
   const { gameId } = useParams();
+  const navigate = useNavigate();
   const { showInfoToast, showErrorToast } = useToast();
 
   const onSessionSaveSuccess = () => {
@@ -51,7 +52,6 @@ export const CreateSessionPage = () => {
     onLocationSaveSuccess,
     onLocationSaveError,
   });
-  const navigate = useNavigate();
 
   const [openCreateNewPlayerModal, setOpenCreateNewPlayerModal] = useState(false);
   const [openUpdateNewPlayerModal, setOpenUpdateNewPlayerModal] = useState(false);
@@ -113,11 +113,9 @@ export const CreateSessionPage = () => {
 
   return (
     <BgtPage>
-      <BgtPageContent className="flex flex-col h-full">
+      <BgtPageContent>
         <BgtCenteredCard>
-          <BgtHeading size="6" className="uppercase">
-            {t('player-session.title')}
-          </BgtHeading>
+          <BgtHeading size="6">{t('player-session.title')}</BgtHeading>
           <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="w-full">
             <div className="flex flex-col gap-3 w-full">
               <BgtSelect
@@ -194,10 +192,22 @@ export const CreateSessionPage = () => {
                 label={t('player-session.new.comment.label')}
               />
 
-              <BgtButton type="submit" disabled={saveSession.isPending}>
-                {saveSession.isPending && <Bars className="size-4" />}
-                {t('player-session.save')}
-              </BgtButton>
+              <div className="flex flex-row gap-2">
+                <BgtButton
+                  variant="outline"
+                  type="button"
+                  disabled={saveSession.isPending}
+                  className="flex-none"
+                  onClick={() => navigate(-1)}
+                >
+                  {saveSession.isPending && <Bars className="size-4" />}
+                  {t('common.cancel')}
+                </BgtButton>
+                <BgtButton type="submit" disabled={saveSession.isPending} className="flex-1" variant="soft">
+                  {saveSession.isPending && <Bars className="size-4" />}
+                  {t('player-session.save')}
+                </BgtButton>
+              </div>
             </div>
           </form>
         </BgtCenteredCard>

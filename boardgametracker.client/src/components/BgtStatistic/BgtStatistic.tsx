@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 import { Text } from '@radix-ui/themes';
 
 import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
-import { StringToHsl } from '../../utils/stringUtils';
-import { Game, Player } from '../../models';
+
+import { StringToHsl } from '@/utils/stringUtils';
+import { Game, Player } from '@/models';
 
 interface Props {
   title: string;
@@ -22,11 +23,23 @@ export const BgtStatistic = (props: Props) => {
 
   return (
     <div className="flex flex-col justify-center items-center min-w-24 p-3">
-      <div className={clsx('flex flex-row', (player ?? game) && 'gap-1 items-center')}>
+      <div className={cx('flex flex-row', (player ?? game) && 'gap-1 items-center')}>
         {player && (
-          <BgtAvatar title={player.name} image={player.image} onClick={() => navigate(`/players/${player.id}`)} color={StringToHsl(player.name)} />
+          <BgtAvatar
+            title={player.name}
+            image={player.image}
+            onClick={() => navigate(`/players/${player.id}`)}
+            color={StringToHsl(player.name)}
+          />
         )}
-        {game && <BgtAvatar title={game.title} image={game.image} onClick={() => navigate(`/games/${game.id}`)} color={StringToHsl(game.title)} />}
+        {game && (
+          <BgtAvatar
+            title={game.title}
+            image={game.image}
+            onClick={() => navigate(`/games/${game.id}`)}
+            color={StringToHsl(game.title)}
+          />
+        )}
         <div className="text-xl font-bold line-clamp-1">
           {content}
           {suffix && <span className="text-sm">&nbsp;{suffix}</span>}

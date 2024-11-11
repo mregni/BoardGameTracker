@@ -1,16 +1,16 @@
 import { useNavigate } from 'react-router-dom';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 import { ArrowTrendingDownIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
 
-import { StringToHsl } from '../../../utils/stringUtils';
-import { RoundDecimal } from '../../../utils/numberUtils';
-import { TopPlayer, Trend } from '../../../models/Games/TopPlayer';
-import { usePlayerById } from '../../../hooks/usePlayerById';
-import { BgtText } from '../../../components/BgtText/BgtText';
-import { BgtIcon } from '../../../components/BgtIcon/BgtIcon';
-import { BgtCard } from '../../../components/BgtCard/BgtCard';
-import { BgtAvatar } from '../../../components/BgtAvatar/BgtAvatar';
-import StarIcon from '../../../assets/star.svg';
+import { StringToHsl } from '@/utils/stringUtils';
+import { RoundDecimal } from '@/utils/numberUtils';
+import { TopPlayer, Trend } from '@/models/Games/TopPlayer';
+import { usePlayerById } from '@/hooks/usePlayerById';
+import { BgtText } from '@/components/BgtText/BgtText';
+import { BgtIcon } from '@/components/BgtIcon/BgtIcon';
+import { BgtCard } from '@/components/BgtCard/BgtCard';
+import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
+import StarIcon from '@/assets/star.svg';
 
 interface Props {
   player: TopPlayer;
@@ -24,7 +24,7 @@ export const TopPlayerCard = (props: Props) => {
 
   return (
     <BgtCard
-      className={clsx(
+      className={cx(
         'w-full',
         index === 0 && 'block',
         index === 1 && 'block',
@@ -46,7 +46,7 @@ export const TopPlayerCard = (props: Props) => {
             {playerById(player.playerId)?.name}
           </BgtText>
           <div
-            className={clsx(
+            className={cx(
               'flex flex-row gap-2',
               player.trend === Trend.Up && 'text-green-400',
               player.trend === Trend.Down && 'text-red-500',

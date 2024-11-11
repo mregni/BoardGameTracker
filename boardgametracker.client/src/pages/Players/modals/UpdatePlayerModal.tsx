@@ -6,19 +6,20 @@ import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { usePlayers } from '../hooks/usePlayers';
+
 import {
   CreateSession,
   CreateSessionPlayer,
   CreatePlayerSessionNoScoring,
   CreatePlayerSessionNoScoringSchema,
   CreatePlayerSessionSchema,
-} from '../../../models/Session/CreateSession';
-import { usePlayerById } from '../../../hooks/usePlayerById';
-import { useLocations } from '../../../hooks/useLocations';
-import { BgtSwitch } from '../../../components/BgtSwitch/BgtSwitch';
-import { BgtHeading } from '../../../components/BgtHeading/BgtHeading';
-import { BgtInputField } from '../../../components/BgtForm/BgtInputField';
-import BgtButton from '../../../components/BgtButton/BgtButton';
+} from '@/models/Session/CreateSession';
+import { usePlayerById } from '@/hooks/usePlayerById';
+import { useLocations } from '@/hooks/useLocations';
+import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
+import { BgtInputField } from '@/components/BgtForm/BgtInputField';
+import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog/BgtDialog';
+import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {
   open: boolean;
@@ -56,11 +57,9 @@ const UpdatePlayerForm = (props: Props) => {
   };
 
   return (
-    <Dialog.Root open={open}>
-      <Dialog.Content className="bg-card-black">
-        <BgtHeading size="6" className="uppercase">
-          {t('player-session.update.title')}
-        </BgtHeading>
+    <BgtDialog open={open}>
+      <BgtDialogContent>
+        <BgtDialogTitle>{t('player-session.update.title')}</BgtDialogTitle>
         <Dialog.Description>
           {t('player-session.update.description', { name: playerById(playerToEdit?.playerId)?.name })}
         </Dialog.Description>
@@ -83,23 +82,19 @@ const UpdatePlayerForm = (props: Props) => {
               className="mt-2"
             />
           </div>
-          <div className="flex justify-end gap-3">
-            <Dialog.Close>
-              <>
-                <Form.Submit asChild>
-                  <BgtButton type="submit" variant="soft" color="primary">
-                    {t('player-session.update.save')}
-                  </BgtButton>
-                </Form.Submit>
-                <BgtButton type="button" variant="soft" color="cancel" onClick={() => onCancel()}>
-                  {t('common.cancel')}
-                </BgtButton>
-              </>
-            </Dialog.Close>
-          </div>
+          <BgtDialogClose>
+            <Form.Submit asChild>
+              <BgtButton type="submit" variant="soft" color="primary">
+                {t('player-session.update.save')}
+              </BgtButton>
+            </Form.Submit>
+            <BgtButton type="button" variant="soft" color="cancel" onClick={() => onCancel()}>
+              {t('common.cancel')}
+            </BgtButton>
+          </BgtDialogClose>
         </form>
-      </Dialog.Content>
-    </Dialog.Root>
+      </BgtDialogContent>
+    </BgtDialog>
   );
 };
 

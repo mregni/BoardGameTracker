@@ -1,10 +1,11 @@
-import i18next from 'i18next';
 import { useTranslation } from 'react-i18next';
-
-import { Badge, Button, Dialog, Text } from '@radix-ui/themes';
+import i18next from 'i18next';
+import { Badge, Button, Text } from '@radix-ui/themes';
 
 import { useGame } from '../../../hooks/useGame';
-import { RoundDecimal } from '../../../utils/numberUtils';
+
+import { RoundDecimal } from '@/utils/numberUtils';
+import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog/BgtDialog';
 
 interface Props {
   id: string | undefined;
@@ -28,15 +29,16 @@ export const GameDetailsPopup = (props: Props) => {
   if (game === undefined || !open) return null;
 
   return (
-    <Dialog.Root open={open}>
-      <Dialog.Content>
-        <Dialog.Title>{t('game.details.title', { title: game.title })}</Dialog.Title>
+    <BgtDialog open={open}>
+      <BgtDialogContent>
+        <BgtDialogTitle>{t('game.details.title', { title: game.title })}</BgtDialogTitle>
         <div className="flex flex-col gap-3 mt-3 mb-6">
           <div className="flex flex-col">
             <Text>{i18next.format(t('common.details'), 'capitalize')}</Text>
             <div className="flex flex-row gap-1 flex-wrap">
               <Badge color="green">
-                {t('common.play-time')}: {sanitiseValues(game.minPlayTime, game.maxPlayTime)} {t('common.minutes_abbreviation')}
+                {t('common.play-time')}: {sanitiseValues(game.minPlayTime, game.maxPlayTime)}{' '}
+                {t('common.minutes_abbreviation')}
               </Badge>
               <Badge color="green">
                 {t('common.players')}: {sanitiseValues(game.minPlayers, game.maxPlayers)}
@@ -73,14 +75,12 @@ export const GameDetailsPopup = (props: Props) => {
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-3">
-          <Dialog.Close>
-            <Button variant="surface" color="gray" onClick={() => setOpen(false)}>
-              {t('common.close')}
-            </Button>
-          </Dialog.Close>
-        </div>
-      </Dialog.Content>
-    </Dialog.Root>
+        <BgtDialogClose>
+          <Button variant="surface" color="gray" onClick={() => setOpen(false)}>
+            {t('common.close')}
+          </Button>
+        </BgtDialogClose>
+      </BgtDialogContent>
+    </BgtDialog>
   );
 };

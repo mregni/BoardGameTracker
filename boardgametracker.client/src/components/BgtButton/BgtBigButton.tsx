@@ -1,5 +1,5 @@
-import clsx from 'clsx';
-import { Button, Text } from '@radix-ui/themes';
+import { cx } from 'class-variance-authority';
+import { Text } from '@radix-ui/themes';
 
 import BgtButton from './BgtButton';
 
@@ -18,7 +18,7 @@ const BgtBigButton = (props: Props) => {
       disabled={disabled}
       variant="soft"
       onClick={onClick}
-      className={clsx('!h-28', !disabled && 'hover:cursor-pointer')}
+      className={cx('!h-28', !disabled && 'hover:cursor-pointer')}
     >
       <div className="flex flex-col p-3 gap-3">
         <Text align="center" as="p" size="4">

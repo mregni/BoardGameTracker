@@ -1,5 +1,5 @@
 import { Control, Controller, FieldValues, Path, useController } from 'react-hook-form';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 import * as Select from '@radix-ui/react-select';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
@@ -45,7 +45,7 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
             defaultValue={control?._defaultValues[name]}
           >
             <Select.Trigger
-              className={clsx(
+              className={cx(
                 'px-4 py-2 h-[45px] shadow-none bg-input uppercase inline-flex justify-between items-center rounded-lg leading-none text-[12px]',
                 error && 'border border-red-600 !bg-error-dark'
               )}

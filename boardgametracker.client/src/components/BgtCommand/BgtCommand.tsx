@@ -1,7 +1,7 @@
 import { Bars } from 'react-loading-icons';
 import { ComponentPropsWithoutRef } from 'react';
 import { Command as CommandPrimitive } from 'cmdk';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 import { MagnifyingGlassIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
 
 import { BgtIcon } from '../BgtIcon/BgtIcon';
@@ -11,7 +11,7 @@ export const BgtCommand = (props: ComponentPropsWithoutRef<typeof CommandPrimiti
 
   return (
     <CommandPrimitive
-      className={clsx(
+      className={cx(
         'mx-auto w-full transform overflow-hidden rounded-md bg-input shadow-md transition-all p-1',
         className
       )}
@@ -28,10 +28,7 @@ export const BgtCommandInput = (props: ComponentPropsWithoutRef<typeof CommandPr
     <div className="flex flex-row justify-start gap-2 items-center p-2" cmdk-input-wrapper="">
       <BgtIcon icon={<MagnifyingGlassIcon />} />
       <CommandPrimitive.Input
-        className={clsx(
-          'h-8 w-full border-0 bg-transparent focus:ring-0 focus-visible:outline-0 text-[14px]',
-          className
-        )}
+        className={cx('h-8 w-full border-0 bg-transparent focus:ring-0 focus-visible:outline-0 text-[14px]', className)}
         {...rest}
       />
     </div>
@@ -47,7 +44,7 @@ export const BgtCommandItem = (props: ComponentPropsWithoutRef<typeof CommandPri
   const { className, ...rest } = props;
   return (
     <CommandPrimitive.Item
-      className={clsx(
+      className={cx(
         'group flex gap-3 cursor-default select-none items-center rounded-md p-2 text-[14px] hover:bg-primary-dark',
         className
       )}
@@ -65,7 +62,7 @@ export const BgtCommandCreate = (props: CommandCreateProps) => {
 
   return (
     <div
-      className={clsx(
+      className={cx(
         'group p-2 flex gap-3 cursor-default select-none items-center rounded-md text-[14px] hover:bg-primary-dark',
         className
       )}

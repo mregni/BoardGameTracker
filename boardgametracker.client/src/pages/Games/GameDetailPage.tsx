@@ -3,21 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import i18next from 'i18next';
 import { formatDistanceToNowStrict } from 'date-fns';
-import clsx from 'clsx';
-
-import { RoundDecimal } from '../../utils/numberUtils';
-import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/ItemStateUtils';
-import { useSettings } from '../../hooks/useSettings';
-import { BgtDeleteModal } from '../../components/Modals/BgtDeleteModal';
-import { BgtText } from '../../components/BgtText/BgtText';
-import { BgtTextStatistic } from '../../components/BgtStatistic/BgtTextStatistic';
-import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
-import { BgtPage } from '../../components/BgtLayout/BgtPage';
-import { BgtHeading } from '../../components/BgtHeading/BgtHeading';
-import { BgtMostWinnerCard } from '../../components/BgtCard/BgtMostWinnerCard';
-import { BgtEditDeleteButtons } from '../../components/BgtButton/BgtEditDeleteButtons';
-import BgtButton from '../../components/BgtButton/BgtButton';
-import { BgtBadge } from '../../components/BgtBadge/BgtBadge';
+import { cx } from 'class-variance-authority';
 
 import { useGame } from './hooks/useGame';
 import { TopPlayerCard } from './components/GameTopPlayers';
@@ -25,7 +11,20 @@ import { GameCharts } from './components/GameCharts';
 import { BgtPoster } from './components/BgtPoster';
 import { BgtNoSessions } from './components/BgtNoSessions';
 
+import { RoundDecimal } from '@/utils/numberUtils';
+import { getColorFromGameState, getItemStateTranslationKey } from '@/utils/ItemStateUtils';
 import { useToast } from '@/providers/BgtToastProvider';
+import { useSettings } from '@/hooks/useSettings';
+import { BgtDeleteModal } from '@/components/Modals/BgtDeleteModal';
+import { BgtText } from '@/components/BgtText/BgtText';
+import { BgtTextStatistic } from '@/components/BgtStatistic/BgtTextStatistic';
+import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
+import { BgtPage } from '@/components/BgtLayout/BgtPage';
+import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
+import { BgtMostWinnerCard } from '@/components/BgtCard/BgtMostWinnerCard';
+import { BgtEditDeleteButtons } from '@/components/BgtButton/BgtEditDeleteButtons';
+import BgtButton from '@/components/BgtButton/BgtButton';
+import { BgtBadge } from '@/components/BgtBadge/BgtBadge';
 
 export const GameDetailPage = () => {
   const { id } = useParams();
@@ -88,7 +87,7 @@ export const GameDetailPage = () => {
                       >
                         {t(getItemStateTranslationKey(game.data.state))}
                       </BgtText>
-                      <BgtHeading className="uppercase">{game.data.title}</BgtHeading>
+                      <BgtHeading>{game.data.title}</BgtHeading>
                     </div>
                     <BgtEditDeleteButtons onDelete={() => alert('deleting')} onEdit={() => alert('editing')} />
                   </div>
@@ -106,7 +105,7 @@ export const GameDetailPage = () => {
               </div>
               <div>
                 <BgtText
-                  className={clsx(
+                  className={cx(
                     'whitespace-pre-line transition-all duration-500 ease-in-out md:max-h-none overflow-hidden',
                     !isExpanded && 'xl:line-clamp-none transition-max-height max-h-11',
                     isExpanded && 'transition-max-height max-h-[1000px]'
@@ -192,7 +191,7 @@ export const GameDetailPage = () => {
                 prefix={settings.data.currency}
               />
             </div>
-            <BgtHeading className="pt-8 uppercase" size="7">
+            <BgtHeading className="pt-8" size="7">
               {t('game.titles.top-players')}
             </BgtHeading>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -200,7 +199,7 @@ export const GameDetailPage = () => {
                 <TopPlayerCard key={player.playerId} index={i} player={player} />
               ))}
             </div>
-            <BgtHeading className="pt-8 uppercase" size="7">
+            <BgtHeading className="pt-8" size="7">
               {t('game.titles.analytics')}
             </BgtHeading>
             <GameCharts />

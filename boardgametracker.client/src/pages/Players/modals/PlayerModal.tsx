@@ -2,20 +2,26 @@ import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { ChangeEvent, DragEvent, useState } from 'react';
-import clsx from 'clsx';
-import { Button, Dialog } from '@radix-ui/themes';
+import { cx } from 'class-variance-authority';
+import { Button } from '@radix-ui/themes';
 import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowUpTrayIcon, PhotoIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 import { usePlayerModal } from '../hooks/usePlayerModal';
-import { Player } from '../../../models';
-import { useImages } from '../../../hooks/useImages';
-import { BgtIcon } from '../../../components/BgtIcon/BgtIcon';
-import { BgtHeading } from '../../../components/BgtHeading/BgtHeading';
-import { BgtInputField } from '../../../components/BgtForm/BgtInputField';
 
 import { useToast } from '@/providers/BgtToastProvider';
+import { Player } from '@/models';
+import { useImages } from '@/hooks/useImages';
+import { BgtIcon } from '@/components/BgtIcon/BgtIcon';
+import { BgtInputField } from '@/components/BgtForm/BgtInputField';
+import {
+  BgtDialog,
+  BgtDialogClose,
+  BgtDialogContent,
+  BgtDialogDescription,
+  BgtDialogTitle,
+} from '@/components/BgtDialog/BgtDialog';
 
 interface Props {
   open: boolean;
@@ -97,7 +103,7 @@ export const PlayerModal = (props: Props) => {
 
     if (image !== undefined) {
       const savedImage = await uploadPlayerImage(image);
-      player.image = savedImage?.model ?? null;
+      player.image = savedImage ?? null;
     }
 
     await save(player);
@@ -105,12 +111,10 @@ export const PlayerModal = (props: Props) => {
   };
 
   return (
-    <Dialog.Root open={open}>
-      <Dialog.Content className="bg-card-black">
-        <BgtHeading size="6" className="uppercase">
-          {t('player.new.title')}
-        </BgtHeading>
-        <Dialog.Description>{t('player.new.description')}</Dialog.Description>
+    <BgtDialog open={open}>
+      <BgtDialogContent>
+        <BgtDialogTitle>{t('player.new.title')}</BgtDialogTitle>
+        <BgtDialogDescription>{t('player.new.description')}</BgtDialogDescription>
         <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className="flex flex-col gap-3 mt-3 mb-6">
             <BgtInputField
@@ -144,7 +148,7 @@ export const PlayerModal = (props: Props) => {
                   onDragOver={onDragOver}
                   onDragEnter={onDragEnter}
                   onDragLeave={onDragLeave}
-                  className={clsx(
+                  className={cx(
                     'flex flex-col items-center justify-center grow h-28 border-2 border-gray-500 hover:border-gray-400 hover:bg-gray-800 border-dashed cursor-pointer',
                     isDragging && 'border-gray-400 bg-gray-800'
                   )}
@@ -163,22 +167,18 @@ export const PlayerModal = (props: Props) => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3">
-            <Dialog.Close>
-              <>
-                <Form.Submit asChild>
-                  <Button type="submit" variant="surface" color="orange" disabled={isPending}>
-                    {t('player.new.save')}
-                  </Button>
-                </Form.Submit>
-                <Button variant="surface" color="gray" onClick={() => setOpen(false)}>
-                  {t('common.cancel')}
-                </Button>
-              </>
-            </Dialog.Close>
-          </div>
+          <BgtDialogClose>
+            <Form.Submit asChild>
+              <Button type="submit" variant="surface" color="orange" disabled={isPending}>
+                {t('player.new.save')}
+              </Button>
+            </Form.Submit>
+            <Button variant="surface" color="gray" onClick={() => setOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+          </BgtDialogClose>
         </form>
-      </Dialog.Content>
-    </Dialog.Root>
+      </BgtDialogContent>
+    </BgtDialog>
   );
 };

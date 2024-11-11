@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import { useTranslation } from 'react-i18next';
 import { createContext, ElementRef, forwardRef, ReactNode, useContext, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 import * as RadixToast from '@radix-ui/react-toast';
 import { ExclamationTriangleIcon, InformationCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -74,11 +74,17 @@ export const BgtToastProvider = (props: Props) => {
 
   return (
     <RadixToast.Provider>
-      <ToastContext.Provider value={{ showInfoToast, showErrorToast, showWarningToast }}>{children}</ToastContext.Provider>
+      <ToastContext.Provider value={{ showInfoToast, showErrorToast, showWarningToast }}>
+        {children}
+      </ToastContext.Provider>
 
       <AnimatePresence mode="popLayout">
         {messages.map((toast) => (
-          <Toast key={toast.id} toast={toast} onClose={() => setMessages((toasts) => toasts.filter((t) => t.id !== toast.id))} />
+          <Toast
+            key={toast.id}
+            toast={toast}
+            onClose={() => setMessages((toasts) => toasts.filter((t) => t.id !== toast.id))}
+          />
         ))}
       </AnimatePresence>
 
@@ -122,7 +128,7 @@ const Toast = forwardRef<
         style={{ width, WebkitTapHighlightColor: 'transparent' }}
       >
         <div
-          className={clsx(
+          className={cx(
             'flex items-center w-full max-w-xs p-3 mt-2 text-white rounded-lg shadow',
             toast.type === ToastType.Info && 'bg-green-950',
             toast.type === ToastType.Warning && 'bg-orange-950',
@@ -130,7 +136,7 @@ const Toast = forwardRef<
           )}
         >
           <div
-            className={clsx(
+            className={cx(
               'inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg text-white',
               toast.type === ToastType.Info && 'bg-green-600 ',
               toast.type === ToastType.Warning && 'bg-orange-600 ',

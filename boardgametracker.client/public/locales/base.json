@@ -213,6 +213,9 @@
     "win-percentage": "Win percentage",
     "buy-price": "Cost"
   },
+  "sessions": {
+    "new": "Add new session"
+  },
   "player-session": {
     "save": "Create game play",
     "title": "Add new game session",

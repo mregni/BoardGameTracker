@@ -1,6 +1,6 @@
 import { Control, Controller, FieldValues, Path, useController } from 'react-hook-form';
 import { format } from 'date-fns';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 
 import { BgtText } from '../BgtText/BgtText';
 
@@ -54,7 +54,7 @@ export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
         control={control}
         render={({ field }) => (
           <div
-            className={clsx(
+            className={cx(
               'rounded-lg bg-input active:border-none px-4 flex flex-row gap-2 items-center text-[12px]',
               className,
               error && 'border border-red-600 !bg-error-dark'

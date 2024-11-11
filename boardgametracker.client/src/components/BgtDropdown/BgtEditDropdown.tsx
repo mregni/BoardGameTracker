@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { ComponentPropsWithoutRef, ReactNode } from 'react';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { EllipsisHorizontalIcon, EllipsisVerticalIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 import { BgtIcon } from '../BgtIcon/BgtIcon';
-import BgtButton from '../BgtButton/BgtButton';
 
 interface Props extends ComponentPropsWithoutRef<'div'> {
   triggerClassName?: string;
@@ -23,13 +22,13 @@ const BgtEditDropdown = (props: Props) => {
   return (
     <div className={className}>
       <DropdownMenu.Root>
-        <DropdownMenu.Trigger className={clsx(triggerClassName, 'focus-visible:outline-none')}>
+        <DropdownMenu.Trigger className={cx(triggerClassName, 'focus-visible:outline-none')}>
           <BgtIcon icon={icon} size={size} />
         </DropdownMenu.Trigger>
 
         <DropdownMenu.Portal>
           <DropdownMenu.Content
-            className={clsx(
+            className={cx(
               contentClassName,
               'bg-card-black border border-card-border p-2 rounded-md data-[side=top]:animate-slideDownAndFade data-[side=right]:animate-slideLeftAndFade data-[side=bottom]:animate-slideUpAndFade data-[side=left]:animate-slideRightAndFade'
             )}

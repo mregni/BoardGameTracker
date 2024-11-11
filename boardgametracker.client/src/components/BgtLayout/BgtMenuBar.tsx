@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { clsx } from 'clsx';
+import { cx } from 'class-variance-authority';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 import { BgtMenuLogo } from '../BgtMenu/BgtMenuLogo';
@@ -39,7 +39,7 @@ const MobileMenu = () => {
           {open && <XMarkIcon height={25} className="pr-3" onClick={() => setOpen(false)} />}
         </div>
       </div>
-      <div className={clsx('mobile-menu bg-gray-950 absolute w-full top-16 z-40', !open && 'hidden-menu')}>
+      <div className={cx('mobile-menu bg-gray-950 absolute w-full top-16 z-40', !open && 'hidden-menu')}>
         {menuItems.map((x) => (
           <BgtMenuItem key={x.path} item={x} count={counts.data.find((y) => y.key == x.path)?.value} />
         ))}
@@ -56,7 +56,7 @@ const BgtMenuBar = () => {
 
   return (
     <>
-      <div className={clsx('hidden relative md:flex bg-card-black h-full flex-col justify-between w-64')}>
+      <div className={cx('hidden relative md:flex bg-card-black h-full flex-col justify-between w-64')}>
         <div className="px-4 flex flex-col">
           <BgtMenuLogo />
           <div className="mt-4">

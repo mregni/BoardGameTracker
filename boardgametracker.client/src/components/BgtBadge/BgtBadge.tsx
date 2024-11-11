@@ -1,5 +1,5 @@
 import { ComponentPropsWithoutRef } from 'react';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 
 interface Props extends ComponentPropsWithoutRef<'div'> {
   variant: 'soft';
@@ -11,7 +11,7 @@ export const BgtBadge = (props: Props) => {
 
   return (
     <div
-      className={clsx(
+      className={cx(
         'px-4 py-2 rounded-md uppercase text-xs',
         color === 'green' && variant === 'soft' && 'text-mint-green bg-[#34FFAA1F]',
         color === 'red' && variant === 'soft' && '',

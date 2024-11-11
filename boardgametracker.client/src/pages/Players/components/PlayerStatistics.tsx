@@ -1,12 +1,13 @@
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import { GetPercentage } from '../../../utils/numberUtils';
 import { usePlayer } from '../../../hooks/usePlayer';
 import { useGames } from '../../../hooks/useGames';
-import { BgtStatisticsContainer } from '../../../components/BgtStatistics/BgtStatisticsContainer';
-import { BgtStatistic } from '../../../components/BgtStatistic/BgtStatistic';
-import { BgtCard } from '../../../components/BgtCard/BgtCard';
+
+import { GetPercentage } from '@/utils/numberUtils';
+import { BgtStatisticsContainer } from '@/components/BgtStatistics/BgtStatisticsContainer';
+import { BgtStatistic } from '@/components/BgtStatistic/BgtStatistic';
+import { BgtCard } from '@/components/BgtCard/BgtCard';
 
 export const PlayerStatistics = () => {
   const { id } = useParams();

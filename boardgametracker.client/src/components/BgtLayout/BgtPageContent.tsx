@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 
 interface Props {
   children: ReactNode;
@@ -9,5 +9,5 @@ interface Props {
 export const BgtPageContent = (props: Props) => {
   const { children, className = '' } = props;
 
-  return <div className={clsx('flex flex-col gap-3', className)}>{children}</div>;
+  return <div className={cx('flex flex-col gap-3', className)}>{children}</div>;
 };

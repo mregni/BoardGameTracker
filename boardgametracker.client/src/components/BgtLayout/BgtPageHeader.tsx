@@ -30,7 +30,7 @@ const BgtPageHeader = (props: Props) => {
           </IconButton>
         )}
         <div>
-          <BgtHeading className="uppercase">{header}</BgtHeading>
+          <BgtHeading>{header}</BgtHeading>
         </div>
       </div>
       <div className="flex content-center flex-wrap gap-3">

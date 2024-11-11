@@ -45,6 +45,7 @@ export const BgtPlayerSelector = (props: Props) => {
           <BgtButton
             className="w-fit"
             type="button"
+            variant="soft"
             size="1"
             onClick={() => setCreateModalOpen(true)}
             disabled={disabled}

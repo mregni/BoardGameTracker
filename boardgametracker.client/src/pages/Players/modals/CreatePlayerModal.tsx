@@ -1,23 +1,29 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { Dialog } from '@radix-ui/themes';
 import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { usePlayers } from '../hooks/usePlayers';
+
 import {
   CreateSessionPlayer,
   CreatePlayerSessionNoScoring,
   CreatePlayerSessionNoScoringSchema,
   CreatePlayerSessionSchema,
-} from '../../../models/Session/CreateSession';
-import { useLocations } from '../../../hooks/useLocations';
-import { BgtSwitch } from '../../../components/BgtSwitch/BgtSwitch';
-import { BgtHeading } from '../../../components/BgtHeading/BgtHeading';
-import { BgtSelect } from '../../../components/BgtForm/BgtSelect';
-import { BgtInputField } from '../../../components/BgtForm/BgtInputField';
-import BgtButton from '../../../components/BgtButton/BgtButton';
+} from '@/models/Session/CreateSession';
+import { useLocations } from '@/hooks/useLocations';
+import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
+import { BgtSelect } from '@/components/BgtForm/BgtSelect';
+import { BgtInputField } from '@/components/BgtForm/BgtInputField';
+import {
+  BgtDialog,
+  BgtDialogContent,
+  BgtDialogDescription,
+  BgtDialogClose,
+  BgtDialogTitle,
+} from '@/components/BgtDialog/BgtDialog';
+import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {
   open: boolean;
@@ -52,12 +58,10 @@ const CreatePlayerForm = (props: Props) => {
   };
 
   return (
-    <Dialog.Root open={open}>
-      <Dialog.Content className="bg-card-black">
-        <BgtHeading size="6" className="uppercase">
-          {t('player-session.new.title')}
-        </BgtHeading>
-        <Dialog.Description>{t('player-session.new.description')}</Dialog.Description>
+    <BgtDialog open={open}>
+      <BgtDialogContent>
+        <BgtDialogTitle>{t('player-session.new.title')}</BgtDialogTitle>
+        <BgtDialogDescription>{t('player-session.new.description')}</BgtDialogDescription>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-4 mt-3 mb-6">
             <BgtSelect
@@ -90,23 +94,19 @@ const CreatePlayerForm = (props: Props) => {
               className="mt-2"
             />
           </div>
-          <div className="flex justify-end gap-3">
-            <Dialog.Close>
-              <>
-                <Form.Submit asChild>
-                  <BgtButton type="submit" variant="soft" color="primary">
-                    {t('player-session.new.save')}
-                  </BgtButton>
-                </Form.Submit>
-                <BgtButton type="button" variant="soft" color="cancel" onClick={() => onCancel()}>
-                  {t('common.cancel')}
-                </BgtButton>
-              </>
-            </Dialog.Close>
-          </div>
+          <BgtDialogClose>
+            <Form.Submit asChild>
+              <BgtButton type="submit" variant="soft" color="primary">
+                {t('player-session.new.save')}
+              </BgtButton>
+            </Form.Submit>
+            <BgtButton type="button" variant="soft" color="cancel" onClick={() => onCancel()}>
+              {t('common.cancel')}
+            </BgtButton>
+          </BgtDialogClose>
         </form>
-      </Dialog.Content>
-    </Dialog.Root>
+      </BgtDialogContent>
+    </BgtDialog>
   );
 };
 

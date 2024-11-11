@@ -13,9 +13,7 @@ export const BgtChartCard = (props: Props) => {
   return (
     <BgtCard className={className}>
       <div className="flex flex-col gap-3 p-3 h-full w-full">
-        <BgtHeading size="5" className="uppercase">
-          {title}
-        </BgtHeading>
+        <BgtHeading size="5">{title}</BgtHeading>
         {children}
       </div>
     </BgtCard>

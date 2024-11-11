@@ -1,5 +1,5 @@
 import { ComponentPropsWithoutRef, MouseEventHandler, ReactNode } from 'react';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 
 interface Props extends ComponentPropsWithoutRef<'button'> {
   children: ReactNode | ReactNode[];
@@ -23,7 +23,7 @@ const BgtButton = (props: Props) => {
 
   return (
     <button
-      className={clsx(
+      className={cx(
         'font-bold rounded uppercase flex flex-row gap-2 justify-center',
         !disabled && 'hover:cursor-pointer',
         !disabled && variant === 'solid' && color === 'primary' && 'bg-primary text-white',

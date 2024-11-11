@@ -49,7 +49,7 @@ export const PlayerDetailpage = () => {
 
   return (
     <BgtPage>
-      <BgtPageContent className="flex flex-col gap-3">
+      <BgtPageContent>
         <div className="grid grid-cols-12 gap-3">
           <div className="col-span-12 xl:col-span-8 2xl:col-span-9 flex flex-col justify-between gap-3">
             <div className="flex flex-col gap-6 w-full">
@@ -61,7 +61,7 @@ export const PlayerDetailpage = () => {
                 />
                 <div className="col-span-8 md:col-span-10 xl:col-span-12 flex flex-col gap-2">
                   <div className="flex flex-row justify-between">
-                    <BgtHeading className="uppercase">{player.data.name}</BgtHeading>
+                    <BgtHeading>{player.data.name}</BgtHeading>
                     <BgtEditDeleteButtons onDelete={() => alert('deleting')} onEdit={() => alert('editing')} />
                   </div>
                   <BgtButton size="3" className="md:hidden">
@@ -114,7 +114,7 @@ export const PlayerDetailpage = () => {
                 title={t('statistics.distinct-game-count')}
               />
             </div>
-            <BgtHeading className="pt-8 uppercase" size="7">
+            <BgtHeading className="pt-8" size="7">
               {t('game.titles.analytics')}
             </BgtHeading>
 

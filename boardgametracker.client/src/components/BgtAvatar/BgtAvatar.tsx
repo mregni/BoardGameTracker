@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 import { Text } from '@radix-ui/themes';
 
 export interface Props {
@@ -32,7 +32,7 @@ export const BgtAvatar = (props: Props) => {
     <div className="group flex relative min-w-7">
       {image && (
         <img
-          className={clsx(
+          className={cx(
             'shadow-gray-800 shadow-md',
             size === 'big' && 'h-28 w-28 rounded-full',
             size === 'large' && 'h-11 w-11 rounded-lg',
@@ -48,7 +48,7 @@ export const BgtAvatar = (props: Props) => {
         <div
           style={{ backgroundColor: color }}
           onClick={onClick}
-          className={clsx(
+          className={cx(
             'shadow-gray-800 shadow-md flex justify-center items-center',
             size === 'big' && 'h-28 w-28 rounded-full',
             size === 'large' && 'h-11 w-11 rounded-sm',

@@ -1,7 +1,7 @@
 import { Control, FieldValues, Path, useController } from 'react-hook-form';
 import { useState } from 'react';
 import { CommandList } from 'cmdk';
-import clsx from 'clsx';
+import { cx } from 'class-variance-authority';
 import { Button } from '@radix-ui/themes';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
@@ -67,7 +67,7 @@ export const BgtComboBox = <T1 extends FieldValues, T2>(props: ComboboxProps<T1,
             role="combobox"
             aria-expanded={open}
             disabled={disabled}
-            className={clsx(
+            className={cx(
               'px-4 py-2 h-[45px] !font-normal uppercase shadow-none bg-input inline-flex justify-between items-center rounded-lg leading-none text-[12px]',
               error && 'outline outline-1 outline-red-600 !bg-error-dark'
             )}
