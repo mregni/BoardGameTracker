@@ -1,5 +1,6 @@
 {
   "common": {
+    "save": "Save",
     "actions": "Actions",
     "start": "Start",
     "cancel": "Cancel",
@@ -32,6 +33,9 @@
     "days-ago": "Days ago",
     "read-more": "Read more",
     "read-less": "Read less",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "id": "Id",
     "flags": {
       "header": "Tags",
       "shortest-game": "Shortest",
@@ -39,6 +43,7 @@
       "highest-score": "High score",
       "lowest-score": "Lowest score"
     },
+    "count": "Count",
     "game_one": "{{count}} game",
     "game_other": "{{count}} games",
     "player_one": "{{count}} player",
@@ -53,6 +58,11 @@
       "title": "No sessions logged yet",
       "content": "Log your first game session to view analytics",
       "button": ""
+    }
+  },
+  "dashboard": {
+    "charts": {
+      "games": "Games"
     }
   },
   "game": {
@@ -187,8 +197,16 @@
   "statistics": {
     "average-score": "Average score",
     "high-score": "High score",
-    "most-wint": "Most wins",
+    "most-wins": "Most wins",
     "play-count": "Plays",
+    "game-count": "Games",
+    "player-count": "Players",
+    "session-count": "Sessions",
+    "location-count": "Locations",
+    "total-cost": "Total cost",
+    "mean-cost": "Average cost",
+    "total-playtime": "Total play time",
+    "mean-playtime": "Average play time",
     "price-per-play": "Price / play",
     "total-play-time": "Total play time",
     "unique-players": "Unique players",
@@ -199,6 +217,47 @@
     "average-playtime": "Average playtime",
     "win-percentage": "Win percentage",
     "buy-price": "Cost"
+  },
+  "sessions": {
+    "new": "Add new session"
+  },
+  "settings": {
+    "titles": {
+      "localisation": "Localisation settings",
+      "currency": "Currency settings",
+      "environment": "Environment"
+    },
+    "time-zone": {
+      "label": "Time zone",
+      "required": "Time zone is required"
+    },
+    "date-format": {
+      "label": "Date format",
+      "required": "Date format is required"
+    },
+    "time-format": {
+      "label": "Time format",
+      "required": "Time format is required"
+    },
+    "ui-language": {
+      "label": "Language",
+      "required": "language is required"
+    },
+    "currency": {
+      "label": "Currency",
+      "required": "Currency is required"
+    },
+    "decimal-separator": {
+      "label": "Decimal separator",
+      "required": "Decimal separator is required",
+      "max-length": "Decimal separator can be at most 1 character"
+    },
+    "environment": {
+      "name": "Environment",
+      "port": "Port",
+      "statistics": "Statistics",
+      "log-level": "Log level"
+    }
   },
   "player-session": {
     "save": "Create game play",
@@ -267,5 +326,15 @@
       "successfull": "Game play is successfully deleted.",
       "failed": "Game play deletion failed, check logs for more details."
     }
+  },
+  "languages": {
+    "english": "English",
+    "dutch": "Dutch"
+  },
+  "log-levels": {
+    "debug": "Debug",
+    "info": "Info",
+    "warn": "Warning",
+    "error": "Error"
   }
 }
