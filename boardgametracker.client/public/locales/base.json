@@ -35,6 +35,7 @@
     "read-less": "Read less",
     "enabled": "Enabled",
     "disabled": "Disabled",
+    "id": "Id",
     "flags": {
       "header": "Tags",
       "shortest-game": "Shortest",
@@ -42,6 +43,7 @@
       "highest-score": "High score",
       "lowest-score": "Lowest score"
     },
+    "count": "Count",
     "game_one": "{{count}} game",
     "game_other": "{{count}} games",
     "player_one": "{{count}} player",

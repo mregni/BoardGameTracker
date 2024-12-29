@@ -1,7 +1,7 @@
 import { ComponentPropsWithoutRef, Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 
-import { BgtBody, BgtHead, BgtPagination, BgtTable, BgtTableContainer } from '../BgtTable/BgtTable';
+import { BgtBody, BgtHead, BgtPagination, BgtTable, BgtTableContainer } from '../BgtTable/BgtDataTable';
 import { BgtNoData } from '../BgtNoData/BgtNoData';
 import { Play } from '../../models';
 
