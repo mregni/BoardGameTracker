@@ -2,7 +2,7 @@ import { Control, Controller, FieldValues, Path, useController } from 'react-hoo
 import { cx } from 'class-variance-authority';
 import * as Select from '@radix-ui/react-select';
 import { CheckIcon } from '@heroicons/react/24/solid';
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 import { BgtIcon } from '../BgtIcon/BgtIcon';
 import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
@@ -57,9 +57,6 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
             </Select.Trigger>
             <Select.Portal>
               <Select.Content className="overflow-hidden bg-input rounded-md">
-                <Select.ScrollUpButton className="flex items-center  justify-center cursor-default">
-                  <ChevronUpIcon />
-                </Select.ScrollUpButton>
                 <Select.Viewport className="p-1">
                   {items.map((item) => (
                     <Select.Item

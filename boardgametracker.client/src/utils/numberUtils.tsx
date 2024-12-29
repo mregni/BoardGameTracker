@@ -11,3 +11,18 @@ export const GetPercentage = (value: number | undefined | null, total: number | 
 
   return RoundDecimal((value / total) * 100);
 };
+
+export const ToLogLevel = (level: number): string => {
+  switch (level) {
+    case 1:
+      return 'log-levels.debug';
+    case 2:
+      return 'log-levels.info';
+    case 3:
+      return 'log-levels.warn';
+    case 4:
+      return 'log-levels.error';
+    default:
+      return 'log-levels.warn';
+  }
+};

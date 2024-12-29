@@ -47,7 +47,7 @@ const BgtButton = (props: Props) => {
         !disabled && variant === 'inline' && color === 'primary' && ' text-white h-7 hover:text-gray-300',
         !disabled && variant === 'inline' && color === 'error' && 'text-red-800 h-7 hover:text-red-600',
         disabled && 'text-gray-500 border border-gray-500',
-        size === '1' && 'py-1 px-2 text-xs',
+        size === '1' && 'py-2 px-2 text-xs',
         size === '2' && 'py-2 px-3',
         size === '3' && 'py-3 px-8',
         className

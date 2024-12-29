@@ -5,38 +5,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Players;
 
-public class PlayerRepository : IPlayerRepository
+public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
 {
     private readonly MainDbContext _dbContext;
 
-    public PlayerRepository(MainDbContext dbContext)
+    public PlayerRepository(MainDbContext dbContext): base(dbContext)
     {
         _dbContext = dbContext;
     }
 
-    public Task<List<Player>> GetList()
+    public override Task<List<Player>> GetAllAsync()
     {
         return _dbContext.Players
             .OrderBy(x => x.Name)
             .ToListAsync();
-    }
-
-    public async Task<Player> Create(Player player)
-    {
-        await _dbContext.Players.AddAsync(player);
-        await _dbContext.SaveChangesAsync();
-        return player;
-    }
-
-    public Task<Player?> GetById(int id)
-    {
-        return _dbContext.Players.SingleOrDefaultAsync(x => x.Id == id);
-    }
-
-    public Task DeletePlayer(Player player)
-    {
-        _dbContext.Remove(player);
-        return _dbContext.SaveChangesAsync();
     }
 
     public Task<int> GetPlayCount(int id)
@@ -80,20 +62,6 @@ public class PlayerRepository : IPlayerRepository
             .Where(x => x.Id == id)
             .SelectMany(x => x.PlayerSessions)
             .SumAsync(x => (x.Session.End - x.Session.Start).TotalMinutes);
-    }
-
-    public async Task<Player> Update(Player player)
-    {
-        var dbPlayer = await _dbContext.Players
-            .SingleOrDefaultAsync(x => x.Id == player.Id);
-        if (dbPlayer != null)
-        {
-            dbPlayer.Name = player.Name;
-            dbPlayer.Image = player.Image;
-            await _dbContext.SaveChangesAsync();
-        }
-
-        return player;
     }
 
     public Task<int> GetDistinctGameCount(int id)

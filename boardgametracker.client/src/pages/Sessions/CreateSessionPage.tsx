@@ -104,7 +104,7 @@ export const CreateSessionPage = () => {
     }
   };
 
-  if (locations.data === undefined || games.data === undefined || game.data === undefined) return null;
+  if (locations.data === undefined || games.data === undefined) return null;
 
   const onSubmit = async (data: CreateSession) => {
     const result = await saveSession.mutateAsync(data);

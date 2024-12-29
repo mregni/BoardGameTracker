@@ -9,6 +9,7 @@ using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Common.Models.Dashboard;
 using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Common.ViewModels.Dashboard;
+using BoardGameTracker.Common.ViewModels.Language;
 using BoardGameTracker.Common.ViewModels.Location;
 using BoardGameTracker.Common.ViewModels.Results;
 
@@ -92,6 +93,8 @@ public class MapProfiles : Profile
         CreateMap<DashboardCharts, DashboardChartsViewModel>()
             .ForMember(x => x.GameState, x => x.MapFrom(y => y.GameState.OrderBy(z => z.GameCount)));
         CreateMap<GameStateChart, GameStateChartViewModel>();
+
+        CreateMap<Language, LanguageViewModel>();
     }
     
     private static bool IsPersonType(BggRawLink link)

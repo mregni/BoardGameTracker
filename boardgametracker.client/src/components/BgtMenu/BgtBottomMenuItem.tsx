@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
-import { MenuItem } from '../../models';
 import { BgtIcon } from '../BgtIcon/BgtIcon';
+import { MenuItem } from '../../models';
 
 export interface Props {
   item: MenuItem;

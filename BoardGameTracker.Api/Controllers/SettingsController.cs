@@ -1,7 +1,10 @@
-﻿using BoardGameTracker.Common.Enums;
+﻿using AutoMapper;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
+using BoardGameTracker.Common.ViewModels.Language;
 using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Configuration.Interfaces;
+using BoardGameTracker.Core.Languages.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Sentry;
 
@@ -13,11 +16,14 @@ public class SettingsController
 {
     private readonly IConfigFileProvider _configFileProvider;
     private readonly IEnvironmentProvider _environmentProvider;
-    
-    public SettingsController(IConfigFileProvider configFileProvider, IEnvironmentProvider environmentProvider)
+    private readonly ILanguageService _languageService;
+    private readonly IMapper _mapper;
+    public SettingsController(IConfigFileProvider configFileProvider, IEnvironmentProvider environmentProvider, ILanguageService languageService, IMapper mapper)
     {
         _configFileProvider = configFileProvider;
         _environmentProvider = environmentProvider;
+        _languageService = languageService;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -25,7 +31,6 @@ public class SettingsController
     {
         var uiResources = new UIResourceViewModel
         {
-            TimeZone = _configFileProvider.TimeZone,
             TimeFormat = _configFileProvider.TimeFormat,
             DateFormat = _configFileProvider.DateFormat,
             UILanguage = _configFileProvider.UILanguage,
@@ -44,6 +49,7 @@ public class SettingsController
         _configFileProvider.DecimalSeparator = model.DecimalSeparator;
         _configFileProvider.TimeFormat = model.TimeFormat;
         _configFileProvider.DateFormat = model.DateFormat;
+        _configFileProvider.UILanguage = model.UILanguage;
         
         return new OkObjectResult(model);
     }
@@ -61,5 +67,15 @@ public class SettingsController
         };
         
         return new OkObjectResult(resources);
+    }
+    
+    [HttpGet]
+    [Route("languages")]
+    public async Task<IActionResult> GetLanguages()
+    {
+        var languages = await _languageService.GetAllAsync();
+
+        var mappedLanguages = _mapper.Map<IList<LanguageViewModel>>(languages);
+        return new OkObjectResult(mappedLanguages);
     }
 }

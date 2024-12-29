@@ -147,11 +147,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 SendStartApplicationCommand(app.Services);
-await RunDbMigrations(app.Services);
+RunDbMigrations(app.Services);
 
 await app.RunAsync();
 
-static Task RunDbMigrations(IServiceProvider serviceProvider)
+static void RunDbMigrations(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<MainDbContext>();
@@ -160,7 +160,7 @@ static Task RunDbMigrations(IServiceProvider serviceProvider)
     {
         throw new ServiceNotResolvedException("Can't resolve MainContext");
     }
-    return context.Database.MigrateAsync();
+    context.Database.Migrate();
 }
 
 static void CreateFolders(IServiceProvider serviceProvider)

@@ -10,6 +10,8 @@ using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Languages;
+using BoardGameTracker.Core.Languages.Interfaces;
 using BoardGameTracker.Core.Locations;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players;
@@ -36,12 +38,14 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddTransient<ISessionService, SessionService>();
         serviceCollection.AddTransient<ILocationService, LocationService>();
         serviceCollection.AddTransient<IDashboardService, DashboardService>();
+        serviceCollection.AddTransient<ILanguageService, LanguageService>();
         
         serviceCollection.AddTransient<IGameRepository, GameRepository>();
         serviceCollection.AddTransient<IPlayerRepository, PlayerRepository>();
         serviceCollection.AddTransient<ISessionRepository, SessionRepository>();
         serviceCollection.AddTransient<ILocationRepository, LocationRepository>();
         serviceCollection.AddTransient<IDashboardRepository, DashboardRepository>();
+        serviceCollection.AddTransient<ILanguageRepository, LanguageRepository>();
 
         serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
         {

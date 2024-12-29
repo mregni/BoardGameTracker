@@ -1,4 +1,4 @@
-﻿namespace BoardGameTracker.Core.Extensions;
+﻿namespace BoardGameTracker.Common.Extensions;
 
 public static class ListExtensions
 {

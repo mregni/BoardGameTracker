@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Common.Models.Charts;
@@ -48,7 +49,7 @@ public class GameService : IGameService
         game.AdditionDate = search.AdditionDate;
         game.HasScoring = search.HasScoring;
 
-        return await _gameRepository.InsertGame(game);
+        return await _gameRepository.CreateAsync(game);
     }
 
     public Task<Game?> GetGameByBggId(int bggId)
@@ -63,19 +64,19 @@ public class GameService : IGameService
 
     public Task<Game?> GetGameById(int id)
     {
-        return _gameRepository.GetGameById(id);
+        return _gameRepository.GetByIdAsync(id);
     }
 
     public async Task Delete(int id)
     {
-        var game = await _gameRepository.GetGameById(id);
+        var game = await _gameRepository.GetByIdAsync(id);
         if (game == null)
         {
             return;
         }
 
         _imageService.DeleteImage(game.Image);
-        await _gameRepository.DeleteGame(game);
+        await _gameRepository.DeleteAsync(game.Id);
     }
 
     public async Task<Dictionary<SessionFlag, int?>> GetPlayFlags(int id)

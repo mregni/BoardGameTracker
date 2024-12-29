@@ -1,12 +1,9 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Datastore.Interfaces;
 
 namespace BoardGameTracker.Core.Locations.Interfaces;
 
-public interface ILocationRepository
+public interface ILocationRepository : ICrudHelper<Location>
 {
-    public Task<List<Location>> GetLocations();
-    Task<Location> Create(Location location);
-    Task Delete(int id);
-    Task Update(Location location);
     Task<int> CountAsync();
 }

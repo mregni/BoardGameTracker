@@ -10,10 +10,9 @@ public interface IConfigFileProvider : IRequestHandler<ApplicationStartedCommand
     string PostgresUser { get; }
     string PostgresPassword { get; }
     string PostgresMainDb { get; }
-    string TimeZone { get; }
     string DateFormat { get; set; }
     string TimeFormat { get; set; }
-    string UILanguage { get; }
+    string UILanguage { get; set; }
     string Currency { get; set; }
     string DecimalSeparator { get; set; }
 

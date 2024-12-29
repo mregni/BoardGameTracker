@@ -1,20 +1,40 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { getSettings } from './services/settingsService';
+import { getSettings, getLanguages, updateSettings, getEnvironment } from './services/settingsService';
 
-import { QUERY_KEYS, Settings } from '@/models';
+import { Language } from '@/models/Settings/Language';
+import { Environment } from '@/models/Settings/Environment';
+import { FailResult, QUERY_KEYS, Settings } from '@/models';
 
-export interface RemoteSettings {
-  settings: UseQueryResult<Settings, Error>;
-}
-
-export const useSettings = (): RemoteSettings => {
+export const useSettings = () => {
   const settings = useQuery<Settings>({
     queryKey: [QUERY_KEYS.settings],
     queryFn: ({ signal }) => getSettings(signal),
   });
 
+  const { mutateAsync: saveSettings, isPending } = useMutation<Settings, AxiosError<FailResult>, Settings>({
+    mutationFn: updateSettings,
+    onSuccess() {
+      settings.refetch();
+    },
+  });
+
+  const languages = useQuery<Language[]>({
+    queryKey: [QUERY_KEYS.environment],
+    queryFn: ({ signal }) => getLanguages(signal),
+  });
+
+  const environment = useQuery<Environment>({
+    queryKey: [QUERY_KEYS.languages],
+    queryFn: ({ signal }) => getEnvironment(signal),
+  });
+
   return {
     settings,
+    saveSettings,
+    isPending,
+    languages,
+    environment,
   };
 };

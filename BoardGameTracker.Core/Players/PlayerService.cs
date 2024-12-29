@@ -18,28 +18,28 @@ public class PlayerService : IPlayerService
 
     public Task<List<Player>> GetList()
     {
-        return _playerRepository.GetList();
+        return _playerRepository.GetAllAsync();
     }
 
     public Task<Player> Create(Player player)
     {
-        return _playerRepository.Create(player);
+        return _playerRepository.CreateAsync(player);
     }
 
     public Task<Player?> Get(int id)
     {
-        return _playerRepository.GetById(id);
+        return _playerRepository.GetByIdAsync(id);
     }
 
     public async Task<Player> Update(Player player)
     {
-        var dbPlayer = await _playerRepository.GetById(player.Id);
+        var dbPlayer = await _playerRepository.GetByIdAsync(player.Id);
         if (dbPlayer != null && player.Image != dbPlayer.Image)
         {
             _imageService.DeleteImage(dbPlayer.Image);
         }
 
-        return await _playerRepository.Update(player);
+        return await _playerRepository.UpdateAsync(player);
     }
 
     public Task<int> CountAsync()
@@ -49,14 +49,14 @@ public class PlayerService : IPlayerService
 
     public async Task Delete(int id)
     {
-        var player = await _playerRepository.GetById(id);
+        var player = await _playerRepository.GetByIdAsync(id);
         if (player == null)
         {
             return;
         }
 
         _imageService.DeleteImage(player.Image);
-        await _playerRepository.DeletePlayer(player);
+        await _playerRepository.DeleteAsync(player.Id);
     }
 
     public async Task<PlayerStatistics> GetStats(int id)

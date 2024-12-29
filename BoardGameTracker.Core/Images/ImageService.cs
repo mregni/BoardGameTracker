@@ -63,47 +63,14 @@ public class ImageService : IImageService
         return $"/{path.Replace("\\", "/")}";
     }
 
-    public void DeleteImage(string image)
+    public void DeleteImage(string? image)
     {
-        _diskProvider.DeleteFile(image);
-    }
-
-    public async Task<string> DownloadBackgroundImage(int bggId)
-    {
-        var url = $"https://boardgamegeek.com/boardgame/{bggId}";
-        var web = new HtmlWeb();
-        var document = await web.LoadFromWebAsync(url);
-        
-        var node = document.DocumentNode.SelectSingleNode("//script[contains(text(), 'GEEK.geekitemPreload')]");
-        if (node != null)
+        if (image == null)
         {
-            var regex = new Regex(@"GEEK\.geekitemPreload\s*=\s*(\{.*?\});", RegexOptions.Singleline);
-            var match = regex.Match(node.InnerText);
-
-            if (match.Success)
-            {
-                var json = match.Groups[1].Value;
-                var backgroundImageUrl = JsonConvert.DeserializeObject<JObject>(json)?["item"]["topimageurl"].Value<string>();
-
-                if (!string.IsNullOrEmpty(backgroundImageUrl))
-                {
-                    using var client = new HttpClient();
-                    var response = await client.GetAsync(backgroundImageUrl);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var fileName = CreateFileNameFromUrl(backgroundImageUrl, $"{bggId}-bg");
-                        var imageContent = await response.Content.ReadAsByteArrayAsync();
-
-                        using var image = Image.Load(imageContent);
-                        var newFileName = await _diskProvider.WriteFile(image, fileName, PathHelper.FullBackgroundImagePath);
-                        var path = Path.Combine(PathHelper.BackgroundImagePath, newFileName);
-                        return $"/{path.Replace("\\", "/")}";
-                    }
-                }
-            }
+            return;
         }
         
-        return CreateNoImageImages($"{bggId}-bg", PathHelper.FullBackgroundImagePath, PathHelper.BackgroundImagePath);
+        _diskProvider.DeleteFile(image);
     }
 
     private static string CreateFileNameFromUrl(string imageUrl, string fileName)

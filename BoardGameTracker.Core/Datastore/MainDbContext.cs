@@ -17,16 +17,21 @@ public class MainDbContext : DbContext
     public DbSet<Session> Sessions { get; set; }
     public DbSet<Location> Locations { get; set; }
     public DbSet<Config> Config { get; set; }
+    public DbSet<Language> Languages { get; set; }
 
-    public MainDbContext(DbContextOptions<MainDbContext> options): base(options)
+    public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
     {
-        
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.EnableSensitiveDataLogging();
         base.OnConfiguring(optionsBuilder);
+
+        optionsBuilder.UseSeeding((context, _) =>
+        {
+            CheckLanguages(context);
+        });
     }
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -60,7 +65,7 @@ public class MainDbContext : DbContext
             .HasMany(x => x.Expansions)
             .WithOne(x => x.BaseGame)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         builder.Entity<Game>()
             .HasMany(x => x.Sessions)
             .WithOne(x => x.Game)
@@ -69,7 +74,7 @@ public class MainDbContext : DbContext
         builder.Entity<Game>()
             .HasMany(x => x.Categories)
             .WithMany(x => x.Games);
-        
+
         builder.Entity<Game>()
             .HasMany(x => x.Mechanics)
             .WithMany(x => x.Games);
@@ -77,7 +82,7 @@ public class MainDbContext : DbContext
         builder.Entity<Game>()
             .HasMany(x => x.People)
             .WithMany(x => x.Games);
-        
+
         builder.Entity<Game>()
             .HasMany(x => x.Accessories)
             .WithOne(x => x.Game)
@@ -97,7 +102,7 @@ public class MainDbContext : DbContext
             .HasMany(x => x.ExtraImages)
             .WithOne(x => x.Play)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         builder.Entity<Session>()
             .HasMany(x => x.Expansions)
             .WithMany(x => x.Sessions);
@@ -119,5 +124,24 @@ public class MainDbContext : DbContext
             .WithOne(x => x.Player)
             .HasForeignKey(x => x.PlayerId)
             .OnDelete(DeleteBehavior.Cascade);
+    }
+
+    private static void CheckLanguages(DbContext context)
+    {
+        var languages = new []
+        {
+            new Language { Key = "en-us", TranslationKey = "english" },
+            new Language { Key = "nl-be", TranslationKey = "dutch" } 
+        };
+
+        foreach (var language in languages)
+        {
+            var dblang = context.Set<Language>().FirstOrDefault(b => b.Key == language.Key);
+            if (dblang == null)
+            {
+                context.Set<Language>().Add(language);
+            }
+        }
+        context.SaveChanges();
     }
 }

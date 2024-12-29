@@ -17,6 +17,8 @@ export const QUERY_KEYS = {
   locations: 'locations',
   dashboardStatistics: 'dashboard-statistics',
   dashboardCharts: 'dashboard-charts',
+  languages: 'languages',
+  environment: 'environment',
 };
 
 export const GAME_CHARTS = {

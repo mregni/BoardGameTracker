@@ -14,22 +14,22 @@ public class LocationService : ILocationService
 
     public Task<List<Location>> GetLocations()
     {
-        return _locationRepository.GetLocations();
+        return _locationRepository.GetAllAsync();
     }
 
     public Task<Location> Create(Location location)
     {
-        return _locationRepository.Create(location);
+        return _locationRepository.CreateAsync(location);
     }
 
     public Task Delete(int id)
     {
-        return _locationRepository.Delete(id);
+        return _locationRepository.DeleteAsync(id);
     }
 
     public Task Update(Location location)
     {
-        return _locationRepository.Update(location);
+        return _locationRepository.UpdateAsync(location);
     }
 
     public Task<int> CountAsync()

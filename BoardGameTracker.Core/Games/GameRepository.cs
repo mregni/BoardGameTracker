@@ -8,11 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Games;
 
-public class GameRepository : IGameRepository
+public class GameRepository : CrudHelper<Game>, IGameRepository
 {
     private readonly MainDbContext _context;
 
-    public GameRepository(MainDbContext context)
+    public GameRepository(MainDbContext context): base(context)
     {
         _context = context;
     }
@@ -35,21 +35,21 @@ public class GameRepository : IGameRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<Game> InsertGame(Game game)
+    public override async Task<Game> CreateAsync(Game entity)
     {
-        var catIds = game.Categories.Select(x => x.Id);
-        game.Categories = await _context.GameCategories.Where(x => catIds.Contains(x.Id)).ToListAsync();
+        var catIds = entity.Categories.Select(x => x.Id);
+        entity.Categories = await _context.GameCategories.Where(x => catIds.Contains(x.Id)).ToListAsync();
 
-        var mecIds = game.Mechanics.Select(x => x.Id);
-        game.Mechanics = await _context.GameMechanics.Where(x => mecIds.Contains(x.Id)).ToListAsync();
+        var mecIds = entity.Mechanics.Select(x => x.Id);
+        entity.Mechanics = await _context.GameMechanics.Where(x => mecIds.Contains(x.Id)).ToListAsync();
 
-        var peopleIds = game.People.Select(x => x.Id);
-        game.People = await _context.People.Where(x => peopleIds.Contains(x.Id)).ToListAsync();
+        var peopleIds = entity.People.Select(x => x.Id);
+        entity.People = await _context.People.Where(x => peopleIds.Contains(x.Id)).ToListAsync();
 
-        await _context.Games.AddAsync(game);
+        await _context.Games.AddAsync(entity);
         await _context.SaveChangesAsync();
 
-        return game;
+        return entity;
     }
 
     public Task<Game?> GetGameByBggId(int bggId)
@@ -65,7 +65,7 @@ public class GameRepository : IGameRepository
             .ToListAsync();
     }
 
-    public Task<Game?> GetGameById(int id)
+    public override Task<Game?> GetByIdAsync(int id)
     {
         return _context.Games
             .Include(x => x.Accessories)
@@ -74,12 +74,6 @@ public class GameRepository : IGameRepository
             .Include(x => x.Mechanics)
             .Include(x => x.People)
             .SingleOrDefaultAsync(x => x.Id == id);
-    }
-
-    public Task DeleteGame(Game game)
-    {
-        _context.Remove(game);
-        return _context.SaveChangesAsync();
     }
 
     public Task<List<Session>> GetSessions(int id, int skip, int? take)

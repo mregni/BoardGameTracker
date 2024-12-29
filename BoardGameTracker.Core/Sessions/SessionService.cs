@@ -14,16 +14,16 @@ public class SessionService : ISessionService
 
     public Task<Session> Create(Session session)
     {
-        return _sessionRepository.Create(session);
+        return _sessionRepository.CreateAsync(session);
     }
 
     public Task Delete(int id)
     {
-        return _sessionRepository.Delete(id);
+        return _sessionRepository.DeleteAsync(id);
     }
 
     public Task<Session> Update(Session session)
     {
-        return _sessionRepository.Update(session);
+        return _sessionRepository.UpdateAsync(session);
     }
 }

@@ -2,19 +2,17 @@
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models.Charts;
+using BoardGameTracker.Core.Datastore.Interfaces;
 
 namespace BoardGameTracker.Core.Games.Interfaces;
 
-public interface IGameRepository
+public interface IGameRepository: ICrudHelper<Game>
 {
     Task AddGameCategoriesIfNotExists(IEnumerable<GameCategory> categories);
     Task AddGameMechanicsIfNotExists(IEnumerable<GameMechanic> mechanics);
     Task AddPeopleIfNotExists(IEnumerable<Person> people);
-    Task<Game> InsertGame(Game game);
     Task<Game?> GetGameByBggId(int bggId);
     Task<List<Game>> GetGamesOverviewList();
-    Task<Game?> GetGameById(int id);
-    Task DeleteGame(Game game);
     Task<List<Session>> GetSessions(int id, int skip, int? take);
     Task<List<Session>> GetSessions(int id, int dayCount);
     Task<int> GetPlayCount(int id);
