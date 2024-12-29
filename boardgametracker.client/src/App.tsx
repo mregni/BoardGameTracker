@@ -6,6 +6,7 @@ import { useToast } from './providers/BgtToastProvider';
 import { SettingsRoutes } from './pages/Settings/SettingsRoutes';
 import { PlayRoutes } from './pages/Sessions/SessionRoutes';
 import { PlayerRoutes } from './pages/Players/PlayerRoutes';
+import { LocationRoutes } from './pages/Locations/LocationRoutes';
 import { GameRoutes } from './pages/Games/GameRoutes';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { FailResult } from './models';
@@ -55,6 +56,7 @@ function App() {
           <Route element={<PlayerRoutes />} path="/players/*" />
           <Route element={<PlayRoutes />} path="/play/*" />
           <Route element={<SettingsRoutes />} path="/settings/*" />
+          <Route element={<LocationRoutes />} path="/locations/*" />
           <Route element={<DashboardPage />} path="*" />
         </Routes>
       </div>
