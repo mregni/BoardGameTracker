@@ -1,5 +1,6 @@
 {
   "common": {
+    "save": "Save",
     "actions": "Actions",
     "start": "Start",
     "cancel": "Cancel",
@@ -32,6 +33,8 @@
     "days-ago": "Days ago",
     "read-more": "Read more",
     "read-less": "Read less",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
     "flags": {
       "header": "Tags",
       "shortest-game": "Shortest",
@@ -216,6 +219,44 @@
   "sessions": {
     "new": "Add new session"
   },
+  "settings": {
+    "titles": {
+      "localisation": "Localisation settings",
+      "currency": "Currency settings",
+      "environment": "Environment"
+    },
+    "time-zone": {
+      "label": "Time zone",
+      "required": "Time zone is required"
+    },
+    "date-format": {
+      "label": "Date format",
+      "required": "Date format is required"
+    },
+    "time-format": {
+      "label": "Time format",
+      "required": "Time format is required"
+    },
+    "ui-language": {
+      "label": "Language",
+      "required": "language is required"
+    },
+    "currency": {
+      "label": "Currency",
+      "required": "Currency is required"
+    },
+    "decimal-separator": {
+      "label": "Decimal separator",
+      "required": "Decimal separator is required",
+      "max-length": "Decimal separator can be at most 1 character"
+    },
+    "environment": {
+      "name": "Environment",
+      "port": "Port",
+      "statistics": "Statistics",
+      "log-level": "Log level"
+    }
+  },
   "player-session": {
     "save": "Create game play",
     "title": "Add new game session",
@@ -283,5 +324,15 @@
       "successfull": "Game play is successfully deleted.",
       "failed": "Game play deletion failed, check logs for more details."
     }
+  },
+  "languages": {
+    "english": "English",
+    "dutch": "Dutch"
+  },
+  "log-levels": {
+    "debug": "Debug",
+    "info": "Info",
+    "warn": "Warning",
+    "error": "Error"
   }
 }
