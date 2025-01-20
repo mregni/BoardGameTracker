@@ -14,6 +14,7 @@ export interface Props<T extends FieldValues> {
   valueAsNumber?: boolean;
   label?: string;
   prefixLabel?: string;
+  suffixLabel?: string;
   className?: string;
   disabled?: boolean;
 }
@@ -35,6 +36,7 @@ export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
     label,
     control,
     prefixLabel = undefined,
+    suffixLabel = undefined,
     className = '',
     disabled = false,
   } = props;
@@ -71,6 +73,7 @@ export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
               }
               placeholder={placeholder.toUpperCase()}
             />
+            {suffixLabel && <BgtText>{suffixLabel}</BgtText>}
           </div>
         )}
       />

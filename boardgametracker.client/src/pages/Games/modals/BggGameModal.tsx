@@ -107,13 +107,11 @@ export const BggGameModal = (props: Props) => {
             <BgtSwitch label={t('game.scoring.label')} disabled={isPending} control={control} name="hasScoring" />
           </div>
           <BgtDialogClose>
-            <Form.Submit>
-              <BgtButton type="submit" variant="soft" disabled={isPending}>
-                {t('game.new.save')}
-              </BgtButton>
-            </Form.Submit>
-            <BgtButton variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
+            <BgtButton variant="soft" color="cancel" onClick={() => setOpen(false)} disabled={isPending}>
               {t('common.cancel')}
+            </BgtButton>
+            <BgtButton type="submit" variant="soft" disabled={isPending}>
+              {t('game.new.save')}
             </BgtButton>
           </BgtDialogClose>
         </form>

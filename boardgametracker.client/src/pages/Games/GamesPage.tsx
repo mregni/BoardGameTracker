@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
@@ -14,13 +15,15 @@ import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
 export const GamesPage = () => {
   const { t } = useTranslation();
   const { pageTitle } = usePage();
+  const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
   const [openBggModal, setOpenBggModal] = useState(false);
-  const { games } = useGames();
+
+  const { games } = useGames({});
 
   const openManual = () => {
-    //TODO: implement
-    console.log('open manual => TODO');
+    setOpenModal(false);
+    navigate('/games/new');
   };
 
   const openBgg = () => {
@@ -39,7 +42,14 @@ export const GamesPage = () => {
       <BgtPageContent>
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 2xl:grid-cols-10">
           {games.data.map((x) => (
-            <BgtImageCard key={x.id} title={x.title} image={x.image} state={x.state} link={`/games/${x.id}`} />
+            <BgtImageCard
+              key={x.id}
+              id={x.id}
+              title={x.title}
+              image={x.image}
+              state={x.state}
+              link={`/games/${x.id}`}
+            />
           ))}
         </div>
         {openBggModal && <BggGameModal open={openBggModal} setOpen={setOpenBggModal} />}

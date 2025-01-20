@@ -24,7 +24,7 @@ const BgtButton = (props: Props) => {
   return (
     <button
       className={cx(
-        'font-bold rounded uppercase flex flex-row gap-2 justify-center',
+        'font-bold rounded uppercase flex flex-row gap-2 justify-center  focus-visible:outline-none',
         !disabled && 'hover:cursor-pointer',
         !disabled && variant === 'solid' && color === 'primary' && 'bg-primary text-white',
         !disabled && variant === 'solid' && color === 'cancel' && 'bg-[--gray-3] text-white',

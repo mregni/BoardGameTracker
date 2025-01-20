@@ -40,5 +40,8 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+        <Content Include="..\DockerFile">
+            <Link>DockerFile</Link>
+        </Content>
     </ItemGroup>
 </Project>

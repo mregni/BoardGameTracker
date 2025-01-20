@@ -105,7 +105,7 @@ const Toast = forwardRef<
   const { t } = useTranslation();
 
   return (
-    <RadixToast.Root ref={forwardedRef} asChild forceMount onOpenChange={onClose} duration={2000}>
+    <RadixToast.Root ref={forwardedRef} asChild forceMount onOpenChange={onClose} duration={2000} className="z-[9999]">
       <motion.li
         layout
         initial={{ x: width + margin }}

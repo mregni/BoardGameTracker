@@ -245,4 +245,9 @@ public class GameService : IGameService
 
         return list;
     }
+
+    public Task<Game> CreateGame(Game game)
+    {
+        return _gameRepository.CreateAsync(game);
+    }
 }

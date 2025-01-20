@@ -35,6 +35,7 @@
     "read-less": "Read less",
     "enabled": "Enabled",
     "disabled": "Disabled",
+    "poster": "Game poster",
     "id": "Id",
     "flags": {
       "header": "Tags",
@@ -71,7 +72,8 @@
     "notifications": {
       "created": "Game is succesfully created",
       "not-found": "Could not find game",
-      "duplicate": "Game already exists"
+      "duplicate": "Game already exists",
+      "deleted": "Game is succesfully deleted"
     },
     "added-date": {
       "label": "Date added",
@@ -91,7 +93,36 @@
       "bgg-subtext": "Import game data from BoardGameGeek",
       "bgg-description": "Enter required fields to import a game from BoardGameGeek",
       "manual-title": "Manual input",
-      "manual-subtext": "Manual input data to create a game"
+      "manual-subtext": "Manual input data to create a game",
+      "manual": {
+        "title": "Create game",
+        "game-title": {
+          "required": "Game title is required",
+          "label": "Game title"
+        },
+        "year": {
+          "label": "Year published",
+          "required": "Year published is required"
+        },
+        "min-players": {
+          "label": "Minimum players"
+        },
+        "max-players": {
+          "label": "Maximum players"
+        },
+        "min-time": {
+          "label": "Minimum play time"
+        },
+        "max-time": {
+          "label": "Maximum play time"
+        },
+        "min-age": {
+          "label": "Minimum player age"
+        },
+        "description": {
+          "label": "Game description"
+        }
+      }
     },
     "price": {
       "label": "Price",
@@ -143,9 +174,8 @@
     }
   },
   "images": {
-    "drag-and-drop": " or drag and drop",
     "types": "png or jpg",
-    "upload": "Click to upload"
+    "upload": "Click or drop to add image"
   },
   "player": {
     "notifications": {

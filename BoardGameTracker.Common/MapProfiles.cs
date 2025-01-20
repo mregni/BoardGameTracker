@@ -56,6 +56,7 @@ public class MapProfiles : Profile
         
         //ViewModels
         CreateMap<Game, GameViewModel>();
+        CreateMap<CreateGameViewModel, Game>();
         CreateMap<GameCategory, GameLinkViewModel>();
         CreateMap<GameMechanic, GameLinkViewModel>();
         CreateMap<Person, GamePersonViewModel>();

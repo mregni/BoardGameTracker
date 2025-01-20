@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Disk.Interfaces;
@@ -49,17 +50,33 @@ public class ImageService : IImageService
         }
     }
 
-    public async Task<string> SaveProfileImage(IFormFile? file)
+    public async Task<string> SaveImage(IFormFile? file, UploadFileType type)
     {
+        string folder;
+        string fullPath;
+        switch (type)
+        {
+            case UploadFileType.Game:
+                folder = PathHelper.CoverImagePath;
+                fullPath = PathHelper.FullCoverImagePath;
+                break;
+            case UploadFileType.Profile:
+                folder = PathHelper.ProfileImagePath;
+                fullPath = PathHelper.FullProfileImagePath;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(type), type, null);
+        }
+        
         if (file == null || file.Length == 0)
         {
-            return CreateNoImageImages("profile", PathHelper.FullProfileImagePath, PathHelper.ProfileImagePath);
+            return CreateNoImageImages(folder, fullPath, folder);
         }
         
         using var image = await Image.LoadAsync(file.OpenReadStream());
         image.Mutate(x => x.Resize(512, 512));
-        var newFileName = await _diskProvider.WriteFile(image, file.FileName, PathHelper.FullProfileImagePath);
-        var path = Path.Combine(PathHelper.ProfileImagePath, newFileName);
+        var newFileName = await _diskProvider.WriteFile(image, file.FileName, fullPath);
+        var path = Path.Combine(folder, newFileName);
         return $"/{path.Replace("\\", "/")}";
     }
 

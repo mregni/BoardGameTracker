@@ -6,8 +6,9 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { cx } from 'class-variance-authority';
 
 import { useGame } from './hooks/useGame';
+import { ScoringRankChart } from './components/ScoringRankChart';
+import { PlayerCountChart } from './components/PlayerCountChart';
 import { TopPlayerCard } from './components/GameTopPlayers';
-import { GameCharts } from './components/GameCharts';
 import { BgtPoster } from './components/BgtPoster';
 import { BgtNoSessions } from './components/BgtNoSessions';
 
@@ -89,7 +90,7 @@ export const GameDetailPage = () => {
                       </BgtText>
                       <BgtHeading>{game.data.title}</BgtHeading>
                     </div>
-                    <BgtEditDeleteButtons onDelete={() => alert('deleting')} onEdit={() => alert('editing')} />
+                    <BgtEditDeleteButtons onDelete={() => setOpenDeleteModal(true)} onEdit={() => alert('editing')} />
                   </div>
                   <div className="flex-row justify-start gap-2 hidden md:flex">
                     {game.data.categories.map((cat) => (
@@ -202,147 +203,18 @@ export const GameDetailPage = () => {
             <BgtHeading className="pt-8" size="7">
               {t('game.titles.analytics')}
             </BgtHeading>
-            <GameCharts />
-            <BgtDeleteModal
-              title={game.data.title}
-              open={openDeleteModal}
-              setOpen={setOpenDeleteModal}
-              onDelete={deleteGameInternal}
-            />
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3">
+              <ScoringRankChart />
+              <PlayerCountChart />
+            </div>
           </>
         )}
-
-        {/* <BgtCard transparant noPadding>
-          <div className="flex flex-row justify-between">
-            <div className="flex flex-col gap-3">
-              <Heading as="h4" weight="medium">
-                {game.title}
-              </Heading>
-              <div className="flex flex-row gap-2">
-                {game.categories.map((cat) => (
-                  <Badge color="green" key={cat.id} variant="solid">
-                    {cat.name}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            <div className="flex flex-row justify-end gap-2">
-              <Button variant="solid" onClick={() => navigate(`/play/create/${game.id}`)} size="3"></Button>
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger>
-                  <Button variant="solid" size="3">
-                    Options
-                    <DropdownMenu.TriggerIcon />
-                  </Button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Content size="2">
-                  <DropdownMenu.Item onClick={() => setOpenDetailsModal(true)}>
-                    {i18next.format(t('common.details'), 'capitalize')}
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item disabled>{i18next.format(t('common.edit'), 'capitalize')}</DropdownMenu.Item>
-                  <DropdownMenu.Separator />
-                  <DropdownMenu.Item color="red" onClick={() => setOpenDeleteModal(true)}>
-                    {i18next.format(t('common.delete.button'), 'capitalize')}
-                  </DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu.Root>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3">
-            <Heading as="h6" weight="medium" size="5">
-              {t('games.cards.top-players')}
-            </Heading>
-            <div className="grid grid-cols-5 gap-3">
-              {topPlayers.map((player, i) => (
-                <BgtCard key={i}>
-                  <div className="flex flex-col gap-5">
-                    <div className="flex flex-col gap-2">
-                      <BgtAvatar
-                        image={byId(player.playerId)?.image}
-                        title={byId(player.playerId)?.name}
-                        color={StringToHsl(byId(player.playerId)?.name)}
-                        size="large"
-                      />
-                      <Heading as="h4" weight="medium">
-                        {byId(player.playerId)?.name}
-                      </Heading>
-                    </div>
-                    <div className="flex flex-row justify-between">
-                      <div className="flex-col">
-                        <Text as="div">Ranking</Text>
-                        <Text as="div" weight="bold">
-                          {player.wins}/{player.playCount}
-                        </Text>
-                      </div>
-                      <div className="flex-col">
-                        <Text as="div" align="right">
-                          Trend
-                        </Text>
-                        <div
-                          className={clsx(
-                            'flex flex-row gap-1',
-                            player.trend === Trend.Up && 'text-green-400',
-                            player.trend === Trend.Down && 'text-red-500',
-                            player.trend === Trend.Equal && 'text-orange-400'
-                          )}
-                        >
-                          {player.trend === Trend.Up && (
-                            <BgtIcon icon={<ArrowTrendingUpIcon />} className="mt-1" size={17} />
-                          )}
-                          {player.trend === Trend.Down && (
-                            <BgtIcon icon={<ArrowTrendingDownIcon />} className="mt-1" size={17} />
-                          )}
-                          {RoundDecimal(player.winPercentage * 100, 0.1)}%
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </BgtCard>
-              ))}
-            </div>
-          </div>
-        </BgtCard>
-        <div
-          className={clsx(
-            'grid gap-4',
-            count <= 4 && 'grid-cols-4',
-            count === 5 && 'grid-cols-5',
-            count === 6 && 'grid-cols-6'
-          )}
-        >
-          <BgtTextStatistic content={RoundDecimal(statistics.averageScore)} title={t('statistics.average-score')} />
-          <BgtTextStatistic
-            content={RoundDecimal(statistics.averagePlayTime)}
-            title={t('statistics.average-playtime')}
-            suffix={t('common.minutes_abbreviation')}
-          />
-          <BgtTextStatistic content={statistics.playCount} title={t('statistics.play-count')} />
-          <BgtTextStatistic
-            content={
-              statistics.lastPlayed != null
-                ? formatDistanceToNowStrict(new Date(statistics.lastPlayed), { addSuffix: true })
-                : null
-            }
-            title={t('statistics.last-played')}
-          />
-          <BgtTextStatistic
-            content={statistics.totalPlayedTime}
-            title={t('statistics.total-play-time')}
-            suffix={t('common.minutes_abbreviation')}
-          />
-          <BgtTextStatistic
-            content={statistics.pricePerPlay}
-            title={t('statistics.price-per-play')}
-            suffix={settings.currency}
-          />
-        </div>
-        <GameDetailsPopup open={openDetailsModal} setOpen={setOpenDetailsModal} id={id} />
         <BgtDeleteModal
-          title={game.title}
+          title={game.data.title}
           open={openDeleteModal}
           setOpen={setOpenDeleteModal}
           onDelete={deleteGameInternal}
-        /> */}
+        />
       </BgtPageContent>
     </BgtPage>
   );

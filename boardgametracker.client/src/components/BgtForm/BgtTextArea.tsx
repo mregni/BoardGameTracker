@@ -7,12 +7,12 @@ export interface Props<T extends FieldValues> extends ComponentPropsWithoutRef<'
   name: Path<T>;
   register?: UseFormRegister<T>;
   errors?: Partial<DeepMap<T, FieldError>>;
-  disabled: boolean;
+  disabled?: boolean;
   label: string;
 }
 
 export const BgtTextArea = <T extends FieldValues>(props: Props<T>) => {
-  const { name, register, disabled, className, label } = props;
+  const { name, register, disabled = false, className, label } = props;
   return (
     <div className="flex flex-col">
       <div className="flex items-baseline justify-between">

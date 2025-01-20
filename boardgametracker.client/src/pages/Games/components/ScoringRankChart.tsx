@@ -1,15 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/dot-notation */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { ResponsiveBar } from '@nivo/bar';
 
-import { useGame } from '../../hooks/useGame';
-import { RoundDecimal } from '../../../../utils/numberUtils';
-import { usePlayerById } from '../../../../hooks/usePlayerById';
-import { BgtChartCard } from '../../../../components/BgtCard/BgtChartCard';
+import { useGame } from '../hooks/useGame';
+import { RoundDecimal } from '../../../utils/numberUtils';
+import { usePlayerById } from '../../../hooks/usePlayerById';
+import { BgtChartCard } from '../../../components/BgtCard/BgtChartCard';
 
 const fillColors: Record<string, string> = {
   'top-score': '#008000',

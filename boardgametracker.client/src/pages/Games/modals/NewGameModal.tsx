@@ -29,19 +29,13 @@ const NewGameModal = (props: Props) => {
         <div className="flex flex-col gap-4 mt-3 mb-3">
           <BgtBigButton title={t('game.new.bgg-title')} subText={t('game.new.bgg-subtext')} onClick={openBgg} />
           <BgtBigButton
-            disabled
             title={t('game.new.manual-title')}
             subText={t('game.new.manual-subtext')}
             onClick={openManual}
           />
         </div>
         <BgtDialogClose>
-          <BgtButton
-            variant="soft"
-            color="cancel"
-            className="w-full hover:cursor-pointer"
-            onClick={() => setOpen(false)}
-          >
+          <BgtButton variant="soft" color="cancel" className="w-full" onClick={() => setOpen(false)}>
             {t('common.cancel')}
           </BgtButton>
         </BgtDialogClose>

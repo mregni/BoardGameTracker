@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Common.ViewModels;
@@ -28,6 +29,20 @@ public class GameController
         var mappedGames = _mapper.Map<IList<GameViewModel>>(games);
 
         return new OkObjectResult(mappedGames);
+    }
+    
+    [HttpPost]
+    [Route("")]
+    public async Task<IActionResult> CreateGame([FromBody] CreateGameViewModel? gameViewModel)
+    {
+        if (gameViewModel == null)
+        {
+            return new BadRequestResult();
+        }
+        
+        var game = _mapper.Map<Game>(gameViewModel);
+        game = await _gameService.CreateGame(game);
+        return new OkObjectResult(_mapper.Map<GameViewModel>(game));
     }
 
     [HttpGet]

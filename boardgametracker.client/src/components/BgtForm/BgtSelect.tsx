@@ -41,7 +41,7 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
           <Select.Root
             disabled={disabled}
             onValueChange={field.onChange}
-            value={field.value}
+            value={field.value.toString()}
             defaultValue={control?._defaultValues[name]}
           >
             <Select.Trigger

@@ -1,12 +1,15 @@
 import { HTMLAttributes } from 'react';
 import { cx } from 'class-variance-authority';
 
+import { BgtHeading } from '../BgtHeading/BgtHeading';
+
 interface Props extends HTMLAttributes<HTMLDivElement> {
   hide?: boolean;
+  title?: string;
 }
 
 export const BgtCenteredCard = (props: Props) => {
-  const { children, className, ...rest } = props;
+  const { children, className, title = null, ...rest } = props;
 
   return (
     <div className="grid place-items-center md:h-full" {...rest}>
@@ -17,6 +20,7 @@ export const BgtCenteredCard = (props: Props) => {
           className
         )}
       >
+        {title && <BgtHeading size="6">{title}</BgtHeading>}
         {children}
       </div>
     </div>

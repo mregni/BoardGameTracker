@@ -10,4 +10,13 @@ public class Game : BaseGame
     public ICollection<GameCategory> Categories { get; set; }
     public ICollection<GameMechanic> Mechanics { get; set; }
     public ICollection<Person> People { get; set; }
+
+    public Game()
+    {
+        Expansions = new List<Expansion>();
+        Accessories = new List<GameAccessory>();
+        Categories = new List<GameCategory>();
+        Mechanics = new List<GameMechanic>();
+        People = new List<Person>();
+    }
 }

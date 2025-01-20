@@ -9,7 +9,7 @@ interface Props {
 export const BgtIcon = (props: Props) => {
   const { size = 20, icon, className = '' } = props;
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} width={size} height={size}>
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className}>
       {icon}
     </svg>
   );

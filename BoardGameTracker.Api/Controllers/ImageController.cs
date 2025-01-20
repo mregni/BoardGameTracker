@@ -28,13 +28,8 @@ public class ImageController : ControllerBase
     {
         try
         {
-            if (upload.Type == UploadFileType.Profile)
-            {
-                var name = await _imageService.SaveProfileImage(upload.File);
-                return new OkObjectResult(name);
-            }
-            
-            return new BadRequestResult();
+            var name = await _imageService.SaveImage(upload.File, upload.Type);
+            return new OkObjectResult(name);
         }
         catch (Exception e)
         {

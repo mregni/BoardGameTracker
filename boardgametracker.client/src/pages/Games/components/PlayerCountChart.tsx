@@ -1,12 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/dot-notation */
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 
-import { useGame } from '../../hooks/useGame';
-import { BgtPieChart } from '../../../../components/BgtCharts/BgtPieChart';
-import { BgtChartCard } from '../../../../components/BgtCard/BgtChartCard';
+import { useGame } from '../hooks/useGame';
+import { BgtPieChart } from '../../../components/BgtCharts/BgtPieChart';
+import { BgtChartCard } from '../../../components/BgtCard/BgtChartCard';
 
 export const PlayerCountChart = () => {
   const { id } = useParams();

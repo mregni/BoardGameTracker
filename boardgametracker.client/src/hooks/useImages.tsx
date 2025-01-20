@@ -5,17 +5,12 @@ import { uploadImages } from './services/imageService';
 
 import { FailResult } from '@/models';
 
-export interface RemoteImages {
-  isPending: boolean;
-  uploadPlayerImage: (file: File | undefined) => Promise<string | undefined>;
-}
-
 export interface ImageUpload {
   type: number;
   file: File | undefined;
 }
 
-export const useImages = (): RemoteImages => {
+export const useImages = () => {
   const { mutateAsync, isPending } = useMutation<string, AxiosError<FailResult>, ImageUpload>({
     mutationFn: uploadImages,
   });
@@ -24,8 +19,13 @@ export const useImages = (): RemoteImages => {
     return mutateAsync({ type: 0, file });
   };
 
+  const uploadGameImage = (file: File | undefined): Promise<string | undefined> => {
+    return mutateAsync({ type: 1, file });
+  };
+
   return {
     isPending,
     uploadPlayerImage,
+    uploadGameImage,
   };
 };

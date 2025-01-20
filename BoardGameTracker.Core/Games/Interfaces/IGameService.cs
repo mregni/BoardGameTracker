@@ -23,4 +23,5 @@ public interface IGameService
     Task<IEnumerable<PlayerCount>> GetPlayerCountChart(int id);
     Task<Dictionary<DateTime, XValue[]>> GetPlayerScoringChart(int id);
     Task<List<ScoreRank>> GetScoringRankedChart(int id);
+    Task<Game> CreateGame(Game game);
 }

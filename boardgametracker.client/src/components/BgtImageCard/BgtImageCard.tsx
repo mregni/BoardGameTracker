@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { cx } from 'class-variance-authority';
 
+import { BgtDeleteModal } from '../Modals/BgtDeleteModal';
 import { BgtText } from '../BgtText/BgtText';
 import { BgtHiddenEditDropdown } from '../BgtDropdown/BgtEditDropdown';
 import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/ItemStateUtils';
 
 import { StringToRgb } from '@/utils/stringUtils';
+import { useToast } from '@/providers/BgtToastProvider';
+import { useGames } from '@/pages/Games/hooks/useGames';
 import { GameState } from '@/models';
 
 interface Props {
@@ -14,11 +18,20 @@ interface Props {
   state?: GameState;
   image: string | null;
   link: string;
+  id: number;
 }
 
 export const BgtImageCard = (props: Props) => {
-  const { title, image, state = null, link } = props;
+  const { title, image, state = null, link, id } = props;
   const { t } = useTranslation();
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const { showInfoToast } = useToast();
+
+  const onDeleteSuccess = () => {
+    setOpenDeleteModal(false);
+    showInfoToast(t('game.notifications.deleted'));
+  };
+  const { deleteGame } = useGames({ onDeleteSuccess });
 
   return (
     <div className="flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1 group">
@@ -51,8 +64,14 @@ export const BgtImageCard = (props: Props) => {
             </BgtText>
           </Link>
         </div>
-        <BgtHiddenEditDropdown />
+        <BgtHiddenEditDropdown onDelete={() => setOpenDeleteModal(true)} onEdit={() => alert('editing')} />
       </div>
+      <BgtDeleteModal
+        title={title}
+        open={openDeleteModal}
+        setOpen={setOpenDeleteModal}
+        onDelete={() => deleteGame(id)}
+      />
     </div>
   );
 };

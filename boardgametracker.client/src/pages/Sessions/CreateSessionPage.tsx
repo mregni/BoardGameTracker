@@ -114,8 +114,7 @@ export const CreateSessionPage = () => {
   return (
     <BgtPage>
       <BgtPageContent>
-        <BgtCenteredCard>
-          <BgtHeading size="6">{t('player-session.title')}</BgtHeading>
+        <BgtCenteredCard title={t('player-session.title')}>
           <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="w-full">
             <div className="flex flex-col gap-3 w-full">
               <BgtSelect

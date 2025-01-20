@@ -1,11 +1,19 @@
 import { axiosInstance } from '../../utils/axiosInstance';
 import { TopPlayer } from '../../models/Games/TopPlayer';
-import { BggSearch, Game, GameStatistics, Session } from '../../models';
+import { BggSearch, Game, GameStatistics } from '../../models';
+
+import { CreateGame } from '@/models/Games/CreateGame';
 
 const domain = 'game';
 
 export const getGames = (signal: AbortSignal): Promise<Game[]> => {
   return axiosInstance.get<Game[]>(domain, { signal }).then((response) => {
+    return response.data;
+  });
+};
+
+export const saveGameCall = (game: CreateGame): Promise<Game> => {
+  return axiosInstance.post<Game>(domain, { ...game }).then((response) => {
     return response.data;
   });
 };
@@ -40,6 +48,6 @@ export const getChart = <T,>(id: string, chartName: string, signal: AbortSignal)
   });
 };
 
-export const deleteGame = (id: string): Promise<void> => {
+export const deleteGameCall = (id: number): Promise<void> => {
   return axiosInstance.delete(`${domain}/${id}`);
 };

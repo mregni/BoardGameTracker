@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ComponentPropsWithoutRef, ReactNode } from 'react';
+import { ComponentPropsWithoutRef, ReactNode, useState } from 'react';
 import { cx } from 'class-variance-authority';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { EllipsisHorizontalIcon, EllipsisVerticalIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -19,10 +19,15 @@ const BgtEditDropdown = (props: Props) => {
   const { className, triggerClassName, contentClassName, size, icon, onDelete, onEdit } = props;
   const { t } = useTranslation();
 
+  const [open, setOpen] = useState(false);
+
   return (
     <div className={className}>
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger className={cx(triggerClassName, 'focus-visible:outline-none')}>
+      <DropdownMenu.Root open={open}>
+        <DropdownMenu.Trigger
+          className={cx(triggerClassName, 'focus-visible:outline-none')}
+          onClick={() => setOpen(true)}
+        >
           <BgtIcon icon={icon} size={size} />
         </DropdownMenu.Trigger>
 
@@ -35,14 +40,20 @@ const BgtEditDropdown = (props: Props) => {
             sideOffset={5}
           >
             <DropdownMenu.Item
-              onClick={onEdit}
+              onClick={() => {
+                setOpen(false);
+                onEdit();
+              }}
               className="leading-none rounded-md flex items-center gap-3 p-2 select-none outline-none data-[highlighted]:bg-primary"
             >
               <BgtIcon icon={<PencilIcon />} size={16} />{' '}
               <span className="first-letter:uppercase">{t('common.edit')}</span>
             </DropdownMenu.Item>
             <DropdownMenu.Item
-              onClick={onDelete}
+              onClick={() => {
+                setOpen(false);
+                onDelete();
+              }}
               className="leading-none rounded-[3px] flex items-center gap-3 p-2 select-none outline-none data-[highlighted]:bg-primary data-[highlighted]:text-red-500 text-red-500"
             >
               <BgtIcon icon={<TrashIcon />} size={16} />{' '}

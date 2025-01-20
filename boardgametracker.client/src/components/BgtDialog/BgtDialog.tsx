@@ -39,7 +39,7 @@ const BgtDialogClose = (props: HTMLAttributes<HTMLDivElement>) => {
   const { className, children, ...rest } = props;
 
   return (
-    <div className={cx('flex justify-end gap-3', className)} {...rest}>
+    <div className={cx('flex justify-end gap-3 pt-2', className)} {...rest}>
       <Dialog.Close>
         <>{children}</>
       </Dialog.Close>

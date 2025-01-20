@@ -5,13 +5,7 @@ import { useToast } from '@/providers/BgtToastProvider';
 import { TopPlayer } from '@/models/Games/TopPlayer';
 import { ScoreRank } from '@/models/Games/ScoringRank';
 import { FailResult, Game, GAME_CHARTS, GameStatistics, PlayerCountChart, QUERY_KEYS } from '@/models';
-import {
-  getGame,
-  getGameStatistics,
-  getTopPlayers,
-  deleteGame as deleteGameCall,
-  getChart,
-} from '@/hooks/services/gameService';
+import { getGame, getGameStatistics, getTopPlayers, deleteGameCall, getChart } from '@/hooks/services/gameService';
 
 interface Props {
   id: string | undefined;

@@ -23,8 +23,9 @@ export const DashboardPage = () => {
       <BgtPageContent>
         <h1>TODO</h1>
         <ul>
+          <li>✅ New game (manual)</li>
           <li>Edit game</li>
-          <li>Delete game</li>
+          <li>✅ Delete game</li>
           <li>Edit location</li>
           <li>Delete location</li>
           <li>Edit player</li>
@@ -35,7 +36,6 @@ export const DashboardPage = () => {
           <li>Delete session</li>
           <li>Use decimal seperator from settings</li>
           <li>Load language from settings after settings save (if updated)</li>
-          <li>Fix scroll in long pages (background is shorter then page)</li>
           <li>Add github button for feature requests</li>
           <li>Add crowndin button for translations</li>
           <li>Remove "info for nerds" page</li>
@@ -44,6 +44,12 @@ export const DashboardPage = () => {
           <li>Add loaders everywhere</li>
           <li>Add docker build for win and linux (like embystat)</li>
           <li>REMOVE ME WHEN ALL IS DONE</li>
+        </ul>
+        <h1>Bugs</h1>
+        <ul>
+          <li>EditDropdown menu component sluit niet bij wegklikken ergens op het scherm</li>
+          <li>Toasts verdwijnen achter de posters op de gsm. Misschien andere toast gebruiken?</li>
+          <li>Fix scroll in long pages (background is shorter then page)</li>
         </ul>
         <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 md:gap-3">
           <BgtTextStatistic content={statistics.data.gameCount} title={t('statistics.game-count')} />
