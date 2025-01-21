@@ -36,9 +36,9 @@ export const DashboardPage = () => {
           <li>Delete session</li>
           <li>Use decimal seperator from settings</li>
           <li>Load language from settings after settings save (if updated)</li>
-          <li>Add github button for feature requests</li>
-          <li>Add crowndin button for translations</li>
-          <li>Remove "info for nerds" page</li>
+          <li>✅ Add github button for feature requests</li>
+          <li>✅ Add crowdin button for translations</li>
+          <li>✅ Remove "info for nerds" page</li>
           <li>Add version number in environment settings</li>
           <li>Disable "add player" button in modal when creating a player</li>
           <li>Add loaders everywhere</li>

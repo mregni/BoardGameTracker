@@ -15,6 +15,8 @@ import { BgtSelect } from '@/components/BgtForm/BgtSelect';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtCard } from '@/components/BgtCard/BgtCard';
 import BgtButton from '@/components/BgtButton/BgtButton';
+import GitHubIcon from '@/assets/icons/github.svg?react';
+import CrowdinIcon from '@/assets/icons/crowdin.svg?react';
 
 export const SettingsPage = () => {
   const { t } = useTranslation();
@@ -29,7 +31,6 @@ export const SettingsPage = () => {
   if (settings.data === undefined || languages.data === undefined || environment.data === undefined) return null;
 
   const onSubmit = async (data: Settings) => {
-    console.log(data);
     await saveSettings(data);
   };
 
@@ -102,18 +103,30 @@ export const SettingsPage = () => {
         </BgtCard>
         <BgtCard className="p-4">
           <BgtHeading size="6">{t('settings.titles.environment')}</BgtHeading>
-          <div className="flex flex-row gap-3 pt-3">
-            <div>
-              <div>{t('settings.environment.name')}</div>
-              <div>{t('settings.environment.port')}</div>
-              <div>{t('settings.environment.statistics')}</div>
-              <div>{t('settings.environment.log-level')}</div>
+          <div className="flex flex-column md:flex-row gap-3 justify-between">
+            <div className="flex flex-row gap-3 pt-3">
+              <div className="text-gray-500">
+                <div>{t('settings.environment.name')}</div>
+                <div>{t('settings.environment.port')}</div>
+                <div>{t('settings.environment.statistics')}</div>
+                <div>{t('settings.environment.log-level')}</div>
+              </div>
+              <div>
+                <div>{environment.data.environmentName}</div>
+                <div>{environment.data.port}</div>
+                <div>{environment.data.enableStatistics ? t('common.enabled') : t('common.disabled')}</div>
+                <div>{t(ToLogLevel(environment.data.logLevel))}</div>
+              </div>
             </div>
-            <div>
-              <div>{environment.data.environmentName}</div>
-              <div>{environment.data.port}</div>
-              <div>{environment.data.enableStatistics ? t('common.enabled') : t('common.disabled')}</div>
-              <div>{t(ToLogLevel(environment.data.logLevel))}</div>
+            <div className="flex flex-col gap-2">
+              <BgtButton onClick={() => window.open('https://github.com/mregni/BoardGameTracker/issues')}>
+                <GitHubIcon className="size-4" />
+                {t('settings.feature-request')}
+              </BgtButton>
+              <BgtButton onClick={() => window.open('https://crowdin.com/project/boardgametracker')}>
+                <CrowdinIcon className="size-4" />
+                {t('settings.translations')}
+              </BgtButton>
             </div>
           </div>
         </BgtCard>
