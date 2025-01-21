@@ -287,7 +287,9 @@
       "port": "Port",
       "statistics": "Statistics",
       "log-level": "Log level"
-    }
+    },
+    "feature-request": "Feature request",
+    "translations": "Translate the app"
   },
   "player-session": {
     "save": "Create game play",
