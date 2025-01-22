@@ -1,14 +1,27 @@
 import { AxiosError } from 'axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { useToast } from '../providers/BgtToastProvider';
 import { CreateLocation, FailResult, Location, QUERY_KEYS } from '../models';
 
-import { addLocation, getLocations } from './services/locationService';
+import {
+  addLocation,
+  getLocations,
+  deleteLocation as deleteGameCall,
+  updateLocation,
+} from './services/locationService';
 
-export const useLocations = () => {
+interface Props {
+  onDeleteSuccess?: () => void;
+  onDeleteFailed?: () => void;
+  onEditSuccess?: () => void;
+  onEditFailed?: () => void;
+  onNewSuccess?: () => void;
+  onNewFailed?: () => void;
+}
+
+export const useLocations = (props: Props) => {
+  const { onDeleteSuccess, onDeleteFailed, onEditSuccess, onEditFailed, onNewSuccess, onNewFailed } = props;
   const queryClient = useQueryClient();
-  const { showInfoToast, showErrorToast } = useToast();
 
   const { data, refetch } = useQuery<Location[]>({
     queryKey: [QUERY_KEYS.locations],
@@ -22,23 +35,34 @@ export const useLocations = () => {
     },
     onSettled: async () => {
       await refetch();
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
     },
-    onSuccess(data) {
-      const previousLocations = queryClient.getQueryData<Location[]>([QUERY_KEYS.locations]);
-
-      if (previousLocations !== undefined) {
-        previousLocations.length = previousLocations.length + 1;
-        queryClient.setQueryData([QUERY_KEYS.locations], [...previousLocations, data]);
-      }
-
-      showInfoToast('location.notifications.created');
+    onSuccess() {
+      onNewSuccess?.();
     },
     onError: () => {
-      showErrorToast('location.notifications.failed');
+      onNewFailed?.();
     },
   });
 
-  const byId = (id: number): Location | null => {
+  const { mutateAsync: update, isPending: isUpdating } = useMutation<Location, AxiosError<FailResult>, Location>({
+    mutationFn: updateLocation,
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.locations] });
+    },
+    onSettled: async () => {
+      await refetch();
+    },
+    onSuccess() {
+      onEditSuccess?.();
+    },
+    onError: () => {
+      onEditFailed?.();
+    },
+  });
+
+  const byId = (id: number | null): Location | null => {
+    if (id === null) return null;
     if (data === undefined) return null;
 
     const index = data.findIndex((x) => x.id === id);
@@ -49,10 +73,25 @@ export const useLocations = () => {
     return null;
   };
 
+  const deleteLocation = (id: number) => {
+    void deleteGameCall(id)
+      .then(() => {
+        refetch();
+        queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+        onDeleteSuccess?.();
+      })
+      .catch(() => {
+        onDeleteFailed?.();
+      });
+  };
+
   return {
     locations: data ?? [],
     byId,
     save,
     isSaving,
+    deleteLocation,
+    update,
+    isUpdating,
   };
 };

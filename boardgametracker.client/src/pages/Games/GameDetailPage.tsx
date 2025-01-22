@@ -214,6 +214,7 @@ export const GameDetailPage = () => {
           open={openDeleteModal}
           setOpen={setOpenDeleteModal}
           onDelete={deleteGameInternal}
+          description={t('common.delete.description', { title: game.data.title })}
         />
       </BgtPageContent>
     </BgtPage>

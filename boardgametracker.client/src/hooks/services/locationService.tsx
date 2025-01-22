@@ -14,3 +14,15 @@ export const addLocation = (location: CreateLocation): Promise<Location> => {
     return response.data;
   });
 };
+
+export const deleteLocation = (id: number): Promise<void> => {
+  return axiosInstance.delete<void>(`${domain}/${id}`).then((response) => {
+    return response.data;
+  });
+};
+
+export const updateLocation = (location: Location): Promise<Location> => {
+  return axiosInstance.put<Location>(domain, location).then((response) => {
+    return response.data;
+  });
+};

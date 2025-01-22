@@ -37,7 +37,7 @@ const CreatePlayerForm = (props: Props) => {
   const { open, hasScoring, onClose, selectedPlayerIds, onCancel } = props;
   const { t } = useTranslation();
   const { players } = usePlayers();
-  const { locations } = useLocations();
+  const { locations } = useLocations({});
 
   type PlayType<T extends boolean> = T extends true ? CreateSessionPlayer : CreatePlayerSessionNoScoring;
   type CreatePlayType = PlayType<typeof hasScoring>;

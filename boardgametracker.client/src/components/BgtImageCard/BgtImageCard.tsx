@@ -71,6 +71,7 @@ export const BgtImageCard = (props: Props) => {
         open={openDeleteModal}
         setOpen={setOpenDeleteModal}
         onDelete={() => deleteGame(id)}
+        description={t('common.delete.description', { title: title })}
       />
     </div>
   );

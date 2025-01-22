@@ -1,19 +1,16 @@
 import { ReactNode } from 'react';
 import { cx } from 'class-variance-authority';
 
-import { BgtIcon } from '../BgtIcon/BgtIcon';
-
 interface Props {
   icon: ReactNode;
   onClick: () => void;
-  size?: number;
   type?: 'normal' | 'danger';
   disabled?: boolean;
   className?: string;
 }
 
 export const BgtIconButton = (props: Props) => {
-  const { icon, onClick, size = 20, type = 'normal', disabled, className } = props;
+  const { icon, onClick, type = 'normal', disabled, className } = props;
   return (
     <button
       onClick={onClick}
@@ -26,7 +23,7 @@ export const BgtIconButton = (props: Props) => {
       )}
       disabled={disabled}
     >
-      <BgtIcon size={size} icon={icon} />
+      {icon}
     </button>
   );
 };

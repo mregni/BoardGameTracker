@@ -11,22 +11,23 @@ import BgtButton from '../BgtButton/BgtButton';
 
 interface Props {
   open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  close: () => void;
   onDelete: () => void;
   title: string;
+  description: string;
 }
 
 export const BgtDeleteModal = (props: Props) => {
-  const { open, setOpen, onDelete, title } = props;
+  const { open, close, onDelete, title, description } = props;
   const { t } = useTranslation();
 
   return (
     <BgtDialog open={open}>
       <BgtDialogContent>
         <BgtDialogTitle>{t('common.delete.title', { title: title })}</BgtDialogTitle>
-        <BgtDialogDescription>{t('common.delete.description', { title: title })}</BgtDialogDescription>
+        <BgtDialogDescription>{description}</BgtDialogDescription>
         <BgtDialogClose>
-          <BgtButton variant="soft" color="cancel" onClick={() => setOpen(false)}>
+          <BgtButton variant="soft" color="cancel" onClick={() => close()}>
             {t('common.cancel')}
           </BgtButton>
           <BgtButton color="error" onClick={onDelete}>

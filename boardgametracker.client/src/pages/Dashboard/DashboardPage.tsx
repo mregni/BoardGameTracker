@@ -26,8 +26,9 @@ export const DashboardPage = () => {
           <li>✅ New game (manual)</li>
           <li>Edit game</li>
           <li>✅ Delete game</li>
-          <li>Edit location</li>
-          <li>Delete location</li>
+          <li>✅ Edit location</li>
+          <li>✅ Delete location</li>
+          <li>✅ New location</li>
           <li>Edit player</li>
           <li>Delete player</li>
           <li>Move icons to svg files</li>
@@ -39,7 +40,7 @@ export const DashboardPage = () => {
           <li>✅ Add github button for feature requests</li>
           <li>✅ Add crowdin button for translations</li>
           <li>✅ Remove "info for nerds" page</li>
-          <li>Add version number in environment settings</li>
+          <li>✅ Add version number in environment settings</li>
           <li>Disable "add player" button in modal when creating a player</li>
           <li>Add loaders everywhere</li>
           <li>Add docker build for win and linux (like embystat)</li>
@@ -50,6 +51,10 @@ export const DashboardPage = () => {
           <li>EditDropdown menu component sluit niet bij wegklikken ergens op het scherm</li>
           <li>Toasts verdwijnen achter de posters op de gsm. Misschien andere toast gebruiken?</li>
           <li>Fix scroll in long pages (background is shorter then page)</li>
+          <li>
+            Bij aanmaken van locatie word bij een tweede create de lijst niet meer geupdate na de POST, ook de counts
+            query word niet refreshed
+          </li>
         </ul>
         <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 md:gap-3">
           <BgtTextStatistic content={statistics.data.gameCount} title={t('statistics.game-count')} />

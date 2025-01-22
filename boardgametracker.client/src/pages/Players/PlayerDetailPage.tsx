@@ -123,6 +123,7 @@ export const PlayerDetailpage = () => {
               open={openDeleteModal}
               setOpen={setOpenDeleteModal}
               onDelete={deletePlayerInternal}
+              description={t('common.delete.description', { title: player.data.name })}
             />
           </>
         )}

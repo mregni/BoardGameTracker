@@ -33,7 +33,7 @@ interface Props {
 const UpdatePlayerForm = (props: Props) => {
   const { open, hasScoring, onClose, playerToEdit, onCancel } = props;
   const { t } = useTranslation();
-  const { locations } = useLocations();
+  const { locations } = useLocations({});
   const { playerById } = usePlayerById();
   const { players } = usePlayers();
 

@@ -103,19 +103,23 @@ export const SettingsPage = () => {
         </BgtCard>
         <BgtCard className="p-4">
           <BgtHeading size="6">{t('settings.titles.environment')}</BgtHeading>
-          <div className="flex flex-column md:flex-row gap-3 justify-between">
-            <div className="flex flex-row gap-3 pt-3">
+          <div className="flex flex-col md:flex-row gap-3 justify-between">
+            <div className="flex flex-row gap-3 pt-3 md:justify-start justify-between">
               <div className="text-gray-500">
                 <div>{t('settings.environment.name')}</div>
                 <div>{t('settings.environment.port')}</div>
                 <div>{t('settings.environment.statistics')}</div>
                 <div>{t('settings.environment.log-level')}</div>
+                <div>{t('settings.environment.version')}</div>
               </div>
               <div>
-                <div>{environment.data.environmentName}</div>
-                <div>{environment.data.port}</div>
-                <div>{environment.data.enableStatistics ? t('common.enabled') : t('common.disabled')}</div>
-                <div>{t(ToLogLevel(environment.data.logLevel))}</div>
+                <div className="text-end md:text-start">{environment.data.environmentName}</div>
+                <div className="text-end md:text-start">{environment.data.port}</div>
+                <div className="text-end md:text-start">
+                  {environment.data.enableStatistics ? t('common.enabled') : t('common.disabled')}
+                </div>
+                <div className="text-end md:text-start">{t(ToLogLevel(environment.data.logLevel))}</div>
+                <div className="text-end md:text-start">{environment.data.version}</div>
               </div>
             </div>
             <div className="flex flex-col gap-2">

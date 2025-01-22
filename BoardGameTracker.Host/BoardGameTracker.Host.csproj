@@ -9,6 +9,7 @@
         <SpaRoot>..\boardgametracker.client\</SpaRoot>
         <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
         <SpaProxyServerUrl>http://192.168.72.66:5443</SpaProxyServerUrl>
+        <Version>0.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>

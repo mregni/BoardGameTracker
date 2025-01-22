@@ -11,7 +11,7 @@ public class Session: HasId
     public Game Game { get; set; }
     public ICollection<Expansion> Expansions { get; set; }
     public int? LocationId { get; set; }
-    public Location Location { get; set; }
+    public Location? Location { get; set; }
     public ICollection<Image> ExtraImages { get; set; }
     public ICollection<PlayerSession> PlayerSessions { get; set; }
 }

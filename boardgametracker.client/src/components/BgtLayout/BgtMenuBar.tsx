@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { cx } from 'class-variance-authority';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -9,11 +10,15 @@ import { useMenuItems } from '../../hooks/useMenuItems';
 
 import { useBgtMenuBar } from './hooks/useBgtMenuBar';
 
+import { useSettings } from '@/hooks/useSettings';
+
 const MobileMenu = () => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const { menuItems } = useMenuItems();
   const { counts } = useBgtMenuBar();
   const location = useLocation();
+  const { environment } = useSettings();
 
   useEffect(() => {
     setOpen(false);
@@ -39,18 +44,27 @@ const MobileMenu = () => {
           {open && <XMarkIcon height={25} className="pr-3" onClick={() => setOpen(false)} />}
         </div>
       </div>
-      <div className={cx('mobile-menu bg-gray-950 absolute w-full top-16 z-40', !open && 'hidden-menu')}>
+      <div className={cx('mobile-menu bg-gray-950 absolute w-full top-12 z-40', !open && 'hidden-menu')}>
         {menuItems.map((x) => (
           <BgtMenuItem key={x.path} item={x} count={counts.data.find((y) => y.key == x.path)?.value} />
         ))}
+        <div>
+          {environment.data && (
+            <div className="flex justify-center items-center h-9 text-gray-500 text-sm">
+              {t('settings.environment.version')}: {environment.data.version}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
 const BgtMenuBar = () => {
+  const { t } = useTranslation();
   const { counts } = useBgtMenuBar();
   const { menuItems } = useMenuItems();
+  const { environment } = useSettings();
 
   if (counts.data === undefined) return null;
 
@@ -65,6 +79,11 @@ const BgtMenuBar = () => {
             ))}
           </div>
         </div>
+        {environment.data && (
+          <div className="flex justify-center items-center h-16 text-gray-500">
+            {t('settings.environment.version')}: {environment.data.version}
+          </div>
+        )}
       </div>
       <MobileMenu />
     </>

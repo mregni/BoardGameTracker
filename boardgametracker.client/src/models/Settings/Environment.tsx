@@ -3,4 +3,5 @@ export interface Environment {
   port: number;
   enableStatistics: boolean;
   logLevel: number;
+  version: string;
 }
