@@ -1,16 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { cx } from 'class-variance-authority';
-import { ArrowTrendingDownIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
 
 import { StringToHsl } from '@/utils/stringUtils';
 import { RoundDecimal } from '@/utils/numberUtils';
 import { TopPlayer, Trend } from '@/models/Games/TopPlayer';
 import { usePlayerById } from '@/hooks/usePlayerById';
 import { BgtText } from '@/components/BgtText/BgtText';
-import { BgtIcon } from '@/components/BgtIcon/BgtIcon';
 import { BgtCard } from '@/components/BgtCard/BgtCard';
 import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
-import StarIcon from '@/assets/star.svg';
+import TrendUpIcon from '@/assets/icons/trend-up.svg?react';
+import TrendDownIcon from '@/assets/icons/trend-down.svg?react';
+import StarIcon from '@/assets/icons/star.svg';
 
 interface Props {
   player: TopPlayer;
@@ -53,14 +53,14 @@ export const TopPlayerCard = (props: Props) => {
               player.trend === Trend.Equal && 'text-orange-400'
             )}
           >
-            {player.trend === Trend.Up && <BgtIcon icon={<ArrowTrendingUpIcon />} className="mt-1" size={17} />}
-            {player.trend === Trend.Down && <BgtIcon icon={<ArrowTrendingDownIcon />} className="mt-1" size={17} />}
+            {player.trend === Trend.Up && <TrendUpIcon className="size-5 mt-0.5" />}
+            {player.trend === Trend.Down && <TrendDownIcon className="size-5 mt-0.5" />}
             {RoundDecimal(player.winPercentage * 100, 0.1)}%
           </div>
         </div>
         <BgtCard className="bg-card-light">
           <div className="flex flex-row gap-2 justify-center items-center">
-            <img src={StarIcon} />
+            <img src={StarIcon} className="h-5" />
             <BgtText size="5">
               {player.wins} / {player.playCount}
             </BgtText>

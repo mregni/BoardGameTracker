@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.26.11",
-    "@heroicons/react": "^2.1.1",
     "@hookform/resolvers": "^3.3.4",
     "@kodingdotninja/use-tailwind-breakpoint": "^1.0.0",
     "@nivo/bar": "^0.87.0",

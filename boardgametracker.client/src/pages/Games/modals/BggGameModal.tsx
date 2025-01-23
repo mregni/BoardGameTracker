@@ -2,9 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { Dispatch, SetStateAction } from 'react';
-import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 
 import { useBggGameModal } from '../hooks/useBggGameModal';
 
@@ -13,7 +11,6 @@ import { useToast } from '@/providers/BgtToastProvider';
 import { BggSearch, BggSearchSchema, Game, GameState } from '@/models';
 import { useSettings } from '@/hooks/useSettings';
 import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
-import { BgtIcon } from '@/components/BgtIcon/BgtIcon';
 import { BgtSelect } from '@/components/BgtForm/BgtSelect';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import {
@@ -24,6 +21,7 @@ import {
   BgtDialogTitle,
 } from '@/components/BgtDialog/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
+import SquareOutIcon from '@/assets/icons/square-out.svg?react';
 
 interface Props {
   open: boolean;
@@ -67,7 +65,7 @@ export const BggGameModal = (props: Props) => {
         <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className="flex flex-col gap-4 mt-3 mb-6">
             <BgtButton onClick={() => openBgg()} disabled={isPending}>
-              <BgtIcon icon={<ArrowTopRightOnSquareIcon />} size={18} />
+              <SquareOutIcon className="size-5" />
               <>{t('game.bgg.external-page')}</>
             </BgtButton>
             <BgtInputField

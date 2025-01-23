@@ -1,11 +1,10 @@
 import { ChangeEvent, Dispatch, DragEvent, SetStateAction, useState } from 'react';
 import { t } from 'i18next';
 import { cx } from 'class-variance-authority';
-import { Button } from '@radix-ui/themes';
-import { TrashIcon, PhotoIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 
 import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
-import { BgtIcon } from '../BgtIcon/BgtIcon';
+
+import TrashIcon from '@/assets/icons/trash.svg?react';
 
 interface Props {
   label?: string;
@@ -66,9 +65,8 @@ export const BgtImageSelector = (props: Props) => {
             <div className=" absolute top-0 left-0 w-full h-full collapse group-hover:visible">
               <div className="flex justify-center items-center w-full h-full">
                 <BgtIconButton
-                  size={25}
                   className="!rounded-full border-solid border h-10 w-10 hover:bg-[rgba(240,240,240,0.3)]"
-                  icon={<BgtIcon icon={<TrashIcon color="white" />} size={25} />}
+                  icon={<TrashIcon className="size-5" color="white" />}
                   onClick={() => setImage(undefined)}
                 />
               </div>
@@ -94,7 +92,6 @@ export const BgtImageSelector = (props: Props) => {
               )}
             >
               <div className="flex flex-col items-center justify-center">
-                <BgtIcon icon={<ArrowUpTrayIcon />} className="text-gray-500" />
                 <p className="mb-2 text-sm text-gray-500 text-center">
                   <span className="font-semibold">{t('images.upload')}</span>
                 </p>

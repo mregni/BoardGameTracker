@@ -2,21 +2,24 @@ import { useTranslation } from 'react-i18next';
 import { ComponentPropsWithoutRef, ReactNode, useState } from 'react';
 import { cx } from 'class-variance-authority';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { EllipsisHorizontalIcon, EllipsisVerticalIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 import { BgtIcon } from '../BgtIcon/BgtIcon';
+
+import TrashIcon from '@/assets/icons/trash.svg?react';
+import PencilIcon from '@/assets/icons/pencil.svg?react';
+import DotsVertical from '@/assets/icons/dots-vertical.svg?react';
+import DotsHorizontal from '@/assets/icons/dots-horizontal.svg?react';
 
 interface Props extends ComponentPropsWithoutRef<'div'> {
   triggerClassName?: string;
   contentClassName?: string;
-  size: number;
   icon: ReactNode;
   onDelete: () => void;
   onEdit: () => void;
 }
 
 const BgtEditDropdown = (props: Props) => {
-  const { className, triggerClassName, contentClassName, size, icon, onDelete, onEdit } = props;
+  const { className, triggerClassName, contentClassName, icon, onDelete, onEdit } = props;
   const { t } = useTranslation();
 
   const [open, setOpen] = useState(false);
@@ -25,10 +28,10 @@ const BgtEditDropdown = (props: Props) => {
     <div className={className}>
       <DropdownMenu.Root open={open}>
         <DropdownMenu.Trigger
-          className={cx(triggerClassName, 'focus-visible:outline-none')}
+          className={cx(triggerClassName, 'focus-visible:outline-none flex items-end')}
           onClick={() => setOpen(true)}
         >
-          <BgtIcon icon={icon} size={size} />
+          <BgtIcon icon={icon} className="size-5" />
         </DropdownMenu.Trigger>
 
         <DropdownMenu.Portal>
@@ -46,8 +49,7 @@ const BgtEditDropdown = (props: Props) => {
               }}
               className="leading-none rounded-md flex items-center gap-3 p-2 select-none outline-none data-[highlighted]:bg-primary"
             >
-              <BgtIcon icon={<PencilIcon />} size={16} />{' '}
-              <span className="first-letter:uppercase">{t('common.edit')}</span>
+              <PencilIcon className="size-5" /> <span className="first-letter:uppercase">{t('common.edit')}</span>
             </DropdownMenu.Item>
             <DropdownMenu.Item
               onClick={() => {
@@ -56,7 +58,7 @@ const BgtEditDropdown = (props: Props) => {
               }}
               className="leading-none rounded-[3px] flex items-center gap-3 p-2 select-none outline-none data-[highlighted]:bg-primary data-[highlighted]:text-red-500 text-red-500"
             >
-              <BgtIcon icon={<TrashIcon />} size={16} />{' '}
+              <TrashIcon className="size-5" />{' '}
               <span className="first-letter:uppercase">{t('common.delete.button')}</span>
             </DropdownMenu.Item>
           </DropdownMenu.Content>
@@ -76,10 +78,9 @@ export const BgtHiddenEditDropdown = (props: ExternalProps) => {
   return (
     <BgtEditDropdown
       triggerClassName="opacity:100 md:opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity duration-200"
-      contentClassName="will-change-[opacity,transform]"
-      size={15}
+      contentClassName="will-change-[opacity,transform] items-end"
       className={className}
-      icon={<EllipsisVerticalIcon />}
+      icon={<DotsVertical className="size-4" />}
       onDelete={onDelete}
       onEdit={onEdit}
     />
@@ -92,9 +93,8 @@ export const BgtNormalEditDropdown = (props: ExternalProps) => {
     <BgtEditDropdown
       onEdit={onEdit}
       onDelete={onDelete}
-      size={20}
       className={className}
-      icon={<EllipsisHorizontalIcon />}
+      icon={<DotsHorizontal className="size-5" />}
     />
   );
 };

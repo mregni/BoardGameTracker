@@ -1,15 +1,15 @@
 import { Control, Controller, FieldValues, Path, useController } from 'react-hook-form';
 import { cx } from 'class-variance-authority';
 import * as Select from '@radix-ui/react-select';
-import { CheckIcon } from '@heroicons/react/24/solid';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
-import { BgtIcon } from '../BgtIcon/BgtIcon';
 import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
 import { StringToHsl } from '../../utils/stringUtils';
 import { BgtSelectImageItem } from '../../models/Common/BgtSelectItem';
 
 import { BgtFormErrors } from './BgtFormErrors';
+
+import CheckIcon from '@/assets/icons/check.svg?react';
+import CaretDownIcon from '@/assets/icons/caret-down.svg?react';
 
 interface Props<T extends FieldValues> {
   label: string;
@@ -41,7 +41,7 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
           <Select.Root
             disabled={disabled}
             onValueChange={field.onChange}
-            value={field.value.toString()}
+            value={field.value?.toString()}
             defaultValue={control?._defaultValues[name]}
           >
             <Select.Trigger
@@ -52,7 +52,7 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
             >
               <Select.Value placeholder={placeholder} />
               <Select.Icon>
-                <BgtIcon icon={<ChevronDownIcon />} />
+                <CaretDownIcon className="size-5" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
@@ -73,7 +73,7 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
                         </div>
                       </Select.ItemText>
                       <Select.ItemIndicator className="absolute left-0 w-[25px] inline-flex items-center justify-center">
-                        <BgtIcon icon={<CheckIcon />} size={15} />
+                        <CheckIcon className="size-4" />
                       </Select.ItemIndicator>
                     </Select.Item>
                   ))}

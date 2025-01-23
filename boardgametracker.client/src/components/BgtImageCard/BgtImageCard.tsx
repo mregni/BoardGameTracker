@@ -69,7 +69,7 @@ export const BgtImageCard = (props: Props) => {
       <BgtDeleteModal
         title={title}
         open={openDeleteModal}
-        setOpen={setOpenDeleteModal}
+        close={() => setOpenDeleteModal(false)}
         onDelete={() => deleteGame(id)}
         description={t('common.delete.description', { title: title })}
       />

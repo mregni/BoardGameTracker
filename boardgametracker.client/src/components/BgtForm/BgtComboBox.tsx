@@ -3,10 +3,8 @@ import { useState } from 'react';
 import { CommandList } from 'cmdk';
 import { cx } from 'class-variance-authority';
 import { Button } from '@radix-ui/themes';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 import { BgtPopover, BgtPopoverContent, BgtPopoverTrigger } from '../BgtPopover/BgtPopover';
-import { BgtIcon } from '../BgtIcon/BgtIcon';
 import {
   BgtCommand,
   BgtCommandCreate,
@@ -17,6 +15,9 @@ import {
 import { BgtSelectItem } from '../../models/Common/BgtSelectItem';
 
 import { BgtFormErrors } from './BgtFormErrors';
+
+import CaretUp from '@/assets/icons/caret-up.svg?react';
+import CaretDown from '@/assets/icons/caret-down.svg?react';
 
 interface ComboboxProps<T1 extends FieldValues, T2> {
   options: BgtSelectItem[];
@@ -73,7 +74,7 @@ export const BgtComboBox = <T1 extends FieldValues, T2>(props: ComboboxProps<T1,
             )}
           >
             {selected ? options.find((option) => option.value === selected)?.label ?? selected : placeholder}
-            <BgtIcon icon={<ChevronDownIcon />} />
+            {open ? <CaretUp className="size-5" /> : <CaretDown className="size-5" />}
           </Button>
         </BgtPopoverTrigger>
 

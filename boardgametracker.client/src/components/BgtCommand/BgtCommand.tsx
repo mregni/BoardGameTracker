@@ -2,9 +2,9 @@ import { Bars } from 'react-loading-icons';
 import { ComponentPropsWithoutRef } from 'react';
 import { Command as CommandPrimitive } from 'cmdk';
 import { cx } from 'class-variance-authority';
-import { MagnifyingGlassIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
 
-import { BgtIcon } from '../BgtIcon/BgtIcon';
+import PlusCircleIcon from '@/assets/icons/plus-circle.svg?react';
+import MagnifyingGlassIcon from '@/assets/icons/magnifying-glass.svg?react';
 
 export const BgtCommand = (props: ComponentPropsWithoutRef<typeof CommandPrimitive>) => {
   const { className, ...rest } = props;
@@ -26,7 +26,7 @@ export const BgtCommandInput = (props: ComponentPropsWithoutRef<typeof CommandPr
   return (
     // eslint-disable-next-line react/no-unknown-property
     <div className="flex flex-row justify-start gap-2 items-center p-2" cmdk-input-wrapper="">
-      <BgtIcon icon={<MagnifyingGlassIcon />} />
+      <MagnifyingGlassIcon className="size-5" />
       <CommandPrimitive.Input
         className={cx('h-8 w-full border-0 bg-transparent focus:ring-0 focus-visible:outline-0 text-[14px]', className)}
         {...rest}

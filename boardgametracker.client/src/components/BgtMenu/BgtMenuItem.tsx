@@ -25,9 +25,7 @@ export const BgtMenuItem = (props: Props) => {
         )}
       >
         <div className="flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18}>
-            {item.icon}
-          </svg>
+          {item.icon}
           <Text as="span" size="3">
             {t(item.menuLabel)}
           </Text>

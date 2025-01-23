@@ -4,9 +4,10 @@ import { createContext, ElementRef, forwardRef, ReactNode, useContext, useState 
 import { AnimatePresence, motion } from 'framer-motion';
 import { cx } from 'class-variance-authority';
 import * as RadixToast from '@radix-ui/react-toast';
-import { ExclamationTriangleIcon, InformationCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
-import { BgtIcon } from '../components/BgtIcon/BgtIcon';
+import XIcon from '@/assets/icons/x.svg?react';
+import WarningTriangleIcon from '@/assets/icons/warning-triangle.svg?react';
+import InfoCircleIcon from '@/assets/icons/info-circle.svg?react';
 
 const ToastContext = createContext<{
   showInfoToast: (text: string) => void;
@@ -143,9 +144,9 @@ const Toast = forwardRef<
               toast.type === ToastType.Error && 'bg-red-600'
             )}
           >
-            {toast.type === ToastType.Info && <BgtIcon icon={<InformationCircleIcon />} />}
-            {toast.type === ToastType.Warning && <BgtIcon icon={<ExclamationTriangleIcon />} />}
-            {toast.type === ToastType.Error && <BgtIcon icon={<ExclamationTriangleIcon />} />}
+            {toast.type === ToastType.Info && <InfoCircleIcon className="size-5" />}
+            {toast.type === ToastType.Warning && <WarningTriangleIcon className="size-5" />}
+            {toast.type === ToastType.Error && <WarningTriangleIcon className="size-5" />}
           </div>
           <div className="ms-3 text-sm font-normal">{t(toast.text)}</div>
           <button
@@ -153,7 +154,7 @@ const Toast = forwardRef<
             onClick={onClose}
             className="ms-auto -mx-1.5 -my-1.5 text-gray-400 hover:text-white rounded-lg p-1.5 inline-flex items-center justify-center h-8 w-8 "
           >
-            <BgtIcon icon={<XMarkIcon />} />
+            <XIcon className="size-5" />
           </button>
         </div>
       </motion.li>

@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import i18next from 'i18next';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { cx } from 'class-variance-authority';
@@ -212,7 +212,7 @@ export const GameDetailPage = () => {
         <BgtDeleteModal
           title={game.data.title}
           open={openDeleteModal}
-          setOpen={setOpenDeleteModal}
+          close={() => setOpenDeleteModal(false)}
           onDelete={deleteGameInternal}
           description={t('common.delete.description', { title: game.data.title })}
         />

@@ -1,9 +1,8 @@
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-
-import { BgtIcon } from '../BgtIcon/BgtIcon';
+import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
 import { BgtNormalEditDropdown } from '../BgtDropdown/BgtEditDropdown';
 
-import BgtButton from './BgtButton';
+import TrashIcon from '@/assets/icons/trash.svg?react';
+import PencilIcon from '@/assets/icons/pencil.svg?react';
 
 interface Props {
   onDelete: () => void;
@@ -16,13 +15,9 @@ export const BgtEditDeleteButtons = (props: Props) => {
   return (
     <div>
       <BgtNormalEditDropdown onDelete={onDelete} onEdit={onEdit} className="md:hidden" />
-      <div className="hidden flex-row justify-end gap-1 md:flex">
-        <BgtButton variant="inline" color="primary" onClick={onEdit}>
-          <BgtIcon icon={<PencilIcon />} size={19} />
-        </BgtButton>
-        <BgtButton variant="inline" color="error" onClick={onDelete}>
-          <BgtIcon icon={<TrashIcon />} />
-        </BgtButton>
+      <div className="hidden flex-row justify-end gap-2 md:flex">
+        <BgtIconButton type="normal" onClick={onEdit} icon={<PencilIcon />} />
+        <BgtIconButton type="danger" onClick={onDelete} icon={<TrashIcon />} />
       </div>
     </div>
   );

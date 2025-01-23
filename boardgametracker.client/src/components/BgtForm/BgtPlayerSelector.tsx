@@ -2,7 +2,6 @@ import { ArrayPath, Control, FieldArrayWithId, UseFieldArrayRemove, useControlle
 import { Dispatch, SetStateAction } from 'react';
 import { t } from 'i18next';
 import { Badge, Text } from '@radix-ui/themes';
-import { ClockIcon, PencilIcon, TrashIcon, TrophyIcon } from '@heroicons/react/24/outline';
 
 import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
 import BgtButton from '../BgtButton/BgtButton';
@@ -12,6 +11,11 @@ import { CreateSession } from '../../models/Session/CreateSession';
 import { usePlayerById } from '../../hooks/usePlayerById';
 
 import { BgtFormErrors } from './BgtFormErrors';
+
+import TrophyIcon from '@/assets/icons/trophy.svg?react';
+import TrashIcon from '@/assets/icons/trash.svg?react';
+import PencilIcon from '@/assets/icons/pencil.svg?react';
+import ClockIcon from '@/assets/icons/clock.svg?react';
 
 interface Props {
   name: ArrayPath<CreateSession>;
@@ -71,14 +75,8 @@ export const BgtPlayerSelector = (props: Props) => {
             {'score' in x && x.score !== undefined && <Badge>{x.score}</Badge>}
           </div>
           <div className="flex items-center gap-1">
-            <BgtIconButton size={17} icon={<PencilIcon />} onClick={() => editPlayer(x.id)} disabled={disabled} />
-            <BgtIconButton
-              size={17}
-              icon={<TrashIcon />}
-              onClick={() => remove(index)}
-              type="danger"
-              disabled={disabled}
-            />
+            <BgtIconButton icon={<PencilIcon />} onClick={() => editPlayer(x.id)} disabled={disabled} />
+            <BgtIconButton icon={<TrashIcon />} onClick={() => remove(index)} type="danger" disabled={disabled} />
           </div>
         </div>
       ))}

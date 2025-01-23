@@ -31,7 +31,7 @@ export const DashboardPage = () => {
           <li>✅ New location</li>
           <li>Edit player</li>
           <li>Delete player</li>
-          <li>Move icons to svg files</li>
+          <li>✅ Move icons to svg files</li>
           <li>View session table</li>
           <li>Edit session</li>
           <li>Delete session</li>
@@ -55,6 +55,8 @@ export const DashboardPage = () => {
             Bij aanmaken van locatie word bij een tweede create de lijst niet meer geupdate na de POST, ook de counts
             query word niet refreshed
           </li>
+          <li>Player met score 0 kan niet aan sessie worden toegevoegd.</li>
+          <li>Fix layout on create player modal (photo should be left to name)</li>
         </ul>
         <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 md:gap-3">
           <BgtTextStatistic content={statistics.data.gameCount} title={t('statistics.game-count')} />

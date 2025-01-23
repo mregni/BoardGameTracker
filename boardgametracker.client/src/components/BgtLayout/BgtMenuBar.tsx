@@ -2,7 +2,6 @@ import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { cx } from 'class-variance-authority';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 import { BgtMenuLogo } from '../BgtMenu/BgtMenuLogo';
 import { BgtMenuItem } from '../BgtMenu/BgtMenuItem';
@@ -11,6 +10,8 @@ import { useMenuItems } from '../../hooks/useMenuItems';
 import { useBgtMenuBar } from './hooks/useBgtMenuBar';
 
 import { useSettings } from '@/hooks/useSettings';
+import XIcon from '@/assets/icons/x.svg?react';
+import List from '@/assets/icons/list.svg?react';
 
 const MobileMenu = () => {
   const { t } = useTranslation();
@@ -40,8 +41,8 @@ const MobileMenu = () => {
       <div className=" bg-gray-950 z-50">
         <div className="px-4 pt-2 grow flex flex-row justify-between items-center">
           <BgtMenuLogo />
-          {!open && <Bars3Icon height={25} className="pr-3" onClick={() => setOpen(true)} />}
-          {open && <XMarkIcon height={25} className="pr-3" onClick={() => setOpen(false)} />}
+          {!open && <List height={25} className="pr-3" onClick={() => setOpen(true)} />}
+          {open && <XIcon height={25} className="pr-3" onClick={() => setOpen(false)} />}
         </div>
       </div>
       <div className={cx('mobile-menu bg-gray-950 absolute w-full top-12 z-40', !open && 'hidden-menu')}>

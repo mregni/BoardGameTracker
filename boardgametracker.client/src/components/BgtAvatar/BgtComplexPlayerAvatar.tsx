@@ -1,6 +1,7 @@
-import { ClockIcon, TrophyIcon } from '@heroicons/react/24/solid';
-
 import { BgtAvatar, Props } from './BgtAvatar';
+
+import TrophyIcon from '@/assets/icons/trophy.svg?react';
+import ClockIcon from '@/assets/icons/clock.svg?react';
 
 interface ComplexProps extends Props {
   firstPlay: boolean;
