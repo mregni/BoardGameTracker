@@ -97,6 +97,7 @@ export const NewGamePage = () => {
                 label={t('game.price.label')}
                 name="buyingPrice"
                 type="number"
+                defaultValue={0}
                 placeholder={t('game.price.placeholder')}
                 control={control}
                 prefixLabel={settings.data?.currency}
@@ -106,6 +107,7 @@ export const NewGamePage = () => {
                 name="date"
                 type="date"
                 control={control}
+                defaultValue={new Date().toISOString().split('T')[0]}
                 className="pr-2"
               />
               <BgtSelect
@@ -165,7 +167,7 @@ export const NewGamePage = () => {
                 className="pr-2"
               />
 
-              <BgtSwitch label={t('game.scoring.label')} control={control} name="hasScoring" className="pt-3" />
+              <BgtSwitch label={t('game.scoring.label')} control={control} defaultValue={false} name="hasScoring" className="pt-3" />
 
               <BgtTextArea label={t('game.new.manual.description.label')} name="description" register={register} />
 

@@ -21,11 +21,15 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
 
     public Task<double> GetTotalPlayTime()
     {
-        return _context.Sessions.SumAsync(x => (x.End - x.Start).TotalMinutes);
+        return _context.Sessions.Select(x => (x.End - x.Start).TotalMinutes)
+            .DefaultIfEmpty()
+            .SumAsync();
     }
 
     public Task<double> GetMeanPlayTime()
     {
-        return _context.Sessions.AverageAsync(x => (x.End - x.Start).TotalMinutes);
+        return _context.Sessions.Select(x => (x.End - x.Start).TotalMinutes)
+            .DefaultIfEmpty()
+            .AverageAsync();
     }
 }
