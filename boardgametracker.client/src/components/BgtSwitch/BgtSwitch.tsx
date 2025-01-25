@@ -1,4 +1,4 @@
-import { Control, Controller, FieldValues, Path } from 'react-hook-form';
+import { Control, Controller, FieldValues, Path, PathValue } from 'react-hook-form';
 import { Text } from '@radix-ui/themes';
 import * as Switch from '@radix-ui/react-switch';
 
@@ -8,16 +8,18 @@ interface Props<T extends FieldValues> {
   name: Path<T>;
   disabled?: boolean;
   className?: string;
+  defaultValue?: PathValue<T, Path<T>>;
 }
 
 export const BgtSwitch = <TFormValues extends FieldValues>(props: Props<TFormValues>) => {
-  const { label, control, name, disabled = false, className } = props;
+  const { label, control, name, disabled = false, className, defaultValue } = props;
 
   return (
     <div className={className}>
       <Controller
         name={name}
         control={control}
+        defaultValue={defaultValue}
         render={({ field }) => (
           <Text as="label" size="3">
             <div className="flex gap-2">
