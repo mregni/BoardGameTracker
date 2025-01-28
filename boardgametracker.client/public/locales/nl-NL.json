@@ -21,7 +21,7 @@
     "rating": "Rating",
     "weight": "Weight",
     "age": "Age",
-    "minutes_abbreviation": "min",
+    "minutes-abbreviation": "min",
     "edit": "edit",
     "close": "close",
     "details": "details",

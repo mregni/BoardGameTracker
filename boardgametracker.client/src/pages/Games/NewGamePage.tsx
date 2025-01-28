@@ -146,7 +146,7 @@ export const NewGamePage = () => {
                   type="number"
                   control={control}
                   className="pr-2"
-                  suffixLabel={t('common.minutes_abbreviation')}
+                  suffixLabel={t('common.minutes-abbreviation')}
                 />
                 <BgtInputField
                   label={t('game.new.manual.max-time.label')}
@@ -154,7 +154,7 @@ export const NewGamePage = () => {
                   type="number"
                   control={control}
                   className="pr-2"
-                  suffixLabel={t('common.minutes_abbreviation')}
+                  suffixLabel={t('common.minutes-abbreviation')}
                 />
               </div>
               <BgtInputField

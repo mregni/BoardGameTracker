@@ -58,6 +58,16 @@ public class GameController
         var viewModel = _mapper.Map<GameViewModel>(game);
         return new OkObjectResult(viewModel);
     }
+    
+    [HttpGet]
+    [Route("{id:int}/sessions")]
+    public async Task<IActionResult> GetGameSessionsById(int id)
+    {
+        var sessions = await _gameService.GetSessionsForGame(id);
+        
+        var viewModel = _mapper.Map<IList<SessionViewModel>>(sessions);
+        return new OkObjectResult(viewModel);
+    }
 
     [HttpDelete]
     [Route("{id:int}")]

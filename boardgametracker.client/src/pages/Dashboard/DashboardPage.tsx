@@ -77,12 +77,12 @@ export const DashboardPage = () => {
           <BgtTextStatistic
             content={statistics.data.totalPlayTime}
             title={t('statistics.total-playtime')}
-            suffix={t('common.minutes_abbreviation')}
+            suffix={t('common.minutes-abbreviation')}
           />
           <BgtTextStatistic
             content={RoundDecimal(statistics.data.meanPlayTime, 1)}
             title={t('statistics.mean-playtime')}
-            suffix={t('common.minutes_abbreviation')}
+            suffix={t('common.minutes-abbreviation')}
           />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 md:gap-3">

@@ -24,4 +24,5 @@ public interface IGameService
     Task<Dictionary<DateTime, XValue[]>> GetPlayerScoringChart(int id);
     Task<List<ScoreRank>> GetScoringRankedChart(int id);
     Task<Game> CreateGame(Game game);
+    Task<List<Session>> GetSessionsForGame(int id);
 }

@@ -31,7 +31,7 @@ export const GameStatistics = () => {
       <BgtStatistic
         content={statistics.totalPlayedTime}
         title={t('statistics.total-play-time')}
-        suffix={t('common.minutes_abbreviation')}
+        suffix={t('common.minutes-abbreviation')}
       />
       <BgtStatistic
         content={statistics.pricePerPlay}

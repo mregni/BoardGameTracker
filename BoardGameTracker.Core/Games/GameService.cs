@@ -250,4 +250,9 @@ public class GameService : IGameService
     {
         return _gameRepository.CreateAsync(game);
     }
+
+    public Task<List<Session>> GetSessionsForGame(int id)
+    {
+        return _gameRepository.GetSessionsByGameId(id);
+    }
 }

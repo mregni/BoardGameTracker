@@ -132,7 +132,7 @@ export const GameDetailPage = () => {
                   <BgtButton size="3" onClick={() => navigate(`/play/create/${game.data.id}`)}>
                     {i18next.format(t('game.add'))}
                   </BgtButton>
-                  <BgtButton size="3" variant="outline" onClick={() => alert('Sessions not implemented')}>
+                  <BgtButton size="3" variant="outline" onClick={() => navigate(`/games/${game.data.id}/sessions`)}>
                     {i18next.format(t('game.sessions'))}
                   </BgtButton>
                 </div>
@@ -160,7 +160,7 @@ export const GameDetailPage = () => {
               <BgtTextStatistic
                 content={statistics.data.totalPlayedTime}
                 title={t('statistics.total-play-time')}
-                suffix={t('common.minutes_abbreviation')}
+                suffix={t('common.minutes-abbreviation')}
               />
               <BgtTextStatistic
                 content={statistics.data.pricePerPlay}
@@ -175,7 +175,7 @@ export const GameDetailPage = () => {
               <BgtTextStatistic
                 content={RoundDecimal(statistics.data.averagePlayTime)}
                 title={t('statistics.average-playtime')}
-                suffix={t('common.minutes_abbreviation')}
+                suffix={t('common.minutes-abbreviation')}
               />
               <BgtTextStatistic
                 content={

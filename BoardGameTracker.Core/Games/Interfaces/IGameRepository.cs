@@ -39,4 +39,5 @@ public interface IGameRepository: ICrudHelper<Game>
     Task<double?> GetMeanPayedAsync();
     Task<double?> GetTotalPayedAsync();
     Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState();
+    Task<List<Session>> GetSessionsByGameId(int id);
 }

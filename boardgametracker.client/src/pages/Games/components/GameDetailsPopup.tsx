@@ -38,7 +38,7 @@ export const GameDetailsPopup = (props: Props) => {
             <div className="flex flex-row gap-1 flex-wrap">
               <Badge color="green">
                 {t('common.play-time')}: {sanitiseValues(game.minPlayTime, game.maxPlayTime)}{' '}
-                {t('common.minutes_abbreviation')}
+                {t('common.minutes-abbreviation')}
               </Badge>
               <Badge color="green">
                 {t('common.players')}: {sanitiseValues(game.minPlayers, game.maxPlayers)}

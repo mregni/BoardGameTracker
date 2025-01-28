@@ -229,6 +229,14 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
             
     }
 
+    public Task<List<Session>> GetSessionsByGameId(int id)
+    {
+        return _context.Sessions
+            .Include(x => x.PlayerSessions)
+            .Where(x => x.GameId == id)
+            .ToListAsync();
+    }
+
     public Task<int> CountAsync()
     {
         return _context.Games.CountAsync();
