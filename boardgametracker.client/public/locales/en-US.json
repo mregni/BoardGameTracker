@@ -8,6 +8,8 @@
     "games": "Games",
     "items_one": "{{count}} item",
     "items_other": "{{count}} items",
+    "minutes_one": "minute",
+    "minutes_other": "minutes",
     "locations": "Locations",
     "location": "Location",
     "duration": "Duration",
@@ -22,7 +24,7 @@
     "rating": "Rating",
     "weight": "Weight",
     "age": "Age",
-    "minutes_abbreviation": "min",
+    "minutes-abbreviation": "min",
     "edit": "edit",
     "close": "close",
     "details": "details",
@@ -36,6 +38,10 @@
     "enabled": "Enabled",
     "disabled": "Disabled",
     "poster": "Game poster",
+    "date": "Date",
+    "time": "Time",
+    "other-players": "Other players",
+    "high-score": "High score",
     "id": "Id",
     "flags": {
       "header": "Tags",
@@ -175,7 +181,7 @@
   },
   "images": {
     "types": "png or jpg",
-    "upload": "Click or drop to add image"
+    "upload": "Click to upload"
   },
   "player": {
     "notifications": {
@@ -262,7 +268,8 @@
     "buy-price": "Cost"
   },
   "sessions": {
-    "new": "Add new session"
+    "new": "Add new session",
+    "title": "sessions"
   },
   "settings": {
     "titles": {
