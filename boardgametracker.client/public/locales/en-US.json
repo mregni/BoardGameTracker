@@ -1,5 +1,6 @@
 {
   "common": {
+    "save": "Save",
     "actions": "Actions",
     "start": "Start",
     "cancel": "Cancel",
@@ -7,6 +8,8 @@
     "games": "Games",
     "items_one": "{{count}} item",
     "items_other": "{{count}} items",
+    "minutes_one": "minute",
+    "minutes_other": "minutes",
     "locations": "Locations",
     "location": "Location",
     "duration": "Duration",
@@ -32,6 +35,14 @@
     "days-ago": "Days ago",
     "read-more": "Read more",
     "read-less": "Read less",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "poster": "Game poster",
+    "date": "Date",
+    "time": "Time",
+    "other-players": "Other players",
+    "high-score": "High score",
+    "id": "Id",
     "flags": {
       "header": "Tags",
       "shortest-game": "Shortest",
@@ -39,6 +50,7 @@
       "highest-score": "High score",
       "lowest-score": "Lowest score"
     },
+    "count": "Count",
     "game_one": "{{count}} game",
     "game_other": "{{count}} games",
     "player_one": "{{count}} player",
@@ -55,13 +67,19 @@
       "button": ""
     }
   },
+  "dashboard": {
+    "charts": {
+      "games": "Games"
+    }
+  },
   "game": {
     "add": "Add game session",
     "sessions": "View sessions",
     "notifications": {
       "created": "Game is succesfully created",
       "not-found": "Could not find game",
-      "duplicate": "Game already exists"
+      "duplicate": "Game already exists",
+      "deleted": "Game is succesfully deleted"
     },
     "added-date": {
       "label": "Date added",
@@ -81,7 +99,36 @@
       "bgg-subtext": "Import game data from BoardGameGeek",
       "bgg-description": "Enter required fields to import a game from BoardGameGeek",
       "manual-title": "Manual input",
-      "manual-subtext": "Manual input data to create a game"
+      "manual-subtext": "Manual input data to create a game",
+      "manual": {
+        "title": "Create game",
+        "game-title": {
+          "required": "Game title is required",
+          "label": "Game title"
+        },
+        "year": {
+          "label": "Year published",
+          "required": "Year published is required"
+        },
+        "min-players": {
+          "label": "Minimum players"
+        },
+        "max-players": {
+          "label": "Maximum players"
+        },
+        "min-time": {
+          "label": "Minimum play time"
+        },
+        "max-time": {
+          "label": "Maximum play time"
+        },
+        "min-age": {
+          "label": "Minimum player age"
+        },
+        "description": {
+          "label": "Game description"
+        }
+      }
     },
     "price": {
       "label": "Price",
@@ -133,7 +180,6 @@
     }
   },
   "images": {
-    "drag-and-drop": " or drag and drop",
     "types": "png or jpg",
     "upload": "Click to upload"
   },
@@ -171,6 +217,7 @@
   },
   "location": {
     "new": {
+      "button": "Add new Location",
       "title": "Create new location",
       "description": "Enter the location name to create a new one.",
       "name": {
@@ -179,16 +226,36 @@
       },
       "save": "Create location"
     },
+    "edit": {
+      "title": "Edit location"
+    },
     "notifications": {
       "created": "Location is succesfully created",
-      "failed": "Failed creating location"
+      "create-failed": "Failed creating location",
+      "failed": "Failed creating location",
+      "update": "Location is succesfully updated",
+      "update-failed": "Failed updating location",
+      "deleted": "Location is succesfully deleted",
+      "delete-failed": "Failed deleting location"
+    },
+    "delete": {
+      "description": "Are you sure you want to delete location '{{name}}'?",
+      "extra-description": "The location is connected to {{count}} game sessions, they will be disconnected."
     }
   },
   "statistics": {
     "average-score": "Average score",
     "high-score": "High score",
-    "most-wint": "Most wins",
+    "most-wins": "Most wins",
     "play-count": "Plays",
+    "game-count": "Games",
+    "player-count": "Players",
+    "session-count": "Sessions",
+    "location-count": "Locations",
+    "total-cost": "Total cost",
+    "mean-cost": "Average cost",
+    "total-playtime": "Total play time",
+    "mean-playtime": "Average play time",
     "price-per-play": "Price / play",
     "total-play-time": "Total play time",
     "unique-players": "Unique players",
@@ -199,6 +266,59 @@
     "average-playtime": "Average playtime",
     "win-percentage": "Win percentage",
     "buy-price": "Cost"
+  },
+  "sessions": {
+    "new": "Add new session",
+    "title": "sessions",
+    "notifications": {
+      "deleted": "Location is succesfully deleted",
+      "delete-failed": "Failed deleting location"
+    },
+    "delete": {
+      "title": "Delete session",
+      "description": "Are you sure you want to the sessions?"
+    }
+  },
+  "settings": {
+    "titles": {
+      "localisation": "Localisation settings",
+      "currency": "Currency settings",
+      "environment": "Environment"
+    },
+    "time-zone": {
+      "label": "Time zone",
+      "required": "Time zone is required"
+    },
+    "date-format": {
+      "label": "Date format",
+      "required": "Date format is required"
+    },
+    "time-format": {
+      "label": "Time format",
+      "required": "Time format is required"
+    },
+    "ui-language": {
+      "label": "Language",
+      "required": "language is required"
+    },
+    "currency": {
+      "label": "Currency",
+      "required": "Currency is required"
+    },
+    "decimal-separator": {
+      "label": "Decimal separator",
+      "required": "Decimal separator is required",
+      "max-length": "Decimal separator can be at most 1 character"
+    },
+    "environment": {
+      "name": "Environment",
+      "port": "Port",
+      "statistics": "Statistics",
+      "log-level": "Log level",
+      "version": "Version"
+    },
+    "feature-request": "Feature request",
+    "translations": "Translate the app"
   },
   "player-session": {
     "save": "Create game play",
@@ -268,15 +388,14 @@
       "failed": "Game play deletion failed, check logs for more details."
     }
   },
-  "settings": {
-    "titles": {
-      "localisation": "Localisation settings",
-      "currency": "Currency settings",
-      "environment": "Environment"
-    },
-    "ui-language": {
-      "label": "Language",
-      "required": "language is required"
-    }
+  "languages": {
+    "english": "English",
+    "dutch": "Dutch"
+  },
+  "log-levels": {
+    "debug": "Debug",
+    "info": "Info",
+    "warn": "Warning",
+    "error": "Error"
   }
 }
