@@ -267,5 +267,16 @@
       "successfull": "Game play is successfully deleted.",
       "failed": "Game play deletion failed, check logs for more details."
     }
+  },
+  "settings": {
+    "titles": {
+      "localisation": "Localisation settings",
+      "currency": "Currency settings",
+      "environment": "Environment"
+    },
+    "ui-language": {
+      "label": "Language",
+      "required": "language is required"
+    }
   }
 }

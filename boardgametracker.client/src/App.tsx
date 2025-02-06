@@ -1,4 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -43,6 +45,11 @@ function AppContainer() {
 
 function App() {
   const { settings } = useSettings();
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    i18n.changeLanguage(settings.data?.uiLanguage ?? 'en-US');
+  }, [i18n, settings.data?.uiLanguage]);
 
   if (settings.isLoading || settings.isError) return null;
 

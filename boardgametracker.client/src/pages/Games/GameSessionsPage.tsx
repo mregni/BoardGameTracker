@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { t } from 'i18next';
 import { format } from 'date-fns';
 
@@ -9,14 +9,17 @@ import { useGameSessionsPage } from './hooks/useGameSessionsPage';
 import { useGame } from './hooks/useGame';
 
 import { StringToHsl } from '@/utils/stringUtils';
+import { useToast } from '@/providers/BgtToastProvider';
 import { Game, PlayerSession, Session } from '@/models';
 import { useSettings } from '@/hooks/useSettings';
 import { usePlayerById } from '@/hooks/usePlayerById';
+import { BgtDeleteModal } from '@/components/Modals/BgtDeleteModal';
 import { BgtDataTable, DataTableProps } from '@/components/BgtTable/BgtDataTable';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtCard } from '@/components/BgtCard/BgtCard';
+import { BgtEditDeleteButtons } from '@/components/BgtButton/BgtEditDeleteButtons';
 import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
 
 interface AvatarProps {
@@ -47,10 +50,18 @@ const PlayerAvatar = (props: AvatarProps) => {
 export const GameSessionsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showInfoToast } = useToast();
   const { settings } = useSettings();
-  const { playerById } = usePlayerById();
   const { game } = useGame({ id });
-  const { sessions } = useGameSessionsPage({ id });
+
+  const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
+
+  const onDeleteSuccess = () => {
+    showInfoToast('sessions.notifications.deleted');
+    setSessionToDelete(null);
+  };
+
+  const { sessions, deleteSession } = useGameSessionsPage({ id, onDeleteSuccess });
 
   const columns: DataTableProps<Session>['columns'] = useMemo(
     () => [
@@ -110,7 +121,12 @@ export const GameSessionsPage = () => {
       },
       {
         accessorKey: '200',
-        cell: ({ row }) => <div className="flex justify-end">ACTIONS {row.original.id}</div>,
+        cell: ({ row }) => (
+          <BgtEditDeleteButtons
+            onDelete={() => setSessionToDelete(row.original.id)}
+            onEdit={() => alert('not implemented')}
+          />
+        ),
         header: <div className="flex justify-end">{t('common.actions')}</div>,
       },
     ],
@@ -122,7 +138,7 @@ export const GameSessionsPage = () => {
   return (
     <BgtPage>
       <BgtPageHeader
-        header={`${game.data.title} - ${t('game.sessions')}`}
+        header={`${game.data.title} - ${t('sessions.title')}`}
         actions={[{ onClick: () => navigate(`/play/create/${game.data.id}`), variant: 'solid', content: 'game.add' }]}
       />
       <BgtPageContent>
@@ -132,6 +148,13 @@ export const GameSessionsPage = () => {
             data={sessions.data ?? []}
             noDataMessage={'LOADING DATA'}
             widths={['w-[70px]', 'w-[100px]', 'w-[75px]']}
+          />
+          <BgtDeleteModal
+            open={sessionToDelete !== null}
+            close={() => setSessionToDelete(null)}
+            onDelete={() => sessionToDelete && deleteSession(sessionToDelete)}
+            title={t('sessions.delete.title')}
+            description={t('sessions.delete.description')}
           />
         </BgtCard>
       </BgtPageContent>

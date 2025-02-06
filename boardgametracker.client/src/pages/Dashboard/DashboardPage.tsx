@@ -32,9 +32,9 @@ export const DashboardPage = () => {
           <li>Edit player</li>
           <li>Delete player</li>
           <li>✅ Move icons to svg files</li>
-          <li>View session table</li>
+          <li>✅ View session table</li>
           <li>Edit session</li>
-          <li>Delete session</li>
+          <li>✅ Delete session</li>
           <li>Use decimal seperator from settings</li>
           <li>Load language from settings after settings save (if updated)</li>
           <li>✅ Add github button for feature requests</li>

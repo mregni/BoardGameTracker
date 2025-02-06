@@ -19,7 +19,7 @@ import GitHubIcon from '@/assets/icons/github.svg?react';
 import CrowdinIcon from '@/assets/icons/crowdin.svg?react';
 
 export const SettingsPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { pageTitle } = usePage();
   const { settings, saveSettings, isPending, languages, environment } = useSettings();
 
@@ -32,6 +32,7 @@ export const SettingsPage = () => {
 
   const onSubmit = async (data: Settings) => {
     await saveSettings(data);
+    i18n.changeLanguage(data.uiLanguage);
   };
 
   return (
@@ -50,7 +51,7 @@ export const SettingsPage = () => {
               <BgtSelect
                 disabled={isPending}
                 control={control}
-                label={t('game.state.label')}
+                label={t('settings.ui-language.label')}
                 name="uiLanguage"
                 items={languages.data.map((value) => ({
                   label: t(`languages.${value.translationKey}`),

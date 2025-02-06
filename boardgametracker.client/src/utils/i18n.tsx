@@ -3,10 +3,10 @@ import Backend from 'i18next-http-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import i18n from 'i18next';
 
-let translationFilePath = '/locales/{{lng}}.json';
-if (process.env.NODE_ENV === 'development') {
-  translationFilePath = '/locales/base.json';
-}
+const translationFilePath = '/locales/{{lng}}.json';
+// if (process.env.NODE_ENV === 'development') {
+//   translationFilePath = '/locales/base.json';
+// }
 
 void i18n
   .use(Backend)
@@ -14,7 +14,7 @@ void i18n
   .use(initReactI18next)
   .init({
     debug: false,
-    supportedLngs: ['en-US', 'nl-NL'],
+    supportedLngs: ['en-US', 'nl-NL', 'nl-BE'],
     fallbackLng: 'en-US',
     interpolation: {
       escapeValue: false,
