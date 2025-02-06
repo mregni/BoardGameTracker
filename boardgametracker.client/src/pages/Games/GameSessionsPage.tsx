@@ -3,8 +3,6 @@ import { useMemo, useState } from 'react';
 import { t } from 'i18next';
 import { format } from 'date-fns';
 
-import { usePlayers } from '../Players/hooks/usePlayers';
-
 import { useGameSessionsPage } from './hooks/useGameSessionsPage';
 import { useGame } from './hooks/useGame';
 
@@ -139,7 +137,9 @@ export const GameSessionsPage = () => {
     <BgtPage>
       <BgtPageHeader
         header={`${game.data.title} - ${t('sessions.title')}`}
-        actions={[{ onClick: () => navigate(`/play/create/${game.data.id}`), variant: 'solid', content: 'game.add' }]}
+        actions={[
+          { onClick: () => navigate(`/sessions/create/${game.data.id}`), variant: 'solid', content: 'game.add' },
+        ]}
       />
       <BgtPageContent>
         <BgtCard className="p-4">

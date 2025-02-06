@@ -7,7 +7,7 @@ import { BgtPageContent } from '../../components/BgtLayout/BgtPageContent';
 import { BgtPage } from '../../components/BgtLayout/BgtPage';
 import { BgtImageCard } from '../../components/BgtImageCard/BgtImageCard';
 
-import { PlayerModal } from './modals/PlayerModal';
+import { CreatePlayerModal } from './modals/CreatePlayerModal';
 import { usePlayers } from './hooks/usePlayers';
 
 export const PlayersPage = () => {
@@ -30,7 +30,7 @@ export const PlayersPage = () => {
             <BgtImageCard key={x.id} title={x.name} image={x.image} link={`/players/${x.id}`} />
           ))}
         </div>
-        <PlayerModal open={openModal} setOpen={setOpenModal} />
+        <CreatePlayerModal open={openModal} setOpen={setOpenModal} />
       </BgtPageContent>
     </BgtPage>
   );

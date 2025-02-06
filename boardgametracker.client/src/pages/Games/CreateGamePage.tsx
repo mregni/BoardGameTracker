@@ -22,7 +22,7 @@ import { BgtImageSelector } from '@/components/BgtForm/BgtImageSelector';
 import { BgtCenteredCard } from '@/components/BgtCard/BgtCenteredCard';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
-export const NewGamePage = () => {
+export const CreateGamePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { settings } = useSettings();

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
-import NewGameModal from './modals/NewGameModal';
+import CreateGameModal from './modals/CreateGameModal';
 import { BggGameModal } from './modals/BggGameModal';
 import { useGames } from './hooks/useGames';
 
@@ -53,7 +53,7 @@ export const GamesPage = () => {
           ))}
         </div>
         {openBggModal && <BggGameModal open={openBggModal} setOpen={setOpenBggModal} />}
-        <NewGameModal open={openModal} setOpen={setOpenModal} openBgg={openBgg} openManual={openManual} />
+        <CreateGameModal open={openModal} setOpen={setOpenModal} openBgg={openBgg} openManual={openManual} />
       </BgtPageContent>
     </BgtPage>
   );

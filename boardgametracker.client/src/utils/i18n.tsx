@@ -3,10 +3,10 @@ import Backend from 'i18next-http-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import i18n from 'i18next';
 
-const translationFilePath = '/locales/{{lng}}.json';
-// if (process.env.NODE_ENV === 'development') {
-//   translationFilePath = '/locales/base.json';
-// }
+let translationFilePath = '/locales/{{lng}}.json';
+if (process.env.NODE_ENV === 'development') {
+  translationFilePath = '/locales/base.json';
+}
 
 void i18n
   .use(Backend)

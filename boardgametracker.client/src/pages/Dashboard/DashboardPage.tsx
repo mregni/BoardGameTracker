@@ -36,7 +36,7 @@ export const DashboardPage = () => {
           <li>Edit session</li>
           <li>✅ Delete session</li>
           <li>Use decimal seperator from settings</li>
-          <li>Load language from settings after settings save (if updated)</li>
+          <li>✅ Load language from settings after settings save (if updated)</li>
           <li>✅ Add github button for feature requests</li>
           <li>✅ Add crowdin button for translations</li>
           <li>✅ Remove "info for nerds" page</li>
@@ -55,8 +55,11 @@ export const DashboardPage = () => {
             Bij aanmaken van locatie word bij een tweede create de lijst niet meer geupdate na de POST, ook de counts
             query word niet refreshed
           </li>
-          <li>Player met score 0 kan niet aan sessie worden toegevoegd.</li>
-          <li>Fix layout on create player modal (photo should be left to name)</li>
+          <li>✅ Player met score 0 kan niet aan sessie worden toegevoegd.</li>
+          <li>✅ Fix layout on create player modal (photo should be left to name)</li>
+          <li>
+            BgtImageCard has a link to deletGame and a delete modal. This should not happen or add a "delete" function
+          </li>
         </ul>
         <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 md:gap-3">
           <BgtTextStatistic content={statistics.data.gameCount} title={t('statistics.game-count')} />

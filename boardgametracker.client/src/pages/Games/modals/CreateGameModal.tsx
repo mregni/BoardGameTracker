@@ -17,7 +17,7 @@ interface Props {
   openManual: () => void;
 }
 
-const NewGameModal = (props: Props) => {
+const CreateGameModal = (props: Props) => {
   const { open, setOpen, openBgg, openManual } = props;
   const { t } = useTranslation();
 
@@ -44,4 +44,4 @@ const NewGameModal = (props: Props) => {
   );
 };
 
-export default NewGameModal;
+export default CreateGameModal;

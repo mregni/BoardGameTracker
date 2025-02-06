@@ -6,7 +6,7 @@ import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-qu
 
 import { useToast } from './providers/BgtToastProvider';
 import { SettingsRoutes } from './pages/Settings/SettingsRoutes';
-import { PlayRoutes } from './pages/Sessions/SessionRoutes';
+import { SessionRoutes } from './pages/Sessions/SessionRoutes';
 import { PlayerRoutes } from './pages/Players/PlayerRoutes';
 import { LocationRoutes } from './pages/Locations/LocationRoutes';
 import { GameRoutes } from './pages/Games/GameRoutes';
@@ -61,7 +61,7 @@ function App() {
         <Routes>
           <Route element={<GameRoutes />} path="/games/*" />
           <Route element={<PlayerRoutes />} path="/players/*" />
-          <Route element={<PlayRoutes />} path="/play/*" />
+          <Route element={<SessionRoutes />} path="/sessions/*" />
           <Route element={<SettingsRoutes />} path="/settings/*" />
           <Route element={<LocationRoutes />} path="/locations/*" />
           <Route element={<DashboardPage />} path="*" />

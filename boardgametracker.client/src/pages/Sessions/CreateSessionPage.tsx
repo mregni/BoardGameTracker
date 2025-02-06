@@ -6,9 +6,8 @@ import { t } from 'i18next';
 import { addMinutes } from 'date-fns';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { UpdatePlayerModal } from '../Players/modals/UpdatePlayerModal';
-import { CreatePlayerModal } from '../Players/modals/CreatePlayerModal';
-
+import { UpdateSessionPlayerModal } from './modals/UpdateSessionPlayerModal';
+import { CreateSessionPlayerModal } from './modals/CreateSessionPlayerModal';
 import { useCreateSessionPage } from './hooks/useCreateSessionPage';
 
 import { useToast } from '@/providers/BgtToastProvider';
@@ -20,7 +19,6 @@ import {
 } from '@/models/Session/CreateSession';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
 import { BgtTextArea } from '@/components/BgtForm/BgtTextArea';
 import { BgtSelect } from '@/components/BgtForm/BgtSelect';
 import { BgtPlayerSelector } from '@/components/BgtForm/BgtPlayerSelector';
@@ -211,16 +209,16 @@ export const CreateSessionPage = () => {
           </form>
         </BgtCenteredCard>
 
-        <CreatePlayerModal
+        <CreateSessionPlayerModal
           open={openCreateNewPlayerModal}
-          hasScoring={game.data.hasScoring ?? true}
+          hasScoring={game.data?.hasScoring ?? true}
           onClose={closeNewPlayPlayer}
           onCancel={() => setOpenCreateNewPlayerModal(false)}
           selectedPlayerIds={players.map((x) => x.playerId)}
         />
-        <UpdatePlayerModal
+        <UpdateSessionPlayerModal
           open={openUpdateNewPlayerModal}
-          hasScoring={game.data.hasScoring ?? true}
+          hasScoring={game.data?.hasScoring ?? true}
           onClose={closeUpdatePlayPlayer}
           onCancel={() => setOpenUpdateNewPlayerModal(false)}
           selectedPlayerIds={players.map((x) => x.playerId)}

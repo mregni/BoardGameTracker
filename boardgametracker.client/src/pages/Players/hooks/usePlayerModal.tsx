@@ -11,7 +11,7 @@ interface Props {
 export const usePlayerModal = ({ onSuccess }: Props) => {
   const queryClient = useQueryClient();
 
-  const { mutateAsync } = useMutation<Player, AxiosError<FailResult>, Player>({
+  const { mutateAsync, isPending } = useMutation<Player, AxiosError<FailResult>, Player>({
     mutationFn: addPlayer,
     async onSuccess() {
       onSuccess();
@@ -26,5 +26,6 @@ export const usePlayerModal = ({ onSuccess }: Props) => {
 
   return {
     save: mutateAsync,
+    isPending,
   };
 };

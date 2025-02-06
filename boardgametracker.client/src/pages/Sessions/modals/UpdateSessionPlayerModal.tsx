@@ -5,7 +5,7 @@ import { Dialog } from '@radix-ui/themes';
 import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { usePlayers } from '../hooks/usePlayers';
+import { usePlayers } from '../../Players/hooks/usePlayers';
 
 import {
   CreateSession,
@@ -30,7 +30,7 @@ interface Props {
   playerToEdit: FieldArrayWithId<CreateSession> | undefined;
 }
 
-const UpdatePlayerForm = (props: Props) => {
+const UpdateSessionPlayerForm = (props: Props) => {
   const { open, hasScoring, onClose, playerToEdit, onCancel } = props;
   const { t } = useTranslation();
   const { locations } = useLocations({});
@@ -98,6 +98,6 @@ const UpdatePlayerForm = (props: Props) => {
   );
 };
 
-export const UpdatePlayerModal = (props: Props) => {
-  return props.open && props.playerToEdit && <UpdatePlayerForm {...props} />;
+export const UpdateSessionPlayerModal = (props: Props) => {
+  return props.open && props.playerToEdit && <UpdateSessionPlayerForm {...props} />;
 };
