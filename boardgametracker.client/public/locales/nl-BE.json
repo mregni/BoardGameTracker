@@ -181,7 +181,7 @@
   },
   "images": {
     "types": "png or jpg",
-    "upload": "Click or drop to add image"
+    "upload": "Click to upload"
   },
   "player": {
     "notifications": {
@@ -269,11 +269,19 @@
   },
   "sessions": {
     "new": "Add new session",
-    "title": "sessions"
+    "title": "sessions",
+    "notifications": {
+      "deleted": "Location is succesfully deleted",
+      "delete-failed": "Failed deleting location"
+    },
+    "delete": {
+      "title": "Delete session",
+      "description": "Are you sure you want to the sessions?"
+    }
   },
   "settings": {
     "titles": {
-      "localisation": "Localisation settings",
+      "localisation": "Taal installingen",
       "currency": "Currency settings",
       "environment": "Environment"
     },
@@ -290,8 +298,8 @@
       "required": "Time format is required"
     },
     "ui-language": {
-      "label": "Language",
-      "required": "language is required"
+      "label": "Taal",
+      "required": "Taal is verplicht"
     },
     "currency": {
       "label": "Currency",
@@ -330,7 +338,7 @@
       "players": {
         "label": "Players",
         "add": "+ add player",
-        "minimum": "Add at least one player to this session"
+        "minimum": "Add at least one player to this game"
       },
       "duration": {
         "label": "Duration",
