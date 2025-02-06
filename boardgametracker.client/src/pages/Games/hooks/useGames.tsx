@@ -30,14 +30,11 @@ export const useGames = (props: Props) => {
     onError: onError,
   });
 
-  const deleteGame = (id: number) => {
-    void deleteGameCall(id)
-      .then(() => {
-        games.refetch();
-        queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-        onDeleteSuccess?.();
-      })
-      .finally(() => {});
+  const deleteGame = async (id: number) => {
+    await deleteGameCall(id);
+    await games.refetch();
+    queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+    onDeleteSuccess?.();
   };
 
   return {

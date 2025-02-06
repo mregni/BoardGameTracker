@@ -12,7 +12,7 @@ import BgtButton from '../BgtButton/BgtButton';
 interface Props {
   open: boolean;
   close: () => void;
-  onDelete: () => void;
+  onDelete: () => Promise<void>;
   title: string;
   description: string;
 }

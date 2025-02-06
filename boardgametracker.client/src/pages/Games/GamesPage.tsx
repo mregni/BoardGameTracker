@@ -10,7 +10,7 @@ import { usePage } from '@/hooks/usePage';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
+import { BgtGameImageCard } from '@/components/BgtImageCard/BgtImageCard';
 
 export const GamesPage = () => {
   const { t } = useTranslation();
@@ -42,7 +42,7 @@ export const GamesPage = () => {
       <BgtPageContent>
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 2xl:grid-cols-10">
           {games.data.map((x) => (
-            <BgtImageCard
+            <BgtGameImageCard
               key={x.id}
               id={x.id}
               title={x.title}
