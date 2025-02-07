@@ -1,8 +1,9 @@
-name: Production build
+name: Docker Build and Push
 
 on:
   push:
     branches:
+      - dev
       - master
 
 jobs:
@@ -18,17 +19,20 @@ jobs:
         uses: PaulHatch/semantic-version@v5.3.0
         id: versioning
         with:
-          enable_prerelease_mode: true
-          namespace: beta
+          enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
+          namespace: ${{ github.ref == 'refs/heads/dev' && 'beta' || '' }}
           bump_each_commit: true
           bump_each_commit_patch_pattern: "*bump version*"
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-        
+        id: buildx
+        uses: docker/setup-buildx-action@master
+
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -39,9 +43,10 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64,
           push: true
-          file: BoardGameTracker.Host/Dockerfile
-          tags: uping/boardgametracker:dev
+          file: Dockerfile
+          tags: |
+            uping/boardgametracker:${{ github.ref == 'refs/heads/master' && 'latest' || 'dev' }}
           build-args: |
             VERSION=${{ steps.versioning.outputs.version }}
