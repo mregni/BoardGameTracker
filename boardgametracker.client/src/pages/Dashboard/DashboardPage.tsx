@@ -30,18 +30,18 @@ export const DashboardPage = () => {
           <li>✅ Delete location</li>
           <li>✅ New location</li>
           <li>Edit player</li>
-          <li>Delete player</li>
+          <li>✅ Delete player</li>
           <li>✅ Move icons to svg files</li>
-          <li>View session table</li>
+          <li>✅ View session table</li>
           <li>Edit session</li>
-          <li>Delete session</li>
+          <li>✅ Delete session</li>
           <li>Use decimal seperator from settings</li>
-          <li>Load language from settings after settings save (if updated)</li>
+          <li>✅ Load language from settings after settings save (if updated)</li>
           <li>✅ Add github button for feature requests</li>
           <li>✅ Add crowdin button for translations</li>
           <li>✅ Remove "info for nerds" page</li>
           <li>✅ Add version number in environment settings</li>
-          <li>Disable "add player" button in modal when creating a player</li>
+          <li>✅ Disable "add player" button in modal when creating a player</li>
           <li>Add loaders everywhere</li>
           <li>Add docker build for win and linux (like embystat)</li>
           <li>REMOVE ME WHEN ALL IS DONE</li>
@@ -55,8 +55,12 @@ export const DashboardPage = () => {
             Bij aanmaken van locatie word bij een tweede create de lijst niet meer geupdate na de POST, ook de counts
             query word niet refreshed
           </li>
-          <li>Player met score 0 kan niet aan sessie worden toegevoegd.</li>
-          <li>Fix layout on create player modal (photo should be left to name)</li>
+          <li>✅ Player met score 0 kan niet aan sessie worden toegevoegd.</li>
+          <li>✅ Fix layout on create player modal (photo should be left to name)</li>
+          <li>
+            ✅ BgtImageCard has a link to deletGame and a delete modal. This should not happen or add a "delete"
+            function
+          </li>
         </ul>
         <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 md:gap-3">
           <BgtTextStatistic content={statistics.data.gameCount} title={t('statistics.game-count')} />
@@ -77,12 +81,12 @@ export const DashboardPage = () => {
           <BgtTextStatistic
             content={statistics.data.totalPlayTime}
             title={t('statistics.total-playtime')}
-            suffix={t('common.minutes_abbreviation')}
+            suffix={t('common.minutes-abbreviation')}
           />
           <BgtTextStatistic
             content={RoundDecimal(statistics.data.meanPlayTime, 1)}
             title={t('statistics.mean-playtime')}
-            suffix={t('common.minutes_abbreviation')}
+            suffix={t('common.minutes-abbreviation')}
           />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 md:gap-3">

@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 
-import { PlayerDetailpage } from './PlayerDetailPage';
 import { PlayersPage } from './PlayersPage';
+import { PlayerDetailpage } from './PlayerDetailPage';
 
 export const PlayerRoutes = () => {
   return (

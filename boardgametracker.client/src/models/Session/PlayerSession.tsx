@@ -1,5 +1,5 @@
 export interface PlayerSession {
-  id: number;
+  sessionId: number;
   playerId: number;
   won: boolean;
   firstPlay: boolean;

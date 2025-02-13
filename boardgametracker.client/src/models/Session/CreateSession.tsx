@@ -12,7 +12,7 @@ export const CreatePlayerSessionSchema = CreatePlayerSessionNoScoringSchema.exte
       required_error: 'player-session.score.required',
       invalid_type_error: 'player-session.score.required',
     })
-    .positive({
+    .nonnegative({
       message: 'player-session.score.required',
     }),
 });

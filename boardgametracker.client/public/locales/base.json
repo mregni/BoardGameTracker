@@ -8,6 +8,8 @@
     "games": "Games",
     "items_one": "{{count}} item",
     "items_other": "{{count}} items",
+    "minutes_one": "minute",
+    "minutes_other": "minutes",
     "locations": "Locations",
     "location": "Location",
     "duration": "Duration",
@@ -22,7 +24,7 @@
     "rating": "Rating",
     "weight": "Weight",
     "age": "Age",
-    "minutes_abbreviation": "min",
+    "minutes-abbreviation": "min",
     "edit": "edit",
     "close": "close",
     "details": "details",
@@ -36,6 +38,10 @@
     "enabled": "Enabled",
     "disabled": "Disabled",
     "poster": "Game poster",
+    "date": "Date",
+    "time": "Time",
+    "other-players": "Other players",
+    "high-score": "High score",
     "id": "Id",
     "flags": {
       "header": "Tags",
@@ -180,7 +186,9 @@
   "player": {
     "notifications": {
       "created": "Player is succesfully created",
-      "not-found": "Could not find player"
+      "not-found": "Could not find player",
+      "deleted": "Player is succesfully deleted",
+      "delete-failed": "Failed deleting player"
     },
     "new": {
       "button": "Add new player",
@@ -194,7 +202,8 @@
     },
     "delete": {
       "successfull": "Player is successfully deleted.",
-      "failed": "Player deletion failed, check logs for more details."
+      "failed": "Player deletion failed, check logs for more details.",
+      "description": "Are you sure you want to delete player {{name}}? This cannot be reversed and will delete all game sessions connected to this player."
     },
     "cards": {
       "games": "Games"
@@ -262,7 +271,16 @@
     "buy-price": "Cost"
   },
   "sessions": {
-    "new": "Add new session"
+    "new": "Add new session",
+    "title": "sessions",
+    "notifications": {
+      "deleted": "Location is succesfully deleted",
+      "delete-failed": "Failed deleting location"
+    },
+    "delete": {
+      "title": "Delete session",
+      "description": "Are you sure you want to the sessions?"
+    }
   },
   "settings": {
     "titles": {

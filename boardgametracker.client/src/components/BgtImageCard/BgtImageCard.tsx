@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
+import { t } from 'i18next';
 import { cx } from 'class-variance-authority';
 
 import { BgtDeleteModal } from '../Modals/BgtDeleteModal';
@@ -10,6 +11,7 @@ import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/I
 
 import { StringToRgb } from '@/utils/stringUtils';
 import { useToast } from '@/providers/BgtToastProvider';
+import { usePlayers } from '@/pages/Players/hooks/usePlayers';
 import { useGames } from '@/pages/Games/hooks/useGames';
 import { GameState } from '@/models';
 
@@ -21,9 +23,14 @@ interface Props {
   id: number;
 }
 
-export const BgtImageCard = (props: Props) => {
-  const { title, image, state = null, link, id } = props;
-  const { t } = useTranslation();
+interface GameCardProps extends Props {
+  openDeleteModal: boolean;
+  setOpenDeleteModal: Dispatch<SetStateAction<boolean>>;
+  deleteAction: (id: number) => Promise<void>;
+  modalDescription: string;
+}
+
+export const BgtGameImageCard = (props: Props) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const { showInfoToast } = useToast();
 
@@ -32,6 +39,57 @@ export const BgtImageCard = (props: Props) => {
     showInfoToast(t('game.notifications.deleted'));
   };
   const { deleteGame } = useGames({ onDeleteSuccess });
+
+  return (
+    <BgtImageCard
+      {...props}
+      setOpenDeleteModal={setOpenDeleteModal}
+      openDeleteModal={openDeleteModal}
+      deleteAction={deleteGame}
+      modalDescription={t('common.delete.description', { title: props.title })}
+    />
+  );
+};
+
+export const BgtPlayerImageCard = (props: Props) => {
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const { showInfoToast } = useToast();
+
+  const onDeleteSuccess = () => {
+    setOpenDeleteModal(false);
+    showInfoToast(t('player.notifications.deleted'));
+  };
+  const onDeleteError = () => {
+    setOpenDeleteModal(false);
+    showInfoToast(t('player.notifications.delete-failed'));
+  };
+
+  const { deletePlayer } = usePlayers({ onDeleteSuccess, onDeleteError });
+
+  return (
+    <BgtImageCard
+      {...props}
+      setOpenDeleteModal={setOpenDeleteModal}
+      openDeleteModal={openDeleteModal}
+      deleteAction={deletePlayer}
+      modalDescription={t('player.delete.description', { name: props.title })}
+    />
+  );
+};
+
+const BgtImageCard = (props: GameCardProps) => {
+  const {
+    title,
+    image,
+    state = null,
+    link,
+    id,
+    setOpenDeleteModal,
+    openDeleteModal,
+    deleteAction,
+    modalDescription,
+  } = props;
+  const { t } = useTranslation();
 
   return (
     <div className="flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1 group">
@@ -70,8 +128,8 @@ export const BgtImageCard = (props: Props) => {
         title={title}
         open={openDeleteModal}
         close={() => setOpenDeleteModal(false)}
-        onDelete={() => deleteGame(id)}
-        description={t('common.delete.description', { title: title })}
+        onDelete={() => deleteAction(id)}
+        description={modalDescription}
       />
     </div>
   );

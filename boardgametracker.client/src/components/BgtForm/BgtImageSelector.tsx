@@ -7,13 +7,12 @@ import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
 import TrashIcon from '@/assets/icons/trash.svg?react';
 
 interface Props {
-  label?: string;
   image: File | undefined;
   setImage: Dispatch<SetStateAction<File | undefined>>;
 }
 
 export const BgtImageSelector = (props: Props) => {
-  const { label, image, setImage } = props;
+  const { image, setImage } = props;
   const [isDragging, setIsDragging] = useState(false);
 
   const onImageChangeViaInput = (event: ChangeEvent<HTMLInputElement>) => {
@@ -57,11 +56,10 @@ export const BgtImageSelector = (props: Props) => {
 
   return (
     <div className="flex justify-start w-full flex-col">
-      {label && <div className="text-[15px] font-medium leading-[35px] uppercase">{label}</div>}
       <div className="flex flex-row justify-start gap-3">
         {image && (
           <div className="group relative">
-            <img alt="preview image" src={URL.createObjectURL(image)} className="w-28 h-28 mb-1 rounded-lg" />
+            <img alt="preview image" src={URL.createObjectURL(image)} className="w-28 h-28 rounded-lg" />
             <div className=" absolute top-0 left-0 w-full h-full collapse group-hover:visible">
               <div className="flex justify-center items-center w-full h-full">
                 <BgtIconButton

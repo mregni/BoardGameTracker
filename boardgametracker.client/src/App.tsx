@@ -1,10 +1,12 @@
 import { Route, Routes } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { useToast } from './providers/BgtToastProvider';
 import { SettingsRoutes } from './pages/Settings/SettingsRoutes';
-import { PlayRoutes } from './pages/Sessions/SessionRoutes';
+import { SessionRoutes } from './pages/Sessions/SessionRoutes';
 import { PlayerRoutes } from './pages/Players/PlayerRoutes';
 import { LocationRoutes } from './pages/Locations/LocationRoutes';
 import { GameRoutes } from './pages/Games/GameRoutes';
@@ -43,6 +45,11 @@ function AppContainer() {
 
 function App() {
   const { settings } = useSettings();
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    i18n.changeLanguage(settings.data?.uiLanguage ?? 'en-US');
+  }, [i18n, settings.data?.uiLanguage]);
 
   if (settings.isLoading || settings.isError) return null;
 
@@ -54,7 +61,7 @@ function App() {
         <Routes>
           <Route element={<GameRoutes />} path="/games/*" />
           <Route element={<PlayerRoutes />} path="/players/*" />
-          <Route element={<PlayRoutes />} path="/play/*" />
+          <Route element={<SessionRoutes />} path="/sessions/*" />
           <Route element={<SettingsRoutes />} path="/settings/*" />
           <Route element={<LocationRoutes />} path="/locations/*" />
           <Route element={<DashboardPage />} path="*" />

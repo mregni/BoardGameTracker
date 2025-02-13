@@ -1,6 +1,6 @@
 import { axiosInstance } from '../../utils/axiosInstance';
 import { TopPlayer } from '../../models/Games/TopPlayer';
-import { BggSearch, Game, GameStatistics } from '../../models';
+import { BggSearch, Game, GameStatistics, Session } from '../../models';
 
 import { CreateGame } from '@/models/Games/CreateGame';
 
@@ -20,6 +20,12 @@ export const saveGameCall = (game: CreateGame): Promise<Game> => {
 
 export const getGame = (id: string, signal: AbortSignal): Promise<Game> => {
   return axiosInstance.get<Game>(`${domain}/${id}`, { signal }).then((response) => {
+    return response.data;
+  });
+};
+
+export const getGameSessions = (id: string, signal: AbortSignal): Promise<Session[]> => {
+  return axiosInstance.get<Session[]>(`${domain}/${id}/sessions`, { signal }).then((response) => {
     return response.data;
   });
 };

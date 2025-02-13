@@ -23,7 +23,7 @@ export const BgtNoSessions = (props: Props) => {
           <BgtText> {t('common.no-sessions.content')}</BgtText>
         </div>
         <div>
-          <BgtButton size="3" onClick={() => navigate(`/play/create/${gameId}`)}>
+          <BgtButton size="3" onClick={() => navigate(`/sessions/create/${gameId}`)}>
             {t('game.add')}
           </BgtButton>
         </div>

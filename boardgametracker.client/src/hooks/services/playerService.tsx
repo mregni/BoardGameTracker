@@ -27,6 +27,6 @@ export const getPlayerStatistics = (id: string, signal: AbortSignal): Promise<Pl
   });
 };
 
-export const deletePlayer = (id: string): Promise<void> => {
+export const deletePlayer = (id: number): Promise<void> => {
   return axiosInstance.delete(`${domain}/${id}`);
 };

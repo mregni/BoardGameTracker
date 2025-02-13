@@ -1,115 +1,106 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
+import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import * as Form from '@radix-ui/react-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { usePlayers } from '../hooks/usePlayers';
+import { usePlayerModal } from '../hooks/usePlayerModal';
 
-import {
-  CreateSessionPlayer,
-  CreatePlayerSessionNoScoring,
-  CreatePlayerSessionNoScoringSchema,
-  CreatePlayerSessionSchema,
-} from '@/models/Session/CreateSession';
-import { useLocations } from '@/hooks/useLocations';
-import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
-import { BgtSelect } from '@/components/BgtForm/BgtSelect';
+import { useToast } from '@/providers/BgtToastProvider';
+import { Player } from '@/models';
+import { useImages } from '@/hooks/useImages';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
+import { BgtImageSelector } from '@/components/BgtForm/BgtImageSelector';
 import {
   BgtDialog,
+  BgtDialogClose,
   BgtDialogContent,
   BgtDialogDescription,
-  BgtDialogClose,
   BgtDialogTitle,
 } from '@/components/BgtDialog/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {
   open: boolean;
-  hasScoring: boolean;
-  onClose: (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void;
-  onCancel: () => void;
-  selectedPlayerIds: string[];
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const CreatePlayerForm = (props: Props) => {
-  const { open, hasScoring, onClose, selectedPlayerIds, onCancel } = props;
+interface FormProps {
+  name: string;
+}
+
+export const CreatePlayerModal = (props: Props) => {
+  const { open, setOpen } = props;
   const { t } = useTranslation();
-  const { players } = usePlayers();
-  const { locations } = useLocations({});
+  const [image, setImage] = useState<File | undefined>(undefined);
+  const { showInfoToast } = useToast();
 
-  type PlayType<T extends boolean> = T extends true ? CreateSessionPlayer : CreatePlayerSessionNoScoring;
-  type CreatePlayType = PlayType<typeof hasScoring>;
+  const { isPending, uploadPlayerImage } = useImages();
 
-  const { handleSubmit, control } = useForm<CreatePlayType>({
-    resolver: zodResolver(hasScoring ? CreatePlayerSessionSchema : CreatePlayerSessionNoScoringSchema),
+  const onSuccess = () => {
+    showInfoToast('player.notifications.created');
+  };
+
+  const { save, isPending: playerIsPending } = usePlayerModal({ onSuccess });
+
+  const schema = z.object({
+    name: z.string().min(1, { message: t('player.new.name.required') }),
+  });
+
+  const { handleSubmit, control } = useForm<FormProps>({
+    resolver: zodResolver(schema),
     defaultValues: {
-      firstPlay: false,
-      won: false,
-      score: 0,
+      name: '',
     },
   });
 
-  if (players.data === undefined || locations === undefined) return null;
+  const onSubmit = async (data: FormProps) => {
+    const player: Player = {
+      id: 0,
+      name: data.name,
+      image: null,
+    };
 
-  const onSubmit = (data: CreateSessionPlayer | CreatePlayerSessionNoScoring) => {
-    onClose && onClose(data);
+    if (image !== undefined) {
+      const savedImage = await uploadPlayerImage(image);
+      player.image = savedImage ?? null;
+    }
+
+    await save(player);
+    setOpen(false);
   };
 
   return (
     <BgtDialog open={open}>
       <BgtDialogContent>
-        <BgtDialogTitle>{t('player-session.new.title')}</BgtDialogTitle>
-        <BgtDialogDescription>{t('player-session.new.description')}</BgtDialogDescription>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex flex-col gap-4 mt-3 mb-6">
-            <BgtSelect
-              control={control}
-              label={t('player-session.new.player.label')}
-              name="playerId"
-              hasAvatars
-              items={(players.data ?? [])
-                .filter((player) => !selectedPlayerIds.includes(player.id.toString()))
-                .map((value) => ({
-                  label: value.name,
-                  value: value.id.toString(),
-                  image: value.image,
-                }))}
-            />
-            {hasScoring && (
+        <BgtDialogTitle>{t('player.new.title')}</BgtDialogTitle>
+        <BgtDialogDescription>{t('player.new.description')}</BgtDialogDescription>
+        <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
+          <div className="flex flex-row gap-3 mt-3 mb-6">
+            <div className="flex-none">
+              <BgtImageSelector image={image} setImage={setImage} />
+            </div>
+            <div className="flex-grow">
               <BgtInputField
-                name="score"
-                type="number"
-                valueAsNumber
+                type="text"
+                placeholder={t('player.new.name.placeholder')}
+                name="name"
+                label={t('common.name')}
                 control={control}
-                label={t('player-session.score.label')}
+                disabled={isPending || playerIsPending}
               />
-            )}
-            <BgtSwitch label={t('player-session.won.label')} control={control} name="won" className="mt-2" />
-            <BgtSwitch
-              label={t('player-session.first-play.label')}
-              control={control}
-              name="firstPlay"
-              className="mt-2"
-            />
+            </div>
           </div>
           <BgtDialogClose>
-            <Form.Submit asChild>
-              <BgtButton type="submit" variant="soft" color="primary">
-                {t('player-session.new.save')}
-              </BgtButton>
-            </Form.Submit>
-            <BgtButton type="button" variant="soft" color="cancel" onClick={() => onCancel()}>
+            <BgtButton variant="outline" onClick={() => setOpen(false)} disabled={isPending || playerIsPending}>
               {t('common.cancel')}
+            </BgtButton>
+            <BgtButton type="submit" variant="soft" disabled={isPending || playerIsPending}>
+              {t('player.new.save')}
             </BgtButton>
           </BgtDialogClose>
         </form>
       </BgtDialogContent>
     </BgtDialog>
   );
-};
-
-export const CreatePlayerModal = (props: Props) => {
-  return props.open && <CreatePlayerForm {...props} />;
 };

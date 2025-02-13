@@ -71,7 +71,7 @@ export const PlayerDetailpage = () => {
               </div>
               {statistics.data.playCount !== 0 && (
                 <div className="flex-row justify-start gap-2 hidden md:flex">
-                  <BgtButton size="3" onClick={() => navigate(`/play/create`)}>
+                  <BgtButton size="3" onClick={() => navigate(`/sessions/create`)}>
                     {i18next.format(t('game.add'))}
                   </BgtButton>
                   <BgtButton size="3" variant="outline" onClick={() => alert('Sessions not implemented')}>
@@ -101,7 +101,7 @@ export const PlayerDetailpage = () => {
               <BgtTextStatistic
                 content={statistics.data.totalPlayedTime}
                 title={t('statistics.total-play-time')}
-                suffix={t('common.minutes_abbreviation')}
+                suffix={t('common.minutes-abbreviation')}
               />
               <BgtTextStatistic content={statistics.data.winCount} title={t('statistics.win-count')} />
               <BgtTextStatistic
@@ -121,7 +121,7 @@ export const PlayerDetailpage = () => {
             <BgtDeleteModal
               title={player.data.name}
               open={openDeleteModal}
-              setOpen={setOpenDeleteModal}
+              close={() => setOpenDeleteModal(false)}
               onDelete={deletePlayerInternal}
               description={t('common.delete.description', { title: player.data.name })}
             />

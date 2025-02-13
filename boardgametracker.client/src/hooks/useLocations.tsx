@@ -6,7 +6,7 @@ import { CreateLocation, FailResult, Location, QUERY_KEYS } from '../models';
 import {
   addLocation,
   getLocations,
-  deleteLocation as deleteGameCall,
+  deleteLocation as deleteLocationCall,
   updateLocation,
 } from './services/locationService';
 
@@ -74,7 +74,7 @@ export const useLocations = (props: Props) => {
   };
 
   const deleteLocation = (id: number) => {
-    void deleteGameCall(id)
+    void deleteLocationCall(id)
       .then(() => {
         refetch();
         queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
