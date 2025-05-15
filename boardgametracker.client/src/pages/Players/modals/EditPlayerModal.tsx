@@ -1,4 +1,4 @@
-import * as z from 'zod';
+import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
@@ -13,35 +13,37 @@ import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtImageSelector } from '@/components/BgtForm/BgtImageSelector';
 import {
   BgtDialog,
-  BgtDialogClose,
   BgtDialogContent,
-  BgtDialogDescription,
   BgtDialogTitle,
+  BgtDialogDescription,
+  BgtDialogClose,
 } from '@/components/BgtDialog/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  player: Player;
 }
 
 interface FormProps {
+  id: number;
   name: string;
 }
 
-export const CreatePlayerModal = (props: Props) => {
-  const { open, setOpen } = props;
+export const EditPlayerModal = (props: Props) => {
+  const { open, setOpen, player } = props;
   const { t } = useTranslation();
   const [image, setImage] = useState<File | undefined>(undefined);
   const { showInfoToast } = useToast();
 
   const { isPending, uploadPlayerImage } = useImages();
 
-  const onSuccess = () => {
-    showInfoToast('player.notifications.created');
+  const onUpdateSuccess = () => {
+    showInfoToast('player.notifications.updated');
   };
 
-  const { save, isPending: playerIsPending } = usePlayerModal({ onSuccess });
+  const { update, updateIsPending } = usePlayerModal({ onUpdateSuccess });
 
   const schema = z.object({
     name: z.string().min(1, { message: t('player.new.name.required') }),
@@ -50,35 +52,33 @@ export const CreatePlayerModal = (props: Props) => {
   const { handleSubmit, control } = useForm<FormProps>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: '',
+      name: player.name,
     },
   });
 
   const onSubmit = async (data: FormProps) => {
-    const player: Player = {
-      id: 0,
-      name: data.name,
-      image: null,
-    };
+    player.name = data.name;
 
     if (image !== undefined) {
       const savedImage = await uploadPlayerImage(image);
       player.image = savedImage ?? null;
+    } else {
+      player.image = null;
     }
 
-    await save(player);
+    await update(player);
     setOpen(false);
   };
 
   return (
     <BgtDialog open={open}>
       <BgtDialogContent>
-        <BgtDialogTitle>{t('player.new.title')}</BgtDialogTitle>
-        <BgtDialogDescription>{t('player.new.description')}</BgtDialogDescription>
+        <BgtDialogTitle>{t('player.update.title')}</BgtDialogTitle>
+        <BgtDialogDescription>{t('player.update.description')}</BgtDialogDescription>
         <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className="flex flex-row gap-3 mt-3 mb-6">
             <div className="flex-none">
-              <BgtImageSelector image={image} setImage={setImage} />
+              <BgtImageSelector image={image} setImage={setImage} defaultImage={player.image} />
             </div>
             <div className="flex-grow">
               <BgtInputField
@@ -87,16 +87,16 @@ export const CreatePlayerModal = (props: Props) => {
                 name="name"
                 label={t('common.name')}
                 control={control}
-                disabled={isPending || playerIsPending}
+                disabled={isPending || updateIsPending}
               />
             </div>
           </div>
           <BgtDialogClose>
-            <BgtButton variant="outline" onClick={() => setOpen(false)} disabled={isPending || playerIsPending}>
+            <BgtButton variant="outline" onClick={() => setOpen(false)} disabled={isPending || updateIsPending}>
               {t('common.cancel')}
             </BgtButton>
-            <BgtButton type="submit" variant="soft" disabled={isPending || playerIsPending}>
-              {t('player.new.save')}
+            <BgtButton type="submit" variant="soft" disabled={isPending || updateIsPending}>
+              {t('player.update.save')}
             </BgtButton>
           </BgtDialogClose>
         </form>

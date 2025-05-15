@@ -14,14 +14,21 @@ import { BgtMostWinnerCard } from '../../components/BgtCard/BgtMostWinnerCard';
 import { BgtEditDeleteButtons } from '../../components/BgtButton/BgtEditDeleteButtons';
 import BgtButton from '../../components/BgtButton/BgtButton';
 
+import { EditPlayerModal } from './modals/EditPlayerModal';
+import { usePlayers } from './hooks/usePlayers';
 import { usePlayer } from './hooks/usePlayer';
 
 import { useToast } from '@/providers/BgtToastProvider';
 
 export const PlayerDetailpage = () => {
-  const { id } = useParams();
+  const { id } = useParams<string>();
   const { t } = useTranslation();
   const { showInfoToast, showErrorToast } = useToast();
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
+
+  if (!id) {
+    throw Error('No player id found in path');
+  }
 
   const onDeleteError = () => {
     showErrorToast('player.delete.failed');
@@ -31,18 +38,18 @@ export const PlayerDetailpage = () => {
     showInfoToast('player.delete.successfull');
   };
 
-  const { player, statistics, deletePlayer } = usePlayer({ id, onDeleteError, onDeleteSuccess });
+  const { player, statistics } = usePlayer({ id });
+  const { deletePlayer } = usePlayers({ onDeleteError, onDeleteSuccess });
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const navigate = useNavigate();
 
-  const deletePlayerInternal = () => {
-    void deletePlayer()
-      .then(() => {
-        navigate('/players');
-      })
-      .finally(() => {
-        setOpenDeleteModal(false);
-      });
+  const deletePlayerInternal = async () => {
+    try {
+      await deletePlayer(id as string);
+      navigate('/players');
+    } finally {
+      setOpenDeleteModal(false);
+    }
   };
 
   if (player.data === undefined || statistics.data === undefined) return null;
@@ -62,7 +69,7 @@ export const PlayerDetailpage = () => {
                 <div className="col-span-8 md:col-span-10 xl:col-span-12 flex flex-col gap-2">
                   <div className="flex flex-row justify-between">
                     <BgtHeading>{player.data.name}</BgtHeading>
-                    <BgtEditDeleteButtons onDelete={() => alert('deleting')} onEdit={() => alert('editing')} />
+                    <BgtEditDeleteButtons onDelete={() => alert('deleting')} onEdit={() => setOpenUpdateModal(true)} />
                   </div>
                   <BgtButton size="3" className="md:hidden">
                     {i18next.format(t('game.add'))}
@@ -126,6 +133,9 @@ export const PlayerDetailpage = () => {
               description={t('common.delete.description', { title: player.data.name })}
             />
           </>
+        )}
+        {openUpdateModal && (
+          <EditPlayerModal open={openUpdateModal} setOpen={setOpenUpdateModal} player={player.data} />
         )}
       </BgtPageContent>
     </BgtPage>

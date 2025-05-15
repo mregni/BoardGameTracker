@@ -30,7 +30,7 @@ export const useGames = (props: Props) => {
     onError: onError,
   });
 
-  const deleteGame = async (id: number) => {
+  const deleteGame = async (id: string) => {
     await deleteGameCall(id);
     await games.refetch();
     queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });

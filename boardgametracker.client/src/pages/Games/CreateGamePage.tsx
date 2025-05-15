@@ -50,11 +50,11 @@ export const CreateGamePage = () => {
       description: '',
       state: 1,
       yearPublished: undefined,
-      maxPlayers: 0,
-      minPlayers: 0,
-      maxPlayTime: 0,
-      minPlayTime: 0,
-      minAge: 0,
+      maxPlayers: undefined,
+      minPlayers: undefined,
+      maxPlayTime: undefined,
+      minPlayTime: undefined,
+      minAge: undefined,
     },
   });
 

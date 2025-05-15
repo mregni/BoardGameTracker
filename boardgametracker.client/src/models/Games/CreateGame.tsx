@@ -18,9 +18,11 @@ export const CreateGameSchema = z.object({
     }),
   }),
   state: z.preprocess((value) => Number(value), z.nativeEnum(GameState)),
-  yearPublished: z.coerce.number({
-    invalid_type_error: 'game.new.manual.year.required',
-  }),
+  yearPublished: z.coerce
+    .number({
+      required_error: 'game.new.manual.year.required',
+    })
+    .min(1, { message: 'game.new.manual.year.required' }),
   description: z.string().optional(),
   minPlayers: z.coerce.number().int().optional(),
   maxPlayers: z.coerce.number().int().optional(),

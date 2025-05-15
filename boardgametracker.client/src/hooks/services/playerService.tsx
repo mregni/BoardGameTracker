@@ -15,6 +15,12 @@ export const addPlayer = (player: Player): Promise<Player> => {
   });
 };
 
+export const updatePlayer = (player: Player): Promise<Player> => {
+  return axiosInstance.put<Player>(domain, player).then((response) => {
+    return response.data;
+  });
+};
+
 export const getPlayer = (id: string, signal: AbortSignal): Promise<Player> => {
   return axiosInstance.get<Player>(`${domain}/${id}`, { signal }).then((response) => {
     return response.data;
@@ -27,6 +33,6 @@ export const getPlayerStatistics = (id: string, signal: AbortSignal): Promise<Pl
   });
 };
 
-export const deletePlayer = (id: number): Promise<void> => {
+export const deletePlayer = (id: string): Promise<void> => {
   return axiosInstance.delete(`${domain}/${id}`);
 };

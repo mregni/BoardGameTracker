@@ -188,17 +188,23 @@
       "created": "Player is succesfully created",
       "not-found": "Could not find player",
       "deleted": "Player is succesfully deleted",
-      "delete-failed": "Failed deleting player"
+      "delete-failed": "Failed deleting player",
+      "updated": "Player is succesfully updated"
+    },
+    "name": {
+      "placeholder": "Enter name of the player",
+      "required": "player name is required"
     },
     "new": {
       "button": "Add new player",
-      "description": "Fill out the form to create a new player",
-      "name": {
-        "placeholder": "Enter name of the player",
-        "required": "player name is required"
-      },
+      "description": "Fill out the form to create a new player.",
       "save": "Create player",
       "title": "Create player"
+    },
+    "update": {
+      "save": "update player",
+      "title": "Update player",
+      "description": "Change the name or image to update the player."
     },
     "delete": {
       "successfull": "Player is successfully deleted.",

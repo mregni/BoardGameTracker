@@ -2,19 +2,20 @@ import { AxiosError } from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Player, FailResult, QUERY_KEYS } from '@/models';
-import { addPlayer } from '@/hooks/services/playerService';
+import { addPlayer, updatePlayer } from '@/hooks/services/playerService';
 
 interface Props {
-  onSuccess: () => void;
+  onSuccess?: () => void;
+  onUpdateSuccess?: () => void;
 }
 
-export const usePlayerModal = ({ onSuccess }: Props) => {
+export const usePlayerModal = ({ onSuccess, onUpdateSuccess }: Props) => {
   const queryClient = useQueryClient();
 
-  const { mutateAsync, isPending } = useMutation<Player, AxiosError<FailResult>, Player>({
+  const { mutateAsync: save, isPending } = useMutation<Player, AxiosError<FailResult>, Player>({
     mutationFn: addPlayer,
     async onSuccess() {
-      onSuccess();
+      onSuccess?.();
       await queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.players],
       });
@@ -24,8 +25,20 @@ export const usePlayerModal = ({ onSuccess }: Props) => {
     },
   });
 
+  const { mutateAsync: update, isPending: updateIsPending } = useMutation<Player, AxiosError<FailResult>, Player>({
+    mutationFn: updatePlayer,
+    async onSuccess() {
+      onUpdateSuccess?.();
+      await queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.players],
+      });
+    },
+  });
+
   return {
-    save: mutateAsync,
+    save,
     isPending,
+    update,
+    updateIsPending,
   };
 };

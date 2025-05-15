@@ -11,7 +11,9 @@ import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/I
 
 import { StringToRgb } from '@/utils/stringUtils';
 import { useToast } from '@/providers/BgtToastProvider';
+import { EditPlayerModal } from '@/pages/Players/modals/EditPlayerModal';
 import { usePlayers } from '@/pages/Players/hooks/usePlayers';
+import { usePlayer } from '@/pages/Players/hooks/usePlayer';
 import { useGames } from '@/pages/Games/hooks/useGames';
 import { GameState } from '@/models';
 
@@ -20,24 +22,28 @@ interface Props {
   state?: GameState;
   image: string | null;
   link: string;
-  id: number;
+  id: string;
 }
 
 interface GameCardProps extends Props {
   openDeleteModal: boolean;
   setOpenDeleteModal: Dispatch<SetStateAction<boolean>>;
-  deleteAction: (id: number) => Promise<void>;
+  deleteAction: (id: string) => Promise<void>;
   modalDescription: string;
+  openUpdateModal: boolean;
+  setOpenUpdateModal: Dispatch<SetStateAction<boolean>>;
 }
 
 export const BgtGameImageCard = (props: Props) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const { showInfoToast } = useToast();
 
   const onDeleteSuccess = () => {
     setOpenDeleteModal(false);
     showInfoToast(t('game.notifications.deleted'));
   };
+
   const { deleteGame } = useGames({ onDeleteSuccess });
 
   return (
@@ -47,12 +53,15 @@ export const BgtGameImageCard = (props: Props) => {
       openDeleteModal={openDeleteModal}
       deleteAction={deleteGame}
       modalDescription={t('common.delete.description', { title: props.title })}
+      openUpdateModal={openUpdateModal}
+      setOpenUpdateModal={setOpenUpdateModal}
     />
   );
 };
 
 export const BgtPlayerImageCard = (props: Props) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const { showInfoToast } = useToast();
 
   const onDeleteSuccess = () => {
@@ -65,15 +74,23 @@ export const BgtPlayerImageCard = (props: Props) => {
   };
 
   const { deletePlayer } = usePlayers({ onDeleteSuccess, onDeleteError });
+  const { player } = usePlayer({ id: props.id });
+
+  if (player.data === undefined) return null;
 
   return (
-    <BgtImageCard
-      {...props}
-      setOpenDeleteModal={setOpenDeleteModal}
-      openDeleteModal={openDeleteModal}
-      deleteAction={deletePlayer}
-      modalDescription={t('player.delete.description', { name: props.title })}
-    />
+    <>
+      <BgtImageCard
+        {...props}
+        setOpenDeleteModal={setOpenDeleteModal}
+        openDeleteModal={openDeleteModal}
+        deleteAction={deletePlayer}
+        modalDescription={t('player.delete.description', { name: props.title })}
+        openUpdateModal={openUpdateModal}
+        setOpenUpdateModal={setOpenUpdateModal}
+      />
+      <EditPlayerModal open={openUpdateModal} setOpen={setOpenUpdateModal} player={player.data} />
+    </>
   );
 };
 
@@ -86,6 +103,7 @@ const BgtImageCard = (props: GameCardProps) => {
     id,
     setOpenDeleteModal,
     openDeleteModal,
+    setOpenUpdateModal,
     deleteAction,
     modalDescription,
   } = props;
@@ -122,7 +140,7 @@ const BgtImageCard = (props: GameCardProps) => {
             </BgtText>
           </Link>
         </div>
-        <BgtHiddenEditDropdown onDelete={() => setOpenDeleteModal(true)} onEdit={() => alert('editing')} />
+        <BgtHiddenEditDropdown onDelete={() => setOpenDeleteModal(true)} onEdit={() => setOpenUpdateModal(true)} />
       </div>
       <BgtDeleteModal
         title={title}
