@@ -186,9 +186,7 @@
   "player": {
     "notifications": {
       "created": "Player is succesfully created",
-      "not-found": "Could not find player",
-      "deleted": "Player is succesfully deleted",
-      "delete-failed": "Failed deleting player"
+      "not-found": "Could not find player"
     },
     "new": {
       "button": "Add new player",
@@ -202,8 +200,7 @@
     },
     "delete": {
       "successfull": "Player is successfully deleted.",
-      "failed": "Player deletion failed, check logs for more details.",
-      "description": "Are you sure you want to delete player {{name}}? This cannot be reversed and will delete all game sessions connected to this player."
+      "failed": "Player deletion failed, check logs for more details."
     },
     "cards": {
       "games": "Games"
