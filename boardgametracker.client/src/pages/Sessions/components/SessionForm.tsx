@@ -121,6 +121,7 @@ export const SessionForm = (props: Props) => {
           <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="w-full">
             <div className="flex flex-col gap-3 w-full">
               <BgtSelect
+                hasSearch
                 control={control}
                 name="gameId"
                 items={
@@ -135,6 +136,7 @@ export const SessionForm = (props: Props) => {
                 placeholder={t('player-session.new.game.placeholder')}
               />
               <BgtSelect
+                hasSearch
                 control={control}
                 name="locationId"
                 items={

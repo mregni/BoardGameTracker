@@ -114,7 +114,7 @@ export const CreateGamePage = () => {
                 name="state"
                 items={Object.keys(GameState)
                   .filter((value) => !isNaN(Number(value)))
-                  .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value, image: null }))}
+                  .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value }))}
               />
               <BgtInputField
                 label={t('game.new.manual.year.label')}

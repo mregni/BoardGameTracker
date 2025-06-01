@@ -23,10 +23,11 @@ interface Props<T extends FieldValues> {
   disabled?: boolean;
   placeholder?: string;
   defaultValue?: string;
+  hasSearch?: boolean;
 }
 
 export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
-  const { items, label, control, name, disabled = false, placeholder = null } = props;
+  const { items, label, control, name, disabled = false, placeholder = null, hasSearch = false } = props;
 
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
@@ -104,23 +105,25 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
                   }
                 }}
               >
-                <div className="p-2 border-b border-gray-700">
-                  <div className="flex items-center px-2 bg-input rounded">
-                    <SearchIcon className="size-4 text-gray-400 mr-2" />
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Search..."
-                      className="bg-transparent border-none outline-none py-2 text-sm w-full"
-                      onClick={(e) => e.stopPropagation()}
-                      onKeyDown={(e) => {
-                        e.stopPropagation();
-                      }}
-                    />
+                {hasSearch && (
+                  <div className="p-2 border-b border-gray-700">
+                    <div className="flex items-center px-2 bg-input rounded">
+                      <SearchIcon className="size-4 text-gray-400 mr-2" />
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search..."
+                        className="bg-transparent border-none outline-none py-2 text-sm w-full"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
                 <Select.Viewport className="p-1 max-h-[300px]">
                   {filteredItems.length > 0 ? (
                     filteredItems.map((item) => (
