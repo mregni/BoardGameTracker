@@ -22,7 +22,8 @@ jobs:
           enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
           namespace: ${{ github.ref == 'refs/heads/dev' && 'beta' || '' }}
           bump_each_commit: true
-          bump_each_commit_patch_pattern: "*bump version*"
+          version_format: "${major}.${minor}.${patch}-pre${increment}"
+          debug: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
@@ -39,7 +40,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build
+      - name: Build and Push
         uses: docker/build-push-action@v4
         with:
           context: .
