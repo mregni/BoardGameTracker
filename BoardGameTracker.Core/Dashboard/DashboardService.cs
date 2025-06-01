@@ -24,7 +24,7 @@ public class DashboardService : IDashboardService
         _locationRepository = locationRepository;
     }
 
-    public async Task<DashbardStatistics> GetStatistics()
+    public async Task<DashboardStatistics> GetStatistics()
     {
         var gameCount = await _gameRepository.CountAsync();
         var meanPayed = await _gameRepository.GetMeanPayedAsync();
@@ -37,7 +37,7 @@ public class DashboardService : IDashboardService
         var meanPlayTime = await _sessionRepository.GetMeanPlayTime();
         var locationCount = await _locationRepository.CountAsync();
         
-        var result = new DashbardStatistics
+        var result = new DashboardStatistics
         {
             GameCount = gameCount,
             PlayerCount = playerCount,

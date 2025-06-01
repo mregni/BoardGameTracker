@@ -4,6 +4,6 @@ namespace BoardGameTracker.Core.Dashboard.Interfaces;
 
 public interface IDashboardService
 {
-    Task<DashbardStatistics> GetStatistics();
+    Task<DashboardStatistics> GetStatistics();
     Task<DashboardCharts> GetCharts();
 }

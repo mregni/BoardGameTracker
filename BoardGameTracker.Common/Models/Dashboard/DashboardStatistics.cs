@@ -1,6 +1,6 @@
 ﻿namespace BoardGameTracker.Common.Models.Dashboard;
 
-public class DashbardStatistics
+public class DashboardStatistics
 {
     public int GameCount { get; set; }
     public int PlayerCount { get; set; }
