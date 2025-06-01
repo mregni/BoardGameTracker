@@ -20,12 +20,26 @@ export interface Props<T extends FieldValues> {
 }
 
 const formatDateToLocalInput = (date: Date) => {
-  console.log(date);
   try {
     return format(date, "yyyy-MM-dd'T'HH:mm");
   } catch (error) {
     return '';
   }
+};
+
+const formatInput = (input: string | undefined, type: 'text' | 'number' | 'datetime-local' | 'date') => {
+  if (input === undefined || input === null) {
+    return '';
+  }
+
+  if (type === 'datetime-local') {
+    return formatDateToLocalInput(new Date(input));
+  }
+  if (type === 'date') {
+    return format(new Date(input), 'yyyy-MM-dd');
+  }
+
+  return input;
 };
 
 export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
@@ -66,7 +80,7 @@ export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
             {prefixLabel && <BgtText>{prefixLabel}</BgtText>}
             <input
               className="h-[45px] bg-transparent shadow-none focus:outline-none hide-arrow w-full"
-              value={type === 'datetime-local' ? formatDateToLocalInput(field.value) : field.value}
+              value={formatInput(field.value, type)}
               disabled={disabled}
               type={type}
               onChange={(event) =>

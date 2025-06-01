@@ -55,7 +55,13 @@ public class MapProfiles : Profile
         
         
         //ViewModels
-        CreateMap<Game, GameViewModel>();
+        CreateMap<Game, GameViewModel>().ReverseMap();
+        CreateMap<GameLinkViewModel, GameCategory>();
+        CreateMap<GameLinkViewModel, GameMechanic>();
+        CreateMap<GameLinkViewModel, GameAccessory>();
+        CreateMap<GameViewModel, Expansion>();
+        CreateMap<GamePersonViewModel, Person>();
+        
         CreateMap<CreateGameViewModel, Game>();
         CreateMap<GameCategory, GameLinkViewModel>();
         CreateMap<GameMechanic, GameLinkViewModel>();

@@ -90,7 +90,10 @@ export const GameDetailPage = () => {
                       </BgtText>
                       <BgtHeading>{game.data.title}</BgtHeading>
                     </div>
-                    <BgtEditDeleteButtons onDelete={() => setOpenDeleteModal(true)} onEdit={() => alert('editing')} />
+                    <BgtEditDeleteButtons
+                      onDelete={() => setOpenDeleteModal(true)}
+                      onEdit={() => navigate(`/games/${id}/update`)}
+                    />
                   </div>
                   <div className="flex-row justify-start gap-2 hidden md:flex">
                     {game.data.categories.map((cat) => (

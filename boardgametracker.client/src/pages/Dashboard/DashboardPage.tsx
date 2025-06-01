@@ -24,12 +24,13 @@ export const DashboardPage = () => {
         <h1>TODO</h1>
         <ul>
           <li>✅ New game (manual)</li>
-          <li>Edit game</li>
+          <li>✅ Edit game</li>
           <li>✅ Delete game</li>
           <li>✅ Edit location</li>
           <li>✅ Delete location</li>
           <li>✅ New location</li>
           <li>✅ Edit player</li>
+          <li>User session list</li>
           <li>✅ Delete player</li>
           <li>✅ Move icons to svg files</li>
           <li>✅ View session table</li>

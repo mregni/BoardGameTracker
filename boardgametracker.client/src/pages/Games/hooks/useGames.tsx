@@ -20,7 +20,7 @@ export const useGames = (props: Props) => {
     queryFn: ({ signal }) => getGames(signal),
   });
 
-  const { mutateAsync: saveGame, isPending } = useMutation<Game, AxiosError<FailResult>, CreateGame>({
+  const { mutateAsync: saveGame, isPending: saveIsPending } = useMutation<Game, AxiosError<FailResult>, CreateGame>({
     mutationFn: saveGameCall,
     onSuccess: async (data) => {
       await games.refetch();
@@ -40,7 +40,7 @@ export const useGames = (props: Props) => {
   return {
     games,
     saveGame,
-    isPending,
+    saveIsPending,
     deleteGame,
   };
 };

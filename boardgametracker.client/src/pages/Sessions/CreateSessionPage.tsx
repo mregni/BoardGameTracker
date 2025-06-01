@@ -38,6 +38,7 @@ export const CreateSessionPage = () => {
       buttonText={t('player-session.save')}
       onClick={save}
       disabled={saveSession.isPending}
+      title={t('player-session.title-new')}
     />
   );
 };

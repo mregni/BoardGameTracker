@@ -57,7 +57,9 @@ export const BgtAvatar = (props: Props) => {
             onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer'
           )}
         >
-          <Text size={getSize()}>{title![0]}</Text>
+          <Text size={getSize()} className="capitalize">
+            {title![0]}
+          </Text>
         </div>
       )}
       {!noTooltip && title && (

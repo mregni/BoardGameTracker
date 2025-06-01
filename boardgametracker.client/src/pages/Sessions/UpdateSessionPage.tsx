@@ -44,6 +44,7 @@ export const UpdateSessionPage = () => {
       buttonText={t('player-session.save-update')}
       onClick={save}
       disabled={updateSession.isPending}
+      title={t('player-session.title-update')}
     />
   );
 };

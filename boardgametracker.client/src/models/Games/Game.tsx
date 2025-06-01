@@ -8,7 +8,6 @@ export interface Game {
   description: string;
   yearPublished: number | null;
   image: string;
-  thumbnail: string;
   minPlayers: number | null;
   maxPlayers: number | null;
   minPlayTime: number | null;
@@ -27,6 +26,7 @@ export interface Game {
   people: GamePerson[];
   hasScoring: boolean;
   buyingPrice: number | null;
+  additionDate: Date | null;
 }
 
 export interface GameLink {

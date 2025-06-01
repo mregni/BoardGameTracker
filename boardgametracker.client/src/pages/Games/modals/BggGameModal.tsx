@@ -88,7 +88,7 @@ export const BggGameModal = (props: Props) => {
             <BgtInputField
               disabled={isPending}
               label={t('game.added-date.label')}
-              name="date"
+              name="additionDate"
               type="date"
               control={control}
               className="pr-2"

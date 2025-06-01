@@ -34,7 +34,7 @@ interface FormProps {
 export const EditPlayerModal = (props: Props) => {
   const { open, setOpen, player } = props;
   const { t } = useTranslation();
-  const [image, setImage] = useState<File | undefined>(undefined);
+  const [image, setImage] = useState<File | undefined | null>(undefined);
   const { showInfoToast } = useToast();
 
   const { isPending, uploadPlayerImage } = useImages();
@@ -59,10 +59,10 @@ export const EditPlayerModal = (props: Props) => {
   const onSubmit = async (data: FormProps) => {
     player.name = data.name;
 
-    if (image !== undefined) {
+    if (image !== undefined && image !== null) {
       const savedImage = await uploadPlayerImage(image);
       player.image = savedImage ?? null;
-    } else {
+    } else if (image === null) {
       player.image = null;
     }
 

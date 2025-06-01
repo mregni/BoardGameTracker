@@ -52,7 +52,7 @@ export const GameSessionsPage = () => {
   const { settings } = useSettings();
   const { game } = useGame({ id });
 
-  const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
   const onDeleteSuccess = () => {
     showInfoToast('sessions.notifications.deleted');

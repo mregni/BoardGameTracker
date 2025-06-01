@@ -255,4 +255,9 @@ public class GameService : IGameService
     {
         return _gameRepository.GetSessionsByGameId(id);
     }
+
+    public Task<Game> UpdateGame(Game game)
+    {
+        return _gameRepository.UpdateAsync(game);
+    }
 }

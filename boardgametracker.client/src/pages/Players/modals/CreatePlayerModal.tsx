@@ -56,7 +56,7 @@ export const CreatePlayerModal = (props: Props) => {
 
   const onSubmit = async (data: FormProps) => {
     const player: Player = {
-      id: 0,
+      id: '0',
       name: data.name,
       image: null,
     };

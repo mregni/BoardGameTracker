@@ -7,8 +7,8 @@ import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
 import TrashIcon from '@/assets/icons/trash.svg?react';
 
 interface Props {
-  image: File | undefined;
-  setImage: Dispatch<SetStateAction<File | undefined>>;
+  image: File | undefined | null;
+  setImage: Dispatch<SetStateAction<File | undefined | null>>;
   defaultImage?: string | null;
 }
 
@@ -69,7 +69,7 @@ export const BgtImageSelector = (props: Props) => {
                   className="!rounded-full border-solid border hover:bg-[rgba(240,240,240,0.3)]"
                   icon={<TrashIcon className="size-5" color="white" />}
                   onClick={() => {
-                    setImage(undefined);
+                    setImage(null);
                     setHasDefaultImage(false);
                   }}
                 />

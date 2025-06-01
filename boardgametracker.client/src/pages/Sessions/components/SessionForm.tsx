@@ -36,6 +36,7 @@ interface Props {
   playerSessions?: CreateSessionPlayer[] | CreatePlayerSessionNoScoring[] | undefined;
   onClick: (data: CreateSession) => Promise<void>;
   buttonText: string;
+  title: string;
   disabled: boolean;
 }
 
@@ -49,6 +50,7 @@ export const SessionForm = (props: Props) => {
     playerSessions = [],
     onClick,
     buttonText,
+    title,
     disabled,
   } = props;
   const navigate = useNavigate();
@@ -117,7 +119,7 @@ export const SessionForm = (props: Props) => {
   return (
     <BgtPage>
       <BgtPageContent>
-        <BgtCenteredCard title={t('player-session.title')}>
+        <BgtCenteredCard title={title}>
           <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="w-full">
             <div className="flex flex-col gap-3 w-full">
               <BgtSelect

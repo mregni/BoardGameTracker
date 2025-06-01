@@ -12,7 +12,7 @@ export const CreateGameSchema = z.object({
   buyingPrice: z.coerce.number({
     invalid_type_error: 'game.price.required',
   }),
-  date: z.coerce.date({
+  additionDate: z.coerce.date({
     errorMap: () => ({
       message: 'game.added-date.required',
     }),
@@ -29,7 +29,7 @@ export const CreateGameSchema = z.object({
   minPlayTime: z.coerce.number().int().optional(),
   maxPlayTime: z.coerce.number().int().optional(),
   minAge: z.coerce.number().int().optional(),
-  image: z.string().optional(),
+  image: z.string().nullable().optional(),
   hasScoring: z.boolean(),
 });
 
