@@ -65,7 +65,8 @@ export const BgtImageSelector = (props: Props) => {
             <div className=" absolute top-0 left-0 w-full h-full collapse group-hover:visible">
               <div className="flex justify-center items-center w-full h-full">
                 <BgtIconButton
-                  className="!rounded-full border-solid border h-10 w-10 hover:bg-[rgba(240,240,240,0.3)]"
+                  size="big"
+                  className="!rounded-full border-solid border hover:bg-[rgba(240,240,240,0.3)]"
                   icon={<TrashIcon className="size-5" color="white" />}
                   onClick={() => {
                     setImage(undefined);
@@ -82,7 +83,8 @@ export const BgtImageSelector = (props: Props) => {
             <div className=" absolute top-0 left-0 w-full h-full collapse group-hover:visible">
               <div className="flex justify-center items-center w-full h-full">
                 <BgtIconButton
-                  className="!rounded-full border-solid border h-10 w-10 hover:bg-[rgba(240,240,240,0.3)]"
+                  size="big"
+                  className="!rounded-full border-solid border hover:bg-[rgba(240,240,240,0.3)]"
                   icon={<TrashIcon className="size-5" color="white" />}
                   onClick={() => {
                     setImage(undefined);

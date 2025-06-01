@@ -42,6 +42,7 @@
     "time": "Time",
     "other-players": "Other players",
     "high-score": "High score",
+    "no-results": "No results found",
     "id": "Id",
     "flags": {
       "header": "Tags",
@@ -331,6 +332,7 @@
   },
   "player-session": {
     "save": "Create game play",
+    "save-update": "Update game play",
     "title": "Add new game session",
     "new": {
       "notifications": {

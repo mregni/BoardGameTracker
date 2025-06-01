@@ -35,7 +35,7 @@ const UpdateSessionPlayerForm = (props: Props) => {
   const { t } = useTranslation();
   const { locations } = useLocations({});
   const { playerById } = usePlayerById();
-  const { players } = usePlayers();
+  const { players } = usePlayers({});
 
   type PlayType<T extends boolean> = T extends true ? CreateSessionPlayer : CreatePlayerSessionNoScoring;
   type CreatePlayType = PlayType<typeof hasScoring>;

@@ -20,6 +20,7 @@ export interface Props<T extends FieldValues> {
 }
 
 const formatDateToLocalInput = (date: Date) => {
+  console.log(date);
   try {
     return format(date, "yyyy-MM-dd'T'HH:mm");
   } catch (error) {

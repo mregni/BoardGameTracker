@@ -122,13 +122,13 @@ export const GameSessionsPage = () => {
         cell: ({ row }) => (
           <BgtEditDeleteButtons
             onDelete={() => setSessionToDelete(row.original.id)}
-            onEdit={() => alert('not implemented')}
+            onEdit={() => navigate(`/sessions/update/${row.original.id}`)}
           />
         ),
         header: <div className="flex justify-end">{t('common.actions')}</div>,
       },
     ],
-    [game.data, settings.data?.dateFormat, settings.data?.timeFormat]
+    [game.data, navigate, settings.data?.dateFormat, settings.data?.timeFormat]
   );
 
   if (game.data === undefined) return null;
@@ -136,6 +136,7 @@ export const GameSessionsPage = () => {
   return (
     <BgtPage>
       <BgtPageHeader
+        backAction={() => navigate(`/games/${id}`)}
         header={`${game.data.title} - ${t('sessions.title')}`}
         actions={[
           { onClick: () => navigate(`/sessions/create/${game.data.id}`), variant: 'solid', content: 'game.add' },

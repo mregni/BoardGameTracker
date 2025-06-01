@@ -3,7 +3,7 @@ import { GameType } from './GameType';
 import { GameState } from './GameState';
 
 export interface Game {
-  id: number;
+  id: string;
   title: string;
   description: string;
   yearPublished: number | null;
@@ -30,7 +30,7 @@ export interface Game {
 }
 
 export interface GameLink {
-  id: number;
+  id: string;
   name: string;
 }
 

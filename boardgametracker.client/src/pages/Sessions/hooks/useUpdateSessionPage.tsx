@@ -1,19 +1,26 @@
 import { AxiosError } from 'axios';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { CreateSession } from '@/models/Session/CreateSession';
 import { FailResult, QUERY_KEYS, Session } from '@/models';
-import { addSession } from '@/hooks/services/sessionService';
+import { getSession, updateSession } from '@/hooks/services/sessionService';
 
 interface Props {
+  id: string | undefined;
   onSessionSaveSuccess: () => void;
 }
 
-export const useCreateSessionPage = ({ onSessionSaveSuccess }: Props) => {
+export const useUpdateSessionPage = (props: Props) => {
+  const { id, onSessionSaveSuccess } = props;
   const queryClient = useQueryClient();
 
-  const saveSession = useMutation<Session, AxiosError<FailResult>, CreateSession>({
-    mutationFn: addSession,
+  const { data: session } = useQuery<Session, AxiosError<FailResult>>({
+    queryKey: [QUERY_KEYS.gameSessions, id],
+    queryFn: ({ signal }) => getSession(id!, signal),
+    enabled: id !== undefined,
+  });
+
+  const saveSessionMutation = useMutation<Session, AxiosError<FailResult>, Session>({
+    mutationFn: updateSession,
     async onSuccess(sessionResult) {
       onSessionSaveSuccess();
 
@@ -32,6 +39,7 @@ export const useCreateSessionPage = ({ onSessionSaveSuccess }: Props) => {
   });
 
   return {
-    saveSession,
+    session,
+    updateSession: saveSessionMutation,
   };
 };

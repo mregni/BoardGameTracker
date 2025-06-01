@@ -24,6 +24,20 @@ public class SessionController : ControllerBase
         _mapper = mapper;
         _logger = logger;
     }
+    
+    [HttpGet]
+    [Route("{id:int}")]
+    public async Task<IActionResult> GetSession(int id)
+    {
+        var session = await _sessionService.Get(id);
+        if (session == null)
+        {
+            return new NotFoundResult();
+        }
+        
+        var mapped = _mapper.Map<SessionViewModel>(session);
+        return new OkObjectResult(mapped);
+    }
 
     [HttpPost]
     public async Task<IActionResult> CreateSession([FromBody] SessionViewModel? viewModel)

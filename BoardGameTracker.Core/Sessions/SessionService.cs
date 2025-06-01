@@ -26,4 +26,9 @@ public class SessionService : ISessionService
     {
         return _sessionRepository.UpdateAsync(session);
     }
+
+    public Task<Session?> Get(int id)
+    {
+        return _sessionRepository.GetByIdAsync(id);
+    }
 }

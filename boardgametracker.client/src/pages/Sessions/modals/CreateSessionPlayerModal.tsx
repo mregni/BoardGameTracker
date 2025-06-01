@@ -36,7 +36,7 @@ interface Props {
 const CreateSessionPlayerForm = (props: Props) => {
   const { open, hasScoring, onClose, selectedPlayerIds, onCancel } = props;
   const { t } = useTranslation();
-  const { players } = usePlayers();
+  const { players } = usePlayers({});
   const { locations } = useLocations({});
 
   type PlayType<T extends boolean> = T extends true ? CreateSessionPlayer : CreatePlayerSessionNoScoring;
