@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using BoardGameTracker.Core.Configuration;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Services;
