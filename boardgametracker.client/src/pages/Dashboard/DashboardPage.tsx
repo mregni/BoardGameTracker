@@ -50,7 +50,7 @@ export const DashboardPage = () => {
         <h1>Bugs</h1>
         <ul>
           <li>EditDropdown menu component sluit niet bij wegklikken ergens op het scherm</li>
-          <li>Toasts verdwijnen achter de posters op de gsm. Misschien andere toast gebruiken?</li>
+          <li>✅ Toasts verdwijnen achter de posters op de gsm. Misschien andere toast gebruiken?</li>
           <li>Fix scroll in long pages (background is shorter then page)</li>
           <li>
             Bij aanmaken van locatie word bij een tweede create de lijst niet meer geupdate na de POST, ook de counts

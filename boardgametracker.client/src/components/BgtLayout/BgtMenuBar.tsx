@@ -70,7 +70,7 @@ const BgtMenuBar = () => {
   if (counts.data === undefined) return null;
 
   return (
-    <>
+    <div className="h-screen">
       <div className={cx('hidden relative md:flex bg-card-black h-full flex-col justify-between w-64')}>
         <div className="px-4 flex flex-col">
           <BgtMenuLogo />
@@ -87,7 +87,7 @@ const BgtMenuBar = () => {
         )}
       </div>
       <MobileMenu />
-    </>
+    </div>
   );
 };
 

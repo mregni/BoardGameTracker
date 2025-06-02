@@ -54,9 +54,9 @@ function App() {
   if (settings.isLoading || settings.isError) return null;
 
   return (
-    <div className="flex flex-col md:flex-row h-screen text-white">
+    <div className="flex flex-col md:flex-row text-white h-screen">
       <BgtMenuBar />
-      <div className="flex-1 bg-custom-gradient flex flex-col">
+      <div className="flex-1 bg-custom-gradient flex flex-col overflow-y-auto">
         <BgtHeader />
         <Routes>
           <Route element={<GameRoutes />} path="/games/*" />
