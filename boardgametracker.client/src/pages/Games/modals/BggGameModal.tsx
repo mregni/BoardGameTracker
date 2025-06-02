@@ -79,6 +79,7 @@ export const BggGameModal = (props: Props) => {
             <BgtInputField
               disabled={isPending}
               label={t('game.price.label')}
+              defaultValue={0}
               name="price"
               type="number"
               placeholder={t('game.price.placeholder')}
@@ -88,6 +89,7 @@ export const BggGameModal = (props: Props) => {
             <BgtInputField
               disabled={isPending}
               label={t('game.added-date.label')}
+              defaultValue={new Date().toISOString().split('T')[0]}
               name="additionDate"
               type="date"
               control={control}

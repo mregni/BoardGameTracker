@@ -1,4 +1,4 @@
-import { Control, Controller, FieldValues, Path, useController } from 'react-hook-form';
+import { Control, Controller, FieldValues, Path, PathValue, useController } from 'react-hook-form';
 import { format } from 'date-fns';
 import { cx } from 'class-variance-authority';
 
@@ -12,6 +12,7 @@ export interface Props<T extends FieldValues> {
   placeholder?: string;
   control: Control<T>;
   valueAsNumber?: boolean;
+  defaultValue?: PathValue<T, Path<T>>;
   label?: string;
   prefixLabel?: string;
   suffixLabel?: string;
@@ -49,6 +50,7 @@ export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
     placeholder = '',
     valueAsNumber,
     label,
+    defaultValue,
     control,
     prefixLabel = undefined,
     suffixLabel = undefined,
@@ -58,7 +60,7 @@ export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
 
   const {
     fieldState: { error },
-  } = useController({ name, control });
+  } = useController({ name, control, defaultValue });
 
   return (
     <div className="flex flex-col justify-start w-full">
@@ -69,6 +71,7 @@ export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
       <Controller
         name={name}
         control={control}
+        defaultValue={defaultValue}
         render={({ field }) => (
           <div
             className={cx(
