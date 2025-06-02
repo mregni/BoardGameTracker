@@ -272,7 +272,7 @@ public class DiskProviderTests: IDisposable
         [Fact]
         public void DeleteFile_ShouldLogUnknownError_WhenUnexpectedExceptionOccurs()
         {
-            var invalidPath = "Z:\\nonexistent\\invalid\\path\\file.txt";
+            var invalidPath =Path.Combine("Z", "nonexistent-path", "file.txt");
 
             _diskProvider.DeleteFile(invalidPath);
 
