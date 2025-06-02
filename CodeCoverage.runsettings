@@ -1,20 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <RunSettings>
-  <DataCollectionRunSettings>
-    <DataCollectors>
-      <DataCollector friendlyName="XPlat code coverage">
-        <Configuration>
-          <ExcludeByFile>
-            **/BoardGameTracker.Host/**
-            **/DataStore/**
-          </ExcludeByFile>
-          <ExcludeByAttribute>
-            Obsolete
-            GeneratedCodeAttribute
-            CompilerGeneratedAttribute
-            ExcludeFromCodeCoverageAttribute
-          </ExcludeByAttribute>
-        </Configuration>
-      </DataCollector>
-    </DataCollectors>
-  </DataCollectionRunSettings>
+    <DataCollectionRunSettings>
+        <DataCollectors>
+            <DataCollector friendlyName="XPlat code coverage">
+                <Configuration>
+                    <Exclude>**/BoardGameTracker.Host/**,**/DataStore/**</Exclude>
+                </Configuration>
+            </DataCollector>
+        </DataCollectors>
+    </DataCollectionRunSettings>
 </RunSettings>
