@@ -3,13 +3,13 @@ import { SessionFlag } from '../Games/SessionFlag';
 import { PlayerSession } from './PlayerSession';
 
 export interface Session {
-  id: number;
+  id: string;
   comment: string;
   ended: boolean;
-  gameId: number;
+  gameId: string;
   start: Date;
   minutes: number;
   playerSessions: PlayerSession[];
-  locationId: number;
+  locationId: string;
   flags: SessionFlag[];
 }

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { t } from 'i18next';
@@ -11,7 +11,9 @@ import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/I
 
 import { StringToRgb } from '@/utils/stringUtils';
 import { useToast } from '@/providers/BgtToastProvider';
+import { EditPlayerModal } from '@/pages/Players/modals/EditPlayerModal';
 import { usePlayers } from '@/pages/Players/hooks/usePlayers';
+import { usePlayer } from '@/pages/Players/hooks/usePlayer';
 import { useGames } from '@/pages/Games/hooks/useGames';
 import { GameState } from '@/models';
 
@@ -20,24 +22,27 @@ interface Props {
   state?: GameState;
   image: string | null;
   link: string;
-  id: number;
+  id: string;
 }
 
 interface GameCardProps extends Props {
   openDeleteModal: boolean;
   setOpenDeleteModal: Dispatch<SetStateAction<boolean>>;
-  deleteAction: (id: number) => Promise<void>;
+  deleteAction: (id: string) => Promise<void>;
   modalDescription: string;
+  callUpdate: () => void;
 }
 
 export const BgtGameImageCard = (props: Props) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const navigate = useNavigate();
   const { showInfoToast } = useToast();
 
   const onDeleteSuccess = () => {
     setOpenDeleteModal(false);
     showInfoToast(t('game.notifications.deleted'));
   };
+
   const { deleteGame } = useGames({ onDeleteSuccess });
 
   return (
@@ -47,12 +52,14 @@ export const BgtGameImageCard = (props: Props) => {
       openDeleteModal={openDeleteModal}
       deleteAction={deleteGame}
       modalDescription={t('common.delete.description', { title: props.title })}
+      callUpdate={() => navigate(`/games/${props.id}/update`)}
     />
   );
 };
 
 export const BgtPlayerImageCard = (props: Props) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const { showInfoToast } = useToast();
 
   const onDeleteSuccess = () => {
@@ -65,15 +72,22 @@ export const BgtPlayerImageCard = (props: Props) => {
   };
 
   const { deletePlayer } = usePlayers({ onDeleteSuccess, onDeleteError });
+  const { player } = usePlayer({ id: props.id });
+
+  if (player.data === undefined) return null;
 
   return (
-    <BgtImageCard
-      {...props}
-      setOpenDeleteModal={setOpenDeleteModal}
-      openDeleteModal={openDeleteModal}
-      deleteAction={deletePlayer}
-      modalDescription={t('player.delete.description', { name: props.title })}
-    />
+    <>
+      <BgtImageCard
+        {...props}
+        setOpenDeleteModal={setOpenDeleteModal}
+        openDeleteModal={openDeleteModal}
+        deleteAction={deletePlayer}
+        modalDescription={t('player.delete.description', { name: props.title })}
+        callUpdate={() => setOpenUpdateModal(true)}
+      />
+      <EditPlayerModal open={openUpdateModal} setOpen={setOpenUpdateModal} player={player.data} />
+    </>
   );
 };
 
@@ -86,6 +100,7 @@ const BgtImageCard = (props: GameCardProps) => {
     id,
     setOpenDeleteModal,
     openDeleteModal,
+    callUpdate,
     deleteAction,
     modalDescription,
   } = props;
@@ -97,12 +112,16 @@ const BgtImageCard = (props: GameCardProps) => {
         <div
           style={{ '--image-url': `url(${image})`, '--fallback-color': StringToRgb(title) }}
           className={cx(
-            'w-full relative overflow-hidden aspect-square z-10 rounded-xl flex justify-end flex-col gap-3 pb-4 px-3',
+            'w-full relative overflow-hidden aspect-square z-10 rounded-xl flex flex-col justify-center',
             `bg-cover bg-no-repeat bg-center`,
             image && 'bg-[image:var(--image-url)]',
             !image && `bg-[var(--fallback-color)]`
           )}
-        ></div>
+        >
+          {!image && (
+            <span className="flex justify-center align-middle h-max font-bold text-3xl capitalize">{title[0]}</span>
+          )}
+        </div>
       </Link>
       <div className="flex flex-row justify-between items-end">
         <div className="flex flex-col items-start justify-start">
@@ -122,7 +141,7 @@ const BgtImageCard = (props: GameCardProps) => {
             </BgtText>
           </Link>
         </div>
-        <BgtHiddenEditDropdown onDelete={() => setOpenDeleteModal(true)} onEdit={() => alert('editing')} />
+        <BgtHiddenEditDropdown onDelete={() => setOpenDeleteModal(true)} onEdit={() => callUpdate()} />
       </div>
       <BgtDeleteModal
         title={title}

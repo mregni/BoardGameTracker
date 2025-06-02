@@ -361,4 +361,33 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
             .OrderBy(x => x.Start)
             .ToListAsync();
     }
+
+    public override async Task<Game> UpdateAsync(Game entity)
+    {
+        var dbGame = await _context.Games.SingleOrDefaultAsync(x => x.Id == entity.Id);
+        if (dbGame != null)
+        {
+            dbGame.HasScoring = entity.HasScoring;
+            dbGame.Description = entity.Description;
+            dbGame.Image = entity.Image;
+            dbGame.Rating = entity.Rating;
+            dbGame.State = entity.State;
+            dbGame.Title = entity.Title;
+            dbGame.Weight = entity.Weight;
+            dbGame.BggId = entity.BggId;
+            dbGame.BuyingPrice = entity.BuyingPrice;
+            dbGame.MaxPlayers = entity.MaxPlayers;
+            dbGame.MinAge = entity.MinAge;
+            dbGame.MinPlayers = entity.MinPlayers;
+            dbGame.SoldPrice = entity.SoldPrice;
+            dbGame.YearPublished = entity.YearPublished;
+            dbGame.MaxPlayTime = entity.MaxPlayTime;
+            dbGame.MinPlayTime = entity.MinPlayTime;
+            dbGame.AdditionDate = entity.AdditionDate;
+
+            await _context.SaveChangesAsync();
+        }
+
+        return entity;
+    }
 }

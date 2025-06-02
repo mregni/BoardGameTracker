@@ -18,6 +18,7 @@ public class MainDbContext : DbContext
     public DbSet<Location> Locations { get; set; }
     public DbSet<Config> Config { get; set; }
     public DbSet<Language> Languages { get; set; }
+    public DbSet<PlayerSession> PlayerSessions { get; set; }
 
     public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
     {

@@ -258,7 +258,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.HasIndex("SessionId");
 
-                    b.ToTable("PlayerSession");
+                    b.ToTable("PlayerSessions");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Image", b =>

@@ -20,7 +20,7 @@ export const useGames = (props: Props) => {
     queryFn: ({ signal }) => getGames(signal),
   });
 
-  const { mutateAsync: saveGame, isPending } = useMutation<Game, AxiosError<FailResult>, CreateGame>({
+  const { mutateAsync: saveGame, isPending: saveIsPending } = useMutation<Game, AxiosError<FailResult>, CreateGame>({
     mutationFn: saveGameCall,
     onSuccess: async (data) => {
       await games.refetch();
@@ -30,7 +30,7 @@ export const useGames = (props: Props) => {
     onError: onError,
   });
 
-  const deleteGame = async (id: number) => {
+  const deleteGame = async (id: string) => {
     await deleteGameCall(id);
     await games.refetch();
     queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
@@ -40,7 +40,7 @@ export const useGames = (props: Props) => {
   return {
     games,
     saveGame,
-    isPending,
+    saveIsPending,
     deleteGame,
   };
 };

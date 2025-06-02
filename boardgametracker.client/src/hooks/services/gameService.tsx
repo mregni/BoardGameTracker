@@ -54,6 +54,12 @@ export const getChart = <T,>(id: string, chartName: string, signal: AbortSignal)
   });
 };
 
-export const deleteGameCall = (id: number): Promise<void> => {
+export const deleteGameCall = (id: string): Promise<void> => {
   return axiosInstance.delete(`${domain}/${id}`);
+};
+
+export const updateGameCall = (game: Game): Promise<Game> => {
+  return axiosInstance.put<Game>(domain, { ...game }).then((response) => {
+    return response.data;
+  });
 };

@@ -2,6 +2,6 @@
 
 public class LocationViewModel : CreateLocationViewModel
 {
-    public int Id { get; set; }
+    public string Id { get; set; }
     public int PlayCount { get; set; }
 }

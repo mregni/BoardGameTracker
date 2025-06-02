@@ -15,4 +15,5 @@ public class CreateGameViewModel
     public int State { get; set; }
     public bool HasScoring { get; set; }
     public double? BuyingPrice { get; set; }
+    public DateTime? AdditionDate { get; set; }
 }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
-using Sentry;
 
 namespace BoardGameTracker.Common.Extensions;
 

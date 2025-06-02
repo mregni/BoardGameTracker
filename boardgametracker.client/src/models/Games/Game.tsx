@@ -3,12 +3,11 @@ import { GameType } from './GameType';
 import { GameState } from './GameState';
 
 export interface Game {
-  id: number;
+  id: string;
   title: string;
   description: string;
   yearPublished: number | null;
   image: string;
-  thumbnail: string;
   minPlayers: number | null;
   maxPlayers: number | null;
   minPlayTime: number | null;
@@ -27,10 +26,11 @@ export interface Game {
   people: GamePerson[];
   hasScoring: boolean;
   buyingPrice: number | null;
+  additionDate: Date | null;
 }
 
 export interface GameLink {
-  id: number;
+  id: string;
   name: string;
 }
 

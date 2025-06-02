@@ -1,6 +1,4 @@
-﻿using BoardGameTracker.Common.Enums;
-
-namespace BoardGameTracker.Common.ViewModels.Dashboard;
+﻿namespace BoardGameTracker.Common.ViewModels.Dashboard;
 
 public class GameStateChartViewModel
 {

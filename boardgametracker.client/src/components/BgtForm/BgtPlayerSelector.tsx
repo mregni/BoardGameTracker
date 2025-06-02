@@ -76,7 +76,7 @@ export const BgtPlayerSelector = (props: Props) => {
           </div>
           <div className="flex items-center gap-1">
             <BgtIconButton icon={<PencilIcon />} onClick={() => editPlayer(x.id)} disabled={disabled} />
-            <BgtIconButton icon={<TrashIcon />} onClick={() => remove(index)} type="danger" disabled={disabled} />
+            <BgtIconButton icon={<TrashIcon />} onClick={() => remove(index)} intent="danger" disabled={disabled} />
           </div>
         </div>
       ))}

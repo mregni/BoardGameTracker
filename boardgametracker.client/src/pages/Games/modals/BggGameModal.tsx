@@ -90,7 +90,7 @@ export const BggGameModal = (props: Props) => {
               disabled={isPending}
               label={t('game.added-date.label')}
               defaultValue={new Date().toISOString().split('T')[0]}
-              name="date"
+              name="additionDate"
               type="date"
               control={control}
               className="pr-2"
@@ -102,7 +102,7 @@ export const BggGameModal = (props: Props) => {
               name="state"
               items={Object.keys(GameState)
                 .filter((value) => !isNaN(Number(value)))
-                .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value, image: null }))}
+                .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value }))}
             />
             <BgtSwitch label={t('game.scoring.label')} disabled={isPending} control={control} name="hasScoring" />
           </div>

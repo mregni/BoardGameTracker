@@ -11,7 +11,7 @@ namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/game")]
-public class GameController
+public class GameController : ControllerBase
 {
     private readonly IGameService _gameService;
     private readonly IMapper _mapper;
@@ -30,7 +30,7 @@ public class GameController
 
         return new OkObjectResult(mappedGames);
     }
-    
+
     [HttpPost]
     [Route("")]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameViewModel? gameViewModel)
@@ -39,10 +39,32 @@ public class GameController
         {
             return new BadRequestResult();
         }
-        
+
         var game = _mapper.Map<Game>(gameViewModel);
         game = await _gameService.CreateGame(game);
         return new OkObjectResult(_mapper.Map<GameViewModel>(game));
+    }
+
+    [HttpPut]
+    [Route("")]
+    public async Task<IActionResult> UpdateGame([FromBody] GameViewModel? gameViewModel)
+    {
+        if (gameViewModel == null)
+        {
+            return new BadRequestResult();
+        }
+
+        try
+        {
+            var game = _mapper.Map<Game>(gameViewModel);
+            game = await _gameService.UpdateGame(game);
+
+            return new OkObjectResult(_mapper.Map<GameViewModel>(game));
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500);
+        }
     }
 
     [HttpGet]
@@ -54,17 +76,17 @@ public class GameController
         {
             return new NotFoundResult();
         }
-        
+
         var viewModel = _mapper.Map<GameViewModel>(game);
         return new OkObjectResult(viewModel);
     }
-    
+
     [HttpGet]
     [Route("{id:int}/sessions")]
     public async Task<IActionResult> GetGameSessionsById(int id)
     {
         var sessions = await _gameService.GetSessionsForGame(id);
-        
+
         var viewModel = _mapper.Map<IList<SessionViewModel>>(sessions);
         return new OkObjectResult(viewModel);
     }
@@ -86,13 +108,13 @@ public class GameController
         var statsViewModel = _mapper.Map<GameStatisticsViewModel>(stats);
         return new OkObjectResult(statsViewModel);
     }
-    
+
     [HttpGet]
     [Route("{id:int}/top")]
     public async Task<IActionResult> GetTopPlayers(int id)
     {
         var topPlayers = await _gameService.GetTopPlayers(id);
-        
+
         var playersViewModel = _mapper.Map<IList<TopPlayerViewModel>>(topPlayers);
         return new OkObjectResult(playersViewModel);
     }
@@ -125,7 +147,7 @@ public class GameController
         var dataViewModel = _mapper.Map<IList<PlayByDayChartViewModel>>(data);
         return new OkObjectResult(dataViewModel);
     }
-    
+
     [HttpGet("{id:int}/chart/playercounts")]
     public async Task<IActionResult> PlayerCounts(int id)
     {
@@ -133,7 +155,7 @@ public class GameController
         var dataViewModel = _mapper.Map<IList<PlayerCountChartViewModel>>(data);
         return new OkObjectResult(dataViewModel);
     }
-        
+
     [HttpGet("{id:int}/chart/playerscoring")]
     public async Task<IActionResult> PlayerScoring(int id)
     {
@@ -142,12 +164,12 @@ public class GameController
         {
             return new BadRequestResult();
         }
-        
+
         var data = await _gameService.GetPlayerScoringChart(id);
         var dataViewModel = _mapper.Map<IList<PlayerScoringChartViewModel>>(data);
         return new OkObjectResult(dataViewModel);
     }
-    
+
     [HttpGet("{id:int}/chart/scorerank")]
     public async Task<IActionResult> ScoringRanked(int id)
     {

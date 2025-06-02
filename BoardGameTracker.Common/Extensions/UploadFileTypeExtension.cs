@@ -3,7 +3,7 @@ using BoardGameTracker.Common.Helpers;
 
 namespace BoardGameTracker.Common.Extensions;
 
-public static class UploadFileTypeExtensions
+public static class UploadFileTypeExtension
 {
     public static string ConvertToPath(this UploadFileType type)
     {

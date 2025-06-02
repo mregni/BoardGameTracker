@@ -1,6 +1,6 @@
 export interface PlayerSession {
-  sessionId: number;
-  playerId: number;
+  sessionId: string;
+  playerId: string;
   won: boolean;
   firstPlay: boolean;
   isBot: boolean;

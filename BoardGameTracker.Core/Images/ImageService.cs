@@ -1,13 +1,9 @@
-﻿using System.Text.RegularExpressions;
-using BoardGameTracker.Common.Enums;
+﻿using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
-using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 

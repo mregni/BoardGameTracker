@@ -7,7 +7,7 @@ import { BgtCard } from '../../../components/BgtCard/BgtCard';
 import BgtButton from '../../../components/BgtButton/BgtButton';
 
 interface Props {
-  gameId: number;
+  gameId: string;
 }
 
 export const BgtNoSessions = (props: Props) => {

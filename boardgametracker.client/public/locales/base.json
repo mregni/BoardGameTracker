@@ -42,6 +42,7 @@
     "time": "Time",
     "other-players": "Other players",
     "high-score": "High score",
+    "no-results": "No results found",
     "id": "Id",
     "flags": {
       "header": "Tags",
@@ -79,7 +80,8 @@
       "created": "Game is succesfully created",
       "not-found": "Could not find game",
       "duplicate": "Game already exists",
-      "deleted": "Game is succesfully deleted"
+      "deleted": "Game is succesfully deleted",
+      "updated": "Game is succesfully updated"
     },
     "added-date": {
       "label": "Date added",
@@ -90,6 +92,10 @@
       "placeholder": "BoardGameGeek game id",
       "required": "BGG id is required",
       "external-page": "Open BoardGameGeek website"
+    },
+    "update": {
+      "save": "Update game",
+      "title": "Update game"
     },
     "new": {
       "description": "Choose a method to create a new game.",
@@ -188,17 +194,23 @@
       "created": "Player is succesfully created",
       "not-found": "Could not find player",
       "deleted": "Player is succesfully deleted",
-      "delete-failed": "Failed deleting player"
+      "delete-failed": "Failed deleting player",
+      "updated": "Player is succesfully updated"
+    },
+    "name": {
+      "placeholder": "Enter name of the player",
+      "required": "player name is required"
     },
     "new": {
       "button": "Add new player",
-      "description": "Fill out the form to create a new player",
-      "name": {
-        "placeholder": "Enter name of the player",
-        "required": "player name is required"
-      },
+      "description": "Fill out the form to create a new player.",
       "save": "Create player",
       "title": "Create player"
+    },
+    "update": {
+      "save": "update player",
+      "title": "Update player",
+      "description": "Change the name or image to update the player."
     },
     "delete": {
       "successfull": "Player is successfully deleted.",
@@ -324,8 +336,10 @@
     "translations": "Translate the app"
   },
   "player-session": {
-    "save": "Create game play",
-    "title": "Add new game session",
+    "save-new": "Create game play",
+    "save-update": "Update game play",
+    "title-new": "Add new game session",
+    "title-update": "Update game session",
     "new": {
       "notifications": {
         "created": "Game play is succesfully created",

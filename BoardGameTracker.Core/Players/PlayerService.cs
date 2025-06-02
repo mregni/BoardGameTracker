@@ -37,9 +37,13 @@ public class PlayerService : IPlayerService
         if (dbPlayer != null && player.Image != dbPlayer.Image)
         {
             _imageService.DeleteImage(dbPlayer.Image);
+            
+            dbPlayer.Image = player.Image;
+            dbPlayer.Name = player.Name;
+            return await _playerRepository.UpdateAsync(dbPlayer);
         }
 
-        return await _playerRepository.UpdateAsync(player);
+        return player;
     }
 
     public Task<int> CountAsync()

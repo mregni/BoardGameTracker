@@ -1,5 +1,4 @@
-﻿using System.Net;
-using AutoMapper;
+﻿using AutoMapper;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
@@ -60,7 +59,7 @@ public class PlayerController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdatePlayer([FromBody] PlayerViewModel? viewModel)
     {
-        if (viewModel is not {Id: { }})
+        if (viewModel is null)
         {
             return new BadRequestResult();
         }

@@ -19,7 +19,7 @@ export const useGameSessionsPage = (props: Props) => {
     enabled: id !== undefined,
   });
 
-  const deleteSession = (id: number) => {
+  const deleteSession = (id: string) => {
     void deleteSessionCall(id)
       .then(() => {
         sessions.refetch();

@@ -71,7 +71,7 @@ export const LocationsPage = () => {
             />
             <BgtIconButton
               icon={<TrashIcon className="size-5" />}
-              type="danger"
+              intent="danger"
               onClick={() => {
                 row.original.id;
                 setDeleteModalState({ open: true, location: row.original });

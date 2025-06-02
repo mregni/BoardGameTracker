@@ -56,7 +56,7 @@ export const CreatePlayerModal = (props: Props) => {
 
   const onSubmit = async (data: FormProps) => {
     const player: Player = {
-      id: 0,
+      id: '0',
       name: data.name,
       image: null,
     };
@@ -83,7 +83,7 @@ export const CreatePlayerModal = (props: Props) => {
             <div className="flex-grow">
               <BgtInputField
                 type="text"
-                placeholder={t('player.new.name.placeholder')}
+                placeholder={t('player.name.placeholder')}
                 name="name"
                 label={t('common.name')}
                 control={control}

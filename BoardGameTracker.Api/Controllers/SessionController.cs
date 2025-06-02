@@ -3,7 +3,6 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Common.ViewModels.Results;
-using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -23,6 +22,20 @@ public class SessionController : ControllerBase
         _sessionService = sessionService;
         _mapper = mapper;
         _logger = logger;
+    }
+    
+    [HttpGet]
+    [Route("{id:int}")]
+    public async Task<IActionResult> GetSession(int id)
+    {
+        var session = await _sessionService.Get(id);
+        if (session == null)
+        {
+            return new NotFoundResult();
+        }
+        
+        var mapped = _mapper.Map<SessionViewModel>(session);
+        return new OkObjectResult(mapped);
     }
 
     [HttpPost]

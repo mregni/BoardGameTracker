@@ -1,6 +1,4 @@
-﻿using BoardGameTracker.Common.Enums;
-
-namespace BoardGameTracker.Common.Entities.Helpers;
+﻿namespace BoardGameTracker.Common.Entities.Helpers;
 
 public class PlayerSession
 {

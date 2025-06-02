@@ -4,7 +4,7 @@ namespace BoardGameTracker.Common.Extensions;
 
 public static class StringExtensions
 {
-    public static PersonType ToPersonTypeEnum(this string type)
+    public static PersonType ToPersonTypeEnum(this string? type)
     {
         return type switch
         {
@@ -23,7 +23,7 @@ public static class StringExtensions
         return $"{fileNameWithoutExtension}_{randomPart}{extension}";
     }
     
-    public static string FirstCharToUpper(this string input)
+    public static string FirstCharToUpper(this string? input)
     {
         if (string.IsNullOrEmpty(input))
         {

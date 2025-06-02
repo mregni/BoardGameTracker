@@ -16,8 +16,8 @@ export const BgtEditDeleteButtons = (props: Props) => {
     <div>
       <BgtNormalEditDropdown onDelete={onDelete} onEdit={onEdit} className="md:hidden" />
       <div className="hidden flex-row justify-end gap-2 md:flex">
-        <BgtIconButton type="normal" onClick={onEdit} icon={<PencilIcon />} />
-        <BgtIconButton type="danger" onClick={onDelete} icon={<TrashIcon />} />
+        <BgtIconButton onClick={onEdit} icon={<PencilIcon />} />
+        <BgtIconButton intent="danger" onClick={onDelete} icon={<TrashIcon />} />
       </div>
     </div>
   );

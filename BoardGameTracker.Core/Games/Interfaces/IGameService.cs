@@ -25,4 +25,5 @@ public interface IGameService
     Task<List<ScoreRank>> GetScoringRankedChart(int id);
     Task<Game> CreateGame(Game game);
     Task<List<Session>> GetSessionsForGame(int id);
+    Task<Game> UpdateGame(Game game);
 }

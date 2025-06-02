@@ -18,7 +18,7 @@ export const usePlayers = ({ onDeleteSuccess, onDeleteError }: Props) => {
     queryFn: ({ signal }) => getPlayers(signal),
   });
 
-  const deletePlayer = async (id: number) => {
+  const deletePlayer = async (id: string) => {
     try {
       await deletePlayerCall(id);
       players.refetch();

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Common.ViewModels.Location;
 using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Locations.Interfaces;
