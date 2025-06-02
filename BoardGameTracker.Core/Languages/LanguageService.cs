@@ -8,7 +8,7 @@ public class LanguageService : ILanguageService
 {
     private readonly ILanguageRepository _languageRepository;
     
-    public LanguageService(MainDbContext context, ILanguageRepository languageRepository)
+    public LanguageService(ILanguageRepository languageRepository)
     {
         _languageRepository = languageRepository;
     }

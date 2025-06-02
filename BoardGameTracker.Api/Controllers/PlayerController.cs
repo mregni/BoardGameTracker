@@ -60,7 +60,7 @@ public class PlayerController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdatePlayer([FromBody] PlayerViewModel? viewModel)
     {
-        if (viewModel is not {Id: { }})
+        if (viewModel is null)
         {
             return new BadRequestResult();
         }

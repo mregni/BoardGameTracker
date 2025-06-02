@@ -16,7 +16,7 @@ public class DiskProvider : IDiskProvider
         _logger = logger;
     }
 
-    public bool FileExists(string path)
+    public bool FileExists(string? path)
     {
         return File.Exists(path);
     }

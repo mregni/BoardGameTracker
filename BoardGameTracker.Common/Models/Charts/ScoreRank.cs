@@ -7,6 +7,7 @@ public class ScoreRank
     public string Key { get; set; }
     public double Score { get; set; }
     public int PlayerId { get; set; }
+    
 
     public static ScoreRank? MakeHighestScoreRank(PlayerSession? play)
     {

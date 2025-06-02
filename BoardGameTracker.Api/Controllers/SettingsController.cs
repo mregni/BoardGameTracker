@@ -43,6 +43,7 @@ public class SettingsController
     }
 
     [HttpPut]
+    [Route("")]
     public IActionResult Update([FromBody] UIResourceViewModel model)
     {
         _configFileProvider.Currency = model.Currency;

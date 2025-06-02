@@ -3,7 +3,7 @@ using BoardGameTracker.Common.Extensions;
 using FluentAssertions;
 using Xunit;
 
-namespace BoardGameTracker.Tests.ExtensionTests;
+namespace BoardGameTracker.Tests.Extensions;
 
 public class UploadFileTypeExtensionTests
 {
