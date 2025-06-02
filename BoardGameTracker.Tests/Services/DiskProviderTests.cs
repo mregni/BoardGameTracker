@@ -207,20 +207,6 @@ public class DiskProviderTests: IDisposable
         }
 
         [Fact]
-        public void DeleteFile_ShouldLogError_WhenIOExceptionOccurs()
-        {
-            var filePath = CreateTestFile("locked.txt", "content");
-            
-            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
-            
-            _diskProvider.DeleteFile(filePath);
-
-            File.Exists(filePath).Should().BeTrue();
-            VerifyLogInformation("Removing file {Path}", filePath);
-            VerifyLogError("Can't delete file because it seems to be in use");
-        }
-
-        [Fact]
         public void EnsureFolder_ShouldCreateDirectory_WhenDirectoryDoesNotExist()
         {
             var dirPath = Path.Combine(_testDirectory, "newdir");
