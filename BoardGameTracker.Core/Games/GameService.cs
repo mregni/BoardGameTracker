@@ -6,7 +6,6 @@ using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Core.Bgg;
-using BoardGameTracker.Core.Extensions;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;

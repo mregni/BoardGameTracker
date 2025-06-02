@@ -1,6 +1,4 @@
-﻿using BoardGameTracker.Common.Entities;
-
-namespace BoardGameTracker.Common.Models;
+﻿namespace BoardGameTracker.Common.Models;
 
 public class GameStatistics
 {

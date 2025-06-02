@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
-using BoardGameTracker.Common.Models.Dashboard;
 using BoardGameTracker.Common.ViewModels.Dashboard;
-using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Dashboard.Interfaces;
-using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;

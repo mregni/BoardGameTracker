@@ -1,7 +1,6 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Core.Datastore.Interfaces;
 
 namespace BoardGameTracker.Core.Games.Interfaces;

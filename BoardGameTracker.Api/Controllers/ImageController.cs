@@ -1,10 +1,5 @@
-﻿using System.Net;
-using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Common.ViewModels.Results;
+﻿using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Core.Images.Interfaces;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 

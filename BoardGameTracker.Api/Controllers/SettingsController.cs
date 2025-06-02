@@ -1,12 +1,9 @@
 ﻿using AutoMapper;
-using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Common.ViewModels.Language;
-using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Sentry;
 
 namespace BoardGameTracker.Api.Controllers;
 

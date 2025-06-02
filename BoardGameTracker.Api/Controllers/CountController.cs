@@ -1,5 +1,4 @@
 ﻿using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;

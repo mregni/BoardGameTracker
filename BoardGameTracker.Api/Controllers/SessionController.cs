@@ -3,7 +3,6 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Common.ViewModels.Results;
-using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

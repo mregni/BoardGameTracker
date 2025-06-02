@@ -1,5 +1,4 @@
-﻿using System.Xml.Serialization;
-using BoardGameTracker.Common.Enums;
+﻿using BoardGameTracker.Common.Enums;
 
 namespace BoardGameTracker.Common.Models.Bgg;
 

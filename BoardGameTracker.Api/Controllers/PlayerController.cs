@@ -1,5 +1,4 @@
-﻿using System.Net;
-using AutoMapper;
+﻿using AutoMapper;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
