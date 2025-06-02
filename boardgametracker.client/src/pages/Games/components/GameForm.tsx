@@ -31,7 +31,7 @@ export const GameForm = (props: Props) => {
   const { onClick, buttonText, disabled, game, title } = props;
   const { settings } = useSettings();
   const { t } = useTranslation();
-  const [poster, setPoster] = useState<File | undefined>(undefined);
+  const [poster, setPoster] = useState<File | undefined | null>(undefined);
   const { uploadGameImage } = useImages();
   const navigate = useNavigate();
 
@@ -49,8 +49,8 @@ export const GameForm = (props: Props) => {
       minPlayTime: game?.minPlayTime ?? undefined,
       minAge: game?.minAge ?? undefined,
       bggId: game?.bggId ?? undefined,
-      buyingPrice: game?.buyingPrice ?? undefined,
-      additionDate: game?.additionDate ?? undefined,
+      buyingPrice: game?.buyingPrice ?? 0,
+      additionDate: game?.additionDate ?? new Date(),
       image: game?.image ?? null,
     },
   });
@@ -63,7 +63,6 @@ export const GameForm = (props: Props) => {
       game.image = null;
     }
 
-    console.log(game);
     await onClick(game);
   };
 
