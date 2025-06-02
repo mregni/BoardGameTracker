@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react';
 import { NewLocationModal } from './modals/NewLocationModal';
 import { EditLocationModal } from './modals/EditLocationModal';
 
-import { useToast } from '@/providers/BgtToastProvider';
 import { Location } from '@/models';
+import { useToasts } from '@/hooks/useToasts';
 import { usePage } from '@/hooks/usePage';
 import { useLocations } from '@/hooks/useLocations';
 import { BgtDeleteModal } from '@/components/Modals/BgtDeleteModal';
@@ -26,18 +26,18 @@ interface ModalState {
 export const LocationsPage = () => {
   const { t } = useTranslation();
   const { pageTitle } = usePage();
-  const { showInfoToast } = useToast();
+  const { infoToast, errorToast } = useToasts();
   const [deleteModalState, setDeleteModalState] = useState<ModalState>({ location: null, open: false });
   const [editModalState, setEditModalState] = useState<ModalState>({ location: null, open: false });
   const [openNewModal, setOpenNewModal] = useState(false);
 
   const onDeleteSuccess = () => {
     setDeleteModalState({ open: false, location: null });
-    showInfoToast(t('location.notifications.deleted'));
+    infoToast(t('location.notifications.deleted'));
   };
 
   const onDeleteFailed = () => {
-    showInfoToast(t('location.notifications.delete-failed'));
+    errorToast(t('location.notifications.delete-failed'));
   };
 
   const { locations, deleteLocation } = useLocations({ onDeleteSuccess, onDeleteFailed });

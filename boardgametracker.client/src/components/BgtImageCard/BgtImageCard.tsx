@@ -10,12 +10,12 @@ import { BgtHiddenEditDropdown } from '../BgtDropdown/BgtEditDropdown';
 import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/ItemStateUtils';
 
 import { StringToRgb } from '@/utils/stringUtils';
-import { useToast } from '@/providers/BgtToastProvider';
 import { EditPlayerModal } from '@/pages/Players/modals/EditPlayerModal';
 import { usePlayers } from '@/pages/Players/hooks/usePlayers';
 import { usePlayer } from '@/pages/Players/hooks/usePlayer';
 import { useGames } from '@/pages/Games/hooks/useGames';
 import { GameState } from '@/models';
+import { useToasts } from '@/hooks/useToasts';
 
 interface Props {
   title: string;
@@ -36,11 +36,11 @@ interface GameCardProps extends Props {
 export const BgtGameImageCard = (props: Props) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const navigate = useNavigate();
-  const { showInfoToast } = useToast();
+  const { infoToast } = useToasts();
 
   const onDeleteSuccess = () => {
     setOpenDeleteModal(false);
-    showInfoToast(t('game.notifications.deleted'));
+    infoToast(t('game.notifications.deleted'));
   };
 
   const { deleteGame } = useGames({ onDeleteSuccess });
@@ -60,15 +60,15 @@ export const BgtGameImageCard = (props: Props) => {
 export const BgtPlayerImageCard = (props: Props) => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
-  const { showInfoToast } = useToast();
+  const { infoToast, errorToast } = useToasts();
 
   const onDeleteSuccess = () => {
     setOpenDeleteModal(false);
-    showInfoToast(t('player.notifications.deleted'));
+    infoToast(t('player.notifications.deleted'));
   };
   const onDeleteError = () => {
     setOpenDeleteModal(false);
-    showInfoToast(t('player.notifications.delete-failed'));
+    errorToast(t('player.notifications.delete-failed'));
   };
 
   const { deletePlayer } = usePlayers({ onDeleteSuccess, onDeleteError });

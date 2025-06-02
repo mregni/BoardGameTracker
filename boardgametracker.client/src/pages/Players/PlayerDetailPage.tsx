@@ -18,12 +18,12 @@ import { EditPlayerModal } from './modals/EditPlayerModal';
 import { usePlayers } from './hooks/usePlayers';
 import { usePlayer } from './hooks/usePlayer';
 
-import { useToast } from '@/providers/BgtToastProvider';
+import { useToasts } from '@/hooks/useToasts';
 
 export const PlayerDetailpage = () => {
   const { id } = useParams<string>();
   const { t } = useTranslation();
-  const { showInfoToast, showErrorToast } = useToast();
+  const { infoToast, errorToast } = useToasts();
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
 
   if (!id) {
@@ -31,11 +31,11 @@ export const PlayerDetailpage = () => {
   }
 
   const onDeleteError = () => {
-    showErrorToast('player.delete.failed');
+    errorToast('player.delete.failed');
   };
 
   const onDeleteSuccess = () => {
-    showInfoToast('player.delete.successfull');
+    infoToast('player.delete.successfull');
   };
 
   const { player, statistics } = usePlayer({ id });

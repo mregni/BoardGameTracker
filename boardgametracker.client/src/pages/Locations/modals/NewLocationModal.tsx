@@ -1,10 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
-import { t } from 'i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { useToast } from '@/providers/BgtToastProvider';
 import { CreateLocation, CreateLocationSchema } from '@/models';
+import { useToasts } from '@/hooks/useToasts';
 import { useLocations } from '@/hooks/useLocations';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtDialog, BgtDialogContent, BgtDialogTitle, BgtDialogClose } from '@/components/BgtDialog/BgtDialog';
@@ -17,15 +16,15 @@ interface Props {
 
 export const NewLocationModal = (props: Props) => {
   const { open, close } = props;
-  const { showInfoToast, showErrorToast } = useToast();
+  const { infoToast, errorToast } = useToasts();
   const { t } = useTranslation();
 
   const onNewSuccess = () => {
-    showInfoToast('location.notifications.created');
+    infoToast('location.notifications.created');
     close();
   };
   const onNewFailed = () => {
-    showErrorToast('location.notifications.create-failed');
+    errorToast('location.notifications.create-failed');
   };
   const { save } = useLocations({ onNewSuccess, onNewFailed });
   const { handleSubmit, control } = useForm<CreateLocation>({

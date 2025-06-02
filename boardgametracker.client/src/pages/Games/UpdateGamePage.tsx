@@ -4,18 +4,18 @@ import { useTranslation } from 'react-i18next';
 import { useUpdateGame } from './hooks/useUpdateGame';
 import { GameForm } from './components/GameForm';
 
-import { useToast } from '@/providers/BgtToastProvider';
 import { CreateGame } from '@/models/Games/CreateGame';
 import { Game } from '@/models';
+import { useToasts } from '@/hooks/useToasts';
 
 export const UpdateGamePage = () => {
   const { id } = useParams();
-  const { showInfoToast } = useToast();
+  const { successToast } = useToasts();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const onSuccess = (game: Game) => {
-    showInfoToast('game.notifications.created');
+    successToast('game.notifications.created');
     navigate(`/games/${game.id}`);
     window.scrollTo(0, 0);
   };

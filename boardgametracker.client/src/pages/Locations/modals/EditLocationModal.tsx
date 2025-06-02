@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { useToast } from '@/providers/BgtToastProvider';
 import { CreateLocation, CreateLocationSchema, Location } from '@/models';
+import { useToasts } from '@/hooks/useToasts';
 import { useLocations } from '@/hooks/useLocations';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog/BgtDialog';
@@ -18,14 +18,14 @@ interface Props {
 export const EditLocationModal = (props: Props) => {
   const { location, open, close } = props;
   const { t } = useTranslation();
-  const { showInfoToast, showErrorToast } = useToast();
+  const { infoToast, errorToast } = useToasts();
 
   const onEditSuccess = () => {
-    showInfoToast('location.notifications.update');
+    infoToast('location.notifications.update');
     close();
   };
   const onEditFailed = () => {
-    showErrorToast('location.notifications.update-failed');
+    errorToast('location.notifications.update-failed');
   };
   const { update } = useLocations({ onEditSuccess, onEditFailed });
 

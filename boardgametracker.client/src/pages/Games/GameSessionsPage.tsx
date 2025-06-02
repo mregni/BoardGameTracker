@@ -9,6 +9,7 @@ import { useGame } from './hooks/useGame';
 import { StringToHsl } from '@/utils/stringUtils';
 import { useToast } from '@/providers/BgtToastProvider';
 import { Game, PlayerSession, Session } from '@/models';
+import { useToasts } from '@/hooks/useToasts';
 import { useSettings } from '@/hooks/useSettings';
 import { usePlayerById } from '@/hooks/usePlayerById';
 import { BgtDeleteModal } from '@/components/Modals/BgtDeleteModal';
@@ -48,14 +49,14 @@ const PlayerAvatar = (props: AvatarProps) => {
 export const GameSessionsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { showInfoToast } = useToast();
+  const { infoToast } = useToasts();
   const { settings } = useSettings();
   const { game } = useGame({ id });
 
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
   const onDeleteSuccess = () => {
-    showInfoToast('sessions.notifications.deleted');
+    infoToast('sessions.notifications.deleted');
     setSessionToDelete(null);
   };
 

@@ -6,8 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { usePlayerModal } from '../hooks/usePlayerModal';
 
-import { useToast } from '@/providers/BgtToastProvider';
 import { Player } from '@/models';
+import { useToasts } from '@/hooks/useToasts';
 import { useImages } from '@/hooks/useImages';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtImageSelector } from '@/components/BgtForm/BgtImageSelector';
@@ -33,12 +33,12 @@ export const CreatePlayerModal = (props: Props) => {
   const { open, setOpen } = props;
   const { t } = useTranslation();
   const [image, setImage] = useState<File | undefined>(undefined);
-  const { showInfoToast } = useToast();
+  const { infoToast } = useToasts();
 
   const { isPending, uploadPlayerImage } = useImages();
 
   const onSuccess = () => {
-    showInfoToast('player.notifications.created');
+    infoToast('player.notifications.created');
   };
 
   const { save, isPending: playerIsPending } = usePlayerModal({ onSuccess });

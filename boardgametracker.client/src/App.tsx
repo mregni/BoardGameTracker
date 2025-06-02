@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { useToast } from './providers/BgtToastProvider';
 import { SettingsRoutes } from './pages/Settings/SettingsRoutes';
 import { SessionRoutes } from './pages/Sessions/SessionRoutes';
 import { PlayerRoutes } from './pages/Players/PlayerRoutes';
@@ -12,12 +11,13 @@ import { LocationRoutes } from './pages/Locations/LocationRoutes';
 import { GameRoutes } from './pages/Games/GameRoutes';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { FailResult } from './models';
+import { useToasts } from './hooks/useToasts';
 import { useSettings } from './hooks/useSettings';
 import BgtMenuBar from './components/BgtLayout/BgtMenuBar';
 import { BgtHeader } from './components/BgtHeader/BgtHeader';
 
 function AppContainer() {
-  const { showErrorToast } = useToast();
+  const { errorToast } = useToasts();
 
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -31,7 +31,7 @@ function AppContainer() {
       onError: (_error, query) => {
         const error = query.state.error as AxiosError<FailResult>;
         const reason = error.response?.data.reason ?? 'common.unknown-error';
-        showErrorToast(reason);
+        errorToast(reason);
       },
     }),
   });

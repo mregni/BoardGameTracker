@@ -14,7 +14,7 @@ import { BgtNoSessions } from './components/BgtNoSessions';
 
 import { RoundDecimal } from '@/utils/numberUtils';
 import { getColorFromGameState, getItemStateTranslationKey } from '@/utils/ItemStateUtils';
-import { useToast } from '@/providers/BgtToastProvider';
+import { useToasts } from '@/hooks/useToasts';
 import { useSettings } from '@/hooks/useSettings';
 import { BgtDeleteModal } from '@/components/Modals/BgtDeleteModal';
 import { BgtText } from '@/components/BgtText/BgtText';
@@ -56,15 +56,15 @@ export const GameDetailPage = () => {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const navigate = useNavigate();
-  const { showInfoToast, showErrorToast } = useToast();
+  const { errorToast, successToast } = useToasts();
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
   const onDeleteError = () => {
-    showErrorToast('game.delete.failed');
+    errorToast('game.delete.failed');
   };
 
   const onDeleteSuccess = () => {
-    showInfoToast('game.delete.successfull');
+    successToast('game.delete.successfull');
   };
 
   const { game, deleteGame, statistics, topPlayers } = useGame({ id, onDeleteError, onDeleteSuccess });

@@ -7,18 +7,18 @@ import { useGame } from '../Games/hooks/useGame';
 import { useCreateSessionPage } from './hooks/useCreateSessionPage';
 import { SessionForm } from './components/SessionForm';
 
-import { useToast } from '@/providers/BgtToastProvider';
 import { CreateSession } from '@/models/Session/CreateSession';
+import { useToasts } from '@/hooks/useToasts';
 
 export const CreateSessionPage = () => {
   const { gameId } = useParams();
   const { game } = useGame({ id: gameId });
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { showInfoToast } = useToast();
+  const { infoToast } = useToasts();
 
   const onSessionSaveSuccess = () => {
-    showInfoToast('player-session.new.notifications.created');
+    infoToast('player-session.new.notifications.created');
   };
 
   const { saveSession } = useCreateSessionPage({

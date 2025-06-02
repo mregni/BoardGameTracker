@@ -1,10 +1,10 @@
 import { AxiosError } from 'axios';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { useToast } from '@/providers/BgtToastProvider';
 import { TopPlayer } from '@/models/Games/TopPlayer';
 import { ScoreRank } from '@/models/Games/ScoringRank';
 import { FailResult, Game, GAME_CHARTS, GameStatistics, PlayerCountChart, QUERY_KEYS } from '@/models';
+import { useToasts } from '@/hooks/useToasts';
 import { getGame, getGameStatistics, getTopPlayers, deleteGameCall, getChart } from '@/hooks/services/gameService';
 
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
 
 export const useGame = ({ id, onDeleteError, onDeleteSuccess }: Props) => {
   const queryClient = useQueryClient();
-  const { showErrorToast } = useToast();
+  const { errorToast } = useToasts();
 
   const game = useQuery<Game, AxiosError<FailResult>>({
     queryKey: [QUERY_KEYS.game, id],
@@ -66,7 +66,7 @@ export const useGame = ({ id, onDeleteError, onDeleteSuccess }: Props) => {
   };
 
   if (game.isError) {
-    showErrorToast('game.notifications.not-found');
+    errorToast('game.notifications.not-found');
   }
 
   return {

@@ -7,8 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useBggGameModal } from '../hooks/useBggGameModal';
 
 import { getItemStateTranslationKeyByString } from '@/utils/ItemStateUtils';
-import { useToast } from '@/providers/BgtToastProvider';
 import { BggSearch, BggSearchSchema, Game, GameState } from '@/models';
+import { useToasts } from '@/hooks/useToasts';
 import { useSettings } from '@/hooks/useSettings';
 import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
 import { BgtSelect } from '@/components/BgtForm/BgtSelect';
@@ -33,10 +33,10 @@ export const BggGameModal = (props: Props) => {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const navigate = useNavigate();
-  const { showInfoToast } = useToast();
+  const { infoToast } = useToasts();
 
   const onSuccess = (game: Game) => {
-    showInfoToast('game.notifications.created');
+    infoToast('game.notifications.created');
     navigate(`/games/${game.id}`);
   };
   const { save, isPending } = useBggGameModal({ onSuccess });
@@ -90,7 +90,7 @@ export const BggGameModal = (props: Props) => {
               disabled={isPending}
               label={t('game.added-date.label')}
               defaultValue={new Date().toISOString().split('T')[0]}
-              name="additionDate"
+              name="date"
               type="date"
               control={control}
               className="pr-2"
