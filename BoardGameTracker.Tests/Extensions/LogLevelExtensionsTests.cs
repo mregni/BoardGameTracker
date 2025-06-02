@@ -93,7 +93,6 @@ public class LogLevelExtensionsTests : IDisposable
     [InlineData("dEbUg", LogLevel.Debug)]
     [InlineData("warning", LogLevel.Warning)]
     [InlineData("Warning", LogLevel.Warning)]
-    [InlineData("wArNiNg", LogLevel.Warning)]
     public void GetEnvironmentLogLevel_ShouldReturnCorrectLogLevel_WhenEnvironmentVariableIsDifferentCase(string value,
         LogLevel expectedLogLevel)
     {

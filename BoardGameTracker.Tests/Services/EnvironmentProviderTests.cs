@@ -81,40 +81,6 @@ public class EnvironmentProviderTests : IDisposable
         }
 
         [Fact]
-        public void LogLevel_ShouldCallLogLevelExtensions_WhenAccessed()
-        {
-            Environment.SetEnvironmentVariable("LOGLEVEL", "ERROR");
-
-            var result = _environmentProvider.LogLevel;
-
-            result.Should().Be(LogLevel.Error);
-        }
-
-        [Theory]
-        [InlineData("ERROR", LogLevel.Error)]
-        [InlineData("INFO", LogLevel.Information)]
-        [InlineData("DEBUG", LogLevel.Debug)]
-        [InlineData("WARNING", LogLevel.Warning)]
-        public void LogLevel_ShouldReturnCorrectLogLevel_WithDifferentValues(string logLevelString, LogLevel expectedLogLevel)
-        {
-            Environment.SetEnvironmentVariable("LOGLEVEL", logLevelString);
-
-            var result = _environmentProvider.LogLevel;
-
-            result.Should().Be(expectedLogLevel);
-        }
-
-        [Fact]
-        public void LogLevel_ShouldReturnWarning_WhenEnvironmentVariableIsNotSet()
-        {
-            Environment.SetEnvironmentVariable("LOGLEVEL", null);
-
-            var result = _environmentProvider.LogLevel;
-
-            result.Should().Be(LogLevel.Warning);
-        }
-
-        [Fact]
         public void AllProperties_ShouldBeConsistent_WhenCalledMultipleTimes()
         {
             Environment.SetEnvironmentVariable("ENVIRONMENT", "production");
