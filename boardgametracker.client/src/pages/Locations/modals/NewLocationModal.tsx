@@ -16,11 +16,11 @@ interface Props {
 
 export const NewLocationModal = (props: Props) => {
   const { open, close } = props;
-  const { infoToast, errorToast } = useToasts();
+  const { successToast, errorToast } = useToasts();
   const { t } = useTranslation();
 
   const onNewSuccess = () => {
-    infoToast('location.notifications.created');
+    successToast('location.notifications.created');
     close();
   };
   const onNewFailed = () => {

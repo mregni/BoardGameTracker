@@ -18,10 +18,10 @@ interface Props {
 export const EditLocationModal = (props: Props) => {
   const { location, open, close } = props;
   const { t } = useTranslation();
-  const { infoToast, errorToast } = useToasts();
+  const { successToast, errorToast } = useToasts();
 
   const onEditSuccess = () => {
-    infoToast('location.notifications.update');
+    successToast('location.notifications.update');
     close();
   };
   const onEditFailed = () => {

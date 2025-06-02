@@ -12,10 +12,10 @@ export const UpdateSessionPage = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { infoToast } = useToasts();
+  const { successToast } = useToasts();
 
   const onSessionSaveSuccess = () => {
-    infoToast('player-session.new.notifications.created');
+    successToast('player-session.new.notifications.created');
   };
 
   const { session, updateSession } = useUpdateSessionPage({ id, onSessionSaveSuccess });

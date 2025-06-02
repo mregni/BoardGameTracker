@@ -35,12 +35,12 @@ export const EditPlayerModal = (props: Props) => {
   const { open, setOpen, player } = props;
   const { t } = useTranslation();
   const [image, setImage] = useState<File | undefined | null>(undefined);
-  const { infoToast } = useToasts();
+  const { successToast } = useToasts();
 
   const { isPending, uploadPlayerImage } = useImages();
 
   const onUpdateSuccess = () => {
-    infoToast('player.notifications.updated');
+    successToast('player.notifications.updated');
   };
 
   const { update, updateIsPending } = usePlayerModal({ onUpdateSuccess });

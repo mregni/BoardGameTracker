@@ -15,7 +15,7 @@ export const UpdateGamePage = () => {
   const { t } = useTranslation();
 
   const onSuccess = (game: Game) => {
-    successToast('game.notifications.created');
+    successToast('game.notifications.updated');
     navigate(`/games/${game.id}`);
     window.scrollTo(0, 0);
   };

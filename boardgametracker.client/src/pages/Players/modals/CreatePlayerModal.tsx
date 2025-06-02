@@ -33,12 +33,12 @@ export const CreatePlayerModal = (props: Props) => {
   const { open, setOpen } = props;
   const { t } = useTranslation();
   const [image, setImage] = useState<File | undefined>(undefined);
-  const { infoToast } = useToasts();
+  const { successToast } = useToasts();
 
   const { isPending, uploadPlayerImage } = useImages();
 
   const onSuccess = () => {
-    infoToast('player.notifications.created');
+    successToast('player.notifications.created');
   };
 
   const { save, isPending: playerIsPending } = usePlayerModal({ onSuccess });

@@ -15,10 +15,10 @@ export const CreateSessionPage = () => {
   const { game } = useGame({ id: gameId });
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { infoToast } = useToasts();
+  const { successToast } = useToasts();
 
   const onSessionSaveSuccess = () => {
-    infoToast('player-session.new.notifications.created');
+    successToast('player-session.new.notifications.created');
   };
 
   const { saveSession } = useCreateSessionPage({

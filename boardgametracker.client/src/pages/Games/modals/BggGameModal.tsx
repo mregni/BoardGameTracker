@@ -33,10 +33,10 @@ export const BggGameModal = (props: Props) => {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const navigate = useNavigate();
-  const { infoToast } = useToasts();
+  const { successToast } = useToasts();
 
   const onSuccess = (game: Game) => {
-    infoToast('game.notifications.created');
+    successToast('game.notifications.created');
     navigate(`/games/${game.id}`);
   };
   const { save, isPending } = useBggGameModal({ onSuccess });
