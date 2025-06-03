@@ -45,7 +45,7 @@ const MobileMenu = () => {
           {open && <XIcon height={25} className="pr-3" onClick={() => setOpen(false)} />}
         </div>
       </div>
-      <div className={cx('mobile-menu bg-gray-950 absolute w-full top-12 z-40', !open && 'hidden-menu')}>
+      <div className={cx('mobile-menu bg-gray-950 absolute w-full top-14 z-40', !open && 'hidden-menu')}>
         {menuItems.map((x) => (
           <BgtMenuItem key={x.path} item={x} count={counts.data.find((y) => y.key == x.path)?.value} />
         ))}
@@ -70,8 +70,8 @@ const BgtMenuBar = () => {
   if (counts.data === undefined) return null;
 
   return (
-    <div className="h-screen">
-      <div className={cx('hidden relative md:flex bg-card-black h-full flex-col justify-between w-64')}>
+    <div>
+      <div className="hidden relative md:flex bg-card-black md:h-full flex-col justify-between w-64">
         <div className="px-4 flex flex-col">
           <BgtMenuLogo />
           <div className="mt-4">

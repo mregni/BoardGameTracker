@@ -80,17 +80,6 @@ public class ConfigFileProviderTests
         }
 
         [Fact]
-        public void DecimalSeparator_ShouldReturnDefaultValue_WhenNoEnvironmentVariableAndNoConfigFile()
-        {
-            SetupEmptyEnvironmentAndNoConfigFile();
-
-            var result = _configFileProvider.DecimalSeparator;
-
-            result.Should().Be(",");
-            VerifyConfigFileCreationAndValueSet("DECIMAL_SEPARATOR", ",");
-        }
-
-        [Fact]
         public void DateFormat_ShouldReturnDefaultValue_WhenNoEnvironmentVariableAndNoConfigFile()
         {
             SetupEmptyEnvironmentAndNoConfigFile();
@@ -303,7 +292,6 @@ public class ConfigFileProviderTests
 
         [Theory]
         [InlineData("Currency", "€")]
-        [InlineData("DecimalSeparator", ",")]
         [InlineData("DateFormat", "yy-MM-dd")]
         [InlineData("TimeFormat", "HH:mm")]
         [InlineData("UILanguage", "en-us")]
@@ -314,7 +302,6 @@ public class ConfigFileProviderTests
             var result = property switch
             {
                 "Currency" => _configFileProvider.Currency,
-                "DecimalSeparator" => _configFileProvider.DecimalSeparator,
                 "DateFormat" => _configFileProvider.DateFormat,
                 "TimeFormat" => _configFileProvider.TimeFormat,
                 "UILanguage" => _configFileProvider.UILanguage,
@@ -343,7 +330,7 @@ public class ConfigFileProviderTests
             var result = CallPrivateMethod<Dictionary<string, object>>("GetConfigDictionary");
 
             result.Should().NotBeNull();
-            result.Should().ContainKeys("Currency", "DecimalSeparator", "DateFormat", "TimeFormat", "UILanguage");
+            result.Should().ContainKeys("Currency", "DateFormat", "TimeFormat", "UILanguage");
             result.Should().ContainKeys("PostgresHost", "PostgresUser", "PostgresPassword", "PostgresMainDb", "PostgresPort");
 
             CleanupEnvironmentVariables();

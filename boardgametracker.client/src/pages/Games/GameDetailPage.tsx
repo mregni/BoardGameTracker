@@ -197,13 +197,6 @@ export const GameDetailPage = () => {
                     <TopPlayerCard key={player.playerId} index={i} player={player} />
                   ))}
                 </div>
-                <BgtHeading className="pt-8" size="7">
-                  {t('game.titles.analytics')}
-                </BgtHeading>
-                <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3">
-                  <ScoringRankChart />
-                  <PlayerCountChart />
-                </div>
               </>
             )}
           </div>
@@ -214,7 +207,17 @@ export const GameDetailPage = () => {
             )}
           </div>
         </div>
-
+        {statistics.data.playCount !== 0 && (
+          <div>
+            <BgtHeading className="pt-8" size="7">
+              {t('game.titles.analytics')}
+            </BgtHeading>
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3">
+              <ScoringRankChart />
+              <PlayerCountChart />
+            </div>
+          </div>
+        )}
         <BgtDeleteModal
           title={game.data.title}
           open={openDeleteModal}

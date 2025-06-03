@@ -1,5 +1,3 @@
-import { Text } from '@radix-ui/themes';
-
 import { BgtText } from '../BgtText/BgtText';
 import { BgtCard } from '../BgtCard/BgtCard';
 
@@ -20,7 +18,7 @@ export const BgtTextStatistic = (props: Props) => {
       <div className="flex flex-col items-center">
         <BgtText weight="bold" className="text-mint-green text-lg md:text-3xl">
           {prefix && <span>{prefix}&nbsp;</span>}
-          {content}
+          {content.toLocaleString()}
           {suffix && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
         </BgtText>
         <BgtText className="uppercase text-[10px] md:text-base">{title}</BgtText>

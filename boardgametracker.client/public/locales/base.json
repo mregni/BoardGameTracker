@@ -320,11 +320,6 @@
       "label": "Currency",
       "required": "Currency is required"
     },
-    "decimal-separator": {
-      "label": "Decimal separator",
-      "required": "Decimal separator is required",
-      "max-length": "Decimal separator can be at most 1 character"
-    },
     "environment": {
       "name": "Environment",
       "port": "Port",

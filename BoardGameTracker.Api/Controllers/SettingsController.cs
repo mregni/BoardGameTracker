@@ -32,7 +32,6 @@ public class SettingsController
             DateFormat = _configFileProvider.DateFormat,
             UILanguage = _configFileProvider.UILanguage,
             Currency = _configFileProvider.Currency,
-            DecimalSeparator = _configFileProvider.DecimalSeparator,
             Statistics = _environmentProvider.EnableStatistics
         };
 
@@ -44,7 +43,6 @@ public class SettingsController
     public IActionResult Update([FromBody] UIResourceViewModel model)
     {
         _configFileProvider.Currency = model.Currency;
-        _configFileProvider.DecimalSeparator = model.DecimalSeparator;
         _configFileProvider.TimeFormat = model.TimeFormat;
         _configFileProvider.DateFormat = model.DateFormat;
         _configFileProvider.UILanguage = model.UILanguage;

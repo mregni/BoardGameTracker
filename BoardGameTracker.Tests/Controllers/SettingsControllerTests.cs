@@ -44,14 +44,12 @@ public class SettingsControllerTests
             const string expectedDateFormat = "yyyy-MM-dd";
             const string expectedUILanguage = "en-US";
             const string expectedCurrency = "USD";
-            const string expectedDecimalSeparator = ".";
             const bool expectedStatistics = true;
 
             _configFileProviderMock.Setup(x => x.TimeFormat).Returns(expectedTimeFormat);
             _configFileProviderMock.Setup(x => x.DateFormat).Returns(expectedDateFormat);
             _configFileProviderMock.Setup(x => x.UILanguage).Returns(expectedUILanguage);
             _configFileProviderMock.Setup(x => x.Currency).Returns(expectedCurrency);
-            _configFileProviderMock.Setup(x => x.DecimalSeparator).Returns(expectedDecimalSeparator);
             _environmentProviderMock.Setup(x => x.EnableStatistics).Returns(expectedStatistics);
 
             var result = _controller.Get();
@@ -65,14 +63,12 @@ public class SettingsControllerTests
             uiResources.DateFormat.Should().Be(expectedDateFormat);
             uiResources.UILanguage.Should().Be(expectedUILanguage);
             uiResources.Currency.Should().Be(expectedCurrency);
-            uiResources.DecimalSeparator.Should().Be(expectedDecimalSeparator);
             uiResources.Statistics.Should().Be(expectedStatistics);
 
             _configFileProviderMock.Verify(x => x.TimeFormat, Times.Once);
             _configFileProviderMock.Verify(x => x.DateFormat, Times.Once);
             _configFileProviderMock.Verify(x => x.UILanguage, Times.Once);
             _configFileProviderMock.Verify(x => x.Currency, Times.Once);
-            _configFileProviderMock.Verify(x => x.DecimalSeparator, Times.Once);
             _environmentProviderMock.Verify(x => x.EnableStatistics, Times.Once);
             _configFileProviderMock.VerifyNoOtherCalls();
             _environmentProviderMock.VerifyNoOtherCalls();
@@ -81,18 +77,17 @@ public class SettingsControllerTests
         }
 
         [Theory]
-        [InlineData("HH:mm:ss", "dd/MM/yyyy", "fr-FR", "EUR", ",", false)]
-        [InlineData("h:mm tt", "MM/dd/yyyy", "en-US", "USD", ".", true)]
-        [InlineData("HH:mm", "yyyy-MM-dd", "de-DE", "GBP", ".", false)]
+        [InlineData("HH:mm:ss", "dd/MM/yyyy", "fr-FR", "EUR",  false)]
+        [InlineData("h:mm tt", "MM/dd/yyyy", "en-US", "USD",  true)]
+        [InlineData("HH:mm", "yyyy-MM-dd", "de-DE", "GBP",  false)]
         public void Get_ShouldReturnCorrectValues_WithDifferentConfigurations(
             string timeFormat, string dateFormat, string uiLanguage, 
-            string currency, string decimalSeparator, bool enableStatistics)
+            string currency, bool enableStatistics)
         {
             _configFileProviderMock.Setup(x => x.TimeFormat).Returns(timeFormat);
             _configFileProviderMock.Setup(x => x.DateFormat).Returns(dateFormat);
             _configFileProviderMock.Setup(x => x.UILanguage).Returns(uiLanguage);
             _configFileProviderMock.Setup(x => x.Currency).Returns(currency);
-            _configFileProviderMock.Setup(x => x.DecimalSeparator).Returns(decimalSeparator);
             _environmentProviderMock.Setup(x => x.EnableStatistics).Returns(enableStatistics);
 
             var result = _controller.Get();
@@ -105,11 +100,9 @@ public class SettingsControllerTests
             uiResources.DateFormat.Should().Be(dateFormat);
             uiResources.UILanguage.Should().Be(uiLanguage);
             uiResources.Currency.Should().Be(currency);
-            uiResources.DecimalSeparator.Should().Be(decimalSeparator);
             uiResources.Statistics.Should().Be(enableStatistics);
 
             _configFileProviderMock.VerifyGet(x => x.Currency, Times.Once);
-            _configFileProviderMock.VerifyGet(x => x.DecimalSeparator, Times.Once);
             _configFileProviderMock.VerifyGet(x => x.TimeFormat, Times.Once);
             _configFileProviderMock.VerifyGet(x => x.DateFormat, Times.Once);
             _configFileProviderMock.VerifyGet(x => x.UILanguage, Times.Once);
@@ -129,7 +122,6 @@ public class SettingsControllerTests
                 DateFormat = "dd/MM/yyyy",
                 UILanguage = "fr-FR",
                 Currency = "EUR",
-                DecimalSeparator = ",",
                 Statistics = true
             };
 
@@ -142,7 +134,6 @@ public class SettingsControllerTests
             okResult!.Value.Should().Be(model);
 
             _configFileProviderMock.VerifySet(x => x.Currency = model.Currency, Times.Once);
-            _configFileProviderMock.VerifySet(x => x.DecimalSeparator = model.DecimalSeparator, Times.Once);
             _configFileProviderMock.VerifySet(x => x.TimeFormat = model.TimeFormat, Times.Once);
             _configFileProviderMock.VerifySet(x => x.DateFormat = model.DateFormat, Times.Once);
             _configFileProviderMock.VerifySet(x => x.UILanguage = model.UILanguage, Times.Once);
@@ -153,11 +144,11 @@ public class SettingsControllerTests
         }
 
         [Theory]
-        [InlineData("12:00", "yyyy/MM/dd", "ja-JP", "JPY", ".")]
-        [InlineData("24:00", "dd.MM.yyyy", "ru-RU", "RUB", ",")]
-        [InlineData("h:mm a", "M/d/yyyy", "es-ES", "USD", ".")]
+        [InlineData("12:00", "yyyy/MM/dd", "ja-JP", "JPY")]
+        [InlineData("24:00", "dd.MM.yyyy", "ru-RU", "RUB")]
+        [InlineData("h:mm a", "M/d/yyyy", "es-ES", "USD")]
         public void Update_ShouldSetAllProperties_WithDifferentValues(
-            string timeFormat, string dateFormat, string uiLanguage, string currency, string decimalSeparator)
+            string timeFormat, string dateFormat, string uiLanguage, string currency)
         {
             var model = new UIResourceViewModel
             {
@@ -165,7 +156,6 @@ public class SettingsControllerTests
                 DateFormat = dateFormat,
                 UILanguage = uiLanguage,
                 Currency = currency,
-                DecimalSeparator = decimalSeparator,
                 Statistics = false
             };
 
@@ -178,7 +168,6 @@ public class SettingsControllerTests
             okResult!.Value.Should().Be(model);
 
             _configFileProviderMock.VerifySet(x => x.Currency = currency, Times.Once);
-            _configFileProviderMock.VerifySet(x => x.DecimalSeparator = decimalSeparator, Times.Once);
             _configFileProviderMock.VerifySet(x => x.TimeFormat = timeFormat, Times.Once);
             _configFileProviderMock.VerifySet(x => x.DateFormat = dateFormat, Times.Once);
             _configFileProviderMock.VerifySet(x => x.UILanguage = uiLanguage, Times.Once);
@@ -342,7 +331,6 @@ public class SettingsControllerTests
                 DateFormat = "yyyy-MM-dd",
                 UILanguage = "en-US",
                 Currency = "USD",
-                DecimalSeparator = ".",
                 Statistics = true
             };
 
@@ -353,7 +341,6 @@ public class SettingsControllerTests
             result.Should().BeOfType<OkObjectResult>();
 
             _configFileProviderMock.VerifySet(x => x.Currency = model.Currency, Times.Once);
-            _configFileProviderMock.VerifySet(x => x.DecimalSeparator = model.DecimalSeparator, Times.Once);
             _configFileProviderMock.VerifySet(x => x.TimeFormat = model.TimeFormat, Times.Once);
             _configFileProviderMock.VerifySet(x => x.DateFormat = model.DateFormat, Times.Once);
             _configFileProviderMock.VerifySet(x => x.UILanguage = model.UILanguage, Times.Once);
@@ -371,7 +358,6 @@ public class SettingsControllerTests
             _configFileProviderMock.InSequence(sequence).Setup(x => x.DateFormat).Returns("yyyy-MM-dd");
             _configFileProviderMock.InSequence(sequence).Setup(x => x.UILanguage).Returns("en-US");
             _configFileProviderMock.InSequence(sequence).Setup(x => x.Currency).Returns("USD");
-            _configFileProviderMock.InSequence(sequence).Setup(x => x.DecimalSeparator).Returns(".");
             _environmentProviderMock.InSequence(sequence).Setup(x => x.EnableStatistics).Returns(true);
 
             var result = _controller.Get();
@@ -379,7 +365,6 @@ public class SettingsControllerTests
             result.Should().BeOfType<OkObjectResult>();
             
             _configFileProviderMock.VerifyGet(x => x.Currency, Times.Once);
-            _configFileProviderMock.VerifyGet(x => x.DecimalSeparator, Times.Once);
             _configFileProviderMock.VerifyGet(x => x.TimeFormat, Times.Once);
             _configFileProviderMock.VerifyGet(x => x.DateFormat, Times.Once);
             _configFileProviderMock.VerifyGet(x => x.UILanguage, Times.Once);

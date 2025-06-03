@@ -20,7 +20,7 @@ export const BgtMenuItem = (props: Props) => {
     <Link to={item.path}>
       <div
         className={cx(
-          'flex w-full p-2 text-white cursor-pointer border border-transparent items-center my-1  hover:bg-primary-dark rounded-lg font-semibold justify-between px-2',
+          'flex w-full p-2 text-white cursor-pointer border border-transparent items-center my-1 hover:bg-primary-dark md:rounded-lg font-semibold justify-between px-2',
           activePage == item.path && 'bg-primary-dark border border-primary'
         )}
       >
@@ -30,7 +30,7 @@ export const BgtMenuItem = (props: Props) => {
             {t(item.menuLabel)}
           </Text>
         </div>
-        { count !== undefined && <div className="py-1 px-3 flex items-center justify-center text-xs">{count}</div>}
+        {count !== undefined && <div className="py-1 px-3 flex items-center justify-center text-xs">{count}</div>}
       </div>
     </Link>
   );

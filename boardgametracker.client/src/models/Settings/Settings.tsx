@@ -5,7 +5,6 @@ export interface Settings {
   timeFormat: string;
   uiLanguage: string;
   currency: string;
-  decimalSeparator: string;
   statistics: boolean;
 }
 
@@ -33,16 +32,5 @@ export const SettingsSchema = z.object({
     })
     .min(1, {
       message: 'settings.currency.required',
-    }),
-  decimalSeparator: z
-    .string({
-      required_error: 'settings.decimal-separator.required',
-    })
-
-    .min(1, {
-      message: 'settings.decimal-separator.required',
-    })
-    .max(1, {
-      message: 'settings.decimal-separator.max-length',
     }),
 });

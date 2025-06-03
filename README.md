@@ -95,7 +95,6 @@ You can also download the docker compose example [here](docker-compose.yml)
 | DATE_FORMAT       | yy-MM-dd         | Date format (use [date-fns](https://date-fns.org/v3.6.0/docs/format) formatting) |
 | TIME_FORMAT       | HH:mm            | Time format (use [date-fns](https://date-fns.org/v3.6.0/docs/format) |
 | TZ                | Europe/Londen    | Timezone |
-| DECIMAL_SEPARATOR | ,                |  |
 | CURRENCY          | €                |  |
 
 ## Screenshots

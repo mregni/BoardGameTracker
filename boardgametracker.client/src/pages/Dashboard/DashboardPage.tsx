@@ -36,7 +36,7 @@ export const DashboardPage = () => {
           <li>✅ View session table</li>
           <li>✅ Edit session</li>
           <li>✅ Delete session</li>
-          <li>Use decimal seperator from settings</li>
+          <li>✅ Use decimal seperator from settings</li>
           <li>✅ Load language from settings after settings save (if updated)</li>
           <li>✅ Add github button for feature requests</li>
           <li>✅ Add crowdin button for translations</li>
@@ -49,9 +49,9 @@ export const DashboardPage = () => {
         </ul>
         <h1>Bugs</h1>
         <ul>
-          <li>EditDropdown menu component sluit niet bij wegklikken ergens op het scherm</li>
+          <li>✅ EditDropdown menu component sluit niet bij wegklikken ergens op het scherm</li>
           <li>✅ Toasts verdwijnen achter de posters op de gsm. Misschien andere toast gebruiken?</li>
-          <li>Fix scroll in long pages (background is shorter then page)</li>
+          <li>✅ Fix scroll in long pages (background is shorter then page)</li>
           <li>
             Bij aanmaken van locatie word bij een tweede create de lijst niet meer geupdate na de POST, ook de counts
             query word niet refreshed

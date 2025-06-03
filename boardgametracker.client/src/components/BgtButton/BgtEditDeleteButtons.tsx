@@ -1,5 +1,5 @@
 import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
-import { BgtNormalEditDropdown } from '../BgtDropdown/BgtEditDropdown';
+import { BgtEditDropdown } from '../BgtDropdown/BgtEditDropdown';
 
 import TrashIcon from '@/assets/icons/trash.svg?react';
 import PencilIcon from '@/assets/icons/pencil.svg?react';
@@ -14,7 +14,7 @@ export const BgtEditDeleteButtons = (props: Props) => {
 
   return (
     <div>
-      <BgtNormalEditDropdown onDelete={onDelete} onEdit={onEdit} className="md:hidden" />
+      <BgtEditDropdown onDelete={onDelete} onEdit={onEdit} className="md:hidden" />
       <div className="hidden flex-row justify-end gap-2 md:flex">
         <BgtIconButton onClick={onEdit} icon={<PencilIcon />} />
         <BgtIconButton intent="danger" onClick={onDelete} icon={<TrashIcon />} />

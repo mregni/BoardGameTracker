@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
 import { AxiosError } from 'axios';
@@ -43,6 +43,16 @@ function AppContainer() {
   );
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   const { settings } = useSettings();
   const { i18n } = useTranslation();
@@ -55,8 +65,9 @@ function App() {
 
   return (
     <div className="flex flex-col md:flex-row text-white h-screen">
+      <ScrollToTop />
       <BgtMenuBar />
-      <div className="flex-1 bg-custom-gradient flex flex-col overflow-y-auto">
+      <div className="flex-1 bg-custom-gradient flex flex-col md:overflow-y-auto">
         <BgtHeader />
         <Routes>
           <Route element={<GameRoutes />} path="/games/*" />

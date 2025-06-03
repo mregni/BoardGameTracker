@@ -1,3 +1,4 @@
+import { useMeasure } from 'react-use';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
@@ -38,6 +39,7 @@ export const ScoringRankChart = () => {
   const { scoreRankChart, game } = useGame({ id });
   const { playerById } = usePlayerById();
   const { t } = useTranslation();
+  const [divRef, { width }] = useMeasure();
 
   const barData = useMemo(() => {
     if (scoreRankChart.data !== undefined) {
@@ -54,9 +56,16 @@ export const ScoringRankChart = () => {
 
   if (scoreRankChart.data === undefined || !game.data?.hasScoring) return null;
 
+  const getTickValues = () => {
+    if (width < 350) return 3;
+    if (width < 550) return 5;
+    if (width < 600) return 8;
+    return 10;
+  };
+
   return (
     <>
-      <div className="col-span-1">
+      <div className="col-span-1" ref={divRef as React.Ref<HTMLDivElement>}>
         <BgtChartCard title={t('game.charts.top-scoring.title')} className="h-96">
           <ResponsiveBar
             data={barData}
@@ -75,6 +84,12 @@ export const ScoringRankChart = () => {
             tooltip={() => <></>}
             axisLeft={{
               format: (value) => t(`game.charts.top-scoring.${value}`),
+            }}
+            axisBottom={{
+              tickSize: 1,
+              tickPadding: 5,
+              tickRotation: 0,
+              tickValues: getTickValues(),
             }}
             layers={[
               'grid',

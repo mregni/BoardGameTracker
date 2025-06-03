@@ -92,13 +92,6 @@ export const SettingsPage = () => {
                 name="currency"
                 label={t('settings.currency.label')}
               />
-              <BgtInputField
-                disabled={isPending}
-                type="text"
-                control={control}
-                name="decimalSeparator"
-                label={t('settings.decimal-separator.label')}
-              />
             </div>
           </form>
         </BgtCard>

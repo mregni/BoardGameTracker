@@ -1,7 +1,6 @@
 import '@radix-ui/themes/styles.css';
 import './index.css';
 import './utils/i18n';
-import 'react-perfect-scrollbar/dist/css/styles.css';
 import { Toaster } from 'sonner';
 import { BrowserRouter } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';

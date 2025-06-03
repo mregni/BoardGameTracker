@@ -22,12 +22,6 @@ public class ConfigFileProvider : IConfigFileProvider
         set => SetValue("CURRENCY", value);
     }
 
-    public string DecimalSeparator
-    {
-        get => GetValue("DECIMAL_SEPARATOR", ",");
-        set => SetValue("DECIMAL_SEPARATOR", value);
-    }
-
     public string DateFormat
     {
         get => GetValue("DATE_FORMAT", "yy-MM-dd");
