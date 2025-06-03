@@ -78,7 +78,7 @@ export const PlayerDetailpage = () => {
               </div>
               {statistics.data.playCount !== 0 && (
                 <div className="flex-row justify-start gap-2 hidden md:flex">
-                  <BgtButton size="3" variant="outline" onClick={() => alert('Sessions not implemented')}>
+                  <BgtButton size="3" variant="outline" onClick={() => navigate(`/players/${id}/sessions`)}>
                     {i18next.format(t('game.sessions'))}
                   </BgtButton>
                 </div>

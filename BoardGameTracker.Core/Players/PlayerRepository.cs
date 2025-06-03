@@ -101,4 +101,12 @@ public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
             .Where(x => x.PlayerSessions.Any(y => y.Player.Id == id && y.Won))
             .CountAsync();
     }
+
+    public Task<List<Session>> GetSessions(int id)
+    {
+        return _dbContext.Sessions
+            .Include(x => x.PlayerSessions)
+            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == id))
+            .ToListAsync();
+    }
 }

@@ -110,4 +110,14 @@ public class PlayerController : ControllerBase
         var statsViewModel = _mapper.Map<PlayerStatisticsViewModel>(stats);
         return new OkObjectResult(statsViewModel);
     }
+    
+    [HttpGet]
+    [Route("{id:int}/sessions")]
+    public async Task<IActionResult> GetGameSessionsById(int id)
+    {
+        var sessions = await _playerService.GetSessions(id);
+
+        var viewModel = _mapper.Map<IList<SessionViewModel>>(sessions);
+        return new OkObjectResult(viewModel);
+    }
 }

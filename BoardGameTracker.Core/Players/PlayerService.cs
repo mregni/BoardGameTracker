@@ -51,6 +51,11 @@ public class PlayerService : IPlayerService
         return _playerRepository.CountAsync();
     }
 
+    public Task<List<Session>> GetSessions(int id)
+    {
+        return _playerRepository.GetSessions(id);
+    }
+
     public async Task Delete(int id)
     {
         var player = await _playerRepository.GetByIdAsync(id);

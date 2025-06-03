@@ -30,7 +30,7 @@ export const DashboardPage = () => {
           <li>✅ Delete location</li>
           <li>✅ New location</li>
           <li>✅ Edit player</li>
-          <li>User session list</li>
+          <li>✅ User session list</li>
           <li>✅ Delete player</li>
           <li>✅ Move icons to svg files</li>
           <li>✅ View session table</li>

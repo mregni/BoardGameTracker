@@ -13,4 +13,5 @@ public interface IPlayerService
     Task<int> GetTotalPlayCount(int id);
     Task<Player> Update(Player player);
     Task<int> CountAsync();
+    Task<List<Session>> GetSessions(int id);
 }

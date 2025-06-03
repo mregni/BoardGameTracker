@@ -1,26 +1,32 @@
 import { useNavigate } from 'react-router-dom';
 
 import { StringToHsl } from '../../utils/stringUtils';
-import { PlayerSession } from '../../models';
+import { Game, PlayerSession } from '../../models';
 import { usePlayerById } from '../../hooks/usePlayerById';
 
 import { BgtAvatar } from './BgtAvatar';
 
-interface Props {
+interface AvatarProps {
   playerSession: PlayerSession;
+  game: Game | undefined;
 }
 
-export const BgtPlayerAvatar = (props: Props) => {
-  const { playerSession } = props;
+export const BgtPlayerAvatar = (props: AvatarProps) => {
+  const { playerSession, game } = props;
   const { playerById } = usePlayerById();
   const navigate = useNavigate();
 
+  const player = playerById(playerSession.playerId);
+
+  if (player === null || game === undefined) return null;
+
   return (
     <BgtAvatar
-      onClick={() => navigate(`/players/${playerSession.playerId}`)}
-      title={playerById(playerSession.playerId)?.name + (playerSession.score ? `: ${playerSession.score}` : '')}
-      image={playerById(playerSession.playerId)?.image}
-      color={StringToHsl(playerById(playerSession.playerId)?.name)}
+      key={`${playerSession.playerId}_${playerSession.sessionId}`}
+      title={`${player.name}${game.hasScoring ? ` (${playerSession.score})` : ''}`}
+      image={player.image}
+      onClick={() => navigate(`/players/${player.id}`)}
+      color={StringToHsl(player.name)}
     />
   );
 };

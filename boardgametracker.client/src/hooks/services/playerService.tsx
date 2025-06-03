@@ -1,5 +1,5 @@
 import { axiosInstance } from '../../utils/axiosInstance';
-import { Player, PlayerStatistics } from '../../models';
+import { Player, PlayerStatistics, Session } from '../../models';
 
 const domain = 'player';
 
@@ -35,4 +35,10 @@ export const getPlayerStatistics = (id: string, signal: AbortSignal): Promise<Pl
 
 export const deletePlayer = (id: string): Promise<void> => {
   return axiosInstance.delete(`${domain}/${id}`);
+};
+
+export const getPlayerSessions = (id: string, signal: AbortSignal): Promise<Session[]> => {
+  return axiosInstance.get<Session[]>(`${domain}/${id}/sessions`, { signal }).then((response) => {
+    return response.data;
+  });
 };

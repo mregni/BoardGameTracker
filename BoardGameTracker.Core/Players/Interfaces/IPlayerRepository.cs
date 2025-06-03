@@ -14,4 +14,5 @@ public interface IPlayerRepository: ICrudHelper<Player>
     Task<int> GetTotalPlayCount(int id);
     Task<int> GetWinCount(int id, int gameId);
     Task<int> GetWinCount(int id);
+    Task<List<Session>> GetSessions(int id);
 }
