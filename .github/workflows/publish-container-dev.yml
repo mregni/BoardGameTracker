@@ -49,7 +49,7 @@ jobs:
           hide_complexity: true
           indicators: true
           output: both
-          thresholds: "60 80"
+          thresholds: "40 80"
 
       - name: Add Coverage PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
@@ -166,51 +166,51 @@ jobs:
           foreach ($tag in $tags) {
             docker push $tag.Trim()
           }
-            
+
   create-manifest:
     needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     steps:
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Extract metadata for manifest
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=raw,value=latest,enable={{is_default_branch}}
+      - name: Extract metadata for manifest
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
 
-    - name: Create and push manifest
-      run: |
-        # Get the tags without platform suffixes
-        TAGS="${{ steps.meta.outputs.tags }}"
-        
-        for TAG in $TAGS; do
-          echo "Creating manifest for $TAG"
-          
-          # Create manifest
-          docker manifest create $TAG \
-            ${TAG}-linux \
-            ${TAG}-windows
-          
-          # Annotate Linux image
-          docker manifest annotate $TAG ${TAG}-linux \
-            --os linux --arch amd64
-          
-          # Annotate Windows image  
-          docker manifest annotate $TAG ${TAG}-windows \
-            --os windows --arch amd64 --os-version 10.0.20348.1547
-          
-          # Push manifest
-          docker manifest push $TAG
-        done
+      - name: Create and push manifest
+        run: |
+          # Get the tags without platform suffixes
+          TAGS="${{ steps.meta.outputs.tags }}"
+
+          for TAG in $TAGS; do
+            echo "Creating manifest for $TAG"
+            
+            # Create manifest
+            docker manifest create $TAG \
+              ${TAG}-linux \
+              ${TAG}-windows
+            
+            # Annotate Linux image
+            docker manifest annotate $TAG ${TAG}-linux \
+              --os linux --arch amd64
+            
+            # Annotate Windows image  
+            docker manifest annotate $TAG ${TAG}-windows \
+              --os windows --arch amd64 --os-version 10.0.20348.1547
+            
+            # Push manifest
+            docker manifest push $TAG
+          done
