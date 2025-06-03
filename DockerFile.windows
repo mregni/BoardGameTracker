@@ -1,33 +1,36 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-ltsc2022 AS with-node
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+FROM node:20-nanoserver-ltsc2022 AS node-build
+WORKDIR C:\src
 
-# Install Node.js 20.x
-RUN $nodeVersion = '20.11.0'; `
-    $nodeUrl = "https://nodejs.org/dist/v$nodeVersion/node-v$nodeVersion-win-x64.zip"; `
-    Write-Host "Downloading Node.js $nodeVersion..."; `
-    Invoke-WebRequest -Uri $nodeUrl -OutFile 'node.zip' -UseBasicParsing; `
-    Write-Host "Extracting Node.js..."; `
-    Expand-Archive -Path 'node.zip' -DestinationPath 'C:\'; `
-    Rename-Item -Path "C:\node-v$nodeVersion-win-x64" -NewName 'nodejs'; `
-    Remove-Item -Path 'node.zip' -Force
+COPY ["BoardGameTracker.Host/ClientApp/package*.json", "./"]
+RUN npm ci --only=production --silent
 
-RUN $env:PATH = 'C:\nodejs;' + $env:PATH; `
-  [Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine); `
-  Write-Host "Node.js version: $(node --version)"; `
-  Write-Host "NPM version: $(npm --version)"
+COPY ["BoardGameTracker.Host/ClientApp/", "./"]
+RUN npm run build
 
-FROM with-node AS publish
+FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-ltsc2022 AS dotnet-build
+WORKDIR C:\src
+
+COPY . .
+RUN dotnet restore "BoardGameTracker.Host/BoardGameTracker.Host.csproj" --verbosity minimal
+
+COPY --from=node-build ["C:/src/build", "BoardGameTracker.Host/ClientApp/build/"]
+
+FROM dotnet-build AS publish
 WORKDIR C:\src
 COPY . .
 
-dotnet restore ".\BoardGameTracker.Host\BoardGameTracker.Host.csproj" --verbosity minimal
-dotnet publish ".\BoardGameTracker.Host\BoardGameTracker.Host.csproj" -c Release -o C:\publish
+RUN dotnet restore ".\BoardGameTracker.Host\BoardGameTracker.Host.csproj" --verbosity minimal
+RUN dotnet publish ".\BoardGameTracker.Host\BoardGameTracker.Host.csproj" -c Release -o C:\publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022
 WORKDIR C:\app
+
 COPY --from=publish C:\publish .
+
 ENV ASPNETCORE_ENVIRONMENT=production
 ENV DOTNET_EnableDiagnostics=0
 ENV ASPNETCORE_URLS=http://*:5444
+
 EXPOSE 5444
+
 ENTRYPOINT ["dotnet", "BoardGameTracker.Host.dll"]
