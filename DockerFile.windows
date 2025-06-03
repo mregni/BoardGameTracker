@@ -1,4 +1,4 @@
-FROM node:20-nanoserver-ltsc2022 AS node-build
+FROM node:20 AS node-build
 WORKDIR C:\src
 
 COPY ["BoardGameTracker.Host/ClientApp/package*.json", "./"]
