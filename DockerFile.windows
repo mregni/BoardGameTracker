@@ -1,0 +1,33 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-ltsc2022 AS with-node
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+# Install Node.js 20.x
+RUN $nodeVersion = '20.11.0'; `
+    $nodeUrl = "https://nodejs.org/dist/v$nodeVersion/node-v$nodeVersion-win-x64.zip"; `
+    Write-Host "Downloading Node.js $nodeVersion..."; `
+    Invoke-WebRequest -Uri $nodeUrl -OutFile 'node.zip' -UseBasicParsing; `
+    Write-Host "Extracting Node.js..."; `
+    Expand-Archive -Path 'node.zip' -DestinationPath 'C:\'; `
+    Rename-Item -Path "C:\node-v$nodeVersion-win-x64" -NewName 'nodejs'; `
+    Remove-Item -Path 'node.zip' -Force
+
+RUN $env:PATH = 'C:\nodejs;' + $env:PATH; `
+  [Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine); `
+  Write-Host "Node.js version: $(node --version)"; `
+  Write-Host "NPM version: $(npm --version)"
+
+FROM with-node AS publish
+WORKDIR C:\src
+COPY . .
+
+dotnet restore ".\BoardGameTracker.Host\BoardGameTracker.Host.csproj" --verbosity minimal
+dotnet publish ".\BoardGameTracker.Host\BoardGameTracker.Host.csproj" -c Release -o C:\publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022
+WORKDIR C:\app
+COPY --from=publish C:\publish .
+ENV ASPNETCORE_ENVIRONMENT=production
+ENV DOTNET_EnableDiagnostics=0
+ENV ASPNETCORE_URLS=http://*:5444
+EXPOSE 5444
+ENTRYPOINT ["dotnet", "BoardGameTracker.Host.dll"]

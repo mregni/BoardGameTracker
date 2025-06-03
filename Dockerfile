@@ -8,7 +8,7 @@ RUN apt-get -y install nodejs
 FROM with-node AS publish
 WORKDIR /src
 COPY . .
-RUN dotnet restore "./BoardGameTracker.Host/BoardGameTracker.Host.csproj"
+RUN dotnet restore "./BoardGameTracker.Host/BoardGameTracker.Host.csproj" --verbosity minimal
 RUN dotnet publish "./BoardGameTracker.Host/BoardGameTracker.Host.csproj" -c Release -o /publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
