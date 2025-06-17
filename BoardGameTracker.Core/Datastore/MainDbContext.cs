@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
+using BoardGameTracker.Common.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Datastore;
@@ -19,6 +20,7 @@ public class MainDbContext : DbContext
     public DbSet<Config> Config { get; set; }
     public DbSet<Language> Languages { get; set; }
     public DbSet<PlayerSession> PlayerSessions { get; set; }
+    public DbSet<Badge> Badges { get; set; }
 
     public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
     {
@@ -41,6 +43,7 @@ public class MainDbContext : DbContext
         BuildGame(builder);
         BuildGameSessions(builder);
         BuildPlayer(builder);
+        BuildBadges(builder);
     }
 
     private void BuildIds(ModelBuilder builder)
@@ -125,6 +128,21 @@ public class MainDbContext : DbContext
             .WithOne(x => x.Player)
             .HasForeignKey(x => x.PlayerId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.Entity<Player>()
+            .HasMany(x => x.Badges)
+            .WithMany(x => x.Players);
+    }
+    
+    private static void BuildBadges(ModelBuilder builder)
+    {
+        builder.Entity<Badge>()
+            .Property(x => x.Level)
+            .HasConversion<BadgeLevel>();
+        
+        builder.Entity<Badge>()
+            .Property(x => x.Type)
+            .HasConversion<BadgeType>();
     }
 
     private static void CheckLanguages(DbContext context)

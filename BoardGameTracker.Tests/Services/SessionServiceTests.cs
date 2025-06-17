@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Sessions;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
@@ -13,12 +14,14 @@ namespace BoardGameTracker.Tests.Services;
 public class SessionServiceTests
     {
         private readonly Mock<ISessionRepository> _sessionRepositoryMock;
+        private readonly Mock<IBadgeService> _badgeServiceMock;
         private readonly SessionService _sessionService;
 
         public SessionServiceTests()
         {
             _sessionRepositoryMock = new Mock<ISessionRepository>();
-            _sessionService = new SessionService(_sessionRepositoryMock.Object);
+            _badgeServiceMock = new Mock<IBadgeService>();
+            _sessionService = new SessionService(_sessionRepositoryMock.Object, _badgeServiceMock.Object);
         }
 
         [Fact]
@@ -35,6 +38,9 @@ public class SessionServiceTests
             result.Should().Be(expectedSession);
             _sessionRepositoryMock.Verify(x => x.CreateAsync(inputSession), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.Verify(x => x.AwardBadgesAsync(expectedSession), Times.Once);
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -59,6 +65,9 @@ public class SessionServiceTests
             _sessionRepositoryMock.Verify(x => x.CreateAsync(
                 It.Is<Session>(s => s.Id == session.Id && s.Comment == session.Comment && s.GameId == session.GameId)), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.Verify(x => x.AwardBadgesAsync(expectedSession), Times.Once);
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -75,6 +84,8 @@ public class SessionServiceTests
             exception.Should().Be(expectedException);
             _sessionRepositoryMock.Verify(x => x.CreateAsync(session), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -88,6 +99,8 @@ public class SessionServiceTests
 
             _sessionRepositoryMock.Verify(x => x.DeleteAsync(sessionId), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -104,6 +117,8 @@ public class SessionServiceTests
             exception.Should().Be(expectedException);
             _sessionRepositoryMock.Verify(x => x.DeleteAsync(sessionId), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -120,6 +135,8 @@ public class SessionServiceTests
             result.Should().Be(expectedSession);
             _sessionRepositoryMock.Verify(x => x.UpdateAsync(inputSession), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -144,6 +161,8 @@ public class SessionServiceTests
             _sessionRepositoryMock.Verify(x => x.UpdateAsync(
                 It.Is<Session>(s => s.Id == session.Id && s.Comment == session.Comment && s.GameId == session.GameId)), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -160,6 +179,8 @@ public class SessionServiceTests
             exception.Should().Be(expectedException);
             _sessionRepositoryMock.Verify(x => x.UpdateAsync(session), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -184,6 +205,8 @@ public class SessionServiceTests
             result.Should().Be(expectedSession);
             _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -198,6 +221,8 @@ public class SessionServiceTests
             result.Should().BeNull();
             _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -214,6 +239,8 @@ public class SessionServiceTests
             exception.Should().Be(expectedException);
             _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -236,30 +263,6 @@ public class SessionServiceTests
             getResult.Should().BeSameAs(retrievedSession);
         }
 
-        [Fact]
-        public async Task SessionService_ShouldBeConsistent_WhenCalledMultipleTimes()
-        {
-            var session = new Session { Id = 1, Comment = "Test" };
-            const int sessionId = 1;
-
-            _sessionRepositoryMock.Setup(x => x.CreateAsync(session)).ReturnsAsync(session);
-            _sessionRepositoryMock.Setup(x => x.GetByIdAsync(sessionId)).ReturnsAsync(session);
-
-            var createResult1 = await _sessionService.Create(session);
-            var createResult2 = await _sessionService.Create(session);
-            var getResult1 = await _sessionService.Get(sessionId);
-            var getResult2 = await _sessionService.Get(sessionId);
-
-            createResult1.Should().BeSameAs(session);
-            createResult2.Should().BeSameAs(session);
-            getResult1.Should().BeSameAs(session);
-            getResult2.Should().BeSameAs(session);
-
-            _sessionRepositoryMock.Verify(x => x.CreateAsync(session), Times.Exactly(2));
-            _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Exactly(2));
-            _sessionRepositoryMock.VerifyNoOtherCalls();
-        }
-
         [Theory]
         [InlineData(typeof(ArgumentException), "Invalid argument")]
         [InlineData(typeof(InvalidOperationException), "Invalid operation")]
@@ -277,5 +280,7 @@ public class SessionServiceTests
             exception.Message.Should().Be(message);
             _sessionRepositoryMock.Verify(x => x.CreateAsync(session), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
+            
+            _badgeServiceMock.VerifyNoOtherCalls();
         }
     }

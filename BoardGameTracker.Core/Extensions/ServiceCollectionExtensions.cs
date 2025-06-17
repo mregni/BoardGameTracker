@@ -1,4 +1,7 @@
 ﻿using BoardGameTracker.Common.Exeptions;
+using BoardGameTracker.Core.Badges;
+using BoardGameTracker.Core.Badges.BadgeEvaluators;
+using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Dashboard;
@@ -27,25 +30,37 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCoreService(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddTransient<IDiskProvider, DiskProvider>();
+        serviceCollection.AddScoped<IDiskProvider, DiskProvider>();
         
-        serviceCollection.AddTransient<IConfigFileProvider, ConfigFileProvider>();
-        serviceCollection.AddTransient<IEnvironmentProvider, EnvironmentProvider>();
+        serviceCollection.AddScoped<IConfigFileProvider, ConfigFileProvider>();
+        serviceCollection.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
         
-        serviceCollection.AddTransient<IGameService, GameService>();
-        serviceCollection.AddTransient<IImageService, ImageService>();
-        serviceCollection.AddTransient<IPlayerService, PlayerService>();
-        serviceCollection.AddTransient<ISessionService, SessionService>();
-        serviceCollection.AddTransient<ILocationService, LocationService>();
-        serviceCollection.AddTransient<IDashboardService, DashboardService>();
-        serviceCollection.AddTransient<ILanguageService, LanguageService>();
+        serviceCollection.AddScoped<IGameService, GameService>();
+        serviceCollection.AddScoped<IImageService, ImageService>();
+        serviceCollection.AddScoped<IPlayerService, PlayerService>();
+        serviceCollection.AddScoped<ISessionService, SessionService>();
+        serviceCollection.AddScoped<ILocationService, LocationService>();
+        serviceCollection.AddScoped<IDashboardService, DashboardService>();
+        serviceCollection.AddScoped<ILanguageService, LanguageService>();
+        serviceCollection.AddScoped<IBadgeService, BadgeService>();
         
-        serviceCollection.AddTransient<IGameRepository, GameRepository>();
-        serviceCollection.AddTransient<IPlayerRepository, PlayerRepository>();
-        serviceCollection.AddTransient<ISessionRepository, SessionRepository>();
-        serviceCollection.AddTransient<ILocationRepository, LocationRepository>();
-        serviceCollection.AddTransient<IDashboardRepository, DashboardRepository>();
-        serviceCollection.AddTransient<ILanguageRepository, LanguageRepository>();
+        serviceCollection.AddScoped<IGameRepository, GameRepository>();
+        serviceCollection.AddScoped<IPlayerRepository, PlayerRepository>();
+        serviceCollection.AddScoped<ISessionRepository, SessionRepository>();
+        serviceCollection.AddScoped<ILocationRepository, LocationRepository>();
+        serviceCollection.AddScoped<IDashboardRepository, DashboardRepository>();
+        serviceCollection.AddScoped<ILanguageRepository, LanguageRepository>();
+        serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
+        
+        serviceCollection.AddScoped<IBadgeEvaluator, SessionsBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, DifferentGameBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, SessionWinEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, DurationBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, WinPercentageBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, SoloSpecialistBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, CloseWinBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, CloseLossBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, MarathonRunnerBadgeEvaluator>();
 
         serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
         {

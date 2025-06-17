@@ -1,4 +1,5 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 
 namespace BoardGameTracker.Core.Sessions;
@@ -6,15 +7,20 @@ namespace BoardGameTracker.Core.Sessions;
 public class SessionService : ISessionService
 {
     private readonly ISessionRepository _sessionRepository;
+    private readonly IBadgeService _badgeService;
 
-    public SessionService(ISessionRepository sessionRepository)
+    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService)
     {
         _sessionRepository = sessionRepository;
+        _badgeService = badgeService;
     }
 
-    public Task<Session> Create(Session session)
+    public async Task<Session> Create(Session session)
     {
-        return _sessionRepository.CreateAsync(session);
+        session = await _sessionRepository.CreateAsync(session);
+        await _badgeService.AwardBadgesAsync(session);
+        
+        return session;
     }
 
     public Task Delete(int id)

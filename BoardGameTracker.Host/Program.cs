@@ -24,8 +24,6 @@ builder.Services.AddCoreService();
 builder.WebHost.UseConfiguredSentry();
 builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 
-var boe = 
-//Versie komt niet door via launchsettings
 builder.Services.AddLogging(b =>
 {
     b.ClearProviders();
