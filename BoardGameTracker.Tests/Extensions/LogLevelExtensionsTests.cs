@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BoardGameTracker.Common.Extensions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Serilog.Events;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Extensions;
@@ -28,7 +29,7 @@ public class LogLevelExtensionsTests : IDisposable
 
         var result = LogLevelExtensions.GetEnvironmentLogLevel();
 
-        result.Should().Be(LogLevel.Error);
+        result.Should().Be(LogEventLevel.Error);
     }
 
     [Fact]
@@ -38,7 +39,7 @@ public class LogLevelExtensionsTests : IDisposable
 
         var result = LogLevelExtensions.GetEnvironmentLogLevel();
 
-        result.Should().Be(LogLevel.Information);
+        result.Should().Be(LogEventLevel.Information);
     }
 
     [Fact]
@@ -48,7 +49,7 @@ public class LogLevelExtensionsTests : IDisposable
 
         var result = LogLevelExtensions.GetEnvironmentLogLevel();
 
-        result.Should().Be(LogLevel.Debug);
+        result.Should().Be(LogEventLevel.Debug);
     }
 
     [Fact]
@@ -58,7 +59,7 @@ public class LogLevelExtensionsTests : IDisposable
 
         var result = LogLevelExtensions.GetEnvironmentLogLevel();
 
-        result.Should().Be(LogLevel.Warning);
+        result.Should().Be(LogEventLevel.Warning);
     }
 
     [Theory]
@@ -79,15 +80,15 @@ public class LogLevelExtensionsTests : IDisposable
 
         var result = LogLevelExtensions.GetEnvironmentLogLevel();
 
-        result.Should().Be(LogLevel.Warning);
+        result.Should().Be(LogEventLevel.Warning);
     }
 
     [Theory]
-    [InlineData(" ERROR ", LogLevel.Error)]
-    [InlineData(" INFO ", LogLevel.Information)]
-    [InlineData(" DEBUG ", LogLevel.Debug)]
-    [InlineData(" WARNING ", LogLevel.Warning)]
-    public void GetEnvironmentLogLevel_ShouldReturnWarning_WhenEnvironmentVariableHasWhitespace(string value, LogLevel logLevel)
+    [InlineData(" ERROR ", LogEventLevel.Error)]
+    [InlineData(" INFO ", LogEventLevel.Information)]
+    [InlineData(" DEBUG ", LogEventLevel.Debug)]
+    [InlineData(" WARNING ", LogEventLevel.Warning)]
+    public void GetEnvironmentLogLevel_ShouldReturnWarning_WhenEnvironmentVariableHasWhitespace(string value, LogEventLevel logLevel)
     {
         Environment.SetEnvironmentVariable("LOGLEVEL", value);
 
@@ -105,9 +106,9 @@ public class LogLevelExtensionsTests : IDisposable
         var result2 = LogLevelExtensions.GetEnvironmentLogLevel();
         var result3 = LogLevelExtensions.GetEnvironmentLogLevel();
 
-        result1.Should().Be(LogLevel.Error);
-        result2.Should().Be(LogLevel.Error);
-        result3.Should().Be(LogLevel.Error);
+        result1.Should().Be(LogEventLevel.Error);
+        result2.Should().Be(LogEventLevel.Error);
+        result3.Should().Be(LogEventLevel.Error);
     }
 
     [Fact]
@@ -122,8 +123,8 @@ public class LogLevelExtensionsTests : IDisposable
         Environment.SetEnvironmentVariable("LOGLEVEL", "INFO");
         var result3 = LogLevelExtensions.GetEnvironmentLogLevel();
 
-        result1.Should().Be(LogLevel.Error);
-        result2.Should().Be(LogLevel.Debug);
-        result3.Should().Be(LogLevel.Information);
+        result1.Should().Be(LogEventLevel.Error);
+        result2.Should().Be(LogEventLevel.Debug);
+        result3.Should().Be(LogEventLevel.Information);
     }
 }

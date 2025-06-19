@@ -3,7 +3,7 @@
 public static class PathHelper
 {
     private static readonly string CurrentDir = Directory.GetCurrentDirectory();
-    private const string DataPath = "data";
+    private const string DataPath = "config";
     private const string ImagesPath = "images";
     
     public static readonly string CoverImagePath = Path.Combine(ImagesPath, "cover");

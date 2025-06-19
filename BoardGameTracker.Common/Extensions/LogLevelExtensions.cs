@@ -1,19 +1,20 @@
 ﻿using Microsoft.Extensions.Logging;
+using Serilog.Events;
 
 namespace BoardGameTracker.Common.Extensions;
 
 public static class LogLevelExtensions
 {
-    public static LogLevel GetEnvironmentLogLevel()
+    public static LogEventLevel  GetEnvironmentLogLevel()
     {
         var logLevelString = Environment.GetEnvironmentVariable("LOGLEVEL") ?? "WARNING";
         logLevelString = logLevelString.ToUpper().Trim();
         return logLevelString switch
         {
-            "ERROR" => LogLevel.Error,
-            "INFO" => LogLevel.Information,
-            "DEBUG" => LogLevel.Debug,
-            _ => LogLevel.Warning
+            "ERROR" => LogEventLevel.Error,
+            "INFO" => LogEventLevel.Information,
+            "DEBUG" => LogEventLevel.Debug,
+            _ => LogEventLevel.Warning
         };
     }
 }

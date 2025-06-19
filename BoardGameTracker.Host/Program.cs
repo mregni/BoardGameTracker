@@ -15,8 +15,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
 using Refit;
+using Serilog;
 
 var logLevel = LogLevelExtensions.GetEnvironmentLogLevel();
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Is(logLevel)
+    .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager", Serilog.Events.LogEventLevel.Error)
+    .WriteTo.Console()
+    .WriteTo.File(
+        path: Path.Combine("logs", "app-.log"),
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 30,
+        shared: true,
+        flushToDiskInterval: TimeSpan.FromSeconds(1))
+    .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCoreService();
@@ -24,14 +38,7 @@ builder.Services.AddCoreService();
 builder.WebHost.UseConfiguredSentry();
 builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 
-builder.Services.AddLogging(b =>
-{
-    b.ClearProviders();
-    b.SetMinimumLevel(logLevel);
-    b.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
-    b.AddFilter("Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager", LogLevel.Error);
-    b.AddConsole();
-});
+builder.Host.UseSerilog();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -89,6 +96,8 @@ builder.Services.AddSpaStaticFiles(configuration => {
 var app = builder.Build();
 CreateFolders(app.Services);
 
+app.UseSerilogRequestLogging();
+
 app.UseRouting();
 app.MapControllers();
 
@@ -117,14 +126,14 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 var logger = app.Services.GetService<ILogger<Program>>();
-logger.LogError("TEST");
-logger.LogError(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
-logger.LogError(Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS"));
-logger.LogError(app.Environment.IsDevelopment().ToString());
+logger.LogInformation("Server URLs: {Urls}", string.Join(", ", app.Urls));
+logger.LogInformation("HTTP ports: {HttpPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS"));
+logger.LogInformation("HTTPS ports: {HttpsPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORTS"));
+logger.LogInformation("Is Development: {IsDevelopment}", app.Environment.IsDevelopment());
+
 
 if (!app.Environment.IsDevelopment())
 {
-    logger.LogError("PRODUCTION");
     app.UseExceptionHandler("/Error");
     app.UseSpaStaticFiles();
     app.UseStaticFiles();
@@ -150,6 +159,8 @@ SendStartApplicationCommand(app.Services);
 RunDbMigrations(app.Services);
 
 await app.RunAsync();
+
+await Log.CloseAndFlushAsync();
 
 static void RunDbMigrations(IServiceProvider serviceProvider)
 {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog.Events;
 
 namespace BoardGameTracker.Common.Extensions;
 
@@ -10,7 +11,7 @@ public static class WebHostBuilderExtensions
         builder.UseSentry(o =>
         {
             o.Environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "development";
-            o.Debug = LogLevelExtensions.GetEnvironmentLogLevel() == LogLevel.Debug;
+            o.Debug = LogLevelExtensions.GetEnvironmentLogLevel() == LogEventLevel.Debug;
             o.TracesSampleRate = 1.0;
             o.SendDefaultPii = false;
 

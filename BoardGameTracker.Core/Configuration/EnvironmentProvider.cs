@@ -1,6 +1,7 @@
 ﻿using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using Microsoft.Extensions.Logging;
+using Serilog.Events;
 
 namespace BoardGameTracker.Core.Configuration;
 
@@ -15,6 +16,6 @@ public class EnvironmentProvider : IEnvironmentProvider
     public bool EnableStatistics =>
         bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS"), out var enableLogging) && enableLogging;
 
-    public LogLevel LogLevel => LogLevelExtensions.GetEnvironmentLogLevel();
+    public LogEventLevel LogLevel => LogLevelExtensions.GetEnvironmentLogLevel();
     public bool IsDevelopment => EnvironmentName == "development";
 }

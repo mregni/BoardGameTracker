@@ -12,6 +12,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Serilog.Events;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Controllers;
@@ -181,7 +182,7 @@ public class SettingsControllerTests
         public void GetEnvironment_ShouldReturnOkResultWithUIEnvironmentViewModel_WhenCalled()
         {
             const bool expectedEnableStatistics = true;
-            const LogLevel expectedLogLevel = LogLevel.Information;
+            const LogEventLevel expectedLogLevel = LogEventLevel.Information;
             const string expectedEnvironmentName = "Production";
             const int expectedPort = 8080;
 
@@ -213,12 +214,12 @@ public class SettingsControllerTests
         }
 
         [Theory]
-        [InlineData(LogLevel.Debug, "Development", 3000, false)]
-        [InlineData(LogLevel.Information, "Staging", 5000, true)]
-        [InlineData(LogLevel.Warning, "Production", 8080, true)]
-        [InlineData(LogLevel.Error, "Testing", 9000, false)]
+        [InlineData(LogEventLevel.Debug, "Development", 3000, false)]
+        [InlineData(LogEventLevel.Information, "Staging", 5000, true)]
+        [InlineData(LogEventLevel.Warning, "Production", 8080, true)]
+        [InlineData(LogEventLevel.Error, "Testing", 9000, false)]
         public void GetEnvironment_ShouldReturnCorrectValues_WithDifferentConfigurations(
-            LogLevel logLevel, string environmentName, int port, bool enableStatistics)
+            LogEventLevel logLevel, string environmentName, int port, bool enableStatistics)
         {
             _environmentProviderMock.Setup(x => x.EnableStatistics).Returns(enableStatistics);
             _environmentProviderMock.Setup(x => x.LogLevel).Returns(logLevel);
