@@ -32,7 +32,7 @@ interface FormProps {
 export const CreatePlayerModal = (props: Props) => {
   const { open, setOpen } = props;
   const { t } = useTranslation();
-  const [image, setImage] = useState<File | undefined>(undefined);
+  const [image, setImage] = useState<File | undefined | null>(undefined);
   const { successToast } = useToasts();
 
   const { isPending, uploadPlayerImage } = useImages();

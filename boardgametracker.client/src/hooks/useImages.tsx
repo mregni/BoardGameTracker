@@ -7,7 +7,7 @@ import { FailResult } from '@/models';
 
 export interface ImageUpload {
   type: number;
-  file: File | undefined;
+  file: File | undefined | null;
 }
 
 export const useImages = () => {
@@ -15,7 +15,7 @@ export const useImages = () => {
     mutationFn: uploadImages,
   });
 
-  const uploadPlayerImage = (file: File | undefined): Promise<string | undefined> => {
+  const uploadPlayerImage = (file: File | undefined | null): Promise<string | undefined> => {
     return mutateAsync({ type: 0, file });
   };
 
