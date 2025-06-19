@@ -30,7 +30,7 @@ export const PlayersPage = () => {
             <BgtImageCard key={x.id} title={x.name} image={x.image} link={`/players/${x.id}`} />
           ))}
         </div>
-        <CreatePlayerModal open={openModal} setOpen={setOpenModal} />
+        {openModal && <CreatePlayerModal open={openModal} setOpen={setOpenModal} />}
       </BgtPageContent>
     </BgtPage>
   );

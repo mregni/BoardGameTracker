@@ -68,7 +68,6 @@ function App() {
       <ScrollToTop />
       <BgtMenuBar />
       <div className="flex-1 bg-custom-gradient flex flex-col md:overflow-y-auto">
-        <BgtHeader />
         <Routes>
           <Route element={<GameRoutes />} path="/games/*" />
           <Route element={<PlayerRoutes />} path="/players/*" />

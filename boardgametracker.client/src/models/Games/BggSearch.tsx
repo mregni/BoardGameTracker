@@ -19,7 +19,7 @@ export const BggSearchSchema = z.object({
   price: z.coerce.number({
     invalid_type_error: 'game.price.required',
   }),
-  additionDate: z.coerce.date({
+  date: z.coerce.date({
     errorMap: () => ({
       message: 'game.added-date.required',
     }),

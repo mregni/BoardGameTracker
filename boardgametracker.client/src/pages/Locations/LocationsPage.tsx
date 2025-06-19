@@ -96,7 +96,7 @@ export const LocationsPage = () => {
           <BgtDataTable
             columns={columns}
             data={locations}
-            noDataMessage={'LOADING DATA'}
+            noDataMessage={t('common.no-data')}
             widths={['w-[70px]', 'w-[100px]', '', 'w-[50px]']}
           />
         </BgtCard>

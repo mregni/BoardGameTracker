@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cx } from 'class-variance-authority';
 import {
   useReactTable,
@@ -23,6 +24,7 @@ export interface DataTableProps<T> {
 
 export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
   const { columns, data, size = 'md', noDataMessage, isLoading = false, widths, noHeaders } = props;
+  const { t } = useTranslation();
   const table = useReactTable({
     data,
     columns,
@@ -55,8 +57,8 @@ export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
   if (isLoading) {
     rows = (
       <BgtTableRow>
-        <BgtTableCell colSpan={columns.length} className="h-9">
-          Loading data
+        <BgtTableCell colSpan={columns.length} className="h-10">
+          {t('common.loading-data')}
         </BgtTableCell>
       </BgtTableRow>
     );

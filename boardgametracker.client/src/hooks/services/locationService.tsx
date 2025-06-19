@@ -15,7 +15,7 @@ export const addLocation = (location: CreateLocation): Promise<Location> => {
   });
 };
 
-export const deleteLocation = (id: number): Promise<void> => {
+export const deleteLocation = (id: string): Promise<void> => {
   return axiosInstance.delete<void>(`${domain}/${id}`).then((response) => {
     return response.data;
   });

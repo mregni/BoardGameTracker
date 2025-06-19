@@ -59,6 +59,7 @@ export const CreatePlayerModal = (props: Props) => {
       id: '0',
       name: data.name,
       image: null,
+      badges: [],
     };
 
     if (image !== undefined) {

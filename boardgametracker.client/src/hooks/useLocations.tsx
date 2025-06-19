@@ -61,7 +61,7 @@ export const useLocations = (props: Props) => {
     },
   });
 
-  const byId = (id: number | null): Location | null => {
+  const byId = (id: string | null): Location | null => {
     if (id === null) return null;
     if (data === undefined) return null;
 
@@ -73,7 +73,7 @@ export const useLocations = (props: Props) => {
     return null;
   };
 
-  const deleteLocation = (id: number) => {
+  const deleteLocation = (id: string) => {
     void deleteLocationCall(id)
       .then(() => {
         refetch();

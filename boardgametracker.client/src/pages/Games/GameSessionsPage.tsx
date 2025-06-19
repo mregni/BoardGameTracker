@@ -130,7 +130,7 @@ export const GameSessionsPage = () => {
           <BgtDataTable
             columns={columns}
             data={sessions.data ?? []}
-            noDataMessage={'LOADING DATA'}
+            noDataMessage={t('common.no-data')}
             widths={['w-[70px]', 'w-[100px]', 'w-[75px]']}
           />
           <BgtDeleteModal

@@ -62,7 +62,11 @@ export const BggGameModal = (props: Props) => {
       <BgtDialogContent>
         <BgtDialogTitle>{t('game.new.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('game.new.bgg-description')}</BgtDialogDescription>
-        <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
+        <form
+          onSubmit={(event) => {
+            void handleSubmit(onSubmit)(event);
+          }}
+        >
           <div className="flex flex-col gap-4 mt-3 mb-6">
             <BgtButton onClick={() => openBgg()} disabled={isPending}>
               <SquareOutIcon className="size-5" />
