@@ -99,5 +99,6 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
+          tags: uping/boardgametracker:dev
           push: true
           file: Dockerfile
