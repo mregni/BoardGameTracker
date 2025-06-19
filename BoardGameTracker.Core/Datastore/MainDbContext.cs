@@ -30,11 +30,6 @@ public class MainDbContext : DbContext
     {
         optionsBuilder.EnableSensitiveDataLogging();
         base.OnConfiguring(optionsBuilder);
-
-        optionsBuilder.UseSeeding((context, _) =>
-        {
-            CheckLanguages(context);
-        });
     }
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -44,6 +39,8 @@ public class MainDbContext : DbContext
         BuildGameSessions(builder);
         BuildPlayer(builder);
         BuildBadges(builder);
+
+        SeedDatabase(builder);
     }
 
     private void BuildIds(ModelBuilder builder)
@@ -128,39 +125,278 @@ public class MainDbContext : DbContext
             .WithOne(x => x.Player)
             .HasForeignKey(x => x.PlayerId)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         builder.Entity<Player>()
             .HasMany(x => x.Badges)
             .WithMany(x => x.Players);
     }
-    
+
     private static void BuildBadges(ModelBuilder builder)
     {
         builder.Entity<Badge>()
             .Property(x => x.Level)
-            .HasConversion<BadgeLevel>();
-        
+            .HasConversion<string>();
+
         builder.Entity<Badge>()
             .Property(x => x.Type)
-            .HasConversion<BadgeType>();
+            .HasConversion<string>();
     }
 
-    private static void CheckLanguages(DbContext context)
+    private static void SeedDatabase(ModelBuilder builder)
     {
-        var languages = new []
-        {
-            new Language { Key = "en-us", TranslationKey = "english" },
-            new Language { Key = "nl-be", TranslationKey = "dutch" } 
-        };
+        SeedLanguages(builder);
+        SeedBadges(builder);
+    }
 
-        foreach (var language in languages)
-        {
-            var dblang = context.Set<Language>().FirstOrDefault(b => b.Key == language.Key);
-            if (dblang == null)
-            {
-                context.Set<Language>().Add(language);
-            }
-        }
-        context.SaveChanges();
+    private static void SeedLanguages(ModelBuilder builder)
+    {
+        builder
+            .Entity<Language>()
+            .HasData(
+                new Language() {Id = 1, Key = "en-us", TranslationKey = "english"},
+                new Language() {Id = 2, Key = "nl-be", TranslationKey = "dutch"}
+            );
+    }
+
+    private static void SeedBadges(ModelBuilder builder)
+    {
+        builder
+            .Entity<Badge>()
+            .HasData(
+                new Badge()
+                {
+                    Id = 1, Type = BadgeType.DifferentGames, Level = BadgeLevel.Green,
+                    DescriptionKey = "different-games.green.description",
+                    TitleKey = "different-games.green.title", Image = "different-games-green.png"
+                },
+                new Badge()
+                {
+                    Id = 2, Type = BadgeType.DifferentGames, Level = BadgeLevel.Blue,
+                    DescriptionKey = "different-games.blue.description",
+                    TitleKey = "different-games.blue.title", Image = "different-games-blue.png"
+                },
+                new Badge()
+                {
+                    Id = 3, Type = BadgeType.DifferentGames, Level = BadgeLevel.Red,
+                    DescriptionKey = "different-games.red.description",
+                    TitleKey = "different-games.red.title", Image = "different-games-red.png"
+                },
+                new Badge()
+                {
+                    Id = 4, Type = BadgeType.DifferentGames, Level = BadgeLevel.Gold,
+                    DescriptionKey = "different-games.gold.description",
+                    TitleKey = "different-games.gold.title", Image = "different-games-gold.png"
+                },
+                new Badge()
+                {
+                    Id = 5, Type = BadgeType.Sessions, Level = BadgeLevel.Green,
+                    DescriptionKey = "sessions.green.description",
+                    TitleKey = "sessions.green.title", Image = "sessions-green.png"
+                },
+                new Badge()
+                {
+                    Id = 6, Type = BadgeType.Sessions, Level = BadgeLevel.Blue,
+                    DescriptionKey = "sessions.blue.description",
+                    TitleKey = "sessions.blue.title", Image = "sessions-blue.png"
+                },
+                new Badge()
+                {
+                    Id = 7, Type = BadgeType.Sessions, Level = BadgeLevel.Red,
+                    DescriptionKey = "sessions.red.description",
+                    TitleKey = "sessions.red.title", Image = "sessions-red.png"
+                },
+                new Badge()
+                {
+                    Id = 8, Type = BadgeType.Sessions, Level = BadgeLevel.Gold,
+                    DescriptionKey = "sessions.gold.description",
+                    TitleKey = "sessions.gold.title", Image = "sessions-gold.png"
+                },
+                new Badge()
+                {
+                    Id = 9, Type = BadgeType.Wins, Level = BadgeLevel.Green,
+                    DescriptionKey = "wins.green.description",
+                    TitleKey = "wins.green.title", Image = "wins-green.png"
+                },
+                new Badge()
+                {
+                    Id = 10, Type = BadgeType.Wins, Level = BadgeLevel.Blue,
+                    DescriptionKey = "wins.blue.description",
+                    TitleKey = "wins.blue.title", Image = "wins-blue.png"
+                },
+                new Badge()
+                {
+                    Id = 11, Type = BadgeType.Wins, Level = BadgeLevel.Red,
+                    DescriptionKey = "wins.red.description",
+                    TitleKey = "wins.red.title", Image = "wins-red.png"
+                },
+                new Badge()
+                {
+                    Id = 12, Type = BadgeType.Wins, Level = BadgeLevel.Gold,
+                    DescriptionKey = "wins.gold.description",
+                    TitleKey = "wins.gold.title", Image = "wins-gold.png"
+                },
+                new Badge()
+                {
+                    Id = 13, Type = BadgeType.Duration, Level = BadgeLevel.Green,
+                    DescriptionKey = "duration.green.description",
+                    TitleKey = "duration.green.title", Image = "duration-green.png"
+                },
+                new Badge()
+                {
+                    Id = 14, Type = BadgeType.Duration, Level = BadgeLevel.Blue,
+                    DescriptionKey = "duration.blue.description",
+                    TitleKey = "duration.blue.title", Image = "duration-blue.png"
+                },
+                new Badge()
+                {
+                    Id = 15, Type = BadgeType.Duration, Level = BadgeLevel.Red,
+                    DescriptionKey = "duration.red.description",
+                    TitleKey = "duration.red.title", Image = "duration-red.png"
+                },
+                new Badge()
+                {
+                    Id = 16, Type = BadgeType.Duration, Level = BadgeLevel.Gold,
+                    DescriptionKey = "duration.gold.description",
+                    TitleKey = "duration.gold.title", Image = "duration-gold.png"
+                },
+                new Badge()
+                {
+                    Id = 17, Type = BadgeType.WinPercentage, Level = BadgeLevel.Green,
+                    DescriptionKey = "win-percentage.green.description",
+                    TitleKey = "win-percentage.green.title", Image = "win-percentage-green.png"
+                },
+                new Badge()
+                {
+                    Id = 18, Type = BadgeType.WinPercentage, Level = BadgeLevel.Blue,
+                    DescriptionKey = "win-percentage.blue.description",
+                    TitleKey = "win-percentage.blue.title", Image = "win-percentage-blue.png"
+                },
+                new Badge()
+                {
+                    Id = 19, Type = BadgeType.WinPercentage, Level = BadgeLevel.Red,
+                    DescriptionKey = "win-percentage.red.description",
+                    TitleKey = "win-percentage.red.title", Image = "win-percentage-red.png"
+                },
+                new Badge()
+                {
+                    Id = 20, Type = BadgeType.WinPercentage, Level = BadgeLevel.Gold,
+                    DescriptionKey = "win-percentage.gold.description",
+                    TitleKey = "win-percentage.gold.title", Image = "win-percentage-gold.png"
+                },
+                new Badge()
+                {
+                    Id = 21, Type = BadgeType.SoloSpecialist, Level = BadgeLevel.Green,
+                    DescriptionKey = "solo-specialist.green.description",
+                    TitleKey = "solo-specialist.green.title", Image = "solo-specialist-green.png"
+                },
+                new Badge()
+                {
+                    Id = 22, Type = BadgeType.SoloSpecialist, Level = BadgeLevel.Blue,
+                    DescriptionKey = "solo-specialist.blue.description",
+                    TitleKey = "solo-specialist.blue.title", Image = "solo-specialist-blue.png"
+                },
+                new Badge()
+                {
+                    Id = 23, Type = BadgeType.SoloSpecialist, Level = BadgeLevel.Red,
+                    DescriptionKey = "solo-specialist.red.description",
+                    TitleKey = "solo-specialist.red.title", Image = "solo-specialist-red.png"
+                },
+                new Badge()
+                {
+                    Id = 24, Type = BadgeType.SoloSpecialist, Level = BadgeLevel.Gold,
+                    DescriptionKey = "solo-specialist.gold.description",
+                    TitleKey = "solo-specialist.gold.title", Image = "solo-specialist-gold.png"
+                },
+                new Badge()
+                {
+                    Id = 25, Type = BadgeType.WinningStreak, Level = BadgeLevel.Green,
+                    DescriptionKey = "winning-streak.green.description",
+                    TitleKey = "winning-streak.green.title", Image = "winning-streak-green.png"
+                },
+                new Badge()
+                {
+                    Id = 26, Type = BadgeType.WinningStreak, Level = BadgeLevel.Blue,
+                    DescriptionKey = "winning-streak.blue.description",
+                    TitleKey = "winning-streak.blue.title", Image = "winning-streak-blue.png"
+                },
+                new Badge()
+                {
+                    Id = 27, Type = BadgeType.WinningStreak, Level = BadgeLevel.Red,
+                    DescriptionKey = "winning-streak.red.description",
+                    TitleKey = "winning-streak.red.title", Image = "winning-streak-red.png"
+                },
+                new Badge()
+                {
+                    Id = 28, Type = BadgeType.WinningStreak, Level = BadgeLevel.Gold,
+                    DescriptionKey = "winning-streak.gold.description",
+                    TitleKey = "winning-streak.gold.title", Image = "winning-streak-gold.png"
+                },
+                new Badge()
+                {
+                    Id = 29, Type = BadgeType.SocialPlayer, Level = BadgeLevel.Green,
+                    DescriptionKey = "social-player.green.description",
+                    TitleKey = "social-player.green.title", Image = "social-player-green.png"
+                },
+                new Badge()
+                {
+                    Id = 30, Type = BadgeType.SocialPlayer, Level = BadgeLevel.Blue,
+                    DescriptionKey = "social-player.blue.description",
+                    TitleKey = "social-player.blue.title", Image = "social-player-blue.png"
+                },
+                new Badge()
+                {
+                    Id = 31, Type = BadgeType.SocialPlayer, Level = BadgeLevel.Red,
+                    DescriptionKey = "social-player.red.description",
+                    TitleKey = "social-player.red.title", Image = "social-player-red.png"
+                },
+                new Badge()
+                {
+                    Id = 32, Type = BadgeType.SocialPlayer, Level = BadgeLevel.Gold,
+                    DescriptionKey = "social-player.gold.description",
+                    TitleKey = "social-player.gold.title", Image = "social-player-gold.png"
+                },
+                new Badge()
+                {
+                    Id = 33, Type = BadgeType.CloseWin, Level = null,
+                    DescriptionKey = "close-win.description",
+                    TitleKey = "close-win.title", Image = "close-win.png"
+                },
+                new Badge()
+                {
+                    Id = 34, Type = BadgeType.CLoseLoss, Level = null,
+                    DescriptionKey = "close-loss.description",
+                    TitleKey = "close-loss.title", Image = "close-loss.png"
+                },
+                new Badge() //HIER VERDER DOEN MET VERTALINGEN
+                {
+                    Id = 35, Type = BadgeType.MarathonRunner, Level = null,
+                    DescriptionKey = "marathon-runner.description",
+                    TitleKey = "marathon-runner.title", Image = "close-loss.png"
+                },
+                new Badge()
+                {
+                    Id = 36, Type = BadgeType.FirstTry, Level = null,
+                    DescriptionKey = "first-try.description",
+                    TitleKey = "first-try.title", Image = "first-try.png"
+                },
+                new Badge()
+                {
+                    Id = 37, Type = BadgeType.LearningCurve, Level = null,
+                    DescriptionKey = "learning-curve.description",
+                    TitleKey = "learning-curve.title", Image = "learning-curve.png"
+                },
+                new Badge()
+                {
+                    Id = 38, Type = BadgeType.MonthlyGoal, Level = null,
+                    DescriptionKey = "monthly-goal.description",
+                    TitleKey = "monthly-goal.title", Image = "monthly-goal.png"
+                },
+                new Badge()
+                {
+                    Id = 39, Type = BadgeType.ConsistentSchedule, Level = null,
+                    DescriptionKey = "consistent-schedule.description",
+                    TitleKey = "consistent-schedule.title", Image = "consistent-schedule.png"
+                }
+            );
     }
 }

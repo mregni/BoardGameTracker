@@ -42,7 +42,7 @@ public class CloseWinBadgeEvaluatorTests
             }
         };
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeFalse();
         _gameRepositoryMock.VerifyNoOtherCalls();
@@ -63,7 +63,7 @@ public class CloseWinBadgeEvaluatorTests
             }
         };
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeFalse();
         _gameRepositoryMock.VerifyNoOtherCalls();
@@ -84,7 +84,7 @@ public class CloseWinBadgeEvaluatorTests
             }
         };
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeFalse();
         _gameRepositoryMock.VerifyNoOtherCalls();
@@ -105,7 +105,7 @@ public class CloseWinBadgeEvaluatorTests
             }
         };
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeFalse();
         _gameRepositoryMock.VerifyNoOtherCalls();
@@ -127,7 +127,7 @@ public class CloseWinBadgeEvaluatorTests
 
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync((Game?)null);
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeFalse();
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
@@ -152,7 +152,7 @@ public class CloseWinBadgeEvaluatorTests
 
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeFalse();
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
@@ -182,7 +182,7 @@ public class CloseWinBadgeEvaluatorTests
 
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().Be(expectedResult);
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
@@ -208,7 +208,7 @@ public class CloseWinBadgeEvaluatorTests
 
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeFalse();
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
@@ -235,7 +235,7 @@ public class CloseWinBadgeEvaluatorTests
 
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeTrue();
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
@@ -262,7 +262,7 @@ public class CloseWinBadgeEvaluatorTests
 
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(game);
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeTrue();
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);

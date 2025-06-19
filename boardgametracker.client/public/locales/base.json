@@ -219,6 +219,9 @@
     },
     "cards": {
       "games": "Games"
+    },
+    "titles": {
+      "achievements": "Achievements"
     }
   },
   "error": {
@@ -410,5 +413,179 @@
     "info": "Info",
     "warn": "Warning",
     "error": "Error"
+  },
+  "badges": {
+    "different-games": {
+      "green": {
+        "title": "Explorer",
+        "description": "Play 3 different games."
+      },
+      "blue": {
+        "title": "Adventurer",
+        "description": "Play 10 different games."
+      },
+      "red": {
+        "title": "Collector",
+        "description": "Play 20 different games."
+      },
+      "gold": {
+        "title": "Game Connoisseur",
+        "description": "Play 50 different games."
+      }
+    },
+    "sessions": {
+      "green": {
+        "title": "Getting Started",
+        "description": "Play 5 sessions."
+      },
+      "blue": {
+        "title": "Regular Player",
+        "description": "Play 10 sessions."
+      },
+      "red": {
+        "title": "Dedicated Gamer",
+        "description": "Play 50 sessions."
+      },
+      "gold": {
+        "title": "Session Master",
+        "description": "Play 100 sessions."
+      }
+    },
+    "wins": {
+      "green": {
+        "title": "First Blood",
+        "description": "Win 3 sessions."
+      },
+      "blue": {
+        "title": "Victory Seeker",
+        "description": "Win 10 sessions."
+      },
+      "red": {
+        "title": "Champion",
+        "description": "Win 25 sessions."
+      },
+      "gold": {
+        "title": "Legend",
+        "description": "Win 50 sessions."
+      }
+    },
+    "duration": {
+      "green": {
+        "title": "Rookie Hours",
+        "description": "Play for 5 hours."
+      },
+      "blue": {
+        "title": "Time Invester",
+        "description": "Play for 10 hours."
+      },
+      "red": {
+        "title": "Veteran Player",
+        "description": "Play for 50 hours."
+      },
+      "gold": {
+        "title": "Time Lord",
+        "description": "Play for 100 hours."
+      }
+    },
+    "win-percentage": {
+      "green": {
+        "title": "Lucky Streak",
+        "description": "Win 30% of your sessions."
+      },
+      "blue": {
+        "title": "Skilled Player",
+        "description": "Win 50% of your sessions."
+      },
+      "red": {
+        "title": "Dominator",
+        "description": "Win 65% of your sessions."
+      },
+      "gold": {
+        "title": "Unstoppable",
+        "description": "Win 80% of your sessions."
+      }
+    },
+    "solo-specialist": {
+      "green": {
+        "title": "Lone Wolf",
+        "description": "Play 5 solo sessions."
+      },
+      "blue": {
+        "title": "Solo Artist",
+        "description": "Play 10 solo  sessions."
+      },
+      "red": {
+        "title": "Master of One",
+        "description": "Play 25 solo  sessions."
+      },
+      "gold": {
+        "title": "Solo Legend",
+        "description": "Play 50 solo  sessions."
+      }
+    },
+    "winning-streak": {
+      "green": {
+        "title": "Hot Streak",
+        "description": "Win 5 sessions in a row."
+      },
+      "blue": {
+        "title": "On Fire",
+        "description": "Win 10 sessions in a row."
+      },
+      "red": {
+        "title": "Untouchable",
+        "description": "Win 15 sessions in a row."
+      },
+      "gold": {
+        "title": "Perfection",
+        "description": "Win 25 sessions in a row."
+      }
+    },
+    "social-player": {
+      "green": {
+        "title": "Friendly",
+        "description": "Play with 5 different players."
+      },
+      "blue": {
+        "title": "Social Butterfly",
+        "description": "Play with 10 different players."
+      },
+      "red": {
+        "title": "Community Builder",
+        "description": "Play with 25 different players."
+      },
+      "gold": {
+        "title": "People Person",
+        "description": "Play with 50 different players."
+      }
+    },
+    "close-win": {
+      "title": "Photo Finish",
+      "description": "Win with a difference of 2 or less points."
+    },
+    "close-loss": {
+      "title": "Almost There!",
+      "description": "Loose with a difference of 2 or less points."
+    },
+    "marathon-runner": {
+      "title": "Marathon Runner",
+      "description": "Play a session of at least 4 hours."
+    },
+    "first-try": {
+      "title": "First Try",
+      "description": "Win a game on first try."
+    },
+    "learning-curve": {
+      "title": "Learning Curve",
+      "description": "Show improvement by scoring better for 3 consecutive sessions for the same game."
+    },
+    "monthly-goal": {
+      "title": "Monthly Goal",
+      "description": "Play more than 20 game sessions within one month."
+    },
+    "consistent-schedule": {
+      "title": "Consistent Schedule",
+      "description": "Play at least one game session every Saturday for 10 consecutive weeks."
+    }
   }
 }

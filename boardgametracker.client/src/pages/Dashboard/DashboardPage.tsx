@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { t } from 'i18next';
 
 import { RoundDecimal } from '../../utils/numberUtils';
@@ -14,6 +15,7 @@ import { GameStateChart } from './components/GameStateChart';
 export const DashboardPage = () => {
   const { statistics, charts } = useDashboardPage();
   const { settings } = useSettings();
+  const navigate = useNavigate();
 
   if (statistics.data === undefined || charts.data === undefined || settings === undefined) return null;
 
@@ -21,48 +23,6 @@ export const DashboardPage = () => {
     <BgtPage>
       <BgtPageHeader header={t('common.dashboard')} actions={[]} />
       <BgtPageContent>
-        <h1>TODO</h1>
-        <ul>
-          <li>✅ New game (manual)</li>
-          <li>✅ Edit game</li>
-          <li>✅ Delete game</li>
-          <li>✅ Edit location</li>
-          <li>✅ Delete location</li>
-          <li>✅ New location</li>
-          <li>✅ Edit player</li>
-          <li>✅ User session list</li>
-          <li>✅ Delete player</li>
-          <li>✅ Move icons to svg files</li>
-          <li>✅ View session table</li>
-          <li>✅ Edit session</li>
-          <li>✅ Delete session</li>
-          <li>✅ Use decimal seperator from settings</li>
-          <li>✅ Load language from settings after settings save (if updated)</li>
-          <li>✅ Add github button for feature requests</li>
-          <li>✅ Add crowdin button for translations</li>
-          <li>✅ Remove "info for nerds" page</li>
-          <li>✅ Add version number in environment settings</li>
-          <li>✅ Disable "add player" button in modal when creating a player</li>
-          <li>Add loaders everywhere</li>
-          <li>Add docker build for win and linux (like embystat)</li>
-          <li>REMOVE ME WHEN ALL IS DONE</li>
-        </ul>
-        <h1>Bugs</h1>
-        <ul>
-          <li>✅ EditDropdown menu component sluit niet bij wegklikken ergens op het scherm</li>
-          <li>✅ Toasts verdwijnen achter de posters op de gsm. Misschien andere toast gebruiken?</li>
-          <li>✅ Fix scroll in long pages (background is shorter then page)</li>
-          <li>
-            Bij aanmaken van locatie word bij een tweede create de lijst niet meer geupdate na de POST, ook de counts
-            query word niet refreshed
-          </li>
-          <li>✅ Player met score 0 kan niet aan sessie worden toegevoegd.</li>
-          <li>✅ Fix layout on create player modal (photo should be left to name)</li>
-          <li>
-            ✅ BgtImageCard has a link to deletGame and a delete modal. This should not happen or add a "delete"
-            function
-          </li>
-        </ul>
         <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 md:gap-3">
           <BgtTextStatistic content={statistics.data.gameCount} title={t('statistics.game-count')} />
           <BgtTextStatistic content={statistics.data.playerCount} title={t('statistics.player-count')} />
@@ -96,6 +56,7 @@ export const DashboardPage = () => {
               image={statistics.data.mostWinningPlayer?.image}
               name={statistics.data.mostWinningPlayer?.name}
               value={statistics.data.mostWinningPlayer?.totalWins}
+              onClick={() => navigate(`/players/${statistics.data.mostWinningPlayer?.id}`)}
               nameHeader={t('statistics.most-wins')}
               valueHeader={t('statistics.win-count')}
             />

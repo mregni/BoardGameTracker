@@ -136,6 +136,7 @@ public class SessionServiceTests
             _sessionRepositoryMock.Verify(x => x.UpdateAsync(inputSession), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
             
+            _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
             _badgeServiceMock.VerifyNoOtherCalls();
         }
 
@@ -162,6 +163,7 @@ public class SessionServiceTests
                 It.Is<Session>(s => s.Id == session.Id && s.Comment == session.Comment && s.GameId == session.GameId)), Times.Once);
             _sessionRepositoryMock.VerifyNoOtherCalls();
             
+            _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
             _badgeServiceMock.VerifyNoOtherCalls();
         }
 

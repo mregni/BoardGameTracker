@@ -2,24 +2,21 @@
 using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.BadgeEvaluators;
-using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
-using Moq;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Evaluators;
 
 public class WinPercentageBadgeEvaluatorTests
 {
-    private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly WinPercentageBadgeEvaluator _evaluator;
 
     public WinPercentageBadgeEvaluatorTests()
     {
-        _sessionRepositoryMock = new Mock<ISessionRepository>();
-        _evaluator = new WinPercentageBadgeEvaluator(_sessionRepositoryMock.Object);
+        _evaluator = new WinPercentageBadgeEvaluator();
     }
 
     [Fact]
@@ -32,42 +29,87 @@ public class WinPercentageBadgeEvaluatorTests
     public async Task CanAwardBadge_WhenTotalSessionsLessThan5_ShouldReturnFalse()
     {
         var playerId = 1;
-        var badge = new Badge { Level = BadgeLevel.Green };
+        var badge = new Badge {Level = BadgeLevel.Green};
         var session = new Session();
-        var sessionsLost = new List<Session> { new() };
-        var sessionsWon = new List<Session> { new(), new() };
+        var sessions = new List<Session>
+        {
+            new()
+            {
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = true}
+                }
+            },
+            new()
+            {
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = false}
+                }
+            },
+            new()
+            {
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = false}
+                }
+            }
+        };
 
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, false)).ReturnsAsync(sessionsLost);
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, true)).ReturnsAsync(sessionsWon);
-
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, sessions);
 
         result.Should().BeFalse();
-        
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, true), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, false), Times.Once);
-        _sessionRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CanAwardBadge_WhenTotalSessionsExactly5_ShouldEvaluateWinPercentage()
     {
         var playerId = 1;
-        var badge = new Badge { Level = BadgeLevel.Green };
+        var badge = new Badge {Level = BadgeLevel.Green};
         var session = new Session();
-        var sessionsLost = new List<Session> { new(), new() };
-        var sessionsWon = new List<Session> { new(), new(), new() };
 
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, false)).ReturnsAsync(sessionsLost);
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, true)).ReturnsAsync(sessionsWon);
-
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var sessions = new List<Session>
+        {
+            new()
+            {
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = true}
+                }
+            },
+            new()
+            {
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = true}
+                }
+            },
+            new()
+            {
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = false}
+                }
+            },
+            new()
+            {
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = false}
+                }
+            },
+            new()
+            {
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = false}
+                }
+            }
+        };
+        
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, sessions);
 
         result.Should().BeTrue();
-        
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, true), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, false), Times.Once);
-        _sessionRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -87,65 +129,87 @@ public class WinPercentageBadgeEvaluatorTests
         BadgeLevel level, int winPercentage, bool expectedResult)
     {
         var playerId = 1;
-        var badge = new Badge { Level = level };
+        var badge = new Badge {Level = level};
         var session = new Session();
-        
+
         var totalSessions = 100;
-        var wonSessions = (int)(totalSessions * winPercentage / 100.0);
+        var wonSessions = (int) (totalSessions * winPercentage / 100.0);
         var lostSessions = totalSessions - wonSessions;
+
+        var sessionsLost = Enumerable.Range(0, lostSessions)
+            .Select(_ => new Session(){
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = false}
+                }
+            })
+            .ToList();
+        var sessionsWon = Enumerable.Range(0, wonSessions)
+            .Select(_ => new Session(){
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = true}
+                }
+            })
+            .ToList();
+
+        var sessions = new List<Session>();
+        sessions.AddRange(sessionsLost);
+        sessions.AddRange(sessionsWon);
         
-        var sessionsLost = Enumerable.Range(0, lostSessions).Select(_ => new Session()).ToList();
-        var sessionsWon = Enumerable.Range(0, wonSessions).Select(_ => new Session()).ToList();
-
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, false)).ReturnsAsync(sessionsLost);
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, true)).ReturnsAsync(sessionsWon);
-
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, sessions);
 
         result.Should().Be(expectedResult);
-        
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, true), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, false), Times.Once);
-        _sessionRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CanAwardBadge_WhenNoSessionsWon_ShouldReturnFalse()
     {
         var playerId = 1;
-        var badge = new Badge { Level = BadgeLevel.Green };
+        var badge = new Badge {Level = BadgeLevel.Green};
         var session = new Session();
-        var sessionsLost = Enumerable.Range(0, 10).Select(_ => new Session()).ToList();
-        var sessionsWon = new List<Session>();
-
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, false)).ReturnsAsync(sessionsLost);
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, true)).ReturnsAsync(sessionsWon);
-
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var sessions = Enumerable.Range(0, 10)
+            .Select(_ => new Session(){
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = false}
+                }
+            })
+            .ToList();
+        
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, sessions);
 
         result.Should().BeFalse();
-        
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, true), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, false), Times.Once);
-        _sessionRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CanAwardBadge_WhenRepositoryCallsAreMade_ShouldCallWithCorrectParameters()
     {
         var playerId = 42;
-        var badge = new Badge { Level = BadgeLevel.Green };
+        var badge = new Badge {Level = BadgeLevel.Green};
         var session = new Session();
-        var sessionsLost = Enumerable.Range(0, 2).Select(_ => new Session()).ToList();
-        var sessionsWon = Enumerable.Range(0, 8).Select(_ => new Session()).ToList();
 
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, false)).ReturnsAsync(sessionsLost);
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, true)).ReturnsAsync(sessionsWon);
+        var sessionsLost = Enumerable.Range(0, 2)
+            .Select(_ => new Session(){
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = false}
+                }
+            })
+            .ToList();
+        var sessionsWon = Enumerable.Range(0, 8)
+            .Select(_ => new Session(){
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new() {PlayerId = playerId, Won = true}
+                }
+            })
+            .ToList();
+        
+        var sessions = new List<Session>();
+        sessions.AddRange(sessionsLost);
+        sessions.AddRange(sessionsWon);
 
-        await _evaluator.CanAwardBadge(playerId, badge, session);
-
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, false), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, true), Times.Once);
-        _sessionRepositoryMock.VerifyNoOtherCalls();
+        await _evaluator.CanAwardBadge(playerId, badge, session, sessions);
     }
 }

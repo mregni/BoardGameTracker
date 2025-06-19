@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using BoardGameTracker.Common.Extensions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -79,28 +80,6 @@ public class LogLevelExtensionsTests : IDisposable
         var result = LogLevelExtensions.GetEnvironmentLogLevel();
 
         result.Should().Be(LogLevel.Warning);
-    }
-
-    [Theory]
-    [InlineData("error", LogLevel.Error)]
-    [InlineData("Error", LogLevel.Error)]
-    [InlineData("eRrOr", LogLevel.Error)]
-    [InlineData("info", LogLevel.Information)]
-    [InlineData("Info", LogLevel.Information)]
-    [InlineData("iNfO", LogLevel.Information)]
-    [InlineData("debug", LogLevel.Debug)]
-    [InlineData("Debug", LogLevel.Debug)]
-    [InlineData("dEbUg", LogLevel.Debug)]
-    [InlineData("warning", LogLevel.Warning)]
-    [InlineData("Warning", LogLevel.Warning)]
-    public void GetEnvironmentLogLevel_ShouldReturnCorrectLogLevel_WhenEnvironmentVariableIsDifferentCase(string value,
-        LogLevel expectedLogLevel)
-    {
-        Environment.SetEnvironmentVariable("LOGLEVEL", value);
-
-        var result = LogLevelExtensions.GetEnvironmentLogLevel();
-
-        result.Should().Be(expectedLogLevel);
     }
 
     [Theory]

@@ -11,7 +11,6 @@ public class CloseLossBadgeEvaluator : IBadgeEvaluator
     private readonly IGameRepository _gameRepository;
 
     private const int MaxDifference = 2;
-    private const double Tolerance = 0.01;
 
     public CloseLossBadgeEvaluator(IGameRepository gameRepository)
     {
@@ -19,7 +18,7 @@ public class CloseLossBadgeEvaluator : IBadgeEvaluator
     }
 
     public BadgeType BadgeType => BadgeType.CLoseLoss;
-    public async Task<bool> CanAwardBadge(int playerId, Badge badge, Session session)
+    public async Task<bool> CanAwardBadge(int playerId, Badge badge, Session session, List<Session> playerSessions)
     {
         if (session.PlayerSessions.Count == 1)
         {

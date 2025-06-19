@@ -29,3 +29,5 @@ export * from './Common/Actions';
 
 export * from './Dashboard/DashboardStatistics';
 export * from './Dashboard/DashboardCharts';
+
+export * from './Badge/Badge';

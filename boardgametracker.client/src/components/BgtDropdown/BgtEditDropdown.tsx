@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ComponentPropsWithoutRef, ReactNode } from 'react';
-import { cx } from 'class-variance-authority';
+import { ComponentPropsWithoutRef } from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 import { BgtIcon } from '../BgtIcon/BgtIcon';

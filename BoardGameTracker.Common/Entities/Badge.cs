@@ -9,7 +9,7 @@ public class Badge : HasId
     public string TitleKey { get; set; }
     public BadgeType Type { get; set; }
     public BadgeLevel? Level { get; set; }
-    public string ImagePath { get; set; }
+    public string Image { get; set; }
 
     public ICollection<Player> Players { get; set; }
 }

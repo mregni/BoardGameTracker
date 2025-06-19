@@ -22,6 +22,399 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("BadgePlayer", b =>
+                {
+                    b.Property<int>("BadgesId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlayersId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("BadgesId", "PlayersId");
+
+                    b.HasIndex("PlayersId");
+
+                    b.ToTable("BadgePlayer");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Badge", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DescriptionKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Level")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Badges");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DescriptionKey = "different-games.green.description",
+                            Image = "different-games-green.png",
+                            Level = "Green",
+                            TitleKey = "different-games.green.title",
+                            Type = "DifferentGames"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DescriptionKey = "different-games.blue.description",
+                            Image = "different-games-blue.png",
+                            Level = "Blue",
+                            TitleKey = "different-games.blue.title",
+                            Type = "DifferentGames"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DescriptionKey = "different-games.red.description",
+                            Image = "different-games-red.png",
+                            Level = "Red",
+                            TitleKey = "different-games.red.title",
+                            Type = "DifferentGames"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            DescriptionKey = "different-games.gold.description",
+                            Image = "different-games-gold.png",
+                            Level = "Gold",
+                            TitleKey = "different-games.gold.title",
+                            Type = "DifferentGames"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DescriptionKey = "sessions.green.description",
+                            Image = "sessions-green.png",
+                            Level = "Green",
+                            TitleKey = "sessions.green.title",
+                            Type = "Sessions"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            DescriptionKey = "sessions.blue.description",
+                            Image = "sessions-blue.png",
+                            Level = "Blue",
+                            TitleKey = "sessions.blue.title",
+                            Type = "Sessions"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            DescriptionKey = "sessions.red.description",
+                            Image = "sessions-red.png",
+                            Level = "Red",
+                            TitleKey = "sessions.red.title",
+                            Type = "Sessions"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            DescriptionKey = "sessions.gold.description",
+                            Image = "sessions-gold.png",
+                            Level = "Gold",
+                            TitleKey = "sessions.gold.title",
+                            Type = "Sessions"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            DescriptionKey = "wins.green.description",
+                            Image = "wins-green.png",
+                            Level = "Green",
+                            TitleKey = "wins.green.title",
+                            Type = "Wins"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            DescriptionKey = "wins.blue.description",
+                            Image = "wins-blue.png",
+                            Level = "Blue",
+                            TitleKey = "wins.blue.title",
+                            Type = "Wins"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            DescriptionKey = "wins.red.description",
+                            Image = "wins-red.png",
+                            Level = "Red",
+                            TitleKey = "wins.red.title",
+                            Type = "Wins"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            DescriptionKey = "wins.gold.description",
+                            Image = "wins-gold.png",
+                            Level = "Gold",
+                            TitleKey = "wins.gold.title",
+                            Type = "Wins"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            DescriptionKey = "duration.green.description",
+                            Image = "duration-green.png",
+                            Level = "Green",
+                            TitleKey = "duration.green.title",
+                            Type = "Duration"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            DescriptionKey = "duration.blue.description",
+                            Image = "duration-blue.png",
+                            Level = "Blue",
+                            TitleKey = "duration.blue.title",
+                            Type = "Duration"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            DescriptionKey = "duration.red.description",
+                            Image = "duration-red.png",
+                            Level = "Red",
+                            TitleKey = "duration.red.title",
+                            Type = "Duration"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            DescriptionKey = "duration.gold.description",
+                            Image = "duration-gold.png",
+                            Level = "Gold",
+                            TitleKey = "duration.gold.title",
+                            Type = "Duration"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            DescriptionKey = "win-percentage.green.description",
+                            Image = "win-percentage-green.png",
+                            Level = "Green",
+                            TitleKey = "win-percentage.green.title",
+                            Type = "WinPercentage"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            DescriptionKey = "win-percentage.blue.description",
+                            Image = "win-percentage-blue.png",
+                            Level = "Blue",
+                            TitleKey = "win-percentage.blue.title",
+                            Type = "WinPercentage"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            DescriptionKey = "win-percentage.red.description",
+                            Image = "win-percentage-red.png",
+                            Level = "Red",
+                            TitleKey = "win-percentage.red.title",
+                            Type = "WinPercentage"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            DescriptionKey = "win-percentage.gold.description",
+                            Image = "win-percentage-gold.png",
+                            Level = "Gold",
+                            TitleKey = "win-percentage.gold.title",
+                            Type = "WinPercentage"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            DescriptionKey = "solo-specialist.green.description",
+                            Image = "solo-specialist-green.png",
+                            Level = "Green",
+                            TitleKey = "solo-specialist.green.title",
+                            Type = "SoloSpecialist"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            DescriptionKey = "solo-specialist.blue.description",
+                            Image = "solo-specialist-blue.png",
+                            Level = "Blue",
+                            TitleKey = "solo-specialist.blue.title",
+                            Type = "SoloSpecialist"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            DescriptionKey = "solo-specialist.red.description",
+                            Image = "solo-specialist-red.png",
+                            Level = "Red",
+                            TitleKey = "solo-specialist.red.title",
+                            Type = "SoloSpecialist"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            DescriptionKey = "solo-specialist.gold.description",
+                            Image = "solo-specialist-gold.png",
+                            Level = "Gold",
+                            TitleKey = "solo-specialist.gold.title",
+                            Type = "SoloSpecialist"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            DescriptionKey = "winning-streak.green.description",
+                            Image = "winning-streak-green.png",
+                            Level = "Green",
+                            TitleKey = "winning-streak.green.title",
+                            Type = "WinningStreak"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            DescriptionKey = "winning-streak.blue.description",
+                            Image = "winning-streak-blue.png",
+                            Level = "Blue",
+                            TitleKey = "winning-streak.blue.title",
+                            Type = "WinningStreak"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            DescriptionKey = "winning-streak.red.description",
+                            Image = "winning-streak-red.png",
+                            Level = "Red",
+                            TitleKey = "winning-streak.red.title",
+                            Type = "WinningStreak"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            DescriptionKey = "winning-streak.gold.description",
+                            Image = "winning-streak-gold.png",
+                            Level = "Gold",
+                            TitleKey = "winning-streak.gold.title",
+                            Type = "WinningStreak"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            DescriptionKey = "social-player.green.description",
+                            Image = "social-player-green.png",
+                            Level = "Green",
+                            TitleKey = "social-player.green.title",
+                            Type = "SocialPlayer"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            DescriptionKey = "social-player.blue.description",
+                            Image = "social-player-blue.png",
+                            Level = "Blue",
+                            TitleKey = "social-player.blue.title",
+                            Type = "SocialPlayer"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            DescriptionKey = "social-player.red.description",
+                            Image = "social-player-red.png",
+                            Level = "Red",
+                            TitleKey = "social-player.red.title",
+                            Type = "SocialPlayer"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            DescriptionKey = "social-player.gold.description",
+                            Image = "social-player-gold.png",
+                            Level = "Gold",
+                            TitleKey = "social-player.gold.title",
+                            Type = "SocialPlayer"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            DescriptionKey = "close-win.description",
+                            Image = "close-win.png",
+                            TitleKey = "close-win.title",
+                            Type = "CloseWin"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            DescriptionKey = "close-loss.description",
+                            Image = "close-loss.png",
+                            TitleKey = "close-loss.title",
+                            Type = "CLoseLoss"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            DescriptionKey = "marathon-runner.description",
+                            Image = "close-loss.png",
+                            TitleKey = "marathon-runner.title",
+                            Type = "MarathonRunner"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            DescriptionKey = "first-try.description",
+                            Image = "first-try.png",
+                            TitleKey = "first-try.title",
+                            Type = "FirstTry"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            DescriptionKey = "learning-curve.description",
+                            Image = "learning-curve.png",
+                            TitleKey = "learning-curve.title",
+                            Type = "LearningCurve"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            DescriptionKey = "monthly-goal.description",
+                            Image = "monthly-goal.png",
+                            TitleKey = "monthly-goal.title",
+                            Type = "MonthlyGoal"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            DescriptionKey = "consistent-schedule.description",
+                            Image = "consistent-schedule.png",
+                            TitleKey = "consistent-schedule.title",
+                            Type = "ConsistentSchedule"
+                        });
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Config", b =>
                 {
                     b.Property<int>("Id")
@@ -310,6 +703,20 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.HasKey("Id");
 
                     b.ToTable("Languages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Key = "en-us",
+                            TranslationKey = "english"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Key = "nl-be",
+                            TranslationKey = "dutch"
+                        });
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Location", b =>
@@ -460,6 +867,21 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.HasIndex("PeopleId");
 
                     b.ToTable("GamePerson");
+                });
+
+            modelBuilder.Entity("BadgePlayer", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Badge", null)
+                        .WithMany()
+                        .HasForeignKey("BadgesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("PlayersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Expansion", b =>

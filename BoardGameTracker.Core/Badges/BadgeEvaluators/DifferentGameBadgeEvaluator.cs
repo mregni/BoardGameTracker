@@ -1,24 +1,15 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.Interfaces;
-using BoardGameTracker.Core.Sessions.Interfaces;
 
 namespace BoardGameTracker.Core.Badges.BadgeEvaluators;
 
 public class DifferentGameBadgeEvaluator : IBadgeEvaluator
 {
-    private readonly ISessionRepository _sessionRepository;
-
-    public DifferentGameBadgeEvaluator(ISessionRepository sessionRepository)
-    {
-        _sessionRepository = sessionRepository;
-    }
-
     public BadgeType BadgeType => BadgeType.DifferentGames;
-    public async Task<bool> CanAwardBadge(int playerId, Badge badge, Session session)
+    public Task<bool> CanAwardBadge(int playerId, Badge badge, Session session, List<Session> playerSessions)
     {
-        var sessions = await _sessionRepository.GetByPlayer(playerId);
-        var gameCount = sessions
+        var gameCount = playerSessions
             .DistinctBy(x => x.GameId)
             .Count();
         
@@ -28,9 +19,9 @@ public class DifferentGameBadgeEvaluator : IBadgeEvaluator
             case BadgeLevel.Blue when gameCount >= 10:
             case BadgeLevel.Red when gameCount >= 20:
             case BadgeLevel.Gold when gameCount >= 50:
-                return true;
+                return Task.FromResult(true);
             default:
-                return false;
+                return Task.FromResult(false);
         }
     }
 }

@@ -1,33 +1,24 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.Interfaces;
-using BoardGameTracker.Core.Sessions.Interfaces;
 
 namespace BoardGameTracker.Core.Badges.BadgeEvaluators;
 
 public class SessionWinEvaluator : IBadgeEvaluator
 {
-    private readonly ISessionRepository _sessionRepository;
-
-    public SessionWinEvaluator(ISessionRepository sessionRepository)
-    {
-        _sessionRepository = sessionRepository;
-    }
-
     public BadgeType BadgeType => BadgeType.Wins;
-    public async Task<bool> CanAwardBadge(int playerId, Badge badge, Session session)
+    public Task<bool> CanAwardBadge(int playerId, Badge badge, Session session, List<Session> playerSessions)
     {
-        var sessions = await _sessionRepository.GetByPlayer(playerId, true);
-        var sessionCount = sessions.Count;
+        var sessionCount = playerSessions.Count(x => x.PlayerSessions.Single(y => y.PlayerId == playerId).Won);
         switch (badge.Level)
         {
             case BadgeLevel.Green when sessionCount >= 3:
             case BadgeLevel.Blue when sessionCount >= 10:
             case BadgeLevel.Red when sessionCount >= 25:
             case BadgeLevel.Gold when sessionCount >= 50:
-                return true;
+                return Task.FromResult(true);
             default:
-                return false;
+                return Task.FromResult(false);
         }
     }
 }

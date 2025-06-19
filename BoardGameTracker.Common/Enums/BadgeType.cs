@@ -14,5 +14,7 @@ public enum BadgeType
     FirstTry = 9,
     LearningCurve = 10,
     MonthlyGoal = 11,
-    ConsistentSchedule = 12
+    ConsistentSchedule = 12,
+    SocialPlayer = 13,
+    WinningStreak = 14,
 }

@@ -40,7 +40,7 @@ public class MarathonRunnerBadgeEvaluatorTests
             End = new DateTime(2025, 1, 1, 10, 0, 0).AddMinutes(durationMinutes)
         };
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().Be(expectedResult);
     }
@@ -56,7 +56,7 @@ public class MarathonRunnerBadgeEvaluatorTests
             End = new DateTime(2025, 1, 1, 14, 0, 0)
         };
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeTrue();
     }
@@ -72,7 +72,7 @@ public class MarathonRunnerBadgeEvaluatorTests
             End = new DateTime(2025, 1, 1, 13, 59, 0)
         };
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeFalse();
     }
@@ -88,7 +88,7 @@ public class MarathonRunnerBadgeEvaluatorTests
             End = new DateTime(2025, 1, 2, 2, 0, 0)
         };
 
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeTrue();
     }

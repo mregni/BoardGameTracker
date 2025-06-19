@@ -28,9 +28,12 @@ public class SessionService : ISessionService
         return _sessionRepository.DeleteAsync(id);
     }
 
-    public Task<Session> Update(Session session)
+    public async Task<Session> Update(Session session)
     {
-        return _sessionRepository.UpdateAsync(session);
+        session = await _sessionRepository.UpdateAsync(session);
+        await _badgeService.AwardBadgesAsync(session);
+        
+        return session;
     }
 
     public Task<Session?> Get(int id)

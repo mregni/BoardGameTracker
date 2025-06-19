@@ -6,5 +6,5 @@ namespace BoardGameTracker.Core.Badges.Interfaces;
 public interface IBadgeEvaluator
 {
     BadgeType BadgeType { get; }
-    Task<bool> CanAwardBadge(int playerId, Badge badge, Session session);
+    Task<bool> CanAwardBadge(int playerId, Badge badge, Session session, List<Session> playerSessions);
 }

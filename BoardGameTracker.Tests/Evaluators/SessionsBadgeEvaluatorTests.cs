@@ -1,23 +1,20 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.BadgeEvaluators;
-using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
-using Moq;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Evaluators;
 
 public class SessionsBadgeEvaluatorTests
 {
-        private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly SessionsBadgeEvaluator _evaluator;
 
     public SessionsBadgeEvaluatorTests()
     {
-        _sessionRepositoryMock = new Mock<ISessionRepository>();
-        _evaluator = new SessionsBadgeEvaluator(_sessionRepositoryMock.Object);
+        _evaluator = new SessionsBadgeEvaluator();
     }
 
     [Fact]
@@ -42,14 +39,15 @@ public class SessionsBadgeEvaluatorTests
         var badge = new Badge { Level = level };
         var session = new Session();
 
-        _sessionRepositoryMock.Setup(x => x.CountByPlayer(playerId)).ReturnsAsync(sessionCount);
-
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var dbSessions = new List<Session>();
+        for (var i = 0; i < sessionCount; i++)
+        {
+            dbSessions.Add(new Session ());
+        }
+        
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, dbSessions);
 
         result.Should().Be(expectedResult);
-        
-        _sessionRepositoryMock.Verify(x => x.CountByPlayer(playerId), Times.Once);
-        _sessionRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -59,14 +57,9 @@ public class SessionsBadgeEvaluatorTests
         var badge = new Badge { Level = BadgeLevel.Green };
         var session = new Session();
 
-        _sessionRepositoryMock.Setup(x => x.CountByPlayer(playerId)).ReturnsAsync(0);
-
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, []);
 
         result.Should().BeFalse();
-        
-        _sessionRepositoryMock.Verify(x => x.CountByPlayer(playerId), Times.Once);
-        _sessionRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -75,24 +68,25 @@ public class SessionsBadgeEvaluatorTests
         var playerId = 1;
         var session = new Session();
 
-        _sessionRepositoryMock.Setup(x => x.CountByPlayer(playerId)).ReturnsAsync(100);
-
+        var dbSessions = new List<Session>();
+        for (var i = 0; i < 100; i++)
+        {
+            dbSessions.Add(new Session ());
+        }
+        
         var greenBadge = new Badge { Level = BadgeLevel.Green };
         var blueBadge = new Badge { Level = BadgeLevel.Blue };
         var redBadge = new Badge { Level = BadgeLevel.Red };
         var goldBadge = new Badge { Level = BadgeLevel.Gold };
 
-        var greenResult = await _evaluator.CanAwardBadge(playerId, greenBadge, session);
-        var blueResult = await _evaluator.CanAwardBadge(playerId, blueBadge, session);
-        var redResult = await _evaluator.CanAwardBadge(playerId, redBadge, session);
-        var goldResult = await _evaluator.CanAwardBadge(playerId, goldBadge, session);
+        var greenResult = await _evaluator.CanAwardBadge(playerId, greenBadge, session, dbSessions);
+        var blueResult = await _evaluator.CanAwardBadge(playerId, blueBadge, session, dbSessions);
+        var redResult = await _evaluator.CanAwardBadge(playerId, redBadge, session, dbSessions);
+        var goldResult = await _evaluator.CanAwardBadge(playerId, goldBadge, session, dbSessions);
 
         greenResult.Should().BeTrue();
         blueResult.Should().BeTrue();
         redResult.Should().BeTrue();
         goldResult.Should().BeTrue();
-        
-        _sessionRepositoryMock.Verify(x => x.CountByPlayer(playerId), Times.Exactly(4));
-        _sessionRepositoryMock.VerifyNoOtherCalls();
     }
 }

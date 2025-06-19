@@ -138,6 +138,7 @@ export const GameDetailPage = () => {
                     image={statistics.data.mostWinsPlayer?.image}
                     name={statistics.data.mostWinsPlayer?.name}
                     value={statistics.data.mostWinsPlayer?.totalWins}
+                    onClick={() => navigate(`/players/${statistics.data.mostWinsPlayer?.id}`)}
                     nameHeader={t('statistics.most-wins')}
                     valueHeader={t('statistics.win-count')}
                   />

@@ -45,4 +45,14 @@
             <Link>DockerFile</Link>
         </Content>
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="images\badges\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="images\badges\different-games-green.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
 </Project>

@@ -14,6 +14,13 @@ public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
         _dbContext = dbContext;
     }
 
+    public override Task<Player?> GetByIdAsync(int id)
+    {
+        return _dbContext.Players
+            .Include(x => x.Badges)
+            .SingleOrDefaultAsync(x => x.Id == id);
+    }
+
     public override Task<List<Player>> GetAllAsync()
     {
         return _dbContext.Players

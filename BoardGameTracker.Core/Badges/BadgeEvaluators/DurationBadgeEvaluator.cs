@@ -1,24 +1,16 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.Interfaces;
-using BoardGameTracker.Core.Sessions.Interfaces;
 
 namespace BoardGameTracker.Core.Badges.BadgeEvaluators;
 
 public class DurationBadgeEvaluator : IBadgeEvaluator
 {
-    private readonly ISessionRepository _sessionRepository;
-
-    public DurationBadgeEvaluator(ISessionRepository sessionRepository)
-    {
-        _sessionRepository = sessionRepository;
-    }
-
     public BadgeType BadgeType => BadgeType.Duration;
-    public async Task<bool> CanAwardBadge(int playerId, Badge badge, Session session)
+    public Task<bool> CanAwardBadge(int playerId, Badge badge, Session session, List<Session> playerSessions)
     {
-        var sessions = await _sessionRepository.GetByPlayer(playerId, true);
-        var duration = sessions
+        var duration = playerSessions
+            .Where(x => x.PlayerSessions.Single(y => y.PlayerId == playerId).Won)
             .Select(x => x.End - x.Start)
             .Sum(x => x.TotalMinutes);
         
@@ -28,9 +20,9 @@ public class DurationBadgeEvaluator : IBadgeEvaluator
             case BadgeLevel.Blue when duration >= 600:
             case BadgeLevel.Red when duration >= 3000:
             case BadgeLevel.Gold when duration >= 6000:
-                return true;
+                return Task.FromResult(true);
             default:
-                return false;
+                return Task.FromResult(false);
         }
     }
 }

@@ -20,7 +20,7 @@ public class CloseWinBadgeEvaluator : IBadgeEvaluator
 
     public BadgeType BadgeType => BadgeType.CloseWin;
 
-    public async Task<bool> CanAwardBadge(int playerId, Badge badge, Session session)
+    public async Task<bool> CanAwardBadge(int playerId, Badge badge, Session session, List<Session> playerSessions)
     {
         if (session.PlayerSessions.Count == 1)
         {

@@ -8,17 +8,18 @@ interface Props {
   value: string | number | undefined;
   nameHeader: string;
   valueHeader: string;
+  onClick?: () => void;
 }
 
 export const BgtMostWinnerCard = (props: Props) => {
-  const { image, name, value, nameHeader, valueHeader } = props;
+  const { image, name, value, nameHeader, valueHeader, onClick } = props;
 
   if (name === undefined) return null;
 
   return (
     <div className="flex flex-row justify-between items-center bg-gradient-to-r from-[#9A02FB1A] to-[#09FFC41A] rounded-lg p-3">
       <div className="flex flex-row gap-2">
-        <BgtAvatar image={image} title={name} color={StringToHsl(name)} size="large" />
+        <BgtAvatar image={image} title={name} color={StringToHsl(name)} size="large" onClick={onClick} />
         <div className="flex flex-col justify-center gap-0">
           <BgtText weight="medium" size="3" className="uppercase">
             {name}

@@ -26,9 +26,18 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
             .CountAsync();
     }
 
+    public Task<int> CountByPlayerAndGame(int playerId, int gameId)
+    {
+        return _context.Sessions
+            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == playerId))
+            .Where(x => x.GameId == gameId)
+            .CountAsync();
+    }
+
     public Task<List<Session>> GetByPlayer(int playerId, bool? won = null)
     {
         var query = _context.Sessions
+            .Include(x => x.PlayerSessions)
             .Where(x => x.PlayerSessions.Any(y => y.PlayerId == playerId));
 
         if (won.HasValue)
@@ -37,6 +46,14 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
         }
 
         return query.ToListAsync();
+    }
+
+    public Task<List<Session>> GetByPlayerAndGame(int playerId, int gameId)
+    {
+        return _context.Sessions
+            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == playerId))
+            .Where(x => x.GameId == gameId)
+            .ToListAsync();
     }
 
     public Task<double> GetTotalPlayTime()

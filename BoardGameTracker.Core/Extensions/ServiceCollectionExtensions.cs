@@ -30,7 +30,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCoreService(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddScoped<IDiskProvider, DiskProvider>();
+        serviceCollection.AddTransient<IDiskProvider, DiskProvider>();
         
         serviceCollection.AddScoped<IConfigFileProvider, ConfigFileProvider>();
         serviceCollection.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
@@ -61,7 +61,13 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IBadgeEvaluator, CloseWinBadgeEvaluator>();
         serviceCollection.AddScoped<IBadgeEvaluator, CloseLossBadgeEvaluator>();
         serviceCollection.AddScoped<IBadgeEvaluator, MarathonRunnerBadgeEvaluator>();
-
+        serviceCollection.AddScoped<IBadgeEvaluator, FirstTryBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, LearningCurveBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, MonthlyGoalBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, ConsistentScheduleBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, SocialPlayerBadgeEvaluator>();
+        serviceCollection.AddScoped<IBadgeEvaluator, WinningStreakBadgeEvaluator>();
+        
         serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
         {
             var fileConfigProvider = serviceProvider.GetService<IConfigFileProvider>();

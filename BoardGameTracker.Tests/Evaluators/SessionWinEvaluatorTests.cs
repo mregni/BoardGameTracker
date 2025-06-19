@@ -1,24 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.BadgeEvaluators;
-using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
-using Moq;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Evaluators;
 
 public class SessionWinEvaluatorTests
 {
-    private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly SessionWinEvaluator _evaluator;
 
     public SessionWinEvaluatorTests()
     {
-        _sessionRepositoryMock = new Mock<ISessionRepository>();
-        _evaluator = new SessionWinEvaluator(_sessionRepositoryMock.Object);
+        _evaluator = new SessionWinEvaluator();
     }
 
     [Fact]
@@ -42,16 +39,11 @@ public class SessionWinEvaluatorTests
         var playerId = 1;
         var badge = new Badge { Level = level };
         var session = new Session();
-        var sessions = CreateSessions(winCount);
+        var sessions = CreateSessions(winCount, playerId);
 
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, true)).ReturnsAsync(sessions);
-
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, sessions);
 
         result.Should().Be(expectedResult);
-        
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, true), Times.Once);
-        _sessionRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -62,14 +54,9 @@ public class SessionWinEvaluatorTests
         var session = new Session();
         var sessions = new List<Session>();
 
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, true)).ReturnsAsync(sessions);
-
-        var result = await _evaluator.CanAwardBadge(playerId, badge, session);
+        var result = await _evaluator.CanAwardBadge(playerId, badge, session, sessions);
 
         result.Should().BeFalse();
-        
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, true), Times.Once);
-        _sessionRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -77,36 +64,37 @@ public class SessionWinEvaluatorTests
     {
         var playerId = 1;
         var session = new Session();
-        var sessions = CreateSessions(50);
-
-        _sessionRepositoryMock.Setup(x => x.GetByPlayer(playerId, true)).ReturnsAsync(sessions);
+        var sessions = CreateSessions(50, playerId);
 
         var greenBadge = new Badge { Level = BadgeLevel.Green };
         var blueBadge = new Badge { Level = BadgeLevel.Blue };
         var redBadge = new Badge { Level = BadgeLevel.Red };
         var goldBadge = new Badge { Level = BadgeLevel.Gold };
 
-        var greenResult = await _evaluator.CanAwardBadge(playerId, greenBadge, session);
-        var blueResult = await _evaluator.CanAwardBadge(playerId, blueBadge, session);
-        var redResult = await _evaluator.CanAwardBadge(playerId, redBadge, session);
-        var goldResult = await _evaluator.CanAwardBadge(playerId, goldBadge, session);
+        var greenResult = await _evaluator.CanAwardBadge(playerId, greenBadge, session, sessions);
+        var blueResult = await _evaluator.CanAwardBadge(playerId, blueBadge, session, sessions);
+        var redResult = await _evaluator.CanAwardBadge(playerId, redBadge, session, sessions);
+        var goldResult = await _evaluator.CanAwardBadge(playerId, goldBadge, session, sessions);
 
         greenResult.Should().BeTrue();
         blueResult.Should().BeTrue();
         redResult.Should().BeTrue();
         goldResult.Should().BeTrue();
-        
-        _sessionRepositoryMock.Verify(x => x.GetByPlayer(playerId, true), Times.Exactly(4));
-        _sessionRepositoryMock.VerifyNoOtherCalls();
     }
 
-    private static List<Session> CreateSessions(int count)
+    private static List<Session> CreateSessions(int count, int playerId)
     {
         var sessions = new List<Session>();
 
         for (var i = 0; i < count; i++)
         {
-            sessions.Add(new Session());
+            sessions.Add(new Session()
+            {
+                PlayerSessions = new List<PlayerSession>()
+                {
+                    new PlayerSession() { Won = true, PlayerId = playerId}
+                }
+            });
         }
 
         return sessions;
