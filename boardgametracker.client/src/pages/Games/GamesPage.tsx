@@ -50,8 +50,6 @@ export const GamesPage = () => {
     return games.filter((game) => game.title.toLowerCase().includes(filterValue.toLowerCase()));
   }, [games, filterValue]);
 
-  if (games === undefined) return null;
-
   const openManual = () => {
     setOpenModal(false);
     navigate('/games/new');
@@ -68,14 +66,12 @@ export const GamesPage = () => {
         header={t(pageTitle)}
         actions={[{ onClick: () => setOpenModal(true), variant: 'solid', content: 'games.new' }]}
       >
-        <div>
-          <BgtSimpleInputField
-            value={filterValue}
-            onChange={(event) => setFilterValue(event.target.value)}
-            className="bg-slate-800 w-full  md:w-[160px] xl:w-[300px]"
-            placeholder="Filter by name"
-          />
-        </div>
+        <BgtSimpleInputField
+          value={filterValue}
+          onChange={(event) => setFilterValue(event.target.value)}
+          className="bg-slate-800 w-full  md:w-[160px] xl:w-[300px]"
+          placeholder={t('common.filter-name')}
+        />
       </BgtPageHeader>
       <BgtPageContent>
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 2xl:grid-cols-10">

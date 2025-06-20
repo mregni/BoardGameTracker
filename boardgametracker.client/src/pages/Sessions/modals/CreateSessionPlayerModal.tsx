@@ -50,7 +50,7 @@ const CreateSessionPlayerForm = (props: Props) => {
     },
   });
 
-  if (players.data === undefined || locations === undefined) return null;
+  if (locations === undefined) return null;
 
   const onSubmit = (data: CreateSessionPlayer | CreatePlayerSessionNoScoring) => {
     onClose && onClose(data);
@@ -67,8 +67,7 @@ const CreateSessionPlayerForm = (props: Props) => {
               control={control}
               label={t('player-session.new.player.label')}
               name="playerId"
-              hasAvatars
-              items={(players.data ?? [])
+              items={players
                 .filter((player) => !selectedPlayerIds.includes(player.id.toString()))
                 .map((value) => ({
                   label: value.name,

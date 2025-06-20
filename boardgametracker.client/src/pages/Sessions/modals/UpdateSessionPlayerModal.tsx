@@ -34,7 +34,6 @@ const UpdateSessionPlayerForm = (props: Props) => {
   const { t } = useTranslation();
   const { locations } = useLocations({});
   const { playerById } = usePlayerById();
-  const { players } = usePlayers({});
 
   type PlayType<T extends boolean> = T extends true ? CreateSessionPlayer : CreatePlayerSessionNoScoring;
   type CreatePlayType = PlayType<typeof hasScoring>;
@@ -49,7 +48,7 @@ const UpdateSessionPlayerForm = (props: Props) => {
     },
   });
 
-  if (players === undefined || locations === undefined) return null;
+  if (locations === undefined) return null;
 
   const onSubmit = (data: CreateSessionPlayer | CreatePlayerSessionNoScoring) => {
     onClose && onClose(data);

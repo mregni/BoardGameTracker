@@ -30,7 +30,7 @@ export const usePlayers = ({ onDeleteSuccess, onDeleteError }: Props) => {
   };
 
   return {
-    players,
+    players: players.data ?? [],
     deletePlayer,
   };
 };

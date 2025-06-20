@@ -41,6 +41,7 @@
     "date": "Date",
     "time": "Time",
     "loading-data": "Loading data...",
+    "filter-name": "Filter by name",
     "other-players": "Other players",
     "high-score": "High score",
     "no-results": "No results found",
