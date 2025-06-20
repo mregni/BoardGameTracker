@@ -23,7 +23,7 @@ export const BgtTableRow = ({ className, ...props }: HTMLAttributes<HTMLTableRow
   <tr className={cx('px-3', className)} {...props} />
 );
 
-export const <BgtTableCell> = ({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) => (
+export const BgtTableCell = ({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) => (
   <td className={cx('font-bold text-sm text-gray-dark pl-3', className)} {...props} />
 );
 

@@ -79,7 +79,7 @@ export const SessionForm = (props: Props) => {
 
   useEffect(() => {
     if (selectedGameId !== undefined && start == undefined) {
-      const selectedBoardGame = games.data?.find((game) => game.id.toString() === selectedGameId);
+      const selectedBoardGame = games.find((game) => game.id.toString() === selectedGameId);
       if (selectedBoardGame) {
         setValue('minutes', selectedBoardGame.maxPlayTime ?? 30, { shouldValidate: true });
         setValue('start', addMinutes(new Date(), -(selectedBoardGame?.maxPlayTime ?? 30)));
@@ -110,7 +110,7 @@ export const SessionForm = (props: Props) => {
     }
   };
 
-  if (locations === undefined || games.data === undefined) return null;
+  if (locations === undefined) return null;
 
   const onSubmit = async (data: CreateSession) => {
     await onClick(data);
@@ -127,7 +127,7 @@ export const SessionForm = (props: Props) => {
                 control={control}
                 name="gameId"
                 items={
-                  games.data.map((x) => ({
+                  games.map((x) => ({
                     value: x.id.toString(),
                     label: x.title,
                     image: x.image,

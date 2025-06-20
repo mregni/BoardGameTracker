@@ -54,14 +54,13 @@ export const PlayerSessionsPage = () => {
       {
         accessorKey: '2',
         cell: ({ row }) => {
-          const game = games.data?.find((x) => x.id == row.original.gameId);
+          const game = games.find((x) => x.id == row.original.gameId);
           return (
             <div className="flex flex-row gap-2 items-center">
               <BgtAvatar
                 image={game?.image}
                 color={StringToHsl(game?.title)}
                 title={game?.title}
-                noTooltip
                 onClick={() => navigate(`/games/${game?.id}`)}
               />
               <span>{game?.title}</span>
@@ -85,7 +84,7 @@ export const PlayerSessionsPage = () => {
                 <BgtPlayerAvatar
                   key={`${player.playerId}_${player.sessionId}`}
                   playerSession={player}
-                  game={games.data?.find((x) => x.id == row.original.gameId)}
+                  game={games.find((x) => x.id == row.original.gameId)}
                 />
               ))}
           </div>
@@ -102,7 +101,7 @@ export const PlayerSessionsPage = () => {
                 <BgtPlayerAvatar
                   key={`${player.playerId}_${player.sessionId}`}
                   playerSession={player}
-                  game={games.data?.find((x) => x.id == row.original.gameId)}
+                  game={games.find((x) => x.id == row.original.gameId)}
                 />
               ))}
           </div>
@@ -133,10 +132,10 @@ export const PlayerSessionsPage = () => {
         header: <div className="flex justify-end">{t('common.actions')}</div>,
       },
     ],
-    [games.data, navigate, settings.data?.dateFormat, settings.data?.timeFormat]
+    [games, navigate, settings.data?.dateFormat, settings.data?.timeFormat]
   );
 
-  if (games.data === undefined || player.data === undefined) return null;
+  if (player.data === undefined) return null;
 
   return (
     <BgtPage>

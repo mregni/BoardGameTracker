@@ -38,7 +38,7 @@ export const useGames = (props: Props) => {
   };
 
   return {
-    games,
+    games: games.data ?? [],
     saveGame,
     saveIsPending,
     deleteGame,
