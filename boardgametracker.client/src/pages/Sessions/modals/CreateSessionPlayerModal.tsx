@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import * as Form from '@radix-ui/react-form';

@@ -14,7 +14,6 @@ import { FailResult } from './models';
 import { useToasts } from './hooks/useToasts';
 import { useSettings } from './hooks/useSettings';
 import BgtMenuBar from './components/BgtLayout/BgtMenuBar';
-import { BgtHeader } from './components/BgtHeader/BgtHeader';
 
 function AppContainer() {
   const { errorToast } = useToasts();

@@ -8,7 +8,7 @@ interface Props {
 }
 
 const checkComponentName = (
-  child: React.ReactElement<any, string | React.JSXElementConstructor<any>>,
+  child: React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>,
   elementName: string
 ): boolean => {
   return (child.type as (props: Props) => JSX.Element)?.name === elementName;

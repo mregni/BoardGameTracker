@@ -1,5 +1,5 @@
 import { ComponentPropsWithoutRef, ElementRef, forwardRef } from 'react';
-import { cx, cva } from 'class-variance-authority';
+import { cx } from 'class-variance-authority';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 
 export const BgtPopover = PopoverPrimitive.Root;

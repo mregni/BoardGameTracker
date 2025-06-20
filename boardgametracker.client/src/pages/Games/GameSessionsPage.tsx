@@ -6,11 +6,9 @@ import { format } from 'date-fns';
 import { useGameSessionsPage } from './hooks/useGameSessionsPage';
 import { useGame } from './hooks/useGame';
 
-import { StringToHsl } from '@/utils/stringUtils';
-import { Game, PlayerSession, Session } from '@/models';
+import { Session } from '@/models';
 import { useToasts } from '@/hooks/useToasts';
 import { useSettings } from '@/hooks/useSettings';
-import { usePlayerById } from '@/hooks/usePlayerById';
 import { BgtDeleteModal } from '@/components/Modals/BgtDeleteModal';
 import { BgtDataTable, DataTableProps } from '@/components/BgtTable/BgtDataTable';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';

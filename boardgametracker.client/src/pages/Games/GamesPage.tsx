@@ -10,7 +10,7 @@ import { usePage } from '@/hooks/usePage';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtGameImageCard, BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
+import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
 
 export const GamesPage = () => {
   const { t } = useTranslation();

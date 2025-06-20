@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import { useTranslation } from 'react-i18next';
 import { FieldArrayWithId, useForm } from 'react-hook-form';
 import { Dialog } from '@radix-ui/themes';
