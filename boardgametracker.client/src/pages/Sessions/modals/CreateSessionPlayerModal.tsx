@@ -11,7 +11,6 @@ import {
   CreatePlayerSessionNoScoringSchema,
   CreatePlayerSessionSchema,
 } from '@/models/Session/CreateSession';
-import { useLocations } from '@/hooks/useLocations';
 import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
 import { BgtSelect } from '@/components/BgtForm/BgtSelect';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
@@ -36,7 +35,6 @@ const CreateSessionPlayerForm = (props: Props) => {
   const { open, hasScoring, onClose, selectedPlayerIds, onCancel } = props;
   const { t } = useTranslation();
   const { players } = usePlayers({});
-  const { locations } = useLocations({});
 
   type PlayType<T extends boolean> = T extends true ? CreateSessionPlayer : CreatePlayerSessionNoScoring;
   type CreatePlayType = PlayType<typeof hasScoring>;
@@ -49,8 +47,6 @@ const CreateSessionPlayerForm = (props: Props) => {
       score: 0,
     },
   });
-
-  if (locations === undefined) return null;
 
   const onSubmit = (data: CreateSessionPlayer | CreatePlayerSessionNoScoring) => {
     onClose && onClose(data);

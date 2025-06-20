@@ -25,10 +25,10 @@ export const SettingsPage = () => {
 
   const { handleSubmit, control } = useForm<Settings>({
     resolver: zodResolver(SettingsSchema),
-    defaultValues: settings.data,
+    defaultValues: settings,
   });
 
-  if (settings.data === undefined || languages.data === undefined || environment.data === undefined) return null;
+  if (settings === undefined || environment === undefined) return null;
 
   const onSubmit = async (data: Settings) => {
     await saveSettings(data);
@@ -53,7 +53,7 @@ export const SettingsPage = () => {
                 control={control}
                 label={t('settings.ui-language.label')}
                 name="uiLanguage"
-                items={languages.data.map((value) => ({
+                items={languages.map((value) => ({
                   label: t(`languages.${value.translationKey}`),
                   value: value.key,
                   image: null,
@@ -107,13 +107,13 @@ export const SettingsPage = () => {
                 <div>{t('settings.environment.version')}</div>
               </div>
               <div>
-                <div className="text-end md:text-start">{environment.data.environmentName}</div>
-                <div className="text-end md:text-start">{environment.data.port}</div>
+                <div className="text-end md:text-start">{environment.environmentName}</div>
+                <div className="text-end md:text-start">{environment.port}</div>
                 <div className="text-end md:text-start">
-                  {environment.data.enableStatistics ? t('common.enabled') : t('common.disabled')}
+                  {environment.enableStatistics ? t('common.enabled') : t('common.disabled')}
                 </div>
-                <div className="text-end md:text-start">{t(ToLogLevel(environment.data.logLevel))}</div>
-                <div className="text-end md:text-start">{environment.data.version}</div>
+                <div className="text-end md:text-start">{t(ToLogLevel(environment.logLevel))}</div>
+                <div className="text-end md:text-start">{environment.version}</div>
               </div>
             </div>
             <div className="flex flex-col gap-2">

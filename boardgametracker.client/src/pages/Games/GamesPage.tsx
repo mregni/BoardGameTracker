@@ -1,23 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  FieldValues,
-  InternalFieldName,
-  FormState,
-  FieldArrayPath,
-  FieldArray,
-  FieldErrors,
-  FieldName,
-  Field,
-  FieldRefs,
-  RegisterOptions,
-  UseFormRegisterReturn,
-  SubmitHandler,
-  SubmitErrorHandler,
-  FieldError,
-  ErrorOption,
-} from 'react-hook-form';
-import { BaseSyntheticEvent, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import CreateGameModal from './modals/CreateGameModal';
 import { BggGameModal } from './modals/BggGameModal';
@@ -36,7 +19,7 @@ export const GamesPage = () => {
   const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
   const [openBggModal, setOpenBggModal] = useState(false);
-  const [filterValue, setFilterValue] = useState<string | undefined>(undefined);
+  const [filterValue, setFilterValue] = useState<string>('');
 
   const { games } = useGames({});
 

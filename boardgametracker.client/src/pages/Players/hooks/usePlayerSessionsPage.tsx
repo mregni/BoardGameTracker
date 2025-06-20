@@ -29,7 +29,7 @@ export const usePlayerSessionsPage = (props: Props) => {
   };
 
   return {
-    sessions,
+    sessions: sessions.data ?? [],
     deleteSession,
   };
 };

@@ -16,7 +16,7 @@ export const PlayersPage = () => {
   const { t } = useTranslation();
   const { pageTitle } = usePage();
   const [openModal, setOpenModal] = useState<boolean>(false);
-  const [filterValue, setFilterValue] = useState<string | undefined>(undefined);
+  const [filterValue, setFilterValue] = useState<string>('');
   const { players } = usePlayers({});
 
   const filteredPlayers = useMemo(() => {

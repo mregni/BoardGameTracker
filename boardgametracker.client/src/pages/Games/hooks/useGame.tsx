@@ -47,12 +47,6 @@ export const useGame = ({ id, onDeleteError, onDeleteSuccess }: Props) => {
     enabled: id !== undefined,
   });
 
-  // const playerScoringChart = useQuery<PlayerScoring[], AxiosError<FailResult>>({
-  //   queryKey: [QUERY_KEYS.game, id, QUERY_KEYS.gamePlayerScoringChart],
-  //   queryFn: ({ signal }) => getChart<PlayerScoring>(id!, GAME_CHARTS.playerScoring, signal),
-  //   enabled: id !== undefined && (data?.hasScoring ?? false),
-  // });
-
   const deleteGame = async () => {
     if (id !== undefined) {
       try {
@@ -70,11 +64,11 @@ export const useGame = ({ id, onDeleteError, onDeleteSuccess }: Props) => {
   }
 
   return {
-    game,
-    topPlayers,
-    statistics,
+    game: game.data,
+    topPlayers: topPlayers.data ?? [],
+    statistics: statistics.data,
     deleteGame,
-    scoreRankChart,
-    chartPlayerCount,
+    scoreRankChart: scoreRankChart.data ?? [],
+    chartPlayerCount: chartPlayerCount.data ?? [],
   };
 };

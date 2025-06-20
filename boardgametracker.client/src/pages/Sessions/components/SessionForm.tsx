@@ -110,8 +110,6 @@ export const SessionForm = (props: Props) => {
     }
   };
 
-  if (locations === undefined) return null;
-
   const onSubmit = async (data: CreateSession) => {
     await onClick(data);
   };
@@ -204,14 +202,14 @@ export const SessionForm = (props: Props) => {
 
         <CreateSessionPlayerModal
           open={openCreateNewPlayerModal}
-          hasScoring={game.data?.hasScoring ?? true}
+          hasScoring={game?.hasScoring ?? true}
           onClose={closeNewPlayPlayer}
           onCancel={() => setOpenCreateNewPlayerModal(false)}
           selectedPlayerIds={players.map((x) => x.playerId)}
         />
         <UpdateSessionPlayerModal
           open={openUpdateNewPlayerModal}
-          hasScoring={game.data?.hasScoring ?? true}
+          hasScoring={game?.hasScoring ?? true}
           onClose={closeUpdatePlayPlayer}
           onCancel={() => setOpenUpdateNewPlayerModal(false)}
           selectedPlayerIds={players.map((x) => x.playerId)}

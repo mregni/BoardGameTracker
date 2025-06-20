@@ -38,12 +38,12 @@ export const GameSessionsPage = () => {
     () => [
       {
         accessorKey: '0',
-        cell: ({ row }) => format(new Date(row.original.start), `${settings.data?.dateFormat}`),
+        cell: ({ row }) => format(new Date(row.original.start), `${settings?.dateFormat}`),
         header: t('common.date'),
       },
       {
         accessorKey: '1',
-        cell: ({ row }) => format(new Date(row.original.start), `${settings.data?.timeFormat}`),
+        cell: ({ row }) => format(new Date(row.original.start), `${settings?.timeFormat}`),
         header: t('common.time'),
       },
       {
@@ -58,11 +58,7 @@ export const GameSessionsPage = () => {
             {row.original.playerSessions
               .filter((x) => x.won)
               .map((player) => (
-                <BgtPlayerAvatar
-                  key={`${player.playerId}_${player.sessionId}`}
-                  playerSession={player}
-                  game={game.data}
-                />
+                <BgtPlayerAvatar key={`${player.playerId}_${player.sessionId}`} playerSession={player} game={game} />
               ))}
           </div>
         ),
@@ -75,11 +71,7 @@ export const GameSessionsPage = () => {
             {row.original.playerSessions
               .filter((x) => !x.won)
               .map((player) => (
-                <BgtPlayerAvatar
-                  key={`${player.playerId}_${player.sessionId}`}
-                  playerSession={player}
-                  game={game.data}
-                />
+                <BgtPlayerAvatar key={`${player.playerId}_${player.sessionId}`} playerSession={player} game={game} />
               ))}
           </div>
         ),
@@ -109,25 +101,23 @@ export const GameSessionsPage = () => {
         header: <div className="flex justify-end">{t('common.actions')}</div>,
       },
     ],
-    [game.data, navigate, settings.data?.dateFormat, settings.data?.timeFormat]
+    [game, navigate, settings?.dateFormat, settings?.timeFormat]
   );
 
-  if (game.data === undefined) return null;
+  if (game === undefined) return null;
 
   return (
     <BgtPage>
       <BgtPageHeader
         backAction={() => navigate(`/games/${id}`)}
-        header={`${game.data.title} - ${t('sessions.title')}`}
-        actions={[
-          { onClick: () => navigate(`/sessions/create/${game.data.id}`), variant: 'solid', content: 'game.add' },
-        ]}
+        header={`${game.title} - ${t('sessions.title')}`}
+        actions={[{ onClick: () => navigate(`/sessions/create/${game.id}`), variant: 'solid', content: 'game.add' }]}
       />
       <BgtPageContent>
         <BgtCard className="p-4">
           <BgtDataTable
             columns={columns}
-            data={sessions.data ?? []}
+            data={sessions}
             noDataMessage={t('common.no-data')}
             widths={['w-[70px]', 'w-[100px]', 'w-[75px]']}
           />

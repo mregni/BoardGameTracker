@@ -4,8 +4,6 @@ import { Dialog } from '@radix-ui/themes';
 import * as Form from '@radix-ui/react-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { usePlayers } from '../../Players/hooks/usePlayers';
-
 import {
   CreateSession,
   CreateSessionPlayer,
@@ -14,7 +12,6 @@ import {
   CreatePlayerSessionSchema,
 } from '@/models/Session/CreateSession';
 import { usePlayerById } from '@/hooks/usePlayerById';
-import { useLocations } from '@/hooks/useLocations';
 import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog/BgtDialog';
@@ -32,7 +29,6 @@ interface Props {
 const UpdateSessionPlayerForm = (props: Props) => {
   const { open, hasScoring, onClose, playerToEdit, onCancel } = props;
   const { t } = useTranslation();
-  const { locations } = useLocations({});
   const { playerById } = usePlayerById();
 
   type PlayType<T extends boolean> = T extends true ? CreateSessionPlayer : CreatePlayerSessionNoScoring;
@@ -47,8 +43,6 @@ const UpdateSessionPlayerForm = (props: Props) => {
       playerId: playerToEdit?.playerId,
     },
   });
-
-  if (locations === undefined) return null;
 
   const onSubmit = (data: CreateSessionPlayer | CreatePlayerSessionNoScoring) => {
     onClose && onClose(data);

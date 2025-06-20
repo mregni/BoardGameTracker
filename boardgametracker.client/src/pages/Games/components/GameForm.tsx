@@ -101,7 +101,7 @@ export const GameForm = (props: Props) => {
                 placeholder={t('game.price.placeholder')}
                 control={control}
                 disabled={disabled}
-                prefixLabel={settings.data?.currency}
+                prefixLabel={settings?.currency}
               />
               <BgtInputField
                 label={t('game.added-date.label')}

@@ -17,35 +17,35 @@ export const DashboardPage = () => {
   const { settings } = useSettings();
   const navigate = useNavigate();
 
-  if (statistics.data === undefined || charts.data === undefined || settings === undefined) return null;
+  if (statistics === undefined || charts === undefined || settings === undefined) return null;
 
   return (
     <BgtPage>
       <BgtPageHeader header={t('common.dashboard')} actions={[]} />
       <BgtPageContent>
         <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 md:gap-3">
-          <BgtTextStatistic content={statistics.data.gameCount} title={t('statistics.game-count')} />
-          <BgtTextStatistic content={statistics.data.playerCount} title={t('statistics.player-count')} />
-          <BgtTextStatistic content={statistics.data.sessionCount} title={t('statistics.session-count')} />
-          <BgtTextStatistic content={statistics.data.locationCount} title={t('statistics.location-count')} />
+          <BgtTextStatistic content={statistics.gameCount} title={t('statistics.game-count')} />
+          <BgtTextStatistic content={statistics.playerCount} title={t('statistics.player-count')} />
+          <BgtTextStatistic content={statistics.sessionCount} title={t('statistics.session-count')} />
+          <BgtTextStatistic content={statistics.locationCount} title={t('statistics.location-count')} />
           <BgtTextStatistic
-            content={statistics.data.totalCost}
-            prefix={settings.data?.currency}
+            content={statistics.totalCost}
+            prefix={settings.currency}
             title={t('statistics.total-cost')}
           />
           <BgtTextStatistic
-            content={RoundDecimal(statistics.data.meanPayed, 0.5)}
-            prefix={settings.data?.currency}
+            content={RoundDecimal(statistics.meanPayed, 0.5)}
+            prefix={settings.currency}
             title={t('statistics.mean-cost')}
           />
 
           <BgtTextStatistic
-            content={statistics.data.totalPlayTime}
+            content={statistics.totalPlayTime}
             title={t('statistics.total-playtime')}
             suffix={t('common.minutes-abbreviation')}
           />
           <BgtTextStatistic
-            content={RoundDecimal(statistics.data.meanPlayTime, 1)}
+            content={RoundDecimal(statistics.meanPlayTime, 1)}
             title={t('statistics.mean-playtime')}
             suffix={t('common.minutes-abbreviation')}
           />
@@ -53,16 +53,16 @@ export const DashboardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 md:gap-3">
           <div>
             <BgtMostWinnerCard
-              image={statistics.data.mostWinningPlayer?.image}
-              name={statistics.data.mostWinningPlayer?.name}
-              value={statistics.data.mostWinningPlayer?.totalWins}
-              onClick={() => navigate(`/players/${statistics.data.mostWinningPlayer?.id}`)}
+              image={statistics.mostWinningPlayer?.image}
+              name={statistics.mostWinningPlayer?.name}
+              value={statistics.mostWinningPlayer?.totalWins}
+              onClick={() => navigate(`/players/${statistics.mostWinningPlayer?.id}`)}
               nameHeader={t('statistics.most-wins')}
               valueHeader={t('statistics.win-count')}
             />
           </div>
           <div>
-            <GameStateChart charts={charts.data} />
+            <GameStateChart charts={charts} />
           </div>
         </div>
       </BgtPageContent>

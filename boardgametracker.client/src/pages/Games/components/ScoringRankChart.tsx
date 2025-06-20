@@ -42,19 +42,16 @@ export const ScoringRankChart = () => {
   const [divRef, { width }] = useMeasure();
 
   const barData = useMemo(() => {
-    if (scoreRankChart.data !== undefined) {
-      return scoreRankChart.data
-        .map((rank) => ({
-          key: rank.key,
-          score: rank.score,
-          playerId: rank.playerId,
-        }))
-        .reverse();
-    }
-    return [];
+    return scoreRankChart
+      .map((rank) => ({
+        key: rank.key,
+        score: rank.score,
+        playerId: rank.playerId,
+      }))
+      .reverse();
   }, [scoreRankChart]);
 
-  if (scoreRankChart.data === undefined || !game.data?.hasScoring) return null;
+  if (!game?.hasScoring) return null;
 
   const getTickValues = () => {
     if (width < 350) return 3;

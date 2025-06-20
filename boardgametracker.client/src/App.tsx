@@ -53,14 +53,14 @@ function ScrollToTop() {
 }
 
 function App() {
-  const { settings } = useSettings();
+  const { settings, isLoading, isError } = useSettings();
   const { i18n } = useTranslation();
 
   useEffect(() => {
-    i18n.changeLanguage(settings.data?.uiLanguage ?? 'en-US');
-  }, [i18n, settings.data?.uiLanguage]);
+    i18n.changeLanguage(settings?.uiLanguage ?? 'en-US');
+  }, [i18n, settings?.uiLanguage]);
 
-  if (settings.isLoading || settings.isError) return null;
+  if (isLoading || isError) return null;
 
   return (
     <div className="flex flex-col md:flex-row text-white h-screen">

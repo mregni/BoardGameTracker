@@ -12,19 +12,14 @@ export const PlayerCountChart = () => {
   const { t } = useTranslation();
 
   const pieData = useMemo(() => {
-    if (chartPlayerCount.data !== undefined) {
-      return chartPlayerCount.data
-        .map((rank) => ({
-          id: rank.players,
-          label: rank.players,
-          value: rank.playCount,
-        }))
-        .reverse();
-    }
-    return [];
-  }, [chartPlayerCount.data]);
-
-  if (chartPlayerCount.data === undefined) return null;
+    return chartPlayerCount
+      .map((rank) => ({
+        id: rank.players,
+        label: rank.players,
+        value: rank.playCount,
+      }))
+      .reverse();
+  }, [chartPlayerCount]);
 
   return (
     <div className="col-span-1">

@@ -31,10 +31,12 @@ export const useSettings = () => {
   });
 
   return {
-    settings,
+    settings: settings.data,
+    isLoading: settings.isLoading,
+    isError: settings.isError,
     saveSettings,
     isPending,
-    languages,
-    environment,
+    languages: languages.data ?? [],
+    environment: environment.data,
   };
 };

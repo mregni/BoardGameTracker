@@ -2,22 +2,21 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNowStrict } from 'date-fns';
 
+import { useGame } from '../hooks/useGame';
 import { RoundDecimal } from '../../../utils/numberUtils';
 import { useSettings } from '../../../hooks/useSettings';
 import { usePlayerById } from '../../../hooks/usePlayerById';
-import { useGame } from '../../../hooks/useGame';
 import { BgtStatisticsContainer } from '../../../components/BgtStatistics/BgtStatisticsContainer';
 import { BgtStatistic } from '../../../components/BgtStatistic/BgtStatistic';
 
 export const GameStatistics = () => {
   const { id } = useParams();
   const { t } = useTranslation();
-  const { game } = useGame(id);
-  const { statistics } = useGame(id);
+  const { game, statistics } = useGame({ id });
   const { settings } = useSettings();
   const { playerById } = usePlayerById();
 
-  if (game === undefined || statistics === undefined || settings.data === undefined) return null;
+  if (game === undefined || statistics === undefined || settings === undefined) return null;
 
   return (
     <BgtStatisticsContainer>
@@ -36,7 +35,7 @@ export const GameStatistics = () => {
       <BgtStatistic
         content={statistics.pricePerPlay}
         title={t('statistics.price-per-play')}
-        suffix={settings.data.currency}
+        suffix={settings.currency}
       />
       <BgtStatistic
         content={statistics?.mostWinsPlayer?.name}

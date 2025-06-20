@@ -22,7 +22,7 @@ export const usePlayer = ({ id }: Props) => {
   });
 
   return {
-    player,
-    statistics,
+    player: player.data,
+    statistics: statistics.data,
   };
 };

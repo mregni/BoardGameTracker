@@ -168,7 +168,7 @@ export const PlayerDetailpage = () => {
     }
   };
 
-  if (player.data === undefined || statistics.data === undefined) return null;
+  if (player === undefined || statistics === undefined) return null;
 
   return (
     <BgtPage>
@@ -179,12 +179,12 @@ export const PlayerDetailpage = () => {
               <div className="grid grid-cols-12 gap-3">
                 <BgtPoster
                   className="col-span-4 md:col-span-2 flex xl:hidden aspect-square"
-                  title={player.data.name}
-                  image={player.data.image}
+                  title={player.name}
+                  image={player.image}
                 />
                 <div className="col-span-8 md:col-span-10 xl:col-span-12 flex flex-col gap-2">
                   <div className="flex flex-row justify-between">
-                    <BgtHeading>{player.data.name}</BgtHeading>
+                    <BgtHeading>{player.name}</BgtHeading>
                     <BgtEditDeleteButtons onDelete={() => alert('deleting')} onEdit={() => setOpenUpdateModal(true)} />
                   </div>
                   <BgtButton size="3" className="md:hidden">
@@ -193,18 +193,18 @@ export const PlayerDetailpage = () => {
                 </div>
               </div>
 
-              <BgtBadgeContainer badges={player.data.badges} achievementsRef={ref} />
+              <BgtBadgeContainer badges={player.badges} achievementsRef={ref} />
 
               <BgtMostWinnerCard
-                name={statistics.data.mostWinsGame?.title}
-                image={statistics.data.mostWinsGame?.image}
-                value={statistics.data.mostWinsGame?.totalWins}
-                onClick={() => navigate(`/games/${statistics.data.mostWinsGame?.id}`)}
+                name={statistics.mostWinsGame?.title}
+                image={statistics.mostWinsGame?.image}
+                value={statistics.mostWinsGame?.totalWins}
+                onClick={() => navigate(`/games/${statistics.mostWinsGame?.id}`)}
                 nameHeader={t('statistics.best-game')}
                 valueHeader={t('statistics.win-count')}
               />
 
-              {statistics.data.playCount !== 0 && (
+              {statistics.playCount !== 0 && (
                 <div className="flex-row justify-start gap-2 hidden md:flex">
                   <BgtButton size="3" variant="outline" onClick={() => navigate(`/players/${id}/sessions`)}>
                     {i18next.format(t('game.sessions'))}
@@ -215,27 +215,27 @@ export const PlayerDetailpage = () => {
           </div>
           <BgtPoster
             className="hidden xl:flex xl:col-span-4 2xl:col-span-3"
-            title={player.data.name}
-            image={player.data.image}
+            title={player.name}
+            image={player.image}
           />
         </div>
-        {statistics.data.playCount !== 0 && (
+        {statistics.playCount !== 0 && (
           <>
             <div className="grid grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6 gap-1 md:gap-3">
-              <BgtTextStatistic content={statistics.data.playCount} title={t('statistics.play-count')} />
+              <BgtTextStatistic content={statistics.playCount} title={t('statistics.play-count')} />
               <BgtTextStatistic
-                content={statistics.data.totalPlayedTime}
+                content={statistics.totalPlayedTime}
                 title={t('statistics.total-play-time')}
                 suffix={t('common.minutes-abbreviation')}
               />
-              <BgtTextStatistic content={statistics.data.winCount} title={t('statistics.win-count')} />
+              <BgtTextStatistic content={statistics.winCount} title={t('statistics.win-count')} />
               <BgtTextStatistic
-                content={GetPercentage(statistics.data.winCount, statistics.data.playCount)}
+                content={GetPercentage(statistics.winCount, statistics.playCount)}
                 title={t('statistics.win-percentage')}
                 suffix={'%'}
               />
               <BgtTextStatistic
-                content={statistics.data.distinctGameCount}
+                content={statistics.distinctGameCount}
                 title={t('statistics.distinct-game-count')}
               />
             </div>
@@ -245,20 +245,20 @@ export const PlayerDetailpage = () => {
               </BgtHeading>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1 md:gap-3">
-              {player.data.badges && player.data.badges.map((badge) => <BgtBadge key={badge.titleKey} badge={badge} />)}
+              {player.badges && player.badges.map((badge) => <BgtBadge key={badge.titleKey} badge={badge} />)}
             </div>
 
             <BgtDeleteModal
-              title={player.data.name}
+              title={player.name}
               open={openDeleteModal}
               close={() => setOpenDeleteModal(false)}
               onDelete={deletePlayerInternal}
-              description={t('common.delete.description', { title: player.data.name })}
+              description={t('common.delete.description', { title: player.name })}
             />
           </>
         )}
         {openUpdateModal && (
-          <EditPlayerModal open={openUpdateModal} setOpen={setOpenUpdateModal} player={player.data} />
+          <EditPlayerModal open={openUpdateModal} setOpen={setOpenUpdateModal} player={player} />
         )}
       </BgtPageContent>
     </BgtPage>

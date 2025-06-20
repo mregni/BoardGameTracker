@@ -88,7 +88,7 @@ export const BggGameModal = (props: Props) => {
               type="number"
               placeholder={t('game.price.placeholder')}
               control={control}
-              prefixLabel={settings.data?.currency}
+              prefixLabel={settings?.currency}
             />
             <BgtInputField
               disabled={isPending}

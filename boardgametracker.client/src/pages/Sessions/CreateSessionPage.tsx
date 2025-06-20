@@ -33,8 +33,8 @@ export const CreateSessionPage = () => {
   return (
     <SessionForm
       gameId={gameId}
-      minutes={game.data?.maxPlayTime ?? 30}
-      start={addMinutes(new Date(), -(game.data?.maxPlayTime ?? 30))}
+      minutes={game?.maxPlayTime ?? 30}
+      start={addMinutes(new Date(), -(game?.maxPlayTime ?? 30))}
       buttonText={t('player-session.save')}
       onClick={save}
       disabled={saveSession.isPending}

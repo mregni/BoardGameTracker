@@ -34,7 +34,7 @@ const MobileMenu = () => {
     };
   }, []);
 
-  if (counts.data === undefined) return null;
+  if (counts === undefined) return null;
 
   return (
     <div className="flex-col flex justify-between md:hidden">
@@ -47,12 +47,12 @@ const MobileMenu = () => {
       </div>
       <div className={cx('mobile-menu bg-gray-950 absolute w-full top-14 z-40', !open && 'hidden-menu')}>
         {menuItems.map((x) => (
-          <BgtMenuItem key={x.path} item={x} count={counts.data.find((y) => y.key == x.path)?.value} />
+          <BgtMenuItem key={x.path} item={x} count={counts.find((y) => y.key == x.path)?.value} />
         ))}
         <div>
-          {environment.data && (
+          {environment && (
             <div className="flex justify-center items-center h-9 text-gray-500 text-sm">
-              {t('settings.environment.version')}: {environment.data.version}
+              {t('settings.environment.version')}: {environment.version}
             </div>
           )}
         </div>
@@ -67,7 +67,7 @@ const BgtMenuBar = () => {
   const { menuItems } = useMenuItems();
   const { environment } = useSettings();
 
-  if (counts.data === undefined) return null;
+  if (counts === undefined) return null;
 
   return (
     <div>
@@ -76,13 +76,13 @@ const BgtMenuBar = () => {
           <BgtMenuLogo />
           <div className="mt-4">
             {menuItems.map((x) => (
-              <BgtMenuItem key={x.path} item={x} count={counts.data.find((y) => y.key == x.path)?.value} />
+              <BgtMenuItem key={x.path} item={x} count={counts.find((y) => y.key == x.path)?.value} />
             ))}
           </div>
         </div>
-        {environment.data && (
+        {environment && (
           <div className="flex justify-center items-center h-16 text-gray-500">
-            {t('settings.environment.version')}: {environment.data.version}
+            {t('settings.environment.version')}: {environment.version}
           </div>
         )}
       </div>

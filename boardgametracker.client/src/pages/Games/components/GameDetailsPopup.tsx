@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import i18next from 'i18next';
 import { Badge, Button, Text } from '@radix-ui/themes';
 
-import { useGame } from '../../../hooks/useGame';
+import { useGame } from '../hooks/useGame';
 
 import { RoundDecimal } from '@/utils/numberUtils';
 import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog/BgtDialog';
@@ -23,7 +23,7 @@ const sanitiseValues = (val1: number | null, val2: number | null): string | null
 
 export const GameDetailsPopup = (props: Props) => {
   const { id, open, setOpen } = props;
-  const { game } = useGame(id);
+  const { game } = useGame({ id });
   const { t } = useTranslation();
 
   if (game === undefined || !open) return null;
