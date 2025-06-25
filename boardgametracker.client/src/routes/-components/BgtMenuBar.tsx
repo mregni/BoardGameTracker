@@ -58,7 +58,7 @@ const MobileMenu = () => {
 
 const BgtMenuBar = () => {
   const { t } = useTranslation();
-  const { counts, environment, settings, menuItems } = useBgtMenuBar();
+  const { counts, environment, menuItems } = useBgtMenuBar();
 
   if (counts === undefined) return null;
 
@@ -79,7 +79,7 @@ const BgtMenuBar = () => {
           </div>
         )}
       </div>
-      <MobileMenu settings={settings} />
+      <MobileMenu />
     </div>
   );
 };

@@ -19,7 +19,6 @@ export const BgtImageCard = (props: Props) => {
   const { title, image, state = null, link } = props;
   const { t } = useTranslation();
 
-  console.log(link);
   return (
     <Link to={link} from="/">
       <div className="flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1 group">

@@ -15,8 +15,6 @@ import CheckIcon from '@/assets/icons/check.svg?react';
 import CaretUpIcon from '@/assets/icons/caret-up.svg?react';
 import CaretDownIcon from '@/assets/icons/caret-down.svg?react';
 
-
-
 interface Props<T extends FieldValues> {
   label: string;
   items: BgtSelectImageItem[] | BgtSelectItem[];
@@ -50,7 +48,7 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
   });
 
   const isSelectImageItem = (item: BgtSelectImageItem | BgtSelectItem): item is BgtSelectImageItem => {
-    return item && typeof item === 'object' && 'image' in item;
+    return item && typeof item === 'object' && 'image' in item && item.image !== null;
   };
 
   useEffect(() => {

@@ -10,14 +10,12 @@ import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
 import { BgtFormErrors } from './BgtFormErrors';
 
 import { StringToHsl } from '@/utils/stringUtils';
+import { usePlayerById } from '@/routes/-hooks/usePlayerById';
 import { CreateSession } from '@/models';
-import { usePlayerById } from '@/hooks/usePlayerById';
 import TrophyIcon from '@/assets/icons/trophy.svg?react';
 import TrashIcon from '@/assets/icons/trash.svg?react';
 import PencilIcon from '@/assets/icons/pencil.svg?react';
 import ClockIcon from '@/assets/icons/clock.svg?react';
-
-
 
 interface Props {
   name: ArrayPath<CreateSession>;

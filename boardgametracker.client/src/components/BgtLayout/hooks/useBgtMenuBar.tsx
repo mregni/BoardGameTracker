@@ -23,18 +23,16 @@ export const menuItems: MenuItem[] = [
 ];
 
 export const useBgtMenuBar = () => {
-  const [environmentQuery, countsQuery, settingsQuery] = useQueries({
-    queries: [getEnvironment(), getCounts(), getSettings()],
+  const [environmentQuery, countsQuery] = useQueries({
+    queries: [getEnvironment(), getCounts()],
   });
 
   const environment = useMemo(() => environmentQuery.data, [environmentQuery.data]);
   const counts = useMemo(() => countsQuery.data, [countsQuery.data]);
-  const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
 
   return {
     environment,
     counts,
-    settings,
     menuItems,
   };
 };
