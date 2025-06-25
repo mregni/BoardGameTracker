@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { Badge } from '../';
+import { Badge } from '..';
 
 export interface Player {
   id: string;

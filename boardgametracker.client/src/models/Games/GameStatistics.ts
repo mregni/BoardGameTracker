@@ -1,4 +1,4 @@
-import { Player } from '../';
+import { Player } from '..';
 
 export interface MostWinner extends Player {
   totalWins: number;
