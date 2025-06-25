@@ -3,8 +3,8 @@ import { addMinutes } from 'date-fns';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { useToasts } from '../-hooks/useToasts';
-import { useNewSessionWithGameData } from './-hooks/useNewSessionWithGameData';
 
+import { useNewSessionWithGameData } from './-hooks/useNewSessionWithGameData';
 import { SessionForm } from './-components/SessionForm';
 
 import { getPlayers } from '@/services/queries/players';

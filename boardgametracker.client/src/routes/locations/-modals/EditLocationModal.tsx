@@ -4,8 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { useLocationModal } from '../-hooks/useLocationModal';
 
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { CreateLocation, CreateLocationSchema, Location } from '@/models';
-import { useToasts } from '@/hooks/useToasts';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';

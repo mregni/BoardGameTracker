@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
+import { useToasts } from '../-hooks/useToasts';
 
 import { usePlayerSessionData } from './-hooks/usePlayerSessionData';
 
@@ -12,7 +13,6 @@ import { getSettings } from '@/services/queries/settings';
 import { getPlayer, getPlayers, getPlayerSessions } from '@/services/queries/players';
 import { getGames } from '@/services/queries/games';
 import { Session } from '@/models';
-import { useToasts } from '@/hooks/useToasts';
 import { DataTableProps, BgtDataTable } from '@/components/BgtTable/BgtDataTable';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';

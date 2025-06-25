@@ -3,17 +3,21 @@ import { Dispatch, SetStateAction } from 'react';
 import { t } from 'i18next';
 import { Badge, Text } from '@radix-ui/themes';
 
+import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
+import BgtButton from '../BgtButton/BgtButton';
+import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
+
+import { BgtFormErrors } from './BgtFormErrors';
+
+import { StringToHsl } from '@/utils/stringUtils';
+import { CreateSession } from '@/models';
+import { usePlayerById } from '@/hooks/usePlayerById';
 import TrophyIcon from '@/assets/icons/trophy.svg?react';
 import TrashIcon from '@/assets/icons/trash.svg?react';
 import PencilIcon from '@/assets/icons/pencil.svg?react';
 import ClockIcon from '@/assets/icons/clock.svg?react';
-import { usePlayerById } from '@/hooks/usePlayerById';
-import { CreateSession } from '@/models';
-import { StringToHsl } from '@/utils/stringUtils';
-import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
-import BgtButton from '../BgtButton/BgtButton';
-import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
-import { BgtFormErrors } from './BgtFormErrors';
+
+
 
 interface Props {
   name: ArrayPath<CreateSession>;

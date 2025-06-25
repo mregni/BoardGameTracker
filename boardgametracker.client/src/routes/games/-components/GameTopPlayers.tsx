@@ -1,9 +1,9 @@
 import { cx } from 'class-variance-authority';
 import { useNavigate } from '@tanstack/react-router';
 
-import { usePlayerById } from '@/routes/-hooks/usePlayerById';
 import { StringToHsl } from '@/utils/stringUtils';
 import { RoundDecimal } from '@/utils/numberUtils';
+import { usePlayerById } from '@/routes/-hooks/usePlayerById';
 import { TopPlayer, Trend } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
 import { BgtCard } from '@/components/BgtCard/BgtCard';

@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
+import { useToasts } from '../-hooks/useToasts';
+
 import { useUpdateGame } from './-hooks/useUpdateGame';
 import { GameForm } from './-components/GameForm';
 
 import { getSettings } from '@/services/queries/settings';
 import { Game, CreateGame } from '@/models';
-import { useToasts } from '../-hooks/useToasts';
 
 export const Route = createFileRoute('/games/$gameId_/update')({
   component: RouteComponent,

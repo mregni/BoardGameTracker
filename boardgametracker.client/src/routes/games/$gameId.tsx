@@ -6,6 +6,7 @@ import { cx } from 'class-variance-authority';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
+import { useToasts } from '../-hooks/useToasts';
 import { BgtPoster } from '../-components/BgtPoster';
 
 import { ExpansionSelectorModal } from './-modals/ExpansionSelectorModal';
@@ -28,7 +29,6 @@ import { BgtMostWinnerCard } from '@/components/BgtCard/BgtMostWinnerCard';
 import { BgtEditDeleteButtons } from '@/components/BgtButton/BgtEditDeleteButtons';
 import BgtButton from '@/components/BgtButton/BgtButton';
 import { BgtBadge } from '@/components/BgtBadge/BgtBadge';
-import { useToasts } from '../-hooks/useToasts';
 
 export const Route = createFileRoute('/games/$gameId')({
   component: RouteComponent,

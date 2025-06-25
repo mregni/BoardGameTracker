@@ -3,13 +3,13 @@ import { useState, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
+import { useToasts } from '../-hooks/useToasts';
 
 import { useLocationsData } from './-hooks/useLocationsData';
 
 import { NewLocationModal } from '@/routes/locations/-modals/NewLocationModal';
 import { EditLocationModal } from '@/routes/locations/-modals/EditLocationModal';
 import { Location } from '@/models';
-import { useToasts } from '@/hooks/useToasts';
 import { DataTableProps, BgtDataTable } from '@/components/BgtTable/BgtDataTable';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';

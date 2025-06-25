@@ -1,5 +1,5 @@
-import { Expansion } from '../Games/Expansion';
 import { SessionFlag } from '../Games/SessionFlag';
+import { Expansion } from '../Games/Expansion';
 
 import { PlayerSession } from './PlayerSession';
 

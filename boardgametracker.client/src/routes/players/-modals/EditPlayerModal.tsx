@@ -5,8 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { usePlayerModal } from '../-hooks/usePlayerModal';
 
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { CreatePlayerSchema, Player, UpdatePlayer } from '@/models';
-import { useToasts } from '@/hooks/useToasts';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtImageSelector } from '@/components/BgtForm/BgtImageSelector';
 import {

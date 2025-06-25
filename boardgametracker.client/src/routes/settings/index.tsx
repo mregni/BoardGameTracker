@@ -3,12 +3,13 @@ import { useForm } from 'react-hook-form';
 import { createFileRoute } from '@tanstack/react-router';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { useToasts } from '../-hooks/useToasts';
+
 import { useSettingsData } from './-hooks/useSettingsData';
 
 import { ToLogLevel } from '@/utils/numberUtils';
 import { getSettings, getLanguages, getEnvironment } from '@/services/queries/settings';
 import { Settings, SettingsSchema } from '@/models';
-import { useToasts } from '@/hooks/useToasts';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';

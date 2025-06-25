@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { useToasts } from '../-hooks/useToasts';
-import { useUpdateSessionData } from './-hooks/useUpdateSessionData';
 
+import { useUpdateSessionData } from './-hooks/useUpdateSessionData';
 import { SessionForm } from './-components/SessionForm';
 
 import { getSession } from '@/services/queries/sessions';

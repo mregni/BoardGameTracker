@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
+import { useToasts } from '../-hooks/useToasts';
 
 import { useGameSessionsData } from './-hooks/useGameSessionsData';
 
@@ -18,7 +19,6 @@ import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtCard } from '@/components/BgtCard/BgtCard';
 import { BgtEditDeleteButtons } from '@/components/BgtButton/BgtEditDeleteButtons';
 import { BgtPlayerAvatar } from '@/components/BgtAvatar/BgtPlayerAvatar';
-import { useToasts } from '../-hooks/useToasts';
 
 export const Route = createFileRoute('/games/$gameId_/sessions')({
   component: RouteComponent,

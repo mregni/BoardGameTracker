@@ -5,6 +5,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import * as Tooltip from '@radix-ui/react-tooltip';
 
 import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
+import { useToasts } from '../-hooks/useToasts';
 import { BgtPoster } from '../-components/BgtPoster';
 
 import { usePlayerData } from './-hooks/usePlayerData';
@@ -21,7 +22,6 @@ import { BgtMostWinnerCard } from '@/components/BgtCard/BgtMostWinnerCard';
 import { BgtCard } from '@/components/BgtCard/BgtCard';
 import { BgtEditDeleteButtons } from '@/components/BgtButton/BgtEditDeleteButtons';
 import BgtButton from '@/components/BgtButton/BgtButton';
-import { useToasts } from '../-hooks/useToasts';
 
 export const Route = createFileRoute('/players/$playerId')({
   component: RouteComponent,
