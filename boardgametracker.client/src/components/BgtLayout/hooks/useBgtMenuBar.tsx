@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 
-import { getEnvironment } from '@/services/queries/settings';
+import { getEnvironment, getSettings } from '@/services/queries/settings';
 import { getCounts } from '@/services/queries/count';
 import { MenuItem } from '@/models';
 import UsersIcon from '@/assets/icons/users.svg?react';
@@ -23,16 +23,18 @@ export const menuItems: MenuItem[] = [
 ];
 
 export const useBgtMenuBar = () => {
-  const [environmentQuery, countsQuery] = useQueries({
-    queries: [getEnvironment(), getCounts()],
+  const [environmentQuery, countsQuery, settingsQuery] = useQueries({
+    queries: [getEnvironment(), getCounts(), getSettings()],
   });
 
   const environment = useMemo(() => environmentQuery.data, [environmentQuery.data]);
   const counts = useMemo(() => countsQuery.data, [countsQuery.data]);
+  const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
 
   return {
     environment,
     counts,
+    settings,
     menuItems,
   };
 };

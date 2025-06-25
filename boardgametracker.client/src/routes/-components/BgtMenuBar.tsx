@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { cx } from 'class-variance-authority';
+import { useLocation } from '@tanstack/react-router';
 
-import { BgtMenuLogo } from '../BgtMenu/BgtMenuLogo';
-import { BgtMenuItem } from '../BgtMenu/BgtMenuItem';
-
-import { useBgtMenuBar } from './hooks/useBgtMenuBar';
+import { BgtMenuLogo } from '../../components/BgtMenu/BgtMenuLogo';
+import { BgtMenuItem } from '../../components/BgtMenu/BgtMenuItem';
+import { useBgtMenuBar } from '../../components/BgtLayout/hooks/useBgtMenuBar';
 
 import XIcon from '@/assets/icons/x.svg?react';
 import List from '@/assets/icons/list.svg?react';
@@ -13,13 +13,12 @@ import List from '@/assets/icons/list.svg?react';
 const MobileMenu = () => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const { counts } = useBgtMenuBar();
-  // const { environment } = useSettings();
+  const location = useLocation();
+  const { environment, menuItems, counts } = useBgtMenuBar();
 
-  //TODO: fix
-  // useEffect(() => {
-  //   setOpen(false);
-  // }, [location]);
+  useEffect(() => {
+    setOpen(false);
+  }, [location]);
 
   useEffect(() => {
     const closeMenu = () => setOpen(false);
@@ -42,16 +41,16 @@ const MobileMenu = () => {
         </div>
       </div>
       <div className={cx('mobile-menu bg-gray-950 absolute w-full top-14 z-40', !open && 'hidden-menu')}>
-        {/* {menuItems.map((x) => (
-          <BgtMenuItem key={x.path} item={x} count={counts.find((y) => y.key == x.path)?.value} />
+        {menuItems.map((x) => (
+          <BgtMenuItem key={x.path} item={x} count={counts.find((y) => x.path.endsWith(y.key))?.value} />
         ))}
-        {/* <div>
+        <div>
           {environment && (
             <div className="flex justify-center items-center h-9 text-gray-500 text-sm">
               {t('settings.environment.version')}: {environment.version}
             </div>
           )}
-        </div> */}
+        </div>
       </div>
     </div>
   );
@@ -59,7 +58,7 @@ const MobileMenu = () => {
 
 const BgtMenuBar = () => {
   const { t } = useTranslation();
-  const { counts, environment, menuItems } = useBgtMenuBar();
+  const { counts, environment, settings, menuItems } = useBgtMenuBar();
 
   if (counts === undefined) return null;
 
@@ -80,7 +79,7 @@ const BgtMenuBar = () => {
           </div>
         )}
       </div>
-      <MobileMenu />
+      <MobileMenu settings={settings} />
     </div>
   );
 };

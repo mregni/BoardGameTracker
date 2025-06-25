@@ -19,9 +19,10 @@ export const BgtImageCard = (props: Props) => {
   const { title, image, state = null, link } = props;
   const { t } = useTranslation();
 
+  console.log(link);
   return (
-    <div className="flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1 group">
-      <Link to={link}>
+    <Link to={link} from="/">
+      <div className="flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1 group">
         <div
           style={{ '--image-url': `url(${image})`, '--fallback-color': StringToRgb(title) }}
           className={cx(
@@ -35,10 +36,8 @@ export const BgtImageCard = (props: Props) => {
             <span className="flex justify-center align-middle h-max font-bold text-3xl capitalize">{title[0]}</span>
           )}
         </div>
-      </Link>
-      <div className="flex flex-row justify-between items-end">
-        <div className="flex flex-col items-start justify-start">
-          <Link to={link}>
+        <div className="flex flex-row justify-between items-end">
+          <div className="flex flex-col items-start justify-start">
             {state !== null && (
               <BgtText
                 size="1"
@@ -52,9 +51,9 @@ export const BgtImageCard = (props: Props) => {
             <BgtText size="4" className="line-clamp-1 uppercase w-full" weight="medium">
               {title}
             </BgtText>
-          </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };

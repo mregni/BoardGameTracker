@@ -1,8 +1,9 @@
 import { Outlet, createRootRouteWithContext } from '@tanstack/react-router';
 import { QueryClient } from '@tanstack/react-query';
 
+import BgtMenuBar from './-components/BgtMenuBar';
+
 import { MenuItem } from '@/models';
-import BgtMenuBar from '@/components/BgtLayout/BgtMenuBar';
 
 interface RouterContext {
   queryClient: QueryClient;

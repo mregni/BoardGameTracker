@@ -139,7 +139,7 @@ function RouteComponent() {
                         key={cat.id}
                         color="green"
                         variant="soft"
-                        onClick={() => navigate({ to: `/games?category=${cat.name}` })}
+                        onClick={() => navigate({ to: '/games', search: () => ({ category: cat.name }) })}
                       >
                         {cat.name}
                       </BgtBadge>

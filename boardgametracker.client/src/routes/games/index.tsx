@@ -63,9 +63,7 @@ function RouteComponent() {
     setOpenBggModal(true);
   };
 
-  if (isLoading) {
-    return <></>;
-  }
+  if (isLoading) return null;
 
   return (
     <BgtPage>
