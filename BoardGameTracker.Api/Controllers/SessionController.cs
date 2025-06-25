@@ -3,6 +3,7 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Common.ViewModels.Results;
+using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,14 +15,16 @@ namespace BoardGameTracker.Api.Controllers;
 public class SessionController : ControllerBase
 {
     private readonly ISessionService _sessionService;
+    private readonly IGameService _gameService;
     private readonly IMapper _mapper;
     private readonly ILogger<SessionController> _logger;
 
-    public SessionController(ISessionService sessionService, IMapper mapper, ILogger<SessionController> logger)
+    public SessionController(ISessionService sessionService, IMapper mapper, ILogger<SessionController> logger, IGameService gameService)
     {
         _sessionService = sessionService;
         _mapper = mapper;
         _logger = logger;
+        _gameService = gameService;
     }
     
     [HttpGet]
@@ -39,7 +42,7 @@ public class SessionController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateSession([FromBody] SessionViewModel? viewModel)
+    public async Task<IActionResult> CreateSession([FromBody] CreateSessionViewModel? viewModel)
     {
         if (viewModel == null)
         {
@@ -49,6 +52,7 @@ public class SessionController : ControllerBase
         try
         {
             var play = _mapper.Map<Session>(viewModel);
+            play.Expansions = await _gameService.GetGameExpansions(viewModel.ExpansionIds);
             play = await _sessionService.Create(play);
 
             var result = _mapper.Map<SessionViewModel>(play);
@@ -62,7 +66,7 @@ public class SessionController : ControllerBase
     }
     
     [HttpPut]
-    public async Task<IActionResult> UpdateSession([FromBody] SessionViewModel? updateViewModel)
+    public async Task<IActionResult> UpdateSession([FromBody] CreateSessionViewModel? updateViewModel)
     {
         if (updateViewModel is not {Id: not null})
         {
@@ -72,6 +76,7 @@ public class SessionController : ControllerBase
         var play = _mapper.Map<Session>(updateViewModel);
         try
         {
+            play.Expansions = await _gameService.GetGameExpansions(updateViewModel.ExpansionIds);
             var result = await _sessionService.Update(play);
             var viewModel = _mapper.Map<SessionViewModel>(result);
             return new OkObjectResult(viewModel);

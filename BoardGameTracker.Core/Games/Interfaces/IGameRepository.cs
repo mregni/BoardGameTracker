@@ -34,9 +34,12 @@ public interface IGameRepository: ICrudHelper<Game>
     Task<PlayerSession?> GetHighestLosingPlayer(int id);
     Task<PlayerSession?> GetLowestWinning(int id);
     Task<PlayerSession?> GetLowestScoringPlayer(int id);
+    Task<int?> GetExpansionCount(int id);
     Task<double> GetAveragePlayTime(int id);
     Task<double?> GetMeanPayedAsync();
     Task<double?> GetTotalPayedAsync();
     Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState();
     Task<List<Session>> GetSessionsByGameId(int id);
+    Task<List<Expansion>> GetExpansions(List<int> expansionIds);
+    Task<int> GetTotalExpansionCount();
 }

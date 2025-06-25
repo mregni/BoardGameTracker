@@ -4,16 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { cx } from 'class-variance-authority';
 import * as Select from '@radix-ui/react-select';
 
-import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
-import { StringToHsl } from '../../utils/stringUtils';
-import { BgtSelectImageItem, BgtSelectItem } from '../../models/Common/BgtSelectItem';
-
-import { BgtFormErrors } from './BgtFormErrors';
-
 import SearchIcon from '@/assets/icons/magnifying-glass.svg?react';
 import CheckIcon from '@/assets/icons/check.svg?react';
 import CaretUpIcon from '@/assets/icons/caret-up.svg?react';
 import CaretDownIcon from '@/assets/icons/caret-down.svg?react';
+import { BgtSelectImageItem, BgtSelectItem } from '@/models';
+import { StringToHsl } from '@/utils/stringUtils';
+import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
+import { BgtFormErrors } from './BgtFormErrors';
 
 interface Props<T extends FieldValues> {
   label: string;

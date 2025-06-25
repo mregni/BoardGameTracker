@@ -1,6 +1,7 @@
 import { PersonType } from './PersonType';
 import { GameType } from './GameType';
 import { GameState } from './GameState';
+import { Expansion } from './Expansion';
 
 export interface Game {
   id: string;
@@ -20,7 +21,7 @@ export interface Game {
   state: GameState;
   baseGameId: number | null;
   baseGame: Game;
-  expansions: Game[];
+  expansions: Expansion[];
   categories: GameLink[];
   mechanics: GameLink[];
   people: GamePerson[];

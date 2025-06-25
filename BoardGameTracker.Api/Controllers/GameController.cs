@@ -66,6 +66,15 @@ public class GameController : ControllerBase
             return StatusCode(500);
         }
     }
+    
+    [HttpDelete]
+    [Route("{id:int}")]
+    public async Task<IActionResult> DeleteGameById(int id)
+    {
+        await _gameService.Delete(id);
+        return new OkObjectResult(new DeletionResultViewModel(ResultState.Success));
+    }
+
 
     [HttpGet]
     [Route("{id:int}")]
@@ -80,45 +89,7 @@ public class GameController : ControllerBase
         var viewModel = _mapper.Map<GameViewModel>(game);
         return new OkObjectResult(viewModel);
     }
-
-    [HttpGet]
-    [Route("{id:int}/sessions")]
-    public async Task<IActionResult> GetGameSessionsById(int id)
-    {
-        var sessions = await _gameService.GetSessionsForGame(id);
-
-        var viewModel = _mapper.Map<IList<SessionViewModel>>(sessions);
-        return new OkObjectResult(viewModel);
-    }
-
-    [HttpDelete]
-    [Route("{id:int}")]
-    public async Task<IActionResult> DeleteGameById(int id)
-    {
-        await _gameService.Delete(id);
-        return new OkObjectResult(new DeletionResultViewModel(ResultState.Success));
-    }
-
-    [HttpGet]
-    [Route("{id:int}/stats")]
-    public async Task<IActionResult> GetGameStats(int id)
-    {
-        var stats = await _gameService.GetStats(id);
-
-        var statsViewModel = _mapper.Map<GameStatisticsViewModel>(stats);
-        return new OkObjectResult(statsViewModel);
-    }
-
-    [HttpGet]
-    [Route("{id:int}/top")]
-    public async Task<IActionResult> GetTopPlayers(int id)
-    {
-        var topPlayers = await _gameService.GetTopPlayers(id);
-
-        var playersViewModel = _mapper.Map<IList<TopPlayerViewModel>>(topPlayers);
-        return new OkObjectResult(playersViewModel);
-    }
-
+    
     [HttpPost("bgg")]
     public async Task<IActionResult> SearchOnBgg([FromBody] BggSearch search)
     {
@@ -129,7 +100,7 @@ public class GameController : ControllerBase
             return new OkObjectResult(existingGameViewModel);
         }
 
-        var game = await _gameService.SearchAndCreateGame(search.BggId);
+        var game = await _gameService.SearchGame(search.BggId);
         if (game == null)
         {
             return new BadRequestResult();
@@ -140,41 +111,57 @@ public class GameController : ControllerBase
         return new OkObjectResult(result);
     }
 
-    [HttpGet("{id:int}/chart/sessionsbyday")]
-    public async Task<IActionResult> PlayByDayChart(int id)
+    [HttpGet]
+    [Route("{id:int}/sessions")]
+    public async Task<IActionResult> GetGameSessionsById(int id)
     {
-        var data = await _gameService.GetPlayByDayChart(id);
-        var dataViewModel = _mapper.Map<IList<PlayByDayChartViewModel>>(data);
-        return new OkObjectResult(dataViewModel);
-    }
+        var sessions = await _gameService.GetSessionsForGame(id);
 
-    [HttpGet("{id:int}/chart/playercounts")]
-    public async Task<IActionResult> PlayerCounts(int id)
-    {
-        var data = await _gameService.GetPlayerCountChart(id);
-        var dataViewModel = _mapper.Map<IList<PlayerCountChartViewModel>>(data);
-        return new OkObjectResult(dataViewModel);
+        var viewModel = _mapper.Map<IList<SessionViewModel>>(sessions);
+        return new OkObjectResult(viewModel);
     }
-
-    [HttpGet("{id:int}/chart/playerscoring")]
-    public async Task<IActionResult> PlayerScoring(int id)
+    
+    [HttpGet]
+    [Route("{id:int}/expansions")]
+    public async Task<IActionResult> GetGameExpansions(int id)
     {
-        var game = await _gameService.GetGameById(id);
-        if (game is {HasScoring: false})
+        var expansions = await _gameService.SearchExpansionsForGame(id);
+
+        var expansionsViewModel = _mapper.Map<IList<BggLinkViewModel>>(expansions);
+        return new OkObjectResult(expansionsViewModel);
+    }
+    
+    [HttpPost]
+    [Route("{id:int}/expansions")]
+    public async Task<IActionResult> UpdateGameExpansions(int id, [FromBody] GameExpansionUpdateViewModel model)
+    {
+        var expansions = await _gameService.UpdateGameExpansions(id, model.ExpansionBggIds);
+        
+        var viewModel = _mapper.Map<IList<Expansion>>(expansions);
+        return new OkObjectResult(viewModel);
+    }
+    
+    [HttpGet]
+    [Route("{id:int}/statistics")]
+    public async Task<IActionResult> GetGameStatistics(int id)
+    {
+        var stats = await _gameService.GetStats(id);
+        var topPlayers = await _gameService.GetTopPlayers(id);
+        var playByDayChart = await _gameService.GetPlayByDayChart(id);
+        var playerCountChart = await _gameService.GetPlayerCountChart(id);
+        var playerScoringChart = await _gameService.GetPlayerScoringChart(id);
+        var scoringRankChart = await _gameService.GetScoringRankedChart(id);
+
+        var result = new GameStatisticsViewModel()
         {
-            return new BadRequestResult();
-        }
-
-        var data = await _gameService.GetPlayerScoringChart(id);
-        var dataViewModel = _mapper.Map<IList<PlayerScoringChartViewModel>>(data);
-        return new OkObjectResult(dataViewModel);
-    }
-
-    [HttpGet("{id:int}/chart/scorerank")]
-    public async Task<IActionResult> ScoringRanked(int id)
-    {
-        var data = await _gameService.GetScoringRankedChart(id);
-        var dataViewModel = _mapper.Map<IList<ScoreRankChartViewModel>>(data);
-        return new OkObjectResult(dataViewModel);
+            GameStats = _mapper.Map<GameStatsViewModel>(stats),
+            TopPlayers = _mapper.Map<IList<TopPlayerViewModel>>(topPlayers),
+            PlayByDayChart = _mapper.Map<IList<PlayByDayChartViewModel>>(playByDayChart),
+            PlayerCountChart = _mapper.Map<IList<PlayerCountChartViewModel>>(playerCountChart),
+            PlayerScoringChart = _mapper.Map<IList<PlayerScoringChartViewModel>>(playerScoringChart),
+            ScoreRankChart = _mapper.Map<IList<ScoreRankChartViewModel>>(scoringRankChart),
+        };
+        
+        return new OkObjectResult(result);
     }
 }

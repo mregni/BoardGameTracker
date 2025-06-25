@@ -1,3 +1,4 @@
+import { Expansion } from '../Games/Expansion';
 import { SessionFlag } from '../Games/SessionFlag';
 
 import { PlayerSession } from './PlayerSession';
@@ -10,6 +11,7 @@ export interface Session {
   start: Date;
   minutes: number;
   playerSessions: PlayerSession[];
+  expansions: Expansion[];
   locationId: string;
   flags: SessionFlag[];
 }

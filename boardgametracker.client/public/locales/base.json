@@ -40,6 +40,7 @@
     "poster": "Game poster",
     "date": "Date",
     "time": "Time",
+    "filter": "Filter",
     "loading-data": "Loading data...",
     "filter-name": "Filter by name",
     "other-players": "Other players",
@@ -75,15 +76,20 @@
       "games": "Games"
     }
   },
+  "expansions": {
+    "label": "Expansions"
+  },
   "game": {
     "add": "Add game session",
     "sessions": "View sessions",
     "notifications": {
       "created": "Game is succesfully created",
+      "create-failed": "Game creation failed",
       "not-found": "Could not find game",
       "duplicate": "Game already exists",
       "deleted": "Game is succesfully deleted",
-      "updated": "Game is succesfully updated"
+      "updated": "Game is succesfully updated",
+      "update-failed": "Failed updating game"
     },
     "added-date": {
       "label": "Date added",
@@ -98,6 +104,13 @@
     "update": {
       "save": "Update game",
       "title": "Update game"
+    },
+    "expansions": {
+      "title": "Expansions",
+      "description": "Add/delete expansions to this game.",
+      "update": "Update expansions",
+      "none": "No expansions added to this game.",
+      "no-game": "Select a game to view expansions."
     },
     "new": {
       "description": "Choose a method to create a new game.",
@@ -194,10 +207,12 @@
   "player": {
     "notifications": {
       "created": "Player is succesfully created",
+      "create-failed": "Failed creating player",
       "not-found": "Could not find player",
       "deleted": "Player is succesfully deleted",
       "delete-failed": "Failed deleting player",
-      "updated": "Player is succesfully updated"
+      "updated": "Player is succesfully updated",
+      "update-failed": "Failed updating player"
     },
     "name": {
       "placeholder": "Enter name of the player",
@@ -267,7 +282,7 @@
     "average-score": "Average score",
     "high-score": "High score",
     "most-wins": "Most wins",
-    "play-count": "Plays",
+    "play-count": "Sessions",
     "game-count": "Games",
     "player-count": "Players",
     "session-count": "Sessions",
@@ -285,7 +300,8 @@
     "best-game": "Best game",
     "average-playtime": "Average playtime",
     "win-percentage": "Win percentage",
-    "buy-price": "Cost"
+    "buy-price": "Cost",
+    "expansion-count": "Expansions"
   },
   "sessions": {
     "new": "Add new session",
@@ -333,7 +349,11 @@
       "version": "Version"
     },
     "feature-request": "Feature request",
-    "translations": "Translate the app"
+    "translations": "Translate the app",
+    "save": {
+      "failed": "Failed saving settings",
+      "successfull": "Settings are successfully saved"
+    }
   },
   "player-session": {
     "save-new": "Create game play",
@@ -343,7 +363,7 @@
     "new": {
       "notifications": {
         "created": "Game play is succesfully created",
-        "failed": "Failed creating game play"
+        "create-failed": "Failed creating game play"
       },
       "save": "Add player",
       "title": "Add player",
@@ -386,7 +406,11 @@
     "update": {
       "save": "Update player",
       "title": "Update player",
-      "description": "Update the form to change the details of {{name}}."
+      "description": "Update the form to change the details of {{name}}.",
+      "notifications": {
+        "updated": "Game play is succesfully created",
+        "update-failed": "Failed creating game play"
+      }
     },
     "won": {
       "label": "Player has won the game"

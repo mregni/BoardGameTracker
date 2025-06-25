@@ -32,7 +32,8 @@ public class MapProfiles : Profile
             .ForMember(x => x.Weight, x => x.MapFrom(y => y.Statistics.Ratings.AverageWeight.Value))
             .ForMember(x => x.People, x => x.MapFrom(y => y.Links.Where(IsPersonType)))
             .ForMember(x => x.Categories, x => x.MapFrom(y => y.Links.Where(z => z.Type == Constants.Bgg.Category)))
-            .ForMember(x => x.Mechanics, x => x.MapFrom(y => y.Links.Where(z => z.Type == Constants.Bgg.Mechanic)));
+            .ForMember(x => x.Mechanics, x => x.MapFrom(y => y.Links.Where(z => z.Type == Constants.Bgg.Mechanic)))
+            .ForMember(x => x.Expansions, x => x.MapFrom(y => y.Links.Where(z => z.Type == Constants.Bgg.Expansion)));
 
         CreateMap<BggRawLink, BggLink>();
 
@@ -51,22 +52,26 @@ public class MapProfiles : Profile
 
         CreateMap<BggGame, Game>()
             .ForMember(x => x.Title, x => x.MapFrom(y => y.Names.FirstOrDefault()))
-            .ForMember(x => x.Image, x => x.Ignore());
-        
+            .ForMember(x => x.Image, x => x.Ignore())
+            .ForMember(x => x.Expansions, x => x.Ignore());
+
+        CreateMap<BggLink, BggLinkViewModel>();
         
         //ViewModels
-        CreateMap<Game, GameViewModel>().ReverseMap();
+        CreateMap<Game, GameViewModel>()
+            .ReverseMap();
         CreateMap<GameLinkViewModel, GameCategory>();
         CreateMap<GameLinkViewModel, GameMechanic>();
         CreateMap<GameLinkViewModel, GameAccessory>();
-        CreateMap<GameViewModel, Expansion>();
         CreateMap<GamePersonViewModel, Person>();
+        
+        CreateMap<Expansion, ExpansionViewModel>();
         
         CreateMap<CreateGameViewModel, Game>();
         CreateMap<GameCategory, GameLinkViewModel>();
         CreateMap<GameMechanic, GameLinkViewModel>();
         CreateMap<Person, GamePersonViewModel>();
-        CreateMap<Player, PlayerViewModel>().ReverseMap();
+        CreateMap<Player, PlayerViewModel>().ReverseMap().ForMember(x => x.Badges, x => x.Ignore());
         CreateMap<Badge, BadgeViewModel>();
         CreateMap<Location, LocationViewModel>()
             .ForMember(x => x.PlayCount, x => x.MapFrom(y => y.Sessions.Count))
@@ -76,11 +81,14 @@ public class MapProfiles : Profile
         CreateMap<PlayerCreationViewModel, Player>()
             .ForMember(x => x.Id, x => x.MapFrom(y => (int?)null));
 
-        CreateMap<SessionViewModel, Session>()
-            .ForMember(x => x.End, x => x.MapFrom(y => y.Start.AddMinutes(y.Minutes)))
-            .ReverseMap()
+        CreateMap<Session, SessionViewModel>()
             .ForMember(x => x.Minutes, x => x.MapFrom(y => (y.End - y.Start).TotalMinutes))
             .ForMember(x => x.Flags, x => x.MapFrom(y => new List<SessionFlag>()));
+        
+        CreateMap<CreateSessionViewModel, Session>()
+            .ForMember(x => x.End, x => x.MapFrom(y => y.Start.AddMinutes(y.Minutes)))
+            .ForMember(x => x.Expansions, x => x.Ignore());
+        
         CreateMap<PlayerSessionViewModel, PlayerSession>().ReverseMap();
 
         CreateMap<TopPlayer, TopPlayerViewModel>();
@@ -93,7 +101,7 @@ public class MapProfiles : Profile
             .ForMember(x => x.Series, x => x.MapFrom(y =>y.Value));
         
         CreateMap<PlayerStatistics, PlayerStatisticsViewModel>();
-        CreateMap<GameStatistics, GameStatisticsViewModel>()
+        CreateMap<GameStatistics, GameStatsViewModel>()
             .ForMember(x => x.TotalPlayedTime, x => x.MapFrom(y => y.TotalPlayedTime.TotalMinutes));
         CreateMap<MostWinningPlayer, MostWinnerViewModel>();
         CreateMap<BestWinningGame, BestWinningGameViewModel>();

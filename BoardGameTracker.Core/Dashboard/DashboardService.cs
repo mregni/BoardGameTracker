@@ -36,6 +36,7 @@ public class DashboardService : IDashboardService
         var totalPlayTime = await _sessionRepository.GetTotalPlayTime();
         var meanPlayTime = await _sessionRepository.GetMeanPlayTime();
         var locationCount = await _locationRepository.CountAsync();
+        var expansionCount = await _gameRepository.GetTotalExpansionCount();
         
         var result = new DashboardStatistics
         {
@@ -46,7 +47,8 @@ public class DashboardService : IDashboardService
             TotalPlayTime = totalPlayTime,
             MeanPayed = meanPayed,
             TotalCost = totalPayed,
-            MeanPlayTime = meanPlayTime
+            MeanPlayTime = meanPlayTime,
+            ExpansionCount = expansionCount
         };
         
         var mostWinPlayer = await _gameRepository.GetMostWins();

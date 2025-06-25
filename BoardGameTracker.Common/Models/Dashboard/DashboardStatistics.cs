@@ -3,6 +3,7 @@
 public class DashboardStatistics
 {
     public int GameCount { get; set; }
+    public int ExpansionCount { get; set; }
     public int PlayerCount { get; set; }
     public int LocationCount { get; set; }
     public int SessionCount { get; set; }

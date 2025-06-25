@@ -1,4 +1,4 @@
-import { SessionFlag } from '../models/Games/SessionFlag';
+import { SessionFlag } from '@/models';
 
 export const StringToHsl = (value: string | undefined): string => {
   if (value === undefined) {

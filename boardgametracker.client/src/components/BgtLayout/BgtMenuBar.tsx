@@ -1,29 +1,25 @@
-import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { cx } from 'class-variance-authority';
 
 import { BgtMenuLogo } from '../BgtMenu/BgtMenuLogo';
 import { BgtMenuItem } from '../BgtMenu/BgtMenuItem';
-import { useMenuItems } from '../../hooks/useMenuItems';
 
 import { useBgtMenuBar } from './hooks/useBgtMenuBar';
 
-import { useSettings } from '@/hooks/useSettings';
 import XIcon from '@/assets/icons/x.svg?react';
 import List from '@/assets/icons/list.svg?react';
 
 const MobileMenu = () => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const { menuItems } = useMenuItems();
   const { counts } = useBgtMenuBar();
-  const location = useLocation();
-  const { environment } = useSettings();
+  // const { environment } = useSettings();
 
-  useEffect(() => {
-    setOpen(false);
-  }, [location]);
+  //TODO: fix
+  // useEffect(() => {
+  //   setOpen(false);
+  // }, [location]);
 
   useEffect(() => {
     const closeMenu = () => setOpen(false);
@@ -46,16 +42,16 @@ const MobileMenu = () => {
         </div>
       </div>
       <div className={cx('mobile-menu bg-gray-950 absolute w-full top-14 z-40', !open && 'hidden-menu')}>
-        {menuItems.map((x) => (
+        {/* {menuItems.map((x) => (
           <BgtMenuItem key={x.path} item={x} count={counts.find((y) => y.key == x.path)?.value} />
         ))}
-        <div>
+        {/* <div>
           {environment && (
             <div className="flex justify-center items-center h-9 text-gray-500 text-sm">
               {t('settings.environment.version')}: {environment.version}
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -63,9 +59,7 @@ const MobileMenu = () => {
 
 const BgtMenuBar = () => {
   const { t } = useTranslation();
-  const { counts } = useBgtMenuBar();
-  const { menuItems } = useMenuItems();
-  const { environment } = useSettings();
+  const { counts, environment, menuItems } = useBgtMenuBar();
 
   if (counts === undefined) return null;
 
@@ -76,7 +70,7 @@ const BgtMenuBar = () => {
           <BgtMenuLogo />
           <div className="mt-4">
             {menuItems.map((x) => (
-              <BgtMenuItem key={x.path} item={x} count={counts.find((y) => y.key == x.path)?.value} />
+              <BgtMenuItem key={x.path} item={x} count={counts.find((y) => x.path.endsWith(y.key))?.value} />
             ))}
           </div>
         </div>

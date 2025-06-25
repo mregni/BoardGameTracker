@@ -4,13 +4,13 @@ namespace BoardGameTracker.Common.ViewModels;
 
 public class GameViewModel : CreateGameViewModel
 {
-    public int Id { get; set; }
+    public string Id { get; set; }
     public double? Rating { get; set; }
     public double? Weight { get; set; }
     public int Type { get; set; }
     public string? BaseGameId { get; set; }
     public GameViewModel? BaseGame { get; set; }
-    public List<GameViewModel>? Expansions { get; set; }
+    public List<ExpansionViewModel>? Expansions { get; set; }
     public List<GameLinkViewModel>? Categories { get; set; }
     public List<GameLinkViewModel>? Mechanics { get; set; }
     public List<GamePersonViewModel>? People { get; set; }

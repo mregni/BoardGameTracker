@@ -85,7 +85,7 @@ public static class ServiceCollectionExtensions
             var connectionString = fileConfigProvider.GetPostgresConnectionString(fileConfigProvider.PostgresMainDb);
             options
                 .EnableSensitiveDataLogging(environmentProvider.IsDevelopment)
-                .UseNpgsql(connectionString);
+                .UseNpgsql(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         });
 
         return serviceCollection;

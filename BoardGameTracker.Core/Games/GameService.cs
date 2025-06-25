@@ -20,7 +20,8 @@ public class GameService : IGameService
     private readonly IMapper _mapper;
     private readonly IImageService _imageService;
 
-    public GameService(IGameRepository gameRepository, IMapper mapper, IImageService imageService, IBggApi bggApi, IPlayerRepository playerRepository)
+    public GameService(IGameRepository gameRepository, IMapper mapper, IImageService imageService, IBggApi bggApi,
+        IPlayerRepository playerRepository)
     {
         _gameRepository = gameRepository;
         _mapper = mapper;
@@ -134,9 +135,10 @@ public class GameService : IGameService
             HighScore = await _gameRepository.GetHighestScore(id),
             AveragePlayTime = await _gameRepository.GetAveragePlayTime(id),
             AverageScore = await _gameRepository.GetAverageScore(id),
-            LastPlayed = await _gameRepository.GetLastPlayedDateTime(id)
+            LastPlayed = await _gameRepository.GetLastPlayedDateTime(id),
+            ExpansionCount = await _gameRepository.GetExpansionCount(id),
         };
-        
+
         var mostWinPlayer = await _gameRepository.GetMostWins(id);
         if (mostWinPlayer != null)
         {
@@ -149,7 +151,7 @@ public class GameService : IGameService
                 TotalWins = wins
             };
         }
-        
+
         return stats;
     }
 
@@ -158,9 +160,9 @@ public class GameService : IGameService
         return _gameRepository.CountAsync();
     }
 
-    public async Task<BggGame?> SearchAndCreateGame(int id)
+    public async Task<BggGame?> SearchGame(int id)
     {
-        var response = await _bggApi.SearchGame(id, "boardgame", 1);
+        var response = await _bggApi.SearchGame(id, 1);
         var firstResult = response.Content?.Games?.FirstOrDefault();
         if (!response.IsSuccessStatusCode || firstResult == null)
         {
@@ -168,6 +170,24 @@ public class GameService : IGameService
         }
 
         return _mapper.Map<BggGame>(firstResult);
+    }
+
+    public async Task<BggLink[]> SearchExpansionsForGame(int id)
+    {
+        var dbGame = await _gameRepository.GetByIdAsync(id);
+        if (dbGame is not {BggId: not null})
+        {
+            return [];
+        }
+        var response = await _bggApi.SearchGame(dbGame.BggId.Value, 0);
+        var firstResult = response.Content?.Games?.FirstOrDefault();
+        if (!response.IsSuccessStatusCode || firstResult == null)
+        {
+            return [];
+        }
+
+        var game = _mapper.Map<BggGame>(firstResult);
+        return game.Expansions;
     }
 
     public async Task<List<TopPlayer>> GetTopPlayers(int id)
@@ -186,8 +206,14 @@ public class GameService : IGameService
             .ToList();
     }
 
-    public async Task<Dictionary<DateTime, XValue[]>> GetPlayerScoringChart(int id)
+    public async Task<Dictionary<DateTime, XValue[]>?> GetPlayerScoringChart(int id)
     {
+        var game = await _gameRepository.GetByIdAsync(id);
+        if (game is not {HasScoring: true})
+        {
+            return null;
+        }
+        
         var sessions = await _gameRepository.GetSessions(id, -200);
         var uniquePlayers = sessions
             .SelectMany(x => x.PlayerSessions)
@@ -258,5 +284,44 @@ public class GameService : IGameService
     public Task<Game> UpdateGame(Game game)
     {
         return _gameRepository.UpdateAsync(game);
+    }
+
+    public async Task<List<Expansion>> UpdateGameExpansions(int gameId, int[] expansionIds)
+    {
+        var game = await _gameRepository.GetByIdAsync(gameId);
+        if (game == null)
+        {
+            return [];
+        }
+
+        game.Expansions = game.Expansions.Where(x => expansionIds.Contains(x.BggId)).ToList();
+        
+        var newExpansionsIds = expansionIds
+            .Where(x => !game.Expansions.Select(y => y.BggId).Contains(x));
+        foreach (var expansionId in newExpansionsIds)
+        {
+            var expansionResult = await _bggApi.SearchExpansion(expansionId, 0);
+            var firstResult = expansionResult.Content?.Games?.FirstOrDefault();
+            if (!expansionResult.IsSuccessStatusCode || firstResult == null)
+            {
+                continue;
+            }
+
+            var expansion = new Expansion()
+            {
+                GameId = game.Id,
+                BggId = firstResult.Id,
+                Title = firstResult.Names.FirstOrDefault()?.Value ?? string.Empty
+            };
+            game.Expansions.Add(expansion);
+        }
+
+        await _gameRepository.UpdateAsync(game);
+        return game.Expansions.ToList();
+    }
+
+    public Task<List<Expansion>> GetGameExpansions(List<int> expansionIds)
+    {
+        return _gameRepository.GetExpansions(expansionIds);
     }
 }

@@ -15,15 +15,18 @@ public interface IGameService
     Task Delete(int id);
     Task<GameStatistics> GetStats(int id);
     Task<int> CountAsync();
-    Task<BggGame?> SearchAndCreateGame(int searchBggId);
+    Task<BggGame?> SearchGame(int searchBggId);
+    Task<BggLink[]> SearchExpansionsForGame(int id);
     Task<List<TopPlayer>> GetTopPlayers(int id);
     Task<Dictionary<SessionFlag, int?>> GetPlayFlags(int id);
     Task<int> GetTotalPlayCount(int id);
     Task<IEnumerable<PlayByDay>> GetPlayByDayChart(int id);
     Task<IEnumerable<PlayerCount>> GetPlayerCountChart(int id);
-    Task<Dictionary<DateTime, XValue[]>> GetPlayerScoringChart(int id);
+    Task<Dictionary<DateTime, XValue[]>?> GetPlayerScoringChart(int id);
     Task<List<ScoreRank>> GetScoringRankedChart(int id);
     Task<Game> CreateGame(Game game);
     Task<List<Session>> GetSessionsForGame(int id);
     Task<Game> UpdateGame(Game game);
+    Task<List<Expansion>> UpdateGameExpansions(int gameId, int[] expansionIds);
+    Task<List<Expansion>> GetGameExpansions(List<int> expansionIds);
 }

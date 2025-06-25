@@ -9,5 +9,6 @@ public static class Constants
         public const string Artist = "boardgameartist";
         public const string Designer = "boardgamedesigner";
         public const string Publisher = "boardgamepublisher";
+        public const string Expansion = "boardgameexpansion";
     }
 }

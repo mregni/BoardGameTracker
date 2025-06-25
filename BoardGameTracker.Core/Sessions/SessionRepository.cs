@@ -75,16 +75,18 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
     {
         return _context.Sessions
             .Include(x => x.PlayerSessions)
+            .Include(x => x.Expansions)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public override async Task<Session> UpdateAsync(Session entity)
     {
-        await _context.PlayerSessions
-            .Where(x => x.SessionId == entity.Id)
+        await _context.Sessions
+            .Where(x => x.Id == entity.Id)
             .ExecuteDeleteAsync();
-    
-        _context.Update(entity);
+        
+        _context.Sessions.Add(entity);
+        
         await _context.SaveChangesAsync();
 
         return entity;

@@ -40,6 +40,7 @@ export const CreateSessionSchema = z.object({
   playerSessions: CreatePlayerSessionSchema.or(CreatePlayerSessionNoScoringSchema).array().min(1, {
     message: 'player-session.new.players.minimum',
   }),
+  expansionIds: z.array(z.number()).optional(),
 });
 
 export type CreateSession = z.infer<typeof CreateSessionSchema>;

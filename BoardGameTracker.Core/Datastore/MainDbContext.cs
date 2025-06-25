@@ -10,6 +10,7 @@ namespace BoardGameTracker.Core.Datastore;
 public class MainDbContext : DbContext
 {
     public DbSet<Game> Games { get; set; }
+    public DbSet<Expansion> Expansions { get; set; }
     public DbSet<GameAccessory> GameAccessories { get; set; }
     public DbSet<GameCategory> GameCategories { get; set; }
     public DbSet<GameMechanic> GameMechanics { get; set; }
@@ -64,7 +65,7 @@ public class MainDbContext : DbContext
     {
         builder.Entity<Game>()
             .HasMany(x => x.Expansions)
-            .WithOne(x => x.BaseGame)
+            .WithOne(x => x.Game)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Game>()

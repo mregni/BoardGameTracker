@@ -1,31 +1,28 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 
 import { StringToHsl } from '../../utils/stringUtils';
-import { Game, PlayerSession } from '../../models';
-import { usePlayerById } from '../../hooks/usePlayerById';
+import { Game, Player, PlayerSession } from '../../models';
 
 import { BgtAvatar } from './BgtAvatar';
 
 interface AvatarProps {
   playerSession: PlayerSession;
   game: Game | undefined;
+  player: Player | undefined;
 }
 
 export const BgtPlayerAvatar = (props: AvatarProps) => {
-  const { playerSession, game } = props;
-  const { playerById } = usePlayerById();
+  const { playerSession, game, player } = props;
   const navigate = useNavigate();
 
-  const player = playerById(playerSession.playerId);
-
-  if (player === null || game === undefined) return null;
+  if (player === undefined || game === undefined) return null;
 
   return (
     <BgtAvatar
       key={`${playerSession.playerId}_${playerSession.sessionId}`}
       title={`${player.name}${game.hasScoring ? ` (${playerSession.score})` : ''}`}
       image={player.image}
-      onClick={() => navigate(`/players/${player.id}`)}
+      onClick={() => navigate({ to: `/players/${player.id}` })}
       color={StringToHsl(player.name)}
     />
   );

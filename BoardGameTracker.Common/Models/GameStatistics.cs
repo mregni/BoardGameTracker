@@ -10,4 +10,5 @@ public class GameStatistics
     public MostWinningPlayer? MostWinsPlayer { get; set; }
     public double AveragePlayTime { get; set; }
     public DateTime? LastPlayed { get; set; }
+    public int? ExpansionCount { get; set; }
 } 

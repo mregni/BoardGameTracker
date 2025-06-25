@@ -19,6 +19,7 @@ public class BggGame
     public int BggId { get; set; }
     public BggLink[] Categories { get; set; }
     public BggLink[] Mechanics { get; set; }
+    public BggLink[] Expansions { get; set; }
     public BggPerson[] People { get; set; }
 }
 

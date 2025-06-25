@@ -61,6 +61,8 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
     public Task<List<Game>> GetGamesOverviewList()
     {
         return _context.Games
+            .Include(x => x.Expansions)
+            .Include(x => x.Categories)
             .OrderBy(x => x.Title)
             .ToListAsync();
     }
@@ -197,6 +199,14 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
             .AverageAsync(x => x.Score);
     }
 
+    public async Task<int?> GetExpansionCount(int id)
+    {
+        var count = await  _context.Expansions
+            .CountAsync(x => x.GameId == id);
+        
+        return count > 0 ? count : null;
+    }
+
     public Task<double> GetAveragePlayTime(int id)
     {
         if (_context.Sessions.Any(x => x.GameId == id))
@@ -235,6 +245,18 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
             .Include(x => x.PlayerSessions)
             .Where(x => x.GameId == id)
             .ToListAsync();
+    }
+
+    public Task<List<Expansion>> GetExpansions(List<int> expansionIds)
+    {
+        return _context.Expansions
+            .Where(x => expansionIds.Contains(x.Id))
+            .ToListAsync();
+    }
+
+    public Task<int> GetTotalExpansionCount()
+    {
+        return _context.Expansions.CountAsync();
     }
 
     public Task<int> CountAsync()
@@ -364,7 +386,9 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
 
     public override async Task<Game> UpdateAsync(Game entity)
     {
-        var dbGame = await _context.Games.SingleOrDefaultAsync(x => x.Id == entity.Id);
+        var dbGame = await _context.Games
+            .Include(x => x.Expansions)
+            .SingleOrDefaultAsync(x => x.Id == entity.Id);
         if (dbGame != null)
         {
             dbGame.HasScoring = entity.HasScoring;
@@ -384,10 +408,17 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
             dbGame.MaxPlayTime = entity.MaxPlayTime;
             dbGame.MinPlayTime = entity.MinPlayTime;
             dbGame.AdditionDate = entity.AdditionDate;
+            dbGame.Expansions = entity.Expansions;
 
             await _context.SaveChangesAsync();
         }
 
+        var expansions = _context.Expansions
+            .Where(x => x.GameId == null);
+        _context.Expansions.RemoveRange(expansions);
+        await _context.SaveChangesAsync();
+        
         return entity;
     }
+    
 }

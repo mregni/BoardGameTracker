@@ -27,6 +27,14 @@ module.exports = {
       },
     ],
   },
+  overrides: [
+    {
+      files: ['**/models/index.ts'],
+      rules: {
+        'react-refresh/only-export-components': 'off',
+      },
+    },
+  ],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',

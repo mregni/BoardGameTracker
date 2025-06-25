@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cx } from 'class-variance-authority';
+import { Link } from '@tanstack/react-router';
 
 import { BgtText } from '../BgtText/BgtText';
 import { getColorFromGameState, getItemStateTranslationKey } from '../../utils/ItemStateUtils';

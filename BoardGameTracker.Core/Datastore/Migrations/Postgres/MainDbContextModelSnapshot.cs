@@ -444,64 +444,21 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("AdditionDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("BaseGameId")
+                    b.Property<int>("BggId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("BggId")
-                        .HasColumnType("integer");
-
-                    b.Property<double?>("BuyingPrice")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Image")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("MaxPlayTime")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MaxPlayers")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MinAge")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MinPlayTime")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MinPlayers")
-                        .HasColumnType("integer");
-
-                    b.Property<double?>("Rating")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("SoldPrice")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("State")
+                    b.Property<int?>("GameId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<double?>("Weight")
-                        .HasColumnType("double precision");
-
-                    b.Property<int?>("YearPublished")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("BaseGameId");
+                    b.HasIndex("GameId");
 
-                    b.ToTable("Expansion");
+                    b.ToTable("Expansions");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Game", b =>
@@ -886,12 +843,12 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Expansion", b =>
                 {
-                    b.HasOne("BoardGameTracker.Common.Entities.Game", "BaseGame")
+                    b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
                         .WithMany("Expansions")
-                        .HasForeignKey("BaseGameId")
+                        .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("BaseGame");
+                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.GameAccessory", b =>

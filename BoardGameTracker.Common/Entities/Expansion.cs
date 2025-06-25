@@ -1,9 +1,14 @@
-﻿using BoardGameTracker.Common.Entities.Helpers;
+﻿using System.Text.Json.Serialization;
+using BoardGameTracker.Common.Entities.Helpers;
 
 namespace BoardGameTracker.Common.Entities;
 
-public class Expansion : BaseGame
+public class Expansion : HasId
 {
-    public Game BaseGame { get; set; }
-    public int? BaseGameId { get; set; }
+    public string Title { get; set; }
+    public int BggId { get; set; }
+    [JsonIgnore]
+    public Game Game { get; set; }
+    public int? GameId { get; set; }
+    public ICollection<Session> Sessions { get; set; }
 }

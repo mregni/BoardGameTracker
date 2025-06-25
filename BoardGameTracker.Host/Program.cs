@@ -13,6 +13,7 @@ using MediatR;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Http;
 using Microsoft.Net.Http.Headers;
 using Refit;
 using Serilog;
@@ -45,6 +46,14 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
+});
+
+builder.Services.Configure<HttpClientFactoryOptions>(options =>
+{
+    options.HttpClientActions.Add(client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(30);
+    });
 });
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);

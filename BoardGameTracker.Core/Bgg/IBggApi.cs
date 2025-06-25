@@ -5,6 +5,9 @@ namespace BoardGameTracker.Core.Bgg;
 
 public interface IBggApi
 {
-    [Get("/thing")]
-    public Task<ApiResponse<BggApiGames>> SearchGame([Query] int id, [Query] string type, [Query] int stats);
+    [Get("/thing?type=boardgame")]
+    public Task<ApiResponse<BggApiGames>> SearchGame([Query] int id, [Query] int stats);
+    
+    [Get("/thing?type=boardgameexpansion")]
+    public Task<ApiResponse<BggApiGames>> SearchExpansion([Query] int id, [Query] int stats);
 }

@@ -49,6 +49,7 @@ public class DashboardServiceTests
         const double expectedTotalPlayTime = 1200.0;
         const double expectedMeanPlayTime = 60.0;
         const int expectedLocationCount = 3;
+        const int expectedExpansionCount = 5;
         var mostWinPlayer = new Player {Id = 1, Name = "Top Player", Image = "player.jpg"};
         const int expectedWins = 15;
 
@@ -56,6 +57,7 @@ public class DashboardServiceTests
         _gameRepositoryMock.Setup(x => x.GetMeanPayedAsync()).ReturnsAsync(expectedMeanPayed);
         _gameRepositoryMock.Setup(x => x.GetTotalPayedAsync()).ReturnsAsync(expectedTotalPayed);
         _gameRepositoryMock.Setup(x => x.GetMostWins()).ReturnsAsync(mostWinPlayer);
+        _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount()).ReturnsAsync(expectedExpansionCount);
         _playerRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(expectedPlayerCount);
         _playerRepositoryMock.Setup(x => x.GetWinCount(mostWinPlayer.Id)).ReturnsAsync(expectedWins);
         _sessionRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(expectedSessionCount);
@@ -74,6 +76,7 @@ public class DashboardServiceTests
         result.TotalPlayTime.Should().Be(expectedTotalPlayTime);
         result.MeanPlayTime.Should().Be(expectedMeanPlayTime);
         result.LocationCount.Should().Be(expectedLocationCount);
+        result.ExpansionCount.Should().Be(expectedExpansionCount);
         result.MostWinningPlayer.Should().NotBeNull();
         result.MostWinningPlayer.Id.Should().Be(mostWinPlayer.Id);
         result.MostWinningPlayer.Name.Should().Be(mostWinPlayer.Name);
@@ -90,11 +93,13 @@ public class DashboardServiceTests
         const int expectedPlayerCount = 3;
         const int expectedSessionCount = 10;
         const int expectedLocationCount = 2;
+        const int expectedExpansionCount = 5;
 
         _gameRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(expectedGameCount);
         _gameRepositoryMock.Setup(x => x.GetMeanPayedAsync()).ReturnsAsync(0.0);
         _gameRepositoryMock.Setup(x => x.GetTotalPayedAsync()).ReturnsAsync(0.0);
         _gameRepositoryMock.Setup(x => x.GetMostWins()).ReturnsAsync((Player?) null);
+        _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount()).ReturnsAsync(expectedExpansionCount);
         _playerRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(expectedPlayerCount);
         _sessionRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(expectedSessionCount);
         _sessionRepositoryMock.Setup(x => x.GetTotalPlayTime()).ReturnsAsync(0.0);
@@ -108,12 +113,14 @@ public class DashboardServiceTests
         result.PlayerCount.Should().Be(expectedPlayerCount);
         result.SessionCount.Should().Be(expectedSessionCount);
         result.LocationCount.Should().Be(expectedLocationCount);
+        result.ExpansionCount.Should().Be(expectedExpansionCount);
         result.MostWinningPlayer.Should().BeNull();
 
         _gameRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetMeanPayedAsync(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetTotalPayedAsync(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetMostWins(), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetTotalExpansionCount(), Times.Once);
         _playerRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _playerRepositoryMock.Verify(x => x.GetWinCount(It.IsAny<int>()), Times.Never);
         _sessionRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
@@ -124,17 +131,18 @@ public class DashboardServiceTests
     }
 
     [Theory]
-    [InlineData(0, 0, 0, 0, 0, 0, 0, 0)]
-    [InlineData(100, 50.0, 500.0, 25, 200, 3000.0, 15.0, 8)]
-    [InlineData(1, 10.5, 10.5, 1, 1, 60.0, 60.0, 1)]
-    [InlineData(999, 0.0, 0.0, 500, 1000, 50000.0, 50.0, 100)]
+    [InlineData(0, 0, 0, 0, 0, 0, 0, 0, 0)]
+    [InlineData(100, 50.0, 500.0, 25, 200, 3000.0, 15.0, 8, 10)]
+    [InlineData(1, 10.5, 10.5, 1, 1, 60.0, 60.0, 1, 5)]
+    [InlineData(999, 0.0, 0.0, 500, 1000, 50000.0, 50.0, 100, 20)]
     public async Task GetStatistics_ShouldReturnCorrectValues_WithDifferentDataSets(
         int gameCount, double meanPayed, double totalPayed, int playerCount,
-        int sessionCount, double totalPlayTime, double meanPlayTime, int locationCount)
+        int sessionCount, double totalPlayTime, double meanPlayTime, int locationCount, int expectedExpansionCount)
     {
         _gameRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(gameCount);
         _gameRepositoryMock.Setup(x => x.GetMeanPayedAsync()).ReturnsAsync(meanPayed);
         _gameRepositoryMock.Setup(x => x.GetTotalPayedAsync()).ReturnsAsync(totalPayed);
+        _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount()).ReturnsAsync(expectedExpansionCount);
         _gameRepositoryMock.Setup(x => x.GetMostWins()).ReturnsAsync((Player?) null);
         _playerRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(playerCount);
         _sessionRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(sessionCount);
@@ -152,11 +160,13 @@ public class DashboardServiceTests
         result.TotalPlayTime.Should().Be(totalPlayTime);
         result.MeanPlayTime.Should().Be(meanPlayTime);
         result.LocationCount.Should().Be(locationCount);
+        result.ExpansionCount.Should().Be(expectedExpansionCount);
 
         _gameRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetMeanPayedAsync(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetTotalPayedAsync(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetMostWins(), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetTotalExpansionCount(), Times.Once);
         _playerRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.GetTotalPlayTime(), Times.Once);
@@ -311,6 +321,7 @@ public class DashboardServiceTests
         _gameRepositoryMock.Verify(x => x.GetMeanPayedAsync(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetTotalPayedAsync(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetMostWins(), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetTotalExpansionCount(), Times.Once);
         _playerRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _playerRepositoryMock.Verify(x => x.GetWinCount(playerId), Times.Once);
         _sessionRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
