@@ -513,12 +513,12 @@ public class GameServiceTests
     public async Task SearchExpansionsForGame_ShouldReturnExpansions_WhenApiReturnsValidData()
     {
         const int gameId = 123;
-        var game = new Game()
+        var game = new Game
         {
             BggId = 1,
             Id = gameId
         };
-        
+
         var bggApiGames = new BggApiGames
         {
             Games = [new BggRawGame {Id = gameId, Names = [new Name {Value = "Test Game"}]}]
@@ -546,11 +546,11 @@ public class GameServiceTests
         var result = await _gameService.SearchExpansionsForGame(gameId);
 
         result.Should().BeEquivalentTo(expectedBggGame.Expansions);
-        
+
         _bggApiMock.Verify(x => x.SearchGame(game.BggId.Value, 0), Times.Once);
         _mapperMock.Verify(x => x.Map<BggGame>(apiResponse.Content.Games.First()), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(game.Id), Times.Once);
-        
+
         VerifyNoOtherCalls();
     }
 
@@ -558,12 +558,12 @@ public class GameServiceTests
     public async Task SearchExpansionsForGame_ShouldReturnEmptyArray_WhenApiReturnsError()
     {
         const int gameId = 123;
-        var game = new Game()
+        var game = new Game
         {
             BggId = 1,
             Id = gameId
         };
-        
+
         var apiResponse = new ApiResponse<BggApiGames>(
             new HttpResponseMessage(HttpStatusCode.BadRequest),
             null,
@@ -585,12 +585,12 @@ public class GameServiceTests
     public async Task SearchExpansionsForGame_ShouldReturnEmptyArray_WhenApiReturnsNoGames()
     {
         const int gameId = 123;
-        var game = new Game()
+        var game = new Game
         {
             BggId = 1,
             Id = gameId
         };
-        
+
         var bggApiGames = new BggApiGames {Games = []};
         var apiResponse = new ApiResponse<BggApiGames>(
             new HttpResponseMessage(HttpStatusCode.OK),
@@ -606,7 +606,7 @@ public class GameServiceTests
         result.Should().BeEmpty();
         _bggApiMock.Verify(x => x.SearchGame(game.BggId.Value, 0), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(game.Id), Times.Once);
-        
+
         VerifyNoOtherCalls();
     }
 
@@ -789,14 +789,14 @@ public class GameServiceTests
 
         _gameRepositoryMock.Setup(x => x.GetSessions(gameId, -200)).ReturnsAsync(sessions);
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(gameId))
-            .ReturnsAsync(new Game() {HasScoring = true});
-        
+            .ReturnsAsync(new Game {HasScoring = true});
+
         var result = await _gameService.GetPlayerScoringChart(gameId);
 
         result.Should().HaveCount(2);
 
         var firstSessionData = result[new DateTime(2024, 1, 1)];
-        firstSessionData.Should().HaveCount(3); 
+        firstSessionData.Should().HaveCount(3);
         firstSessionData.Should().Contain(x => x.Id == 1 && x.Value == 85.5);
         firstSessionData.Should().Contain(x => x.Id == 2 && x.Value == 92.0);
         firstSessionData.Should().Contain(x => x.Id == 3 && x.Value == null);
@@ -809,7 +809,7 @@ public class GameServiceTests
 
         _gameRepositoryMock.Verify(x => x.GetSessions(gameId, -200), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
-        
+
         VerifyNoOtherCalls();
     }
 
@@ -820,16 +820,16 @@ public class GameServiceTests
         var sessions = new List<Session>();
 
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(gameId))
-            .ReturnsAsync(new Game() {HasScoring = true});
+            .ReturnsAsync(new Game {HasScoring = true});
         _gameRepositoryMock.Setup(x => x.GetSessions(gameId, -200)).ReturnsAsync(sessions);
 
         var result = await _gameService.GetPlayerScoringChart(gameId);
 
         result.Should().BeEmpty();
-        
+
         _gameRepositoryMock.Verify(x => x.GetSessions(gameId, -200), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
-        
+
         VerifyNoOtherCalls();
     }
 
@@ -852,7 +852,7 @@ public class GameServiceTests
         };
 
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(gameId))
-            .ReturnsAsync(new Game() {HasScoring = true});
+            .ReturnsAsync(new Game {HasScoring = true});
         _gameRepositoryMock.Setup(x => x.GetSessions(gameId, -200)).ReturnsAsync(sessions);
 
         var result = await _gameService.GetPlayerScoringChart(gameId);
@@ -867,17 +867,17 @@ public class GameServiceTests
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
         VerifyNoOtherCalls();
     }
-    
-    
+
+
     [Fact]
     public async Task GetGameExpansions_ShouldReturnExpansions_WhenRepositoryReturnsData()
     {
-        var expansionIds = new List<int> { 1, 2, 3 };
+        var expansionIds = new List<int> {1, 2, 3};
         var expectedExpansions = new List<Expansion>
         {
-            new() { Id = 1, Title = "Cities and Knights", BggId = 100 },
-            new() { Id = 2, Title = "Seafarers", BggId = 200 },
-            new() { Id = 3, Title = "Traders and Barbarians", BggId = 300 }
+            new() {Id = 1, Title = "Cities and Knights", BggId = 100},
+            new() {Id = 2, Title = "Seafarers", BggId = 200},
+            new() {Id = 3, Title = "Traders and Barbarians", BggId = 300}
         };
 
         _gameRepositoryMock.Setup(x => x.GetExpansions(expansionIds)).ReturnsAsync(expectedExpansions);
@@ -888,6 +888,299 @@ public class GameServiceTests
         _gameRepositoryMock.Verify(x => x.GetExpansions(expansionIds), Times.Once);
         VerifyNoOtherCalls();
     }
+    
+    [Fact]
+public async Task ImportBggCollection_ShouldReturnMappedResult_WhenApiReturnsSuccessWithGames()
+{
+    const string userName = "testuser";
+    var collectionItems = new List<Item>
+    {
+        new() { Name = new ImportName() { Text = "Scrabble" } },
+        new() { Name = new ImportName { Text = "Monopoly" } }
+    };
+    var bggApiCollection = new BggApiCollection
+    {
+        Item = collectionItems
+    };
+    var mappedGames = new List<BggImportGame>
+    {
+        new() { Title = "Monopoly" },
+        new() { Title = "Scrabble" }
+    };
+    var apiResponse = new ApiResponse<BggApiCollection>(
+        new HttpResponseMessage(HttpStatusCode.OK),
+        bggApiCollection,
+        new RefitSettings()
+    );
+
+    _bggApiMock.Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion"))
+              .ReturnsAsync(apiResponse);
+    _mapperMock.Setup(x => x.Map<List<BggImportGame>>(It.IsAny<List<Item>>()))
+              .Returns(mappedGames);
+
+    var result = await _gameService.ImportBggCollection(userName);
+
+    result.Should().NotBeNull();
+    result.StatusCode.Should().Be(HttpStatusCode.OK);
+    result.Games.Should().BeEquivalentTo(mappedGames);
+    result.Games.Should().BeInAscendingOrder(x => x.Title);
+
+    _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion"), Times.Once);
+    _mapperMock.Verify(x => x.Map<List<BggImportGame>>(It.Is<List<Item>>(list => 
+        list.Count == 2 && 
+        list[0].Name.Text == "Monopoly" && 
+        list[1].Name.Text == "Scrabble")), Times.Once);
+    VerifyNoOtherCalls();
+}
+
+[Fact]
+public async Task ImportBggCollection_ShouldReturnResultWithoutGames_WhenApiReturnsAcceptedStatus()
+{
+    const string userName = "testuser";
+    var apiResponse = new ApiResponse<BggApiCollection>(
+        new HttpResponseMessage(HttpStatusCode.Accepted),
+        null,
+        new RefitSettings()
+    );
+
+    _bggApiMock.Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion"))
+              .ReturnsAsync(apiResponse);
+
+    var result = await _gameService.ImportBggCollection(userName);
+
+    result.Should().NotBeNull();
+    result.StatusCode.Should().Be(HttpStatusCode.Accepted);
+    result.Games.Should().BeEmpty();
+
+    _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion"), Times.Once);
+    VerifyNoOtherCalls();
+}
+
+[Fact]
+public async Task ImportBggCollection_ShouldReturnNull_WhenApiReturnsErrorStatus()
+{
+    const string userName = "testuser";
+    var apiResponse = new ApiResponse<BggApiCollection>(
+        new HttpResponseMessage(HttpStatusCode.BadRequest),
+        null,
+        new RefitSettings()
+    );
+
+    _bggApiMock.Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion"))
+              .ReturnsAsync(apiResponse);
+
+    var result = await _gameService.ImportBggCollection(userName);
+
+    result.Should().BeNull();
+
+    _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion"), Times.Once);
+    VerifyNoOtherCalls();
+}
+
+[Fact]
+public async Task ImportBggCollection_ShouldReturnOkResultWithEmptyGames_WhenApiReturnsEmptyCollection()
+{
+    const string userName = "testuser";
+    var bggApiCollection = new BggApiCollection
+    {
+        Item = new List<Item>()
+    };
+    var mappedGames = new List<BggImportGame>();
+    var apiResponse = new ApiResponse<BggApiCollection>(
+        new HttpResponseMessage(HttpStatusCode.OK),
+        bggApiCollection,
+        new RefitSettings()
+    );
+
+    _bggApiMock.Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion"))
+              .ReturnsAsync(apiResponse);
+    _mapperMock.Setup(x => x.Map<List<BggImportGame>>(It.IsAny<List<Item>>()))
+              .Returns(mappedGames);
+
+    var result = await _gameService.ImportBggCollection(userName);
+
+    result.Should().NotBeNull();
+    result.StatusCode.Should().Be(HttpStatusCode.OK);
+    result.Games.Should().BeEmpty();
+
+    _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion"), Times.Once);
+    _mapperMock.Verify(x => x.Map<List<BggImportGame>>(It.IsAny<List<Item>>()), Times.Once);
+    VerifyNoOtherCalls();
+}
+
+[Fact]
+public async Task ImportList_ShouldProcessAllValidGames_WhenAllGamesFoundInBgg()
+{
+    var importGames = new List<ImportGame>
+    {
+        new() 
+        { 
+            BggId = 123, 
+            HasScoring = true, 
+            State = GameState.Owned, 
+            AddedDate = DateTime.Today,
+            Price = 29.99
+        },
+        new() 
+        { 
+            BggId = 456, 
+            HasScoring = false, 
+            State = GameState.Wanted, 
+            AddedDate = DateTime.Today.AddDays(-1),
+            Price = 39.99
+        }
+    };
+    var bggGame1 = new BggGame { BggId = 123, Names = ["Game 1"] };
+    var bggGame2 = new BggGame { BggId = 456, Names = ["Game 2"] };
+    var createdGame1 = new Game { Id = 1, BggId = 123, Title = "Game 1" };
+    var createdGame2 = new Game { Id = 2, BggId = 456, Title = "Game 2" };
+
+    SetupSearchGameMock(123, bggGame1);
+    SetupSearchGameMock(456, bggGame2);
+    SetupProcessBggGameDataMock(bggGame1, createdGame1);
+    SetupProcessBggGameDataMock(bggGame2, createdGame2);
+
+    await _gameService.ImportList(importGames);
+
+    VerifyProcessBggGameDataCall(bggGame1, 123, GameState.Owned, 29.99, true);
+    VerifyProcessBggGameDataCall(bggGame2, 456, GameState.Wanted, 39.99, false);
+    
+    _bggApiMock.Verify(x => x.SearchGame(123, 1), Times.Once);
+    _bggApiMock.Verify(x => x.SearchGame(456, 1), Times.Once);
+    
+    _mapperMock.Verify(x => x.Map<IList<GameCategory>>(null), Times.Exactly(2));
+    _mapperMock.Verify(x => x.Map<IList<GameMechanic>>(null), Times.Exactly(2));
+    _mapperMock.Verify(x => x.Map<IList<Person>>(null), Times.Exactly(2));
+    _mapperMock.Verify(x => x.Map<Game>(bggGame1), Times.Once);
+    _mapperMock.Verify(x => x.Map<Game>(bggGame2), Times.Once);
+    _mapperMock.Verify(x => x.Map<BggGame>(It.IsAny<BggRawGame>()), Times.Exactly(2));
+    
+    VerifyNoOtherCalls();
+}
+
+[Fact]
+public async Task ImportList_ShouldSkipGamesNotFoundInBgg_WhenSomeGamesNotFound()
+{
+    var importGames = new List<ImportGame>
+    {
+        new() { BggId = 123, HasScoring = true, State = GameState.Owned },
+        new() { BggId = 999, HasScoring = false, State = GameState.Wanted }
+    };
+    var bggGame1 = new BggGame { BggId = 123, Names = ["Game 1"], Image = "test.png"};
+    var createdGame1 = new Game { Id = 1, BggId = 123, Title = "Game 1", BuyingPrice = 10};
+
+    SetupSearchGameMock(123, bggGame1);
+    SetupSearchGameMock(999, null);
+    SetupProcessBggGameDataMock(bggGame1, createdGame1);
+
+    await _gameService.ImportList(importGames);
+
+    _bggApiMock.Verify(x => x.SearchGame(123, 1), Times.Once);
+    _bggApiMock.Verify(x => x.SearchGame(999, 1), Times.Once);
+    
+    _gameRepositoryMock.Verify(x => x.AddGameCategoriesIfNotExists(It.IsAny<IEnumerable<GameCategory>>()), Times.Once);
+    _gameRepositoryMock.Verify(x => x.AddGameMechanicsIfNotExists(It.IsAny<IEnumerable<GameMechanic>>()), Times.Once);
+    _gameRepositoryMock.Verify(x => x.AddPeopleIfNotExists(It.IsAny<IEnumerable<Person>>()), Times.Once);
+    _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Once);
+    
+    _mapperMock.Verify(x => x.Map<IList<GameCategory>>(null), Times.Once);
+    _mapperMock.Verify(x => x.Map<IList<GameMechanic>>(null), Times.Once);
+    _mapperMock.Verify(x => x.Map<IList<Person>>(null), Times.Once);
+    _mapperMock.Verify(x => x.Map<Game>(bggGame1), Times.Once);
+    _mapperMock.Verify(x => x.Map<BggGame>(It.IsAny<BggRawGame>()), Times.Once);
+    
+    _imageServiceMock.Verify(x => x.DownloadImage("test.png", "123"), Times.Once);
+    
+    VerifyNoOtherCalls();
+}
+
+[Fact]
+public async Task ImportList_ShouldDoNothing_WhenEmptyGameListProvided()
+{
+    var importGames = new List<ImportGame>();
+
+    await _gameService.ImportList(importGames);
+
+    VerifyNoOtherCalls();
+}
+
+[Fact]
+public async Task ImportList_ShouldDoNothing_WhenAllGamesNotFoundInBgg()
+{
+    var importGames = new List<ImportGame>
+    {
+        new() { BggId = 123 },
+        new() { BggId = 456 }
+    };
+
+    SetupSearchGameMock(123, null);
+    SetupSearchGameMock(456, null);
+
+    await _gameService.ImportList(importGames);
+
+    _bggApiMock.Verify(x => x.SearchGame(123, 1), Times.Once);
+    _bggApiMock.Verify(x => x.SearchGame(456, 1), Times.Once);
+    VerifyNoOtherCalls();
+}
+
+private void SetupSearchGameMock(int bggId, BggGame? returnValue)
+{
+    if (returnValue != null)
+    {
+        var bggApiGames = new BggApiGames
+        {
+            Games = [new BggRawGame { Id = bggId, Names = [new Name { Value = returnValue.Names.First() }]}]
+        };
+        var apiResponse = new ApiResponse<BggApiGames>(
+            new HttpResponseMessage(HttpStatusCode.OK),
+            bggApiGames,
+            new RefitSettings()
+        );
+
+        _bggApiMock.Setup(x => x.SearchGame(bggId, 1)).ReturnsAsync(apiResponse);
+        _mapperMock.Setup(x => x.Map<BggGame>(apiResponse.Content.Games.First())).Returns(returnValue);
+    }
+    else
+    {
+        var apiResponse = new ApiResponse<BggApiGames>(
+            new HttpResponseMessage(HttpStatusCode.BadRequest),
+            null,
+            new RefitSettings()
+        );
+
+        _bggApiMock.Setup(x => x.SearchGame(bggId, 1)).ReturnsAsync(apiResponse);
+    }
+}
+
+private void SetupProcessBggGameDataMock(BggGame bggGame, Game returnValue)
+{
+    var categories = new List<GameCategory>();
+    var mechanics = new List<GameMechanic>();
+    var people = new List<Person>();
+    var mappedGame = new Game { Title = bggGame.Names.First(), BggId = bggGame.BggId };
+    var downloadedImage = $"/images/{bggGame.BggId}.jpg";
+
+    _mapperMock.Setup(x => x.Map<IList<GameCategory>>(bggGame.Categories)).Returns(categories);
+    _mapperMock.Setup(x => x.Map<IList<GameMechanic>>(bggGame.Mechanics)).Returns(mechanics);
+    _mapperMock.Setup(x => x.Map<IList<Person>>(bggGame.People)).Returns(people);
+    _mapperMock.Setup(x => x.Map<Game>(bggGame)).Returns(mappedGame);
+    _imageServiceMock.Setup(x => x.DownloadImage(bggGame.Image, bggGame.BggId.ToString()))
+        .ReturnsAsync(downloadedImage);
+    _gameRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Game>())).ReturnsAsync(returnValue);
+}
+
+private void VerifyProcessBggGameDataCall(BggGame bggGame, int bggId, GameState state, double? price, bool hasScoring)
+{
+    _gameRepositoryMock.Verify(x => x.AddGameCategoriesIfNotExists(It.IsAny<IList<GameCategory>>()), Times.AtLeastOnce);
+    _gameRepositoryMock.Verify(x => x.AddGameMechanicsIfNotExists(It.IsAny<IList<GameMechanic>>()), Times.AtLeastOnce);
+    _gameRepositoryMock.Verify(x => x.AddPeopleIfNotExists(It.IsAny<IList<Person>>()), Times.AtLeastOnce);
+    _mapperMock.Verify(x => x.Map<Game>(bggGame), Times.AtLeastOnce);
+    _imageServiceMock.Verify(x => x.DownloadImage(bggGame.Image, bggId.ToString()), Times.AtLeastOnce);
+    _gameRepositoryMock.Verify(x => x.CreateAsync(It.Is<Game>(g =>
+        g.State == state &&
+        g.BuyingPrice == price &&
+        g.HasScoring == hasScoring)), Times.AtLeastOnce);
+}
 
     private void VerifyNoOtherCalls()
     {
@@ -947,7 +1240,7 @@ public class GameServiceTests
         _gameRepositoryMock.Verify(x => x.GetLastPlayedDateTime(gameId), Times.Once);
         VerifyNoOtherCalls();
     }
-
+    
     private static IGrouping<T, Session> CreateGrouping<T>(T key, int count)
     {
         var sessions = Enumerable.Range(1, count).Select(i => new Session {Id = i}).ToList();

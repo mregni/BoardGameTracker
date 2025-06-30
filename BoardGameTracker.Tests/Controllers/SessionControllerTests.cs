@@ -260,7 +260,7 @@ public class SessionControllerTests
         [Fact]
         public async Task UpdateSession_ShouldReturnOkResultWithMappedSession_WhenValidViewModelProvided()
         {
-            var expansionIds = new List<int>() { 1,2 };
+            var expansionIds = new List<int> { 1,2 };
             var updateViewModel = new CreateSessionViewModel 
             { 
                 Id = "1",

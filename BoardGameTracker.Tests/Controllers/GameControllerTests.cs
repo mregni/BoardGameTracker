@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using BoardGameTracker.Api.Controllers;
@@ -264,7 +265,7 @@ public class GameControllerTests
     public async Task GetGameStats_ShouldReturnOkResultWithMappedStats_WhenStatsExist()
     {
         const int gameId = 1;
-        var stats = new GameStatistics {PlayCount = 10, TotalPlayedTime = new TimeSpan(0, 2,0,0)};
+        var stats = new GameStatistics {PlayCount = 10, TotalPlayedTime = new TimeSpan(0, 2, 0, 0)};
         var statsViewModel = new GameStatisticsViewModel
         {
             GameStats = new GameStatsViewModel
@@ -281,18 +282,19 @@ public class GameControllerTests
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
         okResult!.Value.Should().BeEquivalentTo(statsViewModel);
-        
+
         _gameServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetStats(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
-        
+
         _mapperMock.Verify(x => x.Map<GameStatsViewModel>(stats), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(null), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()),
+            Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(null), Times.Once);
 
@@ -322,18 +324,19 @@ public class GameControllerTests
             TopPlayers = topPlayerViewModels
         };
         okResult!.Value.Should().BeEquivalentTo(expectedResult);
-        
+
         _gameServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetStats(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
-        
+
         _mapperMock.Verify(x => x.Map<GameStatsViewModel>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(topPlayers), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()),
+            Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(null), Times.Once);
 
@@ -437,14 +440,15 @@ public class GameControllerTests
         _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
-        
+
         _mapperMock.Verify(x => x.Map<GameStatsViewModel>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(data), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(null), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny< IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()),
+            Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(null), Times.Once);
-        
+
         _gameServiceMock.VerifyNoOtherCalls();
         _mapperMock.VerifyNoOtherCalls();
     }
@@ -466,7 +470,7 @@ public class GameControllerTests
 
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
-        
+
         var expectedResult = new GameStatisticsViewModel
         {
             PlayerCountChart = dataViewModel
@@ -479,14 +483,15 @@ public class GameControllerTests
         _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
-        
+
         _mapperMock.Verify(x => x.Map<GameStatsViewModel>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(null), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()),
+            Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(null), Times.Once);
-        
+
         _gameServiceMock.VerifyNoOtherCalls();
         _mapperMock.VerifyNoOtherCalls();
     }
@@ -500,7 +505,7 @@ public class GameControllerTests
         var game = new Game {HasScoring = true};
         var data = new Dictionary<DateTime, XValue[]>
         {
-            {dateTime, [new XValue { Value = 20, Id = 1}]}
+            {dateTime, [new XValue {Value = 20, Id = 1}]}
         };
         var dataViewModel = new List<PlayerScoringChartViewModel>
         {
@@ -527,11 +532,12 @@ public class GameControllerTests
         _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
-        
+
         _mapperMock.Verify(x => x.Map<GameStatsViewModel>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(null), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()),
+            Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(data), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(null), Times.Once);
 
@@ -564,136 +570,297 @@ public class GameControllerTests
             ScoreRankChart = dataViewModel
         };
         okResult!.Value.Should().BeEquivalentTo(expectedResult);
-        
+
         _gameServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetStats(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
-        
+
         _mapperMock.Verify(x => x.Map<GameStatsViewModel>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(null), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()),
+            Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(data), Times.Once);
 
         _gameServiceMock.VerifyNoOtherCalls();
         _mapperMock.VerifyNoOtherCalls();
     }
-    
+
     [Fact]
-public async Task GetGameExpansions_ShouldReturnOkResultWithMappedExpansions_WhenExpansionsExist()
-{
-    const int gameId = 1;
-    var expansions = new BggLink[]
+    public async Task GetGameExpansions_ShouldReturnOkResultWithMappedExpansions_WhenExpansionsExist()
     {
-        new() { Id = 1, Value = "Cities and Knights" },
-        new() { Id = 2, Value = "Seafarers" }
-    };
-    var expansionViewModels = new List<BggLinkViewModel>
+        const int gameId = 1;
+        var expansions = new BggLink[]
+        {
+            new() {Id = 1, Value = "Cities and Knights"},
+            new() {Id = 2, Value = "Seafarers"}
+        };
+        var expansionViewModels = new List<BggLinkViewModel>
+        {
+            new() {Id = 1, Value = "Cities and Knights"},
+            new() {Id = 2, Value = "Seafarers"}
+        };
+
+        _gameServiceMock.Setup(x => x.SearchExpansionsForGame(gameId)).ReturnsAsync(expansions);
+        _mapperMock.Setup(x => x.Map<IList<BggLinkViewModel>>(expansions)).Returns(expansionViewModels);
+
+        var result = await _controller.GetGameExpansions(gameId);
+
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        okResult!.Value.Should().Be(expansionViewModels);
+
+        _gameServiceMock.Verify(x => x.SearchExpansionsForGame(gameId), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<BggLinkViewModel>>(expansions), Times.Once);
+        _gameServiceMock.VerifyNoOtherCalls();
+        _mapperMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGameExpansions_ShouldReturnOkResultWithEmptyList_WhenNoExpansionsExist()
     {
-        new() { Id = 1, Value = "Cities and Knights" },
-        new() { Id = 2, Value = "Seafarers" }
-    };
+        const int gameId = 1;
+        var expansions = Array.Empty<BggLink>();
+        var expansionViewModels = new List<BggLinkViewModel>();
 
-    _gameServiceMock.Setup(x => x.SearchExpansionsForGame(gameId)).ReturnsAsync(expansions);
-    _mapperMock.Setup(x => x.Map<IList<BggLinkViewModel>>(expansions)).Returns(expansionViewModels);
+        _gameServiceMock.Setup(x => x.SearchExpansionsForGame(gameId)).ReturnsAsync(expansions);
+        _mapperMock.Setup(x => x.Map<IList<BggLinkViewModel>>(expansions)).Returns(expansionViewModels);
 
-    var result = await _controller.GetGameExpansions(gameId);
+        var result = await _controller.GetGameExpansions(gameId);
 
-    result.Should().BeOfType<OkObjectResult>();
-    var okResult = result as OkObjectResult;
-    okResult!.Value.Should().Be(expansionViewModels);
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        okResult!.Value.Should().Be(expansionViewModels);
 
-    _gameServiceMock.Verify(x => x.SearchExpansionsForGame(gameId), Times.Once);
-    _mapperMock.Verify(x => x.Map<IList<BggLinkViewModel>>(expansions), Times.Once);
-    _gameServiceMock.VerifyNoOtherCalls();
-    _mapperMock.VerifyNoOtherCalls();
-}
+        _gameServiceMock.Verify(x => x.SearchExpansionsForGame(gameId), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<BggLinkViewModel>>(expansions), Times.Once);
+        _gameServiceMock.VerifyNoOtherCalls();
+        _mapperMock.VerifyNoOtherCalls();
+    }
 
-[Fact]
-public async Task GetGameExpansions_ShouldReturnOkResultWithEmptyList_WhenNoExpansionsExist()
-{
-    const int gameId = 1;
-    var expansions = Array.Empty<BggLink>();
-    var expansionViewModels = new List<BggLinkViewModel>();
-
-    _gameServiceMock.Setup(x => x.SearchExpansionsForGame(gameId)).ReturnsAsync(expansions);
-    _mapperMock.Setup(x => x.Map<IList<BggLinkViewModel>>(expansions)).Returns(expansionViewModels);
-
-    var result = await _controller.GetGameExpansions(gameId);
-
-    result.Should().BeOfType<OkObjectResult>();
-    var okResult = result as OkObjectResult;
-    okResult!.Value.Should().Be(expansionViewModels);
-
-    _gameServiceMock.Verify(x => x.SearchExpansionsForGame(gameId), Times.Once);
-    _mapperMock.Verify(x => x.Map<IList<BggLinkViewModel>>(expansions), Times.Once);
-    _gameServiceMock.VerifyNoOtherCalls();
-    _mapperMock.VerifyNoOtherCalls();
-}
-
-[Fact]
-public async Task UpdateGameExpansions_ShouldReturnOkResultWithMappedExpansions_WhenValidModelProvided()
-{
-    const int gameId = 1;
-    var updateModel = new GameExpansionUpdateViewModel
+    [Fact]
+    public async Task UpdateGameExpansions_ShouldReturnOkResultWithMappedExpansions_WhenValidModelProvided()
     {
-        ExpansionBggIds = [123, 456]
-    };
-    var updatedExpansions = new List<Expansion>
+        const int gameId = 1;
+        var updateModel = new GameExpansionUpdateViewModel
+        {
+            ExpansionBggIds = [123, 456]
+        };
+        var updatedExpansions = new List<Expansion>
+        {
+            new() {Id = 1, Title = "Cities and Knights"},
+            new() {Id = 2, Title = "Seafarers"}
+        };
+        var mappedExpansions = new List<Expansion>
+        {
+            new() {Id = 1, Title = "Cities and Knights"},
+            new() {Id = 2, Title = "Seafarers"}
+        };
+
+        _gameServiceMock.Setup(x => x.UpdateGameExpansions(gameId, updateModel.ExpansionBggIds))
+            .ReturnsAsync(updatedExpansions);
+        _mapperMock.Setup(x => x.Map<IList<Expansion>>(updatedExpansions)).Returns(mappedExpansions);
+
+        var result = await _controller.UpdateGameExpansions(gameId, updateModel);
+
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        okResult!.Value.Should().Be(mappedExpansions);
+
+        _gameServiceMock.Verify(x => x.UpdateGameExpansions(gameId, updateModel.ExpansionBggIds), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<Expansion>>(updatedExpansions), Times.Once);
+        _gameServiceMock.VerifyNoOtherCalls();
+        _mapperMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateGameExpansions_ShouldReturnOkResultWithEmptyList_WhenNoExpansionsProvided()
     {
-        new() { Id = 1, Title = "Cities and Knights" },
-        new() { Id = 2, Title = "Seafarers" }
-    };
-    var mappedExpansions = new List<Expansion>
+        const int gameId = 1;
+        var updateModel = new GameExpansionUpdateViewModel
+        {
+            ExpansionBggIds = []
+        };
+        var updatedExpansions = new List<Expansion>();
+        var mappedExpansions = new List<Expansion>();
+
+        _gameServiceMock.Setup(x => x.UpdateGameExpansions(gameId, updateModel.ExpansionBggIds))
+            .ReturnsAsync(updatedExpansions);
+        _mapperMock.Setup(x => x.Map<IList<Expansion>>(updatedExpansions)).Returns(mappedExpansions);
+
+        var result = await _controller.UpdateGameExpansions(gameId, updateModel);
+
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        okResult!.Value.Should().Be(mappedExpansions);
+
+        _gameServiceMock.Verify(x => x.UpdateGameExpansions(gameId, updateModel.ExpansionBggIds), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<Expansion>>(updatedExpansions), Times.Once);
+        _gameServiceMock.VerifyNoOtherCalls();
+        _mapperMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBgg_ShouldReturnOkResultWithImportResult_WhenValidUsernameProvided()
     {
-        new() { Id = 1, Title = "Cities and Knights" },
-        new() { Id = 2, Title = "Seafarers" }
-    };
+        const string username = "testuser";
+        var importResult = new BggImportResult
+        {
+            StatusCode = HttpStatusCode.OK, 
+            Games =
+            [
+                new BggImportGame() {Title = "Monopoly"},
+                new BggImportGame() {Title = "Scrabble"}
+            ]
+        };
 
-    _gameServiceMock.Setup(x => x.UpdateGameExpansions(gameId, updateModel.ExpansionBggIds))
-                   .ReturnsAsync(updatedExpansions);
-    _mapperMock.Setup(x => x.Map<IList<Expansion>>(updatedExpansions)).Returns(mappedExpansions);
+        _gameServiceMock.Setup(x => x.ImportBggCollection(username)).ReturnsAsync(importResult);
 
-    var result = await _controller.UpdateGameExpansions(gameId, updateModel);
+        var result = await _controller.ImportBgg(username);
 
-    result.Should().BeOfType<OkObjectResult>();
-    var okResult = result as OkObjectResult;
-    okResult!.Value.Should().Be(mappedExpansions);
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        okResult!.Value.Should().Be(importResult);
 
-    _gameServiceMock.Verify(x => x.UpdateGameExpansions(gameId, updateModel.ExpansionBggIds), Times.Once);
-    _mapperMock.Verify(x => x.Map<IList<Expansion>>(updatedExpansions), Times.Once);
-    _gameServiceMock.VerifyNoOtherCalls();
-    _mapperMock.VerifyNoOtherCalls();
-}
+        _gameServiceMock.Verify(x => x.ImportBggCollection(username), Times.Once);
+        _gameServiceMock.VerifyNoOtherCalls();
+        _mapperMock.VerifyNoOtherCalls();
+    }
 
-[Fact]
-public async Task UpdateGameExpansions_ShouldReturnOkResultWithEmptyList_WhenNoExpansionsProvided()
-{
-    const int gameId = 1;
-    var updateModel = new GameExpansionUpdateViewModel
+    [Fact]
+    public async Task ImportBgg_ShouldReturnOkResultWithEmptyList_WhenUsernameHasNoGames()
     {
-        ExpansionBggIds = []
-    };
-    var updatedExpansions = new List<Expansion>();
-    var mappedExpansions = new List<Expansion>();
+        const string username = "emptyuser";
+        var importResult = new BggImportResult
+        {
+            StatusCode = HttpStatusCode.OK, 
+            Games = []
+        };
 
-    _gameServiceMock.Setup(x => x.UpdateGameExpansions(gameId, updateModel.ExpansionBggIds))
-                   .ReturnsAsync(updatedExpansions);
-    _mapperMock.Setup(x => x.Map<IList<Expansion>>(updatedExpansions)).Returns(mappedExpansions);
+        _gameServiceMock.Setup(x => x.ImportBggCollection(username)).ReturnsAsync(importResult);
 
-    var result = await _controller.UpdateGameExpansions(gameId, updateModel);
+        var result = await _controller.ImportBgg(username);
 
-    result.Should().BeOfType<OkObjectResult>();
-    var okResult = result as OkObjectResult;
-    okResult!.Value.Should().Be(mappedExpansions);
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        okResult!.Value.Should().Be(importResult);
 
-    _gameServiceMock.Verify(x => x.UpdateGameExpansions(gameId, updateModel.ExpansionBggIds), Times.Once);
-    _mapperMock.Verify(x => x.Map<IList<Expansion>>(updatedExpansions), Times.Once);
-    _gameServiceMock.VerifyNoOtherCalls();
-    _mapperMock.VerifyNoOtherCalls();
-}
+        _gameServiceMock.Verify(x => x.ImportBggCollection(username), Times.Once);
+        _gameServiceMock.VerifyNoOtherCalls();
+        _mapperMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBggGames_ShouldReturnOkResultWithTrue_WhenValidGameImportProvided()
+    {
+        var gameImportViewModel = new ImportGameListViewModal
+        {
+            Games = new List<ImportGameViewModel>
+            {
+                new() {BggId = 123, Title = "Monopoly"},
+                new() {BggId = 456, Title = "Scrabble"}
+            }
+        };
+        var mappedGames = new List<ImportGame>
+        {
+            new() {BggId = 123, Title = "Monopoly"},
+            new() {BggId = 456, Title = "Scrabble"}
+        };
+
+        _mapperMock.Setup(x => x.Map<IList<ImportGame>>(gameImportViewModel.Games)).Returns(mappedGames);
+        _gameServiceMock.Setup(x => x.ImportList(mappedGames)).Returns(Task.CompletedTask);
+
+        var result = await _controller.ImportBggGames(gameImportViewModel);
+
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        okResult!.Value.Should().Be(true);
+
+        _mapperMock.Verify(x => x.Map<IList<ImportGame>>(gameImportViewModel.Games), Times.Once);
+        _gameServiceMock.Verify(x => x.ImportList(mappedGames), Times.Once);
+        _gameServiceMock.VerifyNoOtherCalls();
+        _mapperMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBggGames_ShouldReturnOkResultWithTrue_WhenEmptyGameListProvided()
+    {
+        var gameImportViewModel = new ImportGameListViewModal
+        {
+            Games = new List<ImportGameViewModel>()
+        };
+        var mappedGames = new List<ImportGame>();
+
+        _mapperMock.Setup(x => x.Map<IList<ImportGame>>(gameImportViewModel.Games)).Returns(mappedGames);
+        _gameServiceMock.Setup(x => x.ImportList(mappedGames)).Returns(Task.CompletedTask);
+
+        var result = await _controller.ImportBggGames(gameImportViewModel);
+
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        okResult!.Value.Should().Be(true);
+
+        _mapperMock.Verify(x => x.Map<IList<ImportGame>>(gameImportViewModel.Games), Times.Once);
+        _gameServiceMock.Verify(x => x.ImportList(mappedGames), Times.Once);
+        _gameServiceMock.VerifyNoOtherCalls();
+        _mapperMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBggGames_ShouldThrowException_WhenMapperThrowsException()
+    {
+        var gameImportViewModel = new ImportGameListViewModal
+        {
+            Games = new List<ImportGameViewModel>
+            {
+                new() {BggId = 123, Title = "Monopoly"}
+            }
+        };
+
+        _mapperMock.Setup(x => x.Map<IList<ImportGame>>(gameImportViewModel.Games))
+            .Throws(new InvalidOperationException("Mapping failed"));
+
+        var act = () => _controller.ImportBggGames(gameImportViewModel);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Mapping failed");
+
+        _mapperMock.Verify(x => x.Map<IList<ImportGame>>(gameImportViewModel.Games), Times.Once);
+        _gameServiceMock.VerifyNoOtherCalls();
+        _mapperMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBggGames_ShouldThrowException_WhenServiceThrowsException()
+    {
+        var gameImportViewModel = new ImportGameListViewModal
+        {
+            Games = new List<ImportGameViewModel>
+            {
+                new() {BggId = 123, Title = "Monopoly"}
+            }
+        };
+        var mappedGames = new List<ImportGame>
+        {
+            new() {BggId = 123, Title = "Monopoly"}
+        };
+
+        _mapperMock.Setup(x => x.Map<IList<ImportGame>>(gameImportViewModel.Games)).Returns(mappedGames);
+        _gameServiceMock.Setup(x => x.ImportList(mappedGames))
+            .ThrowsAsync(new InvalidOperationException("Import failed"));
+
+        var act = () => _controller.ImportBggGames(gameImportViewModel);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Import failed");
+
+        _mapperMock.Verify(x => x.Map<IList<ImportGame>>(gameImportViewModel.Games), Times.Once);
+        _gameServiceMock.Verify(x => x.ImportList(mappedGames), Times.Once);
+        _gameServiceMock.VerifyNoOtherCalls();
+        _mapperMock.VerifyNoOtherCalls();
+    }
 }
