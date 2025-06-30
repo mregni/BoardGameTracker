@@ -11,6 +11,7 @@ export * from './Dashboard/DashboardStatistics';
 export * from './Dashboard/DashboardCharts';
 export * from './Dashboard/GameStateChart';
 
+export * from './Games/BggImportResults';
 export * from './Games/BggSearch';
 export * from './Games/CreateGame';
 export * from './Games/Expansion';

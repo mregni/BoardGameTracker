@@ -88,11 +88,11 @@ public class SessionWinEvaluatorTests
 
         for (var i = 0; i < count; i++)
         {
-            sessions.Add(new Session()
+            sessions.Add(new Session
             {
-                PlayerSessions = new List<PlayerSession>()
+                PlayerSessions = new List<PlayerSession>
                 {
-                    new PlayerSession() { Won = true, PlayerId = playerId}
+                    new() { Won = true, PlayerId = playerId}
                 }
             });
         }

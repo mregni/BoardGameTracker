@@ -10,7 +10,7 @@ import {
   CreatePlayerSessionSchema,
   Player,
 } from '@/models';
-import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
+import { BgtSwitch } from '@/components/BgtForm/BgtSwitch';
 import { BgtSelect } from '@/components/BgtForm/BgtSelect';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import {

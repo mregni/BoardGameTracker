@@ -30,7 +30,8 @@
     "details": "details",
     "categories": "categories",
     "mechanics": "mechanics",
-    "no-data": "No data yet",
+    "no-data-yet": "No data yet",
+    "no-data": "No data",
     "load-more": "Load more",
     "days-ago": "Days ago",
     "read-more": "Read more",
@@ -41,11 +42,16 @@
     "date": "Date",
     "time": "Time",
     "filter": "Filter",
+    "previous-page": "Previous page",
+    "next-page": "Next page",
+    "scoring": "Scoring",
     "loading-data": "Loading data...",
     "filter-name": "Filter by name",
     "other-players": "Other players",
     "high-score": "High score",
     "no-results": "No results found",
+    "state": "State",
+    "bgg-id": "BGG id",
     "id": "Id",
     "flags": {
       "header": "Tags",
@@ -78,6 +84,9 @@
   },
   "expansions": {
     "label": "Expansions"
+  },
+  "bgg-import": {
+    "title": "Import games from BoardGameGeek"
   },
   "game": {
     "add": "Add game session",
@@ -121,6 +130,8 @@
       "bgg-description": "Enter required fields to import a game from BoardGameGeek",
       "manual-title": "Manual input",
       "manual-subtext": "Manual input data to create a game",
+      "bgg-import-title": "Import from BoardGameGeek",
+      "bgg-import-subtext": "Import your game collection from BoardGameGeek",
       "manual": {
         "title": "Create game",
         "game-title": {
@@ -194,6 +205,23 @@
     }
   },
   "games": {
+    "import": {
+      "loading": "Loading BGG data...",
+      "importing": "Importing games from BoardGameGeek...",
+      "success": "Games are successfully imported from BoardGameGeek",
+      "failed": "Failed importing games from BoardGameGeek, check logs for more details.",
+      "start": {
+        "bgg-username": {
+          "label": "BGG username",
+          "required": "BGG username is required"
+        },
+        "title": "Import games from BoardGameGeek",
+        "description": "Import your game collection from BoardGameGeek. You can select which games you want to import in the next step.",
+        "button": "Import games"
+      },
+      "start-import": "Start import ({{count}}/{{totalCount}})",
+      "intro": "We found {{count}} games in your BGG collection, {{collectionCount}} are already included in your local collection. Select what games you want to import. Select max {{maxImport}} games at any time, this is to prevent stress on the bgg website."
+    },
     "title": "Games",
     "new": "Add new game",
     "cards": {

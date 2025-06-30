@@ -9,5 +9,5 @@ interface Props {
 export const BgtPageContent = (props: Props) => {
   const { children, className = '' } = props;
 
-  return <div className={cx('flex flex-col gap-3', className)}>{children}</div>;
+  return <div className={cx('flex flex-col gap-3 h-full', className)}>{children}</div>;
 };

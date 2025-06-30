@@ -9,6 +9,7 @@ using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Common.ViewModels.Results;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
+using Castle.Components.DictionaryAdapter;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -127,7 +128,7 @@ public class SessionControllerTests
         [Fact]
         public async Task CreateSession_ShouldReturnOkResultWithMappedSession_WhenValidViewModelProvided()
         {
-            var viewModel = new SessionViewModel 
+            var viewModel = new CreateSessionViewModel 
             { 
                 Comment = "New session", 
                 GameId = "1",
@@ -202,7 +203,7 @@ public class SessionControllerTests
         [Fact]
         public async Task CreateSession_ShouldReturnInternalServerError_WhenServiceThrowsException()
         {
-            var viewModel = new SessionViewModel { Comment = "Test", GameId = "1", ExpansionIds = []};
+            var viewModel = new CreateSessionViewModel { Comment = "Test", GameId = "1", ExpansionIds = []};
             var session = new Session { Comment = "Test", GameId = 1 };
             var expectedException = new InvalidOperationException("Service error");
 
@@ -229,11 +230,11 @@ public class SessionControllerTests
         public async Task CreateSession_ShouldSetExpansionListCorrectly()
         {
             var expansionIds = new List<int> { 1, 2 };
-            var viewModel = new SessionViewModel { Comment = "Test", GameId = "1", ExpansionIds = expansionIds};
+            var viewModel = new CreateSessionViewModel { Comment = "Test", GameId = "1", ExpansionIds = expansionIds};
             var resultViewModel = new SessionViewModel { Id = "1", Comment = "New session" };
-            var expansionList = new List<Expansion>()
+            var expansionList = new List<Expansion>
             {
-                new Expansion(), new Expansion()
+                new(), new()
             };
             var session = new Session { Comment = "Test", GameId = 1, Expansions = expansionList};
 
@@ -259,7 +260,8 @@ public class SessionControllerTests
         [Fact]
         public async Task UpdateSession_ShouldReturnOkResultWithMappedSession_WhenValidViewModelProvided()
         {
-            var updateViewModel = new SessionViewModel 
+            var expansionIds = new List<int>() { 1,2 };
+            var updateViewModel = new CreateSessionViewModel 
             { 
                 Id = "1",
                 Comment = "Updated session", 
@@ -267,7 +269,8 @@ public class SessionControllerTests
                 Start = DateTime.Now,
                 Minutes = 120,
                 LocationId = "2",
-                Flags = [SessionFlag.LongestGame]
+                Flags = [SessionFlag.LongestGame],
+                ExpansionIds = expansionIds
             };
             var session = new Session 
             { 
@@ -311,6 +314,7 @@ public class SessionControllerTests
             _mapperMock.Verify(x => x.Map<Session>(updateViewModel), Times.Once);
             _sessionServiceMock.Verify(x => x.Update(session), Times.Once);
             _mapperMock.Verify(x => x.Map<SessionViewModel>(updatedSession), Times.Once);
+            _gameServiceMock.Verify(x => x.GetGameExpansions(expansionIds), Times.Once);
             _sessionServiceMock.VerifyNoOtherCalls();
             _mapperMock.VerifyNoOtherCalls();
             _loggerMock.VerifyNoOtherCalls();
@@ -333,7 +337,7 @@ public class SessionControllerTests
         [Fact]
         public async Task UpdateSession_ShouldReturnBadRequest_WhenViewModelIdIsNull()
         {
-            var updateViewModel = new SessionViewModel { Id = null, Comment = "Test", GameId = "1" };
+            var updateViewModel = new CreateSessionViewModel { Id = null, Comment = "Test", GameId = "1" };
 
             var result = await _controller.UpdateSession(updateViewModel);
 
@@ -348,7 +352,8 @@ public class SessionControllerTests
         [Fact]
         public async Task UpdateSession_ShouldReturnInternalServerError_WhenServiceThrowsException()
         {
-            var updateViewModel = new SessionViewModel { Id = "1", Comment = "Test", GameId = "1" };
+            var expansionIds = new List<int> { 1, 2 };
+            var updateViewModel = new CreateSessionViewModel { Id = "1", Comment = "Test", GameId = "1", ExpansionIds = expansionIds};
             var session = new Session { Id = 1, Comment = "Test", GameId = 1 };
             var expectedException = new InvalidOperationException("Update failed");
 
@@ -363,6 +368,8 @@ public class SessionControllerTests
 
             _mapperMock.Verify(x => x.Map<Session>(updateViewModel), Times.Once);
             _sessionServiceMock.Verify(x => x.Update(session), Times.Once);
+            _gameServiceMock.Verify(x => x.GetGameExpansions(expansionIds), Times.Once);
+            
             _mapperMock.VerifyNoOtherCalls();
             _sessionServiceMock.VerifyNoOtherCalls();
             _gameServiceMock.VerifyNoOtherCalls();
@@ -416,7 +423,7 @@ public class SessionControllerTests
         [Fact]
         public async Task CreateSession_ShouldHandleNullFlags_WhenFlagsAreNull()
         {
-            var viewModel = new SessionViewModel 
+            var viewModel = new CreateSessionViewModel 
             { 
                 Comment = "Test session", 
                 GameId = "1",

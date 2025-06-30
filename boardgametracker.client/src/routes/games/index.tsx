@@ -76,6 +76,7 @@ function RouteComponent() {
           onChange={(event) => setFilterValue(event.target.value)}
           className="bg-slate-800 w-full md:w-[160px] xl:w-[300px]"
           placeholder={t('common.filter-name')}
+          type={'text'}
         />
       </BgtPageHeader>
       <BgtPageContent>

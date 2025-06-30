@@ -7,10 +7,11 @@ export interface Props {
   color?: string | undefined;
   onClick?: () => void;
   size?: 'small' | 'medium' | 'large' | 'big';
+  disabled?: boolean;
 }
 
 export const BgtAvatar = (props: Props) => {
-  const { title, image, color, onClick, size = 'medium' } = props;
+  const { title, image, color, onClick, size = 'medium', disabled = false } = props;
 
   if (!image && title === undefined) return null;
 
@@ -37,7 +38,8 @@ export const BgtAvatar = (props: Props) => {
             size === 'large' && 'h-11 w-11 rounded-lg',
             size === 'medium' && 'h-7 w-7 rounded-md',
             size === 'small' && 'h-5 w-5 rounded-sm',
-            onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer'
+            onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer',
+            disabled && 'opacity-50'
           )}
           onClick={onClick}
           src={image}

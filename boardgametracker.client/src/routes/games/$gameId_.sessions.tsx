@@ -150,7 +150,7 @@ function RouteComponent() {
           <BgtDataTable
             columns={columns}
             data={sessions}
-            noDataMessage={t('common.no-data')}
+            noDataMessage={t('common.no-data-yet')}
             widths={['w-[70px]', 'w-[100px]', 'w-[75px]']}
           />
           <BgtDeleteModal

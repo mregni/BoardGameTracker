@@ -27,3 +27,11 @@ export const BggSearchSchema = z.object({
   state: z.preprocess((value) => Number(value), z.nativeEnum(GameState)),
   hasScoring: z.boolean(),
 });
+
+export const BggUserNameSchema = z.object({
+  username: z
+    .string({ required_error: 'games.import.start.bgg-username.required' })
+    .min(1, { message: 'games.import.start.bgg-username.required' }),
+});
+
+export type BggUserName = z.infer<typeof BggUserNameSchema>;

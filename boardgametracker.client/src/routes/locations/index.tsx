@@ -100,7 +100,7 @@ function RouteComponent() {
           <BgtDataTable
             columns={columns}
             data={locations}
-            noDataMessage={t('common.no-data')}
+            noDataMessage={t('common.no-data-yet')}
             widths={['w-[70px]', 'w-[100px]', '', 'w-[50px]']}
           />
         </BgtCard>

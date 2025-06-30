@@ -31,7 +31,7 @@ export const BgtPage = (props: Props) => {
   return (
     <div className="w-full h-full flex flex-col p-3 gap-3">
       {_header && <div>{_header}</div>}
-      <div className="md:pb-3">{_content}</div>
+      <div className="md:pb-3 h-full">{_content}</div>
     </div>
   );
 };

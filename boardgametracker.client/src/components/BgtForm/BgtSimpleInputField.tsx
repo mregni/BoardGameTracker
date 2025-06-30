@@ -1,12 +1,26 @@
 import { ChangeEventHandler } from 'react';
+import { format } from 'date-fns';
 import { cx } from 'class-variance-authority';
 
 import { BgtText } from '../BgtText/BgtText';
 
+export const formatInput = (input: string | number | Date | undefined) => {
+  if (input === undefined || input === null) {
+    return '';
+  }
+
+  if (input instanceof Date) {
+    return format(input, 'yyyy-MM-dd');
+  }
+
+  return input;
+};
+
 export interface Props {
+  type: 'text' | 'number' | 'date';
   placeholder?: string;
   label?: string;
-  value: string | undefined;
+  value: string | number | Date | undefined;
   prefixLabel?: string;
   suffixLabel?: string;
   className?: string;
@@ -16,6 +30,7 @@ export interface Props {
 
 export const BgtSimpleInputField = (props: Props) => {
   const {
+    type,
     placeholder = '',
     value,
     label = undefined,
@@ -34,15 +49,16 @@ export const BgtSimpleInputField = (props: Props) => {
       <div
         className={cx(
           'rounded-lg bg-input active:border-none px-4 flex flex-row gap-2 items-center text-[12px]',
-          className
+          className,
+          disabled && 'text-gray-500'
         )}
       >
         {prefixLabel && <BgtText>{prefixLabel}</BgtText>}
         <input
           className="h-[45px] bg-transparent shadow-none focus:outline-none hide-arrow w-full"
-          value={value}
+          value={formatInput(value)}
           disabled={disabled}
-          type="text"
+          type={type}
           onChange={onChange}
           placeholder={placeholder.toUpperCase()}
         />

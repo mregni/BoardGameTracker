@@ -19,7 +19,7 @@ export interface DataTableProps<T> {
   isLoading?: boolean;
   noHeaders?: boolean;
   firstCellClassNames?: string;
-  widths?: string[];
+  widths?: (string | null)[];
 }
 
 export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
@@ -82,7 +82,7 @@ export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
   if (!isLoading && table.getRowModel().rows?.length === 0) {
     rows = (
       <BgtTableRow>
-        <BgtTableCell colSpan={columns.length} className="items-center text-center h-9">
+        <BgtTableCell colSpan={columns.length} className="items-center text-center h-9 pt-4">
           {noDataMessage}
         </BgtTableCell>
       </BgtTableRow>

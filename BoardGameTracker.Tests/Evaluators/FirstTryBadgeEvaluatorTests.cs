@@ -49,7 +49,7 @@ public class FirstTryBadgeEvaluatorTests
         var dbSessions = new List<Session>();
         for (var i = 0; i < sessionCount; i++)
         {
-            dbSessions.Add(new Session () { GameId = gameId});
+            dbSessions.Add(new Session { GameId = gameId});
         }
 
         var result = await _evaluator.CanAwardBadge(playerId, badge, session, dbSessions);

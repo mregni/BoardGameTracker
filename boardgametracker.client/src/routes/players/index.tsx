@@ -42,6 +42,7 @@ function RouteComponent() {
         actions={[{ content: 'player.new.button', variant: 'solid', onClick: () => setOpenModal(true) }]}
       >
         <BgtSimpleInputField
+          type="text"
           value={filterValue}
           onChange={(event) => setFilterValue(event.target.value)}
           className="bg-slate-800 w-full md:w-[160px] xl:w-[300px]"

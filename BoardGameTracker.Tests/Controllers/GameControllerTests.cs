@@ -43,8 +43,8 @@ public class GameControllerTests
 
         var mappedGames = new List<GameViewModel>
         {
-            new() {Title = "Monopoly", Id = 1},
-            new() {Title = "Scrabble", Id = 2}
+            new() {Title = "Monopoly", Id = "1"},
+            new() {Title = "Scrabble", Id = "2"}
         };
 
         _gameServiceMock.Setup(x => x.GetGames()).ReturnsAsync(games);
@@ -89,16 +89,14 @@ public class GameControllerTests
         var createGameViewModel = new CreateGameViewModel {Title = "New Game"};
         var game = new Game {Title = "New Game", Id = 1};
         var createdGame = new Game {Title = "New Game", Id = 1};
-        var gameViewModel = new GameViewModel {Title = "New Game", Id = 1};
+        var gameViewModel = new GameViewModel {Title = "New Game", Id = "1"};
 
         _mapperMock.Setup(x => x.Map<Game>(createGameViewModel)).Returns(game);
         _gameServiceMock.Setup(x => x.CreateGame(game)).ReturnsAsync(createdGame);
         _mapperMock.Setup(x => x.Map<GameViewModel>(createdGame)).Returns(gameViewModel);
 
-        // Act
         var result = await _controller.CreateGame(createGameViewModel);
 
-        // Assert
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
         okResult!.Value.Should().Be(gameViewModel);
@@ -124,10 +122,10 @@ public class GameControllerTests
     [Fact]
     public async Task UpdateGame_ShouldReturnOkResultWithMappedGame_WhenValidGameViewModelProvided()
     {
-        var gameViewModel = new GameViewModel {Title = "Updated Game", Id = 1};
+        var gameViewModel = new GameViewModel {Title = "Updated Game", Id = "1"};
         var game = new Game {Title = "Updated Game", Id = 1};
         var updatedGame = new Game {Title = "Updated Game", Id = 1};
-        var resultViewModel = new GameViewModel {Title = "Updated Game", Id = 1};
+        var resultViewModel = new GameViewModel {Title = "Updated Game", Id = "1"};
 
         _mapperMock.Setup(x => x.Map<Game>(gameViewModel)).Returns(game);
         _gameServiceMock.Setup(x => x.UpdateGame(game)).ReturnsAsync(updatedGame);
@@ -160,7 +158,7 @@ public class GameControllerTests
     [Fact]
     public async Task UpdateGame_ShouldReturnInternalServerError_WhenServiceThrowsException()
     {
-        var gameViewModel = new GameViewModel {Title = "Game", Id = 1};
+        var gameViewModel = new GameViewModel {Title = "Game", Id = "1"};
         var game = new Game {Title = "Game", Id = 1};
 
         _mapperMock.Setup(x => x.Map<Game>(gameViewModel)).Returns(game);
@@ -183,7 +181,7 @@ public class GameControllerTests
     {
         const int gameId = 1;
         var game = new Game {Title = "Test Game", Id = gameId};
-        var gameViewModel = new GameViewModel {Title = "Test Game", Id = gameId};
+        var gameViewModel = new GameViewModel {Title = "Test Game", Id = gameId.ToString()};
 
         _gameServiceMock.Setup(x => x.GetGameById(gameId)).ReturnsAsync(game);
         _mapperMock.Setup(x => x.Map<GameViewModel>(game)).Returns(gameViewModel);
@@ -267,19 +265,37 @@ public class GameControllerTests
     {
         const int gameId = 1;
         var stats = new GameStatistics {PlayCount = 10, TotalPlayedTime = new TimeSpan(0, 2,0,0)};
-        var statsViewModel = new GameStatisticsViewModel {PlayCount = 10, TotalPlayedTime = 120};
+        var statsViewModel = new GameStatisticsViewModel
+        {
+            GameStats = new GameStatsViewModel
+            {
+                PlayCount = 10, TotalPlayedTime = 120, AveragePlayTime = 10
+            }
+        };
 
         _gameServiceMock.Setup(x => x.GetStats(gameId)).ReturnsAsync(stats);
-        _mapperMock.Setup(x => x.Map<GameStatisticsViewModel>(stats)).Returns(statsViewModel);
+        _mapperMock.Setup(x => x.Map<GameStatsViewModel>(stats)).Returns(statsViewModel.GameStats);
 
-        var result = await _controller.GetGameStats(gameId);
+        var result = await _controller.GetGameStatistics(gameId);
 
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
-        okResult!.Value.Should().Be(statsViewModel);
-
+        okResult!.Value.Should().BeEquivalentTo(statsViewModel);
+        
+        _gameServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetStats(gameId), Times.Once);
-        _mapperMock.Verify(x => x.Map<GameStatisticsViewModel>(stats), Times.Once);
+        _gameServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
+        
+        _mapperMock.Verify(x => x.Map<GameStatsViewModel>(stats), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(null), Times.Once);
+
         _gameServiceMock.VerifyNoOtherCalls();
         _mapperMock.VerifyNoOtherCalls();
     }
@@ -297,14 +313,30 @@ public class GameControllerTests
         _gameServiceMock.Setup(x => x.GetTopPlayers(gameId)).ReturnsAsync(topPlayers);
         _mapperMock.Setup(x => x.Map<IList<TopPlayerViewModel>>(topPlayers)).Returns(topPlayerViewModels);
 
-        var result = await _controller.GetTopPlayers(gameId);
+        var result = await _controller.GetGameStatistics(gameId);
 
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
-        okResult!.Value.Should().Be(topPlayerViewModels);
-
+        var expectedResult = new GameStatisticsViewModel
+        {
+            TopPlayers = topPlayerViewModels
+        };
+        okResult!.Value.Should().BeEquivalentTo(expectedResult);
+        
+        _gameServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetStats(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
+        
+        _mapperMock.Verify(x => x.Map<GameStatsViewModel>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(topPlayers), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(null), Times.Once);
+
         _gameServiceMock.VerifyNoOtherCalls();
         _mapperMock.VerifyNoOtherCalls();
     }
@@ -355,7 +387,7 @@ public class GameControllerTests
         var search = new BggSearch {BggId = 123};
         var bggGame = new BggGame {Names = ["New BGG Game"]};
         var dbGame = new Game {Title = "New BGG Game", Id = 1};
-        var gameViewModel = new GameViewModel {Title = "New BGG Game", Id = 1};
+        var gameViewModel = new GameViewModel {Title = "New BGG Game", Id = "1"};
 
         _gameServiceMock.Setup(x => x.GetGameByBggId(search.BggId)).ReturnsAsync((Game?) null);
         _gameServiceMock.Setup(x => x.SearchGame(search.BggId)).ReturnsAsync(bggGame);
@@ -389,14 +421,30 @@ public class GameControllerTests
         _gameServiceMock.Setup(x => x.GetPlayByDayChart(gameId)).ReturnsAsync(data);
         _mapperMock.Setup(x => x.Map<IList<PlayByDayChartViewModel>>(data)).Returns(dataViewModel);
 
-        var result = await _controller.PlayByDayChart(gameId);
+        var result = await _controller.GetGameStatistics(gameId);
 
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
-        okResult!.Value.Should().Be(dataViewModel);
+        var expectedResult = new GameStatisticsViewModel
+        {
+            PlayByDayChart = dataViewModel
+        };
+        okResult!.Value.Should().BeEquivalentTo(expectedResult);
 
         _gameServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetStats(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
+        
+        _mapperMock.Verify(x => x.Map<GameStatsViewModel>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(data), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny< IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(null), Times.Once);
+        
         _gameServiceMock.VerifyNoOtherCalls();
         _mapperMock.VerifyNoOtherCalls();
     }
@@ -414,31 +462,31 @@ public class GameControllerTests
         _gameServiceMock.Setup(x => x.GetPlayerCountChart(gameId)).ReturnsAsync(data);
         _mapperMock.Setup(x => x.Map<IList<PlayerCountChartViewModel>>(data)).Returns(dataViewModel);
 
-        var result = await _controller.PlayerCounts(gameId);
+        var result = await _controller.GetGameStatistics(gameId);
 
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
-        okResult!.Value.Should().Be(dataViewModel);
+        
+        var expectedResult = new GameStatisticsViewModel
+        {
+            PlayerCountChart = dataViewModel
+        };
+        okResult!.Value.Should().BeEquivalentTo(expectedResult);
 
+        _gameServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetStats(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(data), Times.Once);
-        _gameServiceMock.VerifyNoOtherCalls();
-        _mapperMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task PlayerScoring_ShouldReturnBadRequest_WhenGameHasNoScoring()
-    {
-        const int gameId = 1;
-        var game = new Game {HasScoring = false};
-
-        _gameServiceMock.Setup(x => x.GetGameById(gameId)).ReturnsAsync(game);
-
-        var result = await _controller.PlayerScoring(gameId);
-
-        result.Should().BeOfType<BadRequestResult>();
-
-        _gameServiceMock.Verify(x => x.GetGameById(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
+        
+        _mapperMock.Verify(x => x.Map<GameStatsViewModel>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(null), Times.Once);
+        
         _gameServiceMock.VerifyNoOtherCalls();
         _mapperMock.VerifyNoOtherCalls();
     }
@@ -447,12 +495,12 @@ public class GameControllerTests
     public async Task PlayerScoring_ShouldReturnOkResultWithMappedData_WhenGameHasScoring()
     {
         const int gameId = 1;
-        var series = new XValue() {Value = 20, Id = 1};
+        var series = new XValue {Value = 20, Id = 1};
         var dateTime = DateTime.Now;
         var game = new Game {HasScoring = true};
-        var data = new Dictionary<DateTime, XValue[]>()
+        var data = new Dictionary<DateTime, XValue[]>
         {
-            {dateTime, [new XValue(){ Value = 20, Id = 1}]}
+            {dateTime, [new XValue { Value = 20, Id = 1}]}
         };
         var dataViewModel = new List<PlayerScoringChartViewModel>
         {
@@ -463,15 +511,30 @@ public class GameControllerTests
         _gameServiceMock.Setup(x => x.GetPlayerScoringChart(gameId)).ReturnsAsync(data);
         _mapperMock.Setup(x => x.Map<IList<PlayerScoringChartViewModel>>(data)).Returns(dataViewModel);
 
-        var result = await _controller.PlayerScoring(gameId);
+        var result = await _controller.GetGameStatistics(gameId);
 
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
-        okResult!.Value.Should().Be(dataViewModel);
+        var expectedResult = new GameStatisticsViewModel
+        {
+            PlayerScoringChart = dataViewModel
+        };
+        okResult!.Value.Should().BeEquivalentTo(expectedResult);
 
-        _gameServiceMock.Verify(x => x.GetGameById(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetStats(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
+        
+        _mapperMock.Verify(x => x.Map<GameStatsViewModel>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(data), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(null), Times.Once);
+
         _gameServiceMock.VerifyNoOtherCalls();
         _mapperMock.VerifyNoOtherCalls();
     }
@@ -492,14 +555,30 @@ public class GameControllerTests
         _gameServiceMock.Setup(x => x.GetScoringRankedChart(gameId)).ReturnsAsync(data);
         _mapperMock.Setup(x => x.Map<IList<ScoreRankChartViewModel>>(data)).Returns(dataViewModel);
 
-        var result = await _controller.ScoringRanked(gameId);
+        var result = await _controller.GetGameStatistics(gameId);
 
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
-        okResult!.Value.Should().Be(dataViewModel);
-
+        var expectedResult = new GameStatisticsViewModel
+        {
+            ScoreRankChart = dataViewModel
+        };
+        okResult!.Value.Should().BeEquivalentTo(expectedResult);
+        
+        _gameServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetStats(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
+        _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
         _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
+        
+        _mapperMock.Verify(x => x.Map<GameStatsViewModel>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(null), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<ScoreRankChartViewModel>>(data), Times.Once);
+
         _gameServiceMock.VerifyNoOtherCalls();
         _mapperMock.VerifyNoOtherCalls();
     }

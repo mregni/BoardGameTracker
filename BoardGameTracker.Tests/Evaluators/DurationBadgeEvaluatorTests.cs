@@ -94,7 +94,7 @@ public class DurationBadgeEvaluatorTests
             {
                 Start = baseDate,
                 End = baseDate.AddMinutes(totalMinutes),
-                PlayerSessions = new List<PlayerSession>()
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() { Won = true, PlayerId = playerId},
                     new() { Won = false, PlayerId = 2}

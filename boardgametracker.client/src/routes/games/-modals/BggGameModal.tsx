@@ -9,7 +9,7 @@ import { useBggGameModal } from '../-hooks/useBggGameModal';
 import { getItemStateTranslationKeyByString } from '@/utils/ItemStateUtils';
 import { useToasts } from '@/routes/-hooks/useToasts';
 import { BggSearch, BggSearchSchema, Game, GameState } from '@/models';
-import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
+import { BgtSwitch } from '@/components/BgtForm/BgtSwitch';
 import { BgtSelect } from '@/components/BgtForm/BgtSelect';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import {
@@ -37,7 +37,7 @@ export const BggGameModal = (props: Props) => {
     successToast('game.notifications.created');
     navigate({ to: `/games/${game.id}` });
   };
-  const { save, isPending } = useBggGameModal({ onSuccess });
+  const { save, isPending, settings } = useBggGameModal({ onSuccess });
 
   const openBgg = () => {
     window.open('https://boardgamegeek.com/browse/boardgame', '_blank');
@@ -60,11 +60,7 @@ export const BggGameModal = (props: Props) => {
       <BgtDialogContent>
         <BgtDialogTitle>{t('game.new.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('game.new.bgg-description')}</BgtDialogDescription>
-        <form
-          onSubmit={(event) => {
-            void handleSubmit(onSubmit)(event);
-          }}
-        >
+        <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
           <div className="flex flex-col gap-4 mt-3 mb-6">
             <BgtButton onClick={() => openBgg()} disabled={isPending}>
               <SquareOutIcon className="size-5" />
@@ -86,8 +82,7 @@ export const BggGameModal = (props: Props) => {
               type="number"
               placeholder={t('game.price.placeholder')}
               control={control}
-              // TODO: Fix me
-              //prefixLabel={settings?.currency}
+              prefixLabel={settings?.currency}
             />
             <BgtInputField
               disabled={isPending}
@@ -113,7 +108,7 @@ export const BggGameModal = (props: Props) => {
             <BgtButton variant="soft" color="cancel" onClick={() => setOpen(false)} disabled={isPending}>
               {t('common.cancel')}
             </BgtButton>
-            <BgtButton type="submit" variant="soft" disabled={isPending}>
+            <BgtButton type="submit" variant="soft" disabled={isPending} className="flex-1">
               {t('game.new.save')}
             </BgtButton>
           </BgtDialogClose>

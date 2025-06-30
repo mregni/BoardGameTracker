@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from '@tanstack/react-router';
 
 import {
   BgtDialog,
@@ -20,6 +21,7 @@ interface Props {
 const CreateGameModal = (props: Props) => {
   const { open, setOpen, openBgg, openManual } = props;
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <BgtDialog open={open}>
@@ -33,9 +35,14 @@ const CreateGameModal = (props: Props) => {
             subText={t('game.new.manual-subtext')}
             onClick={openManual}
           />
+          <BgtBigButton
+            title={t('game.new.bgg-import-title')}
+            subText={t('game.new.bgg-import-subtext')}
+            onClick={() => navigate({ to: '/games/import/start' })}
+          />
         </div>
         <BgtDialogClose>
-          <BgtButton variant="soft" color="cancel" className="w-full" onClick={() => setOpen(false)}>
+          <BgtButton variant="soft" color="cancel" className="flex-1" onClick={() => setOpen(false)}>
             {t('common.cancel')}
           </BgtButton>
         </BgtDialogClose>

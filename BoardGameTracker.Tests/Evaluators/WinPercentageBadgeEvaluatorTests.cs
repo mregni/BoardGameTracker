@@ -35,21 +35,21 @@ public class WinPercentageBadgeEvaluatorTests
         {
             new()
             {
-                PlayerSessions = new List<PlayerSession>()
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = true}
                 }
             },
             new()
             {
-                PlayerSessions = new List<PlayerSession>()
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = false}
                 }
             },
             new()
             {
-                PlayerSessions = new List<PlayerSession>()
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = false}
                 }
@@ -72,35 +72,35 @@ public class WinPercentageBadgeEvaluatorTests
         {
             new()
             {
-                PlayerSessions = new List<PlayerSession>()
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = true}
                 }
             },
             new()
             {
-                PlayerSessions = new List<PlayerSession>()
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = true}
                 }
             },
             new()
             {
-                PlayerSessions = new List<PlayerSession>()
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = false}
                 }
             },
             new()
             {
-                PlayerSessions = new List<PlayerSession>()
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = false}
                 }
             },
             new()
             {
-                PlayerSessions = new List<PlayerSession>()
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = false}
                 }
@@ -137,16 +137,16 @@ public class WinPercentageBadgeEvaluatorTests
         var lostSessions = totalSessions - wonSessions;
 
         var sessionsLost = Enumerable.Range(0, lostSessions)
-            .Select(_ => new Session(){
-                PlayerSessions = new List<PlayerSession>()
+            .Select(_ => new Session {
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = false}
                 }
             })
             .ToList();
         var sessionsWon = Enumerable.Range(0, wonSessions)
-            .Select(_ => new Session(){
-                PlayerSessions = new List<PlayerSession>()
+            .Select(_ => new Session {
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = true}
                 }
@@ -169,8 +169,8 @@ public class WinPercentageBadgeEvaluatorTests
         var badge = new Badge {Level = BadgeLevel.Green};
         var session = new Session();
         var sessions = Enumerable.Range(0, 10)
-            .Select(_ => new Session(){
-                PlayerSessions = new List<PlayerSession>()
+            .Select(_ => new Session {
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = false}
                 }
@@ -190,16 +190,16 @@ public class WinPercentageBadgeEvaluatorTests
         var session = new Session();
 
         var sessionsLost = Enumerable.Range(0, 2)
-            .Select(_ => new Session(){
-                PlayerSessions = new List<PlayerSession>()
+            .Select(_ => new Session {
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = false}
                 }
             })
             .ToList();
         var sessionsWon = Enumerable.Range(0, 8)
-            .Select(_ => new Session(){
-                PlayerSessions = new List<PlayerSession>()
+            .Select(_ => new Session {
+                PlayerSessions = new List<PlayerSession>
                 {
                     new() {PlayerId = playerId, Won = true}
                 }

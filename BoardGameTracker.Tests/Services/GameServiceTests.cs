@@ -513,6 +513,12 @@ public class GameServiceTests
     public async Task SearchExpansionsForGame_ShouldReturnExpansions_WhenApiReturnsValidData()
     {
         const int gameId = 123;
+        var game = new Game()
+        {
+            BggId = 1,
+            Id = gameId
+        };
+        
         var bggApiGames = new BggApiGames
         {
             Games = [new BggRawGame {Id = gameId, Names = [new Name {Value = "Test Game"}]}]
@@ -533,14 +539,18 @@ public class GameServiceTests
             new RefitSettings()
         );
 
-        _bggApiMock.Setup(x => x.SearchGame(gameId, 0)).ReturnsAsync(apiResponse);
+        _bggApiMock.Setup(x => x.SearchGame(game.BggId.Value, 0)).ReturnsAsync(apiResponse);
         _mapperMock.Setup(x => x.Map<BggGame>(apiResponse.Content.Games.First())).Returns(expectedBggGame);
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(gameId)).ReturnsAsync(game);
 
         var result = await _gameService.SearchExpansionsForGame(gameId);
 
         result.Should().BeEquivalentTo(expectedBggGame.Expansions);
-        _bggApiMock.Verify(x => x.SearchGame(gameId, 0), Times.Once);
+        
+        _bggApiMock.Verify(x => x.SearchGame(game.BggId.Value, 0), Times.Once);
         _mapperMock.Verify(x => x.Map<BggGame>(apiResponse.Content.Games.First()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(game.Id), Times.Once);
+        
         VerifyNoOtherCalls();
     }
 
@@ -548,18 +558,26 @@ public class GameServiceTests
     public async Task SearchExpansionsForGame_ShouldReturnEmptyArray_WhenApiReturnsError()
     {
         const int gameId = 123;
+        var game = new Game()
+        {
+            BggId = 1,
+            Id = gameId
+        };
+        
         var apiResponse = new ApiResponse<BggApiGames>(
             new HttpResponseMessage(HttpStatusCode.BadRequest),
             null,
             new RefitSettings()
         );
 
-        _bggApiMock.Setup(x => x.SearchGame(gameId, 0)).ReturnsAsync(apiResponse);
+        _bggApiMock.Setup(x => x.SearchGame(game.BggId.Value, 0)).ReturnsAsync(apiResponse);
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(gameId)).ReturnsAsync(game);
 
         var result = await _gameService.SearchExpansionsForGame(gameId);
 
         result.Should().BeEmpty();
-        _bggApiMock.Verify(x => x.SearchGame(gameId, 0), Times.Once);
+        _bggApiMock.Verify(x => x.SearchGame(game.BggId.Value, 0), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(game.Id), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -567,6 +585,12 @@ public class GameServiceTests
     public async Task SearchExpansionsForGame_ShouldReturnEmptyArray_WhenApiReturnsNoGames()
     {
         const int gameId = 123;
+        var game = new Game()
+        {
+            BggId = 1,
+            Id = gameId
+        };
+        
         var bggApiGames = new BggApiGames {Games = []};
         var apiResponse = new ApiResponse<BggApiGames>(
             new HttpResponseMessage(HttpStatusCode.OK),
@@ -574,12 +598,15 @@ public class GameServiceTests
             new RefitSettings()
         );
 
-        _bggApiMock.Setup(x => x.SearchGame(gameId, 0)).ReturnsAsync(apiResponse);
+        _bggApiMock.Setup(x => x.SearchGame(game.BggId.Value, 0)).ReturnsAsync(apiResponse);
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(gameId)).ReturnsAsync(game);
 
         var result = await _gameService.SearchExpansionsForGame(gameId);
 
         result.Should().BeEmpty();
-        _bggApiMock.Verify(x => x.SearchGame(gameId, 0), Times.Once);
+        _bggApiMock.Verify(x => x.SearchGame(game.BggId.Value, 0), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(game.Id), Times.Once);
+        
         VerifyNoOtherCalls();
     }
 
@@ -761,7 +788,9 @@ public class GameServiceTests
         };
 
         _gameRepositoryMock.Setup(x => x.GetSessions(gameId, -200)).ReturnsAsync(sessions);
-
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(gameId))
+            .ReturnsAsync(new Game() {HasScoring = true});
+        
         var result = await _gameService.GetPlayerScoringChart(gameId);
 
         result.Should().HaveCount(2);
@@ -779,6 +808,8 @@ public class GameServiceTests
         secondSessionData.Should().Contain(x => x.Id == 3 && x.Value == 95.5);
 
         _gameRepositoryMock.Verify(x => x.GetSessions(gameId, -200), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        
         VerifyNoOtherCalls();
     }
 
@@ -788,12 +819,17 @@ public class GameServiceTests
         const int gameId = 1;
         var sessions = new List<Session>();
 
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(gameId))
+            .ReturnsAsync(new Game() {HasScoring = true});
         _gameRepositoryMock.Setup(x => x.GetSessions(gameId, -200)).ReturnsAsync(sessions);
 
         var result = await _gameService.GetPlayerScoringChart(gameId);
 
         result.Should().BeEmpty();
+        
         _gameRepositoryMock.Verify(x => x.GetSessions(gameId, -200), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        
         VerifyNoOtherCalls();
     }
 
@@ -815,6 +851,8 @@ public class GameServiceTests
             }
         };
 
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(gameId))
+            .ReturnsAsync(new Game() {HasScoring = true});
         _gameRepositoryMock.Setup(x => x.GetSessions(gameId, -200)).ReturnsAsync(sessions);
 
         var result = await _gameService.GetPlayerScoringChart(gameId);
@@ -826,6 +864,7 @@ public class GameServiceTests
         sessionData.Should().Contain(x => x.Id == 2 && x.Value == 85.0);
 
         _gameRepositoryMock.Verify(x => x.GetSessions(gameId, -200), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
         VerifyNoOtherCalls();
     }
     
@@ -923,8 +962,8 @@ public class GameServiceTests
             {
                 PlayerSessions = new List<PlayerSession>
                 {
-                    new() {PlayerId = 1, Won = true, Session = new Session() {Start = DateTime.Now}},
-                    new() {PlayerId = 2, Session = new Session() {Start = DateTime.Now.AddDays(-1)}}
+                    new() {PlayerId = 1, Won = true, Session = new Session {Start = DateTime.Now}},
+                    new() {PlayerId = 2, Session = new Session {Start = DateTime.Now.AddDays(-1)}}
                 }
             }
         ];

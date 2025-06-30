@@ -19,6 +19,13 @@ public class MapProfiles : Profile
 {
     public MapProfiles()
     {
+        CreateMap<Item, BggImportGame>()
+            .ForMember(x => x.BggId, x => x.MapFrom(y => y.Objectid))
+            .ForMember(x => x.Title, x => x.MapFrom(y => y.Name.Text))
+            .ForMember(x => x.State, x => x.MapFrom(y => MapStatus(y.Status)))
+            .ForMember(x => x.ImageUrl, x => x.MapFrom(y => y.Image.Text))
+            .ForMember(x => x.LastModified, x => x.MapFrom(y => DateTime.ParseExact(y.Status.LastModified, "yyyy-MM-dd HH:mm:ss", null)));
+        
         CreateMap<BggRawGame, BggGame>()
             .ForMember(x => x.BggId, x => x.MapFrom(y => y.Id))
             .ForMember(x => x.Names, x => x.MapFrom(y => y.Names.Select(z => z.Value)))
@@ -67,6 +74,7 @@ public class MapProfiles : Profile
         
         CreateMap<Expansion, ExpansionViewModel>();
         
+        CreateMap<ImportGameViewModel, ImportGame>();
         CreateMap<CreateGameViewModel, Game>();
         CreateMap<GameCategory, GameLinkViewModel>();
         CreateMap<GameMechanic, GameLinkViewModel>();
@@ -117,5 +125,25 @@ public class MapProfiles : Profile
     {
         var peopleTypes = new[] {Constants.Bgg.Artist, Constants.Bgg.Designer, Constants.Bgg.Publisher};
         return peopleTypes.Contains(link.Type);
+    }
+
+    private static GameState MapStatus(Status status)
+    {
+        if (status.Prevowned == 1)
+        {
+            return GameState.PreviouslyOwned;
+        }
+
+        if (status.Fortrade == 1)
+        {
+            return GameState.ForTrade;
+        }
+        
+        if(status.Want == 1)
+        {
+            return GameState.Wanted;
+        }
+        
+        return GameState.Owned;
     }
 }

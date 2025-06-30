@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Common.ViewModels.Results;
@@ -90,7 +91,7 @@ public class GameController : ControllerBase
         return new OkObjectResult(viewModel);
     }
     
-    [HttpPost("bgg")]
+    [HttpPost("bgg/search")]
     public async Task<IActionResult> SearchOnBgg([FromBody] BggSearch search)
     {
         var existingGame = await _gameService.GetGameByBggId(search.BggId);
@@ -109,6 +110,30 @@ public class GameController : ControllerBase
         var dbGame = await _gameService.ProcessBggGameData(game, search);
         var result = _mapper.Map<GameViewModel>(dbGame);
         return new OkObjectResult(result);
+    }
+    
+    [HttpGet("bgg/import")]
+    public async Task<IActionResult> ImportBgg([FromQuery] string username)
+    {
+        var result = await _gameService.ImportBggCollection(username); 
+        return new OkObjectResult(result);
+    }
+    
+    [HttpPost("bgg/import")]
+    public async Task<IActionResult> ImportBggGames([FromBody] ImportGameListViewModal gameImport)
+    {
+        try
+        {
+            var gamesToImport = _mapper.Map<IList<ImportGame>>(gameImport.Games);
+            await _gameService.ImportList(gamesToImport);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
+        return new OkObjectResult(true);
     }
 
     [HttpGet]
@@ -152,7 +177,7 @@ public class GameController : ControllerBase
         var playerScoringChart = await _gameService.GetPlayerScoringChart(id);
         var scoringRankChart = await _gameService.GetScoringRankedChart(id);
 
-        var result = new GameStatisticsViewModel()
+        var result = new GameStatisticsViewModel
         {
             GameStats = _mapper.Map<GameStatsViewModel>(stats),
             TopPlayers = _mapper.Map<IList<TopPlayerViewModel>>(topPlayers),

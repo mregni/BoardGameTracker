@@ -82,8 +82,8 @@ public class DashboardControllerTests
         {
             GameState =
             [
-                new GameStateChart() {Type = GameState.Owned, GameCount = 100},
-                new GameStateChart() {Type = GameState.Wanted, GameCount = 2}
+                new GameStateChart {Type = GameState.Owned, GameCount = 100},
+                new GameStateChart {Type = GameState.Wanted, GameCount = 2}
             ],
         };
 
@@ -91,8 +91,8 @@ public class DashboardControllerTests
         {
             GameState =
             [
-                new GameStateChartViewModel() { Type = 1, GameCount = 100 },
-                new GameStateChartViewModel() { Type = 0, GameCount = 2 }
+                new GameStateChartViewModel { Type = 1, GameCount = 100 },
+                new GameStateChartViewModel { Type = 0, GameCount = 2 }
             ]
         };
 

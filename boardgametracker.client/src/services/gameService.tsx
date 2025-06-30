@@ -1,5 +1,5 @@
 import { axiosInstance } from '../utils/axiosInstance';
-import { BggSearch, Game, GameStatistics, Session } from '../models';
+import { BggImportResults, BggSearch, Game, GameStatistics, ImportGame, Session } from '../models';
 
 import { ExpansionLink, Expansion, ExpansionUpdate, CreateGame } from '@/models/';
 
@@ -30,7 +30,13 @@ export const getGameSessionsCall = (id: string): Promise<Session[]> => {
 };
 
 export const addGameWithBggCall = (search: BggSearch): Promise<Game> => {
-  return axiosInstance.post<Game>(`${domain}/bgg`, { ...search }).then((response) => {
+  return axiosInstance.post<Game>(`${domain}/bgg/search`, { ...search }).then((response) => {
+    return response.data;
+  });
+};
+
+export const getBggCollectionCall = (username: string): Promise<BggImportResults> => {
+  return axiosInstance.get<BggImportResults>(`${domain}/bgg/import`, { params: { username } }).then((response) => {
     return response.data;
   });
 };
@@ -65,4 +71,10 @@ export const saveGameExpansionCall = (expansionUpdate: ExpansionUpdate): Promise
     .then((response) => {
       return response.data;
     });
+};
+
+export const importGamesCall = (games: ImportGame[]): Promise<boolean> => {
+  return axiosInstance.post<boolean>(`${domain}/bgg/import`, { games: [...games] }).then((response) => {
+    return response.data;
+  });
 };

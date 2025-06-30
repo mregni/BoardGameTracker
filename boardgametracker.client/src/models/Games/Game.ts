@@ -27,7 +27,7 @@ export interface Game {
   people: GamePerson[];
   hasScoring: boolean;
   buyingPrice: number | null;
-  additionDate: Date | null;
+  additionDate: string | null;
 }
 
 export interface GameLink {

@@ -29,4 +29,6 @@ public interface IGameService
     Task<Game> UpdateGame(Game game);
     Task<List<Expansion>> UpdateGameExpansions(int gameId, int[] expansionIds);
     Task<List<Expansion>> GetGameExpansions(List<int> expansionIds);
+    Task<BggImportResult?> ImportBggCollection(string userName);
+    Task ImportList(IList<ImportGame> games);
 }

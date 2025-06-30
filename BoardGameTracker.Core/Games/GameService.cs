@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using AutoMapper;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
@@ -307,7 +308,7 @@ public class GameService : IGameService
                 continue;
             }
 
-            var expansion = new Expansion()
+            var expansion = new Expansion
             {
                 GameId = game.Id,
                 BggId = firstResult.Id,
@@ -323,5 +324,51 @@ public class GameService : IGameService
     public Task<List<Expansion>> GetGameExpansions(List<int> expansionIds)
     {
         return _gameRepository.GetExpansions(expansionIds);
+    }
+
+    public async Task<BggImportResult?> ImportBggCollection(string userName)
+    {
+        var importGameResult = await _bggApi.ImportCollection(userName, "boardgame", "boardgameexpansion");
+        if (!importGameResult.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        var result = new BggImportResult
+        {
+            StatusCode = importGameResult.StatusCode
+        };
+
+        if (importGameResult.StatusCode != HttpStatusCode.OK)
+        {
+            return result;
+        }
+
+        var list = importGameResult.Content.Item.OrderBy(x => x.Name.Text).ToList();
+        result.Games = _mapper.Map<List<BggImportGame>>(list);
+
+        return result;
+    }
+
+    public async Task ImportList(IList<ImportGame> games)
+    {
+        foreach (var game in games)
+        {
+            var bggGame = await SearchGame(game.BggId);
+            if (bggGame == null)
+            {
+                continue;
+            }
+
+            var search = new BggSearch
+            {
+                BggId = game.BggId,
+                HasScoring = game.HasScoring,
+                State = game.State,
+                AdditionDate = game.AddedDate,
+                Price = game.Price
+            };
+            await ProcessBggGameData(bggGame, search);
+        }
     }
 }

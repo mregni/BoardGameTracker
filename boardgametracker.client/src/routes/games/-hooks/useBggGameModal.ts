@@ -1,5 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 
+import { getSettings } from '@/services/queries/settings';
 import { addGameWithBggCall } from '@/services/gameService';
 import { Game, QUERY_KEYS } from '@/models';
 
@@ -9,6 +11,12 @@ interface Props {
 
 export const useBggGameModal = ({ onSuccess }: Props) => {
   const queryClient = useQueryClient();
+
+  const [settingsQuery] = useQueries({
+    queries: [getSettings()],
+  });
+
+  const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
 
   const addGameMutation = useMutation({
     mutationFn: addGameWithBggCall,
@@ -23,5 +31,6 @@ export const useBggGameModal = ({ onSuccess }: Props) => {
   return {
     save: addGameMutation.mutateAsync,
     isPending: addGameMutation.isPending,
+    settings,
   };
 };

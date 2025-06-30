@@ -12,7 +12,7 @@ import {
   CreatePlayerSessionNoScoringSchema,
   CreatePlayerSessionSchema,
 } from '@/models/';
-import { BgtSwitch } from '@/components/BgtSwitch/BgtSwitch';
+import { BgtSwitch } from '@/components/BgtForm/BgtSwitch';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';

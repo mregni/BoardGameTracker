@@ -7,6 +7,7 @@ export const QUERY_KEYS = {
   settings: 'settings',
   games: 'games',
   game: 'game',
+  bgg: 'bgg',
   expansions: 'expansions',
   locations: 'locations',
   dashboard: 'dashboard',
