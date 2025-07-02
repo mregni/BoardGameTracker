@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { useMemo, useState, useRef, LegacyRef } from 'react';
 import i18next from 'i18next';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import * as Tooltip from '@radix-ui/react-tooltip';
 
 import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
 import { useToasts } from '../-hooks/useToasts';
@@ -19,9 +18,9 @@ import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
 import { BgtMostWinnerCard } from '@/components/BgtCard/BgtMostWinnerCard';
-import { BgtCard } from '@/components/BgtCard/BgtCard';
 import { BgtEditDeleteButtons } from '@/components/BgtButton/BgtEditDeleteButtons';
 import BgtButton from '@/components/BgtButton/BgtButton';
+import { BgtAchievement, BgtAchievementIcon } from '@/components/BgtAchievement/BgtAchievement';
 
 export const Route = createFileRoute('/players/$playerId')({
   component: RouteComponent,
@@ -30,53 +29,6 @@ export const Route = createFileRoute('/players/$playerId')({
     queryClient.prefetchQuery(getPlayerStatistics(params.playerId));
   },
 });
-
-interface Props {
-  badge: Badge;
-}
-
-const BgtBadge = (props: Props) => {
-  const { badge } = props;
-  const { t } = useTranslation();
-
-  return (
-    <BgtCard className="col-span-1 p-3">
-      <div className="flex flex-row gap-3">
-        <img src={`/images/badges/${badge.image}`} alt="Badge image" className="h-10 aspect-square" />
-        <div className="flex flex-col">
-          <div className="font-bold">{t(`badges.${badge.titleKey}`)}</div>
-          <div className="text-xs line-clamp-1">{t(`badges.${badge.descriptionKey}`)}</div>
-        </div>
-      </div>
-    </BgtCard>
-  );
-};
-
-const BgtBadgeIcon = (props: Props) => {
-  const { badge } = props;
-  const { t } = useTranslation();
-
-  return (
-    <Tooltip.Provider>
-      <Tooltip.Root>
-        <Tooltip.Trigger asChild>
-          <img src={`/images/badges/${badge.image}`} alt="Badge image" className="h-10 aspect-square" />
-        </Tooltip.Trigger>
-        <Tooltip.Portal>
-          <Tooltip.Content
-            className="select-none rounded bg-card-black border-card-border border-2 border-solid px-[15px] py-2.5 text-[15px] leading-none will-change-[transform,opacity] data-[state=delayed-open]:data-[side=bottom]:animate-slideUpAndFade data-[state=delayed-open]:data-[side=left]:animate-slideRightAndFade data-[state=delayed-open]:data-[side=right]:animate-slideLeftAndFade data-[state=delayed-open]:data-[side=top]:animate-slideDownAndFade"
-            sideOffset={5}
-          >
-            <div className="flex flex-col justify-center">
-              <div className="font-bold">{t(`badges.${badge.titleKey}`)}</div>
-              <div className="text-xs">{t(`badges.${badge.descriptionKey}`)}</div>
-            </div>
-          </Tooltip.Content>
-        </Tooltip.Portal>
-      </Tooltip.Root>
-    </Tooltip.Provider>
-  );
-};
 
 interface BadgeContainerProps {
   badges: Badge[];
@@ -129,7 +81,7 @@ export const BgtBadgeContainer = (props: BadgeContainerProps) => {
   return (
     <div className="flex flex-row flex-wrap gap-2">
       {processedBadges.displayBadges.map((badge) => (
-        <BgtBadgeIcon key={badge.titleKey} badge={badge} />
+        <BgtAchievementIcon key={badge.titleKey} badge={badge} />
       ))}
       {processedBadges.hiddenCount > 0 && (
         <div
@@ -248,7 +200,7 @@ function RouteComponent() {
               </BgtHeading>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1 md:gap-3">
-              {player.badges && player.badges.map((badge) => <BgtBadge key={badge.titleKey} badge={badge} />)}
+              {player.badges && player.badges.map((badge) => <BgtAchievement key={badge.titleKey} badge={badge} />)}
             </div>
           </>
         )}
