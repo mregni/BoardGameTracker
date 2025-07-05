@@ -106,6 +106,9 @@
     },
     "total-duration": {
       "label": "{{player}} played a total of {{duration}} minutes."
+    },
+    "total-sessions": {
+      "label": "{{player}} played a total of {{count}} game sessions."
     }
   },
   "game": {

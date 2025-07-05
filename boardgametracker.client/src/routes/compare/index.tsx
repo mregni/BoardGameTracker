@@ -6,6 +6,7 @@ import { useCompareData } from './-hooks/useCompareData';
 import { WinnerCount } from './-components/WinnerCount';
 import { TotalWinPercentage } from './-components/TotalWinPercentage';
 import { TotalWinCount } from './-components/TotalWinCount';
+import { TotalSessions } from './-components/TotalSessions';
 import { TotalDuration } from './-components/TotalDuration';
 import { PlayerSpotlight } from './-components/PlayerSpotlight';
 import { BestPlayerGame } from './-components/BestPlayerGame';
@@ -127,6 +128,26 @@ function RouteComponent() {
           right={
             <TotalDuration
               row={compare.totalDuration}
+              position="right"
+              playerLeft={playerLeft}
+              playerRight={playerRight}
+              className="text-left"
+            />
+          }
+        />
+        <Row
+          left={
+            <TotalSessions
+              row={compare.sessionCounts}
+              position="left"
+              playerLeft={playerLeft}
+              playerRight={playerRight}
+              className="text-left"
+            />
+          }
+          right={
+            <TotalSessions
+              row={compare.sessionCounts}
               position="right"
               playerLeft={playerLeft}
               playerRight={playerRight}
