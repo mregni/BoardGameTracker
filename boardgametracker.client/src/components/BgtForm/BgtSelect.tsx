@@ -59,6 +59,16 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
     }
   }, [open]);
 
+  useEffect(() => {
+    const onResize = (event: Event) => {
+      event.stopImmediatePropagation();
+    };
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
   return (
     <div className="flex flex-col justify-start">
       <div className="flex items-baseline justify-between">
@@ -100,9 +110,7 @@ export const BgtSelect = <T extends FieldValues>(props: Props<T>) => {
                 sideOffset={5}
                 style={{ bottom: 'auto' }}
                 onCloseAutoFocus={(e) => {
-                  if (open) {
-                    e.preventDefault();
-                  }
+                  e.preventDefault();
                 }}
               >
                 {hasSearch && (

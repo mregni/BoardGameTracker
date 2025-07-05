@@ -34,7 +34,7 @@ export const BgtAvatar = (props: Props) => {
         <img
           className={cx(
             'shadow-gray-800 shadow-md',
-            size === 'big' && 'h-28 w-28 rounded-full',
+            size === 'big' && 'md:h-28 md:w-28 rounded-full h-20 w-20',
             size === 'large' && 'h-11 w-11 rounded-lg',
             size === 'medium' && 'h-7 w-7 rounded-md',
             size === 'small' && 'h-5 w-5 rounded-sm',

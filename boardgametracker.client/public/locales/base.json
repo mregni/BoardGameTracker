@@ -21,6 +21,7 @@
     "winners": "Winners",
     "loosers": "Loosers",
     "play-time": "Play time",
+    "compare": "Compare",
     "rating": "Rating",
     "weight": "Weight",
     "age": "Age",
@@ -87,6 +88,25 @@
   },
   "bgg-import": {
     "title": "Import games from BoardGameGeek"
+  },
+  "compare": {
+    "title": "Compare players",
+    "wins": {
+      "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
+      "looser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+    },
+    "best-game": {
+      "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
+    },
+    "total-wins": {
+      "label": "{{player}} won in total {{count}} game sessions."
+    },
+    "win-percentage": {
+      "label": "{{player}} has a win percentage of {{percentage}}%"
+    },
+    "total-duration": {
+      "label": "{{player}} played a total of {{duration}} minutes."
+    }
   },
   "game": {
     "add": "Add game session",

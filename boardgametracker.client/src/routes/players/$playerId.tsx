@@ -137,17 +137,12 @@ function RouteComponent() {
                   title={player.name}
                   image={player.image}
                 />
-                <div className="col-span-8 md:col-span-10 xl:col-span-12 flex flex-col gap-2">
-                  <div className="flex flex-row justify-between">
-                    <BgtHeading>{player.name}</BgtHeading>
-                    <BgtEditDeleteButtons
-                      onDelete={() => setOpenDeleteModal(true)}
-                      onEdit={() => setOpenUpdateModal(true)}
-                    />
-                  </div>
-                  <BgtButton size="3" className="md:hidden">
-                    {i18next.format(t('game.add'))}
-                  </BgtButton>
+                <div className="col-span-8 md:col-span-10 xl:col-span-12 flex flex-row justify-between">
+                  <BgtHeading>{player.name}</BgtHeading>
+                  <BgtEditDeleteButtons
+                    onDelete={() => setOpenDeleteModal(true)}
+                    onEdit={() => setOpenUpdateModal(true)}
+                  />
                 </div>
               </div>
 

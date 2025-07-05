@@ -273,7 +273,7 @@ public class PlayerServiceTests
             var bestGame = new Game { Id = 1, Title = "Best Game", Image = "game.jpg" };
             const int expectedGameWins = 3;
 
-            _playerRepositoryMock.Setup(x => x.GetPlayCount(playerId)).ReturnsAsync(expectedPlayCount);
+            _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerId)).ReturnsAsync(expectedPlayCount);
             _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerId)).ReturnsAsync(expectedWinCount);
             _playerRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(playerId)).ReturnsAsync(expectedTotalPlayedTime);
             _playerRepositoryMock.Setup(x => x.GetDistinctGameCount(playerId)).ReturnsAsync(expectedDistinctGameCount);
@@ -293,7 +293,7 @@ public class PlayerServiceTests
             result.MostWinsGame.Image.Should().Be(bestGame.Image);
             result.MostWinsGame.TotalWins.Should().Be(expectedGameWins);
 
-            _playerRepositoryMock.Verify(x => x.GetPlayCount(playerId), Times.Once);
+            _playerRepositoryMock.Verify(x => x.GetTotalPlayCount(playerId), Times.Once);
             _playerRepositoryMock.Verify(x => x.GetTotalWinCount(playerId), Times.Once);
             _playerRepositoryMock.Verify(x => x.GetPlayLengthInMinutes(playerId), Times.Once);
             _playerRepositoryMock.Verify(x => x.GetDistinctGameCount(playerId), Times.Once);
@@ -312,7 +312,7 @@ public class PlayerServiceTests
             const double expectedTotalPlayedTime = 60.0;
             const int expectedDistinctGameCount = 1;
 
-            _playerRepositoryMock.Setup(x => x.GetPlayCount(playerId)).ReturnsAsync(expectedPlayCount);
+            _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerId)).ReturnsAsync(expectedPlayCount);
             _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerId)).ReturnsAsync(expectedWinCount);
             _playerRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(playerId)).ReturnsAsync(expectedTotalPlayedTime);
             _playerRepositoryMock.Setup(x => x.GetDistinctGameCount(playerId)).ReturnsAsync(expectedDistinctGameCount);
@@ -327,7 +327,7 @@ public class PlayerServiceTests
             result.DistinctGameCount.Should().Be(expectedDistinctGameCount);
             result.MostWinsGame.Should().BeNull();
 
-            _playerRepositoryMock.Verify(x => x.GetPlayCount(playerId), Times.Once);
+            _playerRepositoryMock.Verify(x => x.GetTotalPlayCount(playerId), Times.Once);
             _playerRepositoryMock.Verify(x => x.GetTotalWinCount(playerId), Times.Once);
             _playerRepositoryMock.Verify(x => x.GetPlayLengthInMinutes(playerId), Times.Once);
             _playerRepositoryMock.Verify(x => x.GetDistinctGameCount(playerId), Times.Once);
@@ -376,12 +376,12 @@ public class PlayerServiceTests
             const int playerId = 1;
             var expectedException = new InvalidOperationException("Repository error");
 
-            _playerRepositoryMock.Setup(x => x.GetPlayCount(playerId)).ThrowsAsync(expectedException);
+            _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerId)).ThrowsAsync(expectedException);
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => _playerService.GetStats(playerId));
 
             exception.Should().Be(expectedException);
-            _playerRepositoryMock.Verify(x => x.GetPlayCount(playerId), Times.Once);
+            _playerRepositoryMock.Verify(x => x.GetTotalPlayCount(playerId), Times.Once);
         }
     }

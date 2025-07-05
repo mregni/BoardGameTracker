@@ -54,7 +54,7 @@ public class DashboardService : IDashboardService
         var mostWinPlayer = await _gameRepository.GetMostWins();
         if (mostWinPlayer != null)
         {
-            var wins = await _playerRepository.GetWinCount(mostWinPlayer.Id);
+            var wins = await _playerRepository.GetTotalWinCount(mostWinPlayer.Id);
             result.MostWinningPlayer = new MostWinningPlayer
             {
                 Id = mostWinPlayer.Id,

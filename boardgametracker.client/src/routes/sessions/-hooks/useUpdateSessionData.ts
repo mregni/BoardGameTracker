@@ -23,7 +23,7 @@ export const useUpdateSessionData = ({ sessionId, onSaveSuccess, onSaveError }: 
       onSaveSuccess?.();
       sessionResult.playerSessions.map((x) => {
         queryClient.invalidateQueries({
-          queryKey: [QUERY_KEYS.players, x.playerId, QUERY_KEYS.sessions],
+          queryKey: [QUERY_KEYS.player, x.playerId, QUERY_KEYS.sessions],
         });
       });
 

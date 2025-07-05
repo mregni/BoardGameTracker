@@ -2,6 +2,8 @@
 using BoardGameTracker.Core.Badges;
 using BoardGameTracker.Core.Badges.BadgeEvaluators;
 using BoardGameTracker.Core.Badges.Interfaces;
+using BoardGameTracker.Core.Compares;
+using BoardGameTracker.Core.Compares.Interfaces;
 using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Dashboard;
@@ -43,6 +45,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IDashboardService, DashboardService>();
         serviceCollection.AddScoped<ILanguageService, LanguageService>();
         serviceCollection.AddScoped<IBadgeService, BadgeService>();
+        serviceCollection.AddScoped<ICompareService, CompareService>();
         
         serviceCollection.AddScoped<IGameRepository, GameRepository>();
         serviceCollection.AddScoped<IPlayerRepository, PlayerRepository>();
@@ -51,6 +54,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IDashboardRepository, DashboardRepository>();
         serviceCollection.AddScoped<ILanguageRepository, LanguageRepository>();
         serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
+        serviceCollection.AddScoped<ICompareRepository, CompareRepository>();
         
         serviceCollection.AddScoped<IBadgeEvaluator, SessionsBadgeEvaluator>();
         serviceCollection.AddScoped<IBadgeEvaluator, DifferentGameBadgeEvaluator>();

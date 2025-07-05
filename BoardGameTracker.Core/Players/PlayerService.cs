@@ -72,7 +72,7 @@ public class PlayerService : IPlayerService
     {
         var stats = new PlayerStatistics
         {
-            PlayCount = await _playerRepository.GetPlayCount(id),
+            PlayCount = await _playerRepository.GetTotalPlayCount(id),
             WinCount = await _playerRepository.GetTotalWinCount(id),
             TotalPlayedTime = await _playerRepository.GetPlayLengthInMinutes(id),
             DistinctGameCount = await _playerRepository.GetDistinctGameCount(id)

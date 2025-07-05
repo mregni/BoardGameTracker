@@ -27,16 +27,6 @@ public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
             .OrderBy(x => x.Name)
             .ToListAsync();
     }
-
-    public Task<int> GetPlayCount(int id)
-    {
-        return _dbContext.Players
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.Id == id)
-            .Select(x => x.PlayerSessions.Count)
-            .FirstAsync();
-    }
-
     public async Task<Game?> GetBestGame(int id)
     {
         var gameId = await _dbContext.Players
@@ -52,14 +42,6 @@ public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
         return await _dbContext.Games.FirstOrDefaultAsync(x => x.Id == gameId);
     }
 
-    public Task<int> GetTotalWinCount(int id)
-    {
-        return _dbContext.Players
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.Id == id)
-            .SelectMany(x => x.PlayerSessions)
-            .CountAsync(x => x.Won);
-    }
 
     public Task<double> GetPlayLengthInMinutes(int id)
     {
@@ -101,12 +83,13 @@ public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
             .CountAsync();
     }
 
-    public Task<int> GetWinCount(int id)
+    public Task<int> GetTotalWinCount(int id)
     {
-        return _dbContext.Sessions
+        return _dbContext.Players
             .Include(x => x.PlayerSessions)
-            .Where(x => x.PlayerSessions.Any(y => y.Player.Id == id && y.Won))
-            .CountAsync();
+            .Where(x => x.Id == id)
+            .SelectMany(x => x.PlayerSessions)
+            .CountAsync(x => x.Won);
     }
 
     public Task<List<Session>> GetSessions(int id)

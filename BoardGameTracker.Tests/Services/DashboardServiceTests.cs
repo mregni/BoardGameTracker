@@ -59,7 +59,7 @@ public class DashboardServiceTests
         _gameRepositoryMock.Setup(x => x.GetMostWins()).ReturnsAsync(mostWinPlayer);
         _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount()).ReturnsAsync(expectedExpansionCount);
         _playerRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(expectedPlayerCount);
-        _playerRepositoryMock.Setup(x => x.GetWinCount(mostWinPlayer.Id)).ReturnsAsync(expectedWins);
+        _playerRepositoryMock.Setup(x => x.GetTotalWinCount(mostWinPlayer.Id)).ReturnsAsync(expectedWins);
         _sessionRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(expectedSessionCount);
         _sessionRepositoryMock.Setup(x => x.GetTotalPlayTime()).ReturnsAsync(expectedTotalPlayTime);
         _sessionRepositoryMock.Setup(x => x.GetMeanPlayTime()).ReturnsAsync(expectedMeanPlayTime);
@@ -122,7 +122,7 @@ public class DashboardServiceTests
         _gameRepositoryMock.Verify(x => x.GetMostWins(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetTotalExpansionCount(), Times.Once);
         _playerRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetWinCount(It.IsAny<int>()), Times.Never);
+        _playerRepositoryMock.Verify(x => x.GetTotalWinCount(It.IsAny<int>()), Times.Never);
         _sessionRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.GetTotalPlayTime(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.GetMeanPlayTime(), Times.Once);
@@ -323,7 +323,7 @@ public class DashboardServiceTests
         _gameRepositoryMock.Verify(x => x.GetMostWins(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetTotalExpansionCount(), Times.Once);
         _playerRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetWinCount(playerId), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetTotalWinCount(playerId), Times.Once);
         _sessionRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.GetTotalPlayTime(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.GetMeanPlayTime(), Times.Once);

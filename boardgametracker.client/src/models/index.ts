@@ -5,6 +5,8 @@ export * from './Common/BgtSelectItem';
 export * from './Common/FailResult';
 export * from './Common/KeyValuePair';
 
+export * from './Compare/CompareResult';
+
 export * from './constants';
 
 export * from './Dashboard/DashboardStatistics';

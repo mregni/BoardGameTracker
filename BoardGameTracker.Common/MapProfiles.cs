@@ -6,8 +6,10 @@ using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Common.Models.Charts;
+using BoardGameTracker.Common.Models.Compare;
 using BoardGameTracker.Common.Models.Dashboard;
 using BoardGameTracker.Common.ViewModels;
+using BoardGameTracker.Common.ViewModels.Compare;
 using BoardGameTracker.Common.ViewModels.Dashboard;
 using BoardGameTracker.Common.ViewModels.Language;
 using BoardGameTracker.Common.ViewModels.Location;
@@ -71,6 +73,10 @@ public class MapProfiles : Profile
         CreateMap<GameLinkViewModel, GameMechanic>();
         CreateMap<GameLinkViewModel, GameAccessory>();
         CreateMap<GamePersonViewModel, Person>();
+
+        CreateMap<CompareResult, CompareResultViewModel>();
+        CreateMap(typeof(CompareRow<>), typeof(CompareRowViewModel<>));
+        CreateMap<MostWonGame, MostWonGameViewModel>();
         
         CreateMap<Expansion, ExpansionViewModel>();
         

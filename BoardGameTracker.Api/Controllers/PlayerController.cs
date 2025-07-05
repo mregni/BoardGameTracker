@@ -77,7 +77,6 @@ public class PlayerController : ControllerBase
             return StatusCode(500);
         }
     }
-
     
     [HttpGet]
     [Route("{id:int}")]
