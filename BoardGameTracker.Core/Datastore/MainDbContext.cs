@@ -368,11 +368,11 @@ public class MainDbContext : DbContext
                     DescriptionKey = "close-loss.description",
                     TitleKey = "close-loss.title", Image = "close-loss.png"
                 },
-                new Badge() //HIER VERDER DOEN MET VERTALINGEN
+                new Badge()
                 {
                     Id = 35, Type = BadgeType.MarathonRunner, Level = null,
                     DescriptionKey = "marathon-runner.description",
-                    TitleKey = "marathon-runner.title", Image = "close-loss.png"
+                    TitleKey = "marathon-runner.title", Image = "marathon.png"
                 },
                 new Badge
                 {

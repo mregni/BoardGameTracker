@@ -28,12 +28,15 @@ export const Route = createFileRoute('/compare/')({
 interface RowTableProps {
   left: ReactNode;
   right: ReactNode;
+  withDivider?: boolean;
 }
-const Row = ({ left, right }: RowTableProps) => {
+const Row = ({ left, right, withDivider }: RowTableProps) => {
   return (
     <div className="flex flex-row w-full gap-2 xl:mx-8">
       <div className="flex justify-end flex-1 text-right">{left}</div>
-      <div className="flex justify-center lg:w-[100px] w-[5px]"></div>
+      <div className="flex justify-center lg:w-[100px] w-[5px] items-center">
+        {withDivider && <img src="/images/common/vs.jpg" alt="Divider" className="lg:w-18 lg:h-28 mb-16" />}
+      </div>
       <div className="flex justify-start flex-1">{right}</div>
     </div>
   );
@@ -54,7 +57,11 @@ function RouteComponent() {
     <BgtPage>
       <BgtPageHeader header={t('compare.title')} actions={[]}></BgtPageHeader>
       <BgtPageContent className="!gap-10 xs:!gap-6 text-sm lg:!gap-3 lg:text-base">
-        <Row left={<PlayerSpotlight player={playerLeft} />} right={<PlayerSpotlight player={playerRight} />} />
+        <Row
+          left={<PlayerSpotlight player={playerLeft} />}
+          right={<PlayerSpotlight player={playerRight} />}
+          withDivider
+        />
         <Row
           left={
             <WinnerCount

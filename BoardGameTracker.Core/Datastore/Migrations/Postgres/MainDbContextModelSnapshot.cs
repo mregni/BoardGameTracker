@@ -377,7 +377,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         {
                             Id = 35,
                             DescriptionKey = "marathon-runner.description",
-                            Image = "close-loss.png",
+                            Image = "marathon.png",
                             TitleKey = "marathon-runner.title",
                             Type = "MarathonRunner"
                         },
