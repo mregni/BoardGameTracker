@@ -201,6 +201,7 @@ static void CreateFolders(IServiceProvider serviceProvider)
     diskProvider.EnsureFolder(PathHelper.FullCoverImagePath);
     diskProvider.EnsureFolder(PathHelper.FullProfileImagePath);
     diskProvider.EnsureFolder(PathHelper.FullBadgeImagePath);
+    diskProvider.EnsureFolder(PathHelper.FullCommonImagePath);
 }
 
 static void SendStartApplicationCommand(IServiceProvider serviceProvider)

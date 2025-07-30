@@ -35,7 +35,7 @@ const Row = ({ left, right, withDivider }: RowTableProps) => {
     <div className="flex flex-row w-full gap-2 xl:mx-8">
       <div className="flex justify-end flex-1 text-right">{left}</div>
       <div className="flex justify-center lg:w-[100px] w-[5px] items-center">
-        {withDivider && <img src="/images/common/vs.jpg" alt="Divider" className="lg:w-18 lg:h-28 mb-16" />}
+        {withDivider && <img src="/images/common/vs.png" alt="Divider" className="lg:w-18 lg:h-28 mb-16" />}
       </div>
       <div className="flex justify-start flex-1">{right}</div>
     </div>
