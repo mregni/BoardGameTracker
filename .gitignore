@@ -633,3 +633,6 @@ FodyWeavers.xsd
 # End of https://www.toptal.com/developers/gitignore/api/rider,visualstudio,visualstudiocode,node
 BoardGameTracker.Host/images/cover/
 BoardGameTracker.Host/images/profile/
+
+# Claude Code
+.claude
