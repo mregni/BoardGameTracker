@@ -65,7 +65,7 @@ jobs:
           dotnet-version: "8.x"
 
       - name: Install dependencies
-        run: dotnet restore ./BoardGameTracker.Tests/BoardGameTracker.Tests.csproj
+        run: dotnet restore ./BoardGameTracker.sln
 
       - name: Build
         run: dotnet build --no-restore

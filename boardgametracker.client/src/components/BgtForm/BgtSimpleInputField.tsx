@@ -4,7 +4,7 @@ import { cx } from 'class-variance-authority';
 
 import { BgtText } from '../BgtText/BgtText';
 
-export const formatInput = (input: string | number | Date | undefined) => {
+const formatInput = (input: string | number | Date | undefined) => {
   if (input === undefined || input === null) {
     return '';
   }
