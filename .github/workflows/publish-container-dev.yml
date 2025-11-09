@@ -15,6 +15,27 @@ env:
   IMAGE_NAME: uping/boardgametracker
 
 jobs:
+  version:
+    name: Calculate Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.versioning.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Git Semantic Version
+        uses: PaulHatch/semantic-version@v5.3.0
+        id: versioning
+        with:
+          enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
+          namespace: ${{ github.ref == 'refs/heads/dev' && 'beta' || '' }}
+          bump_each_commit: true
+          version_format: "${major}.${minor}.${patch}-pre${increment}"
+          debug: true
+
   test-frontend:
     name: Test and Lint Frontend
     runs-on: ubuntu-latest
@@ -95,7 +116,7 @@ jobs:
   sonarcloud:
     name: SonarCloud Analysis and Coverage Report
     runs-on: ubuntu-latest
-    needs: [test-frontend, test-backend]
+    needs: [version, test-frontend, test-backend]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -140,16 +161,6 @@ jobs:
           name: backend-tests
           path: TestResults
 
-      - name: Git Semantic Version
-        uses: PaulHatch/semantic-version@v5.3.0
-        id: versioning
-        with:
-          enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
-          namespace: ${{ github.ref == 'refs/heads/dev' && 'beta' || '' }}
-          bump_each_commit: true
-          version_format: "${major}.${minor}.${patch}-pre${increment}"
-          debug: true
-
       - name: Install dependencies
         run: dotnet restore
 
@@ -163,7 +174,7 @@ jobs:
             /o:"${{ secrets.SONAR_ORGANIZATION }}" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /v:"${{ steps.versioning.outputs.version }}" \
+            /v:"${{ needs.version.outputs.version }}" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js" \
@@ -202,27 +213,15 @@ jobs:
           path: coveragereport/SummaryGithub.md
 
   build-and-publish:
-    needs: [test-backend, test-frontend]
+    needs: [version, test-backend, test-frontend]
     name: Build and Publish Application
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
-    outputs:
-      version: ${{ steps.versioning.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Git Semantic Version
-        uses: PaulHatch/semantic-version@v5.3.0
-        id: versioning
-        with:
-          enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
-          namespace: ${{ github.ref == 'refs/heads/dev' && 'beta' || '' }}
-          bump_each_commit: true
-          version_format: "${major}.${minor}.${patch}-pre${increment}"
-          debug: true
 
       - name: Setup dotnet v8
         uses: actions/setup-dotnet@v4
@@ -237,13 +236,13 @@ jobs:
       - name: Update package.json version
         run: |
           cd boardgametracker.client
-          npm version ${{ steps.versioning.outputs.version }} --no-git-tag-version
+          npm version ${{ needs.version.outputs.version }} --no-git-tag-version
 
       - name: Restore dependencies
         run: dotnet restore ./BoardGameTracker.Host/BoardGameTracker.Host.csproj
 
       - name: Publish application
-        run: dotnet publish ./BoardGameTracker.Host/BoardGameTracker.Host.csproj -c Release -o ./publish /p:Version=${{ steps.versioning.outputs.version }}
+        run: dotnet publish ./BoardGameTracker.Host/BoardGameTracker.Host.csproj -c Release -o ./publish /p:Version=${{ needs.version.outputs.version }}
 
       - name: Upload publish artifact
         uses: actions/upload-artifact@v4
@@ -252,7 +251,7 @@ jobs:
           path: ./publish
 
   build-linux-container:
-    needs: build-and-publish
+    needs: [version, build-and-publish]
     name: Build and Push Linux Container
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
@@ -287,7 +286,7 @@ jobs:
           context: .
           platforms: linux/amd64
           tags: |
-            uping/boardgametracker:${{ needs.build-and-publish.outputs.version }}
+            uping/boardgametracker:${{ needs.version.outputs.version }}
             uping/boardgametracker:${{ github.ref == 'refs/heads/dev' && 'dev' || 'latest' }}
           push: true
           file: Dockerfile
