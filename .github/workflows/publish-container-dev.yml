@@ -140,6 +140,16 @@ jobs:
           name: backend-tests
           path: TestResults
 
+      - name: Git Semantic Version
+        uses: PaulHatch/semantic-version@v5.3.0
+        id: versioning
+        with:
+          enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
+          namespace: ${{ github.ref == 'refs/heads/dev' && 'beta' || '' }}
+          bump_each_commit: true
+          version_format: "${major}.${minor}.${patch}-pre${increment}"
+          debug: true
+
       - name: Install dependencies
         run: dotnet restore
 
@@ -153,6 +163,7 @@ jobs:
             /o:"${{ secrets.SONAR_ORGANIZATION }}" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
+            /v:"${{ steps.versioning.outputs.version }}" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/DataStore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs" \
