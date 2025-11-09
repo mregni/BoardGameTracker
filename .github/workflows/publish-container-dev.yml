@@ -71,18 +71,24 @@ jobs:
         run: dotnet build --no-restore
 
       - name: Test with dotnet
-        run: dotnet test ./BoardGameTracker.Tests/BoardGameTracker.Tests.csproj --no-build --no-restore --logger trx --results-directory "TestResults" --collect "XPlat Code Coverage" --settings CodeCoverage.runsettings -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+        run: |
+          dotnet test ./BoardGameTracker.Tests/BoardGameTracker.Tests.csproj \
+            --no-build \
+            --no-restore \
+            --logger trx \
+            --results-directory "TestResults" \
+            --collect "XPlat Code Coverage;Format=opencover" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/DataStore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs"
       - name: Upload dotnet test results
         uses: actions/upload-artifact@v4
         with:
           name: backend-tests
           path: TestResults
-        if: ${{ always() }}
 
       - name: Code Coverage Report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: TestResults/**/coverage.cobertura.xml
+          filename: "**/coverage.opencover.xml"
           badge: true
           fail_below_min: true
           format: markdown
@@ -162,7 +168,12 @@ jobs:
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
-            /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx"
+            /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" \
+            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/DataStore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs"
+            /d:sonar.coverage.overall.line.min=80
+            /d:sonar.coverage.overall.branch.min=77
+            /d:sonar.coverage.new.line.min=80
+            /d:sonar.coverage.new.branch.min=75
 
       - name: Build
         run: dotnet build --no-restore
