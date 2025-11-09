@@ -166,7 +166,7 @@ jobs:
             /v:"${{ steps.versioning.outputs.version }}" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" \
-            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/DataStore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs" \
+            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js" \
             /d:sonar.coverage.overall.line.min=80 \
             /d:sonar.coverage.overall.branch.min=77 \
             /d:sonar.coverage.new.line.min=80 \
