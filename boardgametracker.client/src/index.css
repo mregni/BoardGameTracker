@@ -9,8 +9,8 @@
   --heading-font-family: 'Chakra Petch', sans-serif;
 }
 
-.hide-arrow[type="number"]::-webkit-inner-spin-button,
-.hide-arrow[type="number"]::-webkit-outer-spin-button {
+.hide-arrow[type='number']::-webkit-inner-spin-button,
+.hide-arrow[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -20,8 +20,8 @@ body {
 }
 
 /* Apply to Radix components */
-[class^="radix-"],
-[class*=" radix-"] {
+[class^='radix-'],
+[class*=' radix-'] {
   font-family: var(--default-font-family);
 }
 

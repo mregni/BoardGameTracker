@@ -27,7 +27,13 @@ export const BgtSelectNoLabel = <T extends FieldValues>(props: Props<T>) => {
         name={name}
         control={control}
         render={({ field }) => (
-          <Select.Root onValueChange={field.onChange} value={field.value} size="2" defaultValue={control?._defaultValues[name]} disabled={disabled}>
+          <Select.Root
+            onValueChange={field.onChange}
+            value={field.value}
+            size="2"
+            defaultValue={control?._defaultValues[name]}
+            disabled={disabled}
+          >
             <Select.Trigger className="line-clamp-1" />
             <Select.Content>
               {items?.map((x) => (

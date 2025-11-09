@@ -3,36 +3,33 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import CloseIcon from '@/assets/icons/x.svg?react';
 
-const badgeVariants = cva(
-  'group px-3 py-2 rounded-md uppercase text-xs flex flex-row gap-2',
-  {
-    variants: {
-      variant: {
-        soft: '',
-      },
-      color: {
-        green: 'text-mint-green bg-[#34FFAA1F]',
-        red: '',
-      },
-      interactive: {
-        true: 'cursor-pointer hover:bg-[#34ffaa4a] transition-colors duration-200',
-        false: '',
-      },
+const badgeVariants = cva('group px-3 py-2 rounded-md uppercase text-xs flex flex-row gap-2', {
+  variants: {
+    variant: {
+      soft: '',
     },
-    compoundVariants: [
-      {
-        variant: 'soft',
-        color: 'green',
-        className: 'group-hover:bg-[#34ffaa4a]',
-      },
-    ],
-    defaultVariants: {
+    color: {
+      green: 'text-mint-green bg-[#34FFAA1F]',
+      red: '',
+    },
+    interactive: {
+      true: 'cursor-pointer hover:bg-[#34ffaa4a] transition-colors duration-200',
+      false: '',
+    },
+  },
+  compoundVariants: [
+    {
       variant: 'soft',
       color: 'green',
-      interactive: false,
+      className: 'group-hover:bg-[#34ffaa4a]',
     },
-  }
-);
+  ],
+  defaultVariants: {
+    variant: 'soft',
+    color: 'green',
+    interactive: false,
+  },
+});
 
 interface Props extends Omit<ComponentPropsWithoutRef<'div'>, 'color'>, VariantProps<typeof badgeVariants> {
   onClose?: () => void;
