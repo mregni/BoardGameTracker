@@ -1,13 +1,43 @@
-import { cx } from 'class-variance-authority';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { Text } from '@radix-ui/themes';
 
-export interface Props {
+const avatarVariants = cva(
+  'shadow-gray-800 shadow-md',
+  {
+    variants: {
+      size: {
+        small: 'h-5 w-5 rounded-sm',
+        medium: 'h-7 w-7 rounded-md',
+        large: 'h-11 w-11 rounded-lg',
+        big: 'h-20 w-20 md:h-28 md:w-28 rounded-full',
+      },
+      interactive: {
+        true: 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer',
+        false: '',
+      },
+      disabled: {
+        true: 'opacity-50',
+        false: '',
+      },
+      hasImage: {
+        true: '',
+        false: 'flex justify-center items-center',
+      },
+    },
+    defaultVariants: {
+      size: 'medium',
+      interactive: false,
+      disabled: false,
+      hasImage: true,
+    },
+  }
+);
+
+export interface Props extends Omit<VariantProps<typeof avatarVariants>, 'interactive' | 'hasImage'> {
   title?: string | undefined;
   image: string | undefined | null;
   color?: string | undefined;
   onClick?: () => void;
-  size?: 'small' | 'medium' | 'large' | 'big';
-  disabled?: boolean;
 }
 
 export const BgtAvatar = (props: Props) => {
@@ -15,7 +45,7 @@ export const BgtAvatar = (props: Props) => {
 
   if (!image && title === undefined) return null;
 
-  const getSize = (): '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
+  const getTextSize = (): '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
     switch (size) {
       case 'big':
         return '8';
@@ -28,37 +58,30 @@ export const BgtAvatar = (props: Props) => {
     }
   };
 
+  const avatarClasses = avatarVariants({
+    size,
+    interactive: !!onClick,
+    disabled,
+    hasImage: !!image,
+  });
+
   return (
     <div className="group flex relative min-w-7">
       {image && (
         <img
-          className={cx(
-            'shadow-gray-800 shadow-md',
-            size === 'big' && 'md:h-28 md:w-28 rounded-full h-20 w-20',
-            size === 'large' && 'h-11 w-11 rounded-lg',
-            size === 'medium' && 'h-7 w-7 rounded-md',
-            size === 'small' && 'h-5 w-5 rounded-sm',
-            onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer',
-            disabled && 'opacity-50'
-          )}
+          className={avatarClasses}
           onClick={onClick}
           src={image}
+          alt={title || ''}
         />
       )}
       {!image && (
         <div
           style={{ backgroundColor: color }}
           onClick={onClick}
-          className={cx(
-            'shadow-gray-800 shadow-md flex justify-center items-center',
-            size === 'big' && 'h-28 w-28 rounded-full',
-            size === 'large' && 'h-11 w-11 rounded-sm',
-            size === 'medium' && 'h-7 w-7 rounded-sm',
-            size === 'small' && 'h-5 w-5 rounded-sm',
-            onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer'
-          )}
+          className={avatarClasses}
         >
-          <Text size={getSize()} className="capitalize">
+          <Text size={getTextSize()} className="capitalize">
             {title![0]}
           </Text>
         </div>

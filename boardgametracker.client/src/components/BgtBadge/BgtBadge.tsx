@@ -1,29 +1,55 @@
 import { ComponentPropsWithoutRef } from 'react';
-import { cx } from 'class-variance-authority';
+import { cva, type VariantProps } from 'class-variance-authority';
 
 import CloseIcon from '@/assets/icons/x.svg?react';
 
-interface Props extends ComponentPropsWithoutRef<'div'> {
-  variant: 'soft';
-  color: 'red' | 'green';
-  onClick?: () => void;
+const badgeVariants = cva(
+  'group px-3 py-2 rounded-md uppercase text-xs flex flex-row gap-2',
+  {
+    variants: {
+      variant: {
+        soft: '',
+      },
+      color: {
+        green: 'text-mint-green bg-[#34FFAA1F]',
+        red: '',
+      },
+      interactive: {
+        true: 'cursor-pointer hover:bg-[#34ffaa4a] transition-colors duration-200',
+        false: '',
+      },
+    },
+    compoundVariants: [
+      {
+        variant: 'soft',
+        color: 'green',
+        className: 'group-hover:bg-[#34ffaa4a]',
+      },
+    ],
+    defaultVariants: {
+      variant: 'soft',
+      color: 'green',
+      interactive: false,
+    },
+  }
+);
+
+interface Props extends Omit<ComponentPropsWithoutRef<'div'>, 'color'>, VariantProps<typeof badgeVariants> {
   onClose?: () => void;
 }
 
 export const BgtBadge = (props: Props) => {
   const { className, children, variant, color, onClick, onClose } = props;
 
+  const badgeClasses = badgeVariants({
+    variant,
+    color,
+    interactive: !!onClick,
+    className,
+  });
+
   return (
-    <div
-      className={cx(
-        'group group-hover:bg-[#34ffaa4a] px-3 py-2 rounded-md uppercase text-xs flex flex-row gap-2',
-        color === 'green' && variant === 'soft' && 'text-mint-green bg-[#34FFAA1F]',
-        color === 'red' && variant === 'soft' && '',
-        onClick && 'cursor-pointer hover:bg-[#34ffaa4a] transition-colors duration-200',
-        className
-      )}
-      onClick={onClick}
-    >
+    <div className={badgeClasses} onClick={onClick}>
       {children}
       {onClose && <CloseIcon onClick={onClose} className="size-4 cursor-pointer" />}
     </div>
