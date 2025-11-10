@@ -9,5 +9,14 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
+    coverage: {
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['**/main.tsx', '**/App.tsx', '**/routeTree.gen.ts', '**/vite-env.d.ts'],
+    },
+    reporters: [
+      'default',
+      ['lcov', { projectRoot: './src' }],
+      ['vitest-sonar-reporter', { outputFile: 'coverage/sonar-report.xml' }],
+    ],
   },
 });

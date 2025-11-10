@@ -73,7 +73,7 @@ jobs:
       - name: Upload frontend test coverage
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-coverage
+          name: frontend-tests
           path: boardgametracker.client/coverage
         if: ${{ always() }}
 
@@ -190,6 +190,7 @@ jobs:
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" \
             /d:sonar.javascript.lcov.reportPaths="**/boardgametracker.client/coverage/lcov.info" \
+            /d:sonar.testExecutionReportPaths=**/boardgametracker.client/coverage/sonar-report.xml \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js"
 
       - name: Build
