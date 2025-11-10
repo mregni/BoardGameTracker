@@ -170,7 +170,7 @@ jobs:
       - name: Download frontend test coverage
         uses: actions/download-artifact@v4
         with:
-          name: frontend-coverage
+          name: frontend-tests
           path: boardgametracker.client/coverage
 
       - name: Install dependencies
