@@ -68,7 +68,7 @@ jobs:
       - name: Run ESLint
         run: |
           cd boardgametracker.client
-          npm run lint:report
+          npm run lint:report -s
 
       - name: Upload frontend test coverage
         uses: actions/upload-artifact@v4
