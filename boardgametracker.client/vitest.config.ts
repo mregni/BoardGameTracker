@@ -12,11 +12,8 @@ export default defineConfig({
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['**/main.tsx', '**/App.tsx', '**/routeTree.gen.ts', '**/vite-env.d.ts'],
+      reporter: ['lcov'],
     },
-    reporters: [
-      'default',
-      ['lcov', { projectRoot: './src' }],
-      ['vitest-sonar-reporter', { outputFile: 'coverage/sonar-report.xml' }],
-    ],
+    reporters: ['default', ['vitest-sonar-reporter', { outputFile: 'coverage/sonar-report.xml' }]],
   },
 });
