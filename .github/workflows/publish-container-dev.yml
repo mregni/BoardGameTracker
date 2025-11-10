@@ -167,6 +167,12 @@ jobs:
           name: backend-tests
           path: TestResults
 
+      - name: Download frontend test coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: boardgametracker.client/coverage
+
       - name: Install dependencies
         run: dotnet restore
 
@@ -183,6 +189,7 @@ jobs:
             /v:"${{ needs.version.outputs.version }}" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" \
+            /d:sonar.javascript.lcov.reportPaths="**/boardgametracker.client/coverage/lcov.info" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js"
 
       - name: Build
@@ -198,7 +205,7 @@ jobs:
       - name: Code Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.11
         with:
-          reports: "TestResults/**/coverage.opencover.xml"
+          reports: "TestResults/**/coverage.opencover.xml;boardgametracker.client/coverage/cobertura-coverage.xml"
           targetdir: "coveragereport"
           reporttypes: "MarkdownSummaryGithub;Cobertura"
           assemblyfilters: "-BoardGameTracker.Host;-BoardGameTracker.DataStore"

@@ -9,11 +9,11 @@ export default defineConfig({
   plugins: [
     svgr(),
     tsconfigPaths(),
+    react(),
     tanstackRouter({
       target: 'react',
-      autoCodeSplitting: true,
+      autoCodeSplitting: false,
     }),
-    react(),
   ],
   base: '/',
   server: {

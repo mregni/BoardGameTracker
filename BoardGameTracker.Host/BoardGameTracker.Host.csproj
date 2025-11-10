@@ -51,15 +51,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="images\badges\" />
+        <Folder Include="images\badges\" />
     </ItemGroup>
-
     <ItemGroup>
-      <None Update="images\badges\different-games-green.png">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="images\common\vs.jpg">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+        <Folder Include="images\common\" />
     </ItemGroup>
 </Project>
