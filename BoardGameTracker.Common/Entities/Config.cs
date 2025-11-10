@@ -4,12 +4,12 @@ namespace BoardGameTracker.Common.Entities;
 
 public class Config: HasId
 {
-    private string _key;
+    private string _key = null!;
 
-    public string Key
+    public required string Key
     {
         get => _key;
         set => _key = value.ToLowerInvariant();
     }
-    public string Value { get; set; }
+    public required string Value { get; set; }
 }

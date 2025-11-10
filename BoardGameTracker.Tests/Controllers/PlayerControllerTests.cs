@@ -299,7 +299,7 @@ namespace BoardGameTracker.Tests.Controllers;
                 TotalPlayedTime = 500.5,
                 DistinctGameCount = 3,
                 BestGameId = 1,
-                MostWinsGame = new BestWinningGameViewModel { TotalWins = 5 }
+                MostWinsGame = new BestWinningGameViewModel { TotalWins = 5, Title = "", Id = "" }
             };
 
             _playerServiceMock.Setup(x => x.GetStats(playerId)).ReturnsAsync(stats);
@@ -329,7 +329,7 @@ namespace BoardGameTracker.Tests.Controllers;
             { 
                 PlayCount = 5, 
                 WinCount = 2,
-                MostWinsGame = new BestWinningGameViewModel { TotalWins = 2 }
+                MostWinsGame = new BestWinningGameViewModel { TotalWins = 2, Title = "", Id = ""}
             };
 
             _playerServiceMock.Setup(x => x.GetStats(playerId)).ReturnsAsync(stats);

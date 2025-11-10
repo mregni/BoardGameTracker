@@ -4,9 +4,9 @@ namespace BoardGameTracker.Common.Entities;
 
 public class Image: HasId
 {
-    public string Path { get; set; }
+    public required string Path { get; set; }
     public int? GamePlayId { get; set; }
     public Session? Play { get; set; }
     public int GameId { get; set; }
-    public Game Game { get; set; }
+    public Game Game { get; set; } = null!;
 }

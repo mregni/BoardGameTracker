@@ -87,6 +87,7 @@ public class PlayerService : IPlayerService
                 Id = game.Id,
                 Image = game.Image,
                 Title = game.Title,
+                Description = game.Description,
                 TotalWins = wins
             };
         }

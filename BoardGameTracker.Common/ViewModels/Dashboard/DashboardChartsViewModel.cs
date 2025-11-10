@@ -2,5 +2,5 @@
 
 public class DashboardChartsViewModel
 {
-    public IEnumerable<GameStateChartViewModel> GameState { get; set; }
+    public IEnumerable<GameStateChartViewModel> GameState { get; set; } = [];
 }

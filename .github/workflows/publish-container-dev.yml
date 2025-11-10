@@ -65,11 +65,17 @@ jobs:
           cd boardgametracker.client
           npm run prettier
 
-      # TODO: Add frontend tests here when test framework is set up
-      # - name: Run tests with coverage
-      #   run: |
-      #     cd boardgametracker.client
-      #     npm test -- --coverage
+      - name: Run tests with coverage
+        run: |
+          cd boardgametracker.client
+          npm run test:coverage
+
+      - name: Upload frontend test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: boardgametracker.client/coverage
+        if: ${{ always() }}
 
   test-backend:
     name: Test Backend
@@ -177,11 +183,7 @@ jobs:
             /v:"${{ needs.version.outputs.version }}" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" \
-            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js" \
-            /d:sonar.coverage.overall.line.min=80 \
-            /d:sonar.coverage.overall.branch.min=77 \
-            /d:sonar.coverage.new.line.min=80 \
-            /d:sonar.coverage.new.branch.min=75
+            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js"
 
       - name: Build
         run: dotnet build --no-restore

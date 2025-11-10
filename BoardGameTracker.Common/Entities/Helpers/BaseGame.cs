@@ -4,9 +4,9 @@ namespace BoardGameTracker.Common.Entities.Helpers;
 
 public abstract class BaseGame : HasId
 {
-    public string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
     public int? YearPublished { get; set; }
-    public string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
     public string? Image { get; set; }
     public int? MinPlayers { get; set; }
     public int? MaxPlayers { get; set; }
@@ -20,5 +20,5 @@ public abstract class BaseGame : HasId
     public double? BuyingPrice { get; set; }
     public double? SoldPrice { get; set; }
     public DateTime? AdditionDate { get; set; }
-    public ICollection<Session> Sessions { get; set; }
+    public ICollection<Session> Sessions { get; set; } = [];
 }

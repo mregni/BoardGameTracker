@@ -4,7 +4,7 @@ namespace BoardGameTracker.Common.ViewModels;
 
 public class GameViewModel : CreateGameViewModel
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
     public double? Rating { get; set; }
     public double? Weight { get; set; }
     public int Type { get; set; }
@@ -19,8 +19,8 @@ public class GameViewModel : CreateGameViewModel
 
 public class GameLinkViewModel
 {
-    public string Id { get; set; }
-    public string Name { get; set; }
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 }
 
 public class GamePersonViewModel : GameLinkViewModel

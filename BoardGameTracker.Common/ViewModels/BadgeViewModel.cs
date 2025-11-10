@@ -2,10 +2,10 @@
 
 public class BadgeViewModel
 {
-    public int Id { get; set; }    
-    public string DescriptionKey { get; set; }
-    public string TitleKey { get; set; }
+    public int Id { get; set; }
+    public required string DescriptionKey { get; set; }
+    public required string TitleKey { get; set; }
     public int Type { get; set; }
     public int? Level { get; set; }
-    public string Image { get; set; }
+    public required string Image { get; set; }
 }

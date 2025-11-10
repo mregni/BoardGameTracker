@@ -2,9 +2,9 @@
 
 public class UIResourceViewModel
 {
-    public string DateFormat { get; set; }
-    public string TimeFormat { get; set; }
-    public string UILanguage { get; set; }
-    public string Currency { get; set; }
+    public required string DateFormat { get; set; }
+    public required string TimeFormat { get; set; }
+    public required string UILanguage { get; set; }
+    public required string Currency { get; set; }
     public bool Statistics { get; set; }
 }

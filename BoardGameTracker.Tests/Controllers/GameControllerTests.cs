@@ -38,8 +38,8 @@ public class GameControllerTests
     {
         var games = new List<Game>
         {
-            new() {Title = "Monopoly", Id = 1},
-            new() {Title = "Scrabble", Id = 2}
+            new() {Title = "Monopoly", Id = 1, Description = ""},
+            new() {Title = "Scrabble", Id = 2, Description = ""}
         };
 
         var mappedGames = new List<GameViewModel>
@@ -219,7 +219,7 @@ public class GameControllerTests
     public async Task GetGameSessionsById_ShouldReturnOkResultWithMappedSessions_WhenSessionsExist()
     {
         const int gameId = 1;
-        var sessions = new List<Session> {new() {Id = 1}, new() {Id = 2}};
+        var sessions = new List<Session> {new() {Id = 1, Comment = "", }, new() {Id = 2}};
         var sessionViewModels = new List<SessionViewModel>
         {
             new() {Id = "1"},

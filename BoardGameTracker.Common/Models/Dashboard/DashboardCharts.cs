@@ -4,5 +4,5 @@ namespace BoardGameTracker.Common.Models.Dashboard;
 
 public class DashboardCharts
 {
-    public IEnumerable<GameStateChart> GameState { get; set; }
+    public IEnumerable<GameStateChart> GameState { get; set; } = [];
 }

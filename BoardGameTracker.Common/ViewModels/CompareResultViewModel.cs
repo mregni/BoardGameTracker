@@ -4,12 +4,12 @@ namespace BoardGameTracker.Common.ViewModels;
 
 public class CompareResultViewModel
 {
-    public CompareRowViewModel<int> DirectWins { get; set; }
-    public CompareRowViewModel<MostWonGameViewModel?> MostWonGame { get; set; }
-    public CompareRowViewModel<int> SessionCounts { get; set; }
-    public CompareRowViewModel<int> WinCount { get; set; }
-    public CompareRowViewModel<double> WinPercentageCount { get; set; }
-    public CompareRowViewModel<double> TotalDuration { get; set; }
+    public CompareRowViewModel<int> DirectWins { get; set; } = null!;
+    public CompareRowViewModel<MostWonGameViewModel?> MostWonGame { get; set; } = null!;
+    public CompareRowViewModel<int> SessionCounts { get; set; } = null!;
+    public CompareRowViewModel<int> WinCount { get; set; } = null!;
+    public CompareRowViewModel<double> WinPercentageCount { get; set; } = null!;
+    public CompareRowViewModel<double> TotalDuration { get; set; } = null!;
 }
 
 public class CompareRowViewModel<T>

@@ -2,7 +2,7 @@
 
 public class CreateGameViewModel
 {
-    public string Title { get; set; }
+    public required string Title { get; set; }
     public int? YearPublished { get; set; }
     public string? Image { get; set; }
     public string? Description { get; set; }

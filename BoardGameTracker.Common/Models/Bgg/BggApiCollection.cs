@@ -5,7 +5,7 @@ namespace BoardGameTracker.Common.Models.Bgg;
 [XmlRoot(ElementName = "image")]
 public class Image
 {
-    [XmlText] public string Text { get; set; }
+    [XmlText] public required string Text { get; set; }
 }
 
 [XmlRoot(ElementName = "name")]
@@ -14,7 +14,7 @@ public class ImportName
     [XmlAttribute(AttributeName = "sortindex")]
     public int Sortindex { get; set; }
 
-    [XmlText] public string Text { get; set; }
+    [XmlText] public required string Text { get; set; }
 }
 
 [XmlRoot(ElementName = "status")]
@@ -43,39 +43,39 @@ public class Status
     [XmlAttribute(AttributeName = "preordered")]
     public int Preordered { get; set; }
 
-    [XmlAttribute(AttributeName="lastmodified")] 
-    public string LastModified { get; set; } 
+    [XmlAttribute(AttributeName="lastmodified")]
+    public required string LastModified { get; set; }
 }
 
 [XmlRoot(ElementName = "item")]
 public class Item
 {
-    [XmlElement(ElementName = "name")] 
-    public ImportName Name { get; set; }
-    
-    [XmlElement(ElementName = "status")] 
-    public Status Status { get; set; }
-    
-    [XmlElement(ElementName = "image")] 
-    public Image Image { get; set; }
+    [XmlElement(ElementName = "name")]
+    public ImportName Name { get; set; } = null!;
+
+    [XmlElement(ElementName = "status")]
+    public Status Status { get; set; } = null!;
+
+    [XmlElement(ElementName = "image")]
+    public Image Image { get; set; } = null!;
 
     [XmlAttribute(AttributeName = "objecttype")]
-    public string Objecttype { get; set; }
+    public string Objecttype { get; set; } = null!;
 
     [XmlAttribute(AttributeName = "objectid")]
     public int Objectid { get; set; }
 
     [XmlAttribute(AttributeName = "subtype")]
-    public string Subtype { get; set; }
+    public string Subtype { get; set; } = null!;
 
     [XmlAttribute(AttributeName = "collid")]
     public int Collid { get; set; }
 
-    [XmlText] public string Text { get; set; }
+    [XmlText] public string Text { get; set; } = null!;
 }
 
 [XmlRoot(ElementName = "items")]
 public class BggApiCollection
 {
-    [XmlElement(ElementName = "item")] public List<Item> Item { get; set; }
+    [XmlElement(ElementName = "item")] public List<Item> Item { get; set; } = [];
 }

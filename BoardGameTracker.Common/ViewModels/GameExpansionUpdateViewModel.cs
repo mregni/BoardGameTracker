@@ -2,5 +2,5 @@
 
 public class GameExpansionUpdateViewModel
 {
-    public int[] ExpansionBggIds { get; set; }
+    public int[] ExpansionBggIds { get; set; } = [];
 }
