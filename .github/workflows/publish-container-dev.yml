@@ -189,11 +189,11 @@ jobs:
             /v:"${{ needs.version.outputs.version }}" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" \
-            /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
-            /d:sonar.testExecutionReportPaths=boardgametracker.client/coverage/sonar-report.xml \
+            /d:sonar.javascript.lcov.reportPaths="**/lcov.info" \
+            /d:sonar.testExecutionReportPaths=**/sonar-report.xml \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js" \
-            /d:sonar.typescript.tsconfigPaths="boardgametracker.client/tsconfig.json" \
-            /d:sonar.eslint.reportPaths="boardgametracker.client/coverage/eslint-report.json"
+            /d:sonar.typescript.tsconfigPaths="**/tsconfig.json" \
+            /d:sonar.eslint.reportPaths="**/eslint-report.json"
 
       - name: Build
         run: dotnet build --no-restore
