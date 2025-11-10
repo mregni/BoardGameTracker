@@ -9,6 +9,7 @@ BoardGameTracker is a self-hosted board game statistics tracker that can be run 
 <br/>
 <br/>
 ⚠️ The project is still unstable. Lots of (breaking) changes can happen.
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=mregni_BoardGameTracker&metric=coverage)](https://sonarcloud.io/summary/new_code?id=mregni_BoardGameTracker)
 </p>
 
 
