@@ -1,17 +1,16 @@
 ﻿using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models.Charts;
-using BoardGameTracker.Common.ViewModels.Results;
 
 namespace BoardGameTracker.Common.ViewModels;
 
 public class GameStatisticsViewModel
 {
-    public GameStatsViewModel GameStats { get; set; }
-    public IEnumerable<TopPlayerViewModel> TopPlayers { get; set; }
-    public IEnumerable<PlayByDayChartViewModel> PlayByDayChart{ get; set; }
-    public IEnumerable<PlayerCountChartViewModel> PlayerCountChart { get; set; }
-    public IEnumerable<PlayerScoringChartViewModel> PlayerScoringChart { get; set; }
-    public IEnumerable<ScoreRankChartViewModel> ScoreRankChart { get; set; }
+    public GameStatsViewModel GameStats { get; set; } = null!;
+    public IEnumerable<TopPlayerViewModel> TopPlayers { get; set; } = [];
+    public IEnumerable<PlayByDayChartViewModel> PlayByDayChart{ get; set; } = [];
+    public IEnumerable<PlayerCountChartViewModel> PlayerCountChart { get; set; } = [];
+    public IEnumerable<PlayerScoringChartViewModel> PlayerScoringChart { get; set; } = [];
+    public IEnumerable<ScoreRankChartViewModel> ScoreRankChart { get; set; } = [];
 }
 
 public class GameStatsViewModel
@@ -51,12 +50,12 @@ public class PlayerCountChartViewModel
 public class PlayerScoringChartViewModel
 {
     public DateTime DateTime { get; set; }
-    public XValue[] Series { get; set; }
+    public required XValue[] Series { get; set; }
 }
 
 public class ScoreRankChartViewModel
 {
-    public string Key { get; set; }
+    public required string Key { get; set; }
     public double Score { get; set; }
     public int PlayerId { get; set; }
 }

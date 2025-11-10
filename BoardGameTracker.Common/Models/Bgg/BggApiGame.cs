@@ -13,13 +13,13 @@ public class BggApiGames {
 public class Name { 
 
 	[XmlAttribute(AttributeName="type")] 
-	public string Type { get; set; } 
+	public required string Type { get; set; } 
 
 	[XmlAttribute(AttributeName="sortindex")] 
 	public int Sortindex { get; set; } 
 
 	[XmlAttribute(AttributeName="value")] 
-	public string Value { get; set; } 
+	public required string Value { get; set; } 
 }
 
 [XmlRoot(ElementName="yearpublished")]
@@ -68,13 +68,13 @@ public class MinAge {
 public class BggRawLink { 
 
 	[XmlAttribute(AttributeName="type")] 
-	public string Type { get; set; } 
+	public required string Type { get; set; } 
 
 	[XmlAttribute(AttributeName="id")] 
 	public int Id { get; set; } 
 
 	[XmlAttribute(AttributeName="value")] 
-	public string Value { get; set; } 
+	public required string Value { get; set; } 
 }
 
 [XmlRoot(ElementName="average")]
@@ -95,60 +95,60 @@ public class AverageWeight {
 public class Ratings { 
 
 	[XmlElement(ElementName="average")] 
-	public Average Average { get; set; } 
+	public Average Average { get; set; }  = new(); 
 	
 	[XmlElement(ElementName="averageweight")] 
-	public AverageWeight AverageWeight { get; set; } 
+	public AverageWeight AverageWeight { get; set; }  = new(); 
 }
 
 [XmlRoot(ElementName="statistics")]
 public class Statistics { 
 
 	[XmlElement(ElementName="ratings")] 
-	public Ratings Ratings { get; set; } 
+	public Ratings Ratings { get; set; } = new(); 
 }
 
 [XmlRoot(ElementName="item")]
 public class BggRawGame { 
 
 	[XmlElement(ElementName="thumbnail")] 
-	public string Thumbnail { get; set; } 
+	public required string Thumbnail { get; set; } 
 
 	[XmlElement(ElementName="image")] 
-	public string Image { get; set; } 
+	public required string Image { get; set; }
 
-	[XmlElement(ElementName="name")] 
-	public List<Name> Names { get; set; } 
+	[XmlElement(ElementName = "name")] 
+	public List<Name> Names { get; set; } = [];
 
 	[XmlElement(ElementName="description")] 
-	public string Description { get; set; } 
+	public required string Description { get; set; }
 
-	[XmlElement(ElementName="yearpublished")] 
-	public YearPublished YearPublished { get; set; } 
+	[XmlElement(ElementName = "yearpublished")]
+	public YearPublished YearPublished { get; set; } = new();
 
 	[XmlElement(ElementName="minplayers")] 
-	public MinPlayers MinPlayers { get; set; } 
+	public MinPlayers MinPlayers { get; set; }  = new();
 
 	[XmlElement(ElementName="maxplayers")] 
-	public MaxPlayers MaxPlayers { get; set; } 
+	public MaxPlayers MaxPlayers { get; set; }  = new();
 
 	[XmlElement(ElementName="minplaytime")] 
-	public MinPlayTime MinPlayTime { get; set; } 
+	public MinPlayTime MinPlayTime { get; set; }  = new();
 
 	[XmlElement(ElementName="maxplaytime")] 
-	public MaxPlayTime MaxPlayTime { get; set; } 
+	public MaxPlayTime MaxPlayTime { get; set; }  = new();
 
 	[XmlElement(ElementName="minage")] 
-	public MinAge MinAge { get; set; } 
+	public MinAge MinAge { get; set; }  = new();
 
 	[XmlElement(ElementName="link")] 
-	public List<BggRawLink> Links { get; set; } 
+	public List<BggRawLink> Links { get; set; } = [];
 
 	[XmlElement(ElementName="statistics")] 
-	public Statistics Statistics { get; set; } 
+	public Statistics Statistics { get; set; } = new();
 
 	[XmlAttribute(AttributeName="type")] 
-	public string Type { get; set; } 
+	public required string Type { get; set; } 
 
 	[XmlAttribute(AttributeName="id")] 
 	public int Id { get; set; } 

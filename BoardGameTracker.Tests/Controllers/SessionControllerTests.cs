@@ -231,7 +231,12 @@ public class SessionControllerTests
         {
             var expansionIds = new List<int> { 1, 2 };
             var viewModel = new CreateSessionViewModel { Comment = "Test", GameId = "1", ExpansionIds = expansionIds};
-            var resultViewModel = new SessionViewModel { Id = "1", Comment = "New session" };
+            var resultViewModel = new SessionViewModel
+            {
+                Id = "1",
+                Comment = "New session",
+                GameId = "1"
+            };
             var expansionList = new List<Expansion>
             {
                 new(), new()

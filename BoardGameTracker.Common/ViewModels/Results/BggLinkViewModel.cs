@@ -2,6 +2,6 @@
 
 public class BggLinkViewModel
 {
-    public string Value { get; set; }
+    public required string Value { get; set; }
     public int Id { get; set; }
 }

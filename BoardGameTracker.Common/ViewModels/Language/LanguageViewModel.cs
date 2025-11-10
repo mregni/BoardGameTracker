@@ -3,6 +3,6 @@
 public class LanguageViewModel
 {
     public int Id { get; set; }
-    public string Key { get; set; }
-    public string TranslationKey { get; set; }
+    public required string Key { get; set; }
+    public required string TranslationKey { get; set; }
 }

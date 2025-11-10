@@ -54,8 +54,13 @@ public class GameServiceTests
         {
             BggId = 123,
             Image = "https://example.com/image.jpg",
-            Names = ["Test Game"],
-            YearPublished = 2020
+            Names =
+            [
+                "Test Game"
+            ],
+            YearPublished = 2020,
+            Thumbnail = string.Empty,
+            Description = string.Empty
         };
         var search = new BggSearch
         {
@@ -92,9 +97,9 @@ public class GameServiceTests
             g.AdditionDate == search.AdditionDate &&
             g.HasScoring == search.HasScoring)), Times.Once);
 
-        _mapperMock.Verify(x => x.Map<IList<GameCategory>>(null), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<GameMechanic>>(null), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<Person>>(null), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<GameCategory>>(rawGame.Categories), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<GameMechanic>>(rawGame.Mechanics), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<Person>>(rawGame.People), Times.Once);
         _mapperMock.Verify(x => x.Map<Game>(rawGame), Times.Once);
 
         _imageServiceMock.Verify(x => x.DownloadImage(rawGame.Image, rawGame.BggId.ToString()), Times.Once);
@@ -375,9 +380,35 @@ public class GameServiceTests
         const int bggId = 123;
         var bggApiGames = new BggApiGames
         {
-            Games = [new BggRawGame {Id = bggId, Names = [new Name {Value = "Test Game"}]}]
+            Games = [new BggRawGame
+                {
+                    Id = bggId,
+                    Names =
+                    [
+                        new Name
+                        {
+                            Value = "Test Game",
+                            Type = "BaseGame"
+                        }
+                    ],
+                    Thumbnail = string.Empty,
+                    Image =  string.Empty,
+                    Description =  string.Empty,
+                    Type =  string.Empty
+                }
+            ]
         };
-        var expectedBggGame = new BggGame {BggId = bggId, Names = ["Test Game"]};
+        var expectedBggGame = new BggGame
+        {
+            BggId = bggId,
+            Names =
+            [
+                "Test Game"
+            ],
+            Thumbnail = string.Empty,
+            Image = string.Empty,
+            Description = string.Empty
+        };
         var apiResponse = new ApiResponse<BggApiGames>(
             new HttpResponseMessage(HttpStatusCode.OK),
             bggApiGames,
@@ -521,17 +552,47 @@ public class GameServiceTests
 
         var bggApiGames = new BggApiGames
         {
-            Games = [new BggRawGame {Id = gameId, Names = [new Name {Value = "Test Game"}]}]
+            Games = [new BggRawGame
+                {
+                    Id = gameId,
+                    Names =
+                    [
+                        new Name
+                        {
+                            Value = "Test Game",
+                            Type = string.Empty
+                        }
+                    ],
+                    Thumbnail = string.Empty,
+                    Image = string.Empty,
+                    Description = string.Empty,
+                    Type = string.Empty
+                }
+            ]
         };
         var expectedBggGame = new BggGame
         {
             BggId = gameId,
-            Names = ["Test Game"],
+            Names =
+            [
+                "Test Game"
+            ],
             Expansions =
             [
-                new BggLink {Id = 1, Value = "Expansion 1"},
-                new BggLink {Id = 2, Value = "Expansion 2"}
-            ]
+                new BggLink
+                {
+                    Id = 1,
+                    Value = "Expansion 1"
+                },
+                new BggLink
+                {
+                    Id = 2,
+                    Value = "Expansion 2"
+                }
+            ],
+            Thumbnail = string.Empty,
+            Image = string.Empty,
+            Description = string.Empty
         };
         var apiResponse = new ApiResponse<BggApiGames>(
             new HttpResponseMessage(HttpStatusCode.OK),
@@ -680,7 +741,23 @@ public class GameServiceTests
         };
         var bggApiGames = new BggApiGames
         {
-            Games = [new BggRawGame {Id = 300, Names = [new Name {Value = "New Expansion"}]}]
+            Games = [new BggRawGame
+                {
+                    Id = 300,
+                    Names =
+                    [
+                        new Name
+                        {
+                            Value = "New Expansion",
+                            Type = string.Empty
+                        }
+                    ],
+                    Thumbnail = string.Empty,
+                    Image = string.Empty,
+                    Description = string.Empty,
+                    Type = string.Empty
+                }
+            ]
         };
         var apiResponse = new ApiResponse<BggApiGames>(
             new HttpResponseMessage(HttpStatusCode.OK),
@@ -1013,25 +1090,49 @@ public async Task ImportList_ShouldProcessAllValidGames_WhenAllGamesFoundInBgg()
 {
     var importGames = new List<ImportGame>
     {
-        new() 
-        { 
-            BggId = 123, 
-            HasScoring = true, 
-            State = GameState.Owned, 
+        new()
+        {
+            BggId = 123,
+            HasScoring = true,
+            State = GameState.Owned,
             AddedDate = DateTime.Today,
-            Price = 29.99
+            Price = 29.99,
+            Title = string.Empty,
+            ImageUrl = string.Empty
         },
-        new() 
-        { 
-            BggId = 456, 
-            HasScoring = false, 
-            State = GameState.Wanted, 
+        new()
+        {
+            BggId = 456,
+            HasScoring = false,
+            State = GameState.Wanted,
             AddedDate = DateTime.Today.AddDays(-1),
-            Price = 39.99
+            Price = 39.99,
+            Title = string.Empty,
+            ImageUrl = string.Empty
         }
     };
-    var bggGame1 = new BggGame { BggId = 123, Names = ["Game 1"] };
-    var bggGame2 = new BggGame { BggId = 456, Names = ["Game 2"] };
+    var bggGame1 = new BggGame
+    {
+        BggId = 123,
+        Names =
+        [
+            "Game 1"
+        ],
+        Thumbnail = string.Empty,
+        Image = string.Empty,
+        Description = string.Empty
+    };
+    var bggGame2 = new BggGame
+    {
+        BggId = 456,
+        Names =
+        [
+            "Game 2"
+        ],
+        Thumbnail = string.Empty,
+        Image = string.Empty,
+        Description = string.Empty
+    };
     var createdGame1 = new Game { Id = 1, BggId = 123, Title = "Game 1" };
     var createdGame2 = new Game { Id = 2, BggId = 456, Title = "Game 2" };
 
@@ -1047,10 +1148,10 @@ public async Task ImportList_ShouldProcessAllValidGames_WhenAllGamesFoundInBgg()
     
     _bggApiMock.Verify(x => x.SearchGame(123, 1), Times.Once);
     _bggApiMock.Verify(x => x.SearchGame(456, 1), Times.Once);
-    
-    _mapperMock.Verify(x => x.Map<IList<GameCategory>>(null), Times.Exactly(2));
-    _mapperMock.Verify(x => x.Map<IList<GameMechanic>>(null), Times.Exactly(2));
-    _mapperMock.Verify(x => x.Map<IList<Person>>(null), Times.Exactly(2));
+
+    _mapperMock.Verify(x => x.Map<IList<GameCategory>>(It.IsAny<BggLink[]>()), Times.Exactly(2));
+    _mapperMock.Verify(x => x.Map<IList<GameMechanic>>(It.IsAny<BggLink[]>()), Times.Exactly(2));
+    _mapperMock.Verify(x => x.Map<IList<Person>>(It.IsAny<BggPerson[]>()), Times.Exactly(2));
     _mapperMock.Verify(x => x.Map<Game>(bggGame1), Times.Once);
     _mapperMock.Verify(x => x.Map<Game>(bggGame2), Times.Once);
     _mapperMock.Verify(x => x.Map<BggGame>(It.IsAny<BggRawGame>()), Times.Exactly(2));
@@ -1063,10 +1164,34 @@ public async Task ImportList_ShouldSkipGamesNotFoundInBgg_WhenSomeGamesNotFound(
 {
     var importGames = new List<ImportGame>
     {
-        new() { BggId = 123, HasScoring = true, State = GameState.Owned },
-        new() { BggId = 999, HasScoring = false, State = GameState.Wanted }
+        new()
+        {
+            BggId = 123,
+            HasScoring = true,
+            State = GameState.Owned,
+            Title = string.Empty,
+            ImageUrl = string.Empty
+        },
+        new()
+        {
+            BggId = 999,
+            HasScoring = false,
+            State = GameState.Wanted,
+            Title = string.Empty,
+            ImageUrl = string.Empty
+        }
     };
-    var bggGame1 = new BggGame { BggId = 123, Names = ["Game 1"], Image = "test.png"};
+    var bggGame1 = new BggGame
+    {
+        BggId = 123,
+        Names =
+        [
+            "Game 1"
+        ],
+        Image = "test.png",
+        Thumbnail = string.Empty,
+        Description = string.Empty
+    };
     var createdGame1 = new Game { Id = 1, BggId = 123, Title = "Game 1", BuyingPrice = 10};
 
     SetupSearchGameMock(123, bggGame1);
@@ -1082,10 +1207,10 @@ public async Task ImportList_ShouldSkipGamesNotFoundInBgg_WhenSomeGamesNotFound(
     _gameRepositoryMock.Verify(x => x.AddGameMechanicsIfNotExists(It.IsAny<IEnumerable<GameMechanic>>()), Times.Once);
     _gameRepositoryMock.Verify(x => x.AddPeopleIfNotExists(It.IsAny<IEnumerable<Person>>()), Times.Once);
     _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Once);
-    
-    _mapperMock.Verify(x => x.Map<IList<GameCategory>>(null), Times.Once);
-    _mapperMock.Verify(x => x.Map<IList<GameMechanic>>(null), Times.Once);
-    _mapperMock.Verify(x => x.Map<IList<Person>>(null), Times.Once);
+
+    _mapperMock.Verify(x => x.Map<IList<GameCategory>>(It.IsAny<BggLink[]>()), Times.Once);
+    _mapperMock.Verify(x => x.Map<IList<GameMechanic>>(It.IsAny<BggLink[]>()), Times.Once);
+    _mapperMock.Verify(x => x.Map<IList<Person>>(It.IsAny<BggPerson[]>()), Times.Once);
     _mapperMock.Verify(x => x.Map<Game>(bggGame1), Times.Once);
     _mapperMock.Verify(x => x.Map<BggGame>(It.IsAny<BggRawGame>()), Times.Once);
     
@@ -1109,8 +1234,18 @@ public async Task ImportList_ShouldDoNothing_WhenAllGamesNotFoundInBgg()
 {
     var importGames = new List<ImportGame>
     {
-        new() { BggId = 123 },
-        new() { BggId = 456 }
+        new()
+        {
+            BggId = 123,
+            Title = string.Empty,
+            ImageUrl = string.Empty
+        },
+        new()
+        {
+            BggId = 456,
+            Title = string.Empty,
+            ImageUrl = string.Empty
+        }
     };
 
     SetupSearchGameMock(123, null);
@@ -1129,7 +1264,23 @@ private void SetupSearchGameMock(int bggId, BggGame? returnValue)
     {
         var bggApiGames = new BggApiGames
         {
-            Games = [new BggRawGame { Id = bggId, Names = [new Name { Value = returnValue.Names.First() }]}]
+            Games = [new BggRawGame
+                {
+                    Id = bggId,
+                    Names =
+                    [
+                        new Name
+                        {
+                            Value = returnValue.Names.First(),
+                            Type = string.Empty
+                        }
+                    ],
+                    Thumbnail = string.Empty,
+                    Image = string.Empty,
+                    Description = string.Empty,
+                    Type = string.Empty
+                }
+            ]
         };
         var apiResponse = new ApiResponse<BggApiGames>(
             new HttpResponseMessage(HttpStatusCode.OK),

@@ -12,5 +12,5 @@ public class DashboardStatistics
     public double? MeanPayed { get; set; }
     public double TotalPlayTime { get; set; }
     public double MeanPlayTime { get; set; }
-    public MostWinningPlayer MostWinningPlayer { get; set; }
+    public MostWinningPlayer? MostWinningPlayer { get; set; }
 }
