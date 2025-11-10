@@ -58,7 +58,7 @@ jobs:
       - name: Run ESLint
         run: |
           cd boardgametracker.client
-          npm run lint
+          npm run lint:report
 
       - name: Run Prettier check
         run: |

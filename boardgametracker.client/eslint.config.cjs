@@ -27,6 +27,12 @@ const compat = new FlatCompat({
 });
 
 module.exports = defineConfig([{
+    settings: {
+        react: {
+            version: "detect",
+        },
+    },
+
     languageOptions: {
         globals: {
             ...globals.browser,
