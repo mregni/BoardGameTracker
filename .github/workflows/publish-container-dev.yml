@@ -55,11 +55,6 @@ jobs:
           cd boardgametracker.client
           npm ci
 
-      - name: Run ESLint
-        run: |
-          cd boardgametracker.client
-          npm run lint:report
-
       - name: Run Prettier check
         run: |
           cd boardgametracker.client
@@ -69,6 +64,11 @@ jobs:
         run: |
           cd boardgametracker.client
           npm run test:coverage
+
+      - name: Run ESLint
+        run: |
+          cd boardgametracker.client
+          npm run lint:report
 
       - name: Upload frontend test coverage
         uses: actions/upload-artifact@v4
