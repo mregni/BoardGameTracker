@@ -208,7 +208,7 @@ jobs:
       - name: Code Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.11
         with:
-          reports: "TestResults/**/coverage.opencover.xml;boardgametracker.client/coverage/cobertura-coverage.xml"
+          reports: "TestResults/**/coverage.opencover.xml;boardgametracker.client/coverage/lcov.info"
           targetdir: "coveragereport"
           reporttypes: "MarkdownSummaryGithub;Cobertura"
           assemblyfilters: "-BoardGameTracker.Host;-BoardGameTracker.DataStore"
