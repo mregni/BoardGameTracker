@@ -17,6 +17,7 @@ export default {
         'card-border': '#1E192C',
         input: '#1E1A2D',
         primary: '#8502fb',
+        'primary-light': '#9d1ffc',
         'primary-dark': '#8502fb42',
         'mint-green': '#09FFC4',
         'lime-green': '#40FA47',

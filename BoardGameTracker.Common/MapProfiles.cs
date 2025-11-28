@@ -125,6 +125,9 @@ public class MapProfiles : Profile
         CreateMap<GameStateChart, GameStateChartViewModel>();
 
         CreateMap<Language, LanguageViewModel>();
+
+        CreateMap<Loan, LoanViewModel>();
+        CreateMap<CreateLoanViewModel, Loan>();
     }
     
     private static bool IsPersonType(BggRawLink link)

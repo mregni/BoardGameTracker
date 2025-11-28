@@ -4,6 +4,7 @@ export const QUERY_KEYS = {
   statistics: 'statistics',
   sessions: 'sessions',
   counts: 'counts',
+  loans: 'loans',
   compare: 'compare',
   settings: 'settings',
   games: 'games',

@@ -51,6 +51,7 @@
     "other-players": "Other players",
     "high-score": "High score",
     "no-results": "No results found",
+    "loans": "Loans",
     "state": "State",
     "bgg-id": "BGG id",
     "id": "Id",
@@ -76,6 +77,29 @@
       "title": "No sessions logged yet",
       "content": "Log your first game session to view analytics",
       "button": ""
+    }
+  },
+  "loan": {
+    "title": "Loans",
+    "notifications": {
+      "created": "Loan is succesfully created",
+      "create-failed": "Failed creating loan"
+    },
+    "new": {
+      "title": "Add new loan",
+      "description": "Fill out the form to create a new loan.",
+      "start": {
+        "label": "Loan start",
+        "required": "Start loan date is required"
+      },
+      "end": {
+        "label": "Return date"
+      },
+      "player": {
+        "label": "Player",
+        "required": "Player is required",
+        "placeholder": "Choose player"
+      }
     }
   },
   "dashboard": {
@@ -442,7 +466,6 @@
         "label": "Start",
         "required": "Start date is required"
       },
-
       "location": {
         "label": "Location",
         "placeholder": "Choose location",

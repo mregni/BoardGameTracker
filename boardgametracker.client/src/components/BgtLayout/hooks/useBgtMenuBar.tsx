@@ -20,6 +20,7 @@ export const menuItems: MenuItem[] = [
   { menuLabel: 'common.games', path: '/games', icon: PuzzlePieceIcon },
   { menuLabel: 'common.players', path: '/players', icon: UsersIcon },
   { menuLabel: 'common.compare', path: '/compare', icon: LeftRightArrowIcon },
+  { menuLabel: 'common.loans', path: '/loans', icon: LeftRightArrowIcon },
   { menuLabel: 'common.locations', path: '/locations', icon: MapPinIcon },
   { menuLabel: 'common.settings', path: '/settings', icon: CogIcon },
 ];

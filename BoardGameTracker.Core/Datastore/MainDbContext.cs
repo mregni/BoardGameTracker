@@ -22,6 +22,7 @@ public class MainDbContext : DbContext
     public DbSet<Language> Languages { get; set; }
     public DbSet<PlayerSession> PlayerSessions { get; set; }
     public DbSet<Badge> Badges { get; set; }
+    public DbSet<Loan> Loans { get; set; }
 
     public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
     {
@@ -40,6 +41,7 @@ public class MainDbContext : DbContext
         BuildGameSessions(builder);
         BuildPlayer(builder);
         BuildBadges(builder);
+        BuildLoans(builder);
 
         SeedDatabase(builder);
     }
@@ -59,6 +61,21 @@ public class MainDbContext : DbContext
                 builder.Entity(type).HasKey("Id");
             }
         }
+    }
+
+    private static void BuildLoans(ModelBuilder builder)
+    {
+        builder.Entity<Loan>()
+            .HasOne(x => x.Game)
+            .WithMany(x => x.Loans)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.Entity<Loan>()
+            .HasOne(x => x.Player)
+            .WithMany(x => x.Loans)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     private static void BuildGame(ModelBuilder builder)

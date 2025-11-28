@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as PlayersIndexRouteImport } from './routes/players/index'
 import { Route as LocationsIndexRouteImport } from './routes/locations/index'
+import { Route as LoansIndexRouteImport } from './routes/loans/index'
 import { Route as GamesIndexRouteImport } from './routes/games/index'
 import { Route as CompareIndexRouteImport } from './routes/compare/index'
 import { Route as SessionsNewRouteImport } from './routes/sessions/new'
@@ -45,6 +46,11 @@ const PlayersIndexRoute = PlayersIndexRouteImport.update({
 const LocationsIndexRoute = LocationsIndexRouteImport.update({
   id: '/locations/',
   path: '/locations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoansIndexRoute = LoansIndexRouteImport.update({
+  id: '/loans/',
+  path: '/loans/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesIndexRoute = GamesIndexRouteImport.update({
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/sessions/new': typeof SessionsNewRoute
   '/compare': typeof CompareIndexRoute
   '/games': typeof GamesIndexRoute
+  '/loans': typeof LoansIndexRoute
   '/locations': typeof LocationsIndexRoute
   '/players': typeof PlayersIndexRoute
   '/settings': typeof SettingsIndexRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/sessions/new': typeof SessionsNewRoute
   '/compare': typeof CompareIndexRoute
   '/games': typeof GamesIndexRoute
+  '/loans': typeof LoansIndexRoute
   '/locations': typeof LocationsIndexRoute
   '/players': typeof PlayersIndexRoute
   '/settings': typeof SettingsIndexRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/sessions/new': typeof SessionsNewRoute
   '/compare/': typeof CompareIndexRoute
   '/games/': typeof GamesIndexRoute
+  '/loans/': typeof LoansIndexRoute
   '/locations/': typeof LocationsIndexRoute
   '/players/': typeof PlayersIndexRoute
   '/settings/': typeof SettingsIndexRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/sessions/new'
     | '/compare'
     | '/games'
+    | '/loans'
     | '/locations'
     | '/players'
     | '/settings'
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/sessions/new'
     | '/compare'
     | '/games'
+    | '/loans'
     | '/locations'
     | '/players'
     | '/settings'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/sessions/new'
     | '/compare/'
     | '/games/'
+    | '/loans/'
     | '/locations/'
     | '/players/'
     | '/settings/'
@@ -239,6 +251,7 @@ export interface RootRouteChildren {
   SessionsNewRoute: typeof SessionsNewRoute
   CompareIndexRoute: typeof CompareIndexRoute
   GamesIndexRoute: typeof GamesIndexRoute
+  LoansIndexRoute: typeof LoansIndexRoute
   LocationsIndexRoute: typeof LocationsIndexRoute
   PlayersIndexRoute: typeof PlayersIndexRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
@@ -279,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/locations'
       fullPath: '/locations'
       preLoaderRoute: typeof LocationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loans/': {
+      id: '/loans/'
+      path: '/loans'
+      fullPath: '/loans'
+      preLoaderRoute: typeof LoansIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/': {
@@ -383,6 +403,7 @@ const rootRouteChildren: RootRouteChildren = {
   SessionsNewRoute: SessionsNewRoute,
   CompareIndexRoute: CompareIndexRoute,
   GamesIndexRoute: GamesIndexRoute,
+  LoansIndexRoute: LoansIndexRoute,
   LocationsIndexRoute: LocationsIndexRoute,
   PlayersIndexRoute: PlayersIndexRoute,
   SettingsIndexRoute: SettingsIndexRoute,

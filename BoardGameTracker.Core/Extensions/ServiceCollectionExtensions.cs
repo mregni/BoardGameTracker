@@ -17,6 +17,8 @@ using BoardGameTracker.Core.Images;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Languages;
 using BoardGameTracker.Core.Languages.Interfaces;
+using BoardGameTracker.Core.Loans;
+using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players;
@@ -42,6 +44,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IPlayerService, PlayerService>();
         serviceCollection.AddScoped<ISessionService, SessionService>();
         serviceCollection.AddScoped<ILocationService, LocationService>();
+        serviceCollection.AddScoped<ILoanService, LoanService>();
         serviceCollection.AddScoped<IDashboardService, DashboardService>();
         serviceCollection.AddScoped<ILanguageService, LanguageService>();
         serviceCollection.AddScoped<IBadgeService, BadgeService>();
@@ -51,6 +54,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IPlayerRepository, PlayerRepository>();
         serviceCollection.AddScoped<ISessionRepository, SessionRepository>();
         serviceCollection.AddScoped<ILocationRepository, LocationRepository>();
+        serviceCollection.AddScoped<ILoanRepository, LoanRepository>();
         serviceCollection.AddScoped<IDashboardRepository, DashboardRepository>();
         serviceCollection.AddScoped<ILanguageRepository, LanguageRepository>();
         serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
