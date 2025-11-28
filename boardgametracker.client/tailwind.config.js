@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 /* disable eslint errors if any */
-const defaultTheme = require('tailwindcss/defaultTheme');
+// const defaultTheme = require('tailwindcss/defaultTheme');
 
 export default {
   mode: 'jit',
@@ -8,7 +8,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Chakra Petch"', ...defaultTheme.fontFamily.sans],
+        sans: ['"Chakra Petch"'],
       },
       colors: {
         'page-black': '#121212',
