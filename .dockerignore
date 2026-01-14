@@ -21,5 +21,12 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
+**/publish
+**/data
+**/images
+**/logs
+**/.claude
+**/.plans
+**/IMPLEMENTATION_PLAN*.md
 LICENSE
 README.md

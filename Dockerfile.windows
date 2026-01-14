@@ -1,0 +1,95 @@
+# Windows Dockerfile for BoardGameTracker
+# Supports: windows/amd64
+#
+# Build with Docker:
+# docker build -f Dockerfile.windows -t uping/boardgametracker:windows-latest .
+#
+# Run example:
+# docker run -e DB_HOST=host.docker.internal -e DB_USER=dev -e DB_PASSWORD=dev -e DB_NAME=boardgametracker-dev `
+#   -p 6544:5444 `
+#   -v C:\data:/app/data `
+#   -v C:\images:/app/images `
+#   uping/boardgametracker:windows-latest
+
+# Build arguments
+ARG VERSION=0.0.1
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-ltsc2022 AS build
+ARG VERSION
+WORKDIR /src
+
+# Install Node.js (required for frontend build via .esproj)
+# Download and install Node.js 20.x for Windows
+RUN powershell -Command " \
+    Invoke-WebRequest -Uri 'https://nodejs.org/dist/v20.11.0/node-v20.11.0-win-x64.zip' -OutFile node.zip; \
+    Expand-Archive -Path node.zip -DestinationPath C:\; \
+    Rename-Item -Path C:\node-v20.11.0-win-x64 -NewName nodejs; \
+    Remove-Item -Path node.zip"
+
+# Add Node.js to PATH
+ENV PATH="C:\nodejs;${PATH}"
+
+# Copy Directory.Build.props (affects MSBuild behavior)
+COPY Directory.Build.props Directory.Build.props
+
+# Copy project files
+COPY BoardGameTracker.Common/BoardGameTracker.Common.csproj BoardGameTracker.Common/
+COPY BoardGameTracker.Core/BoardGameTracker.Core.csproj BoardGameTracker.Core/
+COPY BoardGameTracker.Api/BoardGameTracker.Api.csproj BoardGameTracker.Api/
+COPY BoardGameTracker.Host/BoardGameTracker.Host.csproj BoardGameTracker.Host/
+COPY boardgametracker.client/boardgametracker.client.esproj boardgametracker.client/
+COPY boardgametracker.client/package*.json boardgametracker.client/
+
+# Restore dependencies
+RUN dotnet restore BoardGameTracker.Host/BoardGameTracker.Host.csproj
+
+# Copy source code (only what's needed for build)
+COPY BoardGameTracker.Common/ BoardGameTracker.Common/
+COPY BoardGameTracker.Core/ BoardGameTracker.Core/
+COPY BoardGameTracker.Api/ BoardGameTracker.Api/
+COPY BoardGameTracker.Host/ BoardGameTracker.Host/
+COPY boardgametracker.client/ boardgametracker.client/
+
+# Build and publish
+WORKDIR /src/BoardGameTracker.Host
+RUN dotnet publish -c Release -o /app/publish `
+    --no-restore `
+    --runtime win-x64 `
+    --self-contained false `
+    /p:Version=%VERSION%
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS runtime
+
+# Build arguments for runtime configuration
+ARG ASPNETCORE_ENVIRONMENT=production
+ARG ASPNETCORE_URLS=http://*:5444
+ARG TZ=UTC
+
+WORKDIR /app
+
+# Copy published files from build stage
+COPY --from=build /app/publish .
+
+# Create directories for data and images
+RUN mkdir C:\app\data && mkdir C:\app\images && mkdir C:\app\logs
+
+# Set environment variables with defaults from build args
+ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+ENV DOTNET_EnableDiagnostics=0
+ENV ASPNETCORE_URLS=${ASPNETCORE_URLS}
+ENV TZ=${TZ}
+
+# Expose port
+EXPOSE 5444
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD powershell -Command "try { $response = Invoke-WebRequest -Uri http://localhost:5444/api/health -UseBasicParsing; exit ($response.StatusCode -eq 200 ? 0 : 1) } catch { exit 1 }"
+
+# Switch to non-root user (ContainerUser is built-in non-admin user in Windows containers)
+USER ContainerUser
+
+# Run the application
+ENTRYPOINT ["dotnet", "BoardGameTracker.Host.dll"]

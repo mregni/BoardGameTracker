@@ -1,6 +1,13 @@
 services:
   boardgametracker:
-    image: uping/boardgametracker:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-0.0.1}
+        ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-production}
+        ASPNETCORE_URLS: ${ASPNETCORE_URLS:-http://*:5444}
+        TZ: ${TZ:-UTC}
     restart: unless-stopped
     depends_on:
       db:
