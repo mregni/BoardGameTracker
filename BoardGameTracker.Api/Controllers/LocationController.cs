@@ -59,7 +59,7 @@ public class LocationController : ControllerBase
         try
         {
             var location = new Location(command.Name) { Id = command.Id };
-            _locationService.Update(location);
+            await _locationService.Update(location);
             return Ok(location.ToDto());
         }
         catch (Exception e)

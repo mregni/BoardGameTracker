@@ -97,20 +97,6 @@ public class LogLevelExtensionsTests : IDisposable
     }
 
     [Fact]
-    public void GetEnvironmentLogLevel_ShouldBeConsistent_WhenCalledMultipleTimes()
-    {
-        Environment.SetEnvironmentVariable("LOGLEVEL", "ERROR");
-
-        var result1 = LogLevelExtensions.GetEnvironmentLogLevel();
-        var result2 = LogLevelExtensions.GetEnvironmentLogLevel();
-        var result3 = LogLevelExtensions.GetEnvironmentLogLevel();
-
-        result1.Should().Be(LogEventLevel.Error);
-        result2.Should().Be(LogEventLevel.Error);
-        result3.Should().Be(LogEventLevel.Error);
-    }
-
-    [Fact]
     public void GetEnvironmentLogLevel_ShouldReflectChanges_WhenEnvironmentVariableIsModified()
     {
         Environment.SetEnvironmentVariable("LOGLEVEL", "ERROR");

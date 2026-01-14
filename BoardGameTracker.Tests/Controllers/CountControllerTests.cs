@@ -109,15 +109,49 @@ public class CountControllerTests
 
             var exception = await Assert.ThrowsAsync<TimeoutException>(
                 () => _controller.GetMenuCounts());
-            
+
             exception.Should().Be(expectedException);
 
             _gameServiceMock.Verify(x => x.CountAsync(), Times.Once);
             _playerServiceMock.Verify(x => x.CountAsync(), Times.Once);
             _locationServiceMock.Verify(x => x.CountAsync(), Times.Once);
-            
-            _gameServiceMock.VerifyNoOtherCalls();
-            _playerServiceMock.VerifyNoOtherCalls();
-            _locationServiceMock.VerifyNoOtherCalls();
+            VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task GetMenuCounts_ShouldReturnCounts_WhenSuccessful()
+        {
+            // Arrange
+            _gameServiceMock
+                .Setup(x => x.CountAsync())
+                .ReturnsAsync(42);
+
+            _playerServiceMock
+                .Setup(x => x.CountAsync())
+                .ReturnsAsync(15);
+
+            _locationServiceMock
+                .Setup(x => x.CountAsync())
+                .ReturnsAsync(7);
+
+            // Act
+            var result = await _controller.GetMenuCounts();
+
+            // Assert
+            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+            var counts = okResult.Value.Should().BeAssignableTo<BoardGameTracker.Common.DTOs.KeyValuePairDto<int>[]>().Subject;
+
+            counts.Should().HaveCount(3);
+            counts[0].Key.Should().Be("games");
+            counts[0].Value.Should().Be(42);
+            counts[1].Key.Should().Be("players");
+            counts[1].Value.Should().Be(15);
+            counts[2].Key.Should().Be("locations");
+            counts[2].Value.Should().Be(7);
+
+            _gameServiceMock.Verify(x => x.CountAsync(), Times.Once);
+            _playerServiceMock.Verify(x => x.CountAsync(), Times.Once);
+            _locationServiceMock.Verify(x => x.CountAsync(), Times.Once);
+            VerifyNoOtherCalls();
         }
     }
