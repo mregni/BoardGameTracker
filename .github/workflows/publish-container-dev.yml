@@ -27,13 +27,13 @@ jobs:
           fetch-depth: 0
 
       - name: Git Semantic Version
-        uses: PaulHatch/semantic-version@v5.3.0
+        uses: PaulHatch/semantic-version@v5.4.0
         id: versioning
         with:
           enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
-          namespace: ${{ github.ref == 'refs/heads/dev' && 'beta' || '' }}
+          namespace: beta
           bump_each_commit: true
-          version_format: "${{ github.ref == 'refs/heads/dev' && '${major}.${minor}.${patch}-${namespace}${increment}' || '${major}.${minor}.${patch}' }}"
+          version_format: "${{ github.ref == 'refs/heads/dev' && '${major}.${minor}.${patch}-beta.${increment}' || '${major}.${minor}.${patch}' }}"
           debug: true
 
   test-frontend:
@@ -188,8 +188,8 @@ jobs:
           ./.sonar/scanner/dotnet-sonarscanner begin \
             /k:"${{ secrets.SONAR_PROJECT_KEY }}" \
             /o:"${{ secrets.SONAR_ORGANIZATION }}" \
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /v:"${{ needs.version.outputs.version }}" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
@@ -198,6 +198,7 @@ jobs:
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js" \
             /d:sonar.typescript.tsconfigPaths="boardgametracker.client/tsconfig.json" \
             /d:sonar.eslint.reportPaths="boardgametracker.client/coverage/eslint-report.json"
+        if: env.SONAR_TOKEN != ''
 
       - name: Build
         run: dotnet build --no-restore
@@ -207,7 +208,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
-        if: github.event_name != 'pull_request'
+        if: env.SONAR_TOKEN != '' && github.event_name != 'pull_request'
 
       - name: Code Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.11

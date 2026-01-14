@@ -21,11 +21,7 @@ WORKDIR /src
 
 # Install Node.js (required for frontend build via .esproj)
 # Download and install Node.js 20.x for Windows
-RUN powershell -Command " \
-    Invoke-WebRequest -Uri 'https://nodejs.org/dist/v20.11.0/node-v20.11.0-win-x64.zip' -OutFile node.zip; \
-    Expand-Archive -Path node.zip -DestinationPath C:\; \
-    Rename-Item -Path C:\node-v20.11.0-win-x64 -NewName nodejs; \
-    Remove-Item -Path node.zip"
+RUN powershell -Command "Invoke-WebRequest -Uri 'https://nodejs.org/dist/v20.11.0/node-v20.11.0-win-x64.zip' -OutFile node.zip; Expand-Archive -Path node.zip -DestinationPath C:\; Rename-Item -Path C:\node-v20.11.0-win-x64 -NewName nodejs; Remove-Item -Path node.zip"
 
 # Add Node.js to PATH
 ENV PATH="C:\nodejs;${PATH}"
@@ -53,11 +49,7 @@ COPY boardgametracker.client/ boardgametracker.client/
 
 # Build and publish
 WORKDIR /src/BoardGameTracker.Host
-RUN dotnet publish -c Release -o /app/publish `
-    --no-restore `
-    --runtime win-x64 `
-    --self-contained false `
-    /p:Version=%VERSION%
+RUN dotnet publish -c Release -o /app/publish --no-restore --runtime win-x64 --self-contained false /p:Version=${VERSION}
 
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS runtime
@@ -73,7 +65,7 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # Create directories for data and images
-RUN mkdir C:\app\data && mkdir C:\app\images && mkdir C:\app\logs
+RUN powershell -Command "New-Item -ItemType Directory -Force -Path C:\app\data,C:\app\images,C:\app\logs"
 
 # Set environment variables with defaults from build args
 ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
@@ -85,8 +77,7 @@ ENV TZ=${TZ}
 EXPOSE 5444
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD powershell -Command "try { $response = Invoke-WebRequest -Uri http://localhost:5444/api/health -UseBasicParsing; exit ($response.StatusCode -eq 200 ? 0 : 1) } catch { exit 1 }"
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 CMD powershell -Command "try { $response = Invoke-WebRequest -Uri http://localhost:5444/api/health -UseBasicParsing; exit ($response.StatusCode -eq 200 ? 0 : 1) } catch { exit 1 }"
 
 # Switch to non-root user (ContainerUser is built-in non-admin user in Windows containers)
 USER ContainerUser
