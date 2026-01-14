@@ -11,8 +11,8 @@ on:
       - master
 
 env:
-  REGISTRY: docker.io
-  IMAGE_NAME: uping/boardgametracker
+  REGISTRY: ${{ vars.DOCKER_REGISTRY || 'docker.io' }}
+  IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME || 'uping/boardgametracker' }}
 
 jobs:
   version:
@@ -33,7 +33,7 @@ jobs:
           enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
           namespace: ${{ github.ref == 'refs/heads/dev' && 'beta' || '' }}
           bump_each_commit: true
-          version_format: "${major}.${minor}.${patch}-pre${increment}"
+          version_format: "${{ github.ref == 'refs/heads/dev' && '${major}.${minor}.${patch}-${namespace}${increment}' || '${major}.${minor}.${patch}' }}"
           debug: true
 
   test-frontend:
@@ -75,7 +75,8 @@ jobs:
         with:
           name: frontend-tests
           path: boardgametracker.client/coverage
-        if: ${{ always() }}
+          retention-days: 7
+        if: success() || failure()
 
   test-backend:
     name: Test Backend
@@ -111,13 +112,16 @@ jobs:
         with:
           name: backend-tests
           path: TestResults
+          retention-days: 7
+        if: success() || failure()
 
       - name: Upload coverage file for debugging
         uses: actions/upload-artifact@v4
         with:
           name: coverage-opencover
           path: TestResults/**/coverage.opencover.xml
-        if: ${{ always() }}
+          retention-days: 7
+        if: success() || failure()
 
   sonarcloud:
     name: SonarCloud Analysis and Coverage Report
@@ -224,10 +228,11 @@ jobs:
           recreate: true
           path: coveragereport/SummaryGithub.md
 
-  build-and-publish:
+  build-linux-multiarch:
     needs: [version, test-backend, test-frontend]
-    name: Build and Publish Application
+    name: Build and Push Multi-Arch Linux Containers
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     if: github.event_name != 'pull_request'
     steps:
       - name: Checkout
@@ -235,70 +240,164 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup dotnet v8
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.x"
+      - name: Update package.json version
+        run: |
+          cd boardgametracker.client
+          npm version ${{ needs.version.outputs.version }} --no-git-tag-version
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
         with:
-          node-version: "20.x"
+          platforms: all
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ needs.version.outputs.version }}
+            type=raw,value=${{ github.ref == 'refs/heads/dev' && 'dev' || 'latest' }}
+            type=raw,value=${{ needs.version.outputs.version }}-{{date 'YYYYMMDD'}}
+
+      - name: Build and Push Multi-Architecture Images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: |
+            type=registry,ref=${{ env.IMAGE_NAME }}:cache-build
+            type=registry,ref=${{ env.IMAGE_NAME }}:cache-runtime
+          cache-to: |
+            type=registry,ref=${{ env.IMAGE_NAME }}:cache-build,mode=max,image-manifest=true
+            type=registry,ref=${{ env.IMAGE_NAME }}:cache-runtime,mode=max,image-manifest=true
+          build-args: |
+            VERSION=${{ needs.version.outputs.version }}
+            BUILDKIT_INLINE_CACHE=1
+
+  build-windows-container:
+    needs: [version, test-backend, test-frontend]
+    name: Build and Push Windows Container
+    runs-on: windows-2022
+    timeout-minutes: 90
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Update package.json version
         run: |
           cd boardgametracker.client
           npm version ${{ needs.version.outputs.version }} --no-git-tag-version
 
-      - name: Restore dependencies
-        run: dotnet restore ./BoardGameTracker.Host/BoardGameTracker.Host.csproj
-
-      - name: Publish application
-        run: dotnet publish ./BoardGameTracker.Host/BoardGameTracker.Host.csproj -c Release -o ./publish /p:Version=${{ needs.version.outputs.version }}
-
-      - name: Upload publish artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: published-app
-          path: ./publish
-
-  build-linux-container:
-    needs: [version, build-and-publish]
-    name: Build and Push Linux Container
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download publish artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: published-app
-          path: ./publish
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@master
-        with:
-          platforms: all
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@master
-
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push
-        uses: docker/build-push-action@v4
+      - name: Build and Push Windows Image
+        run: |
+          docker build `
+            -f Dockerfile.windows `
+            -t ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}-windows `
+            -t ${{ env.IMAGE_NAME }}:${{ github.ref == 'refs/heads/dev' && 'dev-windows' || 'windows-latest' }} `
+            --build-arg VERSION=${{ needs.version.outputs.version }} `
+            .
+          docker push ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}-windows
+          docker push ${{ env.IMAGE_NAME }}:${{ github.ref == 'refs/heads/dev' && 'dev-windows' || 'windows-latest' }}
+
+  security-scan:
+    needs: [version, build-linux-multiarch]
+    name: Security Scan Container Images
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name != 'pull_request'
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
         with:
-          context: .
-          platforms: linux/amd64
-          tags: |
-            uping/boardgametracker:${{ needs.version.outputs.version }}
-            uping/boardgametracker:${{ github.ref == 'refs/heads/dev' && 'dev' || 'latest' }}
-          push: true
-          file: Dockerfile
+          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          timeout: '10m'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Trivy vulnerability scanner (fail on critical)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          timeout: '10m'
+
+      - name: Generate SBOM
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}
+          format: 'cyclonedx'
+          output: 'sbom.json'
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ needs.version.outputs.version }}
+          path: sbom.json
+          retention-days: 90
+
+  create-manifest:
+    needs: [version, build-linux-multiarch, build-windows-container, security-scan]
+    name: Create Multi-Platform Manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Create and Push Manifest
+        run: |
+          # Create manifest for latest tag (all platforms)
+          docker manifest create ${{ env.IMAGE_NAME }}:latest \
+            ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }} \
+            ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}-windows
+
+          # Annotate Windows image
+          docker manifest annotate ${{ env.IMAGE_NAME }}:latest \
+            ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}-windows \
+            --os windows --arch amd64
+
+          # Push manifest
+          docker manifest push ${{ env.IMAGE_NAME }}:latest

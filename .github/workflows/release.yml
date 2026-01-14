@@ -1,0 +1,412 @@
+name: Release - Build and Publish Multi-Arch Containers
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ${{ vars.DOCKER_REGISTRY || 'docker.io' }}
+  IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME || 'uping/boardgametracker' }}
+
+jobs:
+  extract-version:
+    name: Extract Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get version from tag or input
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+  test-frontend:
+    name: Test and Lint Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: 'npm'
+          cache-dependency-path: boardgametracker.client/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd boardgametracker.client
+          npm ci
+
+      - name: Run Prettier check
+        run: |
+          cd boardgametracker.client
+          npm run prettier
+
+      - name: Run tests with coverage
+        run: |
+          cd boardgametracker.client
+          npm run test:coverage
+
+      - name: Run ESLint
+        run: |
+          cd boardgametracker.client
+          npm run lint:report
+
+      - name: Upload frontend test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-tests-release
+          path: boardgametracker.client/coverage
+          retention-days: 30
+        if: success() || failure()
+
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup dotnet v8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+
+      - name: Install dependencies
+        run: dotnet restore ./BoardGameTracker.sln
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Test with dotnet
+        run: |
+          dotnet test ./BoardGameTracker.Tests/BoardGameTracker.Tests.csproj \
+            --no-build \
+            --no-restore \
+            --logger trx \
+            --results-directory "TestResults" \
+            --collect "XPlat Code Coverage;Format=opencover" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/DataStore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs"
+
+      - name: Upload dotnet test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-tests-release
+          path: TestResults
+          retention-days: 30
+        if: success() || failure()
+
+  build-linux-multiarch:
+    name: Build Multi-Arch Linux Containers
+    needs: [extract-version, test-frontend, test-backend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update package.json version
+        run: |
+          cd boardgametracker.client
+          npm version ${{ needs.extract-version.outputs.version }} --no-git-tag-version
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.extract-version.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.extract-version.outputs.version }}
+            type=semver,pattern={{major}},value=${{ needs.extract-version.outputs.version }}
+            type=raw,value=latest
+
+      - name: Build and Push Multi-Architecture Images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: |
+            type=registry,ref=${{ env.IMAGE_NAME }}:cache-build
+            type=registry,ref=${{ env.IMAGE_NAME }}:cache-runtime
+          cache-to: |
+            type=registry,ref=${{ env.IMAGE_NAME }}:cache-build,mode=max,image-manifest=true
+            type=registry,ref=${{ env.IMAGE_NAME }}:cache-runtime,mode=max,image-manifest=true
+          build-args: |
+            VERSION=${{ needs.extract-version.outputs.version }}
+            BUILDKIT_INLINE_CACHE=1
+
+  build-windows-container:
+    name: Build Windows Container
+    needs: [extract-version, test-frontend, test-backend]
+    runs-on: windows-2022
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update package.json version
+        run: |
+          cd boardgametracker.client
+          npm version ${{ needs.extract-version.outputs.version }} --no-git-tag-version
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Windows Image
+        run: |
+          docker build `
+            -f Dockerfile.windows `
+            -t ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }}-windows `
+            -t ${{ env.IMAGE_NAME }}:windows-latest `
+            --build-arg VERSION=${{ needs.extract-version.outputs.version }} `
+            .
+          docker push ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }}-windows
+          docker push ${{ env.IMAGE_NAME }}:windows-latest
+
+  security-scan:
+    name: Security Scan Container Images
+    needs: [extract-version, build-linux-multiarch]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          timeout: '10m'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Trivy vulnerability scanner (fail on critical)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }}
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          timeout: '10m'
+
+      - name: Generate SBOM
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }}
+          format: 'cyclonedx'
+          output: 'sbom-${{ needs.extract-version.outputs.version }}.json'
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ needs.extract-version.outputs.version }}
+          path: sbom-${{ needs.extract-version.outputs.version }}.json
+          retention-days: 90
+
+  create-manifest:
+    name: Create Multi-Platform Manifest
+    needs: [extract-version, build-linux-multiarch, build-windows-container, security-scan]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Create and Push Manifest
+        run: |
+          # Create manifest for latest tag (all platforms)
+          docker manifest create ${{ env.IMAGE_NAME }}:latest \
+            ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }} \
+            ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }}-windows
+
+          # Annotate Windows image
+          docker manifest annotate ${{ env.IMAGE_NAME }}:latest \
+            ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }}-windows \
+            --os windows --arch amd64
+
+          # Push manifest
+          docker manifest push ${{ env.IMAGE_NAME }}:latest
+
+          # Create manifest for version tag
+          docker manifest create ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }} \
+            ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }} \
+            ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }}-windows
+
+          # Annotate Windows image for version tag
+          docker manifest annotate ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }} \
+            ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }}-windows \
+            --os windows --arch amd64
+
+          # Push version manifest
+          docker manifest push ${{ env.IMAGE_NAME }}:${{ needs.extract-version.outputs.version }}
+
+  create-github-release:
+    name: Create GitHub Release
+    needs: [extract-version, create-manifest]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          VERSION=${{ needs.extract-version.outputs.version }}
+
+          # Get previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          # Generate changelog
+          if [ -n "$PREVIOUS_TAG" ]; then
+            CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          fi
+
+          # Create release notes
+          cat > release_notes.md << EOF
+          ## BoardGameTracker v${VERSION}
+
+          ### Docker Images
+
+          **Multi-Architecture Linux:**
+          \`\`\`bash
+          docker pull uping/boardgametracker:${VERSION}
+          docker pull uping/boardgametracker:latest
+          \`\`\`
+
+          Supported platforms:
+          - \`linux/amd64\` - x86_64 architecture
+          - \`linux/arm64\` - ARM 64-bit (Raspberry Pi 4, AWS Graviton)
+          - \`linux/arm/v7\` - ARM 32-bit (Raspberry Pi 3)
+
+          **Windows:**
+          \`\`\`powershell
+          docker pull uping/boardgametracker:${VERSION}-windows
+          docker pull uping/boardgametracker:windows-latest
+          \`\`\`
+
+          ### Changes
+
+          ${CHANGELOG}
+
+          ### Installation
+
+          See [DOCKER.md](https://github.com/mregni/BoardGameTracker/blob/master/DOCKER.md) for detailed installation instructions.
+
+          ### Upgrade Notes
+
+          If updating from a previous version:
+          1. Pull the new image: \`docker pull uping/boardgametracker:${VERSION}\`
+          2. Stop and remove the old container
+          3. Start with the new image (database migrations run automatically)
+
+          ### Documentation
+
+          - [Main Repository](https://github.com/mregni/BoardGameTracker)
+          - [Docker Hub](https://hub.docker.com/r/uping/boardgametracker)
+          EOF
+
+          echo "Created release notes"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ needs.extract-version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify-completion:
+    name: Notify Completion
+    needs: [extract-version, create-github-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # ✅ Release v${{ needs.extract-version.outputs.version }} Published
+
+          ## Docker Images
+
+          ### Multi-Architecture Linux
+          - \`uping/boardgametracker:${{ needs.extract-version.outputs.version }}\`
+          - \`uping/boardgametracker:latest\`
+
+          **Platforms:** linux/amd64, linux/arm64, linux/arm/v7
+
+          ### Windows
+          - \`uping/boardgametracker:${{ needs.extract-version.outputs.version }}-windows\`
+          - \`uping/boardgametracker:windows-latest\`
+
+          **Platform:** windows/amd64
+
+          ## Links
+
+          - [Docker Hub](https://hub.docker.com/r/uping/boardgametracker)
+          - [Release Notes](https://github.com/${{ github.repository }}/releases/tag/v${{ needs.extract-version.outputs.version }})
+          EOF
