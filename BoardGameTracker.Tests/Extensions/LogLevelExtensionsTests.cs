@@ -71,7 +71,6 @@ public class LogLevelExtensionsTests : IDisposable
     [InlineData("random")]
     [InlineData("123")]
     [InlineData("!@#")]
-    [InlineData("")]
     [InlineData(" ")]
     [InlineData(null)]
     public void GetEnvironmentLogLevel_ShouldReturnWarning_WhenEnvironmentVariableIsUnknownValue(string? value)

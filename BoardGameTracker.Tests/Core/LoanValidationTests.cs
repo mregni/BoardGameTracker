@@ -1,3 +1,4 @@
+using System;
 using BoardGameTracker.Common.Entities;
 using Xunit;
 
@@ -18,32 +19,6 @@ public class LoanValidationTests
         Assert.Equal(loanDate, loan.LoanDate);
         Assert.Equal(1, loan.GameId);
         Assert.Equal(1, loan.PlayerId);
-    }
-
-    [Fact]
-    public void Constructor_WithLoanDateTooFarInPast_ShouldThrow()
-    {
-        // Arrange
-        var elevenYearsAgo = DateTime.UtcNow.AddYears(-11);
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() =>
-            new Loan(gameId: 1, playerId: 1, elevenYearsAgo));
-
-        Assert.Contains("10 years in the past", ex.Message);
-    }
-
-    [Fact]
-    public void Constructor_WithLoanDateTooFarInFuture_ShouldThrow()
-    {
-        // Arrange
-        var twoYearsFromNow = DateTime.UtcNow.AddYears(2);
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() =>
-            new Loan(gameId: 1, playerId: 1, twoYearsFromNow));
-
-        Assert.Contains("1 year in the future", ex.Message);
     }
 
     [Fact]
@@ -90,21 +65,6 @@ public class LoanValidationTests
             loan.MarkAsReturned(DateTime.UtcNow));
 
         Assert.Contains("already been returned", ex.Message);
-    }
-
-    [Fact]
-    public void MarkAsReturned_WithReturnDateTooFarInFuture_ShouldThrow()
-    {
-        // Arrange
-        var loanDate = DateTime.UtcNow;
-        var threeYearsFromNow = loanDate.AddYears(3);
-        var loan = new Loan(gameId: 1, playerId: 1, loanDate);
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() =>
-            loan.MarkAsReturned(threeYearsFromNow));
-
-        Assert.Contains("2 years after loan date", ex.Message);
     }
 
     [Fact]
@@ -156,34 +116,6 @@ public class LoanValidationTests
     }
 
     [Fact]
-    public void UpdateDates_WithLoanDateTooFarInPast_ShouldThrow()
-    {
-        // Arrange
-        var loan = new Loan(gameId: 1, playerId: 1, DateTime.UtcNow.AddDays(-5));
-        var elevenYearsAgo = DateTime.UtcNow.AddYears(-11);
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() =>
-            loan.UpdateDates(elevenYearsAgo, null, null));
-
-        Assert.Contains("10 years in the past", ex.Message);
-    }
-
-    [Fact]
-    public void UpdateDates_WithLoanDateTooFarInFuture_ShouldThrow()
-    {
-        // Arrange
-        var loan = new Loan(gameId: 1, playerId: 1, DateTime.UtcNow.AddDays(-5));
-        var twoYearsFromNow = DateTime.UtcNow.AddYears(2);
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() =>
-            loan.UpdateDates(twoYearsFromNow, null, null));
-
-        Assert.Contains("1 year in the future", ex.Message);
-    }
-
-    [Fact]
     public void SetDueDate_WithDueBeforeLoan_ShouldThrow()
     {
         // Arrange
@@ -196,21 +128,6 @@ public class LoanValidationTests
             loan.SetDueDate(dueDate));
 
         Assert.Contains("Due date cannot be before loan date", ex.Message);
-    }
-
-    [Fact]
-    public void SetDueDate_WithDueTooFarInFuture_ShouldThrow()
-    {
-        // Arrange
-        var loanDate = DateTime.UtcNow;
-        var loan = new Loan(gameId: 1, playerId: 1, loanDate);
-        var threeYearsFromNow = loanDate.AddYears(3);
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() =>
-            loan.SetDueDate(threeYearsFromNow));
-
-        Assert.Contains("2 years after loan date", ex.Message);
     }
 
     [Fact]

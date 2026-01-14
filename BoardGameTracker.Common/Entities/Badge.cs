@@ -37,7 +37,7 @@ public class Badge : HasId
         Players = new List<Player>();
     }
 
-    internal static Badge CreateWithId(int id, string titleKey, string descriptionKey, BadgeType type, string image, BadgeLevel? level = null)
+    public static Badge CreateWithId(int id, string titleKey, string descriptionKey, BadgeType type, string image, BadgeLevel? level = null)
     {
         return new Badge(titleKey, descriptionKey, type, image, level) { Id = id };
     }

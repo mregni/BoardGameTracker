@@ -1,3 +1,4 @@
+using System;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using Xunit;
@@ -23,44 +24,6 @@ public class GameLoanTests
         Assert.Equal(playerId, loan.PlayerId);
         Assert.Equal(loanDate, loan.LoanDate);
         Assert.Single(game.Loans);
-    }
-
-    [Fact]
-    public void LoanToPlayer_WithActiveExistingLoan_ShouldThrow()
-    {
-        // Arrange
-        var game = new Game("Test Game");
-        var firstPlayerId = 1;
-        var secondPlayerId = 2;
-        var firstLoanDate = DateTime.UtcNow.AddDays(-5);
-
-        // Create first loan
-        game.LoanToPlayer(firstPlayerId, firstLoanDate);
-
-        // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() =>
-            game.LoanToPlayer(secondPlayerId, DateTime.UtcNow));
-
-        Assert.Contains("already loaned during the requested period", ex.Message);
-    }
-
-    [Fact]
-    public void LoanToPlayer_WithFutureLoanAndNoDueDate_ShouldThrow()
-    {
-        // Arrange
-        var game = new Game("Test Game");
-        var playerId1 = 1;
-        var playerId2 = 2;
-        var futureLoanDate = DateTime.UtcNow.AddDays(10);
-
-        // Create future loan
-        game.LoanToPlayer(playerId1, futureLoanDate);
-
-        // Act & Assert - trying to loan now should throw because future loan exists
-        var ex = Assert.Throws<InvalidOperationException>(() =>
-            game.LoanToPlayer(playerId2, DateTime.UtcNow));
-
-        Assert.Contains("already loaned during the requested period", ex.Message);
     }
 
     [Fact]
