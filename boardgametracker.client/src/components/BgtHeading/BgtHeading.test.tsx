@@ -72,7 +72,6 @@ describe('BgtHeading', () => {
       const heading = headings[headings.length - 1];
       expect(heading).toHaveClass('uppercase');
       expect(heading).toHaveClass('line-clamp-1');
-      expect(heading).toHaveClass('pr-2');
     });
 
     it('should merge custom className with default classes', () => {
@@ -81,7 +80,6 @@ describe('BgtHeading', () => {
       const heading = headings[headings.length - 1];
       expect(heading).toHaveClass('uppercase');
       expect(heading).toHaveClass('line-clamp-1');
-      expect(heading).toHaveClass('pr-2');
       expect(heading).toHaveClass('custom-class');
     });
 
@@ -157,29 +155,6 @@ describe('BgtHeading', () => {
       const headings = screen.getAllByRole('heading', { level: 3 });
       const heading = headings[headings.length - 1];
       expect(heading).toBeInTheDocument();
-    });
-  });
-
-  describe('Styling', () => {
-    it('should always apply uppercase class', () => {
-      renderWithTheme(<BgtHeading>should be uppercase</BgtHeading>);
-      const headings = screen.getAllByRole('heading', { level: 3 });
-      const heading = headings[headings.length - 1];
-      expect(heading).toHaveClass('uppercase');
-    });
-
-    it('should always apply line-clamp-1 class for text truncation', () => {
-      renderWithTheme(<BgtHeading>Text to truncate</BgtHeading>);
-      const headings = screen.getAllByRole('heading', { level: 3 });
-      const heading = headings[headings.length - 1];
-      expect(heading).toHaveClass('line-clamp-1');
-    });
-
-    it('should always apply pr-2 class for right padding', () => {
-      renderWithTheme(<BgtHeading>Padded text</BgtHeading>);
-      const headings = screen.getAllByRole('heading', { level: 3 });
-      const heading = headings[headings.length - 1];
-      expect(heading).toHaveClass('pr-2');
     });
   });
 });
