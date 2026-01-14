@@ -1,7 +1,12 @@
-﻿using BoardGameTracker.Common.Entities;
+﻿using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models;
+using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Players.DomainServices;
 using BoardGameTracker.Core.Players.Interfaces;
+using BoardGameTracker.Core.Sessions.Interfaces;
 
 namespace BoardGameTracker.Core.Players;
 
@@ -9,11 +14,25 @@ public class PlayerService : IPlayerService
 {
     private readonly IPlayerRepository _playerRepository;
     private readonly IImageService _imageService;
+    private readonly IPlayerStatisticsDomainService _playerStatisticsDomainService;
+    private readonly IGameSessionRepository _gameSessionRepository;
+    private readonly ISessionRepository _sessionRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public PlayerService(IPlayerRepository playerRepository, IImageService imageService)
+    public PlayerService(
+        IPlayerRepository playerRepository,
+        IImageService imageService,
+        IPlayerStatisticsDomainService playerStatisticsDomainService,
+        IGameSessionRepository gameSessionRepository,
+        ISessionRepository sessionRepository,
+        IUnitOfWork unitOfWork)
     {
         _playerRepository = playerRepository;
         _imageService = imageService;
+        _playerStatisticsDomainService = playerStatisticsDomainService;
+        _gameSessionRepository = gameSessionRepository;
+        _sessionRepository = sessionRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public Task<List<Player>> GetList()
@@ -21,9 +40,11 @@ public class PlayerService : IPlayerService
         return _playerRepository.GetAllAsync();
     }
 
-    public Task<Player> Create(Player player)
+    public async Task<Player> Create(Player player)
     {
-        return _playerRepository.CreateAsync(player);
+        await _playerRepository.CreateAsync(player);
+        await _unitOfWork.SaveChangesAsync();
+        return player;
     }
 
     public Task<Player?> Get(int id)
@@ -31,19 +52,25 @@ public class PlayerService : IPlayerService
         return _playerRepository.GetByIdAsync(id);
     }
 
-    public async Task<Player> Update(Player player)
+    public async Task<Player?> Update(UpdatePlayerCommand command)
     {
-        var dbPlayer = await _playerRepository.GetByIdAsync(player.Id);
-        if (dbPlayer != null && player.Image != dbPlayer.Image)
+        var dbPlayer = await _playerRepository.GetByIdAsync(command.Id);
+        if (dbPlayer == null)
+        {
+            return null;
+        }
+        
+        if (command.Image != dbPlayer.Image)
         {
             _imageService.DeleteImage(dbPlayer.Image);
-            
-            dbPlayer.Image = player.Image;
-            dbPlayer.Name = player.Name;
-            return await _playerRepository.UpdateAsync(dbPlayer);
+            dbPlayer.UpdateImage(command.Image);
         }
-
-        return player;
+        
+        dbPlayer.UpdateName(command.Name);
+        await _playerRepository.UpdateAsync(dbPlayer);
+        await _unitOfWork.SaveChangesAsync();
+        
+        return dbPlayer;
     }
 
     public Task<int> CountAsync()
@@ -51,9 +78,9 @@ public class PlayerService : IPlayerService
         return _playerRepository.CountAsync();
     }
 
-    public Task<List<Session>> GetSessions(int id)
+    public Task<List<Session>> GetSessions(int id, int? count)
     {
-        return _playerRepository.GetSessions(id);
+        return _gameSessionRepository.GetSessionsByPlayerId(id, count);
     }
 
     public async Task Delete(int id)
@@ -64,35 +91,23 @@ public class PlayerService : IPlayerService
             return;
         }
 
-        _imageService.DeleteImage(player.Image);
-        await _playerRepository.DeleteAsync(player.Id);
-    }
+        // Get all sessions where this player participated
+        var sessions = await _sessionRepository.GetByPlayer(id);
 
-    public async Task<PlayerStatistics> GetStats(int id)
-    {
-        var stats = new PlayerStatistics
+        // Delete each session (this will cascade delete PlayerSessions and related data)
+        foreach (var session in sessions)
         {
-            PlayCount = await _playerRepository.GetTotalPlayCount(id),
-            WinCount = await _playerRepository.GetTotalWinCount(id),
-            TotalPlayedTime = await _playerRepository.GetPlayLengthInMinutes(id),
-            DistinctGameCount = await _playerRepository.GetDistinctGameCount(id)
-        };
-
-        var game = await _playerRepository.GetBestGame(id);
-        if (game != null)
-        {
-            var wins = await _playerRepository.GetWinCount(id, game.Id);
-            stats.MostWinsGame = new BestWinningGame
-            {
-                Id = game.Id,
-                Image = game.Image,
-                Title = game.Title,
-                Description = game.Description,
-                TotalWins = wins
-            };
+            await _sessionRepository.DeleteAsync(session.Id);
         }
 
-        return stats;
+        _imageService.DeleteImage(player.Image);
+        await _playerRepository.DeleteAsync(player.Id);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public Task<PlayerStatistics> GetStats(int id)
+    {
+        return _playerStatisticsDomainService.CalculateStatisticsAsync(id);
     }
     
     public Task<int> GetTotalPlayCount(int id)

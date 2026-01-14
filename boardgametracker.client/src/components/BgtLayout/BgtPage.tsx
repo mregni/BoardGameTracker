@@ -1,6 +1,6 @@
 import { Children, ReactElement } from 'react';
 
-import BgtPageHeader from './BgtPageHeader';
+import { BgtPageHeader } from './BgtPageHeader';
 import { BgtPageContent } from './BgtPageContent';
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
 }
 
 const checkComponentName = (
-  child: React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>,
+  child: ReactElement<unknown, string | React.JSXElementConstructor<unknown>>,
   elementName: string
 ): boolean => {
   return (child.type as (props: Props) => JSX.Element)?.name === elementName;
@@ -17,21 +17,23 @@ const checkComponentName = (
 export const BgtPage = (props: Props) => {
   const { children } = props;
 
-  let _content, _header;
+  let content: ReactElement | undefined;
+  let header: ReactElement | undefined;
+
   Children.forEach(children, (child) => {
     if (checkComponentName(child, BgtPageHeader.name)) {
-      return (_header = child);
-    }
-
-    if (checkComponentName(child, BgtPageContent.name)) {
-      return (_content = child);
+      header = child;
+    } else if (checkComponentName(child, BgtPageContent.name)) {
+      content = child;
     }
   });
 
   return (
-    <div className="w-full h-full flex flex-col p-3 gap-3">
-      {_header && <div>{_header}</div>}
-      <div className="md:pb-3 h-full">{_content}</div>
+    <div className="w-full h-full flex flex-col p-3 xl:px-6 gap-3">
+      {header}
+      <div className="min-h-full">
+        <div className="pb-3">{content}</div>
+      </div>
     </div>
   );
 };

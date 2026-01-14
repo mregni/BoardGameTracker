@@ -1,7 +1,7 @@
 import { MouseEventHandler } from 'react';
 
 export interface Actions {
-  variant?: 'solid' | 'outline' | undefined;
+  variant?: 'primary' | 'error' | 'cancel' | 'text';
   onClick: MouseEventHandler<HTMLButtonElement>;
-  content: string;
+  content: string | React.ReactNode;
 }

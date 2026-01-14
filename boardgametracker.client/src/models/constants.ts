@@ -16,4 +16,6 @@ export const QUERY_KEYS = {
   charts: 'charts',
   languages: 'languages',
   environment: 'environment',
+  shortlist: 'shortlist',
+  badges: 'badges',
 };

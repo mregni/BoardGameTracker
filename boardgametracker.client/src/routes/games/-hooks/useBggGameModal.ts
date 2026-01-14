@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { getSettings } from '@/services/queries/settings';
@@ -16,7 +15,7 @@ export const useBggGameModal = ({ onSuccess }: Props) => {
     queries: [getSettings()],
   });
 
-  const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
+  const settings = settingsQuery.data;
 
   const addGameMutation = useMutation({
     mutationFn: addGameWithBggCall,

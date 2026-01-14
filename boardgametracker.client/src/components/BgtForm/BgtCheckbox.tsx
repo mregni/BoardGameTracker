@@ -1,24 +1,33 @@
+import { memo, useCallback } from 'react';
+import { AnyFieldApi } from '@tanstack/react-form';
 import * as Checkbox from '@radix-ui/react-checkbox';
 
 import CheckIcon from '@/assets/icons/check.svg?react';
 
 interface Props {
+  field: AnyFieldApi;
   id: string;
   label: string;
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
 }
 
-export const BgtCheckbox = (props: Props) => {
-  const { id, label, checked, onCheckedChange, disabled = false } = props;
+const BgtCheckboxComponent = (props: Props) => {
+  const { id, label, field, disabled = false } = props;
+
+  const handleCheckedChange = useCallback(
+    (checked: boolean | 'indeterminate') => {
+      field.handleChange(checked);
+    },
+    [field]
+  );
+
   return (
     <div className="flex items-center space-x-2">
       <Checkbox.Root
-        className="flex h-4 w-4 appearance-none items-center justify-center rounded-sm border border-gray-300 bg-card-border data-[state=checked]:bg-primary data-[state=checked]:border-primary-dark focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-4 w-4 appearance-none items-center justify-center rounded-xs border border-gray-300 bg-card-border data-[state=checked]:bg-primary data-[state=checked]:border-primary/60 focus:outline-hidden focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
         id={id}
-        checked={checked}
-        onCheckedChange={onCheckedChange}
+        checked={field.state.value}
+        onCheckedChange={handleCheckedChange}
         disabled={disabled}
       >
         <Checkbox.Indicator className="text-white">
@@ -34,3 +43,7 @@ export const BgtCheckbox = (props: Props) => {
     </div>
   );
 };
+
+BgtCheckboxComponent.displayName = 'BgtCheckbox';
+
+export const BgtCheckbox = memo(BgtCheckboxComponent);

@@ -21,21 +21,41 @@ public class BadgeService : IBadgeService
 
     public async Task AwardBadgesAsync(Session session)
     {
+        var playerIds = session.PlayerSessions.Select(ps => ps.PlayerId).Distinct().ToList();
+
+        if (!playerIds.Any())
+        {
+            return;
+        }
+
+        var allBadges = await _badgeRepository.GetAllAsync();
+        var playerBadgesMapData = await _badgeRepository.GetPlayerBadgesBatchAsync(playerIds);
+        var playerSessionsMap
+            = await _sessionRepository.GetByPlayerBatchAsync(playerIds);
+
+        var playerBadgesMap = playerBadgesMapData
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(b => b.Id).ToHashSet());
+
         foreach (var player in session.PlayerSessions)
         {
-            var badges = await _badgeRepository.GetAllAsync();
-            var playerBadges = await _badgeRepository.GetPlayerBadgesAsync(player.PlayerId);
+            var earnedBadgeIds = playerBadgesMap[player.PlayerId];
 
-            var newBadges = badges
-                .Where(x => playerBadges.All(y => y.Id != x.Id))
+            var newBadges = allBadges
+                .Where(x => !earnedBadgeIds.Contains(x.Id))
                 .GroupBy(x => x.Type);
 
-            var sessions = await _sessionRepository.GetByPlayer(player.PlayerId);
+            var playerSessions = playerSessionsMap[player.PlayerId];
+
             foreach (var badgeGroup in newBadges)
             {
-                await ProcessBadgeGroup(badgeGroup, session, player, sessions);
+                await ProcessBadgeGroup(badgeGroup, session, player, playerSessions);
             }
         }
+    }
+
+    public Task<List<Badge>> GetAllBadgesAsync()
+    {
+        return _badgeRepository.GetAllAsync();
     }
 
     private async Task ProcessBadgeGroup(IGrouping<BadgeType, Badge> badgeGroup, Session session, PlayerSession player, List<Session> sessions)

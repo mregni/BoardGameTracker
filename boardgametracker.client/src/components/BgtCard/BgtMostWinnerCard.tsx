@@ -14,22 +14,24 @@ interface Props {
 export const BgtMostWinnerCard = (props: Props) => {
   const { image, name, value, nameHeader, valueHeader, onClick } = props;
 
-  if (name === undefined) return null;
+  if (!name) {
+    return null;
+  }
 
   return (
-    <div className="flex flex-row justify-between items-center bg-gradient-to-r from-[#9A02FB1A] to-[#09FFC41A] rounded-lg p-3">
+    <div className="flex flex-row justify-between items-center bg-linear-to-r from-[#9A02FB1A] to-[#09FFC41A] rounded-lg p-3">
       <div className="flex flex-row gap-2">
         <BgtAvatar image={image} title={name} color={StringToHsl(name)} size="large" onClick={onClick} />
         <div className="flex flex-col justify-center gap-0">
           <BgtText weight="medium" size="3" className="uppercase">
             {name}
           </BgtText>
-          <BgtText size="1" className="uppercase text-mint-green">
+          <BgtText size="1" className="uppercase text-card-value">
             {nameHeader}
           </BgtText>
         </div>
       </div>
-      <div className="flex flex-col gap2 items-end">
+      <div className="flex flex-col gap-2 items-end">
         <BgtText size="3" className="uppercase">
           {valueHeader}
         </BgtText>

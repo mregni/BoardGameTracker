@@ -1,7 +1,8 @@
 export interface Loan {
-  id: string;
-  gameId: string;
-  playerId: string;
+  id: number;
   loanDate: Date;
-  returnDate: Date | null;
+  dueDate: Date | null;
+  returnedDate: Date | null;
+  gameId: number;
+  playerId: number;
 }

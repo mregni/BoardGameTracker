@@ -20,7 +20,7 @@ export const GameStateChart = (props: Props) => {
       return charts?.gameState
         .map((rank) => ({
           id: rank.type,
-          label: rank.type,
+          label: String(rank.type),
           value: rank.gameCount,
         }))
         .reverse();

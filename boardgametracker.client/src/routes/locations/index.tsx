@@ -61,7 +61,7 @@ function RouteComponent() {
       {
         accessorKey: '2',
         cell: ({ row }) => <div className="flex justify-end">{row.original.playCount}</div>,
-        header: <div className="flex justify-end">{t('common.count')}</div>,
+        header: () => <div className="flex justify-end">{t('common.count')}</div>,
       },
       {
         accessorKey: '3',
@@ -77,7 +77,6 @@ function RouteComponent() {
               icon={<TrashIcon className="size-5" />}
               intent="danger"
               onClick={() => {
-                row.original.id;
                 setDeleteModalState({ open: true, location: row.original });
               }}
             />
@@ -93,7 +92,7 @@ function RouteComponent() {
     <BgtPage>
       <BgtPageHeader
         header={t('common.locations')}
-        actions={[{ onClick: () => setOpenNewModal(true), variant: 'solid', content: 'location.new.button' }]}
+        actions={[{ onClick: () => setOpenNewModal(true), variant: 'primary', content: 'location.new.button' }]}
       />
       <BgtPageContent>
         <BgtCard className="p-4">
@@ -109,7 +108,7 @@ function RouteComponent() {
           title={deleteModalState.location?.name ?? ''}
           open={deleteModalState.open}
           close={() => setDeleteModalState({ location: null, open: false })}
-          onDelete={() => deleteModalState.location && deleteLocation(deleteModalState.location?.id)}
+          onDelete={() => deleteModalState.location && deleteLocation(deleteModalState.location.id)}
           description={
             t('location.delete.description', { name: deleteModalState.location?.name ?? '' }) +
             ' ' +

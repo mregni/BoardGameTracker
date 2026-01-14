@@ -1,28 +1,32 @@
-import { useMemo } from 'react';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { getSettings } from '@/services/queries/settings';
-import { getGame, getGameStatistics } from '@/services/queries/games';
-import { deleteGameCall } from '@/services/gameService';
+import { getGame, getGameSessionsShortList, getGameStatistics } from '@/services/queries/games';
+import { deleteExpansionCall, deleteGameCall } from '@/services/gameService';
 import { QUERY_KEYS } from '@/models';
 
 interface UseGameDataProps {
-  gameId: string;
+  gameId: number;
   onDeleteError?: () => void;
   onDeleteSuccess?: () => void;
+  onDeleteExpansionSuccess?: () => void;
+  onDeleteExpansionError?: () => void;
 }
 
-export const useGameData = ({ gameId, onDeleteError, onDeleteSuccess }: UseGameDataProps) => {
+export const useGameData = (props: UseGameDataProps) => {
+  const { gameId, onDeleteError, onDeleteSuccess, onDeleteExpansionSuccess, onDeleteExpansionError } = props;
   const queryClient = useQueryClient();
 
-  const [gameQuery, settingsQuery, statisticsQuery] = useQueries({
-    queries: [getGame(gameId), getSettings(), getGameStatistics(gameId)],
+  const [gameQuery, settingsQuery, statisticsQuery, sessionsQuery] = useQueries({
+    queries: [getGame(gameId), getSettings(), getGameStatistics(gameId), getGameSessionsShortList(gameId, 5)],
   });
 
-  const game = useMemo(() => gameQuery.data, [gameQuery.data]);
-  const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
-  const statistics = useMemo(() => statisticsQuery.data, [statisticsQuery.data]);
-  const isLoading = gameQuery.isLoading || settingsQuery.isLoading;
+  const game = gameQuery.data;
+  const settings = settingsQuery.data;
+  const statistics = statisticsQuery.data;
+  const sessions = sessionsQuery.data;
+  const isLoading =
+    gameQuery.isLoading || settingsQuery.isLoading || sessionsQuery.isLoading || statisticsQuery.isLoading;
 
   const deleteGame = async () => {
     if (gameId !== undefined) {
@@ -37,11 +41,23 @@ export const useGameData = ({ gameId, onDeleteError, onDeleteSuccess }: UseGameD
     }
   };
 
+  const deleteExpansion = async (id: number, gameIdParam: number) => {
+    try {
+      await deleteExpansionCall(id, gameIdParam);
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameIdParam] });
+      onDeleteExpansionSuccess?.();
+    } catch {
+      onDeleteExpansionError?.();
+    }
+  };
+
   return {
     isLoading,
     game,
     deleteGame,
     settings,
     statistics,
+    sessions,
+    deleteExpansion,
   };
 };

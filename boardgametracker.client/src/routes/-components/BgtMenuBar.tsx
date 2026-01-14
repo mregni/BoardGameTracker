@@ -17,6 +17,8 @@ const MobileMenu = () => {
   const { environment, menuItems, counts } = useBgtMenuBar();
 
   useEffect(() => {
+    // Close menu when navigating to a new route
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(false);
   }, [location]);
 

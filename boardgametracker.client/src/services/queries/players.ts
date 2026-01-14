@@ -1,29 +1,20 @@
-import { queryOptions } from '@tanstack/react-query';
-
 import { getPlayerCall, getPlayersCall, getPlayerSessionsCall, getPlayerStatisticsCall } from '../playerService';
+
+import { createEntityQuery, createListQuery, createNestedQuery, createNestedQueryWithKeys } from './queryFactory';
 
 import { QUERY_KEYS } from '@/models';
 
-export const getPlayers = () =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.players],
-    queryFn: () => getPlayersCall(),
-  });
+export const getPlayers = createListQuery(QUERY_KEYS.players, getPlayersCall);
 
-export const getPlayer = (id: string) =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.player, id],
-    queryFn: () => getPlayerCall(id),
-  });
+export const getPlayer = createEntityQuery(QUERY_KEYS.player, getPlayerCall);
 
-export const getPlayerStatistics = (id: string) =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.player, id, QUERY_KEYS.statistics],
-    queryFn: () => getPlayerStatisticsCall(id),
-  });
+export const getPlayerStatistics = createNestedQuery(QUERY_KEYS.player, QUERY_KEYS.statistics, getPlayerStatisticsCall);
 
-export const getPlayerSessions = (id: string) =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.player, id, QUERY_KEYS.sessions],
-    queryFn: () => getPlayerSessionsCall(id),
-  });
+export const getPlayerSessions = createNestedQuery(QUERY_KEYS.player, QUERY_KEYS.sessions, getPlayerSessionsCall);
+
+export const getPlayerSessionsShortList = createNestedQueryWithKeys(
+  QUERY_KEYS.game,
+  QUERY_KEYS.sessions,
+  [QUERY_KEYS.shortlist],
+  getPlayerSessionsCall
+);

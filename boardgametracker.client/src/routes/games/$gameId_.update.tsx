@@ -6,11 +6,13 @@ import { useToasts } from '../-hooks/useToasts';
 import { useUpdateGame } from './-hooks/useUpdateGame';
 import { GameForm } from './-components/GameForm';
 
+import { gameIdParamSchema } from '@/utils/routeSchemas';
 import { getSettings } from '@/services/queries/settings';
 import { Game, CreateGame } from '@/models';
 
 export const Route = createFileRoute('/games/$gameId_/update')({
   component: RouteComponent,
+  params: gameIdParamSchema,
   loader: async ({ context: { queryClient } }) => {
     queryClient.prefetchQuery(getSettings());
   },
@@ -37,18 +39,12 @@ function RouteComponent() {
   if (game === undefined) return null;
 
   const save = async (data: CreateGame) => {
-    const updatedGame = {
+    const updatedGame: Game = {
+      ...game,
       ...data,
-      id: game.id,
-      baseGameId: game.baseGameId,
-      categories: game.categories,
-      expansions: game.expansions,
-      mechanics: game.mechanics,
-      people: game.people,
-      rating: game.rating,
-      weight: game.weight,
-      type: game.type,
-    } as Game;
+      image: data.image ?? game.image,
+      additionDate: data.additionDate ? data.additionDate.toISOString() : null,
+    };
     const result = await updateGame(updatedGame);
 
     navigate({ to: `/games/${result.id}` });

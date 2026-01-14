@@ -1,31 +1,41 @@
-import { DeepMap, FieldError, FieldValues, Path, UseFormRegister } from 'react-hook-form';
-import { ComponentPropsWithoutRef } from 'react';
+import { memo, useCallback } from 'react';
 import { cx } from 'class-variance-authority';
+import { AnyFieldApi } from '@tanstack/react-form';
 import { TextArea } from '@radix-ui/themes';
 
-export interface Props<T extends FieldValues> extends ComponentPropsWithoutRef<'div'> {
-  name: Path<T>;
-  register?: UseFormRegister<T>;
-  errors?: Partial<DeepMap<T, FieldError>>;
+import { FormFieldWrapper } from './FormFieldWrapper';
+
+export interface Props {
+  field: AnyFieldApi;
   disabled?: boolean;
   label: string;
+  className?: string;
 }
 
-export const BgtTextArea = <T extends FieldValues>(props: Props<T>) => {
-  const { name, register, disabled = false, className, label } = props;
+const BgtTextAreaComponent = (props: Props) => {
+  const { field, disabled = false, className, label } = props;
+
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+      field.handleChange(event.target.value);
+    },
+    [field]
+  );
+
   return (
-    <div className="flex flex-col">
-      <div className="flex items-baseline justify-between">
-        <div className="text-[15px] font-medium leading-[35px] uppercase">{label}</div>
-      </div>
-      <div className="bg-input rounded-lg p-2">
+    <FormFieldWrapper label={label} errors={field.state.meta.errors}>
+      <div className="'w-full bg-background font- text-whiterounded-lg border border-primary/30 focus:border-primary focus:outline-none'">
         <TextArea
-          className={cx(className, 'bg-transparent shadow-none focus-within:outline-none')}
+          className={cx(className, 'bg-transparent shadow-none focus-within:outline-hidden')}
           rows={4}
           disabled={disabled}
-          {...register?.(name)}
+          value={field.state.value ?? ''}
+          onChange={handleChange}
+          onBlur={field.handleBlur}
         />
       </div>
-    </div>
+    </FormFieldWrapper>
   );
 };
+
+export const BgtTextArea = memo(BgtTextAreaComponent);

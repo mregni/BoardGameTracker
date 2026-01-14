@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 
 import { getSettings } from '@/services/queries/settings';
@@ -11,10 +10,10 @@ export const useSessionForm = () => {
     queries: [getSettings(), getLocations(), getGames(), getPlayers()],
   });
 
-  const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
-  const locations = useMemo(() => locationQuery.data ?? [], [locationQuery.data]);
-  const games = useMemo(() => gamesQuery.data ?? [], [gamesQuery.data]);
-  const players = useMemo(() => playersQuery.data ?? [], [playersQuery.data]);
+  const settings = settingsQuery.data;
+  const locations = locationQuery.data ?? [];
+  const games = gamesQuery.data?.items ?? [];
+  const players = playersQuery.data ?? [];
 
   const isLoading = settingsQuery.isLoading || locationQuery.isLoading || gamesQuery.isLoading;
 

@@ -1,13 +1,16 @@
-import { Game } from '../Games/Game';
-
 export interface PlayerStatistics {
   playCount: number;
   winCount: number;
-  mostWinsGame: BestGame;
+  mostPlayedGames: MostPlayedGame[];
   totalPlayedTime: number;
   distinctGameCount: number;
 }
 
-export interface BestGame extends Game {
+export interface MostPlayedGame {
+  id: number;
+  image: string;
+  title: string;
   totalWins: number;
+  totalSessions: number;
+  winningPercentage: number;
 }

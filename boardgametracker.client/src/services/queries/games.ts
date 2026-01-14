@@ -9,37 +9,26 @@ import {
   getGameStatisticsCall,
 } from '../gameService';
 
+import { createEntityQuery, createListQuery, createNestedQuery, createNestedQueryWithKeys } from './queryFactory';
+
 import { QUERY_KEYS } from '@/models';
 
-export const getGames = () =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.games],
-    queryFn: getGamesCall,
-  });
+export const getGames = createListQuery(QUERY_KEYS.games, getGamesCall);
 
-export const getGame = (id: string) =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.game, id],
-    queryFn: () => getGameCall(id),
-  });
+export const getGame = createEntityQuery(QUERY_KEYS.game, getGameCall);
 
-export const getGameExpansions = (id: string) =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.game, id, QUERY_KEYS.expansions],
-    queryFn: () => getGameExpansionsCall(id),
-  });
+export const getGameExpansions = createNestedQuery(QUERY_KEYS.game, QUERY_KEYS.expansions, getGameExpansionsCall);
 
-export const getGameStatistics = (id: string) =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.game, id, QUERY_KEYS.statistics],
-    queryFn: () => getGameStatisticsCall(id),
-  });
+export const getGameStatistics = createNestedQuery(QUERY_KEYS.game, QUERY_KEYS.statistics, getGameStatisticsCall);
 
-export const getGameSessions = (id: string) =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.game, id, QUERY_KEYS.sessions],
-    queryFn: () => getGameSessionsCall(id),
-  });
+export const getGameSessions = createNestedQuery(QUERY_KEYS.game, QUERY_KEYS.sessions, getGameSessionsCall);
+
+export const getGameSessionsShortList = createNestedQueryWithKeys(
+  QUERY_KEYS.game,
+  QUERY_KEYS.sessions,
+  [QUERY_KEYS.shortlist],
+  getGameSessionsCall
+);
 
 export const getBggCollection = (username: string) =>
   queryOptions({

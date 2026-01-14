@@ -1,12 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { useState } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useCallback, useState } from 'react';
+import { useForm } from '@tanstack/react-form';
 
 import { usePlayerModal } from '../-hooks/usePlayerModal';
 
 import { useToasts } from '@/routes/-hooks/useToasts';
-import { CreatePlayerSchema, Player, UpdatePlayer } from '@/models';
+import { CreatePlayerSchema, Player } from '@/models';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtImageSelector } from '@/components/BgtForm/BgtImageSelector';
 import {
@@ -30,63 +29,90 @@ export const EditPlayerModal = (props: Props) => {
   const [image, setImage] = useState<File | undefined | null>(undefined);
   const { successToast, errorToast } = useToasts();
 
-  const onUpdateSuccess = () => {
+  const onUpdateSuccess = useCallback(() => {
     successToast('player.notifications.updated');
-  };
+  }, [successToast]);
 
-  const onUpdateError = () => {
+  const onUpdateError = useCallback(() => {
     errorToast('player.notifications.update-failed');
-  };
+  }, [errorToast]);
 
   const { updatePlayer, uploadImage, isLoading } = usePlayerModal({ onUpdateSuccess, onUpdateError });
 
-  const { handleSubmit, control } = useForm<UpdatePlayer>({
-    resolver: zodResolver(CreatePlayerSchema),
+  const handleClose = useCallback(() => {
+    setOpen(false);
+  }, [setOpen]);
+
+  const form = useForm({
     defaultValues: {
       name: player.name,
     },
+    onSubmit: async ({ value }) => {
+      const validatedData = CreatePlayerSchema.parse(value);
+
+      const updatedPlayer: Player = {
+        ...player,
+        name: validatedData.name,
+      };
+
+      if (image !== undefined && image !== null) {
+        const savedImage = await uploadImage({ type: 0, file: image });
+        updatedPlayer.image = savedImage ?? null;
+      } else if (image === null) {
+        updatedPlayer.image = null;
+      }
+
+      await updatePlayer(updatedPlayer);
+      setOpen(false);
+    },
   });
-
-  const onSubmit = async (data: UpdatePlayer) => {
-    player.name = data.name;
-
-    if (image !== undefined && image !== null) {
-      const savedImage = await uploadImage({ type: 0, file: image });
-      player.image = savedImage ?? null;
-    } else if (image === null) {
-      player.image = null;
-    }
-
-    await updatePlayer(player);
-    setOpen(false);
-  };
 
   return (
     <BgtDialog open={open}>
       <BgtDialogContent>
         <BgtDialogTitle>{t('player.update.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('player.update.description')}</BgtDialogDescription>
-        <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+        >
           <div className="flex flex-row gap-3 mt-3 mb-6">
             <div className="flex-none">
               <BgtImageSelector image={image} setImage={setImage} defaultImage={player.image} />
             </div>
-            <div className="flex-grow">
-              <BgtInputField
-                type="text"
-                placeholder={t('player.name.placeholder')}
+            <div className="grow">
+              <form.Field
                 name="name"
-                label={t('common.name')}
-                control={control}
-                disabled={isLoading}
-              />
+                validators={{
+                  onChange: ({ value }) => {
+                    const result = CreatePlayerSchema.shape.name.safeParse(value);
+                    if (!result.success) {
+                      return t(result.error.errors[0].message);
+                    }
+                    return undefined;
+                  },
+                }}
+              >
+                {(field) => (
+                  <BgtInputField
+                    field={field}
+                    type="text"
+                    placeholder={t('player.name.placeholder')}
+                    label={t('common.name')}
+                    disabled={isLoading}
+                  />
+                )}
+              </form.Field>
             </div>
           </div>
           <BgtDialogClose>
-            <BgtButton variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
+            <BgtButton variant="cancel" onClick={handleClose} disabled={isLoading}>
               {t('common.cancel')}
             </BgtButton>
-            <BgtButton type="submit" variant="soft" disabled={isLoading}>
+            <BgtButton type="submit" variant="primary" disabled={isLoading}>
               {t('player.update.save')}
             </BgtButton>
           </BgtDialogClose>

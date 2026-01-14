@@ -1,4 +1,4 @@
-import { ChangeEventHandler } from 'react';
+import { ChangeEventHandler, ReactNode } from 'react';
 import { format } from 'date-fns';
 import { cx } from 'class-variance-authority';
 
@@ -21,9 +21,10 @@ export interface Props {
   placeholder?: string;
   label?: string;
   value: string | number | Date | undefined;
-  prefixLabel?: string;
-  suffixLabel?: string;
+  prefixLabel?: string | ReactNode;
+  suffixLabel?: string | ReactNode;
   className?: string;
+  inputClassName?: string;
   disabled?: boolean;
   onChange: ChangeEventHandler<HTMLInputElement> | undefined;
 }
@@ -37,6 +38,7 @@ export const BgtSimpleInputField = (props: Props) => {
     prefixLabel = undefined,
     suffixLabel = undefined,
     className = '',
+    inputClassName = '',
     disabled = false,
     onChange,
   } = props;
@@ -48,21 +50,21 @@ export const BgtSimpleInputField = (props: Props) => {
       </div>
       <div
         className={cx(
-          'rounded-lg bg-input active:border-none px-4 flex flex-row gap-2 items-center text-[12px]',
+          'rounded-lg bg-input px-4 flex flex-row gap-2 items-center text-[18px]',
           className,
           disabled && 'text-gray-500'
         )}
       >
-        {prefixLabel && <BgtText>{prefixLabel}</BgtText>}
+        {prefixLabel && (typeof prefixLabel === 'string' ? <BgtText>{prefixLabel}</BgtText> : prefixLabel)}
         <input
-          className="h-[45px] bg-transparent shadow-none focus:outline-none hide-arrow w-full"
+          className={cx(inputClassName, 'h-[45px] bg-transparent shadow-none focus:outline-hidden hide-arrow w-full')}
           value={formatInput(value)}
           disabled={disabled}
           type={type}
           onChange={onChange}
           placeholder={placeholder.toUpperCase()}
         />
-        {suffixLabel && <BgtText>{suffixLabel}</BgtText>}
+        {suffixLabel && (typeof suffixLabel === 'string' ? <BgtText>{suffixLabel}</BgtText> : suffixLabel)}
       </div>
     </div>
   );

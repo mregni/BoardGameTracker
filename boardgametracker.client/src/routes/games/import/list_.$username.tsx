@@ -20,7 +20,7 @@ import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtSimpleSwitch } from '@/components/BgtForm/BgtSimpleSwitch';
 import { BgtSimpleSelect } from '@/components/BgtForm/BgtSimpleSelect';
 import { BgtSimpleInputField } from '@/components/BgtForm/BgtSimpleInputField';
-import { BgtCheckbox } from '@/components/BgtForm/BgtCheckbox';
+import { BgtSimpleCheckbox } from '@/components/BgtForm/BgtSimpleCheckbox';
 import BgtButton from '@/components/BgtButton/BgtButton';
 import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
 import LinkIcon from '@/assets/icons/arrow-square-out.svg?react';
@@ -78,7 +78,7 @@ function RouteComponent() {
       {
         accessorKey: '0',
         cell: ({ row }) => (
-          <BgtCheckbox
+          <BgtSimpleCheckbox
             id={''}
             disabled={row.original.inCollection}
             label={''}
@@ -151,7 +151,7 @@ function RouteComponent() {
             disabled={row.original.inCollection}
             items={Object.keys(GameState)
               .filter((value) => !isNaN(Number(value)))
-              .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value }))}
+              .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: Number(value) }))}
           />
         ),
         header: t('common.state'),
@@ -210,7 +210,7 @@ function RouteComponent() {
               />
             </div>
             <div>
-              <BgtButton onClick={() => triggerImport()} disabled={checkedCount > maxImport}>
+              <BgtButton onClick={() => triggerImport()} disabled={checkedCount > maxImport} variant="primary">
                 {t('games.import.start-import', { count: checkedCount, totalCount: maxImport })}
               </BgtButton>
             </div>

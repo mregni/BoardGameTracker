@@ -6,18 +6,16 @@ namespace BoardGameTracker.Core.Datastore;
 
 public abstract class CrudHelper<T>: ICrudHelper<T> where T : HasId
 {
-    private readonly MainDbContext _context;
     private readonly DbSet<T> _dbSet;
 
     protected CrudHelper(MainDbContext context)
     {
-        _context = context;
         _dbSet = context.Set<T>();
     }
     
     public virtual Task<T?> GetByIdAsync(int id)
     {
-        return _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+        return _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public virtual Task<List<T>> GetAllAsync()
@@ -28,24 +26,18 @@ public abstract class CrudHelper<T>: ICrudHelper<T> where T : HasId
     public virtual async Task<T> CreateAsync(T entity)
     {
         await _dbSet.AddAsync(entity);
-        await _context.SaveChangesAsync();
-
         return entity;
     }
 
     public async Task CreateRangeAsync(List<T> obj)
     {
         await _dbSet.AddRangeAsync(obj);
-        await _context.SaveChangesAsync();
     }
 
-    public virtual async Task<T> UpdateAsync(T entity)
+    public virtual Task<T> UpdateAsync(T entity)
     {
-        _dbSet.Attach(entity);
-        _context.Entry(entity).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-
-        return entity;
+        _dbSet.Update(entity);
+        return Task.FromResult(entity);
     }
 
     public virtual async Task<bool> DeleteAsync(int id)
@@ -57,7 +49,6 @@ public abstract class CrudHelper<T>: ICrudHelper<T> where T : HasId
         }
 
         _dbSet.Remove(entity);
-        await _context.SaveChangesAsync();
         return true;
     }
 }

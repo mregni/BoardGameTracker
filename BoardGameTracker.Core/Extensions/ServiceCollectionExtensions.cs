@@ -1,17 +1,24 @@
 ﻿using BoardGameTracker.Common.Exeptions;
 using BoardGameTracker.Core.Badges;
 using BoardGameTracker.Core.Badges.BadgeEvaluators;
+using BoardGameTracker.Core.Badges.DomainServices;
 using BoardGameTracker.Core.Badges.Interfaces;
+using BoardGameTracker.Core.Badges.Policies;
+using BoardGameTracker.Core.Bgg.AntiCorruption;
 using BoardGameTracker.Core.Compares;
+using BoardGameTracker.Core.Compares.DomainServices;
 using BoardGameTracker.Core.Compares.Interfaces;
 using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Dashboard;
 using BoardGameTracker.Core.Dashboard.Interfaces;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Disk;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Games;
+using BoardGameTracker.Core.Games.DomainServices;
+using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images;
 using BoardGameTracker.Core.Images.Interfaces;
@@ -22,9 +29,14 @@ using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players;
+using BoardGameTracker.Core.Players.DomainServices;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions;
+using BoardGameTracker.Core.Sessions.DomainServices;
 using BoardGameTracker.Core.Sessions.Interfaces;
+using BoardGameTracker.Core.Common;
+using BoardGameTracker.Core.Updates;
+using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -35,7 +47,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddCoreService(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddTransient<IDiskProvider, DiskProvider>();
-        
+
+        serviceCollection.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         serviceCollection.AddScoped<IConfigFileProvider, ConfigFileProvider>();
         serviceCollection.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
         
@@ -49,8 +62,11 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<ILanguageService, LanguageService>();
         serviceCollection.AddScoped<IBadgeService, BadgeService>();
         serviceCollection.AddScoped<ICompareService, CompareService>();
-        
+        serviceCollection.AddScoped<IUpdateService, UpdateService>();
+
         serviceCollection.AddScoped<IGameRepository, GameRepository>();
+        serviceCollection.AddScoped<IGameSessionRepository, GameSessionRepository>();
+        serviceCollection.AddScoped<IGameStatisticsRepository, GameStatisticsRepository>();
         serviceCollection.AddScoped<IPlayerRepository, PlayerRepository>();
         serviceCollection.AddScoped<ISessionRepository, SessionRepository>();
         serviceCollection.AddScoped<ILocationRepository, LocationRepository>();
@@ -59,7 +75,22 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<ILanguageRepository, LanguageRepository>();
         serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
         serviceCollection.AddScoped<ICompareRepository, CompareRepository>();
-        
+        serviceCollection.AddScoped<IUpdateRepository, UpdateRepository>();
+
+        serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        serviceCollection.AddScoped<IGameStatisticsDomainService, GameStatisticsDomainService>();
+        serviceCollection.AddScoped<IPlayerStatisticsDomainService, PlayerStatisticsDomainService>();
+        serviceCollection.AddScoped<IPlayerComparisonDomainService, PlayerComparisonDomainService>();
+        serviceCollection.AddScoped<IBadgeProgressionDomainService, BadgeProgressionDomainService>();
+        serviceCollection.AddScoped<IFirstPlayDetectionService, FirstPlayDetectionService>();
+
+        serviceCollection.AddScoped<IBggGameTranslator, BggGameTranslator>();
+
+        serviceCollection.AddScoped<IGameFactory, GameFactory>();
+
+        serviceCollection.AddScoped<IBadgeLevelProgressionPolicy, BadgeLevelProgressionPolicy>();
+
         serviceCollection.AddScoped<IBadgeEvaluator, SessionsBadgeEvaluator>();
         serviceCollection.AddScoped<IBadgeEvaluator, DifferentGameBadgeEvaluator>();
         serviceCollection.AddScoped<IBadgeEvaluator, SessionWinEvaluator>();

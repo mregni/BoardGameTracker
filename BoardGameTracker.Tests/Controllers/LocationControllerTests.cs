@@ -158,7 +158,7 @@ public class LocationControllerTests
         var location = new Location { Id = 1, Name = "Updated Location" };
 
         _mapperMock.Setup(x => x.Map<Location>(viewModel)).Returns(location);
-        _locationServiceMock.Setup(x => x.Update(location)).Returns(Task.CompletedTask);
+        _locationServiceMock.Setup(x => x.Update(location));
 
         var result = await _controller.UpdateLocation(viewModel);
 

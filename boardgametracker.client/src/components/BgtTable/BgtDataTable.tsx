@@ -25,6 +25,9 @@ export interface DataTableProps<T> {
 export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
   const { columns, data, size = 'md', noDataMessage, isLoading = false, widths, noHeaders } = props;
   const { t } = useTranslation();
+  // TanStack Table's useReactTable returns functions that cannot be memoized safely
+  // This is expected and documented behavior
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,

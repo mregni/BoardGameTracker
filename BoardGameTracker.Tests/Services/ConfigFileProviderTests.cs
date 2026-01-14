@@ -369,7 +369,7 @@ public class ConfigFileProviderTests
             _diskProviderMock.Setup(x => x.ReadAllText(_testConfigFile)).Returns(configXml);
 
             var tasks = new List<Task>();
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 tasks.Add(Task.Run(() =>
                 {

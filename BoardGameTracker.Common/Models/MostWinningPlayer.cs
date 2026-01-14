@@ -1,8 +1,9 @@
-﻿using BoardGameTracker.Common.Entities;
+﻿namespace BoardGameTracker.Common.Models;
 
-namespace BoardGameTracker.Common.Models;
-
-public class MostWinningPlayer : Player
+public class MostWinningPlayer
 {
+    public int Id { get; set; }
+    public string Image { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     public int TotalWins { get; set; }
 }

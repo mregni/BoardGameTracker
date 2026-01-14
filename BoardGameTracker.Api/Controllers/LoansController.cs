@@ -1,6 +1,6 @@
-﻿using AutoMapper;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.ViewModels;
 using BoardGameTracker.Core.Loans.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +10,10 @@ namespace BoardGameTracker.Api.Controllers;
 [Route("api/loans")]
 public class LoansController : ControllerBase
 {
-    private readonly IMapper _mapper;
     private readonly ILoanService _loanService;
 
-    public LoansController(IMapper mapper, ILoanService loanService)
+    public LoansController(ILoanService loanService)
     {
-        _mapper = mapper;
         _loanService = loanService;
     }
 
@@ -23,50 +21,60 @@ public class LoansController : ControllerBase
     public async Task<IActionResult> GetLoans()
     {
         var loans = await _loanService.GetLoans();
-        return Ok(loans);
+        var boe = loans.ToListDto();
+        return Ok(boe);
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetLoanById(int id)
-    {
-        var loan = await _loanService.GetLoanById(id);
-        if (loan == null)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetLoanById(int id)
         {
-            return NotFound();
+            var loan = await _loanService.GetLoanById(id);
+            if (loan == null)
+            {
+                return NotFound();
+            }
+            return Ok(loan.ToDto());
         }
-        return Ok(loan);
-    }
 
     [HttpPost]
-    public async Task<IActionResult> CreateLoan([FromBody] CreateLoanViewModel? createLoan)
+    public async Task<IActionResult> CreateLoan([FromBody] CreateLoanCommand? command)
     {
-        if (createLoan == null)
+        if (command == null)
         {
             return BadRequest();
         }
 
-        var loan = _mapper.Map<Loan>(createLoan);
-        var createdLoan = await _loanService.Create(loan);
-        return CreatedAtAction(nameof(GetLoanById), new { id = createdLoan.Id }, createdLoan);
+        var createdLoan = await _loanService.LoanGameToPlayer(command);
+        return CreatedAtAction(nameof(GetLoanById), new { id = createdLoan.Id }, createdLoan.ToDto());
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateLoan([FromBody] LoanViewModel? updateLoan)
+    public async Task<IActionResult> UpdateLoan([FromBody] UpdateLoanCommand? command)
     {
-        if (updateLoan == null)
+        if (command == null)
         {
             return BadRequest();
         }
 
-        var existingLoan = await _loanService.GetLoanById(updateLoan.Id);
-        if (existingLoan == null)
+        var updatedLoan = await _loanService.Update(command);
+        return Ok(updatedLoan.ToDto());
+    }
+    
+    [HttpPut("return")]
+    public async Task<IActionResult> ReturnLoan([FromBody] ReturnLoanCommand? command)
+    {
+        if (command == null)
+        {
+            return BadRequest();
+        }
+
+        var updatedLoan = await _loanService.ReturnLoan(command);
+        if (updatedLoan == null)
         {
             return NotFound();
         }
-
-        var loan = _mapper.Map<Loan>(updateLoan);
-        var updatedLoan = await _loanService.Update(loan);
-        return Ok(updatedLoan);
+        
+        return Ok(updatedLoan.ToDto());
     }
 
     [HttpDelete("{id}")]

@@ -31,6 +31,7 @@ export interface TopPlayer {
   wins: number;
   winPercentage: number;
   trend: Trend;
+  averageScore: number | null;
 }
 
 export interface PlayByDayChartData {
@@ -44,7 +45,7 @@ export interface PlayerCountChartData {
 }
 
 export interface PlayerScoringChartData {
-  dateTime: Date | string;
+  dateTime: Date;
   series: XValue[];
 }
 

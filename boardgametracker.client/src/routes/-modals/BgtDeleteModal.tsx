@@ -27,10 +27,10 @@ export const BgtDeleteModal = (props: Props) => {
         <BgtDialogTitle>{t('common.delete.title', { title: title })}</BgtDialogTitle>
         <BgtDialogDescription>{description}</BgtDialogDescription>
         <BgtDialogClose>
-          <BgtButton variant="soft" color="cancel" onClick={() => close()}>
+          <BgtButton variant="cancel" onClick={() => close()}>
             {t('common.cancel')}
           </BgtButton>
-          <BgtButton color="error" onClick={onDelete}>
+          <BgtButton variant="error" onClick={onDelete}>
             {t('common.delete.button')}
           </BgtButton>
         </BgtDialogClose>

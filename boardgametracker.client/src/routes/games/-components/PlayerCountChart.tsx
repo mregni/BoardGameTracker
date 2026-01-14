@@ -16,7 +16,7 @@ export const PlayerCountChart = ({ data }: Props) => {
     return data
       .map((rank) => ({
         id: rank.players,
-        label: rank.players,
+        label: String(rank.players),
         value: rank.playCount,
       }))
       .reverse();

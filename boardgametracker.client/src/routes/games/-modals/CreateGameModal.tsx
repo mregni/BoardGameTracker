@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 
 import {
@@ -23,6 +24,14 @@ const CreateGameModal = (props: Props) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  const handleClose = useCallback(() => {
+    setOpen(false);
+  }, [setOpen]);
+
+  const handleBggImport = useCallback(() => {
+    navigate({ to: '/games/import/start' });
+  }, [navigate]);
+
   return (
     <BgtDialog open={open}>
       <BgtDialogContent>
@@ -38,11 +47,11 @@ const CreateGameModal = (props: Props) => {
           <BgtBigButton
             title={t('game.new.bgg-import-title')}
             subText={t('game.new.bgg-import-subtext')}
-            onClick={() => navigate({ to: '/games/import/start' })}
+            onClick={handleBggImport}
           />
         </div>
         <BgtDialogClose>
-          <BgtButton variant="soft" color="cancel" className="flex-1" onClick={() => setOpen(false)}>
+          <BgtButton variant="cancel" className="flex-1" onClick={handleClose}>
             {t('common.cancel')}
           </BgtButton>
         </BgtDialogClose>

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exeptions;
 using BoardGameTracker.Common.Extensions;
@@ -7,6 +8,8 @@ using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Commands;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Core.DockerHub;
+using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Extensions;
 using MediatR;
@@ -15,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Http;
 using Microsoft.Net.Http.Headers;
+using Microsoft.OpenApi.Models;
 using Refit;
 using Serilog;
 
@@ -35,11 +39,14 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCoreService();
+builder.Services.AddHostedService<UpdateCheckBackgroundService>();
 
 builder.WebHost.UseConfiguredSentry();
 builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 
 builder.Host.UseSerilog();
+
+builder.Services.AddHealthChecks();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -85,8 +92,15 @@ builder.Services
     .AddControllersAsServices();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddAutoMapper(typeof(MapProfiles));
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "BoardGameTracker API",
+        Version = "v1",
+        Description = "BoardGameTracker API for managing board game collections and play sessions"
+    });
+});
 
 var refitSettings = new RefitSettings
 {
@@ -96,6 +110,12 @@ builder.Services.AddRefitClient<IBggApi>(refitSettings)
     .ConfigureHttpClient(options =>
     {
         options.BaseAddress = new Uri("https://boardgamegeek.com/xmlapi2");
+    });
+
+builder.Services.AddRefitClient<IDockerHubApi>()
+    .ConfigureHttpClient(options =>
+    {
+        options.BaseAddress = new Uri("https://hub.docker.com");
     });
 
 builder.Services.AddSpaStaticFiles(configuration => {
@@ -146,7 +166,6 @@ logger.LogInformation("HTTP ports: {HttpPorts}", Environment.GetEnvironmentVaria
 logger.LogInformation("HTTPS ports: {HttpsPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORTS"));
 logger.LogInformation("Is Development: {IsDevelopment}", app.Environment.IsDevelopment());
 
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -172,6 +191,8 @@ if (!app.Environment.IsDevelopment())
 
 SendStartApplicationCommand(app.Services);
 RunDbMigrations(app.Services);
+
+app.MapHealthChecks("/api/health");
 
 await app.RunAsync();
 
@@ -217,9 +238,13 @@ static void SendStartApplicationCommand(IServiceProvider serviceProvider)
 static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)
 {
     serializerSettings.AllowTrailingCommas = true;
-    serializerSettings.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    serializerSettings.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
     serializerSettings.PropertyNameCaseInsensitive = true;
     serializerSettings.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     serializerSettings.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     serializerSettings.WriteIndented = true;
+
+    // Ensure all DateTime values are handled as UTC
+    serializerSettings.Converters.Add(new UtcDateTimeConverter());
+    serializerSettings.Converters.Add(new UtcNullableDateTimeConverter());
 }

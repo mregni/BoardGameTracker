@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from '@tanstack/react-form';
 
 import { useLocationModal } from '../-hooks/useLocationModal';
 
 import { useToasts } from '@/routes/-hooks/useToasts';
-import { CreateLocation, CreateLocationSchema, Location } from '@/models';
+import { CreateLocationSchema, Location } from '@/models';
 import { BgtInputField } from '@/components/BgtForm/BgtInputField';
 import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
@@ -30,39 +29,62 @@ export const EditLocationModal = (props: Props) => {
   };
   const { updateLocation, isLoading } = useLocationModal({ onUpdateSuccess, onUpdateError });
 
-  const { handleSubmit, control } = useForm<CreateLocation>({
-    resolver: zodResolver(CreateLocationSchema),
+  const form = useForm({
     defaultValues: {
       name: location.name,
+    },
+    onSubmit: async ({ value }) => {
+      const validatedData = CreateLocationSchema.parse(value);
+      const updatedLocation: Location = {
+        ...location,
+        name: validatedData.name,
+      };
+      await updateLocation(updatedLocation);
     },
   });
 
   if (location === null) return null;
 
-  const onSubmit = async (data: CreateLocation) => {
-    location.name = data.name;
-    await updateLocation(location);
-  };
-
   return (
     <BgtDialog open={open}>
       <BgtDialogContent>
-        <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} className="w-full">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="w-full"
+        >
           <BgtDialogTitle>{t('location.edit.title')}</BgtDialogTitle>
           <div className="flex flex-col gap-2 mb-3">
-            <BgtInputField
-              type="text"
-              control={control}
+            <form.Field
               name="name"
-              label={t('location.new.name.placeholder')}
-              disabled={isLoading}
-            />
+              validators={{
+                onChange: ({ value }) => {
+                  const result = CreateLocationSchema.shape.name.safeParse(value);
+                  if (!result.success) {
+                    return t(result.error.errors[0].message);
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <BgtInputField
+                  field={field}
+                  type="text"
+                  label={t('location.new.name.placeholder')}
+                  disabled={isLoading}
+                />
+              )}
+            </form.Field>
           </div>
           <BgtDialogClose>
-            <BgtButton variant="soft" color="cancel" onClick={() => close()} disabled={isLoading}>
+            <BgtButton variant="cancel" onClick={() => close()} disabled={isLoading}>
               {t('common.cancel')}
             </BgtButton>
-            <BgtButton color="primary" type="submit" disabled={isLoading}>
+            <BgtButton variant="primary" type="submit" disabled={isLoading}>
               {t('common.save')}
             </BgtButton>
           </BgtDialogClose>

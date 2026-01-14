@@ -18,8 +18,8 @@ export const BgtMenuItem = (props: Props) => {
   return (
     <Link
       to={item.path}
-      activeProps={{ className: 'bg-primary-dark border border-primary' }}
-      className="flex w-full p-2 text-white cursor-pointer border border-transparent items-center my-1 hover:bg-primary-dark md:rounded-lg font-semibold justify-between px-2"
+      activeProps={{ className: 'bg-primary/60 border border-primary' }}
+      className="flex w-full p-2 text-white cursor-pointer border border-transparent items-center my-1 hover:bg-primary/60 md:rounded-lg font-semibold justify-between px-2"
     >
       <div className="flex items-center gap-2">
         <Icon className="size-5" />
@@ -27,7 +27,9 @@ export const BgtMenuItem = (props: Props) => {
           {t(item.menuLabel)}
         </Text>
       </div>
-      {count !== undefined && <div className="py-1 px-3 flex items-center justify-center text-xs">{count}</div>}
+      {count !== undefined && count > 0 && (
+        <div className="py-1 px-3 flex items-center justify-center text-xs">{count}</div>
+      )}
     </Link>
   );
 };

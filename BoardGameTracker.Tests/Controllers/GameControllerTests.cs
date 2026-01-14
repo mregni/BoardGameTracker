@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
@@ -354,7 +355,7 @@ public class GameControllerTests
         _gameServiceMock.Setup(x => x.GetPlayerScoringChart(gameId)).ReturnsAsync([]);
         _gameServiceMock.Setup(x => x.GetScoringRankedChart(gameId)).ReturnsAsync([]);
         _mapperMock.Setup(x => x.Map<GameStatsViewModel>(It.IsAny<GameStatistics>())).Returns(new GameStatsViewModel());
-        _mapperMock.Setup(x => x.Map<IList<TopPlayerViewModel>>(It.IsAny<IEnumerable<TopPlayer>>())).Returns([]);
+        _mapperMock.Setup(x => x.Map<IList<TopPlayerViewModel>>(It.IsAny<IEnumerable<TopPlayerDto>>())).Returns([]);
         _mapperMock.Setup(x => x.Map<IList<PlayByDayChartViewModel>>(data)).Returns(dataViewModel);
         _mapperMock.Setup(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>())).Returns([]);
         _mapperMock.Setup(x => x.Map<IList<PlayerScoringChartViewModel>>(It.IsAny<IDictionary<DateTime, XValue[]>>())).Returns([]);
@@ -380,7 +381,7 @@ public class GameControllerTests
 
         _mapperMock.Verify(x => x.Map<GameStatsViewModel>(It.IsAny<GameStatistics>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(data), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(It.IsAny<IEnumerable<TopPlayer>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(It.IsAny<IEnumerable<TopPlayerDto>>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()),
             Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(It.IsAny<IDictionary<DateTime, XValue[]>>()), Times.Once);
@@ -414,7 +415,7 @@ public class GameControllerTests
         _gameServiceMock.Setup(x => x.GetPlayerScoringChart(gameId)).ReturnsAsync(data);
         _gameServiceMock.Setup(x => x.GetScoringRankedChart(gameId)).ReturnsAsync([]);
         _mapperMock.Setup(x => x.Map<GameStatsViewModel>(It.IsAny<GameStatistics>())).Returns(new GameStatsViewModel());
-        _mapperMock.Setup(x => x.Map<IList<TopPlayerViewModel>>(It.IsAny<IEnumerable<TopPlayer>>())).Returns([]);
+        _mapperMock.Setup(x => x.Map<IList<TopPlayerViewModel>>(It.IsAny<IEnumerable<TopPlayerDto>>())).Returns([]);
         _mapperMock.Setup(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>())).Returns([]);
         _mapperMock.Setup(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>())).Returns([]);
         _mapperMock.Setup(x => x.Map<IList<PlayerScoringChartViewModel>>(data)).Returns(dataViewModel);
@@ -440,7 +441,7 @@ public class GameControllerTests
 
         _mapperMock.Verify(x => x.Map<GameStatsViewModel>(It.IsAny<GameStatistics>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayByDayChartViewModel>>(It.IsAny<IEnumerable<PlayByDay>>()), Times.Once);
-        _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(It.IsAny<IEnumerable<TopPlayer>>()), Times.Once);
+        _mapperMock.Verify(x => x.Map<IList<TopPlayerViewModel>>(It.IsAny<IEnumerable<TopPlayerDto>>()), Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerCountChartViewModel>>(It.IsAny<IEnumerable<PlayerCount>>()),
             Times.Once);
         _mapperMock.Verify(x => x.Map<IList<PlayerScoringChartViewModel>>(data), Times.Once);

@@ -1,9 +1,9 @@
-﻿using BoardGameTracker.Common.Models.Dashboard;
+﻿using BoardGameTracker.Common.DTOs;
 
 namespace BoardGameTracker.Core.Dashboard.Interfaces;
 
 public interface IDashboardService
 {
-    Task<DashboardStatistics> GetStatistics();
-    Task<DashboardCharts> GetCharts();
+    Task<DashboardStatisticsDto> GetStatistics();
+    Task<DashboardChartsDto> GetCharts();
 }

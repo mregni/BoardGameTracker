@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { getLocations } from '@/services/queries/locations';
@@ -17,9 +16,9 @@ export const useLocationsData = ({ onDeleteSuccess, onDeleteError }: Props) => {
     queries: [getLocations()],
   });
 
-  const locations = useMemo(() => locationsQuery.data ?? [], [locationsQuery.data]);
+  const locations = locationsQuery.data ?? [];
 
-  const deleteLocation = async (id: string) => {
+  const deleteLocation = async (id: number) => {
     try {
       await deleteLocationCall(id);
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });

@@ -1,7 +1,8 @@
-import { useMeasure } from 'react-use';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { ResponsiveBar } from '@nivo/bar';
+
+import { useElementSize } from '../../-hooks/useElementSize';
 
 import { RoundDecimal } from '@/utils/numberUtils';
 import { usePlayerById } from '@/routes/-hooks/usePlayerById';
@@ -41,7 +42,7 @@ interface Props {
 export const ScoringRankChart = ({ hasScoring, data }: Props) => {
   const { playerById } = usePlayerById();
   const { t } = useTranslation();
-  const [divRef, { width }] = useMeasure();
+  const [divRef, { width }] = useElementSize();
 
   const barData = useMemo(() => {
     return data
@@ -64,7 +65,7 @@ export const ScoringRankChart = ({ hasScoring, data }: Props) => {
 
   return (
     <>
-      <div className="col-span-1" ref={divRef as React.Ref<HTMLDivElement>}>
+      <div className="col-span-1" ref={divRef}>
         <BgtChartCard title={t('game.charts.top-scoring.title')} className="h-96">
           <ResponsiveBar
             data={barData}

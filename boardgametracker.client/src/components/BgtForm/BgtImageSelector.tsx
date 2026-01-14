@@ -1,5 +1,5 @@
+import { useTranslation } from 'react-i18next';
 import { ChangeEvent, Dispatch, DragEvent, SetStateAction, useState } from 'react';
-import { t } from 'i18next';
 import { cx } from 'class-variance-authority';
 
 import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
@@ -12,36 +12,56 @@ interface Props {
   defaultImage?: string | null;
 }
 
+interface ImagePreviewProps {
+  src: string;
+  onRemove: () => void;
+}
+
+const ImagePreview = (props: ImagePreviewProps) => {
+  const { src, onRemove } = props;
+
+  return (
+    <div className="group relative">
+      <img alt="preview image" src={src} className="w-28 h-28 rounded-lg" />
+      <div className="absolute top-0 left-0 w-full h-full collapse group-hover:visible">
+        <div className="flex justify-center items-center w-full h-full">
+          <BgtIconButton
+            size="big"
+            className="rounded-full! border-solid border bg-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.6)]"
+            icon={<TrashIcon className="size-5" color="white" />}
+            onClick={onRemove}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const BgtImageSelector = (props: Props) => {
   const { image, setImage, defaultImage } = props;
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
-  const [hasDefaultImage, setHasDefaultImage] = useState<boolean>(!!defaultImage);
+  const [hasDefaultImage, setHasDefaultImage] = useState(!!defaultImage);
 
   const onImageChangeViaInput = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.[0]) {
       setImage(event.target.files[0]);
     }
-
-    return false;
   };
 
   const onImageChangeViaDrop = (event: DragEvent<HTMLLabelElement>) => {
-    setIsDragging(false);
     event.stopPropagation();
     event.preventDefault();
+    setIsDragging(false);
 
     if (event.dataTransfer.files?.[0]) {
       setImage(event.dataTransfer.files[0]);
     }
-
-    return false;
   };
 
   const onDragOver = (event: DragEvent<HTMLLabelElement>) => {
     event.stopPropagation();
     event.preventDefault();
-
-    return false;
   };
 
   const onDragEnter = (event: DragEvent<HTMLLabelElement>) => {
@@ -56,49 +76,27 @@ export const BgtImageSelector = (props: Props) => {
     setIsDragging(false);
   };
 
+  const handleRemoveDefaultImage = () => {
+    setImage(null);
+    setHasDefaultImage(false);
+  };
+
+  const handleRemoveNewImage = () => {
+    setImage(undefined);
+    setHasDefaultImage(false);
+  };
+
   return (
     <div className="flex justify-start w-full flex-col">
       <div className="flex flex-row justify-start gap-3">
         {hasDefaultImage && !image && defaultImage && (
-          <div className="group relative">
-            <img alt="preview image" src={defaultImage} className="w-28 h-28 rounded-lg" />
-            <div className=" absolute top-0 left-0 w-full h-full collapse group-hover:visible">
-              <div className="flex justify-center items-center w-full h-full">
-                <BgtIconButton
-                  size="big"
-                  className="!rounded-full border-solid border hover:bg-[rgba(240,240,240,0.3)]"
-                  icon={<TrashIcon className="size-5" color="white" />}
-                  onClick={() => {
-                    setImage(null);
-                    setHasDefaultImage(false);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+          <ImagePreview src={defaultImage} onRemove={handleRemoveDefaultImage} />
         )}
-        {image && (
-          <div className="group relative">
-            <img alt="preview image" src={URL.createObjectURL(image)} className="w-28 h-28 rounded-lg" />
-            <div className=" absolute top-0 left-0 w-full h-full collapse group-hover:visible">
-              <div className="flex justify-center items-center w-full h-full">
-                <BgtIconButton
-                  size="big"
-                  className="!rounded-full border-solid border hover:bg-[rgba(240,240,240,0.3)]"
-                  icon={<TrashIcon className="size-5" color="white" />}
-                  onClick={() => {
-                    setImage(undefined);
-                    setHasDefaultImage(false);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        {image && <ImagePreview src={URL.createObjectURL(image)} onRemove={handleRemoveNewImage} />}
         {!image && !hasDefaultImage && (
           <div
             className={cx(
-              'group border-gray-500 hover:border-gray-400 border-dashed border-2 rounded-md aspect-square h-28 p-1 cursor-pointer',
+              'group border-gray-500 hover:border-gray-400 border-dashed border-2 rounded-md aspect-square h-28 p-2 cursor-pointer',
               isDragging && 'border-gray-400'
             )}
           >

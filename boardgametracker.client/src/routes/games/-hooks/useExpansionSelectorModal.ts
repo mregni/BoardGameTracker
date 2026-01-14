@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { getGameExpansions } from '@/services/queries/games';
@@ -6,7 +5,7 @@ import { saveGameExpansionCall } from '@/services/gameService';
 import { QUERY_KEYS } from '@/models';
 
 interface Props {
-  gameId: string;
+  gameId: number;
   onSaveSuccess?: () => void;
   onSaveError?: () => void;
 }
@@ -18,7 +17,7 @@ export const useExpansionSelectorModal = ({ gameId, onSaveError, onSaveSuccess }
     queries: [getGameExpansions(gameId)],
   });
 
-  const expansions = useMemo(() => expansionQuery.data ?? [], [expansionQuery.data]);
+  const expansions = expansionQuery.data ?? [];
 
   const mutateExpasions = useMutation({
     mutationFn: saveGameExpansionCall,

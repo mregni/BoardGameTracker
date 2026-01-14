@@ -447,7 +447,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int>("BggId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("GameId")
+                    b.Property<int>("GameId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
@@ -475,9 +475,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int?>("BggId")
                         .HasColumnType("integer");
 
-                    b.Property<double?>("BuyingPrice")
-                        .HasColumnType("double precision");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -488,26 +485,8 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<string>("Image")
                         .HasColumnType("text");
 
-                    b.Property<int?>("MaxPlayTime")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MaxPlayers")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("MinAge")
                         .HasColumnType("integer");
-
-                    b.Property<int?>("MinPlayTime")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MinPlayers")
-                        .HasColumnType("integer");
-
-                    b.Property<double?>("Rating")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("SoldPrice")
-                        .HasColumnType("double precision");
 
                     b.Property<int>("State")
                         .HasColumnType("integer");
@@ -516,13 +495,13 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<double?>("Weight")
-                        .HasColumnType("double precision");
-
                     b.Property<int?>("YearPublished")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BggId")
+                        .IsUnique();
 
                     b.ToTable("Games");
                 });
@@ -684,31 +663,26 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("GameId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("GameId1")
+                    b.Property<int>("GameId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("LoanDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PlayerId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("PlayerId1")
+                    b.Property<int>("PlayerId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("ReturnDate")
+                    b.Property<DateTime?>("ReturnedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GameId1");
+                    b.HasIndex("GameId");
 
-                    b.HasIndex("PlayerId1");
+                    b.HasIndex("PlayerId");
 
                     b.ToTable("Loans");
                 });
@@ -883,9 +857,139 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
                         .WithMany("Expansions")
                         .HasForeignKey("GameId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Game");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Game", b =>
+                {
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.Price", "BuyingPrice", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("BuyingPrice");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.Price", "SoldPrice", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("SoldPrice");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.PlayTimeRange", "PlayTime", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("MaxMinutes")
+                                .HasColumnType("integer")
+                                .HasColumnName("MaxPlayTime");
+
+                            b1.Property<int>("MinMinutes")
+                                .HasColumnType("integer")
+                                .HasColumnName("MinPlayTime");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.PlayerCountRange", "PlayerCount", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("Max")
+                                .HasColumnType("integer")
+                                .HasColumnName("MaxPlayers");
+
+                            b1.Property<int>("Min")
+                                .HasColumnType("integer")
+                                .HasColumnName("MinPlayers");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.Rating", "Rating", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<double>("Value")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("double precision")
+                                .HasColumnName("Rating");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.Weight", "Weight", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<double>("Value")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("double precision")
+                                .HasColumnName("Weight");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.Navigation("BuyingPrice");
+
+                    b.Navigation("PlayTime");
+
+                    b.Navigation("PlayerCount");
+
+                    b.Navigation("Rating");
+
+                    b.Navigation("SoldPrice");
+
+                    b.Navigation("Weight");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.GameAccessory", b =>
@@ -940,13 +1044,13 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                 {
                     b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
                         .WithMany("Loans")
-                        .HasForeignKey("GameId1")
+                        .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BoardGameTracker.Common.Entities.Player", "Player")
                         .WithMany("Loans")
-                        .HasForeignKey("PlayerId1")
+                        .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

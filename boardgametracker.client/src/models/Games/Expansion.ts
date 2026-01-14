@@ -6,6 +6,6 @@ export interface Expansion {
 }
 
 export interface ExpansionUpdate {
-  gameId: string;
+  gameId: number;
   expansionBggIds: number[];
 }

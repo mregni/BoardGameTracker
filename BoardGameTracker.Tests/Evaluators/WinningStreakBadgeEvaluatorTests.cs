@@ -169,7 +169,7 @@ public class WinningStreakBadgeEvaluatorTests
         var sessions = new List<Session>();
         var currentDate = new DateTime(2025, 1, 1);
 
-        for (int i = 0; i < winCount; i++)
+        for (var i = 0; i < winCount; i++)
         {
             sessions.Add(new Session
             {
@@ -181,7 +181,7 @@ public class WinningStreakBadgeEvaluatorTests
             });
         }
 
-        for (int i = 0; i < lossCount; i++)
+        for (var i = 0; i < lossCount; i++)
         {
             sessions.Add(new Session
             {

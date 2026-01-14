@@ -1,77 +1,86 @@
-﻿using AutoMapper;
-using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Common.ViewModels.Language;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
+using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/settings")]
-public class SettingsController
+public class SettingsController : ControllerBase
 {
     private readonly IConfigFileProvider _configFileProvider;
     private readonly IEnvironmentProvider _environmentProvider;
     private readonly ILanguageService _languageService;
-    private readonly IMapper _mapper;
-    public SettingsController(IConfigFileProvider configFileProvider, IEnvironmentProvider environmentProvider, ILanguageService languageService, IMapper mapper)
+    private readonly IUpdateService _updateService;
+
+    public SettingsController(
+        IConfigFileProvider configFileProvider,
+        IEnvironmentProvider environmentProvider,
+        ILanguageService languageService,
+        IUpdateService updateService)
     {
         _configFileProvider = configFileProvider;
         _environmentProvider = environmentProvider;
         _languageService = languageService;
-        _mapper = mapper;
+        _updateService = updateService;
     }
 
     [HttpGet]
-    public IActionResult Get()
+    public async Task<IActionResult> Get()
     {
-        var uiResources = new UIResourceViewModel
+        var updateSettings = await _updateService.GetUpdateSettingsAsync();
+
+        var uiResources = new UIResourceDto
         {
             TimeFormat = _configFileProvider.TimeFormat,
             DateFormat = _configFileProvider.DateFormat,
             UILanguage = _configFileProvider.UILanguage,
             Currency = _configFileProvider.Currency,
-            Statistics = _environmentProvider.EnableStatistics
+            Statistics = _environmentProvider.EnableStatistics,
+            UpdateCheckEnabled = updateSettings.Enabled,
+            UpdateCheckIntervalHours = updateSettings.IntervalHours
         };
 
-        return new OkObjectResult(uiResources);
+        return Ok(uiResources);
     }
 
     [HttpPut]
     [Route("")]
-    public IActionResult Update([FromBody] UIResourceViewModel model)
+    public async Task<IActionResult> Update([FromBody] UIResourceDto model)
     {
         _configFileProvider.Currency = model.Currency;
         _configFileProvider.TimeFormat = model.TimeFormat;
         _configFileProvider.DateFormat = model.DateFormat;
         _configFileProvider.UILanguage = model.UILanguage;
-        
-        return new OkObjectResult(model);
+
+        await _updateService.UpdateSettingsAsync(model.UpdateCheckEnabled, model.UpdateCheckIntervalHours);
+
+        return Ok(model);
     }
 
     [HttpGet]
     [Route("environment")]
     public IActionResult GetEnvironment()
     {
-        var resources = new UIEnvironmentViewModel
+        var resources = new UIEnvironmentDto
         {
             EnableStatistics = _environmentProvider.EnableStatistics,
             LogLevel = _environmentProvider.LogLevel,
             EnvironmentName = _environmentProvider.EnvironmentName,
-            Port = _environmentProvider.Port
+            Port = _environmentProvider.Port,
+            Version = _updateService.GetCurrentVersion()
         };
-        
-        return new OkObjectResult(resources);
+
+        return Ok(resources);
     }
-    
+
     [HttpGet]
     [Route("languages")]
     public async Task<IActionResult> GetLanguages()
     {
         var languages = await _languageService.GetAllAsync();
-
-        var mappedLanguages = _mapper.Map<IList<LanguageViewModel>>(languages);
-        return new OkObjectResult(mappedLanguages);
+        return Ok(languages);
     }
 }

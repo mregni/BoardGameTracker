@@ -16,9 +16,9 @@ const BgtBigButton = (props: Props) => {
   return (
     <BgtButton
       disabled={disabled}
-      variant="soft"
+      variant="primary"
       onClick={onClick}
-      className={cx('!h-28', !disabled && 'hover:cursor-pointer')}
+      className={cx('h-28!', !disabled && 'hover:cursor-pointer')}
     >
       <div className="flex flex-col p-3 gap-3">
         <Text align="center" as="p" size="4">

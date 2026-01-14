@@ -4,7 +4,7 @@ import { GameState } from './GameState';
 import { Expansion } from './Expansion';
 
 export interface Game {
-  id: string;
+  id: number;
   title: string;
   description: string;
   yearPublished: number | null;
@@ -19,6 +19,7 @@ export interface Game {
   bggId: number | null;
   type: GameType;
   state: GameState;
+  isLoaned: boolean;
   baseGameId: number | null;
   baseGame: Game;
   expansions: Expansion[];
@@ -27,7 +28,7 @@ export interface Game {
   people: GamePerson[];
   hasScoring: boolean;
   buyingPrice: number | null;
-  additionDate: string | null;
+  additionDate: Date | null;
 }
 
 export interface GameLink {

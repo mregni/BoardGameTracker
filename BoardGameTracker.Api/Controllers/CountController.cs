@@ -1,4 +1,4 @@
-﻿using BoardGameTracker.Common.ViewModels;
+﻿using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
@@ -8,7 +8,7 @@ namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/count")]
-public class CountController
+public class CountController : ControllerBase
 {
     private readonly IGameService _gameService;
     private readonly IPlayerService _playerService;
@@ -24,13 +24,13 @@ public class CountController
     [HttpGet]
     public async Task<IActionResult> GetMenuCounts()
     {
-        var counts = new KeyValuePairViewModel<string,int>[]
+        var counts = new KeyValuePairDto<int>[]
         {
             new("games", await _gameService.CountAsync()),
             new("players", await _playerService.CountAsync()),
             new("locations", await _locationService.CountAsync()),
         };
 
-        return new OkObjectResult(counts);
+        return Ok(counts);
     }
 }

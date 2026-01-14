@@ -14,7 +14,7 @@ import {
 import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {
-  gameId: string;
+  gameId: number;
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedExpansions: number[];
@@ -48,10 +48,10 @@ export const ExpansionSelectorModal = (props: Props) => {
           />
         </div>
         <BgtDialogClose>
-          <BgtButton variant="soft" color="cancel" onClick={() => setOpen(false)} disabled={isLoading || isPending}>
+          <BgtButton variant="cancel" onClick={() => setOpen(false)} disabled={isLoading || isPending}>
             {t('common.cancel')}
           </BgtButton>
-          <BgtButton type="button" variant="soft" disabled={isLoading} onClick={saveModal || isPending}>
+          <BgtButton type="button" variant="primary" disabled={isLoading} onClick={saveModal || isPending}>
             {t('game.expansions.update')}
           </BgtButton>
         </BgtDialogClose>

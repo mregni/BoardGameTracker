@@ -4,5 +4,4 @@ export enum GameState {
   PreviouslyOwned = 2,
   NotOwned = 3,
   ForTrade = 4,
-  OnLoan = 5,
 }

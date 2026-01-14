@@ -17,8 +17,8 @@ export const BgtPoster = (props: Props) => {
       className={cx(
         className,
         'relative overflow-hidden aspect-square rounded-xl flex justify-center flex-col px-3 w-full bg-cover bg-no-repeat bg-center',
-        image && 'bg-[image:var(--image-url)]',
-        !image && `bg-[var(--fallback-color)]`
+        image && 'bg-(image:--image-url)',
+        !image && `bg-(--fallback-color)`
       )}
     >
       {!image && (

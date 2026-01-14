@@ -189,7 +189,7 @@ public class SocialPlayerBadgeEvaluatorTests
         var sessions = new List<Session>();
         var playerSessions = new List<PlayerSession> { new() { PlayerId = playerId } };
 
-        for (int i = 0; i < distinctPlayerCount; i++)
+        for (var i = 0; i < distinctPlayerCount; i++)
         {
             playerSessions.Add(new PlayerSession { PlayerId = playerId + i + 1 });
         }

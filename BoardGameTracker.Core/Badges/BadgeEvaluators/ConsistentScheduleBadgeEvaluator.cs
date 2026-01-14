@@ -19,7 +19,7 @@ public class ConsistentScheduleBadgeEvaluator : IBadgeEvaluator
         var requiredSaturdays = new List<DateTime>();
         for (var i = 0; i < 10; i++)
         {
-            requiredSaturdays.Add(session.Start.AddDays(-7 * i));
+            requiredSaturdays.Add(session.Start.AddDays(-BadgeEvaluatorConstants.DaysInWeek * i));
         }
         
         foreach (var requiredSaturday in requiredSaturdays)

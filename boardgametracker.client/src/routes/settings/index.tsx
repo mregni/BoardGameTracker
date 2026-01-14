@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
 import { createFileRoute } from '@tanstack/react-router';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from '@tanstack/react-form';
 
 import { useToasts } from '../-hooks/useToasts';
 
@@ -9,13 +8,12 @@ import { useSettingsData } from './-hooks/useSettingsData';
 
 import { ToLogLevel } from '@/utils/numberUtils';
 import { getSettings, getLanguages, getEnvironment } from '@/services/queries/settings';
-import { Settings, SettingsSchema } from '@/models';
+import { SettingsSchema } from '@/models';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
-import { BgtSelect } from '@/components/BgtForm/BgtSelect';
-import { BgtInputField } from '@/components/BgtForm/BgtInputField';
+import { BgtFormField, BgtSelect, BgtInputField } from '@/components/BgtForm';
 import { BgtCard } from '@/components/BgtCard/BgtCard';
 import BgtButton from '@/components/BgtButton/BgtButton';
 import GitHubIcon from '@/assets/icons/github.svg?react';
@@ -44,75 +42,100 @@ function RouteComponent() {
 
   const { settings, saveSettings, isLoading, languages, environment } = useSettingsData({ onSaveSuccess, onSaveError });
 
-  const { handleSubmit, control } = useForm<Settings>({
-    resolver: zodResolver(SettingsSchema),
-    defaultValues: settings,
+  const form = useForm({
+    defaultValues: {
+      uiLanguage: settings?.uiLanguage ?? '',
+      dateFormat: settings?.dateFormat ?? '',
+      timeFormat: settings?.timeFormat ?? '',
+      currency: settings?.currency ?? '',
+    },
+    onSubmit: async ({ value }) => {
+      const validatedData = SettingsSchema.parse(value);
+      if (settings) {
+        await saveSettings({ ...settings, ...validatedData });
+        i18n.changeLanguage(validatedData.uiLanguage);
+      }
+    },
   });
 
   if (settings === undefined || environment === undefined) return null;
-
-  const onSubmit = async (data: Settings) => {
-    await saveSettings(data);
-    i18n.changeLanguage(data.uiLanguage);
-  };
 
   return (
     <BgtPage>
       <BgtPageHeader header={t('common.settings')} actions={[]} />
       <BgtPageContent>
         <BgtCard className="p-4">
-          <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+          >
             <div className="flex flex-row justify-between">
               <BgtHeading size="6">{t('settings.titles.localisation')}</BgtHeading>
-              <BgtButton size="1" type="submit" disabled={isLoading}>
+              <BgtButton size="1" type="submit" disabled={isLoading} variant="primary">
                 {t('common.save')}
               </BgtButton>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <BgtSelect
-                disabled={isLoading}
-                control={control}
-                label={t('settings.ui-language.label')}
-                name="uiLanguage"
-                items={languages.map((value) => ({
-                  label: t(`languages.${value.translationKey}`),
-                  value: value.key,
-                  image: null,
-                }))}
-              />
-              <BgtInputField
-                disabled={isLoading}
-                type="text"
-                control={control}
-                name="dateFormat"
-                label={t('settings.date-format.label')}
-              />
-              <BgtInputField
-                disabled={isLoading}
-                type="text"
-                control={control}
-                name="timeFormat"
-                label={t('settings.time-format.label')}
-              />
+              <BgtFormField form={form} name="uiLanguage" schema={SettingsSchema.shape.uiLanguage}>
+                {(field) => (
+                  <BgtSelect
+                    field={field}
+                    disabled={isLoading}
+                    label={t('settings.ui-language.label')}
+                    items={languages.map((value) => ({
+                      label: t(`languages.${value.translationKey}`),
+                      value: value.key,
+                      image: null,
+                    }))}
+                  />
+                )}
+              </BgtFormField>
+              <BgtFormField form={form} name="dateFormat" schema={SettingsSchema.shape.dateFormat}>
+                {(field) => (
+                  <BgtInputField
+                    field={field}
+                    disabled={isLoading}
+                    type="text"
+                    label={t('settings.date-format.label')}
+                  />
+                )}
+              </BgtFormField>
+              <BgtFormField form={form} name="timeFormat" schema={SettingsSchema.shape.timeFormat}>
+                {(field) => (
+                  <BgtInputField
+                    field={field}
+                    disabled={isLoading}
+                    type="text"
+                    label={t('settings.time-format.label')}
+                  />
+                )}
+              </BgtFormField>
             </div>
           </form>
         </BgtCard>
         <BgtCard className="p-4">
-          <form onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+          >
             <div className="flex flex-row justify-between">
               <BgtHeading size="6">{t('settings.titles.currency')} </BgtHeading>
-              <BgtButton size="1" type="submit" disabled={isLoading}>
+              <BgtButton size="1" type="submit" disabled={isLoading} variant="primary">
                 {t('common.save')}
               </BgtButton>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <BgtInputField
-                disabled={isLoading}
-                type="text"
-                control={control}
-                name="currency"
-                label={t('settings.currency.label')}
-              />
+              <BgtFormField form={form} name="currency" schema={SettingsSchema.shape.currency}>
+                {(field) => (
+                  <BgtInputField field={field} disabled={isLoading} type="text" label={t('settings.currency.label')} />
+                )}
+              </BgtFormField>
             </div>
           </form>
         </BgtCard>
@@ -138,11 +161,14 @@ function RouteComponent() {
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <BgtButton onClick={() => window.open('https://github.com/mregni/BoardGameTracker/issues')}>
+              <BgtButton
+                onClick={() => window.open('https://github.com/mregni/BoardGameTracker/issues')}
+                variant="primary"
+              >
                 <GitHubIcon className="size-4" />
                 {t('settings.feature-request')}
               </BgtButton>
-              <BgtButton onClick={() => window.open('https://crowdin.com/project/boardgametracker')}>
+              <BgtButton onClick={() => window.open('https://crowdin.com/project/boardgametracker')} variant="primary">
                 <CrowdinIcon className="size-4" />
                 {t('settings.translations')}
               </BgtButton>

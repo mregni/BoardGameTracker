@@ -3,14 +3,14 @@ import z from 'zod';
 import { Badge } from '..';
 
 export interface Player {
-  id: string;
+  id: number;
   name: string;
   image: string | null;
   badges: Badge[];
 }
 
 export const CreatePlayerSchema = z.object({
-  name: z.string().min(1, { message: 'player.new.name.required' }),
+  name: z.string().min(1, { message: 'player.name.required' }),
 });
 
 export const UpdatePlayerSchema = CreatePlayerSchema.extend({

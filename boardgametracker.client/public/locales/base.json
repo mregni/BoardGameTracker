@@ -5,15 +5,27 @@
     "start": "Start",
     "cancel": "Cancel",
     "dashboard": "Dashboard",
+    "new-session": "Add session",
     "games": "Games",
     "items_one": "{{count}} item",
     "items_other": "{{count}} items",
     "minutes_one": "minute",
     "minutes_other": "minutes",
     "locations": "Locations",
+    "wins_other": "{{count}} wins",
+    "wins_one": "{{count}} win",
     "location": "Location",
+    "since": "Since {{date}}",
     "duration": "Duration",
+    "points_other": "{{count}} points",
+    "points_one": "{{count}} point",
+    "overdue": "Overdue",
+    "loaned": "Loaned",
+    "returned": "Returned",
+    "due-date": "Due date",
+    "history": "History",
     "name": "Name",
+    "total": "Total",
     "players": "Players",
     "profile-picture": "Profile picture",
     "settings": "Settings",
@@ -21,6 +33,8 @@
     "winners": "Winners",
     "loosers": "Loosers",
     "play-time": "Play time",
+    "won": "Won",
+    "lost": "Lost",
     "compare": "Compare",
     "rating": "Rating",
     "weight": "Weight",
@@ -30,8 +44,12 @@
     "close": "close",
     "details": "details",
     "categories": "categories",
+    "try-again": "Try again",
+    "go-home": "Go to home",
     "mechanics": "mechanics",
     "no-data-yet": "No data yet",
+    "losses": "Losses",
+    "wins": "Wins",
     "no-data": "No data",
     "load-more": "Load more",
     "days-ago": "Days ago",
@@ -54,6 +72,8 @@
     "loans": "Loans",
     "state": "State",
     "bgg-id": "BGG id",
+    "day_one": "{{count}} day",
+    "day_other": "{{count}} days",
     "id": "Id",
     "flags": {
       "header": "Tags",
@@ -65,6 +85,8 @@
     "count": "Count",
     "game_one": "{{count}} game",
     "game_other": "{{count}} games",
+    "win_one": "{{count}} win",
+    "win_other": "{{count}} wins",
     "player_one": "{{count}} player",
     "player_other": "{{count}} players",
     "game-play": "this game play",
@@ -77,23 +99,52 @@
       "title": "No sessions logged yet",
       "content": "Log your first game session to view analytics",
       "button": ""
+    },
+    "days": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
     }
   },
   "loan": {
     "title": "Loans",
+    "mark-as-returned": "Return game",
+    "statistics": {
+      "active": "Active loans",
+      "returned": "Returned loans",
+      "total-loans": "Total loans"
+    },
     "notifications": {
       "created": "Loan is succesfully created",
       "create-failed": "Failed creating loan"
     },
+    "delete": {
+      "button": "Delete loan",
+      "description": "Are you sure you want to delete this loan? This cannot be reversed!",
+      "successfull": "Loan is successfully deleted.",
+      "failed": "Loan deletion failed, check logs for more details."
+    },
+    "return": {
+      "successfull": "Game is successfully marked as returned.",
+      "failed": "Marking game as returned failed, check logs for more details."
+    },
+    "no-active-loans": "There are no active loans at the moment.",
     "new": {
       "title": "Add new loan",
+      "save": "Create loan",
       "description": "Fill out the form to create a new loan.",
       "start": {
         "label": "Loan start",
-        "required": "Start loan date is required"
+        "required": "Start loan date is required",
+        "placeholder": "Pick a date"
       },
       "end": {
-        "label": "Return date"
+        "label": "Return date",
+        "placeholder": "Pick a date"
       },
       "player": {
         "label": "Player",
@@ -108,13 +159,21 @@
     }
   },
   "expansions": {
-    "label": "Expansions"
+    "label": "Expansions",
+    "delete": {
+      "successfull": "Expansion is successfully deleted.",
+      "failed": "Expansion deletion failed, check logs for more details."
+    }
   },
   "bgg-import": {
     "title": "Import games from BoardGameGeek"
   },
   "compare": {
     "title": "Compare players",
+    "select-player": "Select player to compare",
+    "total-games-played": "Total games together",
+    "minutes-played": "Minutes played",
+    "most-played-game": "Most played game",
     "wins": {
       "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
       "looser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
@@ -133,10 +192,37 @@
     },
     "total-sessions": {
       "label": "{{player}} played a total of {{count}} game sessions."
+    },
+    "head-to-head": {
+      "title": "Head to Head",
+      "direct-wins": "{{player}} won {{count}} times against {{opponent}}",
+      "most-won-game": "{{player}} won most from {{opponent}} in {{game}} ({{count}} times)",
+      "last-session": "Last session was won by {{player}} in {{game}}",
+      "most-played-together": "Most played together: {{game}} ({{count}} sessions)",
+      "closest-game": "{{player}} won by just {{points}} points in {{game}}",
+      "first-game-together": "First game together: {{game}} on {{date}}"
+    },
+    "stats": {
+      "total-wins": "Total wins",
+      "win-percentage": "Win Percentage",
+      "sessions": "Sessions",
+      "total-duration": "Total gameplay time",
+      "player-stats": "{{player}}'s Stats"
+    },
+    "empty": {
+      "insufficient-players": {
+        "title": "Not enough players to compare",
+        "description": "Not enough players in your database to start comparing statistics and head-to-head performance."
+      },
+      "no-players": {
+        "title": "No players available to compare",
+        "description": "You currently have no players in the database. Please add players to use the compare feature."
+      },
+      "button": "Go to players page"
     }
   },
   "game": {
-    "add": "Add game session",
+    "add": "Add session",
     "sessions": "View sessions",
     "notifications": {
       "created": "Game is succesfully created",
@@ -166,7 +252,8 @@
       "description": "Add/delete expansions to this game.",
       "update": "Update expansions",
       "none": "No expansions added to this game.",
-      "no-game": "Select a game to view expansions."
+      "no-game": "Select a game to view expansions.",
+      "add": "Add your first expansion"
     },
     "new": {
       "description": "Choose a method to create a new game.",
@@ -238,7 +325,6 @@
       "games-week-day": "Games by day of the week",
       "scoring": "Scoring per game/player",
       "top-scoring": {
-        "title": "Scoring results",
         "top-score": "Top score",
         "highest-losing": "Highest losing",
         "average": "Average",
@@ -248,10 +334,14 @@
     },
     "titles": {
       "top-players": "Top players",
+      "scoring-results": "Scoring results",
+      "recent-sessions": "Recent sessions",
+      "session-count-per-day": "Session count per day",
       "analytics": "Analytics"
     }
   },
   "games": {
+    "back": "Back to games",
     "import": {
       "loading": "Loading BGG data...",
       "importing": "Importing games from BoardGameGeek...",
@@ -271,6 +361,8 @@
     },
     "title": "Games",
     "new": "Add new game",
+    "count_other": "{{count}} games found",
+    "count_one": "{{count}} game found",
     "cards": {
       "games": "Games"
     }
@@ -280,6 +372,9 @@
     "upload": "Click or drop to add image"
   },
   "player": {
+    "back": "Back to players",
+    "count_other": "{{count}} players found",
+    "count_one": "{{count}} player found",
     "notifications": {
       "created": "Player is succesfully created",
       "create-failed": "Failed creating player",
@@ -291,13 +386,14 @@
     },
     "name": {
       "placeholder": "Enter name of the player",
-      "required": "player name is required"
+      "required": "Player name is required"
     },
     "new": {
       "button": "Add new player",
       "description": "Fill out the form to create a new player.",
       "save": "Create player",
-      "title": "Create player"
+      "title": "Create player",
+      "players": { "none": "No players added yet. Add your first player!" }
     },
     "update": {
       "save": "update player",
@@ -310,7 +406,9 @@
       "description": "Are you sure you want to delete player {{name}}? This cannot be reversed and will delete all game sessions connected to this player."
     },
     "cards": {
-      "games": "Games"
+      "games": "Games",
+      "win-record": "Win/Loss Record",
+      "most-played-games": "Most Played Games"
     },
     "titles": {
       "achievements": "Achievements"
@@ -323,7 +421,9 @@
     "image": {
       "type-not-supported": "Image type not supported",
       "error": "Error while uploading image, check logs"
-    }
+    },
+    "something-went-wrong": "Something went wrong, please try again later.",
+    "unexpected-error": "An unexpected error occurred."
   },
   "location": {
     "new": {
@@ -354,6 +454,7 @@
     }
   },
   "statistics": {
+    "average-abreviation": "avg",
     "average-score": "Average score",
     "high-score": "High score",
     "most-wins": "Most wins",
@@ -376,7 +477,9 @@
     "average-playtime": "Average playtime",
     "win-percentage": "Win percentage",
     "buy-price": "Cost",
-    "expansion-count": "Expansions"
+    "expansion-count": "Expansions",
+    "best-player": "Best player",
+    "in-collection": "In collection"
   },
   "sessions": {
     "new": "Add new session",
@@ -447,6 +550,7 @@
         "label": "Player",
         "required": "Player is required"
       },
+      "create-player": "Create new player",
       "players": {
         "label": "Players",
         "add": "+ add player",
@@ -464,7 +568,8 @@
       },
       "start": {
         "label": "Start",
-        "required": "Start date is required"
+        "required": "Start date is required",
+        "placeholder": "Pick a date"
       },
       "location": {
         "label": "Location",

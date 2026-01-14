@@ -17,7 +17,7 @@ public class CompareService : ICompareService
         _playerRepository = playerRepository;
     }
 
-    public async Task<CompareResult> GetPlayerComparisation(int playerOne, int playerTwo)
+    public async Task<CompareResultDto> GetPlayerComparisation(int playerOne, int playerTwo)
     {
         var sessionCountPlayerOne = await _playerRepository.GetTotalPlayCount(playerOne);
         var sessionCountPlayerTwo = await _playerRepository.GetTotalPlayCount(playerTwo);
@@ -33,15 +33,30 @@ public class CompareService : ICompareService
         
         var winPercentagePlayerOne = totalSessionPlayerOne > 0 ? (double)winCountPlayerOne / totalSessionPlayerOne : 0;
         var winPercentagePlayerTwo = totalSessionPlayerTwo > 0 ? (double)winCountPlayerTwo / totalSessionPlayerTwo : 0;
-        
-        var result = new CompareResult
+
+        var totalSessionsTogether = await _compareRepository.GetTotalSessionsTogether(playerOne, playerTwo);
+        var minutesPlayedTogether = await _compareRepository.GetMinutesPlayedTogether(playerOne, playerTwo);
+        var preferredGame = await _compareRepository.GetPreferredGame(playerOne, playerTwo);
+        var lastWonGame = await _compareRepository.GetLastWonGame(playerOne, playerTwo);
+        var longestSessionTogether = await _compareRepository.GetLongestSessionTogether(playerOne, playerTwo);
+        var firstGameTogether = await _compareRepository.GetFirstGameTogether(playerOne, playerTwo);
+        var closestGame = await _compareRepository.GetClosestGame(playerOne, playerTwo);
+
+        var result = new CompareResultDto
         {
             DirectWins = await _compareRepository.GetDirectWins(playerOne, playerTwo),
             MostWonGame = await _compareRepository.GetMostWonGame(playerOne, playerTwo),
             SessionCounts = new CompareRow<int>(sessionCountPlayerOne, sessionCountPlayerTwo),
             TotalDuration = new CompareRow<double>(durationPlayerOne, durationPlayerTwo),
             WinCount = new CompareRow<int>(winCountPlayerOne, winCountPlayerTwo),
-            WinPercentageCount = new CompareRow<double>(winPercentagePlayerOne, winPercentagePlayerTwo)
+            WinPercentage = new CompareRow<double>(winPercentagePlayerOne, winPercentagePlayerTwo),
+            TotalSessionsTogether = totalSessionsTogether,
+            MinutesPlayed = (int)minutesPlayedTogether,
+            PreferredGame = preferredGame,
+            LastWonGame = lastWonGame,
+            LongestSessionTogether = longestSessionTogether,
+            FirstGameTogether = firstGameTogether,
+            ClosestGame = closestGame
         };
 
         return result;

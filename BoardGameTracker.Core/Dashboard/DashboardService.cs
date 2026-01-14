@@ -1,6 +1,5 @@
-﻿using BoardGameTracker.Common.Models;
+﻿using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Models.Charts;
-using BoardGameTracker.Common.Models.Dashboard;
 using BoardGameTracker.Core.Dashboard.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
@@ -12,33 +11,39 @@ namespace BoardGameTracker.Core.Dashboard;
 public class DashboardService : IDashboardService
 {
     private readonly IGameRepository _gameRepository;
+    private readonly IGameStatisticsRepository _gameStatisticsRepository;
     private readonly IPlayerRepository _playerRepository;
     private readonly ISessionRepository _sessionRepository;
     private readonly ILocationRepository _locationRepository;
 
-    public DashboardService(IGameRepository gameRepository, IPlayerRepository playerRepository, ISessionRepository sessionRepository, ILocationRepository locationRepository)
+    public DashboardService(
+        IGameRepository gameRepository,
+        IGameStatisticsRepository gameStatisticsRepository,
+        IPlayerRepository playerRepository,
+        ISessionRepository sessionRepository,
+        ILocationRepository locationRepository)
     {
         _gameRepository = gameRepository;
+        _gameStatisticsRepository = gameStatisticsRepository;
         _playerRepository = playerRepository;
         _sessionRepository = sessionRepository;
         _locationRepository = locationRepository;
     }
 
-    public async Task<DashboardStatistics> GetStatistics()
+    public async Task<DashboardStatisticsDto> GetStatistics()
     {
         var gameCount = await _gameRepository.CountAsync();
-        var meanPayed = await _gameRepository.GetMeanPayedAsync();
-        var totalPayed = await _gameRepository.GetTotalPayedAsync();
-        
+        var meanPayed = await _gameStatisticsRepository.GetMeanPayedAsync();
+        var totalPayed = await _gameStatisticsRepository.GetTotalPayedAsync();
+
         var playerCount = await _playerRepository.CountAsync();
-        
         var sessionCount = await _sessionRepository.CountAsync();
         var totalPlayTime = await _sessionRepository.GetTotalPlayTime();
         var meanPlayTime = await _sessionRepository.GetMeanPlayTime();
         var locationCount = await _locationRepository.CountAsync();
         var expansionCount = await _gameRepository.GetTotalExpansionCount();
-        
-        var result = new DashboardStatistics
+
+        var result = new DashboardStatisticsDto
         {
             GameCount = gameCount,
             PlayerCount = playerCount,
@@ -50,15 +55,15 @@ public class DashboardService : IDashboardService
             MeanPlayTime = meanPlayTime,
             ExpansionCount = expansionCount
         };
-        
-        var mostWinPlayer = await _gameRepository.GetMostWins();
+
+        var mostWinPlayer = await _gameStatisticsRepository.GetMostWins();
         if (mostWinPlayer != null)
         {
             var wins = await _playerRepository.GetTotalWinCount(mostWinPlayer.Id);
-            result.MostWinningPlayer = new MostWinningPlayer
+            result.MostWinningPlayer = new MostWinningPlayerDto
             {
                 Id = mostWinPlayer.Id,
-                Image = mostWinPlayer.Image,
+                Image = mostWinPlayer.Image ?? string.Empty,
                 Name = mostWinPlayer.Name,
                 TotalWins = wins
             };
@@ -67,10 +72,10 @@ public class DashboardService : IDashboardService
         return result;
     }
 
-    public async Task<DashboardCharts> GetCharts()
+    public async Task<DashboardChartsDto> GetCharts()
     {
-        var gameStates = await _gameRepository.GetGamesGroupedByState();
-        var charts = new DashboardCharts
+        var gameStates = await _gameStatisticsRepository.GetGamesGroupedByState();
+        var charts = new DashboardChartsDto
         {
             GameState = gameStates.Select(x => new GameStateChart { Type = x.Key, GameCount = x.Count()})
         };

@@ -1,4 +1,4 @@
-﻿using BoardGameTracker.Common.ViewModels;
+﻿using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Core.Images.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,12 +19,12 @@ public class ImageController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> UploadImage([FromForm] FileUploadViewModel upload)
+    public async Task<IActionResult> UploadImage([FromForm] UploadImageCommand command)
     {
         try
         {
-            var name = await _imageService.SaveImage(upload.File, upload.Type);
-            return new OkObjectResult(name);
+            var name = await _imageService.SaveImage(command.File, command.Type);
+            return Ok(name);
         }
         catch (Exception e)
         {

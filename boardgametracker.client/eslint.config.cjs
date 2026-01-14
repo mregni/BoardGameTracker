@@ -14,6 +14,7 @@ const tsParser = require("@typescript-eslint/parser");
 const reactRefresh = require("eslint-plugin-react-refresh");
 const _import = require("eslint-plugin-import");
 const autofix = require("eslint-plugin-autofix");
+const tanstackQuery = require("@tanstack/eslint-plugin-query");
 const js = require("@eslint/js");
 
 const {
@@ -60,6 +61,7 @@ module.exports = defineConfig([{
         "react-refresh": reactRefresh,
         import: fixupPluginRules(_import),
         autofix,
+        "@tanstack/query": tanstackQuery,
     },
 
     rules: {
@@ -79,8 +81,12 @@ module.exports = defineConfig([{
                 caseInsensitive: true,
             },
         }],
+
+        "@tanstack/query/exhaustive-deps": "error",
+        "@tanstack/query/no-rest-destructuring": "warn",
+        "@tanstack/query/stable-query-client": "error",
     },
-}, globalIgnores(["**/dist", "**/.eslintrc.cjs", "**/*.config.js", "**/*.config.ts"]), {
+}, globalIgnores(["**/dist", "**/.eslintrc.cjs", "**/*.config.js", "**/*.config.ts", "**/*.config.cjs"]), {
     files: ["**/models/index.ts"],
 
     rules: {

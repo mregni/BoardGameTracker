@@ -6,6 +6,6 @@ interface Props {
 }
 
 export const BgtIcon = (props: Props) => {
-  const { icon, className = '' } = props;
+  const { icon, className } = props;
   return <div className={className}>{icon}</div>;
 };

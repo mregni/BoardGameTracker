@@ -1,11 +1,7 @@
-import { queryOptions } from '@tanstack/react-query';
-
 import { getSessionCall } from '../sessionService';
+
+import { createEntityQueryWithStringId } from './queryFactory';
 
 import { QUERY_KEYS } from '@/models';
 
-export const getSession = (id: string) =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.sessions, id],
-    queryFn: () => getSessionCall(id),
-  });
+export const getSession = createEntityQueryWithStringId(QUERY_KEYS.sessions, getSessionCall);

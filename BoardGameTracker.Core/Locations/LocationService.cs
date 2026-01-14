@@ -1,4 +1,5 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 
 namespace BoardGameTracker.Core.Locations;
@@ -6,10 +7,12 @@ namespace BoardGameTracker.Core.Locations;
 public class LocationService : ILocationService
 {
     private readonly ILocationRepository _locationRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public LocationService(ILocationRepository locationRepository)
+    public LocationService(ILocationRepository locationRepository, IUnitOfWork unitOfWork)
     {
         _locationRepository = locationRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public Task<List<Location>> GetLocations()
@@ -17,19 +20,24 @@ public class LocationService : ILocationService
         return _locationRepository.GetAllAsync();
     }
 
-    public Task<Location> Create(Location location)
+    public async Task<Location> Create(Location location)
     {
-        return _locationRepository.CreateAsync(location);
+        await _locationRepository.CreateAsync(location);
+        await _unitOfWork.SaveChangesAsync();
+        
+        return location;
     }
 
-    public Task Delete(int id)
+    public async Task Delete(int id)
     {
-        return _locationRepository.DeleteAsync(id);
+        await _locationRepository.DeleteAsync(id);
+        await _unitOfWork.SaveChangesAsync();
     }
 
-    public Task Update(Location location)
+    public async Task Update(Location location)
     {
-        return _locationRepository.UpdateAsync(location);
+        await _locationRepository.UpdateAsync(location);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public Task<int> CountAsync()

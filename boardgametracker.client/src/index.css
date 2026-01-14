@@ -1,8 +1,100 @@
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap')
+layer(base);
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  /* Custom Breakpoints */
+  --breakpoint-2xl: 100rem;
+
+  /* Custom Colors */
+  --color-page-black: #121212;
+  --color-card-black: #100c1d;
+  --color-card-light: #141022;
+  --color-card-border: #1e192c;
+  --color-input: #1e1a2d;
+  --color-primary: #a855f7;
+  --color-dialog: #1a0f2e;
+  --color-card: #1a0f2e;
+  --color-cancel: #a8a29e;
+  --color-error: #cc1f1f;
+  --color-card-value: #22d3ee;
+  --color-lime-green: #40fa47;
+  --color-error-dark: #ff1d1d1a;
+  --color-background: #0a0416;
+
+  /* Font Family */
+  --font-family-sans: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+
+  /* Transition Properties */
+  --transition-max-height: max-height;
+}
+
+@keyframes slideDownAndFade {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideLeftAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideUpAndFade {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideRightAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(-2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 .radix-themes {
   --default-font-family: 'Chakra Petch', sans-serif;

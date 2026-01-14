@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { addSessionCall } from '@/services/sessionService';
@@ -17,7 +16,7 @@ export const useNewSessionWithGameData = ({ gameId, onSaveSuccess, onSaveError }
     queries: [getGame(gameId)],
   });
 
-  const game = useMemo(() => gameQuery.data, [gameQuery.data]);
+  const game = gameQuery.data;
 
   const saveSessionMutation = useMutation({
     mutationFn: addSessionCall,

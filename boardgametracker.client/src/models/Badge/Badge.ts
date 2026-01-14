@@ -24,6 +24,7 @@ export enum BadgeLevel {
 }
 
 export interface Badge {
+  id: number;
   descriptionKey: string;
   titleKey: string;
   type: BadgeType;

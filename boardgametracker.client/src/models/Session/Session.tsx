@@ -4,10 +4,10 @@ import { Expansion } from '../Games/Expansion';
 import { PlayerSession } from './PlayerSession';
 
 export interface Session {
-  id: string;
+  id: number;
   comment: string;
   ended: boolean;
-  gameId: string;
+  gameId: number;
   start: Date;
   minutes: number;
   playerSessions: PlayerSession[];

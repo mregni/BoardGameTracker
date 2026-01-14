@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries } from '@tanstack/react-query';
 
 import { getSettings } from '@/services/queries/settings';
 import { getBggCollection, getGames } from '@/services/queries/games';
 import { importGamesCall } from '@/services/gameService';
-import { ImportGame, QUERY_KEYS } from '@/models';
+import { ImportGame } from '@/models';
+import { useQueryInvalidator } from '@/hooks/useQueryInvalidator';
 
 interface Props {
   username: string;
@@ -13,35 +14,36 @@ interface Props {
 }
 
 export const useList = ({ username, onSuccessImport, onFailedImport }: Props) => {
-  const queryClient = useQueryClient();
+  const invalidator = useQueryInvalidator();
 
   const [bggCollectionQuery, gamesQuery, settingsQuery] = useQueries({
     queries: [getBggCollection(username), getGames(), getSettings()],
   });
 
-  const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
+  const settings = settingsQuery.data;
   const statusCode = bggCollectionQuery.data?.statusCode ?? 202;
 
-  const [games, setGames] = useState<ImportGame[]>([]);
   const [filterCollected, setFilterCollected] = useState<boolean>(true);
-  const [inCollectionCount, setInCollectionCount] = useState<number>(0);
-  const [totalCount, setTotalCount] = useState<number>(0);
-  const [processingGames, setProcessingGames] = useState<boolean>(true);
 
-  const originalGames = useMemo(() => {
-    setProcessingGames(true);
-    const games = bggCollectionQuery.data?.games;
-    const collectionGames = gamesQuery.data;
+  // Derive all values during render instead of storing in state
+  const processingGames = bggCollectionQuery.isLoading || gamesQuery.isLoading;
 
-    if (!games) return [];
+  const totalCount = useMemo(() => {
+    return bggCollectionQuery.data?.games?.length ?? 0;
+  }, [bggCollectionQuery.data?.games]);
 
-    setTotalCount(games.length);
+  const processedGames = useMemo(() => {
+    const bggGames = bggCollectionQuery.data?.games;
+    const collectionGames = gamesQuery.data?.items;
+
+    if (!bggGames) return [];
+
     if (!collectionGames) {
-      return games.map((game) => ({ ...game, inCollection: false }));
+      return bggGames.map((game) => ({ ...game, inCollection: false }));
     }
 
     const collectionBggIds = new Set(collectionGames.map((game) => game.bggId));
-    const processedGames = games.map((game) => {
+    return bggGames.map((game) => {
       const existingGame = collectionGames.find((g) => g.bggId === game.bggId);
       return {
         ...game,
@@ -52,19 +54,26 @@ export const useList = ({ username, onSuccessImport, onFailedImport }: Props) =>
         checked: false,
       };
     });
+  }, [bggCollectionQuery.data?.games, gamesQuery.data]);
 
-    setInCollectionCount(processedGames.filter((game) => game.inCollection).length);
+  const inCollectionCount = useMemo(() => {
+    return processedGames.filter((game) => game.inCollection).length;
+  }, [processedGames]);
 
-    setProcessingGames(false);
+  const derivedGames = useMemo(() => {
     if (filterCollected) {
       return processedGames.filter((game) => !game.inCollection);
     }
     return processedGames;
-  }, [bggCollectionQuery.data?.games, gamesQuery.data, filterCollected]);
+  }, [processedGames, filterCollected]);
 
+  // Keep games in state to allow mutations via updateGame
+  const [games, setGames] = useState<ImportGame[]>([]);
+
+  // Sync state with derived value when dependencies change
   useEffect(() => {
-    setGames(originalGames);
-  }, [originalGames]);
+    setGames(derivedGames);
+  }, [derivedGames]);
 
   const updateGame = useCallback((bggId: number, updates: Partial<ImportGame>) => {
     setGames((prev) => prev.map((game) => (game.bggId === bggId ? { ...game, ...updates } : game)));
@@ -73,8 +82,10 @@ export const useList = ({ username, onSuccessImport, onFailedImport }: Props) =>
   const startImportMutation = useMutation({
     mutationFn: importGamesCall,
     async onSuccess() {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+      // Use centralized invalidation for games
+      await invalidator.invalidateGames();
+      // Dashboard includes counts, so this is covered
+      await invalidator.invalidateDashboard();
 
       onSuccessImport?.();
     },

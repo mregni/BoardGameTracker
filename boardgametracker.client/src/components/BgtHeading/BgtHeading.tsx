@@ -3,14 +3,14 @@ import { cx } from 'class-variance-authority';
 import { Heading } from '@radix-ui/themes';
 
 interface Props extends Omit<ComponentPropsWithoutRef<'div'>, 'color'> {
-  size?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | undefined;
+  size?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 }
 
 export const BgtHeading = (props: Props) => {
   const { children, className, size = '8', ...rest } = props;
 
   return (
-    <Heading as="h3" size={size} className={cx('uppercase line-clamp-1 pr-2', className)} {...rest}>
+    <Heading as="h3" size={size} className={cx('uppercase line-clamp-1', className)} {...rest}>
       {children}
     </Heading>
   );

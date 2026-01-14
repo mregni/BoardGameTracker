@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 
+import { getSettings } from '@/services/queries/settings';
 import { getPlayers } from '@/services/queries/players';
-import { getGames } from '@/services/queries/games';
 import { getCompare } from '@/services/queries/compare';
 
 interface Props {
@@ -11,17 +10,17 @@ interface Props {
 }
 
 export const useCompareData = ({ playerLeft, playerRight }: Props) => {
-  const [playersQuery, compareQuery, gamesQuery] = useQueries({
-    queries: [getPlayers(), getCompare(playerLeft, playerRight), getGames()],
+  const [playersQuery, compareQuery, settingsQuery] = useQueries({
+    queries: [getPlayers(), getCompare(playerLeft, playerRight), getSettings()],
   });
 
-  const players = useMemo(() => playersQuery?.data ?? [], [playersQuery.data]);
-  const games = useMemo(() => gamesQuery?.data ?? [], [gamesQuery.data]);
-  const compare = useMemo(() => compareQuery?.data, [compareQuery.data]);
+  const players = playersQuery?.data ?? [];
+  const compare = compareQuery?.data;
+  const settings = settingsQuery?.data;
 
   return {
     players,
-    games,
     compare,
+    settings,
   };
 };

@@ -1,4 +1,5 @@
-﻿using BoardGameTracker.Common.Entities;
+﻿using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models;
 
 namespace BoardGameTracker.Core.Players.Interfaces;
@@ -11,7 +12,7 @@ public interface IPlayerService
     Task Delete(int id);
     Task<PlayerStatistics> GetStats(int id);
     Task<int> GetTotalPlayCount(int id);
-    Task<Player> Update(Player player);
+    Task<Player?> Update(UpdatePlayerCommand command);
     Task<int> CountAsync();
-    Task<List<Session>> GetSessions(int id);
+    Task<List<Session>> GetSessions(int id, int? count);
 }

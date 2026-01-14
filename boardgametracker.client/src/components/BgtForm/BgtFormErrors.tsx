@@ -1,13 +1,19 @@
-import { useTranslation } from 'react-i18next';
-import { FieldError } from 'react-hook-form';
-import { ComponentPropsWithoutRef } from 'react';
-
-interface ErrorProps extends ComponentPropsWithoutRef<'div'> {
-  error: FieldError | undefined;
+interface Props {
+  errors?: string[];
 }
-export const BgtFormErrors = (props: ErrorProps) => {
-  const { error } = props;
-  const { t } = useTranslation();
 
-  return error && <div className="text-[13px] text-red-500 opacity-[0.8]">{t(error.message ?? '')}</div>;
+export const BgtFormErrors = ({ errors }: Props) => {
+  if (!errors || errors.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="text-right">
+      {errors.map((error, index) => (
+        <div key={index} className="text-error text-sm">
+          {error}
+        </div>
+      ))}
+    </div>
+  );
 };

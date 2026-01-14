@@ -130,7 +130,7 @@ public class MonthlyGoalBadgeEvaluatorTests
         var sessions = new List<Session>();
         var baseDate = DateTime.UtcNow.AddDays(-15);
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             sessions.Add(new Session
             {

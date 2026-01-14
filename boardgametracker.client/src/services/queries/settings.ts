@@ -1,23 +1,11 @@
-import { queryOptions } from '@tanstack/react-query';
-
 import { getSettingsCall, getEnvironmentCall, getLanguagesCall } from '../settingsService';
+
+import { createListQuery, createSingletonQuery } from './queryFactory';
 
 import { QUERY_KEYS } from '@/models';
 
-export const getSettings = () =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.settings],
-    queryFn: () => getSettingsCall(),
-  });
+export const getSettings = createSingletonQuery(QUERY_KEYS.settings, getSettingsCall);
 
-export const getEnvironment = () =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.environment],
-    queryFn: () => getEnvironmentCall(),
-  });
+export const getEnvironment = createSingletonQuery(QUERY_KEYS.environment, getEnvironmentCall);
 
-export const getLanguages = () =>
-  queryOptions({
-    queryKey: [QUERY_KEYS.languages],
-    queryFn: () => getLanguagesCall(),
-  });
+export const getLanguages = createListQuery(QUERY_KEYS.languages, getLanguagesCall);

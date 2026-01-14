@@ -1,9 +1,5 @@
-﻿using AutoMapper;
-using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Common.ViewModels.Results;
-using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,18 +11,14 @@ namespace BoardGameTracker.Api.Controllers;
 public class SessionController : ControllerBase
 {
     private readonly ISessionService _sessionService;
-    private readonly IGameService _gameService;
-    private readonly IMapper _mapper;
     private readonly ILogger<SessionController> _logger;
 
-    public SessionController(ISessionService sessionService, IMapper mapper, ILogger<SessionController> logger, IGameService gameService)
+    public SessionController(ISessionService sessionService, ILogger<SessionController> logger)
     {
         _sessionService = sessionService;
-        _mapper = mapper;
         _logger = logger;
-        _gameService = gameService;
     }
-    
+
     [HttpGet]
     [Route("{id:int}")]
     public async Task<IActionResult> GetSession(int id)
@@ -34,65 +26,57 @@ public class SessionController : ControllerBase
         var session = await _sessionService.Get(id);
         if (session == null)
         {
-            return new NotFoundResult();
+            return NotFound();
         }
-        
-        var mapped = _mapper.Map<SessionViewModel>(session);
-        return new OkObjectResult(mapped);
+
+        return Ok(session.ToDto());
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateSession([FromBody] CreateSessionViewModel? viewModel)
+    public async Task<IActionResult> CreateSession([FromBody] CreateSessionCommand? command)
     {
-        if (viewModel == null)
+        if (command == null)
         {
-            return new BadRequestResult();
+            return BadRequest();
         }
 
         try
         {
-            var play = _mapper.Map<Session>(viewModel);
-            play.Expansions = await _gameService.GetGameExpansions(viewModel.ExpansionIds);
-            play = await _sessionService.Create(play);
-
-            var result = _mapper.Map<SessionViewModel>(play);
-            return new OkObjectResult(result);
+            var session = await _sessionService.CreateFromCommand(command);
+            return Ok(session.ToDto());
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            _logger.LogError(e, "Error creating session");
             return StatusCode(500);
         }
     }
-    
+
     [HttpPut]
-    public async Task<IActionResult> UpdateSession([FromBody] CreateSessionViewModel? updateViewModel)
+    public async Task<IActionResult> UpdateSession([FromBody] UpdateSessionCommand? command)
     {
-        if (updateViewModel is not {Id: not null})
+        if (command == null || command.Id == 0)
         {
-            return new BadRequestResult();
+            return BadRequest();
         }
 
-        var play = _mapper.Map<Session>(updateViewModel);
         try
         {
-            play.Expansions = await _gameService.GetGameExpansions(updateViewModel.ExpansionIds);
-            var result = await _sessionService.Update(play);
-            var viewModel = _mapper.Map<SessionViewModel>(result);
-            return new OkObjectResult(viewModel);
+            var result = await _sessionService.UpdateFromCommand(command);
+            return Ok(result.ToDto());
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message);
+            _logger.LogError(e, "Error updating session");
             return StatusCode(500);
         }
     }
-    
+
     [HttpDelete]
     [Route("{id:int}")]
     public async Task<IActionResult> DeleteSession(int id)
     {
         await _sessionService.Delete(id);
-        return new OkObjectResult(new DeletionResultViewModel(ResultState.Success));
+        return Ok(new { success = true });
     }
 }

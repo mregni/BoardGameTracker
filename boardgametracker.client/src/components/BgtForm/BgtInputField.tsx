@@ -1,18 +1,16 @@
-import { Control, Controller, FieldValues, Path, PathValue, useController } from 'react-hook-form';
+import { memo } from 'react';
 import { format } from 'date-fns';
 import { cx } from 'class-variance-authority';
+import { AnyFieldApi } from '@tanstack/react-form';
 
 import { BgtText } from '../BgtText/BgtText';
 
-import { BgtFormErrors } from './BgtFormErrors';
+import { FormFieldWrapper } from './FormFieldWrapper';
 
-export interface Props<T extends FieldValues> {
+export interface BgtInputFieldProps {
+  field: AnyFieldApi;
   type: 'text' | 'number' | 'datetime-local' | 'date';
-  name: Path<T>;
   placeholder?: string;
-  control: Control<T>;
-  valueAsNumber?: boolean;
-  defaultValue?: PathValue<T, Path<T>>;
   label?: string;
   prefixLabel?: string;
   suffixLabel?: string;
@@ -23,13 +21,16 @@ export interface Props<T extends FieldValues> {
 const formatDateToLocalInput = (date: Date) => {
   try {
     return format(date, "yyyy-MM-dd'T'HH:mm");
-  } catch (error) {
+  } catch {
     return '';
   }
 };
 
-const formatInput = (input: string | undefined, type: 'text' | 'number' | 'datetime-local' | 'date') => {
-  if (input === undefined || input === null) {
+const formatInput = (
+  input: string | number | Date | undefined,
+  type: 'text' | 'number' | 'datetime-local' | 'date'
+) => {
+  if (input === undefined || input === null || input === '') {
     return '';
   }
 
@@ -37,64 +38,58 @@ const formatInput = (input: string | undefined, type: 'text' | 'number' | 'datet
     return formatDateToLocalInput(new Date(input));
   }
   if (type === 'date') {
-    return format(new Date(input), 'yyyy-MM-dd');
+    try {
+      return format(new Date(input), 'yyyy-MM-dd');
+    } catch {
+      return '';
+    }
   }
 
-  return input;
+  return String(input);
 };
 
-export const BgtInputField = <T extends FieldValues>(props: Props<T>) => {
+const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
   const {
+    field,
     type,
-    name,
     placeholder = '',
-    valueAsNumber,
     label,
-    defaultValue,
-    control,
     prefixLabel = undefined,
     suffixLabel = undefined,
     className = '',
     disabled = false,
   } = props;
 
-  const {
-    fieldState: { error },
-  } = useController({ name, control, defaultValue });
+  const hasErrors = field.state.meta.errors.length > 0;
 
   return (
-    <div className="flex flex-col justify-start w-full">
-      <div className="flex items-baseline justify-between">
-        <div className="text-[15px] font-medium leading-[35px] uppercase">{label}</div>
-        {<BgtFormErrors error={error} />}
-      </div>
-      <Controller
-        name={name}
-        control={control}
-        defaultValue={defaultValue}
-        render={({ field }) => (
-          <div
-            className={cx(
-              'rounded-lg bg-input active:border-none px-4 flex flex-row gap-2 items-center text-[12px]',
-              className,
-              error && 'border border-red-600 !bg-error-dark'
-            )}
-          >
-            {prefixLabel && <BgtText>{prefixLabel}</BgtText>}
-            <input
-              className="h-[45px] bg-transparent shadow-none focus:outline-none hide-arrow w-full"
-              value={formatInput(field.value, type)}
-              disabled={disabled}
-              type={type}
-              onChange={(event) =>
-                valueAsNumber ? field.onChange(+event.target.value) : field.onChange(event.target.value)
-              }
-              placeholder={placeholder.toUpperCase()}
-            />
-            {suffixLabel && <BgtText>{suffixLabel}</BgtText>}
-          </div>
+    <FormFieldWrapper label={label} errors={field.state.meta.errors} className="w-full">
+      <div
+        className={cx(
+          'rounded-lg active:border-none flex flex-row gap-2 items-center text-[12px]',
+          className,
+          hasErrors && 'border border-error bg-error/5!'
         )}
-      />
-    </div>
+      >
+        {prefixLabel && <BgtText color="white">{prefixLabel}</BgtText>}
+        <input
+          className="w-full bg-background font- text-white px-4 py-3 rounded-lg border border-primary/30 focus:border-primary focus:outline-none"
+          value={formatInput(field.state.value, type)}
+          disabled={disabled}
+          type={type}
+          onChange={(event) => {
+            const value = type === 'number' ? +event.target.value : event.target.value;
+            field.handleChange(value);
+          }}
+          onBlur={field.handleBlur}
+          placeholder={placeholder.toUpperCase()}
+        />
+        {suffixLabel && <BgtText color="white">{suffixLabel}</BgtText>}
+      </div>
+    </FormFieldWrapper>
   );
 };
+
+BgtInputFieldComponent.displayName = 'BgtInputField';
+
+export const BgtInputField = memo(BgtInputFieldComponent);

@@ -11,4 +11,11 @@ public static class Constants
         public const string Publisher = "boardgamepublisher";
         public const string Expansion = "boardgameexpansion";
     }
+    
+    public static class Game
+    {
+        public const int ChartHistoryDays = 200;
+        public const int TopPlayersCount = 5;
+    }
+
 }

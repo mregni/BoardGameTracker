@@ -4,5 +4,5 @@ namespace BoardGameTracker.Core.Compares.Interfaces;
 
 public interface ICompareService
 {
-    Task<CompareResult> GetPlayerComparisation(int playerOne, int playerTwo);
+    Task<CompareResultDto> GetPlayerComparisation(int playerOne, int playerTwo);
 }

@@ -3,27 +3,21 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import CloseIcon from '@/assets/icons/x.svg?react';
 
-const badgeVariants = cva('group px-3 py-2 rounded-md uppercase text-xs flex flex-row gap-2', {
+const badgeVariants = cva('group px-3 py-1 rounded-full uppercase text-xs flex flex-row gap-2 border', {
   variants: {
     variant: {
       soft: '',
     },
     color: {
-      green: 'text-mint-green bg-[#34FFAA1F]',
-      red: '',
+      green: 'text-card-value bg-[#34FFAA1F]',
+      red: 'text-error-dark y bg-error-dark/20 border-error-dark/30',
+      primary: 'text-primary bg-primary/20 border-primary/30',
     },
     interactive: {
-      true: 'cursor-pointer hover:bg-[#34ffaa4a] transition-colors duration-200',
+      true: 'cursor-pointer',
       false: '',
     },
   },
-  compoundVariants: [
-    {
-      variant: 'soft',
-      color: 'green',
-      className: 'group-hover:bg-[#34ffaa4a]',
-    },
-  ],
   defaultVariants: {
     variant: 'soft',
     color: 'green',
@@ -36,7 +30,7 @@ interface Props extends Omit<ComponentPropsWithoutRef<'div'>, 'color'>, VariantP
 }
 
 export const BgtBadge = (props: Props) => {
-  const { className, children, variant, color, onClick, onClose } = props;
+  const { className, children, variant, color, onClick, onClose, ...rest } = props;
 
   const badgeClasses = badgeVariants({
     variant,
@@ -45,10 +39,15 @@ export const BgtBadge = (props: Props) => {
     className,
   });
 
+  const handleClose = (e: React.MouseEvent<SVGSVGElement>) => {
+    e.stopPropagation();
+    onClose?.();
+  };
+
   return (
-    <div className={badgeClasses} onClick={onClick}>
+    <div className={badgeClasses} onClick={onClick} {...rest}>
       {children}
-      {onClose && <CloseIcon onClick={onClose} className="size-4 cursor-pointer" />}
+      {onClose && <CloseIcon onClick={handleClose} className="cursor-pointer" />}
     </div>
   );
 };

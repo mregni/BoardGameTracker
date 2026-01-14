@@ -2,6 +2,7 @@
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Datastore;
@@ -37,6 +38,7 @@ public class MainDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         BuildIds(builder);
+        ConfigureValueObjects(builder);
         BuildGame(builder);
         BuildGameSessions(builder);
         BuildPlayer(builder);
@@ -63,6 +65,59 @@ public class MainDbContext : DbContext
         }
     }
 
+    private static void ConfigureValueObjects(ModelBuilder builder)
+    {
+        builder.Entity<Game>()
+            .OwnsOne(g => g.BuyingPrice, cost =>
+            {
+                cost.Property(c => c.Amount)
+                    .HasColumnName(nameof(Game.BuyingPrice))
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+            });
+        
+        builder.Entity<Game>()
+            .OwnsOne(g => g.SoldPrice, cost =>
+            {
+                cost.Property(c => c.Amount)
+                    .HasColumnName(nameof(Game.SoldPrice))
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+            });
+        
+        builder.Entity<Game>()
+            .OwnsOne(g => g.Rating, cost =>
+            {
+                cost.Property(c => c.Value)
+                    .HasColumnName(nameof(Game.Rating))
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+            });
+
+        builder.Entity<Game>()
+            .OwnsOne(g => g.Weight, cost =>
+            {
+                cost.Property(c => c.Value)
+                    .HasColumnName(nameof(Game.Weight))
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+            });
+        
+        builder.Entity<Game>()
+            .OwnsOne(x => x.PlayerCount, pcr =>
+            {
+                pcr.Property(p => p.Min).HasColumnName("MinPlayers");
+                pcr.Property(p => p.Max).HasColumnName("MaxPlayers");
+            });
+
+        builder.Entity<Game>()
+            .OwnsOne(x => x.PlayTime, ptr =>
+            {
+                ptr.Property(p => p.MinMinutes).HasColumnName("MinPlayTime");
+                ptr.Property(p => p.MaxMinutes).HasColumnName("MaxPlayTime");
+            });
+    }
+
     private static void BuildLoans(ModelBuilder builder)
     {
         builder.Entity<Loan>()
@@ -80,6 +135,10 @@ public class MainDbContext : DbContext
 
     private static void BuildGame(ModelBuilder builder)
     {
+        builder.Entity<Game>()
+            .HasIndex(x => x.BggId)
+            .IsUnique();
+
         builder.Entity<Game>()
             .HasMany(x => x.Expansions)
             .WithOne(x => x.Game)
@@ -181,240 +240,45 @@ public class MainDbContext : DbContext
         builder
             .Entity<Badge>()
             .HasData(
-                new Badge
-                {
-                    Id = 1, Type = BadgeType.DifferentGames, Level = BadgeLevel.Green,
-                    DescriptionKey = "different-games.green.description",
-                    TitleKey = "different-games.green.title", Image = "different-games-green.png"
-                },
-                new Badge
-                {
-                    Id = 2, Type = BadgeType.DifferentGames, Level = BadgeLevel.Blue,
-                    DescriptionKey = "different-games.blue.description",
-                    TitleKey = "different-games.blue.title", Image = "different-games-blue.png"
-                },
-                new Badge
-                {
-                    Id = 3, Type = BadgeType.DifferentGames, Level = BadgeLevel.Red,
-                    DescriptionKey = "different-games.red.description",
-                    TitleKey = "different-games.red.title", Image = "different-games-red.png"
-                },
-                new Badge
-                {
-                    Id = 4, Type = BadgeType.DifferentGames, Level = BadgeLevel.Gold,
-                    DescriptionKey = "different-games.gold.description",
-                    TitleKey = "different-games.gold.title", Image = "different-games-gold.png"
-                },
-                new Badge
-                {
-                    Id = 5, Type = BadgeType.Sessions, Level = BadgeLevel.Green,
-                    DescriptionKey = "sessions.green.description",
-                    TitleKey = "sessions.green.title", Image = "sessions-green.png"
-                },
-                new Badge
-                {
-                    Id = 6, Type = BadgeType.Sessions, Level = BadgeLevel.Blue,
-                    DescriptionKey = "sessions.blue.description",
-                    TitleKey = "sessions.blue.title", Image = "sessions-blue.png"
-                },
-                new Badge
-                {
-                    Id = 7, Type = BadgeType.Sessions, Level = BadgeLevel.Red,
-                    DescriptionKey = "sessions.red.description",
-                    TitleKey = "sessions.red.title", Image = "sessions-red.png"
-                },
-                new Badge
-                {
-                    Id = 8, Type = BadgeType.Sessions, Level = BadgeLevel.Gold,
-                    DescriptionKey = "sessions.gold.description",
-                    TitleKey = "sessions.gold.title", Image = "sessions-gold.png"
-                },
-                new Badge
-                {
-                    Id = 9, Type = BadgeType.Wins, Level = BadgeLevel.Green,
-                    DescriptionKey = "wins.green.description",
-                    TitleKey = "wins.green.title", Image = "wins-green.png"
-                },
-                new Badge
-                {
-                    Id = 10, Type = BadgeType.Wins, Level = BadgeLevel.Blue,
-                    DescriptionKey = "wins.blue.description",
-                    TitleKey = "wins.blue.title", Image = "wins-blue.png"
-                },
-                new Badge
-                {
-                    Id = 11, Type = BadgeType.Wins, Level = BadgeLevel.Red,
-                    DescriptionKey = "wins.red.description",
-                    TitleKey = "wins.red.title", Image = "wins-red.png"
-                },
-                new Badge
-                {
-                    Id = 12, Type = BadgeType.Wins, Level = BadgeLevel.Gold,
-                    DescriptionKey = "wins.gold.description",
-                    TitleKey = "wins.gold.title", Image = "wins-gold.png"
-                },
-                new Badge
-                {
-                    Id = 13, Type = BadgeType.Duration, Level = BadgeLevel.Green,
-                    DescriptionKey = "duration.green.description",
-                    TitleKey = "duration.green.title", Image = "duration-green.png"
-                },
-                new Badge
-                {
-                    Id = 14, Type = BadgeType.Duration, Level = BadgeLevel.Blue,
-                    DescriptionKey = "duration.blue.description",
-                    TitleKey = "duration.blue.title", Image = "duration-blue.png"
-                },
-                new Badge
-                {
-                    Id = 15, Type = BadgeType.Duration, Level = BadgeLevel.Red,
-                    DescriptionKey = "duration.red.description",
-                    TitleKey = "duration.red.title", Image = "duration-red.png"
-                },
-                new Badge
-                {
-                    Id = 16, Type = BadgeType.Duration, Level = BadgeLevel.Gold,
-                    DescriptionKey = "duration.gold.description",
-                    TitleKey = "duration.gold.title", Image = "duration-gold.png"
-                },
-                new Badge
-                {
-                    Id = 17, Type = BadgeType.WinPercentage, Level = BadgeLevel.Green,
-                    DescriptionKey = "win-percentage.green.description",
-                    TitleKey = "win-percentage.green.title", Image = "win-percentage-green.png"
-                },
-                new Badge
-                {
-                    Id = 18, Type = BadgeType.WinPercentage, Level = BadgeLevel.Blue,
-                    DescriptionKey = "win-percentage.blue.description",
-                    TitleKey = "win-percentage.blue.title", Image = "win-percentage-blue.png"
-                },
-                new Badge
-                {
-                    Id = 19, Type = BadgeType.WinPercentage, Level = BadgeLevel.Red,
-                    DescriptionKey = "win-percentage.red.description",
-                    TitleKey = "win-percentage.red.title", Image = "win-percentage-red.png"
-                },
-                new Badge
-                {
-                    Id = 20, Type = BadgeType.WinPercentage, Level = BadgeLevel.Gold,
-                    DescriptionKey = "win-percentage.gold.description",
-                    TitleKey = "win-percentage.gold.title", Image = "win-percentage-gold.png"
-                },
-                new Badge
-                {
-                    Id = 21, Type = BadgeType.SoloSpecialist, Level = BadgeLevel.Green,
-                    DescriptionKey = "solo-specialist.green.description",
-                    TitleKey = "solo-specialist.green.title", Image = "solo-specialist-green.png"
-                },
-                new Badge
-                {
-                    Id = 22, Type = BadgeType.SoloSpecialist, Level = BadgeLevel.Blue,
-                    DescriptionKey = "solo-specialist.blue.description",
-                    TitleKey = "solo-specialist.blue.title", Image = "solo-specialist-blue.png"
-                },
-                new Badge
-                {
-                    Id = 23, Type = BadgeType.SoloSpecialist, Level = BadgeLevel.Red,
-                    DescriptionKey = "solo-specialist.red.description",
-                    TitleKey = "solo-specialist.red.title", Image = "solo-specialist-red.png"
-                },
-                new Badge
-                {
-                    Id = 24, Type = BadgeType.SoloSpecialist, Level = BadgeLevel.Gold,
-                    DescriptionKey = "solo-specialist.gold.description",
-                    TitleKey = "solo-specialist.gold.title", Image = "solo-specialist-gold.png"
-                },
-                new Badge
-                {
-                    Id = 25, Type = BadgeType.WinningStreak, Level = BadgeLevel.Green,
-                    DescriptionKey = "winning-streak.green.description",
-                    TitleKey = "winning-streak.green.title", Image = "winning-streak-green.png"
-                },
-                new Badge
-                {
-                    Id = 26, Type = BadgeType.WinningStreak, Level = BadgeLevel.Blue,
-                    DescriptionKey = "winning-streak.blue.description",
-                    TitleKey = "winning-streak.blue.title", Image = "winning-streak-blue.png"
-                },
-                new Badge
-                {
-                    Id = 27, Type = BadgeType.WinningStreak, Level = BadgeLevel.Red,
-                    DescriptionKey = "winning-streak.red.description",
-                    TitleKey = "winning-streak.red.title", Image = "winning-streak-red.png"
-                },
-                new Badge
-                {
-                    Id = 28, Type = BadgeType.WinningStreak, Level = BadgeLevel.Gold,
-                    DescriptionKey = "winning-streak.gold.description",
-                    TitleKey = "winning-streak.gold.title", Image = "winning-streak-gold.png"
-                },
-                new Badge
-                {
-                    Id = 29, Type = BadgeType.SocialPlayer, Level = BadgeLevel.Green,
-                    DescriptionKey = "social-player.green.description",
-                    TitleKey = "social-player.green.title", Image = "social-player-green.png"
-                },
-                new Badge
-                {
-                    Id = 30, Type = BadgeType.SocialPlayer, Level = BadgeLevel.Blue,
-                    DescriptionKey = "social-player.blue.description",
-                    TitleKey = "social-player.blue.title", Image = "social-player-blue.png"
-                },
-                new Badge
-                {
-                    Id = 31, Type = BadgeType.SocialPlayer, Level = BadgeLevel.Red,
-                    DescriptionKey = "social-player.red.description",
-                    TitleKey = "social-player.red.title", Image = "social-player-red.png"
-                },
-                new Badge
-                {
-                    Id = 32, Type = BadgeType.SocialPlayer, Level = BadgeLevel.Gold,
-                    DescriptionKey = "social-player.gold.description",
-                    TitleKey = "social-player.gold.title", Image = "social-player-gold.png"
-                },
-                new Badge
-                {
-                    Id = 33, Type = BadgeType.CloseWin, Level = null,
-                    DescriptionKey = "close-win.description",
-                    TitleKey = "close-win.title", Image = "close-win.png"
-                },
-                new Badge
-                {
-                    Id = 34, Type = BadgeType.CLoseLoss, Level = null,
-                    DescriptionKey = "close-loss.description",
-                    TitleKey = "close-loss.title", Image = "close-loss.png"
-                },
-                new Badge()
-                {
-                    Id = 35, Type = BadgeType.MarathonRunner, Level = null,
-                    DescriptionKey = "marathon-runner.description",
-                    TitleKey = "marathon-runner.title", Image = "marathon.png"
-                },
-                new Badge
-                {
-                    Id = 36, Type = BadgeType.FirstTry, Level = null,
-                    DescriptionKey = "first-try.description",
-                    TitleKey = "first-try.title", Image = "first-try.png"
-                },
-                new Badge
-                {
-                    Id = 37, Type = BadgeType.LearningCurve, Level = null,
-                    DescriptionKey = "learning-curve.description",
-                    TitleKey = "learning-curve.title", Image = "learning-curve.png"
-                },
-                new Badge
-                {
-                    Id = 38, Type = BadgeType.MonthlyGoal, Level = null,
-                    DescriptionKey = "monthly-goal.description",
-                    TitleKey = "monthly-goal.title", Image = "monthly-goal.png"
-                },
-                new Badge
-                {
-                    Id = 39, Type = BadgeType.ConsistentSchedule, Level = null,
-                    DescriptionKey = "consistent-schedule.description",
-                    TitleKey = "consistent-schedule.title", Image = "consistent-schedule.png"
-                }
+                Badge.CreateWithId(1, "different-games.green.title", "different-games.green.description", BadgeType.DifferentGames, "different-games-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(2, "different-games.blue.title", "different-games.blue.description", BadgeType.DifferentGames, "different-games-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(3, "different-games.red.title", "different-games.red.description", BadgeType.DifferentGames, "different-games-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(4, "different-games.gold.title", "different-games.gold.description", BadgeType.DifferentGames, "different-games-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(5, "sessions.green.title", "sessions.green.description", BadgeType.Sessions, "sessions-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(6, "sessions.blue.title", "sessions.blue.description", BadgeType.Sessions, "sessions-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(7, "sessions.red.title", "sessions.red.description", BadgeType.Sessions, "sessions-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(8, "sessions.gold.title", "sessions.gold.description", BadgeType.Sessions, "sessions-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(9, "wins.green.title", "wins.green.description", BadgeType.Wins, "wins-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(10, "wins.blue.title", "wins.blue.description", BadgeType.Wins, "wins-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(11, "wins.red.title", "wins.red.description", BadgeType.Wins, "wins-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(12, "wins.gold.title", "wins.gold.description", BadgeType.Wins, "wins-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(13, "duration.green.title", "duration.green.description", BadgeType.Duration, "duration-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(14, "duration.blue.title", "duration.blue.description", BadgeType.Duration, "duration-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(15, "duration.red.title", "duration.red.description", BadgeType.Duration, "duration-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(16, "duration.gold.title", "duration.gold.description", BadgeType.Duration, "duration-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(17, "win-percentage.green.title", "win-percentage.green.description", BadgeType.WinPercentage, "win-percentage-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(18, "win-percentage.blue.title", "win-percentage.blue.description", BadgeType.WinPercentage, "win-percentage-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(19, "win-percentage.red.title", "win-percentage.red.description", BadgeType.WinPercentage, "win-percentage-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(20, "win-percentage.gold.title", "win-percentage.gold.description", BadgeType.WinPercentage, "win-percentage-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(21, "solo-specialist.green.title", "solo-specialist.green.description", BadgeType.SoloSpecialist, "solo-specialist-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(22, "solo-specialist.blue.title", "solo-specialist.blue.description", BadgeType.SoloSpecialist, "solo-specialist-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(23, "solo-specialist.red.title", "solo-specialist.red.description", BadgeType.SoloSpecialist, "solo-specialist-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(24, "solo-specialist.gold.title", "solo-specialist.gold.description", BadgeType.SoloSpecialist, "solo-specialist-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(25, "winning-streak.green.title", "winning-streak.green.description", BadgeType.WinningStreak, "winning-streak-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(26, "winning-streak.blue.title", "winning-streak.blue.description", BadgeType.WinningStreak, "winning-streak-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(27, "winning-streak.red.title", "winning-streak.red.description", BadgeType.WinningStreak, "winning-streak-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(28, "winning-streak.gold.title", "winning-streak.gold.description", BadgeType.WinningStreak, "winning-streak-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(29, "social-player.green.title", "social-player.green.description", BadgeType.SocialPlayer, "social-player-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(30, "social-player.blue.title", "social-player.blue.description", BadgeType.SocialPlayer, "social-player-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(31, "social-player.red.title", "social-player.red.description", BadgeType.SocialPlayer, "social-player-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(32, "social-player.gold.title", "social-player.gold.description", BadgeType.SocialPlayer, "social-player-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(33, "close-win.title", "close-win.description", BadgeType.CloseWin, "close-win.png"),
+                Badge.CreateWithId(34, "close-loss.title", "close-loss.description", BadgeType.CLoseLoss, "close-loss.png"),
+                Badge.CreateWithId(35, "marathon-runner.title", "marathon-runner.description", BadgeType.MarathonRunner, "marathon.png"),
+                Badge.CreateWithId(36, "first-try.title", "first-try.description", BadgeType.FirstTry, "first-try.png"),
+                Badge.CreateWithId(37, "learning-curve.title", "learning-curve.description", BadgeType.LearningCurve, "learning-curve.png"),
+                Badge.CreateWithId(38, "monthly-goal.title", "monthly-goal.description", BadgeType.MonthlyGoal, "monthly-goal.png"),
+                Badge.CreateWithId(39, "consistent-schedule.title", "consistent-schedule.description", BadgeType.ConsistentSchedule, "consistent-schedule.png")
             );
     }
 }

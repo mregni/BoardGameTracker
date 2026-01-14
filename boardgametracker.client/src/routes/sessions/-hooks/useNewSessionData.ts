@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 
 import { addSessionCall } from '@/services/sessionService';
-import { QUERY_KEYS } from '@/models';
+import { useQueryInvalidator } from '@/hooks/useQueryInvalidator';
 
 interface Props {
   onSaveSuccess?: () => void;
@@ -9,24 +9,14 @@ interface Props {
 }
 
 export const useNewSessionData = ({ onSaveSuccess, onSaveError }: Props) => {
-  const queryClient = useQueryClient();
+  const invalidator = useQueryInvalidator();
 
   const saveSessionMutation = useMutation({
     mutationFn: addSessionCall,
     async onSuccess(sessionResult) {
       onSaveSuccess?.();
 
-      const maps = sessionResult.playerSessions.map(async (x) => {
-        return await queryClient.invalidateQueries({
-          queryKey: [QUERY_KEYS.players, x.playerId, QUERY_KEYS.sessions],
-        });
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.game, sessionResult.gameId],
-      });
-
-      await Promise.all(maps);
+      await invalidator.invalidateSession(sessionResult.id, sessionResult.gameId);
     },
     onError: () => {
       onSaveError?.();

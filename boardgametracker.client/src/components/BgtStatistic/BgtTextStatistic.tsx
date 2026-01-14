@@ -1,3 +1,6 @@
+import { cloneElement, isValidElement } from 'react';
+import { cx } from 'class-variance-authority';
+
 import { BgtText } from '../BgtText/BgtText';
 import { BgtCard } from '../BgtCard/BgtCard';
 
@@ -6,23 +9,33 @@ interface Props {
   content: string | number | null;
   suffix?: string | number | null;
   prefix?: string | number | null;
+  icon?: React.ReactNode;
+  iconClassName?: string;
 }
 
 export const BgtTextStatistic = (props: Props) => {
-  const { title, content, suffix = null, prefix = null } = props;
+  const { title, content, suffix, prefix, icon, iconClassName } = props;
 
   if (content === null || content === undefined) return null;
 
+  const iconWithClasses =
+    icon && isValidElement(icon)
+      ? cloneElement(icon as React.ReactElement<{ className?: string }>, {
+          className: cx('size-5', (icon.props as { className?: string }).className, iconClassName),
+        })
+      : icon;
+
   return (
     <BgtCard className="col-span-1">
-      <div className="flex flex-col items-center">
-        <BgtText weight="bold" className="text-mint-green text-lg md:text-3xl">
-          {prefix && <span>{prefix}&nbsp;</span>}
-          {content.toLocaleString()}
-          {suffix && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
-        </BgtText>
-        <BgtText className="uppercase text-[10px] md:text-base">{title}</BgtText>
+      <div className="flex items-center gap-2 text-primary/70 uppercase mb-2">
+        {iconWithClasses}
+        <span>{title}</span>
       </div>
+      <BgtText size="5" color="cyan" weight="bold">
+        {prefix && <span>{prefix}&nbsp;</span>}
+        {content.toLocaleString()}
+        {suffix && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
+      </BgtText>
     </BgtCard>
   );
 };

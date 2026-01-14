@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
@@ -473,7 +474,7 @@ public class GameServiceTests
     {
         const int gameId = 1;
         var sessions = CreateSessionsWithPlayerSessions();
-        var topPlayers = new List<TopPlayer>
+        var topPlayers = new List<TopPlayerDto>
         {
             new() {PlayerId = 1, Wins = 5, PlayCount = 10},
             new() {PlayerId = 2, Wins = 3, PlayCount = 8},

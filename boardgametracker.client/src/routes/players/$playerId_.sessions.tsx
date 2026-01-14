@@ -1,5 +1,5 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
-import { t } from 'i18next';
 import { format } from 'date-fns';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
@@ -9,6 +9,7 @@ import { useToasts } from '../-hooks/useToasts';
 import { usePlayerSessionData } from './-hooks/usePlayerSessionData';
 
 import { StringToHsl } from '@/utils/stringUtils';
+import { playerIdParamSchema } from '@/utils/routeSchemas';
 import { getSettings } from '@/services/queries/settings';
 import { getPlayer, getPlayers, getPlayerSessions } from '@/services/queries/players';
 import { getGames } from '@/services/queries/games';
@@ -24,6 +25,7 @@ import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
 
 export const Route = createFileRoute('/players/$playerId_/sessions')({
   component: RouteComponent,
+  params: playerIdParamSchema,
   loader: ({ params, context: { queryClient } }) => {
     queryClient.prefetchQuery(getSettings());
     queryClient.prefetchQuery(getGames());
@@ -35,18 +37,17 @@ export const Route = createFileRoute('/players/$playerId_/sessions')({
 
 function RouteComponent() {
   const { playerId } = Route.useParams();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { infoToast } = useToasts();
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
-  const onDeleteSuccess = () => {
-    infoToast('sessions.notifications.deleted');
-    setSessionToDelete(null);
-  };
-
-  const { sessions, deleteSession, settings, games, player, players } = usePlayerSessionData({
+  const { sessions, deleteSession, settings, games, player, players, isLoading } = usePlayerSessionData({
     playerId,
-    onDeleteSuccess,
+    onDeleteSuccess: () => {
+      infoToast('sessions.notifications.deleted');
+      setSessionToDelete(null);
+    },
   });
 
   const columns: DataTableProps<Session>['columns'] = useMemo(
@@ -113,7 +114,7 @@ function RouteComponent() {
                   key={`${player.playerId}_${player.sessionId}`}
                   player={players.find((x) => x.id === player.playerId)}
                   playerSession={player}
-                  game={games.find((x) => x.id == row.original.gameId)}
+                  game={games.find((x) => x.id === row.original.gameId)}
                 />
               ))}
           </div>
@@ -141,20 +142,22 @@ function RouteComponent() {
             onEdit={() => navigate({ to: `/sessions/update/${row.original.id}` })}
           />
         ),
-        header: <div className="flex justify-end">{t('common.actions')}</div>,
+        header: () => <div className="flex justify-end">{t('common.actions')}</div>,
       },
     ],
-    [games, navigate, settings?.dateFormat, settings?.timeFormat, players]
+    [games, navigate, settings?.dateFormat, settings?.timeFormat, players, t]
   );
 
-  if (player === undefined) return null;
+  if (isLoading || player === undefined) return null;
 
   return (
     <BgtPage>
       <BgtPageHeader
-        backAction={() => navigate({ to: `/games/${playerId}` })}
+        backAction={() => navigate({ to: `/players/${playerId}` })}
         header={`${player.name} - ${t(`sessions.title`)}`}
-        actions={[{ onClick: () => navigate({ to: `/sessions/new` }), variant: `solid`, content: `game.add` }]}
+        actions={[
+          { onClick: () => navigate({ to: `/sessions/new` }), variant: `primary`, content: `sessions.new.button` },
+        ]}
       />
       <BgtPageContent>
         <BgtCard className="p-4">

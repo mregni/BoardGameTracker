@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
 
 import { getPlayers } from '@/services/queries/players';
@@ -9,12 +8,12 @@ export const usePlayerById = () => {
     queries: [getPlayers()],
   });
 
-  const players = useMemo(() => playersQuery.data ?? [], [playersQuery.data]);
+  const players = playersQuery.data ?? [];
 
-  const playerById = (id: string | number | undefined): Player | null => {
+  const playerById = (id: number | undefined): Player | null => {
     if (id === undefined) return null;
 
-    const index = players.findIndex((x) => x.id === id.toString());
+    const index = players.findIndex((x) => x.id === id);
     if (index !== -1) {
       return players[index];
     }

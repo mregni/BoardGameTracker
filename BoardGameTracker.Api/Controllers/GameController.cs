@@ -1,81 +1,73 @@
-﻿using AutoMapper;
-using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models.Bgg;
-using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Common.ViewModels.Results;
+using BoardGameTracker.Core.Games.DomainServices;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
-[ApiController]
 [Route("api/game")]
-public class GameController : ControllerBase
+public class GameController : BaseApiController
 {
     private readonly IGameService _gameService;
-    private readonly IMapper _mapper;
+    private readonly IGameStatisticsDomainService  _gameStatisticsDomainService;
 
-    public GameController(IGameService gameService, IMapper mapper)
+    public GameController(IGameService gameService, IGameStatisticsDomainService gameStatisticsDomainService)
     {
         _gameService = gameService;
-        _mapper = mapper;
+        _gameStatisticsDomainService = gameStatisticsDomainService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetGames()
     {
         var games = await _gameService.GetGames();
-        var mappedGames = _mapper.Map<IList<GameViewModel>>(games);
-
-        return new OkObjectResult(mappedGames);
+        return Ok(games.ToListDto());
     }
 
     [HttpPost]
     [Route("")]
-    public async Task<IActionResult> CreateGame([FromBody] CreateGameViewModel? gameViewModel)
+    public async Task<IActionResult> CreateGame([FromBody] CreateGameCommand? command)
     {
-        if (gameViewModel == null)
+        if (command == null)
         {
-            return new BadRequestResult();
+            return BadRequest();
         }
 
-        var game = _mapper.Map<Game>(gameViewModel);
-        game = await _gameService.CreateGame(game);
-        return new OkObjectResult(_mapper.Map<GameViewModel>(game));
+        var game = await _gameService.CreateGameFromCommand(command);
+        return Ok(game.ToDto());
     }
 
     [HttpPut]
     [Route("")]
-    public async Task<IActionResult> UpdateGame([FromBody] GameViewModel? gameViewModel)
+    public async Task<IActionResult> UpdateGame([FromBody] GameDto? dto)
     {
-        if (gameViewModel == null)
+        if (dto == null)
         {
-            return new BadRequestResult();
+            return BadRequest();
         }
 
         try
         {
-            var game = _mapper.Map<Game>(gameViewModel);
+            var game = dto.ToEntity();
             game = await _gameService.UpdateGame(game);
-
-            return new OkObjectResult(_mapper.Map<GameViewModel>(game));
+            return Ok(game.ToDto());
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            return StatusCode(500);
+            return StatusCode(500, new { error = "An unexpected error occurred. Please try again later." });
         }
     }
-    
+
     [HttpDelete]
     [Route("{id:int}")]
     public async Task<IActionResult> DeleteGameById(int id)
     {
         await _gameService.Delete(id);
-        return new OkObjectResult(new DeletionResultViewModel(ResultState.Success));
+        return Ok(new { success = true });
     }
-
 
     [HttpGet]
     [Route("{id:int}")]
@@ -84,109 +76,103 @@ public class GameController : ControllerBase
         var game = await _gameService.GetGameById(id);
         if (game == null)
         {
-            return new NotFoundResult();
+            return NotFound();
         }
 
-        var viewModel = _mapper.Map<GameViewModel>(game);
-        return new OkObjectResult(viewModel);
+        return Ok(game.ToDto());
     }
-    
+
     [HttpPost("bgg/search")]
     public async Task<IActionResult> SearchOnBgg([FromBody] BggSearch search)
     {
         var existingGame = await _gameService.GetGameByBggId(search.BggId);
         if (existingGame != null)
         {
-            var existingGameViewModel = _mapper.Map<GameViewModel>(existingGame);
-            return new OkObjectResult(existingGameViewModel);
+            return Ok(existingGame.ToDto());
         }
 
         var game = await _gameService.SearchGame(search.BggId);
         if (game == null)
         {
-            return new BadRequestResult();
+            return BadRequest();
         }
 
-        var dbGame = await _gameService.ProcessBggGameData(game, search);
-        var result = _mapper.Map<GameViewModel>(dbGame);
-        return new OkObjectResult(result);
+        var dbGame = await _gameService.SearchOnBgg(game, search);
+        return Ok(dbGame.ToDto());
     }
-    
+
     [HttpGet("bgg/import")]
     public async Task<IActionResult> ImportBgg([FromQuery] string username)
     {
-        var result = await _gameService.ImportBggCollection(username); 
-        return new OkObjectResult(result);
+        var result = await _gameService.ImportBggCollection(username);
+        return Ok(result);
     }
-    
+
     [HttpPost("bgg/import")]
-    public async Task<IActionResult> ImportBggGames([FromBody] ImportGameListViewModal gameImport)
+    public async Task<IActionResult> ImportBggGames([FromBody] ImportBggGamesCommand command)
     {
         try
         {
-            var gamesToImport = _mapper.Map<IList<ImportGame>>(gameImport.Games);
-            await _gameService.ImportList(gamesToImport);
+            await _gameService.ImportList(command.Games);
+            return Ok(new { success = true });
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            return StatusCode(500, new { error = e.Message });
         }
-        
-        return new OkObjectResult(true);
     }
 
     [HttpGet]
     [Route("{id:int}/sessions")]
-    public async Task<IActionResult> GetGameSessionsById(int id)
+    public async Task<IActionResult> GetGameSessionsById(int id, [FromQuery] int? count)
     {
-        var sessions = await _gameService.GetSessionsForGame(id);
-
-        var viewModel = _mapper.Map<IList<SessionViewModel>>(sessions);
-        return new OkObjectResult(viewModel);
+        var sessions = await _gameService.GetSessionsForGame(id, count);
+        return Ok(sessions.ToListDto());
     }
-    
+
     [HttpGet]
     [Route("{id:int}/expansions")]
     public async Task<IActionResult> GetGameExpansions(int id)
     {
         var expansions = await _gameService.SearchExpansionsForGame(id);
-
-        var expansionsViewModel = _mapper.Map<IList<BggLinkViewModel>>(expansions);
-        return new OkObjectResult(expansionsViewModel);
+        return Ok(expansions);
     }
-    
+
     [HttpPost]
     [Route("{id:int}/expansions")]
-    public async Task<IActionResult> UpdateGameExpansions(int id, [FromBody] GameExpansionUpdateViewModel model)
+    public async Task<IActionResult> UpdateGameExpansions(int id, [FromBody] UpdateGameExpansionsCommand command)
     {
-        var expansions = await _gameService.UpdateGameExpansions(id, model.ExpansionBggIds);
-        
-        var viewModel = _mapper.Map<IList<Expansion>>(expansions);
-        return new OkObjectResult(viewModel);
+        var expansions = await _gameService.UpdateGameExpansions(id, command.ExpansionBggIds);
+        return Ok(expansions.ToListDto());
     }
-    
+
+    [HttpDelete]
+    [Route("{id:int}/expansion/{expansionId:int}")]
+    public async Task<IActionResult> DeleteGameExpansions(int id, int expansionId)
+    {
+        await _gameService.DeleteExpansion(id, expansionId);
+        return Ok(new { success = true });
+    }
+
     [HttpGet]
     [Route("{id:int}/statistics")]
     public async Task<IActionResult> GetGameStatistics(int id)
     {
-        var stats = await _gameService.GetStats(id);
+        var stats = await _gameStatisticsDomainService.CalculateStatisticsAsync(id);
         var topPlayers = await _gameService.GetTopPlayers(id);
         var playByDayChart = await _gameService.GetPlayByDayChart(id);
         var playerCountChart = await _gameService.GetPlayerCountChart(id);
         var playerScoringChart = await _gameService.GetPlayerScoringChart(id);
         var scoringRankChart = await _gameService.GetScoringRankedChart(id);
 
-        var result = new GameStatisticsViewModel
+        return Ok(new
         {
-            GameStats = _mapper.Map<GameStatsViewModel>(stats),
-            TopPlayers = _mapper.Map<IList<TopPlayerViewModel>>(topPlayers),
-            PlayByDayChart = _mapper.Map<IList<PlayByDayChartViewModel>>(playByDayChart),
-            PlayerCountChart = _mapper.Map<IList<PlayerCountChartViewModel>>(playerCountChart),
-            PlayerScoringChart = _mapper.Map<IList<PlayerScoringChartViewModel>>(playerScoringChart),
-            ScoreRankChart = _mapper.Map<IList<ScoreRankChartViewModel>>(scoringRankChart),
-        };
-        
-        return new OkObjectResult(result);
+            gameStats = stats,
+            topPlayers,
+            playByDayChart,
+            playerCountChart,
+            playerScoringChart,
+            scoreRankChart = scoringRankChart
+        });
     }
 }

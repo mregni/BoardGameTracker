@@ -9,13 +9,17 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const BgtCenteredCard = (props: Props) => {
-  const { children, className, title = null, ...rest } = props;
+  const { children, className, title, hide, ...rest } = props;
+
+  if (hide) {
+    return null;
+  }
 
   return (
     <div className="grid place-items-center md:h-full" {...rest}>
       <div
         className={cx(
-          'border-card-border border rounded-lg bg-card-black p-6 md:p-10 flex flex-col items-center gap-6',
+          'border-card-border border rounded-lg bg-card p-6 md:p-10 flex flex-col items-center gap-6',
           'min-w-full xl:min-w-[650px] lg:min-w-[500px] md:min-w-[450px]',
           className
         )}

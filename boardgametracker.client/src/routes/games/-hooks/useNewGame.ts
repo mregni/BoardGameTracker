@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { getSettings } from '@/services/queries/settings';
@@ -17,7 +16,7 @@ export const useNewGame = ({ onSaveSuccess, onSaveError }: Props) => {
     queries: [getSettings()],
   });
 
-  const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
+  const settings = settingsQuery.data;
 
   const saveGameMutation = useMutation({
     mutationFn: saveGameCall,
