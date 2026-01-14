@@ -35,7 +35,8 @@
         <ProjectReference Include="..\BoardGameTracker.Common\BoardGameTracker.Common.csproj" />
         <ProjectReference Include="..\BoardGameTracker.Core\BoardGameTracker.Core.csproj" />
         <ProjectReference Include="..\BoardGameTracker.Core\BoardGameTracker.Core.csproj" />
-        <ProjectReference Include="..\boardgametracker.client\boardgametracker.client.esproj">
+        <!-- Include frontend project for local development, exclude for Docker builds -->
+        <ProjectReference Include="..\boardgametracker.client\boardgametracker.client.esproj" Condition="'$(BuildWithoutEsproj)' != 'true'">
             <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
         </ProjectReference>
     </ItemGroup>
