@@ -268,7 +268,6 @@ jobs:
           tags: |
             type=raw,value=${{ needs.version.outputs.version }}
             type=raw,value=${{ github.ref == 'refs/heads/dev' && 'dev' || 'latest' }}
-            type=raw,value=${{ needs.version.outputs.version }}-{{date 'YYYYMMDD'}}
 
       - name: Build and Push Multi-Architecture Images
         uses: docker/build-push-action@v5
@@ -279,12 +278,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: |
-            type=registry,ref=${{ env.IMAGE_NAME }}:cache-build
-            type=registry,ref=${{ env.IMAGE_NAME }}:cache-runtime
-          cache-to: |
-            type=registry,ref=${{ env.IMAGE_NAME }}:cache-build,mode=max,image-manifest=true
-            type=registry,ref=${{ env.IMAGE_NAME }}:cache-runtime,mode=max,image-manifest=true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ needs.version.outputs.version }}
             BUILDKIT_INLINE_CACHE=1
