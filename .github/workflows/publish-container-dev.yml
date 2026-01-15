@@ -289,40 +289,6 @@ jobs:
             VERSION=${{ needs.version.outputs.version }}
             BUILDKIT_INLINE_CACHE=1
 
-  build-windows-container:
-    needs: [version, test-backend, test-frontend]
-    name: Build and Push Windows Container
-    runs-on: windows-2022
-    timeout-minutes: 90
-    if: github.event_name != 'pull_request'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Update package.json version
-        run: |
-          cd boardgametracker.client
-          npm version ${{ needs.version.outputs.version }} --no-git-tag-version
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and Push Windows Image
-        run: |
-          docker build `
-            -f Dockerfile.windows `
-            -t ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}-windows `
-            -t ${{ env.IMAGE_NAME }}:${{ github.ref == 'refs/heads/dev' && 'dev-windows' || 'windows-latest' }} `
-            --build-arg VERSION=${{ needs.version.outputs.version }} `
-            .
-          docker push ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}-windows
-          docker push ${{ env.IMAGE_NAME }}:${{ github.ref == 'refs/heads/dev' && 'dev-windows' || 'windows-latest' }}
-
   security-scan:
     needs: [version, build-linux-multiarch]
     name: Security Scan Container Images
@@ -376,7 +342,7 @@ jobs:
           retention-days: 90
 
   create-manifest:
-    needs: [version, build-linux-multiarch, build-windows-container, security-scan]
+    needs: [version, build-linux-multiarch, security-scan]
     name: Create Multi-Platform Manifest
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -392,13 +358,7 @@ jobs:
         run: |
           # Create manifest for latest tag (all platforms)
           docker manifest create ${{ env.IMAGE_NAME }}:latest \
-            ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }} \
-            ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}-windows
-
-          # Annotate Windows image
-          docker manifest annotate ${{ env.IMAGE_NAME }}:latest \
-            ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}-windows \
-            --os windows --arch amd64
+            ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}
 
           # Push manifest
           docker manifest push ${{ env.IMAGE_NAME }}:latest
