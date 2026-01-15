@@ -54,7 +54,7 @@ const GameFormBasicFieldsComponent = ({ form, disabled, currency }: GameFormBasi
             label={t('game.state.label')}
             disabled={disabled}
             items={Object.keys(GameState)
-              .filter((value) => !isNaN(Number(value)))
+              .filter((value) => !Number.isNaN(Number(value)))
               .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value }))}
           />
         )}

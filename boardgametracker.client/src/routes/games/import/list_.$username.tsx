@@ -150,7 +150,7 @@ function RouteComponent() {
             onChange={(value) => updateGame(row.original.bggId, { state: Number(value) })}
             disabled={row.original.inCollection}
             items={Object.keys(GameState)
-              .filter((value) => !isNaN(Number(value)))
+              .filter((value) => !Number.isNaN(Number(value)))
               .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: Number(value) }))}
           />
         ),

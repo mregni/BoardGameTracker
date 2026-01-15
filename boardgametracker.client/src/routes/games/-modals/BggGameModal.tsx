@@ -120,7 +120,7 @@ export const BggGameModal = (props: Props) => {
                   disabled={isPending}
                   label={t('game.state.label')}
                   items={Object.keys(GameState)
-                    .filter((value) => !isNaN(Number(value)))
+                    .filter((value) => !Number.isNaN(Number(value)))
                     .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value }))}
                 />
               )}

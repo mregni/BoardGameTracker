@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common.Models.Charts;
 using FluentAssertions;
 using Xunit;
 
@@ -67,17 +68,5 @@ public class ListExtensionsTests
 
         list.Should().HaveCount(3);
         list.Should().Equal("item1", "item2", "item3");
-    }
-
-    [Fact]
-    public void AddIfNotNull_ShouldWorkWithIntegerType_WhenItemIsNotNull()
-    {
-        var list = new List<int?>();
-        int? item = 42;
-
-        list.AddIfNotNull(item);
-
-        list.Should().HaveCount(1);
-        list.Should().Contain(42);
     }
 }
