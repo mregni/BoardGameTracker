@@ -340,7 +340,7 @@ jobs:
       - name: Build Summary
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
-          # ✅ Release v${{ needs.extract-version.outputs.version }} Published
+          # Release v${{ needs.extract-version.outputs.version }} Published
 
           ## Docker Images
 
