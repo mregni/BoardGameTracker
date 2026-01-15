@@ -33,7 +33,7 @@ jobs:
           enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
           namespace: beta
           bump_each_commit: true
-          version_format: "${{ github.ref == 'refs/heads/dev' && '${major}.${minor}.${patch}-beta.${increment}' || '${major}.${minor}.${patch}' }}"
+          version_format: "${{ github.ref == 'refs/heads/dev' && '${major}.${minor}.${patch}-beta' || '${major}.${minor}.${patch}' }}"
           debug: true
 
   test-frontend:
