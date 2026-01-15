@@ -54,7 +54,9 @@ COPY --from=frontend-build /src/dist BoardGameTracker.Host/wwwroot
 
 # Build and publish backend
 WORKDIR /src/BoardGameTracker.Host
-RUN dotnet publish -c Release -o /app/publish --no-restore --runtime win-x64 --self-contained false /p:Version=${VERSION} /p:BuildWithoutEsproj=true
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
+RUN $assemblyVersion = ('${VERSION}' -split '-')[0]; dotnet publish -c Release -o /app/publish --no-restore --runtime win-x64 --self-contained false /p:Version=$assemblyVersion /p:BuildWithoutEsproj=true
+SHELL ["cmd", "/S", "/C"]
 
 # Stage 3: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-windowsservercore-ltsc2022 AS runtime

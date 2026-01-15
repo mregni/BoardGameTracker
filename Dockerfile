@@ -64,11 +64,12 @@ COPY --from=frontend-build /src/dist BoardGameTracker.Host/wwwroot
 
 # Build and publish backend
 WORKDIR /src/BoardGameTracker.Host
-RUN dotnet publish \
+RUN ASSEMBLY_VERSION=$(echo "${VERSION}" | cut -d'-' -f1) && \
+    dotnet publish \
     -c Release \
     -o /app/publish \
     --no-restore \
-    /p:Version=${VERSION} \
+    /p:Version=${ASSEMBLY_VERSION} \
     /p:BuildWithoutEsproj=true
 
 # Stage 3: Runtime
