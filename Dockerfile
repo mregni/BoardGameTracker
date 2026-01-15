@@ -88,8 +88,12 @@ RUN apk add --no-cache curl
 # Copy published files from backend build stage
 COPY --from=backend-build /app/publish .
 
-# Create directories for data and images
-RUN mkdir -p /app/data /app/images /app/logs
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Create directories for data, images, config and logs with proper ownership
+RUN mkdir -p /app/data /app/images /app/logs /app/config && \
+    chown -R appuser:appgroup /app
 
 # Set environment variables
 ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
@@ -105,7 +109,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl --fail http://localhost:5444/api/health || exit 1
 
 # Run as non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
 CMD ["dotnet", "BoardGameTracker.Host.dll"]

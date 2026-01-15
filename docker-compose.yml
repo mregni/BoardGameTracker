@@ -6,20 +6,18 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ${IMAGE_PATH:-./images}:/app/images
-      - ${DATA_PATH:-./data}:/app/data
-      - ${LOG_PATH:-./logs}:/app/logs
+      - ./images:/app/images
+      - ./data:/app/data
+      - ./logs:/app/logs
     ports:
       - "${APP_PORT:-5444}:5444"
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-production}
-      - ASPNETCORE_URLS=${ASPNETCORE_URLS:-http://*:5444}
       - DB_HOST=db
-      - DB_USER=${DB_USER:-dev}
-      - DB_PASSWORD=${DB_PASSWORD:-CHANGEME}
-      - DB_NAME=${DB_NAME:-boardgametracker}
+      - DB_USER=dbuser
+      - DB_PASSWORD=CHANGEME
+      - DB_NAME=boardgametracker
       - DB_PORT=5432
-      - TZ=${TZ:-UTC}
+      - TZ=UTC
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
       interval: 30s
@@ -31,13 +29,13 @@ services:
     image: postgres:16
     restart: unless-stopped
     volumes:
-      - ${DB_PATH:-./postgres-data}:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=${DB_NAME:-boardgametracker}
-      - POSTGRES_USER=${DB_USER:-dev}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-CHANGEME}
+      - POSTGRES_DB=boardgametracker
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=CHANGEME
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dev} -d ${DB_NAME:-boardgametracker}"]
+      test: ["CMD-SHELL", "pg_isready -U dbuser -d boardgametracker"]
       interval: 10s
       timeout: 5s
       retries: 5
