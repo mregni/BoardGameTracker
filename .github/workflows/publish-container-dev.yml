@@ -177,6 +177,17 @@ jobs:
           name: frontend-tests
           path: boardgametracker.client/coverage
 
+      - name: Verify coverage files
+        run: |
+          echo "=== Frontend coverage files ==="
+          ls -la boardgametracker.client/coverage/ || echo "No frontend coverage directory"
+          echo "=== lcov.info first 20 lines ==="
+          head -20 boardgametracker.client/coverage/lcov.info || echo "No lcov.info file"
+          echo "=== sonar-report.xml first 20 lines ==="
+          head -20 boardgametracker.client/coverage/sonar-report.xml || echo "No sonar-report.xml file"
+          echo "=== Backend coverage files ==="
+          find TestResults -name "*.xml" -type f 2>/dev/null || echo "No backend coverage files"
+
       - name: Install dependencies
         run: dotnet restore
 
@@ -197,7 +208,8 @@ jobs:
             /d:sonar.testExecutionReportPaths="boardgametracker.client/coverage/sonar-report.xml" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js" \
             /d:sonar.typescript.tsconfigPaths="boardgametracker.client/tsconfig.json" \
-            /d:sonar.eslint.reportPaths="boardgametracker.client/coverage/eslint-report.json"
+            /d:sonar.eslint.reportPaths="boardgametracker.client/coverage/eslint-report.json" \
+            /d:sonar.typescript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info"
         if: env.SONAR_TOKEN != ''
 
       - name: Build

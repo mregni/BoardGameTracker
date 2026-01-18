@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 import { BgtTextArea } from './BgtTextArea';
 
-// i18next is mocked globally in setup.ts
+import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 const createMockField = (value: string = '') => ({
   state: {
@@ -73,7 +72,6 @@ describe('BgtTextArea', () => {
     });
 
     it('should allow multiline input', async () => {
-      const user = userEvent.setup();
       mockField = createMockField('Line 1\nLine 2');
       renderWithTheme(<BgtTextArea field={mockField} label="Description" />);
 
