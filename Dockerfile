@@ -1,4 +1,4 @@
-# Multi-architecture Dockerfile for BoardGameTracker
+﻿# Multi-architecture Dockerfile for BoardGameTracker
 # Supports: linux/amd64, linux/arm64, linux/arm/v7
 #
 # This uses a multi-stage build:
@@ -78,7 +78,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
 # Build arguments for runtime configuration
 ARG ASPNETCORE_ENVIRONMENT=production
 ARG ASPNETCORE_URLS=http://*:5444
-ARG TZ=UTC
 
 WORKDIR /app
 
@@ -99,7 +98,6 @@ RUN mkdir -p /app/data /app/images /app/logs /app/config && \
 ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
 ENV DOTNET_EnableDiagnostics=0
 ENV ASPNETCORE_URLS=${ASPNETCORE_URLS}
-ENV TZ=${TZ}
 
 # Expose port
 EXPOSE 5444

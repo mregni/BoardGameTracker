@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using BoardGameTracker.Common.Exeptions;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Commands;
 using BoardGameTracker.Core.Configuration;

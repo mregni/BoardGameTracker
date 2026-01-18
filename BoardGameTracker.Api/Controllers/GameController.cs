@@ -2,7 +2,6 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models.Bgg;
-using BoardGameTracker.Core.Games.DomainServices;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,12 +11,12 @@ namespace BoardGameTracker.Api.Controllers;
 public class GameController : BaseApiController
 {
     private readonly IGameService _gameService;
-    private readonly IGameStatisticsDomainService  _gameStatisticsDomainService;
+    private readonly IGameStatisticsService  _gameStatisticsService;
 
-    public GameController(IGameService gameService, IGameStatisticsDomainService gameStatisticsDomainService)
+    public GameController(IGameService gameService, IGameStatisticsService gameStatisticsService)
     {
         _gameService = gameService;
-        _gameStatisticsDomainService = gameStatisticsDomainService;
+        _gameStatisticsService = gameStatisticsService;
     }
 
     [HttpGet]
@@ -158,7 +157,7 @@ public class GameController : BaseApiController
     [Route("{id:int}/statistics")]
     public async Task<IActionResult> GetGameStatistics(int id)
     {
-        var stats = await _gameStatisticsDomainService.CalculateStatisticsAsync(id);
+        var stats = await _gameStatisticsService.CalculateStatisticsAsync(id);
         var topPlayers = await _gameService.GetTopPlayers(id);
         var playByDayChart = await _gameService.GetPlayByDayChart(id);
         var playerCountChart = await _gameService.GetPlayerCountChart(id);

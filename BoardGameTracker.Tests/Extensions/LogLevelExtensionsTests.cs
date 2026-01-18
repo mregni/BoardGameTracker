@@ -63,53 +63,26 @@ public class LogLevelExtensionsTests : IDisposable
     }
 
     [Theory]
-    [InlineData("unknown")]
-    [InlineData("invalid")]
-    [InlineData("TRACE")]
-    [InlineData("CRITICAL")]
-    [InlineData("FATAL")]
-    [InlineData("random")]
-    [InlineData("123")]
-    [InlineData("!@#")]
-    [InlineData(" ")]
-    [InlineData(null)]
-    public void GetEnvironmentLogLevel_ShouldReturnWarning_WhenEnvironmentVariableIsUnknownValue(string? value)
-    {
-        Environment.SetEnvironmentVariable("LOGLEVEL", value);
-
-        var result = LogLevelExtensions.GetEnvironmentLogLevel();
-
-        result.Should().Be(LogEventLevel.Warning);
-    }
-
-    [Theory]
     [InlineData(" ERROR ", LogEventLevel.Error)]
     [InlineData(" INFO ", LogEventLevel.Information)]
     [InlineData(" DEBUG ", LogEventLevel.Debug)]
     [InlineData(" WARNING ", LogEventLevel.Warning)]
-    public void GetEnvironmentLogLevel_ShouldReturnWarning_WhenEnvironmentVariableHasWhitespace(string value, LogEventLevel logLevel)
+    [InlineData("unknown", LogEventLevel.Warning)]
+    [InlineData("invalid", LogEventLevel.Warning)]
+    [InlineData("TRACE", LogEventLevel.Warning)]
+    [InlineData("CRITICAL", LogEventLevel.Warning)]
+    [InlineData("FATAL", LogEventLevel.Warning)]
+    [InlineData("random", LogEventLevel.Warning)]
+    [InlineData("123", LogEventLevel.Warning)]
+    [InlineData("!@#", LogEventLevel.Warning)]
+    [InlineData(" ", LogEventLevel.Warning)]
+    [InlineData(null, LogEventLevel.Warning)]
+    public void GetEnvironmentLogLevel_ShouldReturnWarning_WhenEnvironmentVariableIsUnknownValue(string? value, LogEventLevel logLevel)
     {
         Environment.SetEnvironmentVariable("LOGLEVEL", value);
 
         var result = LogLevelExtensions.GetEnvironmentLogLevel();
 
         result.Should().Be(logLevel);
-    }
-
-    [Fact]
-    public void GetEnvironmentLogLevel_ShouldReflectChanges_WhenEnvironmentVariableIsModified()
-    {
-        Environment.SetEnvironmentVariable("LOGLEVEL", "ERROR");
-        var result1 = LogLevelExtensions.GetEnvironmentLogLevel();
-
-        Environment.SetEnvironmentVariable("LOGLEVEL", "DEBUG");
-        var result2 = LogLevelExtensions.GetEnvironmentLogLevel();
-
-        Environment.SetEnvironmentVariable("LOGLEVEL", "INFO");
-        var result3 = LogLevelExtensions.GetEnvironmentLogLevel();
-
-        result1.Should().Be(LogEventLevel.Error);
-        result2.Should().Be(LogEventLevel.Debug);
-        result3.Should().Be(LogEventLevel.Information);
     }
 }

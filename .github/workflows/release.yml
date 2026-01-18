@@ -173,6 +173,7 @@ jobs:
             type=registry,ref=${{ env.IMAGE_NAME }}:cache-runtime,mode=max,image-manifest=true
           build-args: |
             VERSION=${{ needs.extract-version.outputs.version }}
+            ASPNETCORE_ENVIRONMENT=production
             BUILDKIT_INLINE_CACHE=1
 
   security-scan:

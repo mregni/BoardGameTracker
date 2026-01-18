@@ -10,7 +10,7 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
     ports:
-      - "${APP_PORT:-5444}:5444"
+      - "5444:5444"
     environment:
       - DB_HOST=db
       - DB_USER=dbuser

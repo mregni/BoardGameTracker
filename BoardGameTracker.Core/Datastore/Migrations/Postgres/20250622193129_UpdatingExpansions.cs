@@ -1,9 +1,8 @@
-﻿using System;
+﻿#nullable disable
+
 using Microsoft.EntityFrameworkCore.Migrations;
 
-#nullable disable
-
-namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
+namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 {
     /// <inheritdoc />
     public partial class UpdatingExpansions : Migration

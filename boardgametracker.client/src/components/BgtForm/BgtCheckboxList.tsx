@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { BgtCheckbox } from './BgtCheckbox';
+import { BgtSimpleCheckbox } from './BgtSimpleCheckbox';
 
 interface ListItem {
   id: number;
@@ -35,12 +35,12 @@ export const BgtCheckboxList = <T extends ListItem>(props: CheckboxListProps<T>)
   return (
     <div className="space-y-3">
       {items.map((item) => (
-        <BgtCheckbox
+        <BgtSimpleCheckbox
           key={item.id}
           id={`item-${item.id}`}
           label={renderLabel(item)}
           checked={checkedIds.has(item.id)}
-          onCheckedChange={(checked) => handleCheckedChange(item.id, checked === true)}
+          onCheckedChange={(checked) => handleCheckedChange(item.id, checked)}
           disabled={disabled}
         />
       ))}

@@ -124,7 +124,7 @@ jobs:
         if: success() || failure()
 
   sonarcloud:
-    name: SonarCloud Analysis and Coverage Report
+    name: SonarCloud Analysis
     runs-on: ubuntu-latest
     needs: [version, test-frontend, test-backend]
     steps:
@@ -231,7 +231,7 @@ jobs:
 
   build-linux-multiarch:
     needs: [version, test-backend, test-frontend]
-    name: Build and Push Multi-Arch Linux Containers
+    name: Build Multi-Arch Linux Containers
     runs-on: ubuntu-latest
     timeout-minutes: 60
     if: github.event_name != 'pull_request'
@@ -282,11 +282,12 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ needs.version.outputs.version }}
+            ASPNETCORE_ENVIRONMENT=${{ github.ref == 'refs/heads/dev' && 'development' || 'production' }}
             BUILDKIT_INLINE_CACHE=1
 
   security-scan:
     needs: [version, build-linux-multiarch]
-    name: Security Scan Container Images
+    name: Security Scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     if: github.event_name != 'pull_request'

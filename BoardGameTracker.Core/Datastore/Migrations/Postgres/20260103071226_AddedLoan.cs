@@ -1,10 +1,9 @@
-﻿using System;
+﻿#nullable disable
+
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-#nullable disable
-
-namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
+namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 {
     /// <inheritdoc />
     public partial class AddedLoan : Migration

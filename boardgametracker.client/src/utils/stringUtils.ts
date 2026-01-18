@@ -32,7 +32,7 @@ const calculateHash = (input: string): number => {
     hash = input.charCodeAt(i) + ((hash << 5) - hash);
   }
 
-  return hash % 360;
+  return ((hash % 360) + 360) % 360;
 };
 
 const hueToRgb = (p: number, q: number, t: number): number => {

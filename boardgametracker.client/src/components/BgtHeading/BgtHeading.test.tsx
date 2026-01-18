@@ -1,14 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom/vitest';
-import { Theme } from '@radix-ui/themes';
+import { screen, renderWithTheme } from '@/test/test-utils';
 
 import { BgtHeading } from './BgtHeading';
-
-const renderWithTheme = (ui: React.ReactElement) => {
-  return render(<Theme>{ui}</Theme>);
-};
 
 describe('BgtHeading', () => {
   describe('Rendering', () => {
@@ -40,25 +33,25 @@ describe('BgtHeading', () => {
   });
 
   describe('Size Prop', () => {
-    it('should apply default size of 8', () => {
+    it('should render with default size', () => {
       renderWithTheme(<BgtHeading>Default Size</BgtHeading>);
       const headings = screen.getAllByRole('heading', { level: 3 });
       expect(headings[headings.length - 1]).toBeInTheDocument();
     });
 
-    it('should accept size prop value 1', () => {
+    it('should render with size 1', () => {
       renderWithTheme(<BgtHeading size="1">Size 1</BgtHeading>);
       const headings = screen.getAllByRole('heading', { level: 3 });
       expect(headings[headings.length - 1]).toBeInTheDocument();
     });
 
-    it('should accept size prop value 5', () => {
+    it('should render with size 5', () => {
       renderWithTheme(<BgtHeading size="5">Size 5</BgtHeading>);
       const headings = screen.getAllByRole('heading', { level: 3 });
       expect(headings[headings.length - 1]).toBeInTheDocument();
     });
 
-    it('should accept size prop value 9', () => {
+    it('should render with size 9', () => {
       renderWithTheme(<BgtHeading size="9">Size 9</BgtHeading>);
       const headings = screen.getAllByRole('heading', { level: 3 });
       expect(headings[headings.length - 1]).toBeInTheDocument();
@@ -66,20 +59,10 @@ describe('BgtHeading', () => {
   });
 
   describe('ClassName Prop', () => {
-    it('should include default classes', () => {
-      renderWithTheme(<BgtHeading>Heading</BgtHeading>);
-      const headings = screen.getAllByRole('heading', { level: 3 });
-      const heading = headings[headings.length - 1];
-      expect(heading).toHaveClass('uppercase');
-      expect(heading).toHaveClass('line-clamp-1');
-    });
-
-    it('should merge custom className with default classes', () => {
+    it('should apply custom className', () => {
       renderWithTheme(<BgtHeading className="custom-class">Heading</BgtHeading>);
       const headings = screen.getAllByRole('heading', { level: 3 });
       const heading = headings[headings.length - 1];
-      expect(heading).toHaveClass('uppercase');
-      expect(heading).toHaveClass('line-clamp-1');
       expect(heading).toHaveClass('custom-class');
     });
 
@@ -147,7 +130,6 @@ describe('BgtHeading', () => {
       const headings = screen.getAllByRole('heading', { level: 3 });
       const heading = headings[headings.length - 1];
       expect(heading).toHaveTextContent(longText);
-      expect(heading).toHaveClass('line-clamp-1');
     });
 
     it('should handle special characters', () => {

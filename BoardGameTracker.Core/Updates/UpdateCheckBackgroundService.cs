@@ -23,7 +23,6 @@ public class UpdateCheckBackgroundService : BackgroundService
     {
         _logger.LogInformation("Update Check Background Service started");
 
-        // Wait 1 minute after startup before first check
         await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -44,7 +43,6 @@ public class UpdateCheckBackgroundService : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in Update Check Background Service");
-                // Wait 1 hour before retrying on error
                 await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
             }
         }
@@ -55,7 +53,6 @@ public class UpdateCheckBackgroundService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
 
-        // Check if updates are enabled
         var repository = scope.ServiceProvider.GetRequiredService<IUpdateRepository>();
         var enabled = await repository.GetConfigValueAsync("update_check_enabled");
 
@@ -80,7 +77,6 @@ public class UpdateCheckBackgroundService : BackgroundService
             return TimeSpan.FromHours(hours);
         }
 
-        // Default to 24 hours and save it
         await repository.SetConfigValueAsync("update_check_interval_hours", "24");
         return _defaultInterval;
     }

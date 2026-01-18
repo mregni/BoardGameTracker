@@ -4,7 +4,6 @@ using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
-using BoardGameTracker.Core.Players.DomainServices;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 
@@ -14,7 +13,7 @@ public class PlayerService : IPlayerService
 {
     private readonly IPlayerRepository _playerRepository;
     private readonly IImageService _imageService;
-    private readonly IPlayerStatisticsDomainService _playerStatisticsDomainService;
+    private readonly IPlayerStatisticsService _playerStatisticsService;
     private readonly IGameSessionRepository _gameSessionRepository;
     private readonly ISessionRepository _sessionRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -22,14 +21,14 @@ public class PlayerService : IPlayerService
     public PlayerService(
         IPlayerRepository playerRepository,
         IImageService imageService,
-        IPlayerStatisticsDomainService playerStatisticsDomainService,
+        IPlayerStatisticsService playerStatisticsService,
         IGameSessionRepository gameSessionRepository,
         ISessionRepository sessionRepository,
         IUnitOfWork unitOfWork)
     {
         _playerRepository = playerRepository;
         _imageService = imageService;
-        _playerStatisticsDomainService = playerStatisticsDomainService;
+        _playerStatisticsService = playerStatisticsService;
         _gameSessionRepository = gameSessionRepository;
         _sessionRepository = sessionRepository;
         _unitOfWork = unitOfWork;
@@ -107,7 +106,7 @@ public class PlayerService : IPlayerService
 
     public Task<PlayerStatistics> GetStats(int id)
     {
-        return _playerStatisticsDomainService.CalculateStatisticsAsync(id);
+        return _playerStatisticsService.CalculateStatisticsAsync(id);
     }
     
     public Task<int> GetTotalPlayCount(int id)

@@ -1,6 +1,6 @@
 ﻿using System.Xml;
 using System.Xml.Linq;
-using BoardGameTracker.Common.Exeptions;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Commands;

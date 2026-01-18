@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿#nullable disable
 
-#nullable disable
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
+namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 {
     /// <inheritdoc />
     public partial class AddedMoreBadges : Migration
