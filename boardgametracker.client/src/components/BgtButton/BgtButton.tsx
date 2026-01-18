@@ -30,7 +30,8 @@ const buttonVariants = cva(
 );
 
 interface Props
-  extends Omit<ComponentPropsWithoutRef<'button'>, 'color'>, Omit<VariantProps<typeof buttonVariants>, 'disabled'> {}
+  extends Omit<ComponentPropsWithoutRef<'button'>, 'color'>,
+    Omit<VariantProps<typeof buttonVariants>, 'disabled'> {}
 
 const BgtButton = (props: Props) => {
   const { children, variant, size, type = 'button', disabled, className, ...rest } = props;
