@@ -48,16 +48,12 @@ describe('BgtSelect', () => {
 
   describe('Rendering', () => {
     it('should render select with label', () => {
-      renderWithTheme(
-        <BgtSelect field={mockField} label="Category" items={mockItems} />
-      );
+      renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} />);
       expect(screen.getByText('Category')).toBeInTheDocument();
     });
 
     it('should render trigger button', () => {
-      renderWithTheme(
-        <BgtSelect field={mockField} label="Category" items={mockItems} />
-      );
+      renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} />);
       expect(screen.getByRole('combobox')).toBeInTheDocument();
     });
 
@@ -69,33 +65,25 @@ describe('BgtSelect', () => {
     });
 
     it('should show caret down icon when closed', () => {
-      renderWithTheme(
-        <BgtSelect field={mockField} label="Category" items={mockItems} />
-      );
+      renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} />);
       expect(screen.getByTestId('caret-down-icon')).toBeInTheDocument();
     });
 
     it('should display selected value', () => {
       mockField = createMockField('2');
-      renderWithTheme(
-        <BgtSelect field={mockField} label="Category" items={mockItems} />
-      );
+      renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} />);
       expect(screen.getByText('Option 2')).toBeInTheDocument();
     });
   });
 
   describe('Disabled State', () => {
     it('should be disabled when disabled prop is true', () => {
-      renderWithTheme(
-        <BgtSelect field={mockField} label="Category" items={mockItems} disabled />
-      );
+      renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} disabled />);
       expect(screen.getByRole('combobox')).toBeDisabled();
     });
 
     it('should not be disabled by default', () => {
-      renderWithTheme(
-        <BgtSelect field={mockField} label="Category" items={mockItems} />
-      );
+      renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} />);
       expect(screen.getByRole('combobox')).not.toBeDisabled();
     });
   });
@@ -103,25 +91,19 @@ describe('BgtSelect', () => {
   describe('Error State', () => {
     it('should display error message', () => {
       mockField.state.meta.errors = ['Please select an option'];
-      renderWithTheme(
-        <BgtSelect field={mockField} label="Category" items={mockItems} />
-      );
+      renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} />);
       expect(screen.getByText('Please select an option')).toBeInTheDocument();
     });
   });
 
   describe('Props', () => {
     it('should accept empty items array', () => {
-      renderWithTheme(
-        <BgtSelect field={mockField} label="Category" items={[]} />
-      );
+      renderWithTheme(<BgtSelect field={mockField} label="Category" items={[]} />);
       expect(screen.getByRole('combobox')).toBeInTheDocument();
     });
 
     it('should handle hasSearch prop without error', () => {
-      renderWithTheme(
-        <BgtSelect field={mockField} label="Category" items={mockItems} hasSearch />
-      );
+      renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} hasSearch />);
       expect(screen.getByRole('combobox')).toBeInTheDocument();
     });
   });

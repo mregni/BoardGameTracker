@@ -127,13 +127,7 @@ describe('BgtButton', () => {
       const user = userEvent.setup();
       const handleClick = vi.fn();
       render(
-        <BgtButton
-          variant="error"
-          size="3"
-          className="extra-class"
-          type="submit"
-          onClick={handleClick}
-        >
+        <BgtButton variant="error" size="3" className="extra-class" type="submit" onClick={handleClick}>
           Submit Error
         </BgtButton>
       );

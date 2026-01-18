@@ -52,7 +52,6 @@ describe('BgtAchievement', () => {
       renderWithTheme(<BgtAchievement badge={createBadge()} earned={false} />);
       expect(screen.queryByTestId('award-icon')).not.toBeInTheDocument();
     });
-
   });
 });
 
@@ -71,6 +70,5 @@ describe('BgtAchievementIcon', () => {
       const image = screen.getByRole('img');
       expect(image).toHaveAttribute('src', '/images/badges/first-win.png');
     });
-
   });
 });

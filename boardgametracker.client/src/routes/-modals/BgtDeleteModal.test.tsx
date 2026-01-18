@@ -108,9 +108,7 @@ describe('BgtDeleteModal', () => {
 
     it('should handle slow async onDelete', async () => {
       const user = userEvent.setup();
-      const onDeleteMock = vi.fn().mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      );
+      const onDeleteMock = vi.fn().mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
       renderWithTheme(<BgtDeleteModal {...defaultProps} onDelete={onDeleteMock} />);
 
       await user.click(screen.getByRole('button', { name: /delete/i }));

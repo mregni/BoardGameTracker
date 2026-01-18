@@ -4,7 +4,12 @@ import { screen, renderWithTheme, render } from '@/test/test-utils';
 import { BgtBarChart } from './BgtBarChart';
 
 vi.mock('@nivo/bar', () => ({
-  ResponsiveBar: ({ data, keys, indexBy, tooltip }: {
+  ResponsiveBar: ({
+    data,
+    keys,
+    indexBy,
+    tooltip,
+  }: {
     data: unknown[];
     keys: string[];
     indexBy: string;
@@ -16,9 +21,7 @@ vi.mock('@nivo/bar', () => ({
           {JSON.stringify(item)}
         </div>
       ))}
-      <div data-testid="tooltip">
-        {tooltip({ value: 10, indexValue: 'January' })}
-      </div>
+      <div data-testid="tooltip">{tooltip({ value: 10, indexValue: 'January' })}</div>
     </div>
   ),
 }));
@@ -33,7 +36,10 @@ class MockResizeObserver {
 
   observe() {
     // Simulate a resize event
-    this.callback([{ contentRect: { width: 800, height: 400 } } as ResizeObserverEntry], this as unknown as ResizeObserver);
+    this.callback(
+      [{ contentRect: { width: 800, height: 400 } } as ResizeObserverEntry],
+      this as unknown as ResizeObserver
+    );
   }
 
   unobserve() {}
@@ -111,12 +117,7 @@ describe('BgtBarChart', () => {
 
   describe('Multiple Keys', () => {
     it('should handle multiple keys', () => {
-      renderWithTheme(
-        <BgtBarChart
-          {...defaultProps}
-          keys={['value', 'count']}
-        />
-      );
+      renderWithTheme(<BgtBarChart {...defaultProps} keys={['value', 'count']} />);
       const chart = screen.getByTestId('responsive-bar');
       expect(chart).toHaveAttribute('data-keys', 'value,count');
     });

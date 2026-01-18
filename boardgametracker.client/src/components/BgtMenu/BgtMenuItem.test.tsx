@@ -74,12 +74,7 @@ describe('BgtMenuItem', () => {
 
   describe('Combined Props', () => {
     it('should render complete menu item', () => {
-      renderWithTheme(
-        <BgtMenuItem
-          item={createMenuItem({ menuLabel: 'menu.games', path: '/games' })}
-          count={42}
-        />
-      );
+      renderWithTheme(<BgtMenuItem item={createMenuItem({ menuLabel: 'menu.games', path: '/games' })} count={42} />);
 
       expect(screen.getByText('menu.games')).toBeInTheDocument();
       expect(screen.getByText('42')).toBeInTheDocument();

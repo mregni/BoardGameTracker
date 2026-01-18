@@ -94,9 +94,7 @@ describe('RecentActivityCard', () => {
 
   describe('Icon', () => {
     it('should render icon when provided', () => {
-      const TestIcon = (props: React.SVGProps<SVGSVGElement>) => (
-        <svg data-testid="activity-icon" {...props} />
-      );
+      const TestIcon = (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="activity-icon" {...props} />;
       renderWithTheme(<RecentActivityCard {...defaultProps} icon={TestIcon} />);
       expect(screen.getByTestId('activity-icon')).toBeInTheDocument();
     });
@@ -123,13 +121,7 @@ describe('RecentActivityCard', () => {
         { id: 'a', name: 'String A' },
         { id: 'b', name: 'String B' },
       ];
-      renderWithTheme(
-        <RecentActivityCard
-          {...defaultProps}
-          items={items}
-          getKey={(item) => item.id}
-        />
-      );
+      renderWithTheme(<RecentActivityCard {...defaultProps} items={items} getKey={(item) => item.id} />);
 
       expect(screen.getByText('String A')).toBeInTheDocument();
       expect(screen.getByText('String B')).toBeInTheDocument();
@@ -139,9 +131,7 @@ describe('RecentActivityCard', () => {
   describe('Combined Props', () => {
     it('should handle all props together', async () => {
       const user = userEvent.setup();
-      const TestIcon = (props: React.SVGProps<SVGSVGElement>) => (
-        <svg data-testid="custom-icon" {...props} />
-      );
+      const TestIcon = (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="custom-icon" {...props} />;
 
       renderWithTheme(
         <RecentActivityCard

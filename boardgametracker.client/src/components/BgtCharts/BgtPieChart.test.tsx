@@ -6,7 +6,10 @@ import { BgtPieChart } from './BgtPieChart';
 // i18next is mocked globally in setup.ts
 
 vi.mock('@nivo/pie', () => ({
-  ResponsivePie: ({ data, tooltip }: {
+  ResponsivePie: ({
+    data,
+    tooltip,
+  }: {
     data: Array<{ id: string; label: string; value: number }>;
     tooltip: (props: { datum: { id: string; label: string; value: number } }) => React.ReactNode;
   }) => (
@@ -16,9 +19,7 @@ vi.mock('@nivo/pie', () => ({
           {item.label}: {item.value}
         </div>
       ))}
-      <div data-testid="tooltip">
-        {tooltip({ datum: { id: '1', label: 'Test', value: 10 } })}
-      </div>
+      <div data-testid="tooltip">{tooltip({ datum: { id: '1', label: 'Test', value: 10 } })}</div>
     </div>
   ),
 }));

@@ -17,11 +17,7 @@ interface TestFormData {
   email: string;
 }
 
-const TestFormComponent = ({
-  onFieldValue
-}: {
-  onFieldValue?: (value: string) => void
-}) => {
+const TestFormComponent = ({ onFieldValue }: { onFieldValue?: (value: string) => void }) => {
   const form = useForm<TestFormData>({
     defaultValues: {
       name: '',
@@ -43,9 +39,7 @@ const TestFormComponent = ({
               }}
               onBlur={field.handleBlur}
             />
-            {field.state.meta.errors.length > 0 && (
-              <span data-testid="name-error">{field.state.meta.errors[0]}</span>
-            )}
+            {field.state.meta.errors.length > 0 && <span data-testid="name-error">{field.state.meta.errors[0]}</span>}
           </div>
         )}
       </BgtFormField>
@@ -162,9 +156,7 @@ const NumberFormComponent = () => {
               onChange={(e) => field.handleChange(Number(e.target.value))}
               onBlur={field.handleBlur}
             />
-            {field.state.meta.errors.length > 0 && (
-              <span data-testid="age-error">{field.state.meta.errors[0]}</span>
-            )}
+            {field.state.meta.errors.length > 0 && <span data-testid="age-error">{field.state.meta.errors[0]}</span>}
           </div>
         )}
       </BgtFormField>

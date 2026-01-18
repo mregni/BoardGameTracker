@@ -207,8 +207,7 @@ describe('useMultiQuery', () => {
 
     it('should include query status in results', async () => {
       const { result } = renderHook(
-        () =>
-          useMultiQuery([{ queryKey: ['test'], queryFn: () => Promise.resolve('done') }] as const),
+        () => useMultiQuery([{ queryKey: ['test'], queryFn: () => Promise.resolve('done') }] as const),
         { wrapper: createWrapper() }
       );
 
@@ -240,10 +239,7 @@ describe('useMultiQuery', () => {
   describe('single query', () => {
     it('should work with a single query', async () => {
       const { result } = renderHook(
-        () =>
-          useMultiQuery([
-            { queryKey: ['single'], queryFn: () => Promise.resolve('single result') },
-          ] as const),
+        () => useMultiQuery([{ queryKey: ['single'], queryFn: () => Promise.resolve('single result') }] as const),
         { wrapper: createWrapper() }
       );
 

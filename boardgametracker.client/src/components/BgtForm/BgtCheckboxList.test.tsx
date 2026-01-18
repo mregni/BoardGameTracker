@@ -87,7 +87,9 @@ describe('BgtCheckboxList', () => {
     it('should call onSelectionChange with correct ids when item is unchecked', async () => {
       const user = userEvent.setup();
       const onSelectionChange = vi.fn();
-      renderWithTheme(<BgtCheckboxList items={defaultItems} selectedIds={[1, 2]} onSelectionChange={onSelectionChange} />);
+      renderWithTheme(
+        <BgtCheckboxList items={defaultItems} selectedIds={[1, 2]} onSelectionChange={onSelectionChange} />
+      );
 
       const checkboxes = screen.getAllByRole('checkbox');
       await user.click(checkboxes[0]);
@@ -136,7 +138,7 @@ describe('BgtCheckboxList', () => {
       ];
 
       renderWithTheme(
-        <BgtCheckboxList items={items} renderLabel={(item) => (item as typeof items[0]).customField} />
+        <BgtCheckboxList items={items} renderLabel={(item) => (item as (typeof items)[0]).customField} />
       );
 
       expect(screen.getByText('Custom Label 1')).toBeInTheDocument();

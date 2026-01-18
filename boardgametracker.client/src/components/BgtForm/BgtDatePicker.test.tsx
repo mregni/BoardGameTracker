@@ -6,11 +6,12 @@ import { BgtDatePicker } from './BgtDatePicker';
 vi.mock('@/services/queries/settings', () => ({
   getSettings: () => ({
     queryKey: ['settings'],
-    queryFn: () => Promise.resolve({
-      dateFormat: 'yyyy-MM-dd',
-      timeFormat: 'HH:mm',
-      uiLanguage: 'en-us',
-    }),
+    queryFn: () =>
+      Promise.resolve({
+        dateFormat: 'yyyy-MM-dd',
+        timeFormat: 'HH:mm',
+        uiLanguage: 'en-us',
+      }),
   }),
 }));
 
@@ -79,7 +80,6 @@ describe('BgtDatePicker', () => {
       const button = screen.getByRole('button');
       expect(button).not.toBeDisabled();
     });
-
   });
 
   describe('Error State', () => {

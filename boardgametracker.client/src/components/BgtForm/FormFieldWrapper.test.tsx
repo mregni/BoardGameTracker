@@ -22,7 +22,6 @@ describe('FormFieldWrapper', () => {
       );
       expect(screen.getByText('Username')).toBeInTheDocument();
     });
-
   });
 
   describe('Error Display', () => {

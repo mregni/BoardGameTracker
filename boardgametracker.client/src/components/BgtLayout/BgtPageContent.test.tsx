@@ -4,7 +4,15 @@ import { render, screen } from '@/test/test-utils';
 import { BgtPageContent } from './BgtPageContent';
 
 vi.mock('../BgtDataGuard/BgtDataGuard', () => ({
-  BgtDataGuard: ({ isLoading, data, children }: { isLoading: boolean; data: Record<string, unknown>; children: (data: Record<string, unknown>) => React.ReactNode }) => {
+  BgtDataGuard: ({
+    isLoading,
+    data,
+    children,
+  }: {
+    isLoading: boolean;
+    data: Record<string, unknown>;
+    children: (data: Record<string, unknown>) => React.ReactNode;
+  }) => {
     if (isLoading) return <div data-testid="loading">Loading...</div>;
     const hasUndefined = Object.values(data).some((v) => v === undefined);
     if (hasUndefined) return <div data-testid="loading">Loading...</div>;

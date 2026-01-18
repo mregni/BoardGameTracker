@@ -124,10 +124,11 @@ describe('BgtSimpleInputField', () => {
     });
 
     it('should render ReactNode prefix label', () => {
-      renderWithTheme(<BgtSimpleInputField {...defaultProps} prefixLabel={<span data-testid="prefix-icon">Icon</span>} />);
+      renderWithTheme(
+        <BgtSimpleInputField {...defaultProps} prefixLabel={<span data-testid="prefix-icon">Icon</span>} />
+      );
       expect(screen.getByTestId('prefix-icon')).toBeInTheDocument();
     });
-
   });
 
   describe('Suffix Label', () => {
@@ -137,7 +138,9 @@ describe('BgtSimpleInputField', () => {
     });
 
     it('should render ReactNode suffix label', () => {
-      renderWithTheme(<BgtSimpleInputField {...defaultProps} suffixLabel={<span data-testid="suffix-icon">Icon</span>} />);
+      renderWithTheme(
+        <BgtSimpleInputField {...defaultProps} suffixLabel={<span data-testid="suffix-icon">Icon</span>} />
+      );
       expect(screen.getByTestId('suffix-icon')).toBeInTheDocument();
     });
   });
@@ -154,7 +157,6 @@ describe('BgtSimpleInputField', () => {
       const input = screen.getByRole('textbox');
       expect(input).toBeDisabled();
     });
-
   });
 
   describe('Combined Props', () => {

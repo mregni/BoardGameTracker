@@ -25,16 +25,12 @@ describe('BgtPaging', () => {
     });
 
     it('should return null when totalCount is less than countPerPage', () => {
-      const { container } = render(
-        <BgtPaging {...defaultProps} totalCount={5} countPerPage={10} />
-      );
+      const { container } = render(<BgtPaging {...defaultProps} totalCount={5} countPerPage={10} />);
       expect(container.firstChild).toBeNull();
     });
 
     it('should return null when totalCount equals countPerPage', () => {
-      const { container } = render(
-        <BgtPaging {...defaultProps} totalCount={10} countPerPage={10} />
-      );
+      const { container } = render(<BgtPaging {...defaultProps} totalCount={10} countPerPage={10} />);
       expect(container.firstChild).toBeNull();
     });
 

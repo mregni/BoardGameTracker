@@ -79,12 +79,7 @@ describe('BgtChartCard', () => {
   describe('Combined Props', () => {
     it('should handle all props together', () => {
       renderWithTheme(
-        <BgtChartCard
-          title="Sales Chart"
-          className="sales-chart"
-          hide={false}
-          data-testid="combined-chart"
-        >
+        <BgtChartCard title="Sales Chart" className="sales-chart" hide={false} data-testid="combined-chart">
           <div data-testid="chart-visualization">Chart</div>
         </BgtChartCard>
       );

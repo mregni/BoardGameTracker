@@ -81,9 +81,7 @@ describe('ErrorFallback', () => {
       const errorWithStack = new Error('Test error');
       errorWithStack.stack = 'Error: Test error\n    at TestComponent';
 
-      renderWithTheme(
-        <ErrorFallback error={errorWithStack} resetErrorBoundary={vi.fn()} />
-      );
+      renderWithTheme(<ErrorFallback error={errorWithStack} resetErrorBoundary={vi.fn()} />);
 
       expect(screen.getByText('error.something-went-wrong')).toBeInTheDocument();
     });

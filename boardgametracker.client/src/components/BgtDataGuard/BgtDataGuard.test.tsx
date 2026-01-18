@@ -32,7 +32,11 @@ describe('BgtDataGuard', () => {
 
     it('should render custom fallback when provided', () => {
       render(
-        <BgtDataGuard isLoading={true} data={{ name: 'John' }} fallback={<div data-testid="custom-fallback">Custom Loading</div>}>
+        <BgtDataGuard
+          isLoading={true}
+          data={{ name: 'John' }}
+          fallback={<div data-testid="custom-fallback">Custom Loading</div>}
+        >
           {({ name }) => <div>Hello {name}</div>}
         </BgtDataGuard>
       );

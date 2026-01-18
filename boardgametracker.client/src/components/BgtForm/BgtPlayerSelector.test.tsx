@@ -50,9 +50,7 @@ describe('BgtPlayerSelector', () => {
     });
 
     it('should not render empty state message when players exist', () => {
-      const players: CreateSessionPlayer[] = [
-        { playerId: 1, won: false, firstPlay: false, score: 100 },
-      ];
+      const players: CreateSessionPlayer[] = [{ playerId: 1, won: false, firstPlay: false, score: 100 }];
       renderWithTheme(<BgtPlayerSelector {...defaultProps} players={players} />);
       expect(screen.queryByText('player.new.players.none')).not.toBeInTheDocument();
     });
@@ -71,9 +69,7 @@ describe('BgtPlayerSelector', () => {
     });
 
     it('should render player scores', () => {
-      const players: CreateSessionPlayer[] = [
-        { playerId: 1, won: false, firstPlay: false, score: 100 },
-      ];
+      const players: CreateSessionPlayer[] = [{ playerId: 1, won: false, firstPlay: false, score: 100 }];
       renderWithTheme(<BgtPlayerSelector {...defaultProps} players={players} />);
 
       expect(screen.getByText('100')).toBeInTheDocument();
@@ -94,14 +90,14 @@ describe('BgtPlayerSelector', () => {
     it('should call remove when delete button is clicked', async () => {
       const user = userEvent.setup();
       const remove = vi.fn();
-      const players: CreateSessionPlayer[] = [
-        { playerId: 1, won: false, firstPlay: false, score: 100 },
-      ];
+      const players: CreateSessionPlayer[] = [{ playerId: 1, won: false, firstPlay: false, score: 100 }];
       renderWithTheme(<BgtPlayerSelector {...defaultProps} players={players} remove={remove} />);
 
       // Find the delete button (trash icon button)
       const buttons = screen.getAllByRole('button');
-      const deleteButton = buttons.find((btn) => btn.querySelector('[class*="text-red"]') || btn.closest('[class*="danger"]'));
+      const deleteButton = buttons.find(
+        (btn) => btn.querySelector('[class*="text-red"]') || btn.closest('[class*="danger"]')
+      );
 
       if (deleteButton) {
         await user.click(deleteButton);
@@ -113,9 +109,7 @@ describe('BgtPlayerSelector', () => {
       const user = userEvent.setup();
       const setPlayerIdToEdit = vi.fn();
       const setUpdateModalOpen = vi.fn();
-      const players: CreateSessionPlayer[] = [
-        { playerId: 1, won: false, firstPlay: false, score: 100 },
-      ];
+      const players: CreateSessionPlayer[] = [{ playerId: 1, won: false, firstPlay: false, score: 100 }];
       renderWithTheme(
         <BgtPlayerSelector
           {...defaultProps}
@@ -150,9 +144,7 @@ describe('BgtPlayerSelector', () => {
     });
 
     it('should disable edit and delete buttons when disabled', () => {
-      const players: CreateSessionPlayer[] = [
-        { playerId: 1, won: false, firstPlay: false, score: 100 },
-      ];
+      const players: CreateSessionPlayer[] = [{ playerId: 1, won: false, firstPlay: false, score: 100 }];
       renderWithTheme(<BgtPlayerSelector {...defaultProps} players={players} disabled={true} />);
 
       const buttons = screen.getAllByRole('button');
@@ -166,16 +158,12 @@ describe('BgtPlayerSelector', () => {
 
   describe('Error State', () => {
     it('should display error message when errors exist and no players', () => {
-      renderWithTheme(
-        <BgtPlayerSelector {...defaultProps} errors={['At least one player is required']} />
-      );
+      renderWithTheme(<BgtPlayerSelector {...defaultProps} errors={['At least one player is required']} />);
       expect(screen.getByText('At least one player is required')).toBeInTheDocument();
     });
 
     it('should not display empty state message when errors exist', () => {
-      renderWithTheme(
-        <BgtPlayerSelector {...defaultProps} errors={['At least one player is required']} />
-      );
+      renderWithTheme(<BgtPlayerSelector {...defaultProps} errors={['At least one player is required']} />);
       expect(screen.queryByText('player.new.players.none')).not.toBeInTheDocument();
     });
   });

@@ -84,10 +84,9 @@ describe('useDebounce', () => {
   });
 
   it('should work with different data types', () => {
-    const { result: numberResult, rerender: rerenderNumber } = renderHook(
-      ({ value }) => useDebounce(value, 100),
-      { initialProps: { value: 0 } }
-    );
+    const { result: numberResult, rerender: rerenderNumber } = renderHook(({ value }) => useDebounce(value, 100), {
+      initialProps: { value: 0 },
+    });
 
     rerenderNumber({ value: 42 });
     act(() => {
@@ -95,10 +94,9 @@ describe('useDebounce', () => {
     });
     expect(numberResult.current).toBe(42);
 
-    const { result: objectResult, rerender: rerenderObject } = renderHook(
-      ({ value }) => useDebounce(value, 100),
-      { initialProps: { value: { name: 'initial' } } }
-    );
+    const { result: objectResult, rerender: rerenderObject } = renderHook(({ value }) => useDebounce(value, 100), {
+      initialProps: { value: { name: 'initial' } },
+    });
 
     const newObj = { name: 'updated' };
     rerenderObject({ value: newObj });
@@ -107,10 +105,9 @@ describe('useDebounce', () => {
     });
     expect(objectResult.current).toEqual({ name: 'updated' });
 
-    const { result: arrayResult, rerender: rerenderArray } = renderHook(
-      ({ value }) => useDebounce(value, 100),
-      { initialProps: { value: [1, 2, 3] } }
-    );
+    const { result: arrayResult, rerender: rerenderArray } = renderHook(({ value }) => useDebounce(value, 100), {
+      initialProps: { value: [1, 2, 3] },
+    });
 
     rerenderArray({ value: [4, 5, 6] });
     act(() => {

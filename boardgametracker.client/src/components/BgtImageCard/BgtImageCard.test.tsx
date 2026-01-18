@@ -7,9 +7,7 @@ import { GameState } from '@/models';
 // i18next is mocked globally in setup.ts
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
-  ),
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
 }));
 
 describe('BgtImageCard', () => {
@@ -83,13 +81,7 @@ describe('BgtImageCard', () => {
   describe('Combined Props', () => {
     it('should handle all props together', () => {
       renderWithTheme(
-        <BgtImageCard
-          title="Wingspan"
-          image="/wingspan.jpg"
-          link="/games/2"
-          state={GameState.Owned}
-          isLoaned={false}
-        />
+        <BgtImageCard title="Wingspan" image="/wingspan.jpg" link="/games/2" state={GameState.Owned} isLoaned={false} />
       );
 
       expect(screen.getByText('Wingspan')).toBeInTheDocument();

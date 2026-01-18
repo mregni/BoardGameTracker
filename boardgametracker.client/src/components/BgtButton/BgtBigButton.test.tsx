@@ -59,7 +59,6 @@ describe('BgtBigButton', () => {
       renderWithTheme(<BgtBigButton {...defaultProps} disabled={true} />);
       expect(screen.getByRole('button')).toBeDisabled();
     });
-
   });
 
   describe('Combined Props', () => {

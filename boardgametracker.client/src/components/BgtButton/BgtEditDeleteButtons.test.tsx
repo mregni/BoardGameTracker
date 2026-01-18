@@ -76,5 +76,4 @@ describe('BgtEditDeleteButtons', () => {
       expect(handleEdit).not.toHaveBeenCalled();
     });
   });
-
 });

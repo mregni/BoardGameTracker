@@ -28,13 +28,14 @@ describe('BgtPlayerAvatar', () => {
     ...overrides,
   });
 
-  const createGame = (overrides: Partial<Game> = {}): Game => ({
-    id: 1,
-    title: 'Catan',
-    hasScoring: true,
-    state: GameState.Owned,
-    ...overrides,
-  } as Game);
+  const createGame = (overrides: Partial<Game> = {}): Game =>
+    ({
+      id: 1,
+      title: 'Catan',
+      hasScoring: true,
+      state: GameState.Owned,
+      ...overrides,
+    }) as Game;
 
   beforeEach(() => {
     mockNavigate.mockClear();
@@ -92,22 +93,14 @@ describe('BgtPlayerAvatar', () => {
   describe('Null Handling', () => {
     it('should return null when player is undefined', () => {
       const { container } = render(
-        <BgtPlayerAvatar
-          playerSession={createPlayerSession()}
-          player={undefined}
-          game={createGame()}
-        />
+        <BgtPlayerAvatar playerSession={createPlayerSession()} player={undefined} game={createGame()} />
       );
       expect(container.firstChild).toBeNull();
     });
 
     it('should return null when game is undefined', () => {
       const { container } = render(
-        <BgtPlayerAvatar
-          playerSession={createPlayerSession()}
-          player={createPlayer()}
-          game={undefined}
-        />
+        <BgtPlayerAvatar playerSession={createPlayerSession()} player={createPlayer()} game={undefined} />
       );
       expect(container.firstChild).toBeNull();
     });
@@ -117,11 +110,7 @@ describe('BgtPlayerAvatar', () => {
     it('should navigate to player page on click', async () => {
       const user = userEvent.setup();
       renderWithTheme(
-        <BgtPlayerAvatar
-          playerSession={createPlayerSession()}
-          player={createPlayer({ id: 42 })}
-          game={createGame()}
-        />
+        <BgtPlayerAvatar playerSession={createPlayerSession()} player={createPlayer({ id: 42 })} game={createGame()} />
       );
 
       await user.click(screen.getByRole('img'));

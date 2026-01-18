@@ -4,9 +4,7 @@ import { render, screen, userEvent } from '@/test/test-utils';
 import { BgtBadge } from './BgtBadge';
 
 vi.mock('@/assets/icons/x.svg?react', () => ({
-  default: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg data-testid="close-icon" {...props} />
-  ),
+  default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="close-icon" {...props} />,
 }));
 
 describe('BgtBadge', () => {
@@ -135,12 +133,7 @@ describe('BgtBadge', () => {
       const handleClick = vi.fn();
       const handleClose = vi.fn();
       render(
-        <BgtBadge
-          color="red"
-          className="extra-class"
-          onClick={handleClick}
-          onClose={handleClose}
-        >
+        <BgtBadge color="red" className="extra-class" onClick={handleClick} onClose={handleClose}>
           Full Badge
         </BgtBadge>
       );

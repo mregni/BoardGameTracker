@@ -80,13 +80,7 @@ describe('BgtFancyTextStatistic', () => {
 
   describe('Combined Props', () => {
     it('should handle all props together', () => {
-      renderWithTheme(
-        <BgtFancyTextStatistic
-          title="Win Rate"
-          content={75}
-          suffix="% success rate"
-        />
-      );
+      renderWithTheme(<BgtFancyTextStatistic title="Win Rate" content={75} suffix="% success rate" />);
 
       expect(screen.getByText('Win Rate')).toBeInTheDocument();
       expect(screen.getByText('75')).toBeInTheDocument();

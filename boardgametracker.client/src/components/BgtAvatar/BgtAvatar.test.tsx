@@ -109,13 +109,7 @@ describe('BgtAvatar', () => {
       const handleClick = vi.fn();
 
       renderWithTheme(
-        <BgtAvatar
-          title="Alice"
-          image={null}
-          size="large"
-          color="hsl(100, 85%, 35%)"
-          onClick={handleClick}
-        />
+        <BgtAvatar title="Alice" image={null} size="large" color="hsl(100, 85%, 35%)" onClick={handleClick} />
       );
 
       const avatar = screen.getByText('A').parentElement;

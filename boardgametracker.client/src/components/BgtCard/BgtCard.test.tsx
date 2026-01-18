@@ -181,13 +181,7 @@ describe('BgtCard', () => {
       const actions = [{ content: 'action.submit', onClick: handleClick }];
 
       render(
-        <BgtCard
-          title="Full Card"
-          icon={TestIcon}
-          actions={actions}
-          className="extra-class"
-          data-testid="full-card"
-        >
+        <BgtCard title="Full Card" icon={TestIcon} actions={actions} className="extra-class" data-testid="full-card">
           Full Content
         </BgtCard>
       );
