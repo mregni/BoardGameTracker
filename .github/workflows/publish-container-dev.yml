@@ -182,6 +182,10 @@ jobs:
 
       - name: Verify coverage files
         run: |
+          echo "=== Current directory ==="
+          pwd
+          echo "=== GITHUB_WORKSPACE ==="
+          echo $GITHUB_WORKSPACE
           echo "=== Frontend coverage files ==="
           ls -la boardgametracker.client/coverage/ || echo "No frontend coverage directory"
           echo "=== lcov.info first 20 lines ==="
@@ -209,8 +213,8 @@ jobs:
             /v:"${{ needs.version.outputs.version }}" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
-            /d:sonar.javascript.lcov.reportPaths="coverage/lcov.info" \
-            /d:sonar.typescript.lcov.reportPaths="coverage/lcov.info" \
+            /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
+            /d:sonar.typescript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
             /d:sonar.testExecutionReportPaths="boardgametracker.client/coverage/sonar-report.xml" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
             /d:sonar.typescript.tsconfigPaths="boardgametracker.client/tsconfig.json" \
