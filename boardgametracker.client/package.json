@@ -8,7 +8,7 @@
     "build": "vite build",
     "build2": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:report": "eslint . --ext ts,tsx --ignore-pattern 'coverage/**' --report-unused-disable-directives -f json -o coverage/eslint-report.json;exit 0",
+    "lint:report": "eslint . --ext ts,tsx --ignore-pattern 'coverage/**' --ignore-pattern '**/*.test.tsx' --ignore-pattern '**/*.test.ts' --report-unused-disable-directives -f json -o coverage/eslint-report.json;exit 0",
     "preview": "vite preview",
     "prettier": "npx prettier src test --check --no-error-on-unmatched-pattern",
     "prettier:fix": "npm run prettier -- --write",

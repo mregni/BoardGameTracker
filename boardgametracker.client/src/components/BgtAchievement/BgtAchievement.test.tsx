@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, renderWithTheme } from '@/test/test-utils';
 
 import { BgtAchievement, BgtAchievementIcon } from './BgtAchievement';
+
+import { screen, renderWithTheme } from '@/test/test-utils';
 import { Badge } from '@/models';
 
 // i18next is mocked globally in setup.ts
