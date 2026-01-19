@@ -99,7 +99,7 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /v:"${{ needs.version.outputs.version }}" \
-            /d:sonar.projectBaseDir="." \
+            /d:sonar.projectBaseDir=".." \
             /d:sonar.sources="." \
             /d:sonar.tests="BoardGameTracker.Tests" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
