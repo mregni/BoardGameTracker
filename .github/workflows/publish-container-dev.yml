@@ -99,14 +99,12 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /v:"${{ needs.version.outputs.version }}" \
-            /d:sonar.projectBaseDir=".." \
-            /d:sonar.sources="." \
+            /d:sonar.sources="BoardGameTracker.Api,BoardGameTracker.Common,BoardGameTracker.Core,BoardGameTracker.Host,boardgametracker.client/src" \
             /d:sonar.tests="BoardGameTracker.Tests" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
-            /d:sonar.javascript.lcov.reportPaths="coverage/lcov.info" \
-            /d:sonar.typescript.lcov.reportPaths="coverage/lcov.info" \
-            /d:sonar.eslint.reportPaths="coverage/eslint-report.json" \
+            /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
+            /d:sonar.eslint.reportPaths="boardgametracker.client/coverage/eslint-report.json" \
             /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**"
         if: env.SONAR_TOKEN != ''
@@ -139,10 +137,19 @@ jobs:
           cd boardgametracker.client
           npm run test:coverage
 
+      - name: Fix lcov paths for SonarCloud
+        run: |
+          sed -i 's|SF:src/|SF:boardgametracker.client/src/|g' boardgametracker.client/coverage/lcov.info
+
       - name: Run ESLint
         run: |
           cd boardgametracker.client
           npm run lint:report
+
+      - name: Fix ESLint report paths for SonarCloud
+        run: |
+          sed -i 's|"filePath":"src/|"filePath":"boardgametracker.client/src/|g' boardgametracker.client/coverage/eslint-report.json
+          sed -i 's|"filePath":"./src/|"filePath":"boardgametracker.client/src/|g' boardgametracker.client/coverage/eslint-report.json
 
       - name: End SonarCloud analysis
         env:
@@ -167,6 +174,7 @@ jobs:
           reports: "TestResults/**/coverage.opencover.xml;boardgametracker.client/coverage/lcov.info"
           targetdir: "coveragereport"
           reporttypes: "MarkdownSummaryGithub;Cobertura"
+          sourcedirs: "boardgametracker.client"
           assemblyfilters: "-BoardGameTracker.Host;-BoardGameTracker.DataStore"
           filefilters: "-**/ViewModels/**;-**/Entities/**"
 
