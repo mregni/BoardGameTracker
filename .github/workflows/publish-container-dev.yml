@@ -190,6 +190,8 @@ jobs:
           head -20 boardgametracker.client/coverage/sonar-report.xml || echo "No sonar-report.xml file"
           echo "=== Backend coverage files ==="
           find TestResults -name "*.xml" -type f 2>/dev/null || echo "No backend coverage files"
+          echo "=== Frontend code folder ==="
+          ls -la boardgametracker.client/src || echo "No frontend code directory"
 
       - name: Install dependencies
         run: dotnet restore
@@ -213,7 +215,7 @@ jobs:
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
             /d:sonar.typescript.tsconfigPaths="boardgametracker.client/tsconfig.json" \
             /d:sonar.eslint.reportPaths="boardgametracker.client/coverage/eslint-report.json" \
-            /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/*.test.ts,**/*.test.tsx" \
+            /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**" \
             /d:sonar.test.inclusions="**/*.test.ts,**/*.test.tsx" \
             /d:sonar.javascript.file.suffixes=".js,.jsx" \
             /d:sonar.typescript.file.suffixes=".ts,.tsx"
