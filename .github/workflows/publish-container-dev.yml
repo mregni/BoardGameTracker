@@ -99,7 +99,6 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /v:"${{ needs.version.outputs.version }}" \
-            /d:sonar.sources="BoardGameTracker.Api,BoardGameTracker.Common,BoardGameTracker.Core,BoardGameTracker.Host,boardgametracker.client/src" \
             /d:sonar.tests="BoardGameTracker.Tests" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
