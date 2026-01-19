@@ -74,7 +74,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-tests
-          path: boardgametracker.client/coverage
+          path: |
+            boardgametracker.client/coverage
+            boardgametracker.client/tsconfig.json
           retention-days: 7
         if: success() || failure()
 
@@ -207,7 +209,7 @@ jobs:
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
             /d:sonar.javascript.lcov.reportPaths="coverage/lcov.info" \
             /d:sonar.typescript.lcov.reportPaths="coverage/lcov.info" \
-            /d:sonar.testExecutionReportPaths="coverage/sonar-report.xml" \
+            /d:sonar.testExecutionReportPaths="boardgametracker.client/coverage/sonar-report.xml" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
             /d:sonar.typescript.tsconfigPaths="boardgametracker.client/tsconfig.json" \
             /d:sonar.eslint.reportPaths="boardgametracker.client/coverage/eslint-report.json" \
