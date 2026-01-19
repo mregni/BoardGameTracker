@@ -36,109 +36,10 @@ jobs:
           version_format: "${{ github.ref == 'refs/heads/dev' && '${major}.${minor}.${patch}-beta' || '${major}.${minor}.${patch}' }}"
           debug: true
 
-  test-frontend:
-    name: Test and Lint Frontend
+  test-and-analyze:
+    name: Test and SonarCloud Analysis
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20.x"
-          cache: 'npm'
-          cache-dependency-path: boardgametracker.client/package-lock.json
-
-      - name: Install dependencies
-        run: |
-          cd boardgametracker.client
-          npm ci
-
-      - name: Run Prettier check
-        run: |
-          cd boardgametracker.client
-          npm run prettier
-
-      - name: Run tests with coverage
-        run: |
-          cd boardgametracker.client
-          npm run test:coverage
-
-      - name: Run ESLint
-        run: |
-          cd boardgametracker.client
-          npm run lint:report
-
-      - name: Fix paths in coverage reports
-        run: |
-          # Fix sonar-report.xml paths (src/ -> boardgametracker.client/src/)
-          sed -i 's|path="src/|path="boardgametracker.client/src/|g' boardgametracker.client/coverage/sonar-report.xml
-          # Fix lcov.info paths (SF:src/ -> SF:boardgametracker.client/src/)
-          sed -i 's|SF:src/|SF:boardgametracker.client/src/|g' boardgametracker.client/coverage/lcov.info
-          # Fix eslint-report.json paths (absolute -> relative)
-          sed -i 's+/home/runner/work/[^/]*/[^/]*/++g' boardgametracker.client/coverage/eslint-report.json
-
-      - name: Upload frontend test coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-tests
-          path: |
-            boardgametracker.client/coverage
-            boardgametracker.client/tsconfig.json
-            boardgametracker.client/src
-          retention-days: 7
-        if: success() || failure()
-
-  test-backend:
-    name: Test Backend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup dotnet v8
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.x"
-
-      - name: Install dependencies
-        run: dotnet restore ./BoardGameTracker.sln
-
-      - name: Build
-        run: dotnet build --no-restore
-
-      - name: Test with dotnet
-        run: |
-          dotnet test ./BoardGameTracker.Tests/BoardGameTracker.Tests.csproj \
-            --no-build \
-            --no-restore \
-            --logger trx \
-            --results-directory "TestResults" \
-            --collect "XPlat Code Coverage;Format=opencover" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/DataStore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs"
-      - name: Upload dotnet test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-tests
-          path: TestResults
-          retention-days: 7
-        if: success() || failure()
-
-      - name: Upload coverage file for debugging
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-opencover
-          path: TestResults/**/coverage.opencover.xml
-          retention-days: 7
-        if: success() || failure()
-
-  sonarcloud:
-    name: SonarCloud Analysis
-    runs-on: ubuntu-latest
-    needs: [version, test-frontend, test-backend]
+    needs: [version]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -155,6 +56,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.x"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: 'npm'
+          cache-dependency-path: boardgametracker.client/package-lock.json
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
@@ -177,41 +85,8 @@ jobs:
           mkdir -p ./.sonar/scanner
           dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
 
-      - name: Download backend test results
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-tests
-          path: TestResults
-
-      - name: Download frontend test coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-tests
-          path: boardgametracker.client
-
-      - name: Verify coverage files
-        run: |
-          echo "=== Current directory ==="
-          pwd
-          echo "=== GITHUB_WORKSPACE ==="
-          echo $GITHUB_WORKSPACE
-          echo "=== client code files ==="
-          ls -la boardgametracker.client/src/ || echo "No frontend code directory"
-          echo "=== client code files in $GITHUB_WORKSPACE==="
-          ls -la $GITHUB_WORKSPACE/boardgametracker.client/src/ || echo "No frontend code directory in $GITHUB_WORKSPACE"
-          echo "=== Frontend coverage files ==="
-          head -20 boardgametracker.client/src/App.tsx || echo "No App.tsx file"
-          echo "=== Frontend coverage files ==="
-          ls -la boardgametracker.client/coverage/ || echo "No frontend coverage directory"
-          echo "=== lcov.info first 20 lines ==="
-          head -20 boardgametracker.client/coverage/lcov.info || echo "No lcov.info file"
-          echo "=== sonar-report.xml first 20 lines ==="
-          head -20 boardgametracker.client/coverage/sonar-report.xml || echo "No sonar-report.xml file"
-          echo "=== Backend coverage files ==="
-          find TestResults -name "*.xml" -type f 2>/dev/null || echo "No backend coverage files"
-
-      - name: Install dependencies
-        run: dotnet restore
+      - name: Install .NET dependencies
+        run: dotnet restore ./BoardGameTracker.sln
 
       - name: Begin SonarCloud analysis
         env:
@@ -238,9 +113,40 @@ jobs:
             /d:sonar.test.inclusions="**/*.test.ts,**/*.test.tsx" \
             /d:sonar.javascript.file.suffixes=".js,.jsx" \
             /d:sonar.typescript.file.suffixes=".ts,.tsx"
+        if: env.SONAR_TOKEN != ''
 
-      - name: Build
+      - name: Build .NET
         run: dotnet build --no-restore
+
+      - name: Run .NET tests
+        run: |
+          dotnet test ./BoardGameTracker.Tests/BoardGameTracker.Tests.csproj \
+            --no-build \
+            --no-restore \
+            --logger trx \
+            --results-directory "TestResults" \
+            --collect "XPlat Code Coverage;Format=opencover" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/DataStore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs"
+
+      - name: Install frontend dependencies
+        run: |
+          cd boardgametracker.client
+          npm ci
+
+      - name: Run Prettier check
+        run: |
+          cd boardgametracker.client
+          npm run prettier
+
+      - name: Run frontend tests with coverage
+        run: |
+          cd boardgametracker.client
+          npm run test:coverage
+
+      - name: Run ESLint
+        run: |
+          cd boardgametracker.client
+          npm run lint:report
 
       - name: End SonarCloud analysis
         env:
@@ -249,10 +155,20 @@ jobs:
         run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
         if: env.SONAR_TOKEN != '' && github.event_name != 'pull_request'
 
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            TestResults
+            boardgametracker.client/coverage
+          retention-days: 7
+        if: success() || failure()
+
       - name: Code Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.11
         with:
-          reports: "TestResults/**/coverage.opencover.xml;coverage/lcov.info"
+          reports: "TestResults/**/coverage.opencover.xml;boardgametracker.client/coverage/lcov.info"
           targetdir: "coveragereport"
           reporttypes: "MarkdownSummaryGithub;Cobertura"
           assemblyfilters: "-BoardGameTracker.Host;-BoardGameTracker.DataStore"
@@ -269,7 +185,7 @@ jobs:
           path: coveragereport/SummaryGithub.md
 
   build-linux-multiarch:
-    needs: [version, test-backend, test-frontend]
+    needs: [version, test-and-analyze]
     name: Build Multi-Arch Linux Containers
     runs-on: ubuntu-latest
     timeout-minutes: 60
