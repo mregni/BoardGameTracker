@@ -104,9 +104,9 @@ jobs:
             /d:sonar.tests="BoardGameTracker.Tests" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
-            /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
-            /d:sonar.typescript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
-            /d:sonar.eslint.reportPaths="boardgametracker.client/coverage/eslint-report.json" \
+            /d:sonar.javascript.lcov.reportPaths="coverage/lcov.info" \
+            /d:sonar.typescript.lcov.reportPaths="coverage/lcov.info" \
+            /d:sonar.eslint.reportPaths="coverage/eslint-report.json" \
             /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**"
         if: env.SONAR_TOKEN != ''
