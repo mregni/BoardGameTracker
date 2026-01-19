@@ -206,11 +206,11 @@ jobs:
             /d:sonar.tests="BoardGameTracker.Tests" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
-            /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
-            /d:sonar.typescript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
-            /d:sonar.testExecutionReportPaths="boardgametracker.client/coverage/sonar-report.xml" \
+            /d:sonar.javascript.lcov.reportPaths="coverage/lcov.info" \
+            /d:sonar.typescript.lcov.reportPaths="coverage/lcov.info" \
+            /d:sonar.testExecutionReportPaths="coverage/sonar-report.xml" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
-            /d:sonar.typescript.tsconfigPaths="boardgametracker.client/tsconfig.json" \
+            /d:sonar.typescript.tsconfigPaths="tsconfig.json" \
             /d:sonar.eslint.reportPaths="coverage/eslint-report.json" \
             /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/*.test.ts,**/*.test.tsx" \
             /d:sonar.test.inclusions="**/*.test.ts,**/*.test.tsx" \
