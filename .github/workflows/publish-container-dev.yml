@@ -186,6 +186,12 @@ jobs:
           pwd
           echo "=== GITHUB_WORKSPACE ==="
           echo $GITHUB_WORKSPACE
+          echo "=== client code files ==="
+          ls -la boardgametracker.client/src/ || echo "No frontend code directory"
+          echo "=== client code files in $GITHUB_WORKSPACE==="
+          ls -la $GITHUB_WORKSPACE/boardgametracker.client/src/ || echo "No frontend code directory in $GITHUB_WORKSPACE"
+          echo "=== Frontend coverage files ==="
+          head -20 boardgametracker.client/src/App.tsx || echo "No App.tsx file"
           echo "=== Frontend coverage files ==="
           ls -la boardgametracker.client/coverage/ || echo "No frontend coverage directory"
           echo "=== lcov.info first 20 lines ==="
@@ -194,8 +200,6 @@ jobs:
           head -20 boardgametracker.client/coverage/sonar-report.xml || echo "No sonar-report.xml file"
           echo "=== Backend coverage files ==="
           find TestResults -name "*.xml" -type f 2>/dev/null || echo "No backend coverage files"
-          echo "=== Frontend code folder ==="
-          ls -la boardgametracker.client/src || echo "No frontend code directory"
 
       - name: Install dependencies
         run: dotnet restore
