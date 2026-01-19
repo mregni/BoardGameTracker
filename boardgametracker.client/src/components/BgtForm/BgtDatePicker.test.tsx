@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor, userEvent, renderWithProviders } from '@/test/test-utils';
 
 import { BgtDatePicker } from './BgtDatePicker';
+
+import { screen, waitFor, userEvent, renderWithProviders } from '@/test/test-utils';
 
 vi.mock('@/services/queries/settings', () => ({
   getSettings: () => ({

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 import { BgtCheckbox } from './BgtCheckbox';
+
+import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 vi.mock('@/assets/icons/check.svg?react', () => ({
   default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="check-icon" {...props} />,

@@ -1,9 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
-import { screen, waitFor, userEvent, renderWithTheme } from '@/test/test-utils';
-import { useForm } from '@tanstack/react-form';
 import { z } from 'zod';
+import { describe, it, expect, vi } from 'vitest';
+import { useForm } from '@tanstack/react-form';
 
 import { BgtFormField } from './BgtFormField';
+
+import { screen, waitFor, userEvent, renderWithTheme } from '@/test/test-utils';
 
 // i18next is mocked globally in setup.ts
 

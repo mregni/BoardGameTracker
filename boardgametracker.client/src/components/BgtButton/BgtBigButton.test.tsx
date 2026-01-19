@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 import BgtBigButton from './BgtBigButton';
+
+import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 describe('BgtBigButton', () => {
   const defaultProps = {

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 import { BgtEditDeleteButtons } from './BgtEditDeleteButtons';
+
+import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 vi.mock('@/assets/icons/trash.svg?react', () => ({
   default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="trash-icon" {...props} />,

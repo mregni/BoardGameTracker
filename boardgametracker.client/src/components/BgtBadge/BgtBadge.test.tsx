@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, userEvent } from '@/test/test-utils';
 
 import { BgtBadge } from './BgtBadge';
+
+import { render, screen, userEvent } from '@/test/test-utils';
 
 vi.mock('@/assets/icons/x.svg?react', () => ({
   default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="close-icon" {...props} />,

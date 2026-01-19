@@ -4,8 +4,6 @@ import { BgtImageSelector } from './BgtImageSelector';
 
 import { screen, fireEvent, userEvent, renderWithTheme } from '@/test/test-utils';
 
-// i18next is mocked globally in setup.ts
-
 vi.mock('@/assets/icons/trash.svg?react', () => ({
   default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="trash-icon" {...props} />,
 }));

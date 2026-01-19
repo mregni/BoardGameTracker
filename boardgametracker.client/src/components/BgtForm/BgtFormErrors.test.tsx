@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@/test/test-utils';
 
 import { BgtFormErrors } from './BgtFormErrors';
+
+import { render, screen } from '@/test/test-utils';
 
 describe('BgtFormErrors', () => {
   describe('Rendering', () => {

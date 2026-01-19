@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, userEvent } from '@/test/test-utils';
 
 import { BgtButton } from './BgtButton';
+
+import { render, screen, userEvent } from '@/test/test-utils';
 
 describe('BgtButton', () => {
   describe('Rendering', () => {

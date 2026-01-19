@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, userEvent, renderWithProviders } from '@/test/test-utils';
 
 import { BgtDateTimePicker } from './BgtDateTimePicker';
+
+import { screen, userEvent, renderWithProviders } from '@/test/test-utils';
 
 // i18next is mocked globally in setup.ts
 
