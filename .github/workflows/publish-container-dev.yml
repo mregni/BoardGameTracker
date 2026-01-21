@@ -64,8 +64,48 @@ jobs:
           cache: 'npm'
           cache-dependency-path: boardgametracker.client/package-lock.json
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarCloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4
+        with:
+          path: ./.sonar/scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarCloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./.sonar/scanner
+          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+
       - name: Install .NET dependencies
         run: dotnet restore ./BoardGameTracker.sln
+
+      - name: Begin SonarCloud analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ./.sonar/scanner/dotnet-sonarscanner begin \
+            /k:"${{ secrets.SONAR_PROJECT_KEY }}" \
+            /o:"${{ secrets.SONAR_ORGANIZATION }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /v:"${{ needs.version.outputs.version }}" \
+            /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
+            /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
+            /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
+            /d:sonar.eslint.reportPaths="boardgametracker.client/coverage/eslint-report.json" \
+            /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**" \
+            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**"
+        if: env.SONAR_TOKEN != ''
 
       - name: Build .NET
         run: dotnet build --no-restore
@@ -100,25 +140,11 @@ jobs:
           cd boardgametracker.client
           npm run lint:report
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5
+      - name: End SonarCloud analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
-            -Dsonar.projectVersion=${{ needs.version.outputs.version }}
-            -Dsonar.sources=BoardGameTracker.Api,BoardGameTracker.Common,BoardGameTracker.Core,BoardGameTracker.Host,boardgametracker.client/src
-            -Dsonar.tests=BoardGameTracker.Tests,boardgametracker.client/src
-            -Dsonar.test.inclusions=**/*Tests.cs,**/*.test.ts,**/*.test.tsx
-            -Dsonar.cs.opencover.reportsPaths=TestResults/**/coverage.opencover.xml
-            -Dsonar.cs.vstest.reportsPaths=TestResults/*.trx
-            -Dsonar.javascript.lcov.reportPaths=boardgametracker.client/coverage/lcov.info
-            -Dsonar.eslint.reportPaths=boardgametracker.client/coverage/eslint-report.json
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**
-            -Dsonar.coverage.exclusions=**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**
+        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
         if: env.SONAR_TOKEN != '' && github.event_name != 'pull_request'
 
       - name: Upload test results
