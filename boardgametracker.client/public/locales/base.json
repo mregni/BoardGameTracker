@@ -118,6 +118,7 @@
   "loan": {
     "title": "Loans",
     "mark-as-returned": "Return game",
+    "no-returned-loans": "No returned loans yet.",
     "statistics": {
       "active": "Active loans",
       "returned": "Returned loans",
