@@ -95,6 +95,11 @@ jobs:
           cd boardgametracker.client
           npm run test:coverage
 
+      - name: Run ESLint
+        run: |
+          cd boardgametracker.client
+          npm run lint:report
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
@@ -111,6 +116,7 @@ jobs:
             -Dsonar.cs.opencover.reportsPaths=TestResults/**/coverage.opencover.xml
             -Dsonar.cs.vstest.reportsPaths=TestResults/*.trx
             -Dsonar.javascript.lcov.reportPaths=boardgametracker.client/coverage/lcov.info
+            -Dsonar.eslint.reportPaths=boardgametracker.client/coverage/eslint-report.json
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**
             -Dsonar.coverage.exclusions=**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**
         if: env.SONAR_TOKEN != '' && github.event_name != 'pull_request'
