@@ -140,10 +140,16 @@ jobs:
           cd boardgametracker.client
           npm run lint:report
 
+      - name: Debug - Dump ESLint report
+        run: cat boardgametracker.client/coverage/eslint-report.json
+
       - name: Fix ESLint report paths for SonarCloud
         run: |
           sed -i 's|"filePath":"src/|"filePath":"boardgametracker.client/src/|g' boardgametracker.client/coverage/eslint-report.json
           sed -i 's|"filePath":"./src/|"filePath":"boardgametracker.client/src/|g' boardgametracker.client/coverage/eslint-report.json
+
+      - name: Debug - Dump ESLint report
+        run: cat boardgametracker.client/coverage/eslint-report.json
 
       - name: End SonarCloud analysis
         env:
