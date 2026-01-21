@@ -4,7 +4,7 @@ namespace BoardGameTracker.Core.Updates.Interfaces;
 
 public interface IUpdateService
 {
-    Task<UpdateStatus> GetUpdateStatusAsync();
+    Task<UpdateStatus> GetVersionInfoAsync();
     Task CheckForUpdatesAsync();
     Task<UpdateSettings> GetUpdateSettingsAsync();
     Task UpdateSettingsAsync(bool enabled, int intervalHours);

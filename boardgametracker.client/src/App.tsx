@@ -6,21 +6,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { routeTree } from './routeTree.gen';
 import { ErrorFallback } from './components/ErrorBoundary/ErrorFallback';
 
-const TanStackQueryDevtools = import.meta.env.PROD
-  ? () => null
-  : lazy(() =>
-      import('@tanstack/react-query-devtools').then((res) => ({
-        default: res.ReactQueryDevtools,
-      }))
-    );
+const TanStackQueryDevtools = import.meta.env.PROD ? () => null : () => null;
 
-const TanStackRouterDevtools = import.meta.env.PROD
-  ? () => null
-  : lazy(() =>
-      import('@tanstack/react-router-devtools').then((res) => ({
-        default: res.TanStackRouterDevtools,
-      }))
-    );
+const TanStackRouterDevtools = import.meta.env.PROD ? () => null : () => null;
 
 const queryClient = new QueryClient({
   defaultOptions: {

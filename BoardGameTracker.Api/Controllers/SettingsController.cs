@@ -46,6 +46,13 @@ public class SettingsController : ControllerBase
         return Ok(uiResources);
     }
 
+    [HttpGet("version-info")]
+    public async Task<IActionResult> GetVersionInfo()
+    {
+        var status = await _updateService.GetVersionInfoAsync();
+        return Ok(status.ToDto());
+    }
+    
     [HttpPut]
     [Route("")]
     public async Task<IActionResult> Update([FromBody] UIResourceDto model)

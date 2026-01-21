@@ -2,7 +2,8 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { Outlet, createRootRouteWithContext, ErrorComponentProps } from '@tanstack/react-router';
 import { QueryClient } from '@tanstack/react-query';
 
-import BgtMenuBar from './-components/BgtMenuBar';
+import { Sidebar } from './-components/Sidebar';
+import { BottomNav } from './-components/BottomNav';
 
 import { MenuItem } from '@/models';
 import { ErrorFallback } from '@/components/ErrorBoundary/ErrorFallback';
@@ -24,13 +25,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootComponent() {
   return (
-    <div className="flex flex-col md:flex-row text-white h-screen">
-      <BgtMenuBar />
-      <div className="flex-1 bg-background flex flex-col md:overflow-y-auto">
+    <div className="flex size-full text-white">
+      <Sidebar />
+
+      <main className="flex-1 overflow-auto pb-20 md:pb-0 h-screen">
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Outlet />
         </ErrorBoundary>
-      </div>
+      </main>
+
+      <BottomNav />
     </div>
   );
 }

@@ -4,4 +4,5 @@ export interface MenuItem {
   menuLabel: string;
   path: string;
   icon: FunctionComponent<SVGProps<SVGSVGElement>>;
+  mobileVisible: boolean;
 }

@@ -1,6 +1,6 @@
 import { useQueries } from '@tanstack/react-query';
 
-import { getEnvironment } from '@/services/queries/settings';
+import { getEnvironment, getVersionInfo } from '@/services/queries/settings';
 import { getCounts } from '@/services/queries/count';
 import { MenuItem } from '@/models';
 import UsersIcon from '@/assets/icons/users.svg?react';
@@ -17,23 +17,23 @@ export interface MenuItems {
 }
 
 export const menuItems: MenuItem[] = [
-  { menuLabel: 'common.dashboard', path: '/', icon: HomeIcon },
-  { menuLabel: 'common.new-session', path: '/sessions/new', icon: PlusIcon },
-  { menuLabel: 'common.games', path: '/games', icon: PuzzlePieceIcon },
-  { menuLabel: 'common.players', path: '/players', icon: UsersIcon },
-  { menuLabel: 'common.compare', path: '/compare', icon: TrendUp },
-  { menuLabel: 'common.loans', path: '/loans', icon: LeftRightArrowIcon },
-  { menuLabel: 'common.locations', path: '/locations', icon: MapPinIcon },
-  { menuLabel: 'common.settings', path: '/settings', icon: CogIcon },
+  { menuLabel: 'common.dashboard', path: '/', icon: HomeIcon, mobileVisible: true },
+  { menuLabel: 'common.new-session', path: '/sessions/new', icon: PlusIcon, mobileVisible: true },
+  { menuLabel: 'common.games', path: '/games', icon: PuzzlePieceIcon, mobileVisible: true },
+  { menuLabel: 'common.players', path: '/players', icon: UsersIcon, mobileVisible: true },
+  { menuLabel: 'common.compare', path: '/compare', icon: TrendUp, mobileVisible: false },
+  { menuLabel: 'common.loans', path: '/loans', icon: LeftRightArrowIcon, mobileVisible: false },
+  { menuLabel: 'common.locations', path: '/locations', icon: MapPinIcon, mobileVisible: false },
+  { menuLabel: 'common.settings', path: '/settings', icon: CogIcon, mobileVisible: false },
 ];
 
 export const useBgtMenuBar = () => {
-  const [environmentQuery, countsQuery] = useQueries({
-    queries: [getEnvironment(), getCounts()],
+  const [versionInfoQuery, countsQuery] = useQueries({
+    queries: [getVersionInfo(), getCounts()],
   });
 
   return {
-    environment: environmentQuery.data,
+    versionInfo: versionInfoQuery.data,
     counts: countsQuery.data,
     menuItems,
   };

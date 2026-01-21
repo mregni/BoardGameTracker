@@ -33,6 +33,7 @@ public class UpdateRepository : IUpdateRepository
         {
             var config = new Config { Key = normalizedKey, Value = value };
             await _context.Config.AddAsync(config);
+            await _context.SaveChangesAsync();
         }
     }
     

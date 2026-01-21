@@ -1,6 +1,7 @@
 import { axiosInstance } from '../utils/axiosInstance';
 import { Settings } from '../models';
 
+import { VersionInfo } from '@/models/Settings/VersionInfo';
 import { Language, Environment } from '@/models';
 
 const domain = 'settings';
@@ -25,6 +26,12 @@ export const getLanguagesCall = (): Promise<Language[]> => {
 
 export const getEnvironmentCall = (): Promise<Environment> => {
   return axiosInstance.get<Environment>(`${domain}/environment`).then((response) => {
+    return response.data;
+  });
+};
+
+export const getVersionInfoCall = (): Promise<VersionInfo> => {
+  return axiosInstance.get<VersionInfo>(`${domain}/version-info`).then((response) => {
     return response.data;
   });
 };

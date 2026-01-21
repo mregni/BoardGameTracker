@@ -1,5 +1,10 @@
 {
+  "version": {
+    "new": "New version available",
+    "version": "Version"
+  },
   "common": {
+    "more": "More",
     "save": "Save",
     "actions": "Actions",
     "start": "Start",

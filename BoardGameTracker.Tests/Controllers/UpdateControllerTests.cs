@@ -41,7 +41,7 @@ public class UpdateControllerTests
         };
 
         _updateServiceMock
-            .Setup(x => x.GetUpdateStatusAsync())
+            .Setup(x => x.GetVersionInfoAsync())
             .ReturnsAsync(updateStatus);
 
         // Act
@@ -57,7 +57,7 @@ public class UpdateControllerTests
         statusDto.LastChecked.Should().Be(updateStatus.LastChecked);
         statusDto.ErrorMessage.Should().BeNull();
 
-        _updateServiceMock.Verify(x => x.GetUpdateStatusAsync(), Times.Once);
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -75,7 +75,7 @@ public class UpdateControllerTests
         };
 
         _updateServiceMock
-            .Setup(x => x.GetUpdateStatusAsync())
+            .Setup(x => x.GetVersionInfoAsync())
             .ReturnsAsync(updateStatus);
 
         // Act
@@ -91,7 +91,7 @@ public class UpdateControllerTests
         statusDto.LastChecked.Should().Be(updateStatus.LastChecked);
         statusDto.ErrorMessage.Should().BeNull();
 
-        _updateServiceMock.Verify(x => x.GetUpdateStatusAsync(), Times.Once);
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -109,7 +109,7 @@ public class UpdateControllerTests
         };
 
         _updateServiceMock
-            .Setup(x => x.GetUpdateStatusAsync())
+            .Setup(x => x.GetVersionInfoAsync())
             .ReturnsAsync(updateStatus);
 
         // Act
@@ -125,7 +125,7 @@ public class UpdateControllerTests
         statusDto.LastChecked.Should().BeNull();
         statusDto.ErrorMessage.Should().BeNull();
 
-        _updateServiceMock.Verify(x => x.GetUpdateStatusAsync(), Times.Once);
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -143,7 +143,7 @@ public class UpdateControllerTests
         };
 
         _updateServiceMock
-            .Setup(x => x.GetUpdateStatusAsync())
+            .Setup(x => x.GetVersionInfoAsync())
             .ReturnsAsync(updateStatus);
 
         // Act
@@ -159,7 +159,7 @@ public class UpdateControllerTests
         statusDto.LastChecked.Should().Be(updateStatus.LastChecked);
         statusDto.ErrorMessage.Should().Be("Failed to connect to update server");
 
-        _updateServiceMock.Verify(x => x.GetUpdateStatusAsync(), Times.Once);
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -181,7 +181,7 @@ public class UpdateControllerTests
             .Returns(Task.CompletedTask);
 
         _updateServiceMock
-            .Setup(x => x.GetUpdateStatusAsync())
+            .Setup(x => x.GetVersionInfoAsync())
             .ReturnsAsync(updatedStatus);
 
         // Act
@@ -198,7 +198,7 @@ public class UpdateControllerTests
         statusDto.ErrorMessage.Should().BeNull();
 
         _updateServiceMock.Verify(x => x.CheckForUpdatesAsync(), Times.Once);
-        _updateServiceMock.Verify(x => x.GetUpdateStatusAsync(), Times.Once);
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -220,7 +220,7 @@ public class UpdateControllerTests
             .Returns(Task.CompletedTask);
 
         _updateServiceMock
-            .Setup(x => x.GetUpdateStatusAsync())
+            .Setup(x => x.GetVersionInfoAsync())
             .ReturnsAsync(updatedStatus);
 
         // Act
@@ -237,7 +237,7 @@ public class UpdateControllerTests
         statusDto.ErrorMessage.Should().BeNull();
 
         _updateServiceMock.Verify(x => x.CheckForUpdatesAsync(), Times.Once);
-        _updateServiceMock.Verify(x => x.GetUpdateStatusAsync(), Times.Once);
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -259,7 +259,7 @@ public class UpdateControllerTests
             .Returns(Task.CompletedTask);
 
         _updateServiceMock
-            .Setup(x => x.GetUpdateStatusAsync())
+            .Setup(x => x.GetVersionInfoAsync())
             .ReturnsAsync(errorStatus);
 
         // Act
@@ -276,7 +276,7 @@ public class UpdateControllerTests
         statusDto.ErrorMessage.Should().Be("Network timeout");
 
         _updateServiceMock.Verify(x => x.CheckForUpdatesAsync(), Times.Once);
-        _updateServiceMock.Verify(x => x.GetUpdateStatusAsync(), Times.Once);
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -311,7 +311,7 @@ public class UpdateControllerTests
             .Returns(Task.CompletedTask);
 
         _updateServiceMock
-            .Setup(x => x.GetUpdateStatusAsync())
+            .Setup(x => x.GetVersionInfoAsync())
             .ThrowsAsync(expectedException);
 
         // Act & Assert
@@ -321,7 +321,7 @@ public class UpdateControllerTests
         exception.Should().Be(expectedException);
 
         _updateServiceMock.Verify(x => x.CheckForUpdatesAsync(), Times.Once);
-        _updateServiceMock.Verify(x => x.GetUpdateStatusAsync(), Times.Once);
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 }

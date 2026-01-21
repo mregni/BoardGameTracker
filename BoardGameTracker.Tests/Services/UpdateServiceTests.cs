@@ -59,7 +59,7 @@ public class UpdateServiceTests
             .ReturnsAsync(config);
 
         // Act
-        var result = await _updateService.GetUpdateStatusAsync();
+        var result = await _updateService.GetVersionInfoAsync();
 
         // Assert
         result.Should().NotBeNull();
@@ -85,7 +85,7 @@ public class UpdateServiceTests
             .ReturnsAsync(config);
 
         // Act
-        var result = await _updateService.GetUpdateStatusAsync();
+        var result = await _updateService.GetVersionInfoAsync();
 
         // Assert
         result.UpdateAvailable.Should().BeFalse();
@@ -105,7 +105,7 @@ public class UpdateServiceTests
             .ReturnsAsync(config);
 
         // Act
-        var result = await _updateService.GetUpdateStatusAsync();
+        var result = await _updateService.GetVersionInfoAsync();
 
         // Assert
         result.ErrorMessage.Should().Be("Network error occurred");
@@ -120,7 +120,7 @@ public class UpdateServiceTests
             .ReturnsAsync(new Dictionary<string, string>());
 
         // Act
-        var result = await _updateService.GetUpdateStatusAsync();
+        var result = await _updateService.GetVersionInfoAsync();
 
         // Assert
         result.Should().NotBeNull();

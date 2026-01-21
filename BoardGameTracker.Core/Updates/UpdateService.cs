@@ -1,9 +1,7 @@
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Updates;
-using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -16,7 +14,6 @@ public class UpdateService : IUpdateService
     private readonly IUpdateRepository _repository;
     private readonly IDockerHubApi _dockerHubApi;
     private readonly ILogger<UpdateService> _logger;
-    private readonly IUnitOfWork _unitOfWork;
 
     private const string DOCKER_OWNER = "uping";
     private const string DOCKER_REPO = "boardgametracker";
@@ -24,15 +21,14 @@ public class UpdateService : IUpdateService
     public UpdateService(
         IUpdateRepository repository,
         IDockerHubApi dockerHubApi,
-        ILogger<UpdateService> logger, IUnitOfWork unitOfWork)
+        ILogger<UpdateService> logger)
     {
         _repository = repository;
         _dockerHubApi = dockerHubApi;
         _logger = logger;
-        _unitOfWork = unitOfWork;
     }
 
-    public async Task<UpdateStatus> GetUpdateStatusAsync()
+    public async Task<UpdateStatus> GetVersionInfoAsync()
     {
         var currentVersion = GetCurrentVersion();
         var config = await _repository.GetUpdateConfigAsync();
@@ -61,15 +57,13 @@ public class UpdateService : IUpdateService
             _logger.LogInformation("Checking for updates from Docker Hub...");
 
             var currentVersion = GetCurrentVersion();
-            var currentArchitecture = GetCurrentArchitecture();
+            var updateTrack = await _repository.GetConfigValueAsync("update_track") ?? "stable";
+            var isBetaTrack = updateTrack.Equals("beta", StringComparison.OrdinalIgnoreCase);
 
-            _logger.LogInformation("Current version: {Version}, Architecture: {Architecture}",
-                currentVersion, currentArchitecture);
-
-            await _repository.SetConfigValueAsync("update_current_architecture", currentArchitecture);
+            _logger.LogInformation("Current version: {Version}, Update track: {Track}",
+                currentVersion, updateTrack);
 
             var response = await _dockerHubApi.GetTags(DOCKER_OWNER, DOCKER_REPO);
-
             if (!response.IsSuccessStatusCode || response.Content == null)
             {
                 throw new Exception($"Docker Hub API returned status {response.StatusCode}");
@@ -77,7 +71,6 @@ public class UpdateService : IUpdateService
 
             var semverTags = response.Content.Results
                 .Where(t => IsSemanticVersion(t.Name))
-                .OrderByDescending(t => ParseVersion(t.Name))
                 .ToList();
 
             if (!semverTags.Any())
@@ -88,52 +81,35 @@ public class UpdateService : IUpdateService
                 return;
             }
 
-            string? latestVersionForArch = null;
-            foreach (var tag in semverTags)
+            var latestVersion = isBetaTrack
+                ? semverTags
+                    .Where(t => IsBetaVersion(t.Name))
+                    .OrderByDescending(t => ParseVersion(t.Name))
+                    .FirstOrDefault()?.Name
+                : semverTags
+                    .Where(t => !IsBetaVersion(t.Name))
+                    .OrderByDescending(t => ParseVersion(t.Name))
+                    .FirstOrDefault()?.Name;
+
+            if (latestVersion == null)
             {
-                try
-                {
-                    var manifestResponse = await _dockerHubApi.GetTagManifest(DOCKER_OWNER, DOCKER_REPO, tag.Name);
-
-                    if (manifestResponse is {IsSuccessStatusCode: true, Content: not null})
-                    {
-                        var supportsArchitecture = manifestResponse.Content.Architecture == currentArchitecture ||
-                                                   manifestResponse.Content.Manifests.Any(m =>
-                                                       m.Platform.Architecture == currentArchitecture);
-
-                        if (supportsArchitecture)
-                        {
-                            latestVersionForArch = tag.Name;
-                            break;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Error checking manifest for tag {Tag}", tag.Name);
-                }
-            }
-
-            await _unitOfWork.BeginTransactionAsync();
-            if (latestVersionForArch == null)
-            {
-                _logger.LogWarning("No versions found for architecture {Architecture}", currentArchitecture);
+                _logger.LogWarning("No matching versions found for track: {Track}", updateTrack);
                 await _repository.SetConfigValueAsync("update_check_error",
-                    $"No versions found for architecture {currentArchitecture}");
+                    $"No {updateTrack} versions found");
                 await _repository.SetConfigValueAsync("update_check_last_run", DateTime.UtcNow.ToString("O"));
                 return;
             }
 
-            var updateAvailable = CompareVersions(currentVersion, latestVersionForArch);
+            var updateAvailable = CompareVersions(currentVersion, latestVersion);
 
-            await _repository.SetConfigValueAsync("update_available_version", latestVersionForArch);
+            await _repository.SetConfigValueAsync("update_available_version", latestVersion);
             await _repository.SetConfigValueAsync("update_available", updateAvailable.ToString().ToLowerInvariant());
             await _repository.SetConfigValueAsync("update_check_last_run", DateTime.UtcNow.ToString("O"));
             await _repository.SetConfigValueAsync("update_check_error", string.Empty);
 
             _logger.LogInformation(
                 "Update check completed. Current: {Current}, Latest: {Latest}, Available: {Available}",
-                currentVersion, latestVersionForArch, updateAvailable);
+                currentVersion, latestVersion, updateAvailable);
         }
         catch (ApiException apiEx)
         {
@@ -147,8 +123,6 @@ public class UpdateService : IUpdateService
             await _repository.SetConfigValueAsync("update_check_error", ex.Message);
             await _repository.SetConfigValueAsync("update_check_last_run", DateTime.UtcNow.ToString("O"));
         }
-        
-        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<UpdateSettings> GetUpdateSettingsAsync()
@@ -172,10 +146,8 @@ public class UpdateService : IUpdateService
             throw new ArgumentException("Interval must be at least 1 hour", nameof(intervalHours));
         }
 
-        await _unitOfWork.BeginTransactionAsync();
         await _repository.SetConfigValueAsync("update_check_enabled", enabled.ToString().ToLowerInvariant());
         await _repository.SetConfigValueAsync("update_check_interval_hours", intervalHours.ToString());
-        await _unitOfWork.SaveChangesAsync();
     }
 
     public string GetCurrentVersion()
@@ -184,26 +156,20 @@ public class UpdateService : IUpdateService
         return version?.ToVersionString() ?? "0.0.0";
     }
 
-    private string GetCurrentArchitecture()
-    {
-        var arch = RuntimeInformation.ProcessArchitecture;
-        return arch switch
-        {
-            Architecture.X64 => "amd64",
-            Architecture.Arm64 => "arm64",
-            Architecture.Arm => "arm/v7",
-            _ => arch.ToString().ToLowerInvariant()
-        };
-    }
-
     private bool IsSemanticVersion(string tag)
     {
-        return Regex.IsMatch(tag, @"^\d+\.\d+\.\d+$");
+        return Regex.IsMatch(tag, @"^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$");
     }
 
     private Version ParseVersion(string versionString)
     {
-        return Version.TryParse(versionString, out var version) ? version : new Version(0, 0, 0);
+        var versionOnly = versionString.Split('-')[0];
+        return Version.TryParse(versionOnly, out var version) ? version : new Version(0, 0, 0);
+    }
+
+    private bool IsBetaVersion(string versionString)
+    {
+        return versionString.Contains("-beta", StringComparison.OrdinalIgnoreCase);
     }
 
     private bool CompareVersions(string current, string latest)
