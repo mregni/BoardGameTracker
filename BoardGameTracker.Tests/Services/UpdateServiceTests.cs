@@ -17,7 +17,6 @@ public class UpdateServiceTests
     private readonly Mock<IUpdateRepository> _updateRepositoryMock;
     private readonly Mock<IDockerHubApi> _dockerHubApiMock;
     private readonly Mock<ILogger<UpdateService>> _loggerMock;
-    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly UpdateService _updateService;
 
     public UpdateServiceTests()
@@ -25,20 +24,17 @@ public class UpdateServiceTests
         _updateRepositoryMock = new Mock<IUpdateRepository>();
         _dockerHubApiMock = new Mock<IDockerHubApi>();
         _loggerMock = new Mock<ILogger<UpdateService>>();
-        _unitOfWorkMock = new Mock<IUnitOfWork>();
 
         _updateService = new UpdateService(
             _updateRepositoryMock.Object,
             _dockerHubApiMock.Object,
-            _loggerMock.Object,
-            _unitOfWorkMock.Object);
+            _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
         _updateRepositoryMock.VerifyNoOtherCalls();
         _dockerHubApiMock.VerifyNoOtherCalls();
-        _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
     #region GetUpdateStatusAsync Tests
@@ -202,17 +198,9 @@ public class UpdateServiceTests
     public async Task UpdateSettingsAsync_ShouldUpdateSettings()
     {
         // Arrange
-        _unitOfWorkMock
-            .Setup(x => x.BeginTransactionAsync(default))
-            .ReturnsAsync((Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction)null!);
-
         _updateRepositoryMock
             .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<string>()))
             .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
 
         // Act
         await _updateService.UpdateSettingsAsync(true, 12);
@@ -220,24 +208,15 @@ public class UpdateServiceTests
         // Assert
         _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", "true"), Times.Once);
         _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_interval_hours", "12"), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
     }
 
     [Fact]
     public async Task UpdateSettingsAsync_ShouldDisableUpdates()
     {
         // Arrange
-        _unitOfWorkMock
-            .Setup(x => x.BeginTransactionAsync(default))
-            .ReturnsAsync((Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction)null!);
-
         _updateRepositoryMock
             .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<string>()))
             .Returns(Task.CompletedTask);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
 
         // Act
         await _updateService.UpdateSettingsAsync(false, 24);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
@@ -330,6 +331,142 @@ public class SettingsControllerTests
         returnedLanguages.Should().BeEmpty();
 
         _languageServiceMock.Verify(x => x.GetAllAsync(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+    
+    [Fact]
+    public async Task GetUpdateStatus_ShouldReturnStatus_WhenUpdateIsAvailable()
+    {
+        // Arrange
+        var updateStatus = new UpdateStatus
+        {
+            CurrentVersion = "1.0.0",
+            LatestVersion = "1.1.0",
+            UpdateAvailable = true,
+            LastChecked = DateTime.UtcNow.AddHours(-1),
+            ErrorMessage = null
+        };
+
+        _updateServiceMock
+            .Setup(x => x.GetVersionInfoAsync())
+            .ReturnsAsync(updateStatus);
+
+        // Act
+        var result = await _controller.GetVersionInfo();
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
+
+        statusDto.CurrentVersion.Should().Be("1.0.0");
+        statusDto.LatestVersion.Should().Be("1.1.0");
+        statusDto.UpdateAvailable.Should().BeTrue();
+        statusDto.LastChecked.Should().Be(updateStatus.LastChecked);
+        statusDto.ErrorMessage.Should().BeNull();
+
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetUpdateStatus_ShouldReturnStatus_WhenNoUpdateIsAvailable()
+    {
+        // Arrange
+        var updateStatus = new UpdateStatus
+        {
+            CurrentVersion = "2.5.0",
+            LatestVersion = "2.5.0",
+            UpdateAvailable = false,
+            LastChecked = DateTime.UtcNow.AddMinutes(-30),
+            ErrorMessage = null
+        };
+
+        _updateServiceMock
+            .Setup(x => x.GetVersionInfoAsync())
+            .ReturnsAsync(updateStatus);
+
+        // Act
+        var result = await _controller.GetVersionInfo();
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
+
+        statusDto.CurrentVersion.Should().Be("2.5.0");
+        statusDto.LatestVersion.Should().Be("2.5.0");
+        statusDto.UpdateAvailable.Should().BeFalse();
+        statusDto.LastChecked.Should().Be(updateStatus.LastChecked);
+        statusDto.ErrorMessage.Should().BeNull();
+
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetUpdateStatus_ShouldReturnStatus_WhenNeverChecked()
+    {
+        // Arrange
+        var updateStatus = new UpdateStatus
+        {
+            CurrentVersion = "1.0.0",
+            LatestVersion = null,
+            UpdateAvailable = false,
+            LastChecked = null,
+            ErrorMessage = null
+        };
+
+        _updateServiceMock
+            .Setup(x => x.GetVersionInfoAsync())
+            .ReturnsAsync(updateStatus);
+
+        // Act
+        var result = await _controller.GetVersionInfo();
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
+
+        statusDto.CurrentVersion.Should().Be("1.0.0");
+        statusDto.LatestVersion.Should().BeNull();
+        statusDto.UpdateAvailable.Should().BeFalse();
+        statusDto.LastChecked.Should().BeNull();
+        statusDto.ErrorMessage.Should().BeNull();
+
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetUpdateStatus_ShouldReturnStatus_WhenErrorOccurred()
+    {
+        // Arrange
+        var updateStatus = new UpdateStatus
+        {
+            CurrentVersion = "1.5.0",
+            LatestVersion = null,
+            UpdateAvailable = false,
+            LastChecked = DateTime.UtcNow.AddDays(-1),
+            ErrorMessage = "Failed to connect to update server"
+        };
+
+        _updateServiceMock
+            .Setup(x => x.GetVersionInfoAsync())
+            .ReturnsAsync(updateStatus);
+
+        // Act
+        var result = await _controller.GetVersionInfo();
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
+
+        statusDto.CurrentVersion.Should().Be("1.5.0");
+        statusDto.LatestVersion.Should().BeNull();
+        statusDto.UpdateAvailable.Should().BeFalse();
+        statusDto.LastChecked.Should().Be(updateStatus.LastChecked);
+        statusDto.ErrorMessage.Should().Be("Failed to connect to update server");
+
+        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 }
