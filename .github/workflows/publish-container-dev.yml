@@ -141,6 +141,9 @@ jobs:
           cd boardgametracker.client
           npm run lint:report
 
+      - name: Fix ESLint report paths for SonarCloud
+        run: sed -i 's|${{ github.workspace }}/||g' boardgametracker.client/coverage/eslint-report.json
+
       - name: End SonarCloud analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
