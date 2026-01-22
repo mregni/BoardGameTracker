@@ -4,7 +4,6 @@ import { BgtIconButton } from './BgtIconButton';
 
 import { render, screen, userEvent } from '@/test/test-utils';
 
-
 describe('BgtIconButton', () => {
   const TestIcon = () => <svg data-testid="test-icon" />;
 

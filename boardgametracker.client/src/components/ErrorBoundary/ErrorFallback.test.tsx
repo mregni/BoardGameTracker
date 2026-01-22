@@ -4,7 +4,6 @@ import { ErrorFallback } from './ErrorFallback';
 
 import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
-
 // i18next is mocked globally in setup.ts
 
 vi.mock('@/assets/icons/alert-triangle.svg?react', () => ({

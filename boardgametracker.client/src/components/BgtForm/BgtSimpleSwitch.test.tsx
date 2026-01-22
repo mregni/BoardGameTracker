@@ -4,7 +4,6 @@ import { BgtSimpleSwitch } from './BgtSimpleSwitch';
 
 import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
-
 describe('BgtSimpleSwitch', () => {
   const defaultProps = {
     label: 'Test Switch',

@@ -4,7 +4,6 @@ import { BgtFancyTextStatistic } from './BgtFancyTextStatistic';
 
 import { screen, renderWithTheme, render } from '@/test/test-utils';
 
-
 describe('BgtFancyTextStatistic', () => {
   describe('Rendering', () => {
     it('should render title', () => {

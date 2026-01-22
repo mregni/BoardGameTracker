@@ -4,7 +4,6 @@ import { BgtMostWinnerCard } from './BgtMostWinnerCard';
 
 import { screen, userEvent, renderWithTheme, render } from '@/test/test-utils';
 
-
 describe('BgtMostWinnerCard', () => {
   const defaultProps = {
     image: '/player.jpg',

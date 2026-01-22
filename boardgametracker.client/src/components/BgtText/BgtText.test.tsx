@@ -4,7 +4,6 @@ import { BgtText } from './BgtText';
 
 import { screen, renderWithTheme } from '@/test/test-utils';
 
-
 describe('BgtText', () => {
   describe('Rendering', () => {
     it('should render children text content', () => {

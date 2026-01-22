@@ -4,7 +4,6 @@ import { BgtDialog, BgtDialogContent, BgtDialogTitle, BgtDialogDescription, BgtD
 
 import { screen, renderWithTheme, render } from '@/test/test-utils';
 
-
 describe('BgtDialog', () => {
   describe('BgtDialog Root', () => {
     it('should render children when open', () => {

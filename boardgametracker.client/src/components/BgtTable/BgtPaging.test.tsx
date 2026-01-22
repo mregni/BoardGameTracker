@@ -4,7 +4,6 @@ import { BgtPaging } from './BgtPaging';
 
 import { screen, userEvent, renderWithTheme, render } from '@/test/test-utils';
 
-
 // i18next is mocked globally in setup.ts
 
 describe('BgtPaging', () => {

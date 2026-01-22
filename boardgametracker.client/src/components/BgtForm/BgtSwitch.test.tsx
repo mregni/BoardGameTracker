@@ -4,7 +4,6 @@ import { BgtSwitch } from './BgtSwitch';
 
 import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
-
 const createMockField = (value: boolean = false) => ({
   state: {
     value,

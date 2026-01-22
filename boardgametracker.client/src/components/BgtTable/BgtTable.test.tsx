@@ -13,7 +13,6 @@ import {
 
 import { render, screen } from '@/test/test-utils';
 
-
 describe('BgtTable Components', () => {
   describe('BgtTable', () => {
     it('should render table element', () => {

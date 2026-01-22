@@ -4,7 +4,6 @@ import { BgtIcon } from './BgtIcon';
 
 import { render, screen } from '@/test/test-utils';
 
-
 describe('BgtIcon', () => {
   describe('Rendering', () => {
     it('should render the icon node', () => {

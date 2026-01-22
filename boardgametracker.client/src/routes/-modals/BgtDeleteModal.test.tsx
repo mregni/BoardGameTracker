@@ -4,7 +4,6 @@ import { BgtDeleteModal } from './BgtDeleteModal';
 
 import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
-
 // i18next is mocked globally in setup.ts
 
 describe('BgtDeleteModal', () => {

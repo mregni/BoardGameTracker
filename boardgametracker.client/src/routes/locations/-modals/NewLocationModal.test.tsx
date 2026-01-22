@@ -4,7 +4,6 @@ import { NewLocationModal } from './NewLocationModal';
 
 import { screen, waitFor, userEvent, renderWithTheme } from '@/test/test-utils';
 
-
 // i18next is mocked globally in setup.ts
 
 const mockSaveLocation = vi.fn();

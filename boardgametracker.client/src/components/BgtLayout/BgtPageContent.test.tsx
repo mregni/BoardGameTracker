@@ -4,7 +4,6 @@ import { BgtPageContent } from './BgtPageContent';
 
 import { render, screen } from '@/test/test-utils';
 
-
 vi.mock('../BgtDataGuard/BgtDataGuard', () => ({
   BgtDataGuard: ({
     isLoading,

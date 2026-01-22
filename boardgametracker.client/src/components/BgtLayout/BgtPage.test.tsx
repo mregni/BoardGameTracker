@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 
-
 import { BgtPageHeader } from './BgtPageHeader';
 import { BgtPageContent } from './BgtPageContent';
 import { BgtPage } from './BgtPage';

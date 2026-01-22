@@ -4,7 +4,6 @@ import { BgtHeading } from './BgtHeading';
 
 import { screen, renderWithTheme } from '@/test/test-utils';
 
-
 describe('BgtHeading', () => {
   describe('Rendering', () => {
     it('should render children text content', () => {

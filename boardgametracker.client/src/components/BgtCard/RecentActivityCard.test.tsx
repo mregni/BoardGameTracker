@@ -4,7 +4,6 @@ import { RecentActivityCard } from './RecentActivityCard';
 
 import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
-
 const mockNavigate = vi.fn();
 
 // i18next is mocked globally in setup.ts

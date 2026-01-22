@@ -4,7 +4,6 @@ import { BgtCenteredCard } from './BgtCenteredCard';
 
 import { screen, renderWithTheme, render } from '@/test/test-utils';
 
-
 describe('BgtCenteredCard', () => {
   describe('Rendering', () => {
     it('should render children', () => {

@@ -4,7 +4,6 @@ import { BgtSelect } from './BgtSelect';
 
 import { screen, renderWithTheme } from '@/test/test-utils';
 
-
 // i18next is mocked globally in setup.ts
 
 vi.mock('@/assets/icons/magnifying-glass.svg?react', () => ({

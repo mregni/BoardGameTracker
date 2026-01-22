@@ -4,7 +4,6 @@ import { BgtSimpleCheckbox } from './BgtSimpleCheckbox';
 
 import { render, screen, userEvent } from '@/test/test-utils';
 
-
 vi.mock('@/assets/icons/check.svg?react', () => ({
   default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="check-icon" {...props} />,
 }));

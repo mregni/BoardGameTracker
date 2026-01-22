@@ -4,7 +4,6 @@ import { FormFieldWrapper } from './FormFieldWrapper';
 
 import { render, screen } from '@/test/test-utils';
 
-
 describe('FormFieldWrapper', () => {
   describe('Rendering', () => {
     it('should render children', () => {

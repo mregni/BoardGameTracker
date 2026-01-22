@@ -4,7 +4,6 @@ import { BgtChartCard } from './BgtChartCard';
 
 import { screen, renderWithTheme, render } from '@/test/test-utils';
 
-
 describe('BgtChartCard', () => {
   describe('Rendering', () => {
     it('should render title', () => {

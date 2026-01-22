@@ -4,7 +4,6 @@ import { BgtSimpleInputField } from './BgtSimpleInputField';
 
 import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
-
 describe('BgtSimpleInputField', () => {
   const defaultProps = {
     type: 'text' as const,

@@ -4,7 +4,6 @@ import { BgtPieChart } from './BgtPieChart';
 
 import { screen, renderWithTheme, render } from '@/test/test-utils';
 
-
 // i18next is mocked globally in setup.ts
 
 vi.mock('@nivo/pie', () => ({
