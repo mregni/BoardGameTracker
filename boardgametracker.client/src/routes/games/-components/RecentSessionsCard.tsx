@@ -10,17 +10,16 @@ import Calendar from '@/assets/icons/calendar.svg?react';
 interface Props {
   sessions: Session[];
   dateFormat: string;
-  uiLanguage: string;
   gameId: string;
 }
 
 export const RecentSessionsCard = (props: Props) => {
-  const { sessions, dateFormat, uiLanguage, gameId } = props;
+  const { sessions, dateFormat, gameId } = props;
   const { t } = useTranslation();
 
   const renderSession = useCallback(
-    (session: Session) => <SessionCardItem session={session} dateFormat={dateFormat} uiLanguage={uiLanguage} />,
-    [dateFormat, uiLanguage]
+    (session: Session) => <SessionCardItem session={session} dateFormat={dateFormat} />,
+    [dateFormat]
   );
 
   const getSessionKey = useCallback((session: Session) => session.id, []);

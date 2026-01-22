@@ -17,10 +17,7 @@ import { BgtDataTable, DataTableProps } from '@/components/BgtTable/BgtDataTable
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtSimpleSwitch } from '@/components/BgtForm/BgtSimpleSwitch';
-import { BgtSimpleSelect } from '@/components/BgtForm/BgtSimpleSelect';
-import { BgtSimpleInputField } from '@/components/BgtForm/BgtSimpleInputField';
-import { BgtSimpleCheckbox } from '@/components/BgtForm/BgtSimpleCheckbox';
+import { BgtSimpleSwitch, BgtSimpleSelect, BgtSimpleInputField, BgtSimpleCheckbox } from '@/components/BgtForm';
 import BgtButton from '@/components/BgtButton/BgtButton';
 import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
 import LinkIcon from '@/assets/icons/arrow-square-out.svg?react';

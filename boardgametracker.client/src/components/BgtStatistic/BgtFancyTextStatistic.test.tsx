@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { screen, renderWithTheme, render } from '@/test/test-utils';
 
 import { BgtFancyTextStatistic } from './BgtFancyTextStatistic';
+
+import { screen, renderWithTheme, render } from '@/test/test-utils';
+
 
 describe('BgtFancyTextStatistic', () => {
   describe('Rendering', () => {

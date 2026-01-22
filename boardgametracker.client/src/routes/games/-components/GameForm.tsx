@@ -15,8 +15,7 @@ import { CreateGame, CreateGameSchema } from '@/models/Games/CreateGame';
 import { Game } from '@/models';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtImageSelector } from '@/components/BgtForm/BgtImageSelector';
-import { BgtFormField, BgtSwitch } from '@/components/BgtForm';
+import { BgtImageSelector, BgtFormField, BgtSwitch } from '@/components/BgtForm';
 import { BgtCenteredCard } from '@/components/BgtCard/BgtCenteredCard';
 import BgtButton from '@/components/BgtButton/BgtButton';
 

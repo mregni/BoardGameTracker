@@ -8,7 +8,7 @@ export const useGameById = () => {
     queries: [getGames()],
   });
 
-  const games = gameQuery.data?.items ?? [];
+  const games = gameQuery.data ?? [];
 
   const gameById = (id: string | number | undefined): Game | null => {
     if (id === undefined) return null;

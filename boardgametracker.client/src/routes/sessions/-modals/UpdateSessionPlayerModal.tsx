@@ -10,7 +10,7 @@ import {
   CreatePlayerSessionSchema,
 } from '@/models/';
 import { BgtFormField, BgtSwitch, BgtInputField } from '@/components/BgtForm';
-import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog/BgtDialog';
+import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {

@@ -64,6 +64,22 @@ module.exports = defineConfig([
       'no-console': 'error',
       'autofix/no-debugger': 'error',
 
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/components/BgtForm/*', '!@/components/BgtForm/index'],
+              message: 'Import from @/components/BgtForm instead of direct file imports.',
+            },
+            {
+              group: ['@/components/BgtDialog/*', '!@/components/BgtDialog/index'],
+              message: 'Import from @/components/BgtDialog instead of direct file imports.',
+            },
+          ],
+        },
+      ],
+
       'react-refresh/only-export-components': [
         'warn',
         {
@@ -88,7 +104,17 @@ module.exports = defineConfig([
       '@tanstack/query/stable-query-client': 'error',
     },
   },
-  globalIgnores(['**/dist', '**/.eslintrc.cjs', '**/*.config.js', '**/*.config.ts', '**/*.config.cjs']),
+  globalIgnores([
+    '**/dist',
+    '**/.eslintrc.cjs',
+    '**/*.config.js',
+    '**/*.config.ts',
+    '**/*.config.cjs',
+    '**/*.test.ts',
+    '**/*.test.tsx',
+    '**/test-utils.tsx',
+    'coverage/**',
+  ]),
   {
     files: ['**/models/index.ts'],
 

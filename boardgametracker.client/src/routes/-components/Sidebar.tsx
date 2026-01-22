@@ -1,11 +1,12 @@
+import { useMenuInfo } from '../-hooks/useMenuInfo';
+
 import { VersionCard } from './VersionCard';
 
 import { BgtMenuLogo } from '@/components/BgtMenu/BgtMenuLogo';
 import { BgtMenuItem } from '@/components/BgtMenu/BgtMenuItem';
-import { useBgtMenuBar } from '@/components/BgtLayout/hooks/useBgtMenuBar';
 
 export const Sidebar = () => {
-  const { counts, versionInfo, menuItems } = useBgtMenuBar();
+  const { counts, versionInfo, menuItems } = useMenuInfo();
 
   if (counts === undefined) return null;
 

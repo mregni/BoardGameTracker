@@ -6,15 +6,14 @@ import { usePlayerModal } from '../-hooks/usePlayerModal';
 
 import { useToasts } from '@/routes/-hooks/useToasts';
 import { CreatePlayerSchema, Player } from '@/models';
-import { BgtInputField } from '@/components/BgtForm/BgtInputField';
-import { BgtImageSelector } from '@/components/BgtForm/BgtImageSelector';
+import { BgtInputField, BgtImageSelector } from '@/components/BgtForm';
 import {
   BgtDialog,
   BgtDialogContent,
   BgtDialogTitle,
   BgtDialogDescription,
   BgtDialogClose,
-} from '@/components/BgtDialog/BgtDialog';
+} from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {

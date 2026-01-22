@@ -1,6 +1,6 @@
 import { useQueries } from '@tanstack/react-query';
 
-import { getEnvironment, getVersionInfo } from '@/services/queries/settings';
+import { getVersionInfo } from '@/services/queries/settings';
 import { getCounts } from '@/services/queries/count';
 import { MenuItem } from '@/models';
 import UsersIcon from '@/assets/icons/users.svg?react';
@@ -27,7 +27,7 @@ export const menuItems: MenuItem[] = [
   { menuLabel: 'common.settings', path: '/settings', icon: CogIcon, mobileVisible: false },
 ];
 
-export const useBgtMenuBar = () => {
+export const useMenuInfo = () => {
   const [versionInfoQuery, countsQuery] = useQueries({
     queries: [getVersionInfo(), getCounts()],
   });

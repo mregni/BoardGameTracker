@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { screen, renderWithTheme, render } from '@/test/test-utils';
 
 import { BgtChartCard } from './BgtChartCard';
+
+import { screen, renderWithTheme, render } from '@/test/test-utils';
+
 
 describe('BgtChartCard', () => {
   describe('Rendering', () => {

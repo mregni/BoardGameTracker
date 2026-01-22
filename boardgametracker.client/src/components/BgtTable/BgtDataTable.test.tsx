@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { screen, renderWithTheme } from '@/test/test-utils';
 import { ColumnDef } from '@tanstack/react-table';
 
 import { BgtDataTable } from './BgtDataTable';
+
+import { screen, renderWithTheme } from '@/test/test-utils';
 
 // i18next is mocked globally in setup.ts
 

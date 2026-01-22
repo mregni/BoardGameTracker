@@ -16,7 +16,7 @@ import {
   BgtDialogDescription,
   BgtDialogClose,
   BgtDialogTitle,
-} from '@/components/BgtDialog/BgtDialog';
+} from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {

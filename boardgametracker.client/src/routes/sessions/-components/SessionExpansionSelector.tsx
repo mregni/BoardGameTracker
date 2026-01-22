@@ -3,7 +3,7 @@ import { memo } from 'react';
 
 import { Expansion } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
-import { BgtCheckboxList } from '@/components/BgtForm/BgtCheckboxList';
+import { BgtCheckboxList } from '@/components/BgtForm';
 
 interface SessionExpansionSelectorProps {
   expansionList: Expansion[];

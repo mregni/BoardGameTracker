@@ -6,8 +6,7 @@ import { CreateSessionPlayerModal } from '../-modals/CreateSessionPlayerModal';
 
 import { CreateSession, CreateSessionPlayer, CreatePlayerSessionNoScoring, Player } from '@/models';
 import { CreateSessionSchema } from '@/models';
-import { BgtPlayerSelector } from '@/components/BgtForm/BgtPlayerSelector';
-import { BgtFormField } from '@/components/BgtForm';
+import { BgtPlayerSelector, BgtFormField } from '@/components/BgtForm';
 
 interface SessionPlayerManagerProps {
   form: UseFormReturn<CreateSession>;

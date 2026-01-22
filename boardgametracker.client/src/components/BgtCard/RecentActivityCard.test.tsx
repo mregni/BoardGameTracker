@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 import { RecentActivityCard } from './RecentActivityCard';
+
+import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
+
 
 const mockNavigate = vi.fn();
 

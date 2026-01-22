@@ -5,8 +5,8 @@ import { useLocationModal } from '../-hooks/useLocationModal';
 
 import { useToasts } from '@/routes/-hooks/useToasts';
 import { CreateLocationSchema, Location } from '@/models';
-import { BgtInputField } from '@/components/BgtForm/BgtInputField';
-import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog/BgtDialog';
+import { BgtInputField } from '@/components/BgtForm';
+import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {

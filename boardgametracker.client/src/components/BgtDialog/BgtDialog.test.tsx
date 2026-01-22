@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { screen, renderWithTheme, render } from '@/test/test-utils';
 
 import { BgtDialog, BgtDialogContent, BgtDialogTitle, BgtDialogDescription, BgtDialogClose } from './BgtDialog';
+
+import { screen, renderWithTheme, render } from '@/test/test-utils';
+
 
 describe('BgtDialog', () => {
   describe('BgtDialog Root', () => {

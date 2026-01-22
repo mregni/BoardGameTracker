@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@/test/test-utils';
 
 import { BgtIcon } from './BgtIcon';
+
+import { render, screen } from '@/test/test-utils';
+
 
 describe('BgtIcon', () => {
   describe('Rendering', () => {

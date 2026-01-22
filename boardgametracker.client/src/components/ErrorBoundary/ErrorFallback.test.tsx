@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 import { ErrorFallback } from './ErrorFallback';
+
+import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
+
 
 // i18next is mocked globally in setup.ts
 

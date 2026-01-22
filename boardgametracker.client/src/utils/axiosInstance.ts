@@ -4,6 +4,7 @@ import { apiUrl } from './apiUrl';
 
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertDatesInObject(obj: any): any {
   if (obj === null || obj === undefined) {
     return obj;
@@ -18,9 +19,10 @@ function convertDatesInObject(obj: any): any {
   }
 
   if (typeof obj === 'object') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const converted: any = {};
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         converted[key] = convertDatesInObject(obj[key]);
       }
     }

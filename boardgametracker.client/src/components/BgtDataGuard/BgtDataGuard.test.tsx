@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@/test/test-utils';
 
 import { BgtDataGuard } from './BgtDataGuard';
+
+import { render, screen } from '@/test/test-utils';
 
 vi.mock('../BgtLoadingSpinner/BgtLoadingSpinner', () => ({
   BgtLoadingSpinner: () => <div data-testid="loading-spinner">Loading...</div>,

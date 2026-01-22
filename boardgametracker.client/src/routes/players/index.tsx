@@ -12,7 +12,7 @@ import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
-import { SearchInputField } from '@/components/BgtForm/SearchInputField';
+import { SearchInputField } from '@/components/BgtForm';
 
 export const Route = createFileRoute('/players/')({
   component: RouteComponent,

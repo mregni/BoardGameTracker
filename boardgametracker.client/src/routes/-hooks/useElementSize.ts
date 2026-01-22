@@ -5,10 +5,6 @@ interface Size {
   height: number;
 }
 
-/**
- * Custom hook to measure element dimensions using ResizeObserver
- * Replacement for react-use's useMeasure to reduce bundle size
- */
 export const useElementSize = <T extends HTMLElement = HTMLDivElement>(): [(node: T | null) => void, Size] => {
   const [size, setSize] = useState<Size>({
     width: 0,

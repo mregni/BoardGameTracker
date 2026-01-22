@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
+
+import { GameState } from '../models';
+
 import {
   getItemStateTranslationKey,
   getItemStateTranslationKeyByString,
   getColorFromGameState,
 } from './ItemStateUtils';
-import { GameState } from '../models';
 
 describe('ItemStateUtils', () => {
   describe('getItemStateTranslationKey', () => {

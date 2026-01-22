@@ -1,17 +1,18 @@
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import { cva, cx } from 'class-variance-authority';
+import { cx } from 'class-variance-authority';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
+
+import { useMenuInfo } from '../-hooks/useMenuInfo';
 
 import { BgtText } from '@/components/BgtText/BgtText';
 import { BgtMenuItem } from '@/components/BgtMenu/BgtMenuItem';
-import { useBgtMenuBar } from '@/components/BgtLayout/hooks/useBgtMenuBar';
 import More from '@/assets/icons/more.svg?react';
 
 export const BottomNav = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { versionInfo, menuItems, counts } = useBgtMenuBar();
+  const { versionInfo, menuItems, counts } = useMenuInfo();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;

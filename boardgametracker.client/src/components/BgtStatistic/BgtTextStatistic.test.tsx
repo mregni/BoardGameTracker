@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, renderWithTheme, render } from '@/test/test-utils';
 
 import { BgtTextStatistic } from './BgtTextStatistic';
+
+import { screen, renderWithTheme, render } from '@/test/test-utils';
+
 
 vi.mock('@/assets/icons/trophy.svg?react', () => ({
   default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="trophy-icon" {...props} />,

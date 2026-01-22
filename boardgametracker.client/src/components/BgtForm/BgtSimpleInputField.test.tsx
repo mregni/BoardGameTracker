@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 import { BgtSimpleInputField } from './BgtSimpleInputField';
+
+import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
+
 
 describe('BgtSimpleInputField', () => {
   const defaultProps = {

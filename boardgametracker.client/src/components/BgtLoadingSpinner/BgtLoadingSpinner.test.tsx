@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@/test/test-utils';
 
 import { BgtLoadingSpinner } from './BgtLoadingSpinner';
+
+import { render, screen } from '@/test/test-utils';
+
 
 vi.mock('react-loading-icons', () => ({
   Bars: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="loading-bars" {...props} />,

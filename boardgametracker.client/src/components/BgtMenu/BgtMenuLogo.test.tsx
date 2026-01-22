@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { screen, renderWithTheme } from '@/test/test-utils';
 
 import { BgtMenuLogo } from './BgtMenuLogo';
+
+import { screen, renderWithTheme } from '@/test/test-utils';
+
 
 describe('BgtMenuLogo', () => {
   describe('Rendering', () => {

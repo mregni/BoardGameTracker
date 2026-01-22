@@ -4,7 +4,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { PlayerAvatarWithCrown } from './PlayerAvatarWithCrown';
 
 import { Player } from '@/models';
-import { BgtSimpleSelect } from '@/components/BgtForm/BgtSimpleSelect';
+import { BgtSimpleSelect } from '@/components/BgtForm';
 
 interface PlayerSelectorProps {
   player: Player;

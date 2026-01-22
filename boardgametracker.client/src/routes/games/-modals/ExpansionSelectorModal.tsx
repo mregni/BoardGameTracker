@@ -3,14 +3,14 @@ import { useState } from 'react';
 
 import { useExpansionSelectorModal } from '../-hooks/useExpansionSelectorModal';
 
-import { BgtCheckboxList } from '@/components/BgtForm/BgtCheckboxList';
+import { BgtCheckboxList } from '@/components/BgtForm';
 import {
   BgtDialog,
   BgtDialogClose,
   BgtDialogContent,
   BgtDialogDescription,
   BgtDialogTitle,
-} from '@/components/BgtDialog/BgtDialog';
+} from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {

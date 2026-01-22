@@ -34,7 +34,7 @@ export const useList = ({ username, onSuccessImport, onFailedImport }: Props) =>
 
   const processedGames = useMemo(() => {
     const bggGames = bggCollectionQuery.data?.games;
-    const collectionGames = gamesQuery.data?.items;
+    const collectionGames = gamesQuery.data;
 
     if (!bggGames) return [];
 

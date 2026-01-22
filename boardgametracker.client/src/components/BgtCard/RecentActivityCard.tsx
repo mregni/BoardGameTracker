@@ -6,7 +6,7 @@ import { BgtCard } from './BgtCard';
 
 import BgtButton from '@/components/BgtButton/BgtButton';
 
-interface RecentActivityCardProps<T extends Record<string, unknown>> {
+interface RecentActivityCardProps<T> {
   items: T[];
   renderItem: (item: T) => ReactNode;
   title: string;
@@ -16,7 +16,7 @@ interface RecentActivityCardProps<T extends Record<string, unknown>> {
   getKey: (item: T) => string | number;
 }
 
-const RecentActivityCardComponent = <T extends Record<string, unknown>>({
+const RecentActivityCardComponent = <T,>({
   items,
   renderItem,
   title,
@@ -48,6 +48,6 @@ const RecentActivityCardComponent = <T extends Record<string, unknown>>({
 
 RecentActivityCardComponent.displayName = 'RecentActivityCard';
 
-export const RecentActivityCard = memo(RecentActivityCardComponent) as <T extends Record<string, unknown>>(
+export const RecentActivityCard = memo(RecentActivityCardComponent) as <T>(
   props: RecentActivityCardProps<T>
 ) => JSX.Element;
