@@ -97,7 +97,6 @@ function RouteComponent() {
                     <RecentSessionsCard
                       sessions={sessions}
                       dateFormat={settings.dateFormat}
-                      uiLanguage={settings.uiLanguage}
                       gameId={gameId.toString()}
                     />
                     <SessionCountChartCard playByDayChart={statistics.playByDayChart} />

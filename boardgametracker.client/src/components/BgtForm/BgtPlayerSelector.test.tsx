@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 
 import { BgtPlayerSelector } from './BgtPlayerSelector';
+
+import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
 import { CreateSessionPlayer } from '@/models';
 
 // i18next is mocked globally in setup.ts

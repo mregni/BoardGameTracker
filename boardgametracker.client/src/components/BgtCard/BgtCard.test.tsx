@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, userEvent } from '@/test/test-utils';
 
 import { BgtCard } from './BgtCard';
+
+import { render, screen, userEvent } from '@/test/test-utils';
 
 // i18next is mocked globally in setup.ts
 

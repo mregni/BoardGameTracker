@@ -97,9 +97,7 @@ function RouteComponent() {
               {t('common.history')} ({loans.filter((loan) => loan.returnedDate !== null).length})
             </BgtHeading>
             {loans.filter((loan) => loan.returnedDate !== null).length === 0 ? (
-              <BgtText color="primary" className="text-center py-8">
-                {t('loan.no-returned-loans')}
-              </BgtText>
+              <BgtText color="primary">{t('loan.no-returned-loans')}</BgtText>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                 {loans

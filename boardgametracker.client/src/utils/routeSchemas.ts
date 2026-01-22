@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const numericIdSchema = z.string().transform((val) => {
+const numericIdSchema = z.string().transform((val) => {
   const num = Number.parseInt(val, 10);
   if (Number.isNaN(num)) {
     throw new Error(`Invalid numeric ID: ${val}`);

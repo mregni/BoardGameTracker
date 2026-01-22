@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, renderWithTheme } from '@/test/test-utils';
 
 import { BgtSelect } from './BgtSelect';
+
+import { screen, renderWithTheme } from '@/test/test-utils';
 
 // i18next is mocked globally in setup.ts
 

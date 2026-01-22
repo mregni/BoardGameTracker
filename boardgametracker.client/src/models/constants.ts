@@ -18,4 +18,5 @@ export const QUERY_KEYS = {
   environment: 'environment',
   shortlist: 'shortlist',
   badges: 'badges',
+  versionInfo: 'versionInfo',
 };

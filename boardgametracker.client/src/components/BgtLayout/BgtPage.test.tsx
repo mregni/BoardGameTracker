@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@/test/test-utils';
 
-import { BgtPage } from './BgtPage';
 import { BgtPageHeader } from './BgtPageHeader';
 import { BgtPageContent } from './BgtPageContent';
+import { BgtPage } from './BgtPage';
+
+import { render, screen } from '@/test/test-utils';
 
 describe('BgtPage', () => {
   describe('Rendering', () => {

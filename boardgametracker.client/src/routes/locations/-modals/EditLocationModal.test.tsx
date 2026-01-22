@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor, userEvent, renderWithTheme } from '@/test/test-utils';
 
 import { EditLocationModal } from './EditLocationModal';
+
+import { screen, waitFor, userEvent, renderWithTheme } from '@/test/test-utils';
 import { Location } from '@/models';
 
 // i18next is mocked globally in setup.ts

@@ -14,6 +14,7 @@ const textVariants = cva('', {
       green: 'text-green-500',
       white: 'text-white',
       primary: 'text-primary',
+      gray: 'text-gray-400',
     },
     opacity: {
       100: '',

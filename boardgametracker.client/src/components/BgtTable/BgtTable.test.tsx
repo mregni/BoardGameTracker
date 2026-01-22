@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@/test/test-utils';
 
 import {
   BgtTable,
@@ -11,6 +10,8 @@ import {
   BgtTableCaption,
   BgtTableFooter,
 } from './BgtTable';
+
+import { render, screen } from '@/test/test-utils';
 
 describe('BgtTable Components', () => {
   describe('BgtTable', () => {

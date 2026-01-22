@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, renderWithTheme, userEvent } from '@/test/test-utils';
 
 import { BgtAvatar } from './BgtAvatar';
+
+import { render, screen, renderWithTheme, userEvent } from '@/test/test-utils';
 
 describe('BgtAvatar', () => {
   describe('Rendering', () => {

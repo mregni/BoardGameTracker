@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { RoundDecimal, GetPercentage, ToLogLevel } from './numberUtils';
 
 describe('numberUtils', () => {

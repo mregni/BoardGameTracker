@@ -1,19 +1,13 @@
-/**
- * Centralized type definitions for player detail page components
- */
-
 import { LegacyRef } from 'react';
 
 import { Badge, Player } from '@/models';
 
-// Player Header Types
 export interface PlayerHeaderProps {
   playerName: string;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-// Player Statistics Types
 export interface PlayerStatistics {
   playCount: number;
   totalPlayedTime: number | null;
@@ -33,7 +27,6 @@ export interface PlayerStatisticsGridProps {
   statistics: PlayerStatistics;
 }
 
-// Player Hero Section Types
 export interface PlayerHeroSectionProps {
   player: Player;
   statistics: PlayerStatistics;

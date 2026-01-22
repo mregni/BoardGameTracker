@@ -105,33 +105,3 @@ export class QueryInvalidator {
     await this.queryClient.invalidateQueries();
   }
 }
-
-export const invalidateGameRelated = (queryClient: QueryClient, gameId: number) => {
-  const invalidator = new QueryInvalidator(queryClient);
-  return invalidator.invalidateGame(gameId);
-};
-
-export const invalidateSessionRelated = (queryClient: QueryClient, sessionId: number, gameId: number) => {
-  const invalidator = new QueryInvalidator(queryClient);
-  return invalidator.invalidateSession(sessionId, gameId);
-};
-
-export const invalidatePlayerRelated = (queryClient: QueryClient, playerId: number) => {
-  const invalidator = new QueryInvalidator(queryClient);
-  return invalidator.invalidatePlayer(playerId);
-};
-
-export const invalidateLoanRelated = (queryClient: QueryClient, loanId?: number) => {
-  const invalidator = new QueryInvalidator(queryClient);
-  return invalidator.invalidateLoan(loanId);
-};
-
-export const invalidateLocationRelated = (queryClient: QueryClient, locationId?: number) => {
-  const invalidator = new QueryInvalidator(queryClient);
-  return invalidator.invalidateLocation(locationId);
-};
-
-export const invalidateDashboardRelated = (queryClient: QueryClient) => {
-  const invalidator = new QueryInvalidator(queryClient);
-  return invalidator.invalidateDashboard();
-};

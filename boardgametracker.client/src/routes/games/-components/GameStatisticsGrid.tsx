@@ -1,10 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { formatDuration } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 
 import { RoundDecimal } from '@/utils/numberUtils';
-import { getDateFnsLocale } from '@/utils/localeUtils';
-import { formatMinutesToDuration, minutesToDuration, toRelative } from '@/utils/dateUtils';
+import { formatMinutesToDuration, toRelative } from '@/utils/dateUtils';
 import { getSettings } from '@/services/queries/settings';
 import { BgtTextStatistic } from '@/components/BgtStatistic/BgtTextStatistic';
 

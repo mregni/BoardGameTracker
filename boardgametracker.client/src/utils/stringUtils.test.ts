@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
+
 import { StringToHsl, StringToRgb, SessionFlagToString } from './stringUtils';
+
 import { SessionFlag } from '@/models';
 
 describe('stringUtils', () => {

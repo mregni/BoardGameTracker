@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 
 import { useGameById } from '../../-hooks/useGameById';
 

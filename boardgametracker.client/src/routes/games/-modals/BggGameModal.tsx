@@ -16,7 +16,7 @@ import {
   BgtDialogContent,
   BgtDialogDescription,
   BgtDialogTitle,
-} from '@/components/BgtDialog/BgtDialog';
+} from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 import SquareOutIcon from '@/assets/icons/square-out.svg?react';
 

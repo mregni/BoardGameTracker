@@ -1,5 +1,10 @@
 {
+  "version": {
+    "new": "New version available",
+    "version": "Version"
+  },
   "common": {
+    "more": "More",
     "save": "Save",
     "actions": "Actions",
     "start": "Start",
@@ -113,6 +118,7 @@
   "loan": {
     "title": "Loans",
     "mark-as-returned": "Return game",
+    "no-returned-loans": "No returned loans yet.",
     "statistics": {
       "active": "Active loans",
       "returned": "Returned loans",

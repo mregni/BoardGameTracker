@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, userEvent } from '@/test/test-utils';
 
 import { BgtIconButton } from './BgtIconButton';
+
+import { render, screen, userEvent } from '@/test/test-utils';
 
 describe('BgtIconButton', () => {
   const TestIcon = () => <svg data-testid="test-icon" />;

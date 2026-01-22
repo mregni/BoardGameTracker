@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { screen, renderWithTheme, render } from '@/test/test-utils';
 
 import { BgtBarChart } from './BgtBarChart';
+
+import { screen, renderWithTheme, render } from '@/test/test-utils';
 
 vi.mock('@nivo/bar', () => ({
   ResponsiveBar: ({

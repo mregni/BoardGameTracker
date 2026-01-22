@@ -15,18 +15,11 @@ public class UpdateController : ControllerBase
         _updateService = updateService;
     }
 
-    [HttpGet("status")]
-    public async Task<IActionResult> GetUpdateStatus()
-    {
-        var status = await _updateService.GetUpdateStatusAsync();
-        return Ok(status.ToDto());
-    }
-
     [HttpPost("check")]
     public async Task<IActionResult> CheckNow()
     {
         await _updateService.CheckForUpdatesAsync();
-        var status = await _updateService.GetUpdateStatusAsync();
+        var status = await _updateService.GetVersionInfoAsync();
         return Ok(status.ToDto());
     }
 }
