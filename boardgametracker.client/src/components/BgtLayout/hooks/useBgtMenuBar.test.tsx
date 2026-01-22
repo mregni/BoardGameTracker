@@ -7,9 +7,9 @@ import { useBgtMenuBar, menuItems } from './useBgtMenuBar';
 
 // Mock the query functions
 vi.mock('@/services/queries/settings', () => ({
-  getEnvironment: () => ({
-    queryKey: ['environment'],
-    queryFn: () => Promise.resolve({ version: '1.0.0', environment: 'test' }),
+  getVersionInfo: () => ({
+    queryKey: ['version-info'],
+    queryFn: () => Promise.resolve({ currentVersion: '1.0.0', latestVersion: '1.0.0', updateAvailable: false }),
   }),
 }));
 
@@ -134,18 +134,19 @@ describe('useBgtMenuBar', () => {
       expect(result.current.menuItems).toBe(menuItems);
     });
 
-    it('should return environment data when loaded', async () => {
+    it('should return versionInfo data when loaded', async () => {
       const { result } = renderHook(() => useBgtMenuBar(), {
         wrapper: createWrapper(),
       });
 
       await waitFor(() => {
-        expect(result.current.environment).toBeDefined();
+        expect(result.current.versionInfo).toBeDefined();
       });
 
-      expect(result.current.environment).toEqual({
-        version: '1.0.0',
-        environment: 'test',
+      expect(result.current.versionInfo).toEqual({
+        currentVersion: '1.0.0',
+        latestVersion: '1.0.0',
+        updateAvailable: false,
       });
     });
 
