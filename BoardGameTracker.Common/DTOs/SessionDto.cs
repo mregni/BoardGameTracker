@@ -38,7 +38,7 @@ public static class SessionDtoExtensions
 
     public static List<SessionDto> ToListDto(this IEnumerable<Session> sessions)
     {
-        return sessions.Select(s => s.ToDto()).ToList();
+        return sessions.Select(s => ToDto(s)).ToList();
     }
 
     public static Session ToEntity(this SessionDto dto)

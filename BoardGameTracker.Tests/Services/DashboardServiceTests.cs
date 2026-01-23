@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Dashboard;
 using BoardGameTracker.Core.Games.Interfaces;
-using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
@@ -20,8 +21,7 @@ public class DashboardServiceTests
     private readonly Mock<IGameStatisticsRepository> _gameStatisticsRepositoryMock;
     private readonly Mock<IPlayerRepository> _playerRepositoryMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
-    private readonly Mock<ILocationRepository> _locationRepositoryMock;
-    private readonly DashboardService _dashboardService;
+    private readonly DashboardService _sut;
 
     public DashboardServiceTests()
     {
@@ -29,312 +29,328 @@ public class DashboardServiceTests
         _gameStatisticsRepositoryMock = new Mock<IGameStatisticsRepository>();
         _playerRepositoryMock = new Mock<IPlayerRepository>();
         _sessionRepositoryMock = new Mock<ISessionRepository>();
-        _locationRepositoryMock = new Mock<ILocationRepository>();
 
-        _dashboardService = new DashboardService(
+        _sut = new DashboardService(
             _gameRepositoryMock.Object,
             _gameStatisticsRepositoryMock.Object,
             _playerRepositoryMock.Object,
-            _sessionRepositoryMock.Object,
-            _locationRepositoryMock.Object);
-    }
+            _sessionRepositoryMock.Object);
 
-    private void VerifyNoOtherCalls()
-    {
-        _gameRepositoryMock.VerifyNoOtherCalls();
-        _gameStatisticsRepositoryMock.VerifyNoOtherCalls();
-        _playerRepositoryMock.VerifyNoOtherCalls();
-        _sessionRepositoryMock.VerifyNoOtherCalls();
-        _locationRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    #region GetStatistics Tests
-
-    [Fact]
-    public async Task GetStatistics_ShouldReturnAllCounts_WhenDataExists()
-    {
-        // Arrange
-        SetupBasicStatistics(gameCount: 25, playerCount: 10, sessionCount: 100, locationCount: 5, expansionCount: 15);
-        SetupPlayTimeStatistics(totalPlayTime: 5000.0, meanPlayTime: 50.0);
-        SetupPayedStatistics(meanPayed: 35.5, totalPayed: 887.5);
-        SetupMostWinningPlayer(null);
-
-        // Act
-        var result = await _dashboardService.GetStatistics();
-
-        // Assert
-        result.GameCount.Should().Be(25);
-        result.PlayerCount.Should().Be(10);
-        result.SessionCount.Should().Be(100);
-        result.LocationCount.Should().Be(5);
-        result.ExpansionCount.Should().Be(15);
-        result.TotalPlayTime.Should().Be(5000.0);
-        result.MeanPlayTime.Should().Be(50.0);
-        result.MeanPayed.Should().Be(35.5);
-        result.TotalCost.Should().Be(887.5);
+        SetupDefaultMocks();
     }
 
     [Fact]
-    public async Task GetStatistics_ShouldReturnZeroCounts_WhenNoDataExists()
+    public async Task GetStatistics_ShouldReturnCorrectScalarValues()
     {
         // Arrange
-        SetupBasicStatistics(gameCount: 0, playerCount: 0, sessionCount: 0, locationCount: 0, expansionCount: 0);
-        SetupPlayTimeStatistics(totalPlayTime: 0, meanPlayTime: 0);
-        SetupPayedStatistics(meanPayed: null, totalPayed: null);
-        SetupMostWinningPlayer(null);
+        _gameRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(25);
+        _playerRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(10);
+        _sessionRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(100);
+        _sessionRepositoryMock.Setup(x => x.GetTotalPlayTime()).ReturnsAsync(5000.0);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPayedAsync()).ReturnsAsync(887.5);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMeanPayedAsync()).ReturnsAsync(35.5);
+        _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount()).ReturnsAsync(15);
+        _sessionRepositoryMock.Setup(x => x.GetMeanPlayTime()).ReturnsAsync(50.0);
 
         // Act
-        var result = await _dashboardService.GetStatistics();
+        var result = await _sut.GetStatistics();
 
         // Assert
-        result.GameCount.Should().Be(0);
-        result.PlayerCount.Should().Be(0);
-        result.SessionCount.Should().Be(0);
-        result.LocationCount.Should().Be(0);
-        result.ExpansionCount.Should().Be(0);
-        result.TotalPlayTime.Should().Be(0);
-        result.MeanPlayTime.Should().Be(0);
-        result.MeanPayed.Should().BeNull();
-        result.TotalCost.Should().BeNull();
+        result.TotalGames.Should().Be(25);
+        result.ActivePlayers.Should().Be(10);
+        result.SessionsPlayed.Should().Be(100);
+        result.TotalPlayedTime.Should().Be(5000.0);
+        result.TotalCollectionValue.Should().Be(887.5);
+        result.AvgGamePrice.Should().Be(35.5);
+        result.ExpansionsOwned.Should().Be(15);
+        result.AvgSessionTime.Should().Be(50.0);
     }
 
     [Fact]
-    public async Task GetStatistics_ShouldIncludeMostWinningPlayer_WhenPlayerExists()
+    public async Task GetStatistics_ShouldReturnNullForPrices_WhenNoGamesHavePrices()
     {
         // Arrange
-        var winningPlayer = new Player("John Doe", "john.png") { Id = 1 };
-        var expectedWins = 25;
-
-        SetupBasicStatistics(gameCount: 10, playerCount: 5, sessionCount: 50, locationCount: 2, expansionCount: 5);
-        SetupPlayTimeStatistics(totalPlayTime: 2500.0, meanPlayTime: 50.0);
-        SetupPayedStatistics(meanPayed: 30.0, totalPayed: 300.0);
-        SetupMostWinningPlayer(winningPlayer);
-
-        _playerRepositoryMock
-            .Setup(x => x.GetTotalWinCount(winningPlayer.Id))
-            .ReturnsAsync(expectedWins);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPayedAsync()).ReturnsAsync((double?)null);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMeanPayedAsync()).ReturnsAsync((double?)null);
 
         // Act
-        var result = await _dashboardService.GetStatistics();
+        var result = await _sut.GetStatistics();
 
         // Assert
-        result.MostWinningPlayer.Should().NotBeNull();
-        result.MostWinningPlayer!.Id.Should().Be(1);
-        result.MostWinningPlayer.Name.Should().Be("John Doe");
-        result.MostWinningPlayer.Image.Should().Be("john.png");
-        result.MostWinningPlayer.TotalWins.Should().Be(25);
-
-        _playerRepositoryMock.Verify(x => x.GetTotalWinCount(winningPlayer.Id), Times.Once);
+        result.TotalCollectionValue.Should().BeNull();
+        result.AvgGamePrice.Should().BeNull();
     }
 
     [Fact]
-    public async Task GetStatistics_ShouldHaveNullMostWinningPlayer_WhenNoWinnerExists()
+    public async Task GetStatistics_ShouldReturnRecentActivities()
     {
         // Arrange
-        SetupBasicStatistics(gameCount: 10, playerCount: 5, sessionCount: 0, locationCount: 2, expansionCount: 5);
-        SetupPlayTimeStatistics(totalPlayTime: 0, meanPlayTime: 0);
-        SetupPayedStatistics(meanPayed: null, totalPayed: null);
-        SetupMostWinningPlayer(null);
+        var session = CreateSessionWithWinner(
+            gameId: 1,
+            gameTitle: "Catan",
+            gameImage: "catan.jpg",
+            winnerId: 1,
+            winnerName: "John Doe",
+            durationMinutes: 90);
+
+        _sessionRepositoryMock.Setup(x => x.GetRecentSessions(4))
+            .ReturnsAsync(new List<Session> { session });
 
         // Act
-        var result = await _dashboardService.GetStatistics();
+        var result = await _sut.GetStatistics();
 
         // Assert
-        result.MostWinningPlayer.Should().BeNull();
+        result.RecentActivities.Should().HaveCount(1);
+        var activity = result.RecentActivities[0];
+        activity.GameId.Should().Be(1);
+        activity.GameTitle.Should().Be("Catan");
+        activity.GameImage.Should().Be("catan.jpg");
+        activity.PlayerCount.Should().Be(1);
+        activity.DurationInMinutes.Should().BeApproximately(90, 1);
+        activity.WinnerId.Should().Be(1);
+        activity.WinnerName.Should().Be("John Doe");
     }
 
     [Fact]
-    public async Task GetStatistics_ShouldHandlePlayerWithNullImage()
+    public async Task GetStatistics_ShouldReturnRecentActivityWithNullWinner_WhenNoWinnerExists()
     {
         // Arrange
-        var winningPlayer = new Player("Jane Doe") { Id = 2 }; // No image
-        var expectedWins = 15;
+        var session = CreateSessionWithoutWinner(gameId: 1, gameTitle: "Catan");
 
-        SetupBasicStatistics(gameCount: 10, playerCount: 5, sessionCount: 50, locationCount: 2, expansionCount: 5);
-        SetupPlayTimeStatistics(totalPlayTime: 2500.0, meanPlayTime: 50.0);
-        SetupPayedStatistics(meanPayed: 30.0, totalPayed: 300.0);
-        SetupMostWinningPlayer(winningPlayer);
-
-        _playerRepositoryMock
-            .Setup(x => x.GetTotalWinCount(winningPlayer.Id))
-            .ReturnsAsync(expectedWins);
+        _sessionRepositoryMock.Setup(x => x.GetRecentSessions(4))
+            .ReturnsAsync(new List<Session> { session });
 
         // Act
-        var result = await _dashboardService.GetStatistics();
+        var result = await _sut.GetStatistics();
 
         // Assert
-        result.MostWinningPlayer.Should().NotBeNull();
-        result.MostWinningPlayer!.Image.Should().Be(string.Empty);
+        result.RecentActivities.Should().HaveCount(1);
+        result.RecentActivities[0].WinnerId.Should().BeNull();
+        result.RecentActivities[0].WinnerName.Should().BeNull();
     }
 
     [Fact]
-    public async Task GetStatistics_ShouldCallAllRepositories()
+    public async Task GetStatistics_ShouldReturnCollection()
     {
         // Arrange
-        SetupBasicStatistics(gameCount: 10, playerCount: 5, sessionCount: 50, locationCount: 2, expansionCount: 5);
-        SetupPlayTimeStatistics(totalPlayTime: 2500.0, meanPlayTime: 50.0);
-        SetupPayedStatistics(meanPayed: 30.0, totalPayed: 300.0);
-        SetupMostWinningPlayer(null);
+        var groupedGames = new List<IGrouping<GameState, Game>>
+        {
+            CreateGameStateGrouping(GameState.Owned, 3),
+            CreateGameStateGrouping(GameState.Wanted, 2)
+        };
+
+        _gameStatisticsRepositoryMock.Setup(x => x.GetGamesGroupedByState())
+            .ReturnsAsync(groupedGames);
 
         // Act
-        await _dashboardService.GetStatistics();
+        var result = await _sut.GetStatistics();
 
         // Assert
+        result.Collection.Should().HaveCount(2);
+        result.Collection.Should().Contain(x => x.Type == GameState.Owned && x.GameCount == 3);
+        result.Collection.Should().Contain(x => x.Type == GameState.Wanted && x.GameCount == 2);
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldReturnMostPlayedGames()
+    {
+        // Arrange
+        var mostPlayed = new List<(int GameId, string Title, string? Image, int PlayCount)>
+        {
+            (1, "Catan", "catan.jpg", 20),
+            (2, "Ticket to Ride", "ttr.jpg", 15)
+        };
+
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGames(4))
+            .ReturnsAsync(mostPlayed);
+
+        // Act
+        var result = await _sut.GetStatistics();
+
+        // Assert
+        result.MostPlayedGames.Should().HaveCount(2);
+        result.MostPlayedGames[0].Id.Should().Be(1);
+        result.MostPlayedGames[0].Title.Should().Be("Catan");
+        result.MostPlayedGames[0].Image.Should().Be("catan.jpg");
+        result.MostPlayedGames[0].TotalSessions.Should().Be(20);
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldReturnTopPlayers()
+    {
+        // Arrange
+        var topPlayers = new List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>
+        {
+            (1, "John", "john.jpg", 25, 15),
+            (2, "Jane", null, 20, 12)
+        };
+
+        _playerRepositoryMock.Setup(x => x.GetTopPlayers(4))
+            .ReturnsAsync(topPlayers);
+
+        // Act
+        var result = await _sut.GetStatistics();
+
+        // Assert
+        result.TopPlayers.Should().HaveCount(2);
+        result.TopPlayers[0].Id.Should().Be(1);
+        result.TopPlayers[0].Name.Should().Be("John");
+        result.TopPlayers[0].Image.Should().Be("john.jpg");
+        result.TopPlayers[0].PlayCount.Should().Be(25);
+        result.TopPlayers[0].WinCount.Should().Be(15);
+        result.TopPlayers[1].Image.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldReturnRecentAddedGames()
+    {
+        // Arrange
+        var game1 = new Game("New Game 1") { Id = 1 };
+        game1.UpdateAdditionDate(DateTime.Now.AddDays(-1));
+        game1.UpdateBuyingPrice(49.99m);
+
+        var game2 = new Game("New Game 2") { Id = 2 };
+        game2.UpdateAdditionDate(DateTime.Now.AddDays(-2));
+
+        _gameRepositoryMock.Setup(x => x.GetRecentlyAddedGames(4))
+            .ReturnsAsync(new List<Game> { game1, game2 });
+
+        // Act
+        var result = await _sut.GetStatistics();
+
+        // Assert
+        result.RecentAddedGames.Should().HaveCount(2);
+        result.RecentAddedGames[0].Id.Should().Be(1);
+        result.RecentAddedGames[0].Title.Should().Be("New Game 1");
+        result.RecentAddedGames[0].AdditionDate.Should().NotBeNull();
+        result.RecentAddedGames[0].Price.Should().Be(49.99m);
+        result.RecentAddedGames[1].Price.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldReturnSessionsByDayOfWeek()
+    {
+        // Arrange
+        var sessionsByDay = new List<IGrouping<DayOfWeek, Session>>
+        {
+            CreateDayOfWeekGrouping(DayOfWeek.Monday, 5),
+            CreateDayOfWeekGrouping(DayOfWeek.Friday, 3)
+        };
+
+        _sessionRepositoryMock.Setup(x => x.GetSessionsByDayOfWeek())
+            .ReturnsAsync(sessionsByDay);
+
+        // Act
+        var result = await _sut.GetStatistics();
+
+        // Assert
+        result.SessionsByDayOfWeek.Should().HaveCount(2);
+        result.SessionsByDayOfWeek.Should().Contain(x => x.DayOfWeek == DayOfWeek.Monday && x.PlayCount == 5);
+        result.SessionsByDayOfWeek.Should().Contain(x => x.DayOfWeek == DayOfWeek.Friday && x.PlayCount == 3);
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldCallAllRepositoryMethods()
+    {
+        // Act
+        await _sut.GetStatistics();
+
+        // Assert - Scalar values
         _gameRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
-        _gameRepositoryMock.Verify(x => x.GetTotalExpansionCount(), Times.Once);
-        _gameStatisticsRepositoryMock.Verify(x => x.GetMeanPayedAsync(), Times.Once);
-        _gameStatisticsRepositoryMock.Verify(x => x.GetTotalPayedAsync(), Times.Once);
-        _gameStatisticsRepositoryMock.Verify(x => x.GetMostWins(), Times.Once);
         _playerRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.GetTotalPlayTime(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.GetMeanPlayTime(), Times.Once);
-        _locationRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
-    }
+        _gameStatisticsRepositoryMock.Verify(x => x.GetTotalPayedAsync(), Times.Once);
+        _gameStatisticsRepositoryMock.Verify(x => x.GetMeanPayedAsync(), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetTotalExpansionCount(), Times.Once);
 
-    #endregion
-
-    #region GetCharts Tests
-
-    [Fact]
-    public async Task GetCharts_ShouldReturnGameStateChart_WhenGamesExist()
-    {
-        // Arrange
-        var ownedGames = new List<Game>
-        {
-            new Game("Game 1") { Id = 1 },
-            new Game("Game 2") { Id = 2 },
-            new Game("Game 3") { Id = 3 }
-        };
-        var wantedGames = new List<Game>
-        {
-            new Game("Game 4", state: GameState.Wanted) { Id = 4 }
-        };
-
-        var groupedGames = new List<IGrouping<GameState, Game>>
-        {
-            CreateGrouping(GameState.Owned, ownedGames),
-            CreateGrouping(GameState.Wanted, wantedGames)
-        };
-
-        _gameStatisticsRepositoryMock
-            .Setup(x => x.GetGamesGroupedByState())
-            .ReturnsAsync(groupedGames);
-
-        // Act
-        var result = await _dashboardService.GetCharts();
-
-        // Assert
-        result.GameState.Should().HaveCount(2);
-        result.GameState.Should().Contain(x => x.Type == GameState.Owned && x.GameCount == 3);
-        result.GameState.Should().Contain(x => x.Type == GameState.Wanted && x.GameCount == 1);
-
+        // Assert - List data
+        _sessionRepositoryMock.Verify(x => x.GetRecentSessions(4), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetGamesGroupedByState(), Times.Once);
+        _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGames(4), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetTopPlayers(4), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetRecentlyAddedGames(4), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.GetSessionsByDayOfWeek(), Times.Once);
     }
-
-    [Fact]
-    public async Task GetCharts_ShouldReturnEmptyChart_WhenNoGamesExist()
-    {
-        // Arrange
-        _gameStatisticsRepositoryMock
-            .Setup(x => x.GetGamesGroupedByState())
-            .ReturnsAsync(new List<IGrouping<GameState, Game>>());
-
-        // Act
-        var result = await _dashboardService.GetCharts();
-
-        // Assert
-        result.GameState.Should().BeEmpty();
-
-        _gameStatisticsRepositoryMock.Verify(x => x.GetGamesGroupedByState(), Times.Once);
-    }
-
-    [Fact]
-    public async Task GetCharts_ShouldReturnAllGameStates_WhenAllStatesHaveGames()
-    {
-        // Arrange
-        var groupedGames = new List<IGrouping<GameState, Game>>
-        {
-            CreateGrouping(GameState.Owned, new List<Game> { new Game("Game 1") }),
-            CreateGrouping(GameState.Wanted, new List<Game> { new Game("Game 2", state: GameState.Wanted) }),
-            CreateGrouping(GameState.PreviouslyOwned, new List<Game> { new Game("Game 3", state: GameState.PreviouslyOwned) }),
-            CreateGrouping(GameState.ForTrade, new List<Game> { new Game("Game 4", state: GameState.ForTrade) })
-        };
-
-        _gameStatisticsRepositoryMock
-            .Setup(x => x.GetGamesGroupedByState())
-            .ReturnsAsync(groupedGames);
-
-        // Act
-        var result = await _dashboardService.GetCharts();
-
-        // Assert
-        result.GameState.Should().HaveCount(4);
-        result.GameState.Should().Contain(x => x.Type == GameState.Owned);
-        result.GameState.Should().Contain(x => x.Type == GameState.Wanted);
-        result.GameState.Should().Contain(x => x.Type == GameState.PreviouslyOwned);
-        result.GameState.Should().Contain(x => x.Type == GameState.ForTrade);
-    }
-
-    #endregion
 
     #region Helper Methods
 
-    private void SetupBasicStatistics(int gameCount, int playerCount, int sessionCount, int locationCount, int expansionCount)
+    private void SetupDefaultMocks()
     {
-        _gameRepositoryMock
-            .Setup(x => x.CountAsync())
-            .ReturnsAsync(gameCount);
+        // Scalar values
+        _gameRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(0);
+        _playerRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(0);
+        _sessionRepositoryMock.Setup(x => x.CountAsync()).ReturnsAsync(0);
+        _sessionRepositoryMock.Setup(x => x.GetTotalPlayTime()).ReturnsAsync(0);
+        _sessionRepositoryMock.Setup(x => x.GetMeanPlayTime()).ReturnsAsync(0);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPayedAsync()).ReturnsAsync((double?)null);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMeanPayedAsync()).ReturnsAsync((double?)null);
+        _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount()).ReturnsAsync(0);
 
-        _gameRepositoryMock
-            .Setup(x => x.GetTotalExpansionCount())
-            .ReturnsAsync(expansionCount);
-
-        _playerRepositoryMock
-            .Setup(x => x.CountAsync())
-            .ReturnsAsync(playerCount);
-
-        _sessionRepositoryMock
-            .Setup(x => x.CountAsync())
-            .ReturnsAsync(sessionCount);
-
-        _locationRepositoryMock
-            .Setup(x => x.CountAsync())
-            .ReturnsAsync(locationCount);
+        // List data
+        _sessionRepositoryMock.Setup(x => x.GetRecentSessions(4)).ReturnsAsync(new List<Session>());
+        _gameStatisticsRepositoryMock.Setup(x => x.GetGamesGroupedByState()).ReturnsAsync(new List<IGrouping<GameState, Game>>());
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGames(4)).ReturnsAsync(new List<(int, string, string?, int)>());
+        _playerRepositoryMock.Setup(x => x.GetTopPlayers(4)).ReturnsAsync(new List<(int, string, string?, int, int)>());
+        _gameRepositoryMock.Setup(x => x.GetRecentlyAddedGames(4)).ReturnsAsync(new List<Game>());
+        _sessionRepositoryMock.Setup(x => x.GetSessionsByDayOfWeek()).ReturnsAsync(new List<IGrouping<DayOfWeek, Session>>());
     }
 
-    private void SetupPlayTimeStatistics(double totalPlayTime, double meanPlayTime)
+    private static Session CreateSessionWithWinner(
+        int gameId,
+        string gameTitle,
+        string? gameImage,
+        int winnerId,
+        string winnerName,
+        int durationMinutes)
     {
-        _sessionRepositoryMock
-            .Setup(x => x.GetTotalPlayTime())
-            .ReturnsAsync(totalPlayTime);
+        var game = new Game(gameTitle) { Id = gameId };
+        game.UpdateImage(gameImage);
 
-        _sessionRepositoryMock
-            .Setup(x => x.GetMeanPlayTime())
-            .ReturnsAsync(meanPlayTime);
+        var startTime = DateTime.Now.AddMinutes(-durationMinutes);
+        var endTime = DateTime.Now;
+        var session = new Session(gameId, startTime, endTime, "Test session");
+
+        typeof(Session).GetProperty("Game")!.SetValue(session, game);
+
+        session.AddPlayerSession(winnerId, null, false, true);
+
+        var player = new Player(winnerName) { Id = winnerId };
+        var playerSession = session.PlayerSessions.First();
+        typeof(PlayerSession).GetProperty("Player")!.SetValue(playerSession, player);
+
+        return session;
     }
 
-    private void SetupPayedStatistics(double? meanPayed, double? totalPayed)
+    private static Session CreateSessionWithoutWinner(int gameId, string gameTitle)
     {
-        _gameStatisticsRepositoryMock
-            .Setup(x => x.GetMeanPayedAsync())
-            .ReturnsAsync(meanPayed);
+        var game = new Game(gameTitle) { Id = gameId };
+        var session = new Session(gameId, DateTime.Now.AddHours(-1), DateTime.Now, "Test session");
 
-        _gameStatisticsRepositoryMock
-            .Setup(x => x.GetTotalPayedAsync())
-            .ReturnsAsync(totalPayed);
+        typeof(Session).GetProperty("Game")!.SetValue(session, game);
+
+        session.AddPlayerSession(1, null, false, false);
+
+        return session;
     }
 
-    private void SetupMostWinningPlayer(Player? player)
+    private static IGrouping<GameState, Game> CreateGameStateGrouping(GameState state, int count)
     {
-        _gameStatisticsRepositoryMock
-            .Setup(x => x.GetMostWins())
-            .ReturnsAsync(player);
+        var games = Enumerable.Range(1, count)
+            .Select(i => new Game($"Game {i}", state: state) { Id = i })
+            .ToList();
+
+        return games.GroupBy(_ => state).First();
     }
 
-    private static IGrouping<GameState, Game> CreateGrouping(GameState key, List<Game> games)
+    private static IGrouping<DayOfWeek, Session> CreateDayOfWeekGrouping(DayOfWeek day, int count)
     {
-        return games.GroupBy(_ => key).First();
+        var sessions = Enumerable.Range(1, count)
+            .Select(i => new Session(1, DateTime.Now.AddHours(-i), DateTime.Now, $"Session {i}"))
+            .ToList();
+
+        return sessions.GroupBy(_ => day).First();
     }
 
     #endregion

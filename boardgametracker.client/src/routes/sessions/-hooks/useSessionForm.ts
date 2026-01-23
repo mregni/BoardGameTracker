@@ -12,7 +12,7 @@ export const useSessionForm = () => {
 
   const settings = settingsQuery.data;
   const locations = locationQuery.data ?? [];
-  const games = gamesQuery.data?.items ?? [];
+  const games = gamesQuery.data ?? [];
   const players = playersQuery.data ?? [];
 
   const isLoading = settingsQuery.isLoading || locationQuery.isLoading || gamesQuery.isLoading;

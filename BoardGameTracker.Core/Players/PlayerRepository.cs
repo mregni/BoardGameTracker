@@ -107,4 +107,25 @@ public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
             .Where(ps => ps.PlayerId == id && ps.Won)
             .CountAsync();
     }
+
+    public async Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopPlayers(int count)
+    {
+        var result = await _dbContext.PlayerSessions
+            .AsNoTracking()
+            .Include(x => x.Player)
+            .GroupBy(x => x.PlayerId)
+            .Select(g => new
+            {
+                Id = g.Key,
+                Name = g.First().Player.Name,
+                Image = g.First().Player.Image,
+                PlayCount = g.Count(),
+                WinCount = g.Count(x => x.Won)
+            })
+            .OrderByDescending(x => x.PlayCount)
+            .Take(count)
+            .ToListAsync();
+
+        return result.Select(x => (x.Id, x.Name, x.Image, x.PlayCount, x.WinCount)).ToList();
+    }
 }

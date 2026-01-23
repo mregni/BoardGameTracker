@@ -32,7 +32,7 @@ export const BgtPieChart = (props: Props) => {
 
   return (
     <>
-      <div className="flex items-center justify-center mb-4">
+      <div className="flex items-center flex-col justify-between h-full mb-4">
         <div className="relative w-48 h-48">
           <ResponsivePie
             data={data}

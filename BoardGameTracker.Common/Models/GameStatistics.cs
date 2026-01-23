@@ -1,4 +1,4 @@
-﻿namespace BoardGameTracker.Common.Models;
+namespace BoardGameTracker.Common.Models;
 
 public class GameStatistics
 {
@@ -11,4 +11,12 @@ public class GameStatistics
     public double AveragePlayTime { get; set; }
     public DateTime? LastPlayed { get; set; }
     public int? ExpansionCount { get; set; }
-} 
+}
+
+public class MostWinningPlayer
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Image { get; set; } = string.Empty;
+    public int TotalWins { get; set; }
+}

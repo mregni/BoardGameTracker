@@ -100,6 +100,16 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
         }
     }
 
+    public Task<List<Game>> GetRecentlyAddedGames(int count)
+    {
+        return _context.Games
+            .AsNoTracking()
+            .Where(x => x.AdditionDate != null)
+            .OrderByDescending(x => x.AdditionDate)
+            .Take(count)
+            .ToListAsync();
+    }
+
     public override async Task<Game> UpdateAsync(Game entity)
     {
         var dbGame = await _context.Games

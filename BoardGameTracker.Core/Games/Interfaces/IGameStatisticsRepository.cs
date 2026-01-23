@@ -24,4 +24,5 @@ public interface IGameStatisticsRepository
     Task<PlayerSession?> GetHighestLosingPlayer(int gameId);
     Task<PlayerSession?> GetLowestWinning(int gameId);
     Task<PlayerSession?> GetLowestScoringPlayer(int gameId);
+    Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGames(int count);
 }

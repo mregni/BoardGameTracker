@@ -29,7 +29,7 @@ public class SessionController : ControllerBase
             return NotFound();
         }
 
-        return Ok(session.ToDto());
+        return Ok(SessionDtoExtensions.ToDto(session));
     }
 
     [HttpPost]
@@ -43,7 +43,7 @@ public class SessionController : ControllerBase
         try
         {
             var session = await _sessionService.CreateFromCommand(command);
-            return Ok(session.ToDto());
+            return Ok(SessionDtoExtensions.ToDto(session));
         }
         catch (Exception e)
         {
@@ -63,7 +63,7 @@ public class SessionController : ControllerBase
         try
         {
             var result = await _sessionService.UpdateFromCommand(command);
-            return Ok(result.ToDto());
+            return Ok(SessionDtoExtensions.ToDto(result));
         }
         catch (Exception e)
         {

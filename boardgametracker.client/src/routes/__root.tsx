@@ -25,10 +25,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootComponent() {
   return (
-    <div className="flex size-full text-white">
+    <div className="flex size-full text-white bg-background">
       <Sidebar />
 
-      <main className="flex-1 overflow-auto pb-20 md:pb-0 h-screen">
+      <main className="flex-1 overflow-auto pb-20 md:pb-0 h-screen bg-background">
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Outlet />
         </ErrorBoundary>

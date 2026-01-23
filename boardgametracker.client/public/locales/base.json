@@ -92,6 +92,8 @@
     "game_other": "{{count}} games",
     "win_one": "{{count}} win",
     "win_other": "{{count}} wins",
+    "sessions_one": "{{count}} session",
+    "sessions_other": "{{count}} sessions",
     "player_one": "{{count}} player",
     "player_other": "{{count}} players",
     "game-play": "this game play",
@@ -161,8 +163,10 @@
   },
   "dashboard": {
     "charts": {
-      "games": "Games"
-    }
+      "collection": "Collection"
+    },
+    "recent-activity": "Recent activity",
+    "recent-added-games": "Recently added games"
   },
   "expansions": {
     "label": "Expansions",
@@ -367,6 +371,7 @@
     },
     "title": "Games",
     "new": "Add new game",
+    "new-short": "game",
     "count_other": "{{count}} games found",
     "count_one": "{{count}} game found",
     "cards": {
@@ -396,6 +401,7 @@
     },
     "new": {
       "button": "Add new player",
+      "button-short": "player",
       "description": "Fill out the form to create a new player.",
       "save": "Create player",
       "title": "Create player",
@@ -470,9 +476,9 @@
     "session-count": "Sessions",
     "location-count": "Locations",
     "total-cost": "Total cost",
-    "mean-cost": "Average cost",
+    "average-cost": "Average cost",
     "total-playtime": "Total play time",
-    "mean-playtime": "Average play time",
+    "average-playtime": "Average session time",
     "price-per-play": "Price / play",
     "total-play-time": "Total play time",
     "unique-players": "Unique players",
@@ -480,15 +486,16 @@
     "win-count": "Total wins",
     "distinct-game-count": "Different games",
     "best-game": "Best game",
-    "average-playtime": "Average playtime",
     "win-percentage": "Win percentage",
     "buy-price": "Cost",
     "expansion-count": "Expansions",
     "best-player": "Best player",
-    "in-collection": "In collection"
+    "in-collection": "In collection",
+    "collection-value": "Collection value"
   },
   "sessions": {
     "new": "Add new session",
+    "new-short": "session",
     "title": "sessions",
     "notifications": {
       "deleted": "Location is succesfully deleted",

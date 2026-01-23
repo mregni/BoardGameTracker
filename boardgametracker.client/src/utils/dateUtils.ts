@@ -153,7 +153,7 @@ export const minutesToDuration = (
   const remainingAfterDays = remainingAfterWeeks % MINUTES_PER_DAY;
 
   const hours = Math.floor(remainingAfterDays / MINUTES_PER_HOUR);
-  const minutes = remainingAfterDays % MINUTES_PER_HOUR;
+  const minutes = Math.round(remainingAfterDays % MINUTES_PER_HOUR);
 
   return { weeks, days, hours, minutes };
 };

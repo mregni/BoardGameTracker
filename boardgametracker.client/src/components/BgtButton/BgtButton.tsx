@@ -37,10 +37,10 @@ const BgtButton = (props: Props) => {
   const { children, variant, size, type = 'button', disabled, className, ...rest } = props;
 
   const buttonClasses = buttonVariants({
+    className,
     variant,
     size,
     disabled: !!disabled,
-    className,
   });
 
   return (

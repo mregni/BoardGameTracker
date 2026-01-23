@@ -122,6 +122,26 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
+    public Task<List<Session>> GetRecentSessions(int count)
+    {
+        return _context.Sessions
+            .AsNoTracking()
+            .Include(x => x.Game)
+            .Include(x => x.PlayerSessions)
+                .ThenInclude(ps => ps.Player)
+            .OrderByDescending(x => x.Start)
+            .Take(count)
+            .ToListAsync();
+    }
+
+    public Task<List<IGrouping<DayOfWeek, Session>>> GetSessionsByDayOfWeek()
+    {
+        return _context.Sessions
+            .AsNoTracking()
+            .GroupBy(x => x.Start.DayOfWeek)
+            .ToListAsync();
+    }
+
     public override async Task<Session> UpdateAsync(Session entity)
     {
         var existing = await _context.Sessions

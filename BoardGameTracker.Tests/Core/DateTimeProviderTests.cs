@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BoardGameTracker.Core.Common;
+using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
@@ -25,8 +26,8 @@ public class DateTimeProviderTests
         var result = provider.UtcNow;
 
         // Assert
-        Assert.Equal(DateTimeKind.Utc, result.Kind);
-        Assert.True((DateTime.UtcNow - result).TotalSeconds < 1, "UtcNow should return current time");
+        result.Kind.Should().Be(DateTimeKind.Utc);
+        (DateTime.UtcNow - result).TotalSeconds.Should().BeLessThan(1, "UtcNow should return current time");
     }
 
     [Fact]
@@ -47,14 +48,14 @@ public class DateTimeProviderTests
         var localNow = provider.Now;
 
         // Assert
-        Assert.Equal("Europe/Brussels", provider.TimeZone.Id);
+        provider.TimeZone.Id.Should().Be("Europe/Brussels");
 
         // Brussels is typically UTC+1 or UTC+2 (DST)
         var offset = provider.TimeZone.GetUtcOffset(utcNow);
-        Assert.True(offset.TotalHours is >= 1 and <= 2);
+        offset.TotalHours.Should().BeInRange(1, 2);
 
         // Local time should be ahead of UTC for Brussels
-        Assert.True(localNow > utcNow);
+        localNow.Should().BeAfter(utcNow);
     }
 
     [Fact]
@@ -72,7 +73,7 @@ public class DateTimeProviderTests
         var provider = new DateTimeProvider(config);
 
         // Assert
-        Assert.Equal(TimeZoneInfo.Utc.Id, provider.TimeZone.Id);
+        provider.TimeZone.Id.Should().Be(TimeZoneInfo.Utc.Id);
     }
 
     [Fact]
@@ -85,7 +86,7 @@ public class DateTimeProviderTests
         var provider = new DateTimeProvider(config);
 
         // Assert
-        Assert.Equal(TimeZoneInfo.Utc.Id, provider.TimeZone.Id);
+        provider.TimeZone.Id.Should().Be(TimeZoneInfo.Utc.Id);
     }
 
     [Fact]
@@ -107,7 +108,7 @@ public class DateTimeProviderTests
 
         // Assert
         // Brussels is UTC+1 in winter, so 13:30 UTC = 14:30 local
-        Assert.True(localTime.Hour == 14 || localTime.Hour == 15); // Account for DST
+        localTime.Hour.Should().BeOneOf(14, 15); // Account for DST
     }
 
     [Fact]
@@ -124,9 +125,11 @@ public class DateTimeProviderTests
         var provider = new DateTimeProvider(config);
         var localTime = new DateTime(2026, 1, 7, 13, 30, 0, DateTimeKind.Local);
 
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() => provider.ConvertToLocalTime(localTime));
-        Assert.Contains("must be in UTC", ex.Message);
+        // Act
+        var act = () => provider.ConvertToLocalTime(localTime);
+
+        // Assert
+        act.Should().Throw<ArgumentException>().WithMessage("*must be in UTC*");
     }
 
     [Fact]
@@ -147,9 +150,9 @@ public class DateTimeProviderTests
         var utcTime = provider.ConvertToUtc(brusselsTime);
 
         // Assert
-        Assert.Equal(DateTimeKind.Utc, utcTime.Kind);
+        utcTime.Kind.Should().Be(DateTimeKind.Utc);
         // Brussels is UTC+1 in winter, so 14:30 local = 13:30 UTC
-        Assert.True(utcTime.Hour == 13 || utcTime.Hour == 12); // Account for DST
+        utcTime.Hour.Should().BeOneOf(12, 13); // Account for DST
     }
 
     [Fact]
@@ -170,8 +173,8 @@ public class DateTimeProviderTests
         var result = provider.ConvertToUtc(utcTime);
 
         // Assert
-        Assert.Equal(utcTime, result);
-        Assert.Equal(DateTimeKind.Utc, result.Kind);
+        result.Should().Be(utcTime);
+        result.Kind.Should().Be(DateTimeKind.Utc);
     }
 
     [Theory]
@@ -193,7 +196,7 @@ public class DateTimeProviderTests
         var provider = new DateTimeProvider(config);
 
         // Assert
-        Assert.Equal(timezoneId, provider.TimeZone.Id);
-        Assert.NotNull(provider.UtcNow);
+        provider.TimeZone.Id.Should().Be(timezoneId);
+        provider.UtcNow.Should().NotBe(default);
     }
 }
