@@ -50,7 +50,8 @@ const MostPlayedGameItem = ({ game }: MostPlayedGameItemProps) => {
         <div className="flex-1">
           <BgtText color="white">{game.title}</BgtText>
           <div className="text-white/50 text-sm">
-            {t('common.sessions', { count: game.totalSessions ?? 0 })} • {t('common.win', { count: game.totalWins ?? 0 })}
+            {t('common.sessions', { count: game.totalSessions ?? 0 })} •{' '}
+            {t('common.win', { count: game.totalWins ?? 0 })}
           </div>
         </div>
         <div className="text-cyan-400 font-bold">{game.winningPercentage}%</div>

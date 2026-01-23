@@ -40,5 +40,9 @@ export const BgtPageContent = <T extends Record<string, unknown> = Record<string
     );
   }
 
-  return <div className={cx('flex flex-col gap-3 xl:gap-6', centered && 'flex-1 justify-center items-center', className)}>{props.children}</div>;
+  return (
+    <div className={cx('flex flex-col gap-3 xl:gap-6', centered && 'flex-1 justify-center items-center', className)}>
+      {props.children}
+    </div>
+  );
 };

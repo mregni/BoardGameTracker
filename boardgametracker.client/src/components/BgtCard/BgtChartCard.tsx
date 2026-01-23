@@ -1,7 +1,5 @@
 import { ComponentPropsWithoutRef, ComponentType, SVGProps } from 'react';
 
-import { BgtHeading } from '../BgtHeading/BgtHeading';
-
 import { BgtCard } from './BgtCard';
 
 interface Props extends ComponentPropsWithoutRef<'div'> {
