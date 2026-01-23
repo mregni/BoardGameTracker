@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { PropsWithChildren } from 'react';
+import { Fragment, PropsWithChildren } from 'react';
 
 import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
 import { BgtHeading } from '../BgtHeading/BgtHeading';
@@ -41,18 +41,18 @@ export const BgtPageHeader = (props: Props) => {
             const smallContent = action.smallContent === undefined ? content : action.smallContent;
 
             return (
-              <>
-                <div key={`${index}-large`} className="hidden lg:block">
+              <Fragment key={index}>
+                <div className="hidden lg:block">
                   <BgtButton variant={action.variant} size="3" onClick={action.onClick}>
                     {content}
                   </BgtButton>
                 </div>
-                <div key={`${index}-small`} className="block lg:hidden">
+                <div className="block lg:hidden">
                   <BgtButton variant={action.variant} size="1" onClick={action.onClick}>
                     {smallContent}
                   </BgtButton>
                 </div>
-              </>
+              </Fragment>
             );
           })}
         </div>

@@ -67,21 +67,24 @@ describe('BgtPageHeader', () => {
 
       renderWithTheme(<BgtPageHeader actions={actions} />);
 
-      expect(screen.getByText('Save')).toBeInTheDocument();
-      await user.click(screen.getByText('Save'));
+      // Two buttons rendered (large and small screen versions)
+      const buttons = screen.getAllByText('Save');
+      expect(buttons).toHaveLength(2);
+      await user.click(buttons[0]);
       expect(handleAction).toHaveBeenCalled();
     });
 
     it('should render multiple action buttons', () => {
       const actions = [
         { content: 'Save', variant: 'primary' as const, onClick: vi.fn() },
-        { content: 'Cancel', variant: 'secondary' as const, onClick: vi.fn() },
+        { content: 'Cancel', variant: 'error' as const, onClick: vi.fn() },
       ];
 
       renderWithTheme(<BgtPageHeader actions={actions} />);
 
-      expect(screen.getByText('Save')).toBeInTheDocument();
-      expect(screen.getByText('Cancel')).toBeInTheDocument();
+      // Two buttons per action (large and small screen versions)
+      expect(screen.getAllByText('Save')).toHaveLength(2);
+      expect(screen.getAllByText('Cancel')).toHaveLength(2);
     });
 
     it('should translate string action content', () => {
@@ -89,7 +92,8 @@ describe('BgtPageHeader', () => {
 
       renderWithTheme(<BgtPageHeader actions={actions} />);
 
-      expect(screen.getByText('actions.save')).toBeInTheDocument();
+      // Two buttons (large and small screen versions)
+      expect(screen.getAllByText('actions.save')).toHaveLength(2);
     });
 
     it('should render ReactNode action content', () => {
@@ -103,7 +107,8 @@ describe('BgtPageHeader', () => {
 
       renderWithTheme(<BgtPageHeader actions={actions} />);
 
-      expect(screen.getByTestId('custom-action')).toBeInTheDocument();
+      // Two buttons (large and small screen versions)
+      expect(screen.getAllByTestId('custom-action')).toHaveLength(2);
     });
   });
 
@@ -126,13 +131,15 @@ describe('BgtPageHeader', () => {
 
       expect(screen.getByText('Dashboard')).toBeInTheDocument();
       expect(screen.getByText('Home')).toBeInTheDocument();
-      expect(screen.getByText('Refresh')).toBeInTheDocument();
+      // Two buttons (large and small screen versions)
+      const refreshButtons = screen.getAllByText('Refresh');
+      expect(refreshButtons).toHaveLength(2);
       expect(screen.getAllByTestId('filter')).toHaveLength(2);
 
       await user.click(screen.getByText('Home'));
       expect(handleBack).toHaveBeenCalled();
 
-      await user.click(screen.getByText('Refresh'));
+      await user.click(refreshButtons[0]);
       expect(handleAction).toHaveBeenCalled();
     });
   });
