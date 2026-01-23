@@ -262,4 +262,24 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .OrderBy(x => x.Score)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGames(int count)
+    {
+        var result = await _context.Sessions
+            .AsNoTracking()
+            .Include(x => x.Game)
+            .GroupBy(x => x.GameId)
+            .Select(g => new
+            {
+                GameId = g.Key,
+                Title = g.First().Game.Title,
+                Image = g.First().Game.Image,
+                PlayCount = g.Count()
+            })
+            .OrderByDescending(x => x.PlayCount)
+            .Take(count)
+            .ToListAsync();
+
+        return result.Select(x => (x.GameId, x.Title, x.Image, x.PlayCount)).ToList();
+    }
 }

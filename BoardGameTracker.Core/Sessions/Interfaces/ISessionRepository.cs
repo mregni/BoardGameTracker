@@ -13,4 +13,6 @@ public interface ISessionRepository: ICrudHelper<Session>
     Task<List<Session>> GetByPlayer(int playerId, bool? won = null);
     Task<List<Session>> GetByPlayerAndGame(int playerId, int gameId);
     Task<Dictionary<int, List<Session>>> GetByPlayerBatchAsync(IEnumerable<int> playerIds);
+    Task<List<Session>> GetRecentSessions(int count);
+    Task<List<IGrouping<DayOfWeek, Session>>> GetSessionsByDayOfWeek();
 }

@@ -1,8 +1,7 @@
-﻿using BoardGameTracker.Common.DTOs;
-using BoardGameTracker.Common.Models.Charts;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Dashboard.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
-using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 
@@ -14,72 +13,53 @@ public class DashboardService : IDashboardService
     private readonly IGameStatisticsRepository _gameStatisticsRepository;
     private readonly IPlayerRepository _playerRepository;
     private readonly ISessionRepository _sessionRepository;
-    private readonly ILocationRepository _locationRepository;
 
     public DashboardService(
         IGameRepository gameRepository,
         IGameStatisticsRepository gameStatisticsRepository,
         IPlayerRepository playerRepository,
-        ISessionRepository sessionRepository,
-        ILocationRepository locationRepository)
+        ISessionRepository sessionRepository)
     {
         _gameRepository = gameRepository;
         _gameStatisticsRepository = gameStatisticsRepository;
         _playerRepository = playerRepository;
         _sessionRepository = sessionRepository;
-        _locationRepository = locationRepository;
     }
 
     public async Task<DashboardStatisticsDto> GetStatistics()
     {
-        var gameCount = await _gameRepository.CountAsync();
-        var meanPayed = await _gameStatisticsRepository.GetMeanPayedAsync();
-        var totalPayed = await _gameStatisticsRepository.GetTotalPayedAsync();
+        var totalGames = await _gameRepository.CountAsync();
+        var activePlayers = await _playerRepository.CountAsync();
+        var sessionsPlayed = await _sessionRepository.CountAsync();
+        var totalPlayedTime = await _sessionRepository.GetTotalPlayTime();
+        var totalCollectionValue = await _gameStatisticsRepository.GetTotalPayedAsync();
+        var avgGamePrice = await _gameStatisticsRepository.GetMeanPayedAsync();
+        var expansionsOwned = await _gameRepository.GetTotalExpansionCount();
+        var avgSessionTime = await _sessionRepository.GetMeanPlayTime();
 
-        var playerCount = await _playerRepository.CountAsync();
-        var sessionCount = await _sessionRepository.CountAsync();
-        var totalPlayTime = await _sessionRepository.GetTotalPlayTime();
-        var meanPlayTime = await _sessionRepository.GetMeanPlayTime();
-        var locationCount = await _locationRepository.CountAsync();
-        var expansionCount = await _gameRepository.GetTotalExpansionCount();
-
-        var result = new DashboardStatisticsDto
-        {
-            GameCount = gameCount,
-            PlayerCount = playerCount,
-            SessionCount = sessionCount,
-            LocationCount = locationCount,
-            TotalPlayTime = totalPlayTime,
-            MeanPayed = meanPayed,
-            TotalCost = totalPayed,
-            MeanPlayTime = meanPlayTime,
-            ExpansionCount = expansionCount
-        };
-
-        var mostWinPlayer = await _gameStatisticsRepository.GetMostWins();
-        if (mostWinPlayer != null)
-        {
-            var wins = await _playerRepository.GetTotalWinCount(mostWinPlayer.Id);
-            result.MostWinningPlayer = new MostWinningPlayerDto
-            {
-                Id = mostWinPlayer.Id,
-                Image = mostWinPlayer.Image ?? string.Empty,
-                Name = mostWinPlayer.Name,
-                TotalWins = wins
-            };
-        }
-
-        return result;
-    }
-
-    public async Task<DashboardChartsDto> GetCharts()
-    {
+        var recentSessions = await _sessionRepository.GetRecentSessions(4);
         var gameStates = await _gameStatisticsRepository.GetGamesGroupedByState();
-        var charts = new DashboardChartsDto
-        {
-            GameState = gameStates.Select(x => new GameStateChart { Type = x.Key, GameCount = x.Count()})
-        };
+        var mostPlayedGames = await _gameStatisticsRepository.GetMostPlayedGames(4);
+        var topPlayers = await _playerRepository.GetTopPlayers(4);
+        var recentlyAddedGames = await _gameRepository.GetRecentlyAddedGames(4);
+        var sessionsByDayOfWeek = await _sessionRepository.GetSessionsByDayOfWeek();
 
-        return charts;
+        return new DashboardStatisticsDto
+        {
+            TotalGames = totalGames,
+            ActivePlayers = activePlayers,
+            SessionsPlayed = sessionsPlayed,
+            TotalPlayedTime = totalPlayedTime,
+            TotalCollectionValue = totalCollectionValue,
+            AvgGamePrice = avgGamePrice,
+            ExpansionsOwned = expansionsOwned,
+            AvgSessionTime = avgSessionTime,
+            RecentActivities = recentSessions.ToDtoList(),
+            Collection = gameStates.ToDtoList(),
+            MostPlayedGames = mostPlayedGames.ToDtoList(),
+            TopPlayers = topPlayers.ToDtoList(),
+            RecentAddedGames = recentlyAddedGames.ToDtoList(),
+            SessionsByDayOfWeek = sessionsByDayOfWeek.ToDtoList()
+        };
     }
 }

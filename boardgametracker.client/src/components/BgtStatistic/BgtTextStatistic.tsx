@@ -11,10 +11,11 @@ interface Props {
   prefix?: string | number | null;
   icon?: React.ReactNode;
   iconClassName?: string;
+  textSize?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 }
 
 export const BgtTextStatistic = (props: Props) => {
-  const { title, content, suffix, prefix, icon, iconClassName } = props;
+  const { title, content, suffix, prefix, icon, iconClassName, textSize = '5' } = props;
 
   if (content === null || content === undefined) return null;
 
@@ -31,7 +32,7 @@ export const BgtTextStatistic = (props: Props) => {
         {iconWithClasses}
         <span>{title}</span>
       </div>
-      <BgtText size="5" color="cyan" weight="bold">
+      <BgtText size={textSize} color="cyan" weight="bold">
         {prefix && <span>{prefix}&nbsp;</span>}
         {content.toLocaleString()}
         {suffix && <span className="text-sm lowercase">&nbsp;{suffix}</span>}

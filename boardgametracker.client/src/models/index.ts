@@ -10,8 +10,6 @@ export * from './Compare/CompareResult';
 export * from './constants';
 
 export * from './Dashboard/DashboardStatistics';
-export * from './Dashboard/DashboardCharts';
-export * from './Dashboard/GameStateChart';
 
 export * from './Games/BggImportResults';
 export * from './Games/BggSearch';
@@ -33,7 +31,6 @@ export * from './Location/CreateLocation';
 export * from './Menu/MenuItem';
 
 export * from './Player/Player';
-export * from './Player/PlayerStatistics';
 
 export * from './Session/Session';
 export * from './Session/PlayerSession';

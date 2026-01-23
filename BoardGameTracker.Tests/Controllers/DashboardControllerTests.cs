@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
@@ -25,18 +26,26 @@ public class DashboardControllerTests
         _dashboardServiceMock.VerifyNoOtherCalls();
     }
 
-    #region GetDashboardStatistics Tests
-
     [Fact]
     public async Task GetDashboardStatistics_ShouldReturnOkWithStatistics_WhenDataExists()
     {
         // Arrange
         var statistics = new DashboardStatisticsDto
         {
-            GameCount = 25,
-            PlayerCount = 10,
-            SessionCount = 100,
-            TotalPlayTime = 5000
+            TotalGames = 25,
+            ActivePlayers = 10,
+            SessionsPlayed = 100,
+            TotalPlayedTime = 5000,
+            TotalCollectionValue = 887.5,
+            AvgGamePrice = 35.5,
+            ExpansionsOwned = 15,
+            AvgSessionTime = 50,
+            RecentActivities = new List<RecentActivityDto>(),
+            Collection = new List<Common.Models.Charts.GameStateChart>(),
+            MostPlayedGames = new List<MostPlayedGameDto>(),
+            TopPlayers = new List<DashboardTopPlayerDto>(),
+            RecentAddedGames = new List<RecentGameDto>(),
+            SessionsByDayOfWeek = new List<Common.Models.Charts.PlayByDay>()
         };
 
         _dashboardServiceMock
@@ -50,10 +59,14 @@ public class DashboardControllerTests
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedStats = okResult.Value.Should().BeAssignableTo<DashboardStatisticsDto>().Subject;
 
-        returnedStats.GameCount.Should().Be(25);
-        returnedStats.PlayerCount.Should().Be(10);
-        returnedStats.SessionCount.Should().Be(100);
-        returnedStats.TotalPlayTime.Should().Be(5000);
+        returnedStats.TotalGames.Should().Be(25);
+        returnedStats.ActivePlayers.Should().Be(10);
+        returnedStats.SessionsPlayed.Should().Be(100);
+        returnedStats.TotalPlayedTime.Should().Be(5000);
+        returnedStats.TotalCollectionValue.Should().Be(887.5);
+        returnedStats.AvgGamePrice.Should().Be(35.5);
+        returnedStats.ExpansionsOwned.Should().Be(15);
+        returnedStats.AvgSessionTime.Should().Be(50);
 
         _dashboardServiceMock.Verify(x => x.GetStatistics(), Times.Once);
         VerifyNoOtherCalls();
@@ -65,10 +78,14 @@ public class DashboardControllerTests
         // Arrange
         var statistics = new DashboardStatisticsDto
         {
-            GameCount = 0,
-            PlayerCount = 0,
-            SessionCount = 0,
-            TotalPlayTime = 0
+            TotalGames = 0,
+            ActivePlayers = 0,
+            SessionsPlayed = 0,
+            TotalPlayedTime = 0,
+            TotalCollectionValue = null,
+            AvgGamePrice = null,
+            ExpansionsOwned = 0,
+            AvgSessionTime = 0
         };
 
         _dashboardServiceMock
@@ -82,60 +99,61 @@ public class DashboardControllerTests
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedStats = okResult.Value.Should().BeAssignableTo<DashboardStatisticsDto>().Subject;
 
-        returnedStats.GameCount.Should().Be(0);
-        returnedStats.PlayerCount.Should().Be(0);
-        returnedStats.SessionCount.Should().Be(0);
-        returnedStats.TotalPlayTime.Should().Be(0);
+        returnedStats.TotalGames.Should().Be(0);
+        returnedStats.ActivePlayers.Should().Be(0);
+        returnedStats.SessionsPlayed.Should().Be(0);
+        returnedStats.TotalPlayedTime.Should().Be(0);
+        returnedStats.TotalCollectionValue.Should().BeNull();
+        returnedStats.AvgGamePrice.Should().BeNull();
 
         _dashboardServiceMock.Verify(x => x.GetStatistics(), Times.Once);
         VerifyNoOtherCalls();
     }
 
-    #endregion
-
-    #region GetDashboardCharts Tests
-
     [Fact]
-    public async Task GetDashboardCharts_ShouldReturnOkWithCharts_WhenDataExists()
+    public async Task GetDashboardStatistics_ShouldReturnOkWithLists_WhenListDataExists()
     {
         // Arrange
-        var charts = new DashboardChartsDto();
+        var statistics = new DashboardStatisticsDto
+        {
+            TotalGames = 5,
+            ActivePlayers = 3,
+            SessionsPlayed = 10,
+            RecentActivities = new List<RecentActivityDto>
+            {
+                new() { Id = 1, GameId = 1, GameTitle = "Catan", PlayerCount = 4 }
+            },
+            MostPlayedGames = new List<MostPlayedGameDto>
+            {
+                new() { Id = 1, Title = "Catan", TotalSessions = 10 }
+            },
+            TopPlayers = new List<DashboardTopPlayerDto>
+            {
+                new() { Id = 1, Name = "John", PlayCount = 15, WinCount = 8 }
+            },
+            RecentAddedGames = new List<RecentGameDto>
+            {
+                new() { Id = 2, Title = "Ticket to Ride" }
+            }
+        };
 
         _dashboardServiceMock
-            .Setup(x => x.GetCharts())
-            .ReturnsAsync(charts);
+            .Setup(x => x.GetStatistics())
+            .ReturnsAsync(statistics);
 
         // Act
-        var result = await _controller.GetDashboardCharts();
+        var result = await _controller.GetDashboardStatistics();
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().BeAssignableTo<DashboardChartsDto>();
+        var returnedStats = okResult.Value.Should().BeAssignableTo<DashboardStatisticsDto>().Subject;
 
-        _dashboardServiceMock.Verify(x => x.GetCharts(), Times.Once);
+        returnedStats.RecentActivities.Should().HaveCount(1);
+        returnedStats.MostPlayedGames.Should().HaveCount(1);
+        returnedStats.TopPlayers.Should().HaveCount(1);
+        returnedStats.RecentAddedGames.Should().HaveCount(1);
+
+        _dashboardServiceMock.Verify(x => x.GetStatistics(), Times.Once);
         VerifyNoOtherCalls();
     }
-
-    [Fact]
-    public async Task GetDashboardCharts_ShouldReturnOkWithEmptyCharts_WhenNoDataExists()
-    {
-        // Arrange
-        var charts = new DashboardChartsDto();
-
-        _dashboardServiceMock
-            .Setup(x => x.GetCharts())
-            .ReturnsAsync(charts);
-
-        // Act
-        var result = await _controller.GetDashboardCharts();
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().NotBeNull();
-
-        _dashboardServiceMock.Verify(x => x.GetCharts(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    #endregion
 }

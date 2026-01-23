@@ -20,11 +20,4 @@ public class DashboardController
         var statistics = await _dashboardService.GetStatistics();
         return new OkObjectResult(statistics);
     }
-
-    [HttpGet("charts")]
-    public async Task<IActionResult> GetDashboardCharts()
-    {
-        var charts = await _dashboardService.GetCharts();
-        return new OkObjectResult(charts);
-    }
 }

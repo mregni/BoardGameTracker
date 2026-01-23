@@ -29,9 +29,9 @@ export const BgtPage = (props: Props) => {
   });
 
   return (
-    <div className="min-h-full flex flex-col p-3 xl:px-6 gap-3">
+    <div className="min-h-full flex flex-col p-3 xl:px-6 gap-3 xl:gap-6">
       {header}
-      <div className="pb-3">{content}</div>
+      <div className="flex-1 flex flex-col min-h-0">{content}</div>
     </div>
   );
 };

@@ -21,7 +21,7 @@ export const BgtPageHeader = (props: Props) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex-auto flex justify-between">
+      <div className="flex-auto flex-col lg:flex-row flex justify-between max-lg:gap-2">
         <div className="flex flex-row gap-3 content-center items-center">
           {backAction && backText && (
             <BgtButton variant="text" onClick={backAction} className="pl-0">
@@ -36,11 +36,25 @@ export const BgtPageHeader = (props: Props) => {
         </div>
         <div className="flex items-center flex-wrap gap-3">
           <div className="hidden md:flex">{children}</div>
-          {actions.map((action, index) => (
-            <BgtButton key={index} variant={action.variant} size="3" onClick={action.onClick}>
-              {typeof action.content === 'string' ? t(action.content) : action.content}
-            </BgtButton>
-          ))}
+          {actions.map((action, index) => {
+            const content = typeof action.content === 'string' ? t(action.content) : action.content;
+            const smallContent = action.smallContent === undefined ? content : action.smallContent;
+
+            return (
+              <>
+                <div key={`${index}-large`} className="hidden lg:block">
+                  <BgtButton variant={action.variant} size="3" onClick={action.onClick}>
+                    {content}
+                  </BgtButton>
+                </div>
+                <div key={`${index}-small`} className="block lg:hidden">
+                  <BgtButton variant={action.variant} size="1" onClick={action.onClick}>
+                    {smallContent}
+                  </BgtButton>
+                </div>
+              </>
+            );
+          })}
         </div>
       </div>
       <div className="block md:hidden">{children}</div>
