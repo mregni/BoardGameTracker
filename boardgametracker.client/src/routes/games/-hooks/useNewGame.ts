@@ -22,6 +22,7 @@ export const useNewGame = ({ onSaveSuccess, onSaveError }: Props) => {
     mutationFn: saveGameCall,
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.dashboard] });
       onSaveSuccess?.(data);
     },
     onError: () => {

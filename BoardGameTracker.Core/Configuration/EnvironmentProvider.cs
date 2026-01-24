@@ -7,7 +7,10 @@ namespace BoardGameTracker.Core.Configuration;
 
 public class EnvironmentProvider : IEnvironmentProvider
 {
-    public string EnvironmentName => Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "development";
+    public string EnvironmentName =>
+        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+        ?? Environment.GetEnvironmentVariable("ENVIRONMENT")
+        ?? "development";
 
     public int Port => int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var parsedPort) && parsedPort >= 0
         ? parsedPort
@@ -17,5 +20,5 @@ public class EnvironmentProvider : IEnvironmentProvider
         bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS"), out var enableLogging) && enableLogging;
 
     public LogEventLevel LogLevel => LogLevelExtensions.GetEnvironmentLogLevel();
-    public bool IsDevelopment => EnvironmentName == "development";
+    public bool IsDevelopment => EnvironmentName.Equals("development", StringComparison.OrdinalIgnoreCase);
 }

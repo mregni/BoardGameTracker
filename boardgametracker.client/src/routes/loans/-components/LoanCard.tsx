@@ -2,8 +2,7 @@ import { t } from 'i18next';
 import { differenceInDays, format } from 'date-fns';
 import { isAfter } from 'date-fns';
 import { cva } from 'class-variance-authority';
-
-import { BgtPoster } from '../../-components/BgtPoster';
+import { useNavigate } from '@tanstack/react-router';
 
 import type { Player } from '@/models/Player/Player';
 import type { Loan } from '@/models/Loan/Loan';
@@ -53,6 +52,7 @@ interface LoanCardProps {
 }
 
 export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }: LoanCardProps) => {
+  const navigate = useNavigate();
   const isActive = loan.returnedDate === null;
   const isOverdue = loan.dueDate !== null && isAfter(new Date(), loan.dueDate);
   const daysOut = isActive
@@ -73,8 +73,16 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
       )}
 
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center text-2xl">
-          <BgtPoster title={game?.title || ''} image={game?.image ?? null} />
+        <div className=" bg-primary/20 rounded-lg flex items-center justify-center text-2xl">
+          <BgtAvatar
+            size={'large'}
+            title={game?.title || ''}
+            image={game?.image ?? null}
+            color={game?.title || ''}
+            onClick={() => {
+              navigate({ to: `/games/${game?.id}` });
+            }}
+          />
         </div>
         <div className="flex-1">
           <BgtHeading size="4" className="text-white">
@@ -84,7 +92,14 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
       </div>
 
       <div className="flex items-center gap-2 mb-4 pb-4 border-b border-primary/20">
-        <BgtAvatar title={player?.name || ''} image={player?.image} />
+        <BgtAvatar
+          title={player?.name || ''}
+          image={player?.image}
+          color={player?.name || ''}
+          onClick={() => {
+            navigate({ to: `/players/${player?.id}` });
+          }}
+        />
         <BgtText color="white" opacity={80}>
           {player?.name}
         </BgtText>

@@ -24,6 +24,7 @@ export const usePlayerModal = ({ onSaveSuccess, onUpdateSuccess, onUpdateError, 
       onSaveSuccess?.();
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.dashboard] });
     },
     onError: () => {
       onSaveError?.();

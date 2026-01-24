@@ -18,7 +18,7 @@ export const useNewLoanModal = ({ onSaveSuccess, onSaveError }: Props) => {
     queries: [getGames(), getPlayers()],
   });
 
-  const games = gamesQuery.data?.items ?? [];
+  const games = gamesQuery.data ?? [];
   const players = playerQuery.data ?? [];
 
   const saveLoanMutation = useMutation({

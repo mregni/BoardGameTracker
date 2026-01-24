@@ -371,7 +371,6 @@
     },
     "title": "Games",
     "new": "Add new game",
-    "new-short": "game",
     "count_other": "{{count}} games found",
     "count_one": "{{count}} game found",
     "cards": {
@@ -401,7 +400,6 @@
     },
     "new": {
       "button": "Add new player",
-      "button-short": "player",
       "description": "Fill out the form to create a new player.",
       "save": "Create player",
       "title": "Create player",
@@ -495,7 +493,6 @@
   },
   "sessions": {
     "new": "Add new session",
-    "new-short": "session",
     "title": "sessions",
     "notifications": {
       "deleted": "Location is succesfully deleted",
