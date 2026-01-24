@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { useGamesData } from './-hooks/useGamesData';
@@ -7,16 +7,16 @@ import { useGamesData } from './-hooks/useGamesData';
 import { getGames } from '@/services/queries/games';
 import CreateGameModal from '@/routes/games/-modals/CreateGameModal';
 import { BggGameModal } from '@/routes/games/-modals/BggGameModal';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useDebounce } from '@/hooks/useDebounce';
 import { BgtText } from '@/components/BgtText/BgtText';
-import { BgtLoadingSpinner } from '@/components/BgtLoadingSpinner/BgtLoadingSpinner';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
+import { BgtEmptyState } from '@/components/BgtLayout/BgtEmptyState';
 import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
 import { SearchInputField } from '@/components/BgtForm';
 import { BgtBadge } from '@/components/BgtBadge/BgtBadge';
+import Game from '@/assets/icons/gamepad.svg?react';
 
 type GamesFilterSearch = {
   category?: string;
@@ -38,26 +38,13 @@ function RouteComponent() {
   const { category } = Route.useSearch();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { games, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useGamesData(true, 15);
+  const { games, isLoading } = useGamesData();
   const [openModal, setOpenModal] = useState(false);
   const [openBggModal, setOpenBggModal] = useState(false);
   const [filterValue, setFilterValue] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(category);
 
   const debouncedFilterValue = useDebounce(filterValue, 300);
-
-  const handleLoadMore = useCallback(() => {
-    if (fetchNextPage) {
-      fetchNextPage();
-    }
-  }, [fetchNextPage]);
-
-  const sentinelRef = useInfiniteScroll({
-    onLoadMore: handleLoadMore,
-    hasMore: hasNextPage ?? false,
-    isLoading: isFetchingNextPage ?? false,
-    threshold: 500,
-  });
 
   const filteredGames = useMemo(() => {
     let filteredGames = games;
@@ -84,6 +71,24 @@ function RouteComponent() {
 
   if (isLoading) return null;
 
+  if (games.length === 0) {
+    return (
+      <BgtPage>
+        <BgtPageHeader
+          header={t('games.title')}
+          actions={[{ onClick: () => setOpenModal(true), variant: 'primary', content: 'games.new' }]}
+        />
+        <BgtPageContent centered>
+          <BgtEmptyState
+            icon={Game}
+            description={t('dashboard.empty.description')}
+            title={t('dashboard.empty.title')}
+          />
+        </BgtPageContent>
+      </BgtPage>
+    );
+  }
+
   return (
     <BgtPage>
       <BgtPageHeader
@@ -94,7 +99,7 @@ function RouteComponent() {
         <div className="flex flex-row gap-3">
           <SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
         </div>
-        <BgtText size="3" className="pb-6 text-primary" weight="medium">
+        <BgtText size="3" color="primary" className="pb-6" weight="medium">
           {t('games.count', { count: filteredGames.length })}
         </BgtText>
         {categoryFilter !== undefined && (
@@ -117,14 +122,6 @@ function RouteComponent() {
             />
           ))}
         </div>
-        {/* Infinite scroll sentinel */}
-        <div ref={sentinelRef} className="h-4" />
-        {/* Loading indicator */}
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-8">
-            <BgtLoadingSpinner />
-          </div>
-        )}
         <BggGameModal open={openBggModal} setOpen={setOpenBggModal} />
         <CreateGameModal open={openModal} setOpen={setOpenModal} openBgg={openBgg} openManual={openManual} />
       </BgtPageContent>

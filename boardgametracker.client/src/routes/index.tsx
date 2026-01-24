@@ -1,5 +1,6 @@
+import { useTranslation } from 'react-i18next';
 import { t } from 'i18next';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { SessionCountChartCard } from './games/-components/SessionCountChartCard';
 import { useDashboardData } from './-hooks/useDashboardData';
@@ -15,6 +16,7 @@ import { BgtTextStatistic } from '@/components/BgtStatistic/BgtTextStatistic';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
+import { BgtEmptyState } from '@/components/BgtLayout/BgtEmptyState';
 import Players from '@/assets/icons/users.svg?react';
 import Game from '@/assets/icons/gamepad.svg?react';
 import Coins from '@/assets/icons/coins.svg?react';
@@ -29,8 +31,29 @@ export const Route = createFileRoute('/')({
 
 function RouteComponent() {
   const { statistics, settings } = useDashboardData();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
   if (statistics === undefined || settings === undefined) return null;
+
+  if (statistics.totalGames === 0) {
+    return (
+      <BgtPage>
+        <BgtPageHeader header={t('common.dashboard')} />
+        <BgtPageContent centered>
+          <BgtEmptyState
+            icon={Game}
+            description={t('dashboard.empty.description')}
+            title={t('dashboard.empty.title')}
+            action={{
+              label: t('dashboard.empty.button'),
+              onClick: () => navigate({ to: '/games' }),
+            }}
+          />
+        </BgtPageContent>
+      </BgtPage>
+    );
+  }
 
   const totalPlayedTime = formatMinutesToDuration(
     statistics.totalPlayedTime,
