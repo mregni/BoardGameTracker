@@ -1,5 +1,5 @@
 import { t } from 'i18next';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 
 import { SessionCountChartCard } from './games/-components/SessionCountChartCard';
 import { useDashboardData } from './-hooks/useDashboardData';
@@ -16,7 +16,6 @@ import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import Players from '@/assets/icons/users.svg?react';
-import Plus from '@/assets/icons/plus.svg?react';
 import Game from '@/assets/icons/gamepad.svg?react';
 import Coins from '@/assets/icons/coins.svg?react';
 import Calendar from '@/assets/icons/calendar.svg?react';
@@ -30,7 +29,6 @@ export const Route = createFileRoute('/')({
 
 function RouteComponent() {
   const { statistics, settings } = useDashboardData();
-  const navigate = useNavigate();
 
   if (statistics === undefined || settings === undefined) return null;
 
@@ -42,51 +40,9 @@ function RouteComponent() {
 
   const avgSessionTime = formatMinutesToDuration(statistics.avgSessionTime, ['hours', 'minutes'], settings?.uiLanguage);
 
-  const actions = [
-    {
-      variant: 'primary' as const,
-      onClick: () => {
-        navigate({ to: '/games/new' });
-      },
-      content: t('games.new'),
-      smallContent: (
-        <div className="flex flex-row gap-1 items-center">
-          <Plus className="size-3" />
-          {t('games.new-short')}
-        </div>
-      ),
-    },
-    {
-      variant: 'primary' as const,
-      onClick: () => {
-        navigate({ to: '/players' });
-      },
-      content: t('player.new.button'),
-      smallContent: (
-        <div className="flex flex-row gap-1 items-center">
-          <Plus className="size-3" />
-          {t('player.new.button-short')}
-        </div>
-      ),
-    },
-    {
-      variant: 'primary' as const,
-      onClick: () => {
-        navigate({ to: '/sessions/new' });
-      },
-      content: t('sessions.new'),
-      smallContent: (
-        <div className="flex flex-row gap-1 items-center">
-          <Plus className="size-3" />
-          {t('sessions.new-short')}
-        </div>
-      ),
-    },
-  ];
-
   return (
     <BgtPage>
-      <BgtPageHeader header={t('common.dashboard')} actions={actions} />
+      <BgtPageHeader header={t('common.dashboard')} />
       <BgtPageContent>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <BgtTextStatistic

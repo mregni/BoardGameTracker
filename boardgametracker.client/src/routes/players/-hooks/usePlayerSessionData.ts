@@ -21,7 +21,7 @@ export const usePlayerSessionData = ({ playerId, onDeleteSuccess, onDeleteError 
 
   const player = playerQuery.data;
   const settings = settingsQuery.data;
-  const games = gamesQuery.data?.items ?? [];
+  const games = gamesQuery.data ?? [];
   const sessions = sessionsQuery.data ?? [];
   const players = playersQuery.data ?? [];
 
