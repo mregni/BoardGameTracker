@@ -11,8 +11,10 @@ import { BgtText } from '@/components/BgtText/BgtText';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
+import { BgtEmptyState } from '@/components/BgtLayout/BgtEmptyState';
 import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
 import { SearchInputField } from '@/components/BgtForm';
+import Users from '@/assets/icons/users.svg?react';
 
 export const Route = createFileRoute('/players/')({
   component: RouteComponent,
@@ -27,7 +29,6 @@ function RouteComponent() {
   const [filterValue, setFilterValue] = useState<string>('');
   const { players, isLoading } = usePlayersData();
 
-  // Debounce the search input to avoid filtering on every keystroke
   const debouncedFilterValue = useDebounce(filterValue, 300);
 
   const filteredPlayers = useMemo(() => {
@@ -39,6 +40,20 @@ function RouteComponent() {
   }, [players, debouncedFilterValue]);
 
   if (isLoading) return null;
+
+  if (players.length === 0) {
+    return (
+      <BgtPage>
+        <BgtPageHeader
+          header={t('common.players')}
+          actions={[{ content: 'player.new.button', variant: 'primary', onClick: () => setOpenModal(true) }]}
+        />
+        <BgtPageContent centered>
+          <BgtEmptyState icon={Users} description={t('player.empty.description')} title={t('player.empty.title')} />
+        </BgtPageContent>
+      </BgtPage>
+    );
+  }
 
   return (
     <BgtPage>

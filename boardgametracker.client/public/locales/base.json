@@ -162,6 +162,11 @@
     }
   },
   "dashboard": {
+    "empty": {
+      "title": "No games in your collection",
+      "description": "You haven't added any games to your collection yet. Start by adding your first game to track your gameplay sessions and statistics.",
+      "button": "Add Your First Game"
+    },
     "charts": {
       "collection": "Collection"
     },
@@ -382,6 +387,11 @@
     "upload": "Click or drop to add image"
   },
   "player": {
+    "empty": {
+      "title": "No players added yet",
+      "description": "You haven't added any players yet. Start by adding your first player to track their game sessions and statistics.",
+      "button": "Add Your First Player"
+    },
     "back": "Back to players",
     "count_other": "{{count}} players found",
     "count_one": "{{count}} player found",
