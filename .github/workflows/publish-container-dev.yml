@@ -226,7 +226,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ needs.version.outputs.version }}
-            ASPNETCORE_ENVIRONMENT=${{ github.ref == 'refs/heads/dev' && 'development' || 'production' }}
+            ASPNETCORE_ENVIRONMENT=production
             BUILDKIT_INLINE_CACHE=1
 
   security-scan:

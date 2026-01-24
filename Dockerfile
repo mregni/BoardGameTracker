@@ -1,29 +1,11 @@
-﻿# Multi-architecture Dockerfile for BoardGameTracker
-# Supports: linux/amd64, linux/arm64, linux/arm/v7
-#
-# This uses a multi-stage build:
-# 1. Build frontend in Node container
-# 2. Build backend in .NET container
-# 3. Combine in final runtime container
-#
-# Build with Docker Compose:
-# docker-compose -f docker-compose.build.yml build
-#
-# Or build for multiple platforms with Docker Buildx:
-# docker buildx create --name multibuilder --use
-# docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 \
-#   --build-arg VERSION=1.0.0 \
-#   -t uping/boardgametracker:latest \
-#   --push .
-
-# Build arguments for multi-arch support
+﻿# Build arguments for multi-arch support
 ARG BUILDPLATFORM
 ARG TARGETPLATFORM
 ARG TARGETOS
 ARG VERSION=0.0.1
 
 # Stage 1: Build Frontend
-FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend-build
+FROM node:22-alpine AS frontend-build
 WORKDIR /src
 
 # Copy frontend package files
@@ -37,7 +19,7 @@ COPY boardgametracker.client/ ./
 RUN npm run build
 
 # Stage 2: Build Backend
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS backend-build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS backend-build
 ARG VERSION
 WORKDIR /src
 
@@ -81,23 +63,25 @@ ARG ASPNETCORE_URLS=http://*:5444
 
 WORKDIR /app
 
-# Install curl for healthcheck
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl su-exec
+
+RUN mkdir -p /app/data /app/images /app/logs /app/config
 
 # Copy published files from backend build stage
 COPY --from=backend-build /app/publish .
 
-# Create non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-# Create directories for data, images, config and logs with proper ownership
-RUN mkdir -p /app/data /app/images /app/logs /app/config && \
-    chown -R appuser:appgroup /app
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Set environment variables
 ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
 ENV DOTNET_EnableDiagnostics=0
 ENV ASPNETCORE_URLS=${ASPNETCORE_URLS}
+
+# Default PUID/PGID (can be overridden at runtime)
+ENV PUID=1654
+ENV PGID=1654
 
 # Expose port
 EXPOSE 5444
@@ -106,7 +90,4 @@ EXPOSE 5444
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl --fail http://localhost:5444/api/health || exit 1
 
-# Run as non-root user
-USER appuser
-
-CMD ["dotnet", "BoardGameTracker.Host.dll"]
+ENTRYPOINT ["/entrypoint.sh"]

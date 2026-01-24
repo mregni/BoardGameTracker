@@ -1,12 +1,9 @@
-import { t, use } from 'i18next';
+import { t } from 'i18next';
 import { differenceInDays, format } from 'date-fns';
 import { isAfter } from 'date-fns';
 import { cva } from 'class-variance-authority';
 import { useNavigate } from '@tanstack/react-router';
 
-import { BgtPoster } from '../../-components/BgtPoster';
-
-import { StringToHsl } from '@/utils/stringUtils';
 import type { Player } from '@/models/Player/Player';
 import type { Loan } from '@/models/Loan/Loan';
 import type { Game } from '@/models/Games/Game';
