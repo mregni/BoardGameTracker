@@ -35,7 +35,7 @@ function RouteComponent() {
   const { loans, settings, deleteLoan, returnLoan, isLoading } = useLoans({
     onDeleteError: () => errorToast('loan.delete.failed'),
     onDeleteSuccess: () => successToast('loan.delete.successfull'),
-    onReturnError: () => errorToast('loan.return.failed'),
+    onReturnError: (text?: string) => errorToast(text || 'loan.return.failed'),
     onReturnSuccess: () => successToast('loan.return.successfull'),
   });
   const { gameById } = useGameById();

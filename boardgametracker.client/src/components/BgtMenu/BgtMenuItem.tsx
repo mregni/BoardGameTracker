@@ -33,9 +33,7 @@ export const BgtMenuItem = (props: Props) => {
           {t(item.menuLabel)}
         </Text>
       </div>
-      {count !== undefined && count > 0 && (
-        <div className="py-1 px-3 flex items-center justify-center text-xs">{count}</div>
-      )}
+      {count !== undefined && <div className="py-1 px-3 flex items-center justify-center text-xs">{count}</div>}
     </Link>
   );
 };

@@ -20,4 +20,11 @@ public class LoanRepository : CrudHelper<Loan>, ILoanRepository
             .OrderByDescending(x => x.LoanDate)
             .ToListAsync();
     }
+
+    public Task<int> CountActiveLoans()
+    {
+        return _context.Loans
+            .Where(x => x.ReturnedDate == null)
+            .CountAsync();
+    }
 }

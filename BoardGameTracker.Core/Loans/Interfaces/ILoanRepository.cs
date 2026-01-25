@@ -5,4 +5,5 @@ namespace BoardGameTracker.Core.Loans.Interfaces;
 
 public interface ILoanRepository : ICrudHelper<Loan>
 {
+    Task<int> CountActiveLoans();
 }

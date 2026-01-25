@@ -26,6 +26,7 @@ export const useNewLoanModal = ({ onSaveSuccess, onSaveError }: Props) => {
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.loans] });
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
       onSaveSuccess?.(data);
     },
     onError: () => {

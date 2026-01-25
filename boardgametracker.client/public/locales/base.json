@@ -138,7 +138,8 @@
     },
     "return": {
       "successfull": "Game is successfully marked as returned.",
-      "failed": "Marking game as returned failed, check logs for more details."
+      "failed": "Marking game as returned failed, check logs for more details.",
+      "date-failed": "You cannot return a loan before the loan date."
     },
     "no-active-loans": "There are no active loans at the moment.",
     "new": {

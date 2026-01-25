@@ -1,5 +1,6 @@
-﻿using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +14,14 @@ public class CountController : ControllerBase
     private readonly IGameService _gameService;
     private readonly IPlayerService _playerService;
     private readonly ILocationService _locationService;
+    private readonly ILoanService _loanService;
 
-    public CountController(ILocationService locationService, IPlayerService playerService, IGameService gameService)
+    public CountController(ILocationService locationService, IPlayerService playerService, IGameService gameService, ILoanService loanService)
     {
         _locationService = locationService;
         _playerService = playerService;
         _gameService = gameService;
+        _loanService = loanService;
     }
 
     [HttpGet]
@@ -29,6 +32,7 @@ public class CountController : ControllerBase
             new("games", await _gameService.CountAsync()),
             new("players", await _playerService.CountAsync()),
             new("locations", await _locationService.CountAsync()),
+            new("loans", await _loanService.CountActiveLoans()),
         };
 
         return Ok(counts);
