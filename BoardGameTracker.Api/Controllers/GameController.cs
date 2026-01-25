@@ -174,4 +174,12 @@ public class GameController : BaseApiController
             scoreRankChart = scoringRankChart
         });
     }
+
+    [HttpGet]
+    [Route("shelf-of-shame")]
+    public async Task<IActionResult> GetShelfOfShame()
+    {
+        var games = await _gameService.GetShelfOfShameGames();
+        return Ok(games.ToListDto());
+    }
 }

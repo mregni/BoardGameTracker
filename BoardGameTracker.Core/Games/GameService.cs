@@ -12,6 +12,7 @@ using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Common.ValueObjects;
 using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Bgg.Interfaces;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -30,7 +31,8 @@ public class GameService : IGameService
     private readonly IBggGameTranslator _bggGameTranslator;
     private readonly IGameFactory _gameFactory;
     private readonly IUnitOfWork _unitOfWork;
-    
+    private readonly IConfigFileProvider _configFileProvider;
+
     public GameService(
         IGameRepository gameRepository,
         IGameSessionRepository gameSessionRepository,
@@ -38,7 +40,9 @@ public class GameService : IGameService
         IImageService imageService,
         IBggApi bggApi,
         IBggGameTranslator bggGameTranslator,
-        IGameFactory gameFactory, IUnitOfWork unitOfWork)
+        IGameFactory gameFactory,
+        IUnitOfWork unitOfWork,
+        IConfigFileProvider configFileProvider)
     {
         _gameRepository = gameRepository;
         _gameSessionRepository = gameSessionRepository;
@@ -48,6 +52,7 @@ public class GameService : IGameService
         _bggGameTranslator = bggGameTranslator;
         _gameFactory = gameFactory;
         _unitOfWork = unitOfWork;
+        _configFileProvider = configFileProvider;
     }
     
     public async Task<Game> SearchOnBgg(BggGame rawGame, BggSearch search)
@@ -407,7 +412,26 @@ public class GameService : IGameService
             };
             await ProcessBggGameData(bggGame, search);
         }
-        
+
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public Task<List<Game>> GetShelfOfShameGames()
+    {
+        var months = _configFileProvider.ShelfOfShameMonths;
+        var cutoffDate = DateTime.UtcNow.AddMonths(-months);
+        return _gameRepository.GetGamesWithNoRecentSessions(cutoffDate);
+    }
+
+    public Task<int> CountShelfOfShameGames()
+    {
+        if (!_configFileProvider.ShelfOfShameEnabled)
+        {
+            return Task.FromResult(0);
+        }
+
+        var months = _configFileProvider.ShelfOfShameMonths;
+        var cutoffDate = DateTime.UtcNow.AddMonths(-months);
+        return _gameRepository.CountGamesWithNoRecentSessions(cutoffDate);
     }
 }

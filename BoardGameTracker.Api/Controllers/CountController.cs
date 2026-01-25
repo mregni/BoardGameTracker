@@ -1,4 +1,4 @@
-using BoardGameTracker.Common.DTOs;
+﻿using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
@@ -32,6 +32,7 @@ public class CountController : ControllerBase
             new("games", await _gameService.CountAsync()),
             new("players", await _playerService.CountAsync()),
             new("locations", await _locationService.CountAsync()),
+            new("shame", await _gameService.CountShelfOfShameGames()),
             new("loans", await _loanService.CountActiveLoans()),
         };
 
