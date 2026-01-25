@@ -19,4 +19,6 @@ public interface IGameRepository: ICrudHelper<Game>
     Task<int> GetTotalExpansionCount();
     Task DeleteExpansion(int gameId, int expansionId);
     Task<List<Game>> GetRecentlyAddedGames(int count);
+    Task<List<Game>> GetGamesWithNoRecentSessions(DateTime cutoffDate);
+    Task<int> CountGamesWithNoRecentSessions(DateTime cutoffDate);
 }
