@@ -8,7 +8,7 @@ import { QUERY_KEYS } from '@/models';
 interface Props {
   onDeleteError?: () => void;
   onDeleteSuccess?: () => void;
-  onReturnError?: () => void;
+  onReturnError?: (text?: string) => void;
   onReturnSuccess?: () => void;
 }
 
@@ -28,6 +28,7 @@ export const useLoans = (props: Props) => {
       await deleteLoanCall(loanId);
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.loans] });
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
       onDeleteSuccess?.();
     } catch {
       onDeleteError?.();
@@ -39,9 +40,15 @@ export const useLoans = (props: Props) => {
       await returnLoanCall(loanId, date);
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.loans] });
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
       onReturnSuccess?.();
-    } catch {
-      onReturnError?.();
+    } catch (e: unknown) {
+      const error = e as { response?: { data?: string } };
+      if (error.response?.data?.includes('Return date cannot be before loan date.')) {
+        onReturnError?.('loan.return.date-failed');
+      } else {
+        onReturnError?.();
+      }
     }
   };
 

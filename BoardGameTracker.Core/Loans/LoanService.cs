@@ -81,4 +81,9 @@ public class LoanService : ILoanService
         await _loanRepository.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public Task<int> CountActiveLoans()
+    {
+        return _loanRepository.CountActiveLoans();
+    }
 }

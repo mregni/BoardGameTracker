@@ -479,4 +479,46 @@ public class LoanServiceTests
     }
 
     #endregion
+
+    #region CountActiveLoans Tests
+
+    [Fact]
+    public async Task CountActiveLoans_ShouldReturnCount_FromRepository()
+    {
+        // Arrange
+        var expectedCount = 5;
+
+        _loanRepositoryMock
+            .Setup(x => x.CountActiveLoans())
+            .ReturnsAsync(expectedCount);
+
+        // Act
+        var result = await _loanService.CountActiveLoans();
+
+        // Assert
+        result.Should().Be(expectedCount);
+
+        _loanRepositoryMock.Verify(x => x.CountActiveLoans(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CountActiveLoans_ShouldReturnZero_WhenNoActiveLoans()
+    {
+        // Arrange
+        _loanRepositoryMock
+            .Setup(x => x.CountActiveLoans())
+            .ReturnsAsync(0);
+
+        // Act
+        var result = await _loanService.CountActiveLoans();
+
+        // Assert
+        result.Should().Be(0);
+
+        _loanRepositoryMock.Verify(x => x.CountActiveLoans(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
 }
