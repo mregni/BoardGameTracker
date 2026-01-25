@@ -118,7 +118,7 @@ function RouteComponent() {
               open={modals.deleteModal.isOpen}
               close={modals.deleteModal.hide}
               onDelete={actions.handleDelete}
-              description={t('game.delete.description', { title: game.title })}
+              description={t('common.delete.description', { title: game.title })}
             />
             {modals.expansionModal.isOpen && (
               <ExpansionSelectorModal
