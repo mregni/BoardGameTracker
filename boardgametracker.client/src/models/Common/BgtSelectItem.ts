@@ -1,5 +1,5 @@
 export interface BgtSelectItem {
-  value: number;
+  value: number | string;
   label: string;
 }
 

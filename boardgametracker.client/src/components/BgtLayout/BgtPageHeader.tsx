@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Fragment, PropsWithChildren } from 'react';
+import { ComponentType, Fragment, PropsWithChildren, SVGProps } from 'react';
 
 import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
 import { BgtHeading } from '../BgtHeading/BgtHeading';
@@ -13,10 +13,11 @@ interface Props extends PropsWithChildren {
   actions?: Actions[];
   backAction?: () => void;
   backText?: string;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
 }
 
 export const BgtPageHeader = (props: Props) => {
-  const { header, actions = [], backAction, backText, children = null } = props;
+  const { header, actions = [], backAction, backText, children = null, icon: Icon } = props;
   const { t } = useTranslation();
 
   return (
@@ -32,6 +33,7 @@ export const BgtPageHeader = (props: Props) => {
           {backAction && !backText && (
             <BgtIconButton size="2" intent="header" icon={<ArrowLeft />} onClick={backAction} />
           )}
+          {Icon && <Icon className="text-primary size-7" />}
           {header && <BgtHeading>{header}</BgtHeading>}
         </div>
         <div className="flex items-center flex-wrap gap-3">

@@ -18,6 +18,7 @@ import { BgtCard } from '@/components/BgtCard/BgtCard';
 import BgtButton from '@/components/BgtButton/BgtButton';
 import GitHubIcon from '@/assets/icons/github.svg?react';
 import CrowdinIcon from '@/assets/icons/crowdin.svg?react';
+import CogIcon from '@/assets/icons/cog.svg?react';
 
 export const Route = createFileRoute('/settings/')({
   component: RouteComponent,
@@ -62,7 +63,7 @@ function RouteComponent() {
 
   return (
     <BgtPage>
-      <BgtPageHeader header={t('common.settings')} actions={[]} />
+      <BgtPageHeader header={t('common.settings')} icon={CogIcon} />
       <BgtPageContent>
         <BgtCard className="p-4">
           <form

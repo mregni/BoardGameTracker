@@ -77,6 +77,7 @@ function RouteComponent() {
       <BgtPage>
         <BgtPageHeader
           header={t('games.title')}
+          icon={Game}
           actions={[{ onClick: () => setOpenModal(true), variant: 'primary', content: 'games.new' }]}
         />
         <BgtPageContent centered>
@@ -94,6 +95,7 @@ function RouteComponent() {
     <BgtPage>
       <BgtPageHeader
         header={t('games.title')}
+        icon={Game}
         actions={[{ onClick: () => setOpenModal(true), variant: 'primary', content: 'games.new' }]}
       ></BgtPageHeader>
       <BgtPageContent>

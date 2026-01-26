@@ -28,7 +28,7 @@ function RouteComponent() {
 
   return (
     <BgtPage>
-      <BgtPageHeader header={t('common.shame')} actions={[]} />
+      <BgtPageHeader header={t('common.shame')} icon={Game} />
       <BgtPageContent isLoading={isLoading} data={{ statistics, shames, settings }}>
         {({ statistics, shames, settings }) => (
           <>

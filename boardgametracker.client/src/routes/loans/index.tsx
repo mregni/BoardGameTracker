@@ -20,6 +20,7 @@ import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
 import Package from '@/assets/icons/package.svg?react';
+import LeftRightArrowIcon from '@/assets/icons/left-right-arrow.svg?react';
 import History from '@/assets/icons/history.svg?react';
 
 export const Route = createFileRoute('/loans/')({
@@ -52,6 +53,7 @@ function RouteComponent() {
   return (
     <BgtPage>
       <BgtPageHeader
+        icon={LeftRightArrowIcon}
         header={t('common.loans')}
         actions={[{ onClick: () => setOpenModal(true), variant: 'primary', content: 'loan.new.title' }]}
       />

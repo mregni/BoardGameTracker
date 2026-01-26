@@ -15,6 +15,7 @@ import { getPlayers } from '@/services/queries/players';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
+import Home from '@/assets/icons/home.svg?react';
 
 const compareSearchSchema = z.object({
   left: z.number().optional(),
@@ -80,7 +81,7 @@ function RouteComponent() {
 
   return (
     <BgtPage>
-      <BgtPageHeader header={t('compare.title')} actions={[]}></BgtPageHeader>
+      <BgtPageHeader header={t('compare.title')} icon={Home} />
       <BgtPageContent isLoading={!players} data={{ players }} centered={players?.length < 2}>
         {({ players }) => {
           if (players.length < 2) {

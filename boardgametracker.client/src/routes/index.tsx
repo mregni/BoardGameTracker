@@ -17,6 +17,7 @@ import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtEmptyState } from '@/components/BgtLayout/BgtEmptyState';
 import Players from '@/assets/icons/users.svg?react';
+import Home from '@/assets/icons/home.svg?react';
 import Game from '@/assets/icons/gamepad.svg?react';
 import Coins from '@/assets/icons/coins.svg?react';
 import Calendar from '@/assets/icons/calendar.svg?react';
@@ -38,7 +39,7 @@ function RouteComponent() {
   if (statistics.totalGames === 0) {
     return (
       <BgtPage>
-        <BgtPageHeader header={t('common.dashboard')} />
+        <BgtPageHeader header={t('common.dashboard')} icon={Home} />
         <BgtPageContent centered>
           <BgtEmptyState
             icon={Game}
@@ -64,7 +65,7 @@ function RouteComponent() {
 
   return (
     <BgtPage>
-      <BgtPageHeader header={t('common.dashboard')} />
+      <BgtPageHeader header={t('common.dashboard')} icon={Home} />
       <BgtPageContent>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <BgtTextStatistic

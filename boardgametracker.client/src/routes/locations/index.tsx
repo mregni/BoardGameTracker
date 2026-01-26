@@ -18,6 +18,7 @@ import { BgtIconButton } from '@/components/BgtIconButton/BgtIconButton';
 import { BgtCard } from '@/components/BgtCard/BgtCard';
 import TrashIcon from '@/assets/icons/trash.svg?react';
 import PencilIcon from '@/assets/icons/pencil.svg?react';
+import MapPinIcon from '@/assets/icons/map-pin.svg?react';
 
 export const Route = createFileRoute('/locations/')({
   component: RouteComponent,
@@ -91,6 +92,7 @@ function RouteComponent() {
   return (
     <BgtPage>
       <BgtPageHeader
+        icon={MapPinIcon}
         header={t('common.locations')}
         actions={[{ onClick: () => setOpenNewModal(true), variant: 'primary', content: 'location.new.button' }]}
       />
