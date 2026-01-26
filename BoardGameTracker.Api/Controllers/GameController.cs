@@ -1,6 +1,7 @@
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -176,10 +177,18 @@ public class GameController : BaseApiController
     }
 
     [HttpGet]
-    [Route("shelf-of-shame")]
-    public async Task<IActionResult> GetShelfOfShame()
+    [Route("shames")]
+    public async Task<IActionResult> GetShameGames()
     {
-        var games = await _gameService.GetShelfOfShameGames();
-        return Ok(games.ToListDto());
+        var games = await _gameService.GetShameGames();
+        return Ok(games.ToDtoList());
+    }
+
+    [HttpGet]
+    [Route("shames/statistics")]
+    public async Task<IActionResult> GetShameStatistics()
+    {
+        var statistics = await _gameService.GetShameStatistics();
+        return Ok(statistics.ToDto());
     }
 }

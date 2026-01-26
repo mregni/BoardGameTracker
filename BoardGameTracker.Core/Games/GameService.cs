@@ -434,4 +434,33 @@ public class GameService : IGameService
         var cutoffDate = DateTime.UtcNow.AddMonths(-months);
         return _gameRepository.CountGamesWithNoRecentSessions(cutoffDate);
     }
+
+    public Task<List<ShameGame>> GetShameGames()
+    {
+        var months = _configFileProvider.ShelfOfShameMonths;
+        var cutoffDate = DateTime.UtcNow.AddMonths(-months);
+        return _gameRepository.GetShameGames(cutoffDate);
+    }
+
+    public async Task<ShameStatistics> GetShameStatistics()
+    {
+        var shameGames = await GetShameGames();
+
+        var count = shameGames.Count;
+        var totalValue = shameGames
+            .Where(g => g.Price.HasValue)
+            .Sum(g => g.Price!.Value);
+
+        var gamesWithPrice = shameGames.Where(g => g.Price.HasValue).ToList();
+        decimal? averageValue = gamesWithPrice.Count > 0
+            ? gamesWithPrice.Average(g => g.Price!.Value)
+            : null;
+
+        return new ShameStatistics
+        {
+            Count = count,
+            TotalValue = totalValue > 0 ? totalValue : null,
+            AverageValue = averageValue
+        };
+    }
 }

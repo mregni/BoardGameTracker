@@ -12,6 +12,7 @@ import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtEmptyState } from '@/components/BgtLayout/BgtEmptyState';
+import { BgtCardList } from '@/components/BgtLayout/BgtCardList';
 import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
 import { SearchInputField } from '@/components/BgtForm';
 import Users from '@/assets/icons/users.svg?react';
@@ -66,11 +67,11 @@ function RouteComponent() {
         <BgtText size="3" className="pb-6 text-primary" weight="medium">
           {t('player.count', { count: filteredPlayers.length })}
         </BgtText>
-        <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-9 2xl:grid-cols-12">
+        <BgtCardList>
           {filteredPlayers.map((x) => (
             <BgtImageCard key={x.id} title={x.name} image={x.image} link={`/players/${x.id}`} />
           ))}
-        </div>
+        </BgtCardList>
         {openModal && <CreatePlayerModal open={openModal} setOpen={setOpenModal} />}
       </BgtPageContent>
     </BgtPage>

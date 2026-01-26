@@ -5,7 +5,7 @@ import { getGame } from '@/services/queries/games';
 import { QUERY_KEYS } from '@/models';
 
 interface Props {
-  gameId: string;
+  gameId: number;
   onSaveSuccess?: () => void;
   onSaveError?: () => void;
 }
@@ -32,6 +32,9 @@ export const useNewSessionWithGameData = ({ gameId, onSaveSuccess, onSaveError }
       await queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.game, sessionResult.gameId],
       });
+
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] });
 
       await Promise.all(maps);
     },

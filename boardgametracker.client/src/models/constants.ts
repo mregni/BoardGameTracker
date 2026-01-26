@@ -19,4 +19,5 @@ export const QUERY_KEYS = {
   shortlist: 'shortlist',
   badges: 'badges',
   versionInfo: 'versionInfo',
+  shames: 'shames',
 };

@@ -6,6 +6,16 @@ export interface Settings {
   uiLanguage: string;
   currency: string;
   statistics: boolean;
+  updateCheckEnabled: boolean;
+  versionTrack: string;
+  shelfOfShameEnabled: boolean;
+  shelfOfShameMonthsLimit: number;
+  oidcEnabled: boolean;
+  oidcProvider: string;
+  oidcClientId: string;
+  oidcClientSecret: string;
+  publicUrl: string;
+  primaryColor: string;
 }
 
 export const SettingsSchema = z.object({

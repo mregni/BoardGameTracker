@@ -15,12 +15,14 @@
     "items_one": "{{count}} item",
     "items_other": "{{count}} items",
     "minutes_one": "minute",
+    "never": "never",
     "minutes_other": "minutes",
     "locations": "Locations",
     "wins_other": "{{count}} wins",
     "wins_one": "{{count}} win",
     "location": "Location",
     "since": "Since {{date}}",
+    "shame": "Shelf of Shame",
     "duration": "Duration",
     "points_other": "{{count}} points",
     "points_one": "{{count}} point",
@@ -43,6 +45,7 @@
     "compare": "Compare",
     "rating": "Rating",
     "weight": "Weight",
+    "price": "Price",
     "age": "Age",
     "minutes-abbreviation": "min",
     "edit": "edit",
@@ -116,6 +119,17 @@
       "5": "Friday",
       "6": "Saturday"
     }
+  },
+  "shames": {
+    "total-shames": "Total games",
+    "total-value": "Total value of games",
+    "average-value": "Average value of games",
+    "none": {
+      "title": "No Games on the Shelf of Shame!",
+      "description": "Congratulations! You have no games on your Shelf of Shame. Keep up the great work of playing and enjoying your collection."
+    },
+    "days-not-played": "Days not played",
+    "last-session": "Last session"
   },
   "loan": {
     "title": "Loans",

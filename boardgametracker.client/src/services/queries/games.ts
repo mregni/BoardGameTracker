@@ -7,9 +7,17 @@ import {
   getGamesCall,
   getGameSessionsCall,
   getGameStatisticsCall,
+  getShamesCall,
+  getShameStatisticsCall,
 } from '../gameService';
 
-import { createEntityQuery, createListQuery, createNestedQuery, createNestedQueryWithKeys } from './queryFactory';
+import {
+  createEntityQuery,
+  createEntityQueryWithKeys,
+  createListQuery,
+  createNestedQuery,
+  createNestedQueryWithKeys,
+} from './queryFactory';
 
 import { QUERY_KEYS } from '@/models';
 
@@ -39,3 +47,10 @@ export const getBggCollection = (username: string) =>
     },
     refetchIntervalInBackground: false,
   });
+
+export const getShames = createListQuery(QUERY_KEYS.shames, getShamesCall);
+
+export const getShameStatistics = createEntityQueryWithKeys(
+  [QUERY_KEYS.shames, QUERY_KEYS.statistics],
+  getShameStatisticsCall
+);

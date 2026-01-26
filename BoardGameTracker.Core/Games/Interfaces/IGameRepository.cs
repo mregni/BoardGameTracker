@@ -1,5 +1,6 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore.Interfaces;
 
 namespace BoardGameTracker.Core.Games.Interfaces;
@@ -21,4 +22,5 @@ public interface IGameRepository: ICrudHelper<Game>
     Task<List<Game>> GetRecentlyAddedGames(int count);
     Task<List<Game>> GetGamesWithNoRecentSessions(DateTime cutoffDate);
     Task<int> CountGamesWithNoRecentSessions(DateTime cutoffDate);
+    Task<List<ShameGame>> GetShameGames(DateTime cutoffDate);
 }

@@ -24,6 +24,14 @@ export const createEntityQuery =
       queryFn: () => fetchFn(id),
     });
 
+export const createEntityQueryWithKeys =
+  <T>(keys: string[], fetchFn: () => Promise<T>) =>
+  () =>
+    queryOptions({
+      queryKey: [...keys],
+      queryFn: () => fetchFn(),
+    });
+
 export const createNestedQuery =
   <T, TParams = unknown>(parentKey: string, childKey: string, fetchFn: (id: number, params?: TParams) => Promise<T>) =>
   (id: number, params?: TParams) =>

@@ -36,4 +36,6 @@ public interface IGameService
     Task ImportList(IList<ImportGame> games);
     Task<List<Game>> GetShelfOfShameGames();
     Task<int> CountShelfOfShameGames();
+    Task<List<ShameGame>> GetShameGames();
+    Task<ShameStatistics> GetShameStatistics();
 }

@@ -1,6 +1,7 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -124,6 +125,28 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
         return _context.Games
             .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
             .CountAsync();
+    }
+
+    public Task<List<ShameGame>> GetShameGames(DateTime cutoffDate)
+    {
+        return _context.Games
+            .AsNoTracking()
+            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
+            .Select(g => new ShameGame
+            {
+                Id = g.Id,
+                Title = g.Title,
+                Image = g.Image,
+                AdditionDate = g.AdditionDate,
+                Price = g.BuyingPrice != null ? g.BuyingPrice.Amount : null,
+                LastSessionDate = _context.Sessions
+                    .Where(s => s.GameId == g.Id)
+                    .OrderByDescending(s => s.Start)
+                    .Select(s => (DateTime?)s.Start)
+                    .FirstOrDefault()
+            })
+            .OrderBy(g => g.Title)
+            .ToListAsync();
     }
 
     public override async Task<Game> UpdateAsync(Game entity)

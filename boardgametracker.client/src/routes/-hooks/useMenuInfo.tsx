@@ -21,6 +21,7 @@ export const menuItems: MenuItem[] = [
   { menuLabel: 'common.new-session', path: '/sessions/new', icon: PlusIcon, mobileVisible: true },
   { menuLabel: 'common.games', path: '/games', icon: PuzzlePieceIcon, mobileVisible: true },
   { menuLabel: 'common.players', path: '/players', icon: UsersIcon, mobileVisible: true },
+  { menuLabel: 'common.shame', path: '/shames', icon: UsersIcon, mobileVisible: false },
   { menuLabel: 'common.compare', path: '/compare', icon: TrendUp, mobileVisible: false },
   { menuLabel: 'common.loans', path: '/loans', icon: LeftRightArrowIcon, mobileVisible: false },
   { menuLabel: 'common.locations', path: '/locations', icon: MapPinIcon, mobileVisible: false },

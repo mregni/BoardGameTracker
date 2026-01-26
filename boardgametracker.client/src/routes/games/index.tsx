@@ -13,6 +13,7 @@ import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtEmptyState } from '@/components/BgtLayout/BgtEmptyState';
+import { BgtCardList } from '@/components/BgtLayout/BgtCardList';
 import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
 import { SearchInputField } from '@/components/BgtForm';
 import { BgtBadge } from '@/components/BgtBadge/BgtBadge';
@@ -110,7 +111,7 @@ function RouteComponent() {
             </BgtBadge>
           </div>
         )}
-        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 2xl:grid-cols-10">
+        <BgtCardList>
           {filteredGames.map((x) => (
             <BgtImageCard
               key={x.id}
@@ -121,7 +122,7 @@ function RouteComponent() {
               link={`/games/${x.id}`}
             />
           ))}
-        </div>
+        </BgtCardList>
         <BggGameModal open={openBggModal} setOpen={setOpenBggModal} />
         <CreateGameModal open={openModal} setOpen={setOpenModal} openBgg={openBgg} openManual={openManual} />
       </BgtPageContent>

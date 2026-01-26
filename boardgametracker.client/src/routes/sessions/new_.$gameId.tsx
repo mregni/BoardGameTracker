@@ -7,6 +7,7 @@ import { useToasts } from '../-hooks/useToasts';
 import { useNewSessionWithGameData } from './-hooks/useNewSessionWithGameData';
 import { SessionForm } from './-components/SessionForm';
 
+import { gameIdParamSchema } from '@/utils/routeSchemas';
 import { getPlayers } from '@/services/queries/players';
 import { getLocations } from '@/services/queries/locations';
 import { getGame, getGames } from '@/services/queries/games';
@@ -14,6 +15,7 @@ import { CreateSession } from '@/models';
 
 export const Route = createFileRoute('/sessions/new_/$gameId')({
   component: RouteComponent,
+  params: gameIdParamSchema,
   loader: async ({ params, context: { queryClient } }) => {
     queryClient.prefetchQuery(getGame(params.gameId));
     queryClient.prefetchQuery(getGames());

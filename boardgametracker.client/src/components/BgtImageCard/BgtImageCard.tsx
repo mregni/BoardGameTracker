@@ -23,11 +23,11 @@ export const BgtImageCard = (props: Props) => {
   return (
     <Link to={link} from="/">
       <div className="flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1 group">
-        <div className="aspect-square rounded-lg overflow-hidden mb-3 border border-none transition-all duration-200 relative">
+        <div className="aspect-square rounded-lg overflow-hidden border border-none transition-all duration-200 relative">
           <div
             style={{ '--image-url': `url(${image})`, '--fallback-color': StringToRgb(title) } as React.CSSProperties}
             className={cx(
-              'w-full overflow-hidden aspect-square z-10 rounded-xl flex flex-col justify-center relative',
+              'w-full overflow-hidden aspect-square z-10 flex flex-col justify-center relative',
               'bg-cover bg-no-repeat bg-center object-cover group-hover:scale-105 transition-transform duration-200',
               image && 'bg-(image:--image-url)',
               !image && 'bg-(--fallback-color)'
@@ -50,7 +50,7 @@ export const BgtImageCard = (props: Props) => {
                 {t(getItemStateTranslationKey(state, isLoaned))}
               </BgtText>
             )}
-            <BgtText size="4" className="line-clamp-1 uppercase w-full group-hover:-brightness-[110%]" weight="medium">
+            <BgtText size="4" className="line-clamp-1 uppercase w-full" weight="medium">
               {title}
             </BgtText>
           </div>

@@ -1,6 +1,7 @@
 import { axiosInstance } from '../utils/axiosInstance';
-import { BggImportResults, BggSearch, Game, GameStatistics, ImportGame, Session } from '../models';
+import { BggImportResults, BggSearch, Game, GameStatistics, ImportGame, Session, Shame } from '../models';
 
+import { ShameStatistics } from '@/models/Games/ShameStatistics';
 import { ExpansionLink, Expansion, ExpansionUpdate, CreateGame } from '@/models/';
 
 const domain = 'game';
@@ -81,4 +82,16 @@ export const importGamesCall = (games: ImportGame[]): Promise<boolean> => {
 
 export const deleteExpansionCall = (id: number, gameId: number): Promise<void> => {
   return axiosInstance.delete(`${domain}/${gameId}/expansion/${id}`);
+};
+
+export const getShamesCall = (): Promise<Shame[]> => {
+  return axiosInstance.get<Shame[]>(`${domain}/shames`).then((response) => {
+    return response.data;
+  });
+};
+
+export const getShameStatisticsCall = (): Promise<ShameStatistics> => {
+  return axiosInstance.get<ShameStatistics>(`${domain}/shames/statistics`).then((response) => {
+    return response.data;
+  });
 };

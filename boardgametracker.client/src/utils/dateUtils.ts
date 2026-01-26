@@ -1,4 +1,11 @@
-import { format, formatDistanceToNow, isValid as dateFnsIsValid, parseISO, formatDuration } from 'date-fns';
+import {
+  format,
+  formatDistanceToNow,
+  isValid as dateFnsIsValid,
+  parseISO,
+  formatDuration,
+  differenceInDays,
+} from 'date-fns';
 
 import { getDateFnsLocale } from './localeUtils';
 
@@ -172,4 +179,12 @@ export const formatMinutesToDuration = (
     format: formatUnits,
     locale,
   });
+};
+
+export const getDaysSincePurchase = (date: Date | null): number => {
+  if (!date || !dateFnsIsValid(date)) {
+    return 0;
+  }
+
+  return differenceInDays(new Date(), date);
 };

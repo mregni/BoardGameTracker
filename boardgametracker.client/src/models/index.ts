@@ -22,6 +22,7 @@ export * from './Games/GameStatistics';
 export * from './Games/GameType';
 export * from './Games/PersonType';
 export * from './Games/SessionFlag';
+export * from './Games/Shame';
 
 export * from './Images/ImageUpload';
 

@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap')
-layer(base);
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap') layer(base);
 
 @import 'tailwindcss';
 
 @theme {
   /* Custom Breakpoints */
   --breakpoint-2xl: 100rem;
+  --breakpoint-3xl: 160rem;
 
   /* Custom Colors */
   --color-page-black: #121212;
@@ -31,6 +31,7 @@ layer(base);
 }
 
 @layer base {
+
   *,
   ::after,
   ::before,
