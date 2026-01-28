@@ -43,4 +43,15 @@ export const SettingsSchema = z.object({
     .min(1, {
       message: 'settings.currency.required',
     }),
+  statistics: z.boolean(),
+  updateCheckEnabled: z.boolean(),
+  versionTrack: z.string(),
+  shelfOfShameEnabled: z.boolean(),
+  shelfOfShameMonthsLimit: z.number().min(1),
+  oidcEnabled: z.boolean(),
+  oidcProvider: z.string(),
+  oidcClientId: z.string(),
+  oidcClientSecret: z.string(),
+  publicUrl: z.string(),
+  primaryColor: z.string(),
 });

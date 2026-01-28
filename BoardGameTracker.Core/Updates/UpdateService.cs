@@ -128,26 +128,17 @@ public class UpdateService : IUpdateService
     public async Task<UpdateSettings> GetUpdateSettingsAsync()
     {
         var enabled = await _repository.GetConfigValueAsync("update_check_enabled");
-        var intervalStr = await _repository.GetConfigValueAsync("update_check_interval_hours");
-
         var settings = new UpdateSettings
         {
             Enabled = enabled != "false",
-            IntervalHours = int.TryParse(intervalStr, out var hours) ? hours : 24
         };
 
         return settings;
     }
 
-    public async Task UpdateSettingsAsync(bool enabled, int intervalHours)
+    public async Task UpdateSettingsAsync(bool enabled)
     {
-        if (intervalHours < 1)
-        {
-            throw new ArgumentException("Interval must be at least 1 hour", nameof(intervalHours));
-        }
-
         await _repository.SetConfigValueAsync("update_check_enabled", enabled.ToString().ToLowerInvariant());
-        await _repository.SetConfigValueAsync("update_check_interval_hours", intervalHours.ToString());
     }
 
     public string GetCurrentVersion()

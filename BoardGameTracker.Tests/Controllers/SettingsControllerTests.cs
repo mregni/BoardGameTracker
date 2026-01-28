@@ -52,8 +52,7 @@ public class SettingsControllerTests
         // Arrange
         var updateSettings = new UpdateSettings
         {
-            Enabled = true,
-            IntervalHours = 24
+            Enabled = true
         };
 
         _updateServiceMock
@@ -79,7 +78,6 @@ public class SettingsControllerTests
         settings.Currency.Should().Be("USD");
         settings.Statistics.Should().BeTrue();
         settings.UpdateCheckEnabled.Should().BeTrue();
-        settings.UpdateCheckIntervalHours.Should().Be(24);
 
         _updateServiceMock.Verify(x => x.GetUpdateSettingsAsync(), Times.Once);
         _configFileProviderMock.VerifyGet(x => x.TimeFormat, Times.Once);
@@ -98,8 +96,7 @@ public class SettingsControllerTests
         // Arrange
         var updateSettings = new UpdateSettings
         {
-            Enabled = false,
-            IntervalHours = 0
+            Enabled = false
         };
 
         _updateServiceMock
@@ -125,7 +122,6 @@ public class SettingsControllerTests
         settings.Currency.Should().Be("EUR");
         settings.Statistics.Should().BeFalse();
         settings.UpdateCheckEnabled.Should().BeFalse();
-        settings.UpdateCheckIntervalHours.Should().Be(0);
 
         _updateServiceMock.Verify(x => x.GetUpdateSettingsAsync(), Times.Once);
         _configFileProviderMock.VerifyGet(x => x.TimeFormat, Times.Once);
@@ -148,8 +144,7 @@ public class SettingsControllerTests
             DateFormat = "dd-MM-yyyy",
             UILanguage = "de-DE",
             Currency = "GBP",
-            UpdateCheckEnabled = true,
-            UpdateCheckIntervalHours = 48
+            UpdateCheckEnabled = true
         };
 
         _configFileProviderMock.SetupSet(x => x.Currency = model.Currency).Verifiable();
@@ -158,7 +153,7 @@ public class SettingsControllerTests
         _configFileProviderMock.SetupSet(x => x.UILanguage = model.UILanguage).Verifiable();
 
         _updateServiceMock
-            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.UpdateCheckIntervalHours))
+            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -176,7 +171,7 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifySet(x => x.UILanguage = model.UILanguage, Times.Once);
         _configFileProviderMock.VerifySet(x => x.ShelfOfShameEnabled = model.ShelfOfShameEnabled, Times.Once);
         _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonths = model.ShelfOfShameMonths, Times.Once);
-        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.UpdateCheckIntervalHours), Times.Once);
+        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -190,8 +185,7 @@ public class SettingsControllerTests
             DateFormat = "yyyy-MM-dd",
             UILanguage = "en-US",
             Currency = "USD",
-            UpdateCheckEnabled = false,
-            UpdateCheckIntervalHours = 0
+            UpdateCheckEnabled = false
         };
 
         _configFileProviderMock.SetupSet(x => x.Currency = model.Currency).Verifiable();
@@ -200,7 +194,7 @@ public class SettingsControllerTests
         _configFileProviderMock.SetupSet(x => x.UILanguage = model.UILanguage).Verifiable();
 
         _updateServiceMock
-            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.UpdateCheckIntervalHours))
+            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -218,7 +212,7 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifySet(x => x.UILanguage = model.UILanguage, Times.Once);
         _configFileProviderMock.VerifySet(x => x.ShelfOfShameEnabled = model.ShelfOfShameEnabled, Times.Once);
         _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonths = model.ShelfOfShameMonths, Times.Once);
-        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.UpdateCheckIntervalHours), Times.Once);
+        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled), Times.Once);
         VerifyNoOtherCalls();
     }
 

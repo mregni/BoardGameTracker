@@ -137,17 +137,12 @@ public class UpdateServiceTests
             .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
             .ReturnsAsync("true");
 
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync("12");
-
         // Act
         var result = await _updateService.GetUpdateSettingsAsync();
 
         // Assert
         result.Should().NotBeNull();
         result.Enabled.Should().BeTrue();
-        result.IntervalHours.Should().Be(12);
     }
 
     [Fact]
@@ -158,16 +153,11 @@ public class UpdateServiceTests
             .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
             .ReturnsAsync((string?)null);
 
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync((string?)null);
-
         // Act
         var result = await _updateService.GetUpdateSettingsAsync();
 
         // Assert
         result.Enabled.Should().BeTrue(); // Default is enabled when not "false"
-        result.IntervalHours.Should().Be(24); // Default is 24 hours
     }
 
     [Fact]
@@ -178,16 +168,11 @@ public class UpdateServiceTests
             .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
             .ReturnsAsync("false");
 
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync("48");
-
         // Act
         var result = await _updateService.GetUpdateSettingsAsync();
 
         // Assert
         result.Enabled.Should().BeFalse();
-        result.IntervalHours.Should().Be(48);
     }
 
     #endregion
@@ -203,11 +188,10 @@ public class UpdateServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await _updateService.UpdateSettingsAsync(true, 12);
+        await _updateService.UpdateSettingsAsync(true);
 
         // Assert
         _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", "true"), Times.Once);
-        _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_interval_hours", "12"), Times.Once);
     }
 
     [Fact]
@@ -219,32 +203,10 @@ public class UpdateServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await _updateService.UpdateSettingsAsync(false, 24);
+        await _updateService.UpdateSettingsAsync(false);
 
         // Assert
         _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", "false"), Times.Once);
-    }
-
-    [Fact]
-    public async Task UpdateSettingsAsync_ShouldThrowException_WhenIntervalLessThanOne()
-    {
-        // Act
-        var action = async () => await _updateService.UpdateSettingsAsync(true, 0);
-
-        // Assert
-        await action.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("Interval must be at least 1 hour*");
-    }
-
-    [Fact]
-    public async Task UpdateSettingsAsync_ShouldThrowException_WhenIntervalNegative()
-    {
-        // Act
-        var action = async () => await _updateService.UpdateSettingsAsync(true, -5);
-
-        // Assert
-        await action.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("Interval must be at least 1 hour*");
     }
 
     #endregion

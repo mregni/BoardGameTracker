@@ -185,7 +185,7 @@ public class CountControllerTests
             counts[1].Value.Should().Be(15);
             counts[2].Key.Should().Be("locations");
             counts[2].Value.Should().Be(7);
-            counts[3].Key.Should().Be("shame");
+            counts[3].Key.Should().Be("shames");
             counts[3].Value.Should().Be(3);
             counts[4].Key.Should().Be("loans");
             counts[4].Value.Should().Be(2);

@@ -546,10 +546,6 @@
       "label": "Time format",
       "required": "Time format is required"
     },
-    "ui-language": {
-      "label": "Language",
-      "required": "language is required"
-    },
     "currency": {
       "label": "Currency",
       "required": "Currency is required"
@@ -564,8 +560,21 @@
     "feature-request": "Feature request",
     "translations": "Translate the app",
     "save": {
+      "button": "Save settings",
       "failed": "Failed saving settings",
       "successfull": "Settings are successfully saved"
+    },
+    "general": {
+      "public-url": {
+        "label": "Public URL",
+        "placeholder": "https://myboardgametracker.app"
+      },
+      "ui-language": {
+        "label": "Language",
+        "required": "language is required"
+      },
+      "title": "General settings",
+      "description": "Change the general settings of the application."
     }
   },
   "player-session": {

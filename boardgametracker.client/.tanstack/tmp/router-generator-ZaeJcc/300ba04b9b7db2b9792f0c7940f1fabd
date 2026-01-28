@@ -1,9 +1,0 @@
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/sessions/new/$gameId')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/sessions/new/$gameId"!</div>
-}

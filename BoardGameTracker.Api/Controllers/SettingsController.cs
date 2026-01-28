@@ -40,7 +40,6 @@ public class SettingsController : ControllerBase
             Currency = _configFileProvider.Currency,
             Statistics = _environmentProvider.EnableStatistics,
             UpdateCheckEnabled = updateSettings.Enabled,
-            UpdateCheckIntervalHours = updateSettings.IntervalHours,
             ShelfOfShameEnabled = _configFileProvider.ShelfOfShameEnabled,
             ShelfOfShameMonths = _configFileProvider.ShelfOfShameMonths
         };
@@ -66,7 +65,7 @@ public class SettingsController : ControllerBase
         _configFileProvider.ShelfOfShameEnabled = model.ShelfOfShameEnabled;
         _configFileProvider.ShelfOfShameMonths = model.ShelfOfShameMonths;
 
-        await _updateService.UpdateSettingsAsync(model.UpdateCheckEnabled, model.UpdateCheckIntervalHours);
+        await _updateService.UpdateSettingsAsync(model.UpdateCheckEnabled);
 
         return Ok(model);
     }
