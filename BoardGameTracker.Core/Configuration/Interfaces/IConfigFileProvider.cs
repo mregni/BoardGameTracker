@@ -14,6 +14,8 @@ public interface IConfigFileProvider : IRequestHandler<ApplicationStartedCommand
     string TimeFormat { get; set; }
     string UILanguage { get; set; }
     string Currency { get; set; }
+    bool ShelfOfShameEnabled { get; set; }
+    int ShelfOfShameMonths { get; set; }
 
     string GetPostgresConnectionString(string dbName);
 }

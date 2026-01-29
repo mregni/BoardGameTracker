@@ -40,6 +40,18 @@ public class ConfigFileProvider : IConfigFileProvider
         set => SetValue("UI_LANGUAGE", value);
     }
 
+    public bool ShelfOfShameEnabled
+    {
+        get => GetValueBool("SHELF_OF_SHAME_ENABLED", true);
+        set => SetValue("SHELF_OF_SHAME_ENABLED", value);
+    }
+
+    public int ShelfOfShameMonths
+    {
+        get => GetValueInt("SHELF_OF_SHAME_MONTHS", 6);
+        set => SetValue("SHELF_OF_SHAME_MONTHS", value);
+    }
+
     public string PostgresHost => GetValue("DB_HOST", string.Empty);
     public string PostgresUser => GetValue("DB_USER", string.Empty);
     public string PostgresPassword => GetValue("DB_PASSWORD", string.Empty);
@@ -72,6 +84,12 @@ public class ConfigFileProvider : IConfigFileProvider
     private int GetValueInt(string key, int defaultValue, bool persist = true)
     {
         return Convert.ToInt32(GetValue(key, defaultValue, persist));
+    }
+
+    private bool GetValueBool(string key, bool defaultValue, bool persist = true)
+    {
+        var value = GetValue(key, defaultValue, persist);
+        return bool.TryParse(value, out var result) && result;
     }
 
     private string GetValue(string key, object defaultValue, bool persist = true)

@@ -40,7 +40,9 @@ public class SettingsController : ControllerBase
             Currency = _configFileProvider.Currency,
             Statistics = _environmentProvider.EnableStatistics,
             UpdateCheckEnabled = updateSettings.Enabled,
-            UpdateCheckIntervalHours = updateSettings.IntervalHours
+            UpdateCheckIntervalHours = updateSettings.IntervalHours,
+            ShelfOfShameEnabled = _configFileProvider.ShelfOfShameEnabled,
+            ShelfOfShameMonths = _configFileProvider.ShelfOfShameMonths
         };
 
         return Ok(uiResources);
@@ -61,6 +63,8 @@ public class SettingsController : ControllerBase
         _configFileProvider.TimeFormat = model.TimeFormat;
         _configFileProvider.DateFormat = model.DateFormat;
         _configFileProvider.UILanguage = model.UILanguage;
+        _configFileProvider.ShelfOfShameEnabled = model.ShelfOfShameEnabled;
+        _configFileProvider.ShelfOfShameMonths = model.ShelfOfShameMonths;
 
         await _updateService.UpdateSettingsAsync(model.UpdateCheckEnabled, model.UpdateCheckIntervalHours);
 

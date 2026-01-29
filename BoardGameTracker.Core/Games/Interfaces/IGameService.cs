@@ -34,4 +34,6 @@ public interface IGameService
     Task DeleteExpansion(int gameId, int expansionId);
     Task<BggImportResult?> ImportBggCollection(string userName);
     Task ImportList(IList<ImportGame> games);
+    Task<List<Game>> GetShelfOfShameGames();
+    Task<int> CountShelfOfShameGames();
 }

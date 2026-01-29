@@ -55,9 +55,9 @@ describe('BgtMenuItem', () => {
       expect(screen.getByText('5')).toBeInTheDocument();
     });
 
-    it('should not show count when zero', () => {
+    it('should show count when zero', () => {
       renderWithTheme(<BgtMenuItem item={createMenuItem()} count={0} />);
-      expect(screen.queryByText('0')).not.toBeInTheDocument();
+      expect(screen.getByText('0')).toBeInTheDocument();
     });
 
     it('should not show count when undefined', () => {

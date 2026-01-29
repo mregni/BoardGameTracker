@@ -7,6 +7,7 @@ using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Bgg.Interfaces;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Factories;
@@ -28,6 +29,7 @@ public class GameServiceTests
     private readonly Mock<IBggGameTranslator> _bggGameTranslatorMock;
     private readonly Mock<IGameFactory> _gameFactoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IConfigFileProvider> _configFileProviderMock;
     private readonly GameService _gameService;
 
     public GameServiceTests()
@@ -40,6 +42,7 @@ public class GameServiceTests
         _bggGameTranslatorMock = new Mock<IBggGameTranslator>();
         _gameFactoryMock = new Mock<IGameFactory>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _configFileProviderMock = new Mock<IConfigFileProvider>();
 
         _gameService = new GameService(
             _gameRepositoryMock.Object,
@@ -49,7 +52,8 @@ public class GameServiceTests
             _bggApiMock.Object,
             _bggGameTranslatorMock.Object,
             _gameFactoryMock.Object,
-            _unitOfWorkMock.Object);
+            _unitOfWorkMock.Object,
+            _configFileProviderMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -62,6 +66,7 @@ public class GameServiceTests
         _bggGameTranslatorMock.VerifyNoOtherCalls();
         _gameFactoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
+        _configFileProviderMock.VerifyNoOtherCalls();
     }
 
     #region GetGames Tests
@@ -565,6 +570,170 @@ public class GameServiceTests
         result.Should().NotContainKey(SessionFlag.LongestGame);
         result.Should().ContainKey(SessionFlag.HighestScore);
         result.Should().NotContainKey(SessionFlag.LowestScore);
+    }
+
+    #endregion
+
+    #region GetShelfOfShameGames Tests
+
+    [Fact]
+    public async Task GetShelfOfShameGames_ShouldReturnGames_WithConfiguredMonths()
+    {
+        // Arrange
+        var configuredMonths = 6;
+        var games = new List<Game>
+        {
+            new Game("Unplayed Game 1") { Id = 1 },
+            new Game("Unplayed Game 2") { Id = 2 }
+        };
+
+        _configFileProviderMock
+            .Setup(x => x.ShelfOfShameMonths)
+            .Returns(configuredMonths);
+
+        _gameRepositoryMock
+            .Setup(x => x.GetGamesWithNoRecentSessions(It.IsAny<DateTime>()))
+            .ReturnsAsync(games);
+
+        // Act
+        var result = await _gameService.GetShelfOfShameGames();
+
+        // Assert
+        result.Should().HaveCount(2);
+
+        _configFileProviderMock.Verify(x => x.ShelfOfShameMonths, Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGamesWithNoRecentSessions(It.IsAny<DateTime>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetShelfOfShameGames_ShouldReturnEmptyList_WhenNoGamesMatchCriteria()
+    {
+        // Arrange
+        var configuredMonths = 3;
+
+        _configFileProviderMock
+            .Setup(x => x.ShelfOfShameMonths)
+            .Returns(configuredMonths);
+
+        _gameRepositoryMock
+            .Setup(x => x.GetGamesWithNoRecentSessions(It.IsAny<DateTime>()))
+            .ReturnsAsync(new List<Game>());
+
+        // Act
+        var result = await _gameService.GetShelfOfShameGames();
+
+        // Assert
+        result.Should().BeEmpty();
+
+        _configFileProviderMock.Verify(x => x.ShelfOfShameMonths, Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGamesWithNoRecentSessions(It.IsAny<DateTime>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetShelfOfShameGames_ShouldUseCutoffDate_BasedOnConfiguredMonths()
+    {
+        // Arrange
+        var configuredMonths = 12;
+        DateTime capturedCutoffDate = default;
+
+        _configFileProviderMock
+            .Setup(x => x.ShelfOfShameMonths)
+            .Returns(configuredMonths);
+
+        _gameRepositoryMock
+            .Setup(x => x.GetGamesWithNoRecentSessions(It.IsAny<DateTime>()))
+            .Callback<DateTime>(date => capturedCutoffDate = date)
+            .ReturnsAsync(new List<Game>());
+
+        // Act
+        await _gameService.GetShelfOfShameGames();
+
+        // Assert
+        var expectedCutoffDate = DateTime.UtcNow.AddMonths(-configuredMonths);
+        capturedCutoffDate.Should().BeCloseTo(expectedCutoffDate, TimeSpan.FromSeconds(5));
+    }
+
+    #endregion
+
+    #region CountShelfOfShameGames Tests
+
+    [Fact]
+    public async Task CountShelfOfShameGames_ShouldReturnCount_WhenFeatureEnabled()
+    {
+        // Arrange
+        var configuredMonths = 6;
+        var expectedCount = 5;
+
+        _configFileProviderMock
+            .Setup(x => x.ShelfOfShameEnabled)
+            .Returns(true);
+
+        _configFileProviderMock
+            .Setup(x => x.ShelfOfShameMonths)
+            .Returns(configuredMonths);
+
+        _gameRepositoryMock
+            .Setup(x => x.CountGamesWithNoRecentSessions(It.IsAny<DateTime>()))
+            .ReturnsAsync(expectedCount);
+
+        // Act
+        var result = await _gameService.CountShelfOfShameGames();
+
+        // Assert
+        result.Should().Be(expectedCount);
+
+        _configFileProviderMock.Verify(x => x.ShelfOfShameEnabled, Times.Once);
+        _configFileProviderMock.Verify(x => x.ShelfOfShameMonths, Times.Once);
+        _gameRepositoryMock.Verify(x => x.CountGamesWithNoRecentSessions(It.IsAny<DateTime>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CountShelfOfShameGames_ShouldReturnZero_WhenFeatureDisabled()
+    {
+        // Arrange
+        _configFileProviderMock
+            .Setup(x => x.ShelfOfShameEnabled)
+            .Returns(false);
+
+        // Act
+        var result = await _gameService.CountShelfOfShameGames();
+
+        // Assert
+        result.Should().Be(0);
+
+        _configFileProviderMock.Verify(x => x.ShelfOfShameEnabled, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CountShelfOfShameGames_ShouldUseCutoffDate_BasedOnConfiguredMonths()
+    {
+        // Arrange
+        var configuredMonths = 12;
+        DateTime capturedCutoffDate = default;
+
+        _configFileProviderMock
+            .Setup(x => x.ShelfOfShameEnabled)
+            .Returns(true);
+
+        _configFileProviderMock
+            .Setup(x => x.ShelfOfShameMonths)
+            .Returns(configuredMonths);
+
+        _gameRepositoryMock
+            .Setup(x => x.CountGamesWithNoRecentSessions(It.IsAny<DateTime>()))
+            .Callback<DateTime>(date => capturedCutoffDate = date)
+            .ReturnsAsync(0);
+
+        // Act
+        await _gameService.CountShelfOfShameGames();
+
+        // Assert
+        var expectedCutoffDate = DateTime.UtcNow.AddMonths(-configuredMonths);
+        capturedCutoffDate.Should().BeCloseTo(expectedCutoffDate, TimeSpan.FromSeconds(5));
     }
 
     #endregion

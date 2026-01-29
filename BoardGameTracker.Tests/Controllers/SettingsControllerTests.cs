@@ -86,6 +86,8 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifyGet(x => x.DateFormat, Times.Once);
         _configFileProviderMock.VerifyGet(x => x.UILanguage, Times.Once);
         _configFileProviderMock.VerifyGet(x => x.Currency, Times.Once);
+        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameEnabled, Times.Once);
+        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameMonths, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
         VerifyNoOtherCalls();
     }
@@ -130,6 +132,8 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifyGet(x => x.DateFormat, Times.Once);
         _configFileProviderMock.VerifyGet(x => x.UILanguage, Times.Once);
         _configFileProviderMock.VerifyGet(x => x.Currency, Times.Once);
+        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameEnabled, Times.Once);
+        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameMonths, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
         VerifyNoOtherCalls();
     }
@@ -170,6 +174,8 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifySet(x => x.TimeFormat = model.TimeFormat, Times.Once);
         _configFileProviderMock.VerifySet(x => x.DateFormat = model.DateFormat, Times.Once);
         _configFileProviderMock.VerifySet(x => x.UILanguage = model.UILanguage, Times.Once);
+        _configFileProviderMock.VerifySet(x => x.ShelfOfShameEnabled = model.ShelfOfShameEnabled, Times.Once);
+        _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonths = model.ShelfOfShameMonths, Times.Once);
         _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.UpdateCheckIntervalHours), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -210,6 +216,8 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifySet(x => x.TimeFormat = model.TimeFormat, Times.Once);
         _configFileProviderMock.VerifySet(x => x.DateFormat = model.DateFormat, Times.Once);
         _configFileProviderMock.VerifySet(x => x.UILanguage = model.UILanguage, Times.Once);
+        _configFileProviderMock.VerifySet(x => x.ShelfOfShameEnabled = model.ShelfOfShameEnabled, Times.Once);
+        _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonths = model.ShelfOfShameMonths, Times.Once);
         _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.UpdateCheckIntervalHours), Times.Once);
         VerifyNoOtherCalls();
     }

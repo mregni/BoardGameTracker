@@ -9,4 +9,6 @@ public class UIResourceDto
     public bool Statistics { get; set; }
     public bool UpdateCheckEnabled { get; set; }
     public int UpdateCheckIntervalHours { get; set; }
+    public bool ShelfOfShameEnabled { get; set; }
+    public int ShelfOfShameMonths { get; set; }
 }

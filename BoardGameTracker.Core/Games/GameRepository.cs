@@ -110,6 +110,22 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
             .ToListAsync();
     }
 
+    public Task<List<Game>> GetGamesWithNoRecentSessions(DateTime cutoffDate)
+    {
+        return _context.Games
+            .AsNoTracking()
+            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
+            .OrderBy(g => g.Title)
+            .ToListAsync();
+    }
+
+    public Task<int> CountGamesWithNoRecentSessions(DateTime cutoffDate)
+    {
+        return _context.Games
+            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
+            .CountAsync();
+    }
+
     public override async Task<Game> UpdateAsync(Game entity)
     {
         var dbGame = await _context.Games
