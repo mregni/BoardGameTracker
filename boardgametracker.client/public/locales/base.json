@@ -574,7 +574,80 @@
         "required": "language is required"
       },
       "title": "General settings",
-      "description": "Change the general settings of the application."
+      "description": "Change the general settings of the application.",
+      "date-time": {
+        "title": "Date and Time settings",
+        "description": "Configure the date and time format used in the application.",
+        "date-format": "Date format",
+        "time-format": "Time format"
+      },
+      "currency": {
+        "title": "Currency settings",
+        "description": "Configure the currency used in the application.",
+        "label": "Currency"
+      },
+      "language": {
+        "title": "Language settings",
+        "description": "Configure the language used in the application.",
+        "label": "Language"
+      }
+    },
+    "shame": {
+      "title": "Shelf of Shame settings",
+      "description": "Configure how the Shelf of Shame is calculated and displayed.",
+      "enabled": {
+        "label": "Enable Shelf of Shame",
+        "description": "Track games that haven't been played in a while."
+      },
+      "months": {
+        "label": "Months Threshold"
+      }
+    },
+    "advanced": {
+      "version-track": {
+        "label": "Version track",
+        "description": "Choose to stay on stable releases or switch to beta releases to get early access to new features.",
+        "stable": {
+          "label": "Stable",
+          "description": "Get only stable releases."
+        },
+        "beta": {
+          "label": "Beta",
+          "description": "Get beta releases with early access to new features."
+        }
+      },
+      "updates": {
+        "title": "Update check settings",
+        "description": "Configure how the application checks for updates.",
+        "enabled": {
+          "label": "Enable update check",
+          "description": "When enabled, the application will automatically check for and install updates."
+        }
+      },
+      "statistics": {
+        "title": "Statistics settings",
+        "description": "Configure how statistics are collected and displayed.",
+        "enabled": {
+          "label": "Enable statistics",
+          "description": "Collect anonymous usage statistics to help improve the application."
+        }
+      },
+      "bug": "Report a bug",
+      "translate": "Help us translate the app"
+    },
+    "sidebar": {
+      "general": {
+        "title": "General",
+        "description": "Basic app configuration"
+      },
+      "shelf-of-shame": {
+        "title": "Shelf of Shame",
+        "description": "Configure Shelf of Shame settings"
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "Advanced app configuration"
+      }
     }
   },
   "player-session": {
@@ -655,7 +728,7 @@
   },
   "languages": {
     "english": "English",
-    "dutch": "Dutch"
+    "dutch": "Nederlands"
   },
   "log-levels": {
     "debug": "Debug",

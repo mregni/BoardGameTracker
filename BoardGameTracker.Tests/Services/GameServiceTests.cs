@@ -256,35 +256,6 @@ public class GameServiceTests
 
     #endregion
 
-    #region CreateGame Tests
-
-    [Fact]
-    public async Task CreateGame_ShouldCreateGame_AndSaveChanges()
-    {
-        // Arrange
-        var game = new Game("New Game") { Id = 1 };
-
-        _gameRepositoryMock
-            .Setup(x => x.CreateAsync(game))
-            .ReturnsAsync(game);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
-
-        // Act
-        var result = await _gameService.CreateGame(game);
-
-        // Assert
-        result.Should().NotBeNull();
-
-        _gameRepositoryMock.Verify(x => x.CreateAsync(game), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    #endregion
-
     #region CreateGameFromCommand Tests
 
     [Fact]
@@ -479,185 +450,6 @@ public class GameServiceTests
 
     #endregion
 
-    #region GetTotalPlayCount Tests
-
-    [Fact]
-    public async Task GetTotalPlayCount_ShouldReturnPlayCount()
-    {
-        // Arrange
-        var gameId = 1;
-        var expectedCount = 25;
-
-        _gameSessionRepositoryMock
-            .Setup(x => x.GetPlayCount(gameId))
-            .ReturnsAsync(expectedCount);
-
-        // Act
-        var result = await _gameService.GetTotalPlayCount(gameId);
-
-        // Assert
-        result.Should().Be(25);
-
-        _gameSessionRepositoryMock.Verify(x => x.GetPlayCount(gameId), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    #endregion
-
-    #region GetPlayFlags Tests
-
-    [Fact]
-    public async Task GetPlayFlags_ShouldReturnAllFlags_WhenDifferentValues()
-    {
-        // Arrange
-        var gameId = 1;
-
-        _gameSessionRepositoryMock
-            .Setup(x => x.GetShortestPlay(gameId))
-            .ReturnsAsync(30);
-
-        _gameSessionRepositoryMock
-            .Setup(x => x.GetLongestPlay(gameId))
-            .ReturnsAsync(180);
-
-        _gameStatisticsRepositoryMock
-            .Setup(x => x.GetHighScorePlay(gameId))
-            .ReturnsAsync(100);
-
-        _gameStatisticsRepositoryMock
-            .Setup(x => x.GetLowestScorePlay(gameId))
-            .ReturnsAsync(50);
-
-        // Act
-        var result = await _gameService.GetPlayFlags(gameId);
-
-        // Assert
-        result.Should().ContainKey(SessionFlag.ShortestGame);
-        result.Should().ContainKey(SessionFlag.LongestGame);
-        result.Should().ContainKey(SessionFlag.HighestScore);
-        result.Should().ContainKey(SessionFlag.LowestScore);
-        result[SessionFlag.ShortestGame].Should().Be(30);
-        result[SessionFlag.LongestGame].Should().Be(180);
-    }
-
-    [Fact]
-    public async Task GetPlayFlags_ShouldNotIncludeLongestGame_WhenSameAsShortest()
-    {
-        // Arrange
-        var gameId = 1;
-        var samePlayTime = 60;
-
-        _gameSessionRepositoryMock
-            .Setup(x => x.GetShortestPlay(gameId))
-            .ReturnsAsync(samePlayTime);
-
-        _gameSessionRepositoryMock
-            .Setup(x => x.GetLongestPlay(gameId))
-            .ReturnsAsync(samePlayTime);
-
-        _gameStatisticsRepositoryMock
-            .Setup(x => x.GetHighScorePlay(gameId))
-            .ReturnsAsync(100);
-
-        _gameStatisticsRepositoryMock
-            .Setup(x => x.GetLowestScorePlay(gameId))
-            .ReturnsAsync(100);
-
-        // Act
-        var result = await _gameService.GetPlayFlags(gameId);
-
-        // Assert
-        result.Should().ContainKey(SessionFlag.ShortestGame);
-        result.Should().NotContainKey(SessionFlag.LongestGame);
-        result.Should().ContainKey(SessionFlag.HighestScore);
-        result.Should().NotContainKey(SessionFlag.LowestScore);
-    }
-
-    #endregion
-
-    #region GetShelfOfShameGames Tests
-
-    [Fact]
-    public async Task GetShelfOfShameGames_ShouldReturnGames_WithConfiguredMonths()
-    {
-        // Arrange
-        var configuredMonths = 6;
-        var games = new List<Game>
-        {
-            new Game("Unplayed Game 1") { Id = 1 },
-            new Game("Unplayed Game 2") { Id = 2 }
-        };
-
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
-            .Returns(configuredMonths);
-
-        _gameRepositoryMock
-            .Setup(x => x.GetGamesWithNoRecentSessions(It.IsAny<DateTime>()))
-            .ReturnsAsync(games);
-
-        // Act
-        var result = await _gameService.GetShelfOfShameGames();
-
-        // Assert
-        result.Should().HaveCount(2);
-
-        _configFileProviderMock.Verify(x => x.ShelfOfShameMonths, Times.Once);
-        _gameRepositoryMock.Verify(x => x.GetGamesWithNoRecentSessions(It.IsAny<DateTime>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task GetShelfOfShameGames_ShouldReturnEmptyList_WhenNoGamesMatchCriteria()
-    {
-        // Arrange
-        var configuredMonths = 3;
-
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
-            .Returns(configuredMonths);
-
-        _gameRepositoryMock
-            .Setup(x => x.GetGamesWithNoRecentSessions(It.IsAny<DateTime>()))
-            .ReturnsAsync(new List<Game>());
-
-        // Act
-        var result = await _gameService.GetShelfOfShameGames();
-
-        // Assert
-        result.Should().BeEmpty();
-
-        _configFileProviderMock.Verify(x => x.ShelfOfShameMonths, Times.Once);
-        _gameRepositoryMock.Verify(x => x.GetGamesWithNoRecentSessions(It.IsAny<DateTime>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task GetShelfOfShameGames_ShouldUseCutoffDate_BasedOnConfiguredMonths()
-    {
-        // Arrange
-        var configuredMonths = 12;
-        DateTime capturedCutoffDate = default;
-
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
-            .Returns(configuredMonths);
-
-        _gameRepositoryMock
-            .Setup(x => x.GetGamesWithNoRecentSessions(It.IsAny<DateTime>()))
-            .Callback<DateTime>(date => capturedCutoffDate = date)
-            .ReturnsAsync(new List<Game>());
-
-        // Act
-        await _gameService.GetShelfOfShameGames();
-
-        // Assert
-        var expectedCutoffDate = DateTime.UtcNow.AddMonths(-configuredMonths);
-        capturedCutoffDate.Should().BeCloseTo(expectedCutoffDate, TimeSpan.FromSeconds(5));
-    }
-
-    #endregion
-
     #region CountShelfOfShameGames Tests
 
     [Fact]
@@ -672,7 +464,7 @@ public class GameServiceTests
             .Returns(true);
 
         _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
+            .Setup(x => x.ShelfOfShameMonthsLimit)
             .Returns(configuredMonths);
 
         _gameRepositoryMock
@@ -686,7 +478,7 @@ public class GameServiceTests
         result.Should().Be(expectedCount);
 
         _configFileProviderMock.Verify(x => x.ShelfOfShameEnabled, Times.Once);
-        _configFileProviderMock.Verify(x => x.ShelfOfShameMonths, Times.Once);
+        _configFileProviderMock.Verify(x => x.ShelfOfShameMonthsLimit, Times.Once);
         _gameRepositoryMock.Verify(x => x.CountGamesWithNoRecentSessions(It.IsAny<DateTime>()), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -721,7 +513,7 @@ public class GameServiceTests
             .Returns(true);
 
         _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
+            .Setup(x => x.ShelfOfShameMonthsLimit)
             .Returns(configuredMonths);
 
         _gameRepositoryMock
@@ -765,7 +557,7 @@ public class GameServiceTests
         };
 
         _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
+            .Setup(x => x.ShelfOfShameMonthsLimit)
             .Returns(configuredMonths);
 
         _gameRepositoryMock
@@ -781,7 +573,7 @@ public class GameServiceTests
         result[0].LastSessionDate.Should().NotBeNull();
         result[1].LastSessionDate.Should().BeNull();
 
-        _configFileProviderMock.Verify(x => x.ShelfOfShameMonths, Times.Once);
+        _configFileProviderMock.Verify(x => x.ShelfOfShameMonthsLimit, Times.Once);
         _gameRepositoryMock.Verify(x => x.GetShameGames(It.IsAny<DateTime>()), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -791,7 +583,7 @@ public class GameServiceTests
     {
         // Arrange
         _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
+            .Setup(x => x.ShelfOfShameMonthsLimit)
             .Returns(6);
 
         _gameRepositoryMock
@@ -821,7 +613,7 @@ public class GameServiceTests
         };
 
         _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
+            .Setup(x => x.ShelfOfShameMonthsLimit)
             .Returns(6);
 
         _gameRepositoryMock
@@ -849,7 +641,7 @@ public class GameServiceTests
         };
 
         _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
+            .Setup(x => x.ShelfOfShameMonthsLimit)
             .Returns(6);
 
         _gameRepositoryMock
@@ -876,7 +668,7 @@ public class GameServiceTests
         };
 
         _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
+            .Setup(x => x.ShelfOfShameMonthsLimit)
             .Returns(6);
 
         _gameRepositoryMock
@@ -897,7 +689,7 @@ public class GameServiceTests
     {
         // Arrange
         _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonths)
+            .Setup(x => x.ShelfOfShameMonthsLimit)
             .Returns(6);
 
         _gameRepositoryMock

@@ -36,12 +36,13 @@ public class SettingsController : ControllerBase
         {
             TimeFormat = _configFileProvider.TimeFormat,
             DateFormat = _configFileProvider.DateFormat,
-            UILanguage = _configFileProvider.UILanguage,
+            UiLanguage = _configFileProvider.UILanguage,
             Currency = _configFileProvider.Currency,
             Statistics = _environmentProvider.EnableStatistics,
             UpdateCheckEnabled = updateSettings.Enabled,
             ShelfOfShameEnabled = _configFileProvider.ShelfOfShameEnabled,
-            ShelfOfShameMonths = _configFileProvider.ShelfOfShameMonths
+            ShelfOfShameMonthsLimit = _configFileProvider.ShelfOfShameMonthsLimit,
+            VersionTrack = updateSettings.VersionTrack
         };
 
         return Ok(uiResources);
@@ -61,11 +62,11 @@ public class SettingsController : ControllerBase
         _configFileProvider.Currency = model.Currency;
         _configFileProvider.TimeFormat = model.TimeFormat;
         _configFileProvider.DateFormat = model.DateFormat;
-        _configFileProvider.UILanguage = model.UILanguage;
+        _configFileProvider.UILanguage = model.UiLanguage;
         _configFileProvider.ShelfOfShameEnabled = model.ShelfOfShameEnabled;
-        _configFileProvider.ShelfOfShameMonths = model.ShelfOfShameMonths;
+        _configFileProvider.ShelfOfShameMonthsLimit = model.ShelfOfShameMonthsLimit;
 
-        await _updateService.UpdateSettingsAsync(model.UpdateCheckEnabled);
+        await _updateService.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack);
 
         return Ok(model);
     }

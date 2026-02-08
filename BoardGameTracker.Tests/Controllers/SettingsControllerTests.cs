@@ -74,7 +74,7 @@ public class SettingsControllerTests
 
         settings.TimeFormat.Should().Be("HH:mm");
         settings.DateFormat.Should().Be("yyyy-MM-dd");
-        settings.UILanguage.Should().Be("en-US");
+        settings.UiLanguage.Should().Be("en-US");
         settings.Currency.Should().Be("USD");
         settings.Statistics.Should().BeTrue();
         settings.UpdateCheckEnabled.Should().BeTrue();
@@ -85,7 +85,7 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifyGet(x => x.UILanguage, Times.Once);
         _configFileProviderMock.VerifyGet(x => x.Currency, Times.Once);
         _configFileProviderMock.VerifyGet(x => x.ShelfOfShameEnabled, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameMonths, Times.Once);
+        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameMonthsLimit, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
         VerifyNoOtherCalls();
     }
@@ -118,7 +118,7 @@ public class SettingsControllerTests
 
         settings.TimeFormat.Should().Be("hh:mm tt");
         settings.DateFormat.Should().Be("MM/dd/yyyy");
-        settings.UILanguage.Should().Be("fr-FR");
+        settings.UiLanguage.Should().Be("fr-FR");
         settings.Currency.Should().Be("EUR");
         settings.Statistics.Should().BeFalse();
         settings.UpdateCheckEnabled.Should().BeFalse();
@@ -129,7 +129,7 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifyGet(x => x.UILanguage, Times.Once);
         _configFileProviderMock.VerifyGet(x => x.Currency, Times.Once);
         _configFileProviderMock.VerifyGet(x => x.ShelfOfShameEnabled, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameMonths, Times.Once);
+        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameMonthsLimit, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
         VerifyNoOtherCalls();
     }
@@ -142,7 +142,7 @@ public class SettingsControllerTests
         {
             TimeFormat = "HH:mm:ss",
             DateFormat = "dd-MM-yyyy",
-            UILanguage = "de-DE",
+            UiLanguage = "de-DE",
             Currency = "GBP",
             UpdateCheckEnabled = true
         };
@@ -150,7 +150,7 @@ public class SettingsControllerTests
         _configFileProviderMock.SetupSet(x => x.Currency = model.Currency).Verifiable();
         _configFileProviderMock.SetupSet(x => x.TimeFormat = model.TimeFormat).Verifiable();
         _configFileProviderMock.SetupSet(x => x.DateFormat = model.DateFormat).Verifiable();
-        _configFileProviderMock.SetupSet(x => x.UILanguage = model.UILanguage).Verifiable();
+        _configFileProviderMock.SetupSet(x => x.UILanguage = model.UiLanguage).Verifiable();
 
         _updateServiceMock
             .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled))
@@ -168,9 +168,9 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifySet(x => x.Currency = model.Currency, Times.Once);
         _configFileProviderMock.VerifySet(x => x.TimeFormat = model.TimeFormat, Times.Once);
         _configFileProviderMock.VerifySet(x => x.DateFormat = model.DateFormat, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.UILanguage = model.UILanguage, Times.Once);
+        _configFileProviderMock.VerifySet(x => x.UILanguage = model.UiLanguage, Times.Once);
         _configFileProviderMock.VerifySet(x => x.ShelfOfShameEnabled = model.ShelfOfShameEnabled, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonths = model.ShelfOfShameMonths, Times.Once);
+        _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonthsLimit = model.ShelfOfShameMonthsLimit, Times.Once);
         _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -183,7 +183,7 @@ public class SettingsControllerTests
         {
             TimeFormat = "HH:mm",
             DateFormat = "yyyy-MM-dd",
-            UILanguage = "en-US",
+            UiLanguage = "en-US",
             Currency = "USD",
             UpdateCheckEnabled = false
         };
@@ -191,7 +191,7 @@ public class SettingsControllerTests
         _configFileProviderMock.SetupSet(x => x.Currency = model.Currency).Verifiable();
         _configFileProviderMock.SetupSet(x => x.TimeFormat = model.TimeFormat).Verifiable();
         _configFileProviderMock.SetupSet(x => x.DateFormat = model.DateFormat).Verifiable();
-        _configFileProviderMock.SetupSet(x => x.UILanguage = model.UILanguage).Verifiable();
+        _configFileProviderMock.SetupSet(x => x.UILanguage = model.UiLanguage).Verifiable();
 
         _updateServiceMock
             .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled))
@@ -209,9 +209,9 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifySet(x => x.Currency = model.Currency, Times.Once);
         _configFileProviderMock.VerifySet(x => x.TimeFormat = model.TimeFormat, Times.Once);
         _configFileProviderMock.VerifySet(x => x.DateFormat = model.DateFormat, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.UILanguage = model.UILanguage, Times.Once);
+        _configFileProviderMock.VerifySet(x => x.UILanguage = model.UiLanguage, Times.Once);
         _configFileProviderMock.VerifySet(x => x.ShelfOfShameEnabled = model.ShelfOfShameEnabled, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonths = model.ShelfOfShameMonths, Times.Once);
+        _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonthsLimit = model.ShelfOfShameMonthsLimit, Times.Once);
         _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled), Times.Once);
         VerifyNoOtherCalls();
     }

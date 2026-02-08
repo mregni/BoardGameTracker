@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Updates;
 using BoardGameTracker.Core.DockerHub;
@@ -128,17 +129,20 @@ public class UpdateService : IUpdateService
     public async Task<UpdateSettings> GetUpdateSettingsAsync()
     {
         var enabled = await _repository.GetConfigValueAsync("update_check_enabled");
+        var versionTrack = await _repository.GetConfigValueAsync("update_track");
         var settings = new UpdateSettings
         {
             Enabled = enabled != "false",
+            VersionTrack =  versionTrack
         };
 
         return settings;
     }
 
-    public async Task UpdateSettingsAsync(bool enabled)
+    public async Task UpdateSettingsAsync(bool enabled, VersionTrack versionTrack)
     {
         await _repository.SetConfigValueAsync("update_check_enabled", enabled.ToString().ToLowerInvariant());
+        await _repository.SetConfigValueAsync("update_track", versionTrack);
     }
 
     public string GetCurrentVersion()

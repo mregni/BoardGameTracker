@@ -19,13 +19,10 @@ public interface IGameService
     Task<BggGame?> SearchGame(int searchBggId);
     Task<BggLink[]> SearchExpansionsForGame(int id);
     Task<List<TopPlayerDto>> GetTopPlayers(int id);
-    Task<Dictionary<SessionFlag, int?>> GetPlayFlags(int id);
-    Task<int> GetTotalPlayCount(int id);
     Task<IEnumerable<PlayByDay>> GetPlayByDayChart(int id);
     Task<IEnumerable<PlayerCount>> GetPlayerCountChart(int id);
     Task<Dictionary<DateTime, XValue[]>?> GetPlayerScoringChart(int id);
     Task<List<ScoreRank>> GetScoringRankedChart(int id);
-    Task<Game> CreateGame(Game game);
     Task<Game> CreateGameFromCommand(CreateGameCommand command);
     Task<List<Session>> GetSessionsForGame(int id, int? count);
     Task<Game> UpdateGame(Game game);
@@ -34,7 +31,6 @@ public interface IGameService
     Task DeleteExpansion(int gameId, int expansionId);
     Task<BggImportResult?> ImportBggCollection(string userName);
     Task ImportList(IList<ImportGame> games);
-    Task<List<Game>> GetShelfOfShameGames();
     Task<int> CountShelfOfShameGames();
     Task<List<ShameGame>> GetShameGames();
     Task<ShameStatistics> GetShameStatistics();

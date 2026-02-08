@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 import { SettingsToggle } from './SettingsToggle';
 import { SettingsSection } from './SettingsSection';
 
@@ -11,18 +13,17 @@ interface Props {
 }
 
 export const ShelfOfShameSettings = ({ form, disabled = false }: Props) => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-6">
-      <SettingsSection
-        title="Shelf of Shame Tracking"
-        description="Configure how unplayed games are tracked and displayed."
-      >
+      <SettingsSection title={t('settings.shame.title')} description={t('settings.shame.description')}>
         <BgtFormField form={form} name="shelfOfShameEnabled" schema={SettingsSchema.shape.shelfOfShameEnabled}>
           {(field) => (
             <SettingsToggle
               field={field}
-              label="Enable Shelf of Shame"
-              description="Track games that haven't been played in a while"
+              label={t('settings.shame.enabled.label')}
+              description={t('settings.shame.enabled.description')}
               disabled={disabled}
             />
           )}
@@ -43,7 +44,7 @@ export const ShelfOfShameSettings = ({ form, disabled = false }: Props) => {
                     field={field}
                     disabled={disabled}
                     type="number"
-                    label="Months Threshold"
+                    label={t('settings.shame.months.label')}
                     placeholder="3"
                   />
                 )}

@@ -104,37 +104,6 @@ public class GameService : IGameService
         await _gameRepository.DeleteAsync(game.Id);
     }
 
-    public async Task<Dictionary<SessionFlag, int?>> GetPlayFlags(int id)
-    {
-        var shortestPlay = await _gameSessionRepository.GetShortestPlay(id);
-        var longestPlay = await _gameSessionRepository.GetLongestPlay(id);
-        var highestScore = await _gameStatisticsRepository.GetHighScorePlay(id);
-        var lowestScore = await _gameStatisticsRepository.GetLowestScorePlay(id);
-
-        var dict = new Dictionary<SessionFlag, int?>
-        {
-            {SessionFlag.ShortestGame, shortestPlay},
-            {SessionFlag.HighestScore, highestScore}
-        };
-
-        if (shortestPlay != longestPlay)
-        {
-            dict.Add(SessionFlag.LongestGame, longestPlay);
-        }
-
-        if (highestScore != lowestScore)
-        {
-            dict.Add(SessionFlag.LowestScore, lowestScore);
-        }
-
-        return dict;
-    }
-
-    public Task<int> GetTotalPlayCount(int id)
-    {
-        return _gameSessionRepository.GetPlayCount(id);
-    }
-
     public async Task<IEnumerable<PlayByDay>> GetPlayByDayChart(int id)
     {
         var list = await _gameStatisticsRepository.GetPlayByDayChart(id);
@@ -265,13 +234,6 @@ public class GameService : IGameService
         list.AddIfNotNull(ScoreRank.MakeLowestScoreRank(lowest));
 
         return list;
-    }
-
-    public async Task<Game> CreateGame(Game game)
-    {
-        await _gameRepository.CreateAsync(game);
-        await _unitOfWork.SaveChangesAsync();
-        return game;
     }
 
     public async Task<Game> CreateGameFromCommand(CreateGameCommand command)
@@ -415,14 +377,7 @@ public class GameService : IGameService
 
         await _unitOfWork.SaveChangesAsync();
     }
-
-    public Task<List<Game>> GetShelfOfShameGames()
-    {
-        var months = _configFileProvider.ShelfOfShameMonths;
-        var cutoffDate = DateTime.UtcNow.AddMonths(-months);
-        return _gameRepository.GetGamesWithNoRecentSessions(cutoffDate);
-    }
-
+    
     public Task<int> CountShelfOfShameGames()
     {
         if (!_configFileProvider.ShelfOfShameEnabled)
@@ -430,14 +385,14 @@ public class GameService : IGameService
             return Task.FromResult(0);
         }
 
-        var months = _configFileProvider.ShelfOfShameMonths;
+        var months = _configFileProvider.ShelfOfShameMonthsLimit;
         var cutoffDate = DateTime.UtcNow.AddMonths(-months);
         return _gameRepository.CountGamesWithNoRecentSessions(cutoffDate);
     }
 
     public Task<List<ShameGame>> GetShameGames()
     {
-        var months = _configFileProvider.ShelfOfShameMonths;
+        var months = _configFileProvider.ShelfOfShameMonthsLimit;
         var cutoffDate = DateTime.UtcNow.AddMonths(-months);
         return _gameRepository.GetShameGames(cutoffDate);
     }

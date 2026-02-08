@@ -15,7 +15,7 @@ public interface IConfigFileProvider : IRequestHandler<ApplicationStartedCommand
     string UILanguage { get; set; }
     string Currency { get; set; }
     bool ShelfOfShameEnabled { get; set; }
-    int ShelfOfShameMonths { get; set; }
+    int ShelfOfShameMonthsLimit { get; set; }
 
     string GetPostgresConnectionString(string dbName);
 }

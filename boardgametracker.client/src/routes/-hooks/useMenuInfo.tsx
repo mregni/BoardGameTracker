@@ -1,6 +1,6 @@
 import { useQueries } from '@tanstack/react-query';
 
-import { getVersionInfo } from '@/services/queries/settings';
+import { getSettings, getVersionInfo } from '@/services/queries/settings';
 import { getCounts } from '@/services/queries/count';
 import { MenuItem } from '@/models';
 import UsersIcon from '@/assets/icons/users.svg?react';
@@ -29,13 +29,17 @@ export const menuItems: MenuItem[] = [
 ];
 
 export const useMenuInfo = () => {
-  const [versionInfoQuery, countsQuery] = useQueries({
-    queries: [getVersionInfo(), getCounts()],
+  const [versionInfoQuery, countsQuery, settingsQuery] = useQueries({
+    queries: [getVersionInfo(), getCounts(), getSettings()],
+  });
+
+  const filteredMenuItems = menuItems.filter((item) => {
+    return item.path !== '/shames' || settingsQuery.data?.shelfOfShameEnabled;
   });
 
   return {
     versionInfo: versionInfoQuery.data,
     counts: countsQuery.data,
-    menuItems,
+    menuItems: filteredMenuItems,
   };
 };

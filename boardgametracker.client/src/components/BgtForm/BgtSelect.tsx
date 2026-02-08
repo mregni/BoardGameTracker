@@ -36,7 +36,7 @@ const BgtSelectComponent = (props: Props) => {
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      if (item.value === currentValue) {
+      if (item.value.toString() === currentValue) {
         return true;
       }
       return item.label.toLowerCase().includes(searchTerm.toLowerCase());
@@ -139,7 +139,7 @@ const BgtSelectComponent = (props: Props) => {
                   <Select.Item
                     value={item.value.toString()}
                     key={item.value}
-                    className="text-[13px] leading-none rounded-lg h-[45px] flex items-center pr-[35px] pl-[25px] relative select-none data-[disabled]:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
+                    className="text-[13px] leading-none rounded-lg h-[45px] flex items-center pr-[35px] pl-[25px] relative select-none data-disabled:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
                   >
                     <Select.ItemText>
                       <div className="flex flex-row justify-start items-center gap-2">

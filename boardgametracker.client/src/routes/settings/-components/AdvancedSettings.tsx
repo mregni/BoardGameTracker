@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cx } from 'class-variance-authority';
 
 import { SettingsToggle } from './SettingsToggle';
@@ -17,20 +18,33 @@ interface Props {
 }
 
 const VERSION_TRACKS = [
-  { id: 'stable', label: 'Stable', description: 'Recommended for production use.' },
-  { id: 'beta', label: 'Beta', description: 'Early access to new features.' },
+  {
+    id: 'stable',
+    label: 'settings.advanced.version-track.stable.label',
+    description: 'settings.advanced.version-track.stable.description',
+  },
+  {
+    id: 'beta',
+    label: 'settings.advanced.version-track.beta.label',
+    description: 'settings.advanced.version-track.beta.description',
+  },
 ];
 
 export const AdvancedSettings = ({ form, disabled = false }: Props) => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-6">
-      <SettingsSection title="Update Check Settings" description="Configure how the application checks for updates.">
+      <SettingsSection
+        title={t('settings.advanced.updates.title')}
+        description={t('settings.advanced.updates.description')}
+      >
         <BgtFormField form={form} name="updateCheckEnabled" schema={SettingsSchema.shape.updateCheckEnabled}>
           {(field) => (
             <SettingsToggle
               field={field}
-              label="Enable Update Check"
-              description="Automatically check for new versions when the app starts"
+              label={t('settings.advanced.updates.enabled.label')}
+              description={t('settings.advanced.updates.enabled.description')}
               disabled={disabled}
             />
           )}
@@ -38,9 +52,9 @@ export const AdvancedSettings = ({ form, disabled = false }: Props) => {
 
         <BgtFormField form={form} name="versionTrack" schema={SettingsSchema.shape.versionTrack}>
           {(field) => (
-            <div>
-              <BgtText size="2" weight="medium" color="white" className="mb-2">
-                Version Track
+            <div className="flex flex-col gap-1">
+              <BgtText size="2" weight="medium" color="white">
+                {t('settings.advanced.version-track.label')}
               </BgtText>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 {VERSION_TRACKS.map((track) => (
@@ -63,11 +77,11 @@ export const AdvancedSettings = ({ form, disabled = false }: Props) => {
                           field.state.value === track.id ? 'text-white' : 'text-gray-300'
                         )}
                       >
-                        {track.label}
+                        {t(track.label)}
                       </span>
                     </div>
                     <BgtText size="1" color="white" opacity={50}>
-                      {track.description}
+                      {t(track.description)}
                     </BgtText>
                   </button>
                 ))}
@@ -77,13 +91,16 @@ export const AdvancedSettings = ({ form, disabled = false }: Props) => {
         </BgtFormField>
       </SettingsSection>
 
-      <SettingsSection title="Statistics" description="Configure statistics collection.">
+      <SettingsSection
+        title={t('settings.advanced.statistics.title')}
+        description={t('settings.advanced.statistics.description')}
+      >
         <BgtFormField form={form} name="statistics" schema={SettingsSchema.shape.statistics}>
           {(field) => (
             <SettingsToggle
               field={field}
-              label="Enable Statistics"
-              description="Collect anonymous usage statistics to help improve the app"
+              label={t('settings.advanced.statistics.enabled.label')}
+              description={t('settings.advanced.statistics.enabled.description')}
               disabled={disabled}
             />
           )}
@@ -93,11 +110,11 @@ export const AdvancedSettings = ({ form, disabled = false }: Props) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <BgtButton onClick={() => window.open('https://github.com/mregni/BoardGameTracker/issues')} variant="primary">
           <GitHubIcon className="size-4" />
-          Report a Bug
+          {t('settings.advanced.bug')}
         </BgtButton>
         <BgtButton onClick={() => window.open('https://crowdin.com/project/boardgametracker')} variant="primary">
           <CrowdinIcon className="size-4" />
-          Help Translate
+          {t('settings.advanced.translate')}
         </BgtButton>
       </div>
     </div>

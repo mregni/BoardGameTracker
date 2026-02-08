@@ -48,7 +48,7 @@ export const ShameGame = ({ shame, dateFormat, currency }: Props) => {
               } as React.CSSProperties
             }
             className={cx(
-              'w-full overflow-hidden aspect-square z-10 flex flex-col justify-center relative',
+              'w-full overflow-hidden aspect-square z-10 flex flex-col justify-center',
               'bg-cover bg-no-repeat bg-center object-cover group-hover:scale-105 transition-transform duration-200',
               shame.image && 'bg-(image:--image-url)',
               !shame.image && 'bg-(--fallback-color)'
@@ -59,11 +59,11 @@ export const ShameGame = ({ shame, dateFormat, currency }: Props) => {
                 {shame.title[0]}
               </span>
             )}
-            <div className="absolute top-2 right-2 bg-red-500/90 backdrop-blur-sm px-2 py-1 rounded-lg">
-              <p className="text-xs font-bold text-white">
-                {daysLastSession > 0 ? t('common.day', { count: daysLastSession }) : t('common.never')}
-              </p>
-            </div>
+          </div>
+          <div className="absolute top-2 right-2 bg-red-500/90 backdrop-blur-sm px-2 py-1 rounded-lg z-20">
+            <p className="text-xs font-bold text-white">
+              {daysLastSession > 0 ? t('common.day', { count: daysLastSession }) : t('common.never')}
+            </p>
           </div>
         </div>
         <div className="flex flex-col items-start justify-start pb-2 px-2">

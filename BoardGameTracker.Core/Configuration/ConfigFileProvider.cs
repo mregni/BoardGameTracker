@@ -46,7 +46,7 @@ public class ConfigFileProvider : IConfigFileProvider
         set => SetValue("SHELF_OF_SHAME_ENABLED", value);
     }
 
-    public int ShelfOfShameMonths
+    public int ShelfOfShameMonthsLimit
     {
         get => GetValueInt("SHELF_OF_SHAME_MONTHS", 6);
         set => SetValue("SHELF_OF_SHAME_MONTHS", value);
