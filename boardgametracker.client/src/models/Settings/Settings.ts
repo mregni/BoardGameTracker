@@ -10,6 +10,7 @@ export interface Settings {
   versionTrack: string;
   shelfOfShameEnabled: boolean;
   shelfOfShameMonthsLimit: number;
+  publicUrl: string;
 }
 
 export const SettingsSchema = z.object({

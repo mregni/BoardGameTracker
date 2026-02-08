@@ -1,6 +1,6 @@
 export enum SessionFlag {
-  LongestGame = 0,
-  ShortestGame = 1,
-  HighestScore = 2,
-  LowestScore = 3,
+  LongestGame = 'longestGame',
+  ShortestGame = 'shortestGame',
+  HighestScore = 'highestScore',
+  LowestScore = 'lowestScore',
 }

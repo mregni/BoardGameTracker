@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import i18n from '@/utils/i18n';
 import { toRelative } from '@/utils/dateUtils';
 import { useSettingsData } from '@/routes/settings/-hooks/useSettingsData';
@@ -46,7 +45,6 @@ const GameCardItem = (props: ItemProps) => {
         onClick={() => navigate({ to: `/players/${game.id}` })}
         image={game.image}
         title={game.title}
-        color={StringToHsl(game.title)}
         size="large"
       />
       <div className="flex-1">

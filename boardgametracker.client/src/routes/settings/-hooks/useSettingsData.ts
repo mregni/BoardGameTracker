@@ -17,9 +17,9 @@ export const useSettingsData = ({ onSaveSuccess, onSaveError }: Props) => {
     queries: [getSettings(), getLanguages(), getEnvironment()],
   });
 
-  const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
-  const languages = useMemo(() => languageQuery.data ?? [], [languageQuery.data]);
-  const environment = useMemo(() => environmentQuery.data, [environmentQuery.data]);
+  const settings = settingsQuery.data;
+  const languages = languageQuery.data;
+  const environment = environmentQuery.data;
 
   const saveSettingsMutation = useMutation({
     mutationFn: updateSettingsCall,

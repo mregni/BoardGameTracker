@@ -61,7 +61,7 @@ export interface XValue {
 }
 
 export enum Trend {
-  Up = 0,
-  Down = 1,
-  Equal = 2,
+  Up = 'up',
+  Down = 'down',
+  Equal = 'equal',
 }

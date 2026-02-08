@@ -21,10 +21,6 @@ export const getItemStateTranslationKey = (value: GameState, isLoaned: boolean):
   }
 };
 
-export const getItemStateTranslationKeyByString = (value: string): string => {
-  return getItemStateTranslationKey(Number(value), false);
-};
-
 export const getColorFromGameState = (
   state: GameState,
   isLoaned: boolean

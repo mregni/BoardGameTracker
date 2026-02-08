@@ -153,7 +153,7 @@ public class SettingsControllerTests
         _configFileProviderMock.SetupSet(x => x.UILanguage = model.UiLanguage).Verifiable();
 
         _updateServiceMock
-            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled))
+            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -171,7 +171,7 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifySet(x => x.UILanguage = model.UiLanguage, Times.Once);
         _configFileProviderMock.VerifySet(x => x.ShelfOfShameEnabled = model.ShelfOfShameEnabled, Times.Once);
         _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonthsLimit = model.ShelfOfShameMonthsLimit, Times.Once);
-        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled), Times.Once);
+        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -194,7 +194,7 @@ public class SettingsControllerTests
         _configFileProviderMock.SetupSet(x => x.UILanguage = model.UiLanguage).Verifiable();
 
         _updateServiceMock
-            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled))
+            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -212,7 +212,7 @@ public class SettingsControllerTests
         _configFileProviderMock.VerifySet(x => x.UILanguage = model.UiLanguage, Times.Once);
         _configFileProviderMock.VerifySet(x => x.ShelfOfShameEnabled = model.ShelfOfShameEnabled, Times.Once);
         _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonthsLimit = model.ShelfOfShameMonthsLimit, Times.Once);
-        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled), Times.Once);
+        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
         VerifyNoOtherCalls();
     }
 

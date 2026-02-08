@@ -2,11 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import { GameState } from '../models';
 
-import {
-  getItemStateTranslationKey,
-  getItemStateTranslationKeyByString,
-  getColorFromGameState,
-} from './ItemStateUtils';
+import { getItemStateTranslationKey, getColorFromGameState } from './ItemStateUtils';
 
 describe('ItemStateUtils', () => {
   describe('getItemStateTranslationKey', () => {
@@ -47,21 +43,6 @@ describe('ItemStateUtils', () => {
     });
   });
 
-  describe('getItemStateTranslationKeyByString', () => {
-    it('should convert string to GameState and return translation key', () => {
-      expect(getItemStateTranslationKeyByString('0')).toBe('game.state.wanted');
-      expect(getItemStateTranslationKeyByString('1')).toBe('game.state.owned');
-      expect(getItemStateTranslationKeyByString('2')).toBe('game.state.previously-owned');
-      expect(getItemStateTranslationKeyByString('3')).toBe('game.state.not-owned');
-      expect(getItemStateTranslationKeyByString('4')).toBe('game.state.for-trade');
-    });
-
-    it('should return empty string for invalid string values', () => {
-      expect(getItemStateTranslationKeyByString('invalid')).toBe('');
-      expect(getItemStateTranslationKeyByString('999')).toBe('');
-    });
-  });
-
   describe('getColorFromGameState', () => {
     describe('when item is loaned', () => {
       it('should return orange regardless of game state', () => {
@@ -95,7 +76,7 @@ describe('ItemStateUtils', () => {
       });
 
       it('should return orange for unknown state', () => {
-        expect(getColorFromGameState(999 as GameState, false)).toBe('orange');
+        expect(getColorFromGameState('boe' as GameState, false)).toBe('orange');
       });
     });
 

@@ -1,7 +1,7 @@
 import { getSessionCall } from '../sessionService';
 
-import { createEntityQueryWithStringId } from './queryFactory';
+import { createEntityQuery } from './queryFactory';
 
 import { QUERY_KEYS } from '@/models';
 
-export const getSession = createEntityQueryWithStringId(QUERY_KEYS.sessions, getSessionCall);
+export const getSession = createEntityQuery(QUERY_KEYS.sessions, getSessionCall);

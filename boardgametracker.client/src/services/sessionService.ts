@@ -9,11 +9,11 @@ export const addSessionCall = (play: CreateSession): Promise<Session> => {
   });
 };
 
-export const deleteSessionCall = (id: string): Promise<void> => {
+export const deleteSessionCall = (id: number): Promise<void> => {
   return axiosInstance.delete(`${domain}/${id}`);
 };
 
-export const getSessionCall = (id: string): Promise<Session> => {
+export const getSessionCall = (id: number): Promise<Session> => {
   return axiosInstance.get<Session>(`${domain}/${id}`).then((response) => {
     return response.data;
   });

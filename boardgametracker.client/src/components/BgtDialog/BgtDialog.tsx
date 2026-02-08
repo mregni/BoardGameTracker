@@ -1,24 +1,40 @@
-import { ComponentPropsWithoutRef, ReactNode } from 'react';
+import { ComponentPropsWithoutRef, createContext, ReactNode, useContext } from 'react';
 import { cx } from 'class-variance-authority';
 import { Dialog } from '@radix-ui/themes';
+
+import Cross from '@/assets/icons/x.svg?react';
+
+const DialogCloseContext = createContext<(() => void) | undefined>(undefined);
 
 interface BgtDialogProps {
   open: boolean;
   children: ReactNode;
+  onClose?: () => void;
 }
 
 export const BgtDialog = (props: BgtDialogProps) => {
-  const { open, children } = props;
+  const { open, children, onClose } = props;
 
-  return <Dialog.Root open={open}>{children}</Dialog.Root>;
+  return (
+    <Dialog.Root open={open}>
+      <DialogCloseContext.Provider value={onClose}>{children}</DialogCloseContext.Provider>
+    </Dialog.Root>
+  );
 };
 
-type BgtDialogContentProps = ComponentPropsWithoutRef<typeof Dialog.Content>;
-
-export const BgtDialogContent = (props: BgtDialogContentProps) => {
+export const BgtDialogContent = (props: ComponentPropsWithoutRef<typeof Dialog.Content>) => {
   const { className, children, ...rest } = props;
+  const onClose = useContext(DialogCloseContext);
   return (
-    <Dialog.Content className={cx('bg-dialog!', className)} {...rest}>
+    <Dialog.Content className={cx('bg-dialog! relative', className)} {...rest}>
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute top-1 right-1 p-1 hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+        >
+          <Cross className="size-5" />
+        </button>
+      )}
       {children}
     </Dialog.Content>
   );

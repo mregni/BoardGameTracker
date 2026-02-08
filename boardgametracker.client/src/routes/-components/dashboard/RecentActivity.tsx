@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { toRelative } from '@/utils/dateUtils';
 import { RecentActivity } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
@@ -45,7 +44,6 @@ const ActivityItem = ({ activity }: ItemProps) => {
             onClick={() => navigate({ to: `/games/${activity.gameId}` })}
             image={activity.gameImage}
             title={activity.gameTitle}
-            color={StringToHsl(activity.gameTitle)}
             size="large"
           />
         </div>

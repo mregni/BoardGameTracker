@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { usePlayerById } from '@/routes/-hooks/usePlayerById';
 import { DashboardTopPlayer } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
@@ -45,7 +44,6 @@ const TopPlayerCardItem = (props: ItemProps) => {
         onClick={() => navigate({ to: `/players/${player.id}` })}
         image={playerObj?.image}
         title={playerObj?.name}
-        color={StringToHsl(playerObj?.name)}
         size="large"
       />
       <div className="flex-1">

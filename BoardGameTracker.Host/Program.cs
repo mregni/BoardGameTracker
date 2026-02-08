@@ -248,4 +248,5 @@ static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)
     // Ensure all DateTime values are handled as UTC
     serializerSettings.Converters.Add(new UtcDateTimeConverter());
     serializerSettings.Converters.Add(new UtcNullableDateTimeConverter());
+    serializerSettings.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
 }

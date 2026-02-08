@@ -17,7 +17,7 @@ export const CreateGameSchema = z.object({
       message: 'game.added-date.required',
     }),
   }),
-  state: z.preprocess((value) => Number(value), z.nativeEnum(GameState)),
+  state: z.nativeEnum(GameState),
   yearPublished: z.coerce
     .number({
       required_error: 'game.new.manual.year.required',

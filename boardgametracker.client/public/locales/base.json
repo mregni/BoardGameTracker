@@ -3,11 +3,66 @@
     "new": "New version available",
     "version": "Version"
   },
+  "game-nights": {
+    "delete": {
+      "title": "Delete game night",
+      "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
+    },
+    "title": "Game Nights Planner",
+    "create": {
+      "button": "Create Game Night",
+      "title": "Create new Game Night",
+      "description": "Fill out the form to create a new game night event.",
+
+      "save": "Create Game Night"
+    },
+    "upcoming": "Upcoming game nights",
+    "past": "Past game nights",
+    "card": {
+      "hosted-by": "Hosted by {{host}}",
+      "suggested-games": "Suggested games",
+      "rsvp-link": "RSVP Link",
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "copy-link": "Copy RSVP link",
+      "copied": "Copied to clipboard",
+      "manage-rsvps": "Manage RSVPs"
+    },
+    "form": {
+      "title": {
+        "label": "Event title",
+        "placeholder": "Enter game night title"
+      },
+      "start": {
+        "label": "Date"
+      },
+      "location": {
+        "label": "Location",
+        "placeholder": "Enter location"
+      },
+      "host": {
+        "label": "Host",
+        "placeholder": "Enter host player"
+      },
+      "invited-players": {
+        "label": "Invited players",
+        "description": "Select players to invite to this game night"
+      },
+      "suggested-games": {
+        "label": "Suggested games",
+        "description": "Select games that you suggest to play during this game night"
+      },
+      "notes": {
+        "label": "Notes"
+      }
+    }
+  },
   "common": {
     "more": "More",
     "save": "Save",
     "actions": "Actions",
     "start": "Start",
+    "all": "All",
     "cancel": "Cancel",
     "dashboard": "Dashboard",
     "new-session": "Add session",
@@ -16,6 +71,10 @@
     "items_other": "{{count}} items",
     "minutes_one": "minute",
     "never": "never",
+    "accepted": "Accepted",
+    "game-nights": "Game nights",
+    "declined": "Declined",
+    "pending": "Pending",
     "minutes_other": "minutes",
     "locations": "Locations",
     "wins_other": "{{count}} wins",
@@ -47,6 +106,7 @@
     "weight": "Weight",
     "price": "Price",
     "age": "Age",
+    "none": "None",
     "minutes-abbreviation": "min",
     "edit": "edit",
     "close": "close",

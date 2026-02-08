@@ -11,11 +11,22 @@ public static class Constants
         public const string Publisher = "boardgamepublisher";
         public const string Expansion = "boardgameexpansion";
     }
-    
+
     public static class Game
     {
         public const int ChartHistoryDays = 200;
         public const int TopPlayersCount = 5;
     }
 
+    public static class UpdateConfig
+    {
+        public const string Prefix = "update_";
+        public const string Track = "update_track";
+        public const string CheckEnabled = "update_check_enabled";
+        public const string CheckIntervalHours = "update_check_interval_hours";
+        public const string CheckError = "update_check_error";
+        public const string CheckLastRun = "update_check_last_run";
+        public const string AvailableVersion = "update_available_version";
+        public const string Available = "update_available";
+    }
 }

@@ -23,6 +23,7 @@ export const menuItems: MenuItem[] = [
   { menuLabel: 'common.players', path: '/players', icon: UsersIcon, mobileVisible: true },
   { menuLabel: 'common.shame', path: '/shames', icon: Game, mobileVisible: false },
   { menuLabel: 'common.compare', path: '/compare', icon: TrendUp, mobileVisible: false },
+  { menuLabel: 'common.game-nights', path: '/game-nights', icon: UsersIcon, mobileVisible: false },
   { menuLabel: 'common.loans', path: '/loans', icon: LeftRightArrowIcon, mobileVisible: false },
   { menuLabel: 'common.locations', path: '/locations', icon: MapPinIcon, mobileVisible: false },
   { menuLabel: 'common.settings', path: '/settings', icon: CogIcon, mobileVisible: false },

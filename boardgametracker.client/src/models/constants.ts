@@ -20,4 +20,6 @@ export const QUERY_KEYS = {
   badges: 'badges',
   versionInfo: 'versionInfo',
   shames: 'shames',
+  gameNights: 'gameNights',
+  gameNightStatistics: 'gameNightStatistics',
 };

@@ -2,6 +2,7 @@ using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static BoardGameTracker.Common.Constants;
 
 namespace BoardGameTracker.Core.Updates;
 
@@ -54,9 +55,9 @@ public class UpdateCheckBackgroundService : BackgroundService
         var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
 
         var repository = scope.ServiceProvider.GetRequiredService<IUpdateRepository>();
-        var enabled = await repository.GetConfigValueAsync("update_check_enabled");
+        var enabled = await repository.GetConfigValueAsync(UpdateConfig.CheckEnabled, true);
 
-        if (enabled == "false")
+        if (!enabled)
         {
             _logger.LogInformation("Update checks are disabled");
             return;
@@ -70,14 +71,14 @@ public class UpdateCheckBackgroundService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IUpdateRepository>();
 
-        var intervalStr = await repository.GetConfigValueAsync("update_check_interval_hours");
+        var hours = await repository.GetConfigValueAsync<int>(UpdateConfig.CheckIntervalHours);
 
-        if (int.TryParse(intervalStr, out var hours) && hours > 0)
+        if (hours > 0)
         {
             return TimeSpan.FromHours(hours);
         }
 
-        await repository.SetConfigValueAsync("update_check_interval_hours", "24");
+        await repository.SetConfigValueAsync(UpdateConfig.CheckIntervalHours, 24);
         return _defaultInterval;
     }
 }

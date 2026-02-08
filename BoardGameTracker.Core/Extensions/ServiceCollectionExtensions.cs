@@ -30,6 +30,8 @@ using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using BoardGameTracker.Core.Common;
+using BoardGameTracker.Core.GameNights;
+using BoardGameTracker.Core.GameNights.Interfaces;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -58,6 +60,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IBadgeService, BadgeService>();
         serviceCollection.AddScoped<ICompareService, CompareService>();
         serviceCollection.AddScoped<IUpdateService, UpdateService>();
+        serviceCollection.AddScoped<IGameNightService, GameNightService>();
 
         serviceCollection.AddScoped<IGameRepository, GameRepository>();
         serviceCollection.AddScoped<IGameSessionRepository, GameSessionRepository>();
@@ -71,6 +74,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
         serviceCollection.AddScoped<ICompareRepository, CompareRepository>();
         serviceCollection.AddScoped<IUpdateRepository, UpdateRepository>();
+        serviceCollection.AddScoped<IGameNightRepository, GameNightRepository>();
 
         serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
 

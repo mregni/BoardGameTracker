@@ -40,3 +40,5 @@ export * from './Session/CreateSession';
 export * from './Settings/Settings';
 export * from './Settings/Language';
 export * from './Settings/Environment';
+
+export * from './GameNight/GameNight';

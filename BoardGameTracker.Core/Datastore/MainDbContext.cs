@@ -24,6 +24,7 @@ public class MainDbContext : DbContext
     public DbSet<PlayerSession> PlayerSessions { get; set; }
     public DbSet<Badge> Badges { get; set; }
     public DbSet<Loan> Loans { get; set; }
+    public DbSet<GameNight> GameNights { get; set; }
 
     public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
     {
@@ -38,6 +39,7 @@ public class MainDbContext : DbContext
         BuildPlayer(builder);
         BuildBadges(builder);
         BuildLoans(builder);
+        BuildGameNights(builder);
 
         SeedDatabase(builder);
     }
@@ -126,6 +128,23 @@ public class MainDbContext : DbContext
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
     }
+    
+    private static void BuildGameNights(ModelBuilder builder)
+    {
+        builder.Entity<GameNight>()
+            .HasMany(x => x.SuggestedGames)
+            .WithMany();
+        
+        builder.Entity<GameNight>()
+            .HasMany(x => x.InvitedPlayers)
+            .WithOne(x => x.GameNight)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.Entity<GameNightRsvp>()
+            .Property(x => x.State)
+            .HasConversion<string>();
+    }
 
     private static void BuildGame(ModelBuilder builder)
     {
@@ -200,6 +219,12 @@ public class MainDbContext : DbContext
         builder.Entity<Player>()
             .HasMany(x => x.Badges)
             .WithMany(x => x.Players);
+        
+        builder.Entity<Player>()
+            .HasMany(x => x.GameNightRsvps)
+            .WithOne(x => x.Player)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     private static void BuildBadges(ModelBuilder builder)

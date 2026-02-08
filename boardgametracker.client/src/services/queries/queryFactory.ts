@@ -52,11 +52,3 @@ export const createNestedQueryWithKeys =
       queryKey: [parentKey, id, childKey, ...additionalKeys],
       queryFn: () => fetchFn(id, params),
     });
-
-export const createEntityQueryWithStringId =
-  <T>(key: string, fetchFn: (id: string) => Promise<T>) =>
-  (id: string) =>
-    queryOptions({
-      queryKey: [key, id],
-      queryFn: () => fetchFn(id),
-    });

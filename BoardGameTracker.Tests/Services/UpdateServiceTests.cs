@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Updates;
@@ -134,8 +135,11 @@ public class UpdateServiceTests
     {
         // Arrange
         _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync("true");
+            .Setup(x => x.GetConfigValueAsync("update_check_enabled", true))
+            .ReturnsAsync(true);
+        _updateRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<VersionTrack>("update_track", It.IsAny<VersionTrack>()))
+            .ReturnsAsync(VersionTrack.Stable);
 
         // Act
         var result = await _updateService.GetUpdateSettingsAsync();
@@ -143,6 +147,7 @@ public class UpdateServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Enabled.Should().BeTrue();
+        result.VersionTrack.Should().Be(VersionTrack.Stable);
     }
 
     [Fact]
@@ -150,14 +155,17 @@ public class UpdateServiceTests
     {
         // Arrange
         _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync((string?)null);
+            .Setup(x => x.GetConfigValueAsync("update_check_enabled", true))
+            .ReturnsAsync(true);
+        _updateRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<VersionTrack>("update_track", It.IsAny<VersionTrack>()))
+            .ReturnsAsync(VersionTrack.Stable);
 
         // Act
         var result = await _updateService.GetUpdateSettingsAsync();
 
         // Assert
-        result.Enabled.Should().BeTrue(); // Default is enabled when not "false"
+        result.Enabled.Should().BeTrue(); // Default is enabled
     }
 
     [Fact]
@@ -165,8 +173,11 @@ public class UpdateServiceTests
     {
         // Arrange
         _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync("false");
+            .Setup(x => x.GetConfigValueAsync("update_check_enabled", true))
+            .ReturnsAsync(false);
+        _updateRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<VersionTrack>("update_track", It.IsAny<VersionTrack>()))
+            .ReturnsAsync(VersionTrack.Stable);
 
         // Act
         var result = await _updateService.GetUpdateSettingsAsync();
@@ -184,14 +195,18 @@ public class UpdateServiceTests
     {
         // Arrange
         _updateRepositoryMock
-            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<bool>()))
+            .Returns(Task.CompletedTask);
+        _updateRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<VersionTrack>()))
             .Returns(Task.CompletedTask);
 
         // Act
-        await _updateService.UpdateSettingsAsync(true);
+        await _updateService.UpdateSettingsAsync(true, VersionTrack.Stable);
 
         // Assert
-        _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", "true"), Times.Once);
+        _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", true), Times.Once);
+        _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_track", VersionTrack.Stable), Times.Once);
     }
 
     [Fact]
@@ -199,14 +214,18 @@ public class UpdateServiceTests
     {
         // Arrange
         _updateRepositoryMock
-            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<bool>()))
+            .Returns(Task.CompletedTask);
+        _updateRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<VersionTrack>()))
             .Returns(Task.CompletedTask);
 
         // Act
-        await _updateService.UpdateSettingsAsync(false);
+        await _updateService.UpdateSettingsAsync(false, VersionTrack.Beta);
 
         // Assert
-        _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", "false"), Times.Once);
+        _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", false), Times.Once);
+        _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_track", VersionTrack.Beta), Times.Once);
     }
 
     #endregion

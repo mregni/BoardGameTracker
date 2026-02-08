@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { MostPlayedGame } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
 import { BgtCard } from '@/components/BgtCard/BgtCard';
@@ -43,7 +42,6 @@ const MostPlayedGameItem = ({ game }: MostPlayedGameItemProps) => {
             onClick={() => navigate({ to: `/games/${game.id}` })}
             image={game.image}
             title={game.title}
-            color={StringToHsl(game.title)}
             size="large"
           />
         </div>

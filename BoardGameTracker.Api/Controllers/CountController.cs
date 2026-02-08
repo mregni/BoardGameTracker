@@ -1,4 +1,5 @@
 ﻿using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Core.GameNights.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
@@ -15,13 +16,15 @@ public class CountController : ControllerBase
     private readonly IPlayerService _playerService;
     private readonly ILocationService _locationService;
     private readonly ILoanService _loanService;
+    private readonly IGameNightService _gameNightService;
 
-    public CountController(ILocationService locationService, IPlayerService playerService, IGameService gameService, ILoanService loanService)
+    public CountController(ILocationService locationService, IPlayerService playerService, IGameService gameService, ILoanService loanService, IGameNightService gameNightService)
     {
         _locationService = locationService;
         _playerService = playerService;
         _gameService = gameService;
         _loanService = loanService;
+        _gameNightService = gameNightService;
     }
 
     [HttpGet]
@@ -34,6 +37,7 @@ public class CountController : ControllerBase
             new("locations", await _locationService.CountAsync()),
             new("shames", await _gameService.CountShelfOfShameGames()),
             new("loans", await _loanService.CountActiveLoans()),
+            new("game-nights", await _gameNightService.CountFutureGameNights()),
         };
 
         return Ok(counts);

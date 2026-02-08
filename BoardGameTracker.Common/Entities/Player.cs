@@ -17,6 +17,7 @@ public class Player : HasId
     public ICollection<PlayerSession> PlayerSessions { get; private set; }
     public ICollection<Badge> Badges { get; private set; }
     public ICollection<Loan> Loans { get; private set; }
+    public ICollection<GameNightRsvp> GameNightRsvps { get; set; }
 
     public Player(string name, string? image = null)
     {
