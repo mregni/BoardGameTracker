@@ -51,7 +51,7 @@ export const BgtImageCard = (props: Props) => {
               </BgtText>
             )}
             <BgtText size="4" className="line-clamp-1 uppercase w-full" weight="medium">
-              {title}
+              {title} {state}
             </BgtText>
           </div>
         </div>

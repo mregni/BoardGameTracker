@@ -23,7 +23,6 @@ export const BgtPlayerAvatar = (props: AvatarProps) => {
       title={`${player.name}${game.hasScoring ? ` (${playerSession.score})` : ''}`}
       image={player.image}
       onClick={() => navigate({ to: `/players/${player.id}` })}
-      color={StringToHsl(player.name)}
     />
   );
 };

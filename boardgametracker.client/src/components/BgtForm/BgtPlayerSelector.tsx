@@ -7,7 +7,6 @@ import { BgtIconButton } from '../BgtIconButton/BgtIconButton';
 import BgtButton from '../BgtButton/BgtButton';
 import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { usePlayerById } from '@/routes/-hooks/usePlayerById';
 import { CreateSessionPlayer, CreatePlayerSessionNoScoring } from '@/models';
 import TrophyIcon from '@/assets/icons/trophy.svg?react';
@@ -66,7 +65,7 @@ export const BgtPlayerSelector = (props: Props) => {
             className="flex flex-row gap-3 justify-between w-full bg-background font- text-white px-4 py-3 rounded-lg border border-primary/30 focus:border-primary focus:outline-none"
           >
             <div className="flex items-center gap-3">
-              <BgtAvatar size="large" title={playerName} image={player?.image} color={StringToHsl(playerName)} />
+              <BgtAvatar size="large" title={playerName} image={player?.image} />
               <BgtText>{playerName}</BgtText>
               {x.won || x.firstPlay || 'score' in x ? <BgtText> - </BgtText> : ''}
               {'score' in x && x.score !== undefined && (

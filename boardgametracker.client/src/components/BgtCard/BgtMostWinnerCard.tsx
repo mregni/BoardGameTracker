@@ -1,6 +1,5 @@
 import { BgtText } from '../BgtText/BgtText';
 import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
-import { StringToHsl } from '../../utils/stringUtils';
 
 interface Props {
   image: string | undefined | null;
@@ -21,7 +20,7 @@ export const BgtMostWinnerCard = (props: Props) => {
   return (
     <div className="flex flex-row justify-between items-center bg-linear-to-r from-[#9A02FB1A] to-[#09FFC41A] rounded-lg p-3">
       <div className="flex flex-row gap-2">
-        <BgtAvatar image={image} title={name} color={StringToHsl(name)} size="large" onClick={onClick} />
+        <BgtAvatar image={image} title={name} size="large" onClick={onClick} />
         <div className="flex flex-col justify-center gap-0">
           <BgtText weight="medium" size="3" className="uppercase">
             {name}

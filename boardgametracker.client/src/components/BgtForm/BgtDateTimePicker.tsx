@@ -64,7 +64,7 @@ export const BgtDateTimePicker = (props: Props) => {
       </div>
       <div className="flex gap-2">
         <div className="flex-1">
-          <BgtDatePicker field={dateField as AnyFieldApi} label="" disabled={disabled} />
+          <BgtDatePicker field={dateField as AnyFieldApi} label="" placeholder="" disabled={disabled} />
         </div>
         <input
           type="time"

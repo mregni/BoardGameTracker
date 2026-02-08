@@ -5,7 +5,6 @@ import * as Select from '@radix-ui/react-select';
 
 import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { BgtSelectImageItem, BgtSelectItem } from '@/models';
 import SearchIcon from '@/assets/icons/magnifying-glass.svg?react';
 import CheckIcon from '@/assets/icons/check.svg?react';
@@ -75,7 +74,10 @@ export const BgtSimpleSelect = (props: Props) => {
       {label && <div className="text-[15px] font-medium leading-[35px] uppercase">{label}</div>}
       <Select.Root
         disabled={disabled}
-        onValueChange={onValueChange}
+        onValueChange={(val) => {
+          const originalItem = items.find((item) => item.value.toString() === val);
+          onValueChange?.(originalItem ? originalItem.value : val);
+        }}
         value={currentValue}
         open={open}
         onOpenChange={(isOpen) => {
@@ -133,9 +135,7 @@ export const BgtSimpleSelect = (props: Props) => {
                   >
                     <Select.ItemText>
                       <div className="flex flex-row justify-start items-center gap-2">
-                        {isSelectImageItem(item) && (
-                          <BgtAvatar title={item.label} image={item.image} color={StringToHsl(item.label)} />
-                        )}
+                        {isSelectImageItem(item) && <BgtAvatar title={item.label} image={item.image} />}
                         {item.label}
                       </div>
                     </Select.ItemText>

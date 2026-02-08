@@ -1,6 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Text } from '@radix-ui/themes';
 
+import { StringToHsl } from '@/utils/stringUtils';
+
 const avatarVariants = cva('shadow-gray-800 shadow-md', {
   variants: {
     size: {
@@ -18,8 +20,8 @@ const avatarVariants = cva('shadow-gray-800 shadow-md', {
       false: '',
     },
     hasImage: {
-      true: '',
-      false: 'flex justify-center items-center',
+      true: 'cursor-pointer',
+      false: 'cursor-pointer flex justify-center items-center',
     },
   },
   defaultVariants: {
@@ -33,8 +35,8 @@ const avatarVariants = cva('shadow-gray-800 shadow-md', {
 export interface Props extends Omit<VariantProps<typeof avatarVariants>, 'interactive' | 'hasImage'> {
   title?: string;
   image: string | undefined | null;
-  color?: string;
   onClick?: () => void;
+  withTitle?: boolean;
 }
 
 const TEXT_SIZE_MAP: Record<string, '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'> = {
@@ -45,7 +47,7 @@ const TEXT_SIZE_MAP: Record<string, '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8
 };
 
 export const BgtAvatar = (props: Props) => {
-  const { title, image, color, onClick, size, disabled } = props;
+  const { title, image, onClick, size, disabled, withTitle = false } = props;
 
   if (!image && !title) return null;
 
@@ -59,15 +61,16 @@ export const BgtAvatar = (props: Props) => {
   const textSize = TEXT_SIZE_MAP[size || 'medium'];
 
   return (
-    <div className="group flex relative min-w-7">
-      {image && <img className={avatarClasses} onClick={onClick} src={image} alt={title || ''} />}
+    <div className="group flex relative min-w-7 flex-row- gap-2 items-center cursor-pointer" onClick={onClick}>
+      {image && <img className={avatarClasses} src={image} alt={title || ''} />}
       {!image && title && (
-        <div style={{ backgroundColor: color }} onClick={onClick} className={avatarClasses}>
+        <div style={{ backgroundColor: StringToHsl(title) }} className={avatarClasses}>
           <Text size={textSize} className="capitalize">
             {title[0]}
           </Text>
         </div>
       )}
+      {withTitle && title && <span className="cursor-pointer">{title}</span>}
     </div>
   );
 };

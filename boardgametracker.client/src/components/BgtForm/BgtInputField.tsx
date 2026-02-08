@@ -66,7 +66,7 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
     <FormFieldWrapper label={label} errors={field.state.meta.errors} className="w-full">
       <div
         className={cx(
-          'rounded-lg active:border-none flex flex-row gap-2 items-center text-[12px]',
+          'rounded-lg active:border-none flex flex-row gap-2 items-center text-[15px]',
           className,
           hasErrors && 'border border-error bg-error/5!'
         )}
@@ -82,7 +82,7 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
             field.handleChange(value);
           }}
           onBlur={field.handleBlur}
-          placeholder={placeholder.toUpperCase()}
+          placeholder={placeholder}
         />
         {suffixLabel && <BgtText color="white">{suffixLabel}</BgtText>}
       </div>

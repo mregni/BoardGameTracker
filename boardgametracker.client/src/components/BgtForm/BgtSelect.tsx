@@ -8,7 +8,6 @@ import { BgtAvatar } from '../BgtAvatar/BgtAvatar';
 
 import { FormFieldWrapper } from './FormFieldWrapper';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { BgtSelectImageItem, BgtSelectItem } from '@/models';
 import SearchIcon from '@/assets/icons/magnifying-glass.svg?react';
 import CheckIcon from '@/assets/icons/check.svg?react';
@@ -51,9 +50,10 @@ const BgtSelectComponent = (props: Props) => {
 
   const handleValueChange = useCallback(
     (value: string) => {
-      field.handleChange(value);
+      const originalItem = items.find((item) => item.value.toString() === value);
+      field.handleChange(originalItem ? originalItem.value : value);
     },
-    [field]
+    [field, items]
   );
 
   const handleOpenChange = useCallback((isOpen: boolean) => {
@@ -97,7 +97,7 @@ const BgtSelectComponent = (props: Props) => {
         <Select.Trigger
           className={cx(
             'w-full bg-background font- text-whiterounded-lg border border-primary/30 focus:border-primary focus:outline-none',
-            'px-4 py-2 h-[45px] shadow-none uppercase inline-flex justify-between items-center rounded-lg leading-none text-[12px]',
+            'px-4 py-2 h-[45px] shadow-none inline-flex justify-between items-center rounded-lg leading-none text-[15px]',
             hasErrors && 'border border-error bg-error-dark!'
           )}
         >
@@ -143,9 +143,7 @@ const BgtSelectComponent = (props: Props) => {
                   >
                     <Select.ItemText>
                       <div className="flex flex-row justify-start items-center gap-2">
-                        {isSelectImageItem(item) && (
-                          <BgtAvatar title={item.label} image={item.image} color={StringToHsl(item.label)} />
-                        )}
+                        {isSelectImageItem(item) && <BgtAvatar title={item.label} image={item.image} />}
                         {item.label}
                       </div>
                     </Select.ItemText>

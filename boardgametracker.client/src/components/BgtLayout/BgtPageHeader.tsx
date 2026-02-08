@@ -13,11 +13,11 @@ interface Props extends PropsWithChildren {
   actions?: Actions[];
   backAction?: () => void;
   backText?: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  icon?: ComponentType<SVGProps<SVGSVGElement>>;
 }
 
 export const BgtPageHeader = (props: Props) => {
-  const { header, actions = [], backAction, backText, children = null, icon: Icon } = props;
+  const { header, actions = [], backAction, backText, children = null, icon: Icon = null } = props;
   const { t } = useTranslation();
 
   return (

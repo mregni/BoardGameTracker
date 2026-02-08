@@ -8,7 +8,7 @@ const buttonVariants = cva(
       variant: {
         primary: 'bg-primary/60  hover:bg-primary/50 text-white',
         cancel: 'hover:bg-cancel/10 text-cancel border border-cancel/60',
-        error: 'bg-error hover:bg-error/80',
+        error: 'bg-error hover:bg-error/80 text-white',
         text: 'text-primary hover:text-primary/70',
       },
       size: {
