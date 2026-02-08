@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { memo, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { toDisplay } from '@/utils/dateUtils';
 import { Session, Game } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
@@ -37,7 +36,6 @@ const PlayerSessionCardItemComponent = (props: Props) => {
               onClick={() => navigate({ to: `/games/${game.id}` })}
               image={game.image}
               title={game.title}
-              color={StringToHsl(game.title)}
               size="large"
             />
           )}

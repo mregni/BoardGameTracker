@@ -37,7 +37,7 @@ function RouteComponent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { infoToast, errorToast } = useToasts();
-  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
 
   const { settings, game, sessions, deleteSession, players, isLoading } = useGameSessionsData({
     gameId,

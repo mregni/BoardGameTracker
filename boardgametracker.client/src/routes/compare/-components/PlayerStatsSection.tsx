@@ -6,7 +6,6 @@ import { CompareData, getStatConfigs, isWinningValue } from '../-utils/compareUt
 
 import { CompareCard } from './CompareCard';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { Player } from '@/models';
 import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
 import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
@@ -39,13 +38,7 @@ const PlayerStatsSectionComponent = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3 mb-4">
-        <BgtAvatar
-          onClick={handleAvatarClick}
-          image={player.image}
-          title={player.name}
-          color={StringToHsl(player.name)}
-          size="large"
-        />
+        <BgtAvatar onClick={handleAvatarClick} image={player.image} title={player.name} size="large" />
         <BgtHeading size="3" className="text-xl text-white">
           {t('compare.stats.player-stats', { player: player.name })}
         </BgtHeading>

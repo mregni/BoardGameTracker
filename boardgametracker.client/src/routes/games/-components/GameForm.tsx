@@ -83,11 +83,11 @@ export const GameForm = (props: Props) => {
                   <BgtImageSelector image={poster} setImage={setPoster} defaultImage={game?.image} />
                 </div>
                 <div className="grow">
-                  <GameFormBasicFields form={form} disabled={disabled} currency={settings?.currency} />
+                  <GameFormBasicFields form={form} disabled={disabled} />
                 </div>
               </div>
 
-              <GameFormPlayerFields form={form} disabled={disabled} />
+              <GameFormPlayerFields form={form} disabled={disabled} currency={settings?.currency} />
 
               <GameFormTimeFields form={form} disabled={disabled} />
 
@@ -99,7 +99,7 @@ export const GameForm = (props: Props) => {
                 </BgtFormField>
               )}
 
-              <div className="flex flex-row gap-2">
+              <div className="flex flex-row gap-2 mt-2">
                 <BgtButton
                   variant="cancel"
                   type="button"

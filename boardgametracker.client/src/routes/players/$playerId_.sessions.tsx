@@ -8,7 +8,6 @@ import { useToasts } from '../-hooks/useToasts';
 
 import { usePlayerSessionData } from './-hooks/usePlayerSessionData';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { playerIdParamSchema } from '@/utils/routeSchemas';
 import { getSettings } from '@/services/queries/settings';
 import { getPlayer, getPlayers, getPlayerSessions } from '@/services/queries/players';
@@ -40,7 +39,7 @@ function RouteComponent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { infoToast } = useToasts();
-  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
 
   const { sessions, deleteSession, settings, games, player, players, isLoading } = usePlayerSessionData({
     playerId,
@@ -70,7 +69,6 @@ function RouteComponent() {
             <div className="flex flex-row gap-2 items-center">
               <BgtAvatar
                 image={game?.image}
-                color={StringToHsl(game?.title)}
                 title={game?.title}
                 onClick={() => navigate({ to: `/games/${game?.id}` })}
               />

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import { getColorFromGameState, getItemStateTranslationKey } from '@/utils/ItemStateUtils';
+import { GameState } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
 import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
 import { BgtEditDeleteButtons } from '@/components/BgtButton/BgtEditDeleteButtons';
@@ -8,7 +9,7 @@ import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {
   gameTitle: string;
-  gameState: number;
+  gameState: GameState;
   isLoaned: boolean;
   onAddSession: () => void;
   onEdit: () => void;

@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { cx } from 'class-variance-authority';
 import { useNavigate } from '@tanstack/react-router';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { RoundDecimal } from '@/utils/numberUtils';
 import { usePlayerById } from '@/routes/-hooks/usePlayerById';
 import { TopPlayer, Trend } from '@/models';
@@ -47,7 +46,6 @@ const TopPlayerCardItem = (props: ItemProps) => {
         onClick={() => navigate({ to: `/players/${player.playerId}` })}
         image={playerById(player.playerId)?.image}
         title={playerById(player.playerId)?.name}
-        color={StringToHsl(playerById(player.playerId)?.name)}
         size="large"
       />
       <div className="flex-1">

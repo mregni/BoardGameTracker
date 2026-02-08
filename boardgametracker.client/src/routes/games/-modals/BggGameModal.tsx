@@ -5,7 +5,7 @@ import { useForm } from '@tanstack/react-form';
 
 import { useBggGameModal } from '../-hooks/useBggGameModal';
 
-import { getItemStateTranslationKeyByString } from '@/utils/ItemStateUtils';
+import { getItemStateTranslationKey } from '@/utils/ItemStateUtils';
 import { toInputDate } from '@/utils/dateUtils';
 import { useToasts } from '@/routes/-hooks/useToasts';
 import { BggSearchSchema, Game, GameState } from '@/models';
@@ -119,9 +119,10 @@ export const BggGameModal = (props: Props) => {
                   field={field}
                   disabled={isPending}
                   label={t('game.state.label')}
-                  items={Object.keys(GameState)
-                    .filter((value) => !Number.isNaN(Number(value)))
-                    .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: value }))}
+                  items={Object.values(GameState).map((value) => ({
+                    label: t(getItemStateTranslationKey(value, false)),
+                    value: value,
+                  }))}
                 />
               )}
             </BgtFormField>

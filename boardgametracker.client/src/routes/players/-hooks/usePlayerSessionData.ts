@@ -27,7 +27,7 @@ export const usePlayerSessionData = ({ playerId, onDeleteSuccess, onDeleteError 
 
   const isLoading = settingsQuery.isLoading || playerQuery.isLoading || gamesQuery.isLoading;
 
-  const deleteSession = async (id: string) => {
+  const deleteSession = async (id: number) => {
     try {
       await deleteSessionCall(id);
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.player, playerId, QUERY_KEYS.sessions] });

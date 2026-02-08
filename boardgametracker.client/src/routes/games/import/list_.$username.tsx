@@ -6,7 +6,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useList } from './-hooks/useList';
 import { ImportLoader } from './-components/ImportLoader';
 
-import { getItemStateTranslationKeyByString } from '@/utils/ItemStateUtils';
+import { getItemStateTranslationKey } from '@/utils/ItemStateUtils';
 import { getSettings } from '@/services/queries/settings';
 import { getBggCollection, getGames } from '@/services/queries/games';
 import { useToasts } from '@/routes/-hooks/useToasts';
@@ -143,12 +143,13 @@ function RouteComponent() {
         accessorKey: '5',
         cell: ({ row }) => (
           <BgtSimpleSelect
-            value={row.original.state.toString()}
-            onChange={(value) => updateGame(row.original.bggId, { state: Number(value) })}
+            value={row.original.state}
+            onValueChange={(value) => updateGame(row.original.bggId, { state: value as GameState })}
             disabled={row.original.inCollection}
-            items={Object.keys(GameState)
-              .filter((value) => !Number.isNaN(Number(value)))
-              .map((value) => ({ label: t(getItemStateTranslationKeyByString(value)), value: Number(value) }))}
+            items={Object.values(GameState).map((value) => ({
+              label: t(getItemStateTranslationKey(value, false)),
+              value: value,
+            }))}
           />
         ),
         header: t('common.state'),

@@ -78,7 +78,6 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
             size={'large'}
             title={game?.title || ''}
             image={game?.image ?? null}
-            color={game?.title || ''}
             onClick={() => {
               navigate({ to: `/games/${game?.id}` });
             }}
@@ -95,7 +94,6 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
         <BgtAvatar
           title={player?.name || ''}
           image={player?.image}
-          color={player?.name || ''}
           onClick={() => {
             navigate({ to: `/players/${player?.id}` });
           }}

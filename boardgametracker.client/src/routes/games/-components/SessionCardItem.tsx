@@ -2,7 +2,6 @@ import { memo, useMemo } from 'react';
 import { format } from 'date-fns';
 import { useNavigate } from '@tanstack/react-router';
 
-import { StringToHsl } from '@/utils/stringUtils';
 import { usePlayerById } from '@/routes/-hooks/usePlayerById';
 import { Session } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
@@ -38,7 +37,6 @@ const SessionCardItemComponent = (props: Props) => {
             onClick={() => navigate({ to: `/players/${winner.id}` })}
             image={winner.image}
             title={winner.name}
-            color={StringToHsl(playerById(winner.id)?.name)}
             size="large"
           />
         )}
