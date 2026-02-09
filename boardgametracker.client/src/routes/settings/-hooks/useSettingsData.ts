@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { updateSettingsCall } from '@/services/settingsService';
@@ -18,7 +17,7 @@ export const useSettingsData = ({ onSaveSuccess, onSaveError }: Props) => {
   });
 
   const settings = settingsQuery.data;
-  const languages = languageQuery.data;
+  const languages = languageQuery.data ?? [];
   const environment = environmentQuery.data;
 
   const saveSettingsMutation = useMutation({

@@ -1,7 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { cx } from 'class-variance-authority';
 
 import { FormFieldWrapper } from '@/components/BgtForm';
+import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
+import Cross from '@/assets/icons/x.svg?react';
+import SearchIcon from '@/assets/icons/magnifying-glass.svg?react';
+import CaretUpIcon from '@/assets/icons/caret-up.svg?react';
+import CaretDownIcon from '@/assets/icons/caret-down.svg?react';
 
 interface Option {
   value: number;
@@ -22,6 +27,8 @@ export const MultiSelectField = (props: Props) => {
   const { label, options, selected, onChange, placeholder, disabled } = props;
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const filteredOptions = useMemo(() => {
     return options.filter(
@@ -36,60 +43,112 @@ export const MultiSelectField = (props: Props) => {
   const handleSelect = (value: number) => {
     onChange([...selected, value]);
     setSearchTerm('');
+    setIsOpen(false);
   };
 
   const handleRemove = (value: number) => {
     onChange(selected.filter((v) => v !== value));
   };
 
+  const handleToggle = () => {
+    if (disabled) return;
+    setIsOpen((prev) => {
+      if (prev) setSearchTerm('');
+      return !prev;
+    });
+  };
+
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      setTimeout(() => searchInputRef.current?.focus(), 0);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setSearchTerm('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <FormFieldWrapper label={label} errors={[]} className="w-full">
-      <div className="relative flex flex-col gap-2">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => setIsOpen(true)}
-          onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-          placeholder={placeholder}
+      <div className="flex flex-col gap-2" ref={containerRef}>
+        <div className="relative">
+        <button
+          type="button"
+          onClick={handleToggle}
           disabled={disabled}
           className={cx(
-            'w-full bg-background font- text-white px-4 py-3 rounded-lg border border-primary/30 focus:border-primary focus:outline-none',
-            'px-4 py-2 h-[45px]'
+            'w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none',
+            'px-4 py-2 h-[45px] inline-flex justify-between items-center text-[15px]',
+            disabled && 'opacity-50 cursor-not-allowed'
           )}
-        />
+        >
+          <span className="text-gray-400 text-sm">{placeholder}</span>
+          {isOpen ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
+        </button>
 
-        {isOpen && filteredOptions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-input border border-primary/30 rounded-lg max-h-48 overflow-y-auto z-50">
-            {filteredOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleSelect(option.value)}
-                className="w-full px-4 py-2 text-left hover:bg-primary/20 transition-colors text-sm"
-              >
-                {option.label}
-              </button>
-            ))}
+        {isOpen && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-input border border-primary/30 rounded-lg overflow-hidden z-50">
+            <div className="p-2 border-b border-gray-700">
+              <div className="flex items-center px-2 bg-input rounded-sm">
+                <SearchIcon className="size-4 text-gray-400 mr-2" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search..."
+                  className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
+                />
+              </div>
+            </div>
+            <div className="max-h-[300px] overflow-y-auto p-1">
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleSelect(option.value)}
+                    className="w-full text-[13px] leading-none rounded-lg h-[45px] flex items-center pl-4 hover:bg-primary/60 transition-colors cursor-pointer"
+                  >
+                    <div className="flex flex-row justify-start items-center gap-2">
+                      {option.image !== undefined && <BgtAvatar title={option.label} image={option.image} />}
+                      {option.label}
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="text-[13px] py-2 px-4 text-gray-400">No results</div>
+              )}
+            </div>
           </div>
         )}
+        </div>
 
         {selectedItems.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {selectedItems.map((item) => (
-              <span
+              <div
                 key={item.value}
-                className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg text-sm flex items-center gap-2"
+                className="pl-1 pr-2 py-1 bg-primary/20 border border-primary/30 rounded text-sm flex items-center gap-1"
               >
-                {item.label}
+                {item.image !== undefined && <BgtAvatar title={item.label} image={item.image} size="small" />}
+                <span className="text-primary">{item.label}</span>
                 <button
                   type="button"
                   onClick={() => handleRemove(item.value)}
-                  className="hover:text-white transition-colors cursor-pointer"
+                  disabled={disabled}
+                  className="text-primary cursor-pointer hover:text-white transition-colors"
                 >
-                  x
+                  <Cross className="size-3" />
                 </button>
-              </span>
+              </div>
             ))}
           </div>
         )}

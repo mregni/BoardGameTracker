@@ -112,7 +112,7 @@ const NewLoanModal = (props: Props) => {
           <BgtDialogDescription>{t('loan.new.description')}</BgtDialogDescription>
           <div className="flex flex-col gap-4 mt-3 mb-3">
             <div className="flex flex-col gap-3 w-full">
-              <BgtFormField form={form} name="gameId" schema={CreateLoanSchema.shape.gameId}>
+              <BgtFormField form={form} name="gameId" schema={CreateLoanSchema}>
                 {(field) => (
                   <BgtSelect
                     field={field}
@@ -124,7 +124,7 @@ const NewLoanModal = (props: Props) => {
                   />
                 )}
               </BgtFormField>
-              <BgtFormField form={form} name="playerId" schema={CreateLoanSchema.shape.playerId}>
+              <BgtFormField form={form} name="playerId" schema={CreateLoanSchema}>
                 {(field) => (
                   <BgtSelect
                     field={field}
@@ -141,7 +141,7 @@ const NewLoanModal = (props: Props) => {
                   + {t('player-session.new.create-player')}
                 </BgtButton>
               </div>
-              <BgtFormField form={form} name="loanDate" schema={CreateLoanSchema.shape.loanDate}>
+              <BgtFormField form={form} name="loanDate" schema={CreateLoanSchema}>
                 {(field) => (
                   <BgtDatePicker
                     field={field}
@@ -151,7 +151,7 @@ const NewLoanModal = (props: Props) => {
                   />
                 )}
               </BgtFormField>
-              <BgtFormField form={form} name="dueDate" schema={CreateLoanSchema.shape.dueDate}>
+              <BgtFormField form={form} name="dueDate" schema={CreateLoanSchema}>
                 {(field) => (
                   <BgtDatePicker
                     field={field}

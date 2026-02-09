@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { GameNightForm, GameNightFormValues } from '../-components/GameNightForm';
 
-import { CreateGameNight, Game, Location, Player } from '@/models';
+import { GameNight, Game, Location, Player } from '@/models';
 import {
   BgtDialog,
   BgtDialogContent,
@@ -15,29 +15,32 @@ import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {
   open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpen: (open: boolean) => void;
+  gameNight: GameNight | null;
   players: Player[];
   games: Game[];
   locations: Location[];
   isLoading: boolean;
-  onSave: (gameNight: CreateGameNight) => Promise<void>;
+  onSave: (gameNight: GameNight) => Promise<unknown>;
 }
 
-export const CreateGameNightModal = (props: Props) => {
-  const { open, setOpen, players, games, locations, isLoading, onSave } = props;
+export const EditGameNightModal = (props: Props) => {
+  const { open, setOpen, gameNight, players, games, locations, isLoading, onSave } = props;
   const { t } = useTranslation();
 
+  if (!gameNight) return null;
+
   const handleSubmit = async (values: GameNightFormValues) => {
-    const gameNight: CreateGameNight = {
+    await onSave({
+      ...gameNight,
       title: values.title,
       notes: values.notes,
       startDate: values.startDate,
       hostId: values.hostId,
       locationId: values.locationId,
-      suggestedGameIds: values.suggestedGameIds,
-      invitedPlayerIds: values.invitedPlayerIds,
-    };
-    await onSave(gameNight);
+      suggestedGames: games.filter((g) => values.suggestedGameIds.includes(g.id)),
+      invitedPlayers: gameNight.invitedPlayers,
+    });
   };
 
   const handleClose = () => {
@@ -48,6 +51,17 @@ export const CreateGameNightModal = (props: Props) => {
     <BgtDialog open={open} onClose={handleClose}>
       <BgtDialogContent className="max-w-2xl!">
         <GameNightForm
+          defaultValues={{
+            title: gameNight.title,
+            startDate: new Date(gameNight.startDate),
+            locationId: gameNight.locationId,
+            hostId: gameNight.hostId,
+            notes: gameNight.notes,
+            suggestedGameIds: gameNight.suggestedGames.map((g) => g.id),
+            invitedPlayerIds: gameNight.invitedPlayers
+              .filter((p) => p.playerId !== gameNight.hostId)
+              .map((p) => p.playerId),
+          }}
           players={players}
           games={games}
           locations={locations}
@@ -55,8 +69,8 @@ export const CreateGameNightModal = (props: Props) => {
           onSubmit={handleSubmit}
           onClose={handleClose}
         >
-          <BgtDialogTitle>{t('game-nights.create.title')}</BgtDialogTitle>
-          <BgtDialogDescription>{t('game-nights.create.description')}</BgtDialogDescription>
+          <BgtDialogTitle>{t('game-nights.edit.title')}</BgtDialogTitle>
+          <BgtDialogDescription>{t('game-nights.edit.description')}</BgtDialogDescription>
         </GameNightForm>
         <BgtDialogClose>
           <BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={handleClose}>
@@ -64,7 +78,7 @@ export const CreateGameNightModal = (props: Props) => {
           </BgtButton>
           <BgtButton type="submit" form="game-night-form" disabled={isLoading} className="flex-1" variant="primary">
             {isLoading && <Bars className="size-4" />}
-            {t('game-nights.create.save')}
+            {t('game-nights.edit.save')}
           </BgtButton>
         </BgtDialogClose>
       </BgtDialogContent>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
@@ -30,7 +31,7 @@ public class GameServiceTests
     private readonly Mock<IBggGameTranslator> _bggGameTranslatorMock;
     private readonly Mock<IGameFactory> _gameFactoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IConfigFileProvider> _configFileProviderMock;
+    private readonly Mock<IConfigRepository> _configRepositoryMock;
     private readonly GameService _gameService;
 
     public GameServiceTests()
@@ -43,7 +44,7 @@ public class GameServiceTests
         _bggGameTranslatorMock = new Mock<IBggGameTranslator>();
         _gameFactoryMock = new Mock<IGameFactory>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _configFileProviderMock = new Mock<IConfigFileProvider>();
+        _configRepositoryMock = new Mock<IConfigRepository>();
 
         _gameService = new GameService(
             _gameRepositoryMock.Object,
@@ -54,7 +55,7 @@ public class GameServiceTests
             _bggGameTranslatorMock.Object,
             _gameFactoryMock.Object,
             _unitOfWorkMock.Object,
-            _configFileProviderMock.Object);
+            _configRepositoryMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -67,7 +68,7 @@ public class GameServiceTests
         _bggGameTranslatorMock.VerifyNoOtherCalls();
         _gameFactoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
-        _configFileProviderMock.VerifyNoOtherCalls();
+        _configRepositoryMock.VerifyNoOtherCalls();
     }
 
     #region GetGames Tests
@@ -459,13 +460,13 @@ public class GameServiceTests
         var configuredMonths = 6;
         var expectedCount = 5;
 
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameEnabled)
-            .Returns(true);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled))
+            .ReturnsAsync(true);
 
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonthsLimit)
-            .Returns(configuredMonths);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
+            .ReturnsAsync(configuredMonths);
 
         _gameRepositoryMock
             .Setup(x => x.CountGamesWithNoRecentSessions(It.IsAny<DateTime>()))
@@ -477,8 +478,8 @@ public class GameServiceTests
         // Assert
         result.Should().Be(expectedCount);
 
-        _configFileProviderMock.Verify(x => x.ShelfOfShameEnabled, Times.Once);
-        _configFileProviderMock.Verify(x => x.ShelfOfShameMonthsLimit, Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths), Times.Once);
         _gameRepositoryMock.Verify(x => x.CountGamesWithNoRecentSessions(It.IsAny<DateTime>()), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -487,9 +488,9 @@ public class GameServiceTests
     public async Task CountShelfOfShameGames_ShouldReturnZero_WhenFeatureDisabled()
     {
         // Arrange
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameEnabled)
-            .Returns(false);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled))
+            .ReturnsAsync(false);
 
         // Act
         var result = await _gameService.CountShelfOfShameGames();
@@ -497,7 +498,7 @@ public class GameServiceTests
         // Assert
         result.Should().Be(0);
 
-        _configFileProviderMock.Verify(x => x.ShelfOfShameEnabled, Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -508,13 +509,13 @@ public class GameServiceTests
         var configuredMonths = 12;
         DateTime capturedCutoffDate = default;
 
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameEnabled)
-            .Returns(true);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled))
+            .ReturnsAsync(true);
 
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonthsLimit)
-            .Returns(configuredMonths);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
+            .ReturnsAsync(configuredMonths);
 
         _gameRepositoryMock
             .Setup(x => x.CountGamesWithNoRecentSessions(It.IsAny<DateTime>()))
@@ -556,9 +557,9 @@ public class GameServiceTests
             }
         };
 
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonthsLimit)
-            .Returns(configuredMonths);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
+            .ReturnsAsync(configuredMonths);
 
         _gameRepositoryMock
             .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
@@ -573,7 +574,7 @@ public class GameServiceTests
         result[0].LastSessionDate.Should().NotBeNull();
         result[1].LastSessionDate.Should().BeNull();
 
-        _configFileProviderMock.Verify(x => x.ShelfOfShameMonthsLimit, Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetShameGames(It.IsAny<DateTime>()), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -582,9 +583,9 @@ public class GameServiceTests
     public async Task GetShameGames_ShouldReturnEmptyList_WhenNoGames()
     {
         // Arrange
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonthsLimit)
-            .Returns(6);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
+            .ReturnsAsync(6);
 
         _gameRepositoryMock
             .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
@@ -612,9 +613,9 @@ public class GameServiceTests
             new ShameGame { Id = 3, Title = "Game 3", Price = 20.00m }
         };
 
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonthsLimit)
-            .Returns(6);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
+            .ReturnsAsync(6);
 
         _gameRepositoryMock
             .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
@@ -640,9 +641,9 @@ public class GameServiceTests
             new ShameGame { Id = 3, Title = "Game 3", Price = 30.00m }
         };
 
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonthsLimit)
-            .Returns(6);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
+            .ReturnsAsync(6);
 
         _gameRepositoryMock
             .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
@@ -667,9 +668,9 @@ public class GameServiceTests
             new ShameGame { Id = 2, Title = "Game 2", Price = null }
         };
 
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonthsLimit)
-            .Returns(6);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
+            .ReturnsAsync(6);
 
         _gameRepositoryMock
             .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
@@ -688,9 +689,9 @@ public class GameServiceTests
     public async Task GetShameStatistics_ShouldReturnZeroCount_WhenNoGames()
     {
         // Arrange
-        _configFileProviderMock
-            .Setup(x => x.ShelfOfShameMonthsLimit)
-            .Returns(6);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
+            .ReturnsAsync(6);
 
         _gameRepositoryMock
             .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))

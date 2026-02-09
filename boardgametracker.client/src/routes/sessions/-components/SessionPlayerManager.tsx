@@ -43,7 +43,7 @@ const SessionPlayerManagerComponent = ({
 }: SessionPlayerManagerProps) => {
   return (
     <>
-      <BgtFormField form={form} name="playerSessions" schema={CreateSessionSchema.shape.playerSessions}>
+      <BgtFormField form={form} name="playerSessions" schema={CreateSessionSchema}>
         {(field) => {
           if (field.state.value !== players) {
             field.handleChange(players);

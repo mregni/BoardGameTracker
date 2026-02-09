@@ -4,6 +4,16 @@
     "version": "Version"
   },
   "game-nights": {
+    "rsvp": {
+      "title": "Manage RSVPs",
+      "manual-note-prefix": "Manually set RSVP status",
+      "manual-note": " for players who responded via phone, text, or in person.",
+      "accept": "Accept",
+      "decline": "Decline",
+      "maybe": "Maybe",
+      "host": "Host is always attending"
+    },
+
     "delete": {
       "title": "Delete game night",
       "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
@@ -15,6 +25,11 @@
       "description": "Fill out the form to create a new game night event.",
 
       "save": "Create Game Night"
+    },
+    "edit": {
+      "title": "Edit Game Night",
+      "description": "Update the details of this game night event.",
+      "save": "Save Changes"
     },
     "upcoming": "Upcoming game nights",
     "past": "Past game nights",
@@ -55,6 +70,16 @@
       "notes": {
         "label": "Notes"
       }
+    },
+    "notifications": {
+      "created": "Game night created successfully",
+      "create-failed": "Failed to create game night",
+      "updated": "Game night updated successfully",
+      "update-failed": "Failed to update game night",
+      "deleted": "Game night deleted successfully",
+      "delete-failed": "Failed to delete game night",
+      "rsvp-updated": "RSVP updated successfully",
+      "rsvp-update-failed": "Failed to update RSVP"
     }
   },
   "common": {
@@ -99,6 +124,7 @@
     "winners": "Winners",
     "loosers": "Loosers",
     "play-time": "Play time",
+    "done": "Done",
     "won": "Won",
     "lost": "Lost",
     "compare": "Compare",
@@ -663,6 +689,18 @@
         "label": "Months Threshold"
       }
     },
+    "game-nights": {
+      "title": "Game Nights settings",
+      "description": "Configure how game nights are managed and displayed.",
+      "enabled": {
+        "label": "Enable Game Nights",
+        "description": "Enable the game nights feature to plan and manage game night events with your friends."
+      },
+      "public-url": {
+        "label": "Public URL",
+        "placeholder": "https://myboardgametracker.app"
+      }
+    },
     "advanced": {
       "version-track": {
         "label": "Version track",
@@ -707,6 +745,10 @@
       "advanced": {
         "title": "Advanced",
         "description": "Advanced app configuration"
+      },
+      "game-nights": {
+        "title": "Game Nights",
+        "description": "Configure Game Nights settings"
       }
     }
   },

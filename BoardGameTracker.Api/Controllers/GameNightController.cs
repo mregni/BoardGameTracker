@@ -72,7 +72,7 @@ public class GameNightController : BaseApiController
         }
 
         try
-        {
+        {   
             var rsvp = await _gameNightService.UpdateRsvp(command);
             return Ok(rsvp.ToDto());
         }

@@ -44,7 +44,7 @@ export interface UpdateGameNightRsvp {
   id: number;
   gameNightId: number;
   playerName: number;
-  status: GameNightRsvpState;
+  state: GameNightRsvpState;
 }
 
 export interface GameNightStatistics {

@@ -17,10 +17,10 @@ const GameFormPlayerFieldsComponent = ({ form, disabled, currency }: GameFormPla
 
   return (
     <>
-      <BgtFormField form={form} name="bggId" schema={CreateGameSchema.shape.bggId}>
+      <BgtFormField form={form} name="bggId" schema={CreateGameSchema}>
         {(field) => <BgtInputField field={field} type="number" disabled={disabled} label={t('game.bgg.placeholder')} />}
       </BgtFormField>
-      <BgtFormField form={form} name="buyingPrice" schema={CreateGameSchema.shape.buyingPrice}>
+      <BgtFormField form={form} name="buyingPrice" schema={CreateGameSchema}>
         {(field) => (
           <BgtInputField
             field={field}
@@ -32,7 +32,7 @@ const GameFormPlayerFieldsComponent = ({ form, disabled, currency }: GameFormPla
           />
         )}
       </BgtFormField>
-      <BgtFormField form={form} name="additionDate" schema={CreateGameSchema.shape.additionDate}>
+      <BgtFormField form={form} name="additionDate" schema={CreateGameSchema}>
         {(field) => (
           <BgtDatePicker
             field={field}
@@ -42,7 +42,7 @@ const GameFormPlayerFieldsComponent = ({ form, disabled, currency }: GameFormPla
           />
         )}
       </BgtFormField>
-      <BgtFormField form={form} name="state" schema={CreateGameSchema.shape.state}>
+      <BgtFormField form={form} name="state" schema={CreateGameSchema}>
         {(field) => (
           <BgtSelect
             field={field}
@@ -55,7 +55,7 @@ const GameFormPlayerFieldsComponent = ({ form, disabled, currency }: GameFormPla
           />
         )}
       </BgtFormField>
-      <BgtFormField form={form} name="yearPublished" schema={CreateGameSchema.shape.yearPublished}>
+      <BgtFormField form={form} name="yearPublished" schema={CreateGameSchema}>
         {(field) => (
           <BgtInputField
             field={field}
@@ -66,11 +66,11 @@ const GameFormPlayerFieldsComponent = ({ form, disabled, currency }: GameFormPla
           />
         )}
       </BgtFormField>
-      <BgtFormField form={form} name="description" schema={CreateGameSchema.shape.description}>
+      <BgtFormField form={form} name="description" schema={CreateGameSchema}>
         {(field) => <BgtTextArea field={field} label={t('game.new.manual.description.label')} disabled={disabled} />}
       </BgtFormField>
       <div className="flex flex-row gap-2">
-        <BgtFormField form={form} name="minPlayers" schema={CreateGameSchema.shape.minPlayers}>
+        <BgtFormField form={form} name="minPlayers" schema={CreateGameSchema}>
           {(field) => (
             <BgtInputField
               field={field}
@@ -81,7 +81,7 @@ const GameFormPlayerFieldsComponent = ({ form, disabled, currency }: GameFormPla
             />
           )}
         </BgtFormField>
-        <BgtFormField form={form} name="maxPlayers" schema={CreateGameSchema.shape.maxPlayers}>
+        <BgtFormField form={form} name="maxPlayers" schema={CreateGameSchema}>
           {(field) => (
             <BgtInputField
               field={field}

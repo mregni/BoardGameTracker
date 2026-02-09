@@ -14,7 +14,7 @@ const GameFormBasicFieldsComponent = ({ form, disabled }: GameFormBasicFieldsPro
   const { t } = useTranslation();
 
   return (
-    <BgtFormField form={form} name="title" schema={CreateGameSchema.shape.title}>
+    <BgtFormField form={form} name="title" schema={CreateGameSchema}>
       {(field) => (
         <BgtInputField field={field} type="text" disabled={disabled} label={t('game.new.manual.game-title.label')} />
       )}

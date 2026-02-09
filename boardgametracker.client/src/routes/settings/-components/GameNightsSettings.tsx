@@ -12,40 +12,36 @@ interface Props {
   disabled?: boolean;
 }
 
-export const ShelfOfShameSettings = ({ form, disabled = false }: Props) => {
+export const GameNightsSettings = ({ form, disabled = false }: Props) => {
   const { t } = useTranslation();
 
   return (
     <div className="space-y-6">
-      <SettingsSection title={t('settings.shame.title')} description={t('settings.shame.description')}>
-        <BgtFormField form={form} name="shelfOfShameEnabled" schema={SettingsSchema}>
+      <SettingsSection title={t('settings.game-nights.title')} description={t('settings.game-nights.description')}>
+        <BgtFormField form={form} name="gameNightsEnabled" schema={SettingsSchema}>
           {(field) => (
             <SettingsToggle
               field={field}
-              label={t('settings.shame.enabled.label')}
-              description={t('settings.shame.enabled.description')}
+              label={t('settings.game-nights.enabled.label')}
+              description={t('settings.game-nights.enabled.description')}
               disabled={disabled}
             />
           )}
         </BgtFormField>
 
         <form.Subscribe
-          selector={(state: { values: { shelfOfShameEnabled: boolean } }) => state.values.shelfOfShameEnabled}
+          selector={(state: { values: { gameNightsEnabled: boolean } }) => state.values.gameNightsEnabled}
         >
-          {(shelfOfShameEnabled: boolean) =>
-            shelfOfShameEnabled && (
-              <BgtFormField
-                form={form}
-                name="shelfOfShameMonthsLimit"
-                schema={SettingsSchema}
-              >
+          {(gameNightsEnabled: boolean) =>
+            gameNightsEnabled && (
+              <BgtFormField form={form} name="publicUrl" schema={SettingsSchema}>
                 {(field) => (
                   <BgtInputField
                     field={field}
                     disabled={disabled}
-                    type="number"
-                    label={t('settings.shame.months.label')}
-                    placeholder="3"
+                    type="text"
+                    label={t('settings.game-nights.public-url.label')}
+                    placeholder={t('settings.game-nights.public-url.placeholder')}
                   />
                 )}
               </BgtFormField>

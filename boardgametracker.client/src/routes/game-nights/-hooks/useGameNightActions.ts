@@ -3,22 +3,24 @@ import { CreateGameNight, GameNight } from '@/models';
 interface UseGameNightActionsProps {
   createGameNight: (data: CreateGameNight) => Promise<unknown>;
   deleteGameNight: (id: number) => Promise<unknown>;
-  selectedGameNight: GameNight | null;
+  selectedGameNightId: number | null;
   onCreateModalClose: () => void;
+  onEditModalOpen: () => void;
   onDeleteModalClose: () => void;
   onManageRsvpModalOpen: () => void;
-  setSelectedGameNight: (gameNight: GameNight | null) => void;
+  setSelectedGameNightId: (id: number | null) => void;
 }
 
 export const useGameNightActions = (props: UseGameNightActionsProps) => {
   const {
     createGameNight,
     deleteGameNight,
-    selectedGameNight,
+    selectedGameNightId,
     onCreateModalClose,
+    onEditModalOpen,
     onDeleteModalClose,
     onManageRsvpModalOpen,
-    setSelectedGameNight,
+    setSelectedGameNightId,
   } = props;
 
   const handleCreate = async (gameNight: CreateGameNight) => {
@@ -27,24 +29,24 @@ export const useGameNightActions = (props: UseGameNightActionsProps) => {
   };
 
   const handleDelete = async () => {
-    if (!selectedGameNight) return;
-    await deleteGameNight(selectedGameNight.id);
+    if (selectedGameNightId === null) return;
+    await deleteGameNight(selectedGameNightId);
     onDeleteModalClose();
-    setSelectedGameNight(null);
+    setSelectedGameNightId(null);
   };
 
   const handleDeleteClick = (gameNight: GameNight) => {
-    setSelectedGameNight(gameNight);
+    setSelectedGameNightId(gameNight.id);
   };
 
   const handleManageRsvps = (gameNight: GameNight) => {
-    setSelectedGameNight(gameNight);
+    setSelectedGameNightId(gameNight.id);
     onManageRsvpModalOpen();
   };
 
   const handleEditGameNight = (gameNight: GameNight) => {
-    // TODO: Implement edit functionality
-    console.log('Edit game night:', gameNight);
+    setSelectedGameNightId(gameNight.id);
+    onEditModalOpen();
   };
 
   return {

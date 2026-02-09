@@ -88,20 +88,20 @@ export const GameNightCard = (props: Props) => {
             variant="accepted"
           />
           <RsvpSection
-            title={t('common.declined')}
-            count={gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Declined).length}
-            players={gameNight.invitedPlayers
-              .filter((x) => x.state === GameNightRsvpState.Declined)
-              .map((x) => x.player)}
-            variant="declined"
-          />
-          <RsvpSection
             title={t('common.pending')}
             count={gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Pending).length}
             players={gameNight.invitedPlayers
               .filter((x) => x.state === GameNightRsvpState.Pending)
               .map((x) => x.player)}
             variant="pending"
+          />
+          <RsvpSection
+            title={t('common.declined')}
+            count={gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Declined).length}
+            players={gameNight.invitedPlayers
+              .filter((x) => x.state === GameNightRsvpState.Declined)
+              .map((x) => x.player)}
+            variant="declined"
           />
         </div>
 

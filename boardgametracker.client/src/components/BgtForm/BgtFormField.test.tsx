@@ -28,7 +28,7 @@ const TestFormComponent = ({ onFieldValue }: { onFieldValue?: (value: string) =>
 
   return (
     <form>
-      <BgtFormField<TestFormData> form={form} name="name" schema={TestSchema.shape.name}>
+      <BgtFormField form={form} name="name" schema={TestSchema}>
         {(field) => (
           <div>
             <input
@@ -147,7 +147,7 @@ const NumberFormComponent = () => {
 
   return (
     <form>
-      <BgtFormField<NumberFormData> form={form} name="age" schema={NumberSchema.shape.age}>
+      <BgtFormField form={form} name="age" schema={NumberSchema}>
         {(field) => (
           <div>
             <input

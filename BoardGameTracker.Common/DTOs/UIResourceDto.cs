@@ -13,4 +13,6 @@ public class UIResourceDto
     public VersionTrack VersionTrack { get; set; } = VersionTrack.Stable;
     public bool ShelfOfShameEnabled { get; set; }
     public int ShelfOfShameMonthsLimit { get; set; }
+    public string PublicUrl { get; set; } = string.Empty;
+    public bool GameNightsEnabled { get; set; }
 }

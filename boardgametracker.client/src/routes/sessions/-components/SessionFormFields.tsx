@@ -36,7 +36,7 @@ const SessionFormFieldsComponent = ({ form, games, locations, disabled }: Sessio
 
   return (
     <>
-      <BgtFormField form={form} name="gameId" schema={CreateSessionSchema.shape.gameId}>
+      <BgtFormField form={form} name="gameId" schema={CreateSessionSchema}>
         {(field) => (
           <BgtSelect
             field={field}
@@ -48,7 +48,7 @@ const SessionFormFieldsComponent = ({ form, games, locations, disabled }: Sessio
           />
         )}
       </BgtFormField>
-      <BgtFormField form={form} name="locationId" schema={CreateSessionSchema.shape.locationId}>
+      <BgtFormField form={form} name="locationId" schema={CreateSessionSchema}>
         {(field) => (
           <BgtSelect
             field={field}
@@ -60,7 +60,7 @@ const SessionFormFieldsComponent = ({ form, games, locations, disabled }: Sessio
           />
         )}
       </BgtFormField>
-      <BgtFormField form={form} name="minutes" schema={CreateSessionSchema.shape.minutes}>
+      <BgtFormField form={form} name="minutes" schema={CreateSessionSchema}>
         {(field) => (
           <BgtInputField
             field={field}
@@ -71,10 +71,10 @@ const SessionFormFieldsComponent = ({ form, games, locations, disabled }: Sessio
           />
         )}
       </BgtFormField>
-      <BgtFormField form={form} name="start" schema={CreateSessionSchema.shape.start}>
+      <BgtFormField form={form} name="start" schema={CreateSessionSchema}>
         {(field) => <BgtDateTimePicker field={field} disabled={disabled} label={t('player-session.new.start.label')} />}
       </BgtFormField>
-      <BgtFormField form={form} name="comment" schema={CreateSessionSchema.shape.comment}>
+      <BgtFormField form={form} name="comment" schema={CreateSessionSchema}>
         {(field) => <BgtTextArea field={field} disabled={disabled} label={t('player-session.new.comment.label')} />}
       </BgtFormField>
     </>

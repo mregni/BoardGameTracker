@@ -39,12 +39,12 @@ export const useGameNightData = (props: Props = {}) => {
 
   const queryClient = useQueryClient();
 
-  const [gameNightsQuery, statisticsQuery, settingsQuery, playersQuery, gamesQuery, locationsQuery] = useQueries({
-    queries: [getGameNights(), getGameNightStatistics(), getSettings(), getPlayers(), getGames(), getLocations()],
+  const [gameNightsQuery, settingsQuery, playersQuery, gamesQuery, locationsQuery] = useQueries({
+    queries: [getGameNights(), getSettings(), getPlayers(), getGames(), getLocations()],
   });
 
   const gameNights = useMemo(() => gameNightsQuery.data ?? [], [gameNightsQuery.data]);
-  const statistics = useMemo(() => statisticsQuery.data, [statisticsQuery.data]);
+  //const statistics = useMemo(() => statisticsQuery.data, [statisticsQuery.data]);
   const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
   const players = useMemo(() => playersQuery.data ?? [], [playersQuery.data]);
   const games = useMemo(() => gamesQuery.data ?? [], [gamesQuery.data]);
@@ -101,14 +101,14 @@ export const useGameNightData = (props: Props = {}) => {
 
   return {
     gameNights,
-    statistics,
+    // statistics,
     settings,
     players,
     games,
     locations,
     isLoading:
       gameNightsQuery.isLoading ||
-      statisticsQuery.isLoading ||
+      //statisticsQuery.isLoading ||
       settingsQuery.isLoading ||
       playersQuery.isLoading ||
       gamesQuery.isLoading ||

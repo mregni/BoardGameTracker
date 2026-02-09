@@ -35,7 +35,9 @@ export const useMenuInfo = () => {
   });
 
   const filteredMenuItems = menuItems.filter((item) => {
-    return item.path !== '/shames' || settingsQuery.data?.shelfOfShameEnabled;
+    if (item.path === '/shames' && !settingsQuery.data?.shelfOfShameEnabled) return false;
+    if (item.path === '/game-nights' && !settingsQuery.data?.gameNightsEnabled) return false;
+    return true;
   });
 
   return {

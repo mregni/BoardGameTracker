@@ -78,7 +78,7 @@ const CreateSessionPlayerForm = (props: Props) => {
           }}
         >
           <div className="flex flex-col gap-4 mt-3 mb-6">
-            <BgtFormField form={form} name="playerId" schema={schema.shape.playerId}>
+            <BgtFormField form={form} name="playerId" schema={schema}>
               {(field) => (
                 <BgtSelect
                   field={field}
@@ -99,14 +99,14 @@ const CreateSessionPlayerForm = (props: Props) => {
               </BgtButton>
             </div>
             {hasScoring && (
-              <BgtFormField form={form} name="score" schema={CreatePlayerSessionSchema.shape.score}>
+              <BgtFormField form={form} name="score" schema={CreatePlayerSessionSchema}>
                 {(field) => <BgtInputField field={field} type="number" label={t('player-session.score.label')} />}
               </BgtFormField>
             )}
-            <BgtFormField form={form} name="won" schema={schema.shape.won}>
+            <BgtFormField form={form} name="won" schema={schema}>
               {(field) => <BgtSwitch field={field} label={t('player-session.won.label')} className="mt-2" />}
             </BgtFormField>
-            <BgtFormField form={form} name="firstPlay" schema={schema.shape.firstPlay}>
+            <BgtFormField form={form} name="firstPlay" schema={schema}>
               {(field) => <BgtSwitch field={field} label={t('player-session.first-play.label')} className="mt-2" />}
             </BgtFormField>
           </div>

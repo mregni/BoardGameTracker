@@ -9,6 +9,7 @@ import { useSettingsData } from './-hooks/useSettingsData';
 import { ShelfOfShameSettings } from './-components/ShelfOfShameSettings';
 import { SettingsSidebar, SettingsCategory } from './-components/SettingsSidebar';
 import { GeneralSettings } from './-components/GeneralSettings';
+import { GameNightsSettings } from './-components/GameNightsSettings';
 import { AdvancedSettings } from './-components/AdvancedSettings';
 
 import { getSettings, getLanguages, getEnvironment } from '@/services/queries/settings';
@@ -51,12 +52,7 @@ function RouteComponent() {
   }
 
   return (
-    <SettingsPageContent
-      settings={settings}
-      languages={languages}
-      isLoading={isLoading}
-      saveSettings={saveSettings}
-    />
+    <SettingsPageContent settings={settings} languages={languages} isLoading={isLoading} saveSettings={saveSettings} />
   );
 }
 
@@ -82,12 +78,8 @@ function SettingsPageContent({ settings, languages, isLoading, saveSettings }: S
       versionTrack: settings.versionTrack,
       shelfOfShameEnabled: settings.shelfOfShameEnabled,
       shelfOfShameMonthsLimit: settings.shelfOfShameMonthsLimit,
-      oidcEnabled: settings.oidcEnabled,
-      oidcProvider: settings.oidcProvider,
-      oidcClientId: settings.oidcClientId,
-      oidcClientSecret: settings.oidcClientSecret,
       publicUrl: settings.publicUrl,
-      primaryColor: settings.primaryColor,
+      gameNightsEnabled: settings.gameNightsEnabled,
     },
     onSubmit: async ({ value }) => {
       const validatedData = SettingsSchema.parse(value);
@@ -101,6 +93,8 @@ function SettingsPageContent({ settings, languages, isLoading, saveSettings }: S
         return <GeneralSettings form={form} languages={languages} disabled={isLoading} />;
       case 'shelf-of-shame':
         return <ShelfOfShameSettings form={form} disabled={isLoading} />;
+      case 'game-nights':
+        return <GameNightsSettings form={form} disabled={isLoading} />;
       case 'advanced':
         return <AdvancedSettings form={form} disabled={isLoading} />;
       default:

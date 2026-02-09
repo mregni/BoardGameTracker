@@ -4,9 +4,11 @@ using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models.Updates;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
+using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Updates.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +20,7 @@ namespace BoardGameTracker.Tests.Controllers;
 
 public class SettingsControllerTests
 {
-    private readonly Mock<IConfigFileProvider> _configFileProviderMock;
+    private readonly Mock<ISettingsService> _settingsServiceMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly Mock<ILanguageService> _languageServiceMock;
     private readonly Mock<IUpdateService> _updateServiceMock;
@@ -26,13 +28,13 @@ public class SettingsControllerTests
 
     public SettingsControllerTests()
     {
-        _configFileProviderMock = new Mock<IConfigFileProvider>();
+        _settingsServiceMock = new Mock<ISettingsService>();
         _environmentProviderMock = new Mock<IEnvironmentProvider>();
         _languageServiceMock = new Mock<ILanguageService>();
         _updateServiceMock = new Mock<IUpdateService>();
 
         _controller = new SettingsController(
-            _configFileProviderMock.Object,
+            _settingsServiceMock.Object,
             _environmentProviderMock.Object,
             _languageServiceMock.Object,
             _updateServiceMock.Object);
@@ -40,7 +42,7 @@ public class SettingsControllerTests
 
     private void VerifyNoOtherCalls()
     {
-        _configFileProviderMock.VerifyNoOtherCalls();
+        _settingsServiceMock.VerifyNoOtherCalls();
         _environmentProviderMock.VerifyNoOtherCalls();
         _languageServiceMock.VerifyNoOtherCalls();
         _updateServiceMock.VerifyNoOtherCalls();
@@ -50,20 +52,23 @@ public class SettingsControllerTests
     public async Task Get_ShouldReturnSettings_WhenCalled()
     {
         // Arrange
-        var updateSettings = new UpdateSettings
+        var expectedDto = new UIResourceDto
         {
-            Enabled = true
+            TimeFormat = "HH:mm",
+            DateFormat = "yyyy-MM-dd",
+            UiLanguage = "en-US",
+            Currency = "USD",
+            Statistics = true,
+            UpdateCheckEnabled = true,
+            ShelfOfShameEnabled = false,
+            ShelfOfShameMonthsLimit = 6,
+            GameNightsEnabled = true,
+            PublicUrl = "https://example.com"
         };
 
-        _updateServiceMock
-            .Setup(x => x.GetUpdateSettingsAsync())
-            .ReturnsAsync(updateSettings);
-
-        _configFileProviderMock.SetupGet(x => x.TimeFormat).Returns("HH:mm");
-        _configFileProviderMock.SetupGet(x => x.DateFormat).Returns("yyyy-MM-dd");
-        _configFileProviderMock.SetupGet(x => x.UILanguage).Returns("en-US");
-        _configFileProviderMock.SetupGet(x => x.Currency).Returns("USD");
-        _environmentProviderMock.SetupGet(x => x.EnableStatistics).Returns(true);
+        _settingsServiceMock
+            .Setup(x => x.GetSettingsAsync())
+            .ReturnsAsync(expectedDto);
 
         // Act
         var result = await _controller.Get();
@@ -72,65 +77,9 @@ public class SettingsControllerTests
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var settings = okResult.Value.Should().BeAssignableTo<UIResourceDto>().Subject;
 
-        settings.TimeFormat.Should().Be("HH:mm");
-        settings.DateFormat.Should().Be("yyyy-MM-dd");
-        settings.UiLanguage.Should().Be("en-US");
-        settings.Currency.Should().Be("USD");
-        settings.Statistics.Should().BeTrue();
-        settings.UpdateCheckEnabled.Should().BeTrue();
+        settings.Should().BeSameAs(expectedDto);
 
-        _updateServiceMock.Verify(x => x.GetUpdateSettingsAsync(), Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.TimeFormat, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.DateFormat, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.UILanguage, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.Currency, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameEnabled, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameMonthsLimit, Times.Once);
-        _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task Get_ShouldReturnSettings_WhenUpdateCheckIsDisabled()
-    {
-        // Arrange
-        var updateSettings = new UpdateSettings
-        {
-            Enabled = false
-        };
-
-        _updateServiceMock
-            .Setup(x => x.GetUpdateSettingsAsync())
-            .ReturnsAsync(updateSettings);
-
-        _configFileProviderMock.SetupGet(x => x.TimeFormat).Returns("hh:mm tt");
-        _configFileProviderMock.SetupGet(x => x.DateFormat).Returns("MM/dd/yyyy");
-        _configFileProviderMock.SetupGet(x => x.UILanguage).Returns("fr-FR");
-        _configFileProviderMock.SetupGet(x => x.Currency).Returns("EUR");
-        _environmentProviderMock.SetupGet(x => x.EnableStatistics).Returns(false);
-
-        // Act
-        var result = await _controller.Get();
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var settings = okResult.Value.Should().BeAssignableTo<UIResourceDto>().Subject;
-
-        settings.TimeFormat.Should().Be("hh:mm tt");
-        settings.DateFormat.Should().Be("MM/dd/yyyy");
-        settings.UiLanguage.Should().Be("fr-FR");
-        settings.Currency.Should().Be("EUR");
-        settings.Statistics.Should().BeFalse();
-        settings.UpdateCheckEnabled.Should().BeFalse();
-
-        _updateServiceMock.Verify(x => x.GetUpdateSettingsAsync(), Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.TimeFormat, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.DateFormat, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.UILanguage, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.Currency, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameEnabled, Times.Once);
-        _configFileProviderMock.VerifyGet(x => x.ShelfOfShameMonthsLimit, Times.Once);
-        _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
+        _settingsServiceMock.Verify(x => x.GetSettingsAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -144,16 +93,13 @@ public class SettingsControllerTests
             DateFormat = "dd-MM-yyyy",
             UiLanguage = "de-DE",
             Currency = "GBP",
-            UpdateCheckEnabled = true
+            UpdateCheckEnabled = true,
+            GameNightsEnabled = true,
+            PublicUrl = "https://example.com"
         };
 
-        _configFileProviderMock.SetupSet(x => x.Currency = model.Currency).Verifiable();
-        _configFileProviderMock.SetupSet(x => x.TimeFormat = model.TimeFormat).Verifiable();
-        _configFileProviderMock.SetupSet(x => x.DateFormat = model.DateFormat).Verifiable();
-        _configFileProviderMock.SetupSet(x => x.UILanguage = model.UiLanguage).Verifiable();
-
-        _updateServiceMock
-            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack))
+        _settingsServiceMock
+            .Setup(x => x.UpdateSettingsAsync(model))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -165,13 +111,7 @@ public class SettingsControllerTests
 
         returnedModel.Should().BeSameAs(model);
 
-        _configFileProviderMock.VerifySet(x => x.Currency = model.Currency, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.TimeFormat = model.TimeFormat, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.DateFormat = model.DateFormat, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.UILanguage = model.UiLanguage, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.ShelfOfShameEnabled = model.ShelfOfShameEnabled, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonthsLimit = model.ShelfOfShameMonthsLimit, Times.Once);
-        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
+        _settingsServiceMock.Verify(x => x.UpdateSettingsAsync(model), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -188,13 +128,8 @@ public class SettingsControllerTests
             UpdateCheckEnabled = false
         };
 
-        _configFileProviderMock.SetupSet(x => x.Currency = model.Currency).Verifiable();
-        _configFileProviderMock.SetupSet(x => x.TimeFormat = model.TimeFormat).Verifiable();
-        _configFileProviderMock.SetupSet(x => x.DateFormat = model.DateFormat).Verifiable();
-        _configFileProviderMock.SetupSet(x => x.UILanguage = model.UiLanguage).Verifiable();
-
-        _updateServiceMock
-            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack))
+        _settingsServiceMock
+            .Setup(x => x.UpdateSettingsAsync(model))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -206,13 +141,7 @@ public class SettingsControllerTests
 
         returnedModel.Should().BeSameAs(model);
 
-        _configFileProviderMock.VerifySet(x => x.Currency = model.Currency, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.TimeFormat = model.TimeFormat, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.DateFormat = model.DateFormat, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.UILanguage = model.UiLanguage, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.ShelfOfShameEnabled = model.ShelfOfShameEnabled, Times.Once);
-        _configFileProviderMock.VerifySet(x => x.ShelfOfShameMonthsLimit = model.ShelfOfShameMonthsLimit, Times.Once);
-        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
+        _settingsServiceMock.Verify(x => x.UpdateSettingsAsync(model), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -335,7 +264,7 @@ public class SettingsControllerTests
         _languageServiceMock.Verify(x => x.GetAllAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
-    
+
     [Fact]
     public async Task GetUpdateStatus_ShouldReturnStatus_WhenUpdateIsAvailable()
     {

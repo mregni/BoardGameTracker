@@ -92,7 +92,7 @@ export const GameForm = (props: Props) => {
               <GameFormTimeFields form={form} disabled={disabled} />
 
               {game === undefined && (
-                <BgtFormField form={form} name="hasScoring" schema={CreateGameSchema.shape.hasScoring}>
+                <BgtFormField form={form} name="hasScoring" schema={CreateGameSchema}>
                   {(field) => (
                     <BgtSwitch field={field} label={t('game.scoring.label')} className="pt-3" disabled={disabled} />
                   )}

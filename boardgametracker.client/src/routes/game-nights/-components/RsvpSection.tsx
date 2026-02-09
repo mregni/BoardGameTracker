@@ -1,11 +1,7 @@
-import { useTranslation } from 'react-i18next';
-import { use } from 'i18next';
 import { cx } from 'class-variance-authority';
 import { useNavigate } from '@tanstack/react-router';
 
-import { BgtPoster } from '@/routes/-components/BgtPoster';
 import { Player } from '@/models';
-import { BgtText } from '@/components/BgtText/BgtText';
 import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
 
 interface Props {
@@ -35,7 +31,6 @@ const variantStyles = {
 
 export const RsvpSection = (props: Props) => {
   const { title, count, players, variant } = props;
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const styles = variantStyles[variant];
 
@@ -47,23 +42,17 @@ export const RsvpSection = (props: Props) => {
         </span>
       </div>
       <div className="flex flex-wrap gap-1">
-        {players.length === 0 ? (
-          <BgtText size="1" color="gray">
-            {t('common.none')}
-          </BgtText>
-        ) : (
-          players.map((player) => (
-            <div key={player.id} className={cx('flex items-center gap-2 pl-1 pr-2 py-1 rounded text-xs', styles.badge)}>
-              <BgtAvatar
-                key={player.id}
-                title={player.name}
-                image={player.image}
-                onClick={() => navigate({ to: `/players/${player.id}` })}
-                withTitle
-              />
-            </div>
-          ))
-        )}
+        {players.map((player) => (
+          <div key={player.id} className={cx('flex items-center gap-2 pl-1 pr-2 py-1 rounded text-xs', styles.badge)}>
+            <BgtAvatar
+              key={player.id}
+              title={player.name}
+              image={player.image}
+              onClick={() => navigate({ to: `/players/${player.id}` })}
+              withTitle
+            />
+          </div>
+        ))}
       </div>
     </div>
   );

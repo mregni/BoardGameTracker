@@ -7,6 +7,7 @@ import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
 import { useToasts } from '../-hooks/useToasts';
 
 import { ManageRSVPsModal } from './-modals/ManageRSVPsModal';
+import { EditGameNightModal } from './-modals/EditGameNightModal';
 import { CreateGameNightModal } from './-modals/CreateGameNightModal';
 import { useGameNightModals } from './-hooks/useGameNightModals';
 import { useGameNightData } from './-hooks/useGameNightData';
@@ -19,7 +20,6 @@ import { getPlayers } from '@/services/queries/players';
 import { getLocations } from '@/services/queries/locations';
 import { getGames } from '@/services/queries/games';
 import { getGameNights, getGameNightStatistics } from '@/services/queries/gameNights';
-import { GameNight } from '@/models';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
@@ -29,7 +29,7 @@ export const Route = createFileRoute('/game-nights/')({
   component: RouteComponent,
   loader: ({ context: { queryClient } }) => {
     queryClient.prefetchQuery(getGameNights());
-    queryClient.prefetchQuery(getGameNightStatistics());
+    //queryClient.prefetchQuery(getGameNightStatistics());
     queryClient.prefetchQuery(getPlayers());
     queryClient.prefetchQuery(getGames());
     queryClient.prefetchQuery(getLocations());
@@ -41,28 +41,48 @@ function RouteComponent() {
   const { errorToast, successToast } = useToasts();
 
   const [filter, setFilter] = useState<FilterType>('all');
-  const [selectedGameNight, setSelectedGameNight] = useState<GameNight | null>(null);
+  const [selectedGameNightId, setSelectedGameNightId] = useState<number | null>(null);
 
-  const { gameNights, settings, players, games, locations, isLoading, createGameNight, deleteGameNight, updateRsvp, isCreating } =
-    useGameNightData({
-      onCreateSuccess: () => successToast('game-nights.notifications.created'),
-      onCreateError: () => errorToast('game-nights.notifications.create-failed'),
-      onDeleteSuccess: () => successToast('game-nights.notifications.deleted'),
-      onDeleteError: () => errorToast('game-nights.notifications.delete-failed'),
-      onRsvpUpdateSuccess: () => successToast('game-nights.notifications.rsvp-updated'),
-      onRsvpUpdateError: () => errorToast('game-nights.notifications.rsvp-update-failed'),
-    });
+  const {
+    gameNights,
+    settings,
+    players,
+    games,
+    locations,
+    isLoading,
+    createGameNight,
+    deleteGameNight,
+    updateGameNight,
+    updateRsvp,
+    isCreating,
+    isUpdating,
+  } = useGameNightData({
+    onCreateSuccess: () => successToast('game-nights.notifications.created'),
+    onCreateError: () => errorToast('game-nights.notifications.create-failed'),
+    onUpdateSuccess: () => successToast('game-nights.notifications.updated'),
+    onUpdateError: () => errorToast('game-nights.notifications.update-failed'),
+    onDeleteSuccess: () => successToast('game-nights.notifications.deleted'),
+    onDeleteError: () => errorToast('game-nights.notifications.delete-failed'),
+    onRsvpUpdateSuccess: () => successToast('game-nights.notifications.rsvp-updated'),
+    onRsvpUpdateError: () => errorToast('game-nights.notifications.rsvp-update-failed'),
+  });
 
   const modals = useGameNightModals();
+
+  const selectedGameNight = useMemo(
+    () => gameNights.find((gn) => gn.id === selectedGameNightId) ?? null,
+    [gameNights, selectedGameNightId]
+  );
 
   const actions = useGameNightActions({
     createGameNight,
     deleteGameNight,
-    selectedGameNight,
+    selectedGameNightId,
     onCreateModalClose: modals.createModal.hide,
+    onEditModalOpen: modals.editModal.show,
     onDeleteModalClose: modals.deleteModal.hide,
     onManageRsvpModalOpen: modals.manageRsvpModal.show,
-    setSelectedGameNight,
+    setSelectedGameNightId,
   });
 
   const upcomingCount = useMemo(() => gameNights.filter((gn) => !isPast(gn.startDate)).length, [gameNights]);
@@ -125,6 +145,17 @@ function RouteComponent() {
               locations={locations}
               isLoading={isCreating}
               onSave={actions.handleCreate}
+            />
+
+            <EditGameNightModal
+              open={modals.editModal.isOpen}
+              setOpen={modals.editModal.setIsOpen}
+              gameNight={selectedGameNight}
+              players={players}
+              games={games}
+              locations={locations}
+              isLoading={isUpdating}
+              onSave={updateGameNight}
             />
 
             <ManageRSVPsModal

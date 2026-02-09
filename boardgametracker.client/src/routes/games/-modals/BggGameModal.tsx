@@ -80,7 +80,7 @@ export const BggGameModal = (props: Props) => {
               <SquareOutIcon className="size-5" />
               <>{t('game.bgg.external-page')}</>
             </BgtButton>
-            <BgtFormField form={form} name="bggId" schema={BggSearchSchema.shape.bggId}>
+            <BgtFormField form={form} name="bggId" schema={BggSearchSchema}>
               {(field) => (
                 <BgtInputField
                   field={field}
@@ -91,7 +91,7 @@ export const BggGameModal = (props: Props) => {
                 />
               )}
             </BgtFormField>
-            <BgtFormField form={form} name="price" schema={BggSearchSchema.shape.price}>
+            <BgtFormField form={form} name="price" schema={BggSearchSchema}>
               {(field) => (
                 <BgtInputField
                   field={field}
@@ -103,7 +103,7 @@ export const BggGameModal = (props: Props) => {
                 />
               )}
             </BgtFormField>
-            <BgtFormField form={form} name="date" schema={BggSearchSchema.shape.date}>
+            <BgtFormField form={form} name="date" schema={BggSearchSchema}>
               {(field) => (
                 <BgtDatePicker
                   field={field}
@@ -113,7 +113,7 @@ export const BggGameModal = (props: Props) => {
                 />
               )}
             </BgtFormField>
-            <BgtFormField form={form} name="state" schema={BggSearchSchema.shape.state}>
+            <BgtFormField form={form} name="state" schema={BggSearchSchema}>
               {(field) => (
                 <BgtSelect
                   field={field}
@@ -126,7 +126,7 @@ export const BggGameModal = (props: Props) => {
                 />
               )}
             </BgtFormField>
-            <BgtFormField form={form} name="hasScoring" schema={BggSearchSchema.shape.hasScoring}>
+            <BgtFormField form={form} name="hasScoring" schema={BggSearchSchema}>
               {(field) => <BgtSwitch field={field} label={t('game.scoring.label')} disabled={isPending} />}
             </BgtFormField>
           </div>

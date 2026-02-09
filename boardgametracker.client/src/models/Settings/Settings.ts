@@ -11,6 +11,7 @@ export interface Settings {
   shelfOfShameEnabled: boolean;
   shelfOfShameMonthsLimit: number;
   publicUrl: string;
+  gameNightsEnabled: boolean;
 }
 
 export const SettingsSchema = z.object({
@@ -38,9 +39,11 @@ export const SettingsSchema = z.object({
     .min(1, {
       message: 'settings.currency.required',
     }),
+  publicUrl: z.string(),
   statistics: z.boolean(),
   updateCheckEnabled: z.boolean(),
   versionTrack: z.string(),
   shelfOfShameEnabled: z.boolean(),
   shelfOfShameMonthsLimit: z.number().min(1),
+  gameNightsEnabled: z.boolean(),
 });

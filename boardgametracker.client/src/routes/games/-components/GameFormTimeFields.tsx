@@ -16,7 +16,7 @@ const GameFormTimeFieldsComponent = ({ form, disabled }: GameFormTimeFieldsProps
   return (
     <>
       <div className="flex flex-row gap-2">
-        <BgtFormField form={form} name="minPlayTime" schema={CreateGameSchema.shape.minPlayTime}>
+        <BgtFormField form={form} name="minPlayTime" schema={CreateGameSchema}>
           {(field) => (
             <BgtInputField
               field={field}
@@ -28,7 +28,7 @@ const GameFormTimeFieldsComponent = ({ form, disabled }: GameFormTimeFieldsProps
             />
           )}
         </BgtFormField>
-        <BgtFormField form={form} name="maxPlayTime" schema={CreateGameSchema.shape.maxPlayTime}>
+        <BgtFormField form={form} name="maxPlayTime" schema={CreateGameSchema}>
           {(field) => (
             <BgtInputField
               field={field}
@@ -41,7 +41,7 @@ const GameFormTimeFieldsComponent = ({ form, disabled }: GameFormTimeFieldsProps
           )}
         </BgtFormField>
       </div>
-      <BgtFormField form={form} name="minAge" schema={CreateGameSchema.shape.minAge}>
+      <BgtFormField form={form} name="minAge" schema={CreateGameSchema}>
         {(field) => (
           <BgtInputField
             field={field}

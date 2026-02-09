@@ -21,7 +21,7 @@ export const GeneralSettings = ({ form, languages, disabled = false }: Props) =>
         title={t('settings.general.language.title')}
         description={t('settings.general.language.description')}
       >
-        <BgtFormField form={form} name="uiLanguage" schema={SettingsSchema.shape.uiLanguage}>
+        <BgtFormField form={form} name="uiLanguage" schema={SettingsSchema}>
           {(field) => (
             <BgtSelect
               field={field}
@@ -41,7 +41,7 @@ export const GeneralSettings = ({ form, languages, disabled = false }: Props) =>
         description={t('settings.general.date-time.description')}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <BgtFormField form={form} name="dateFormat" schema={SettingsSchema.shape.dateFormat}>
+          <BgtFormField form={form} name="dateFormat" schema={SettingsSchema}>
             {(field) => (
               <BgtInputField
                 field={field}
@@ -52,7 +52,7 @@ export const GeneralSettings = ({ form, languages, disabled = false }: Props) =>
               />
             )}
           </BgtFormField>
-          <BgtFormField form={form} name="timeFormat" schema={SettingsSchema.shape.timeFormat}>
+          <BgtFormField form={form} name="timeFormat" schema={SettingsSchema}>
             {(field) => (
               <BgtInputField
                 field={field}
@@ -70,7 +70,7 @@ export const GeneralSettings = ({ form, languages, disabled = false }: Props) =>
         title={t('settings.general.currency.title')}
         description={t('settings.general.currency.description')}
       >
-        <BgtFormField form={form} name="currency" schema={SettingsSchema.shape.currency}>
+        <BgtFormField form={form} name="currency" schema={SettingsSchema}>
           {(field) => (
             <BgtInputField
               field={field}

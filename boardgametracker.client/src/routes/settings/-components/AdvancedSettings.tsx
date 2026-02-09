@@ -39,7 +39,7 @@ export const AdvancedSettings = ({ form, disabled = false }: Props) => {
         title={t('settings.advanced.updates.title')}
         description={t('settings.advanced.updates.description')}
       >
-        <BgtFormField form={form} name="updateCheckEnabled" schema={SettingsSchema.shape.updateCheckEnabled}>
+        <BgtFormField form={form} name="updateCheckEnabled" schema={SettingsSchema}>
           {(field) => (
             <SettingsToggle
               field={field}
@@ -50,7 +50,7 @@ export const AdvancedSettings = ({ form, disabled = false }: Props) => {
           )}
         </BgtFormField>
 
-        <BgtFormField form={form} name="versionTrack" schema={SettingsSchema.shape.versionTrack}>
+        <BgtFormField form={form} name="versionTrack" schema={SettingsSchema}>
           {(field) => (
             <div className="flex flex-col gap-1">
               <BgtText size="2" weight="medium" color="white">
@@ -95,7 +95,7 @@ export const AdvancedSettings = ({ form, disabled = false }: Props) => {
         title={t('settings.advanced.statistics.title')}
         description={t('settings.advanced.statistics.description')}
       >
-        <BgtFormField form={form} name="statistics" schema={SettingsSchema.shape.statistics}>
+        <BgtFormField form={form} name="statistics" schema={SettingsSchema}>
           {(field) => (
             <SettingsToggle
               field={field}

@@ -3,7 +3,7 @@ import { cx } from 'class-variance-authority';
 
 import { BgtText } from '@/components/BgtText/BgtText';
 
-export type SettingsCategory = 'general' | 'appearance' | 'shelf-of-shame' | 'authentication' | 'advanced';
+export type SettingsCategory = 'general' | 'shelf-of-shame' | 'game-nights' | 'advanced';
 
 interface CategoryItem {
   id: SettingsCategory;
@@ -17,6 +17,11 @@ const CATEGORIES: CategoryItem[] = [
     id: 'shelf-of-shame',
     label: 'settings.sidebar.shelf-of-shame.title',
     description: 'settings.sidebar.shelf-of-shame.description',
+  },
+  {
+    id: 'game-nights',
+    label: 'settings.sidebar.game-nights.title',
+    description: 'settings.sidebar.game-nights.description',
   },
   { id: 'advanced', label: 'settings.sidebar.advanced.title', description: 'settings.sidebar.advanced.description' },
 ];

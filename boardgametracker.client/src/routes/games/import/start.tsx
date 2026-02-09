@@ -44,7 +44,7 @@ function RouteComponent() {
           >
             <div className="flex flex-col gap-5 w-full">
               <div>{t('games.import.start.description')}</div>
-              <BgtFormField form={form} name="username" schema={BggUserNameSchema.shape.username}>
+              <BgtFormField form={form} name="username" schema={BggUserNameSchema}>
                 {(field) => (
                   <BgtInputField
                     field={field}
