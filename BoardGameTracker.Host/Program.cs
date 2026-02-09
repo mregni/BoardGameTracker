@@ -2,18 +2,18 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.Configuration;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Bgg.Interfaces;
-using BoardGameTracker.Core.Commands;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Extensions;
-using MediatR;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -74,11 +74,6 @@ builder.Services.AddCors(options =>
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader());
-});
-
-builder.Services.AddMediatR(opt =>
-{
-    opt.RegisterServicesFromAssemblyContaining<ApplicationStartedCommand>();
 });
 
 builder.Services
@@ -190,8 +185,8 @@ if (!app.Environment.IsDevelopment())
     });
 }
 
-SendStartApplicationCommand(app.Services);
 RunDbMigrations(app.Services);
+SeedConfig(app.Services);
 
 app.MapHealthChecks("/api/health");
 
@@ -218,7 +213,6 @@ static void CreateFolders(IServiceProvider serviceProvider)
     {
         throw new ServiceNotResolvedException("Can't resolve IDiskProvider");
     }
-    diskProvider.EnsureFolder(PathHelper.FullConfigFilePath);
     diskProvider.EnsureFolder(PathHelper.FullRootImagePath);
     diskProvider.EnsureFolder(PathHelper.FullCoverImagePath);
     diskProvider.EnsureFolder(PathHelper.FullProfileImagePath);
@@ -226,14 +220,11 @@ static void CreateFolders(IServiceProvider serviceProvider)
     diskProvider.EnsureFolder(PathHelper.FullCommonImagePath);
 }
 
-static void SendStartApplicationCommand(IServiceProvider serviceProvider)
+static void SeedConfig(IServiceProvider serviceProvider)
 {
-    var mediator = serviceProvider.GetService<IMediator>();
-    if (mediator == null)
-    {
-        throw new ServiceNotResolvedException("Can't resolve IMediator");
-    }
-    mediator.Send(new ApplicationStartedCommand());
+    using var scope = serviceProvider.CreateScope();
+    var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
+    configRepository.SeedConfigAsync(ConfigDefaults.All).GetAwaiter().GetResult();
 }
 
 static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)

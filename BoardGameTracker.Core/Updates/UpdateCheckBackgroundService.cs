@@ -1,3 +1,4 @@
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -54,8 +55,8 @@ public class UpdateCheckBackgroundService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
 
-        var repository = scope.ServiceProvider.GetRequiredService<IUpdateRepository>();
-        var enabled = await repository.GetConfigValueAsync(UpdateConfig.CheckEnabled, true);
+        var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
+        var enabled = await configRepository.GetConfigValueAsync<bool>(UpdateConfig.CheckEnabled);
 
         if (!enabled)
         {
@@ -69,16 +70,16 @@ public class UpdateCheckBackgroundService : BackgroundService
     private async Task<TimeSpan> GetCheckIntervalAsync()
     {
         using var scope = _serviceProvider.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IUpdateRepository>();
+        var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
 
-        var hours = await repository.GetConfigValueAsync<int>(UpdateConfig.CheckIntervalHours);
+        var hours = await configRepository.GetConfigValueAsync<int>(UpdateConfig.CheckIntervalHours);
 
         if (hours > 0)
         {
             return TimeSpan.FromHours(hours);
         }
 
-        await repository.SetConfigValueAsync(UpdateConfig.CheckIntervalHours, 24);
+        await configRepository.SetConfigValueAsync(UpdateConfig.CheckIntervalHours, 24);
         return _defaultInterval;
     }
 }

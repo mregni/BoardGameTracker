@@ -31,7 +31,7 @@ public class GameService : IGameService
     private readonly IBggGameTranslator _bggGameTranslator;
     private readonly IGameFactory _gameFactory;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IConfigFileProvider _configFileProvider;
+    private readonly IConfigRepository _configRepository;
 
     public GameService(
         IGameRepository gameRepository,
@@ -42,7 +42,7 @@ public class GameService : IGameService
         IBggGameTranslator bggGameTranslator,
         IGameFactory gameFactory,
         IUnitOfWork unitOfWork,
-        IConfigFileProvider configFileProvider)
+        IConfigRepository configRepository)
     {
         _gameRepository = gameRepository;
         _gameSessionRepository = gameSessionRepository;
@@ -52,7 +52,7 @@ public class GameService : IGameService
         _bggGameTranslator = bggGameTranslator;
         _gameFactory = gameFactory;
         _unitOfWork = unitOfWork;
-        _configFileProvider = configFileProvider;
+        _configRepository = configRepository;
     }
     
     public async Task<Game> SearchOnBgg(BggGame rawGame, BggSearch search)
@@ -378,23 +378,24 @@ public class GameService : IGameService
         await _unitOfWork.SaveChangesAsync();
     }
     
-    public Task<int> CountShelfOfShameGames()
+    public async Task<int> CountShelfOfShameGames()
     {
-        if (!_configFileProvider.ShelfOfShameEnabled)
+        var enabled = await _configRepository.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled);
+        if (!enabled)
         {
-            return Task.FromResult(0);
+            return 0;
         }
 
-        var months = _configFileProvider.ShelfOfShameMonthsLimit;
+        var months = await _configRepository.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths);
         var cutoffDate = DateTime.UtcNow.AddMonths(-months);
-        return _gameRepository.CountGamesWithNoRecentSessions(cutoffDate);
+        return await _gameRepository.CountGamesWithNoRecentSessions(cutoffDate);
     }
 
-    public Task<List<ShameGame>> GetShameGames()
+    public async Task<List<ShameGame>> GetShameGames()
     {
-        var months = _configFileProvider.ShelfOfShameMonthsLimit;
+        var months = await _configRepository.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths);
         var cutoffDate = DateTime.UtcNow.AddMonths(-months);
-        return _gameRepository.GetShameGames(cutoffDate);
+        return await _gameRepository.GetShameGames(cutoffDate);
     }
 
     public async Task<ShameStatistics> GetShameStatistics()

@@ -18,6 +18,18 @@ public static class Constants
         public const int TopPlayersCount = 5;
     }
 
+    public static class AppConfig
+    {
+        public const string Currency = "currency";
+        public const string DateFormat = "date_format";
+        public const string TimeFormat = "time_format";
+        public const string UiLanguage = "ui_language";
+        public const string ShelfOfShameEnabled = "shelf_of_shame_enabled";
+        public const string ShelfOfShameMonths = "shelf_of_shame_months";
+        public const string GameNightsEnabled = "game_nights_enabled";
+        public const string PublicUrl = "public_url";
+    }
+
     public static class UpdateConfig
     {
         public const string Prefix = "update_";

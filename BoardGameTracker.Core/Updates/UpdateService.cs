@@ -4,6 +4,7 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Updates;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ namespace BoardGameTracker.Core.Updates;
 
 public class UpdateService : IUpdateService
 {
-    private readonly IUpdateRepository _repository;
+    private readonly IConfigRepository _configRepository;
     private readonly IDockerHubApi _dockerHubApi;
     private readonly ILogger<UpdateService> _logger;
 
@@ -22,11 +23,11 @@ public class UpdateService : IUpdateService
     private const string DOCKER_REPO = "boardgametracker";
 
     public UpdateService(
-        IUpdateRepository repository,
+        IConfigRepository configRepository,
         IDockerHubApi dockerHubApi,
         ILogger<UpdateService> logger)
     {
-        _repository = repository;
+        _configRepository = configRepository;
         _dockerHubApi = dockerHubApi;
         _logger = logger;
     }
@@ -34,7 +35,7 @@ public class UpdateService : IUpdateService
     public async Task<UpdateStatus> GetVersionInfoAsync()
     {
         var currentVersion = GetCurrentVersion();
-        var config = await _repository.GetUpdateConfigAsync();
+        var config = await _configRepository.GetConfigsByPrefixAsync(UpdateConfig.Prefix);
 
         var updateStatus = new UpdateStatus
         {
@@ -60,7 +61,7 @@ public class UpdateService : IUpdateService
             _logger.LogInformation("Checking for updates from Docker Hub...");
 
             var currentVersion = GetCurrentVersion();
-            var updateTrack = await _repository.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track);
+            var updateTrack = await _configRepository.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track);
             var isBetaTrack = updateTrack == VersionTrack.Beta;
 
             _logger.LogInformation("Current version: {Version}, Update track: {Track}",
@@ -79,8 +80,8 @@ public class UpdateService : IUpdateService
             if (!semverTags.Any())
             {
                 _logger.LogWarning("No valid semantic version tags found on Docker Hub");
-                await _repository.SetConfigValueAsync(UpdateConfig.CheckError, "No valid versions found");
-                await _repository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
+                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, "No valid versions found");
+                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
                 return;
             }
 
@@ -97,18 +98,18 @@ public class UpdateService : IUpdateService
             if (latestVersion == null)
             {
                 _logger.LogWarning("No matching versions found for track: {Track}", updateTrack);
-                await _repository.SetConfigValueAsync(UpdateConfig.CheckError,
+                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError,
                     $"No {updateTrack} versions found");
-                await _repository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
+                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
                 return;
             }
 
             var updateAvailable = CompareVersions(currentVersion, latestVersion);
 
-            await _repository.SetConfigValueAsync(UpdateConfig.AvailableVersion, latestVersion);
-            await _repository.SetConfigValueAsync(UpdateConfig.Available, updateAvailable);
-            await _repository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
-            await _repository.SetConfigValueAsync(UpdateConfig.CheckError, string.Empty);
+            await _configRepository.SetConfigValueAsync(UpdateConfig.AvailableVersion, latestVersion);
+            await _configRepository.SetConfigValueAsync(UpdateConfig.Available, updateAvailable);
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, string.Empty);
 
             _logger.LogInformation(
                 "Update check completed. Current: {Current}, Latest: {Latest}, Available: {Available}",
@@ -117,21 +118,21 @@ public class UpdateService : IUpdateService
         catch (ApiException apiEx)
         {
             _logger.LogError(apiEx, "Docker Hub API error during update check");
-            await _repository.SetConfigValueAsync(UpdateConfig.CheckError, $"API Error: {apiEx.Message}");
-            await _repository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, $"API Error: {apiEx.Message}");
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error checking for updates");
-            await _repository.SetConfigValueAsync(UpdateConfig.CheckError, ex.Message);
-            await _repository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, ex.Message);
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
         }
     }
 
     public async Task<UpdateSettings> GetUpdateSettingsAsync()
     {
-        var enabled = await _repository.GetConfigValueAsync(UpdateConfig.CheckEnabled, true);
-        var versionTrack = await _repository.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track);
+        var enabled = await _configRepository.GetConfigValueAsync<bool>(UpdateConfig.CheckEnabled);
+        var versionTrack = await _configRepository.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track);
         var settings = new UpdateSettings
         {
             Enabled = enabled,
@@ -143,8 +144,8 @@ public class UpdateService : IUpdateService
 
     public async Task UpdateSettingsAsync(bool enabled, VersionTrack versionTrack)
     {
-        await _repository.SetConfigValueAsync(UpdateConfig.CheckEnabled, enabled);
-        await _repository.SetConfigValueAsync(UpdateConfig.Track, versionTrack);
+        await _configRepository.SetConfigValueAsync(UpdateConfig.CheckEnabled, enabled);
+        await _configRepository.SetConfigValueAsync(UpdateConfig.Track, versionTrack);
     }
 
     public string GetCurrentVersion()
