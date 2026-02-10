@@ -17,7 +17,7 @@ export const BgtEmptyState = ({ icon: Icon, title, description, action }: Props)
     <div className="flex items-center justify-center min-h-[400px] p-8">
       <div className="text-center max-w-md">
         <div className="inline-flex items-center justify-center w-20 h-20 bg-primary/10 border-2 border-primary/20 rounded-xl mb-6">
-          <Icon className="text-primary size-16" />
+          <Icon className="text-primary size-14" />
         </div>
         <h3 className="text-2xl font-bold text-white mb-3">{title}</h3>
         <p className="text-white/60 mb-6">{description}</p>

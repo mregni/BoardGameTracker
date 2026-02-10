@@ -6,6 +6,7 @@ import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
 import { useToasts } from '../-hooks/useToasts';
 
 import { useLocationsData } from './-hooks/useLocationsData';
+import { useLocationModals } from './-hooks/useLocationModals';
 
 import { NewLocationModal } from '@/routes/locations/-modals/NewLocationModal';
 import { EditLocationModal } from '@/routes/locations/-modals/EditLocationModal';
@@ -14,6 +15,7 @@ import { DataTableProps, BgtDataTable } from '@/components/BgtTable/BgtDataTable
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
+import { BgtEmptyPage } from '@/components/BgtLayout/BgtEmptyPage';
 import { BgtIconButton } from '@/components/BgtIconButton/BgtIconButton';
 import { BgtCard } from '@/components/BgtCard/BgtCard';
 import TrashIcon from '@/assets/icons/trash.svg?react';
@@ -24,20 +26,15 @@ export const Route = createFileRoute('/locations/')({
   component: RouteComponent,
 });
 
-interface ModalState {
-  location: Location | null;
-  open: boolean;
-}
-
 function RouteComponent() {
   const { t } = useTranslation();
   const { infoToast, errorToast } = useToasts();
-  const [deleteModalState, setDeleteModalState] = useState<ModalState>({ location: null, open: false });
-  const [editModalState, setEditModalState] = useState<ModalState>({ location: null, open: false });
-  const [openNewModal, setOpenNewModal] = useState(false);
+  const modals = useLocationModals();
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
   const onDeleteSuccess = () => {
-    setDeleteModalState({ open: false, location: null });
+    modals.deleteModal.hide();
+    setSelectedLocation(null);
     infoToast(t('location.notifications.deleted'));
   };
 
@@ -71,14 +68,16 @@ function RouteComponent() {
             <BgtIconButton
               icon={<PencilIcon className="size-5" />}
               onClick={() => {
-                setEditModalState({ open: true, location: row.original });
+                setSelectedLocation(row.original);
+                modals.editModal.show();
               }}
             />
             <BgtIconButton
               icon={<TrashIcon className="size-5" />}
               intent="danger"
               onClick={() => {
-                setDeleteModalState({ open: true, location: row.original });
+                setSelectedLocation(row.original);
+                modals.deleteModal.show();
               }}
             />
           </div>
@@ -86,15 +85,29 @@ function RouteComponent() {
         header: '',
       },
     ],
-    [t]
+    [t, modals.editModal, modals.deleteModal]
   );
+
+  if (locations.length === 0) {
+    return (
+      <BgtEmptyPage
+        header={t('common.locations')}
+        icon={MapPinIcon}
+        title={t('location.empty.title')}
+        description={t('location.empty.description')}
+        action={{ label: t('location.new.button'), onClick: modals.createModal.show }}
+      >
+        <NewLocationModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
+      </BgtEmptyPage>
+    );
+  }
 
   return (
     <BgtPage>
       <BgtPageHeader
         icon={MapPinIcon}
         header={t('common.locations')}
-        actions={[{ onClick: () => setOpenNewModal(true), variant: 'primary', content: 'location.new.button' }]}
+        actions={[{ onClick: modals.createModal.show, variant: 'primary', content: 'location.new.button' }]}
       />
       <BgtPageContent>
         <BgtCard className="p-4">
@@ -105,25 +118,25 @@ function RouteComponent() {
             widths={['w-[70px]', 'w-[100px]', '', 'w-[50px]']}
           />
         </BgtCard>
-        {openNewModal && <NewLocationModal open={openNewModal} close={() => setOpenNewModal(false)} />}
+        <NewLocationModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
         <BgtDeleteModal
-          title={deleteModalState.location?.name ?? ''}
-          open={deleteModalState.open}
-          close={() => setDeleteModalState({ location: null, open: false })}
-          onDelete={() => deleteModalState.location && deleteLocation(deleteModalState.location.id)}
+          title={selectedLocation?.name ?? ''}
+          open={modals.deleteModal.isOpen}
+          close={modals.deleteModal.hide}
+          onDelete={() => selectedLocation && deleteLocation(selectedLocation.id)}
           description={
-            t('location.delete.description', { name: deleteModalState.location?.name ?? '' }) +
+            t('location.delete.description', { name: selectedLocation?.name ?? '' }) +
             ' ' +
-            ((deleteModalState.location?.playCount ?? 0) > 0
-              ? t('location.delete.extra-description', { count: deleteModalState.location?.playCount ?? 0 })
+            ((selectedLocation?.playCount ?? 0) > 0
+              ? t('location.delete.extra-description', { count: selectedLocation?.playCount ?? 0 })
               : '')
           }
         />
-        {editModalState.location && (
+        {selectedLocation && (
           <EditLocationModal
-            location={editModalState.location}
-            open={editModalState.open}
-            close={() => setEditModalState({ location: null, open: false })}
+            location={selectedLocation}
+            open={modals.editModal.isOpen}
+            close={modals.editModal.hide}
           />
         )}
       </BgtPageContent>

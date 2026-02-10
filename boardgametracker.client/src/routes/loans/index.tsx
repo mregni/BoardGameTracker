@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { useToasts } from '../-hooks/useToasts';
@@ -18,6 +17,7 @@ import { BgtTextStatistic } from '@/components/BgtStatistic/BgtTextStatistic';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
+import { BgtEmptyPage } from '@/components/BgtLayout/BgtEmptyPage';
 import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
 import Package from '@/assets/icons/package.svg?react';
 import LeftRightArrowIcon from '@/assets/icons/left-right-arrow.svg?react';
@@ -31,7 +31,7 @@ export const Route = createFileRoute('/loans/')({
 });
 
 function RouteComponent() {
-  const [openModal, setOpenModal] = useState(false);
+  const { t } = useTranslation();
   const { errorToast, successToast } = useToasts();
   const { loans, settings, deleteLoan, returnLoan, isLoading } = useLoans({
     onDeleteError: () => errorToast('loan.delete.failed'),
@@ -50,12 +50,26 @@ function RouteComponent() {
     onDeleteModalClose: modals.deleteModal.hide,
   });
 
+  if (loans.length === 0) {
+    return (
+      <BgtEmptyPage
+        header={t('common.loans')}
+        icon={LeftRightArrowIcon}
+        title={t('loan.empty.title')}
+        description={t('loan.empty.description')}
+        action={{ label: t('loan.new.title'), onClick: modals.createModal.show }}
+      >
+        <NewLoanModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} />
+      </BgtEmptyPage>
+    );
+  }
+
   return (
     <BgtPage>
       <BgtPageHeader
         icon={LeftRightArrowIcon}
         header={t('common.loans')}
-        actions={[{ onClick: () => setOpenModal(true), variant: 'primary', content: 'loan.new.title' }]}
+        actions={[{ onClick: modals.createModal.show, variant: 'primary', content: 'loan.new.title' }]}
       />
       <BgtPageContent isLoading={isLoading} data={{ loans, settings }}>
         {({ loans, settings }) => (
@@ -116,7 +130,7 @@ function RouteComponent() {
                   ))}
               </div>
             )}
-            <NewLoanModal open={openModal} setOpen={setOpenModal} />
+            <NewLoanModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} />
           </>
         )}
       </BgtPageContent>

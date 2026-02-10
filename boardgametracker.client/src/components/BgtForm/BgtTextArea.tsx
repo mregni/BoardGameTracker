@@ -24,9 +24,12 @@ const BgtTextAreaComponent = (props: Props) => {
 
   return (
     <FormFieldWrapper label={label} errors={field.state.meta.errors}>
-      <div className="'w-full bg-background font- text-whiterounded-lg border border-primary/30 focus:border-primary focus:outline-none'">
+      <div className="w-full  text-whiterounded-lg border-none ">
         <TextArea
-          className={cx(className, 'bg-transparent shadow-none focus-within:outline-hidden')}
+          className={cx(
+            'bg-background! shadow-none!border rounded-lg! border-primary/30! focus:border-primary!',
+            className
+          )}
           rows={4}
           disabled={disabled}
           value={field.state.value ?? ''}

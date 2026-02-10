@@ -40,7 +40,7 @@ export const NewLocationModal = (props: Props) => {
   });
 
   return (
-    <BgtDialog open={open}>
+    <BgtDialog open={open} onClose={close}>
       <BgtDialogContent>
         <form
           onSubmit={(e) => {

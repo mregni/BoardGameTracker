@@ -67,7 +67,7 @@ export const EditPlayerModal = (props: Props) => {
   });
 
   return (
-    <BgtDialog open={open}>
+    <BgtDialog open={open} onClose={handleClose}>
       <BgtDialogContent>
         <BgtDialogTitle>{t('player.update.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('player.update.description')}</BgtDialogDescription>

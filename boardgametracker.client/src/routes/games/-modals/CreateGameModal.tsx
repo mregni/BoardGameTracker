@@ -33,7 +33,7 @@ const CreateGameModal = (props: Props) => {
   }, [navigate]);
 
   return (
-    <BgtDialog open={open}>
+    <BgtDialog open={open} onClose={handleClose}>
       <BgtDialogContent>
         <BgtDialogTitle>{t('game.new.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('game.new.description')}</BgtDialogDescription>

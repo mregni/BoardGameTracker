@@ -1,15 +1,15 @@
-import { memo } from 'react';
-import { UseFormReturn } from '@tanstack/react-form';
+import { Dispatch, memo, SetStateAction } from 'react';
 
 import { UpdateSessionPlayerModal } from '../-modals/UpdateSessionPlayerModal';
 import { CreateSessionPlayerModal } from '../-modals/CreateSessionPlayerModal';
 
-import { CreateSession, CreateSessionPlayer, CreatePlayerSessionNoScoring, Player } from '@/models';
+import { CreateSessionPlayer, CreatePlayerSessionNoScoring, Player } from '@/models';
 import { CreateSessionSchema } from '@/models';
 import { BgtPlayerSelector, BgtFormField } from '@/components/BgtForm';
 
 interface SessionPlayerManagerProps {
-  form: UseFormReturn<CreateSession>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  form: any;
   players: (CreateSessionPlayer | CreatePlayerSessionNoScoring)[];
   playerList: Player[];
   hasScoring: boolean;
@@ -17,12 +17,12 @@ interface SessionPlayerManagerProps {
   openCreatePlayerModal: boolean;
   openUpdatePlayerModal: boolean;
   playerIdToEdit: number | null;
-  setOpenCreatePlayerModal: (open: boolean) => void;
-  setOpenUpdatePlayerModal: (open: boolean) => void;
+  setOpenCreatePlayerModal: Dispatch<SetStateAction<boolean>>;
+  setOpenUpdatePlayerModal: Dispatch<SetStateAction<boolean>>;
   onAddPlayer: (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void;
   onUpdatePlayer: (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void;
   onRemovePlayer: (index: number) => void;
-  setPlayerIdToEdit: (id: number | null) => void;
+  setPlayerIdToEdit: Dispatch<SetStateAction<number | null>>;
 }
 
 const SessionPlayerManagerComponent = ({

@@ -15,7 +15,7 @@ import { BgtTextStatistic } from '@/components/BgtStatistic/BgtTextStatistic';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtEmptyState } from '@/components/BgtLayout/BgtEmptyState';
+import { BgtEmptyPage } from '@/components/BgtLayout/BgtEmptyPage';
 import Players from '@/assets/icons/users.svg?react';
 import Home from '@/assets/icons/home.svg?react';
 import Game from '@/assets/icons/gamepad.svg?react';
@@ -38,20 +38,17 @@ function RouteComponent() {
 
   if (statistics.totalGames === 0) {
     return (
-      <BgtPage>
-        <BgtPageHeader header={t('common.dashboard')} icon={Home} />
-        <BgtPageContent centered>
-          <BgtEmptyState
-            icon={Game}
-            description={t('dashboard.empty.description')}
-            title={t('dashboard.empty.title')}
-            action={{
-              label: t('dashboard.empty.button'),
-              onClick: () => navigate({ to: '/games' }),
-            }}
-          />
-        </BgtPageContent>
-      </BgtPage>
+      <BgtEmptyPage
+        header={t('common.dashboard')}
+        icon={Home}
+        emptyIcon={Game}
+        title={t('dashboard.empty.title')}
+        description={t('dashboard.empty.description')}
+        action={{
+          label: t('dashboard.empty.button'),
+          onClick: () => navigate({ to: '/games' }),
+        }}
+      />
     );
   }
 

@@ -98,7 +98,7 @@ const NewLoanModal = (props: Props) => {
   }, [open, form]);
 
   return (
-    <BgtDialog open={open}>
+    <BgtDialog open={open} onClose={() => setOpen(false)}>
       <BgtDialogContent>
         <form
           onSubmit={(e) => {

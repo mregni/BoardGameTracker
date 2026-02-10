@@ -25,7 +25,7 @@
         "DB_HOST": "localhost",
         "DB_USER": "dev",
         "DB_PASSWORD": "dev",
-        "DB_NAME": "boardgametracker-dev",
+        "DB_NAME": "boardgametracker-dev2",
         "DB_PORT": 5432
       }
     },

@@ -59,13 +59,10 @@ export const CreatePlayerModal = (props: Props) => {
       }
 
       const savedPlayer = await savePlayer(player);
-
-      // Call the callback if provided
       if (onPlayerCreated) {
         onPlayerCreated(savedPlayer);
       }
 
-      // Reset form and image
       form.reset();
       setImage(undefined);
       setOpen(false);
@@ -73,14 +70,13 @@ export const CreatePlayerModal = (props: Props) => {
   });
 
   const handleCancel = () => {
-    // Reset form and image when canceling
     form.reset();
     setImage(undefined);
     setOpen(false);
   };
 
   return (
-    <BgtDialog open={open}>
+    <BgtDialog open={open} onClose={handleCancel}>
       <BgtDialogContent>
         <BgtDialogTitle>{t('player.new.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('player.new.description')}</BgtDialogDescription>

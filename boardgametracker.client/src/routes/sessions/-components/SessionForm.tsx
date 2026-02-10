@@ -143,7 +143,7 @@ export const SessionForm = (props: Props) => {
                 setPlayerIdToEdit={() => {}}
               />
 
-              <div className="flex flex-row gap-2">
+              <div className="flex flex-row gap-2 mt-2">
                 <BgtButton
                   variant="cancel"
                   type="button"

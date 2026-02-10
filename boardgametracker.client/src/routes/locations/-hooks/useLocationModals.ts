@@ -1,15 +1,13 @@
 import { useModalState } from '@/hooks/useModalState';
 
-export const useGameModals = () => {
+export const useLocationModals = () => {
   const createModal = useModalState();
-  const bggModal = useModalState();
+  const editModal = useModalState();
   const deleteModal = useModalState();
-  const expansionModal = useModalState();
 
   return {
     createModal,
-    bggModal,
+    editModal,
     deleteModal,
-    expansionModal,
   };
 };

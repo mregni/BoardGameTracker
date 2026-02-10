@@ -23,6 +23,7 @@ import { getGameNights, getGameNightStatistics } from '@/services/queries/gameNi
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
+import { BgtEmptyPage } from '@/components/BgtLayout/BgtEmptyPage';
 import Calendar from '@/assets/icons/calendar.svg?react';
 
 export const Route = createFileRoute('/game-nights/')({
@@ -98,6 +99,28 @@ function RouteComponent() {
         return gameNights;
     }
   }, [gameNights, filter]);
+
+  if (gameNights.length === 0) {
+    return (
+      <BgtEmptyPage
+        header={t('game-nights.title')}
+        icon={Calendar}
+        title={t('game-nights.empty.title')}
+        description={t('game-nights.empty.description')}
+        action={{ label: t('game-nights.create.button'), onClick: modals.createModal.show }}
+      >
+        <CreateGameNightModal
+          open={modals.createModal.isOpen}
+          setOpen={modals.createModal.setIsOpen}
+          players={players}
+          games={games}
+          locations={locations}
+          isLoading={isCreating}
+          onSave={actions.handleCreate}
+        />
+      </BgtEmptyPage>
+    );
+  }
 
   return (
     <BgtPage>

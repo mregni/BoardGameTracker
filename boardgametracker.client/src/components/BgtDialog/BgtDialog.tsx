@@ -30,7 +30,7 @@ export const BgtDialogContent = (props: ComponentPropsWithoutRef<typeof Dialog.C
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute top-1 right-1 p-1 hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+          className="absolute top-1 right-1 p-1 hover:bg-transparent rounded-lg cursor-pointer hover:scale-110 transition-transform"
         >
           <Cross className="size-5" />
         </button>

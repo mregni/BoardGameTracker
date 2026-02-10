@@ -13,7 +13,10 @@
       "maybe": "Maybe",
       "host": "Host is always attending"
     },
-
+    "empty": {
+      "title": "No game nights planned yet",
+      "description": "Invite players to plan a game night."
+    },
     "delete": {
       "title": "Delete game night",
       "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
@@ -197,13 +200,13 @@
       "button": ""
     },
     "days": {
-      "0": "Sunday",
-      "1": "Monday",
-      "2": "Tuesday",
-      "3": "Wednesday",
-      "4": "Thursday",
-      "5": "Friday",
-      "6": "Saturday"
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
     }
   },
   "shames": {
@@ -219,6 +222,10 @@
   },
   "loan": {
     "title": "Loans",
+    "empty": {
+      "title": "No loans yet",
+      "description": "You haven't created any loans yet. Start by lending a game to track who has your games."
+    },
     "mark-as-returned": "Return game",
     "no-returned-loans": "No returned loans yet.",
     "statistics": {
@@ -340,6 +347,12 @@
   "game": {
     "add": "Add session",
     "sessions": "View sessions",
+    "no-sessions": {
+      "title": "No Sessions Logged Yet",
+      "description": "  Start tracking your game sessions to see detailed statistics, player performance, and session history. Log your first session to unlock all the analytics!",
+      "button": "Log Your First Session",
+      "extra": "Session data includes players, scores, duration, and more"
+    },
     "notifications": {
       "created": "Game is succesfully created",
       "create-failed": "Game creation failed",
@@ -547,6 +560,10 @@
     "unexpected-error": "An unexpected error occurred."
   },
   "location": {
+    "empty": {
+      "title": "No locations added yet",
+      "description": "You haven't added any locations yet. Start by adding your first location to track where you play your games."
+    },
     "new": {
       "button": "Add new Location",
       "title": "Create new location",

@@ -46,7 +46,7 @@ export const EditLocationModal = (props: Props) => {
   if (location === null) return null;
 
   return (
-    <BgtDialog open={open}>
+    <BgtDialog open={open} onClose={close}>
       <BgtDialogContent>
         <form
           onSubmit={(e) => {

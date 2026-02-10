@@ -64,7 +64,7 @@ export const BggGameModal = (props: Props) => {
   });
 
   return (
-    <BgtDialog open={open}>
+    <BgtDialog open={open} onClose={handleClose}>
       <BgtDialogContent>
         <BgtDialogTitle>{t('game.new.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('game.new.bgg-description')}</BgtDialogDescription>

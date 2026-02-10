@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { useGamesData } from './-hooks/useGamesData';
+import { useGameModals } from './-hooks/useGameModals';
 
 import { getGames } from '@/services/queries/games';
 import CreateGameModal from '@/routes/games/-modals/CreateGameModal';
@@ -12,7 +13,7 @@ import { BgtText } from '@/components/BgtText/BgtText';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtEmptyState } from '@/components/BgtLayout/BgtEmptyState';
+import { BgtEmptyPage } from '@/components/BgtLayout/BgtEmptyPage';
 import { BgtCardList } from '@/components/BgtLayout/BgtCardList';
 import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
 import { SearchInputField } from '@/components/BgtForm';
@@ -40,8 +41,7 @@ function RouteComponent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { games, isLoading } = useGamesData();
-  const [openModal, setOpenModal] = useState(false);
-  const [openBggModal, setOpenBggModal] = useState(false);
+  const modals = useGameModals();
   const [filterValue, setFilterValue] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(category);
 
@@ -61,33 +61,29 @@ function RouteComponent() {
   }, [games, categoryFilter, debouncedFilterValue]);
 
   const openManual = () => {
-    setOpenModal(false);
+    modals.createModal.hide();
     navigate({ to: '/games/new' });
   };
 
   const openBgg = () => {
-    setOpenModal(false);
-    setOpenBggModal(true);
+    modals.createModal.hide();
+    modals.bggModal.show();
   };
 
   if (isLoading) return null;
 
   if (games.length === 0) {
     return (
-      <BgtPage>
-        <BgtPageHeader
-          header={t('games.title')}
-          icon={Game}
-          actions={[{ onClick: () => setOpenModal(true), variant: 'primary', content: 'games.new' }]}
-        />
-        <BgtPageContent centered>
-          <BgtEmptyState
-            icon={Game}
-            description={t('dashboard.empty.description')}
-            title={t('dashboard.empty.title')}
-          />
-        </BgtPageContent>
-      </BgtPage>
+      <BgtEmptyPage
+        header={t('games.title')}
+        icon={Game}
+        title={t('dashboard.empty.title')}
+        description={t('dashboard.empty.description')}
+        action={{ onClick: modals.createModal.show, label: t('games.new') }}
+      >
+        <BggGameModal open={modals.bggModal.isOpen} setOpen={modals.bggModal.setIsOpen} />
+        <CreateGameModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} openBgg={openBgg} openManual={openManual} />
+      </BgtEmptyPage>
     );
   }
 
@@ -96,7 +92,7 @@ function RouteComponent() {
       <BgtPageHeader
         header={t('games.title')}
         icon={Game}
-        actions={[{ onClick: () => setOpenModal(true), variant: 'primary', content: 'games.new' }]}
+        actions={[{ onClick: modals.createModal.show, variant: 'primary', content: 'games.new' }]}
       ></BgtPageHeader>
       <BgtPageContent>
         <div className="flex flex-row gap-3">
@@ -125,8 +121,8 @@ function RouteComponent() {
             />
           ))}
         </BgtCardList>
-        <BggGameModal open={openBggModal} setOpen={setOpenBggModal} />
-        <CreateGameModal open={openModal} setOpen={setOpenModal} openBgg={openBgg} openManual={openManual} />
+        <BggGameModal open={modals.bggModal.isOpen} setOpen={modals.bggModal.setIsOpen} />
+        <CreateGameModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} openBgg={openBgg} openManual={openManual} />
       </BgtPageContent>
     </BgtPage>
   );

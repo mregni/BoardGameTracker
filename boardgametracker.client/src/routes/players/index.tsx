@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import { CreatePlayerModal } from './-modals/CreatePlayerModal';
 import { usePlayersData } from './-hooks/usePlayersData';
+import { usePlayerModals } from './-hooks/usePlayerModals';
 
 import { getPlayers } from '@/services/queries/players';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -11,7 +12,7 @@ import { BgtText } from '@/components/BgtText/BgtText';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtEmptyState } from '@/components/BgtLayout/BgtEmptyState';
+import { BgtEmptyPage } from '@/components/BgtLayout/BgtEmptyPage';
 import { BgtCardList } from '@/components/BgtLayout/BgtCardList';
 import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
 import { SearchInputField } from '@/components/BgtForm';
@@ -26,7 +27,7 @@ export const Route = createFileRoute('/players/')({
 
 function RouteComponent() {
   const { t } = useTranslation();
-  const [openModal, setOpenModal] = useState<boolean>(false);
+  const modals = usePlayerModals();
   const [filterValue, setFilterValue] = useState<string>('');
   const { players, isLoading } = usePlayersData();
 
@@ -44,16 +45,15 @@ function RouteComponent() {
 
   if (players.length === 0) {
     return (
-      <BgtPage>
-        <BgtPageHeader
-          header={t('common.players')}
-          icon={Users}
-          actions={[{ content: 'player.new.button', variant: 'primary', onClick: () => setOpenModal(true) }]}
-        />
-        <BgtPageContent centered>
-          <BgtEmptyState icon={Users} description={t('player.empty.description')} title={t('player.empty.title')} />
-        </BgtPageContent>
-      </BgtPage>
+      <BgtEmptyPage
+        header={t('common.players')}
+        icon={Users}
+        title={t('player.empty.title')}
+        description={t('player.empty.description')}
+        action={{ label: t('player.new.button'), onClick: modals.createModal.show }}
+      >
+        <CreatePlayerModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} />
+      </BgtEmptyPage>
     );
   }
 
@@ -62,7 +62,7 @@ function RouteComponent() {
       <BgtPageHeader
         header={t('common.players')}
         icon={Users}
-        actions={[{ content: 'player.new.button', variant: 'primary', onClick: () => setOpenModal(true) }]}
+        actions={[{ content: 'player.new.button', variant: 'primary', onClick: modals.createModal.show }]}
       ></BgtPageHeader>
       <BgtPageContent>
         <SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
@@ -74,7 +74,7 @@ function RouteComponent() {
             <BgtImageCard key={x.id} title={x.name} image={x.image} link={`/players/${x.id}`} />
           ))}
         </BgtCardList>
-        {openModal && <CreatePlayerModal open={openModal} setOpen={setOpenModal} />}
+        <CreatePlayerModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} />
       </BgtPageContent>
     </BgtPage>
   );
