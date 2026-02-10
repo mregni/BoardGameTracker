@@ -44,7 +44,15 @@ public class GameNightService : IGameNightService
             .ToListAsync();
 
         var players = command.InvitedPlayerIds.Select(playerId => GameNightRsvp.Create(playerId, GameNightRsvpState.Pending)).ToList();
-        players.Add(GameNightRsvp.Create(command.HostId, GameNightRsvpState.Accepted));
+        if (players.All(x => x.PlayerId != command.HostId))
+        {
+            players.Add(GameNightRsvp.Create(command.HostId, GameNightRsvpState.Accepted));
+        }
+        else
+        {
+            players.First(x => x.PlayerId == command.HostId).UpdateState(GameNightRsvpState.Accepted);
+        }
+        
         var gameNight = GameNight.Create(command.Title, command.Notes, command.StartDate, command.HostId, command.LocationId);
         
         gameNight.SetSuggestedGames(games);
