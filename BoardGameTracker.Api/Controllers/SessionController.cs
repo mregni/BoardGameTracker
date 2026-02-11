@@ -2,7 +2,6 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -11,12 +10,10 @@ namespace BoardGameTracker.Api.Controllers;
 public class SessionController : ControllerBase
 {
     private readonly ISessionService _sessionService;
-    private readonly ILogger<SessionController> _logger;
 
-    public SessionController(ISessionService sessionService, ILogger<SessionController> logger)
+    public SessionController(ISessionService sessionService)
     {
         _sessionService = sessionService;
-        _logger = logger;
     }
 
     [HttpGet]
@@ -40,16 +37,8 @@ public class SessionController : ControllerBase
             return BadRequest();
         }
 
-        try
-        {
-            var session = await _sessionService.CreateFromCommand(command);
-            return Ok(SessionDtoExtensions.ToDto(session));
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error creating session");
-            return StatusCode(500);
-        }
+        var session = await _sessionService.CreateFromCommand(command);
+        return Ok(SessionDtoExtensions.ToDto(session));
     }
 
     [HttpPut]
@@ -60,16 +49,8 @@ public class SessionController : ControllerBase
             return BadRequest();
         }
 
-        try
-        {
-            var result = await _sessionService.UpdateFromCommand(command);
-            return Ok(SessionDtoExtensions.ToDto(result));
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error updating session");
-            return StatusCode(500);
-        }
+        var result = await _sessionService.UpdateFromCommand(command);
+        return Ok(SessionDtoExtensions.ToDto(result));
     }
 
     [HttpDelete]

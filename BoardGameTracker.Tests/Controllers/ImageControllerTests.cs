@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
@@ -8,7 +7,6 @@ using BoardGameTracker.Core.Images.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -17,14 +15,12 @@ namespace BoardGameTracker.Tests.Controllers;
 public class ImageControllerTests
 {
     private readonly Mock<IImageService> _imageServiceMock;
-    private readonly Mock<ILogger<ImageController>> _loggerMock;
     private readonly ImageController _controller;
 
     public ImageControllerTests()
     {
         _imageServiceMock = new Mock<IImageService>();
-        _loggerMock = new Mock<ILogger<ImageController>>();
-        _controller = new ImageController(_imageServiceMock.Object, _loggerMock.Object);
+        _controller = new ImageController(_imageServiceMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -100,58 +96,6 @@ public class ImageControllerTests
         okResult.Value.Should().Be(expectedFileName);
 
         _imageServiceMock.Verify(x => x.SaveImage(formFile, UploadFileType.Profile), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task UploadImage_ShouldReturnInternalServerError_WhenExceptionIsThrown()
-    {
-        // Arrange
-        var formFile = CreateMockFormFile();
-        var command = new UploadImageCommand
-        {
-            File = formFile,
-            Type = UploadFileType.Game
-        };
-
-        _imageServiceMock
-            .Setup(x => x.SaveImage(formFile, UploadFileType.Game))
-            .ThrowsAsync(new IOException("Disk full"));
-
-        // Act
-        var result = await _controller.UploadImage(command);
-
-        // Assert
-        var statusCodeResult = result.Should().BeOfType<StatusCodeResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
-
-        _imageServiceMock.Verify(x => x.SaveImage(formFile, UploadFileType.Game), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task UploadImage_ShouldReturnInternalServerError_WhenUnauthorizedAccessException()
-    {
-        // Arrange
-        var formFile = CreateMockFormFile();
-        var command = new UploadImageCommand
-        {
-            File = formFile,
-            Type = UploadFileType.Game
-        };
-
-        _imageServiceMock
-            .Setup(x => x.SaveImage(formFile, UploadFileType.Game))
-            .ThrowsAsync(new UnauthorizedAccessException("Access denied"));
-
-        // Act
-        var result = await _controller.UploadImage(command);
-
-        // Assert
-        var statusCodeResult = result.Should().BeOfType<StatusCodeResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
-
-        _imageServiceMock.Verify(x => x.SaveImage(formFile, UploadFileType.Game), Times.Once);
         VerifyNoOtherCalls();
     }
 

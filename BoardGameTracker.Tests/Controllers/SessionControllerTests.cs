@@ -8,7 +8,6 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -17,14 +16,12 @@ namespace BoardGameTracker.Tests.Controllers;
 public class SessionControllerTests
 {
     private readonly Mock<ISessionService> _sessionServiceMock;
-    private readonly Mock<ILogger<SessionController>> _loggerMock;
     private readonly SessionController _controller;
 
     public SessionControllerTests()
     {
         _sessionServiceMock = new Mock<ISessionService>();
-        _loggerMock = new Mock<ILogger<SessionController>>();
-        _controller = new SessionController(_sessionServiceMock.Object, _loggerMock.Object);
+        _controller = new SessionController(_sessionServiceMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -132,36 +129,6 @@ public class SessionControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task CreateSession_ShouldReturnInternalServerError_WhenExceptionIsThrown()
-    {
-        // Arrange
-        var command = new CreateSessionCommand
-        {
-            GameId = 1,
-            Start = DateTime.UtcNow,
-            Minutes = 60,
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true }
-            }
-        };
-
-        _sessionServiceMock
-            .Setup(x => x.CreateFromCommand(command))
-            .ThrowsAsync(new InvalidOperationException("Database error"));
-
-        // Act
-        var result = await _controller.CreateSession(command);
-
-        // Assert
-        var statusCodeResult = result.Should().BeOfType<StatusCodeResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
-
-        _sessionServiceMock.Verify(x => x.CreateFromCommand(command), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
     #endregion
 
     #region UpdateSession Tests
@@ -234,37 +201,6 @@ public class SessionControllerTests
         // Assert
         result.Should().BeOfType<BadRequestResult>();
 
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task UpdateSession_ShouldReturnInternalServerError_WhenExceptionIsThrown()
-    {
-        // Arrange
-        var command = new UpdateSessionCommand
-        {
-            Id = 1,
-            GameId = 1,
-            Start = DateTime.UtcNow,
-            Minutes = 60,
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true }
-            }
-        };
-
-        _sessionServiceMock
-            .Setup(x => x.UpdateFromCommand(command))
-            .ThrowsAsync(new InvalidOperationException("Update failed"));
-
-        // Act
-        var result = await _controller.UpdateSession(command);
-
-        // Assert
-        var statusCodeResult = result.Should().BeOfType<StatusCodeResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
-
-        _sessionServiceMock.Verify(x => x.UpdateFromCommand(command), Times.Once);
         VerifyNoOtherCalls();
     }
 

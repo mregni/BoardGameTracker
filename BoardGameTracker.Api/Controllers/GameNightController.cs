@@ -44,15 +44,8 @@ public class GameNightController : ControllerBase
             return BadRequest();
         }
 
-        try
-        {
-            var gameNight = await _gameNightService.Update(command);
-            return Ok(gameNight.ToDto());
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        var gameNight = await _gameNightService.Update(command);
+        return Ok(gameNight.ToDto());
     }
 
     [HttpDelete]
@@ -72,14 +65,7 @@ public class GameNightController : ControllerBase
             return BadRequest();
         }
 
-        try
-        {   
-            var rsvp = await _gameNightService.UpdateRsvp(command);
-            return Ok(rsvp.ToDto());
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        var rsvp = await _gameNightService.UpdateRsvp(command);
+        return Ok(rsvp.ToDto());
     }
 }

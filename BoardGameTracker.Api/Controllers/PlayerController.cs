@@ -1,10 +1,8 @@
-﻿using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -13,14 +11,12 @@ namespace BoardGameTracker.Api.Controllers;
 public class PlayerController : ControllerBase
 {
     private readonly IPlayerService _playerService;
-    private readonly ILogger<PlayerController> _logger;
 
-    public PlayerController(IPlayerService playerService, ILogger<PlayerController> logger)
+    public PlayerController(IPlayerService playerService)
     {
         _playerService = playerService;
-        _logger = logger;
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetPlayers()
     {
@@ -36,17 +32,9 @@ public class PlayerController : ControllerBase
             return BadRequest();
         }
 
-        try
-        {
-            var player = new Player(command.Name, command.Image);
-            player = await _playerService.Create(player);
-            return Ok(player.ToDto());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error in CreatePlayer");
-            return StatusCode(500, new { error = "An unexpected error occurred. Please try again later." });
-        }
+        var player = new Player(command.Name, command.Image);
+        player = await _playerService.Create(player);
+        return Ok(player.ToDto());
     }
 
     [HttpPut]
@@ -57,21 +45,13 @@ public class PlayerController : ControllerBase
             return BadRequest();
         }
 
-        try
+        var player = await _playerService.Update(command);
+        if (player == null)
         {
-            var player = await _playerService.Update(command);
-            if (player == null)
-            {
-                return BadRequest();
-            }
-            
-            return Ok(player.ToDto());
+            return BadRequest();
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error in UpdatePlayer");
-            return StatusCode(500, new { error = "An unexpected error occurred. Please try again later." });
-        }
+
+        return Ok(player.ToDto());
     }
 
     [HttpGet]

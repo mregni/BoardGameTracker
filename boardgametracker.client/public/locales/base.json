@@ -559,6 +559,19 @@
     "something-went-wrong": "Something went wrong, please try again later.",
     "unexpected-error": "An unexpected error occurred."
   },
+  "not-found": {
+    "title": "Page not found",
+    "subtitle": "Looks like this page rolled a critical miss!",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "go-back": "Go Back",
+    "quick-nav": "Quick Navigation",
+    "nav": {
+      "dashboard-description": "View your gaming stats",
+      "games-description": "Browse your collection",
+      "players-description": "Check player profiles",
+      "game-nights-description": "Plan your next session"
+    }
+  },
   "location": {
     "empty": {
       "title": "No locations added yet",

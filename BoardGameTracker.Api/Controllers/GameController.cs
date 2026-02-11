@@ -1,6 +1,5 @@
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
-using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -50,16 +49,9 @@ public class GameController : ControllerBase
             return BadRequest();
         }
 
-        try
-        {
-            var game = dto.ToEntity();
-            game = await _gameService.UpdateGame(game);
-            return Ok(game.ToDto());
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, new { error = "An unexpected error occurred. Please try again later." });
-        }
+        var game = dto.ToEntity();
+        game = await _gameService.UpdateGame(game);
+        return Ok(game.ToDto());
     }
 
     [HttpDelete]
@@ -112,15 +104,8 @@ public class GameController : ControllerBase
     [HttpPost("bgg/import")]
     public async Task<IActionResult> ImportBggGames([FromBody] ImportBggGamesCommand command)
     {
-        try
-        {
-            await _gameService.ImportList(command.Games);
-            return Ok(new { success = true });
-        }
-        catch (Exception e)
-        {
-            return StatusCode(500, new { error = e.Message });
-        }
+        await _gameService.ImportList(command.Games);
+        return Ok(new { success = true });
     }
 
     [HttpGet]

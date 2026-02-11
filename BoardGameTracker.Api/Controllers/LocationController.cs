@@ -3,7 +3,6 @@ using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Locations.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -12,12 +11,10 @@ namespace BoardGameTracker.Api.Controllers;
 public class LocationController : ControllerBase
 {
     private readonly ILocationService _locationService;
-    private readonly ILogger<LocationController> _logger;
 
-    public LocationController(ILocationService locationService, ILogger<LocationController> logger)
+    public LocationController(ILocationService locationService)
     {
         _locationService = locationService;
-        _logger = logger;
     }
 
     [HttpGet]
@@ -35,17 +32,9 @@ public class LocationController : ControllerBase
             return BadRequest();
         }
 
-        try
-        {
-            var location = new Location(command.Name);
-            location = await _locationService.Create(location);
-            return Ok(location.ToDto());
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error creating location");
-            return StatusCode(500, new { error = "An unexpected error occurred. Please try again later." });
-        }
+        var location = new Location(command.Name);
+        location = await _locationService.Create(location);
+        return Ok(location.ToDto());
     }
 
     [HttpPut]
@@ -56,17 +45,9 @@ public class LocationController : ControllerBase
             return BadRequest();
         }
 
-        try
-        {
-            var location = new Location(command.Name) { Id = command.Id };
-            await _locationService.Update(location);
-            return Ok(location.ToDto());
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error updating location");
-            return StatusCode(500);
-        }
+        var location = new Location(command.Name) { Id = command.Id };
+        await _locationService.Update(location);
+        return Ok(location.ToDto());
     }
 
     [HttpDelete]

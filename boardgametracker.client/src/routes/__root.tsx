@@ -6,6 +6,7 @@ import { Sidebar } from './-components/Sidebar';
 import { BottomNav } from './-components/BottomNav';
 
 import { MenuItem } from '@/models';
+import { NotFound } from '@/components/NotFound/NotFound';
 import { ErrorFallback } from '@/components/ErrorBoundary/ErrorFallback';
 
 interface RouterContext {
@@ -21,6 +22,7 @@ function RouterErrorComponent({ error, reset }: ErrorComponentProps) {
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   errorComponent: RouterErrorComponent,
+  notFoundComponent: NotFound,
 });
 
 function RootComponent() {

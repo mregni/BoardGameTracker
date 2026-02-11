@@ -9,7 +9,6 @@ using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -18,14 +17,12 @@ namespace BoardGameTracker.Tests.Controllers;
 public class PlayerControllerTests
 {
     private readonly Mock<IPlayerService> _playerServiceMock;
-    private readonly Mock<ILogger<PlayerController>> _loggerMock;
     private readonly PlayerController _controller;
 
     public PlayerControllerTests()
     {
         _playerServiceMock = new Mock<IPlayerService>();
-        _loggerMock = new Mock<ILogger<PlayerController>>();
-        _controller = new PlayerController(_playerServiceMock.Object, _loggerMock.Object);
+        _controller = new PlayerController(_playerServiceMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -127,33 +124,6 @@ public class PlayerControllerTests
     }
 
     [Fact]
-    public async Task CreatePlayer_ShouldReturnInternalServerError_WhenExceptionIsThrown()
-    {
-        // Arrange
-        var command = new CreatePlayerCommand
-        {
-            Name = "Dave",
-            Image = null
-        };
-
-        var expectedException = new InvalidOperationException("Database error");
-
-        _playerServiceMock
-            .Setup(x => x.Create(It.IsAny<Player>()))
-            .ThrowsAsync(expectedException);
-
-        // Act
-        var result = await _controller.CreatePlayer(command);
-
-        // Assert
-        var statusCodeResult = result.Should().BeOfType<ObjectResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
-
-        _playerServiceMock.Verify(x => x.Create(It.IsAny<Player>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
     public async Task UpdatePlayer_ShouldReturnOkWithUpdatedPlayer_WhenPlayerIsUpdated()
     {
         // Arrange
@@ -217,34 +187,6 @@ public class PlayerControllerTests
 
         // Assert
         result.Should().BeOfType<BadRequestResult>();
-
-        _playerServiceMock.Verify(x => x.Update(command), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task UpdatePlayer_ShouldReturnInternalServerError_WhenExceptionIsThrown()
-    {
-        // Arrange
-        var command = new UpdatePlayerCommand
-        {
-            Id = 1,
-            Name = "Eve",
-            Image = null
-        };
-
-        var expectedException = new TimeoutException("Update timeout");
-
-        _playerServiceMock
-            .Setup(x => x.Update(command))
-            .ThrowsAsync(expectedException);
-
-        // Act
-        var result = await _controller.UpdatePlayer(command);
-
-        // Assert
-        var statusCodeResult = result.Should().BeOfType<ObjectResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
 
         _playerServiceMock.Verify(x => x.Update(command), Times.Once);
         VerifyNoOtherCalls();

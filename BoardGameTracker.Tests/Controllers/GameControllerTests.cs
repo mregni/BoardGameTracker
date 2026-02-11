@@ -186,32 +186,6 @@ public class GameControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task UpdateGame_ShouldReturnInternalServerError_WhenExceptionIsThrown()
-    {
-        // Arrange
-        var dto = new GameDto
-        {
-            Id = 1,
-            Title = "Test Game",
-            State = GameState.Owned
-        };
-
-        _gameServiceMock
-            .Setup(x => x.UpdateGame(It.IsAny<Game>()))
-            .ThrowsAsync(new InvalidOperationException("Database error"));
-
-        // Act
-        var result = await _controller.UpdateGame(dto);
-
-        // Assert
-        var statusCodeResult = result.Should().BeOfType<ObjectResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
-
-        _gameServiceMock.Verify(x => x.UpdateGame(It.IsAny<Game>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
     #endregion
 
     #region DeleteGameById Tests
@@ -543,30 +517,6 @@ public class GameControllerTests
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.Value.Should().NotBeNull();
-
-        _gameServiceMock.Verify(x => x.ImportList(command.Games), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ImportBggGames_ShouldReturnInternalServerError_WhenExceptionIsThrown()
-    {
-        // Arrange
-        var command = new ImportBggGamesCommand
-        {
-            Games = new List<ImportGame>()
-        };
-
-        _gameServiceMock
-            .Setup(x => x.ImportList(command.Games))
-            .ThrowsAsync(new Exception("Import error"));
-
-        // Act
-        var result = await _controller.ImportBggGames(command);
-
-        // Assert
-        var statusCodeResult = result.Should().BeOfType<ObjectResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
 
         _gameServiceMock.Verify(x => x.ImportList(command.Games), Times.Once);
         VerifyNoOtherCalls();

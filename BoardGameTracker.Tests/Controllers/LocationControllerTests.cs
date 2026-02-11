@@ -8,7 +8,6 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Locations.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -17,14 +16,12 @@ namespace BoardGameTracker.Tests.Controllers;
 public class LocationControllerTests
 {
     private readonly Mock<ILocationService> _locationServiceMock;
-    private readonly Mock<ILogger<LocationController>> _loggerMock;
     private readonly LocationController _controller;
 
     public LocationControllerTests()
     {
         _locationServiceMock = new Mock<ILocationService>();
-        _loggerMock = new Mock<ILogger<LocationController>>();
-        _controller = new LocationController(_locationServiceMock.Object, _loggerMock.Object);
+        _controller = new LocationController(_locationServiceMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -126,32 +123,6 @@ public class LocationControllerTests
     }
 
     [Fact]
-    public async Task CreateLocation_ShouldReturnInternalServerError_WhenExceptionIsThrown()
-    {
-        // Arrange
-        var command = new CreateLocationCommand
-        {
-            Name = "Library"
-        };
-
-        var expectedException = new InvalidOperationException("Database error");
-
-        _locationServiceMock
-            .Setup(x => x.Create(It.IsAny<Location>()))
-            .ThrowsAsync(expectedException);
-
-        // Act
-        var result = await _controller.CreateLocation(command);
-
-        // Assert
-        var statusCodeResult = result.Should().BeOfType<ObjectResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
-
-        _locationServiceMock.Verify(x => x.Create(It.IsAny<Location>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
     public async Task UpdateLocation_ShouldReturnOkWithUpdatedLocation_WhenLocationIsUpdated()
     {
         // Arrange
@@ -188,33 +159,6 @@ public class LocationControllerTests
         // Assert
         result.Should().BeOfType<BadRequestResult>();
 
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task UpdateLocation_ShouldReturnInternalServerError_WhenExceptionIsThrown()
-    {
-        // Arrange
-        var command = new UpdateLocationCommand
-        {
-            Id = 1,
-            Name = "Park"
-        };
-
-        var expectedException = new TimeoutException("Update timeout");
-
-        _locationServiceMock
-            .Setup(x => x.Update(It.IsAny<Location>()))
-            .ThrowsAsync(expectedException);
-
-        // Act
-        var result = await _controller.UpdateLocation(command);
-
-        // Assert
-        var statusCodeResult = result.Should().BeOfType<StatusCodeResult>().Subject;
-        statusCodeResult.StatusCode.Should().Be(500);
-
-        _locationServiceMock.Verify(x => x.Update(It.IsAny<Location>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

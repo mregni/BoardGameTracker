@@ -49,6 +49,8 @@ builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 builder.Host.UseSerilog();
 
 builder.Services.AddHealthChecks();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -123,6 +125,7 @@ builder.Services.AddSpaStaticFiles(configuration => {
 var app = builder.Build();
 CreateFolders(app.Services);
 
+app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 
 app.UseRouting();
