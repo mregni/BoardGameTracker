@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
+[ApiController]
 [Route("api/gamenight")]
-public class GameNightController : BaseApiController
+public class GameNightController : ControllerBase
 {
     private readonly IGameNightService _gameNightService;
 

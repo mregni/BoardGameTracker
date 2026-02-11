@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Ardalis.GuardClauses;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Configuration;
@@ -80,6 +81,7 @@ builder.Services
     .AddControllers(options =>
     {
         options.ReturnHttpNotAcceptable = true;
+        options.Filters.Add<ValidateIdFilter>();
     })
     .AddJsonOptions(options =>
     {
@@ -197,22 +199,14 @@ await Log.CloseAndFlushAsync();
 static void RunDbMigrations(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<MainDbContext>();
-
-    if (context == null)
-    {
-        throw new ServiceNotResolvedException("Can't resolve MainContext");
-    }
+    var context = Guard.Against.Null(scope.ServiceProvider.GetRequiredService<MainDbContext>());
     context.Database.Migrate();
 }
 
 static void CreateFolders(IServiceProvider serviceProvider)
 {
-    var diskProvider = serviceProvider.GetService<IDiskProvider>();
-    if (diskProvider == null)
-    {
-        throw new ServiceNotResolvedException("Can't resolve IDiskProvider");
-    }
+    var diskProvider = Guard.Against.Null(serviceProvider.GetService<IDiskProvider>());
+    
     diskProvider.EnsureFolder(PathHelper.FullRootImagePath);
     diskProvider.EnsureFolder(PathHelper.FullCoverImagePath);
     diskProvider.EnsureFolder(PathHelper.FullProfileImagePath);

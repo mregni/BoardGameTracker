@@ -5,7 +5,7 @@ namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
-public class DashboardController
+public class DashboardController : ControllerBase
 {
     private readonly IDashboardService _dashboardService;
 
@@ -18,6 +18,6 @@ public class DashboardController
     public async Task<IActionResult> GetDashboardStatistics()
     {
         var statistics = await _dashboardService.GetStatistics();
-        return new OkObjectResult(statistics);
+        return Ok(statistics);
     }
 }

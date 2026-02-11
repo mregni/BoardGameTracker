@@ -8,8 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
+[ApiController]
 [Route("api/game")]
-public class GameController : BaseApiController
+public class GameController : ControllerBase
 {
     private readonly IGameService _gameService;
     private readonly IGameStatisticsService  _gameStatisticsService;
