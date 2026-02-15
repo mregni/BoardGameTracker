@@ -27,7 +27,7 @@ public class CloseLossBadgeEvaluatorTests
     [Fact]
     public void BadgeType_ShouldBeCloseLoss()
     {
-        _evaluator.BadgeType.Should().Be(BadgeType.CLoseLoss);
+        _evaluator.BadgeType.Should().Be(BadgeType.CloseLoss);
     }
 
     #region Basic Requirements Tests
@@ -309,7 +309,7 @@ public class CloseLossBadgeEvaluatorTests
 
     private static Badge CreateBadge(BadgeLevel? level)
     {
-        return Badge.CreateWithId(1, "close_loss_title", "close_loss_desc", BadgeType.CLoseLoss, "badge.png", level);
+        return Badge.CreateWithId(1, "close_loss_title", "close_loss_desc", BadgeType.CloseLoss, "badge.png", level);
     }
 
     private static Session CreateSession()

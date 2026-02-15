@@ -5,6 +5,7 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Languages;
 using BoardGameTracker.Core.Languages.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -13,12 +14,14 @@ namespace BoardGameTracker.Tests.Services;
 public class LanguageServiceTests
 {
     private readonly Mock<ILanguageRepository> _languageRepositoryMock;
+    private readonly Mock<ILogger<LanguageService>> _loggerMock;
     private readonly LanguageService _languageService;
 
     public LanguageServiceTests()
     {
         _languageRepositoryMock = new Mock<ILanguageRepository>();
-        _languageService = new LanguageService(_languageRepositoryMock.Object);
+        _loggerMock = new Mock<ILogger<LanguageService>>();
+        _languageService = new LanguageService(_languageRepositoryMock.Object, _loggerMock.Object);
     }
 
     [Fact]

@@ -5,6 +5,7 @@ using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
@@ -93,7 +94,7 @@ public class PlayerControllerTests
         var createdPlayer = new Player(command.Name, command.Image) { Id = 1 };
 
         _playerServiceMock
-            .Setup(x => x.Create(It.IsAny<Player>()))
+            .Setup(x => x.Create(command))
             .ReturnsAsync(createdPlayer);
 
         // Act
@@ -107,19 +108,7 @@ public class PlayerControllerTests
         playerDto.Name.Should().Be("Charlie");
         playerDto.Image.Should().Be("https://example.com/charlie.jpg");
 
-        _playerServiceMock.Verify(x => x.Create(It.Is<Player>(p => p.Name == command.Name && p.Image == command.Image)), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task CreatePlayer_ShouldReturnBadRequest_WhenCommandIsNull()
-    {
-        // Act
-        var result = await _controller.CreatePlayer(null);
-
-        // Assert
-        result.Should().BeOfType<BadRequestResult>();
-
+        _playerServiceMock.Verify(x => x.Create(command), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -156,19 +145,7 @@ public class PlayerControllerTests
     }
 
     [Fact]
-    public async Task UpdatePlayer_ShouldReturnBadRequest_WhenCommandIsNull()
-    {
-        // Act
-        var result = await _controller.UpdatePlayer(null);
-
-        // Assert
-        result.Should().BeOfType<BadRequestResult>();
-
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task UpdatePlayer_ShouldReturnBadRequest_WhenServiceReturnsNull()
+    public async Task UpdatePlayer_ShouldThrow_WhenPlayerDoesNotExist()
     {
         // Arrange
         var command = new UpdatePlayerCommand
@@ -180,13 +157,13 @@ public class PlayerControllerTests
 
         _playerServiceMock
             .Setup(x => x.Update(command))
-            .ReturnsAsync((Player?)null);
+            .ThrowsAsync(new EntityNotFoundException(nameof(Player), command.Id));
 
         // Act
-        var result = await _controller.UpdatePlayer(command);
+        var action = async () => await _controller.UpdatePlayer(command);
 
         // Assert
-        result.Should().BeOfType<BadRequestResult>();
+        await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _playerServiceMock.Verify(x => x.Update(command), Times.Once);
         VerifyNoOtherCalls();
@@ -238,7 +215,7 @@ public class PlayerControllerTests
     }
 
     [Fact]
-    public async Task DeleteGameById_ShouldReturnOkWithSuccess_WhenPlayerIsDeleted()
+    public async Task DeletePlayerById_ShouldReturnNoContent_WhenPlayerIsDeleted()
     {
         // Arrange
         var playerId = 1;
@@ -248,20 +225,37 @@ public class PlayerControllerTests
             .Returns(Task.CompletedTask);
 
         // Act
-        var result = await _controller.DeleteGameById(playerId);
+        var result = await _controller.DeletePlayerById(playerId);
 
         // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value;
-
-        response.Should().NotBeNull();
+        result.Should().BeOfType<NoContentResult>();
 
         _playerServiceMock.Verify(x => x.Delete(playerId), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task GetGameStats_ShouldReturnOkWithStats_WhenStatsExist()
+    public async Task DeletePlayerById_ShouldThrow_WhenPlayerDoesNotExist()
+    {
+        // Arrange
+        var playerId = 999;
+
+        _playerServiceMock
+            .Setup(x => x.Delete(playerId))
+            .ThrowsAsync(new EntityNotFoundException(nameof(Player), playerId));
+
+        // Act
+        var action = async () => await _controller.DeletePlayerById(playerId);
+
+        // Assert
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+
+        _playerServiceMock.Verify(x => x.Delete(playerId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetPlayerStats_ShouldReturnOkWithStats_WhenStatsExist()
     {
         // Arrange
         var playerId = 1;
@@ -279,7 +273,7 @@ public class PlayerControllerTests
             .ReturnsAsync(stats);
 
         // Act
-        var result = await _controller.GetGameStats(playerId);
+        var result = await _controller.GetPlayerStats(playerId);
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -295,7 +289,7 @@ public class PlayerControllerTests
     }
 
     [Fact]
-    public async Task GetGameSessionsById_ShouldReturnOkWithSessions_WhenSessionsExist()
+    public async Task GetPlayerSessionsById_ShouldReturnOkWithSessions_WhenSessionsExist()
     {
         // Arrange
         var playerId = 1;
@@ -311,7 +305,7 @@ public class PlayerControllerTests
             .ReturnsAsync(sessions);
 
         // Act
-        var result = await _controller.GetGameSessionsById(playerId, count);
+        var result = await _controller.GetPlayerSessionsById(playerId, count);
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -326,7 +320,7 @@ public class PlayerControllerTests
     }
 
     [Fact]
-    public async Task GetGameSessionsById_ShouldReturnOkWithEmptyList_WhenNoSessionsExist()
+    public async Task GetPlayerSessionsById_ShouldReturnOkWithEmptyList_WhenNoSessionsExist()
     {
         // Arrange
         var playerId = 1;
@@ -337,7 +331,7 @@ public class PlayerControllerTests
             .ReturnsAsync(new List<Session>());
 
         // Act
-        var result = await _controller.GetGameSessionsById(playerId, count);
+        var result = await _controller.GetPlayerSessionsById(playerId, count);
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;

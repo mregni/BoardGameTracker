@@ -5,6 +5,7 @@ using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -15,6 +16,7 @@ public class GameStatisticsServiceTests
     private readonly Mock<IGameSessionRepository> _gameSessionRepositoryMock;
     private readonly Mock<IGameStatisticsRepository> _gameStatisticsRepositoryMock;
     private readonly Mock<IPlayerRepository> _playerRepositoryMock;
+    private readonly Mock<ILogger<GameStatisticsService>> _loggerMock;
     private readonly GameStatisticsService _service;
 
     public GameStatisticsServiceTests()
@@ -22,11 +24,13 @@ public class GameStatisticsServiceTests
         _gameSessionRepositoryMock = new Mock<IGameSessionRepository>();
         _gameStatisticsRepositoryMock = new Mock<IGameStatisticsRepository>();
         _playerRepositoryMock = new Mock<IPlayerRepository>();
+        _loggerMock = new Mock<ILogger<GameStatisticsService>>();
 
         _service = new GameStatisticsService(
             _gameSessionRepositoryMock.Object,
             _gameStatisticsRepositoryMock.Object,
-            _playerRepositoryMock.Object);
+            _playerRepositoryMock.Object,
+            _loggerMock.Object);
     }
 
     #region CalculateStatisticsAsync Tests

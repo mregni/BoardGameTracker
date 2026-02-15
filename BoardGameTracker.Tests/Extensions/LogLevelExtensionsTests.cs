@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using BoardGameTracker.Common.Extensions;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using Xunit;
 

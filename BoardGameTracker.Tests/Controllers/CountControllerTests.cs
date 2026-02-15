@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Core.GameNights.Interfaces;
@@ -20,6 +20,7 @@ public class CountControllerTests
         private readonly Mock<ILocationService> _locationServiceMock;
         private readonly Mock<ILoanService> _loanServiceMock;
         private readonly Mock<IGameNightService> _gameNightServiceMock;
+        private readonly Mock<IShameService> _shameServiceMock;
         private readonly CountController _controller;
 
         public CountControllerTests()
@@ -29,13 +30,15 @@ public class CountControllerTests
             _locationServiceMock = new Mock<ILocationService>();
             _loanServiceMock = new Mock<ILoanService>();
             _gameNightServiceMock = new Mock<IGameNightService>();
+            _shameServiceMock = new Mock<IShameService>();
 
             _controller = new CountController(
                 _locationServiceMock.Object,
                 _playerServiceMock.Object,
                 _gameServiceMock.Object,
                 _loanServiceMock.Object,
-                _gameNightServiceMock.Object);
+                _gameNightServiceMock.Object,
+                _shameServiceMock.Object);
         }
 
         private void VerifyNoOtherCalls()
@@ -45,6 +48,7 @@ public class CountControllerTests
             _locationServiceMock.VerifyNoOtherCalls();
             _loanServiceMock.VerifyNoOtherCalls();
             _gameNightServiceMock.VerifyNoOtherCalls();
+            _shameServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -64,7 +68,7 @@ public class CountControllerTests
                 .Setup(x => x.CountAsync())
                 .ReturnsAsync(5);
 
-            _gameServiceMock
+            _shameServiceMock
                 .Setup(x => x.CountShelfOfShameGames())
                 .ReturnsAsync(2);
 
@@ -102,7 +106,7 @@ public class CountControllerTests
                 .Setup(x => x.CountAsync())
                 .ReturnsAsync(3);
 
-            _gameServiceMock
+            _shameServiceMock
                 .Setup(x => x.CountShelfOfShameGames())
                 .ReturnsAsync(2);
 
@@ -141,7 +145,7 @@ public class CountControllerTests
                 .Setup(x => x.CountAsync())
                 .ThrowsAsync(expectedException);
 
-            _gameServiceMock
+            _shameServiceMock
                 .Setup(x => x.CountShelfOfShameGames())
                 .ReturnsAsync(2);
 
@@ -180,7 +184,7 @@ public class CountControllerTests
                 .Setup(x => x.CountAsync())
                 .ReturnsAsync(7);
 
-            _gameServiceMock
+            _shameServiceMock
                 .Setup(x => x.CountShelfOfShameGames())
                 .ReturnsAsync(3);
 
@@ -216,7 +220,7 @@ public class CountControllerTests
             _gameServiceMock.Verify(x => x.CountAsync(), Times.Once);
             _playerServiceMock.Verify(x => x.CountAsync(), Times.Once);
             _locationServiceMock.Verify(x => x.CountAsync(), Times.Once);
-            _gameServiceMock.Verify(x => x.CountShelfOfShameGames(), Times.Once);
+            _shameServiceMock.Verify(x => x.CountShelfOfShameGames(), Times.Once);
             _loanServiceMock.Verify(x => x.CountActiveLoans(), Times.Once);
             _gameNightServiceMock.Verify(x => x.CountFutureGameNights(), Times.Once);
             VerifyNoOtherCalls();

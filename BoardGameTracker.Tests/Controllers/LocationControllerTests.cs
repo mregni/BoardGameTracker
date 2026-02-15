@@ -1,10 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Locations.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -93,7 +93,7 @@ public class LocationControllerTests
         var createdLocation = new Location(command.Name) { Id = 1 };
 
         _locationServiceMock
-            .Setup(x => x.Create(It.IsAny<Location>()))
+            .Setup(x => x.Create(command))
             .ReturnsAsync(createdLocation);
 
         // Act
@@ -106,19 +106,7 @@ public class LocationControllerTests
         locationDto.Id.Should().Be(1);
         locationDto.Name.Should().Be("Game Store");
 
-        _locationServiceMock.Verify(x => x.Create(It.Is<Location>(l => l.Name == command.Name)), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task CreateLocation_ShouldReturnBadRequest_WhenCommandIsNull()
-    {
-        // Act
-        var result = await _controller.CreateLocation(null);
-
-        // Assert
-        result.Should().BeOfType<BadRequestResult>();
-
+        _locationServiceMock.Verify(x => x.Create(command), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -132,9 +120,11 @@ public class LocationControllerTests
             Name = "Updated Home"
         };
 
+        var updatedLocation = new Location(command.Name) { Id = command.Id };
+
         _locationServiceMock
-            .Setup(x => x.Update(It.IsAny<Location>()))
-            .Returns(Task.CompletedTask);
+            .Setup(x => x.Update(command))
+            .ReturnsAsync(updatedLocation);
 
         // Act
         var result = await _controller.UpdateLocation(command);
@@ -146,27 +136,44 @@ public class LocationControllerTests
         locationDto.Id.Should().Be(1);
         locationDto.Name.Should().Be("Updated Home");
 
-        _locationServiceMock.Verify(x => x.Update(It.Is<Location>(l => l.Id == command.Id && l.Name == command.Name)), Times.Once);
+        _locationServiceMock.Verify(x => x.Update(command), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task UpdateLocation_ShouldReturnBadRequest_WhenCommandIsNull()
+    public async Task UpdateLocation_ShouldThrow_WhenLocationDoesNotExist()
     {
+        // Arrange
+        var command = new UpdateLocationCommand
+        {
+            Id = 999,
+            Name = "NonExistent"
+        };
+
+        _locationServiceMock
+            .Setup(x => x.Update(command))
+            .ThrowsAsync(new EntityNotFoundException(nameof(Location), command.Id));
+
         // Act
-        var result = await _controller.UpdateLocation(null);
+        var action = async () => await _controller.UpdateLocation(command);
 
         // Assert
-        result.Should().BeOfType<BadRequestResult>();
+        await action.Should().ThrowAsync<EntityNotFoundException>();
 
+        _locationServiceMock.Verify(x => x.Update(command), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task DeleteLocation_ShouldReturnOkWithSuccess_WhenLocationIsDeleted()
+    public async Task DeleteLocation_ShouldReturnNoContent_WhenLocationIsDeleted()
     {
         // Arrange
         var locationId = 1;
+        var location = new Location("Test") { Id = locationId };
+
+        _locationServiceMock
+            .Setup(x => x.GetByIdAsync(locationId))
+            .ReturnsAsync(location);
 
         _locationServiceMock
             .Setup(x => x.Delete(locationId))
@@ -176,33 +183,30 @@ public class LocationControllerTests
         var result = await _controller.DeleteLocation(locationId);
 
         // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value;
+        result.Should().BeOfType<NoContentResult>();
 
-        response.Should().NotBeNull();
-
+        _locationServiceMock.Verify(x => x.GetByIdAsync(locationId), Times.Once);
         _locationServiceMock.Verify(x => x.Delete(locationId), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task DeleteLocation_ShouldThrowException_WhenServiceThrows()
+    public async Task DeleteLocation_ShouldReturnNotFound_WhenLocationDoesNotExist()
     {
         // Arrange
         var locationId = 999;
-        var expectedException = new InvalidOperationException("Cannot delete location");
 
         _locationServiceMock
-            .Setup(x => x.Delete(locationId))
-            .ThrowsAsync(expectedException);
+            .Setup(x => x.GetByIdAsync(locationId))
+            .ReturnsAsync((Location?)null);
 
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _controller.DeleteLocation(locationId));
+        // Act
+        var result = await _controller.DeleteLocation(locationId);
 
-        exception.Should().Be(expectedException);
+        // Assert
+        result.Should().BeOfType<NotFoundResult>();
 
-        _locationServiceMock.Verify(x => x.Delete(locationId), Times.Once);
+        _locationServiceMock.Verify(x => x.GetByIdAsync(locationId), Times.Once);
         VerifyNoOtherCalls();
     }
 }

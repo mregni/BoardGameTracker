@@ -43,7 +43,7 @@ public class CompareControllerTests
         };
 
         _compareServiceMock
-            .Setup(x => x.GetPlayerComparisation(playerOne, playerTwo))
+            .Setup(x => x.GetPlayerComparison(playerOne, playerTwo))
             .ReturnsAsync(compareResult);
 
         // Act
@@ -62,7 +62,7 @@ public class CompareControllerTests
         returnedResult.TotalSessionsTogether.Should().Be(10);
         returnedResult.MinutesPlayed.Should().Be(500);
 
-        _compareServiceMock.Verify(x => x.GetPlayerComparisation(playerOne, playerTwo), Times.Once);
+        _compareServiceMock.Verify(x => x.GetPlayerComparison(playerOne, playerTwo), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -79,7 +79,7 @@ public class CompareControllerTests
         };
 
         _compareServiceMock
-            .Setup(x => x.GetPlayerComparisation(playerOne, playerTwo))
+            .Setup(x => x.GetPlayerComparison(playerOne, playerTwo))
             .ReturnsAsync(compareResult);
 
         // Act
@@ -92,7 +92,7 @@ public class CompareControllerTests
         returnedResult.TotalSessionsTogether.Should().Be(0);
         returnedResult.MinutesPlayed.Should().Be(0);
 
-        _compareServiceMock.Verify(x => x.GetPlayerComparisation(playerOne, playerTwo), Times.Once);
+        _compareServiceMock.Verify(x => x.GetPlayerComparison(playerOne, playerTwo), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -105,7 +105,7 @@ public class CompareControllerTests
         var compareResult = new CompareResultDto();
 
         _compareServiceMock
-            .Setup(x => x.GetPlayerComparisation(playerOne, playerTwo))
+            .Setup(x => x.GetPlayerComparison(playerOne, playerTwo))
             .ReturnsAsync(compareResult);
 
         // Act
@@ -114,7 +114,7 @@ public class CompareControllerTests
         // Assert
         result.Should().BeOfType<OkObjectResult>();
 
-        _compareServiceMock.Verify(x => x.GetPlayerComparisation(5, 10), Times.Once);
+        _compareServiceMock.Verify(x => x.GetPlayerComparison(5, 10), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -131,7 +131,7 @@ public class CompareControllerTests
         };
 
         _compareServiceMock
-            .Setup(x => x.GetPlayerComparisation(playerId, playerId))
+            .Setup(x => x.GetPlayerComparison(playerId, playerId))
             .ReturnsAsync(compareResult);
 
         // Act
@@ -144,7 +144,7 @@ public class CompareControllerTests
         returnedResult.WinCount.PlayerOne.Should().Be(10);
         returnedResult.WinCount.PlayerTwo.Should().Be(10);
 
-        _compareServiceMock.Verify(x => x.GetPlayerComparisation(playerId, playerId), Times.Once);
+        _compareServiceMock.Verify(x => x.GetPlayerComparison(playerId, playerId), Times.Once);
         VerifyNoOtherCalls();
     }
 }

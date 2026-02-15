@@ -1,12 +1,13 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Models.Updates;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Settings;
 using BoardGameTracker.Core.Updates.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -17,6 +18,7 @@ public class SettingsServiceTests
     private readonly Mock<IConfigRepository> _configRepositoryMock;
     private readonly Mock<IUpdateService> _updateServiceMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
+    private readonly Mock<ILogger<SettingsService>> _loggerMock;
     private readonly SettingsService _settingsService;
 
     public SettingsServiceTests()
@@ -24,11 +26,13 @@ public class SettingsServiceTests
         _configRepositoryMock = new Mock<IConfigRepository>();
         _updateServiceMock = new Mock<IUpdateService>();
         _environmentProviderMock = new Mock<IEnvironmentProvider>();
+        _loggerMock = new Mock<ILogger<SettingsService>>();
 
         _settingsService = new SettingsService(
             _configRepositoryMock.Object,
             _updateServiceMock.Object,
-            _environmentProviderMock.Object);
+            _environmentProviderMock.Object,
+            _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -43,54 +47,33 @@ public class SettingsServiceTests
     [Fact]
     public async Task GetSettingsAsync_ShouldReturnSettings_WhenCalled()
     {
-        var updateSettings = new UpdateSettings
+        // Arrange
+        var configs = new Dictionary<string, string>
         {
-            Enabled = true,
-            VersionTrack = VersionTrack.Stable
+            { "time_format", "HH:mm" },
+            { "date_format", "yyyy-MM-dd" },
+            { "ui_language", "en-US" },
+            { "currency", "USD" },
+            { "shelf_of_shame_enabled", "true" },
+            { "shelf_of_shame_months", "6" },
+            { "game_nights_enabled", "true" },
+            { "public_url", "https://example.com" },
+            { "update_check_enabled", "true" },
+            { "update_track", "stable" }
         };
 
-        _updateServiceMock
-            .Setup(x => x.GetUpdateSettingsAsync())
-            .ReturnsAsync(updateSettings);
-
         _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.AppConfig.TimeFormat))
-            .ReturnsAsync("HH:mm");
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.AppConfig.DateFormat))
-            .ReturnsAsync("yyyy-MM-dd");
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.AppConfig.UiLanguage))
-            .ReturnsAsync("en-US");
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.AppConfig.Currency))
-            .ReturnsAsync("USD");
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(configs);
 
         _environmentProviderMock
             .Setup(x => x.EnableStatistics)
             .Returns(true);
 
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled))
-            .ReturnsAsync(true);
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
-            .ReturnsAsync(6);
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.GameNightsEnabled))
-            .ReturnsAsync(true);
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.AppConfig.PublicUrl))
-            .ReturnsAsync("https://example.com");
-
+        // Act
         var result = await _settingsService.GetSettingsAsync();
 
+        // Assert
         result.Should().NotBeNull();
         result.TimeFormat.Should().Be("HH:mm");
         result.DateFormat.Should().Be("yyyy-MM-dd");
@@ -104,70 +87,41 @@ public class SettingsServiceTests
         result.GameNightsEnabled.Should().BeTrue();
         result.PublicUrl.Should().Be("https://example.com");
 
-        _updateServiceMock.Verify(x => x.GetUpdateSettingsAsync(), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.TimeFormat), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.DateFormat), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.UiLanguage), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.Currency), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         _environmentProviderMock.Verify(x => x.EnableStatistics, Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.GameNightsEnabled), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.PublicUrl), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task GetSettingsAsync_ShouldReturnSettings_WhenUpdateCheckIsDisabled()
     {
-        var updateSettings = new UpdateSettings
+        // Arrange
+        var configs = new Dictionary<string, string>
         {
-            Enabled = false,
-            VersionTrack = VersionTrack.Beta
+            { "time_format", "hh:mm a" },
+            { "date_format", "MM/dd/yyyy" },
+            { "ui_language", "de-DE" },
+            { "currency", "EUR" },
+            { "shelf_of_shame_enabled", "false" },
+            { "shelf_of_shame_months", "12" },
+            { "game_nights_enabled", "false" },
+            { "public_url", "https://test.com" },
+            { "update_check_enabled", "false" },
+            { "update_track", "beta" }
         };
 
-        _updateServiceMock
-            .Setup(x => x.GetUpdateSettingsAsync())
-            .ReturnsAsync(updateSettings);
-
         _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.AppConfig.TimeFormat))
-            .ReturnsAsync("hh:mm a");
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.AppConfig.DateFormat))
-            .ReturnsAsync("MM/dd/yyyy");
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.AppConfig.UiLanguage))
-            .ReturnsAsync("de-DE");
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.AppConfig.Currency))
-            .ReturnsAsync("EUR");
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(configs);
 
         _environmentProviderMock
             .Setup(x => x.EnableStatistics)
             .Returns(false);
 
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled))
-            .ReturnsAsync(false);
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
-            .ReturnsAsync(12);
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.GameNightsEnabled))
-            .ReturnsAsync(false);
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<string>(Constants.AppConfig.PublicUrl))
-            .ReturnsAsync("https://test.com");
-
+        // Act
         var result = await _settingsService.GetSettingsAsync();
 
+        // Assert
         result.Should().NotBeNull();
         result.TimeFormat.Should().Be("hh:mm a");
         result.DateFormat.Should().Be("MM/dd/yyyy");
@@ -181,16 +135,8 @@ public class SettingsServiceTests
         result.GameNightsEnabled.Should().BeFalse();
         result.PublicUrl.Should().Be("https://test.com");
 
-        _updateServiceMock.Verify(x => x.GetUpdateSettingsAsync(), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.TimeFormat), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.DateFormat), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.UiLanguage), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.Currency), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         _environmentProviderMock.Verify(x => x.EnableStatistics, Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.GameNightsEnabled), Times.Once);
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AppConfig.PublicUrl), Times.Once);
         VerifyNoOtherCalls();
     }
 

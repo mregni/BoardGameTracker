@@ -5,6 +5,7 @@ using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Loans.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +14,15 @@ using Xunit;
 
 namespace BoardGameTracker.Tests.Controllers;
 
-public class LoansControllerTests
+public class LoanControllerTests
 {
     private readonly Mock<ILoanService> _loanServiceMock;
-    private readonly LoansController _controller;
+    private readonly LoanController _controller;
 
-    public LoansControllerTests()
+    public LoanControllerTests()
     {
         _loanServiceMock = new Mock<ILoanService>();
-        _controller = new LoansController(_loanServiceMock.Object);
+        _controller = new LoanController(_loanServiceMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -151,7 +152,7 @@ public class LoansControllerTests
 
         // Assert
         var createdResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
-        createdResult.ActionName.Should().Be(nameof(LoansController.GetLoanById));
+        createdResult.ActionName.Should().Be(nameof(LoanController.GetLoanById));
         createdResult.RouteValues.Should().ContainKey("id");
         createdResult.RouteValues!["id"].Should().Be(1);
 
@@ -161,18 +162,6 @@ public class LoansControllerTests
         returnedLoan.PlayerId.Should().Be(command.PlayerId);
 
         _loanServiceMock.Verify(x => x.LoanGameToPlayer(command), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task CreateLoan_ShouldReturnBadRequest_WhenCommandIsNull()
-    {
-        // Act
-        var result = await _controller.CreateLoan(null);
-
-        // Assert
-        result.Should().BeOfType<BadRequestResult>();
-
         VerifyNoOtherCalls();
     }
 
@@ -211,14 +200,29 @@ public class LoansControllerTests
     }
 
     [Fact]
-    public async Task UpdateLoan_ShouldReturnBadRequest_WhenCommandIsNull()
+    public async Task UpdateLoan_ShouldThrow_WhenLoanDoesNotExist()
     {
+        // Arrange
+        var command = new UpdateLoanCommand
+        {
+            Id = 999,
+            GameId = 1,
+            PlayerId = 1,
+            LoanDate = DateTime.UtcNow.AddDays(-5),
+            DueDate = DateTime.UtcNow.AddDays(25)
+        };
+
+        _loanServiceMock
+            .Setup(x => x.Update(command))
+            .ThrowsAsync(new EntityNotFoundException(nameof(Loan), command.Id));
+
         // Act
-        var result = await _controller.UpdateLoan(null);
+        var action = async () => await _controller.UpdateLoan(command);
 
         // Assert
-        result.Should().BeOfType<BadRequestResult>();
+        await action.Should().ThrowAsync<EntityNotFoundException>();
 
+        _loanServiceMock.Verify(x => x.Update(command), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -254,7 +258,7 @@ public class LoansControllerTests
     }
 
     [Fact]
-    public async Task ReturnLoan_ShouldReturnNotFound_WhenLoanDoesNotExist()
+    public async Task ReturnLoan_ShouldThrow_WhenLoanDoesNotExist()
     {
         // Arrange
         var command = new ReturnLoanCommand
@@ -265,27 +269,15 @@ public class LoansControllerTests
 
         _loanServiceMock
             .Setup(x => x.ReturnLoan(command))
-            .ReturnsAsync((Loan?)null);
+            .ThrowsAsync(new EntityNotFoundException(nameof(Loan), command.Id));
 
         // Act
-        var result = await _controller.ReturnLoan(command);
+        var action = async () => await _controller.ReturnLoan(command);
 
         // Assert
-        result.Should().BeOfType<NotFoundResult>();
+        await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _loanServiceMock.Verify(x => x.ReturnLoan(command), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ReturnLoan_ShouldReturnBadRequest_WhenCommandIsNull()
-    {
-        // Act
-        var result = await _controller.ReturnLoan(null);
-
-        // Assert
-        result.Should().BeOfType<BadRequestResult>();
-
         VerifyNoOtherCalls();
     }
 

@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Loans;
 using BoardGameTracker.Core.Loans.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -18,6 +20,7 @@ public class LoanServiceTests
     private readonly Mock<ILoanRepository> _loanRepositoryMock;
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ILogger<LoanService>> _loggerMock;
     private readonly LoanService _loanService;
 
     public LoanServiceTests()
@@ -25,11 +28,13 @@ public class LoanServiceTests
         _loanRepositoryMock = new Mock<ILoanRepository>();
         _gameRepositoryMock = new Mock<IGameRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _loggerMock = new Mock<ILogger<LoanService>>();
 
         _loanService = new LoanService(
             _loanRepositoryMock.Object,
             _gameRepositoryMock.Object,
-            _unitOfWorkMock.Object);
+            _unitOfWorkMock.Object,
+            _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -160,9 +165,6 @@ public class LoanServiceTests
             .Setup(x => x.CreateAsync(It.IsAny<Loan>()))
             .ReturnsAsync((Loan l) => l);
 
-        _gameRepositoryMock
-            .Setup(x => x.UpdateAsync(game))
-            .ReturnsAsync(game);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -180,13 +182,12 @@ public class LoanServiceTests
 
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
         _loanRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Loan>()), Times.Once);
-        _gameRepositoryMock.Verify(x => x.UpdateAsync(game), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task LoanGameToPlayer_ShouldThrowException_WhenGameDoesNotExist()
+    public async Task LoanGameToPlayer_ShouldThrowEntityNotFoundException_WhenGameDoesNotExist()
     {
         // Arrange
         var command = new CreateLoanCommand
@@ -204,7 +205,7 @@ public class LoanServiceTests
         var action = async () => await _loanService.LoanGameToPlayer(command);
 
         // Assert
-        await action.Should().ThrowAsync<ArgumentNullException>();
+        await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(command.GameId), Times.Once);
     }
@@ -234,9 +235,6 @@ public class LoanServiceTests
             .Setup(x => x.CreateAsync(It.IsAny<Loan>()))
             .ReturnsAsync((Loan l) => l);
 
-        _gameRepositoryMock
-            .Setup(x => x.UpdateAsync(game))
-            .ReturnsAsync(game);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -272,9 +270,6 @@ public class LoanServiceTests
             .Setup(x => x.GetByIdAsync(loanId))
             .ReturnsAsync(loan);
 
-        _loanRepositoryMock
-            .Setup(x => x.UpdateAsync(loan))
-            .ReturnsAsync(loan);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -285,16 +280,16 @@ public class LoanServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.ReturnedDate.Should().Be(returnDate);
+        result.ReturnedDate.Should().Be(returnDate);
 
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(loanId), Times.Once);
-        _loanRepositoryMock.Verify(x => x.UpdateAsync(loan), Times.Once);
+
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task ReturnLoan_ShouldReturnNull_WhenLoanDoesNotExist()
+    public async Task ReturnLoan_ShouldThrowEntityNotFoundException_WhenLoanDoesNotExist()
     {
         // Arrange
         var command = new ReturnLoanCommand
@@ -308,10 +303,10 @@ public class LoanServiceTests
             .ReturnsAsync((Loan?)null);
 
         // Act
-        var result = await _loanService.ReturnLoan(command);
+        var action = async () => await _loanService.ReturnLoan(command);
 
         // Assert
-        result.Should().BeNull();
+        await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(command.Id), Times.Once);
         VerifyNoOtherCalls();
@@ -344,9 +339,6 @@ public class LoanServiceTests
             .Setup(x => x.GetByIdAsync(loanId))
             .ReturnsAsync(loan);
 
-        _loanRepositoryMock
-            .Setup(x => x.UpdateAsync(loan))
-            .ReturnsAsync(loan);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -357,17 +349,17 @@ public class LoanServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.LoanDate.Should().Be(newLoanDate);
+        result.LoanDate.Should().Be(newLoanDate);
         result.DueDate.Should().Be(newDueDate);
 
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(loanId), Times.Once);
-        _loanRepositoryMock.Verify(x => x.UpdateAsync(loan), Times.Once);
+
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task Update_ShouldReturnNull_WhenLoanDoesNotExist()
+    public async Task Update_ShouldThrowEntityNotFoundException_WhenLoanDoesNotExist()
     {
         // Arrange
         var command = new UpdateLoanCommand
@@ -383,10 +375,10 @@ public class LoanServiceTests
             .ReturnsAsync((Loan?)null);
 
         // Act
-        var result = await _loanService.Update(command);
+        var action = async () => await _loanService.Update(command);
 
         // Assert
-        result.Should().BeNull();
+        await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(command.Id), Times.Once);
         VerifyNoOtherCalls();
@@ -414,9 +406,6 @@ public class LoanServiceTests
             .Setup(x => x.GetByIdAsync(loanId))
             .ReturnsAsync(loan);
 
-        _loanRepositoryMock
-            .Setup(x => x.UpdateAsync(loan))
-            .ReturnsAsync(loan);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -427,7 +416,7 @@ public class LoanServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.DueDate.Should().BeNull();
+        result.DueDate.Should().BeNull();
     }
 
     #endregion

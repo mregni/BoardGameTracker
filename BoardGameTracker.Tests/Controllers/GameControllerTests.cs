@@ -6,6 +6,7 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Common.Models.Charts;
@@ -21,19 +22,33 @@ public class GameControllerTests
 {
     private readonly Mock<IGameService> _gameServiceMock;
     private readonly Mock<IGameStatisticsService> _gameStatisticsDomainServiceMock;
+    private readonly Mock<IBggImportService> _bggImportServiceMock;
+    private readonly Mock<IGameChartService> _gameChartServiceMock;
+    private readonly Mock<IShameService> _shameServiceMock;
     private readonly GameController _controller;
 
     public GameControllerTests()
     {
         _gameServiceMock = new Mock<IGameService>();
         _gameStatisticsDomainServiceMock = new Mock<IGameStatisticsService>();
-        _controller = new GameController(_gameServiceMock.Object, _gameStatisticsDomainServiceMock.Object);
+        _bggImportServiceMock = new Mock<IBggImportService>();
+        _gameChartServiceMock = new Mock<IGameChartService>();
+        _shameServiceMock = new Mock<IShameService>();
+        _controller = new GameController(
+            _gameServiceMock.Object,
+            _gameStatisticsDomainServiceMock.Object,
+            _bggImportServiceMock.Object,
+            _gameChartServiceMock.Object,
+            _shameServiceMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
         _gameServiceMock.VerifyNoOtherCalls();
         _gameStatisticsDomainServiceMock.VerifyNoOtherCalls();
+        _bggImportServiceMock.VerifyNoOtherCalls();
+        _gameChartServiceMock.VerifyNoOtherCalls();
+        _shameServiceMock.VerifyNoOtherCalls();
     }
 
     #region GetGames Tests
@@ -126,27 +141,15 @@ public class GameControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task CreateGame_ShouldReturnBadRequest_WhenCommandIsNull()
-    {
-        // Act
-        var result = await _controller.CreateGame(null);
-
-        // Assert
-        result.Should().BeOfType<BadRequestResult>();
-
-        VerifyNoOtherCalls();
-    }
-
     #endregion
 
     #region UpdateGame Tests
 
     [Fact]
-    public async Task UpdateGame_ShouldReturnOkWithUpdatedGame_WhenDtoIsValid()
+    public async Task UpdateGame_ShouldReturnOkWithUpdatedGame_WhenCommandIsValid()
     {
         // Arrange
-        var dto = new GameDto
+        var command = new UpdateGameCommand
         {
             Id = 1,
             Title = "Updated Game",
@@ -154,14 +157,14 @@ public class GameControllerTests
             State = GameState.Owned
         };
 
-        var updatedGame = new Game(dto.Title, dto.HasScoring, dto.State) { Id = dto.Id };
+        var updatedGame = new Game(command.Title, command.HasScoring, command.State) { Id = command.Id };
 
         _gameServiceMock
-            .Setup(x => x.UpdateGame(It.IsAny<Game>()))
+            .Setup(x => x.UpdateGame(command))
             .ReturnsAsync(updatedGame);
 
         // Act
-        var result = await _controller.UpdateGame(dto);
+        var result = await _controller.UpdateGame(command);
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -170,19 +173,33 @@ public class GameControllerTests
         gameDto.Id.Should().Be(1);
         gameDto.Title.Should().Be("Updated Game");
 
-        _gameServiceMock.Verify(x => x.UpdateGame(It.IsAny<Game>()), Times.Once);
+        _gameServiceMock.Verify(x => x.UpdateGame(command), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task UpdateGame_ShouldReturnBadRequest_WhenDtoIsNull()
+    public async Task UpdateGame_ShouldThrow_WhenGameDoesNotExist()
     {
+        // Arrange
+        var command = new UpdateGameCommand
+        {
+            Id = 999,
+            Title = "Non-existent Game",
+            HasScoring = false,
+            State = GameState.Owned
+        };
+
+        _gameServiceMock
+            .Setup(x => x.UpdateGame(command))
+            .ThrowsAsync(new EntityNotFoundException(nameof(Game), command.Id));
+
         // Act
-        var result = await _controller.UpdateGame(null);
+        var action = async () => await _controller.UpdateGame(command);
 
         // Assert
-        result.Should().BeOfType<BadRequestResult>();
+        await action.Should().ThrowAsync<EntityNotFoundException>();
 
+        _gameServiceMock.Verify(x => x.UpdateGame(command), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -191,7 +208,7 @@ public class GameControllerTests
     #region DeleteGameById Tests
 
     [Fact]
-    public async Task DeleteGameById_ShouldReturnOkWithSuccess_WhenGameIsDeleted()
+    public async Task DeleteGameById_ShouldReturnNoContent_WhenGameIsDeleted()
     {
         // Arrange
         var gameId = 1;
@@ -204,8 +221,27 @@ public class GameControllerTests
         var result = await _controller.DeleteGameById(gameId);
 
         // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().NotBeNull();
+        result.Should().BeOfType<NoContentResult>();
+
+        _gameServiceMock.Verify(x => x.Delete(gameId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DeleteGameById_ShouldThrow_WhenGameDoesNotExist()
+    {
+        // Arrange
+        var gameId = 999;
+
+        _gameServiceMock
+            .Setup(x => x.Delete(gameId))
+            .ThrowsAsync(new EntityNotFoundException(nameof(Game), gameId));
+
+        // Act
+        var action = async () => await _controller.DeleteGameById(gameId);
+
+        // Assert
+        await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _gameServiceMock.Verify(x => x.Delete(gameId), Times.Once);
         VerifyNoOtherCalls();
@@ -387,7 +423,7 @@ public class GameControllerTests
     #region DeleteGameExpansions Tests
 
     [Fact]
-    public async Task DeleteGameExpansions_ShouldReturnOkWithSuccess()
+    public async Task DeleteGameExpansions_ShouldReturnNoContent()
     {
         // Arrange
         var gameId = 1;
@@ -401,8 +437,7 @@ public class GameControllerTests
         var result = await _controller.DeleteGameExpansions(gameId, expansionId);
 
         // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().NotBeNull();
+        result.Should().BeOfType<NoContentResult>();
 
         _gameServiceMock.Verify(x => x.DeleteExpansion(gameId, expansionId), Times.Once);
         VerifyNoOtherCalls();
@@ -432,23 +467,23 @@ public class GameControllerTests
             .Setup(x => x.CalculateStatisticsAsync(gameId))
             .ReturnsAsync(stats);
 
-        _gameServiceMock
+        _gameChartServiceMock
             .Setup(x => x.GetTopPlayers(gameId))
             .ReturnsAsync(topPlayers);
 
-        _gameServiceMock
+        _gameChartServiceMock
             .Setup(x => x.GetPlayByDayChart(gameId))
             .ReturnsAsync(playByDayChart);
 
-        _gameServiceMock
+        _gameChartServiceMock
             .Setup(x => x.GetPlayerCountChart(gameId))
             .ReturnsAsync(playerCountChart);
 
-        _gameServiceMock
+        _gameChartServiceMock
             .Setup(x => x.GetPlayerScoringChart(gameId))
             .ReturnsAsync(playerScoringChart);
 
-        _gameServiceMock
+        _gameChartServiceMock
             .Setup(x => x.GetScoringRankedChart(gameId))
             .ReturnsAsync(scoringRankChart);
 
@@ -457,14 +492,16 @@ public class GameControllerTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().NotBeNull();
+        var response = okResult.Value.Should().BeOfType<GameStatisticsResponse>().Subject;
+        response.GameStats.Should().Be(stats);
+        response.TopPlayers.Should().BeSameAs(topPlayers);
 
         _gameStatisticsDomainServiceMock.Verify(x => x.CalculateStatisticsAsync(gameId), Times.Once);
-        _gameServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
-        _gameServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
-        _gameServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
-        _gameServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
-        _gameServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
+        _gameChartServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
+        _gameChartServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
+        _gameChartServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
+        _gameChartServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
+        _gameChartServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -479,7 +516,7 @@ public class GameControllerTests
         var username = "testuser";
         var importResult = new BggImportResult();
 
-        _gameServiceMock
+        _bggImportServiceMock
             .Setup(x => x.ImportBggCollection(username))
             .ReturnsAsync(importResult);
 
@@ -490,12 +527,12 @@ public class GameControllerTests
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.Value.Should().BeAssignableTo<BggImportResult>();
 
-        _gameServiceMock.Verify(x => x.ImportBggCollection(username), Times.Once);
+        _bggImportServiceMock.Verify(x => x.ImportBggCollection(username), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task ImportBggGames_ShouldReturnOkWithSuccess_WhenCommandIsValid()
+    public async Task ImportBggGames_ShouldReturnNoContent_WhenCommandIsValid()
     {
         // Arrange
         var command = new ImportBggGamesCommand
@@ -507,7 +544,7 @@ public class GameControllerTests
             }
         };
 
-        _gameServiceMock
+        _bggImportServiceMock
             .Setup(x => x.ImportList(command.Games))
             .Returns(Task.CompletedTask);
 
@@ -515,10 +552,9 @@ public class GameControllerTests
         var result = await _controller.ImportBggGames(command);
 
         // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().NotBeNull();
+        result.Should().BeOfType<NoContentResult>();
 
-        _gameServiceMock.Verify(x => x.ImportList(command.Games), Times.Once);
+        _bggImportServiceMock.Verify(x => x.ImportList(command.Games), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -533,7 +569,7 @@ public class GameControllerTests
         var search = new BggSearch { BggId = 123 };
         var existingGame = new Game("Existing Game", true) { Id = 1 };
 
-        _gameServiceMock
+        _bggImportServiceMock
             .Setup(x => x.GetGameByBggId(search.BggId))
             .ReturnsAsync(existingGame);
 
@@ -546,7 +582,7 @@ public class GameControllerTests
 
         gameDto.Title.Should().Be("Existing Game");
 
-        _gameServiceMock.Verify(x => x.GetGameByBggId(search.BggId), Times.Once);
+        _bggImportServiceMock.Verify(x => x.GetGameByBggId(search.BggId), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -556,11 +592,11 @@ public class GameControllerTests
         // Arrange
         var search = new BggSearch { BggId = 999 };
 
-        _gameServiceMock
+        _bggImportServiceMock
             .Setup(x => x.GetGameByBggId(search.BggId))
             .ReturnsAsync((Game?)null);
 
-        _gameServiceMock
+        _bggImportServiceMock
             .Setup(x => x.SearchGame(search.BggId))
             .ReturnsAsync((BggGame?)null);
 
@@ -570,8 +606,8 @@ public class GameControllerTests
         // Assert
         result.Should().BeOfType<BadRequestResult>();
 
-        _gameServiceMock.Verify(x => x.GetGameByBggId(search.BggId), Times.Once);
-        _gameServiceMock.Verify(x => x.SearchGame(search.BggId), Times.Once);
+        _bggImportServiceMock.Verify(x => x.GetGameByBggId(search.BggId), Times.Once);
+        _bggImportServiceMock.Verify(x => x.SearchGame(search.BggId), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -590,15 +626,15 @@ public class GameControllerTests
         };
         var newGame = new Game("BGG Game", true) { Id = 1 };
 
-        _gameServiceMock
+        _bggImportServiceMock
             .Setup(x => x.GetGameByBggId(search.BggId))
             .ReturnsAsync((Game?)null);
 
-        _gameServiceMock
+        _bggImportServiceMock
             .Setup(x => x.SearchGame(search.BggId))
             .ReturnsAsync(bggGame);
 
-        _gameServiceMock
+        _bggImportServiceMock
             .Setup(x => x.SearchOnBgg(bggGame, search))
             .ReturnsAsync(newGame);
 
@@ -611,9 +647,9 @@ public class GameControllerTests
 
         gameDto.Title.Should().Be("BGG Game");
 
-        _gameServiceMock.Verify(x => x.GetGameByBggId(search.BggId), Times.Once);
-        _gameServiceMock.Verify(x => x.SearchGame(search.BggId), Times.Once);
-        _gameServiceMock.Verify(x => x.SearchOnBgg(bggGame, search), Times.Once);
+        _bggImportServiceMock.Verify(x => x.GetGameByBggId(search.BggId), Times.Once);
+        _bggImportServiceMock.Verify(x => x.SearchGame(search.BggId), Times.Once);
+        _bggImportServiceMock.Verify(x => x.SearchOnBgg(bggGame, search), Times.Once);
         VerifyNoOtherCalls();
     }
 

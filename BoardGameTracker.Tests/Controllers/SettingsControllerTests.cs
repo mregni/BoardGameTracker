@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models.Updates;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;

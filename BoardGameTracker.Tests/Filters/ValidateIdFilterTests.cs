@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
-using Moq;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Filters;
@@ -43,10 +42,9 @@ public class ValidateIdFilterTests
         _filter.OnActionExecuting(context);
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var errorObject = badRequestResult.Value.Should().BeAssignableTo<object>().Subject;
-        var errorProperty = errorObject.GetType().GetProperty("error");
-        errorProperty.Should().NotBeNull();
-        errorProperty!.GetValue(errorObject).Should().Be("Invalid id. Must be greater than 0.");
+        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Status.Should().Be(400);
+        problemDetails.Title.Should().Be("Invalid id. Must be greater than 0.");
     }
 
     [Fact]
@@ -57,10 +55,9 @@ public class ValidateIdFilterTests
         _filter.OnActionExecuting(context);
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var errorObject = badRequestResult.Value.Should().BeAssignableTo<object>().Subject;
-        var errorProperty = errorObject.GetType().GetProperty("error");
-        errorProperty.Should().NotBeNull();
-        errorProperty!.GetValue(errorObject).Should().Be("Invalid id. Must be greater than 0.");
+        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Status.Should().Be(400);
+        problemDetails.Title.Should().Be("Invalid id. Must be greater than 0.");
     }
 
     [Fact]
@@ -81,10 +78,8 @@ public class ValidateIdFilterTests
         _filter.OnActionExecuting(context);
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var errorObject = badRequestResult.Value.Should().BeAssignableTo<object>().Subject;
-        var errorProperty = errorObject.GetType().GetProperty("error");
-        errorProperty.Should().NotBeNull();
-        errorProperty!.GetValue(errorObject).Should().Be("Invalid playerId. Must be greater than 0.");
+        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Title.Should().Be("Invalid playerId. Must be greater than 0.");
     }
 
     [Fact]
@@ -105,10 +100,8 @@ public class ValidateIdFilterTests
         _filter.OnActionExecuting(context);
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var errorObject = badRequestResult.Value.Should().BeAssignableTo<object>().Subject;
-        var errorProperty = errorObject.GetType().GetProperty("error");
-        errorProperty.Should().NotBeNull();
-        errorProperty!.GetValue(errorObject).Should().Be("Invalid Id. Must be greater than 0.");
+        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Title.Should().Be("Invalid Id. Must be greater than 0.");
     }
 
     [Fact]
@@ -145,10 +138,8 @@ public class ValidateIdFilterTests
         _filter.OnActionExecuting(context);
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var errorObject = badRequestResult.Value.Should().BeAssignableTo<object>().Subject;
-        var errorProperty = errorObject.GetType().GetProperty("error");
-        errorProperty.Should().NotBeNull();
-        errorProperty!.GetValue(errorObject).Should().Be("Invalid gameId. Must be greater than 0.");
+        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Title.Should().Be("Invalid gameId. Must be greater than 0.");
     }
 
     [Fact]
@@ -192,10 +183,8 @@ public class ValidateIdFilterTests
         _filter.OnActionExecuting(context);
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var errorObject = badRequestResult.Value.Should().BeAssignableTo<object>().Subject;
-        var errorProperty = errorObject.GetType().GetProperty("error");
-        errorProperty.Should().NotBeNull();
-        errorProperty!.GetValue(errorObject).Should().Be($"Invalid {parameterName}. Must be greater than 0.");
+        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Title.Should().Be($"Invalid {parameterName}. Must be greater than 0.");
     }
 
     [Theory]
@@ -224,10 +213,8 @@ public class ValidateIdFilterTests
         _filter.OnActionExecuting(context);
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var errorObject = badRequestResult.Value.Should().BeAssignableTo<object>().Subject;
-        var errorProperty = errorObject.GetType().GetProperty("error");
-        errorProperty.Should().NotBeNull();
-        errorProperty!.GetValue(errorObject).Should().Be($"Invalid {parameterName}. Must be greater than 0.");
+        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
+        problemDetails.Title.Should().Be($"Invalid {parameterName}. Must be greater than 0.");
     }
 
     [Theory]

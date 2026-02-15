@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Updates;
-using BoardGameTracker.Core.Updates.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -18,6 +18,7 @@ public class UpdateServiceTests
     private readonly Mock<IConfigRepository> _configRepositoryMock;
     private readonly Mock<IDockerHubApi> _dockerHubApiMock;
     private readonly Mock<ILogger<UpdateService>> _loggerMock;
+    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
     private readonly UpdateService _updateService;
 
     public UpdateServiceTests()
@@ -25,11 +26,14 @@ public class UpdateServiceTests
         _configRepositoryMock = new Mock<IConfigRepository>();
         _dockerHubApiMock = new Mock<IDockerHubApi>();
         _loggerMock = new Mock<ILogger<UpdateService>>();
+        _dateTimeProviderMock = new Mock<IDateTimeProvider>();
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
 
         _updateService = new UpdateService(
             _configRepositoryMock.Object,
             _dockerHubApiMock.Object,
-            _loggerMock.Object);
+            _loggerMock.Object,
+            _dateTimeProviderMock.Object);
     }
 
     private void VerifyNoOtherCalls()
