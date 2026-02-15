@@ -22,5 +22,6 @@ export const useCompareData = ({ playerLeft, playerRight }: Props) => {
     players,
     compare,
     settings,
+    isLoading: playersQuery.isLoading || compareQuery.isLoading || settingsQuery.isLoading,
   };
 };
