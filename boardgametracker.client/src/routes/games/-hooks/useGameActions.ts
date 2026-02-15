@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 
 interface UseGameActionsProps {
@@ -12,35 +13,38 @@ export const useGameActions = (props: UseGameActionsProps) => {
   const { gameId, deleteGame, deleteExpansion, onDeleteModalClose, onExpansionModalOpen } = props;
   const navigate = useNavigate();
 
-  const handleAddSession = () => {
+  const handleAddSession = useCallback(() => {
     navigate({ to: `/sessions/new/${gameId}` });
-  };
+  }, [navigate, gameId]);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     navigate({ to: `/games/${gameId}/update` });
-  };
+  }, [navigate, gameId]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     await deleteGame();
     navigate({ to: '/games' });
     onDeleteModalClose();
-  };
+  }, [deleteGame, navigate, onDeleteModalClose]);
 
-  const handleDeleteExpansion = (expansionId: number) => {
-    deleteExpansion(expansionId, gameId);
-  };
+  const handleDeleteExpansion = useCallback(
+    (expansionId: number) => {
+      deleteExpansion(expansionId, gameId);
+    },
+    [deleteExpansion, gameId]
+  );
 
-  const handleAddExpansion = () => {
+  const handleAddExpansion = useCallback(() => {
     onExpansionModalOpen();
-  };
+  }, [onExpansionModalOpen]);
 
-  const handleViewAllSessions = () => {
+  const handleViewAllSessions = useCallback(() => {
     navigate({ to: `/games/${gameId}/sessions` });
-  };
+  }, [navigate, gameId]);
 
-  const handleBackToGames = () => {
+  const handleBackToGames = useCallback(() => {
     navigate({ to: '/games' });
-  };
+  }, [navigate]);
 
   return {
     handleAddSession,

@@ -2,8 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { addMinutes } from 'date-fns';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
-import { useToasts } from '../-hooks/useToasts';
-
 import { useNewSessionWithGameData } from './-hooks/useNewSessionWithGameData';
 import { SessionForm } from './-components/SessionForm';
 
@@ -28,17 +26,7 @@ function RouteComponent() {
   const { gameId } = Route.useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { successToast, errorToast } = useToasts();
-
-  const onSaveSuccess = () => {
-    successToast('player-session.new.notifications.created');
-  };
-
-  const onSaveError = () => {
-    errorToast('player-session.new.notifications.create-failed');
-  };
-
-  const { game, isLoading, isPending, saveSession } = useNewSessionWithGameData({ gameId, onSaveSuccess, onSaveError });
+  const { game, isLoading, isPending, saveSession } = useNewSessionWithGameData({ gameId });
 
   const save = async (data: CreateSession) => {
     const result = await saveSession(data);

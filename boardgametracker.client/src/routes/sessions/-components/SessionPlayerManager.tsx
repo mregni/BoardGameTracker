@@ -1,28 +1,27 @@
-import { Dispatch, memo, SetStateAction } from 'react';
+import { memo } from 'react';
 
 import { UpdateSessionPlayerModal } from '../-modals/UpdateSessionPlayerModal';
 import { CreateSessionPlayerModal } from '../-modals/CreateSessionPlayerModal';
 
 import { CreateSessionPlayer, CreatePlayerSessionNoScoring, Player } from '@/models';
 import { CreateSessionSchema } from '@/models';
-import { BgtPlayerSelector, BgtFormField } from '@/components/BgtForm';
+import { type AnyReactForm, BgtPlayerSelector, BgtFormField } from '@/components/BgtForm';
 
 interface SessionPlayerManagerProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any;
+  form: AnyReactForm;
   players: (CreateSessionPlayer | CreatePlayerSessionNoScoring)[];
   playerList: Player[];
   hasScoring: boolean;
   disabled: boolean;
-  openCreatePlayerModal: boolean;
-  openUpdatePlayerModal: boolean;
+  isCreateModalOpen: boolean;
+  isUpdateModalOpen: boolean;
   playerIdToEdit: number | null;
-  setOpenCreatePlayerModal: Dispatch<SetStateAction<boolean>>;
-  setOpenUpdatePlayerModal: Dispatch<SetStateAction<boolean>>;
+  onOpenCreateModal: () => void;
+  onCloseModal: () => void;
+  onEditPlayer: (playerId: number) => void;
   onAddPlayer: (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void;
   onUpdatePlayer: (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void;
   onRemovePlayer: (index: number) => void;
-  setPlayerIdToEdit: Dispatch<SetStateAction<number | null>>;
 }
 
 const SessionPlayerManagerComponent = ({
@@ -31,15 +30,15 @@ const SessionPlayerManagerComponent = ({
   playerList,
   hasScoring,
   disabled,
-  openCreatePlayerModal,
-  openUpdatePlayerModal,
+  isCreateModalOpen,
+  isUpdateModalOpen,
   playerIdToEdit,
-  setOpenCreatePlayerModal,
-  setOpenUpdatePlayerModal,
+  onOpenCreateModal,
+  onCloseModal,
+  onEditPlayer,
   onAddPlayer,
   onUpdatePlayer,
   onRemovePlayer,
-  setPlayerIdToEdit,
 }: SessionPlayerManagerProps) => {
   return (
     <>
@@ -50,11 +49,10 @@ const SessionPlayerManagerComponent = ({
           }
           return (
             <BgtPlayerSelector
-              setCreateModalOpen={setOpenCreatePlayerModal}
-              setUpdateModalOpen={setOpenUpdatePlayerModal}
+              onOpenCreateModal={onOpenCreateModal}
+              onEditPlayer={onEditPlayer}
               remove={onRemovePlayer}
               players={players}
-              setPlayerIdToEdit={setPlayerIdToEdit}
               disabled={disabled}
               errors={field.state.meta.errors}
             />
@@ -63,18 +61,18 @@ const SessionPlayerManagerComponent = ({
       </BgtFormField>
 
       <CreateSessionPlayerModal
-        open={openCreatePlayerModal}
+        open={isCreateModalOpen}
         hasScoring={hasScoring}
         onClose={onAddPlayer}
-        onCancel={() => setOpenCreatePlayerModal(false)}
+        onCancel={onCloseModal}
         selectedPlayerIds={players.map((x) => x.playerId)}
         players={playerList}
       />
       <UpdateSessionPlayerModal
-        open={openUpdatePlayerModal}
+        open={isUpdateModalOpen}
         hasScoring={hasScoring}
         onClose={onUpdatePlayer}
-        onCancel={() => setOpenUpdatePlayerModal(false)}
+        onCancel={onCloseModal}
         selectedPlayerIds={players.map((x) => x.playerId)}
         playerToEdit={players.find((x) => x.playerId === playerIdToEdit)}
       />

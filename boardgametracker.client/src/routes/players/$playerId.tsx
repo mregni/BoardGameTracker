@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
-import { useToasts } from '../-hooks/useToasts';
 
 import { EditPlayerModal } from './-modals/EditPlayerModal';
 import { usePlayerModals } from './-hooks/usePlayerModals';
@@ -36,12 +35,9 @@ export const Route = createFileRoute('/players/$playerId')({
 function RouteComponent() {
   const { playerId } = Route.useParams();
   const { t } = useTranslation();
-  const { infoToast, errorToast } = useToasts();
 
   const { player, statistics, deletePlayer, badges, sessions, settings, isLoading } = usePlayerData({
     playerId,
-    onDeleteError: () => errorToast('player.delete.failed'),
-    onDeleteSuccess: () => infoToast('player.delete.successfull'),
   });
 
   const modals = usePlayerModals();
@@ -88,7 +84,7 @@ function RouteComponent() {
               description={t('player.delete.description', { name: player.name })}
             />
             {modals.editModal.isOpen && (
-              <EditPlayerModal open={modals.editModal.isOpen} setOpen={modals.editModal.hide} player={player} />
+              <EditPlayerModal open={modals.editModal.isOpen} close={modals.editModal.hide} player={player} />
             )}
           </>
         )}

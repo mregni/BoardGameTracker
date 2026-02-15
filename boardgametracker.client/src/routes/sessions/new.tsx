@@ -3,11 +3,11 @@ import { addMinutes } from 'date-fns';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 
-import { useToasts } from '../-hooks/useToasts';
-
 import { useNewSessionData } from './-hooks/useNewSessionData';
 import { SessionForm } from './-components/SessionForm';
 
+import { getPlayers } from '@/services/queries/players';
+import { getLocations } from '@/services/queries/locations';
 import { getGames } from '@/services/queries/games';
 import { CreateSession } from '@/models';
 import { BgtEmptyPage } from '@/components/BgtLayout/BgtEmptyPage';
@@ -15,24 +15,19 @@ import Game from '@/assets/icons/gamepad.svg?react';
 
 export const Route = createFileRoute('/sessions/new')({
   component: RouteComponent,
+  loader: ({ context: { queryClient } }) => {
+    queryClient.prefetchQuery(getGames());
+    queryClient.prefetchQuery(getPlayers());
+    queryClient.prefetchQuery(getLocations());
+  },
 });
 
 function RouteComponent() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { successToast, errorToast } = useToasts();
-
   const { data: games } = useQuery(getGames());
 
-  const onSaveSuccess = () => {
-    successToast('player-session.new.notifications.created');
-  };
-
-  const onSaveError = () => {
-    errorToast('player-session.new.notifications.create-failed');
-  };
-
-  const { isPending, saveSession } = useNewSessionData({ onSaveSuccess, onSaveError });
+  const { isPending, saveSession } = useNewSessionData();
 
   const save = async (data: CreateSession) => {
     const result = await saveSession(data);

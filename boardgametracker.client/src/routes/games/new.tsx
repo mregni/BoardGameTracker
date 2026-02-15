@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
-import { useToasts } from '../-hooks/useToasts';
-
 import { useNewGame } from './-hooks/useNewGame';
 import { GameForm } from './-components/GameForm';
 
@@ -18,21 +16,15 @@ export const Route = createFileRoute('/games/new')({
 });
 
 function RouteComponent() {
-  const { errorToast, successToast } = useToasts();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const onSaveSuccess = (game: Game) => {
-    successToast('game.notifications.created');
+  const onSuccess = (game: Game) => {
     navigate({ to: `/games/${game.id}` });
     window.scrollTo(0, 0);
   };
 
-  const onSaveError = () => {
-    errorToast('game.notifications.create-failed');
-  };
-
-  const { saveGame, isLoading } = useNewGame({ onSaveSuccess, onSaveError });
+  const { saveGame, isLoading } = useNewGame({ onSuccess });
   const save = async (game: CreateGame) => {
     const result = await saveGame(game);
     navigate({ to: `/games/${result.id}` });

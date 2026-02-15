@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { GameNightForm, GameNightFormValues } from '../-components/GameNightForm';
 
-import { CreateGameNight, Game, Location, Player } from '@/models';
+import { CreateGameNight, Game, Location, ModalProps, Player } from '@/models';
 import {
   BgtDialog,
   BgtDialogContent,
@@ -13,9 +13,7 @@ import {
 } from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
-interface Props {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+interface Props extends ModalProps {
   players: Player[];
   games: Game[];
   locations: Location[];
@@ -24,7 +22,7 @@ interface Props {
 }
 
 export const CreateGameNightModal = (props: Props) => {
-  const { open, setOpen, players, games, locations, isLoading, onSave } = props;
+  const { open, close, players, games, locations, isLoading, onSave } = props;
   const { t } = useTranslation();
 
   const handleSubmit = async (values: GameNightFormValues) => {
@@ -40,12 +38,8 @@ export const CreateGameNightModal = (props: Props) => {
     await onSave(gameNight);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   return (
-    <BgtDialog open={open} onClose={handleClose}>
+    <BgtDialog open={open} onClose={close}>
       <BgtDialogContent className="max-w-2xl!">
         <GameNightForm
           players={players}
@@ -53,13 +47,13 @@ export const CreateGameNightModal = (props: Props) => {
           locations={locations}
           isLoading={isLoading}
           onSubmit={handleSubmit}
-          onClose={handleClose}
+          onClose={close}
         >
           <BgtDialogTitle>{t('game-nights.create.title')}</BgtDialogTitle>
           <BgtDialogDescription>{t('game-nights.create.description')}</BgtDialogDescription>
         </GameNightForm>
         <BgtDialogClose>
-          <BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={handleClose}>
+          <BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={close}>
             {t('common.cancel')}
           </BgtButton>
           <BgtButton type="submit" form="game-night-form" disabled={isLoading} className="flex-1" variant="primary">

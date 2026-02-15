@@ -2,6 +2,7 @@ import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { getSettings } from '@/services/queries/settings';
 import { addGameWithBggCall } from '@/services/gameService';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { Game, QUERY_KEYS } from '@/models';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 
 export const useBggGameModal = ({ onSuccess }: Props) => {
   const queryClient = useQueryClient();
+  const { successToast, errorToast } = useToasts();
 
   const [settingsQuery] = useQueries({
     queries: [getSettings()],
@@ -23,7 +25,11 @@ export const useBggGameModal = ({ onSuccess }: Props) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 
+      successToast('game.notifications.created');
       onSuccess?.(data);
+    },
+    onError: () => {
+      errorToast('game.notifications.create-failed');
     },
   });
 

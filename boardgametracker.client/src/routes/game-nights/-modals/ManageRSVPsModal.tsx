@@ -3,22 +3,20 @@ import { useTranslation } from 'react-i18next';
 import { RsvpStatusButton } from '../-components/RsvpStatusButton';
 import { RsvpStatBadge } from '../-components/RsvpStatBadge';
 
-import { GameNight, GameNightRsvpState, UpdateGameNightRsvp } from '@/models';
+import { GameNight, GameNightRsvpState, ModalProps, UpdateGameNightRsvp } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
 import { BgtDialog, BgtDialogContent, BgtDialogClose, BgtDialogTitle } from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
 
-interface Props {
-  open: boolean;
-  setOpen: (open: boolean) => void;
+interface Props extends ModalProps {
   gameNight: GameNight | null;
   onUpdateRsvp: (rsvp: UpdateGameNightRsvp) => Promise<unknown>;
   isLoading: boolean;
 }
 
 export const ManageRSVPsModal = (props: Props) => {
-  const { open, setOpen, gameNight, onUpdateRsvp, isLoading } = props;
+  const { open, close, gameNight, onUpdateRsvp, isLoading } = props;
   const { t } = useTranslation();
 
   if (!gameNight) return null;
@@ -27,13 +25,9 @@ export const ManageRSVPsModal = (props: Props) => {
     await onUpdateRsvp({
       id: rsvpId,
       gameNightId: gameNight.id,
-      playerName: 0,
+      playerId: 0,
       state: status,
     });
-  };
-
-  const handleClose = () => {
-    setOpen(false);
   };
 
   const acceptedCount = gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Accepted).length;
@@ -41,7 +35,7 @@ export const ManageRSVPsModal = (props: Props) => {
   const declinedCount = gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Declined).length;
 
   return (
-    <BgtDialog open={open} onClose={handleClose}>
+    <BgtDialog open={open} onClose={close}>
       <BgtDialogContent className="max-w-3xl!">
         <BgtDialogTitle>{t('game-nights.rsvp.title')}</BgtDialogTitle>
         <div className="flex flex-col gap-4">
@@ -68,21 +62,27 @@ export const ManageRSVPsModal = (props: Props) => {
                       </div>
                       <div className="flex gap-2">
                         <RsvpStatusButton
-                          onClick={() => handleStatusChange(rsvp.id, GameNightRsvpState.Accepted)}
+                          rsvpId={rsvp.id}
+                          state={GameNightRsvpState.Accepted}
+                          onStatusChange={handleStatusChange}
                           disabled={isLoading || isHost}
                           isActive={rsvp.state === GameNightRsvpState.Accepted}
                           variant="green"
                           label={t('game-nights.rsvp.accept')}
                         />
                         <RsvpStatusButton
-                          onClick={() => handleStatusChange(rsvp.id, GameNightRsvpState.Pending)}
+                          rsvpId={rsvp.id}
+                          state={GameNightRsvpState.Pending}
+                          onStatusChange={handleStatusChange}
                           disabled={isLoading || isHost}
                           isActive={rsvp.state === GameNightRsvpState.Pending}
                           variant="yellow"
                           label={t('game-nights.rsvp.maybe')}
                         />
                         <RsvpStatusButton
-                          onClick={() => handleStatusChange(rsvp.id, GameNightRsvpState.Declined)}
+                          rsvpId={rsvp.id}
+                          state={GameNightRsvpState.Declined}
+                          onStatusChange={handleStatusChange}
                           disabled={isLoading || isHost}
                           isActive={rsvp.state === GameNightRsvpState.Declined}
                           variant="red"
@@ -103,7 +103,7 @@ export const ManageRSVPsModal = (props: Props) => {
         </div>
 
         <BgtDialogClose>
-          <BgtButton variant="primary" className="flex-1" onClick={handleClose}>
+          <BgtButton variant="primary" className="flex-1" onClick={close}>
             {t('common.done')}
           </BgtButton>
         </BgtDialogClose>

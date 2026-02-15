@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { useState, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { CreatePlayerModal } from './-modals/CreatePlayerModal';
@@ -7,7 +6,7 @@ import { usePlayersData } from './-hooks/usePlayersData';
 import { usePlayerModals } from './-hooks/usePlayerModals';
 
 import { getPlayers } from '@/services/queries/players';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useFilteredList } from '@/hooks/useFilteredList';
 import { BgtText } from '@/components/BgtText/BgtText';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
@@ -28,18 +27,8 @@ export const Route = createFileRoute('/players/')({
 function RouteComponent() {
   const { t } = useTranslation();
   const modals = usePlayerModals();
-  const [filterValue, setFilterValue] = useState<string>('');
   const { players, isLoading } = usePlayersData();
-
-  const debouncedFilterValue = useDebounce(filterValue, 300);
-
-  const filteredPlayers = useMemo(() => {
-    if (!debouncedFilterValue) {
-      return players;
-    }
-
-    return players.filter((player) => player.name.toLowerCase().includes(debouncedFilterValue.toLowerCase()));
-  }, [players, debouncedFilterValue]);
+  const { filterValue, setFilterValue, filtered: filteredPlayers } = useFilteredList(players, 'name');
 
   if (isLoading) return null;
 
@@ -52,7 +41,7 @@ function RouteComponent() {
         description={t('player.empty.description')}
         action={{ label: t('player.new.button'), onClick: modals.createModal.show }}
       >
-        <CreatePlayerModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} />
+        <CreatePlayerModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
       </BgtEmptyPage>
     );
   }
@@ -74,7 +63,7 @@ function RouteComponent() {
             <BgtImageCard key={x.id} title={x.name} image={x.image} link={`/players/${x.id}`} />
           ))}
         </BgtCardList>
-        <CreatePlayerModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} />
+        <CreatePlayerModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
       </BgtPageContent>
     </BgtPage>
   );

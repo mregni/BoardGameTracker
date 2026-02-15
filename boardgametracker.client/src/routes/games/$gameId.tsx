@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
-import { useToasts } from '../-hooks/useToasts';
 
 import { ExpansionSelectorModal } from './-modals/ExpansionSelectorModal';
 import { useGameModals } from './-hooks/useGameModals';
@@ -39,15 +38,10 @@ export const Route = createFileRoute('/games/$gameId')({
 
 function RouteComponent() {
   const { gameId } = Route.useParams();
-  const { errorToast, successToast } = useToasts();
   const { t } = useTranslation();
 
   const { game, deleteGame, settings, statistics, sessions, deleteExpansion, isLoading } = useGameData({
     gameId,
-    onDeleteError: () => errorToast('game.delete.failed'),
-    onDeleteSuccess: () => successToast('game.delete.successfull'),
-    onDeleteExpansionSuccess: () => successToast('expansions.delete.successfull'),
-    onDeleteExpansionError: () => errorToast('expansions.delete.failed'),
   });
 
   const modals = useGameModals();
@@ -123,7 +117,7 @@ function RouteComponent() {
             {modals.expansionModal.isOpen && (
               <ExpansionSelectorModal
                 open={modals.expansionModal.isOpen}
-                setOpen={modals.expansionModal.hide}
+                close={modals.expansionModal.hide}
                 gameId={gameId}
                 selectedExpansions={game.expansions.map((x) => x.bggId)}
               />

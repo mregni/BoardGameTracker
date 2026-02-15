@@ -4,16 +4,17 @@ import { deleteSessionCall } from '@/services/sessionService';
 import { getSettings } from '@/services/queries/settings';
 import { getPlayers } from '@/services/queries/players';
 import { getGame, getGameSessions } from '@/services/queries/games';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { QUERY_KEYS } from '@/models';
 
 interface UseGameSessionsDataProps {
   gameId: number;
-  onDeleteError?: () => void;
   onDeleteSuccess?: () => void;
 }
 
-export const useGameSessionsData = ({ gameId, onDeleteError, onDeleteSuccess }: UseGameSessionsDataProps) => {
+export const useGameSessionsData = ({ gameId, onDeleteSuccess }: UseGameSessionsDataProps) => {
   const queryClient = useQueryClient();
+  const { infoToast, errorToast } = useToasts();
 
   const [gameQuery, settingsQuery, sessionsQuery, playersQuery] = useQueries({
     queries: [getGame(gameId), getSettings(), getGameSessions(gameId), getPlayers()],
@@ -29,10 +30,13 @@ export const useGameSessionsData = ({ gameId, onDeleteError, onDeleteSuccess }: 
     try {
       await deleteSessionCall(id);
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.sessions] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] });
+      infoToast('sessions.notifications.deleted');
       onDeleteSuccess?.();
     } catch {
-      onDeleteError?.();
+      errorToast('sessions.notifications.delete-failed');
     }
   };
 

@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { createFileRoute } from '@tanstack/react-router';
 
-import { useToasts } from '../-hooks/useToasts';
 import { usePlayerById } from '../-hooks/usePlayerById';
 import { useGameById } from '../-hooks/useGameById';
 
@@ -32,13 +31,7 @@ export const Route = createFileRoute('/loans/')({
 
 function RouteComponent() {
   const { t } = useTranslation();
-  const { errorToast, successToast } = useToasts();
-  const { loans, settings, deleteLoan, returnLoan, isLoading } = useLoans({
-    onDeleteError: () => errorToast('loan.delete.failed'),
-    onDeleteSuccess: () => successToast('loan.delete.successfull'),
-    onReturnError: (text?: string) => errorToast(text || 'loan.return.failed'),
-    onReturnSuccess: () => successToast('loan.return.successfull'),
-  });
+  const { loans, settings, deleteLoan, returnLoan, isLoading } = useLoans();
   const { gameById } = useGameById();
   const { playerById } = usePlayerById();
 
@@ -59,7 +52,7 @@ function RouteComponent() {
         description={t('loan.empty.description')}
         action={{ label: t('loan.new.title'), onClick: modals.createModal.show }}
       >
-        <NewLoanModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} />
+        <NewLoanModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
       </BgtEmptyPage>
     );
   }
@@ -130,7 +123,7 @@ function RouteComponent() {
                   ))}
               </div>
             )}
-            <NewLoanModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} />
+            <NewLoanModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
           </>
         )}
       </BgtPageContent>

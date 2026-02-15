@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+
 import { CreateGameNight, GameNight } from '@/models';
 
 interface UseGameNightActionsProps {
@@ -23,31 +25,43 @@ export const useGameNightActions = (props: UseGameNightActionsProps) => {
     setSelectedGameNightId,
   } = props;
 
-  const handleCreate = async (gameNight: CreateGameNight) => {
-    await createGameNight(gameNight);
-    onCreateModalClose();
-  };
+  const handleCreate = useCallback(
+    async (gameNight: CreateGameNight) => {
+      await createGameNight(gameNight);
+      onCreateModalClose();
+    },
+    [createGameNight, onCreateModalClose]
+  );
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (selectedGameNightId === null) return;
     await deleteGameNight(selectedGameNightId);
     onDeleteModalClose();
     setSelectedGameNightId(null);
-  };
+  }, [selectedGameNightId, deleteGameNight, onDeleteModalClose, setSelectedGameNightId]);
 
-  const handleDeleteClick = (gameNight: GameNight) => {
-    setSelectedGameNightId(gameNight.id);
-  };
+  const handleDeleteClick = useCallback(
+    (gameNight: GameNight) => {
+      setSelectedGameNightId(gameNight.id);
+    },
+    [setSelectedGameNightId]
+  );
 
-  const handleManageRsvps = (gameNight: GameNight) => {
-    setSelectedGameNightId(gameNight.id);
-    onManageRsvpModalOpen();
-  };
+  const handleManageRsvps = useCallback(
+    (gameNight: GameNight) => {
+      setSelectedGameNightId(gameNight.id);
+      onManageRsvpModalOpen();
+    },
+    [setSelectedGameNightId, onManageRsvpModalOpen]
+  );
 
-  const handleEditGameNight = (gameNight: GameNight) => {
-    setSelectedGameNightId(gameNight.id);
-    onEditModalOpen();
-  };
+  const handleEditGameNight = useCallback(
+    (gameNight: GameNight) => {
+      setSelectedGameNightId(gameNight.id);
+      onEditModalOpen();
+    },
+    [setSelectedGameNightId, onEditModalOpen]
+  );
 
   return {
     handleCreate,

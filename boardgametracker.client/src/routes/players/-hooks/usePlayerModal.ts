@@ -2,17 +2,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { addPlayerCall, updatePlayerCall } from '@/services/playerService';
 import { uploadImageCall } from '@/services/imageService';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { QUERY_KEYS } from '@/models';
 
 interface Props {
   onSaveSuccess?: () => void;
-  onSaveError?: () => void;
   onUpdateSuccess?: () => void;
-  onUpdateError?: () => void;
 }
 
-export const usePlayerModal = ({ onSaveSuccess, onUpdateSuccess, onUpdateError, onSaveError }: Props) => {
+export const usePlayerModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
   const queryClient = useQueryClient();
+  const { successToast, errorToast } = useToasts();
 
   const uploadImageMutation = useMutation({
     mutationFn: uploadImageCall,
@@ -21,25 +21,27 @@ export const usePlayerModal = ({ onSaveSuccess, onUpdateSuccess, onUpdateError, 
   const saveMutation = useMutation({
     mutationFn: addPlayerCall,
     async onSuccess() {
+      successToast('player.notifications.created');
       onSaveSuccess?.();
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.dashboard] });
     },
     onError: () => {
-      onSaveError?.();
+      errorToast('player.notifications.create-failed');
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: updatePlayerCall,
     async onSuccess() {
+      successToast('player.notifications.updated');
       onUpdateSuccess?.();
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.player] });
     },
     onError: () => {
-      onUpdateError?.();
+      errorToast('player.notifications.update-failed');
     },
   });
 

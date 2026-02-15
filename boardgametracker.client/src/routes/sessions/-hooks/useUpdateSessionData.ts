@@ -3,16 +3,17 @@ import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-q
 import { updateSessionCall } from '@/services/sessionService';
 import { getSession } from '@/services/queries/sessions';
 import { getGame } from '@/services/queries/games';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { QUERY_KEYS } from '@/models';
 
 interface Props {
   sessionId: string;
-  onSaveSuccess?: () => void;
-  onSaveError?: () => void;
+  onSuccess?: () => void;
 }
 
-export const useUpdateSessionData = ({ sessionId, onSaveSuccess, onSaveError }: Props) => {
+export const useUpdateSessionData = ({ sessionId, onSuccess }: Props) => {
   const queryClient = useQueryClient();
+  const { successToast, errorToast } = useToasts();
 
   const { data: session } = useSuspenseQuery(getSession(sessionId));
   const { data: game } = useSuspenseQuery(getGame(session.gameId));
@@ -20,7 +21,8 @@ export const useUpdateSessionData = ({ sessionId, onSaveSuccess, onSaveError }: 
   const updateSessionMutation = useMutation({
     mutationFn: updateSessionCall,
     async onSuccess(sessionResult) {
-      onSaveSuccess?.();
+      successToast('player-session.update.notifications.updated');
+      onSuccess?.();
       sessionResult.playerSessions.map((x) => {
         queryClient.invalidateQueries({
           queryKey: [QUERY_KEYS.player, x.playerId, QUERY_KEYS.sessions],
@@ -31,7 +33,7 @@ export const useUpdateSessionData = ({ sessionId, onSaveSuccess, onSaveError }: 
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.sessions, sessionId] });
     },
     onError: () => {
-      onSaveError?.();
+      errorToast('player-session.update.notifications.update-failed');
     },
   });
 

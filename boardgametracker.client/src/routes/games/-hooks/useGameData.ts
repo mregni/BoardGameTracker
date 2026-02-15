@@ -3,19 +3,19 @@ import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { getSettings } from '@/services/queries/settings';
 import { getGame, getGameSessionsShortList, getGameStatistics } from '@/services/queries/games';
 import { deleteExpansionCall, deleteGameCall } from '@/services/gameService';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { QUERY_KEYS } from '@/models';
 
 interface UseGameDataProps {
   gameId: number;
-  onDeleteError?: () => void;
   onDeleteSuccess?: () => void;
   onDeleteExpansionSuccess?: () => void;
-  onDeleteExpansionError?: () => void;
 }
 
 export const useGameData = (props: UseGameDataProps) => {
-  const { gameId, onDeleteError, onDeleteSuccess, onDeleteExpansionSuccess, onDeleteExpansionError } = props;
+  const { gameId, onDeleteSuccess, onDeleteExpansionSuccess } = props;
   const queryClient = useQueryClient();
+  const { successToast, errorToast } = useToasts();
 
   const [gameQuery, settingsQuery, statisticsQuery, sessionsQuery] = useQueries({
     queries: [getGame(gameId), getSettings(), getGameStatistics(gameId), getGameSessionsShortList(gameId, 5)],
@@ -34,9 +34,10 @@ export const useGameData = (props: UseGameDataProps) => {
         await deleteGameCall(gameId);
         queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
         queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
+        successToast('game.delete.successfull');
         onDeleteSuccess?.();
       } catch {
-        onDeleteError?.();
+        errorToast('game.delete.failed');
       }
     }
   };
@@ -45,9 +46,10 @@ export const useGameData = (props: UseGameDataProps) => {
     try {
       await deleteExpansionCall(id, gameIdParam);
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameIdParam] });
+      successToast('expansions.delete.successfull');
       onDeleteExpansionSuccess?.();
     } catch {
-      onDeleteExpansionError?.();
+      errorToast('expansions.delete.failed');
     }
   };
 

@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
-import { useToasts } from '../-hooks/useToasts';
-
 import { useUpdateSessionData } from './-hooks/useUpdateSessionData';
 import { SessionForm } from './-components/SessionForm';
 
@@ -22,17 +20,7 @@ function RouteComponent() {
   const { sessionId } = Route.useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { successToast, errorToast } = useToasts();
-
-  const onSaveSuccess = () => {
-    successToast('player-session.update.notifications.updated');
-  };
-
-  const onSaveError = () => {
-    errorToast('player-session.update.notifications.update-failed');
-  };
-
-  const { game, session, updateSession, isPending } = useUpdateSessionData({ sessionId, onSaveSuccess, onSaveError });
+  const { game, session, updateSession, isPending } = useUpdateSessionData({ sessionId });
 
   if (session === undefined) return null;
 

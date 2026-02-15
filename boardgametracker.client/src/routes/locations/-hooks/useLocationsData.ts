@@ -2,15 +2,16 @@ import { useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { getLocations } from '@/services/queries/locations';
 import { deleteLocationCall } from '@/services/locationService';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { QUERY_KEYS } from '@/models';
 
 interface Props {
   onDeleteSuccess?: () => void;
-  onDeleteError?: () => void;
 }
 
-export const useLocationsData = ({ onDeleteSuccess, onDeleteError }: Props) => {
+export const useLocationsData = ({ onDeleteSuccess }: Props) => {
   const queryClient = useQueryClient();
+  const { infoToast, errorToast } = useToasts();
 
   const [locationsQuery] = useQueries({
     queries: [getLocations()],
@@ -21,16 +22,18 @@ export const useLocationsData = ({ onDeleteSuccess, onDeleteError }: Props) => {
   const deleteLocation = async (id: number) => {
     try {
       await deleteLocationCall(id);
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
+      infoToast('location.notifications.deleted');
       onDeleteSuccess?.();
     } catch {
-      onDeleteError?.();
+      errorToast('location.notifications.delete-failed');
     }
   };
 
   return {
     locations,
     deleteLocation,
+    isLoading: locationsQuery.isLoading,
   };
 };

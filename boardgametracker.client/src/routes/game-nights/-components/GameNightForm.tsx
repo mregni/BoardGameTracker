@@ -5,6 +5,7 @@ import { useForm } from '@tanstack/react-form';
 
 import { MultiSelectField } from './MultiSelectField';
 
+import { handleFormSubmit } from '@/utils/formUtils';
 import { Game, Location, Player } from '@/models';
 import { BgtFormField, BgtInputField, BgtSelect, BgtTextArea, BgtDateTimePicker } from '@/components/BgtForm';
 
@@ -114,11 +115,7 @@ export const GameNightForm = (props: Props) => {
   return (
     <form
       id="game-night-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit();
-      }}
+      onSubmit={handleFormSubmit(form)}
       className="w-full"
     >
       {children}

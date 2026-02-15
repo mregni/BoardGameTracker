@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { GameNightForm, GameNightFormValues } from '../-components/GameNightForm';
 
-import { GameNight, Game, Location, Player } from '@/models';
+import { GameNight, Game, Location, ModalProps, Player } from '@/models';
 import {
   BgtDialog,
   BgtDialogContent,
@@ -13,9 +13,7 @@ import {
 } from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
-interface Props {
-  open: boolean;
-  setOpen: (open: boolean) => void;
+interface Props extends ModalProps {
   gameNight: GameNight | null;
   players: Player[];
   games: Game[];
@@ -25,7 +23,7 @@ interface Props {
 }
 
 export const EditGameNightModal = (props: Props) => {
-  const { open, setOpen, gameNight, players, games, locations, isLoading, onSave } = props;
+  const { open, close, gameNight, players, games, locations, isLoading, onSave } = props;
   const { t } = useTranslation();
 
   if (!gameNight) return null;
@@ -43,12 +41,8 @@ export const EditGameNightModal = (props: Props) => {
     });
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   return (
-    <BgtDialog open={open} onClose={handleClose}>
+    <BgtDialog open={open} onClose={close}>
       <BgtDialogContent className="max-w-2xl!">
         <GameNightForm
           defaultValues={{
@@ -67,13 +61,13 @@ export const EditGameNightModal = (props: Props) => {
           locations={locations}
           isLoading={isLoading}
           onSubmit={handleSubmit}
-          onClose={handleClose}
+          onClose={close}
         >
           <BgtDialogTitle>{t('game-nights.edit.title')}</BgtDialogTitle>
           <BgtDialogDescription>{t('game-nights.edit.description')}</BgtDialogDescription>
         </GameNightForm>
         <BgtDialogClose>
-          <BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={handleClose}>
+          <BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={close}>
             {t('common.cancel')}
           </BgtButton>
           <BgtButton type="submit" form="game-night-form" disabled={isLoading} className="flex-1" variant="primary">

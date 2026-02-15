@@ -4,16 +4,17 @@ import { getSettings } from '@/services/queries/settings';
 import { getPlayer, getPlayerSessionsShortList, getPlayerStatistics } from '@/services/queries/players';
 import { getBadges } from '@/services/queries/basdges';
 import { deletePlayerCall } from '@/services/playerService';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { QUERY_KEYS } from '@/models';
 
 interface UsePLayerDataProps {
   playerId: number;
   onDeleteSuccess?: () => void;
-  onDeleteError?: () => void;
 }
 
-export const usePlayerData = ({ playerId, onDeleteSuccess, onDeleteError }: UsePLayerDataProps) => {
+export const usePlayerData = ({ playerId, onDeleteSuccess }: UsePLayerDataProps) => {
   const queryClient = useQueryClient();
+  const { infoToast, errorToast } = useToasts();
 
   const [playerQuery, statisticsQuery, badgesQuery, sessionsQuery, settingsQuery] = useQueries({
     queries: [
@@ -42,9 +43,10 @@ export const usePlayerData = ({ playerId, onDeleteSuccess, onDeleteError }: UseP
       await deletePlayerCall(id);
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
+      infoToast('player.delete.successfull');
       onDeleteSuccess?.();
     } catch {
-      onDeleteError?.();
+      errorToast('player.delete.failed');
     }
   };
 

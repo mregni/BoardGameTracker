@@ -1,14 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { useCallback, Dispatch, SetStateAction } from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useForm } from '@tanstack/react-form';
 
 import { useBggGameModal } from '../-hooks/useBggGameModal';
 
 import { getItemStateTranslationKey } from '@/utils/ItemStateUtils';
+import { handleFormSubmit } from '@/utils/formUtils';
 import { toInputDate } from '@/utils/dateUtils';
-import { useToasts } from '@/routes/-hooks/useToasts';
-import { BggSearchSchema, Game, GameState } from '@/models';
+import { BggSearchSchema, Game, GameState, ModalProps } from '@/models';
 import { BgtFormField, BgtSwitch, BgtSelect, BgtInputField, BgtDatePicker } from '@/components/BgtForm';
 import {
   BgtDialog,
@@ -20,23 +20,16 @@ import {
 import BgtButton from '@/components/BgtButton/BgtButton';
 import SquareOutIcon from '@/assets/icons/square-out.svg?react';
 
-interface Props {
-  open: boolean;
-  setOpen: Dispatch<SetStateAction<boolean>>;
-}
-
-export const BggGameModal = (props: Props) => {
-  const { open, setOpen } = props;
+export const BggGameModal = (props: ModalProps) => {
+  const { open, close } = props;
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { successToast } = useToasts();
 
   const onSuccess = useCallback(
     (game: Game) => {
-      successToast('game.notifications.created');
       navigate({ to: `/games/${game.id}` });
     },
-    [successToast, navigate]
+    [navigate]
   );
 
   const { save, isPending, settings } = useBggGameModal({ onSuccess });
@@ -46,8 +39,8 @@ export const BggGameModal = (props: Props) => {
   }, []);
 
   const handleClose = useCallback(() => {
-    setOpen(false);
-  }, [setOpen]);
+    close();
+  }, [close]);
 
   const form = useForm({
     defaultValues: {
@@ -69,11 +62,7 @@ export const BggGameModal = (props: Props) => {
         <BgtDialogTitle>{t('game.new.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('game.new.bgg-description')}</BgtDialogDescription>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
+          onSubmit={handleFormSubmit(form)}
         >
           <div className="flex flex-col gap-4 mt-3 mb-6">
             <BgtButton onClick={openBgg} disabled={isPending} variant="primary" type="button">

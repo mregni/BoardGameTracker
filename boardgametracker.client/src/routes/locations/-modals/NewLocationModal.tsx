@@ -3,7 +3,7 @@ import { useForm } from '@tanstack/react-form';
 
 import { useLocationModal } from '../-hooks/useLocationModal';
 
-import { useToasts } from '@/routes/-hooks/useToasts';
+import { handleFormSubmit } from '@/utils/formUtils';
 import { CreateLocationSchema } from '@/models';
 import { BgtInputField } from '@/components/BgtForm';
 import { BgtDialog, BgtDialogContent, BgtDialogTitle, BgtDialogClose } from '@/components/BgtDialog';
@@ -16,18 +16,9 @@ interface Props {
 
 export const NewLocationModal = (props: Props) => {
   const { open, close } = props;
-  const { successToast, errorToast } = useToasts();
   const { t } = useTranslation();
 
-  const onSaveSuccess = () => {
-    successToast('location.notifications.created');
-    close();
-  };
-  const onSaveError = () => {
-    errorToast('location.notifications.create-failed');
-  };
-
-  const { saveLocation, isLoading } = useLocationModal({ onSaveSuccess, onSaveError });
+  const { saveLocation, isLoading } = useLocationModal({ onSaveSuccess: close });
 
   const form = useForm({
     defaultValues: {
@@ -43,11 +34,7 @@ export const NewLocationModal = (props: Props) => {
     <BgtDialog open={open} onClose={close}>
       <BgtDialogContent>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
+          onSubmit={handleFormSubmit(form)}
           className="w-full"
         >
           <BgtDialogTitle>{t('location.new.title')}</BgtDialogTitle>

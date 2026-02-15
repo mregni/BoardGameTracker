@@ -2,16 +2,18 @@ import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { addSessionCall } from '@/services/sessionService';
 import { getGame } from '@/services/queries/games';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { QUERY_KEYS } from '@/models';
 
 interface Props {
   gameId: number;
-  onSaveSuccess?: () => void;
-  onSaveError?: () => void;
+  onSuccess?: () => void;
 }
 
-export const useNewSessionWithGameData = ({ gameId, onSaveSuccess, onSaveError }: Props) => {
+export const useNewSessionWithGameData = ({ gameId, onSuccess }: Props) => {
   const queryClient = useQueryClient();
+  const { successToast, errorToast } = useToasts();
+
   const [gameQuery] = useQueries({
     queries: [getGame(gameId)],
   });
@@ -21,25 +23,22 @@ export const useNewSessionWithGameData = ({ gameId, onSaveSuccess, onSaveError }
   const saveSessionMutation = useMutation({
     mutationFn: addSessionCall,
     async onSuccess(sessionResult) {
-      onSaveSuccess?.();
+      successToast('player-session.new.notifications.created');
+      onSuccess?.();
 
-      const maps = sessionResult.playerSessions.map(async (x) => {
-        return await queryClient.invalidateQueries({
-          queryKey: [QUERY_KEYS.players, x.playerId, QUERY_KEYS.sessions],
-        });
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.game, sessionResult.gameId],
-      });
-
-      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] });
-
-      await Promise.all(maps);
+      await Promise.all([
+        ...sessionResult.playerSessions.map((x) =>
+          queryClient.invalidateQueries({
+            queryKey: [QUERY_KEYS.player, x.playerId, QUERY_KEYS.sessions],
+          })
+        ),
+        queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, sessionResult.gameId] }),
+        queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] }),
+        queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] }),
+      ]);
     },
     onError: () => {
-      onSaveError?.();
+      errorToast('player-session.new.notifications.create-failed');
     },
   });
 

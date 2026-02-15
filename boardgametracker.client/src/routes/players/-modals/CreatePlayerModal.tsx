@@ -5,8 +5,8 @@ import { useForm } from '@tanstack/react-form';
 
 import { usePlayerModal } from '../-hooks/usePlayerModal';
 
-import { useToasts } from '@/routes/-hooks/useToasts';
-import { CreatePlayerSchema, Player } from '@/models';
+import { handleFormSubmit } from '@/utils/formUtils';
+import { CreatePlayerSchema, ModalProps, Player } from '@/models';
 import { BgtInputField, BgtImageSelector } from '@/components/BgtForm';
 import {
   BgtDialog,
@@ -17,27 +17,16 @@ import {
 } from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
-interface Props {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+interface Props extends ModalProps {
   onPlayerCreated?: (player: Player) => void;
 }
 
 export const CreatePlayerModal = (props: Props) => {
-  const { open, setOpen, onPlayerCreated } = props;
+  const { open, close, onPlayerCreated } = props;
   const { t } = useTranslation();
   const [image, setImage] = useState<File | undefined | null>(undefined);
-  const { successToast, errorToast } = useToasts();
 
-  const onSaveSuccess = () => {
-    successToast('player.notifications.created');
-  };
-
-  const onSaveError = () => {
-    errorToast('player.notifications.create-failed');
-  };
-
-  const { savePlayer, uploadImage, isLoading } = usePlayerModal({ onSaveSuccess, onSaveError });
+  const { savePlayer, uploadImage, isLoading } = usePlayerModal({});
 
   const form = useForm({
     defaultValues: {
@@ -65,14 +54,14 @@ export const CreatePlayerModal = (props: Props) => {
 
       form.reset();
       setImage(undefined);
-      setOpen(false);
+      close();
     },
   });
 
   const handleCancel = () => {
     form.reset();
     setImage(undefined);
-    setOpen(false);
+    close();
   };
 
   return (
@@ -81,11 +70,7 @@ export const CreatePlayerModal = (props: Props) => {
         <BgtDialogTitle>{t('player.new.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('player.new.description')}</BgtDialogDescription>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
+          onSubmit={handleFormSubmit(form)}
         >
           <div className="flex flex-row gap-3 mt-3 mb-6">
             <div className="flex-none">

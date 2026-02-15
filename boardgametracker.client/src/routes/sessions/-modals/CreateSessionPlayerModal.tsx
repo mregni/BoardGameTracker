@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from '@tanstack/react-form';
 
+import { handleFormSubmit } from '@/utils/formUtils';
 import { CreatePlayerModal } from '@/routes/players/-modals/CreatePlayerModal';
 import {
   CreateSessionPlayer,
@@ -34,7 +35,7 @@ const CreateSessionPlayerForm = (props: Props) => {
   const { t } = useTranslation();
 
   const [openCreatePlayerModal, setOpenCreatePlayerModal] = useState(false);
-  const [newlyCreatedPlayerId, setNewlyCreatedPlayerId] = useState<number | null>(null);
+  const newlyCreatedPlayerIdRef = useRef<number | null>(null);
 
   const schema = hasScoring ? CreatePlayerSessionSchema : CreatePlayerSessionNoScoringSchema;
 
@@ -52,18 +53,18 @@ const CreateSessionPlayerForm = (props: Props) => {
   });
 
   const handlePlayerCreated = (player: Player) => {
-    setNewlyCreatedPlayerId(player.id);
+    newlyCreatedPlayerIdRef.current = player.id;
   };
 
   useEffect(() => {
-    if (newlyCreatedPlayerId !== null) {
-      const playerExists = players.some((p) => p.id === newlyCreatedPlayerId);
+    if (newlyCreatedPlayerIdRef.current !== null) {
+      const playerExists = players.some((p) => p.id === newlyCreatedPlayerIdRef.current);
       if (playerExists) {
-        form.setFieldValue('playerId', String(newlyCreatedPlayerId));
-        setTimeout(() => setNewlyCreatedPlayerId(null), 0);
+        form.setFieldValue('playerId', String(newlyCreatedPlayerIdRef.current));
+        newlyCreatedPlayerIdRef.current = null;
       }
     }
-  }, [players, newlyCreatedPlayerId, form]);
+  }, [players, form]);
 
   return (
     <BgtDialog open={open}>
@@ -71,11 +72,7 @@ const CreateSessionPlayerForm = (props: Props) => {
         <BgtDialogTitle>{t('player-session.new.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('player-session.new.description')}</BgtDialogDescription>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
+          onSubmit={handleFormSubmit(form)}
         >
           <div className="flex flex-col gap-4 mt-3 mb-6">
             <BgtFormField form={form} name="playerId" schema={schema}>
@@ -123,7 +120,7 @@ const CreateSessionPlayerForm = (props: Props) => {
 
       <CreatePlayerModal
         open={openCreatePlayerModal}
-        setOpen={setOpenCreatePlayerModal}
+        close={() => setOpenCreatePlayerModal(false)}
         onPlayerCreated={handlePlayerCreated}
       />
     </BgtDialog>

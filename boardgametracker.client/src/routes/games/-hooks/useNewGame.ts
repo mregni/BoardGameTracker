@@ -2,15 +2,16 @@ import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { getSettings } from '@/services/queries/settings';
 import { saveGameCall } from '@/services/gameService';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { Game, QUERY_KEYS } from '@/models';
 
 interface Props {
   gameId?: string;
-  onSaveSuccess?: (game: Game) => void;
-  onSaveError?: () => void;
+  onSuccess?: (game: Game) => void;
 }
-export const useNewGame = ({ onSaveSuccess, onSaveError }: Props) => {
+export const useNewGame = ({ onSuccess }: Props) => {
   const queryClient = useQueryClient();
+  const { successToast, errorToast } = useToasts();
 
   const [settingsQuery] = useQueries({
     queries: [getSettings()],
@@ -23,10 +24,11 @@ export const useNewGame = ({ onSaveSuccess, onSaveError }: Props) => {
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
       await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.dashboard] });
-      onSaveSuccess?.(data);
+      successToast('game.notifications.created');
+      onSuccess?.(data);
     },
     onError: () => {
-      onSaveError?.();
+      errorToast('game.notifications.create-failed');
     },
   });
 

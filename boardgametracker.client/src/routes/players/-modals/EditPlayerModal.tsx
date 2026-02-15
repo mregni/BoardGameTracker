@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 
 import { usePlayerModal } from '../-hooks/usePlayerModal';
 
-import { useToasts } from '@/routes/-hooks/useToasts';
-import { CreatePlayerSchema, Player } from '@/models';
+import { handleFormSubmit } from '@/utils/formUtils';
+import { CreatePlayerSchema, ModalProps, Player } from '@/models';
 import { BgtInputField, BgtImageSelector } from '@/components/BgtForm';
 import {
   BgtDialog,
@@ -16,31 +16,16 @@ import {
 } from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
-interface Props {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+interface Props extends ModalProps {
   player: Player;
 }
 
 export const EditPlayerModal = (props: Props) => {
-  const { open, setOpen, player } = props;
+  const { open, close, player } = props;
   const { t } = useTranslation();
   const [image, setImage] = useState<File | undefined | null>(undefined);
-  const { successToast, errorToast } = useToasts();
 
-  const onUpdateSuccess = useCallback(() => {
-    successToast('player.notifications.updated');
-  }, [successToast]);
-
-  const onUpdateError = useCallback(() => {
-    errorToast('player.notifications.update-failed');
-  }, [errorToast]);
-
-  const { updatePlayer, uploadImage, isLoading } = usePlayerModal({ onUpdateSuccess, onUpdateError });
-
-  const handleClose = useCallback(() => {
-    setOpen(false);
-  }, [setOpen]);
+  const { updatePlayer, uploadImage, isLoading } = usePlayerModal({});
 
   const form = useForm({
     defaultValues: {
@@ -62,21 +47,17 @@ export const EditPlayerModal = (props: Props) => {
       }
 
       await updatePlayer(updatedPlayer);
-      setOpen(false);
+      close();
     },
   });
 
   return (
-    <BgtDialog open={open} onClose={handleClose}>
+    <BgtDialog open={open} onClose={close}>
       <BgtDialogContent>
         <BgtDialogTitle>{t('player.update.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('player.update.description')}</BgtDialogDescription>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
+          onSubmit={handleFormSubmit(form)}
         >
           <div className="flex flex-row gap-3 mt-3 mb-6">
             <div className="flex-none">
@@ -108,7 +89,7 @@ export const EditPlayerModal = (props: Props) => {
             </div>
           </div>
           <BgtDialogClose>
-            <BgtButton variant="cancel" onClick={handleClose} disabled={isLoading}>
+            <BgtButton variant="cancel" onClick={close} disabled={isLoading}>
               {t('common.cancel')}
             </BgtButton>
             <BgtButton type="submit" variant="primary" disabled={isLoading}>

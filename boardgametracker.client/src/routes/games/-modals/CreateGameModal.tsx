@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 
+import { ModalProps } from '@/models';
 import {
   BgtDialog,
   BgtDialogContent,
@@ -12,28 +13,22 @@ import {
 import BgtButton from '@/components/BgtButton/BgtButton';
 import BgtBigButton from '@/components/BgtButton/BgtBigButton';
 
-interface Props {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+interface Props extends ModalProps {
   openBgg: () => void;
   openManual: () => void;
 }
 
 const CreateGameModal = (props: Props) => {
-  const { open, setOpen, openBgg, openManual } = props;
+  const { open, close, openBgg, openManual } = props;
   const { t } = useTranslation();
   const navigate = useNavigate();
-
-  const handleClose = useCallback(() => {
-    setOpen(false);
-  }, [setOpen]);
 
   const handleBggImport = useCallback(() => {
     navigate({ to: '/games/import/start' });
   }, [navigate]);
 
   return (
-    <BgtDialog open={open} onClose={handleClose}>
+    <BgtDialog open={open} onClose={close}>
       <BgtDialogContent>
         <BgtDialogTitle>{t('game.new.title')}</BgtDialogTitle>
         <BgtDialogDescription>{t('game.new.description')}</BgtDialogDescription>
@@ -51,7 +46,7 @@ const CreateGameModal = (props: Props) => {
           />
         </div>
         <BgtDialogClose>
-          <BgtButton variant="cancel" className="flex-1" onClick={handleClose}>
+          <BgtButton variant="cancel" className="flex-1" onClick={close}>
             {t('common.cancel')}
           </BgtButton>
         </BgtDialogClose>

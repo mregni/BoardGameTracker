@@ -9,7 +9,6 @@ import { ImportLoader } from './-components/ImportLoader';
 import { getItemStateTranslationKey } from '@/utils/ItemStateUtils';
 import { getSettings } from '@/services/queries/settings';
 import { getBggCollection, getGames } from '@/services/queries/games';
-import { useToasts } from '@/routes/-hooks/useToasts';
 import { GameState, ImportGame } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
 import { BgtPaging } from '@/components/BgtTable/BgtPaging';
@@ -37,16 +36,9 @@ const maxImport = 5;
 function RouteComponent() {
   const { username } = Route.useParams();
   const { t } = useTranslation();
-  const { errorToast, successToast } = useToasts();
   const [loadText, setLoadText] = useState('games.import.loading');
 
-  const onSuccessImport = () => {
-    successToast(t('games.import.success'));
-    setLoadText('games.import.loading');
-  };
-
-  const onFailedImport = () => {
-    errorToast(t('games.import.failed'));
+  const onSuccess = () => {
     setLoadText('games.import.loading');
   };
 
@@ -64,8 +56,7 @@ function RouteComponent() {
     importing,
   } = useList({
     username,
-    onSuccessImport,
-    onFailedImport,
+    onSuccess,
   });
 
   const [page, setPage] = useState<number>(0);

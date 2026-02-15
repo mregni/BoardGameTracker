@@ -1,25 +1,27 @@
 import { useMutation } from '@tanstack/react-query';
 
 import { addSessionCall } from '@/services/sessionService';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { useQueryInvalidator } from '@/hooks/useQueryInvalidator';
 
 interface Props {
-  onSaveSuccess?: () => void;
-  onSaveError?: () => void;
+  onSuccess?: () => void;
 }
 
-export const useNewSessionData = ({ onSaveSuccess, onSaveError }: Props) => {
+export const useNewSessionData = ({ onSuccess }: Props = {}) => {
   const invalidator = useQueryInvalidator();
+  const { successToast, errorToast } = useToasts();
 
   const saveSessionMutation = useMutation({
     mutationFn: addSessionCall,
     async onSuccess(sessionResult) {
-      onSaveSuccess?.();
+      successToast('player-session.new.notifications.created');
+      onSuccess?.();
 
       await invalidator.invalidateSession(sessionResult.id, sessionResult.gameId);
     },
     onError: () => {
-      onSaveError?.();
+      errorToast('player-session.new.notifications.create-failed');
     },
   });
 

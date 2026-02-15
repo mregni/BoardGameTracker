@@ -1,14 +1,14 @@
 import { Bars } from 'react-loading-icons';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useForm } from '@tanstack/react-form';
 
 import { useNewLoanModal } from '../-hooks/useNewLoanModal';
 
+import { handleFormSubmit } from '@/utils/formUtils';
 import { CreatePlayerModal } from '@/routes/players/-modals/CreatePlayerModal';
-import { useToasts } from '@/routes/-hooks/useToasts';
 import { CreateLoanSchema } from '@/models/Loan/CreateLoan';
-import { Player } from '@/models';
+import { ModalProps, Player } from '@/models';
 import { BgtFormField, BgtSelect, BgtDatePicker } from '@/components/BgtForm';
 import {
   BgtDialog,
@@ -19,30 +19,19 @@ import {
 } from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
-interface Props {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const NewLoanModal = (props: Props) => {
-  const { open, setOpen } = props;
+const NewLoanModal = (props: ModalProps) => {
+  const { open, close } = props;
   const { t } = useTranslation();
-  const { errorToast, successToast } = useToasts();
 
   const [openCreatePlayerModal, setOpenCreatePlayerModal] = useState(false);
-  const [newlyCreatedPlayerId, setNewlyCreatedPlayerId] = useState<number | null>(null);
+  const newlyCreatedPlayerIdRef = useRef<number | null>(null);
 
-  const onSaveError = () => {
-    errorToast('loan.notifications.create-failed');
-  };
-
-  const onSaveSuccess = () => {
-    successToast('loan.notifications.created');
+  const onSuccess = () => {
     form.reset();
-    setOpen(false);
+    close();
   };
 
-  const { games, players, isLoading, saveLoan } = useNewLoanModal({ onSaveError, onSaveSuccess });
+  const { games, players, isLoading, saveLoan } = useNewLoanModal({ onSuccess });
 
   const gamesSelectItems = useMemo(
     () =>
@@ -69,7 +58,7 @@ const NewLoanModal = (props: Props) => {
       gameId: '',
       playerId: '',
       loanDate: '',
-      returnDate: '',
+      dueDate: '',
     },
     onSubmit: async ({ value }) => {
       const validatedData = CreateLoanSchema.parse(value);
@@ -78,18 +67,18 @@ const NewLoanModal = (props: Props) => {
   });
 
   const handlePlayerCreated = (player: Player) => {
-    setNewlyCreatedPlayerId(player.id);
+    newlyCreatedPlayerIdRef.current = player.id;
   };
 
   useEffect(() => {
-    if (newlyCreatedPlayerId !== null) {
-      const playerExists = players.some((p) => p.id === newlyCreatedPlayerId);
+    if (newlyCreatedPlayerIdRef.current !== null) {
+      const playerExists = players.some((p) => p.id === newlyCreatedPlayerIdRef.current);
       if (playerExists) {
-        form.setFieldValue('playerId', String(newlyCreatedPlayerId));
-        setTimeout(() => setNewlyCreatedPlayerId(null), 0);
+        form.setFieldValue('playerId', String(newlyCreatedPlayerIdRef.current));
+        newlyCreatedPlayerIdRef.current = null;
       }
     }
-  }, [players, newlyCreatedPlayerId, form]);
+  }, [players, form]);
 
   useEffect(() => {
     if (!open) {
@@ -98,14 +87,10 @@ const NewLoanModal = (props: Props) => {
   }, [open, form]);
 
   return (
-    <BgtDialog open={open} onClose={() => setOpen(false)}>
+    <BgtDialog open={open} onClose={close}>
       <BgtDialogContent>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
+          onSubmit={handleFormSubmit(form)}
           className="w-full"
         >
           <BgtDialogTitle>{t('loan.new.title')}</BgtDialogTitle>
@@ -164,7 +149,7 @@ const NewLoanModal = (props: Props) => {
             </div>
           </div>
           <BgtDialogClose>
-            <BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={() => setOpen(false)}>
+            <BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={close}>
               {t('common.cancel')}
             </BgtButton>
             <BgtButton type="submit" disabled={isLoading} className="flex-1" variant="primary">
@@ -178,7 +163,7 @@ const NewLoanModal = (props: Props) => {
       {/* Reuse CreatePlayerModal */}
       <CreatePlayerModal
         open={openCreatePlayerModal}
-        setOpen={setOpenCreatePlayerModal}
+        close={() => setOpenCreatePlayerModal(false)}
         onPlayerCreated={handlePlayerCreated}
       />
     </BgtDialog>

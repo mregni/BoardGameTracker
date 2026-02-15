@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 
 import { BgtDeleteModal } from '../-modals/BgtDeleteModal';
-import { useToasts } from '../-hooks/useToasts';
 
 import { useLocationsData } from './-hooks/useLocationsData';
 import { useLocationModals } from './-hooks/useLocationModals';
@@ -28,21 +27,15 @@ export const Route = createFileRoute('/locations/')({
 
 function RouteComponent() {
   const { t } = useTranslation();
-  const { infoToast, errorToast } = useToasts();
   const modals = useLocationModals();
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
   const onDeleteSuccess = () => {
     modals.deleteModal.hide();
     setSelectedLocation(null);
-    infoToast(t('location.notifications.deleted'));
   };
 
-  const onDeleteError = () => {
-    errorToast(t('location.notifications.delete-failed'));
-  };
-
-  const { locations, deleteLocation } = useLocationsData({ onDeleteSuccess, onDeleteError });
+  const { locations, deleteLocation } = useLocationsData({ onDeleteSuccess });
 
   const columns: DataTableProps<Location>['columns'] = useMemo(
     () => [

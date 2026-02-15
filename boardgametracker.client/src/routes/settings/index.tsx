@@ -3,8 +3,6 @@ import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useForm } from '@tanstack/react-form';
 
-import { useToasts } from '../-hooks/useToasts';
-
 import { useSettingsData } from './-hooks/useSettingsData';
 import { ShelfOfShameSettings } from './-components/ShelfOfShameSettings';
 import { SettingsSidebar, SettingsCategory } from './-components/SettingsSidebar';
@@ -12,6 +10,7 @@ import { GeneralSettings } from './-components/GeneralSettings';
 import { GameNightsSettings } from './-components/GameNightsSettings';
 import { AdvancedSettings } from './-components/AdvancedSettings';
 
+import { handleFormSubmit } from '@/utils/formUtils';
 import { getSettings, getLanguages, getEnvironment } from '@/services/queries/settings';
 import { Settings, SettingsSchema } from '@/models';
 import { BgtLoadingSpinner } from '@/components/BgtLoadingSpinner/BgtLoadingSpinner';
@@ -31,17 +30,7 @@ export const Route = createFileRoute('/settings/')({
 });
 
 function RouteComponent() {
-  const { errorToast, successToast } = useToasts();
-
-  const onSaveError = () => {
-    errorToast('settings.save.failed');
-  };
-
-  const onSaveSuccess = () => {
-    successToast('settings.save.successfull');
-  };
-
-  const { settings, saveSettings, isLoading, languages } = useSettingsData({ onSaveSuccess, onSaveError });
+  const { settings, saveSettings, isSaving, languages } = useSettingsData();
 
   if (settings === undefined) {
     return (
@@ -52,18 +41,18 @@ function RouteComponent() {
   }
 
   return (
-    <SettingsPageContent settings={settings} languages={languages} isLoading={isLoading} saveSettings={saveSettings} />
+    <SettingsPageContent settings={settings} languages={languages} isSaving={isSaving} saveSettings={saveSettings} />
   );
 }
 
 interface SettingsPageContentProps {
   settings: Settings;
   languages: { key: string; translationKey: string }[];
-  isLoading: boolean;
+  isSaving: boolean;
   saveSettings: (settings: Settings) => Promise<Settings>;
 }
 
-function SettingsPageContent({ settings, languages, isLoading, saveSettings }: SettingsPageContentProps) {
+function SettingsPageContent({ settings, languages, isSaving, saveSettings }: SettingsPageContentProps) {
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('general');
   const { t } = useTranslation();
 
@@ -90,15 +79,15 @@ function SettingsPageContent({ settings, languages, isLoading, saveSettings }: S
   const renderContent = () => {
     switch (activeCategory) {
       case 'general':
-        return <GeneralSettings form={form} languages={languages} disabled={isLoading} />;
+        return <GeneralSettings form={form} languages={languages} disabled={isSaving} />;
       case 'shelf-of-shame':
-        return <ShelfOfShameSettings form={form} disabled={isLoading} />;
+        return <ShelfOfShameSettings form={form} disabled={isSaving} />;
       case 'game-nights':
-        return <GameNightsSettings form={form} disabled={isLoading} />;
+        return <GameNightsSettings form={form} disabled={isSaving} />;
       case 'advanced':
-        return <AdvancedSettings form={form} disabled={isLoading} />;
+        return <AdvancedSettings form={form} disabled={isSaving} />;
       default:
-        return <GeneralSettings form={form} languages={languages} disabled={isLoading} />;
+        return <GeneralSettings form={form} languages={languages} disabled={isSaving} />;
     }
   };
 
@@ -111,16 +100,12 @@ function SettingsPageContent({ settings, languages, isLoading, saveSettings }: S
 
           <div className="flex-1">
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                form.handleSubmit();
-              }}
+              onSubmit={handleFormSubmit(form)}
             >
               <div className="flex flex-col gap-4 xl:gap-6 lg:pl-4 xl:pl-6 pt-4 lg:pt-0">{renderContent()}</div>
               <div className="mt-6 pt-4 lg:ml-4 xl:ml-6 border-t border-white/10">
                 <div className="flex justify-between flex-wrap gap-3 items-start">
-                  <BgtButton onClick={form.handleSubmit} type="submit" disabled={isLoading}>
+                  <BgtButton onClick={form.handleSubmit} type="submit" disabled={isSaving}>
                     {t('settings.save.button')}
                   </BgtButton>
                 </div>

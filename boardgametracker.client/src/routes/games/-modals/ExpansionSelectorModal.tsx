@@ -12,16 +12,15 @@ import {
   BgtDialogTitle,
 } from '@/components/BgtDialog';
 import BgtButton from '@/components/BgtButton/BgtButton';
+import { ModalProps } from '@/models';
 
-interface Props {
+interface Props extends ModalProps {
   gameId: number;
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedExpansions: number[];
 }
 
 export const ExpansionSelectorModal = (props: Props) => {
-  const { open, setOpen, gameId, selectedExpansions } = props;
+  const { open, close, gameId, selectedExpansions } = props;
   const { t } = useTranslation();
   const [selectedIds, setSelectedIds] = useState<number[]>(selectedExpansions);
 
@@ -29,7 +28,7 @@ export const ExpansionSelectorModal = (props: Props) => {
 
   const saveModal = () => {
     saveExpansions({ gameId, expansionBggIds: selectedIds }).finally(() => {
-      setOpen(false);
+      close();
     });
   };
 
@@ -48,7 +47,7 @@ export const ExpansionSelectorModal = (props: Props) => {
           />
         </div>
         <BgtDialogClose>
-          <BgtButton variant="cancel" onClick={() => setOpen(false)} disabled={isLoading || isPending}>
+          <BgtButton variant="cancel" onClick={() => close()} disabled={isLoading || isPending}>
             {t('common.cancel')}
           </BgtButton>
           <BgtButton type="button" variant="primary" disabled={isLoading} onClick={saveModal || isPending}>

@@ -1,7 +1,12 @@
+import { useCallback } from 'react';
 import { cx } from 'class-variance-authority';
 
+import { GameNightRsvpState } from '@/models';
+
 interface RsvpStatusButtonProps {
-  onClick: () => void;
+  rsvpId: number;
+  state: GameNightRsvpState;
+  onStatusChange: (rsvpId: number, state: GameNightRsvpState) => void;
   disabled: boolean;
   isActive: boolean;
   variant: 'green' | 'yellow' | 'red';
@@ -26,17 +31,23 @@ const statusButtonStyles = {
   },
 };
 
-export const RsvpStatusButton = ({ onClick, disabled, isActive, variant, label }: RsvpStatusButtonProps) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={cx(
-      'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-      disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-      isActive ? statusButtonStyles[variant].active : statusButtonStyles[variant].inactive,
-      !isActive && !disabled && statusButtonStyles[variant].hover
-    )}
-  >
-    {label}
-  </button>
-);
+export const RsvpStatusButton = ({ rsvpId, state, onStatusChange, disabled, isActive, variant, label }: RsvpStatusButtonProps) => {
+  const handleClick = useCallback(() => {
+    onStatusChange(rsvpId, state);
+  }, [onStatusChange, rsvpId, state]);
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={disabled}
+      className={cx(
+        'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+        disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+        isActive ? statusButtonStyles[variant].active : statusButtonStyles[variant].inactive,
+        !isActive && !disabled && statusButtonStyles[variant].hover
+      )}
+    >
+      {label}
+    </button>
+  );
+};

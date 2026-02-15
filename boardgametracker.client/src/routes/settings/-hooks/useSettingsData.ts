@@ -2,15 +2,12 @@ import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 
 import { updateSettingsCall } from '@/services/settingsService';
 import { getEnvironment, getLanguages, getSettings } from '@/services/queries/settings';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { QUERY_KEYS } from '@/models';
 
-interface Props {
-  onSaveSuccess?: () => void;
-  onSaveError?: () => void;
-}
-
-export const useSettingsData = ({ onSaveSuccess, onSaveError }: Props) => {
+export const useSettingsData = () => {
   const queryClient = useQueryClient();
+  const { successToast, errorToast } = useToasts();
 
   const [settingsQuery, languageQuery, environmentQuery] = useQueries({
     queries: [getSettings(), getLanguages(), getEnvironment()],
@@ -23,11 +20,11 @@ export const useSettingsData = ({ onSaveSuccess, onSaveError }: Props) => {
   const saveSettingsMutation = useMutation({
     mutationFn: updateSettingsCall,
     onSuccess() {
-      onSaveSuccess?.();
+      successToast('settings.save.successfull');
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.settings] });
     },
     onError: () => {
-      onSaveError?.();
+      errorToast('settings.save.failed');
     },
   });
 
@@ -36,6 +33,7 @@ export const useSettingsData = ({ onSaveSuccess, onSaveError }: Props) => {
     languages,
     environment,
     saveSettings: saveSettingsMutation.mutateAsync,
-    isLoading: saveSettingsMutation.isPending,
+    isSaving: saveSettingsMutation.isPending,
+    isLoading: settingsQuery.isLoading || languageQuery.isLoading || environmentQuery.isLoading,
   };
 };
