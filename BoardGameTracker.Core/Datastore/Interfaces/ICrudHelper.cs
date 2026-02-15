@@ -6,5 +6,5 @@ public interface ICrudHelper<T> where T : class
     Task<List<T>> GetAllAsync();
     Task<T> CreateAsync(T obj);
     Task<bool> DeleteAsync(int id);
-    Task<T> UpdateAsync(T entity);
+    Task<T> Update(T entity);
 }

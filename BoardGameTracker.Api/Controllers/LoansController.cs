@@ -21,59 +21,39 @@ public class LoanController : ControllerBase
     public async Task<IActionResult> GetLoans()
     {
         var loans = await _loanService.GetLoans();
-        var boe = loans.ToListDto();
-        return Ok(boe);
+        return Ok(loans.ToListDto());
     }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetLoanById(int id)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetLoanById(int id)
+    {
+        var loan = await _loanService.GetLoanById(id);
+        if (loan == null)
         {
-            var loan = await _loanService.GetLoanById(id);
-            if (loan == null)
-            {
-                return NotFound();
-            }
-            return Ok(loan.ToDto());
+            return NotFound();
         }
+
+        return Ok(loan.ToDto());
+    }
 
     [HttpPost]
-    public async Task<IActionResult> CreateLoan([FromBody] CreateLoanCommand? command)
+    public async Task<IActionResult> CreateLoan([FromBody] CreateLoanCommand command)
     {
-        if (command == null)
-        {
-            return BadRequest();
-        }
-
         var createdLoan = await _loanService.LoanGameToPlayer(command);
         return CreatedAtAction(nameof(GetLoanById), new { id = createdLoan.Id }, createdLoan.ToDto());
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateLoan([FromBody] UpdateLoanCommand? command)
+    public async Task<IActionResult> UpdateLoan([FromBody] UpdateLoanCommand command)
     {
-        if (command == null)
-        {
-            return BadRequest();
-        }
-
         var updatedLoan = await _loanService.Update(command);
         return Ok(updatedLoan.ToDto());
     }
-    
-    [HttpPut("return")]
-    public async Task<IActionResult> ReturnLoan([FromBody] ReturnLoanCommand? command)
-    {
-        if (command == null)
-        {
-            return BadRequest();
-        }
 
+    [HttpPut("return")]
+    public async Task<IActionResult> ReturnLoan([FromBody] ReturnLoanCommand command)
+    {
         var updatedLoan = await _loanService.ReturnLoan(command);
-        if (updatedLoan == null)
-        {
-            return NotFound();
-        }
-        
         return Ok(updatedLoan.ToDto());
     }
 

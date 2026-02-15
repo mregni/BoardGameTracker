@@ -50,9 +50,12 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         serviceCollection.AddSingleton<IDbConnectionProvider, DbConnectionProvider>();
         serviceCollection.AddScoped<IConfigRepository, ConfigRepository>();
-        serviceCollection.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
+        serviceCollection.AddSingleton<IEnvironmentProvider, EnvironmentProvider>();
         
         serviceCollection.AddScoped<IGameService, GameService>();
+        serviceCollection.AddScoped<IBggImportService, BggImportService>();
+        serviceCollection.AddScoped<IGameChartService, GameChartService>();
+        serviceCollection.AddScoped<IShameService, ShameService>();
         serviceCollection.AddScoped<IImageService, ImageService>();
         serviceCollection.AddScoped<IPlayerService, PlayerService>();
         serviceCollection.AddScoped<ISessionService, SessionService>();
@@ -83,9 +86,7 @@ public static class ServiceCollectionExtensions
 
         serviceCollection.AddScoped<IGameStatisticsService, GameStatisticsService>();
         serviceCollection.AddScoped<IPlayerStatisticsService, PlayerStatisticsService>();
-        serviceCollection.AddScoped<IPlayerComparisonService, PlayerComparisonService>();
         serviceCollection.AddScoped<IBadgeProgressionService, BadgeProgressionService>();
-        serviceCollection.AddScoped<IFirstPlayDetectionService, FirstPlayDetectionService>();
 
         serviceCollection.AddScoped<IBggGameTranslator, BggGameTranslator>();
 

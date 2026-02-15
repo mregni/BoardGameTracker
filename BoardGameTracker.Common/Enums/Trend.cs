@@ -2,7 +2,7 @@
 
 public enum Trend
 {
-    Up = 0,
-    Down = 1,
-    Equal = 2
+    Up,
+    Down,
+    Equal
 }

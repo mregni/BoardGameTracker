@@ -1,11 +1,11 @@
-using Ardalis.GuardClauses;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.GameNights.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using BoardGameTracker.Core.Games.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.GameNights;
 
@@ -13,20 +13,24 @@ public class GameNightService : IGameNightService
 {
     private readonly IGameNightRepository _gameNightRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly MainDbContext _context;
+    private readonly IGameRepository _gameRepository;
+    private readonly ILogger<GameNightService> _logger;
 
     public GameNightService(
         IGameNightRepository gameNightRepository,
         IUnitOfWork unitOfWork,
-        MainDbContext context)
+        IGameRepository gameRepository,
+        ILogger<GameNightService> logger)
     {
         _gameNightRepository = gameNightRepository;
         _unitOfWork = unitOfWork;
-        _context = context;
+        _gameRepository = gameRepository;
+        _logger = logger;
     }
 
     public Task<List<GameNight>> GetGameNights(bool past)
     {
+        _logger.LogDebug("Fetching {Type} game nights", past ? "past" : "future");
         return past
             ? _gameNightRepository.GetPastGameNightsAsync()
             : _gameNightRepository.GetFutureGameNightsAsync();
@@ -34,14 +38,14 @@ public class GameNightService : IGameNightService
 
     public Task<GameNight?> GetById(int id)
     {
+        _logger.LogDebug("Fetching game night {GameNightId}", id);
         return _gameNightRepository.GetByIdAsync(id);
     }
 
     public async Task<GameNight> Create(CreateGameNightCommand command)
     {
-        var games = await _context.Games
-            .Where(g => command.SuggestedGameIds.Contains(g.Id))
-            .ToListAsync();
+        _logger.LogDebug("Creating game night {Title}", command.Title);
+        var games = await _gameRepository.GetByIdsAsync(command.SuggestedGameIds);
 
         var players = command.InvitedPlayerIds.Select(playerId => GameNightRsvp.Create(playerId, GameNightRsvpState.Pending)).ToList();
         if (players.All(x => x.PlayerId != command.HostId))
@@ -60,18 +64,21 @@ public class GameNightService : IGameNightService
 
         await _gameNightRepository.CreateAsync(gameNight);
         await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game night {GameNightId} ({Title}) created", gameNight.Id, gameNight.Title);
 
-        return (await _gameNightRepository.GetByIdAsync(gameNight.Id))!;
+        return gameNight;
     }
 
     public async Task<GameNight> Update(UpdateGameNightCommand command)
     {
+        _logger.LogDebug("Updating game night {GameNightId}", command.Id);
         var gameNight = await _gameNightRepository.GetByIdAsync(command.Id);
-        Guard.Against.Null(gameNight);
+        if (gameNight == null)
+        {
+            throw new EntityNotFoundException(nameof(GameNight), command.Id);
+        }
 
-        var games = await _context.Games
-            .Where(g => command.SuggestedGameIds.Contains(g.Id))
-            .ToListAsync();
+        var games = await _gameRepository.GetByIdsAsync(command.SuggestedGameIds);
 
         gameNight.Update(command.Title, command.Notes, command.StartDate, command.HostId, command.LocationId);
         gameNight.SetSuggestedGames(games);
@@ -85,28 +92,30 @@ public class GameNightService : IGameNightService
         var toAdd = newPlayerIds.Except(existingPlayerIds);
         gameNight.AddInvitedPlayers(toAdd);
 
-        await _gameNightRepository.UpdateAsync(gameNight);
         await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game night {GameNightId} updated", command.Id);
 
-        return (await _gameNightRepository.GetByIdAsync(gameNight.Id))!;
+        return gameNight;
     }
 
     public async Task Delete(int id)
     {
+        _logger.LogDebug("Deleting game night {GameNightId}", id);
         await _gameNightRepository.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game night {GameNightId} deleted", id);
     }
 
     public async Task<GameNightRsvp> UpdateRsvp(UpdateRsvpCommand command)
     {
+        _logger.LogDebug("Updating RSVP {RsvpId}", command.Id);
         var rsvp = await _gameNightRepository.GetRsvpByIdAsync(command.Id);
         if (rsvp == null)
         {
-            throw new KeyNotFoundException($"RSVP with id {command.Id} not found.");
+            throw new EntityNotFoundException(nameof(GameNightRsvp), command.Id);
         }
 
         rsvp.UpdateState(command.State);
-        await _gameNightRepository.UpdateRsvpAsync(rsvp);
         await _unitOfWork.SaveChangesAsync();
 
         return rsvp;

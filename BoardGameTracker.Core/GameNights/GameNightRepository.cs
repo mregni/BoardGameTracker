@@ -1,4 +1,5 @@
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.GameNights.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +9,12 @@ namespace BoardGameTracker.Core.GameNights;
 public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
 {
     private readonly MainDbContext _context;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public GameNightRepository(MainDbContext context) : base(context)
+    public GameNightRepository(MainDbContext context, IDateTimeProvider dateTimeProvider) : base(context)
     {
         _context = context;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public override Task<GameNight?> GetByIdAsync(int id)
@@ -34,7 +37,7 @@ public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
             .Include(x => x.SuggestedGames)
             .Include(x => x.InvitedPlayers)
                 .ThenInclude(x => x.Player)
-            .Where(x => x.StartDate >= DateTime.UtcNow)
+            .Where(x => x.StartDate >= _dateTimeProvider.UtcNow)
             .OrderBy(x => x.StartDate)
             .ToListAsync();
     }
@@ -48,7 +51,7 @@ public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
             .Include(x => x.SuggestedGames)
             .Include(x => x.InvitedPlayers)
                 .ThenInclude(x => x.Player)
-            .Where(x => x.StartDate < DateTime.UtcNow)
+            .Where(x => x.StartDate < _dateTimeProvider.UtcNow)
             .OrderByDescending(x => x.StartDate)
             .ToListAsync();
     }
@@ -70,7 +73,7 @@ public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
     {
         return _context.GameNights
             .AsNoTracking()
-            .Where(x => x.StartDate >= DateTime.UtcNow)
+            .Where(x => x.StartDate >= _dateTimeProvider.UtcNow)
             .CountAsync();
     }
 }

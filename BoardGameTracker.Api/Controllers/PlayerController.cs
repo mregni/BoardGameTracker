@@ -1,4 +1,4 @@
-using BoardGameTracker.Common.DTOs;
+﻿using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Players.Interfaces;
@@ -25,32 +25,16 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreatePlayer([FromBody] CreatePlayerCommand? command)
+    public async Task<IActionResult> CreatePlayer([FromBody] CreatePlayerCommand command)
     {
-        if (command == null)
-        {
-            return BadRequest();
-        }
-
-        var player = new Player(command.Name, command.Image);
-        player = await _playerService.Create(player);
+        var player = await _playerService.Create(command);
         return Ok(player.ToDto());
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdatePlayer([FromBody] UpdatePlayerCommand? command)
+    public async Task<IActionResult> UpdatePlayer([FromBody] UpdatePlayerCommand command)
     {
-        if (command is null)
-        {
-            return BadRequest();
-        }
-
         var player = await _playerService.Update(command);
-        if (player == null)
-        {
-            return BadRequest();
-        }
-
         return Ok(player.ToDto());
     }
 
@@ -69,15 +53,15 @@ public class PlayerController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
-    public async Task<IActionResult> DeleteGameById(int id)
+    public async Task<IActionResult> DeletePlayerById(int id)
     {
         await _playerService.Delete(id);
-        return Ok(new { success = true });
+        return NoContent();
     }
 
     [HttpGet]
     [Route("{id:int}/statistics")]
-    public async Task<IActionResult> GetGameStats(int id)
+    public async Task<IActionResult> GetPlayerStats(int id)
     {
         var stats = await _playerService.GetStats(id);
         return Ok(stats);
@@ -85,7 +69,7 @@ public class PlayerController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}/sessions")]
-    public async Task<IActionResult> GetGameSessionsById(int id, [FromQuery] int? count)
+    public async Task<IActionResult> GetPlayerSessionsById(int id, [FromQuery] int? count)
     {
         var sessions = await _playerService.GetSessions(id, count);
         return Ok(sessions.ToListDto());

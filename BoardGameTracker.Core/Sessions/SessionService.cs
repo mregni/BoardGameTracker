@@ -1,11 +1,12 @@
-﻿using BoardGameTracker.Common.DTOs;
-using BoardGameTracker.Common.DTOs.Commands;
+﻿using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Sessions;
 
@@ -16,147 +17,51 @@ public class SessionService : ISessionService
     private readonly IGameService _gameService;
     private readonly ILocationService _locationService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<SessionService> _logger;
 
-    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IUnitOfWork unitOfWork)
+    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IUnitOfWork unitOfWork, ILogger<SessionService> logger)
     {
         _sessionRepository = sessionRepository;
         _badgeService = badgeService;
         _gameService = gameService;
         _locationService = locationService;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<Session> Create(Session session)
     {
+        _logger.LogDebug("Creating session for game {GameId}", session.GameId);
         session = await _sessionRepository.CreateAsync(session);
         await _badgeService.AwardBadgesAsync(session);
         await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Session {SessionId} created for game {GameId}", session.Id, session.GameId);
 
         return session;
     }
 
-    public async Task<Session> CreateFromDto(SessionDto dto)
+    public async Task Delete(int id)
     {
-        var session = dto.ToEntity();
-
-        if (dto.Expansions.Count > 0)
-        {
-            var expansionIds = dto.Expansions.Select(e => e.Id).ToList();
-            var expansions = await _gameService.GetGameExpansions(expansionIds);
-            foreach (var expansion in expansions)
-            {
-                session.AddExpansion(expansion);
-            }
-        }
-
-        foreach (var psDto in dto.PlayerSessions)
-        {
-            session.AddPlayerSession(psDto.PlayerId, psDto.Score, false, psDto.Won);
-        }
-
-        if (dto.LocationId.HasValue)
-        {
-            var locations = await _locationService.GetLocations();
-            var location = locations.FirstOrDefault(l => l.Id == dto.LocationId.Value);
-            session.SetLocation(location);
-        }
-
-        return await Create(session);
-    }
-
-    public Task Delete(int id)
-    {
-        return _sessionRepository.DeleteAsync(id);
+        _logger.LogDebug("Deleting session {SessionId}", id);
+        await _sessionRepository.DeleteAsync(id);
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Session {SessionId} deleted", id);
     }
 
     public async Task<Session> Update(Session session)
     {
-        session = await _sessionRepository.UpdateAsync(session);
+        _logger.LogDebug("Updating session {SessionId}", session.Id);
+        session = await _sessionRepository.Update(session);
         await _badgeService.AwardBadgesAsync(session);
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Session {SessionId} updated", session.Id);
 
         return session;
     }
 
-    public async Task<Session> UpdateFromDto(SessionDto dto)
-    {
-        var existingSession = await _sessionRepository.GetByIdAsync(dto.Id);
-        if (existingSession == null)
-        {
-            throw new InvalidOperationException($"Session with ID {dto.Id} not found");
-        }
-
-        existingSession.UpdateTimes(dto.Start, dto.End);
-        existingSession.UpdateComment(dto.Comment);
-
-        var newExpansionIds = dto.Expansions.Select(e => e.Id).ToList();
-        var currentExpansionIds = existingSession.Expansions.Select(e => e.Id).ToList();
-
-        var expansionsToRemove = existingSession.Expansions
-            .Where(e => !newExpansionIds.Contains(e.Id))
-            .ToList();
-        foreach (var expansion in expansionsToRemove)
-        {
-            existingSession.RemoveExpansion(expansion);
-        }
-
-        var expansionIdsToAdd = newExpansionIds.Except(currentExpansionIds).ToList();
-        if (expansionIdsToAdd.Count > 0)
-        {
-            var expansionsToAdd = await _gameService.GetGameExpansions(expansionIdsToAdd);
-            foreach (var expansion in expansionsToAdd)
-            {
-                existingSession.AddExpansion(expansion);
-            }
-        }
-
-        var newPlayerIds = dto.PlayerSessions.Select(ps => ps.PlayerId).ToList();
-        var currentPlayerIds = existingSession.PlayerSessions.Select(ps => ps.PlayerId).ToList();
-
-        var playerIdsToRemove = currentPlayerIds.Except(newPlayerIds).ToList();
-        foreach (var playerId in playerIdsToRemove)
-        {
-            existingSession.RemovePlayerSession(playerId);
-        }
-
-        foreach (var psDto in dto.PlayerSessions)
-        {
-            var existingPlayerSession = existingSession.PlayerSessions
-                .FirstOrDefault(ps => ps.PlayerId == psDto.PlayerId);
-
-            if (existingPlayerSession != null)
-            {
-                existingPlayerSession.UpdateScore(psDto.Score);
-                if (psDto.Won)
-                {
-                    existingPlayerSession.MarkAsWinner();
-                }
-                else
-                {
-                    existingPlayerSession.MarkAsLoser();
-                }
-            }
-            else
-            {
-                existingSession.AddPlayerSession(psDto.PlayerId, psDto.Score, false, psDto.Won);
-            }
-        }
-
-        if (dto.LocationId.HasValue)
-        {
-            var locations = await _locationService.GetLocations();
-            var location = locations.FirstOrDefault(l => l.Id == dto.LocationId.Value);
-            existingSession.SetLocation(location);
-        }
-        else
-        {
-            existingSession.SetLocation(null);
-        }
-
-        return await Update(existingSession);
-    }
-
     public async Task<Session> CreateFromCommand(CreateSessionCommand command)
     {
+        _logger.LogDebug("Creating session from command for game {GameId}", command.GameId);
         var end = command.Start.AddMinutes(command.Minutes);
         var session = new Session(command.GameId, command.Start, end, command.Comment ?? string.Empty);
 
@@ -176,8 +81,7 @@ public class SessionService : ISessionService
 
         if (command.LocationId.HasValue)
         {
-            var locations = await _locationService.GetLocations();
-            var location = locations.FirstOrDefault(l => l.Id == command.LocationId.Value);
+            var location = await _locationService.GetByIdAsync(command.LocationId.Value);
             session.SetLocation(location);
         }
 
@@ -186,10 +90,11 @@ public class SessionService : ISessionService
 
     public async Task<Session> UpdateFromCommand(UpdateSessionCommand command)
     {
+        _logger.LogDebug("Updating session {SessionId} from command", command.Id);
         var existingSession = await _sessionRepository.GetByIdAsync(command.Id);
         if (existingSession == null)
         {
-            throw new InvalidOperationException($"Session with ID {command.Id} not found");
+            throw new EntityNotFoundException(nameof(Session), command.Id);
         }
 
         var end = command.Start.AddMinutes(command.Minutes);
@@ -234,6 +139,7 @@ public class SessionService : ISessionService
             if (existingPlayerSession != null)
             {
                 existingPlayerSession.UpdateScore(psCommand.Score);
+                existingPlayerSession.UpdateFirstPlay(psCommand.FirstPlay);
                 if (psCommand.Won)
                 {
                     existingPlayerSession.MarkAsWinner();
@@ -251,8 +157,7 @@ public class SessionService : ISessionService
 
         if (command.LocationId.HasValue)
         {
-            var locations = await _locationService.GetLocations();
-            var location = locations.FirstOrDefault(l => l.Id == command.LocationId.Value);
+            var location = await _locationService.GetByIdAsync(command.LocationId.Value);
             existingSession.SetLocation(location);
         }
         else
@@ -265,6 +170,7 @@ public class SessionService : ISessionService
 
     public Task<Session?> Get(int id)
     {
+        _logger.LogDebug("Fetching session {SessionId}", id);
         return _sessionRepository.GetByIdAsync(id);
     }
 }

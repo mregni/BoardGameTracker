@@ -8,18 +8,3 @@ public class UpdateStatusDto
     public DateTime? LastChecked { get; set; }
     public string? ErrorMessage { get; set; }
 }
-
-public static class UpdateStatusDtoExtensions
-{
-    public static UpdateStatusDto ToDto(this UpdateStatus status)
-    {
-        return new UpdateStatusDto
-        {
-            CurrentVersion = status.CurrentVersion,
-            LatestVersion = status.LatestVersion,
-            UpdateAvailable = status.UpdateAvailable,
-            LastChecked = status.LastChecked,
-            ErrorMessage = status.ErrorMessage
-        };
-    }
-}

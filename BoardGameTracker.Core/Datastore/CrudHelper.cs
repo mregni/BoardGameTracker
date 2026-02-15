@@ -15,7 +15,7 @@ public abstract class CrudHelper<T>: ICrudHelper<T> where T : HasId
     
     public virtual Task<T?> GetByIdAsync(int id)
     {
-        return _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        return _dbSet.FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public virtual Task<List<T>> GetAllAsync()
@@ -34,7 +34,7 @@ public abstract class CrudHelper<T>: ICrudHelper<T> where T : HasId
         await _dbSet.AddRangeAsync(obj);
     }
 
-    public virtual Task<T> UpdateAsync(T entity)
+    public virtual Task<T> Update(T entity)
     {
         _dbSet.Update(entity);
         return Task.FromResult(entity);

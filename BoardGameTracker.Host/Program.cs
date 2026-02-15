@@ -2,13 +2,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Ardalis.GuardClauses;
 using BoardGameTracker.Api.Infrastructure;
-using BoardGameTracker.Common;
 using BoardGameTracker.Common.Configuration;
-using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
-using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Bgg.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.DockerHub;
@@ -169,6 +166,7 @@ logger.LogInformation("  Sentry:       {SentryEnabled}", Environment.GetEnvironm
 logger.LogInformation("  HTTP ports:   {HttpPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS") ?? "default");
 logger.LogInformation("  HTTPS ports:  {HttpsPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORTS") ?? "not configured");
 logger.LogInformation("  Timezone:     {Timezone}", Environment.GetEnvironmentVariable("TZ") ?? "system default");
+logger.LogInformation("  DB port:      {DbPort}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432");
 
 if (!app.Environment.IsDevelopment())
 {
@@ -194,7 +192,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 RunDbMigrations(app.Services);
-SeedConfig(app.Services);
+await SeedConfig(app.Services);
 
 app.MapHealthChecks("/api/health");
 
@@ -220,11 +218,11 @@ static void CreateFolders(IServiceProvider serviceProvider)
     diskProvider.EnsureFolder(PathHelper.FullCommonImagePath);
 }
 
-static void SeedConfig(IServiceProvider serviceProvider)
+static Task SeedConfig(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
     var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
-    configRepository.SeedConfigAsync(ConfigDefaults.All).GetAwaiter().GetResult();
+    return configRepository.SeedConfigAsync(ConfigDefaults.All);
 }
 
 static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)

@@ -1,5 +1,4 @@
 ﻿using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore;
@@ -30,12 +29,6 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
     public async Task AddPeopleIfNotExists(IEnumerable<Person> people)
     {
         await _context.People.AddRangeIfNotExists(people);
-    }
-
-    public override async Task<Game> CreateAsync(Game entity)
-    {
-        await _context.Games.AddAsync(entity);
-        return entity;
     }
 
     public Task<Game?> GetGameByBggId(int bggId)
@@ -149,43 +142,11 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
             .ToListAsync();
     }
 
-    public override async Task<Game> UpdateAsync(Game entity)
+    public Task<List<Game>> GetByIdsAsync(IEnumerable<int> ids)
     {
-        var dbGame = await _context.Games
-            .Include(x => x.Expansions)
-            .SingleOrDefaultAsync(x => x.Id == entity.Id);
-        if (dbGame != null)
-        {
-            dbGame.UpdateHasScoring(entity.HasScoring);
-            dbGame.UpdateDescription(entity.Description);
-            dbGame.UpdateImage(entity.Image);
-            dbGame.UpdateRating(entity.Rating?.Value);
-            dbGame.UpdateState(entity.State);
-            dbGame.UpdateTitle(entity.Title);
-            dbGame.UpdateWeight(entity.Weight?.Value);
-            dbGame.UpdateBggId(entity.BggId);
-            dbGame.UpdateBuyingPrice(entity.BuyingPrice?.Amount);
-            dbGame.UpdatePlayerCount(entity.PlayerCount?.Min, entity.PlayerCount?.Max);
-            dbGame.UpdateMinAge(entity.MinAge);
-            dbGame.UpdateSoldPrice(entity.SoldPrice?.Amount);
-            dbGame.UpdateYearPublished(entity.YearPublished);
-            dbGame.UpdatePlayTime(entity.PlayTime?.MinMinutes, entity.PlayTime?.MaxMinutes);
-            dbGame.UpdateAdditionDate(entity.AdditionDate);
-
-            var expansionsToRemove = dbGame.Expansions.Where(e => entity.Expansions.All(ne => ne.Id != e.Id)).ToList();
-            foreach (var expansion in expansionsToRemove)
-            {
-                dbGame.RemoveExpansion(expansion.BggId);
-            }
-
-            var expansionsToAdd = entity.Expansions.Where(e => dbGame.Expansions.All(de => de.Id != e.Id)).ToList();
-            foreach (var expansion in expansionsToAdd)
-            {
-                dbGame.AddExpansion(expansion);
-            }
-        }
-
-        return entity;
+        return _context.Games
+            .Where(g => ids.Contains(g.Id))
+            .ToListAsync();
     }
-    
+
 }

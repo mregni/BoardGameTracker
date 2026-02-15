@@ -1,23 +1,12 @@
-﻿using System.Globalization;
-using System.Net;
-using BoardGameTracker.Common;
-using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Extensions;
-using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models.Bgg;
-using BoardGameTracker.Common.Models.Charts;
-using BoardGameTracker.Common.ValueObjects;
-using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Bgg.Interfaces;
-using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
-using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
-using BoardGameTracker.Core.Players.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Games;
 
@@ -25,99 +14,55 @@ public class GameService : IGameService
 {
     private readonly IGameRepository _gameRepository;
     private readonly IGameSessionRepository _gameSessionRepository;
-    private readonly IGameStatisticsRepository _gameStatisticsRepository;
     private readonly IBggApi _bggApi;
     private readonly IImageService _imageService;
     private readonly IBggGameTranslator _bggGameTranslator;
-    private readonly IGameFactory _gameFactory;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IConfigRepository _configRepository;
+    private readonly ILogger<GameService> _logger;
 
     public GameService(
         IGameRepository gameRepository,
         IGameSessionRepository gameSessionRepository,
-        IGameStatisticsRepository gameStatisticsRepository,
         IImageService imageService,
         IBggApi bggApi,
         IBggGameTranslator bggGameTranslator,
-        IGameFactory gameFactory,
         IUnitOfWork unitOfWork,
-        IConfigRepository configRepository)
+        ILogger<GameService> logger)
     {
         _gameRepository = gameRepository;
         _gameSessionRepository = gameSessionRepository;
-        _gameStatisticsRepository = gameStatisticsRepository;
         _imageService = imageService;
         _bggApi = bggApi;
         _bggGameTranslator = bggGameTranslator;
-        _gameFactory = gameFactory;
         _unitOfWork = unitOfWork;
-        _configRepository = configRepository;
-    }
-    
-    public async Task<Game> SearchOnBgg(BggGame rawGame, BggSearch search)
-    {
-        var result = await ProcessBggGameData(rawGame, search);
-        await _unitOfWork.SaveChangesAsync();
-        return result;
-    }
-    
-    private async Task<Game> ProcessBggGameData(BggGame rawGame, BggSearch search)
-    {
-        var gameImportData = await _bggGameTranslator.TranslateFromBggAsync(rawGame);
-
-        var game = await _gameFactory.CreateFromImportDataAsync(
-            gameImportData,
-            search.HasScoring,
-            search.State,
-            search.Price.HasValue ? (decimal?)search.Price.Value : null,
-            search.AdditionDate);
-
-        await _gameRepository.CreateAsync(game);
-        return game;
-    }
-
-    public Task<Game?> GetGameByBggId(int bggId)
-    {
-        return _gameRepository.GetGameByBggId(bggId);
+        _logger = logger;
     }
 
     public Task<List<Game>> GetGames()
     {
+        _logger.LogDebug("Fetching all games");
         return _gameRepository.GetGamesOverviewList();
     }
 
     public Task<Game?> GetGameById(int id)
     {
+        _logger.LogDebug("Fetching game {GameId}", id);
         return _gameRepository.GetByIdAsync(id);
     }
 
     public async Task Delete(int id)
     {
+        _logger.LogDebug("Deleting game {GameId}", id);
         var game = await _gameRepository.GetByIdAsync(id);
         if (game == null)
         {
-            return;
+            throw new EntityNotFoundException(nameof(Game), id);
         }
 
         _imageService.DeleteImage(game.Image);
         await _gameRepository.DeleteAsync(game.Id);
-    }
-
-    public async Task<IEnumerable<PlayByDay>> GetPlayByDayChart(int id)
-    {
-        var list = await _gameStatisticsRepository.GetPlayByDayChart(id);
-        return Enum.GetValues(typeof(DayOfWeek))
-            .Cast<DayOfWeek>()
-            .OrderBy(day => ((int)day + 6) % 7)
-            .ToDictionary(day => day, day => list.SingleOrDefault(y => y.Key == day)?.Count() ?? 0)
-            .Select(x => new PlayByDay {DayOfWeek = x.Key, PlayCount = x.Value});
-    }
-
-    public async Task<IEnumerable<PlayerCount>> GetPlayerCountChart(int id)
-    {
-        var list = await _gameStatisticsRepository.GetPlayerCountChart(id);
-        return list.Select(x => new PlayerCount {PlayCount = x.Count(), Players = x.Key});
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game {GameId} deleted", id);
     }
 
     public Task<int> CountAsync()
@@ -125,119 +70,9 @@ public class GameService : IGameService
         return _gameRepository.CountAsync();
     }
 
-    public async Task<BggGame?> SearchGame(int id)
-    {
-        var response = await _bggApi.SearchGame(id, 1);
-        var firstResult = response.Content?.Games?.FirstOrDefault();
-        if (!response.IsSuccessStatusCode || firstResult == null)
-        {
-            return null;
-        }
-
-        return _bggGameTranslator.TranslateRawGame(firstResult);
-    }
-
-    public async Task<BggLink[]> SearchExpansionsForGame(int id)
-    {
-        var dbGame = await _gameRepository.GetByIdAsync(id);
-        if (dbGame is not {BggId: not null})
-        {
-            return [];
-        }
-        var response = await _bggApi.SearchGame(dbGame.BggId.Value, 0);
-        var firstResult = response.Content?.Games?.FirstOrDefault();
-        if (!response.IsSuccessStatusCode || firstResult == null)
-        {
-            return [];
-        }
-
-        var game = _bggGameTranslator.TranslateRawGame(firstResult);
-        return game.Expansions;
-    }
-
-    public async Task<List<TopPlayerDto>> GetTopPlayers(int id)
-    {
-        var sessions = await _gameSessionRepository.GetSessions(id, 0, null);
-        var playerSessions = sessions
-            .SelectMany(x => x.PlayerSessions)
-            .GroupBy(x => x.PlayerId)
-            .ToList();
-
-        return playerSessions
-            .Select(TopPlayerDto.CreateTopPlayer)
-            .Where(x => x.Wins > 0)
-            .OrderByDescending(x => x.Wins)
-            .Take(Constants.Game.TopPlayersCount)
-            .ToList();
-    }
-
-    public async Task<Dictionary<DateTime, XValue[]>?> GetPlayerScoringChart(int id)
-    {
-        var game = await _gameRepository.GetByIdAsync(id);
-        if (game is not {HasScoring: true})
-        {
-            return null;
-        }
-
-        var sessions = await _gameSessionRepository.GetSessions(id, -Constants.Game.ChartHistoryDays);
-
-        var uniquePlayerIds = sessions
-            .SelectMany(session => session.PlayerSessions)
-            .Select(ps => ps.PlayerId)
-            .Distinct()
-            .ToList();
-
-        var chartData = new Dictionary<DateTime, XValue[]>();
-
-        foreach (var session in sessions)
-        {
-            var playerIdsInSession = session.PlayerSessions.Select(ps => ps.PlayerId).ToHashSet();
-
-            var participatingPlayers = session.PlayerSessions
-                .Select(ps => new XValue
-                {
-                    Id = ps.PlayerId,
-                    Value = ps.Score
-                });
-
-            var nonParticipatingPlayers = uniquePlayerIds
-                .Where(playerId => !playerIdsInSession.Contains(playerId))
-                .Select(playerId => new XValue
-                {
-                    Id = playerId,
-                    Value = null
-                });
-
-            var allPlayerValues = participatingPlayers.Concat(nonParticipatingPlayers).ToArray();
-            chartData.TryAdd(session.Start, allPlayerValues);
-        }
-
-        return chartData;
-    }
-
-    public async Task<List<ScoreRank>> GetScoringRankedChart(int id)
-    {
-        var list = new List<ScoreRank>();
-        var highestScoring = await _gameStatisticsRepository.GetHighestScoringPlayer(id);
-        list.AddIfNotNull(ScoreRank.MakeHighestScoreRank(highestScoring));
-
-        var highestLosing = await _gameStatisticsRepository.GetHighestLosingPlayer(id);
-        list.AddIfNotNull(ScoreRank.MakeHighestLosingRank(highestLosing));
-
-        var average = await _gameStatisticsRepository.GetAverageScore(id);
-        list.AddIfNotNull(ScoreRank.MakeAverageRank(average));
-
-        var lowestWinning = await _gameStatisticsRepository.GetLowestWinning(id);
-        list.AddIfNotNull(ScoreRank.MakeLowestWinningRank(lowestWinning));
-
-        var lowest = await _gameStatisticsRepository.GetLowestScoringPlayer(id);
-        list.AddIfNotNull(ScoreRank.MakeLowestScoreRank(lowest));
-
-        return list;
-    }
-
     public async Task<Game> CreateGameFromCommand(CreateGameCommand command)
     {
+        _logger.LogDebug("Creating game {Title}", command.Title);
         var game = new Game(command.Title, command.HasScoring, command.State);
         game.UpdateYearPublished(command.YearPublished);
         game.UpdateImage(command.Image);
@@ -254,23 +89,67 @@ public class GameService : IGameService
 
         await _gameRepository.CreateAsync(game);
         await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game {GameId} ({Title}) created", game.Id, game.Title);
         return game;
     }
 
     public Task<List<Session>> GetSessionsForGame(int id, int? count)
     {
+        _logger.LogDebug("Fetching sessions for game {GameId}", id);
         return _gameSessionRepository.GetSessionsByGameId(id, count);
     }
 
-    public async Task<Game> UpdateGame(Game game)
+    public async Task<Game> UpdateGame(UpdateGameCommand command)
     {
-        var updatedGame = await _gameRepository.UpdateAsync(game);
+        _logger.LogDebug("Updating game {GameId}", command.Id);
+        var game = await _gameRepository.GetByIdAsync(command.Id);
+        if (game == null)
+        {
+            throw new EntityNotFoundException(nameof(Game), command.Id);
+        }
+
+        game.UpdateTitle(command.Title);
+        game.UpdateHasScoring(command.HasScoring);
+        game.UpdateState(command.State);
+        game.UpdateYearPublished(command.YearPublished);
+        game.UpdateImage(command.Image);
+        game.UpdateDescription(command.Description ?? string.Empty);
+        game.UpdatePlayerCount(command.MinPlayers, command.MaxPlayers);
+        game.UpdatePlayTime(command.MinPlayTime, command.MaxPlayTime);
+        game.UpdateMinAge(command.MinAge);
+        game.UpdateBggId(command.BggId);
+        game.UpdateBuyingPrice(command.BuyingPrice);
+        game.UpdateSoldPrice(command.SoldPrice);
+        game.UpdateRating(command.Rating);
+        game.UpdateWeight(command.Weight);
+        game.UpdateAdditionDate(command.AdditionDate);
+
         await _unitOfWork.SaveChangesAsync();
-        return updatedGame;
+        return game;
+    }
+
+    public async Task<BggLink[]> SearchExpansionsForGame(int id)
+    {
+        _logger.LogDebug("Searching expansions for game {GameId}", id);
+        var dbGame = await _gameRepository.GetByIdAsync(id);
+        if (dbGame is not {BggId: not null})
+        {
+            return [];
+        }
+        var response = await _bggApi.SearchGame(dbGame.BggId.Value, 0);
+        var firstResult = response.Content?.Games?.FirstOrDefault();
+        if (!response.IsSuccessStatusCode || firstResult == null)
+        {
+            return [];
+        }
+
+        var game = _bggGameTranslator.TranslateRawGame(firstResult);
+        return game.Expansions;
     }
 
     public async Task<List<Expansion>> UpdateGameExpansions(int gameId, int[] expansionIds)
     {
+        _logger.LogDebug("Updating expansions for game {GameId}", gameId);
         var game = await _gameRepository.GetByIdAsync(gameId);
         if (game == null)
         {
@@ -284,10 +163,14 @@ public class GameService : IGameService
         }
 
         var newExpansionsIds = expansionIds
-            .Where(x => !game.Expansions.Select(y => y.BggId).Contains(x));
-        foreach (var expansionId in newExpansionsIds)
+            .Where(x => !game.Expansions.Select(y => y.BggId).Contains(x))
+            .ToList();
+
+        var expansionResults = await Task.WhenAll(
+            newExpansionsIds.Select(id => _bggApi.SearchExpansion(id, 0)));
+
+        foreach (var expansionResult in expansionResults)
         {
-            var expansionResult = await _bggApi.SearchExpansion(expansionId, 0);
             var firstResult = expansionResult.Content?.Games?.FirstOrDefault();
             if (!expansionResult.IsSuccessStatusCode || firstResult == null)
             {
@@ -302,7 +185,6 @@ public class GameService : IGameService
             game.AddExpansion(expansion);
         }
 
-        await _gameRepository.UpdateAsync(game);
         await _unitOfWork.SaveChangesAsync();
         return game.Expansions.ToList();
     }
@@ -314,109 +196,8 @@ public class GameService : IGameService
 
     public async Task DeleteExpansion(int gameId, int expansionId)
     {
+        _logger.LogDebug("Deleting expansion {ExpansionId} from game {GameId}", expansionId, gameId);
         await _gameRepository.DeleteExpansion(gameId, expansionId);
         await  _unitOfWork.SaveChangesAsync();
-    }
-
-    public async Task<BggImportResult?> ImportBggCollection(string userName)
-    {
-        var importGameResult = await _bggApi.ImportCollection(userName, "boardgame", "boardgameexpansion");
-        if (!importGameResult.IsSuccessStatusCode)
-        {
-            return null;
-        }
-
-        var result = new BggImportResult
-        {
-            StatusCode = importGameResult.StatusCode
-        };
-
-        if (importGameResult.StatusCode != HttpStatusCode.OK)
-        {
-            return result;
-        }
-
-        var list = importGameResult.Content.Item.OrderBy(x => x.Name.Text).ToList();
-        result.Games = list.Select(item => new BggImportGame
-        {
-            BggId = item.Objectid,
-            Title = item.Name.Text,
-            State = item.Status.ToGameState(),
-            ImageUrl = item.Image.Text,
-            LastModified = DateTime.ParseExact(
-                item.Status.LastModified,
-                "yyyy-MM-dd HH:mm:ss",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
-            IsExpansion = item.Subtype == "boardgameexpansion"
-        }).ToList();
-
-        return result;
-    }
-
-    public async Task ImportList(IList<ImportGame> games)
-    {
-        foreach (var game in games)
-        {
-            var bggGame = await SearchGame(game.BggId);
-            if (bggGame == null)
-            {
-                continue;
-            }
-
-            var search = new BggSearch
-            {
-                BggId = game.BggId,
-                HasScoring = game.HasScoring,
-                State = game.State,
-                AdditionDate = game.AddedDate,
-                Price = game.Price
-            };
-            await ProcessBggGameData(bggGame, search);
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-    }
-    
-    public async Task<int> CountShelfOfShameGames()
-    {
-        var enabled = await _configRepository.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled);
-        if (!enabled)
-        {
-            return 0;
-        }
-
-        var months = await _configRepository.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths);
-        var cutoffDate = DateTime.UtcNow.AddMonths(-months);
-        return await _gameRepository.CountGamesWithNoRecentSessions(cutoffDate);
-    }
-
-    public async Task<List<ShameGame>> GetShameGames()
-    {
-        var months = await _configRepository.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths);
-        var cutoffDate = DateTime.UtcNow.AddMonths(-months);
-        return await _gameRepository.GetShameGames(cutoffDate);
-    }
-
-    public async Task<ShameStatistics> GetShameStatistics()
-    {
-        var shameGames = await GetShameGames();
-
-        var count = shameGames.Count;
-        var totalValue = shameGames
-            .Where(g => g.Price.HasValue)
-            .Sum(g => g.Price!.Value);
-
-        var gamesWithPrice = shameGames.Where(g => g.Price.HasValue).ToList();
-        decimal? averageValue = gamesWithPrice.Count > 0
-            ? gamesWithPrice.Average(g => g.Price!.Value)
-            : null;
-
-        return new ShameStatistics
-        {
-            Count = count,
-            TotalValue = totalValue > 0 ? totalValue : null,
-            AverageValue = averageValue
-        };
     }
 }

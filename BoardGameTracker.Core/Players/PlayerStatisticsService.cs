@@ -1,19 +1,23 @@
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Players.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Players;
 
 public class PlayerStatisticsService : IPlayerStatisticsService
 {
     private readonly IPlayerRepository _playerRepository;
+    private readonly ILogger<PlayerStatisticsService> _logger;
 
-    public PlayerStatisticsService(IPlayerRepository playerRepository)
+    public PlayerStatisticsService(IPlayerRepository playerRepository, ILogger<PlayerStatisticsService> logger)
     {
         _playerRepository = playerRepository;
+        _logger = logger;
     }
 
     public async Task<PlayerStatistics> CalculateStatisticsAsync(int playerId)
     {
+        _logger.LogDebug("Calculating statistics for player {PlayerId}", playerId);
         var stats = new PlayerStatistics
         {
             PlayCount = await _playerRepository.GetTotalPlayCount(playerId),
@@ -22,25 +26,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
             DistinctGameCount = await _playerRepository.GetDistinctGameCount(playerId)
         };
 
-        var mostPlayedGames = await _playerRepository.GetMostPlayedGames(playerId, 5);
-        stats.MostPlayedGames = [];
-
-        foreach (var game in mostPlayedGames)
-        {
-            var wins = await _playerRepository.GetWinCount(playerId, game.Id);
-            var totalPlays = await _playerRepository.GetPlayCount(playerId, game.Id);
-            var winningPercentage = totalPlays > 0 ? (double)wins / totalPlays * 100 : 0;
-
-            stats.MostPlayedGames.Add(new MostPlayedGame
-            {
-                Id = game.Id,
-                Image = game.Image ?? string.Empty,
-                Title = game.Title,
-                TotalWins = wins,
-                TotalSessions = totalPlays,
-                WinningPercentage = winningPercentage
-            });
-        }
+        stats.MostPlayedGames = await _playerRepository.GetMostPlayedGames(playerId, 5);
 
         return stats;
     }

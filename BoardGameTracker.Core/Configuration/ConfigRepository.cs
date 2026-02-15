@@ -1,6 +1,7 @@
 using BoardGameTracker.Common.Configuration;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,11 @@ public class ConfigRepository : IConfigRepository
         var envValue = Environment.GetEnvironmentVariable(key.ToUpperInvariant());
         if (!string.IsNullOrWhiteSpace(envValue))
         {
-            return Task.FromResult(ConvertFromString<T>(envValue.Trim(), key));
+            if (TypeConverter.TryConvertFromString<T>(envValue.Trim(), out var result))
+            {
+                return Task.FromResult(result);
+            }
+            throw new ConfigMissingException(key);
         }
 
         return GetConfigValueFromDbAsync<T>(key);
@@ -42,6 +47,12 @@ public class ConfigRepository : IConfigRepository
             await _context.Config.AddAsync(config);
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<Dictionary<string, string>> GetAllConfigsAsync()
+    {
+        return await _context.Config
+            .ToDictionaryAsync(c => c.Key, c => c.Value);
     }
 
     public async Task<Dictionary<string, string>> GetConfigsByPrefixAsync(string prefix)
@@ -80,35 +91,9 @@ public class ConfigRepository : IConfigRepository
         if (config?.Value is null)
             throw new ConfigMissingException(key);
 
-        return ConvertFromString<T>(config.Value, key);
-    }
-
-    private static T ConvertFromString<T>(string value, string key)
-    {
-        var type = typeof(T);
-
-        if (type == typeof(string))
-            return (T)(object)value;
-
-        if (type == typeof(int))
+        if (TypeConverter.TryConvertFromString<T>(config.Value, out var result))
         {
-            if (int.TryParse(value, out var intResult))
-                return (T)(object)intResult;
-            throw new ConfigMissingException(key);
-        }
-
-        if (type == typeof(bool))
-        {
-            if (bool.TryParse(value, out var boolResult))
-                return (T)(object)boolResult;
-            throw new ConfigMissingException(key);
-        }
-
-        if (type.IsEnum)
-        {
-            if (Enum.TryParse(type, value, true, out var enumResult))
-                return (T)enumResult!;
-            throw new ConfigMissingException(key);
+            return result;
         }
 
         throw new ConfigMissingException(key);

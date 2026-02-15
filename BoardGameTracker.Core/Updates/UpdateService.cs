@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
-using BoardGameTracker.Common;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Updates;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.DockerHub;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.Extensions.Logging;
 using Refit;
@@ -18,6 +18,7 @@ public class UpdateService : IUpdateService
     private readonly IConfigRepository _configRepository;
     private readonly IDockerHubApi _dockerHubApi;
     private readonly ILogger<UpdateService> _logger;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
     private const string DOCKER_OWNER = "uping";
     private const string DOCKER_REPO = "boardgametracker";
@@ -25,11 +26,13 @@ public class UpdateService : IUpdateService
     public UpdateService(
         IConfigRepository configRepository,
         IDockerHubApi dockerHubApi,
-        ILogger<UpdateService> logger)
+        ILogger<UpdateService> logger,
+        IDateTimeProvider dateTimeProvider)
     {
         _configRepository = configRepository;
         _dockerHubApi = dockerHubApi;
         _logger = logger;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public async Task<UpdateStatus> GetVersionInfoAsync()
@@ -81,7 +84,7 @@ public class UpdateService : IUpdateService
             {
                 _logger.LogWarning("No valid semantic version tags found on Docker Hub");
                 await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, "No valid versions found");
-                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
+                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, _dateTimeProvider.UtcNow.ToString("O"));
                 return;
             }
 
@@ -100,7 +103,7 @@ public class UpdateService : IUpdateService
                 _logger.LogWarning("No matching versions found for track: {Track}", updateTrack);
                 await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError,
                     $"No {updateTrack} versions found");
-                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
+                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, _dateTimeProvider.UtcNow.ToString("O"));
                 return;
             }
 
@@ -108,7 +111,7 @@ public class UpdateService : IUpdateService
 
             await _configRepository.SetConfigValueAsync(UpdateConfig.AvailableVersion, latestVersion);
             await _configRepository.SetConfigValueAsync(UpdateConfig.Available, updateAvailable);
-            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, _dateTimeProvider.UtcNow.ToString("O"));
             await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, string.Empty);
 
             _logger.LogInformation(
@@ -119,13 +122,13 @@ public class UpdateService : IUpdateService
         {
             _logger.LogError(apiEx, "Docker Hub API error during update check");
             await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, $"API Error: {apiEx.Message}");
-            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, _dateTimeProvider.UtcNow.ToString("O"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error checking for updates");
             await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, ex.Message);
-            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, DateTime.UtcNow.ToString("O"));
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, _dateTimeProvider.UtcNow.ToString("O"));
         }
     }
 

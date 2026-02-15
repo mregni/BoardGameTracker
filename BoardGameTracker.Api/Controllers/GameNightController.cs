@@ -24,25 +24,15 @@ public class GameNightController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateGameNightCommand? command)
+    public async Task<IActionResult> Create([FromBody] CreateGameNightCommand command)
     {
-        if (command == null)
-        {
-            return BadRequest();
-        }
-
         var gameNight = await _gameNightService.Create(command);
         return Ok(gameNight.ToDto());
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] UpdateGameNightCommand? command)
+    public async Task<IActionResult> Update([FromBody] UpdateGameNightCommand command)
     {
-        if (command == null)
-        {
-            return BadRequest();
-        }
-
         var gameNight = await _gameNightService.Update(command);
         return Ok(gameNight.ToDto());
     }
@@ -51,19 +41,20 @@ public class GameNightController : ControllerBase
     [Route("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var gameNight = await _gameNightService.GetById(id);
+        if (gameNight == null)
+        {
+            return NotFound();
+        }
+
         await _gameNightService.Delete(id);
-        return Ok(new { success = true });
+        return NoContent();
     }
 
     [HttpPut]
     [Route("rsvp")]
-    public async Task<IActionResult> UpdateRsvp([FromBody] UpdateRsvpCommand? command)
+    public async Task<IActionResult> UpdateRsvp([FromBody] UpdateRsvpCommand command)
     {
-        if (command == null)
-        {
-            return BadRequest();
-        }
-
         var rsvp = await _gameNightService.UpdateRsvp(command);
         return Ok(rsvp.ToDto());
     }

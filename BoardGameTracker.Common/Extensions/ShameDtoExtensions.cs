@@ -18,7 +18,7 @@ public static class ShameDtoExtensions
         };
     }
 
-    public static List<ShameDto> ToDtoList(this IEnumerable<ShameGame> shameGames)
+    public static List<ShameDto> ToListDto(this IEnumerable<ShameGame> shameGames)
     {
         return shameGames.Select(ToDto).ToList();
     }

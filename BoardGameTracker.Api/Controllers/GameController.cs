@@ -13,11 +13,22 @@ public class GameController : ControllerBase
 {
     private readonly IGameService _gameService;
     private readonly IGameStatisticsService  _gameStatisticsService;
+    private readonly IBggImportService _bggImportService;
+    private readonly IGameChartService _gameChartService;
+    private readonly IShameService _shameService;
 
-    public GameController(IGameService gameService, IGameStatisticsService gameStatisticsService)
+    public GameController(
+        IGameService gameService,
+        IGameStatisticsService gameStatisticsService,
+        IBggImportService bggImportService,
+        IGameChartService gameChartService,
+        IShameService shameService)
     {
         _gameService = gameService;
         _gameStatisticsService = gameStatisticsService;
+        _bggImportService = bggImportService;
+        _gameChartService = gameChartService;
+        _shameService = shameService;
     }
 
     [HttpGet]
@@ -29,28 +40,17 @@ public class GameController : ControllerBase
 
     [HttpPost]
     [Route("")]
-    public async Task<IActionResult> CreateGame([FromBody] CreateGameCommand? command)
+    public async Task<IActionResult> CreateGame([FromBody] CreateGameCommand command)
     {
-        if (command == null)
-        {
-            return BadRequest();
-        }
-
         var game = await _gameService.CreateGameFromCommand(command);
         return Ok(game.ToDto());
     }
 
     [HttpPut]
     [Route("")]
-    public async Task<IActionResult> UpdateGame([FromBody] GameDto? dto)
+    public async Task<IActionResult> UpdateGame([FromBody] UpdateGameCommand command)
     {
-        if (dto == null)
-        {
-            return BadRequest();
-        }
-
-        var game = dto.ToEntity();
-        game = await _gameService.UpdateGame(game);
+        var game = await _gameService.UpdateGame(command);
         return Ok(game.ToDto());
     }
 
@@ -59,7 +59,7 @@ public class GameController : ControllerBase
     public async Task<IActionResult> DeleteGameById(int id)
     {
         await _gameService.Delete(id);
-        return Ok(new { success = true });
+        return NoContent();
     }
 
     [HttpGet]
@@ -78,34 +78,34 @@ public class GameController : ControllerBase
     [HttpPost("bgg/search")]
     public async Task<IActionResult> SearchOnBgg([FromBody] BggSearch search)
     {
-        var existingGame = await _gameService.GetGameByBggId(search.BggId);
+        var existingGame = await _bggImportService.GetGameByBggId(search.BggId);
         if (existingGame != null)
         {
             return Ok(existingGame.ToDto());
         }
 
-        var game = await _gameService.SearchGame(search.BggId);
+        var game = await _bggImportService.SearchGame(search.BggId);
         if (game == null)
         {
             return BadRequest();
         }
 
-        var dbGame = await _gameService.SearchOnBgg(game, search);
+        var dbGame = await _bggImportService.SearchOnBgg(game, search);
         return Ok(dbGame.ToDto());
     }
 
     [HttpGet("bgg/import")]
     public async Task<IActionResult> ImportBgg([FromQuery] string username)
     {
-        var result = await _gameService.ImportBggCollection(username);
+        var result = await _bggImportService.ImportBggCollection(username);
         return Ok(result);
     }
 
     [HttpPost("bgg/import")]
     public async Task<IActionResult> ImportBggGames([FromBody] ImportBggGamesCommand command)
     {
-        await _gameService.ImportList(command.Games);
-        return Ok(new { success = true });
+        await _bggImportService.ImportList(command.Games);
+        return NoContent();
     }
 
     [HttpGet]
@@ -137,7 +137,7 @@ public class GameController : ControllerBase
     public async Task<IActionResult> DeleteGameExpansions(int id, int expansionId)
     {
         await _gameService.DeleteExpansion(id, expansionId);
-        return Ok(new { success = true });
+        return NoContent();
     }
 
     [HttpGet]
@@ -145,20 +145,20 @@ public class GameController : ControllerBase
     public async Task<IActionResult> GetGameStatistics(int id)
     {
         var stats = await _gameStatisticsService.CalculateStatisticsAsync(id);
-        var topPlayers = await _gameService.GetTopPlayers(id);
-        var playByDayChart = await _gameService.GetPlayByDayChart(id);
-        var playerCountChart = await _gameService.GetPlayerCountChart(id);
-        var playerScoringChart = await _gameService.GetPlayerScoringChart(id);
-        var scoringRankChart = await _gameService.GetScoringRankedChart(id);
+        var topPlayers = await _gameChartService.GetTopPlayers(id);
+        var playByDayChart = await _gameChartService.GetPlayByDayChart(id);
+        var playerCountChart = await _gameChartService.GetPlayerCountChart(id);
+        var playerScoringChart = await _gameChartService.GetPlayerScoringChart(id);
+        var scoringRankChart = await _gameChartService.GetScoringRankedChart(id);
 
-        return Ok(new
+        return Ok(new GameStatisticsResponse
         {
-            gameStats = stats,
-            topPlayers,
-            playByDayChart,
-            playerCountChart,
-            playerScoringChart,
-            scoreRankChart = scoringRankChart
+            GameStats = stats,
+            TopPlayers = topPlayers,
+            PlayByDayChart = playByDayChart,
+            PlayerCountChart = playerCountChart,
+            PlayerScoringChart = playerScoringChart,
+            ScoreRankChart = scoringRankChart
         });
     }
 
@@ -166,15 +166,15 @@ public class GameController : ControllerBase
     [Route("shames")]
     public async Task<IActionResult> GetShameGames()
     {
-        var games = await _gameService.GetShameGames();
-        return Ok(games.ToDtoList());
+        var games = await _shameService.GetShameGames();
+        return Ok(games.ToListDto());
     }
 
     [HttpGet]
     [Route("shames/statistics")]
     public async Task<IActionResult> GetShameStatistics()
     {
-        var statistics = await _gameService.GetShameStatistics();
+        var statistics = await _shameService.GetShameStatistics();
         return Ok(statistics.ToDto());
     }
 }

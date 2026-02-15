@@ -1,6 +1,7 @@
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Games;
 
@@ -9,19 +10,23 @@ public class GameStatisticsService : IGameStatisticsService
     private readonly IGameSessionRepository _gameSessionRepository;
     private readonly IGameStatisticsRepository _gameStatisticsRepository;
     private readonly IPlayerRepository _playerRepository;
+    private readonly ILogger<GameStatisticsService> _logger;
 
     public GameStatisticsService(
         IGameSessionRepository gameSessionRepository,
         IGameStatisticsRepository gameStatisticsRepository,
-        IPlayerRepository playerRepository)
+        IPlayerRepository playerRepository,
+        ILogger<GameStatisticsService> logger)
     {
         _gameSessionRepository = gameSessionRepository;
         _gameStatisticsRepository = gameStatisticsRepository;
         _playerRepository = playerRepository;
+        _logger = logger;
     }
 
     public async Task<GameStatistics> CalculateStatisticsAsync(int gameId)
     {
+        _logger.LogDebug("Calculating statistics for game {GameId}", gameId);
         var stats = new GameStatistics
         {
             PlayCount = await _gameSessionRepository.GetPlayCount(gameId),

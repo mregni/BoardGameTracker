@@ -25,28 +25,16 @@ public class LocationController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateLocation([FromBody] CreateLocationCommand? command)
+    public async Task<IActionResult> CreateLocation([FromBody] CreateLocationCommand command)
     {
-        if (command == null)
-        {
-            return BadRequest();
-        }
-
-        var location = new Location(command.Name);
-        location = await _locationService.Create(location);
+        var location = await _locationService.Create(command);
         return Ok(location.ToDto());
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationCommand? command)
+    public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationCommand command)
     {
-        if (command is null)
-        {
-            return BadRequest();
-        }
-
-        var location = new Location(command.Name) { Id = command.Id };
-        await _locationService.Update(location);
+        var location = await _locationService.Update(command);
         return Ok(location.ToDto());
     }
 
@@ -54,7 +42,13 @@ public class LocationController : ControllerBase
     [Route("{id:int}")]
     public async Task<IActionResult> DeleteLocation(int id)
     {
+        var location = await _locationService.GetByIdAsync(id);
+        if (location == null)
+        {
+            return NotFound();
+        }
+
         await _locationService.Delete(id);
-        return Ok(new { success = true });
+        return NoContent();
     }
 }
