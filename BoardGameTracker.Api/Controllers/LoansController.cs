@@ -1,6 +1,6 @@
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
-using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Loans.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,11 +8,11 @@ namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/loans")]
-public class LoansController : ControllerBase
+public class LoanController : ControllerBase
 {
     private readonly ILoanService _loanService;
 
-    public LoansController(ILoanService loanService)
+    public LoanController(ILoanService loanService)
     {
         _loanService = loanService;
     }

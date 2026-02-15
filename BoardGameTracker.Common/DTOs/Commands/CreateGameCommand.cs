@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using BoardGameTracker.Common.Enums;
 
 namespace BoardGameTracker.Common.DTOs.Commands;
@@ -25,4 +24,7 @@ public class CreateGameCommand
 public class UpdateGameCommand : CreateGameCommand
 {
     public int Id { get; set; }
+    public double? Rating { get; set; }
+    public double? Weight { get; set; }
+    public decimal? SoldPrice { get; set; }
 }

@@ -1,4 +1,3 @@
-using BoardGameTracker.Common.Entities;
 
 namespace BoardGameTracker.Common.DTOs;
 

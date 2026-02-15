@@ -18,7 +18,7 @@ public class CompareController : ControllerBase
     [Route("{playerOne:int}/{playerTwo:int}")]
     public async Task<IActionResult> GetPlayerComparison(int playerOne, int playerTwo)
     {
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
         return Ok(result);
     }
 }

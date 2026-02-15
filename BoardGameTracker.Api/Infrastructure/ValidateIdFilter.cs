@@ -13,8 +13,11 @@ public class ValidateIdFilter : IActionFilter
             {
                 if (id <= 0)
                 {
-                    context.Result = new BadRequestObjectResult(
-                        new { error = $"Invalid {key}. Must be greater than 0." });
+                    context.Result = new BadRequestObjectResult(new ProblemDetails
+                    {
+                        Status = 400,
+                        Title = $"Invalid {key}. Must be greater than 0."
+                    });
                     return;
                 }
             }

@@ -1,4 +1,5 @@
 using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

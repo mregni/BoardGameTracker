@@ -125,7 +125,7 @@
     "settings": "Settings",
     "unknown-error": "Unknown error",
     "winners": "Winners",
-    "loosers": "Loosers",
+    "losers": "Losers",
     "play-time": "Play time",
     "done": "Done",
     "won": "Won",
@@ -299,7 +299,7 @@
     "most-played-game": "Most played game",
     "wins": {
       "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
-      "looser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+      "loser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
     },
     "best-game": {
       "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
@@ -557,7 +557,10 @@
       "error": "Error while uploading image, check logs"
     },
     "something-went-wrong": "Something went wrong, please try again later.",
-    "unexpected-error": "An unexpected error occurred."
+    "unexpected-error": "An unexpected error occurred.",
+    "network": "Unable to connect to the server. Please check your connection.",
+    "timeout": "The request took too long. Please try again.",
+    "server": "A server error occurred. Please try again later."
   },
   "not-found": {
     "title": "Page not found",
@@ -1019,7 +1022,7 @@
     },
     "close-loss": {
       "title": "Almost There!",
-      "description": "Loose with a difference of 2 or less points."
+      "description": "Lose with a difference of 2 or less points."
     },
     "marathon-runner": {
       "title": "Marathon Runner",

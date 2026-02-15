@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.Serialization;
-using Ardalis.GuardClauses;
+﻿using Ardalis.GuardClauses;
 using BoardGameTracker.Common.Entities.Helpers;
 
 namespace BoardGameTracker.Common.Entities;

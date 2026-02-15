@@ -29,10 +29,10 @@ export interface RecentActivity {
   gameId: number;
   gameTitle: string;
   gameImage: string | null;
-  start: Date | string;
+  start: Date;
   playerCount: number;
   winnerName: string;
-  winnerId: string;
+  winnerId: number;
   durationInMinutes: number;
 }
 

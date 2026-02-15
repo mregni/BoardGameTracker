@@ -9,7 +9,7 @@ public enum BadgeType
     WinPercentage = 4,
     SoloSpecialist = 5,
     CloseWin = 6,
-    CLoseLoss = 7,
+    CloseLoss = 7,
     MarathonRunner = 8,
     FirstTry = 9,
     LearningCurve = 10,

@@ -2,7 +2,6 @@
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Datastore;
@@ -292,7 +291,7 @@ public class MainDbContext : DbContext
                 Badge.CreateWithId(31, "social-player.red.title", "social-player.red.description", BadgeType.SocialPlayer, "social-player-red.png", BadgeLevel.Red),
                 Badge.CreateWithId(32, "social-player.gold.title", "social-player.gold.description", BadgeType.SocialPlayer, "social-player-gold.png", BadgeLevel.Gold),
                 Badge.CreateWithId(33, "close-win.title", "close-win.description", BadgeType.CloseWin, "close-win.png"),
-                Badge.CreateWithId(34, "close-loss.title", "close-loss.description", BadgeType.CLoseLoss, "close-loss.png"),
+                Badge.CreateWithId(34, "close-loss.title", "close-loss.description", BadgeType.CloseLoss, "close-loss.png"),
                 Badge.CreateWithId(35, "marathon-runner.title", "marathon-runner.description", BadgeType.MarathonRunner, "marathon.png"),
                 Badge.CreateWithId(36, "first-try.title", "first-try.description", BadgeType.FirstTry, "first-try.png"),
                 Badge.CreateWithId(37, "learning-curve.title", "learning-curve.description", BadgeType.LearningCurve, "learning-curve.png"),

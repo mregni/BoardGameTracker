@@ -43,7 +43,7 @@ export interface CreateGameNight {
 export interface UpdateGameNightRsvp {
   id: number;
   gameNightId: number;
-  playerName: number;
+  playerId: number;
   state: GameNightRsvpState;
 }
 

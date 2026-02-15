@@ -24,7 +24,7 @@
     "settings": "Settings",
     "unknown-error": "Unknown error",
     "winners": "Winners",
-    "loosers": "Loosers",
+    "losers": "Losers",
     "play-time": "Play time",
     "compare": "Compare",
     "rating": "Rating",
@@ -98,7 +98,7 @@
     "title": "Compare players",
     "wins": {
       "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
-      "looser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+      "loser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
     },
     "best-game": {
       "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
@@ -304,7 +304,11 @@
     "image": {
       "type-not-supported": "Image type not supported",
       "error": "Error while uploading image, check logs"
-    }
+    },
+    "something-went-wrong": "Something went wrong, please try again later.",
+    "network": "Unable to connect to the server. Please check your connection.",
+    "timeout": "The request took too long. Please try again.",
+    "server": "A server error occurred. Please try again later."
   },
   "location": {
     "new": {
@@ -647,7 +651,7 @@
     },
     "close-loss": {
       "title": "Almost There!",
-      "description": "Loose with a difference of 2 or less points."
+      "description": "Lose with a difference of 2 or less points."
     },
     "marathon-runner": {
       "title": "Marathon Runner",

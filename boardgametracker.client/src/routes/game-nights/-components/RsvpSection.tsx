@@ -45,7 +45,6 @@ export const RsvpSection = (props: Props) => {
         {players.map((player) => (
           <div key={player.id} className={cx('flex items-center gap-2 pl-1 pr-2 py-1 rounded text-xs', styles.badge)}>
             <BgtAvatar
-              key={player.id}
               title={player.name}
               image={player.image}
               onClick={() => navigate({ to: `/players/${player.id}` })}

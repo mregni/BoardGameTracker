@@ -15,5 +15,5 @@ export interface ImportGame {
   hasScoring: boolean;
   price: number;
   addedDate: Date;
-  lastModified: string;
+  lastModified: Date;
 }

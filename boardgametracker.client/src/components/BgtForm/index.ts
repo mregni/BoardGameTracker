@@ -3,6 +3,7 @@ export { BgtCheckboxList } from './BgtCheckboxList';
 export { BgtDatePicker } from './BgtDatePicker';
 export { BgtDateTimePicker } from './BgtDateTimePicker';
 export { BgtFormErrors } from './BgtFormErrors';
+export type { AnyReactForm } from './BgtFormField';
 export { BgtFormField } from './BgtFormField';
 export { BgtImageSelector } from './BgtImageSelector';
 export { BgtInputField } from './BgtInputField';

@@ -162,10 +162,13 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 var logger = app.Services.GetService<ILogger<Program>>();
-logger.LogInformation("Server URLs: {Urls}", string.Join(", ", app.Urls));
-logger.LogInformation("HTTP ports: {HttpPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS"));
-logger.LogInformation("HTTPS ports: {HttpsPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORTS"));
-logger.LogInformation("Is Development: {IsDevelopment}", app.Environment.IsDevelopment());
+logger.LogInformation("BoardGameTracker started");
+logger.LogInformation("  Environment:  {Environment}", app.Environment.EnvironmentName);
+logger.LogInformation("  Log level:    {LogLevel}", LogLevelExtensions.GetEnvironmentLogLevel());
+logger.LogInformation("  Sentry:       {SentryEnabled}", Environment.GetEnvironmentVariable("STATISTICS") == "1" ? "Enabled" : "Disabled");
+logger.LogInformation("  HTTP ports:   {HttpPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS") ?? "default");
+logger.LogInformation("  HTTPS ports:  {HttpsPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORTS") ?? "not configured");
+logger.LogInformation("  Timezone:     {Timezone}", Environment.GetEnvironmentVariable("TZ") ?? "system default");
 
 if (!app.Environment.IsDevelopment())
 {

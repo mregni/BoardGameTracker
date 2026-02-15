@@ -41,4 +41,9 @@ public class PlayerSession
     {
         Won = false;
     }
+
+    public void UpdateFirstPlay(bool firstPlay)
+    {
+        FirstPlay = firstPlay;
+    }
 }

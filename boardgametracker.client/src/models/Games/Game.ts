@@ -21,7 +21,7 @@ export interface Game {
   state: GameState;
   isLoaned: boolean;
   baseGameId: number | null;
-  baseGame: Game;
+  baseGame: Game | null;
   expansions: Expansion[];
   categories: GameLink[];
   mechanics: GameLink[];

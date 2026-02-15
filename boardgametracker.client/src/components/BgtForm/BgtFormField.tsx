@@ -1,6 +1,7 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import type { AnyFieldApi } from '@tanstack/react-form';
 
 interface Props<TSchema extends z.AnyZodObject> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

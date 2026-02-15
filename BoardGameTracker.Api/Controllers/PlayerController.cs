@@ -1,6 +1,6 @@
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
-using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

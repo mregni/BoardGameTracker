@@ -1,5 +1,3 @@
-using BoardGameTracker.Common.Models.Updates;
-
 namespace BoardGameTracker.Common.DTOs;
 
 public class UpdateStatusDto

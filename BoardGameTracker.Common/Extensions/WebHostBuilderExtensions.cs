@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog.Events;
 
 namespace BoardGameTracker.Common.Extensions;
