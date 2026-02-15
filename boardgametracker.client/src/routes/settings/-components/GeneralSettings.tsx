@@ -3,11 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { SettingsSection } from './SettingsSection';
 
 import { SettingsSchema } from '@/models';
-import { BgtFormField, BgtInputField, BgtSelect } from '@/components/BgtForm';
+import { type AnyReactForm, BgtFormField, BgtInputField, BgtSelect } from '@/components/BgtForm';
 
 interface Props {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any;
+  form: AnyReactForm;
   languages: { key: string; translationKey: string }[];
   disabled?: boolean;
 }

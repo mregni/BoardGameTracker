@@ -1,6 +1,6 @@
 import { Bars } from 'react-loading-icons';
+import { useTranslation } from 'react-i18next';
 import { useCallback } from 'react';
-import { t } from 'i18next';
 import { useRouter } from '@tanstack/react-router';
 import { useForm } from '@tanstack/react-form';
 
@@ -11,13 +11,14 @@ import { SessionPlayerManager } from './SessionPlayerManager';
 import { SessionFormFields } from './SessionFormFields';
 import { SessionExpansionSelector } from './SessionExpansionSelector';
 
+import { handleFormSubmit } from '@/utils/formUtils';
 import {
   CreateSession,
-  CreateSessionSchema,
   CreateSessionPlayer,
   CreatePlayerSessionNoScoring,
   Game,
   Expansion,
+  CreateSessionSchema,
 } from '@/models';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
@@ -26,7 +27,7 @@ import BgtButton from '@/components/BgtButton/BgtButton';
 
 interface Props {
   game?: Game | undefined;
-  locationId?: string | undefined;
+  locationId?: number | undefined;
   minutes?: number | undefined;
   comment?: string | null;
   start?: Date | undefined;
@@ -53,13 +54,14 @@ export const SessionForm = (props: Props) => {
     disabled,
   } = props;
 
+  const { t } = useTranslation();
   const router = useRouter();
   const { locations, games, players: playerList } = useSessionForm();
 
   const form = useForm({
     defaultValues: {
       gameId: game?.id ?? 0,
-      locationId: locationId ?? '',
+      locationId: locationId ?? 0,
       minutes: minutes ?? 30,
       comment: comment ?? '',
       start: start ?? new Date(),
@@ -84,10 +86,11 @@ export const SessionForm = (props: Props) => {
     addPlayer,
     updatePlayer,
     removePlayer,
-    openCreatePlayerModal,
-    setOpenCreatePlayerModal,
-    openUpdatePlayerModal,
-    setOpenUpdatePlayerModal,
+    openEditPlayerModal,
+    isCreateModalOpen,
+    isUpdateModalOpen,
+    openCreateModal,
+    closeModal,
     playerIdToEdit,
   } = useSessionFormState({
     form,
@@ -101,20 +104,11 @@ export const SessionForm = (props: Props) => {
     router.history.back();
   }, [router]);
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      form.handleSubmit();
-    },
-    [form]
-  );
-
   return (
     <BgtPage>
       <BgtPageContent centered>
         <BgtCenteredCard title={title}>
-          <form onSubmit={handleSubmit} className="w-full">
+          <form onSubmit={handleFormSubmit(form)} className="w-full">
             <div className="flex flex-col gap-3 w-full">
               <SessionFormFields form={form} games={games} locations={locations} disabled={disabled} />
 
@@ -132,15 +126,15 @@ export const SessionForm = (props: Props) => {
                 playerList={playerList}
                 hasScoring={game?.hasScoring ?? true}
                 disabled={disabled}
-                openCreatePlayerModal={openCreatePlayerModal}
-                openUpdatePlayerModal={openUpdatePlayerModal}
+                isCreateModalOpen={isCreateModalOpen}
+                isUpdateModalOpen={isUpdateModalOpen}
                 playerIdToEdit={playerIdToEdit}
-                setOpenCreatePlayerModal={setOpenCreatePlayerModal}
-                setOpenUpdatePlayerModal={setOpenUpdatePlayerModal}
+                onOpenCreateModal={openCreateModal}
+                onCloseModal={closeModal}
+                onEditPlayer={openEditPlayerModal}
                 onAddPlayer={addPlayer}
                 onUpdatePlayer={updatePlayer}
                 onRemovePlayer={removePlayer}
-                setPlayerIdToEdit={() => {}}
               />
 
               <div className="flex flex-row gap-2 mt-2">

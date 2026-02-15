@@ -3,13 +3,19 @@ import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
 import type { AnyFieldApi } from '@tanstack/react-form';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export interface AnyReactForm {
+  Field: any;
+  Subscribe: any;
+  [key: string]: any;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 interface Props<TSchema extends z.AnyZodObject> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any;
+  form: AnyReactForm;
   name: keyof z.infer<TSchema> & string;
   schema: TSchema;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  children: (field: any) => ReactNode;
+  children: (field: AnyFieldApi) => ReactNode;
 }
 
 export function BgtFormField<TSchema extends z.AnyZodObject>({ form, name, schema, children }: Props<TSchema>) {
@@ -20,8 +26,7 @@ export function BgtFormField<TSchema extends z.AnyZodObject>({ form, name, schem
     <form.Field
       name={name}
       validators={{
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onChange: ({ value }: { value: any }) => {
+        onChange: ({ value }: { value: unknown }) => {
           const result = fieldSchema.safeParse(value);
           return result.success ? undefined : t(result.error.errors[0].message);
         },

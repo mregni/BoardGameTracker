@@ -2,11 +2,10 @@ import { useTranslation } from 'react-i18next';
 import { memo, useMemo } from 'react';
 
 import { CreateSessionSchema, Game, Location } from '@/models';
-import { BgtFormField, BgtTextArea, BgtSelect, BgtInputField, BgtDateTimePicker } from '@/components/BgtForm';
+import { type AnyReactForm, BgtFormField, BgtTextArea, BgtSelect, BgtInputField, BgtDateTimePicker } from '@/components/BgtForm';
 
 interface SessionFormFieldsProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any;
+  form: AnyReactForm;
   games: Game[];
   locations: Location[];
   disabled: boolean;

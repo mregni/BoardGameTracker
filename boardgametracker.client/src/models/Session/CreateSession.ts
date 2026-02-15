@@ -18,15 +18,16 @@ export const CreatePlayerSessionSchema = CreatePlayerSessionNoScoringSchema.exte
 });
 
 export const CreateSessionSchema = z.object({
-  gameId: z.coerce.string({ required_error: 'player-session.new.game.required' }).min(1, {
-    message: 'player-session.new.game.required',
-  }),
+  gameId: z.coerce
+    .number({ required_error: 'player-session.new.game.required' })
+    .int()
+    .positive({ message: 'player-session.new.game.required' }),
   locationId: z.coerce
-    .string({
+    .number({
       required_error: 'player-session.new.location.required',
       invalid_type_error: 'player-session.new.location.required',
     })
-    .min(1, {
+    .positive({
       message: 'player-session.new.location.required',
     }),
   start: z.coerce.date({

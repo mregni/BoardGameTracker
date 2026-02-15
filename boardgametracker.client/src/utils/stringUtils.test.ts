@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { StringToHsl, StringToRgb, SessionFlagToString } from './stringUtils';
-
-import { SessionFlag } from '@/models';
+import { StringToHsl, StringToRgb } from './stringUtils';
 
 describe('stringUtils', () => {
   describe('StringToHsl', () => {
@@ -96,38 +94,6 @@ describe('stringUtils', () => {
     it('should handle special characters', () => {
       const result = StringToRgb('test@#$%');
       expect(result).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
-    });
-  });
-
-  describe('SessionFlagToString', () => {
-    it('should return correct key for LongestGame', () => {
-      expect(SessionFlagToString(SessionFlag.LongestGame)).toBe('common.flags.longest-game');
-    });
-
-    it('should return correct key for ShortestGame', () => {
-      expect(SessionFlagToString(SessionFlag.ShortestGame)).toBe('common.flags.shortest-game');
-    });
-
-    it('should return correct key for HighestScore', () => {
-      expect(SessionFlagToString(SessionFlag.HighestScore)).toBe('common.flags.highest-score');
-    });
-
-    it('should return correct key for LowestScore', () => {
-      expect(SessionFlagToString(SessionFlag.LowestScore)).toBe('common.flags.lowest-score');
-    });
-
-    it('should handle all enum values', () => {
-      const allFlags = [
-        SessionFlag.LongestGame,
-        SessionFlag.ShortestGame,
-        SessionFlag.HighestScore,
-        SessionFlag.LowestScore,
-      ];
-
-      allFlags.forEach((flag) => {
-        const result = SessionFlagToString(flag);
-        expect(result).toMatch(/^common\.flags\./);
-      });
     });
   });
 });

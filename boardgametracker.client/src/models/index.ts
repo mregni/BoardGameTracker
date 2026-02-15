@@ -1,9 +1,11 @@
 export * from './Badge/Badge';
 
 export * from './Common/Actions';
+export * from './Common/ApiError';
 export * from './Common/BgtSelectItem';
 export * from './Common/FailResult';
 export * from './Common/KeyValuePair';
+export * from './Common/ModalProps';
 
 export * from './Compare/CompareResult';
 
@@ -21,8 +23,8 @@ export * from './Games/GameState';
 export * from './Games/GameStatistics';
 export * from './Games/GameType';
 export * from './Games/PersonType';
-export * from './Games/SessionFlag';
 export * from './Games/Shame';
+export * from './Games/ShameStatistics';
 
 export * from './Images/ImageUpload';
 
@@ -32,6 +34,7 @@ export * from './Location/CreateLocation';
 export * from './Menu/MenuItem';
 
 export * from './Player/Player';
+export type { PlayerStatistics } from './Player/PlayerStatistics';
 
 export * from './Session/Session';
 export * from './Session/PlayerSession';

@@ -10,6 +10,7 @@ import { GameFormTimeFields } from './GameFormTimeFields';
 import { GameFormPlayerFields } from './GameFormPlayerFields';
 import { GameFormBasicFields } from './GameFormBasicFields';
 
+import { handleFormSubmit } from '@/utils/formUtils';
 import { toInputDate } from '@/utils/dateUtils';
 import { CreateGame, CreateGameSchema } from '@/models/Games/CreateGame';
 import { Game } from '@/models';
@@ -63,20 +64,11 @@ export const GameForm = (props: Props) => {
     router.history.back();
   }, [router]);
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      form.handleSubmit();
-    },
-    [form]
-  );
-
   return (
     <BgtPage>
       <BgtPageContent centered>
         <BgtCenteredCard title={title}>
-          <form onSubmit={handleSubmit} className="w-full">
+          <form onSubmit={handleFormSubmit(form)} className="w-full">
             <div className="flex flex-col gap-3 w-full">
               <div className="flex flex-row gap-3">
                 <div className="flex-none">

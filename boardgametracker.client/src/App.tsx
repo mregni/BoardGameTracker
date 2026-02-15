@@ -1,9 +1,12 @@
+import { toast } from 'sonner';
 import { ErrorBoundary } from 'react-error-boundary';
 import { lazy } from 'react';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+import i18n from './utils/i18n';
 import { routeTree } from './routeTree.gen';
+import { isApiError } from './models';
 import { ErrorFallback } from './components/ErrorBoundary/ErrorFallback';
 
 const TanStackQueryDevtools = import.meta.env.PROD
@@ -22,6 +25,26 @@ const TanStackRouterDevtools = import.meta.env.PROD
       }))
     );
 
+function getErrorToastMessage(error: unknown): string {
+  if (!isApiError(error)) {
+    return i18n.t('error.something-went-wrong');
+  }
+
+  switch (error.kind) {
+    case 'network':
+      return i18n.t('error.network');
+    case 'timeout':
+      return i18n.t('error.timeout');
+    case 'server':
+      return i18n.t('error.server');
+    default:
+      return i18n.t('error.something-went-wrong');
+  }
+}
+
+let lastErrorToastTime = 0;
+const ERROR_TOAST_DEBOUNCE_MS = 2000;
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -30,6 +53,20 @@ const queryClient = new QueryClient({
       retry: false,
     },
   },
+  queryCache: new QueryCache({
+    onError: (error) => {
+      const now = Date.now();
+      if (now - lastErrorToastTime < ERROR_TOAST_DEBOUNCE_MS) return;
+      lastErrorToastTime = now;
+      toast.error(getErrorToastMessage(error));
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error, _variables, _context, mutation) => {
+      if (mutation.options.onError) return;
+      toast.error(getErrorToastMessage(error));
+    },
+  }),
 });
 const router = createRouter({
   routeTree,

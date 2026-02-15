@@ -117,7 +117,6 @@ export const GameNightCard = (props: Props) => {
                   className={cx('pl-1 pr-2 py-1 bg-primary/20 text-primary border border-primary/30 rounded text-sm')}
                 >
                   <BgtAvatar
-                    key={game.id}
                     image={game.image}
                     title={game.title}
                     withTitle

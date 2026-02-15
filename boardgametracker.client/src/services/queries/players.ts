@@ -13,7 +13,7 @@ export const getPlayerStatistics = createNestedQuery(QUERY_KEYS.player, QUERY_KE
 export const getPlayerSessions = createNestedQuery(QUERY_KEYS.player, QUERY_KEYS.sessions, getPlayerSessionsCall);
 
 export const getPlayerSessionsShortList = createNestedQueryWithKeys(
-  QUERY_KEYS.game,
+  QUERY_KEYS.player,
   QUERY_KEYS.sessions,
   [QUERY_KEYS.shortlist],
   getPlayerSessionsCall

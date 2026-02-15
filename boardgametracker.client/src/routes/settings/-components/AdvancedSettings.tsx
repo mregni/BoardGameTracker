@@ -6,14 +6,13 @@ import { SettingsSection } from './SettingsSection';
 
 import { SettingsSchema } from '@/models';
 import { BgtText } from '@/components/BgtText/BgtText';
-import { BgtFormField } from '@/components/BgtForm';
+import { type AnyReactForm, BgtFormField } from '@/components/BgtForm';
 import BgtButton from '@/components/BgtButton/BgtButton';
 import GitHubIcon from '@/assets/icons/github.svg?react';
 import CrowdinIcon from '@/assets/icons/crowdin.svg?react';
 
 interface Props {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any;
+  form: AnyReactForm;
   disabled?: boolean;
 }
 

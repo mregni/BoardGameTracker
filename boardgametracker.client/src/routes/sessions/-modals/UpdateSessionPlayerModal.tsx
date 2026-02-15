@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from '@tanstack/react-form';
 import { Dialog } from '@radix-ui/themes';
 
+import { handleFormSubmit } from '@/utils/formUtils';
 import { usePlayerById } from '@/routes/-hooks/usePlayerById';
 import {
   CreateSessionPlayer,
@@ -50,11 +51,7 @@ const UpdateSessionPlayerForm = (props: Props) => {
           {t('player-session.update.description', { name: playerById(playerToEdit?.playerId)?.name })}
         </Dialog.Description>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
+          onSubmit={handleFormSubmit(form)}
         >
           <div className="flex flex-col gap-4 mt-3 mb-6">
             {hasScoring && (

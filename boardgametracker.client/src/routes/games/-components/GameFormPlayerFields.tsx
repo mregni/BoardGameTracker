@@ -3,11 +3,10 @@ import { memo } from 'react';
 
 import { getItemStateTranslationKey } from '@/utils/ItemStateUtils';
 import { CreateGameSchema, GameState } from '@/models';
-import { BgtDatePicker, BgtFormField, BgtInputField, BgtSelect, BgtTextArea } from '@/components/BgtForm';
+import { type AnyReactForm, BgtDatePicker, BgtFormField, BgtInputField, BgtSelect, BgtTextArea } from '@/components/BgtForm';
 
 interface GameFormPlayerFieldsProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any;
+  form: AnyReactForm;
   disabled: boolean;
   currency?: string;
 }

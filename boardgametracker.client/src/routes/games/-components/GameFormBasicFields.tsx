@@ -2,11 +2,10 @@ import { useTranslation } from 'react-i18next';
 import { memo } from 'react';
 
 import { CreateGameSchema } from '@/models';
-import { BgtFormField, BgtInputField } from '@/components/BgtForm';
+import { type AnyReactForm, BgtFormField, BgtInputField } from '@/components/BgtForm';
 
 interface GameFormBasicFieldsProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any;
+  form: AnyReactForm;
   disabled: boolean;
 }
 

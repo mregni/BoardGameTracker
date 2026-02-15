@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useState, useMemo } from 'react';
+import { useCallback, useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 
 import { useGamesData } from './-hooks/useGamesData';
@@ -8,7 +8,7 @@ import { useGameModals } from './-hooks/useGameModals';
 import { getGames } from '@/services/queries/games';
 import CreateGameModal from '@/routes/games/-modals/CreateGameModal';
 import { BggGameModal } from '@/routes/games/-modals/BggGameModal';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useFilteredList } from '@/hooks/useFilteredList';
 import { BgtText } from '@/components/BgtText/BgtText';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
@@ -42,23 +42,21 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { games, isLoading } = useGamesData();
   const modals = useGameModals();
-  const [filterValue, setFilterValue] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(category);
 
-  const debouncedFilterValue = useDebounce(filterValue, 300);
+  const categoryPreFilter = useCallback(
+    (items: typeof games) => {
+      if (categoryFilter === undefined) return items;
+      return items.filter((game) => game.categories.some((cat) => cat.name === categoryFilter));
+    },
+    [categoryFilter]
+  );
 
-  const filteredGames = useMemo(() => {
-    let filteredGames = games;
-    if (categoryFilter !== undefined) {
-      filteredGames = games.filter((game) => game.categories.some((category) => category.name === categoryFilter));
-    }
-
-    if (!debouncedFilterValue) {
-      return filteredGames;
-    }
-
-    return filteredGames.filter((game) => game.title.toLowerCase().includes(debouncedFilterValue.toLowerCase()));
-  }, [games, categoryFilter, debouncedFilterValue]);
+  const { filterValue, setFilterValue, filtered: filteredGames } = useFilteredList(
+    games,
+    'title',
+    categoryPreFilter
+  );
 
   const openManual = () => {
     modals.createModal.hide();
@@ -81,8 +79,8 @@ function RouteComponent() {
         description={t('dashboard.empty.description')}
         action={{ onClick: modals.createModal.show, label: t('games.new') }}
       >
-        <BggGameModal open={modals.bggModal.isOpen} setOpen={modals.bggModal.setIsOpen} />
-        <CreateGameModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} openBgg={openBgg} openManual={openManual} />
+        <BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />
+        <CreateGameModal open={modals.createModal.isOpen} close={modals.createModal.hide} openBgg={openBgg} openManual={openManual} />
       </BgtEmptyPage>
     );
   }
@@ -121,8 +119,8 @@ function RouteComponent() {
             />
           ))}
         </BgtCardList>
-        <BggGameModal open={modals.bggModal.isOpen} setOpen={modals.bggModal.setIsOpen} />
-        <CreateGameModal open={modals.createModal.isOpen} setOpen={modals.createModal.setIsOpen} openBgg={openBgg} openManual={openManual} />
+        <BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />
+        <CreateGameModal open={modals.createModal.isOpen} close={modals.createModal.hide} openBgg={openBgg} openManual={openManual} />
       </BgtPageContent>
     </BgtPage>
   );

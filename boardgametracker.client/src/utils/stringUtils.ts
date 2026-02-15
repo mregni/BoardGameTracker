@@ -1,5 +1,3 @@
-import { SessionFlag } from '@/models';
-
 export const StringToHsl = (value: string | undefined): string => {
   if (value === undefined) {
     return 'hsl(0, 85%, 35%)';
@@ -42,17 +40,4 @@ const hueToRgb = (p: number, q: number, t: number): number => {
   if (t < 1 / 2) return q;
   if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
   return p;
-};
-
-export const SessionFlagToString = (flag: SessionFlag): string => {
-  switch (flag) {
-    case SessionFlag.LongestGame:
-      return 'common.flags.longest-game';
-    case SessionFlag.ShortestGame:
-      return 'common.flags.shortest-game';
-    case SessionFlag.HighestScore:
-      return 'common.flags.highest-score';
-    case SessionFlag.LowestScore:
-      return 'common.flags.lowest-score';
-  }
 };

@@ -1,20 +1,21 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQueries } from '@tanstack/react-query';
 
 import { getSettings } from '@/services/queries/settings';
 import { getBggCollection, getGames } from '@/services/queries/games';
 import { importGamesCall } from '@/services/gameService';
+import { useToasts } from '@/routes/-hooks/useToasts';
 import { ImportGame } from '@/models';
 import { useQueryInvalidator } from '@/hooks/useQueryInvalidator';
 
 interface Props {
   username: string;
-  onSuccessImport?: () => void;
-  onFailedImport?: () => void;
+  onSuccess?: () => void;
 }
 
-export const useList = ({ username, onSuccessImport, onFailedImport }: Props) => {
+export const useList = ({ username, onSuccess }: Props) => {
   const invalidator = useQueryInvalidator();
+  const { successToast, errorToast } = useToasts();
 
   const [bggCollectionQuery, gamesQuery, settingsQuery] = useQueries({
     queries: [getBggCollection(username), getGames(), getSettings()],
@@ -60,23 +61,22 @@ export const useList = ({ username, onSuccessImport, onFailedImport }: Props) =>
     return processedGames.filter((game) => game.inCollection).length;
   }, [processedGames]);
 
-  const derivedGames = useMemo(() => {
-    if (filterCollected) {
-      return processedGames.filter((game) => !game.inCollection);
-    }
-    return processedGames;
-  }, [processedGames, filterCollected]);
+  const [localUpdates, setLocalUpdates] = useState<Map<number, Partial<ImportGame>>>(new Map());
 
-  // Keep games in state to allow mutations via updateGame
-  const [games, setGames] = useState<ImportGame[]>([]);
-
-  // Sync state with derived value when dependencies change
-  useEffect(() => {
-    setGames(derivedGames);
-  }, [derivedGames]);
+  const games = useMemo(() => {
+    const filtered = filterCollected ? processedGames.filter((game) => !game.inCollection) : processedGames;
+    return filtered.map((game) => {
+      const updates = localUpdates.get(game.bggId);
+      return updates ? { ...game, ...updates } : game;
+    });
+  }, [processedGames, filterCollected, localUpdates]);
 
   const updateGame = useCallback((bggId: number, updates: Partial<ImportGame>) => {
-    setGames((prev) => prev.map((game) => (game.bggId === bggId ? { ...game, ...updates } : game)));
+    setLocalUpdates((prev) => {
+      const next = new Map(prev);
+      next.set(bggId, { ...prev.get(bggId), ...updates });
+      return next;
+    });
   }, []);
 
   const startImportMutation = useMutation({
@@ -87,10 +87,11 @@ export const useList = ({ username, onSuccessImport, onFailedImport }: Props) =>
       // Dashboard includes counts, so this is covered
       await invalidator.invalidateDashboard();
 
-      onSuccessImport?.();
+      successToast('games.import.success');
+      onSuccess?.();
     },
     onError() {
-      onFailedImport?.();
+      errorToast('games.import.failed');
     },
   });
 

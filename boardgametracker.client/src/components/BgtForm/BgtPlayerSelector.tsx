@@ -14,9 +14,8 @@ import PencilIcon from '@/assets/icons/pencil.svg?react';
 import ClockIcon from '@/assets/icons/clock.svg?react';
 
 interface Props {
-  setCreateModalOpen: Dispatch<SetStateAction<boolean>>;
-  setPlayerIdToEdit: Dispatch<SetStateAction<number | null>>;
-  setUpdateModalOpen: Dispatch<SetStateAction<boolean>>;
+  onOpenCreateModal: () => void;
+  onEditPlayer: (playerId: number) => void;
   remove: (index: number) => void;
   players: (CreateSessionPlayer | CreatePlayerSessionNoScoring)[];
   disabled: boolean;
@@ -24,14 +23,10 @@ interface Props {
 }
 
 export const BgtPlayerSelector = (props: Props) => {
-  const { setCreateModalOpen, remove, players, setPlayerIdToEdit, setUpdateModalOpen, disabled } = props;
+  const { onOpenCreateModal, onEditPlayer, remove, players, disabled } = props;
   const errors = props.errors ?? [];
+  const { t } = useTranslation();
   const { playerById } = usePlayerById();
-
-  const editPlayer = (playerId: number): void => {
-    setPlayerIdToEdit(playerId);
-    setUpdateModalOpen(true);
-  };
 
   const hasErrors = errors.length > 0;
 
@@ -45,7 +40,7 @@ export const BgtPlayerSelector = (props: Props) => {
             type="button"
             variant="primary"
             size="1"
-            onClick={() => setCreateModalOpen(true)}
+            onClick={onOpenCreateModal}
             disabled={disabled}
           >
             {t('player-session.new.players.add')}
@@ -76,7 +71,7 @@ export const BgtPlayerSelector = (props: Props) => {
               {x.firstPlay && <ClockIcon className="w-4 text-green-600" />}
             </div>
             <div className="flex items-center gap-1">
-              <BgtIconButton icon={<PencilIcon />} onClick={() => editPlayer(x.playerId)} disabled={disabled} />
+              <BgtIconButton icon={<PencilIcon />} onClick={() => onEditPlayer(x.playerId)} disabled={disabled} />
               <BgtIconButton icon={<TrashIcon />} onClick={() => remove(index)} intent="danger" disabled={disabled} />
             </div>
           </div>

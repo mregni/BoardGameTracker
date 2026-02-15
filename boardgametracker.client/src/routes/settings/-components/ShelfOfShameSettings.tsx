@@ -4,11 +4,10 @@ import { SettingsToggle } from './SettingsToggle';
 import { SettingsSection } from './SettingsSection';
 
 import { SettingsSchema } from '@/models';
-import { BgtFormField, BgtInputField } from '@/components/BgtForm';
+import { type AnyReactForm, BgtFormField, BgtInputField } from '@/components/BgtForm';
 
 interface Props {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any;
+  form: AnyReactForm;
   disabled?: boolean;
 }
 

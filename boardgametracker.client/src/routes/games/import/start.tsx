@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router';
 import { useForm } from '@tanstack/react-form';
 
+import { handleFormSubmit } from '@/utils/formUtils';
 import { BggUserNameSchema } from '@/models';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
@@ -36,11 +37,7 @@ function RouteComponent() {
       <BgtPageContent>
         <BgtCenteredCard title={t('games.import.start.title')} className="max-w-[600px]">
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
+            onSubmit={handleFormSubmit(form)}
           >
             <div className="flex flex-col gap-5 w-full">
               <div>{t('games.import.start.description')}</div>

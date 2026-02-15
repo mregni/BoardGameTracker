@@ -1,6 +1,5 @@
-import { t } from 'i18next';
-import { differenceInDays, format } from 'date-fns';
-import { isAfter } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { differenceInDays, format, isAfter } from 'date-fns';
 import { cva } from 'class-variance-authority';
 import { useNavigate } from '@tanstack/react-router';
 
@@ -52,6 +51,7 @@ interface LoanCardProps {
 }
 
 export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }: LoanCardProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isActive = loan.returnedDate === null;
   const isOverdue = loan.dueDate !== null && isAfter(new Date(), loan.dueDate);
