@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { useForm } from '@tanstack/react-form';
 
+import { settingsFormOpts } from './-utils/settingsFormOpts';
 import { useSettingsData } from './-hooks/useSettingsData';
 import { ShelfOfShameSettings } from './-components/ShelfOfShameSettings';
 import { SettingsSidebar, SettingsCategory } from './-components/SettingsSidebar';
@@ -13,6 +13,7 @@ import { AdvancedSettings } from './-components/AdvancedSettings';
 import { handleFormSubmit } from '@/utils/formUtils';
 import { getSettings, getLanguages, getEnvironment } from '@/services/queries/settings';
 import { Settings, SettingsSchema } from '@/models';
+import { useAppForm } from '@/hooks/form';
 import { BgtLoadingSpinner } from '@/components/BgtLoadingSpinner/BgtLoadingSpinner';
 import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
@@ -56,7 +57,8 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
   const [activeCategory, setActiveCategory] = useState<SettingsCategory>('general');
   const { t } = useTranslation();
 
-  const form = useForm({
+  const form = useAppForm({
+    ...settingsFormOpts,
     defaultValues: {
       uiLanguage: settings.uiLanguage,
       dateFormat: settings.dateFormat,
@@ -99,9 +101,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
           <SettingsSidebar activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
 
           <div className="flex-1">
-            <form
-              onSubmit={handleFormSubmit(form)}
-            >
+            <form onSubmit={handleFormSubmit(form)}>
               <div className="flex flex-col gap-4 xl:gap-6 lg:pl-4 xl:pl-6 pt-4 lg:pt-0">{renderContent()}</div>
               <div className="mt-6 pt-4 lg:ml-4 xl:ml-6 border-t border-white/10">
                 <div className="flex justify-between flex-wrap gap-3 items-start">

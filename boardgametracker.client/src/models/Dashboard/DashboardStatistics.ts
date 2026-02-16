@@ -1,3 +1,4 @@
+import { MostPlayedGame } from '../Player/PlayerStatistics';
 import { PlayByDayChartData } from '../Games/GameStatistics';
 import { GameState } from '../Games/GameState';
 
@@ -34,15 +35,6 @@ export interface RecentActivity {
   winnerName: string;
   winnerId: number;
   durationInMinutes: number;
-}
-
-export interface MostPlayedGame {
-  id: number;
-  title: string;
-  image: string | null;
-  totalWins: number | null;
-  totalSessions: number;
-  winningPercentage: number | null;
 }
 
 export interface DashboardTopPlayer {

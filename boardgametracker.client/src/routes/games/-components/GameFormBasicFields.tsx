@@ -1,26 +1,27 @@
 import { useTranslation } from 'react-i18next';
-import { memo } from 'react';
+import type { AnyFieldApi } from '@tanstack/react-form';
 
+import { gameFormOpts } from '../-utils/gameFormOpts';
+
+import { zodValidator } from '@/utils/zodValidator';
 import { CreateGameSchema } from '@/models';
-import { type AnyReactForm, BgtFormField, BgtInputField } from '@/components/BgtForm';
+import { withForm } from '@/hooks/form';
+import { BgtInputField } from '@/components/BgtForm';
 
-interface GameFormBasicFieldsProps {
-  form: AnyReactForm;
-  disabled: boolean;
-}
+export const GameFormBasicFields = withForm({
+  ...gameFormOpts,
+  props: {
+    disabled: false,
+  },
+  render: function Render({ form, disabled }) {
+    const { t } = useTranslation();
 
-const GameFormBasicFieldsComponent = ({ form, disabled }: GameFormBasicFieldsProps) => {
-  const { t } = useTranslation();
-
-  return (
-    <BgtFormField form={form} name="title" schema={CreateGameSchema}>
-      {(field) => (
-        <BgtInputField field={field} type="text" disabled={disabled} label={t('game.new.manual.game-title.label')} />
-      )}
-    </BgtFormField>
-  );
-};
-
-GameFormBasicFieldsComponent.displayName = 'GameFormBasicFields';
-
-export const GameFormBasicFields = memo(GameFormBasicFieldsComponent);
+    return (
+      <form.Field name="title" validators={zodValidator(CreateGameSchema, 'title')}>
+        {(field: AnyFieldApi) => (
+          <BgtInputField field={field} type="text" disabled={disabled} label={t('game.new.manual.game-title.label')} />
+        )}
+      </form.Field>
+    );
+  },
+});

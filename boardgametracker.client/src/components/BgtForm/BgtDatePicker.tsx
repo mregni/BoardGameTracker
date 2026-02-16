@@ -14,7 +14,7 @@ import CalendarIcon from '@/assets/icons/calendar.svg?react';
 
 import 'react-day-picker/dist/style.css';
 
-interface Props {
+export interface BgtDatePickerProps {
   field: AnyFieldApi;
   label: string;
   disabled?: boolean;
@@ -22,7 +22,7 @@ interface Props {
   placeholder: string;
 }
 
-export const BgtDatePicker = (props: Props) => {
+export const BgtDatePicker = (props: BgtDatePickerProps) => {
   const { field, label, disabled = false, className = '', placeholder } = props;
   const [open, setOpen] = useState(false);
 

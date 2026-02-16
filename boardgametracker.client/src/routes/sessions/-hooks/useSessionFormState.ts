@@ -1,11 +1,18 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { addMinutes } from 'date-fns';
-import { UseFormReturn } from '@tanstack/react-form';
 
-import type { CreateSession, CreateSessionPlayer, CreatePlayerSessionNoScoring, Expansion, Game } from '@/models';
+import type { CreateSessionPlayer, CreatePlayerSessionNoScoring, Expansion, Game } from '@/models';
+
+interface SessionFormApi {
+  store: {
+    subscribe: (listener: () => void) => () => void;
+    state: { values: { gameId: number } };
+  };
+  setFieldValue: (field: string, value: unknown) => void;
+}
 
 interface UseSessionFormStateProps {
-  form: UseFormReturn<CreateSession>;
+  form: SessionFormApi;
   games: Game[];
   initialGameId?: number;
   initialExpansions?: Expansion[];

@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useCallback } from 'react';
 import { useRouter } from '@tanstack/react-router';
-import { useForm } from '@tanstack/react-form';
+import type { AnyFieldApi } from '@tanstack/react-form';
 
+import { gameFormOpts } from '../-utils/gameFormOpts';
 import { useImageUpload } from '../-hooks/useImageUpload';
 import { useGameForm } from '../-hooks/useGameForm';
 
@@ -10,13 +11,15 @@ import { GameFormTimeFields } from './GameFormTimeFields';
 import { GameFormPlayerFields } from './GameFormPlayerFields';
 import { GameFormBasicFields } from './GameFormBasicFields';
 
+import { zodValidator } from '@/utils/zodValidator';
 import { handleFormSubmit } from '@/utils/formUtils';
 import { toInputDate } from '@/utils/dateUtils';
 import { CreateGame, CreateGameSchema } from '@/models/Games/CreateGame';
 import { Game } from '@/models';
+import { useAppForm } from '@/hooks/form';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtImageSelector, BgtFormField, BgtSwitch } from '@/components/BgtForm';
+import { BgtImageSelector, BgtSwitch } from '@/components/BgtForm';
 import { BgtCenteredCard } from '@/components/BgtCard/BgtCenteredCard';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
@@ -35,7 +38,8 @@ export const GameForm = (props: Props) => {
   const router = useRouter();
   const { poster, setPoster, uploadPoster } = useImageUpload(game?.image);
 
-  const form = useForm({
+  const form = useAppForm({
+    ...gameFormOpts,
     defaultValues: {
       id: game?.id ?? undefined,
       title: game?.title ?? '',
@@ -84,11 +88,11 @@ export const GameForm = (props: Props) => {
               <GameFormTimeFields form={form} disabled={disabled} />
 
               {game === undefined && (
-                <BgtFormField form={form} name="hasScoring" schema={CreateGameSchema}>
-                  {(field) => (
+                <form.Field name="hasScoring" validators={zodValidator(CreateGameSchema, 'hasScoring')}>
+                  {(field: AnyFieldApi) => (
                     <BgtSwitch field={field} label={t('game.scoring.label')} className="pt-3" disabled={disabled} />
                   )}
-                </BgtFormField>
+                </form.Field>
               )}
 
               <div className="flex flex-row gap-2 mt-2">

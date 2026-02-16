@@ -3,14 +3,14 @@ import { AnyFieldApi } from '@tanstack/react-form';
 import { Text } from '@radix-ui/themes';
 import * as Switch from '@radix-ui/react-switch';
 
-interface Props {
+export interface BgtSwitchProps {
   field: AnyFieldApi;
   label: string;
   disabled?: boolean;
   className?: string;
 }
 
-const BgtSwitchComponent = (props: Props) => {
+const BgtSwitchComponent = (props: BgtSwitchProps) => {
   const { label, field, disabled = false, className } = props;
 
   const handleCheckedChange = useCallback(

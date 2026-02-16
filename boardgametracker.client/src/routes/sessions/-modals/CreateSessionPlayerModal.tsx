@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
-import { useForm } from '@tanstack/react-form';
+import type { AnyFieldApi } from '@tanstack/react-form';
 
+import { zodValidator } from '@/utils/zodValidator';
 import { handleFormSubmit } from '@/utils/formUtils';
 import { CreatePlayerModal } from '@/routes/players/-modals/CreatePlayerModal';
 import {
@@ -11,7 +12,8 @@ import {
   CreatePlayerSessionSchema,
   Player,
 } from '@/models';
-import { BgtFormField, BgtSwitch, BgtSelect, BgtInputField } from '@/components/BgtForm';
+import { useAppForm } from '@/hooks/form';
+import { BgtInputField, BgtSelect, BgtSwitch } from '@/components/BgtForm';
 import {
   BgtDialog,
   BgtDialogContent,
@@ -39,7 +41,7 @@ const CreateSessionPlayerForm = (props: Props) => {
 
   const schema = hasScoring ? CreatePlayerSessionSchema : CreatePlayerSessionNoScoringSchema;
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       playerId: '',
       firstPlay: false,
@@ -75,8 +77,8 @@ const CreateSessionPlayerForm = (props: Props) => {
           onSubmit={handleFormSubmit(form)}
         >
           <div className="flex flex-col gap-4 mt-3 mb-6">
-            <BgtFormField form={form} name="playerId" schema={schema}>
-              {(field) => (
+            <form.Field name="playerId" validators={zodValidator(schema, 'playerId')}>
+              {(field: AnyFieldApi) => (
                 <BgtSelect
                   field={field}
                   label={t('player-session.new.player.label')}
@@ -89,23 +91,23 @@ const CreateSessionPlayerForm = (props: Props) => {
                     }))}
                 />
               )}
-            </BgtFormField>
+            </form.Field>
             <div>
               <BgtButton type="button" variant="text" size="1" onClick={() => setOpenCreatePlayerModal(true)}>
                 + {t('player-session.new.create-player')}
               </BgtButton>
             </div>
             {hasScoring && (
-              <BgtFormField form={form} name="score" schema={CreatePlayerSessionSchema}>
-                {(field) => <BgtInputField field={field} type="number" label={t('player-session.score.label')} />}
-              </BgtFormField>
+              <form.Field name="score" validators={zodValidator(CreatePlayerSessionSchema, 'score')}>
+                {(field: AnyFieldApi) => <BgtInputField field={field} type="number" label={t('player-session.score.label')} />}
+              </form.Field>
             )}
-            <BgtFormField form={form} name="won" schema={schema}>
-              {(field) => <BgtSwitch field={field} label={t('player-session.won.label')} className="mt-2" />}
-            </BgtFormField>
-            <BgtFormField form={form} name="firstPlay" schema={schema}>
-              {(field) => <BgtSwitch field={field} label={t('player-session.first-play.label')} className="mt-2" />}
-            </BgtFormField>
+            <form.Field name="won" validators={zodValidator(schema, 'won')}>
+              {(field: AnyFieldApi) => <BgtSwitch field={field} label={t('player-session.won.label')} className="mt-2" />}
+            </form.Field>
+            <form.Field name="firstPlay" validators={zodValidator(schema, 'firstPlay')}>
+              {(field: AnyFieldApi) => <BgtSwitch field={field} label={t('player-session.first-play.label')} className="mt-2" />}
+            </form.Field>
           </div>
           <BgtDialogClose>
             <BgtButton type="button" variant="cancel" onClick={() => onCancel()}>

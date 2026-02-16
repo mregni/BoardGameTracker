@@ -2,8 +2,8 @@ import { Bars } from 'react-loading-icons';
 import { useTranslation } from 'react-i18next';
 import { useCallback } from 'react';
 import { useRouter } from '@tanstack/react-router';
-import { useForm } from '@tanstack/react-form';
 
+import { sessionFormOpts } from '../-utils/sessionFormOpts';
 import { useSessionFormState } from '../-hooks/useSessionFormState';
 import { useSessionForm } from '../-hooks/useSessionForm';
 
@@ -20,6 +20,7 @@ import {
   Expansion,
   CreateSessionSchema,
 } from '@/models';
+import { useAppForm } from '@/hooks/form';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
 import { BgtCenteredCard } from '@/components/BgtCard/BgtCenteredCard';
@@ -58,8 +59,10 @@ export const SessionForm = (props: Props) => {
   const router = useRouter();
   const { locations, games, players: playerList } = useSessionForm();
 
-  const form = useForm({
+  const form = useAppForm({
+    ...sessionFormOpts,
     defaultValues: {
+      ...sessionFormOpts.defaultValues,
       gameId: game?.id ?? 0,
       locationId: locationId ?? 0,
       minutes: minutes ?? 30,

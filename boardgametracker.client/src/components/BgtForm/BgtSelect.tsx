@@ -14,7 +14,7 @@ import CheckIcon from '@/assets/icons/check.svg?react';
 import CaretUpIcon from '@/assets/icons/caret-up.svg?react';
 import CaretDownIcon from '@/assets/icons/caret-down.svg?react';
 
-interface Props {
+export interface BgtSelectProps {
   field: AnyFieldApi;
   label: string;
   items: BgtSelectImageItem[] | BgtSelectItem[];
@@ -23,7 +23,7 @@ interface Props {
   hasSearch?: boolean;
 }
 
-const BgtSelectComponent = (props: Props) => {
+const BgtSelectComponent = (props: BgtSelectProps) => {
   const { items, label, field, disabled = false, placeholder = null, hasSearch = false } = props;
 
   const { t } = useTranslation();

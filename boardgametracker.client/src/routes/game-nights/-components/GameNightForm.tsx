@@ -1,13 +1,15 @@
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
-import { useForm } from '@tanstack/react-form';
+import type { AnyFieldApi } from '@tanstack/react-form';
 
 import { MultiSelectField } from './MultiSelectField';
 
+import { zodValidator } from '@/utils/zodValidator';
 import { handleFormSubmit } from '@/utils/formUtils';
 import { Game, Location, Player } from '@/models';
-import { BgtFormField, BgtInputField, BgtSelect, BgtTextArea, BgtDateTimePicker } from '@/components/BgtForm';
+import { useAppForm } from '@/hooks/form';
+import { BgtDateTimePicker, BgtInputField, BgtSelect, BgtTextArea } from '@/components/BgtForm';
 
 export const GameNightFormSchema = z.object({
   title: z.string().min(1, { message: 'game-nights.validation.title-required' }),
@@ -85,7 +87,7 @@ export const GameNightForm = (props: Props) => {
     [players]
   );
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       title: defaultValues?.title ?? '',
       startDate: defaultValues?.startDate ?? new Date(),
@@ -121,8 +123,8 @@ export const GameNightForm = (props: Props) => {
       {children}
 
       <div className="flex flex-col gap-4 mt-3 mb-3 max-h-[60vh] overflow-y-auto pr-2">
-        <BgtFormField form={form} name="title" schema={GameNightFormSchema}>
-          {(field) => (
+        <form.Field name="title" validators={zodValidator(GameNightFormSchema, 'title')}>
+          {(field: AnyFieldApi) => (
             <BgtInputField
               field={field}
               type="text"
@@ -131,17 +133,17 @@ export const GameNightForm = (props: Props) => {
               placeholder={t('game-nights.form.title.placeholder')}
             />
           )}
-        </BgtFormField>
+        </form.Field>
 
-        <BgtFormField form={form} name="startDate" schema={GameNightFormSchema}>
-          {(field) => (
+        <form.Field name="startDate" validators={zodValidator(GameNightFormSchema, 'startDate')}>
+          {(field: AnyFieldApi) => (
             <BgtDateTimePicker field={field} disabled={isLoading} label={t('game-nights.form.start.label')} />
           )}
-        </BgtFormField>
+        </form.Field>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <BgtFormField form={form} name="hostId" schema={GameNightFormSchema}>
-            {(field) => (
+          <form.Field name="hostId" validators={zodValidator(GameNightFormSchema, 'hostId')}>
+            {(field: AnyFieldApi) => (
               <BgtSelect
                 field={field}
                 hasSearch
@@ -151,9 +153,9 @@ export const GameNightForm = (props: Props) => {
                 placeholder={t('game-nights.form.host.placeholder')}
               />
             )}
-          </BgtFormField>
-          <BgtFormField form={form} name="locationId" schema={GameNightFormSchema}>
-            {(field) => (
+          </form.Field>
+          <form.Field name="locationId" validators={zodValidator(GameNightFormSchema, 'locationId')}>
+            {(field: AnyFieldApi) => (
               <BgtSelect
                 field={field}
                 hasSearch
@@ -163,38 +165,38 @@ export const GameNightForm = (props: Props) => {
                 placeholder={t('game-nights.form.location.placeholder')}
               />
             )}
-          </BgtFormField>
+          </form.Field>
         </div>
 
         <form.Field name="selectedPlayers">
-          {(field) => (
+          {(field: AnyFieldApi) => (
             <MultiSelectField
               label={t('game-nights.form.invited-players.label')}
               options={playerOptions}
               selected={field.state.value}
               disabled={isLoading}
-              onChange={(values) => field.handleChange(values)}
+              onChange={(values: number[]) => field.handleChange(values)}
               placeholder={t('game-nights.form.invited-players.description')}
             />
           )}
         </form.Field>
 
         <form.Field name="selectedGames">
-          {(field) => (
+          {(field: AnyFieldApi) => (
             <MultiSelectField
               label={t('game-nights.form.suggested-games.label')}
               options={gameOptions}
               selected={field.state.value}
               disabled={isLoading}
-              onChange={(values) => field.handleChange(values)}
+              onChange={(values: number[]) => field.handleChange(values)}
               placeholder={t('game-nights.form.suggested-games.description')}
             />
           )}
         </form.Field>
 
-        <BgtFormField form={form} name="notes" schema={GameNightFormSchema}>
-          {(field) => <BgtTextArea field={field} label={t('game-nights.form.notes.label')} disabled={isLoading} />}
-        </BgtFormField>
+        <form.Field name="notes" validators={zodValidator(GameNightFormSchema, 'notes')}>
+          {(field: AnyFieldApi) => <BgtTextArea field={field} label={t('game-nights.form.notes.label')} disabled={isLoading} />}
+        </form.Field>
       </div>
     </form>
   );

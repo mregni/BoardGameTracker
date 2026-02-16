@@ -5,14 +5,14 @@ import { TextArea } from '@radix-ui/themes';
 
 import { FormFieldWrapper } from './FormFieldWrapper';
 
-export interface Props {
+export interface BgtTextAreaProps {
   field: AnyFieldApi;
   disabled?: boolean;
   label: string;
   className?: string;
 }
 
-const BgtTextAreaComponent = (props: Props) => {
+const BgtTextAreaComponent = (props: BgtTextAreaProps) => {
   const { field, disabled = false, className, label } = props;
 
   const handleChange = useCallback(

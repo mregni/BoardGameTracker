@@ -1,85 +1,87 @@
 import { useTranslation } from 'react-i18next';
-import { memo, useMemo } from 'react';
+import { useMemo } from 'react';
+import type { AnyFieldApi } from '@tanstack/react-form';
 
-import { CreateSessionSchema, Game, Location } from '@/models';
-import { type AnyReactForm, BgtFormField, BgtTextArea, BgtSelect, BgtInputField, BgtDateTimePicker } from '@/components/BgtForm';
+import { sessionFormOpts } from '../-utils/sessionFormOpts';
 
-interface SessionFormFieldsProps {
-  form: AnyReactForm;
-  games: Game[];
-  locations: Location[];
-  disabled: boolean;
-}
+import { zodValidator } from '@/utils/zodValidator';
+import { CreateSessionSchema, type Game, type Location } from '@/models';
+import { withForm } from '@/hooks/form';
+import { BgtDateTimePicker, BgtInputField, BgtSelect, BgtTextArea } from '@/components/BgtForm';
 
-const SessionFormFieldsComponent = ({ form, games, locations, disabled }: SessionFormFieldsProps) => {
-  const { t } = useTranslation();
+export const SessionFormFields = withForm({
+  ...sessionFormOpts,
+  props: {
+    games: [] as Game[],
+    locations: [] as Location[],
+    disabled: false,
+  },
+  render: function Render({ form, games, locations, disabled }) {
+    const { t } = useTranslation();
 
-  const gamesSelectItems = useMemo(
-    () =>
-      games?.map((x) => ({
-        value: x.id,
-        label: x.title,
-        image: x.image,
-      })) ?? [],
-    [games]
-  );
+    const gamesSelectItems = useMemo(
+      () =>
+        games?.map((x: Game) => ({
+          value: x.id,
+          label: x.title,
+          image: x.image,
+        })) ?? [],
+      [games]
+    );
 
-  const locationsSelectItems = useMemo(
-    () =>
-      locations?.map((x) => ({
-        value: x.id,
-        label: x.name,
-      })) ?? [],
-    [locations]
-  );
+    const locationsSelectItems = useMemo(
+      () =>
+        locations?.map((x: Location) => ({
+          value: x.id,
+          label: x.name,
+        })) ?? [],
+      [locations]
+    );
 
-  return (
-    <>
-      <BgtFormField form={form} name="gameId" schema={CreateSessionSchema}>
-        {(field) => (
-          <BgtSelect
-            field={field}
-            hasSearch
-            items={gamesSelectItems}
-            label={t('player-session.new.game.label')}
-            disabled={disabled}
-            placeholder={t('player-session.new.game.placeholder')}
-          />
-        )}
-      </BgtFormField>
-      <BgtFormField form={form} name="locationId" schema={CreateSessionSchema}>
-        {(field) => (
-          <BgtSelect
-            field={field}
-            hasSearch
-            items={locationsSelectItems}
-            label={t('player-session.new.location.label')}
-            disabled={disabled}
-            placeholder={t('player-session.new.location.placeholder')}
-          />
-        )}
-      </BgtFormField>
-      <BgtFormField form={form} name="minutes" schema={CreateSessionSchema}>
-        {(field) => (
-          <BgtInputField
-            field={field}
-            type="number"
-            disabled={disabled}
-            label={t('player-session.new.duration.label')}
-            placeholder={t('player-session.new.duration.placeholder')}
-          />
-        )}
-      </BgtFormField>
-      <BgtFormField form={form} name="start" schema={CreateSessionSchema}>
-        {(field) => <BgtDateTimePicker field={field} disabled={disabled} label={t('player-session.new.start.label')} />}
-      </BgtFormField>
-      <BgtFormField form={form} name="comment" schema={CreateSessionSchema}>
-        {(field) => <BgtTextArea field={field} disabled={disabled} label={t('player-session.new.comment.label')} />}
-      </BgtFormField>
-    </>
-  );
-};
-
-SessionFormFieldsComponent.displayName = 'SessionFormFields';
-
-export const SessionFormFields = memo(SessionFormFieldsComponent);
+    return (
+      <>
+        <form.Field name="gameId" validators={zodValidator(CreateSessionSchema, 'gameId')}>
+          {(field: AnyFieldApi) => (
+            <BgtSelect
+              field={field}
+              hasSearch
+              items={gamesSelectItems}
+              label={t('player-session.new.game.label')}
+              disabled={disabled}
+              placeholder={t('player-session.new.game.placeholder')}
+            />
+          )}
+        </form.Field>
+        <form.Field name="locationId" validators={zodValidator(CreateSessionSchema, 'locationId')}>
+          {(field: AnyFieldApi) => (
+            <BgtSelect
+              field={field}
+              hasSearch
+              items={locationsSelectItems}
+              label={t('player-session.new.location.label')}
+              disabled={disabled}
+              placeholder={t('player-session.new.location.placeholder')}
+            />
+          )}
+        </form.Field>
+        <form.Field name="minutes" validators={zodValidator(CreateSessionSchema, 'minutes')}>
+          {(field: AnyFieldApi) => (
+            <BgtInputField
+              field={field}
+              type="number"
+              disabled={disabled}
+              label={t('player-session.new.duration.label')}
+              placeholder={t('player-session.new.duration.placeholder')}
+            />
+          )}
+        </form.Field>
+        <form.Field name="start" validators={zodValidator(CreateSessionSchema, 'start')}>
+          {(field: AnyFieldApi) => <BgtDateTimePicker field={field} disabled={disabled} label={t('player-session.new.start.label')} />}
+        </form.Field>
+        <form.Field name="comment" validators={zodValidator(CreateSessionSchema, 'comment')}>
+          {(field: AnyFieldApi) => <BgtTextArea field={field} disabled={disabled} label={t('player-session.new.comment.label')} />}
+        </form.Field>
+      </>
+    );
+  },
+});

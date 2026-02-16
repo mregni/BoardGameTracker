@@ -1,13 +1,15 @@
 import { Bars } from 'react-loading-icons';
 import { useTranslation } from 'react-i18next';
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router';
-import { useForm } from '@tanstack/react-form';
+import type { AnyFieldApi } from '@tanstack/react-form';
 
+import { zodValidator } from '@/utils/zodValidator';
 import { handleFormSubmit } from '@/utils/formUtils';
 import { BggUserNameSchema } from '@/models';
+import { useAppForm } from '@/hooks/form';
+import { BgtInputField } from '@/components/BgtForm';
 import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
 import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtFormField, BgtInputField } from '@/components/BgtForm';
 import { BgtCenteredCard } from '@/components/BgtCard/BgtCenteredCard';
 import BgtButton from '@/components/BgtButton/BgtButton';
 
@@ -20,7 +22,7 @@ function RouteComponent() {
   const router = useRouter();
   const navigate = useNavigate();
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       username: '',
     },
@@ -41,8 +43,8 @@ function RouteComponent() {
           >
             <div className="flex flex-col gap-5 w-full">
               <div>{t('games.import.start.description')}</div>
-              <BgtFormField form={form} name="username" schema={BggUserNameSchema}>
-                {(field) => (
+              <form.Field name="username" validators={zodValidator(BggUserNameSchema, 'username')}>
+                {(field: AnyFieldApi) => (
                   <BgtInputField
                     field={field}
                     disabled={isLoading}
@@ -50,7 +52,7 @@ function RouteComponent() {
                     type="text"
                   />
                 )}
-              </BgtFormField>
+              </form.Field>
               <div className="flex flex-row gap-2">
                 <BgtButton
                   variant="cancel"

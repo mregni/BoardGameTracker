@@ -1,15 +1,17 @@
 import { Bars } from 'react-loading-icons';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useForm } from '@tanstack/react-form';
+import type { AnyFieldApi } from '@tanstack/react-form';
 
 import { useNewLoanModal } from '../-hooks/useNewLoanModal';
 
+import { zodValidator } from '@/utils/zodValidator';
 import { handleFormSubmit } from '@/utils/formUtils';
 import { CreatePlayerModal } from '@/routes/players/-modals/CreatePlayerModal';
 import { CreateLoanSchema } from '@/models/Loan/CreateLoan';
 import { ModalProps, Player } from '@/models';
-import { BgtFormField, BgtSelect, BgtDatePicker } from '@/components/BgtForm';
+import { useAppForm } from '@/hooks/form';
+import { BgtDatePicker, BgtSelect } from '@/components/BgtForm';
 import {
   BgtDialog,
   BgtDialogContent,
@@ -53,7 +55,7 @@ const NewLoanModal = (props: ModalProps) => {
     [players]
   );
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       gameId: '',
       playerId: '',
@@ -97,8 +99,8 @@ const NewLoanModal = (props: ModalProps) => {
           <BgtDialogDescription>{t('loan.new.description')}</BgtDialogDescription>
           <div className="flex flex-col gap-4 mt-3 mb-3">
             <div className="flex flex-col gap-3 w-full">
-              <BgtFormField form={form} name="gameId" schema={CreateLoanSchema}>
-                {(field) => (
+              <form.Field name="gameId" validators={zodValidator(CreateLoanSchema, 'gameId')}>
+                {(field: AnyFieldApi) => (
                   <BgtSelect
                     field={field}
                     hasSearch
@@ -108,9 +110,9 @@ const NewLoanModal = (props: ModalProps) => {
                     placeholder={t('player-session.new.game.placeholder')}
                   />
                 )}
-              </BgtFormField>
-              <BgtFormField form={form} name="playerId" schema={CreateLoanSchema}>
-                {(field) => (
+              </form.Field>
+              <form.Field name="playerId" validators={zodValidator(CreateLoanSchema, 'playerId')}>
+                {(field: AnyFieldApi) => (
                   <BgtSelect
                     field={field}
                     hasSearch
@@ -120,14 +122,14 @@ const NewLoanModal = (props: ModalProps) => {
                     placeholder={t('loan.new.player.placeholder')}
                   />
                 )}
-              </BgtFormField>
+              </form.Field>
               <div>
                 <BgtButton type="button" variant="text" size="1" onClick={() => setOpenCreatePlayerModal(true)}>
                   + {t('player-session.new.create-player')}
                 </BgtButton>
               </div>
-              <BgtFormField form={form} name="loanDate" schema={CreateLoanSchema}>
-                {(field) => (
+              <form.Field name="loanDate" validators={zodValidator(CreateLoanSchema, 'loanDate')}>
+                {(field: AnyFieldApi) => (
                   <BgtDatePicker
                     field={field}
                     label={t('loan.new.start.label')}
@@ -135,9 +137,9 @@ const NewLoanModal = (props: ModalProps) => {
                     placeholder={t('loan.new.start.placeholder')}
                   />
                 )}
-              </BgtFormField>
-              <BgtFormField form={form} name="dueDate" schema={CreateLoanSchema}>
-                {(field) => (
+              </form.Field>
+              <form.Field name="dueDate" validators={zodValidator(CreateLoanSchema, 'dueDate')}>
+                {(field: AnyFieldApi) => (
                   <BgtDatePicker
                     field={field}
                     label={t('loan.new.end.label')}
@@ -145,7 +147,7 @@ const NewLoanModal = (props: ModalProps) => {
                     placeholder={t('loan.new.end.placeholder')}
                   />
                 )}
-              </BgtFormField>
+              </form.Field>
             </div>
           </div>
           <BgtDialogClose>

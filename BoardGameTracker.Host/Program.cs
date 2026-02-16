@@ -218,11 +218,11 @@ static void CreateFolders(IServiceProvider serviceProvider)
     diskProvider.EnsureFolder(PathHelper.FullCommonImagePath);
 }
 
-static Task SeedConfig(IServiceProvider serviceProvider)
+static async Task SeedConfig(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
     var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
-    return configRepository.SeedConfigAsync(ConfigDefaults.All);
+    await configRepository.SeedConfigAsync(ConfigDefaults.All);
 }
 
 static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)

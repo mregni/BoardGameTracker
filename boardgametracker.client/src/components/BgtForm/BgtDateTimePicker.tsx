@@ -6,13 +6,13 @@ import { AnyFieldApi } from '@tanstack/react-form';
 import { BgtFormErrors } from './BgtFormErrors';
 import { BgtDatePicker } from './BgtDatePicker';
 
-interface Props {
+export interface BgtDateTimePickerProps {
   field: AnyFieldApi;
   label: string;
   disabled?: boolean;
 }
 
-export const BgtDateTimePicker = (props: Props) => {
+export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
   const { field, label, disabled = false } = props;
 
   const hasErrors = field.state.meta.errors.length > 0;

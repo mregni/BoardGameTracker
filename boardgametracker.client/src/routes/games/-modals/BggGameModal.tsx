@@ -1,15 +1,17 @@
 import { useTranslation } from 'react-i18next';
 import { useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useForm } from '@tanstack/react-form';
+import type { AnyFieldApi } from '@tanstack/react-form';
 
 import { useBggGameModal } from '../-hooks/useBggGameModal';
 
+import { zodValidator } from '@/utils/zodValidator';
 import { getItemStateTranslationKey } from '@/utils/ItemStateUtils';
 import { handleFormSubmit } from '@/utils/formUtils';
 import { toInputDate } from '@/utils/dateUtils';
 import { BggSearchSchema, Game, GameState, ModalProps } from '@/models';
-import { BgtFormField, BgtSwitch, BgtSelect, BgtInputField, BgtDatePicker } from '@/components/BgtForm';
+import { useAppForm } from '@/hooks/form';
+import { BgtDatePicker, BgtInputField, BgtSelect, BgtSwitch } from '@/components/BgtForm';
 import {
   BgtDialog,
   BgtDialogClose,
@@ -42,7 +44,7 @@ export const BggGameModal = (props: ModalProps) => {
     close();
   }, [close]);
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       bggId: '',
       price: 0,
@@ -69,8 +71,8 @@ export const BggGameModal = (props: ModalProps) => {
               <SquareOutIcon className="size-5" />
               <>{t('game.bgg.external-page')}</>
             </BgtButton>
-            <BgtFormField form={form} name="bggId" schema={BggSearchSchema}>
-              {(field) => (
+            <form.Field name="bggId" validators={zodValidator(BggSearchSchema, 'bggId')}>
+              {(field: AnyFieldApi) => (
                 <BgtInputField
                   field={field}
                   disabled={isPending}
@@ -79,9 +81,9 @@ export const BggGameModal = (props: ModalProps) => {
                   placeholder={t('game.bgg.placeholder')}
                 />
               )}
-            </BgtFormField>
-            <BgtFormField form={form} name="price" schema={BggSearchSchema}>
-              {(field) => (
+            </form.Field>
+            <form.Field name="price" validators={zodValidator(BggSearchSchema, 'price')}>
+              {(field: AnyFieldApi) => (
                 <BgtInputField
                   field={field}
                   disabled={isPending}
@@ -91,9 +93,9 @@ export const BggGameModal = (props: ModalProps) => {
                   prefixLabel={settings?.currency}
                 />
               )}
-            </BgtFormField>
-            <BgtFormField form={form} name="date" schema={BggSearchSchema}>
-              {(field) => (
+            </form.Field>
+            <form.Field name="date" validators={zodValidator(BggSearchSchema, 'date')}>
+              {(field: AnyFieldApi) => (
                 <BgtDatePicker
                   field={field}
                   disabled={isPending}
@@ -101,9 +103,9 @@ export const BggGameModal = (props: ModalProps) => {
                   placeholder={t('game.added-date.placeholder')}
                 />
               )}
-            </BgtFormField>
-            <BgtFormField form={form} name="state" schema={BggSearchSchema}>
-              {(field) => (
+            </form.Field>
+            <form.Field name="state" validators={zodValidator(BggSearchSchema, 'state')}>
+              {(field: AnyFieldApi) => (
                 <BgtSelect
                   field={field}
                   disabled={isPending}
@@ -114,10 +116,10 @@ export const BggGameModal = (props: ModalProps) => {
                   }))}
                 />
               )}
-            </BgtFormField>
-            <BgtFormField form={form} name="hasScoring" schema={BggSearchSchema}>
-              {(field) => <BgtSwitch field={field} label={t('game.scoring.label')} disabled={isPending} />}
-            </BgtFormField>
+            </form.Field>
+            <form.Field name="hasScoring" validators={zodValidator(BggSearchSchema, 'hasScoring')}>
+              {(field: AnyFieldApi) => <BgtSwitch field={field} label={t('game.scoring.label')} disabled={isPending} />}
+            </form.Field>
           </div>
           <BgtDialogClose>
             <BgtButton variant="cancel" onClick={handleClose} disabled={isPending}>
