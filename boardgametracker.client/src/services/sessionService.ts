@@ -1,26 +1,26 @@
-import { axiosInstance } from '@/utils/axiosInstance';
-import { Session, CreateSession } from '@/models';
+import type { CreateSession, Session } from "@/models";
+import { axiosInstance } from "@/utils/axiosInstance";
 
-const domain = 'session';
+const domain = "session";
 
 export const addSessionCall = (play: CreateSession): Promise<Session> => {
-  return axiosInstance.post<Session>(domain, play).then((response) => {
-    return response.data;
-  });
+	return axiosInstance.post<Session>(domain, play).then((response) => {
+		return response.data;
+	});
 };
 
 export const deleteSessionCall = (id: number): Promise<void> => {
-  return axiosInstance.delete(`${domain}/${id}`);
+	return axiosInstance.delete(`${domain}/${id}`);
 };
 
 export const getSessionCall = (id: number): Promise<Session> => {
-  return axiosInstance.get<Session>(`${domain}/${id}`).then((response) => {
-    return response.data;
-  });
+	return axiosInstance.get<Session>(`${domain}/${id}`).then((response) => {
+		return response.data;
+	});
 };
 
 export const updateSessionCall = (play: Session): Promise<Session> => {
-  return axiosInstance.put<Session>(domain, play).then((response) => {
-    return response.data;
-  });
+	return axiosInstance.put<Session>(domain, play).then((response) => {
+		return response.data;
+	});
 };

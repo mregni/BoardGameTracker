@@ -1,4 +1,4 @@
 export interface ModalProps {
-  open: boolean;
-  close: () => void;
+	open: boolean;
+	close: () => void;
 }

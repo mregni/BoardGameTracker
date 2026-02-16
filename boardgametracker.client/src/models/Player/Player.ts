@@ -1,20 +1,20 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-import { Badge } from '..';
+import type { Badge } from "..";
 
 export interface Player {
-  id: number;
-  name: string;
-  image: string | null;
-  badges: Badge[];
+	id: number;
+	name: string;
+	image: string | null;
+	badges: Badge[];
 }
 
 export const CreatePlayerSchema = z.object({
-  name: z.string().min(1, { message: 'player.name.required' }),
+	name: z.string().min(1, { message: "player.name.required" }),
 });
 
 export const UpdatePlayerSchema = CreatePlayerSchema.extend({
-  id: z.number(),
+	id: z.number(),
 });
 
 export type CreatePlayer = z.infer<typeof CreatePlayerSchema>;

@@ -1,69 +1,67 @@
-import { useTranslation } from 'react-i18next';
-import { memo, useCallback } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate } from "@tanstack/react-router";
+import { memo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
+import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 
-import { CompareData, getStatConfigs, isWinningValue } from '../-utils/compareUtils';
-
-import { CompareCard } from './CompareCard';
-
-import { Player } from '@/models';
-import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
-import { BgtAvatar } from '@/components/BgtAvatar/BgtAvatar';
+import type { Player } from "@/models";
+import { type CompareData, getStatConfigs, isWinningValue } from "../-utils/compareUtils";
+import { CompareCard } from "./CompareCard";
 
 interface PlayerStatsSectionProps {
-  player: Player;
-  color: 'red' | 'blue';
-  playerKey: 'playerOne' | 'playerTwo';
-  opponentKey: 'playerOne' | 'playerTwo';
-  compare: CompareData;
-  uiLanguage: string;
+	player: Player;
+	color: "red" | "blue";
+	playerKey: "playerOne" | "playerTwo";
+	opponentKey: "playerOne" | "playerTwo";
+	compare: CompareData;
+	uiLanguage: string;
 }
 
 const PlayerStatsSectionComponent = ({
-  player,
-  color,
-  playerKey,
-  opponentKey,
-  compare,
-  uiLanguage,
+	player,
+	color,
+	playerKey,
+	opponentKey,
+	compare,
+	uiLanguage,
 }: PlayerStatsSectionProps) => {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const statConfigs = getStatConfigs(uiLanguage);
+	const { t } = useTranslation();
+	const navigate = useNavigate();
+	const statConfigs = getStatConfigs(uiLanguage);
 
-  const handleAvatarClick = useCallback(() => {
-    navigate({ to: `/players/${player.id}` });
-  }, [navigate, player.id]);
+	const handleAvatarClick = useCallback(() => {
+		navigate({ to: `/players/${player.id}` });
+	}, [navigate, player.id]);
 
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3 mb-4">
-        <BgtAvatar onClick={handleAvatarClick} image={player.image} title={player.name} size="large" />
-        <BgtHeading size="3" className="text-xl text-white">
-          {t('compare.stats.player-stats', { player: player.name })}
-        </BgtHeading>
-      </div>
+	return (
+		<div className="space-y-3">
+			<div className="flex items-center gap-3 mb-4">
+				<BgtAvatar onClick={handleAvatarClick} image={player.image} title={player.name} size="large" />
+				<BgtHeading size="3" className="text-xl text-white">
+					{t("compare.stats.player-stats", { player: player.name })}
+				</BgtHeading>
+			</div>
 
-      {statConfigs.map((stat) => {
-        const playerValue = stat.getRawValue(compare, playerKey);
-        const opponentValue = stat.getRawValue(compare, opponentKey);
-        const isWinner = isWinningValue(playerValue, opponentValue);
+			{statConfigs.map((stat) => {
+				const playerValue = stat.getRawValue(compare, playerKey);
+				const opponentValue = stat.getRawValue(compare, opponentKey);
+				const isWinner = isWinningValue(playerValue, opponentValue);
 
-        return (
-          <CompareCard
-            key={stat.key}
-            color={color}
-            isWinner={isWinner}
-            value={stat.getValue(compare, playerKey)}
-            label={t(stat.translationKey)}
-            icon={stat.icon}
-          />
-        );
-      })}
-    </div>
-  );
+				return (
+					<CompareCard
+						key={stat.key}
+						color={color}
+						isWinner={isWinner}
+						value={stat.getValue(compare, playerKey)}
+						label={t(stat.translationKey)}
+						icon={stat.icon}
+					/>
+				);
+			})}
+		</div>
+	);
 };
 
-PlayerStatsSectionComponent.displayName = 'PlayerStatsSection';
+PlayerStatsSectionComponent.displayName = "PlayerStatsSection";
 
 export const PlayerStatsSection = memo(PlayerStatsSectionComponent);

@@ -1,19 +1,19 @@
-import { GameState } from './GameState';
+import type { GameState } from "./GameState";
 
 export interface BggImportResults {
-  statusCode: number;
-  games: ImportGame[];
+	statusCode: number;
+	games: ImportGame[];
 }
 
 export interface ImportGame {
-  title: string;
-  bggId: number;
-  state: GameState;
-  imageUrl: string;
-  checked: boolean;
-  inCollection: boolean;
-  hasScoring: boolean;
-  price: number;
-  addedDate: Date;
-  lastModified: Date;
+	title: string;
+	bggId: number;
+	state: GameState;
+	imageUrl: string;
+	checked: boolean;
+	inCollection: boolean;
+	hasScoring: boolean;
+	price: number;
+	addedDate: Date;
+	lastModified: Date;
 }

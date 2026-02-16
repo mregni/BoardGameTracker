@@ -1,9 +1,9 @@
-import '@tanstack/react-query';
+import "@tanstack/react-query";
 
-import { ApiError } from '@/models';
+import { ApiError } from "@/models";
 
-declare module '@tanstack/react-query' {
-  interface Register {
-    defaultError: ApiError;
-  }
+declare module "@tanstack/react-query" {
+	interface Register {
+		defaultError: ApiError;
+	}
 }

@@ -1,17 +1,17 @@
-import { ComponentPropsWithoutRef } from 'react';
-import { cx } from 'class-variance-authority';
-import { Heading } from '@radix-ui/themes';
+import { Heading } from "@radix-ui/themes";
+import { cx } from "class-variance-authority";
+import type { ComponentPropsWithoutRef } from "react";
 
-interface Props extends Omit<ComponentPropsWithoutRef<'div'>, 'color'> {
-  size?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+interface Props extends Omit<ComponentPropsWithoutRef<"div">, "color"> {
+	size?: "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 }
 
 export const BgtHeading = (props: Props) => {
-  const { children, className, size = '8', ...rest } = props;
+	const { children, className, size = "8", ...rest } = props;
 
-  return (
-    <Heading as="h3" size={size} className={cx('uppercase line-clamp-1', className)} {...rest}>
-      {children}
-    </Heading>
-  );
+	return (
+		<Heading as="h3" size={size} className={cx("uppercase line-clamp-1", className)} {...rest}>
+			{children}
+		</Heading>
+	);
 };

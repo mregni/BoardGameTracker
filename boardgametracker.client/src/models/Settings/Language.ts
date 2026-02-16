@@ -1,5 +1,5 @@
 export interface Language {
-  id: number;
-  key: string;
-  translationKey: string;
+	id: number;
+	key: string;
+	translationKey: string;
 }

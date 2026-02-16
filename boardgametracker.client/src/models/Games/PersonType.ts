@@ -1,5 +1,5 @@
 export enum PersonType {
-  Designer = 'designer',
-  Artist = 'artist',
-  Publisher = 'publisher',
+	Designer = "designer",
+	Artist = "artist",
+	Publisher = "publisher",
 }

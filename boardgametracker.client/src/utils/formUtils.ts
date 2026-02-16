@@ -1,9 +1,9 @@
 interface FormLike {
-  handleSubmit: () => void;
+	handleSubmit: () => void;
 }
 
 export const handleFormSubmit = (form: FormLike) => (e: React.FormEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-  form.handleSubmit();
+	e.preventDefault();
+	e.stopPropagation();
+	form.handleSubmit();
 };

@@ -1,135 +1,133 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from "vitest";
+import { render, screen, userEvent } from "@/test/test-utils";
+import { BgtIconButton } from "./BgtIconButton";
 
-import { BgtIconButton } from './BgtIconButton';
+describe("BgtIconButton", () => {
+	const TestIcon = () => <svg data-testid="test-icon" />;
 
-import { render, screen, userEvent } from '@/test/test-utils';
+	describe("Rendering", () => {
+		it("should render the icon", () => {
+			render(<BgtIconButton icon={<TestIcon />} />);
+			expect(screen.getByTestId("test-icon")).toBeInTheDocument();
+		});
 
-describe('BgtIconButton', () => {
-  const TestIcon = () => <svg data-testid="test-icon" />;
+		it("should render as button element", () => {
+			render(<BgtIconButton icon={<TestIcon />} />);
+			const button = screen.getByRole("button");
+			expect(button.tagName).toBe("BUTTON");
+		});
 
-  describe('Rendering', () => {
-    it('should render the icon', () => {
-      render(<BgtIconButton icon={<TestIcon />} />);
-      expect(screen.getByTestId('test-icon')).toBeInTheDocument();
-    });
+		it("should have type button", () => {
+			render(<BgtIconButton icon={<TestIcon />} />);
+			const button = screen.getByRole("button");
+			expect(button).toHaveAttribute("type", "button");
+		});
 
-    it('should render as button element', () => {
-      render(<BgtIconButton icon={<TestIcon />} />);
-      const button = screen.getByRole('button');
-      expect(button.tagName).toBe('BUTTON');
-    });
+		it("should render text icon", () => {
+			render(<BgtIconButton icon={<span>X</span>} />);
+			expect(screen.getByText("X")).toBeInTheDocument();
+		});
+	});
 
-    it('should have type button', () => {
-      render(<BgtIconButton icon={<TestIcon />} />);
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('type', 'button');
-    });
+	describe("Disabled State", () => {
+		it("should not be disabled by default", () => {
+			render(<BgtIconButton icon={<TestIcon />} />);
+			const button = screen.getByRole("button");
+			expect(button).not.toBeDisabled();
+		});
 
-    it('should render text icon', () => {
-      render(<BgtIconButton icon={<span>X</span>} />);
-      expect(screen.getByText('X')).toBeInTheDocument();
-    });
-  });
+		it("should be disabled when disabled prop is true", () => {
+			render(<BgtIconButton icon={<TestIcon />} disabled />);
+			const button = screen.getByRole("button");
+			expect(button).toBeDisabled();
+		});
+	});
 
-  describe('Disabled State', () => {
-    it('should not be disabled by default', () => {
-      render(<BgtIconButton icon={<TestIcon />} />);
-      const button = screen.getByRole('button');
-      expect(button).not.toBeDisabled();
-    });
+	describe("Click Handler", () => {
+		it("should call onClick when clicked", async () => {
+			const user = userEvent.setup();
+			const handleClick = vi.fn();
+			render(<BgtIconButton icon={<TestIcon />} onClick={handleClick} />);
 
-    it('should be disabled when disabled prop is true', () => {
-      render(<BgtIconButton icon={<TestIcon />} disabled />);
-      const button = screen.getByRole('button');
-      expect(button).toBeDisabled();
-    });
-  });
+			await user.click(screen.getByRole("button"));
 
-  describe('Click Handler', () => {
-    it('should call onClick when clicked', async () => {
-      const user = userEvent.setup();
-      const handleClick = vi.fn();
-      render(<BgtIconButton icon={<TestIcon />} onClick={handleClick} />);
+			expect(handleClick).toHaveBeenCalledTimes(1);
+		});
 
-      await user.click(screen.getByRole('button'));
+		it("should not call onClick when disabled", async () => {
+			const user = userEvent.setup();
+			const handleClick = vi.fn();
+			render(<BgtIconButton icon={<TestIcon />} onClick={handleClick} disabled />);
 
-      expect(handleClick).toHaveBeenCalledTimes(1);
-    });
+			await user.click(screen.getByRole("button"));
 
-    it('should not call onClick when disabled', async () => {
-      const user = userEvent.setup();
-      const handleClick = vi.fn();
-      render(<BgtIconButton icon={<TestIcon />} onClick={handleClick} disabled />);
+			expect(handleClick).not.toHaveBeenCalled();
+		});
 
-      await user.click(screen.getByRole('button'));
+		it("should pass event to onClick handler", async () => {
+			const user = userEvent.setup();
+			const handleClick = vi.fn();
+			render(<BgtIconButton icon={<TestIcon />} onClick={handleClick} />);
 
-      expect(handleClick).not.toHaveBeenCalled();
-    });
+			await user.click(screen.getByRole("button"));
 
-    it('should pass event to onClick handler', async () => {
-      const user = userEvent.setup();
-      const handleClick = vi.fn();
-      render(<BgtIconButton icon={<TestIcon />} onClick={handleClick} />);
+			expect(handleClick).toHaveBeenCalledWith(expect.any(Object));
+		});
+	});
 
-      await user.click(screen.getByRole('button'));
+	describe("ClassName Prop", () => {
+		it("should apply custom className", () => {
+			render(<BgtIconButton icon={<TestIcon />} className="custom-class" />);
+			const button = screen.getByRole("button");
+			expect(button).toHaveClass("custom-class");
+		});
 
-      expect(handleClick).toHaveBeenCalledWith(expect.any(Object));
-    });
-  });
+		it("should accept multiple custom classes", () => {
+			render(<BgtIconButton icon={<TestIcon />} className="class-one class-two" />);
+			const button = screen.getByRole("button");
+			expect(button).toHaveClass("class-one");
+			expect(button).toHaveClass("class-two");
+		});
+	});
 
-  describe('ClassName Prop', () => {
-    it('should apply custom className', () => {
-      render(<BgtIconButton icon={<TestIcon />} className="custom-class" />);
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('custom-class');
-    });
+	describe("Additional Props", () => {
+		it("should pass through data attributes", () => {
+			render(<BgtIconButton icon={<TestIcon />} data-testid="custom-button" />);
+			expect(screen.getByTestId("custom-button")).toBeInTheDocument();
+		});
 
-    it('should accept multiple custom classes', () => {
-      render(<BgtIconButton icon={<TestIcon />} className="class-one class-two" />);
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('class-one');
-      expect(button).toHaveClass('class-two');
-    });
-  });
+		it("should pass through id attribute", () => {
+			render(<BgtIconButton icon={<TestIcon />} id="button-id" />);
+			const button = screen.getByRole("button");
+			expect(button).toHaveAttribute("id", "button-id");
+		});
 
-  describe('Additional Props', () => {
-    it('should pass through data attributes', () => {
-      render(<BgtIconButton icon={<TestIcon />} data-testid="custom-button" />);
-      expect(screen.getByTestId('custom-button')).toBeInTheDocument();
-    });
+		it("should support aria-label", () => {
+			render(<BgtIconButton icon={<TestIcon />} aria-label="Delete item" />);
+			const button = screen.getByRole("button", { name: "Delete item" });
+			expect(button).toBeInTheDocument();
+		});
+	});
 
-    it('should pass through id attribute', () => {
-      render(<BgtIconButton icon={<TestIcon />} id="button-id" />);
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('id', 'button-id');
-    });
+	describe("Combined Props", () => {
+		it("should handle multiple props together", async () => {
+			const user = userEvent.setup();
+			const handleClick = vi.fn();
+			render(
+				<BgtIconButton
+					icon={<TestIcon />}
+					intent="danger"
+					size="2"
+					className="extra-class"
+					onClick={handleClick}
+					aria-label="Delete"
+				/>,
+			);
+			const button = screen.getByRole("button", { name: "Delete" });
+			expect(button).toHaveClass("extra-class");
 
-    it('should support aria-label', () => {
-      render(<BgtIconButton icon={<TestIcon />} aria-label="Delete item" />);
-      const button = screen.getByRole('button', { name: 'Delete item' });
-      expect(button).toBeInTheDocument();
-    });
-  });
-
-  describe('Combined Props', () => {
-    it('should handle multiple props together', async () => {
-      const user = userEvent.setup();
-      const handleClick = vi.fn();
-      render(
-        <BgtIconButton
-          icon={<TestIcon />}
-          intent="danger"
-          size="2"
-          className="extra-class"
-          onClick={handleClick}
-          aria-label="Delete"
-        />
-      );
-      const button = screen.getByRole('button', { name: 'Delete' });
-      expect(button).toHaveClass('extra-class');
-
-      await user.click(button);
-      expect(handleClick).toHaveBeenCalled();
-    });
-  });
+			await user.click(button);
+			expect(handleClick).toHaveBeenCalled();
+		});
+	});
 });

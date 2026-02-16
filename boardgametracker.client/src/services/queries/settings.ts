@@ -1,8 +1,6 @@
-import { getSettingsCall, getEnvironmentCall, getLanguagesCall, getVersionInfoCall } from '../settingsService';
-
-import { createListQuery, createSingletonQuery } from './queryFactory';
-
-import { QUERY_KEYS } from '@/models';
+import { QUERY_KEYS } from "@/models";
+import { getEnvironmentCall, getLanguagesCall, getSettingsCall, getVersionInfoCall } from "../settingsService";
+import { createListQuery, createSingletonQuery } from "./queryFactory";
 
 export const getSettings = createSingletonQuery(QUERY_KEYS.settings, getSettingsCall);
 

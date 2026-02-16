@@ -1,11 +1,11 @@
-import { Text } from '@radix-ui/themes';
+import { Text } from "@radix-ui/themes";
 
 export const BgtMenuLogo = () => {
-  return (
-    <div className={'my-3 w-full flex gap-2 items-center justify-center'}>
-      <Text size="5" className="text-purple-500 font-bold uppercase">
-        Board games
-      </Text>
-    </div>
-  );
+	return (
+		<div className={"my-3 w-full flex gap-2 items-center justify-center"}>
+			<Text size="5" className="text-purple-500 font-bold uppercase">
+				Board games
+			</Text>
+		</div>
+	);
 };

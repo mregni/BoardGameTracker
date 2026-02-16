@@ -1,15 +1,15 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import { BgtLoadingSpinner } from '../BgtLoadingSpinner/BgtLoadingSpinner';
+import { BgtLoadingSpinner } from "../BgtLoadingSpinner/BgtLoadingSpinner";
 
 type NonUndefined<T> = T extends undefined ? never : T;
 type RequiredData<T> = { [K in keyof T]: NonUndefined<T[K]> };
 
 interface DataGuardProps<T extends Record<string, unknown>> {
-  isLoading: boolean;
-  data: T;
-  children: (data: RequiredData<T>) => ReactNode;
-  fallback?: ReactNode;
+	isLoading: boolean;
+	data: T;
+	children: (data: RequiredData<T>) => ReactNode;
+	fallback?: ReactNode;
 }
 
 /**
@@ -32,24 +32,24 @@ interface DataGuardProps<T extends Record<string, unknown>> {
  * ```
  */
 export const BgtDataGuard = <T extends Record<string, unknown>>({
-  isLoading,
-  data,
-  children,
-  fallback = <BgtLoadingSpinner />,
+	isLoading,
+	data,
+	children,
+	fallback = <BgtLoadingSpinner />,
 }: DataGuardProps<T>) => {
-  // Check if loading
-  if (isLoading) {
-    return <>{fallback}</>;
-  }
+	// Check if loading
+	if (isLoading) {
+		return <>{fallback}</>;
+	}
 
-  // Check if any data property is undefined
-  const hasUndefinedData = Object.values(data).some((value) => value === undefined);
+	// Check if any data property is undefined
+	const hasUndefinedData = Object.values(data).some((value) => value === undefined);
 
-  if (hasUndefinedData) {
-    return <>{fallback}</>;
-  }
+	if (hasUndefinedData) {
+		return <>{fallback}</>;
+	}
 
-  // All data is defined, safe to render children
-  // Type assertion is safe here because we've checked all values are defined
-  return <>{children(data as RequiredData<T>)}</>;
+	// All data is defined, safe to render children
+	// Type assertion is safe here because we've checked all values are defined
+	return <>{children(data as RequiredData<T>)}</>;
 };
