@@ -25,7 +25,7 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
 						</BgtText>
 					</div>
 
-					{process.env.NODE_ENV === "development" && (
+					{import.meta.env.DEV && (
 						<details className="w-full text-left">
 							<summary className="cursor-pointer text-white/60 hover:text-white/80 mb-2">
 								Error Details (Development Only)

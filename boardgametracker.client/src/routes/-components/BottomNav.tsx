@@ -1,4 +1,4 @@
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,7 +8,6 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import { useMenuInfo } from "../-hooks/useMenuInfo";
 
 export const BottomNav = () => {
-	const navigate = useNavigate();
 	const { t } = useTranslation();
 	const { versionInfo, menuItems, counts } = useMenuInfo();
 	const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -17,14 +16,6 @@ export const BottomNav = () => {
 
 	const handleMoreClick = () => {
 		setShowMoreMenu(!showMoreMenu);
-	};
-
-	const handleMenuItemClick = (path: string) => {
-		if (path === "more") {
-			handleMoreClick();
-		} else {
-			navigate({ to: path });
-		}
 	};
 
 	const isMoreMenuActive = menuItems.some((x) => !x.mobileVisible && x.path === currentPath);
@@ -74,13 +65,11 @@ export const BottomNav = () => {
 				<div className="flex items-center justify-between">
 					{mobileMenuItems.map((item) => {
 						const isActive = item.path === "more" ? isMoreMenuActive || showMoreMenu : currentPath === item.path;
+						const itemClassName =
+							"relative flex flex-col items-center justify-center gap-1 py-2 flex-1 h-20 transition-all active:scale-95";
 
-						return (
-							<button
-								key={item.path}
-								onClick={() => handleMenuItemClick(item.path)}
-								className="relative flex flex-col items-center justify-center gap-1 py-2 flex-1 h-20 transition-all active:scale-95"
-							>
+						const content = (
+							<>
 								{isActive && (
 									<div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-full" />
 								)}
@@ -94,10 +83,28 @@ export const BottomNav = () => {
 										)}
 									/>
 								</div>
-								<BgtText size="1" color={isActive ? "primary" : "gray"} className={cx("text-center transition-colors")}>
+								<BgtText
+									size="1"
+									color={isActive ? "primary" : "gray"}
+									className={cx("text-center transition-colors")}
+								>
 									{t(item.menuLabel)}
 								</BgtText>
-							</button>
+							</>
+						);
+
+						if (item.path === "more") {
+							return (
+								<button key={item.path} onClick={handleMoreClick} className={itemClassName}>
+									{content}
+								</button>
+							);
+						}
+
+						return (
+							<Link key={item.path} to={item.path} className={itemClassName}>
+								{content}
+							</Link>
 						);
 					})}
 				</div>

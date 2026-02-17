@@ -16,9 +16,7 @@ export const addLocationCall = (location: CreateLocation): Promise<Location> => 
 };
 
 export const deleteLocationCall = (id: number): Promise<void> => {
-	return axiosInstance.delete<void>(`${domain}/${id}`).then((response) => {
-		return response.data;
-	});
+	return axiosInstance.delete(`${domain}/${id}`);
 };
 
 export const updateLocationCall = (location: Location): Promise<Location> => {

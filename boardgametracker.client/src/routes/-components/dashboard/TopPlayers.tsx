@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
@@ -34,14 +34,12 @@ const TopPlayerCardItem = (props: ItemProps) => {
 	const { player } = props;
 	const { t } = useTranslation();
 	const { playerById } = usePlayerById();
-	const navigate = useNavigate();
 
 	const playerObj = playerById(player.id);
 
 	return (
-		<div className="flex items-center gap-4 bg-primary/5 rounded-lg p-4 border border-primary/10">
+		<Link to="/players/$playerId" params={{ playerId: player.id }} className="flex items-center gap-4 bg-primary/5 rounded-lg p-4 border border-primary/10">
 			<BgtAvatar
-				onClick={() => navigate({ to: `/players/${player.id}` })}
 				image={playerObj?.image}
 				title={playerObj?.name}
 				size="large"
@@ -54,6 +52,6 @@ const TopPlayerCardItem = (props: ItemProps) => {
 					{t("common.win", { count: player.winCount })} • {t("common.game", { count: player.playCount })}
 				</BgtText>
 			</div>
-		</div>
+		</Link>
 	);
 };

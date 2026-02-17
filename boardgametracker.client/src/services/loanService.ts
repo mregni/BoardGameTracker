@@ -17,9 +17,7 @@ export const saveLoanCall = (loan: CreateLoan): Promise<Loan> => {
 };
 
 export const deleteLoanCall = (id: number): Promise<void> => {
-	return axiosInstance.delete<void>(`${domain}/${id}`).then((response) => {
-		return response.data;
-	});
+	return axiosInstance.delete(`${domain}/${id}`);
 };
 
 export const updateLoanCall = (loan: Loan): Promise<Loan> => {

@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Http;
 using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Refit;
 using Serilog;
 
@@ -88,13 +88,15 @@ builder.Services
     })
     .AddControllersAsServices();
 
+var version = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "BoardGameTracker API",
-        Version = "v1",
+        Version = version,
         Description = "BoardGameTracker API for managing board game collections and play sessions"
     });
 });

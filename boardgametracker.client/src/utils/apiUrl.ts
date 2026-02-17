@@ -1,5 +1,5 @@
 let baseUrl = "/api/";
-if (process.env.NODE_ENV === "development") {
+if (import.meta.env.DEV) {
 	baseUrl = "http://localhost:6554/api/";
 }
 

@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Sparkles from "@/assets/icons/sparkles.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
@@ -33,15 +33,13 @@ interface ItemProps {
 
 const GameCardItem = (props: ItemProps) => {
 	const { game } = props;
-	const navigate = useNavigate();
 	const { settings } = useSettingsData({});
 
 	if (settings === undefined) return null;
 
 	return (
-		<div className="flex items-center gap-4 bg-primary/5 rounded-lg p-4 border border-primary/10">
+		<Link to="/games/$gameId" params={{ gameId: game.id }} className="flex items-center gap-4 bg-primary/5 rounded-lg p-4 border border-primary/10">
 			<BgtAvatar
-				onClick={() => navigate({ to: `/players/${game.id}` })}
 				image={game.image}
 				title={game.title}
 				size="large"
@@ -61,6 +59,6 @@ const GameCardItem = (props: ItemProps) => {
 					)}
 				</BgtText>
 			</div>
-		</div>
+		</Link>
 	);
 };

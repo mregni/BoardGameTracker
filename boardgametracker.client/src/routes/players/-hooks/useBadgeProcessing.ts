@@ -1,6 +1,14 @@
 import { useMemo } from "react";
 
 import type { Badge, BadgeType } from "@/models";
+import { BadgeLevel } from "@/models";
+
+const badgeLevelRank: Record<BadgeLevel, number> = {
+	[BadgeLevel.green]: 0,
+	[BadgeLevel.blue]: 1,
+	[BadgeLevel.red]: 2,
+	[BadgeLevel.gold]: 3,
+};
 
 export const useBadgeProcessing = (badges: Badge[]) => {
 	return useMemo(() => {
@@ -26,7 +34,7 @@ export const useBadgeProcessing = (badges: Badge[]) => {
 			const sortedBadges = typeBadges.sort((a, b) => {
 				if (a.level === null) return 1;
 				if (b.level === null) return -1;
-				return b.level - a.level;
+				return badgeLevelRank[b.level] - badgeLevelRank[a.level];
 			});
 
 			highestLevelBadges.push(sortedBadges[0]);

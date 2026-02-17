@@ -1,6 +1,5 @@
 import { useQueries, useQueryClient } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
-import { QUERY_KEYS } from "@/models";
+import { isApiError, QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { deleteLoanCall, returnLoanCall } from "@/services/loanService";
 import { getLoans } from "@/services/queries/loans";
@@ -38,11 +37,7 @@ export const useLoans = () => {
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 			successToast("loan.return.successfull");
 		} catch (e: unknown) {
-			if (
-				isAxiosError<string>(e) &&
-				typeof e.response?.data === "string" &&
-				e.response.data.includes("Return date cannot be before loan date.")
-			) {
+			if (isApiError(e) && e.message.includes("Return date cannot be before loan date.")) {
 				errorToast("loan.return.date-failed");
 			} else {
 				errorToast("loan.return.failed");

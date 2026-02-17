@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Target from "@/assets/icons/target.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
@@ -30,27 +30,27 @@ interface MostPlayedGameItemProps {
 }
 
 const MostPlayedGameItem = ({ game }: MostPlayedGameItemProps) => {
-	const navigate = useNavigate();
 	const { t } = useTranslation();
 
 	return (
-		<BgtCard onClick={() => navigate({ to: `/games/${game.id}` })} className="cursor-pointer p-3">
-			<div className="flex items-center gap-4">
-				<div className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 shrink-0">
-					<BgtAvatar
-						onClick={() => navigate({ to: `/games/${game.id}` })}
-						image={game.image}
-						title={game.title}
-						size="large"
-					/>
+		<Link to="/games/$gameId" params={{ gameId: game.id }}>
+			<BgtCard className="cursor-pointer p-3">
+				<div className="flex items-center gap-4">
+					<div className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 shrink-0">
+						<BgtAvatar
+							image={game.image}
+							title={game.title}
+							size="large"
+						/>
+					</div>
+					<div className="flex-1">
+						<BgtText color="white">{game.title}</BgtText>
+						<BgtText color="white" size="2" opacity={50}>
+							{t("common.sessions", { count: game.totalSessions })}
+						</BgtText>
+					</div>
 				</div>
-				<div className="flex-1">
-					<BgtText color="white">{game.title}</BgtText>
-					<BgtText color="white" size="2" opacity={50}>
-						{t("common.sessions", { count: game.totalSessions })}
-					</BgtText>
-				</div>
-			</div>
-		</BgtCard>
+			</BgtCard>
+		</Link>
 	);
 };

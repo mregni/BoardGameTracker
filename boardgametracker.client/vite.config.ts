@@ -12,7 +12,7 @@ export default defineConfig({
     react(),
     tanstackRouter({
       target: 'react',
-      autoCodeSplitting: false,
+      autoCodeSplitting: true,
     }),
   ],
   base: '/',

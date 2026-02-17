@@ -3,6 +3,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { lazy } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
+import { BgtLoadingSpinner } from "./components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { ErrorFallback } from "./components/ErrorBoundary/ErrorFallback";
 import { isApiError } from "./models";
 import { routeTree } from "./routeTree.gen";
@@ -71,6 +72,8 @@ const router = createRouter({
 	routeTree,
 	defaultPreload: "intent",
 	defaultViewTransition: true,
+	defaultPendingComponent: BgtLoadingSpinner,
+	defaultPendingMinMs: 200,
 	context: { queryClient },
 });
 

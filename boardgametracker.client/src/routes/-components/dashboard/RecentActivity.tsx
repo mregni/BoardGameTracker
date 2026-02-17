@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import Trophy from "@/assets/icons/trophy.svg?react";
@@ -32,33 +32,31 @@ interface ItemProps {
 }
 
 const ActivityItem = ({ activity }: ItemProps) => {
-	const navigate = useNavigate();
 	const { t, i18n } = useTranslation();
 
 	return (
 		<BgtCard className="cursor-pointer p-3">
 			<div className="flex items-center gap-4">
-				<div className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 shrink-0">
+				<Link to="/games/$gameId" params={{ gameId: activity.gameId }} className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 shrink-0">
 					<BgtAvatar
-						onClick={() => navigate({ to: `/games/${activity.gameId}` })}
 						image={activity.gameImage}
 						title={activity.gameTitle}
 						size="large"
 					/>
-				</div>
+				</Link>
 				<div className="flex-1">
 					<BgtText color="white">
 						{activity.winnerName && (
 							<>
-								<span className="font-bold" onClick={() => navigate({ to: `/players/${activity.winnerId}` })}>
+								<Link className="font-bold" to="/players/$playerId" params={{ playerId: activity.winnerId }}>
 									{activity.winnerName}
-								</span>{" "}
+								</Link>{" "}
 								<span className="lowercase">{t("common.won")}</span>{" "}
 							</>
 						)}
-						<span className="text-primary" onClick={() => navigate({ to: `/games/${activity.gameId}` })}>
+						<Link className="text-primary" to="/games/$gameId" params={{ gameId: activity.gameId }}>
 							{activity.gameTitle}
-						</span>
+						</Link>
 					</BgtText>
 					<BgtText color="white" size="2" opacity={50}>
 						{t("common.player", { count: activity.playerCount })} • {activity.durationInMinutes}

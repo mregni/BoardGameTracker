@@ -4,7 +4,7 @@ import Backend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
 
 let translationFilePath = "/locales/{{lng}}.json";
-if (process.env.NODE_ENV === "development") {
+if (import.meta.env.DEV) {
 	translationFilePath = "/locales/base.json";
 }
 
