@@ -69,6 +69,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 			shelfOfShameMonthsLimit: settings.shelfOfShameMonthsLimit,
 			publicUrl: settings.publicUrl,
 			gameNightsEnabled: settings.gameNightsEnabled,
+			rsvpAuthenticationEnabled: settings.rsvpAuthenticationEnabled,
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = SettingsSchema.parse(value);

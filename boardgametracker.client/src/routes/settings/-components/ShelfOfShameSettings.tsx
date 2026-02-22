@@ -34,24 +34,22 @@ export const ShelfOfShameSettings = withForm({
 					<form.Subscribe
 						selector={(state: { values: { shelfOfShameEnabled: boolean } }) => state.values.shelfOfShameEnabled}
 					>
-						{(shelfOfShameEnabled: boolean) =>
-							shelfOfShameEnabled && (
-								<form.Field
-									name="shelfOfShameMonthsLimit"
-									validators={zodValidator(SettingsSchema, "shelfOfShameMonthsLimit")}
-								>
-									{(field: AnyFieldApi) => (
-										<BgtInputField
-											field={field}
-											disabled={disabled}
-											type="number"
-											label={t("settings.shame.months.label")}
-											placeholder="3"
-										/>
-									)}
-								</form.Field>
-							)
-						}
+						{(shelfOfShameEnabled: boolean) => (
+							<form.Field
+								name="shelfOfShameMonthsLimit"
+								validators={zodValidator(SettingsSchema, "shelfOfShameMonthsLimit")}
+							>
+								{(field: AnyFieldApi) => (
+									<BgtInputField
+										field={field}
+										disabled={disabled || !shelfOfShameEnabled}
+										type="number"
+										label={t("settings.shame.months.label")}
+										placeholder="3"
+									/>
+								)}
+							</form.Field>
+						)}
 					</form.Subscribe>
 				</SettingsSection>
 			</div>

@@ -73,7 +73,10 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 			>
 				{prefixLabel && <BgtText color="white">{prefixLabel}</BgtText>}
 				<input
-					className="w-full bg-background font- text-white px-4 py-3 rounded-lg border border-primary/30 focus:border-primary focus:outline-none"
+					className={cx(
+						"w-full bg-background font- text-white px-4 py-3 rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
+						disabled && "opacity-50 cursor-not-allowed",
+					)}
 					value={formatInput(field.state.value, type)}
 					disabled={disabled}
 					type={type}

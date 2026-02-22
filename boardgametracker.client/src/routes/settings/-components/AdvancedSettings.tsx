@@ -91,22 +91,6 @@ export const AdvancedSettings = withForm({
 					</form.Field>
 				</SettingsSection>
 
-				<SettingsSection
-					title={t("settings.advanced.statistics.title")}
-					description={t("settings.advanced.statistics.description")}
-				>
-					<form.Field name="statistics" validators={zodValidator(SettingsSchema, "statistics")}>
-						{(field: AnyFieldApi) => (
-							<SettingsToggle
-								field={field}
-								label={t("settings.advanced.statistics.enabled.label")}
-								description={t("settings.advanced.statistics.enabled.description")}
-								disabled={disabled}
-							/>
-						)}
-					</form.Field>
-				</SettingsSection>
-
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 					<BgtButton onClick={() => window.open("https://github.com/mregni/BoardGameTracker/issues")} variant="primary">
 						<GitHubIcon className="size-4" />

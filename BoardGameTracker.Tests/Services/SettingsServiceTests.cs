@@ -87,6 +87,7 @@ public class SettingsServiceTests
         result.ShelfOfShameMonthsLimit.Should().Be(6);
         result.GameNightsEnabled.Should().BeTrue();
         result.PublicUrl.Should().Be("https://example.com");
+        result.RsvpAuthenticationEnabled.Should().BeTrue();
 
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         _environmentProviderMock.Verify(x => x.EnableStatistics, Times.Once);
@@ -107,6 +108,7 @@ public class SettingsServiceTests
             { "shelf_of_shame_months", "12" },
             { "game_nights_enabled", "false" },
             { "public_url", "https://test.com" },
+            { "rsvp_authentication_enabled", "false" },
             { "update_check_enabled", "false" },
             { "update_track", "beta" }
         };
@@ -135,6 +137,7 @@ public class SettingsServiceTests
         result.ShelfOfShameMonthsLimit.Should().Be(12);
         result.GameNightsEnabled.Should().BeFalse();
         result.PublicUrl.Should().Be("https://test.com");
+        result.RsvpAuthenticationEnabled.Should().BeFalse();
 
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         _environmentProviderMock.Verify(x => x.EnableStatistics, Times.Once);
@@ -159,7 +162,8 @@ public class SettingsServiceTests
             ShelfOfShameEnabled = true,
             ShelfOfShameMonthsLimit = 8,
             GameNightsEnabled = true,
-            PublicUrl = "https://myapp.com"
+            PublicUrl = "https://myapp.com",
+            RsvpAuthenticationEnabled = true
         };
 
         _configRepositoryMock
@@ -194,6 +198,10 @@ public class SettingsServiceTests
             .Setup(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl))
             .Returns(Task.CompletedTask);
 
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled))
+            .Returns(Task.CompletedTask);
+
         _updateServiceMock
             .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack))
             .Returns(Task.CompletedTask);
@@ -208,6 +216,7 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.ShelfOfShameMonths, model.ShelfOfShameMonthsLimit), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled), Times.Once);
         _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -226,7 +235,8 @@ public class SettingsServiceTests
             ShelfOfShameEnabled = false,
             ShelfOfShameMonthsLimit = 3,
             GameNightsEnabled = false,
-            PublicUrl = "https://localhost"
+            PublicUrl = "https://localhost",
+            RsvpAuthenticationEnabled = false
         };
 
         _configRepositoryMock
@@ -261,6 +271,10 @@ public class SettingsServiceTests
             .Setup(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl))
             .Returns(Task.CompletedTask);
 
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled))
+            .Returns(Task.CompletedTask);
+
         _updateServiceMock
             .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack))
             .Returns(Task.CompletedTask);
@@ -275,6 +289,7 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.ShelfOfShameMonths, model.ShelfOfShameMonthsLimit), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled), Times.Once);
         _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
         VerifyNoOtherCalls();
     }

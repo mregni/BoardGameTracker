@@ -96,7 +96,7 @@ export const BgtSimpleSelect = (props: Props) => {
 				</Select.Trigger>
 				<Select.Portal>
 					<Select.Content
-						className="overflow-hidden bg-input rounded-md w-radix-select-trigger-width"
+						className="overflow-hidden bg-input rounded-md w-(--radix-select-trigger-width)"
 						position="popper"
 						sideOffset={5}
 						style={{ bottom: "auto" }}

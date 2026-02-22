@@ -34,21 +34,34 @@ export const GameNightsSettings = withForm({
 					<form.Subscribe
 						selector={(state: { values: { gameNightsEnabled: boolean } }) => state.values.gameNightsEnabled}
 					>
-						{(gameNightsEnabled: boolean) =>
-							gameNightsEnabled && (
+						{(gameNightsEnabled: boolean) => (
+							<>
 								<form.Field name="publicUrl" validators={zodValidator(SettingsSchema, "publicUrl")}>
 									{(field: AnyFieldApi) => (
 										<BgtInputField
 											field={field}
-											disabled={disabled}
+											disabled={disabled || !gameNightsEnabled}
 											type="text"
 											label={t("settings.game-nights.public-url.label")}
 											placeholder={t("settings.game-nights.public-url.placeholder")}
 										/>
 									)}
 								</form.Field>
-							)
-						}
+								<form.Field
+									name="rsvpAuthenticationEnabled"
+									validators={zodValidator(SettingsSchema, "rsvpAuthenticationEnabled")}
+								>
+									{(field: AnyFieldApi) => (
+										<SettingsToggle
+											field={field}
+											label={t("settings.game-nights.rsvp-authentication.label")}
+											description={t("settings.game-nights.rsvp-authentication.description")}
+											disabled={disabled || !gameNightsEnabled}
+										/>
+									)}
+								</form.Field>
+							</>
+						)}
 					</form.Subscribe>
 				</SettingsSection>
 			</div>

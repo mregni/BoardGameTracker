@@ -732,6 +732,10 @@
       "public-url": {
         "label": "Public URL",
         "placeholder": "https://myboardgametracker.app"
+      },
+      "rsvp-authentication": {
+        "label": "Require authentication for RSVPs",
+        "description": "When enabled, players will need to log in to RSVP for game nights. This adds an extra layer of security and helps prevent spam RSVPs."
       }
     },
     "advanced": {
@@ -753,14 +757,6 @@
         "enabled": {
           "label": "Enable update check",
           "description": "When enabled, the application will automatically check for and install updates."
-        }
-      },
-      "statistics": {
-        "title": "Statistics settings",
-        "description": "Configure how statistics are collected and displayed.",
-        "enabled": {
-          "label": "Enable statistics",
-          "description": "Collect anonymous usage statistics to help improve the application."
         }
       },
       "bug": "Report a bug",

@@ -96,6 +96,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 						"w-full bg-background font- text-whiterounded-lg border border-primary/30 focus:border-primary focus:outline-none",
 						"px-4 py-2 h-[45px] shadow-none inline-flex justify-between items-center rounded-lg leading-none text-[15px]",
 						hasErrors && "border border-error bg-error-dark!",
+						disabled && "opacity-50 cursor-not-allowed",
 					)}
 				>
 					<Select.Value placeholder={placeholder} />
@@ -103,7 +104,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 				</Select.Trigger>
 				<Select.Portal>
 					<Select.Content
-						className="overflow-hidden bg-input rounded-md w-radix-select-trigger-width"
+						className="overflow-hidden bg-input rounded-md w-(--radix-select-trigger-width)"
 						position="popper"
 						sideOffset={5}
 						style={{ bottom: "auto" }}
