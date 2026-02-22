@@ -19,24 +19,14 @@ public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
 
     public override Task<GameNight?> GetByIdAsync(int id)
     {
-        return _context.GameNights
-            .Include(x => x.Host)
-            .Include(x => x.Location)
-            .Include(x => x.SuggestedGames)
-            .Include(x => x.InvitedPlayers)
-                .ThenInclude(x => x.Player)
+        return GameNightsWithIncludes()
             .SingleOrDefaultAsync(x => x.Id == id);
     }
 
     public Task<List<GameNight>> GetFutureGameNightsAsync()
     {
-        return _context.GameNights
+        return GameNightsWithIncludes()
             .AsNoTracking()
-            .Include(x => x.Host)
-            .Include(x => x.Location)
-            .Include(x => x.SuggestedGames)
-            .Include(x => x.InvitedPlayers)
-                .ThenInclude(x => x.Player)
             .Where(x => x.StartDate >= _dateTimeProvider.UtcNow)
             .OrderBy(x => x.StartDate)
             .ToListAsync();
@@ -44,13 +34,8 @@ public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
 
     public Task<List<GameNight>> GetPastGameNightsAsync()
     {
-        return _context.GameNights
+        return GameNightsWithIncludes()
             .AsNoTracking()
-            .Include(x => x.Host)
-            .Include(x => x.Location)
-            .Include(x => x.SuggestedGames)
-            .Include(x => x.InvitedPlayers)
-                .ThenInclude(x => x.Player)
             .Where(x => x.StartDate < _dateTimeProvider.UtcNow)
             .OrderByDescending(x => x.StartDate)
             .ToListAsync();
@@ -75,5 +60,29 @@ public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
             .AsNoTracking()
             .Where(x => x.StartDate >= _dateTimeProvider.UtcNow)
             .CountAsync();
+    }
+
+    public Task<GameNightRsvp?> GetRsvpByPlayerAndGameAsync(int playerId, int gameNightId)
+    {
+        return _context.Set<GameNightRsvp>()
+            .Where(x =>  x.GameNightId == gameNightId &&  x.PlayerId == playerId)
+            .SingleOrDefaultAsync();
+            
+    }
+
+    public Task<GameNight?> GetGameNightByLinkId(Guid linkId)
+    {
+        return GameNightsWithIncludes()
+            .SingleOrDefaultAsync(x => x.LinkId == linkId);
+    }
+
+    private IQueryable<GameNight> GameNightsWithIncludes()
+    {
+        return _context.GameNights
+            .Include(x => x.Host)
+            .Include(x => x.Location)
+            .Include(x => x.SuggestedGames)
+            .Include(x => x.InvitedPlayers)
+                .ThenInclude(x => x.Player);
     }
 }

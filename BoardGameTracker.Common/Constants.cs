@@ -28,6 +28,7 @@ public static class Constants
         public const string ShelfOfShameMonths = "shelf_of_shame_months";
         public const string GameNightsEnabled = "game_nights_enabled";
         public const string PublicUrl = "public_url";
+        public const string RsvpAuthenticationEnabled = "rsvp_authentication_enabled";
     }
 
     public static class UpdateConfig

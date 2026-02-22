@@ -45,7 +45,8 @@ public class SettingsService : ISettingsService
             ShelfOfShameEnabled = ResolveValue<bool>(configs, Constants.AppConfig.ShelfOfShameEnabled),
             ShelfOfShameMonthsLimit = ResolveValue<int>(configs, Constants.AppConfig.ShelfOfShameMonths),
             GameNightsEnabled = ResolveValue<bool>(configs, Constants.AppConfig.GameNightsEnabled),
-            PublicUrl = ResolveValue<string>(configs, Constants.AppConfig.PublicUrl)
+            PublicUrl = ResolveValue<string>(configs, Constants.AppConfig.PublicUrl),
+            RsvpAuthenticationEnabled = ResolveValue<bool>(configs, Constants.AppConfig.RsvpAuthenticationEnabled)
         };
     }
 
@@ -60,6 +61,7 @@ public class SettingsService : ISettingsService
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.ShelfOfShameMonths, model.ShelfOfShameMonthsLimit);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl);
+        await _configRepository.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled);
 
         await _updateService.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack);
         _logger.LogInformation("Settings updated");

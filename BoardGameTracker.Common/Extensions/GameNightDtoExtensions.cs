@@ -34,7 +34,7 @@ public static class GameNightDtoExtensions
         {
             Id = rsvp.Id,
             PlayerId = rsvp.PlayerId,
-            Player = rsvp.Player?.ToDto(),
+            Player = rsvp.Player.ToDto(),
             GameNightId = rsvp.GameNightId,
             State = rsvp.State
         };

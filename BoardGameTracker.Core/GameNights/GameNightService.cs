@@ -1,3 +1,4 @@
+using Ardalis.GuardClauses;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
@@ -108,21 +109,34 @@ public class GameNightService : IGameNightService
 
     public async Task<GameNightRsvp> UpdateRsvp(UpdateRsvpCommand command)
     {
-        _logger.LogDebug("Updating RSVP {RsvpId}", command.Id);
-        var rsvp = await _gameNightRepository.GetRsvpByIdAsync(command.Id);
-        if (rsvp == null)
+        GameNightRsvp? rsvp;
+        if (command.Id.HasValue)
         {
-            throw new EntityNotFoundException(nameof(GameNightRsvp), command.Id);
+            _logger.LogDebug("Updating RSVP {RsvpId}", command.Id);
+            rsvp = await _gameNightRepository.GetRsvpByIdAsync(command.Id.Value);
         }
-
+        else
+        {
+            Guard.Against.Null(command.GameNightId);
+            Guard.Against.Null(command.PlayerId);
+            _logger.LogDebug("Updating RSVP via rsvp page with gameNightId {GameNightId}, playerId: {PlayerId}", command.GameNightId, command.PlayerId);
+            rsvp = await _gameNightRepository.GetRsvpByPlayerAndGameAsync(command.PlayerId.Value, command.GameNightId.Value);
+        }
+        
+        Guard.Against.Null(rsvp);
+        
         rsvp.UpdateState(command.State);
         await _unitOfWork.SaveChangesAsync();
-
         return rsvp;
     }
 
     public Task<int> CountFutureGameNights()
     {
         return _gameNightRepository.GetFutureGameNightsCountAsync();
+    }
+
+    public Task<GameNight?> GetByLinkId(Guid linkId)
+    {
+        return _gameNightRepository.GetGameNightByLinkId(linkId);
     }
 }

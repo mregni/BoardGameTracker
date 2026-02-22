@@ -58,6 +58,7 @@ public class SettingsServiceTests
             { "shelf_of_shame_months", "6" },
             { "game_nights_enabled", "true" },
             { "public_url", "https://example.com" },
+            { "rsvp_authentication_enabled", "true" },
             { "update_check_enabled", "true" },
             { "update_track", "stable" }
         };

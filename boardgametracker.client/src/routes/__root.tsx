@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { createRootRouteWithContext, type ErrorComponentProps, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, type ErrorComponentProps, Outlet, useMatch } from "@tanstack/react-router";
 import { ErrorBoundary } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ErrorBoundary/ErrorFallback";
 import { NotFound } from "@/components/NotFound/NotFound";
@@ -25,6 +25,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootComponent() {
+	const isBare = useMatch({ from: "/_bare", shouldThrow: false });
+
+	if (isBare) {
+		return (
+			<ErrorBoundary FallbackComponent={ErrorFallback}>
+				<Outlet />
+			</ErrorBoundary>
+		);
+	}
+
 	return (
 		<div className="flex size-full text-white bg-background">
 			<Sidebar />

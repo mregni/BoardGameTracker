@@ -1,3 +1,4 @@
+using Ardalis.GuardClauses;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.GameNights.Interfaces;
@@ -55,7 +56,21 @@ public class GameNightController : ControllerBase
     [Route("rsvp")]
     public async Task<IActionResult> UpdateRsvp([FromBody] UpdateRsvpCommand command)
     {
+        if (command.Id == null)
+        {
+            Guard.Against.Null(command.GameNightId);
+            Guard.Against.Null(command.PlayerId);
+        }
+        
         var rsvp = await _gameNightService.UpdateRsvp(command);
+        return Ok(rsvp.ToDto());
+    }
+
+    [HttpGet]
+    [Route("link/{linkId:guid}")]
+    public async Task<IActionResult> GetByLink(Guid linkId)
+    {
+        var rsvp = await _gameNightService.GetByLinkId(linkId);
         return Ok(rsvp.ToDto());
     }
 }

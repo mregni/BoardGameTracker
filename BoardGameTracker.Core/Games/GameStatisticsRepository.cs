@@ -48,10 +48,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             return null;
         }
 
-        return await _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == gameId)
+        return await GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
             .MaxAsync(x => x.Score);
     }
@@ -68,10 +65,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
 
     private async Task<Player?> GetMostWinsInternal(int? gameId)
     {
-        var sessionsQuery = _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.PlayerSessions)
-            .AsQueryable();
+        var sessionsQuery = SessionsWithPlayerSessions();
 
         if (gameId.HasValue)
         {
@@ -108,10 +102,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             return null;
         }
 
-        return await _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == gameId)
+        return await GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
             .AverageAsync(x => x.Score);
     }
@@ -172,11 +163,9 @@ public class GameStatisticsRepository : IGameStatisticsRepository
 
     public async Task<int?> GetHighScorePlay(int gameId)
     {
-        var result = await _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.PlayerSessions)
+        var result = await GameSessionsWithPlayerSessions(gameId)
             .Include(x => x.Game)
-            .Where(x => x.GameId == gameId && x.Game.HasScoring)
+            .Where(x => x.Game.HasScoring)
             .SelectMany(x => x.PlayerSessions)
             .OrderByDescending(x => x.Score)
             .FirstOrDefaultAsync();
@@ -186,11 +175,9 @@ public class GameStatisticsRepository : IGameStatisticsRepository
 
     public async Task<int?> GetLowestScorePlay(int gameId)
     {
-        var result = await _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.PlayerSessions)
+        var result = await GameSessionsWithPlayerSessions(gameId)
             .Include(x => x.Game)
-            .Where(x => x.GameId == gameId && x.Game.HasScoring)
+            .Where(x => x.Game.HasScoring)
             .SelectMany(x => x.PlayerSessions)
             .OrderBy(x => x.Score)
             .FirstOrDefaultAsync();
@@ -219,10 +206,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
 
     public Task<PlayerSession?> GetHighestScoringPlayer(int gameId)
     {
-        return _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == gameId)
+        return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
             .OrderByDescending(x => x.Score)
             .FirstOrDefaultAsync();
@@ -230,10 +214,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
 
     public Task<PlayerSession?> GetHighestLosingPlayer(int gameId)
     {
-        return _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == gameId)
+        return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
             .Where(x => !x.Won)
             .OrderByDescending(x => x.Score)
@@ -242,10 +223,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
 
     public Task<PlayerSession?> GetLowestWinning(int gameId)
     {
-        return _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == gameId)
+        return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
             .Where(x => x.Won)
             .OrderBy(x => x.Score)
@@ -254,10 +232,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
 
     public Task<PlayerSession?> GetLowestScoringPlayer(int gameId)
     {
-        return _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == gameId)
+        return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
             .OrderBy(x => x.Score)
             .FirstOrDefaultAsync();
@@ -281,5 +256,18 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .ToListAsync();
 
         return result.Select(x => (x.GameId, x.Title, x.Image, x.PlayCount)).ToList();
+    }
+
+    private IQueryable<Session> SessionsWithPlayerSessions()
+    {
+        return _context.Sessions
+            .AsNoTracking()
+            .Include(x => x.PlayerSessions);
+    }
+
+    private IQueryable<Session> GameSessionsWithPlayerSessions(int gameId)
+    {
+        return SessionsWithPlayerSessions()
+            .Where(x => x.GameId == gameId);
     }
 }

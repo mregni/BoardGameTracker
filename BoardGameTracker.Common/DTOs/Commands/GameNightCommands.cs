@@ -21,6 +21,8 @@ public class UpdateGameNightCommand : CreateGameNightCommand
 
 public class UpdateRsvpCommand
 {
-    public int Id { get; set; }
+    public int? Id { get; set; }
+    public int? GameNightId { get; set; }
+    public int? PlayerId { get; set; }
     public GameNightRsvpState State { get; set; }
 }

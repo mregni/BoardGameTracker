@@ -15,4 +15,5 @@ public class UIResourceDto
     public int ShelfOfShameMonthsLimit { get; set; }
     public string PublicUrl { get; set; } = string.Empty;
     public bool GameNightsEnabled { get; set; }
+    public bool RsvpAuthenticationEnabled { get; set; }
 }

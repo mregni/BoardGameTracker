@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as BareRouteImport } from './routes/_bare'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShamesIndexRouteImport } from './routes/shames/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
@@ -22,6 +23,7 @@ import { Route as SessionsNewRouteImport } from './routes/sessions/new'
 import { Route as PlayersPlayerIdRouteImport } from './routes/players/$playerId'
 import { Route as GamesNewRouteImport } from './routes/games/new'
 import { Route as GamesGameIdRouteImport } from './routes/games/$gameId'
+import { Route as BareRsvpRouteImport } from './routes/_bare/rsvp'
 import { Route as SessionsUpdateSessionIdRouteImport } from './routes/sessions/update_.$sessionId'
 import { Route as SessionsNewGameIdRouteImport } from './routes/sessions/new_.$gameId'
 import { Route as PlayersPlayerIdSessionsRouteImport } from './routes/players/$playerId_.sessions'
@@ -30,6 +32,10 @@ import { Route as GamesGameIdUpdateRouteImport } from './routes/games/$gameId_.u
 import { Route as GamesGameIdSessionsRouteImport } from './routes/games/$gameId_.sessions'
 import { Route as GamesImportListUsernameRouteImport } from './routes/games/import/list_.$username'
 
+const BareRoute = BareRouteImport.update({
+  id: '/_bare',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -95,6 +101,11 @@ const GamesGameIdRoute = GamesGameIdRouteImport.update({
   path: '/games/$gameId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BareRsvpRoute = BareRsvpRouteImport.update({
+  id: '/rsvp',
+  path: '/rsvp',
+  getParentRoute: () => BareRoute,
+} as any)
 const SessionsUpdateSessionIdRoute = SessionsUpdateSessionIdRouteImport.update({
   id: '/sessions/update_/$sessionId',
   path: '/sessions/update/$sessionId',
@@ -133,6 +144,7 @@ const GamesImportListUsernameRoute = GamesImportListUsernameRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/new': typeof GamesNewRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
@@ -155,6 +167,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/new': typeof GamesNewRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
@@ -178,6 +191,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_bare': typeof BareRouteWithChildren
+  '/_bare/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/new': typeof GamesNewRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
@@ -202,6 +217,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/rsvp'
     | '/games/$gameId'
     | '/games/new'
     | '/players/$playerId'
@@ -224,6 +240,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/rsvp'
     | '/games/$gameId'
     | '/games/new'
     | '/players/$playerId'
@@ -246,6 +263,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_bare'
+    | '/_bare/rsvp'
     | '/games/$gameId'
     | '/games/new'
     | '/players/$playerId'
@@ -269,6 +288,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BareRoute: typeof BareRouteWithChildren
   GamesGameIdRoute: typeof GamesGameIdRoute
   GamesNewRoute: typeof GamesNewRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
@@ -292,6 +312,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_bare': {
+      id: '/_bare'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof BareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -383,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesGameIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_bare/rsvp': {
+      id: '/_bare/rsvp'
+      path: '/rsvp'
+      fullPath: '/rsvp'
+      preLoaderRoute: typeof BareRsvpRouteImport
+      parentRoute: typeof BareRoute
+    }
     '/sessions/update_/$sessionId': {
       id: '/sessions/update_/$sessionId'
       path: '/sessions/update/$sessionId'
@@ -435,8 +469,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BareRouteChildren {
+  BareRsvpRoute: typeof BareRsvpRoute
+}
+
+const BareRouteChildren: BareRouteChildren = {
+  BareRsvpRoute: BareRsvpRoute,
+}
+
+const BareRouteWithChildren = BareRoute._addFileChildren(BareRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BareRoute: BareRouteWithChildren,
   GamesGameIdRoute: GamesGameIdRoute,
   GamesNewRoute: GamesNewRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,

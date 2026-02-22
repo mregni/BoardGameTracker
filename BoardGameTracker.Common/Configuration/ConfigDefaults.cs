@@ -16,6 +16,7 @@ public static class ConfigDefaults
         new(AppConfig.ShelfOfShameMonths, "6"),
         new(AppConfig.GameNightsEnabled, "true"),
         new(AppConfig.PublicUrl, "http://localhost:5444"),
+        new(AppConfig.RsvpAuthenticationEnabled, "false"),
 
         new(UpdateConfig.Track, "stable"),
         new(UpdateConfig.CheckEnabled, "true"),

@@ -1044,5 +1044,30 @@
       "title": "Consistent Schedule",
       "description": "Play at least one game session every Saturday for 10 consecutive weeks."
     }
+  },
+  "rsvp": {
+    "youre-invited": "You're Invited!",
+    "let-us-know": "Please let us know if you can make it",
+    "when": "When",
+    "location": "Location",
+    "hosted-by": "Hosted by",
+    "suggested-games": "Games We Might Play",
+    "your-response": "Your Response",
+    "who-are-you": "Who are you?",
+    "select-your-name": "Select your name...",
+    "can-you-make-it": "Can you make it?",
+    "yes-ill-be-there": "Yes, I'll be there!",
+    "maybe": "Maybe",
+    "cant-make-it": "Can't make it",
+    "submit-rsvp": "Submit RSVP",
+    "submitted-title": "RSVP Submitted!",
+    "submitted-thanks": "Thanks for responding, {{name}}! The host will be notified.",
+    "submitted-accepted": "We're excited to see you there!",
+    "submitted-declined": "Sorry you can't make it. Hope to see you next time!",
+    "submitted-maybe": "Let us know when you can confirm!",
+    "whos-coming": "Who's Coming",
+    "not-found": "Game night not found",
+    "not-found-description": "This invitation link may have expired or is invalid.",
+    "rsvp-failed": "Failed to submit RSVP"
   }
 }
