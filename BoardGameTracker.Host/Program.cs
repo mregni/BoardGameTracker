@@ -1,21 +1,27 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Ardalis.GuardClauses;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common.Configuration;
+using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
+using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Bgg.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Http;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
 using Refit;
@@ -63,6 +69,49 @@ builder.Services.Configure<HttpClientFactoryOptions>(options =>
         client.Timeout = TimeSpan.FromSeconds(30);
     });
 });
+
+// ASP.NET Identity
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 4;
+        options.User.RequireUniqueEmail = false;
+    })
+    .AddEntityFrameworkStores<MainDbContext>()
+    .AddDefaultTokenProviders();
+
+// JWT Authentication
+var jwtSecret = builder.Configuration["Jwt:Secret"]
+                ?? "CHANGE-THIS-TO-A-32-CHAR-SECRET-KEY-IN-PRODUCTION";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "boardgametracker-api";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "boardgametracker-client";
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddHttpClient();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddResponseCompression();
@@ -128,12 +177,18 @@ app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 
 app.UseRouting();
+
+app.UseCors("Allow");
+
+app.UseAuthBypassIfEnabled();
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseCors("Allow");
 app.UseSentryTracing();
 
 app.UseStaticFiles(new StaticFileOptions
@@ -169,6 +224,7 @@ logger.LogInformation("  HTTP ports:   {HttpPorts}", Environment.GetEnvironmentV
 logger.LogInformation("  HTTPS ports:  {HttpsPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORTS") ?? "not configured");
 logger.LogInformation("  Timezone:     {Timezone}", Environment.GetEnvironmentVariable("TZ") ?? "system default");
 logger.LogInformation("  DB port:      {DbPort}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432");
+logger.LogInformation("  Auth bypass:  {AuthBypass}", Environment.GetEnvironmentVariable("AUTH_BYPASS")?.ToLower() == "true" ? "Enabled" : "Disabled");
 
 if (!app.Environment.IsDevelopment())
 {
@@ -195,6 +251,7 @@ if (!app.Environment.IsDevelopment())
 
 RunDbMigrations(app.Services);
 await SeedConfig(app.Services);
+await SeedAuthData(app.Services);
 
 app.MapHealthChecks("/api/health");
 
@@ -212,7 +269,7 @@ static void RunDbMigrations(IServiceProvider serviceProvider)
 static void CreateFolders(IServiceProvider serviceProvider)
 {
     var diskProvider = Guard.Against.Null(serviceProvider.GetService<IDiskProvider>());
-    
+
     diskProvider.EnsureFolder(PathHelper.FullRootImagePath);
     diskProvider.EnsureFolder(PathHelper.FullCoverImagePath);
     diskProvider.EnsureFolder(PathHelper.FullProfileImagePath);
@@ -225,6 +282,15 @@ static async Task SeedConfig(IServiceProvider serviceProvider)
     using var scope = serviceProvider.CreateScope();
     var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
     await configRepository.SeedConfigAsync(ConfigDefaults.All);
+}
+
+static async Task SeedAuthData(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var seedLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    await DbSeeder.SeedAuthData(roleManager, userManager, seedLogger);
 }
 
 static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)

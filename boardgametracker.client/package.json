@@ -44,7 +44,8 @@
     "react-i18next": "^14.0.5",
     "react-loading-icons": "^1.1.0",
     "sonner": "^2.0.5",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.1",

@@ -2,12 +2,14 @@
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Players.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/player")]
+[Authorize]
 public class PlayerController : ControllerBase
 {
     private readonly IPlayerService _playerService;

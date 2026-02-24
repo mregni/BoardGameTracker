@@ -1,8 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { createRootRouteWithContext, type ErrorComponentProps, Outlet, useMatch } from "@tanstack/react-router";
+import { createRootRouteWithContext, type ErrorComponentProps, Outlet, useMatch, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ErrorBoundary/ErrorFallback";
 import { NotFound } from "@/components/NotFound/NotFound";
+import { useAuth } from "@/hooks/useAuth";
 
 import type { MenuItem } from "@/models";
 import { BottomNav } from "./-components/BottomNav";
@@ -26,6 +28,32 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootComponent() {
 	const isBare = useMatch({ from: "/_bare", shouldThrow: false });
+	const navigate = useNavigate();
+	const { isAuthenticated, authStatus, fetchAuthStatus } = useAuth();
+	const [authChecked, setAuthChecked] = useState(false);
+
+	useEffect(() => {
+		fetchAuthStatus()
+			.then(() => setAuthChecked(true))
+			.catch(() => setAuthChecked(true));
+	}, [fetchAuthStatus]);
+
+	useEffect(() => {
+		if (!authChecked || !authStatus) return;
+
+		// If auth is enabled and not bypassed, redirect unauthenticated users to login
+		if (authStatus.authEnabled && !authStatus.bypassEnabled && !isAuthenticated && !isBare) {
+			navigate({ to: "/login" });
+		}
+	}, [authChecked, authStatus, isAuthenticated, isBare, navigate]);
+
+	if (!authChecked) {
+		return (
+			<div className="flex items-center justify-center h-screen bg-background">
+				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+			</div>
+		);
+	}
 
 	if (isBare) {
 		return (

@@ -2,12 +2,14 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Locations.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/location")]
+[Authorize]
 public class LocationController : ControllerBase
 {
     private readonly ILocationService _locationService;

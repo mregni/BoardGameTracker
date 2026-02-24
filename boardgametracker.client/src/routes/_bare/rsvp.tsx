@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
@@ -8,6 +8,7 @@ import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useAuth } from "@/hooks/useAuth";
 import { GameNightRsvpState } from "@/models";
 import { RsvpSection } from "@/routes/game-nights/-components/RsvpSection";
 import { RsvpEventDetails } from "./-components/RsvpEventDetails";
@@ -28,7 +29,9 @@ export const Route = createFileRoute("/_bare/rsvp")({
 function RsvpPage() {
   const { settings } = useSettingsData();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { linkId } = Route.useSearch();
+  const { isAuthenticated, authStatus } = useAuth();
   const {
     gameNight,
     isLoading,
@@ -38,6 +41,31 @@ function RsvpPage() {
     submittedPlayerName,
     submittedState,
   } = useRsvpData(linkId);
+
+  const requiresAuth =
+    settings?.rsvpAuthenticationEnabled &&
+    authStatus?.authEnabled &&
+    !authStatus?.bypassEnabled &&
+    !isAuthenticated;
+
+  if (requiresAuth) {
+    return (
+      <BgtEmptyPage
+        header={t("auth.rsvp-login-required")}
+        icon={AlertTriangle}
+        title={t("auth.rsvp-login-required")}
+        description={t("auth.rsvp-login-description")}
+      >
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/login" })}
+          className="mt-4 py-2 px-6 bg-primary text-white rounded-md font-medium hover:bg-primary/90 transition-colors"
+        >
+          {t("auth.login")}
+        </button>
+      </BgtEmptyPage>
+    );
+  }
 
   if (isSubmitted) {
     return (

@@ -2,12 +2,14 @@ using Ardalis.GuardClauses;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.GameNights.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/gamenight")]
+[Authorize]
 public class GameNightController : ControllerBase
 {
     private readonly IGameNightService _gameNightService;
@@ -54,6 +56,7 @@ public class GameNightController : ControllerBase
 
     [HttpPut]
     [Route("rsvp")]
+    [AllowAnonymous]
     public async Task<IActionResult> UpdateRsvp([FromBody] UpdateRsvpCommand command)
     {
         if (command.Id == null)
@@ -68,6 +71,7 @@ public class GameNightController : ControllerBase
 
     [HttpGet]
     [Route("link/{linkId:guid}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetByLink(Guid linkId)
     {
         var rsvp = await _gameNightService.GetByLinkId(linkId);

@@ -1,3 +1,4 @@
+export * from "./Auth/Auth";
 export * from "./Badge/Badge";
 
 export * from "./Common/Actions";

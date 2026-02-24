@@ -31,6 +31,12 @@ public static class Constants
         public const string RsvpAuthenticationEnabled = "rsvp_authentication_enabled";
     }
 
+    public static class AuthRoles
+    {
+        public const string Admin = "Admin";
+        public const string Reader = "Reader";
+    }
+
     public static class UpdateConfig
     {
         public const string Prefix = "update_";

@@ -24,6 +24,8 @@ import { Route as PlayersPlayerIdRouteImport } from './routes/players/$playerId'
 import { Route as GamesNewRouteImport } from './routes/games/new'
 import { Route as GamesGameIdRouteImport } from './routes/games/$gameId'
 import { Route as BareRsvpRouteImport } from './routes/_bare/rsvp'
+import { Route as BareLoginRouteImport } from './routes/_bare/login'
+import { Route as BareAuthCallbackRouteImport } from './routes/_bare/auth-callback'
 import { Route as SessionsUpdateSessionIdRouteImport } from './routes/sessions/update_.$sessionId'
 import { Route as SessionsNewGameIdRouteImport } from './routes/sessions/new_.$gameId'
 import { Route as PlayersPlayerIdSessionsRouteImport } from './routes/players/$playerId_.sessions'
@@ -106,6 +108,16 @@ const BareRsvpRoute = BareRsvpRouteImport.update({
   path: '/rsvp',
   getParentRoute: () => BareRoute,
 } as any)
+const BareLoginRoute = BareLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => BareRoute,
+} as any)
+const BareAuthCallbackRoute = BareAuthCallbackRouteImport.update({
+  id: '/auth-callback',
+  path: '/auth-callback',
+  getParentRoute: () => BareRoute,
+} as any)
 const SessionsUpdateSessionIdRoute = SessionsUpdateSessionIdRouteImport.update({
   id: '/sessions/update_/$sessionId',
   path: '/sessions/update/$sessionId',
@@ -144,6 +156,8 @@ const GamesImportListUsernameRoute = GamesImportListUsernameRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth-callback': typeof BareAuthCallbackRoute
+  '/login': typeof BareLoginRoute
   '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/new': typeof GamesNewRoute
@@ -167,6 +181,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth-callback': typeof BareAuthCallbackRoute
+  '/login': typeof BareLoginRoute
   '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/new': typeof GamesNewRoute
@@ -192,6 +208,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_bare': typeof BareRouteWithChildren
+  '/_bare/auth-callback': typeof BareAuthCallbackRoute
+  '/_bare/login': typeof BareLoginRoute
   '/_bare/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/new': typeof GamesNewRoute
@@ -217,6 +235,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth-callback'
+    | '/login'
     | '/rsvp'
     | '/games/$gameId'
     | '/games/new'
@@ -240,6 +260,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth-callback'
+    | '/login'
     | '/rsvp'
     | '/games/$gameId'
     | '/games/new'
@@ -264,6 +286,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_bare'
+    | '/_bare/auth-callback'
+    | '/_bare/login'
     | '/_bare/rsvp'
     | '/games/$gameId'
     | '/games/new'
@@ -417,6 +441,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BareRsvpRouteImport
       parentRoute: typeof BareRoute
     }
+    '/_bare/login': {
+      id: '/_bare/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof BareLoginRouteImport
+      parentRoute: typeof BareRoute
+    }
+    '/_bare/auth-callback': {
+      id: '/_bare/auth-callback'
+      path: '/auth-callback'
+      fullPath: '/auth-callback'
+      preLoaderRoute: typeof BareAuthCallbackRouteImport
+      parentRoute: typeof BareRoute
+    }
     '/sessions/update_/$sessionId': {
       id: '/sessions/update_/$sessionId'
       path: '/sessions/update/$sessionId'
@@ -470,10 +508,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface BareRouteChildren {
+  BareAuthCallbackRoute: typeof BareAuthCallbackRoute
+  BareLoginRoute: typeof BareLoginRoute
   BareRsvpRoute: typeof BareRsvpRoute
 }
 
 const BareRouteChildren: BareRouteChildren = {
+  BareAuthCallbackRoute: BareAuthCallbackRoute,
+  BareLoginRoute: BareLoginRoute,
   BareRsvpRoute: BareRsvpRoute,
 }
 

@@ -78,6 +78,46 @@ export const axiosInstance = axios.create({
 	},
 });
 
+// Track refresh state to avoid multiple simultaneous refresh attempts
+let isRefreshing = false;
+let failedQueue: Array<{
+	resolve: (value: unknown) => void;
+	reject: (reason: unknown) => void;
+}> = [];
+
+function processQueue(error: unknown, token: string | null = null) {
+	for (const promise of failedQueue) {
+		if (error) {
+			promise.reject(error);
+		} else {
+			promise.resolve(token);
+		}
+	}
+	failedQueue = [];
+}
+
+// Request interceptor: attach JWT token
+axiosInstance.interceptors.request.use(
+	(config) => {
+		// Import dynamically to avoid circular dependency
+		const authStorage = localStorage.getItem("bgt-auth");
+		if (authStorage) {
+			try {
+				const parsed = JSON.parse(authStorage);
+				const accessToken = parsed?.state?.accessToken;
+				if (accessToken) {
+					config.headers.Authorization = `Bearer ${accessToken}`;
+				}
+			} catch {
+				// Ignore parse errors
+			}
+		}
+		return config;
+	},
+	(error) => Promise.reject(error),
+);
+
+// Response interceptor: handle 401 with token refresh
 axiosInstance.interceptors.response.use(
 	(response) => {
 		if (response.data) {
@@ -85,7 +125,96 @@ axiosInstance.interceptors.response.use(
 		}
 		return response;
 	},
-	(error: AxiosError) => {
+	async (error: AxiosError) => {
+		const originalRequest = error.config;
+
+		// Only attempt refresh for 401 errors and not on auth endpoints
+		if (
+			error.response?.status === 401 &&
+			originalRequest &&
+			!originalRequest.url?.includes("auth/login") &&
+			!originalRequest.url?.includes("auth/refresh") &&
+			!originalRequest.url?.includes("auth/status") &&
+			!(originalRequest as { _retry?: boolean })._retry
+		) {
+			if (isRefreshing) {
+				return new Promise((resolve, reject) => {
+					failedQueue.push({ resolve, reject });
+				}).then((token) => {
+					if (originalRequest.headers) {
+						originalRequest.headers.Authorization = `Bearer ${token}`;
+					}
+					return axiosInstance(originalRequest);
+				});
+			}
+
+			(originalRequest as { _retry?: boolean })._retry = true;
+			isRefreshing = true;
+
+			const authStorage = localStorage.getItem("bgt-auth");
+			let refreshToken: string | null = null;
+			if (authStorage) {
+				try {
+					const parsed = JSON.parse(authStorage);
+					refreshToken = parsed?.state?.refreshToken;
+				} catch {
+					// Ignore parse errors
+				}
+			}
+
+			if (!refreshToken) {
+				isRefreshing = false;
+				processQueue(error, null);
+				clearAuthState();
+				return Promise.reject(classifyError(error));
+			}
+
+			try {
+				const response = await axios.post(`${apiUrl}auth/refresh`, { refreshToken });
+				const { accessToken: newAccessToken, refreshToken: newRefreshToken, user } = response.data;
+
+				// Update zustand persisted state
+				const currentStorage = localStorage.getItem("bgt-auth");
+				if (currentStorage) {
+					const parsed = JSON.parse(currentStorage);
+					parsed.state.accessToken = newAccessToken;
+					parsed.state.refreshToken = newRefreshToken;
+					parsed.state.user = user;
+					localStorage.setItem("bgt-auth", JSON.stringify(parsed));
+				}
+
+				if (originalRequest.headers) {
+					originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+				}
+
+				processQueue(null, newAccessToken);
+				return axiosInstance(originalRequest);
+			} catch (refreshError) {
+				processQueue(refreshError, null);
+				clearAuthState();
+				window.location.href = "/login";
+				return Promise.reject(classifyError(error));
+			} finally {
+				isRefreshing = false;
+			}
+		}
+
 		return Promise.reject(classifyError(error));
 	},
 );
+
+function clearAuthState() {
+	const authStorage = localStorage.getItem("bgt-auth");
+	if (authStorage) {
+		try {
+			const parsed = JSON.parse(authStorage);
+			parsed.state.accessToken = null;
+			parsed.state.refreshToken = null;
+			parsed.state.user = null;
+			parsed.state.isAuthenticated = false;
+			localStorage.setItem("bgt-auth", JSON.stringify(parsed));
+		} catch {
+			localStorage.removeItem("bgt-auth");
+		}
+	}
+}

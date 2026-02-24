@@ -1,11 +1,13 @@
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Core.Images.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/image")]
+[Authorize]
 public class ImageController : ControllerBase
 {
     private readonly IImageService _imageService;

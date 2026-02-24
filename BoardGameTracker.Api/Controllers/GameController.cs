@@ -3,12 +3,14 @@ using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Games.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/game")]
+[Authorize]
 public class GameController : ControllerBase
 {
     private readonly IGameService _gameService;

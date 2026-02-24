@@ -1,12 +1,14 @@
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Sessions.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/session")]
+[Authorize]
 public class SessionController : ControllerBase
 {
     private readonly ISessionService _sessionService;

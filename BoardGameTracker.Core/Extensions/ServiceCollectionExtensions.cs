@@ -34,6 +34,8 @@ using BoardGameTracker.Core.GameNights;
 using BoardGameTracker.Core.GameNights.Interfaces;
 using BoardGameTracker.Core.Settings;
 using BoardGameTracker.Core.Settings.Interfaces;
+using BoardGameTracker.Core.Auth;
+using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -83,6 +85,8 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IGameNightRepository, GameNightRepository>();
 
         serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
+        serviceCollection.AddScoped<ITokenService, TokenService>();
+        serviceCollection.AddScoped<IOidcService, OidcService>();
 
         serviceCollection.AddScoped<IGameStatisticsService, GameStatisticsService>();
         serviceCollection.AddScoped<IPlayerStatisticsService, PlayerStatisticsService>();

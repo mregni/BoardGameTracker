@@ -4,12 +4,14 @@ using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/count")]
+[Authorize]
 public class CountController : ControllerBase
 {
     private readonly IGameService _gameService;
