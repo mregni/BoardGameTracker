@@ -22,6 +22,8 @@ public record CreateOidcProviderRequest(
     string? UsernameClaimType,
     string? EmailClaimType,
     string? DisplayNameClaimType,
+    string? RolesClaimType,
+    string? AdminGroupValue,
     string? IconUrl,
     string? ButtonColor);
 
@@ -40,8 +42,16 @@ public record UpdateOidcProviderRequest(
     string? UsernameClaimType,
     string? EmailClaimType,
     string? DisplayNameClaimType,
+    string? RolesClaimType,
+    string? AdminGroupValue,
     string? IconUrl,
     string? ButtonColor);
+
+public record OidcProviderListDto(
+    int Id,
+    string Name,
+    string DisplayName,
+    bool Enabled);
 
 public record OidcProviderDto(
     int Id,
@@ -50,7 +60,26 @@ public record OidcProviderDto(
     bool Enabled,
     string Authority,
     string ClientId,
+    bool HasClientSecret,
     string Scopes,
     bool AutoProvisionUsers,
+    string? AuthorizationEndpoint,
+    string? TokenEndpoint,
+    string? UserInfoEndpoint,
+    string? UsernameClaimType,
+    string? EmailClaimType,
+    string? DisplayNameClaimType,
+    string? RolesClaimType,
+    string? AdminGroupValue,
     string? IconUrl,
     string? ButtonColor);
+
+public record ExternalLoginDto(
+    int Id,
+    string Provider,
+    string ProviderKey,
+    string? ProviderDisplayName,
+    DateTime LinkedAt,
+    DateTime? LastUsedAt);
+
+public record UpdateUserRoleRequest(string Role);

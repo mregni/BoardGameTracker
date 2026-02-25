@@ -34,7 +34,7 @@ public static class Constants
     public static class AuthRoles
     {
         public const string Admin = "Admin";
-        public const string Reader = "Reader";
+        public const string User = "User";
     }
 
     public static class UpdateConfig

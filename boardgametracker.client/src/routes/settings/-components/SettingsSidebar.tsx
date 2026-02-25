@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { BgtText } from "@/components/BgtText/BgtText";
 
-export type SettingsCategory = "general" | "shelf-of-shame" | "game-nights" | "advanced";
+export type SettingsCategory = "general" | "shelf-of-shame" | "game-nights" | "advanced" | "account";
 
 interface CategoryItem {
 	id: SettingsCategory;
@@ -31,6 +31,11 @@ const CATEGORIES: CategoryItem[] = [
 		id: "advanced",
 		label: "settings.sidebar.advanced.title",
 		description: "settings.sidebar.advanced.description",
+	},
+	{
+		id: "account",
+		label: "settings.sidebar.account.title",
+		description: "settings.sidebar.account.description",
 	},
 ];
 

@@ -5,5 +5,5 @@ namespace BoardGameTracker.Core.Settings.Interfaces;
 public interface ISettingsService
 {
     Task<UIResourceDto> GetSettingsAsync();
-    Task UpdateSettingsAsync(UIResourceDto model);
+    Task<UIResourceDto> UpdateSettingsAsync(UIResourceDto model);
 }

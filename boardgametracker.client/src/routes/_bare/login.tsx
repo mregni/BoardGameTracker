@@ -1,11 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import BgtButton from "@/components/BgtButton/BgtButton";
+import { BgtInputField } from "@/components/BgtForm";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtPage } from "@/components/BgtLayout/BgtPage";
+import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import { BgtText } from "@/components/BgtText/BgtText";
+import { useAppForm } from "@/hooks/form";
 import { useAuth } from "@/hooks/useAuth";
 import type { OidcProvider } from "@/models/Auth/Auth";
-import { getOidcProvidersCall } from "@/services/authService";
+import { getOidcProviderCall } from "@/services/authService";
 import { apiUrl } from "@/utils/apiUrl";
-import { useQuery } from "@tanstack/react-query";
+import { handleFormSubmit } from "@/utils/formUtils";
 
 export const Route = createFileRoute("/_bare/login")({
 	component: LoginPage,
@@ -15,26 +24,28 @@ function LoginPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { login, isLoading } = useAuth();
-	const [username, setUsername] = useState("");
-	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
 
-	const { data: oidcProviders } = useQuery<OidcProvider[]>({
-		queryKey: ["oidcProviders"],
-		queryFn: getOidcProvidersCall,
+	const { data: oidcProvider } = useQuery<OidcProvider | null>({
+		queryKey: ["oidcProvider"],
+		queryFn: getOidcProviderCall,
 	});
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setError(null);
-
-		try {
-			await login({ username, password });
-			await navigate({ to: "/" });
-		} catch {
-			setError(t("auth.invalid-credentials"));
-		}
-	};
+	const form = useAppForm({
+		defaultValues: {
+			username: "",
+			password: "",
+		},
+		onSubmit: async ({ value }) => {
+			setError(null);
+			try {
+				await login({ username: value.username, password: value.password });
+				await navigate({ to: "/" });
+			} catch {
+				setError(t("auth.invalid-credentials"));
+			}
+		},
+	});
 
 	const handleOidcLogin = (provider: OidcProvider) => {
 		const redirectUri = `${window.location.origin}/auth-callback`;
@@ -42,89 +53,83 @@ function LoginPage() {
 	};
 
 	return (
-		<div className="flex items-center justify-center min-h-screen bg-background">
-			<div className="w-full max-w-md p-8 space-y-6 bg-card rounded-lg border border-white/10">
-				<div className="text-center">
-					<h1 className="text-2xl font-bold text-white">{t("auth.login-title")}</h1>
-					<p className="text-sm text-gray-400 mt-1">{t("auth.login-subtitle")}</p>
-				</div>
-
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div>
-						<label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
-							{t("auth.username")}
-						</label>
-						<input
-							id="username"
-							type="text"
-							value={username}
-							onChange={(e) => setUsername(e.target.value)}
-							className="w-full px-3 py-2 bg-background border border-white/10 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-							placeholder={t("auth.username-placeholder")}
-							required
-							autoComplete="username"
-						/>
+		<BgtPage>
+			<BgtPageContent centered>
+				<BgtCard className="w-full max-w-md space-y-6">
+					<div className="text-center">
+						<BgtText size="6" weight="bold" color="white">
+							{t("auth.login-title")}
+						</BgtText>
+						<BgtText size="2" color="gray">
+							{t("auth.login-subtitle")}
+						</BgtText>
 					</div>
 
-					<div>
-						<label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
-							{t("auth.password")}
-						</label>
-						<input
-							id="password"
-							type="password"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							className="w-full px-3 py-2 bg-background border border-white/10 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-							placeholder={t("auth.password-placeholder")}
-							required
-							autoComplete="current-password"
-						/>
-					</div>
+					<form onSubmit={handleFormSubmit(form)} className="space-y-4">
+						<form.Field name="username">
+							{(field: AnyFieldApi) => (
+								<BgtInputField
+									field={field}
+									type="text"
+									label={t("auth.username")}
+									placeholder={t("auth.username-placeholder")}
+									disabled={isLoading}
+								/>
+							)}
+						</form.Field>
 
-					{error && (
-						<div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
-							<p className="text-sm text-red-400">{error}</p>
-						</div>
-					)}
+						<form.Field name="password">
+							{(field: AnyFieldApi) => (
+								<BgtInputField
+									field={field}
+									type="password"
+									label={t("auth.password")}
+									placeholder={t("auth.password-placeholder")}
+									disabled={isLoading}
+								/>
+							)}
+						</form.Field>
 
-					<button
-						type="submit"
-						disabled={isLoading}
-						className="w-full py-2 px-4 bg-primary text-white rounded-md font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-					>
-						{isLoading ? t("auth.logging-in") : t("auth.login")}
-					</button>
-				</form>
-
-				{oidcProviders && oidcProviders.length > 0 && (
-					<>
-						<div className="relative">
-							<div className="absolute inset-0 flex items-center">
-								<div className="w-full border-t border-white/10" />
+						{error && (
+							<div className="p-3 bg-error/10 border border-error/20 rounded-md">
+								<BgtText size="2" color="red">
+									{error}
+								</BgtText>
 							</div>
-							<div className="relative flex justify-center text-sm">
-								<span className="px-2 bg-card text-gray-400">{t("auth.or-continue-with")}</span>
-							</div>
-						</div>
+						)}
 
-						<div className="space-y-2">
-							{oidcProviders.map((provider) => (
-								<button
-									key={provider.name}
-									type="button"
-									onClick={() => handleOidcLogin(provider)}
-									className="w-full py-2 px-4 border border-white/10 rounded-md text-white font-medium hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
-									style={provider.buttonColor ? { borderColor: provider.buttonColor } : undefined}
+						<BgtButton type="submit" disabled={isLoading} size="3" className="w-full">
+							{isLoading ? t("auth.logging-in") : t("auth.login")}
+						</BgtButton>
+					</form>
+
+					{oidcProvider && (
+						<>
+							<div className="relative">
+								<div className="absolute inset-0 flex items-center">
+									<div className="w-full border-t border-white/10" />
+								</div>
+								<div className="relative flex justify-center text-sm">
+									<span className="px-2 bg-primary/10 text-gray-400">{t("auth.or-continue-with")}</span>
+								</div>
+							</div>
+
+							<div className="space-y-2">
+								<BgtButton
+									variant="cancel"
+									size="3"
+									className="w-full"
+									onClick={() => handleOidcLogin(oidcProvider)}
+									style={oidcProvider.buttonColor ? { borderColor: oidcProvider.buttonColor } : undefined}
 								>
-									{provider.iconUrl && <img src={provider.iconUrl} alt="" className="w-5 h-5" />}
-									{provider.displayName}
-								</button>
-							))}
-						</div>
-					</>
-				)}
-			</div>
-		</div>
+									{oidcProvider.iconUrl && <img src={oidcProvider.iconUrl} alt="" className="w-5 h-5" />}
+									{oidcProvider.displayName}
+								</BgtButton>
+							</div>
+						</>
+					)}
+				</BgtCard>
+			</BgtPageContent>
+		</BgtPage>
 	);
 }

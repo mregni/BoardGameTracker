@@ -22,4 +22,6 @@ export const QUERY_KEYS = {
 	shames: "shames",
 	gameNights: "gameNights",
 	gameNightStatistics: "gameNightStatistics",
+	profile: "profile",
+	users: "users",
 };

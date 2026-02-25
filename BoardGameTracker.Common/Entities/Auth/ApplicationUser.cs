@@ -25,6 +25,11 @@ public class ApplicationUser : IdentityUser
         DisplayName = displayName;
     }
 
+    public void UpdateEmail(string? email)
+    {
+        Email = email;
+    }
+
     public void UpdateLastLogin()
     {
         LastLoginAt = DateTime.UtcNow;

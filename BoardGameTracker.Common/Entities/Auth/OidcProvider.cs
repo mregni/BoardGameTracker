@@ -23,6 +23,8 @@ public class OidcProvider
     public string? UsernameClaimType { get; private set; }
     public string? EmailClaimType { get; private set; }
     public string? DisplayNameClaimType { get; private set; }
+    public string? RolesClaimType { get; private set; }
+    public string? AdminGroupValue { get; private set; }
 
     // UI customization
     public string? IconUrl { get; private set; }
@@ -53,13 +55,18 @@ public class OidcProvider
         string? usernameClaimType,
         string? emailClaimType,
         string? displayNameClaimType,
+        string? rolesClaimType,
+        string? adminGroupValue,
         string? iconUrl,
         string? buttonColor)
     {
         DisplayName = displayName;
         Authority = authority;
         ClientId = clientId;
-        ClientSecret = clientSecret;
+        if (clientSecret != null)
+        {
+            ClientSecret = clientSecret;
+        }
         Enabled = enabled;
         Scopes = scopes;
         AutoProvisionUsers = autoProvisionUsers;
@@ -69,6 +76,8 @@ public class OidcProvider
         UsernameClaimType = usernameClaimType;
         EmailClaimType = emailClaimType;
         DisplayNameClaimType = displayNameClaimType;
+        RolesClaimType = rolesClaimType;
+        AdminGroupValue = adminGroupValue;
         IconUrl = iconUrl;
         ButtonColor = buttonColor;
     }

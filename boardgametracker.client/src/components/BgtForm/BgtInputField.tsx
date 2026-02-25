@@ -9,7 +9,7 @@ import { FormFieldWrapper } from "./FormFieldWrapper";
 
 export interface BgtInputFieldProps {
 	field: AnyFieldApi;
-	type: "text" | "number" | "datetime-local" | "date";
+	type: "text" | "number" | "datetime-local" | "date" | "password";
 	placeholder?: string;
 	label?: string;
 	prefixLabel?: string;
@@ -28,7 +28,7 @@ const formatDateToLocalInput = (date: Date) => {
 
 const formatInput = (
 	input: string | number | Date | undefined,
-	type: "text" | "number" | "datetime-local" | "date",
+	type: "text" | "number" | "datetime-local" | "date" | "password",
 ) => {
 	if (input === undefined || input === null || input === "") {
 		return "";

@@ -10,4 +10,5 @@ public interface ITokenService
     Task RevokeRefreshTokenAsync(RefreshToken token, string? reason = null, string? replacedByToken = null);
     Task RevokeAllUserTokensAsync(string userId, string? reason = null);
     DateTime GetAccessTokenExpiry();
+    Task CleanupExpiredTokensAsync();
 }

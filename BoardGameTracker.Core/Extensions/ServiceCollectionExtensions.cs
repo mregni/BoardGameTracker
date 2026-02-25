@@ -40,6 +40,7 @@ using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace BoardGameTracker.Core.Extensions;
 
@@ -87,6 +88,10 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
         serviceCollection.AddScoped<ITokenService, TokenService>();
         serviceCollection.AddScoped<IOidcService, OidcService>();
+        serviceCollection.AddScoped<IAuthService, AuthService>();
+        serviceCollection.AddScoped<IOidcProviderService, OidcProviderService>();
+        serviceCollection.AddScoped<IUserAdminService, UserAdminService>();
+        serviceCollection.AddSingleton<IHostedService, RefreshTokenCleanupService>();
 
         serviceCollection.AddScoped<IGameStatisticsService, GameStatisticsService>();
         serviceCollection.AddScoped<IPlayerStatisticsService, PlayerStatisticsService>();

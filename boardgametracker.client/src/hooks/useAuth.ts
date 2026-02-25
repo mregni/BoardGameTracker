@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { AuthStatus, LoginRequest, OidcProvider, User } from "@/models/Auth/Auth";
-import { getAuthStatusCall, getOidcProvidersCall, loginCall, logoutCall } from "@/services/authService";
+import { getAuthStatusCall, getOidcProviderCall, loginCall, logoutCall } from "@/services/authService";
 
 interface AuthState {
 	accessToken: string | null;
@@ -10,14 +10,14 @@ interface AuthState {
 	isAuthenticated: boolean;
 	isLoading: boolean;
 	authStatus: AuthStatus | null;
-	oidcProviders: OidcProvider[];
+	oidcProvider: OidcProvider | null;
 
 	login: (request: LoginRequest) => Promise<void>;
 	logout: () => Promise<void>;
 	setTokens: (accessToken: string, refreshToken: string, user: User) => void;
 	hasRole: (role: string) => boolean;
 	fetchAuthStatus: () => Promise<AuthStatus>;
-	fetchOidcProviders: () => Promise<void>;
+	fetchOidcProvider: () => Promise<void>;
 	clearAuth: () => void;
 }
 
@@ -30,7 +30,7 @@ export const useAuth = create<AuthState>()(
 			isAuthenticated: false,
 			isLoading: false,
 			authStatus: null,
-			oidcProviders: [],
+			oidcProvider: null,
 
 			login: async (request: LoginRequest) => {
 				set({ isLoading: true });
@@ -85,9 +85,9 @@ export const useAuth = create<AuthState>()(
 				return status;
 			},
 
-			fetchOidcProviders: async () => {
-				const providers = await getOidcProvidersCall();
-				set({ oidcProviders: providers });
+			fetchOidcProvider: async () => {
+				const provider = await getOidcProviderCall();
+				set({ oidcProvider: provider });
 			},
 
 			clearAuth: () => {

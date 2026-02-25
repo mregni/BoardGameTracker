@@ -206,8 +206,13 @@ public class SettingsServiceTests
             .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack))
             .Returns(Task.CompletedTask);
 
-        await _settingsService.UpdateSettingsAsync(model);
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
 
+        var result = await _settingsService.UpdateSettingsAsync(model);
+
+        result.Should().NotBeNull();
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.Currency, model.Currency), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.TimeFormat, model.TimeFormat), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.DateFormat, model.DateFormat), Times.Once);
@@ -217,7 +222,9 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
+        _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -279,8 +286,13 @@ public class SettingsServiceTests
             .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack))
             .Returns(Task.CompletedTask);
 
-        await _settingsService.UpdateSettingsAsync(model);
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
 
+        var result = await _settingsService.UpdateSettingsAsync(model);
+
+        result.Should().NotBeNull();
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.Currency, model.Currency), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.TimeFormat, model.TimeFormat), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.DateFormat, model.DateFormat), Times.Once);
@@ -290,7 +302,9 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
+        _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
         VerifyNoOtherCalls();
     }
 

@@ -1,15 +1,18 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Updates.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/settings")]
+[Authorize]
 public class SettingsController : ControllerBase
 {
     private readonly ISettingsService _settingsService;
@@ -30,6 +33,7 @@ public class SettingsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> Get()
     {
         var settings = await _settingsService.GetSettingsAsync();
@@ -37,6 +41,7 @@ public class SettingsController : ControllerBase
     }
 
     [HttpGet("version-info")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetVersionInfo()
     {
         var status = await _updateService.GetVersionInfoAsync();
@@ -44,15 +49,15 @@ public class SettingsController : ControllerBase
     }
 
     [HttpPut]
-    [Route("")]
+    [Authorize(Roles = Constants.AuthRoles.Admin)]
     public async Task<IActionResult> Update([FromBody] UIResourceDto model)
     {
-        await _settingsService.UpdateSettingsAsync(model);
-        return Ok(model);
+        var updated = await _settingsService.UpdateSettingsAsync(model);
+        return Ok(updated);
     }
 
-    [HttpGet]
-    [Route("environment")]
+    [HttpGet("environment")]
+    [Authorize(Roles = Constants.AuthRoles.Admin)]
     public IActionResult GetEnvironment()
     {
         var resources = new UIEnvironmentDto
@@ -67,8 +72,8 @@ public class SettingsController : ControllerBase
         return Ok(resources);
     }
 
-    [HttpGet]
-    [Route("languages")]
+    [HttpGet("languages")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetLanguages()
     {
         var languages = await _languageService.GetAllAsync();

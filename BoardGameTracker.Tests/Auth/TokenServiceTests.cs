@@ -50,7 +50,7 @@ public class TokenServiceTests : IDisposable
     {
         // Arrange
         var user = new ApplicationUser("testuser", "test@test.com", "Test User");
-        var roles = new List<string> { "Admin", "Reader" };
+        var roles = new List<string> { "Admin", "User" };
 
         // Act
         var token = _tokenService.GenerateAccessToken(user, roles);
@@ -70,7 +70,7 @@ public class TokenServiceTests : IDisposable
     {
         // Arrange
         var user = new ApplicationUser("testuser", "test@test.com");
-        var roles = new List<string> { "Admin", "Reader" };
+        var roles = new List<string> { "Admin", "User" };
 
         // Act
         var token = _tokenService.GenerateAccessToken(user, roles);
@@ -80,7 +80,7 @@ public class TokenServiceTests : IDisposable
         var jwtToken = handler.ReadJwtToken(token);
         var roleClaims = jwtToken.Claims.Where(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").ToList();
         roleClaims.Should().HaveCount(2);
-        roleClaims.Select(c => c.Value).Should().Contain("Admin").And.Contain("Reader");
+        roleClaims.Select(c => c.Value).Should().Contain("Admin").And.Contain("User");
     }
 
     [Fact]

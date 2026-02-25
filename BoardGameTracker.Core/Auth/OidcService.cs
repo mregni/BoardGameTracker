@@ -5,6 +5,8 @@ using System.Text.Json;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Common.Entities.Auth;
+using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.AspNetCore.Identity;
@@ -39,18 +41,29 @@ public class OidcService : IOidcService
         _logger = logger;
     }
 
-    public async Task<IList<OidcProviderInfo>> GetEnabledProvidersAsync()
+    public async Task<OidcProviderInfo?> GetEnabledProviderAsync()
     {
-        var providers = await _context.OidcProviders
+        var provider = await _context.OidcProviders
             .Where(p => p.Enabled)
             .Select(p => new OidcProviderInfo(p.Name, p.DisplayName, p.IconUrl, p.ButtonColor))
-            .ToListAsync();
+            .FirstOrDefaultAsync();
 
-        return providers;
+        return provider;
+    }
+
+    public async Task<bool> HasEnabledProviderAsync()
+    {
+        return await _context.OidcProviders.AnyAsync(p => p.Enabled);
     }
 
     public async Task<string> GetAuthorizationUrlAsync(string providerName, string redirectUri, string? state = null)
     {
+        if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != "http" && uri.Scheme != "https"))
+        {
+            throw new InvalidOperationException("Invalid redirect URI");
+        }
+
         var provider = await GetProviderOrThrow(providerName);
         var discovery = await GetDiscoveryDocumentAsync(provider);
 
@@ -59,7 +72,6 @@ public class OidcService : IOidcService
         var codeVerifier = GenerateCodeVerifier();
         var codeChallenge = GenerateCodeChallenge(codeVerifier);
 
-        // Store code verifier in cache for callback
         var cacheKey = $"oidc_pkce_{state ?? providerName}";
         _cache.Set(cacheKey, codeVerifier, TimeSpan.FromMinutes(10));
 
@@ -79,64 +91,24 @@ public class OidcService : IOidcService
         }
 
         var queryString = string.Join("&", queryParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
+
+        _logger.LogInformation("Generated OIDC authorization URL for provider {Provider}", providerName);
+
         return $"{authEndpoint}?{queryString}";
     }
 
-    public async Task<LoginResponse> HandleCallbackAsync(string providerName, string code, string redirectUri)
+    public async Task<LoginResponse> HandleCallbackAsync(string providerName, string code, string redirectUri, string? state = null)
     {
+        _logger.LogInformation("Processing OIDC callback for provider {Provider}", providerName);
+
         var provider = await GetProviderOrThrow(providerName);
-        var discovery = await GetDiscoveryDocumentAsync(provider);
-
-        var tokenEndpoint = provider.TokenEndpoint ?? discovery.TokenEndpoint;
-
-        // Exchange code for tokens
-        var cacheKey = $"oidc_pkce_{providerName}";
-        var codeVerifier = _cache.Get<string>(cacheKey);
-        _cache.Remove(cacheKey);
-
-        var tokenRequest = new Dictionary<string, string>
-        {
-            ["grant_type"] = "authorization_code",
-            ["code"] = code,
-            ["redirect_uri"] = redirectUri,
-            ["client_id"] = provider.ClientId,
-        };
-
-        if (!string.IsNullOrEmpty(provider.ClientSecret))
-        {
-            tokenRequest["client_secret"] = provider.ClientSecret;
-        }
-
-        if (codeVerifier != null)
-        {
-            tokenRequest["code_verifier"] = codeVerifier;
-        }
-
-        var client = _httpClientFactory.CreateClient();
-        var response = await client.PostAsync(tokenEndpoint, new FormUrlEncodedContent(tokenRequest));
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var error = await response.Content.ReadAsStringAsync();
-            _logger.LogError("OIDC token exchange failed for {Provider}: {Error}", providerName, error);
-            throw new InvalidOperationException($"Token exchange failed: {error}");
-        }
-
-        var tokenResponse = await JsonSerializer.DeserializeAsync<JsonElement>(await response.Content.ReadAsStreamAsync());
-        var accessToken = tokenResponse.GetProperty("access_token").GetString()!;
-
-        // Get user info
-        var userInfoEndpoint = provider.UserInfoEndpoint ?? discovery.UserInfoEndpoint;
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        var userInfoResponse = await client.GetAsync(userInfoEndpoint);
-        var userInfo = await JsonSerializer.DeserializeAsync<JsonElement>(await userInfoResponse.Content.ReadAsStreamAsync());
+        var userInfo = await ExchangeCodeAndGetUserInfo(provider, providerName, code, redirectUri, state);
 
         var providerKey = userInfo.GetProperty("sub").GetString()!;
         var email = GetClaimValue(userInfo, provider.EmailClaimType ?? "email");
         var username = GetClaimValue(userInfo, provider.UsernameClaimType ?? "preferred_username") ?? email;
         var displayName = GetClaimValue(userInfo, provider.DisplayNameClaimType ?? "name");
 
-        // Find or create user
         var externalLogin = await _context.ExternalLogins
             .Include(x => x.User)
             .FirstOrDefaultAsync(x => x.Provider == providerName && x.ProviderKey == providerKey);
@@ -147,35 +119,41 @@ public class OidcService : IOidcService
         {
             user = externalLogin.User!;
             externalLogin.UpdateLastUsed();
+            _logger.LogInformation("Existing OIDC user {Username} logged in via {Provider}", user.UserName, providerName);
         }
         else if (provider.AutoProvisionUsers)
         {
-            // Check if user exists by email
-            user = email != null ? await _userManager.FindByEmailAsync(email) : null!;
+            // Check if user exists by email - do NOT silently link (issue #8)
+            var existingUser = email != null ? await _userManager.FindByEmailAsync(email) : null;
 
-            if (user == null)
+            if (existingUser != null)
             {
-                user = new ApplicationUser(
-                    username ?? $"{providerName}_{providerKey}",
-                    email ?? $"{providerKey}@{providerName}.external",
-                    displayName);
-
-                var result = await _userManager.CreateAsync(user);
-                if (!result.Succeeded)
-                {
-                    throw new InvalidOperationException(
-                        $"Failed to create user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                }
-
-                await _userManager.AddToRoleAsync(user, Constants.AuthRoles.Reader);
-                _logger.LogInformation("Auto-provisioned user {Username} from {Provider}", user.UserName, providerName);
+                _logger.LogWarning("OIDC user with email {Email} matches existing local user {Username}. Requires manual linking", email, existingUser.UserName);
+                throw new DomainException("An account with this email already exists. Please log in with your existing credentials and link your OIDC account from your profile.");
             }
+
+            user = new ApplicationUser(
+                username ?? $"{providerName}_{providerKey}",
+                email ?? $"{providerKey}@{providerName}.external",
+                displayName);
+
+            var result = await _userManager.CreateAsync(user);
+            if (!result.Succeeded)
+            {
+                _logger.LogError("Failed to auto-provision OIDC user {Username}: {Errors}", username, string.Join(", ", result.Errors.Select(e => e.Description)));
+                throw new InvalidOperationException(
+                    $"Failed to create user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            }
+
+            await AssignRolesFromClaims(user, provider, userInfo);
 
             var newExternalLogin = new ExternalLogin(user.Id, providerName, providerKey, displayName);
             _context.ExternalLogins.Add(newExternalLogin);
+            _logger.LogInformation("Auto-provisioned user {Username} from {Provider}", user.UserName, providerName);
         }
         else
         {
+            _logger.LogWarning("OIDC login failed for {Provider}: user not found and auto-provisioning is disabled", providerName);
             throw new InvalidOperationException("User not found and auto-provisioning is disabled");
         }
 
@@ -191,36 +169,134 @@ public class OidcService : IOidcService
             jwt,
             refreshToken.Token,
             _tokenService.GetAccessTokenExpiry(),
-            new UserInfo(user.Id, user.UserName!, user.DisplayName, roles));
+            user.ToUserInfo(roles));
     }
 
-    public async Task LinkExternalLoginAsync(string userId, string providerName, string providerKey, string? displayName = null)
+    public async Task<LoginResponse> HandleLinkCallbackAsync(string userId, string providerName, string code, string redirectUri, string? state = null)
     {
+        _logger.LogInformation("Processing OIDC link callback for user {UserId} with provider {Provider}", userId, providerName);
+
+        var user = await _userManager.FindByIdAsync(userId)
+            ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
+
+        var provider = await GetProviderOrThrow(providerName);
+        var userInfo = await ExchangeCodeAndGetUserInfo(provider, providerName, code, redirectUri, state);
+
+        var providerKey = userInfo.GetProperty("sub").GetString()!;
+        var displayName = GetClaimValue(userInfo, provider.DisplayNameClaimType ?? "name");
+
         var existing = await _context.ExternalLogins
             .FirstOrDefaultAsync(x => x.Provider == providerName && x.ProviderKey == providerKey);
 
         if (existing != null)
         {
-            throw new InvalidOperationException("This external account is already linked to a user");
+            throw new DomainException("This external account is already linked to a user");
         }
 
         var externalLogin = new ExternalLogin(userId, providerName, providerKey, displayName);
         _context.ExternalLogins.Add(externalLogin);
         await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Linked OIDC provider {Provider} to user {Username}", providerName, user.UserName);
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var jwt = _tokenService.GenerateAccessToken(user, roles);
+        var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user.Id);
+
+        return new LoginResponse(
+            jwt,
+            refreshToken.Token,
+            _tokenService.GetAccessTokenExpiry(),
+            user.ToUserInfo(roles));
+    }
+
+    public async Task<List<ExternalLoginDto>> GetExternalLoginsAsync(string userId)
+    {
+        return await _context.ExternalLogins
+            .Where(x => x.UserId == userId)
+            .Select(x => x.ToDto())
+            .ToListAsync();
     }
 
     public async Task UnlinkExternalLoginAsync(string userId, int externalLoginId)
     {
         var externalLogin = await _context.ExternalLogins
-            .FirstOrDefaultAsync(x => x.Id == externalLoginId && x.UserId == userId);
-
-        if (externalLogin == null)
-        {
-            throw new InvalidOperationException("External login not found");
-        }
+            .FirstOrDefaultAsync(x => x.Id == externalLoginId && x.UserId == userId)
+            ?? throw new EntityNotFoundException(nameof(ExternalLogin), externalLoginId);
 
         _context.ExternalLogins.Remove(externalLogin);
         await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Unlinked external login {LoginId} (provider: {Provider}) from user {UserId}",
+            externalLoginId, externalLogin.Provider, userId);
+    }
+
+    private async Task<JsonElement> ExchangeCodeAndGetUserInfo(OidcProvider provider, string providerName, string code, string redirectUri, string? state)
+    {
+        var discovery = await GetDiscoveryDocumentAsync(provider);
+        var tokenEndpoint = provider.TokenEndpoint ?? discovery.TokenEndpoint;
+
+        var cacheKey = $"oidc_pkce_{state ?? providerName}";
+        var codeVerifier = _cache.Get<string>(cacheKey)
+            ?? throw new InvalidOperationException("Invalid or expired authentication session");
+        _cache.Remove(cacheKey);
+
+        var tokenRequest = new Dictionary<string, string>
+        {
+            ["grant_type"] = "authorization_code",
+            ["code"] = code,
+            ["redirect_uri"] = redirectUri,
+            ["client_id"] = provider.ClientId,
+            ["code_verifier"] = codeVerifier,
+        };
+
+        if (!string.IsNullOrEmpty(provider.ClientSecret))
+        {
+            tokenRequest["client_secret"] = provider.ClientSecret;
+        }
+
+        var client = _httpClientFactory.CreateClient();
+        var response = await client.PostAsync(tokenEndpoint, new FormUrlEncodedContent(tokenRequest));
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            _logger.LogError("OIDC token exchange failed for {Provider}: {Error}", providerName, error);
+            throw new InvalidOperationException($"Token exchange failed: {error}");
+        }
+
+        var tokenResponse = await JsonSerializer.DeserializeAsync<JsonElement>(await response.Content.ReadAsStreamAsync());
+        var accessToken = tokenResponse.GetProperty("access_token").GetString()!;
+
+        var userInfoEndpoint = provider.UserInfoEndpoint ?? discovery.UserInfoEndpoint;
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var userInfoResponse = await client.GetAsync(userInfoEndpoint);
+
+        if (!userInfoResponse.IsSuccessStatusCode)
+        {
+            var error = await userInfoResponse.Content.ReadAsStringAsync();
+            _logger.LogError("Failed to fetch user info from {Provider}: {StatusCode} {Error}", providerName, userInfoResponse.StatusCode, error);
+            throw new InvalidOperationException("Failed to retrieve user information from OIDC provider");
+        }
+
+        return await JsonSerializer.DeserializeAsync<JsonElement>(await userInfoResponse.Content.ReadAsStreamAsync());
+    }
+
+    private async Task AssignRolesFromClaims(ApplicationUser user, OidcProvider provider, JsonElement userInfo)
+    {
+        var role = Constants.AuthRoles.User;
+
+        if (!string.IsNullOrEmpty(provider.RolesClaimType) && !string.IsNullOrEmpty(provider.AdminGroupValue))
+        {
+            var groupsClaim = GetClaimValue(userInfo, provider.RolesClaimType);
+            if (groupsClaim != null && groupsClaim.Contains(provider.AdminGroupValue, StringComparison.OrdinalIgnoreCase))
+            {
+                role = Constants.AuthRoles.Admin;
+                _logger.LogInformation("Assigning Admin role to OIDC user {Username} based on group claim", user.UserName);
+            }
+        }
+
+        await _userManager.AddToRoleAsync(user, role);
     }
 
     private async Task<OidcProvider> GetProviderOrThrow(string providerName)
@@ -261,7 +337,14 @@ public class OidcService : IOidcService
 
     private static string? GetClaimValue(JsonElement userInfo, string claimType)
     {
-        return userInfo.TryGetProperty(claimType, out var value) ? value.GetString() : null;
+        if (!userInfo.TryGetProperty(claimType, out var value))
+        {
+            return null;
+        }
+
+        return value.ValueKind == JsonValueKind.Array
+            ? string.Join(",", value.EnumerateArray().Select(v => v.GetString()))
+            : value.GetString();
     }
 
     private static string GenerateCodeVerifier()

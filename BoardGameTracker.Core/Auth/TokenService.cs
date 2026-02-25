@@ -27,7 +27,7 @@ public class TokenService : ITokenService
                      ?? throw new InvalidOperationException("JWT Secret is not configured");
         var issuer = _configuration["Jwt:Issuer"] ?? "boardgametracker-api";
         var audience = _configuration["Jwt:Audience"] ?? "boardgametracker-client";
-        var expiryMinutes = int.Parse(_configuration["Jwt:AccessTokenExpiryMinutes"] ?? "60");
+        var expiryMinutes = int.Parse(_configuration["Jwt:AccessTokenExpiryMinutes"] ?? "15");
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -100,7 +100,21 @@ public class TokenService : ITokenService
 
     public DateTime GetAccessTokenExpiry()
     {
-        var expiryMinutes = int.Parse(_configuration["Jwt:AccessTokenExpiryMinutes"] ?? "60");
+        var expiryMinutes = int.Parse(_configuration["Jwt:AccessTokenExpiryMinutes"] ?? "15");
         return DateTime.UtcNow.AddMinutes(expiryMinutes);
+    }
+
+    public async Task CleanupExpiredTokensAsync()
+    {
+        var cutoff = DateTime.UtcNow.AddDays(-30);
+        var expiredTokens = await _context.RefreshTokens
+            .Where(x => x.ExpiresAt < cutoff || (x.RevokedAt != null && x.RevokedAt < cutoff))
+            .ToListAsync();
+
+        if (expiredTokens.Count > 0)
+        {
+            _context.RefreshTokens.RemoveRange(expiredTokens);
+            await _context.SaveChangesAsync();
+        }
     }
 }

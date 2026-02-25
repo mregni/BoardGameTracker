@@ -50,7 +50,7 @@ public class SettingsService : ISettingsService
         };
     }
 
-    public async Task UpdateSettingsAsync(UIResourceDto model)
+    public async Task<UIResourceDto> UpdateSettingsAsync(UIResourceDto model)
     {
         _logger.LogDebug("Updating settings");
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.Currency, model.Currency);
@@ -65,6 +65,8 @@ public class SettingsService : ISettingsService
 
         await _updateService.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack);
         _logger.LogInformation("Settings updated");
+
+        return await GetSettingsAsync();
     }
 
     private static T ResolveValue<T>(Dictionary<string, string> configs, string key)

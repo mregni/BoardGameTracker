@@ -6,7 +6,7 @@ export const Route = createFileRoute("/_bare")({
 
 function BareLayout() {
 	return (
-		<main className="size-full text-white bg-background overflow-auto">
+		<main className="h-screen w-full text-white bg-background overflow-auto">
 			<Outlet />
 		</main>
 	);

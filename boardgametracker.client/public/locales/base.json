@@ -778,6 +778,92 @@
       "game-nights": {
         "title": "Game Nights",
         "description": "Configure Game Nights settings"
+      },
+      "account": {
+        "title": "Account",
+        "description": "Profile & user management"
+      }
+    },
+    "account": {
+      "profile": {
+        "title": "My Account",
+        "description": "Manage your profile and password.",
+        "display-name": {
+          "label": "Display name"
+        },
+        "email": {
+          "label": "Email"
+        },
+        "save": "Save profile"
+      },
+      "password": {
+        "change-button": "Change password",
+        "title": "Change Password",
+        "description": "Enter your current password and choose a new one.",
+        "current": {
+          "label": "Current password"
+        },
+        "new": {
+          "label": "New password"
+        },
+        "confirm": {
+          "label": "Confirm new password"
+        },
+        "mismatch": "Passwords do not match",
+        "save": "Change password"
+      },
+      "users": {
+        "title": "User Management",
+        "description": "Create and manage user accounts.",
+        "last-login": "Last login",
+        "role": "Role",
+        "roles": {
+          "user": "User",
+          "admin": "Admin"
+        },
+        "create-button": "Create user",
+        "create": {
+          "title": "Create New User",
+          "description": "Fill out the form to create a new user.",
+          "username": {
+            "label": "Username"
+          },
+          "email": {
+            "label": "Email"
+          },
+          "password": {
+            "label": "Password"
+          },
+          "display-name": {
+            "label": "Display name"
+          },
+          "save": "Create user"
+        },
+        "reset-password": {
+          "button": "Reset password"
+        },
+        "temp-password": {
+          "title": "Temporary Password",
+          "description": "Password reset for \"{{username}}\". Save this password — it won't be shown again.",
+          "copy": "Copy to clipboard",
+          "copied": "Copied!"
+        },
+        "delete": {
+          "title": "Delete User",
+          "description": "Are you sure you want to delete \"{{username}}\"? This cannot be undone."
+        },
+        "never-logged-in": "Never"
+      },
+      "notifications": {
+        "profile-updated": "Profile updated successfully",
+        "profile-update-failed": "Failed to update profile",
+        "password-changed": "Password changed successfully",
+        "password-change-failed": "Failed to change password. Check your current password.",
+        "user-created": "User created successfully",
+        "user-create-failed": "Failed to create user",
+        "user-deleted": "User deleted successfully",
+        "user-delete-failed": "Failed to delete user",
+        "password-reset-failed": "Failed to reset password"
       }
     }
   },
@@ -1075,6 +1161,7 @@
     "password-placeholder": "Enter your password",
     "login": "Sign in",
     "logging-in": "Signing in...",
+    "authenticating": "Authenticating...",
     "logout": "Sign out",
     "invalid-credentials": "Invalid username or password",
     "or-continue-with": "Or continue with",

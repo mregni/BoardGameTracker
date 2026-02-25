@@ -99,7 +99,7 @@ public class SettingsControllerTests
 
         _settingsServiceMock
             .Setup(x => x.UpdateSettingsAsync(model))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync(model);
 
         // Act
         var result = await _controller.Update(model);
@@ -129,7 +129,7 @@ public class SettingsControllerTests
 
         _settingsServiceMock
             .Setup(x => x.UpdateSettingsAsync(model))
-            .Returns(Task.CompletedTask);
+            .ReturnsAsync(model);
 
         // Act
         var result = await _controller.Update(model);

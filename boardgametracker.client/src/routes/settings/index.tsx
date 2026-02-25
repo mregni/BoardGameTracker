@@ -11,6 +11,7 @@ import { useAppForm } from "@/hooks/form";
 import { type Settings, SettingsSchema } from "@/models";
 import { getEnvironment, getLanguages, getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { AccountSettings } from "./-components/AccountSettings";
 import { AdvancedSettings } from "./-components/AdvancedSettings";
 import { GameNightsSettings } from "./-components/GameNightsSettings";
 import { GeneralSettings } from "./-components/GeneralSettings";
@@ -87,6 +88,8 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 				return <GameNightsSettings form={form} disabled={isSaving} />;
 			case "advanced":
 				return <AdvancedSettings form={form} disabled={isSaving} />;
+			case "account":
+				return <AccountSettings />;
 			default:
 				return <GeneralSettings form={form} languages={languages} disabled={isSaving} />;
 		}
@@ -102,13 +105,15 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 					<div className="flex-1">
 						<form onSubmit={handleFormSubmit(form)}>
 							<div className="flex flex-col gap-4 xl:gap-6 lg:pl-4 xl:pl-6 pt-4 lg:pt-0">{renderContent()}</div>
-							<div className="mt-6 pt-4 lg:ml-4 xl:ml-6 border-t border-white/10">
-								<div className="flex justify-between flex-wrap gap-3 items-start">
-									<BgtButton onClick={form.handleSubmit} type="submit" disabled={isSaving}>
-										{t("settings.save.button")}
-									</BgtButton>
+							{activeCategory !== "account" && (
+								<div className="mt-6 pt-4 lg:ml-4 xl:ml-6 border-t border-white/10">
+									<div className="flex justify-between flex-wrap gap-3 items-start">
+										<BgtButton onClick={form.handleSubmit} type="submit" disabled={isSaving}>
+											{t("settings.save.button")}
+										</BgtButton>
+									</div>
 								</div>
-							</div>
+							)}
 						</form>
 					</div>
 				</div>

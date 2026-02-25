@@ -18,7 +18,7 @@ public static class DbSeeder
 
     private static async Task SeedRoles(RoleManager<IdentityRole> roleManager, ILogger logger)
     {
-        string[] roles = [Constants.AuthRoles.Admin, Constants.AuthRoles.Reader];
+        string[] roles = [Constants.AuthRoles.Admin, Constants.AuthRoles.User];
 
         foreach (var role in roles)
         {
