@@ -1,10 +1,21 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using BoardGameTracker.Common.Exceptions;
+using Microsoft.AspNetCore.Hosting;
 using Serilog.Events;
 
 namespace BoardGameTracker.Common.Extensions;
 
 public static class WebHostBuilderExtensions
 {
+    private static readonly HashSet<Type> IgnoredExceptionTypes =
+    [
+        typeof(ValidationException),
+        typeof(DomainException),
+        typeof(EntityNotFoundException),
+        typeof(UnauthorizedAccessException),
+        typeof(KeyNotFoundException),
+        typeof(ArgumentException)
+    ];
+
     public static IWebHostBuilder UseConfiguredSentry(this IWebHostBuilder builder)
     {
         builder.UseSentry(o =>
@@ -16,6 +27,11 @@ public static class WebHostBuilderExtensions
 
             o.SetBeforeSend((@event, hint) =>
             {
+                if (hint.Exception != null && IgnoredExceptionTypes.Contains(hint.Exception.GetType()))
+                {
+                    return null;
+                }
+
                 @event.ServerName = null;
                 return @event;
             });
