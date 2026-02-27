@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import {
@@ -10,7 +10,7 @@ import {
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
-import type { BgtSelectItem, RegisterRequest } from "@/models";
+import { type BgtSelectItem, isApiError, type RegisterRequest } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 
 interface Props {
@@ -22,6 +22,7 @@ interface Props {
 
 export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => {
 	const { t } = useTranslation();
+	const [error, setError] = useState<string | null>(null);
 
 	const roleItems: BgtSelectItem[] = useMemo(
 		() => [
@@ -39,13 +40,18 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 			role: "User",
 		},
 		onSubmit: async ({ value }) => {
-			await onSubmit({
-				username: value.username,
-				email: value.email,
-				password: value.password,
-				role: value.role,
-			});
-			close();
+			setError(null);
+			try {
+				await onSubmit({
+					username: value.username,
+					email: value.email,
+					password: value.password,
+					role: value.role,
+				});
+				close();
+			} catch (e) {
+				setError(isApiError(e) ? t(e.message) : t("settings.account.notifications.user-create-failed"));
+			}
 		},
 	});
 
@@ -97,6 +103,7 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 							validators={{
 								onChange: ({ value }) => {
 									if (!value) return t("common.required", "Required");
+									if (value.length < 4) return t("settings.account.password.min-length");
 									return undefined;
 								},
 							}}
@@ -121,6 +128,7 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 							)}
 						</form.Field>
 					</div>
+					{error && <div className="text-error text-sm mb-2">{error}</div>}
 					<BgtDialogClose>
 						<BgtButton variant="cancel" onClick={close} disabled={isLoading}>
 							{t("common.cancel")}

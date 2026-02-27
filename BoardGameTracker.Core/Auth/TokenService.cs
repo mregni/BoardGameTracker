@@ -23,7 +23,8 @@ public class TokenService : ITokenService
 
     public string GenerateAccessToken(ApplicationUser user, IList<string> roles)
     {
-        var secret = _configuration["Jwt:Secret"]
+        var secret = Environment.GetEnvironmentVariable("JWT_SECRET")
+                     ?? _configuration["Jwt:Secret"]
                      ?? throw new InvalidOperationException("JWT Secret is not configured");
         var issuer = _configuration["Jwt:Issuer"] ?? "boardgametracker-api";
         var audience = _configuration["Jwt:Audience"] ?? "boardgametracker-client";

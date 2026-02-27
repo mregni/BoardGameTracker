@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using FluentAssertions;
@@ -68,14 +69,14 @@ public class AuthControllerTests
         // Arrange
         var request = new LoginRequest("unknown", "password");
         _authServiceMock.Setup(x => x.LoginAsync(request))
-            .ThrowsAsync(new UnauthorizedAccessException("Invalid username or password"));
+            .ThrowsAsync(new UnauthorizedAccessException(Constants.Errors.InvalidCredentials));
 
         // Act
         var act = () => _controller.Login(request);
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage("Invalid username or password");
+            .WithMessage(Constants.Errors.InvalidCredentials);
 
         _authServiceMock.Verify(x => x.LoginAsync(request), Times.Once);
         VerifyNoOtherCalls();
@@ -159,7 +160,7 @@ public class AuthControllerTests
     {
         // Arrange
         SetupAuthenticatedUser("admin-id");
-        var request = new RegisterRequest("newuser", "new@test.com", "password", "New User");
+        var request = new RegisterRequest("newuser", "new@test.com", "password", null);
         var expectedDto = new UserDto("user-id", "newuser", "new@test.com", "New User",
             new List<string> { "User" }, DateTime.UtcNow, null, null);
 

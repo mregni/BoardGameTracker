@@ -44,14 +44,14 @@ public class AuthService : IAuthService
         if (user == null)
         {
             _logger.LogWarning("Failed login attempt for unknown username {Username}", request.Username);
-            throw new UnauthorizedAccessException("Invalid username or password");
+            throw new UnauthorizedAccessException(Constants.Errors.InvalidCredentials);
         }
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
         if (!result.Succeeded)
         {
             _logger.LogWarning("Failed login attempt for user {Username}: invalid password", request.Username);
-            throw new UnauthorizedAccessException("Invalid username or password");
+            throw new UnauthorizedAccessException(Constants.Errors.InvalidCredentials);
         }
 
         user.UpdateLastLogin();
@@ -75,7 +75,7 @@ public class AuthService : IAuthService
         var existingToken = await _tokenService.GetRefreshTokenAsync(refreshToken);
         if (existingToken == null || !existingToken.IsActive)
         {
-            throw new UnauthorizedAccessException("Invalid or expired refresh token");
+            throw new UnauthorizedAccessException(Constants.Errors.InvalidRefreshToken);
         }
 
         var user = existingToken.User!;
@@ -116,19 +116,19 @@ public class AuthService : IAuthService
         var hasOidcProvider = await _context.OidcProviders.AnyAsync(p => p.Enabled);
         if (hasOidcProvider)
         {
-            throw new DomainException("Cannot create local users when OIDC is enabled. Users are provisioned through OIDC login.");
+            throw new DomainException(Constants.Errors.OidcNoLocalUsers);
         }
 
         var existingUser = await _userManager.FindByNameAsync(request.Username);
         if (existingUser != null)
         {
-            throw new DomainException("Username already exists");
+            throw new DomainException(Constants.Errors.UsernameAlreadyExists);
         }
 
         var role = request.Role ?? Constants.AuthRoles.User;
         if (role != Constants.AuthRoles.Admin && role != Constants.AuthRoles.User)
         {
-            throw new ValidationException($"Invalid role: {role}");
+            throw new ValidationException(Constants.Errors.InvalidRole);
         }
 
         var user = new ApplicationUser(request.Username, request.Email, request.Username);
@@ -181,7 +181,7 @@ public class AuthService : IAuthService
 
         if (!await _userManager.HasPasswordAsync(user))
         {
-            throw new DomainException("Cannot change password for externally authenticated accounts");
+            throw new DomainException(Constants.Errors.CannotChangeOidcPassword);
         }
 
         var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);

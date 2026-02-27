@@ -37,6 +37,19 @@ public static class Constants
         public const string User = "User";
     }
 
+    public static class Errors
+    {
+        public const string UsernameAlreadyExists = "error.auth.username-already-exists";
+        public const string OidcNoLocalUsers = "error.auth.oidc-no-local-users";
+        public const string InvalidRole = "error.auth.invalid-role";
+        public const string CannotChangeOidcPassword = "error.auth.cannot-change-oidc-password";
+        public const string CannotDeleteSelf = "error.auth.cannot-delete-self";
+        public const string CannotDeleteLastAdmin = "error.auth.cannot-delete-last-admin";
+        public const string CannotRemoveLastAdmin = "error.auth.cannot-remove-last-admin";
+        public const string InvalidCredentials = "error.auth.invalid-credentials";
+        public const string InvalidRefreshToken = "error.auth.invalid-refresh-token";
+    }
+
     public static class UpdateConfig
     {
         public const string Prefix = "update_";

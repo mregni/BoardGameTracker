@@ -146,7 +146,7 @@ public class UserAdminServiceTests
 
         // Assert
         await act.Should().ThrowAsync<DomainException>()
-            .WithMessage("Cannot delete your own account");
+            .WithMessage(Constants.Errors.CannotDeleteSelf);
 
         VerifyNoOtherCalls();
     }
@@ -194,7 +194,7 @@ public class UserAdminServiceTests
 
         // Assert
         await act.Should().ThrowAsync<DomainException>()
-            .WithMessage("Cannot delete the last admin account");
+            .WithMessage(Constants.Errors.CannotDeleteLastAdmin);
 
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         _userManagerMock.Verify(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin), Times.Once);

@@ -136,7 +136,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage("Invalid username or password");
+            .WithMessage(Constants.Errors.InvalidCredentials);
 
         _userManagerMock.Verify(x => x.FindByNameAsync("unknownuser"), Times.Once);
         VerifyNoOtherCalls();
@@ -158,7 +158,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage("Invalid username or password");
+            .WithMessage(Constants.Errors.InvalidCredentials);
 
         _userManagerMock.Verify(x => x.FindByNameAsync("testuser"), Times.Once);
         _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "wrongpassword", false), Times.Once);
@@ -219,7 +219,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage("Invalid or expired refresh token");
+            .WithMessage(Constants.Errors.InvalidRefreshToken);
 
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("nonexistent-token"), Times.Once);
         VerifyNoOtherCalls();
@@ -239,7 +239,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
-            .WithMessage("Invalid or expired refresh token");
+            .WithMessage(Constants.Errors.InvalidRefreshToken);
 
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("revoked-token"), Times.Once);
         VerifyNoOtherCalls();
@@ -350,7 +350,7 @@ public class AuthServiceTests : IDisposable
     public async Task RegisterAsync_ShouldReturnUserDto_WhenRegistrationSucceeds()
     {
         // Arrange
-        var request = new RegisterRequest("newuser", "new@test.com", "password123", "New User");
+        var request = new RegisterRequest("newuser", "new@test.com", "password123", null);
         var roles = new List<string> { "User" };
 
         _userManagerMock.Setup(x => x.FindByNameAsync("newuser"))
@@ -369,7 +369,7 @@ public class AuthServiceTests : IDisposable
         result.Should().NotBeNull();
         result.Username.Should().Be("newuser");
         result.Email.Should().Be("new@test.com");
-        result.DisplayName.Should().Be("New User");
+        result.DisplayName.Should().Be("newuser");
         result.Roles.Should().Contain("User");
 
         _userManagerMock.Verify(x => x.FindByNameAsync("newuser"), Times.Once);
@@ -394,7 +394,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         await act.Should().ThrowAsync<DomainException>()
-            .WithMessage("Username already exists");
+            .WithMessage(Constants.Errors.UsernameAlreadyExists);
 
         _userManagerMock.Verify(x => x.FindByNameAsync("existinguser"), Times.Once);
         VerifyNoOtherCalls();

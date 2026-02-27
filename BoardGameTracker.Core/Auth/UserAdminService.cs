@@ -52,7 +52,7 @@ public class UserAdminService : IUserAdminService
     {
         if (userId == currentUserId)
         {
-            throw new DomainException("Cannot delete your own account");
+            throw new DomainException(Constants.Errors.CannotDeleteSelf);
         }
 
         var user = await _userManager.FindByIdAsync(userId)
@@ -61,7 +61,7 @@ public class UserAdminService : IUserAdminService
         var admins = await _userManager.GetUsersInRoleAsync(Constants.AuthRoles.Admin);
         if (admins.Count == 1 && admins[0].Id == userId)
         {
-            throw new DomainException("Cannot delete the last admin account");
+            throw new DomainException(Constants.Errors.CannotDeleteLastAdmin);
         }
 
         await _userManager.DeleteAsync(user);
@@ -74,7 +74,7 @@ public class UserAdminService : IUserAdminService
     {
         if (role != Constants.AuthRoles.Admin && role != Constants.AuthRoles.User)
         {
-            throw new ValidationException($"Invalid role: {role}");
+            throw new ValidationException(Constants.Errors.InvalidRole);
         }
 
         var user = await _userManager.FindByIdAsync(userId)
@@ -85,7 +85,7 @@ public class UserAdminService : IUserAdminService
             var admins = await _userManager.GetUsersInRoleAsync(Constants.AuthRoles.Admin);
             if (admins.Count == 1)
             {
-                throw new DomainException("Cannot remove Admin role from the last admin account");
+                throw new DomainException(Constants.Errors.CannotRemoveLastAdmin);
             }
         }
 

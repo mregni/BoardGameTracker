@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import {
@@ -9,7 +10,7 @@ import {
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtInputField } from "@/components/BgtForm";
-import type { ChangePasswordRequest } from "@/models";
+import { type ChangePasswordRequest, isApiError } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 
 interface Props {
@@ -21,6 +22,7 @@ interface Props {
 
 export const ChangePasswordModal = ({ open, close, onSubmit, isLoading }: Props) => {
 	const { t } = useTranslation();
+	const [error, setError] = useState<string | null>(null);
 
 	const form = useForm({
 		defaultValues: {
@@ -32,13 +34,15 @@ export const ChangePasswordModal = ({ open, close, onSubmit, isLoading }: Props)
 			if (value.newPassword !== value.confirmPassword) {
 				return;
 			}
+			setError(null);
 			try {
 				await onSubmit({
 					currentPassword: value.currentPassword,
 					newPassword: value.newPassword,
 				});
-			} finally {
 				close();
+			} catch (e) {
+				setError(isApiError(e) ? t(e.message) : t("settings.account.notifications.password-change-failed"));
 			}
 		},
 	});
@@ -73,6 +77,7 @@ export const ChangePasswordModal = ({ open, close, onSubmit, isLoading }: Props)
 							validators={{
 								onChange: ({ value }) => {
 									if (!value) return t("common.required", "Required");
+									if (value.length < 4) return t("settings.account.password.min-length");
 									return undefined;
 								},
 							}}
@@ -109,6 +114,7 @@ export const ChangePasswordModal = ({ open, close, onSubmit, isLoading }: Props)
 							)}
 						</form.Field>
 					</div>
+					{error && <div className="text-error text-sm mb-2">{error}</div>}
 					<BgtDialogClose>
 						<BgtButton variant="cancel" onClick={close} disabled={isLoading}>
 							{t("common.cancel")}
