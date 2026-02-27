@@ -70,7 +70,6 @@ builder.Services.Configure<HttpClientFactoryOptions>(options =>
     });
 });
 
-// ASP.NET Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
         options.Password.RequireDigit = false;
@@ -83,9 +82,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<MainDbContext>()
     .AddDefaultTokenProviders();
 
-// JWT Authentication
-var jwtSecret = builder.Configuration["Jwt:Secret"]
-                ?? "CHANGE-THIS-TO-A-32-CHAR-SECRET-KEY-IN-PRODUCTION";
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? builder.Configuration["Jwt:Secret"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "boardgametracker-api";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "boardgametracker-client";
 

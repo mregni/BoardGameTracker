@@ -640,3 +640,5 @@ BoardGameTracker.Host/images/profile/
 boardgametracker.client/.tanstack/
 
 BoardGameTracker.Host/config/config.xml
+
+BoardGameTracker.Host/appsettings.Development.json
