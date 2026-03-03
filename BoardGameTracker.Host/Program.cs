@@ -220,14 +220,14 @@ app.UseStaticFiles(new StaticFileOptions
 
 var logger = app.Services.GetService<ILogger<Program>>();
 logger.LogInformation("BoardGameTracker started");
-logger.LogInformation("  Environment:  {Environment}", app.Environment.EnvironmentName);
+logger.LogInformation("  Environment:  {Environment}", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
 logger.LogInformation("  Log level:    {LogLevel}", LogLevelExtensions.GetEnvironmentLogLevel());
 logger.LogInformation("  Sentry:       {SentryEnabled}", Environment.GetEnvironmentVariable("STATISTICS") == "1" ? "Enabled" : "Disabled");
 logger.LogInformation("  HTTP ports:   {HttpPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS") ?? "default");
 logger.LogInformation("  HTTPS ports:  {HttpsPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORTS") ?? "not configured");
 logger.LogInformation("  Timezone:     {Timezone}", Environment.GetEnvironmentVariable("TZ") ?? "system default");
 logger.LogInformation("  DB port:      {DbPort}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432");
-logger.LogInformation("  Auth bypass:  {AuthBypass}", Environment.GetEnvironmentVariable("AUTH_BYPASS")?.ToLower() == "true" ? "Enabled" : "Disabled");
+logger.LogInformation("  Auth bypass:  {AuthBypass}", Environment.GetEnvironmentVariable("AUTH_BYPASS")?.ToLower() == "true" ? "Yes" : "No");
 
 if (!app.Environment.IsDevelopment())
 {
