@@ -5,7 +5,7 @@ ARG TARGETOS
 ARG VERSION=0.0.1
 
 # Stage 1: Build Frontend
-FROM node:22-alpine AS frontend-build
+FROM --platform=linux/amd64 node:22-alpine AS frontend-build
 WORKDIR /src
 
 # Copy frontend package files
