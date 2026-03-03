@@ -102,7 +102,11 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 			<BgtPageHeader header={"Settings"} icon={CogIcon} />
 			<BgtPageContent>
 				<div className="flex flex-col lg:flex-row">
-					<SettingsSidebar activeCategory={activeCategory} onCategoryChange={setActiveCategory} canManageSettings={canManageSettings} />
+					<SettingsSidebar
+						activeCategory={activeCategory}
+						onCategoryChange={setActiveCategory}
+						canManageSettings={canManageSettings}
+					/>
 
 					<div className="flex-1">
 						<form onSubmit={handleFormSubmit(form)}>

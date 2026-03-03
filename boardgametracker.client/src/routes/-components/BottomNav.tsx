@@ -83,11 +83,7 @@ export const BottomNav = () => {
 										)}
 									/>
 								</div>
-								<BgtText
-									size="1"
-									color={isActive ? "primary" : "gray"}
-									className={cx("text-center transition-colors")}
-								>
+								<BgtText size="1" color={isActive ? "primary" : "gray"} className={cx("text-center transition-colors")}>
 									{t(item.menuLabel)}
 								</BgtText>
 							</>

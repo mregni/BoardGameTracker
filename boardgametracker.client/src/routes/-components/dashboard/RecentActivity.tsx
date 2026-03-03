@@ -37,12 +37,12 @@ const ActivityItem = ({ activity }: ItemProps) => {
 	return (
 		<BgtCard className="cursor-pointer p-3">
 			<div className="flex items-center gap-4">
-				<Link to="/games/$gameId" params={{ gameId: activity.gameId }} className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 shrink-0">
-					<BgtAvatar
-						image={activity.gameImage}
-						title={activity.gameTitle}
-						size="large"
-					/>
+				<Link
+					to="/games/$gameId"
+					params={{ gameId: activity.gameId }}
+					className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 shrink-0"
+				>
+					<BgtAvatar image={activity.gameImage} title={activity.gameTitle} size="large" />
 				</Link>
 				<div className="flex-1">
 					<BgtText color="white">

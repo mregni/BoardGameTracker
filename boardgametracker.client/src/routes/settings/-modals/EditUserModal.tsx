@@ -66,14 +66,7 @@ export const EditUserModal = ({ open, close, user, onSubmit, isLoading }: Props)
 					</BgtDialogDescription>
 					<div className="flex flex-col gap-2 mb-3 mt-3">
 						<form.Field name="username">
-							{(field) => (
-								<BgtInputField
-									field={field}
-									type="text"
-									label={t("auth.username")}
-									disabled={isLoading}
-								/>
-							)}
+							{(field) => <BgtInputField field={field} type="text" label={t("auth.username")} disabled={isLoading} />}
 						</form.Field>
 						<form.Field name="email">
 							{(field) => (
