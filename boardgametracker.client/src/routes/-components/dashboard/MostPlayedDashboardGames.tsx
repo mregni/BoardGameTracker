@@ -37,11 +37,7 @@ const MostPlayedGameItem = ({ game }: MostPlayedGameItemProps) => {
 			<BgtCard className="cursor-pointer p-3">
 				<div className="flex items-center gap-4">
 					<div className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 shrink-0">
-						<BgtAvatar
-							image={game.image}
-							title={game.title}
-							size="large"
-						/>
+						<BgtAvatar image={game.image} title={game.title} size="large" />
 					</div>
 					<div className="flex-1">
 						<BgtText color="white">{game.title}</BgtText>

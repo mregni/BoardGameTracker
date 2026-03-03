@@ -38,12 +38,12 @@ const TopPlayerCardItem = (props: ItemProps) => {
 	const playerObj = playerById(player.id);
 
 	return (
-		<Link to="/players/$playerId" params={{ playerId: player.id }} className="flex items-center gap-4 bg-primary/5 rounded-lg p-4 border border-primary/10">
-			<BgtAvatar
-				image={playerObj?.image}
-				title={playerObj?.name}
-				size="large"
-			/>
+		<Link
+			to="/players/$playerId"
+			params={{ playerId: player.id }}
+			className="flex items-center gap-4 bg-primary/5 rounded-lg p-4 border border-primary/10"
+		>
+			<BgtAvatar image={playerObj?.image} title={playerObj?.name} size="large" />
 			<div className="flex-1">
 				<BgtText color="white" className="text-white uppercase">
 					{playerObj?.name}

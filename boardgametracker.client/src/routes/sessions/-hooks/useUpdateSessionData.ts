@@ -6,7 +6,7 @@ import { getSession } from "@/services/queries/sessions";
 import { updateSessionCall } from "@/services/sessionService";
 
 interface Props {
-	sessionId: string;
+	sessionId: number;
 	onSuccess?: () => void;
 }
 

@@ -1,15 +1,17 @@
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
-import { usePermissions } from "@/hooks/usePermissions";
 import { useTranslation } from "react-i18next";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession, Session } from "@/models";
 import { getGame } from "@/services/queries/games";
 
 import { getSession } from "@/services/queries/sessions";
+import { sessionIdParamSchema } from "@/utils/routeSchemas";
 import { SessionForm } from "./-components/SessionForm";
 import { useUpdateSessionData } from "./-hooks/useUpdateSessionData";
 
 export const Route = createFileRoute("/sessions/update_/$sessionId")({
 	component: RouteComponent,
+	params: sessionIdParamSchema,
 	loader: async ({ params, context: { queryClient } }) => {
 		const data = await queryClient.fetchQuery(getSession(params.sessionId));
 		queryClient.prefetchQuery(getGame(data.gameId));
@@ -22,10 +24,11 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const { canWrite } = usePermissions();
 
-	if (!canWrite) return <Navigate to="/" />;
 	const { game, session, updateSession, isPending } = useUpdateSessionData({
 		sessionId,
 	});
+
+	if (!canWrite) return <Navigate to="/" />;
 
 	if (session === undefined) return null;
 

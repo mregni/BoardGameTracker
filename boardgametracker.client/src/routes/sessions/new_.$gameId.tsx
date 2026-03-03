@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
-import { usePermissions } from "@/hooks/usePermissions";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession } from "@/models";
 import { getGame, getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";
@@ -27,8 +27,9 @@ function RouteComponent() {
 	const { t } = useTranslation();
 	const { canWrite } = usePermissions();
 
-	if (!canWrite) return <Navigate to="/" />;
 	const { game, isLoading, isPending, saveSession } = useNewSessionWithGameData({ gameId });
+
+	if (!canWrite) return <Navigate to="/" />;
 
 	const save = async (data: CreateSession) => {
 		const result = await saveSession(data);

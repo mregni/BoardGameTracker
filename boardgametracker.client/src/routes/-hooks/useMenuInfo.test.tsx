@@ -15,6 +15,14 @@ vi.mock("@/services/queries/settings", () => ({
 				updateAvailable: false,
 			}),
 	}),
+	getSettings: () => ({
+		queryKey: ["settings"],
+		queryFn: () =>
+			Promise.resolve({
+				shelfOfShameEnabled: true,
+				gameNightsEnabled: true,
+			}),
+	}),
 }));
 
 vi.mock("@/services/queries/count", () => ({
@@ -76,8 +84,8 @@ const createWrapper = () => {
 
 describe("useBgtMenuBar", () => {
 	describe("menuItems", () => {
-		it("should have 8 menu items", () => {
-			expect(menuItems).toHaveLength(8);
+		it("should have 10 menu items", () => {
+			expect(menuItems).toHaveLength(10);
 		});
 
 		it("should have dashboard as first item", () => {
@@ -134,12 +142,14 @@ describe("useBgtMenuBar", () => {
 	});
 
 	describe("useBgtMenuBar hook", () => {
-		it("should return menuItems", () => {
+		it("should return menuItems", async () => {
 			const { result } = renderHook(() => useMenuInfo(), {
 				wrapper: createWrapper(),
 			});
 
-			expect(result.current.menuItems).toBe(menuItems);
+			await waitFor(() => {
+				expect(result.current.menuItems).toHaveLength(menuItems.length);
+			});
 		});
 
 		it("should return versionInfo data when loaded", async () => {

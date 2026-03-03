@@ -75,7 +75,9 @@ function RouteComponent() {
 							dateFormat={settings.dateFormat}
 							uiLanguage={settings.uiLanguage}
 						/>
-						{statistics.gameStats.playCount === 0 && <GameDetailEmptyState onLogSession={canWrite ? actions.handleAddSession : undefined} />}
+						{statistics.gameStats.playCount === 0 && (
+							<GameDetailEmptyState onLogSession={canWrite ? actions.handleAddSession : undefined} />
+						)}
 						{statistics.gameStats.playCount !== 0 && (
 							<>
 								<GameStatisticsGrid

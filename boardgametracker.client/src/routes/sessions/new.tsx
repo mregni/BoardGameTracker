@@ -1,10 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
-import { usePermissions } from "@/hooks/usePermissions";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import Game from "@/assets/icons/gamepad.svg?react";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession } from "@/models";
 import { getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";

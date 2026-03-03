@@ -41,7 +41,7 @@ export const ExpansionsCard = (props: Props) => {
 			{expansions.length === 0 ? (
 				<div className="text-center py-8">
 					<div className="text-white/50 text-sm">{t("game.expansions.none")}</div>
-{canWrite && (
+					{canWrite && (
 						<button
 							onClick={onAddExpansion}
 							className="mt-3 text-primary hover:text-primary/80 text-sm transition-colors"
@@ -63,7 +63,7 @@ export const ExpansionsCard = (props: Props) => {
 							<div className="flex-1">
 								<BgtText color="white">{expansion.title}</BgtText>
 							</div>
-{canWrite && (
+							{canWrite && (
 								<div className="flex">
 									<BgtIconButton icon={<Trash />} intent="danger" onClick={() => onDeleteExpansion(expansion.id)} />
 								</div>

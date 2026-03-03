@@ -90,7 +90,7 @@ describe("BgtImageCard", () => {
 				/>,
 			);
 
-			expect(screen.getByText("Wingspan")).toBeInTheDocument();
+			expect(screen.getByText(/Wingspan/)).toBeInTheDocument();
 			expect(screen.getByText("game.state.owned")).toBeInTheDocument();
 			expect(screen.getByRole("link")).toHaveAttribute("href", "/games/2");
 		});

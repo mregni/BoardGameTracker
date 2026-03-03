@@ -127,10 +127,15 @@ jobs:
           cd boardgametracker.client
           npm ci
 
-      - name: Run Prettier check
+      - name: Run Biome format check
         run: |
           cd boardgametracker.client
-          npm run prettier
+          npm run format:check
+
+      - name: Run Biome lint
+        run: |
+          cd boardgametracker.client
+          npm run lint
 
       - name: Run frontend tests with coverage
         run: |

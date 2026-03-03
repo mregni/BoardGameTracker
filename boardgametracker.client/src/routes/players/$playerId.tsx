@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
-import { getBadges } from "@/services/queries/basdges";
 import { usePermissions } from "@/hooks/usePermissions";
+import { getBadges } from "@/services/queries/basdges";
 import { getPlayer, getPlayerStatistics } from "@/services/queries/players";
 import { playerIdParamSchema } from "@/utils/routeSchemas";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
@@ -53,7 +53,12 @@ function RouteComponent() {
 			<BgtPageContent isLoading={isLoading} data={{ player, statistics, badges, settings }}>
 				{({ player, statistics, badges, settings }) => (
 					<>
-						<PlayerHeader playerName={player.name} canWrite={canWrite} onDelete={modals.deleteModal.show} onEdit={modals.editModal.show} />
+						<PlayerHeader
+							playerName={player.name}
+							canWrite={canWrite}
+							onDelete={modals.deleteModal.show}
+							onEdit={modals.editModal.show}
+						/>
 						<PlayerHeroSection player={player} />
 						{statistics.playCount !== 0 && (
 							<>

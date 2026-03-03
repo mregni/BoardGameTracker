@@ -1,5 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { createRootRouteWithContext, type ErrorComponentProps, Outlet, useMatch, useNavigate } from "@tanstack/react-router";
+import {
+	createRootRouteWithContext,
+	type ErrorComponentProps,
+	Outlet,
+	useMatch,
+	useNavigate,
+} from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ErrorBoundary/ErrorFallback";
