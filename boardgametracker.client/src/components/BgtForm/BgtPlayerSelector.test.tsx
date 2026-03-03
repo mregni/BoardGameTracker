@@ -21,9 +21,8 @@ vi.mock("@/routes/-hooks/usePlayerById", () => ({
 
 describe("BgtPlayerSelector", () => {
 	const defaultProps = {
-		setCreateModalOpen: vi.fn(),
-		setPlayerIdToEdit: vi.fn(),
-		setUpdateModalOpen: vi.fn(),
+		onOpenCreateModal: vi.fn(),
+		onEditPlayer: vi.fn(),
 		remove: vi.fn(),
 		players: [] as CreateSessionPlayer[],
 		disabled: false,
@@ -81,10 +80,10 @@ describe("BgtPlayerSelector", () => {
 	});
 
 	describe("User Interactions", () => {
-		it("should call setCreateModalOpen when add player button is clicked", async () => {
+		it("should call onOpenCreateModal when add player button is clicked", async () => {
 			const user = userEvent.setup();
-			const setCreateModalOpen = vi.fn();
-			renderWithTheme(<BgtPlayerSelector {...defaultProps} setCreateModalOpen={setCreateModalOpen} />);
+			const onOpenCreateModal = vi.fn();
+			renderWithTheme(<BgtPlayerSelector {...defaultProps} onOpenCreateModal={onOpenCreateModal} />);
 
 			await user.click(
 				screen.getByRole("button", {
@@ -92,7 +91,7 @@ describe("BgtPlayerSelector", () => {
 				}),
 			);
 
-			expect(setCreateModalOpen).toHaveBeenCalledWith(true);
+			expect(onOpenCreateModal).toHaveBeenCalled();
 		});
 
 		it("should call remove when delete button is clicked", async () => {
@@ -113,19 +112,11 @@ describe("BgtPlayerSelector", () => {
 			}
 		});
 
-		it("should call setPlayerIdToEdit and setUpdateModalOpen when edit button is clicked", async () => {
+		it("should call onEditPlayer when edit button is clicked", async () => {
 			const user = userEvent.setup();
-			const setPlayerIdToEdit = vi.fn();
-			const setUpdateModalOpen = vi.fn();
+			const onEditPlayer = vi.fn();
 			const players: CreateSessionPlayer[] = [{ playerId: 1, won: false, firstPlay: false, score: 100 }];
-			renderWithTheme(
-				<BgtPlayerSelector
-					{...defaultProps}
-					players={players}
-					setPlayerIdToEdit={setPlayerIdToEdit}
-					setUpdateModalOpen={setUpdateModalOpen}
-				/>,
-			);
+			renderWithTheme(<BgtPlayerSelector {...defaultProps} players={players} onEditPlayer={onEditPlayer} />);
 
 			// Find all buttons and click the edit one (the primary styled one, not danger/error)
 			const buttons = screen.getAllByRole("button");
@@ -139,8 +130,7 @@ describe("BgtPlayerSelector", () => {
 
 			if (editButton) {
 				await user.click(editButton);
-				expect(setPlayerIdToEdit).toHaveBeenCalledWith(1);
-				expect(setUpdateModalOpen).toHaveBeenCalledWith(true);
+				expect(onEditPlayer).toHaveBeenCalledWith(1);
 			}
 		});
 	});

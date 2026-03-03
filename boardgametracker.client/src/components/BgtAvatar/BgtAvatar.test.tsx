@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { StringToHsl } from "@/utils/stringUtils";
 import { BgtAvatar } from "./BgtAvatar";
 
 describe("BgtAvatar", () => {
@@ -74,9 +75,9 @@ describe("BgtAvatar", () => {
 
 	describe("Color Prop", () => {
 		it("should apply background color to initial avatar", () => {
-			renderWithTheme(<BgtAvatar title="John" image={null} color="hsl(200, 85%, 35%)" />);
+			renderWithTheme(<BgtAvatar title="John" image={null} />);
 			const avatar = screen.getByText("J").parentElement;
-			expect(avatar).toHaveStyle({ backgroundColor: "hsl(200, 85%, 35%)" });
+			expect(avatar).toHaveStyle({ backgroundColor: StringToHsl("John") });
 		});
 	});
 
@@ -107,12 +108,10 @@ describe("BgtAvatar", () => {
 			const user = userEvent.setup();
 			const handleClick = vi.fn();
 
-			renderWithTheme(
-				<BgtAvatar title="Alice" image={null} size="large" color="hsl(100, 85%, 35%)" onClick={handleClick} />,
-			);
+			renderWithTheme(<BgtAvatar title="Alice" image={null} size="large" onClick={handleClick} />);
 
 			const avatar = screen.getByText("A").parentElement;
-			expect(avatar).toHaveStyle({ backgroundColor: "hsl(100, 85%, 35%)" });
+			expect(avatar).toHaveStyle({ backgroundColor: StringToHsl("Alice") });
 
 			await user.click(screen.getByText("A"));
 			expect(handleClick).toHaveBeenCalled();

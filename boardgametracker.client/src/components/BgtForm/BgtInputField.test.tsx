@@ -27,7 +27,7 @@ describe("BgtInputField", () => {
 			renderWithTheme(<BgtInputField field={mockField} type="text" label="Username" placeholder="enter text" />);
 			expect(screen.getByRole("textbox")).toBeInTheDocument();
 			expect(screen.getByText("Username")).toBeInTheDocument();
-			expect(screen.getByPlaceholderText("ENTER TEXT")).toBeInTheDocument();
+			expect(screen.getByPlaceholderText("enter text")).toBeInTheDocument();
 		});
 
 		it("should render with prefix label", () => {
