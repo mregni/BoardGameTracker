@@ -85,6 +85,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? builder.Configuration["Jwt:Secret"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "boardgametracker-api";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "boardgametracker-client";
+if (string.IsNullOrWhiteSpace(jwtSecret))
+{
+    throw new ArgumentException("JWT_SECRET not set");
+}
 
 builder.Services.AddAuthentication(options =>
     {
@@ -101,8 +105,7 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-            ClockSkew = TimeSpan.FromMinutes(1)
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         };
     });
 

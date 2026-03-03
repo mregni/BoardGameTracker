@@ -7,6 +7,7 @@ import MapPinIcon from "@/assets/icons/map-pin.svg?react";
 import PlusIcon from "@/assets/icons/plus.svg?react";
 import TrendUp from "@/assets/icons/trend-up.svg?react";
 import UsersIcon from "@/assets/icons/users.svg?react";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { MenuItem } from "@/models";
 import { getCounts } from "@/services/queries/count";
 import { getSettings, getVersionInfo } from "@/services/queries/settings";
@@ -79,11 +80,13 @@ export const menuItems: MenuItem[] = [
 ];
 
 export const useMenuInfo = () => {
+	const { canWrite } = usePermissions();
 	const [versionInfoQuery, countsQuery, settingsQuery] = useQueries({
 		queries: [getVersionInfo(), getCounts(), getSettings()],
 	});
 
 	const filteredMenuItems = menuItems.filter((item) => {
+		if (item.path === "/sessions/new" && !canWrite) return false;
 		if (item.path === "/shames" && !settingsQuery.data?.shelfOfShameEnabled) return false;
 		if (item.path === "/game-nights" && !settingsQuery.data?.gameNightsEnabled) return false;
 		return true;

@@ -57,7 +57,7 @@ public class SettingsController : ControllerBase
     }
 
     [HttpGet("environment")]
-    [Authorize(Roles = Constants.AuthRoles.Admin)]
+    [Authorize]
     public IActionResult GetEnvironment()
     {
         var resources = new UIEnvironmentDto
