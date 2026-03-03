@@ -9,6 +9,7 @@ url: ""
 baseurl: ""
 
 github_repo_url: https://github.com/mregni/BoardGameTracker
+github_repo_branch: master
 
 theme: jekyll-theme-rop
 
