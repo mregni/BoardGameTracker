@@ -8,6 +8,7 @@ import {
 	registerUserCall,
 	resetPasswordCall,
 	updateProfileCall,
+	updateUserCall,
 } from "@/services/authService";
 import { getProfile, getUsers } from "@/services/queries/auth";
 
@@ -62,6 +63,18 @@ export const useAccountData = () => {
 		},
 	});
 
+	const updateUserMutation = useMutation({
+		mutationFn: ({ userId, ...request }: { userId: string; username: string; email: string | null; role: string }) =>
+			updateUserCall(userId, request),
+		onSuccess: () => {
+			successToast("settings.account.notifications.user-updated");
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
+		},
+		onError: () => {
+			errorToast("settings.account.notifications.user-update-failed");
+		},
+	});
+
 	return {
 		profile: profileQuery.data,
 		isProfileLoading: profileQuery.isLoading,
@@ -74,6 +87,8 @@ export const useAccountData = () => {
 		registerUser: registerUserMutation.mutateAsync,
 		isRegistering: registerUserMutation.isPending,
 		deleteUser: deleteUserMutation.mutateAsync,
+		updateUser: updateUserMutation.mutateAsync,
+		isUpdatingUser: updateUserMutation.isPending,
 		resetPassword: resetPasswordCall,
 	};
 };

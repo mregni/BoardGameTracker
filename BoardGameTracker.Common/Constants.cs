@@ -35,11 +35,15 @@ public static class Constants
     {
         public const string Admin = "Admin";
         public const string User = "User";
+        public const string Reader = "Reader";
+        public const string UserOrAdmin = $"{User},{Admin}";
+        public static readonly HashSet<string> AllRoles = [Admin, User, Reader];
     }
 
     public static class Errors
     {
         public const string UsernameAlreadyExists = "error.auth.username-already-exists";
+        public const string UsernameRequired = "error.auth.username-required";
         public const string OidcNoLocalUsers = "error.auth.oidc-no-local-users";
         public const string InvalidRole = "error.auth.invalid-role";
         public const string CannotChangeOidcPassword = "error.auth.cannot-change-oidc-password";

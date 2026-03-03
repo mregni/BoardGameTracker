@@ -10,6 +10,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { usePermissions } from "@/hooks/usePermissions";
 import { getLoans } from "@/services/queries/loans";
 import { useGameById } from "../-hooks/useGameById";
 import { usePlayerById } from "../-hooks/usePlayerById";
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/loans/")({
 
 function RouteComponent() {
 	const { t } = useTranslation();
+	const { canWrite } = usePermissions();
 	const { loans, settings, deleteLoan, returnLoan, isLoading } = useLoans();
 	const { gameById } = useGameById();
 	const { playerById } = usePlayerById();
@@ -47,10 +49,7 @@ function RouteComponent() {
 				icon={LeftRightArrowIcon}
 				title={t("loan.empty.title")}
 				description={t("loan.empty.description")}
-				action={{
-					label: t("loan.new.title"),
-					onClick: modals.createModal.show,
-				}}
+				action={canWrite ? { label: t("loan.new.title"), onClick: modals.createModal.show } : undefined}
 			>
 				<NewLoanModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
 			</BgtEmptyPage>
@@ -62,13 +61,17 @@ function RouteComponent() {
 			<BgtPageHeader
 				icon={LeftRightArrowIcon}
 				header={t("common.loans")}
-				actions={[
-					{
-						onClick: modals.createModal.show,
-						variant: "primary",
-						content: "loan.new.title",
-					},
-				]}
+				actions={
+					canWrite
+						? [
+								{
+									onClick: modals.createModal.show,
+									variant: "primary",
+									content: "loan.new.title",
+								},
+							]
+						: []
+				}
 			/>
 			<BgtPageContent isLoading={isLoading} data={{ loans, settings }}>
 				{({ loans, settings }) => (
@@ -101,8 +104,8 @@ function RouteComponent() {
 											game={gameById(loan.gameId) ?? undefined}
 											player={playerById(loan.playerId) ?? undefined}
 											dateFormat={settings.dateFormat}
-											onReturn={actions.handleReturnLoan}
-											onDelete={actions.handleDelete}
+											onReturn={canWrite ? actions.handleReturnLoan : undefined}
+											onDelete={canWrite ? actions.handleDelete : undefined}
 										/>
 									))}
 							</div>
@@ -124,7 +127,7 @@ function RouteComponent() {
 											game={gameById(loan.gameId) ?? undefined}
 											player={playerById(loan.playerId) ?? undefined}
 											dateFormat={settings.dateFormat}
-											onDelete={actions.handleDelete}
+											onDelete={canWrite ? actions.handleDelete : undefined}
 										/>
 									))}
 							</div>

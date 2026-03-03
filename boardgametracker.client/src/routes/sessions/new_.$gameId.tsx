@@ -1,4 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
+import { usePermissions } from "@/hooks/usePermissions";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import type { CreateSession } from "@/models";
@@ -24,6 +25,9 @@ function RouteComponent() {
 	const { gameId } = Route.useParams();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
+	const { canWrite } = usePermissions();
+
+	if (!canWrite) return <Navigate to="/" />;
 	const { game, isLoading, isPending, saveSession } = useNewSessionWithGameData({ gameId });
 
 	const save = async (data: CreateSession) => {

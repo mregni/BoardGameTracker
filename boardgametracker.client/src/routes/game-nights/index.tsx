@@ -7,6 +7,7 @@ import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { usePermissions } from "@/hooks/usePermissions";
 import { getGameNights } from "@/services/queries/gameNights";
 import { getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/game-nights/")({
 
 function RouteComponent() {
 	const { t } = useTranslation();
+	const { canWrite } = usePermissions();
 	const [filter, setFilter] = useState<FilterType>("all");
 	const [selectedGameNightId, setSelectedGameNightId] = useState<number | null>(null);
 
@@ -91,10 +93,7 @@ function RouteComponent() {
 				icon={Calendar}
 				title={t("game-nights.empty.title")}
 				description={t("game-nights.empty.description")}
-				action={{
-					label: t("game-nights.create.button"),
-					onClick: modals.createModal.show,
-				}}
+				action={canWrite ? { label: t("game-nights.create.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<CreateGameNightModal
 					open={modals.createModal.isOpen}
@@ -114,13 +113,17 @@ function RouteComponent() {
 			<BgtPageHeader
 				icon={Calendar}
 				header={t("game-nights.title")}
-				actions={[
-					{
-						onClick: modals.createModal.show,
-						variant: "primary",
-						content: "game-nights.create.button",
-					},
-				]}
+				actions={
+					canWrite
+						? [
+								{
+									onClick: modals.createModal.show,
+									variant: "primary",
+									content: "game-nights.create.button",
+								},
+							]
+						: []
+				}
 			/>
 			<BgtPageContent isLoading={isLoading} data={{ settings, gameNights }}>
 				{({ settings }) => (
@@ -142,6 +145,7 @@ function RouteComponent() {
 										key={gameNight.id}
 										gameNight={gameNight}
 										settings={settings}
+										canWrite={canWrite}
 										onEdit={actions.handleEditGameNight}
 										onDelete={() => {
 											actions.handleDeleteClick(gameNight);

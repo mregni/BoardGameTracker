@@ -42,15 +42,16 @@ const CATEGORIES: CategoryItem[] = [
 interface Props {
 	activeCategory: SettingsCategory;
 	onCategoryChange: (category: SettingsCategory) => void;
+	canManageSettings: boolean;
 }
 
-export const SettingsSidebar = ({ activeCategory, onCategoryChange }: Props) => {
+export const SettingsSidebar = ({ activeCategory, onCategoryChange, canManageSettings }: Props) => {
 	const { t } = useTranslation();
 
 	return (
 		<div className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r border-white/10 lg:pr-4 max-lg:pb-4">
 			<nav className="space-y-1">
-				{CATEGORIES.map((category) => {
+				{CATEGORIES.filter((c) => canManageSettings || c.id === "account").map((category) => {
 					const isActive = activeCategory === category.id;
 
 					return (

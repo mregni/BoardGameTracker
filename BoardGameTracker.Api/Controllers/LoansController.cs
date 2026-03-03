@@ -1,3 +1,4 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
@@ -39,6 +40,7 @@ public class LoanController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> CreateLoan([FromBody] CreateLoanCommand command)
     {
         var createdLoan = await _loanService.LoanGameToPlayer(command);
@@ -46,6 +48,7 @@ public class LoanController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> UpdateLoan([FromBody] UpdateLoanCommand command)
     {
         var updatedLoan = await _loanService.Update(command);
@@ -53,6 +56,7 @@ public class LoanController : ControllerBase
     }
 
     [HttpPut("return")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> ReturnLoan([FromBody] ReturnLoanCommand command)
     {
         var updatedLoan = await _loanService.ReturnLoan(command);
@@ -60,6 +64,7 @@ public class LoanController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> DeleteLoan(int id)
     {
         var existingLoan = await _loanService.GetLoanById(id);

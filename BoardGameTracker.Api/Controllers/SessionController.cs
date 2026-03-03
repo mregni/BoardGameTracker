@@ -1,3 +1,4 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Sessions.Interfaces;
@@ -32,6 +33,7 @@ public class SessionController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> CreateSession([FromBody] CreateSessionCommand command)
     {
         var session = await _sessionService.CreateFromCommand(command);
@@ -39,6 +41,7 @@ public class SessionController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> UpdateSession([FromBody] UpdateSessionCommand command)
     {
         var result = await _sessionService.UpdateFromCommand(command);
@@ -47,6 +50,7 @@ public class SessionController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> DeleteSession(int id)
     {
         var session = await _sessionService.Get(id);

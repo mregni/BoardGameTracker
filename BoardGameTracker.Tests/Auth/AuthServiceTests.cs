@@ -380,6 +380,57 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RegisterAsync_ShouldReturnUserDto_WhenRegistrationSucceedsWithReaderRole()
+    {
+        // Arrange
+        var request = new RegisterRequest("reader", "reader@test.com", "password123", Constants.AuthRoles.Reader);
+        var roles = new List<string> { Constants.AuthRoles.Reader };
+
+        _userManagerMock.Setup(x => x.FindByNameAsync("reader"))
+            .ReturnsAsync((ApplicationUser?)null);
+        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), "password123"))
+            .ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), Constants.AuthRoles.Reader))
+            .ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(It.IsAny<ApplicationUser>()))
+            .ReturnsAsync(roles);
+
+        // Act
+        var result = await _authService.RegisterAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Username.Should().Be("reader");
+        result.Roles.Should().Contain(Constants.AuthRoles.Reader);
+
+        _userManagerMock.Verify(x => x.FindByNameAsync("reader"), Times.Once);
+        _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>(), "password123"), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), Constants.AuthRoles.Reader), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RegisterAsync_ShouldThrowValidationException_WhenRoleIsInvalid()
+    {
+        // Arrange
+        var request = new RegisterRequest("newuser", "new@test.com", "password123", "InvalidRole");
+
+        _userManagerMock.Setup(x => x.FindByNameAsync("newuser"))
+            .ReturnsAsync((ApplicationUser?)null);
+
+        // Act
+        var act = () => _authService.RegisterAsync(request);
+
+        // Assert
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage(Constants.Errors.InvalidRole);
+
+        _userManagerMock.Verify(x => x.FindByNameAsync("newuser"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task RegisterAsync_ShouldThrowDomainException_WhenUsernameAlreadyExists()
     {
         // Arrange

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { usePermissions } from "@/hooks/usePermissions";
 import { getGame, getGameSessionsShortList, getGameStatistics } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { gameIdParamSchema } from "@/utils/routeSchemas";
@@ -36,6 +37,7 @@ export const Route = createFileRoute("/games/$gameId")({
 function RouteComponent() {
 	const { gameId } = Route.useParams();
 	const { t } = useTranslation();
+	const { canWrite } = usePermissions();
 
 	const { game, deleteGame, settings, statistics, sessions, deleteExpansion, isLoading } = useGameData({
 		gameId,
@@ -61,6 +63,7 @@ function RouteComponent() {
 							gameTitle={game.title}
 							gameState={game.state}
 							isLoaned={game.isLoaned}
+							canWrite={canWrite}
 							onAddSession={actions.handleAddSession}
 							onEdit={actions.handleEdit}
 							onDelete={modals.deleteModal.show}
@@ -72,7 +75,7 @@ function RouteComponent() {
 							dateFormat={settings.dateFormat}
 							uiLanguage={settings.uiLanguage}
 						/>
-						{statistics.gameStats.playCount === 0 && <GameDetailEmptyState onLogSession={actions.handleAddSession} />}
+						{statistics.gameStats.playCount === 0 && <GameDetailEmptyState onLogSession={canWrite ? actions.handleAddSession : undefined} />}
 						{statistics.gameStats.playCount !== 0 && (
 							<>
 								<GameStatisticsGrid
@@ -97,6 +100,7 @@ function RouteComponent() {
 										<PlayerCountChartCard playerCountChart={statistics.playerCountChart} />
 										<ExpansionsCard
 											expansions={game.expansions}
+											canWrite={canWrite}
 											onAddExpansion={actions.handleAddExpansion}
 											onDeleteExpansion={actions.handleDeleteExpansion}
 										/>

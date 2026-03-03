@@ -6,7 +6,7 @@ import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
 
 interface GameDetailEmptyStateProps {
-	onLogSession: () => void;
+	onLogSession?: () => void;
 }
 
 export const GameDetailEmptyState = ({ onLogSession }: GameDetailEmptyStateProps) => {
@@ -27,9 +27,11 @@ export const GameDetailEmptyState = ({ onLogSession }: GameDetailEmptyStateProps
 					{t("game.no-sessions.description")}
 				</BgtText>
 
-				<BgtButton onClick={onLogSession} className="mt-6">
-					<Plus /> {t("game.no-sessions.button")}
-				</BgtButton>
+				{onLogSession && (
+					<BgtButton onClick={onLogSession} className="mt-6">
+						<Plus /> {t("game.no-sessions.button")}
+					</BgtButton>
+				)}
 
 				<BgtText color="white" opacity={40} size="2" className="pt-6">
 					{t("game.no-sessions.extra")}

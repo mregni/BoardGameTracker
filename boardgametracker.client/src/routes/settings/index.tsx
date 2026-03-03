@@ -8,6 +8,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { useAppForm } from "@/hooks/form";
+import { usePermissions } from "@/hooks/usePermissions";
 import { type Settings, SettingsSchema } from "@/models";
 import { getEnvironment, getLanguages, getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -53,7 +54,8 @@ interface SettingsPageContentProps {
 }
 
 function SettingsPageContent({ settings, languages, isSaving, saveSettings }: SettingsPageContentProps) {
-	const [activeCategory, setActiveCategory] = useState<SettingsCategory>("general");
+	const { canManageSettings } = usePermissions();
+	const [activeCategory, setActiveCategory] = useState<SettingsCategory>(canManageSettings ? "general" : "account");
 	const { t } = useTranslation();
 
 	const form = useAppForm({
@@ -100,7 +102,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 			<BgtPageHeader header={"Settings"} icon={CogIcon} />
 			<BgtPageContent>
 				<div className="flex flex-col lg:flex-row">
-					<SettingsSidebar activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
+					<SettingsSidebar activeCategory={activeCategory} onCategoryChange={setActiveCategory} canManageSettings={canManageSettings} />
 
 					<div className="flex-1">
 						<form onSubmit={handleFormSubmit(form)}>

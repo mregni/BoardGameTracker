@@ -10,6 +10,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useFilteredList } from "@/hooks/useFilteredList";
+import { usePermissions } from "@/hooks/usePermissions";
 import { getPlayers } from "@/services/queries/players";
 import { usePlayerModals } from "./-hooks/usePlayerModals";
 import { usePlayersData } from "./-hooks/usePlayersData";
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/players/")({
 
 function RouteComponent() {
 	const { t } = useTranslation();
+	const { canWrite } = usePermissions();
 	const modals = usePlayerModals();
 	const { players, isLoading } = usePlayersData();
 	const { filterValue, setFilterValue, filtered: filteredPlayers } = useFilteredList(players, "name");
@@ -37,10 +39,7 @@ function RouteComponent() {
 				icon={Users}
 				title={t("player.empty.title")}
 				description={t("player.empty.description")}
-				action={{
-					label: t("player.new.button"),
-					onClick: modals.createModal.show,
-				}}
+				action={canWrite ? { label: t("player.new.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<CreatePlayerModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
 			</BgtEmptyPage>
@@ -52,13 +51,17 @@ function RouteComponent() {
 			<BgtPageHeader
 				header={t("common.players")}
 				icon={Users}
-				actions={[
-					{
-						content: "player.new.button",
-						variant: "primary",
-						onClick: modals.createModal.show,
-					},
-				]}
+				actions={
+					canWrite
+						? [
+								{
+									content: "player.new.button",
+									variant: "primary",
+									onClick: modals.createModal.show,
+								},
+							]
+						: []
+				}
 			></BgtPageHeader>
 			<BgtPageContent>
 				<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />

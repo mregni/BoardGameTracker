@@ -126,7 +126,7 @@ public class AuthService : IAuthService
         }
 
         var role = request.Role ?? Constants.AuthRoles.User;
-        if (role != Constants.AuthRoles.Admin && role != Constants.AuthRoles.User)
+        if (!Constants.AuthRoles.AllRoles.Contains(role))
         {
             throw new ValidationException(Constants.Errors.InvalidRole);
         }

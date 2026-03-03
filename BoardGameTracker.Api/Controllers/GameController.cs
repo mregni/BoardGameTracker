@@ -1,3 +1,4 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
@@ -42,6 +43,7 @@ public class GameController : ControllerBase
 
     [HttpPost]
     [Route("")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameCommand command)
     {
         var game = await _gameService.CreateGameFromCommand(command);
@@ -50,6 +52,7 @@ public class GameController : ControllerBase
 
     [HttpPut]
     [Route("")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> UpdateGame([FromBody] UpdateGameCommand command)
     {
         var game = await _gameService.UpdateGame(command);
@@ -58,6 +61,7 @@ public class GameController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> DeleteGameById(int id)
     {
         await _gameService.Delete(id);
@@ -78,6 +82,7 @@ public class GameController : ControllerBase
     }
 
     [HttpPost("bgg/search")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> SearchOnBgg([FromBody] BggSearch search)
     {
         var existingGame = await _bggImportService.GetGameByBggId(search.BggId);
@@ -104,6 +109,7 @@ public class GameController : ControllerBase
     }
 
     [HttpPost("bgg/import")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> ImportBggGames([FromBody] ImportBggGamesCommand command)
     {
         await _bggImportService.ImportList(command.Games);
@@ -128,6 +134,7 @@ public class GameController : ControllerBase
 
     [HttpPost]
     [Route("{id:int}/expansions")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> UpdateGameExpansions(int id, [FromBody] UpdateGameExpansionsCommand command)
     {
         var expansions = await _gameService.UpdateGameExpansions(id, command.ExpansionBggIds);
@@ -136,6 +143,7 @@ public class GameController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}/expansion/{expansionId:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> DeleteGameExpansions(int id, int expansionId)
     {
         await _gameService.DeleteExpansion(id, expansionId);

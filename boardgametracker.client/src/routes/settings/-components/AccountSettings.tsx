@@ -15,6 +15,7 @@ import { handleFormSubmit } from "@/utils/formUtils";
 import { useAccountData } from "../-hooks/useAccountData";
 import { ChangePasswordModal } from "../-modals/ChangePasswordModal";
 import { CreateUserModal } from "../-modals/CreateUserModal";
+import { EditUserModal } from "../-modals/EditUserModal";
 import { TempPasswordModal } from "../-modals/TempPasswordModal";
 import { SettingsSection } from "./SettingsSection";
 
@@ -35,12 +36,15 @@ export const AccountSettings = () => {
 		registerUser,
 		isRegistering,
 		deleteUser,
+		updateUser,
+		isUpdatingUser,
 		resetPassword,
 	} = useAccountData();
 
 	const changePasswordModal = useModalState();
 	const createUserModal = useModalState();
 	const [deleteTarget, setDeleteTarget] = useState<UserDto | null>(null);
+	const [editTarget, setEditTarget] = useState<UserDto | null>(null);
 	const [tempPasswordData, setTempPasswordData] = useState<{ username: string; password: string } | null>(null);
 
 	if (isProfileLoading || !profile) {
@@ -65,6 +69,7 @@ export const AccountSettings = () => {
 					users={users}
 					currentUserId={currentUser?.id ?? ""}
 					onCreateUser={createUserModal.show}
+					onEditUser={(user) => setEditTarget(user)}
 					onResetPassword={async (user) => {
 						try {
 							const result: ResetPasswordResponse = await resetPassword(user.id);
@@ -92,6 +97,16 @@ export const AccountSettings = () => {
 					close={createUserModal.hide}
 					onSubmit={registerUser}
 					isLoading={isRegistering}
+				/>
+			)}
+
+			{editTarget && (
+				<EditUserModal
+					open={true}
+					close={() => setEditTarget(null)}
+					user={editTarget}
+					onSubmit={updateUser}
+					isLoading={isUpdatingUser}
 				/>
 			)}
 
@@ -189,6 +204,7 @@ interface UserManagementSectionProps {
 	users: UserDto[];
 	currentUserId: string;
 	onCreateUser: () => void;
+	onEditUser: (user: UserDto) => void;
 	onResetPassword: (user: UserDto) => void;
 	onDeleteUser: (user: UserDto) => void;
 }
@@ -197,6 +213,7 @@ const UserManagementSection = ({
 	users,
 	currentUserId,
 	onCreateUser,
+	onEditUser,
 	onResetPassword,
 	onDeleteUser,
 }: UserManagementSectionProps) => {
@@ -230,6 +247,9 @@ const UserManagementSection = ({
 				header: "",
 				cell: ({ row }) => (
 					<div className="flex justify-end gap-2">
+						<BgtButton size="1" variant="cancel" onClick={() => onEditUser(row.original)}>
+							{t("common.edit")}
+						</BgtButton>
 						<BgtButton size="1" variant="cancel" onClick={() => onResetPassword(row.original)}>
 							{t("settings.account.users.reset-password.button")}
 						</BgtButton>
@@ -242,7 +262,7 @@ const UserManagementSection = ({
 				),
 			},
 		],
-		[t, currentUserId, onResetPassword, onDeleteUser],
+		[t, currentUserId, onEditUser, onResetPassword, onDeleteUser],
 	);
 
 	return (

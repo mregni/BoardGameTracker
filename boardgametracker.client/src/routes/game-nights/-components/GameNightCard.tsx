@@ -17,13 +17,14 @@ import { RsvpSection } from "./RsvpSection";
 interface Props {
 	gameNight: GameNight;
 	settings: Settings;
+	canWrite: boolean;
 	onEdit: (gameNight: GameNight) => void;
 	onDelete: (gameNight: GameNight) => void;
 	onManageRsvps: (gameNight: GameNight) => void;
 }
 
 export const GameNightCard = (props: Props) => {
-	const { gameNight, settings, onEdit, onDelete, onManageRsvps } = props;
+	const { gameNight, settings, canWrite, onEdit, onDelete, onManageRsvps } = props;
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 
@@ -66,14 +67,16 @@ export const GameNightCard = (props: Props) => {
 							</BgtText>
 						</div>
 					</div>
-					<div className="flex gap-2">
-						<BgtButton onClick={() => onEdit(gameNight)} variant="text" size="2">
-							{t("common.edit")}
-						</BgtButton>
-						<BgtButton onClick={() => onDelete(gameNight)} variant="error" size="2">
-							{t("common.delete.button")}
-						</BgtButton>
-					</div>
+					{canWrite && (
+						<div className="flex gap-2">
+							<BgtButton onClick={() => onEdit(gameNight)} variant="text" size="2">
+								{t("common.edit")}
+							</BgtButton>
+							<BgtButton onClick={() => onDelete(gameNight)} variant="error" size="2">
+								{t("common.delete.button")}
+							</BgtButton>
+						</div>
+					)}
 				</div>
 
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -134,7 +137,7 @@ export const GameNightCard = (props: Props) => {
 					</div>
 				)}
 
-				{isUpcoming && <GameNightActions gameNight={gameNight} onManageRsvps={onManageRsvps} />}
+				{isUpcoming && canWrite && <GameNightActions gameNight={gameNight} onManageRsvps={onManageRsvps} />}
 			</div>
 		</BgtCard>
 	);

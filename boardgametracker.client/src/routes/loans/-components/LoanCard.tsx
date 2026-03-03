@@ -46,7 +46,7 @@ interface LoanCardProps {
 	player: Player | undefined;
 	dateFormat: string;
 	onReturn?: (loanId: number, returnDate: Date) => void;
-	onDelete: (loanId: number) => void;
+	onDelete?: (loanId: number) => void;
 }
 
 export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }: LoanCardProps) => {
@@ -147,13 +147,15 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 					</button>
 				)}
 
-				<button
-					onClick={() => onDelete(loan.id)}
-					className="w-full bg-error/20 hover:bg-error/30 text-error border border-error/30 py-1 rounded-lg flex items-center justify-center gap-2"
-				>
-					<Trash className="size-5" />
-					{t("loan.delete.button")}
-				</button>
+				{onDelete && (
+					<button
+						onClick={() => onDelete(loan.id)}
+						className="w-full bg-error/20 hover:bg-error/30 text-error border border-error/30 py-1 rounded-lg flex items-center justify-center gap-2"
+					>
+						<Trash className="size-5" />
+						{t("loan.delete.button")}
+					</button>
+				)}
 			</div>
 		</BgtCard>
 	);

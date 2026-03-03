@@ -1,4 +1,5 @@
 using Ardalis.GuardClauses;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.GameNights.Interfaces;
@@ -27,6 +28,7 @@ public class GameNightController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> Create([FromBody] CreateGameNightCommand command)
     {
         var gameNight = await _gameNightService.Create(command);
@@ -34,6 +36,7 @@ public class GameNightController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> Update([FromBody] UpdateGameNightCommand command)
     {
         var gameNight = await _gameNightService.Update(command);
@@ -42,6 +45,7 @@ public class GameNightController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> Delete(int id)
     {
         var gameNight = await _gameNightService.GetById(id);

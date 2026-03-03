@@ -1,3 +1,4 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Core.Images.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,6 +19,7 @@ public class ImageController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> UploadImage([FromForm] UploadImageCommand command)
     {
         var name = await _imageService.SaveImage(command.File, command.Type);

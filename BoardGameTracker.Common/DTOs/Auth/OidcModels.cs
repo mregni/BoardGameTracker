@@ -83,3 +83,5 @@ public record ExternalLoginDto(
     DateTime? LastUsedAt);
 
 public record UpdateUserRoleRequest(string Role);
+
+public record AdminUpdateUserRequest(string Username, string? Email, string Role);

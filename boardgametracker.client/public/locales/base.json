@@ -560,6 +560,7 @@
       "username-already-exists": "Username already exists",
       "oidc-no-local-users": "Cannot create local users when OIDC is enabled",
       "invalid-role": "Invalid role",
+      "username-required": "Username is required",
       "cannot-change-oidc-password": "Cannot change password for externally authenticated accounts",
       "cannot-delete-self": "Cannot delete your own account",
       "cannot-delete-last-admin": "Cannot delete the last admin account",
@@ -831,6 +832,7 @@
         "role": "Role",
         "roles": {
           "user": "User",
+          "reader": "Reader",
           "admin": "Admin"
         },
         "create-button": "Create user",
@@ -850,6 +852,10 @@
             "label": "Display name"
           },
           "save": "Create user"
+        },
+        "edit": {
+          "title": "Edit User",
+          "description": "Change the role for \"{{username}}\"."
         },
         "reset-password": {
           "button": "Reset password"
@@ -875,6 +881,10 @@
         "user-create-failed": "Failed to create user",
         "user-deleted": "User deleted successfully",
         "user-delete-failed": "Failed to delete user",
+        "role-updated": "User role updated successfully",
+        "role-update-failed": "Failed to update user role",
+        "user-updated": "User updated successfully",
+        "user-update-failed": "Failed to update user",
         "password-reset-failed": "Failed to reset password"
       }
     }

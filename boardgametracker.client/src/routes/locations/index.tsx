@@ -11,6 +11,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { Location } from "@/models";
 import { EditLocationModal } from "@/routes/locations/-modals/EditLocationModal";
 import { NewLocationModal } from "@/routes/locations/-modals/NewLocationModal";
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/locations/")({
 
 function RouteComponent() {
 	const { t } = useTranslation();
+	const { canWrite } = usePermissions();
 	const modals = useLocationModals();
 	const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
@@ -51,31 +53,35 @@ function RouteComponent() {
 				cell: ({ row }) => <div className="flex justify-end">{row.original.playCount}</div>,
 				header: () => <div className="flex justify-end">{t("common.count")}</div>,
 			},
-			{
-				accessorKey: "3",
-				cell: ({ row }) => (
-					<div className="flex flex-row justify-end gap-2">
-						<BgtIconButton
-							icon={<PencilIcon className="size-5" />}
-							onClick={() => {
-								setSelectedLocation(row.original);
-								modals.editModal.show();
-							}}
-						/>
-						<BgtIconButton
-							icon={<TrashIcon className="size-5" />}
-							intent="danger"
-							onClick={() => {
-								setSelectedLocation(row.original);
-								modals.deleteModal.show();
-							}}
-						/>
-					</div>
-				),
-				header: "",
-			},
+			...(canWrite
+				? [
+						{
+							accessorKey: "3",
+							cell: ({ row }: { row: { original: Location } }) => (
+								<div className="flex flex-row justify-end gap-2">
+									<BgtIconButton
+										icon={<PencilIcon className="size-5" />}
+										onClick={() => {
+											setSelectedLocation(row.original);
+											modals.editModal.show();
+										}}
+									/>
+									<BgtIconButton
+										icon={<TrashIcon className="size-5" />}
+										intent="danger"
+										onClick={() => {
+											setSelectedLocation(row.original);
+											modals.deleteModal.show();
+										}}
+									/>
+								</div>
+							),
+							header: "",
+						},
+					]
+				: []),
 		],
-		[t, modals.editModal, modals.deleteModal],
+		[t, canWrite, modals.editModal, modals.deleteModal],
 	);
 
 	if (locations.length === 0) {
@@ -85,10 +91,7 @@ function RouteComponent() {
 				icon={MapPinIcon}
 				title={t("location.empty.title")}
 				description={t("location.empty.description")}
-				action={{
-					label: t("location.new.button"),
-					onClick: modals.createModal.show,
-				}}
+				action={canWrite ? { label: t("location.new.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<NewLocationModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
 			</BgtEmptyPage>
@@ -100,13 +103,17 @@ function RouteComponent() {
 			<BgtPageHeader
 				icon={MapPinIcon}
 				header={t("common.locations")}
-				actions={[
-					{
-						onClick: modals.createModal.show,
-						variant: "primary",
-						content: "location.new.button",
-					},
-				]}
+				actions={
+					canWrite
+						? [
+								{
+									onClick: modals.createModal.show,
+									variant: "primary",
+									content: "location.new.button",
+								},
+							]
+						: []
+				}
 			/>
 			<BgtPageContent>
 				<BgtCard className="p-4">

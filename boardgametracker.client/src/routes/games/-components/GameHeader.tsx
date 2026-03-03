@@ -10,13 +10,14 @@ interface Props {
 	gameTitle: string;
 	gameState: GameState;
 	isLoaned: boolean;
+	canWrite: boolean;
 	onAddSession: () => void;
 	onEdit: () => void;
 	onDelete: () => void;
 }
 
 export const GameHeader = (props: Props) => {
-	const { gameTitle, gameState, isLoaned, onAddSession, onEdit, onDelete } = props;
+	const { gameTitle, gameState, isLoaned, canWrite, onAddSession, onEdit, onDelete } = props;
 	const { t } = useTranslation();
 
 	return (
@@ -34,12 +35,14 @@ export const GameHeader = (props: Props) => {
 					{t(getItemStateTranslationKey(gameState, isLoaned))}
 				</BgtText>
 			</div>
-			<div className="flex gap-3 justify-between md:justify-start items-center pt-2 md:pt-0">
-				<BgtButton variant="primary" onClick={onAddSession}>
-					{t("game.add")}
-				</BgtButton>
-				<BgtEditDeleteButtons onDelete={onDelete} onEdit={onEdit} />
-			</div>
+			{canWrite && (
+				<div className="flex gap-3 justify-between md:justify-start items-center pt-2 md:pt-0">
+					<BgtButton variant="primary" onClick={onAddSession}>
+						{t("game.add")}
+					</BgtButton>
+					<BgtEditDeleteButtons onDelete={onDelete} onEdit={onEdit} />
+				</div>
+			)}
 		</div>
 	);
 };

@@ -3,12 +3,13 @@ import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 
 interface Props {
 	playerName: string;
+	canWrite: boolean;
 	onEdit: () => void;
 	onDelete: () => void;
 }
 
 export const PlayerHeader = (props: Props) => {
-	const { playerName, onEdit, onDelete } = props;
+	const { playerName, canWrite, onEdit, onDelete } = props;
 
 	return (
 		<div className="flex md:flex-row flex-col justify-between">
@@ -17,9 +18,11 @@ export const PlayerHeader = (props: Props) => {
 					{playerName}
 				</BgtHeading>
 			</div>
-			<div className="flex gap-3 justify-between md:justify-start items-center pt-2 md:pt-0">
-				<BgtEditDeleteButtons onDelete={onDelete} onEdit={onEdit} />
-			</div>
+			{canWrite && (
+				<div className="flex gap-3 justify-between md:justify-start items-center pt-2 md:pt-0">
+					<BgtEditDeleteButtons onDelete={onDelete} onEdit={onEdit} />
+				</div>
+			)}
 		</div>
 	);
 };

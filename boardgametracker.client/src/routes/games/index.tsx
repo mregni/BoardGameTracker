@@ -12,6 +12,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useFilteredList } from "@/hooks/useFilteredList";
+import { usePermissions } from "@/hooks/usePermissions";
 import { BggGameModal } from "@/routes/games/-modals/BggGameModal";
 import CreateGameModal from "@/routes/games/-modals/CreateGameModal";
 import { getGames } from "@/services/queries/games";
@@ -39,6 +40,7 @@ function RouteComponent() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { games, isLoading } = useGamesData();
+	const { canWrite } = usePermissions();
 	const modals = useGameModals();
 	const [categoryFilter, setCategoryFilter] = useState<string | undefined>(category);
 
@@ -71,7 +73,7 @@ function RouteComponent() {
 				icon={Game}
 				title={t("dashboard.empty.title")}
 				description={t("dashboard.empty.description")}
-				action={{ onClick: modals.createModal.show, label: t("games.new") }}
+				action={canWrite ? { onClick: modals.createModal.show, label: t("games.new") } : undefined}
 			>
 				<BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />
 				<CreateGameModal
@@ -89,13 +91,17 @@ function RouteComponent() {
 			<BgtPageHeader
 				header={t("games.title")}
 				icon={Game}
-				actions={[
-					{
-						onClick: modals.createModal.show,
-						variant: "primary",
-						content: "games.new",
-					},
-				]}
+				actions={
+					canWrite
+						? [
+								{
+									onClick: modals.createModal.show,
+									variant: "primary",
+									content: "games.new",
+								},
+							]
+						: []
+				}
 			></BgtPageHeader>
 			<BgtPageContent>
 				<div className="flex flex-row gap-3">

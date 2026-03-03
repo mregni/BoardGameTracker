@@ -1,4 +1,5 @@
-﻿using BoardGameTracker.Common.DTOs;
+﻿using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Players.Interfaces;
@@ -27,6 +28,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> CreatePlayer([FromBody] CreatePlayerCommand command)
     {
         var player = await _playerService.Create(command);
@@ -34,6 +36,7 @@ public class PlayerController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> UpdatePlayer([FromBody] UpdatePlayerCommand command)
     {
         var player = await _playerService.Update(command);
@@ -55,6 +58,7 @@ public class PlayerController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> DeletePlayerById(int id)
     {
         await _playerService.Delete(id);

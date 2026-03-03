@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
+import { usePermissions } from "@/hooks/usePermissions";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import Game from "@/assets/icons/gamepad.svg?react";
@@ -23,9 +24,10 @@ export const Route = createFileRoute("/sessions/new")({
 function RouteComponent() {
 	const navigate = useNavigate();
 	const { t } = useTranslation();
-	const { data: games } = useQuery(getGames());
+	const { canWrite } = usePermissions();
+	const { isPending, saveSession, games } = useNewSessionData();
 
-	const { isPending, saveSession } = useNewSessionData();
+	if (!canWrite) return <Navigate to="/" />;
 
 	const save = async (data: CreateSession) => {
 		const result = await saveSession(data);

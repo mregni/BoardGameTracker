@@ -1,3 +1,4 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
@@ -27,6 +28,7 @@ public class LocationController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> CreateLocation([FromBody] CreateLocationCommand command)
     {
         var location = await _locationService.Create(command);
@@ -34,6 +36,7 @@ public class LocationController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationCommand command)
     {
         var location = await _locationService.Update(command);
@@ -42,6 +45,7 @@ public class LocationController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> DeleteLocation(int id)
     {
         var location = await _locationService.GetByIdAsync(id);

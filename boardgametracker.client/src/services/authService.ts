@@ -1,4 +1,5 @@
 import type {
+  AdminUpdateUserRequest,
   AuthStatus,
   ChangePasswordRequest,
   LoginRequest,
@@ -94,4 +95,16 @@ export const getUsersCall = (): Promise<UserDto[]> => {
 
 export const deleteUserCall = (userId: string): Promise<void> => {
   return axiosInstance.delete(`admin/users/${userId}`);
+};
+
+export const updateUserRoleCall = (userId: string, role: string): Promise<UserDto> => {
+  return axiosInstance
+    .put<UserDto>(`admin/users/${userId}/role`, { role })
+    .then((response) => response.data);
+};
+
+export const updateUserCall = (userId: string, request: AdminUpdateUserRequest): Promise<UserDto> => {
+  return axiosInstance
+    .put<UserDto>(`admin/users/${userId}`, request)
+    .then((response) => response.data);
 };

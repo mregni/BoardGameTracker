@@ -13,35 +13,42 @@ interface Expansion {
 
 interface Props {
 	expansions: Expansion[];
+	canWrite: boolean;
 	onAddExpansion: () => void;
 	onDeleteExpansion: (expansionId: number) => void;
 }
 
 export const ExpansionsCard = (props: Props) => {
-	const { expansions, onAddExpansion, onDeleteExpansion } = props;
+	const { expansions, canWrite, onAddExpansion, onDeleteExpansion } = props;
 	const { t } = useTranslation();
 
 	return (
 		<BgtCard
 			title={`${t("game.expansions.title")} (${expansions.length})`}
 			icon={Package}
-			actions={[
-				{
-					variant: "primary",
-					content: <Plus className="size-5" />,
-					onClick: onAddExpansion,
-				},
-			]}
+			actions={
+				canWrite
+					? [
+							{
+								variant: "primary",
+								content: <Plus className="size-5" />,
+								onClick: onAddExpansion,
+							},
+						]
+					: []
+			}
 		>
 			{expansions.length === 0 ? (
 				<div className="text-center py-8">
 					<div className="text-white/50 text-sm">{t("game.expansions.none")}</div>
-					<button
-						onClick={onAddExpansion}
-						className="mt-3 text-primary hover:text-primary/80 text-sm transition-colors"
-					>
-						{t("game.expansions.add")}
-					</button>
+{canWrite && (
+						<button
+							onClick={onAddExpansion}
+							className="mt-3 text-primary hover:text-primary/80 text-sm transition-colors"
+						>
+							{t("game.expansions.add")}
+						</button>
+					)}
 				</div>
 			) : (
 				<div className="space-y-2">
@@ -56,9 +63,11 @@ export const ExpansionsCard = (props: Props) => {
 							<div className="flex-1">
 								<BgtText color="white">{expansion.title}</BgtText>
 							</div>
-							<div className="flex">
-								<BgtIconButton icon={<Trash />} intent="danger" onClick={() => onDeleteExpansion(expansion.id)} />
-							</div>
+{canWrite && (
+								<div className="flex">
+									<BgtIconButton icon={<Trash />} intent="danger" onClick={() => onDeleteExpansion(expansion.id)} />
+								</div>
+							)}
 						</div>
 					))}
 				</div>

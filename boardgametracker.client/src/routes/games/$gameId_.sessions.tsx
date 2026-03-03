@@ -1,3 +1,4 @@
+import { usePermissions } from "@/hooks/usePermissions";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -32,6 +33,7 @@ function RouteComponent() {
 	const { gameId } = Route.useParams();
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const { canWrite } = usePermissions();
 	const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
 
 	const { settings, game, sessions, deleteSession, players, isLoading } = useGameSessionsData({
@@ -110,16 +112,20 @@ function RouteComponent() {
 							},
 							header: t("common.high-score"),
 						},
-						{
-							accessorKey: "200",
-							cell: ({ row }) => (
-								<BgtEditDeleteButtons
-									onDelete={() => setSessionToDelete(row.original.id)}
-									onEdit={() => navigate({ to: `/sessions/update/${row.original.id}` })}
-								/>
-							),
-							header: () => <div className="flex justify-end">{t("common.actions")}</div>,
-						},
+						...(canWrite
+							? [
+									{
+										accessorKey: "200",
+										cell: ({ row }: { row: { original: Session } }) => (
+											<BgtEditDeleteButtons
+												onDelete={() => setSessionToDelete(row.original.id)}
+												onEdit={() => navigate({ to: `/sessions/update/${row.original.id}` })}
+											/>
+										),
+										header: () => <div className="flex justify-end">{t("common.actions")}</div>,
+									},
+								]
+							: []),
 					];
 
 					return (
@@ -127,13 +133,17 @@ function RouteComponent() {
 							<BgtPageHeader
 								backAction={() => navigate({ to: `/games/${gameId}` })}
 								header={`${game.title} - ${t("sessions.title")}`}
-								actions={[
-									{
-										onClick: () => navigate({ to: `/sessions/new/${gameId}` }),
-										variant: "primary",
-										content: "game.add",
-									},
-								]}
+								actions={
+									canWrite
+										? [
+												{
+													onClick: () => navigate({ to: `/sessions/new/${gameId}` }),
+													variant: "primary",
+													content: "game.add",
+												},
+											]
+										: []
+								}
 							/>
 							<BgtCard className="p-4">
 								<BgtDataTable

@@ -170,8 +170,9 @@ builder.Services.AddSpaStaticFiles(configuration => {
 var app = builder.Build();
 CreateFolders(app.Services);
 
-app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
+
+app.UseForwardedHeaders();
 
 app.UseRouting();
 
@@ -180,6 +181,8 @@ app.UseCors("Allow");
 app.UseAuthBypassIfEnabled();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHealthChecks("/api/health");
 
 app.MapControllers();
 
@@ -249,8 +252,6 @@ if (!app.Environment.IsDevelopment())
 RunDbMigrations(app.Services);
 await SeedConfig(app.Services);
 await SeedAuthData(app.Services);
-
-app.MapHealthChecks("/api/health");
 
 await app.RunAsync();
 

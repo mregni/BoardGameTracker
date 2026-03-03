@@ -1,5 +1,6 @@
 ﻿using BoardGameTracker.Common.Exceptions;
 using Microsoft.AspNetCore.Hosting;
+using Sentry.AspNetCore;
 using Serilog.Events;
 
 namespace BoardGameTracker.Common.Extensions;
@@ -18,16 +19,16 @@ public static class WebHostBuilderExtensions
 
     public static IWebHostBuilder UseConfiguredSentry(this IWebHostBuilder builder)
     {
-        builder.UseSentry(o =>
+        builder.UseSentry((SentryAspNetCoreOptions o) =>
         {
             o.Environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "development";
             o.Debug = LogLevelExtensions.GetEnvironmentLogLevel() == LogEventLevel.Debug;
             o.TracesSampleRate = 1.0;
             o.SendDefaultPii = false;
 
-            o.SetBeforeSend((@event, hint) =>
+            o.SetBeforeSend((@event, _) =>
             {
-                if (hint.Exception != null && IgnoredExceptionTypes.Contains(hint.Exception.GetType()))
+                if (@event.Exception != null && IgnoredExceptionTypes.Contains(@event.Exception.GetType()))
                 {
                     return null;
                 }

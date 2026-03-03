@@ -4,6 +4,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { getBadges } from "@/services/queries/basdges";
+import { usePermissions } from "@/hooks/usePermissions";
 import { getPlayer, getPlayerStatistics } from "@/services/queries/players";
 import { playerIdParamSchema } from "@/utils/routeSchemas";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/players/$playerId")({
 function RouteComponent() {
 	const { playerId } = Route.useParams();
 	const { t } = useTranslation();
+	const { canWrite } = usePermissions();
 
 	const { player, statistics, deletePlayer, badges, sessions, settings, isLoading } = usePlayerData({
 		playerId,
@@ -51,7 +53,7 @@ function RouteComponent() {
 			<BgtPageContent isLoading={isLoading} data={{ player, statistics, badges, settings }}>
 				{({ player, statistics, badges, settings }) => (
 					<>
-						<PlayerHeader playerName={player.name} onDelete={modals.deleteModal.show} onEdit={modals.editModal.show} />
+						<PlayerHeader playerName={player.name} canWrite={canWrite} onDelete={modals.deleteModal.show} onEdit={modals.editModal.show} />
 						<PlayerHeroSection player={player} />
 						{statistics.playCount !== 0 && (
 							<>

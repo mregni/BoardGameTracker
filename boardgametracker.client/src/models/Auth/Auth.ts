@@ -67,3 +67,9 @@ export interface UserDto {
 export interface ResetPasswordResponse {
   tempPassword: string;
 }
+
+export interface AdminUpdateUserRequest {
+  username: string;
+  email: string | null;
+  role: string;
+}

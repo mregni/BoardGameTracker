@@ -72,7 +72,7 @@ public class UserAdminService : IUserAdminService
 
     public async Task<UserDto> UpdateRoleAsync(string userId, string role, string currentUserId)
     {
-        if (role != Constants.AuthRoles.Admin && role != Constants.AuthRoles.User)
+        if (!Constants.AuthRoles.AllRoles.Contains(role))
         {
             throw new ValidationException(Constants.Errors.InvalidRole);
         }
@@ -95,6 +95,55 @@ public class UserAdminService : IUserAdminService
 
         _logger.LogInformation("Admin {AdminId} updated role for user {UserId} ({Username}) to {Role}",
             currentUserId, userId, user.UserName, role);
+
+        var updatedRoles = await _userManager.GetRolesAsync(user);
+        return user.ToDto(updatedRoles);
+    }
+
+    public async Task<UserDto> UpdateUserAsync(string userId, string username, string? email, string role, string currentUserId)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            throw new ValidationException(Constants.Errors.UsernameRequired);
+        }
+
+        if (!Constants.AuthRoles.AllRoles.Contains(role))
+        {
+            throw new ValidationException(Constants.Errors.InvalidRole);
+        }
+
+        var user = await _userManager.FindByIdAsync(userId)
+            ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
+
+        if (userId == currentUserId && role != Constants.AuthRoles.Admin)
+        {
+            var admins = await _userManager.GetUsersInRoleAsync(Constants.AuthRoles.Admin);
+            if (admins.Count == 1)
+            {
+                throw new DomainException(Constants.Errors.CannotRemoveLastAdmin);
+            }
+        }
+
+        if (!string.Equals(user.UserName, username, StringComparison.OrdinalIgnoreCase))
+        {
+            var existingUser = await _userManager.FindByNameAsync(username);
+            if (existingUser != null)
+            {
+                throw new ValidationException(Constants.Errors.UsernameAlreadyExists);
+            }
+
+            await _userManager.SetUserNameAsync(user, username);
+        }
+
+        user.UpdateEmail(email);
+        await _userManager.UpdateAsync(user);
+
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        await _userManager.RemoveFromRolesAsync(user, currentRoles);
+        await _userManager.AddToRoleAsync(user, role);
+
+        _logger.LogInformation("Admin {AdminId} updated user {UserId} (username: {Username}, role: {Role})",
+            currentUserId, userId, username, role);
 
         var updatedRoles = await _userManager.GetRolesAsync(user);
         return user.ToDto(updatedRoles);
