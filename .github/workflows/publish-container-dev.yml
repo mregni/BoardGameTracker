@@ -5,10 +5,16 @@ on:
     branches:
       - dev
       - master
+    paths-ignore:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
   pull_request:
     branches:
       - dev
       - master
+    paths-ignore:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
 
 env:
   REGISTRY: ${{ vars.DOCKER_REGISTRY || 'docker.io' }}
