@@ -46,8 +46,8 @@ COPY --from=frontend-build /src/dist BoardGameTracker.Host/wwwroot
 
 # Build and publish backend
 WORKDIR /src/BoardGameTracker.Host
-RUN ASSEMBLY_VERSION=$(echo "${VERSION}" | cut -d'-' -f1)
-RUN dotnet publish \
+RUN ASSEMBLY_VERSION=$(echo "${VERSION}" | cut -d'-' -f1) && \
+    dotnet publish \
     -c Release \
     -o /app/publish \
     --no-restore \
