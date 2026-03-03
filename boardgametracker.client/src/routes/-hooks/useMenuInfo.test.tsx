@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type React from "react";
 import { describe, expect, it, vi } from "vitest";
+import { usePermissions } from "@/hooks/usePermissions";
 import { renderHook, waitFor } from "@/test/test-utils";
 import { menuItems, useMenuInfo } from "./useMenuInfo";
 
@@ -30,6 +31,14 @@ vi.mock("@/services/queries/count", () => ({
 		queryKey: ["counts"],
 		queryFn: () => Promise.resolve({ games: 10, players: 5, sessions: 20 }),
 	}),
+}));
+
+vi.mock("@/hooks/usePermissions", () => ({
+	usePermissions: vi.fn(() => ({
+		isAdmin: true,
+		canWrite: true,
+		canManageSettings: true,
+	})),
 }));
 
 // Mock SVG icons
@@ -149,6 +158,22 @@ describe("useBgtMenuBar", () => {
 
 			await waitFor(() => {
 				expect(result.current.menuItems).toHaveLength(menuItems.length);
+			});
+		});
+
+		it("should skip menuItems based on permissions and settings", async () => {
+			vi.mocked(usePermissions).mockReturnValue({
+				isAdmin: false,
+				canWrite: false,
+				canManageSettings: false,
+			});
+
+			const { result } = renderHook(() => useMenuInfo(), {
+				wrapper: createWrapper(),
+			});
+
+			await waitFor(() => {
+				expect(result.current.menuItems).toHaveLength(menuItems.length - 1);
 			});
 		});
 

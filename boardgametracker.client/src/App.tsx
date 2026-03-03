@@ -55,6 +55,7 @@ const queryClient = new QueryClient({
 	},
 	queryCache: new QueryCache({
 		onError: (error) => {
+			if (isApiError(error) && error.status === 401) return;
 			const now = Date.now();
 			if (now - lastErrorToastTime < ERROR_TOAST_DEBOUNCE_MS) return;
 			lastErrorToastTime = now;

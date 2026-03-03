@@ -3,11 +3,13 @@ import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import Home from "@/assets/icons/home.svg?react";
+import Users from "@/assets/icons/users.svg?react";
+import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { usePermissions } from "@/hooks/usePermissions";
 import { getPlayers } from "@/services/queries/players";
-import { CompareEmptyState } from "./-components/CompareEmptyState";
 import { CompareSummaryStats } from "./-components/CompareSummaryStats";
 import { HeadToHead } from "./-components/HeadToHead";
 import { PlayerSelector } from "./-components/PlayerSelector";
@@ -32,6 +34,7 @@ function RouteComponent() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const search = Route.useSearch();
+	const { canWrite } = usePermissions();
 
 	const { players } = useCompareData({ playerLeft: 0, playerRight: 0 });
 
@@ -77,15 +80,25 @@ function RouteComponent() {
 
 	const playerTwo = useMemo(() => players?.find((p) => p.id === rightPlayerId), [players, rightPlayerId]);
 
+	if (players?.length < 2) {
+		return (
+			<BgtEmptyPage
+				header={t("compare.title")}
+				icon={Users}
+				title={t("compare.empty.insufficient-players.title")}
+				description={t("compare.empty.insufficient-players.description")}
+				action={
+					canWrite ? { label: t("compare.empty.button"), onClick: () => navigate({ to: "/players" }) } : undefined
+				}
+			/>
+		);
+	}
+
 	return (
 		<BgtPage>
 			<BgtPageHeader header={t("compare.title")} icon={Home} />
 			<BgtPageContent isLoading={!players} data={{ players }} centered={players?.length < 2}>
 				{({ players }) => {
-					if (players.length < 2) {
-						return <CompareEmptyState playerCount={players.length} />;
-					}
-
 					if (!actualCompare || !settings || !playerOne || !playerTwo) {
 						return null;
 					}
