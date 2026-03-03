@@ -13,7 +13,10 @@ public record PlayTimeRange
         Guard.Against.Negative(maxMinutes);
 
         if (maxMinutes < minMinutes)
-            throw new ArgumentException("Maximum play time cannot be less than minimum play time.");
+        {
+            throw new ArgumentException(
+                $"Maximum play time ({maxMinutes}) cannot be less than minimum play time ({minMinutes}).");
+        }
 
         MinMinutes = minMinutes;
         MaxMinutes = maxMinutes;
