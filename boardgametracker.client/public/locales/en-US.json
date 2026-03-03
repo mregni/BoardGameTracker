@@ -1,6 +1,11 @@
 {
   "common": {
     "save": "Save",
+    "game-nights": "Game Nights",
+    "none": "None",
+    "copied": "Copied!",
+    "done": "Done",
+    "all": "All",
     "actions": "Actions",
     "start": "Start",
     "cancel": "Cancel",
@@ -19,7 +24,7 @@
     "settings": "Settings",
     "unknown-error": "Unknown error",
     "winners": "Winners",
-    "loosers": "Loosers",
+    "losers": "Losers",
     "play-time": "Play time",
     "compare": "Compare",
     "rating": "Rating",
@@ -93,7 +98,7 @@
     "title": "Compare players",
     "wins": {
       "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
-      "looser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+      "loser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
     },
     "best-game": {
       "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
@@ -299,7 +304,11 @@
     "image": {
       "type-not-supported": "Image type not supported",
       "error": "Error while uploading image, check logs"
-    }
+    },
+    "something-went-wrong": "Something went wrong, please try again later.",
+    "network": "Unable to connect to the server. Please check your connection.",
+    "timeout": "The request took too long. Please try again.",
+    "server": "A server error occurred. Please try again later."
   },
   "location": {
     "new": {
@@ -642,7 +651,7 @@
     },
     "close-loss": {
       "title": "Almost There!",
-      "description": "Loose with a difference of 2 or less points."
+      "description": "Lose with a difference of 2 or less points."
     },
     "marathon-runner": {
       "title": "Marathon Runner",
@@ -663,6 +672,79 @@
     "consistent-schedule": {
       "title": "Consistent Schedule",
       "description": "Play at least one game session every Saturday for 10 consecutive weeks."
+    }
+  },
+  "game-nights": {
+    "title": "Game Night Planner",
+    "subtitle": "Schedule and manage your game nights",
+    "host": "Host",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "suggested-games": "Suggested Games",
+    "rsvp-link": "RSVP Link",
+    "copy-link": "Copy Link",
+    "manage-rsvps": "Manage RSVPs",
+    "delete-confirm": "Are you sure you want to delete this game night?",
+    "stats": {
+      "upcoming": "Upcoming Events",
+      "pending-responses": "Pending Responses",
+      "games-planned": "Games Planned"
+    },
+    "empty": {
+      "title": "No game nights found",
+      "all": "No game nights available",
+      "upcoming": "No upcoming game nights scheduled",
+      "past": "No past game nights recorded"
+    },
+    "create-first": "Create Your First Game Night",
+    "create": {
+      "title": "Create Game Night",
+      "description": "Plan a new game night with your friends.",
+      "button": "Create Game Night",
+      "save": "Create Game Night"
+    },
+    "form": {
+      "title": "Title",
+      "title-placeholder": "Enter game night title",
+      "date": "Date",
+      "date-placeholder": "Select date",
+      "time": "Time",
+      "time-placeholder": "Select time",
+      "host": "Host",
+      "host-placeholder": "Select host",
+      "location": "Location",
+      "location-placeholder": "Select location",
+      "invited-players": "Invited Players",
+      "search-players": "Search players...",
+      "suggested-games": "Suggested Games",
+      "search-games": "Search games...",
+      "notes": "Notes"
+    },
+    "validation": {
+      "title-required": "Title is required",
+      "date-required": "Date is required",
+      "time-required": "Time is required",
+      "location-required": "Location is required",
+      "host-required": "Host is required"
+    },
+    "rsvp": {
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "pending": "Pending",
+      "accept": "Accept",
+      "maybe": "Maybe",
+      "decline": "Decline",
+      "current": "Current",
+      "manual-note-title": "Manually set RSVP status",
+      "manual-note": "for players who responded via phone, text, or in person."
+    },
+    "notifications": {
+      "created": "Game night created successfully",
+      "create-failed": "Failed to create game night",
+      "deleted": "Game night deleted successfully",
+      "delete-failed": "Failed to delete game night",
+      "rsvp-updated": "RSVP status updated successfully",
+      "rsvp-update-failed": "Failed to update RSVP status"
     }
   }
 }

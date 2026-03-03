@@ -17,6 +17,7 @@ public class Player : HasId
     public ICollection<PlayerSession> PlayerSessions { get; private set; }
     public ICollection<Badge> Badges { get; private set; }
     public ICollection<Loan> Loans { get; private set; }
+    public ICollection<GameNightRsvp> GameNightRsvps { get; private set; }
 
     public Player(string name, string? image = null)
     {
@@ -25,6 +26,7 @@ public class Player : HasId
         PlayerSessions = new List<PlayerSession>();
         Badges = new List<Badge>();
         Loans = new List<Loan>();
+        GameNightRsvps = new List<GameNightRsvp>();
     }
 
     public void UpdateName(string name)

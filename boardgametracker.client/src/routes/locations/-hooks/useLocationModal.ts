@@ -1,46 +1,47 @@
-import { useQueryClient, useMutation } from '@tanstack/react-query';
-
-import { addLocationCall, updateLocationCall } from '@/services/locationService';
-import { QUERY_KEYS } from '@/models';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/models";
+import { useToasts } from "@/routes/-hooks/useToasts";
+import { addLocationCall, updateLocationCall } from "@/services/locationService";
 
 interface Props {
-  onSaveSuccess?: () => void;
-  onSaveError?: () => void;
-  onUpdateSuccess?: () => void;
-  onUpdateError?: () => void;
+	onSaveSuccess?: () => void;
+	onUpdateSuccess?: () => void;
 }
 
-export const useLocationModal = ({ onSaveSuccess, onUpdateSuccess, onUpdateError, onSaveError }: Props) => {
-  const queryClient = useQueryClient();
+export const useLocationModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
+	const queryClient = useQueryClient();
+	const { successToast, errorToast } = useToasts();
 
-  const saveMutation = useMutation({
-    mutationFn: addLocationCall,
-    async onSuccess() {
-      onSaveSuccess?.();
-      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
-      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-    },
-    onError: () => {
-      onSaveError?.();
-    },
-  });
+	const saveMutation = useMutation({
+		mutationFn: addLocationCall,
+		async onSuccess() {
+			successToast("location.notifications.created");
+			onSaveSuccess?.();
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+		},
+		onError: () => {
+			errorToast("location.notifications.create-failed");
+		},
+	});
 
-  const updateMutation = useMutation({
-    mutationFn: updateLocationCall,
-    async onSuccess() {
-      onUpdateSuccess?.();
-      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
-    },
-    onError: () => {
-      onUpdateError?.();
-    },
-  });
+	const updateMutation = useMutation({
+		mutationFn: updateLocationCall,
+		async onSuccess() {
+			successToast("location.notifications.update");
+			onUpdateSuccess?.();
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
+		},
+		onError: () => {
+			errorToast("location.notifications.update-failed");
+		},
+	});
 
-  const isLoading = saveMutation.isPending || updateMutation.isPending;
+	const isLoading = saveMutation.isPending || updateMutation.isPending;
 
-  return {
-    saveLocation: saveMutation.mutateAsync,
-    updateLocation: updateMutation.mutateAsync,
-    isLoading,
-  };
+	return {
+		saveLocation: saveMutation.mutateAsync,
+		updateLocation: updateMutation.mutateAsync,
+		isLoading,
+	};
 };

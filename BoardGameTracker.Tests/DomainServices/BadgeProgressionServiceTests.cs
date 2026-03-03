@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges;
 using BoardGameTracker.Core.Badges.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -16,16 +16,19 @@ public class BadgeProgressionServiceTests
 {
     private readonly Mock<IBadgeRepository> _badgeRepositoryMock;
     private readonly Mock<IBadgeLevelProgressionPolicy> _progressionPolicyMock;
+    private readonly Mock<ILogger<BadgeProgressionService>> _loggerMock;
     private readonly BadgeProgressionService _service;
 
     public BadgeProgressionServiceTests()
     {
         _badgeRepositoryMock = new Mock<IBadgeRepository>();
         _progressionPolicyMock = new Mock<IBadgeLevelProgressionPolicy>();
+        _loggerMock = new Mock<ILogger<BadgeProgressionService>>();
 
         _service = new BadgeProgressionService(
             _badgeRepositoryMock.Object,
-            _progressionPolicyMock.Object);
+            _progressionPolicyMock.Object,
+            _loggerMock.Object);
 
         SetupDefaultPolicyMocks();
     }

@@ -1,11 +1,13 @@
 using BoardGameTracker.Core.Dashboard.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
-public class DashboardController
+[Authorize]
+public class DashboardController : ControllerBase
 {
     private readonly IDashboardService _dashboardService;
 
@@ -18,6 +20,6 @@ public class DashboardController
     public async Task<IActionResult> GetDashboardStatistics()
     {
         var statistics = await _dashboardService.GetStatistics();
-        return new OkObjectResult(statistics);
+        return Ok(statistics);
     }
 }

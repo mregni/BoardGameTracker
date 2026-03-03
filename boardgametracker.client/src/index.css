@@ -1,11 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap')
-layer(base);
+@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap")
+	layer(base);
 
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
   /* Custom Breakpoints */
   --breakpoint-2xl: 100rem;
+  --breakpoint-3xl: 160rem;
 
   /* Custom Colors */
   --color-page-black: #121212;
@@ -31,47 +32,47 @@ layer(base);
 }
 
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentcolor);
+	}
 }
 
 .radix-themes {
-  --default-font-family: 'Chakra Petch', sans-serif;
-  --heading-font-family: 'Chakra Petch', sans-serif;
-  --color-background: #0a0416;
-  background-color: var(--color-background);
+	--default-font-family: "Chakra Petch", sans-serif;
+	--heading-font-family: "Chakra Petch", sans-serif;
+	--color-background: #0a0416;
+	background-color: var(--color-background);
 }
 
-.hide-arrow[type='number']::-webkit-inner-spin-button,
-.hide-arrow[type='number']::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.hide-arrow[type="number"]::-webkit-inner-spin-button,
+.hide-arrow[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
 }
 
 body {
-  font-family: var(--default-font-family);
+	font-family: var(--default-font-family);
 }
 
 /* Apply to Radix components */
-[class^='radix-'],
-[class*=' radix-'] {
-  font-family: var(--default-font-family);
+[class^="radix-"],
+[class*=" radix-"] {
+	font-family: var(--default-font-family);
 }
 
 .mobile-menu {
-  transform: translateY(0);
-  transition: transform 0.3s ease-in-out;
+	transform: translateY(0);
+	transition: transform 0.3s ease-in-out;
 }
 
 .mobile-menu.hidden-menu {
-  transform: translateY(-130%);
+	transform: translateY(-130%);
 }
 
 .rt-TextFieldInput {
-  display: block !important;
+	display: block !important;
 }

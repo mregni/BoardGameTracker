@@ -1,14 +1,16 @@
-﻿using System.Reflection;
+using System.Reflection;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.ValueObjects;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Datastore;
 
 // dotnet ef migrations add <NAME> --startup-project ../BoardGameTracker.Host --output-dir DataStore/Migrations/Postgres
-public class MainDbContext : DbContext
+public class MainDbContext : IdentityDbContext<ApplicationUser>
 {
     public DbSet<Game> Games { get; set; }
     public DbSet<Expansion> Expansions { get; set; }
@@ -24,6 +26,10 @@ public class MainDbContext : DbContext
     public DbSet<PlayerSession> PlayerSessions { get; set; }
     public DbSet<Badge> Badges { get; set; }
     public DbSet<Loan> Loans { get; set; }
+    public DbSet<GameNight> GameNights { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<OidcProvider> OidcProviders { get; set; }
+    public DbSet<ExternalLogin> ExternalLogins { get; set; }
 
     public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
     {
@@ -31,6 +37,8 @@ public class MainDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        base.OnModelCreating(builder);
+
         BuildIds(builder);
         ConfigureValueObjects(builder);
         BuildGame(builder);
@@ -38,6 +46,8 @@ public class MainDbContext : DbContext
         BuildPlayer(builder);
         BuildBadges(builder);
         BuildLoans(builder);
+        BuildGameNights(builder);
+        BuildAuthEntities(builder);
 
         SeedDatabase(builder);
     }
@@ -69,7 +79,7 @@ public class MainDbContext : DbContext
                     .HasPrecision(18, 2)
                     .IsRequired();
             });
-        
+
         builder.Entity<Game>()
             .OwnsOne(g => g.SoldPrice, cost =>
             {
@@ -78,7 +88,7 @@ public class MainDbContext : DbContext
                     .HasPrecision(18, 2)
                     .IsRequired();
             });
-        
+
         builder.Entity<Game>()
             .OwnsOne(g => g.Rating, cost =>
             {
@@ -96,7 +106,7 @@ public class MainDbContext : DbContext
                     .HasPrecision(18, 2)
                     .IsRequired();
             });
-        
+
         builder.Entity<Game>()
             .OwnsOne(x => x.PlayerCount, pcr =>
             {
@@ -119,12 +129,29 @@ public class MainDbContext : DbContext
             .WithMany(x => x.Loans)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
-        
+
         builder.Entity<Loan>()
             .HasOne(x => x.Player)
             .WithMany(x => x.Loans)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+    }
+
+    private static void BuildGameNights(ModelBuilder builder)
+    {
+        builder.Entity<GameNight>()
+            .HasMany(x => x.SuggestedGames)
+            .WithMany();
+
+        builder.Entity<GameNight>()
+            .HasMany(x => x.InvitedPlayers)
+            .WithOne(x => x.GameNight)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<GameNightRsvp>()
+            .Property(x => x.State)
+            .HasConversion<string>();
     }
 
     private static void BuildGame(ModelBuilder builder)
@@ -200,6 +227,12 @@ public class MainDbContext : DbContext
         builder.Entity<Player>()
             .HasMany(x => x.Badges)
             .WithMany(x => x.Players);
+
+        builder.Entity<Player>()
+            .HasMany(x => x.GameNightRsvps)
+            .WithOne(x => x.Player)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     private static void BuildBadges(ModelBuilder builder)
@@ -211,6 +244,57 @@ public class MainDbContext : DbContext
         builder.Entity<Badge>()
             .Property(x => x.Type)
             .HasConversion<string>();
+    }
+
+    private static void BuildAuthEntities(ModelBuilder builder)
+    {
+        // Place all Identity tables in the "auth" schema
+        builder.Entity<ApplicationUser>().ToTable("AspNetUsers", "auth");
+        builder.Entity<IdentityRole>().ToTable("AspNetRoles", "auth");
+        builder.Entity<IdentityUserRole<string>>().ToTable("AspNetUserRoles", "auth");
+        builder.Entity<IdentityUserClaim<string>>().ToTable("AspNetUserClaims", "auth");
+        builder.Entity<IdentityUserLogin<string>>().ToTable("AspNetUserLogins", "auth");
+        builder.Entity<IdentityRoleClaim<string>>().ToTable("AspNetRoleClaims", "auth");
+        builder.Entity<IdentityUserToken<string>>().ToTable("AspNetUserTokens", "auth");
+
+        // ApplicationUser -> Player relationship
+        builder.Entity<ApplicationUser>()
+            .HasOne(x => x.Player)
+            .WithMany()
+            .HasForeignKey(x => x.PlayerId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // RefreshToken
+        builder.Entity<RefreshToken>().ToTable("RefreshTokens", "auth");
+        builder.Entity<RefreshToken>().HasKey(x => x.Id);
+        builder.Entity<RefreshToken>()
+            .HasIndex(x => x.Token)
+            .IsUnique();
+        builder.Entity<RefreshToken>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ExternalLogin
+        builder.Entity<ExternalLogin>().ToTable("ExternalLogins", "auth");
+        builder.Entity<ExternalLogin>().HasKey(x => x.Id);
+        builder.Entity<ExternalLogin>()
+            .HasIndex(x => new { x.Provider, x.ProviderKey })
+            .IsUnique();
+        builder.Entity<ExternalLogin>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // OidcProvider
+        builder.Entity<OidcProvider>().ToTable("OidcProviders", "auth");
+        builder.Entity<OidcProvider>().HasKey(x => x.Id);
+        builder.Entity<OidcProvider>()
+            .HasIndex(x => x.Name)
+            .IsUnique();
     }
 
     private static void SeedDatabase(ModelBuilder builder)
@@ -267,7 +351,7 @@ public class MainDbContext : DbContext
                 Badge.CreateWithId(31, "social-player.red.title", "social-player.red.description", BadgeType.SocialPlayer, "social-player-red.png", BadgeLevel.Red),
                 Badge.CreateWithId(32, "social-player.gold.title", "social-player.gold.description", BadgeType.SocialPlayer, "social-player-gold.png", BadgeLevel.Gold),
                 Badge.CreateWithId(33, "close-win.title", "close-win.description", BadgeType.CloseWin, "close-win.png"),
-                Badge.CreateWithId(34, "close-loss.title", "close-loss.description", BadgeType.CLoseLoss, "close-loss.png"),
+                Badge.CreateWithId(34, "close-loss.title", "close-loss.description", BadgeType.CloseLoss, "close-loss.png"),
                 Badge.CreateWithId(35, "marathon-runner.title", "marathon-runner.description", BadgeType.MarathonRunner, "marathon.png"),
                 Badge.CreateWithId(36, "first-try.title", "first-try.description", BadgeType.FirstTry, "first-try.png"),
                 Badge.CreateWithId(37, "learning-curve.title", "learning-curve.description", BadgeType.LearningCurve, "learning-curve.png"),

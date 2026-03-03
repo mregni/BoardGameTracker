@@ -27,8 +27,10 @@ public class TopPlayerDto
             .OrderByDescending(x => x.Session.Start)
             .ToList();
         playList.RemoveAt(0);
-        var previousWinRate = playList.Count(x => x.Won) / (double)playList.Count();
-        
+        var previousWinRate = playList.Count > 0
+            ? playList.Count(x => x.Won) / (double)playList.Count
+            : topPlayer.WinPercentage;
+
         if (topPlayer.WinPercentage > previousWinRate)
         {
             topPlayer.Trend = Trend.Up;

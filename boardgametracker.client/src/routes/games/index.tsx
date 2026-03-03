@@ -1,130 +1,143 @@
-import { useTranslation } from 'react-i18next';
-import { useState, useMemo } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-
-import { useGamesData } from './-hooks/useGamesData';
-
-import { getGames } from '@/services/queries/games';
-import CreateGameModal from '@/routes/games/-modals/CreateGameModal';
-import { BggGameModal } from '@/routes/games/-modals/BggGameModal';
-import { useDebounce } from '@/hooks/useDebounce';
-import { BgtText } from '@/components/BgtText/BgtText';
-import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
-import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
-import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtEmptyState } from '@/components/BgtLayout/BgtEmptyState';
-import { BgtImageCard } from '@/components/BgtImageCard/BgtImageCard';
-import { SearchInputField } from '@/components/BgtForm';
-import { BgtBadge } from '@/components/BgtBadge/BgtBadge';
-import Game from '@/assets/icons/gamepad.svg?react';
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import Game from "@/assets/icons/gamepad.svg?react";
+import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
+import { SearchInputField } from "@/components/BgtForm";
+import { BgtImageCard } from "@/components/BgtImageCard/BgtImageCard";
+import { BgtCardList } from "@/components/BgtLayout/BgtCardList";
+import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
+import { BgtPage } from "@/components/BgtLayout/BgtPage";
+import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { BgtText } from "@/components/BgtText/BgtText";
+import { useFilteredList } from "@/hooks/useFilteredList";
+import { usePermissions } from "@/hooks/usePermissions";
+import { BggGameModal } from "@/routes/games/-modals/BggGameModal";
+import CreateGameModal from "@/routes/games/-modals/CreateGameModal";
+import { getGames } from "@/services/queries/games";
+import { useGameModals } from "./-hooks/useGameModals";
+import { useGamesData } from "./-hooks/useGamesData";
 
 type GamesFilterSearch = {
-  category?: string;
+	category?: string;
 };
 
-export const Route = createFileRoute('/games/')({
-  component: RouteComponent,
-  loader: ({ context: { queryClient } }) => {
-    queryClient.prefetchQuery(getGames());
-  },
-  validateSearch: (search: Record<string, unknown>): GamesFilterSearch => {
-    return {
-      category: search.category ? (search.category as string) : undefined,
-    };
-  },
+export const Route = createFileRoute("/games/")({
+	component: RouteComponent,
+	loader: ({ context: { queryClient } }) => {
+		queryClient.prefetchQuery(getGames());
+	},
+	validateSearch: (search: Record<string, unknown>): GamesFilterSearch => {
+		return {
+			category: search.category ? (search.category as string) : undefined,
+		};
+	},
 });
 
 function RouteComponent() {
-  const { category } = Route.useSearch();
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { games, isLoading } = useGamesData();
-  const [openModal, setOpenModal] = useState(false);
-  const [openBggModal, setOpenBggModal] = useState(false);
-  const [filterValue, setFilterValue] = useState<string>('');
-  const [categoryFilter, setCategoryFilter] = useState<string | undefined>(category);
+	const { category } = Route.useSearch();
+	const { t } = useTranslation();
+	const navigate = useNavigate();
+	const { games, isLoading } = useGamesData();
+	const { canWrite } = usePermissions();
+	const modals = useGameModals();
+	const [categoryFilter, setCategoryFilter] = useState<string | undefined>(category);
 
-  const debouncedFilterValue = useDebounce(filterValue, 300);
+	const categoryPreFilter = useCallback(
+		(items: typeof games) => {
+			if (categoryFilter === undefined) return items;
+			return items.filter((game) => game.categories.some((cat) => cat.name === categoryFilter));
+		},
+		[categoryFilter],
+	);
 
-  const filteredGames = useMemo(() => {
-    let filteredGames = games;
-    if (categoryFilter !== undefined) {
-      filteredGames = games.filter((game) => game.categories.some((category) => category.name === categoryFilter));
-    }
+	const { filterValue, setFilterValue, filtered: filteredGames } = useFilteredList(games, "title", categoryPreFilter);
 
-    if (!debouncedFilterValue) {
-      return filteredGames;
-    }
+	const openManual = () => {
+		modals.createModal.hide();
+		navigate({ to: "/games/new" });
+	};
 
-    return filteredGames.filter((game) => game.title.toLowerCase().includes(debouncedFilterValue.toLowerCase()));
-  }, [games, categoryFilter, debouncedFilterValue]);
+	const openBgg = () => {
+		modals.createModal.hide();
+		modals.bggModal.show();
+	};
 
-  const openManual = () => {
-    setOpenModal(false);
-    navigate({ to: '/games/new' });
-  };
+	if (isLoading) return null;
 
-  const openBgg = () => {
-    setOpenModal(false);
-    setOpenBggModal(true);
-  };
+	if (games.length === 0) {
+		return (
+			<BgtEmptyPage
+				header={t("games.title")}
+				icon={Game}
+				title={t("dashboard.empty.title")}
+				description={t("dashboard.empty.description")}
+				action={canWrite ? { onClick: modals.createModal.show, label: t("games.new") } : undefined}
+			>
+				<BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />
+				<CreateGameModal
+					open={modals.createModal.isOpen}
+					close={modals.createModal.hide}
+					openBgg={openBgg}
+					openManual={openManual}
+				/>
+			</BgtEmptyPage>
+		);
+	}
 
-  if (isLoading) return null;
-
-  if (games.length === 0) {
-    return (
-      <BgtPage>
-        <BgtPageHeader
-          header={t('games.title')}
-          actions={[{ onClick: () => setOpenModal(true), variant: 'primary', content: 'games.new' }]}
-        />
-        <BgtPageContent centered>
-          <BgtEmptyState
-            icon={Game}
-            description={t('dashboard.empty.description')}
-            title={t('dashboard.empty.title')}
-          />
-        </BgtPageContent>
-      </BgtPage>
-    );
-  }
-
-  return (
-    <BgtPage>
-      <BgtPageHeader
-        header={t('games.title')}
-        actions={[{ onClick: () => setOpenModal(true), variant: 'primary', content: 'games.new' }]}
-      ></BgtPageHeader>
-      <BgtPageContent>
-        <div className="flex flex-row gap-3">
-          <SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
-        </div>
-        <BgtText size="3" color="primary" className="pb-6" weight="medium">
-          {t('games.count', { count: filteredGames.length })}
-        </BgtText>
-        {categoryFilter !== undefined && (
-          <div className="flex flex-row gap-2 items-center text-sm text-gray-400">
-            <div>{t('common.filter')}:</div>
-            <BgtBadge color="green" variant="soft" onClose={() => setCategoryFilter(undefined)}>
-              {categoryFilter}
-            </BgtBadge>
-          </div>
-        )}
-        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-8 2xl:grid-cols-10">
-          {filteredGames.map((x) => (
-            <BgtImageCard
-              key={x.id}
-              title={x.title}
-              image={x.image}
-              state={x.state}
-              isLoaned={x.isLoaned}
-              link={`/games/${x.id}`}
-            />
-          ))}
-        </div>
-        <BggGameModal open={openBggModal} setOpen={setOpenBggModal} />
-        <CreateGameModal open={openModal} setOpen={setOpenModal} openBgg={openBgg} openManual={openManual} />
-      </BgtPageContent>
-    </BgtPage>
-  );
+	return (
+		<BgtPage>
+			<BgtPageHeader
+				header={t("games.title")}
+				icon={Game}
+				actions={
+					canWrite
+						? [
+								{
+									onClick: modals.createModal.show,
+									variant: "primary",
+									content: "games.new",
+								},
+							]
+						: []
+				}
+			></BgtPageHeader>
+			<BgtPageContent>
+				<div className="flex flex-row gap-3">
+					<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
+				</div>
+				<BgtText size="3" color="primary" className="pb-6" weight="medium">
+					{t("games.count", { count: filteredGames.length })}
+				</BgtText>
+				{categoryFilter !== undefined && (
+					<div className="flex flex-row gap-2 items-center text-sm text-gray-400">
+						<div>{t("common.filter")}:</div>
+						<BgtBadge color="green" variant="soft" onClose={() => setCategoryFilter(undefined)}>
+							{categoryFilter}
+						</BgtBadge>
+					</div>
+				)}
+				<BgtCardList>
+					{filteredGames.map((x) => (
+						<BgtImageCard
+							key={x.id}
+							title={x.title}
+							image={x.image}
+							state={x.state}
+							isLoaned={x.isLoaned}
+							link={`/games/${x.id}`}
+						/>
+					))}
+				</BgtCardList>
+				<BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />
+				<CreateGameModal
+					open={modals.createModal.isOpen}
+					close={modals.createModal.hide}
+					openBgg={openBgg}
+					openManual={openManual}
+				/>
+			</BgtPageContent>
+		</BgtPage>
+	);
 }

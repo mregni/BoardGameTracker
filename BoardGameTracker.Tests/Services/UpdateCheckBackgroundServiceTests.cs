@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,14 +16,14 @@ public class UpdateCheckBackgroundServiceTests
     private readonly Mock<IServiceProvider> _serviceProviderMock;
     private readonly Mock<ILogger<UpdateCheckBackgroundService>> _loggerMock;
     private readonly Mock<IUpdateService> _updateServiceMock;
-    private readonly Mock<IUpdateRepository> _updateRepositoryMock;
+    private readonly Mock<IConfigRepository> _configRepositoryMock;
 
     public UpdateCheckBackgroundServiceTests()
     {
         _serviceProviderMock = new Mock<IServiceProvider>();
         _loggerMock = new Mock<ILogger<UpdateCheckBackgroundService>>();
         _updateServiceMock = new Mock<IUpdateService>();
-        _updateRepositoryMock = new Mock<IUpdateRepository>();
+        _configRepositoryMock = new Mock<IConfigRepository>();
 
         SetupServiceProvider();
     }
@@ -40,8 +41,8 @@ public class UpdateCheckBackgroundServiceTests
             .Setup(x => x.GetService(typeof(IUpdateService)))
             .Returns(_updateServiceMock.Object);
         scopedProviderMock
-            .Setup(x => x.GetService(typeof(IUpdateRepository)))
-            .Returns(_updateRepositoryMock.Object);
+            .Setup(x => x.GetService(typeof(IConfigRepository)))
+            .Returns(_configRepositoryMock.Object);
 
         _serviceProviderMock
             .Setup(x => x.GetService(typeof(IServiceScopeFactory)))
@@ -84,13 +85,13 @@ public class UpdateCheckBackgroundServiceTests
     public async Task ExecuteAsync_ShouldSkipUpdateCheck_WhenDisabled()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync("false");
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>("update_check_enabled"))
+            .ReturnsAsync(false);
 
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync("1");
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>("update_check_interval_hours"))
+            .ReturnsAsync(1);
 
         var service = new UpdateCheckBackgroundService(
             _serviceProviderMock.Object,
@@ -134,16 +135,16 @@ public class UpdateCheckBackgroundServiceTests
     public async Task ExecuteAsync_ShouldUseDefaultInterval_WhenIntervalNotConfigured()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync((string?)null);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>("update_check_enabled"))
+            .ReturnsAsync(true);
 
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync((string?)null);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>("update_check_interval_hours"))
+            .ReturnsAsync(0);
 
-        _updateRepositoryMock
-            .Setup(x => x.SetConfigValueAsync("update_check_interval_hours", "24"))
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync("update_check_interval_hours", 24))
             .Returns(Task.CompletedTask);
 
         var service = new UpdateCheckBackgroundService(
@@ -174,13 +175,13 @@ public class UpdateCheckBackgroundServiceTests
     public async Task ExecuteAsync_ShouldUseConfiguredInterval()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync("true");
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>("update_check_enabled"))
+            .ReturnsAsync(true);
 
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync("12");
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>("update_check_interval_hours"))
+            .ReturnsAsync(12);
 
         var service = new UpdateCheckBackgroundService(
             _serviceProviderMock.Object,
@@ -209,16 +210,16 @@ public class UpdateCheckBackgroundServiceTests
     public async Task ExecuteAsync_ShouldHandleInvalidIntervalConfig()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync("true");
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>("update_check_enabled"))
+            .ReturnsAsync(true);
 
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync("invalid");
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>("update_check_interval_hours"))
+            .ReturnsAsync(0);
 
-        _updateRepositoryMock
-            .Setup(x => x.SetConfigValueAsync("update_check_interval_hours", "24"))
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync("update_check_interval_hours", 24))
             .Returns(Task.CompletedTask);
 
         var service = new UpdateCheckBackgroundService(
@@ -248,16 +249,16 @@ public class UpdateCheckBackgroundServiceTests
     public async Task ExecuteAsync_ShouldHandleZeroInterval()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync("true");
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>("update_check_enabled"))
+            .ReturnsAsync(true);
 
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync("0"); // Zero hours - should use default
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>("update_check_interval_hours"))
+            .ReturnsAsync(0); // Zero hours - should use default
 
-        _updateRepositoryMock
-            .Setup(x => x.SetConfigValueAsync("update_check_interval_hours", "24"))
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync("update_check_interval_hours", 24))
             .Returns(Task.CompletedTask);
 
         var service = new UpdateCheckBackgroundService(
@@ -287,16 +288,16 @@ public class UpdateCheckBackgroundServiceTests
     public async Task ExecuteAsync_ShouldHandleNegativeInterval()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync("true");
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>("update_check_enabled"))
+            .ReturnsAsync(true);
 
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync("-5"); // Negative hours - should use default
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>("update_check_interval_hours"))
+            .ReturnsAsync(-5); // Negative hours - should use default
 
-        _updateRepositoryMock
-            .Setup(x => x.SetConfigValueAsync("update_check_interval_hours", "24"))
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync("update_check_interval_hours", 24))
             .Returns(Task.CompletedTask);
 
         var service = new UpdateCheckBackgroundService(

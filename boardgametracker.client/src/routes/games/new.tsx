@@ -1,44 +1,35 @@
-import { useTranslation } from 'react-i18next';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
+import type { Game } from "@/models";
+import type { CreateGame } from "@/models/Games/CreateGame";
 
-import { useToasts } from '../-hooks/useToasts';
+import { getSettings } from "@/services/queries/settings";
+import { GameForm } from "./-components/GameForm";
+import { useNewGame } from "./-hooks/useNewGame";
 
-import { useNewGame } from './-hooks/useNewGame';
-import { GameForm } from './-components/GameForm';
-
-import { getSettings } from '@/services/queries/settings';
-import { CreateGame } from '@/models/Games/CreateGame';
-import { Game } from '@/models';
-
-export const Route = createFileRoute('/games/new')({
-  component: RouteComponent,
-  loader: async ({ context: { queryClient } }) => {
-    queryClient.prefetchQuery(getSettings());
-  },
+export const Route = createFileRoute("/games/new")({
+	component: RouteComponent,
+	loader: async ({ context: { queryClient } }) => {
+		queryClient.prefetchQuery(getSettings());
+	},
 });
 
 function RouteComponent() {
-  const { errorToast, successToast } = useToasts();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
+	const navigate = useNavigate();
+	const { t } = useTranslation();
 
-  const onSaveSuccess = (game: Game) => {
-    successToast('game.notifications.created');
-    navigate({ to: `/games/${game.id}` });
-    window.scrollTo(0, 0);
-  };
+	const onSuccess = (game: Game) => {
+		navigate({ to: `/games/${game.id}` });
+		window.scrollTo(0, 0);
+	};
 
-  const onSaveError = () => {
-    errorToast('game.notifications.create-failed');
-  };
+	const { saveGame, isLoading } = useNewGame({ onSuccess });
+	const save = async (game: CreateGame) => {
+		const result = await saveGame(game);
+		navigate({ to: `/games/${result.id}` });
+	};
 
-  const { saveGame, isLoading } = useNewGame({ onSaveSuccess, onSaveError });
-  const save = async (game: CreateGame) => {
-    const result = await saveGame(game);
-    navigate({ to: `/games/${result.id}` });
-  };
-
-  return (
-    <GameForm buttonText={t('game.new.save')} title={t('game.new.manual.title')} onClick={save} disabled={isLoading} />
-  );
+	return (
+		<GameForm buttonText={t("game.new.save")} title={t("game.new.manual.title")} onClick={save} disabled={isLoading} />
+	);
 }

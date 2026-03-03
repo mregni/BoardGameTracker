@@ -1,47 +1,54 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Updates;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.DockerHub;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.Extensions.Logging;
 using Refit;
+using static BoardGameTracker.Common.Constants;
 
 namespace BoardGameTracker.Core.Updates;
 
 public class UpdateService : IUpdateService
 {
-    private readonly IUpdateRepository _repository;
+    private readonly IConfigRepository _configRepository;
     private readonly IDockerHubApi _dockerHubApi;
     private readonly ILogger<UpdateService> _logger;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
     private const string DOCKER_OWNER = "uping";
     private const string DOCKER_REPO = "boardgametracker";
 
     public UpdateService(
-        IUpdateRepository repository,
+        IConfigRepository configRepository,
         IDockerHubApi dockerHubApi,
-        ILogger<UpdateService> logger)
+        ILogger<UpdateService> logger,
+        IDateTimeProvider dateTimeProvider)
     {
-        _repository = repository;
+        _configRepository = configRepository;
         _dockerHubApi = dockerHubApi;
         _logger = logger;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public async Task<UpdateStatus> GetVersionInfoAsync()
     {
         var currentVersion = GetCurrentVersion();
-        var config = await _repository.GetUpdateConfigAsync();
+        var config = await _configRepository.GetConfigsByPrefixAsync(UpdateConfig.Prefix);
 
         var updateStatus = new UpdateStatus
         {
             CurrentVersion = currentVersion,
-            LatestVersion = config.GetValueOrDefault("update_available_version"),
-            UpdateAvailable = config.GetValueOrDefault("update_available") == "true",
-            ErrorMessage = config.GetValueOrDefault("update_check_error")
+            LatestVersion = config.GetValueOrDefault(UpdateConfig.AvailableVersion),
+            UpdateAvailable = config.GetValueOrDefault(UpdateConfig.Available) == "true",
+            ErrorMessage = config.GetValueOrDefault(UpdateConfig.CheckError)
         };
 
-        if (config.TryGetValue("update_check_last_run", out var lastRunStr) &&
+        if (config.TryGetValue(UpdateConfig.CheckLastRun, out var lastRunStr) &&
             DateTime.TryParse(lastRunStr, out var lastRun))
         {
             updateStatus.LastChecked = lastRun;
@@ -57,8 +64,8 @@ public class UpdateService : IUpdateService
             _logger.LogInformation("Checking for updates from Docker Hub...");
 
             var currentVersion = GetCurrentVersion();
-            var updateTrack = await _repository.GetConfigValueAsync("update_track") ?? "stable";
-            var isBetaTrack = updateTrack.Equals("beta", StringComparison.OrdinalIgnoreCase);
+            var updateTrack = await _configRepository.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track);
+            var isBetaTrack = updateTrack == VersionTrack.Beta;
 
             _logger.LogInformation("Current version: {Version}, Update track: {Track}",
                 currentVersion, updateTrack);
@@ -76,8 +83,8 @@ public class UpdateService : IUpdateService
             if (!semverTags.Any())
             {
                 _logger.LogWarning("No valid semantic version tags found on Docker Hub");
-                await _repository.SetConfigValueAsync("update_check_error", "No valid versions found");
-                await _repository.SetConfigValueAsync("update_check_last_run", DateTime.UtcNow.ToString("O"));
+                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, "No valid versions found");
+                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, _dateTimeProvider.UtcNow.ToString("O"));
                 return;
             }
 
@@ -94,18 +101,18 @@ public class UpdateService : IUpdateService
             if (latestVersion == null)
             {
                 _logger.LogWarning("No matching versions found for track: {Track}", updateTrack);
-                await _repository.SetConfigValueAsync("update_check_error",
+                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError,
                     $"No {updateTrack} versions found");
-                await _repository.SetConfigValueAsync("update_check_last_run", DateTime.UtcNow.ToString("O"));
+                await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, _dateTimeProvider.UtcNow.ToString("O"));
                 return;
             }
 
             var updateAvailable = CompareVersions(currentVersion, latestVersion);
 
-            await _repository.SetConfigValueAsync("update_available_version", latestVersion);
-            await _repository.SetConfigValueAsync("update_available", updateAvailable.ToString().ToLowerInvariant());
-            await _repository.SetConfigValueAsync("update_check_last_run", DateTime.UtcNow.ToString("O"));
-            await _repository.SetConfigValueAsync("update_check_error", string.Empty);
+            await _configRepository.SetConfigValueAsync(UpdateConfig.AvailableVersion, latestVersion);
+            await _configRepository.SetConfigValueAsync(UpdateConfig.Available, updateAvailable);
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, _dateTimeProvider.UtcNow.ToString("O"));
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, string.Empty);
 
             _logger.LogInformation(
                 "Update check completed. Current: {Current}, Latest: {Latest}, Available: {Available}",
@@ -114,40 +121,34 @@ public class UpdateService : IUpdateService
         catch (ApiException apiEx)
         {
             _logger.LogError(apiEx, "Docker Hub API error during update check");
-            await _repository.SetConfigValueAsync("update_check_error", $"API Error: {apiEx.Message}");
-            await _repository.SetConfigValueAsync("update_check_last_run", DateTime.UtcNow.ToString("O"));
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, $"API Error: {apiEx.Message}");
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, _dateTimeProvider.UtcNow.ToString("O"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error checking for updates");
-            await _repository.SetConfigValueAsync("update_check_error", ex.Message);
-            await _repository.SetConfigValueAsync("update_check_last_run", DateTime.UtcNow.ToString("O"));
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, ex.Message);
+            await _configRepository.SetConfigValueAsync(UpdateConfig.CheckLastRun, _dateTimeProvider.UtcNow.ToString("O"));
         }
     }
 
     public async Task<UpdateSettings> GetUpdateSettingsAsync()
     {
-        var enabled = await _repository.GetConfigValueAsync("update_check_enabled");
-        var intervalStr = await _repository.GetConfigValueAsync("update_check_interval_hours");
-
+        var enabled = await _configRepository.GetConfigValueAsync<bool>(UpdateConfig.CheckEnabled);
+        var versionTrack = await _configRepository.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track);
         var settings = new UpdateSettings
         {
-            Enabled = enabled != "false",
-            IntervalHours = int.TryParse(intervalStr, out var hours) ? hours : 24
+            Enabled = enabled,
+            VersionTrack = versionTrack
         };
 
         return settings;
     }
 
-    public async Task UpdateSettingsAsync(bool enabled, int intervalHours)
+    public async Task UpdateSettingsAsync(bool enabled, VersionTrack versionTrack)
     {
-        if (intervalHours < 1)
-        {
-            throw new ArgumentException("Interval must be at least 1 hour", nameof(intervalHours));
-        }
-
-        await _repository.SetConfigValueAsync("update_check_enabled", enabled.ToString().ToLowerInvariant());
-        await _repository.SetConfigValueAsync("update_check_interval_hours", intervalHours.ToString());
+        await _configRepository.SetConfigValueAsync(UpdateConfig.CheckEnabled, enabled);
+        await _configRepository.SetConfigValueAsync(UpdateConfig.Track, versionTrack);
     }
 
     public string GetCurrentVersion()

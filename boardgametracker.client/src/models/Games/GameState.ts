@@ -1,7 +1,7 @@
 export enum GameState {
-  Wanted = 0,
-  Owned = 1,
-  PreviouslyOwned = 2,
-  NotOwned = 3,
-  ForTrade = 4,
+	Wanted = "wanted",
+	Owned = "owned",
+	PreviouslyOwned = "previouslyOwned",
+	NotOwned = "notOwned",
+	ForTrade = "forTrade",
 }

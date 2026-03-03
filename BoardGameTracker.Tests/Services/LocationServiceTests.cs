@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Locations;
 using BoardGameTracker.Core.Locations.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -14,16 +17,19 @@ public class LocationServiceTests
 {
     private readonly Mock<ILocationRepository> _locationRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ILogger<LocationService>> _loggerMock;
     private readonly LocationService _locationService;
 
     public LocationServiceTests()
     {
         _locationRepositoryMock = new Mock<ILocationRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _loggerMock = new Mock<ILogger<LocationService>>();
 
         _locationService = new LocationService(
             _locationRepositoryMock.Object,
-            _unitOfWorkMock.Object);
+            _unitOfWorkMock.Object,
+            _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -88,49 +94,26 @@ public class LocationServiceTests
     public async Task Create_ShouldCreateLocation_AndSaveChanges()
     {
         // Arrange
-        var location = new Location("New Location");
+        var command = new CreateLocationCommand { Name = "New Location" };
 
         _locationRepositoryMock
-            .Setup(x => x.CreateAsync(location))
-            .ReturnsAsync(location);
+            .Setup(x => x.CreateAsync(It.Is<Location>(l => l.Name == "New Location")))
+            .ReturnsAsync((Location l) => l);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
         // Act
-        var result = await _locationService.Create(location);
+        var result = await _locationService.Create(command);
 
         // Assert
         result.Should().NotBeNull();
         result.Name.Should().Be("New Location");
 
-        _locationRepositoryMock.Verify(x => x.CreateAsync(location), Times.Once);
+        _locationRepositoryMock.Verify(x => x.CreateAsync(It.Is<Location>(l => l.Name == "New Location")), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task Create_ShouldReturnCreatedLocation()
-    {
-        // Arrange
-        var location = new Location("Board Game Cafe") { Id = 5 };
-
-        _locationRepositoryMock
-            .Setup(x => x.CreateAsync(location))
-            .ReturnsAsync(location);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
-
-        // Act
-        var result = await _locationService.Create(location);
-
-        // Assert
-        result.Should().BeSameAs(location);
-        result.Id.Should().Be(5);
-        result.Name.Should().Be("Board Game Cafe");
     }
 
     #endregion
@@ -189,45 +172,47 @@ public class LocationServiceTests
     public async Task Update_ShouldUpdateLocation_AndSaveChanges()
     {
         // Arrange
-        var location = new Location("Updated Location") { Id = 1 };
+        var command = new UpdateLocationCommand { Id = 1, Name = "Updated Location" };
+        var existingLocation = new Location("Old Location") { Id = 1 };
 
         _locationRepositoryMock
-            .Setup(x => x.UpdateAsync(location))
-            .ReturnsAsync(location);
+            .Setup(x => x.GetByIdAsync(1))
+            .ReturnsAsync(existingLocation);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
         // Act
-        await _locationService.Update(location);
+        var result = await _locationService.Update(command);
 
         // Assert
-        _locationRepositoryMock.Verify(x => x.UpdateAsync(location), Times.Once);
+        result.Should().NotBeNull();
+        result.Name.Should().Be("Updated Location");
+
+        _locationRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task Update_ShouldPassLocationToRepository()
+    public async Task Update_ShouldThrowEntityNotFoundException_WhenLocationNotFound()
     {
         // Arrange
-        var location = new Location("Test Location") { Id = 3 };
-        location.UpdateName("Renamed Location");
+        var command = new UpdateLocationCommand { Id = 999, Name = "NonExistent" };
 
         _locationRepositoryMock
-            .Setup(x => x.UpdateAsync(It.Is<Location>(l => l.Name == "Renamed Location")))
-            .ReturnsAsync(location);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
+            .Setup(x => x.GetByIdAsync(999))
+            .ReturnsAsync((Location?)null);
 
         // Act
-        await _locationService.Update(location);
+        var action = async () => await _locationService.Update(command);
 
         // Assert
-        _locationRepositoryMock.Verify(x => x.UpdateAsync(It.Is<Location>(l => l.Name == "Renamed Location")), Times.Once);
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+
+        _locationRepositoryMock.Verify(x => x.GetByIdAsync(999), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     #endregion

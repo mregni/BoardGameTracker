@@ -1,10 +1,10 @@
-import { axiosInstance } from '../utils/axiosInstance';
-import { DashboardStatistics } from '../models';
+import type { DashboardStatistics } from "../models";
+import { axiosInstance } from "../utils/axiosInstance";
 
-const domain = 'dashboard';
+const domain = "dashboard";
 
 export const getStatistics = (): Promise<DashboardStatistics> => {
-  return axiosInstance.get<DashboardStatistics>(`${domain}/statistics`).then((response) => {
-    return response.data;
-  });
+	return axiosInstance.get<DashboardStatistics>(`${domain}/statistics`).then((response) => {
+		return response.data;
+	});
 };

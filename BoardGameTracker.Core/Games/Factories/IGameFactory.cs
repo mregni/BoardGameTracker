@@ -1,7 +1,6 @@
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
-using BoardGameTracker.Core.Bgg;
 
 namespace BoardGameTracker.Core.Games.Factories;
 

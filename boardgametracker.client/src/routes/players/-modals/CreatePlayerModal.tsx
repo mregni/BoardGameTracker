@@ -1,136 +1,113 @@
-import { Bars } from 'react-loading-icons';
-import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
-import { useForm } from '@tanstack/react-form';
-
-import { usePlayerModal } from '../-hooks/usePlayerModal';
-
-import { useToasts } from '@/routes/-hooks/useToasts';
-import { CreatePlayerSchema, Player } from '@/models';
-import { BgtInputField, BgtImageSelector } from '@/components/BgtForm';
+import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Bars } from "react-loading-icons";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import {
-  BgtDialog,
-  BgtDialogClose,
-  BgtDialogContent,
-  BgtDialogDescription,
-  BgtDialogTitle,
-} from '@/components/BgtDialog';
-import BgtButton from '@/components/BgtButton/BgtButton';
+	BgtDialog,
+	BgtDialogClose,
+	BgtDialogContent,
+	BgtDialogDescription,
+	BgtDialogTitle,
+} from "@/components/BgtDialog";
+import { BgtImageSelector, BgtInputField } from "@/components/BgtForm";
+import { CreatePlayerSchema, type ModalProps, type Player } from "@/models";
+import { handleFormSubmit } from "@/utils/formUtils";
+import { usePlayerModal } from "../-hooks/usePlayerModal";
 
-interface Props {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  onPlayerCreated?: (player: Player) => void;
+interface Props extends ModalProps {
+	onPlayerCreated?: (player: Player) => void;
 }
 
 export const CreatePlayerModal = (props: Props) => {
-  const { open, setOpen, onPlayerCreated } = props;
-  const { t } = useTranslation();
-  const [image, setImage] = useState<File | undefined | null>(undefined);
-  const { successToast, errorToast } = useToasts();
+	const { open, close, onPlayerCreated } = props;
+	const { t } = useTranslation();
+	const [image, setImage] = useState<File | undefined | null>(undefined);
 
-  const onSaveSuccess = () => {
-    successToast('player.notifications.created');
-  };
+	const { savePlayer, uploadImage, isLoading } = usePlayerModal({});
 
-  const onSaveError = () => {
-    errorToast('player.notifications.create-failed');
-  };
+	const form = useForm({
+		defaultValues: {
+			name: "",
+		},
+		onSubmit: async ({ value }) => {
+			const validatedData = CreatePlayerSchema.parse(value);
 
-  const { savePlayer, uploadImage, isLoading } = usePlayerModal({ onSaveSuccess, onSaveError });
+			const player: Player = {
+				id: 0,
+				name: validatedData.name,
+				image: null,
+				badges: [],
+			};
 
-  const form = useForm({
-    defaultValues: {
-      name: '',
-    },
-    onSubmit: async ({ value }) => {
-      const validatedData = CreatePlayerSchema.parse(value);
+			if (image !== undefined) {
+				const savedImage = await uploadImage({ type: 0, file: image });
+				player.image = savedImage ?? null;
+			}
 
-      const player: Player = {
-        id: 0,
-        name: validatedData.name,
-        image: null,
-        badges: [],
-      };
+			const savedPlayer = await savePlayer(player);
+			if (onPlayerCreated) {
+				onPlayerCreated(savedPlayer);
+			}
 
-      if (image !== undefined) {
-        const savedImage = await uploadImage({ type: 0, file: image });
-        player.image = savedImage ?? null;
-      }
+			form.reset();
+			setImage(undefined);
+			close();
+		},
+	});
 
-      const savedPlayer = await savePlayer(player);
+	const handleCancel = () => {
+		form.reset();
+		setImage(undefined);
+		close();
+	};
 
-      // Call the callback if provided
-      if (onPlayerCreated) {
-        onPlayerCreated(savedPlayer);
-      }
-
-      // Reset form and image
-      form.reset();
-      setImage(undefined);
-      setOpen(false);
-    },
-  });
-
-  const handleCancel = () => {
-    // Reset form and image when canceling
-    form.reset();
-    setImage(undefined);
-    setOpen(false);
-  };
-
-  return (
-    <BgtDialog open={open}>
-      <BgtDialogContent>
-        <BgtDialogTitle>{t('player.new.title')}</BgtDialogTitle>
-        <BgtDialogDescription>{t('player.new.description')}</BgtDialogDescription>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
-        >
-          <div className="flex flex-row gap-3 mt-3 mb-6">
-            <div className="flex-none">
-              <BgtImageSelector image={image} setImage={setImage} />
-            </div>
-            <div className="grow">
-              <form.Field
-                name="name"
-                validators={{
-                  onChange: ({ value }) => {
-                    const result = CreatePlayerSchema.shape.name.safeParse(value);
-                    if (!result.success) {
-                      return t(result.error.errors[0].message);
-                    }
-                    return undefined;
-                  },
-                }}
-              >
-                {(field) => (
-                  <BgtInputField
-                    field={field}
-                    type="text"
-                    placeholder={t('player.name.placeholder')}
-                    label={t('common.name')}
-                    disabled={isLoading}
-                  />
-                )}
-              </form.Field>
-            </div>
-          </div>
-          <BgtDialogClose>
-            <BgtButton variant="cancel" onClick={handleCancel} disabled={isLoading}>
-              {t('common.cancel')}
-            </BgtButton>
-            <BgtButton type="submit" variant="primary" disabled={isLoading} className="flex-1">
-              {isLoading && <Bars className="size-4" />}
-              {t('player.new.save')}
-            </BgtButton>
-          </BgtDialogClose>
-        </form>
-      </BgtDialogContent>
-    </BgtDialog>
-  );
+	return (
+		<BgtDialog open={open} onClose={handleCancel}>
+			<BgtDialogContent>
+				<BgtDialogTitle>{t("player.new.title")}</BgtDialogTitle>
+				<BgtDialogDescription>{t("player.new.description")}</BgtDialogDescription>
+				<form onSubmit={handleFormSubmit(form)}>
+					<div className="flex flex-row gap-3 mt-3 mb-6">
+						<div className="flex-none">
+							<BgtImageSelector image={image} setImage={setImage} />
+						</div>
+						<div className="grow">
+							<form.Field
+								name="name"
+								validators={{
+									onChange: ({ value }) => {
+										const result = CreatePlayerSchema.shape.name.safeParse(value);
+										if (!result.success) {
+											return t(result.error.errors[0].message);
+										}
+										return undefined;
+									},
+								}}
+							>
+								{(field) => (
+									<BgtInputField
+										field={field}
+										type="text"
+										placeholder={t("player.name.placeholder")}
+										label={t("common.name")}
+										disabled={isLoading}
+									/>
+								)}
+							</form.Field>
+						</div>
+					</div>
+					<BgtDialogClose>
+						<BgtButton variant="cancel" onClick={handleCancel} disabled={isLoading}>
+							{t("common.cancel")}
+						</BgtButton>
+						<BgtButton type="submit" variant="primary" disabled={isLoading} className="flex-1">
+							{isLoading && <Bars className="size-4" />}
+							{t("player.new.save")}
+						</BgtButton>
+					</BgtDialogClose>
+				</form>
+			</BgtDialogContent>
+		</BgtDialog>
+	);
 };

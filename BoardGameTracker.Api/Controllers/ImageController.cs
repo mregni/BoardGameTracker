@@ -1,35 +1,28 @@
-﻿using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Core.Images.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/image")]
+[Authorize]
 public class ImageController : ControllerBase
 {
     private readonly IImageService _imageService;
-    private readonly ILogger<ImageController> _logger;
 
-    public ImageController(IImageService imageService, ILogger<ImageController> logger)
+    public ImageController(IImageService imageService)
     {
         _imageService = imageService;
-        _logger = logger;
     }
 
     [HttpPost]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> UploadImage([FromForm] UploadImageCommand command)
     {
-        try
-        {
-            var name = await _imageService.SaveImage(command.File, command.Type);
-            return Ok(name);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error while uploading image");
-            return StatusCode(500);
-        }
+        var name = await _imageService.SaveImage(command.File, command.Type);
+        return Ok(name);
     }
 }

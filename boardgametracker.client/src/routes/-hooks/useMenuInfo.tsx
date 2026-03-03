@@ -1,40 +1,97 @@
-import { useQueries } from '@tanstack/react-query';
-
-import { getVersionInfo } from '@/services/queries/settings';
-import { getCounts } from '@/services/queries/count';
-import { MenuItem } from '@/models';
-import UsersIcon from '@/assets/icons/users.svg?react';
-import TrendUp from '@/assets/icons/trend-up.svg?react';
-import PuzzlePieceIcon from '@/assets/icons/puzzle-piece.svg?react';
-import PlusIcon from '@/assets/icons/plus.svg?react';
-import MapPinIcon from '@/assets/icons/map-pin.svg?react';
-import LeftRightArrowIcon from '@/assets/icons/left-right-arrow.svg?react';
-import HomeIcon from '@/assets/icons/home.svg?react';
-import CogIcon from '@/assets/icons/cog.svg?react';
+import { useQueries } from "@tanstack/react-query";
+import CogIcon from "@/assets/icons/cog.svg?react";
+import Game from "@/assets/icons/gamepad.svg?react";
+import HomeIcon from "@/assets/icons/home.svg?react";
+import LeftRightArrowIcon from "@/assets/icons/left-right-arrow.svg?react";
+import MapPinIcon from "@/assets/icons/map-pin.svg?react";
+import PlusIcon from "@/assets/icons/plus.svg?react";
+import TrendUp from "@/assets/icons/trend-up.svg?react";
+import UsersIcon from "@/assets/icons/users.svg?react";
+import type { MenuItem } from "@/models";
+import { getCounts } from "@/services/queries/count";
+import { getSettings, getVersionInfo } from "@/services/queries/settings";
 
 export interface MenuItems {
-  menuItems: MenuItem[];
+	menuItems: MenuItem[];
 }
 
 export const menuItems: MenuItem[] = [
-  { menuLabel: 'common.dashboard', path: '/', icon: HomeIcon, mobileVisible: true },
-  { menuLabel: 'common.new-session', path: '/sessions/new', icon: PlusIcon, mobileVisible: true },
-  { menuLabel: 'common.games', path: '/games', icon: PuzzlePieceIcon, mobileVisible: true },
-  { menuLabel: 'common.players', path: '/players', icon: UsersIcon, mobileVisible: true },
-  { menuLabel: 'common.compare', path: '/compare', icon: TrendUp, mobileVisible: false },
-  { menuLabel: 'common.loans', path: '/loans', icon: LeftRightArrowIcon, mobileVisible: false },
-  { menuLabel: 'common.locations', path: '/locations', icon: MapPinIcon, mobileVisible: false },
-  { menuLabel: 'common.settings', path: '/settings', icon: CogIcon, mobileVisible: false },
+	{
+		menuLabel: "common.dashboard",
+		path: "/",
+		icon: HomeIcon,
+		mobileVisible: true,
+	},
+	{
+		menuLabel: "common.new-session",
+		path: "/sessions/new",
+		icon: PlusIcon,
+		mobileVisible: true,
+	},
+	{
+		menuLabel: "common.games",
+		path: "/games",
+		icon: Game,
+		mobileVisible: true,
+	},
+	{
+		menuLabel: "common.players",
+		path: "/players",
+		icon: UsersIcon,
+		mobileVisible: true,
+	},
+	{
+		menuLabel: "common.shame",
+		path: "/shames",
+		icon: Game,
+		mobileVisible: false,
+	},
+	{
+		menuLabel: "common.compare",
+		path: "/compare",
+		icon: TrendUp,
+		mobileVisible: false,
+	},
+	{
+		menuLabel: "common.game-nights",
+		path: "/game-nights",
+		icon: UsersIcon,
+		mobileVisible: false,
+	},
+	{
+		menuLabel: "common.loans",
+		path: "/loans",
+		icon: LeftRightArrowIcon,
+		mobileVisible: false,
+	},
+	{
+		menuLabel: "common.locations",
+		path: "/locations",
+		icon: MapPinIcon,
+		mobileVisible: false,
+	},
+	{
+		menuLabel: "common.settings",
+		path: "/settings",
+		icon: CogIcon,
+		mobileVisible: false,
+	},
 ];
 
 export const useMenuInfo = () => {
-  const [versionInfoQuery, countsQuery] = useQueries({
-    queries: [getVersionInfo(), getCounts()],
-  });
+	const [versionInfoQuery, countsQuery, settingsQuery] = useQueries({
+		queries: [getVersionInfo(), getCounts(), getSettings()],
+	});
 
-  return {
-    versionInfo: versionInfoQuery.data,
-    counts: countsQuery.data,
-    menuItems,
-  };
+	const filteredMenuItems = menuItems.filter((item) => {
+		if (item.path === "/shames" && !settingsQuery.data?.shelfOfShameEnabled) return false;
+		if (item.path === "/game-nights" && !settingsQuery.data?.gameNightsEnabled) return false;
+		return true;
+	});
+
+	return {
+		versionInfo: versionInfoQuery.data,
+		counts: countsQuery.data,
+		menuItems: filteredMenuItems,
+	};
 };

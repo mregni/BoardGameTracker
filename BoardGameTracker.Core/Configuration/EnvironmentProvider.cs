@@ -1,6 +1,5 @@
 ﻿using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Configuration.Interfaces;
-using Microsoft.Extensions.Logging;
 using Serilog.Events;
 
 namespace BoardGameTracker.Core.Configuration;

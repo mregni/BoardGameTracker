@@ -1,41 +1,44 @@
-import { memo, useCallback } from 'react';
-import { cx } from 'class-variance-authority';
-import { AnyFieldApi } from '@tanstack/react-form';
-import { TextArea } from '@radix-ui/themes';
+import { TextArea } from "@radix-ui/themes";
+import type { AnyFieldApi } from "@tanstack/react-form";
+import { cx } from "class-variance-authority";
+import { memo, useCallback } from "react";
 
-import { FormFieldWrapper } from './FormFieldWrapper';
+import { FormFieldWrapper } from "./FormFieldWrapper";
 
-export interface Props {
-  field: AnyFieldApi;
-  disabled?: boolean;
-  label: string;
-  className?: string;
+export interface BgtTextAreaProps {
+	field: AnyFieldApi;
+	disabled?: boolean;
+	label: string;
+	className?: string;
 }
 
-const BgtTextAreaComponent = (props: Props) => {
-  const { field, disabled = false, className, label } = props;
+const BgtTextAreaComponent = (props: BgtTextAreaProps) => {
+	const { field, disabled = false, className, label } = props;
 
-  const handleChange = useCallback(
-    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-      field.handleChange(event.target.value);
-    },
-    [field]
-  );
+	const handleChange = useCallback(
+		(event: React.ChangeEvent<HTMLTextAreaElement>) => {
+			field.handleChange(event.target.value);
+		},
+		[field],
+	);
 
-  return (
-    <FormFieldWrapper label={label} errors={field.state.meta.errors}>
-      <div className="'w-full bg-background font- text-whiterounded-lg border border-primary/30 focus:border-primary focus:outline-none'">
-        <TextArea
-          className={cx(className, 'bg-transparent shadow-none focus-within:outline-hidden')}
-          rows={4}
-          disabled={disabled}
-          value={field.state.value ?? ''}
-          onChange={handleChange}
-          onBlur={field.handleBlur}
-        />
-      </div>
-    </FormFieldWrapper>
-  );
+	return (
+		<FormFieldWrapper label={label} errors={field.state.meta.errors}>
+			<div className="w-full  text-whiterounded-lg border-none ">
+				<TextArea
+					className={cx(
+						"bg-background! shadow-none!border rounded-lg! border-primary/30! focus:border-primary!",
+						className,
+					)}
+					rows={4}
+					disabled={disabled}
+					value={field.state.value ?? ""}
+					onChange={handleChange}
+					onBlur={field.handleBlur}
+				/>
+			</div>
+		</FormFieldWrapper>
+	);
 };
 
 export const BgtTextArea = memo(BgtTextAreaComponent);

@@ -1,87 +1,90 @@
-import { memo } from 'react';
-import { UseFormReturn } from '@tanstack/react-form';
+import type { AnyFieldApi } from "@tanstack/react-form";
+import { useEffect } from "react";
+import { BgtPlayerSelector } from "@/components/BgtForm";
+import { withForm } from "@/hooks/form";
+import {
+	type CreatePlayerSessionNoScoring,
+	type CreateSessionPlayer,
+	CreateSessionSchema,
+	type Player,
+} from "@/models";
 
-import { UpdateSessionPlayerModal } from '../-modals/UpdateSessionPlayerModal';
-import { CreateSessionPlayerModal } from '../-modals/CreateSessionPlayerModal';
+import { zodValidator } from "@/utils/zodValidator";
+import { CreateSessionPlayerModal } from "../-modals/CreateSessionPlayerModal";
+import { UpdateSessionPlayerModal } from "../-modals/UpdateSessionPlayerModal";
+import { sessionFormOpts } from "../-utils/sessionFormOpts";
 
-import { CreateSession, CreateSessionPlayer, CreatePlayerSessionNoScoring, Player } from '@/models';
-import { CreateSessionSchema } from '@/models';
-import { BgtPlayerSelector, BgtFormField } from '@/components/BgtForm';
+export const SessionPlayerManager = withForm({
+	...sessionFormOpts,
+	props: {
+		players: [] as (CreateSessionPlayer | CreatePlayerSessionNoScoring)[],
+		playerList: [] as Player[],
+		hasScoring: true,
+		disabled: false,
+		isCreateModalOpen: false,
+		isUpdateModalOpen: false,
+		playerIdToEdit: null as number | null,
+		onOpenCreateModal: () => {},
+		onCloseModal: () => {},
+		onEditPlayer: (() => {}) as (playerId: number) => void,
+		onAddPlayer: (() => {}) as (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void,
+		onUpdatePlayer: (() => {}) as (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void,
+		onRemovePlayer: (() => {}) as (index: number) => void,
+	},
+	render: function Render({
+		form,
+		players,
+		playerList,
+		hasScoring,
+		disabled,
+		isCreateModalOpen,
+		isUpdateModalOpen,
+		playerIdToEdit,
+		onOpenCreateModal,
+		onCloseModal,
+		onEditPlayer,
+		onAddPlayer,
+		onUpdatePlayer,
+		onRemovePlayer,
+	}) {
+		useEffect(() => {
+			form.setFieldValue("playerSessions", players);
+		}, [form, players]);
 
-interface SessionPlayerManagerProps {
-  form: UseFormReturn<CreateSession>;
-  players: (CreateSessionPlayer | CreatePlayerSessionNoScoring)[];
-  playerList: Player[];
-  hasScoring: boolean;
-  disabled: boolean;
-  openCreatePlayerModal: boolean;
-  openUpdatePlayerModal: boolean;
-  playerIdToEdit: number | null;
-  setOpenCreatePlayerModal: (open: boolean) => void;
-  setOpenUpdatePlayerModal: (open: boolean) => void;
-  onAddPlayer: (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void;
-  onUpdatePlayer: (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void;
-  onRemovePlayer: (index: number) => void;
-  setPlayerIdToEdit: (id: number | null) => void;
-}
+		return (
+			<>
+				<form.Field name="playerSessions" validators={zodValidator(CreateSessionSchema, "playerSessions")}>
+					{(field: AnyFieldApi) => (
+						<BgtPlayerSelector
+							onOpenCreateModal={onOpenCreateModal}
+							onEditPlayer={onEditPlayer}
+							remove={onRemovePlayer}
+							players={players}
+							disabled={disabled}
+							errors={field.state.meta.errors}
+						/>
+					)}
+				</form.Field>
 
-const SessionPlayerManagerComponent = ({
-  form,
-  players,
-  playerList,
-  hasScoring,
-  disabled,
-  openCreatePlayerModal,
-  openUpdatePlayerModal,
-  playerIdToEdit,
-  setOpenCreatePlayerModal,
-  setOpenUpdatePlayerModal,
-  onAddPlayer,
-  onUpdatePlayer,
-  onRemovePlayer,
-  setPlayerIdToEdit,
-}: SessionPlayerManagerProps) => {
-  return (
-    <>
-      <BgtFormField form={form} name="playerSessions" schema={CreateSessionSchema.shape.playerSessions}>
-        {(field) => {
-          if (field.state.value !== players) {
-            field.handleChange(players);
-          }
-          return (
-            <BgtPlayerSelector
-              setCreateModalOpen={setOpenCreatePlayerModal}
-              setUpdateModalOpen={setOpenUpdatePlayerModal}
-              remove={onRemovePlayer}
-              players={players}
-              setPlayerIdToEdit={setPlayerIdToEdit}
-              disabled={disabled}
-              errors={field.state.meta.errors}
-            />
-          );
-        }}
-      </BgtFormField>
-
-      <CreateSessionPlayerModal
-        open={openCreatePlayerModal}
-        hasScoring={hasScoring}
-        onClose={onAddPlayer}
-        onCancel={() => setOpenCreatePlayerModal(false)}
-        selectedPlayerIds={players.map((x) => x.playerId)}
-        players={playerList}
-      />
-      <UpdateSessionPlayerModal
-        open={openUpdatePlayerModal}
-        hasScoring={hasScoring}
-        onClose={onUpdatePlayer}
-        onCancel={() => setOpenUpdatePlayerModal(false)}
-        selectedPlayerIds={players.map((x) => x.playerId)}
-        playerToEdit={players.find((x) => x.playerId === playerIdToEdit)}
-      />
-    </>
-  );
-};
-
-SessionPlayerManagerComponent.displayName = 'SessionPlayerManager';
-
-export const SessionPlayerManager = memo(SessionPlayerManagerComponent);
+				<CreateSessionPlayerModal
+					open={isCreateModalOpen}
+					hasScoring={hasScoring}
+					onClose={onAddPlayer}
+					onCancel={onCloseModal}
+					selectedPlayerIds={players.map((x: CreateSessionPlayer | CreatePlayerSessionNoScoring) => x.playerId)}
+					players={playerList}
+				/>
+				<UpdateSessionPlayerModal
+					open={isUpdateModalOpen}
+					hasScoring={hasScoring}
+					onClose={onUpdatePlayer}
+					onCancel={onCloseModal}
+					selectedPlayerIds={players.map((x: CreateSessionPlayer | CreatePlayerSessionNoScoring) => x.playerId)}
+					playerToEdit={players.find(
+						(x: CreateSessionPlayer | CreatePlayerSessionNoScoring) => x.playerId === playerIdToEdit,
+					)}
+				/>
+			</>
+		);
+	},
+});

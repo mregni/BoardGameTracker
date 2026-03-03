@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using BoardGameTracker.Common.Extensions;
-using BoardGameTracker.Common.Models.Charts;
 using FluentAssertions;
 using Xunit;
 

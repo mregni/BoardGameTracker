@@ -59,30 +59,24 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
 
     public async Task<double> GetTotalPlayTime()
     {
-        var sessions = await _context.Sessions
-            .AsNoTracking()
-            .ToListAsync();
-
-        if (!sessions.Any())
+        if (!await _context.Sessions.AnyAsync())
         {
             return 0;
         }
 
-        return sessions.Sum(x => (x.End - x.Start).TotalMinutes);
+        return await _context.Sessions
+            .SumAsync(x => (x.End - x.Start).TotalMinutes);
     }
 
     public async Task<double> GetMeanPlayTime()
     {
-        var sessions = await _context.Sessions
-            .AsNoTracking()
-            .ToListAsync();
-
-        if (!sessions.Any())
+        if (!await _context.Sessions.AnyAsync())
         {
             return 0;
         }
 
-        return sessions.Average(x => (x.End - x.Start).TotalMinutes);
+        return await _context.Sessions
+            .AverageAsync(x => (x.End - x.Start).TotalMinutes);
     }
 
     public async Task<Dictionary<int, List<Session>>> GetByPlayerBatchAsync(IEnumerable<int> playerIds)
@@ -142,7 +136,16 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
             .ToListAsync();
     }
 
-    public override async Task<Session> UpdateAsync(Session entity)
+    public async Task DeleteByPlayerIdAsync(int playerId)
+    {
+        var sessions = await _context.Sessions
+            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerId))
+            .ToListAsync();
+
+        _context.Sessions.RemoveRange(sessions);
+    }
+
+    public override async Task<Session> Update(Session entity)
     {
         var existing = await _context.Sessions
             .Include(s => s.PlayerSessions)

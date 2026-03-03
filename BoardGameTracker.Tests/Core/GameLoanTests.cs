@@ -1,6 +1,5 @@
 using System;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Enums;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Core;

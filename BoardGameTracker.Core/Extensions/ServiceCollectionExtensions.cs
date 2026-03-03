@@ -30,10 +30,17 @@ using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using BoardGameTracker.Core.Common;
+using BoardGameTracker.Core.GameNights;
+using BoardGameTracker.Core.GameNights.Interfaces;
+using BoardGameTracker.Core.Settings;
+using BoardGameTracker.Core.Settings.Interfaces;
+using BoardGameTracker.Core.Auth;
+using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace BoardGameTracker.Core.Extensions;
 
@@ -44,10 +51,14 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddTransient<IDiskProvider, DiskProvider>();
 
         serviceCollection.AddSingleton<IDateTimeProvider, DateTimeProvider>();
-        serviceCollection.AddScoped<IConfigFileProvider, ConfigFileProvider>();
-        serviceCollection.AddScoped<IEnvironmentProvider, EnvironmentProvider>();
+        serviceCollection.AddSingleton<IDbConnectionProvider, DbConnectionProvider>();
+        serviceCollection.AddScoped<IConfigRepository, ConfigRepository>();
+        serviceCollection.AddSingleton<IEnvironmentProvider, EnvironmentProvider>();
         
         serviceCollection.AddScoped<IGameService, GameService>();
+        serviceCollection.AddScoped<IBggImportService, BggImportService>();
+        serviceCollection.AddScoped<IGameChartService, GameChartService>();
+        serviceCollection.AddScoped<IShameService, ShameService>();
         serviceCollection.AddScoped<IImageService, ImageService>();
         serviceCollection.AddScoped<IPlayerService, PlayerService>();
         serviceCollection.AddScoped<ISessionService, SessionService>();
@@ -58,6 +69,8 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IBadgeService, BadgeService>();
         serviceCollection.AddScoped<ICompareService, CompareService>();
         serviceCollection.AddScoped<IUpdateService, UpdateService>();
+        serviceCollection.AddScoped<IGameNightService, GameNightService>();
+        serviceCollection.AddScoped<ISettingsService, SettingsService>();
 
         serviceCollection.AddScoped<IGameRepository, GameRepository>();
         serviceCollection.AddScoped<IGameSessionRepository, GameSessionRepository>();
@@ -70,15 +83,19 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<ILanguageRepository, LanguageRepository>();
         serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
         serviceCollection.AddScoped<ICompareRepository, CompareRepository>();
-        serviceCollection.AddScoped<IUpdateRepository, UpdateRepository>();
+        serviceCollection.AddScoped<IGameNightRepository, GameNightRepository>();
 
         serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
+        serviceCollection.AddScoped<ITokenService, TokenService>();
+        serviceCollection.AddScoped<IOidcService, OidcService>();
+        serviceCollection.AddScoped<IAuthService, AuthService>();
+        serviceCollection.AddScoped<IOidcProviderService, OidcProviderService>();
+        serviceCollection.AddScoped<IUserAdminService, UserAdminService>();
+        serviceCollection.AddSingleton<IHostedService, RefreshTokenCleanupService>();
 
         serviceCollection.AddScoped<IGameStatisticsService, GameStatisticsService>();
         serviceCollection.AddScoped<IPlayerStatisticsService, PlayerStatisticsService>();
-        serviceCollection.AddScoped<IPlayerComparisonService, PlayerComparisonService>();
         serviceCollection.AddScoped<IBadgeProgressionService, BadgeProgressionService>();
-        serviceCollection.AddScoped<IFirstPlayDetectionService, FirstPlayDetectionService>();
 
         serviceCollection.AddScoped<IBggGameTranslator, BggGameTranslator>();
 
@@ -104,19 +121,19 @@ public static class ServiceCollectionExtensions
         
         serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
         {
-            var fileConfigProvider = serviceProvider.GetService<IConfigFileProvider>();
-            if (fileConfigProvider == null)
+            var dbConnectionProvider = serviceProvider.GetService<IDbConnectionProvider>();
+            if (dbConnectionProvider == null)
             {
-                throw new ServiceNotResolvedException("fileConfigProvider could not be resolved");
+                throw new ServiceNotResolvedException("dbConnectionProvider could not be resolved");
             }
-            
+
             var environmentProvider = serviceProvider.GetService<IEnvironmentProvider>();
             if (environmentProvider == null)
             {
                 throw new ServiceNotResolvedException("environmentProvider could not be resolved");
             }
-            
-            var connectionString = fileConfigProvider.GetPostgresConnectionString(fileConfigProvider.PostgresMainDb);
+
+            var connectionString = dbConnectionProvider.GetPostgresConnectionString(dbConnectionProvider.PostgresMainDb);
             options
                 .EnableSensitiveDataLogging(environmentProvider.IsDevelopment)
                 .UseNpgsql(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));

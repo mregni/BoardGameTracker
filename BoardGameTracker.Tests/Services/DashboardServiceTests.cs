@@ -10,6 +10,7 @@ using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -21,6 +22,7 @@ public class DashboardServiceTests
     private readonly Mock<IGameStatisticsRepository> _gameStatisticsRepositoryMock;
     private readonly Mock<IPlayerRepository> _playerRepositoryMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
+    private readonly Mock<ILogger<DashboardService>> _loggerMock;
     private readonly DashboardService _sut;
 
     public DashboardServiceTests()
@@ -29,12 +31,14 @@ public class DashboardServiceTests
         _gameStatisticsRepositoryMock = new Mock<IGameStatisticsRepository>();
         _playerRepositoryMock = new Mock<IPlayerRepository>();
         _sessionRepositoryMock = new Mock<ISessionRepository>();
+        _loggerMock = new Mock<ILogger<DashboardService>>();
 
         _sut = new DashboardService(
             _gameRepositoryMock.Object,
             _gameStatisticsRepositoryMock.Object,
             _playerRepositoryMock.Object,
-            _sessionRepositoryMock.Object);
+            _sessionRepositoryMock.Object,
+            _loggerMock.Object);
 
         SetupDefaultMocks();
     }

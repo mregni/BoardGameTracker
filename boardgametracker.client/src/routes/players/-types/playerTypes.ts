@@ -1,50 +1,50 @@
-import { LegacyRef } from 'react';
+import type { LegacyRef } from "react";
 
-import { Badge, Player } from '@/models';
+import type { Badge, Player } from "@/models";
 
 export interface PlayerHeaderProps {
-  playerName: string;
-  onEdit: () => void;
-  onDelete: () => void;
+	playerName: string;
+	onEdit: () => void;
+	onDelete: () => void;
 }
 
 export interface PlayerStatistics {
-  playCount: number;
-  totalPlayedTime: number | null;
-  winCount: number;
-  distinctGameCount: number;
-  mostWinsGame: MostWinsGame | null;
+	playCount: number;
+	totalPlayedTime: number | null;
+	winCount: number;
+	distinctGameCount: number;
+	mostWinsGame: MostWinsGame | null;
 }
 
 export interface MostWinsGame {
-  id: string;
-  title: string | null;
-  image: string | null;
-  totalWins: number | null;
+	id: string;
+	title: string | null;
+	image: string | null;
+	totalWins: number | null;
 }
 
 export interface PlayerStatisticsGridProps {
-  statistics: PlayerStatistics;
+	statistics: PlayerStatistics;
 }
 
 export interface PlayerHeroSectionProps {
-  player: Player;
-  statistics: PlayerStatistics;
-  playerId: string;
-  achievementsRef: LegacyRef<HTMLDivElement> | undefined;
+	player: Player;
+	statistics: PlayerStatistics;
+	playerId: string;
+	achievementsRef: LegacyRef<HTMLDivElement> | undefined;
 }
 
 // Player Badge Container Types
 export interface PlayerBadgeContainerProps {
-  badges: Badge[];
-  achievementsRef: LegacyRef<HTMLDivElement> | undefined;
+	badges: Badge[];
+	achievementsRef: LegacyRef<HTMLDivElement> | undefined;
 }
 
 // Player Achievements Section Types
 export interface PlayerAchievementsSectionProps {
-  badges: Badge[];
-  achievementsRef: LegacyRef<HTMLDivElement> | undefined;
+	badges: Badge[];
+	achievementsRef: LegacyRef<HTMLDivElement> | undefined;
 }
 
 // Re-export Player and Badge from models
-export type { Player, Badge } from '@/models';
+export type { Badge, Player } from "@/models";

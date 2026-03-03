@@ -1,108 +1,106 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from "vitest";
+import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { BgtSimpleSwitch } from "./BgtSimpleSwitch";
 
-import { BgtSimpleSwitch } from './BgtSimpleSwitch';
+describe("BgtSimpleSwitch", () => {
+	const defaultProps = {
+		label: "Test Switch",
+		value: false,
+		onChange: vi.fn(),
+	};
 
-import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
+	describe("Rendering", () => {
+		it("should render the label", () => {
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} />);
+			expect(screen.getByText("Test Switch")).toBeInTheDocument();
+		});
 
-describe('BgtSimpleSwitch', () => {
-  const defaultProps = {
-    label: 'Test Switch',
-    value: false,
-    onChange: vi.fn(),
-  };
+		it("should render switch element", () => {
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} />);
+			const switchElement = screen.getByRole("switch");
+			expect(switchElement).toBeInTheDocument();
+		});
+	});
 
-  describe('Rendering', () => {
-    it('should render the label', () => {
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} />);
-      expect(screen.getByText('Test Switch')).toBeInTheDocument();
-    });
+	describe("Value State", () => {
+		it("should render unchecked when value is false", () => {
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} value={false} />);
+			const switchElement = screen.getByRole("switch");
+			expect(switchElement).not.toBeChecked();
+		});
 
-    it('should render switch element', () => {
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} />);
-      const switchElement = screen.getByRole('switch');
-      expect(switchElement).toBeInTheDocument();
-    });
-  });
+		it("should render checked when value is true", () => {
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} value={true} />);
+			const switchElement = screen.getByRole("switch");
+			expect(switchElement).toBeChecked();
+		});
+	});
 
-  describe('Value State', () => {
-    it('should render unchecked when value is false', () => {
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} value={false} />);
-      const switchElement = screen.getByRole('switch');
-      expect(switchElement).not.toBeChecked();
-    });
+	describe("onChange Handler", () => {
+		it("should call onChange when clicked", async () => {
+			const user = userEvent.setup();
+			const handleChange = vi.fn();
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} onChange={handleChange} />);
 
-    it('should render checked when value is true', () => {
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} value={true} />);
-      const switchElement = screen.getByRole('switch');
-      expect(switchElement).toBeChecked();
-    });
-  });
+			await user.click(screen.getByRole("switch"));
 
-  describe('onChange Handler', () => {
-    it('should call onChange when clicked', async () => {
-      const user = userEvent.setup();
-      const handleChange = vi.fn();
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} onChange={handleChange} />);
+			expect(handleChange).toHaveBeenCalledTimes(1);
+			expect(handleChange).toHaveBeenCalledWith(true);
+		});
 
-      await user.click(screen.getByRole('switch'));
+		it("should call onChange with false when toggling off", async () => {
+			const user = userEvent.setup();
+			const handleChange = vi.fn();
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} value={true} onChange={handleChange} />);
 
-      expect(handleChange).toHaveBeenCalledTimes(1);
-      expect(handleChange).toHaveBeenCalledWith(true);
-    });
+			await user.click(screen.getByRole("switch"));
 
-    it('should call onChange with false when toggling off', async () => {
-      const user = userEvent.setup();
-      const handleChange = vi.fn();
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} value={true} onChange={handleChange} />);
+			expect(handleChange).toHaveBeenCalledWith(false);
+		});
+	});
 
-      await user.click(screen.getByRole('switch'));
+	describe("Disabled State", () => {
+		it("should not be disabled by default", () => {
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} />);
+			const switchElement = screen.getByRole("switch");
+			expect(switchElement).not.toBeDisabled();
+		});
 
-      expect(handleChange).toHaveBeenCalledWith(false);
-    });
-  });
+		it("should be disabled when disabled prop is true", () => {
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} disabled={true} />);
+			const switchElement = screen.getByRole("switch");
+			expect(switchElement).toBeDisabled();
+		});
 
-  describe('Disabled State', () => {
-    it('should not be disabled by default', () => {
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} />);
-      const switchElement = screen.getByRole('switch');
-      expect(switchElement).not.toBeDisabled();
-    });
+		it("should not call onChange when disabled", async () => {
+			const user = userEvent.setup();
+			const handleChange = vi.fn();
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} disabled={true} onChange={handleChange} />);
 
-    it('should be disabled when disabled prop is true', () => {
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} disabled={true} />);
-      const switchElement = screen.getByRole('switch');
-      expect(switchElement).toBeDisabled();
-    });
+			await user.click(screen.getByRole("switch"));
 
-    it('should not call onChange when disabled', async () => {
-      const user = userEvent.setup();
-      const handleChange = vi.fn();
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} disabled={true} onChange={handleChange} />);
+			expect(handleChange).not.toHaveBeenCalled();
+		});
+	});
 
-      await user.click(screen.getByRole('switch'));
+	describe("Accessibility", () => {
+		it("should be focusable", () => {
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} />);
+			const switchElement = screen.getByRole("switch");
+			switchElement.focus();
+			expect(switchElement).toHaveFocus();
+		});
 
-      expect(handleChange).not.toHaveBeenCalled();
-    });
-  });
+		it("should toggle with keyboard", async () => {
+			const user = userEvent.setup();
+			const handleChange = vi.fn();
+			renderWithTheme(<BgtSimpleSwitch {...defaultProps} onChange={handleChange} />);
 
-  describe('Accessibility', () => {
-    it('should be focusable', () => {
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} />);
-      const switchElement = screen.getByRole('switch');
-      switchElement.focus();
-      expect(switchElement).toHaveFocus();
-    });
+			const switchElement = screen.getByRole("switch");
+			switchElement.focus();
+			await user.keyboard(" ");
 
-    it('should toggle with keyboard', async () => {
-      const user = userEvent.setup();
-      const handleChange = vi.fn();
-      renderWithTheme(<BgtSimpleSwitch {...defaultProps} onChange={handleChange} />);
-
-      const switchElement = screen.getByRole('switch');
-      switchElement.focus();
-      await user.keyboard(' ');
-
-      expect(handleChange).toHaveBeenCalledWith(true);
-    });
-  });
+			expect(handleChange).toHaveBeenCalledWith(true);
+		});
+	});
 });

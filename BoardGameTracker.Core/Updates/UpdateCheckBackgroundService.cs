@@ -1,7 +1,9 @@
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static BoardGameTracker.Common.Constants;
 
 namespace BoardGameTracker.Core.Updates;
 
@@ -53,10 +55,10 @@ public class UpdateCheckBackgroundService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var updateService = scope.ServiceProvider.GetRequiredService<IUpdateService>();
 
-        var repository = scope.ServiceProvider.GetRequiredService<IUpdateRepository>();
-        var enabled = await repository.GetConfigValueAsync("update_check_enabled");
+        var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
+        var enabled = await configRepository.GetConfigValueAsync<bool>(UpdateConfig.CheckEnabled);
 
-        if (enabled == "false")
+        if (!enabled)
         {
             _logger.LogInformation("Update checks are disabled");
             return;
@@ -68,16 +70,16 @@ public class UpdateCheckBackgroundService : BackgroundService
     private async Task<TimeSpan> GetCheckIntervalAsync()
     {
         using var scope = _serviceProvider.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IUpdateRepository>();
+        var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
 
-        var intervalStr = await repository.GetConfigValueAsync("update_check_interval_hours");
+        var hours = await configRepository.GetConfigValueAsync<int>(UpdateConfig.CheckIntervalHours);
 
-        if (int.TryParse(intervalStr, out var hours) && hours > 0)
+        if (hours > 0)
         {
             return TimeSpan.FromHours(hours);
         }
 
-        await repository.SetConfigValueAsync("update_check_interval_hours", "24");
+        await configRepository.SetConfigValueAsync(UpdateConfig.CheckIntervalHours, 24);
         return _defaultInterval;
     }
 }

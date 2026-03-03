@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace BoardGameTracker.Common.DTOs.Commands;
 
 public class CreatePlayerCommand

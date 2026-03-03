@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
-using BoardGameTracker.Core.Bgg;
 using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
 using FluentAssertions;

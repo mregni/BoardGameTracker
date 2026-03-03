@@ -1,49 +1,52 @@
-import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
-
-import { addSessionCall } from '@/services/sessionService';
-import { getGame } from '@/services/queries/games';
-import { QUERY_KEYS } from '@/models';
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/models";
+import { useToasts } from "@/routes/-hooks/useToasts";
+import { getGame } from "@/services/queries/games";
+import { addSessionCall } from "@/services/sessionService";
 
 interface Props {
-  gameId: string;
-  onSaveSuccess?: () => void;
-  onSaveError?: () => void;
+	gameId: number;
+	onSuccess?: () => void;
 }
 
-export const useNewSessionWithGameData = ({ gameId, onSaveSuccess, onSaveError }: Props) => {
-  const queryClient = useQueryClient();
-  const [gameQuery] = useQueries({
-    queries: [getGame(gameId)],
-  });
+export const useNewSessionWithGameData = ({ gameId, onSuccess }: Props) => {
+	const queryClient = useQueryClient();
+	const { successToast, errorToast } = useToasts();
 
-  const game = gameQuery.data;
+	const [gameQuery] = useQueries({
+		queries: [getGame(gameId)],
+	});
 
-  const saveSessionMutation = useMutation({
-    mutationFn: addSessionCall,
-    async onSuccess(sessionResult) {
-      onSaveSuccess?.();
+	const game = gameQuery.data;
 
-      const maps = sessionResult.playerSessions.map(async (x) => {
-        return await queryClient.invalidateQueries({
-          queryKey: [QUERY_KEYS.players, x.playerId, QUERY_KEYS.sessions],
-        });
-      });
+	const saveSessionMutation = useMutation({
+		mutationFn: addSessionCall,
+		async onSuccess(sessionResult) {
+			successToast("player-session.new.notifications.created");
+			onSuccess?.();
 
-      await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.game, sessionResult.gameId],
-      });
+			await Promise.all([
+				...sessionResult.playerSessions.map((x) =>
+					queryClient.invalidateQueries({
+						queryKey: [QUERY_KEYS.player, x.playerId, QUERY_KEYS.sessions],
+					}),
+				),
+				queryClient.invalidateQueries({
+					queryKey: [QUERY_KEYS.game, sessionResult.gameId],
+				}),
+				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] }),
+				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] }),
+			]);
+		},
+		onError: () => {
+			errorToast("player-session.new.notifications.create-failed");
+		},
+	});
 
-      await Promise.all(maps);
-    },
-    onError: () => {
-      onSaveError?.();
-    },
-  });
-
-  return {
-    game,
-    isLoading: gameQuery.isLoading,
-    isPending: saveSessionMutation.isPending,
-    saveSession: saveSessionMutation.mutateAsync,
-  };
+	return {
+		game,
+		isLoading: gameQuery.isLoading,
+		isPending: saveSessionMutation.isPending,
+		saveSession: saveSessionMutation.mutateAsync,
+	};
 };

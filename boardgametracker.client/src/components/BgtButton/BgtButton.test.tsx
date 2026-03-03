@@ -1,143 +1,141 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from "vitest";
+import { render, screen, userEvent } from "@/test/test-utils";
+import { BgtButton } from "./BgtButton";
 
-import { BgtButton } from './BgtButton';
+describe("BgtButton", () => {
+	describe("Rendering", () => {
+		it("should render children text content", () => {
+			render(<BgtButton>Click Me</BgtButton>);
+			expect(screen.getByRole("button", { name: "Click Me" })).toBeInTheDocument();
+		});
 
-import { render, screen, userEvent } from '@/test/test-utils';
+		it("should render as button element", () => {
+			render(<BgtButton>Button</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button.tagName).toBe("BUTTON");
+		});
 
-describe('BgtButton', () => {
-  describe('Rendering', () => {
-    it('should render children text content', () => {
-      render(<BgtButton>Click Me</BgtButton>);
-      expect(screen.getByRole('button', { name: 'Click Me' })).toBeInTheDocument();
-    });
+		it("should render multiple children", () => {
+			render(
+				<BgtButton>
+					<span>Icon</span>
+					<span>Text</span>
+				</BgtButton>,
+			);
+			expect(screen.getByText("Icon")).toBeInTheDocument();
+			expect(screen.getByText("Text")).toBeInTheDocument();
+		});
+	});
 
-    it('should render as button element', () => {
-      render(<BgtButton>Button</BgtButton>);
-      const button = screen.getByRole('button');
-      expect(button.tagName).toBe('BUTTON');
-    });
+	describe("Disabled State", () => {
+		it("should not be disabled by default", () => {
+			render(<BgtButton>Enabled</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).not.toBeDisabled();
+		});
 
-    it('should render multiple children', () => {
-      render(
-        <BgtButton>
-          <span>Icon</span>
-          <span>Text</span>
-        </BgtButton>
-      );
-      expect(screen.getByText('Icon')).toBeInTheDocument();
-      expect(screen.getByText('Text')).toBeInTheDocument();
-    });
-  });
+		it("should be disabled when disabled prop is true", () => {
+			render(<BgtButton disabled>Disabled</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).toBeDisabled();
+		});
+	});
 
-  describe('Disabled State', () => {
-    it('should not be disabled by default', () => {
-      render(<BgtButton>Enabled</BgtButton>);
-      const button = screen.getByRole('button');
-      expect(button).not.toBeDisabled();
-    });
+	describe("Type Prop", () => {
+		it("should default to type button", () => {
+			render(<BgtButton>Button</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).toHaveAttribute("type", "button");
+		});
 
-    it('should be disabled when disabled prop is true', () => {
-      render(<BgtButton disabled>Disabled</BgtButton>);
-      const button = screen.getByRole('button');
-      expect(button).toBeDisabled();
-    });
-  });
+		it("should accept type submit", () => {
+			render(<BgtButton type="submit">Submit</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).toHaveAttribute("type", "submit");
+		});
 
-  describe('Type Prop', () => {
-    it('should default to type button', () => {
-      render(<BgtButton>Button</BgtButton>);
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('type', 'button');
-    });
+		it("should accept type reset", () => {
+			render(<BgtButton type="reset">Reset</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).toHaveAttribute("type", "reset");
+		});
+	});
 
-    it('should accept type submit', () => {
-      render(<BgtButton type="submit">Submit</BgtButton>);
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('type', 'submit');
-    });
+	describe("Click Handler", () => {
+		it("should call onClick when clicked", async () => {
+			const user = userEvent.setup();
+			const handleClick = vi.fn();
+			render(<BgtButton onClick={handleClick}>Click Me</BgtButton>);
 
-    it('should accept type reset', () => {
-      render(<BgtButton type="reset">Reset</BgtButton>);
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('type', 'reset');
-    });
-  });
+			await user.click(screen.getByRole("button"));
 
-  describe('Click Handler', () => {
-    it('should call onClick when clicked', async () => {
-      const user = userEvent.setup();
-      const handleClick = vi.fn();
-      render(<BgtButton onClick={handleClick}>Click Me</BgtButton>);
+			expect(handleClick).toHaveBeenCalledTimes(1);
+		});
 
-      await user.click(screen.getByRole('button'));
+		it("should not call onClick when disabled", async () => {
+			const user = userEvent.setup();
+			const handleClick = vi.fn();
+			render(
+				<BgtButton onClick={handleClick} disabled>
+					Disabled
+				</BgtButton>,
+			);
 
-      expect(handleClick).toHaveBeenCalledTimes(1);
-    });
+			await user.click(screen.getByRole("button"));
 
-    it('should not call onClick when disabled', async () => {
-      const user = userEvent.setup();
-      const handleClick = vi.fn();
-      render(
-        <BgtButton onClick={handleClick} disabled>
-          Disabled
-        </BgtButton>
-      );
+			expect(handleClick).not.toHaveBeenCalled();
+		});
+	});
 
-      await user.click(screen.getByRole('button'));
+	describe("ClassName Prop", () => {
+		it("should apply custom className", () => {
+			render(<BgtButton className="custom-class">Button</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).toHaveClass("custom-class");
+		});
 
-      expect(handleClick).not.toHaveBeenCalled();
-    });
-  });
+		it("should accept multiple custom classes", () => {
+			render(<BgtButton className="class-one class-two">Button</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).toHaveClass("class-one");
+			expect(button).toHaveClass("class-two");
+		});
+	});
 
-  describe('ClassName Prop', () => {
-    it('should apply custom className', () => {
-      render(<BgtButton className="custom-class">Button</BgtButton>);
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('custom-class');
-    });
+	describe("Additional Props", () => {
+		it("should pass through data attributes", () => {
+			render(<BgtButton data-testid="custom-button">Button</BgtButton>);
+			expect(screen.getByTestId("custom-button")).toBeInTheDocument();
+		});
 
-    it('should accept multiple custom classes', () => {
-      render(<BgtButton className="class-one class-two">Button</BgtButton>);
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('class-one');
-      expect(button).toHaveClass('class-two');
-    });
-  });
+		it("should pass through id attribute", () => {
+			render(<BgtButton id="button-id">Button</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).toHaveAttribute("id", "button-id");
+		});
 
-  describe('Additional Props', () => {
-    it('should pass through data attributes', () => {
-      render(<BgtButton data-testid="custom-button">Button</BgtButton>);
-      expect(screen.getByTestId('custom-button')).toBeInTheDocument();
-    });
+		it("should support aria attributes", () => {
+			render(<BgtButton aria-label="Custom Label">Button</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).toHaveAttribute("aria-label", "Custom Label");
+		});
+	});
 
-    it('should pass through id attribute', () => {
-      render(<BgtButton id="button-id">Button</BgtButton>);
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('id', 'button-id');
-    });
+	describe("Combined Props", () => {
+		it("should handle multiple props together", async () => {
+			const user = userEvent.setup();
+			const handleClick = vi.fn();
+			render(
+				<BgtButton variant="error" size="3" className="extra-class" type="submit" onClick={handleClick}>
+					Submit Error
+				</BgtButton>,
+			);
+			const button = screen.getByRole("button");
+			expect(button).toHaveClass("extra-class");
+			expect(button).toHaveAttribute("type", "submit");
 
-    it('should support aria attributes', () => {
-      render(<BgtButton aria-label="Custom Label">Button</BgtButton>);
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('aria-label', 'Custom Label');
-    });
-  });
-
-  describe('Combined Props', () => {
-    it('should handle multiple props together', async () => {
-      const user = userEvent.setup();
-      const handleClick = vi.fn();
-      render(
-        <BgtButton variant="error" size="3" className="extra-class" type="submit" onClick={handleClick}>
-          Submit Error
-        </BgtButton>
-      );
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass('extra-class');
-      expect(button).toHaveAttribute('type', 'submit');
-
-      await user.click(button);
-      expect(handleClick).toHaveBeenCalled();
-    });
-  });
+			await user.click(button);
+			expect(handleClick).toHaveBeenCalled();
+		});
+	});
 });

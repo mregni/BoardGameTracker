@@ -1,42 +1,38 @@
-import { useMemo } from 'react';
-import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/models";
+import { useToasts } from "@/routes/-hooks/useToasts";
+import { getEnvironment, getLanguages, getSettings } from "@/services/queries/settings";
+import { updateSettingsCall } from "@/services/settingsService";
 
-import { updateSettingsCall } from '@/services/settingsService';
-import { getEnvironment, getLanguages, getSettings } from '@/services/queries/settings';
-import { QUERY_KEYS } from '@/models';
+export const useSettingsData = () => {
+	const queryClient = useQueryClient();
+	const { successToast, errorToast } = useToasts();
 
-interface Props {
-  onSaveSuccess?: () => void;
-  onSaveError?: () => void;
-}
+	const [settingsQuery, languageQuery, environmentQuery] = useQueries({
+		queries: [getSettings(), getLanguages(), getEnvironment()],
+	});
 
-export const useSettingsData = ({ onSaveSuccess, onSaveError }: Props) => {
-  const queryClient = useQueryClient();
+	const settings = settingsQuery.data;
+	const languages = languageQuery.data ?? [];
+	const environment = environmentQuery.data;
 
-  const [settingsQuery, languageQuery, environmentQuery] = useQueries({
-    queries: [getSettings(), getLanguages(), getEnvironment()],
-  });
+	const saveSettingsMutation = useMutation({
+		mutationFn: updateSettingsCall,
+		onSuccess() {
+			successToast("settings.save.successfull");
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.settings] });
+		},
+		onError: () => {
+			errorToast("settings.save.failed");
+		},
+	});
 
-  const settings = useMemo(() => settingsQuery.data, [settingsQuery.data]);
-  const languages = useMemo(() => languageQuery.data ?? [], [languageQuery.data]);
-  const environment = useMemo(() => environmentQuery.data, [environmentQuery.data]);
-
-  const saveSettingsMutation = useMutation({
-    mutationFn: updateSettingsCall,
-    onSuccess() {
-      onSaveSuccess?.();
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.settings] });
-    },
-    onError: () => {
-      onSaveError?.();
-    },
-  });
-
-  return {
-    settings,
-    languages,
-    environment,
-    saveSettings: saveSettingsMutation.mutateAsync,
-    isLoading: saveSettingsMutation.isPending,
-  };
+	return {
+		settings,
+		languages,
+		environment,
+		saveSettings: saveSettingsMutation.mutateAsync,
+		isSaving: saveSettingsMutation.isPending,
+		isLoading: settingsQuery.isLoading || languageQuery.isLoading || environmentQuery.isLoading,
+	};
 };

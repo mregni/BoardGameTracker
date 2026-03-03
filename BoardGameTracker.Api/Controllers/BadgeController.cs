@@ -1,11 +1,14 @@
 using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Badges.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/badge")]
+[Authorize]
 public class BadgeController : ControllerBase
 {
     private readonly IBadgeService _badgeService;

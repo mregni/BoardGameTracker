@@ -3,6 +3,7 @@ using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Badges;
 
@@ -11,16 +12,19 @@ public class BadgeService : IBadgeService
     private readonly IBadgeRepository _badgeRepository;
     private readonly ISessionRepository _sessionRepository;
     private readonly Dictionary<BadgeType, IBadgeEvaluator> _evaluators;
-    
-    public BadgeService(IBadgeRepository badgeRepository, ISessionRepository sessionRepository, IEnumerable<IBadgeEvaluator> evaluators)
+    private readonly ILogger<BadgeService> _logger;
+
+    public BadgeService(IBadgeRepository badgeRepository, ISessionRepository sessionRepository, IEnumerable<IBadgeEvaluator> evaluators, ILogger<BadgeService> logger)
     {
         _badgeRepository = badgeRepository;
         _sessionRepository = sessionRepository;
         _evaluators = evaluators.ToDictionary(x => x.BadgeType, x => x);
+        _logger = logger;
     }
 
     public async Task AwardBadgesAsync(Session session)
     {
+        _logger.LogDebug("Evaluating badges for session {SessionId}", session.Id);
         var playerIds = session.PlayerSessions.Select(ps => ps.PlayerId).Distinct().ToList();
 
         if (!playerIds.Any())
@@ -55,6 +59,7 @@ public class BadgeService : IBadgeService
 
     public Task<List<Badge>> GetAllBadgesAsync()
     {
+        _logger.LogDebug("Fetching all badges");
         return _badgeRepository.GetAllAsync();
     }
 
@@ -69,6 +74,7 @@ public class BadgeService : IBadgeService
             
             if (await evaluator.CanAwardBadge(player.PlayerId, newBadge, session, sessions))
             {
+                _logger.LogInformation("Awarding badge {BadgeId} ({BadgeType}) to player {PlayerId}", newBadge.Id, newBadge.Type, player.PlayerId);
                 await _badgeRepository.AwardBatchToPlayer(player.PlayerId, newBadge.Id);
             }
             else

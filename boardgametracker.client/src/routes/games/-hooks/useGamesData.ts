@@ -1,12 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
-import { getGames } from '@/services/queries/games';
+import { getGames } from "@/services/queries/games";
 
 export const useGamesData = () => {
-  const { data, isLoading } = useQuery(getGames());
+	const { data, isLoading } = useQuery(getGames());
 
-  return {
-    isLoading,
-    games: data ?? [],
-  };
+	return {
+		isLoading,
+		games: data ?? [],
+	};
 };

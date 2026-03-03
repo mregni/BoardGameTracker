@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Core.GameNights.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
@@ -18,6 +19,8 @@ public class CountControllerTests
         private readonly Mock<IPlayerService> _playerServiceMock;
         private readonly Mock<ILocationService> _locationServiceMock;
         private readonly Mock<ILoanService> _loanServiceMock;
+        private readonly Mock<IGameNightService> _gameNightServiceMock;
+        private readonly Mock<IShameService> _shameServiceMock;
         private readonly CountController _controller;
 
         public CountControllerTests()
@@ -26,12 +29,16 @@ public class CountControllerTests
             _playerServiceMock = new Mock<IPlayerService>();
             _locationServiceMock = new Mock<ILocationService>();
             _loanServiceMock = new Mock<ILoanService>();
+            _gameNightServiceMock = new Mock<IGameNightService>();
+            _shameServiceMock = new Mock<IShameService>();
 
             _controller = new CountController(
                 _locationServiceMock.Object,
                 _playerServiceMock.Object,
                 _gameServiceMock.Object,
-                _loanServiceMock.Object);
+                _loanServiceMock.Object,
+                _gameNightServiceMock.Object,
+                _shameServiceMock.Object);
         }
 
         private void VerifyNoOtherCalls()
@@ -40,6 +47,8 @@ public class CountControllerTests
             _playerServiceMock.VerifyNoOtherCalls();
             _locationServiceMock.VerifyNoOtherCalls();
             _loanServiceMock.VerifyNoOtherCalls();
+            _gameNightServiceMock.VerifyNoOtherCalls();
+            _shameServiceMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -59,13 +68,17 @@ public class CountControllerTests
                 .Setup(x => x.CountAsync())
                 .ReturnsAsync(5);
 
-            _gameServiceMock
+            _shameServiceMock
                 .Setup(x => x.CountShelfOfShameGames())
                 .ReturnsAsync(2);
 
             _loanServiceMock
                 .Setup(x => x.CountActiveLoans())
                 .ReturnsAsync(3);
+
+            _gameNightServiceMock
+                .Setup(x => x.CountFutureGameNights())
+                .ReturnsAsync(0);
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => _controller.GetMenuCounts());
@@ -93,13 +106,17 @@ public class CountControllerTests
                 .Setup(x => x.CountAsync())
                 .ReturnsAsync(3);
 
-            _gameServiceMock
+            _shameServiceMock
                 .Setup(x => x.CountShelfOfShameGames())
                 .ReturnsAsync(2);
 
             _loanServiceMock
                 .Setup(x => x.CountActiveLoans())
                 .ReturnsAsync(3);
+
+            _gameNightServiceMock
+                .Setup(x => x.CountFutureGameNights())
+                .ReturnsAsync(0);
 
             var exception = await Assert.ThrowsAsync<ArgumentException>(
                 () => _controller.GetMenuCounts());
@@ -128,13 +145,17 @@ public class CountControllerTests
                 .Setup(x => x.CountAsync())
                 .ThrowsAsync(expectedException);
 
-            _gameServiceMock
+            _shameServiceMock
                 .Setup(x => x.CountShelfOfShameGames())
                 .ReturnsAsync(2);
 
             _loanServiceMock
                 .Setup(x => x.CountActiveLoans())
                 .ReturnsAsync(3);
+
+            _gameNightServiceMock
+                .Setup(x => x.CountFutureGameNights())
+                .ReturnsAsync(0);
 
             var exception = await Assert.ThrowsAsync<TimeoutException>(
                 () => _controller.GetMenuCounts());
@@ -163,13 +184,17 @@ public class CountControllerTests
                 .Setup(x => x.CountAsync())
                 .ReturnsAsync(7);
 
-            _gameServiceMock
+            _shameServiceMock
                 .Setup(x => x.CountShelfOfShameGames())
                 .ReturnsAsync(3);
 
             _loanServiceMock
                 .Setup(x => x.CountActiveLoans())
                 .ReturnsAsync(2);
+
+            _gameNightServiceMock
+                .Setup(x => x.CountFutureGameNights())
+                .ReturnsAsync(4);
 
             // Act
             var result = await _controller.GetMenuCounts();
@@ -178,23 +203,26 @@ public class CountControllerTests
             var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
             var counts = okResult.Value.Should().BeAssignableTo<BoardGameTracker.Common.DTOs.KeyValuePairDto<int>[]>().Subject;
 
-            counts.Should().HaveCount(5);
+            counts.Should().HaveCount(6);
             counts[0].Key.Should().Be("games");
             counts[0].Value.Should().Be(42);
             counts[1].Key.Should().Be("players");
             counts[1].Value.Should().Be(15);
             counts[2].Key.Should().Be("locations");
             counts[2].Value.Should().Be(7);
-            counts[3].Key.Should().Be("shame");
+            counts[3].Key.Should().Be("shames");
             counts[3].Value.Should().Be(3);
             counts[4].Key.Should().Be("loans");
             counts[4].Value.Should().Be(2);
+            counts[5].Key.Should().Be("game-nights");
+            counts[5].Value.Should().Be(4);
 
             _gameServiceMock.Verify(x => x.CountAsync(), Times.Once);
             _playerServiceMock.Verify(x => x.CountAsync(), Times.Once);
             _locationServiceMock.Verify(x => x.CountAsync(), Times.Once);
-            _gameServiceMock.Verify(x => x.CountShelfOfShameGames(), Times.Once);
+            _shameServiceMock.Verify(x => x.CountShelfOfShameGames(), Times.Once);
             _loanServiceMock.Verify(x => x.CountActiveLoans(), Times.Once);
+            _gameNightServiceMock.Verify(x => x.CountFutureGameNights(), Times.Once);
             VerifyNoOtherCalls();
         }
     }

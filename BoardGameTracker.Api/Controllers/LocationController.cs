@@ -1,23 +1,23 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
-using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Locations.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/location")]
+[Authorize]
 public class LocationController : ControllerBase
 {
     private readonly ILocationService _locationService;
-    private readonly ILogger<LocationController> _logger;
 
-    public LocationController(ILocationService locationService, ILogger<LocationController> logger)
+    public LocationController(ILocationService locationService)
     {
         _locationService = locationService;
-        _logger = logger;
     }
 
     [HttpGet]
@@ -28,52 +28,33 @@ public class LocationController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateLocation([FromBody] CreateLocationCommand? command)
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> CreateLocation([FromBody] CreateLocationCommand command)
     {
-        if (command == null)
-        {
-            return BadRequest();
-        }
-
-        try
-        {
-            var location = new Location(command.Name);
-            location = await _locationService.Create(location);
-            return Ok(location.ToDto());
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error creating location");
-            return StatusCode(500, new { error = "An unexpected error occurred. Please try again later." });
-        }
+        var location = await _locationService.Create(command);
+        return Ok(location.ToDto());
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationCommand? command)
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationCommand command)
     {
-        if (command is null)
-        {
-            return BadRequest();
-        }
-
-        try
-        {
-            var location = new Location(command.Name) { Id = command.Id };
-            await _locationService.Update(location);
-            return Ok(location.ToDto());
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Error updating location");
-            return StatusCode(500);
-        }
+        var location = await _locationService.Update(command);
+        return Ok(location.ToDto());
     }
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> DeleteLocation(int id)
     {
+        var location = await _locationService.GetByIdAsync(id);
+        if (location == null)
+        {
+            return NotFound();
+        }
+
         await _locationService.Delete(id);
-        return Ok(new { success = true });
+        return NoContent();
     }
 }

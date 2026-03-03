@@ -17,7 +17,7 @@ public class CloseLossBadgeEvaluator : IBadgeEvaluator
         _gameRepository = gameRepository;
     }
 
-    public BadgeType BadgeType => BadgeType.CLoseLoss;
+    public BadgeType BadgeType => BadgeType.CloseLoss;
     public async Task<bool> CanAwardBadge(int playerId, Badge badge, Session session, List<Session> playerSessions)
     {
         if (session.PlayerSessions.Count == 1)

@@ -1,11 +1,13 @@
-import { useModalState } from '@/hooks/useModalState';
+import { useModalState } from "@/hooks/useModalState";
 
 export const usePlayerModals = () => {
-  const editModal = useModalState();
-  const deleteModal = useModalState();
+	const createModal = useModalState();
+	const editModal = useModalState();
+	const deleteModal = useModalState();
 
-  return {
-    editModal,
-    deleteModal,
-  };
+	return {
+		createModal,
+		editModal,
+		deleteModal,
+	};
 };

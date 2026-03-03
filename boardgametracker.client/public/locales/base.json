@@ -3,11 +3,94 @@
     "new": "New version available",
     "version": "Version"
   },
+  "game-nights": {
+    "rsvp": {
+      "title": "Manage RSVPs",
+      "manual-note-prefix": "Manually set RSVP status",
+      "manual-note": " for players who responded via phone, text, or in person.",
+      "accept": "Accept",
+      "decline": "Decline",
+      "maybe": "Maybe",
+      "host": "Host is always attending"
+    },
+    "empty": {
+      "title": "No game nights planned yet",
+      "description": "Invite players to plan a game night."
+    },
+    "delete": {
+      "title": "Delete game night",
+      "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
+    },
+    "title": "Game Nights Planner",
+    "create": {
+      "button": "Create Game Night",
+      "title": "Create new Game Night",
+      "description": "Fill out the form to create a new game night event.",
+
+      "save": "Create Game Night"
+    },
+    "edit": {
+      "title": "Edit Game Night",
+      "description": "Update the details of this game night event.",
+      "save": "Save Changes"
+    },
+    "upcoming": "Upcoming game nights",
+    "past": "Past game nights",
+    "card": {
+      "hosted-by": "Hosted by {{host}}",
+      "suggested-games": "Suggested games",
+      "rsvp-link": "RSVP Link",
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "copy-link": "Copy RSVP link",
+      "copied": "Copied to clipboard",
+      "manage-rsvps": "Manage RSVPs"
+    },
+    "form": {
+      "title": {
+        "label": "Event title",
+        "placeholder": "Enter game night title"
+      },
+      "start": {
+        "label": "Date"
+      },
+      "location": {
+        "label": "Location",
+        "placeholder": "Enter location"
+      },
+      "host": {
+        "label": "Host",
+        "placeholder": "Enter host player"
+      },
+      "invited-players": {
+        "label": "Invited players",
+        "description": "Select players to invite to this game night"
+      },
+      "suggested-games": {
+        "label": "Suggested games",
+        "description": "Select games that you suggest to play during this game night"
+      },
+      "notes": {
+        "label": "Notes"
+      }
+    },
+    "notifications": {
+      "created": "Game night created successfully",
+      "create-failed": "Failed to create game night",
+      "updated": "Game night updated successfully",
+      "update-failed": "Failed to update game night",
+      "deleted": "Game night deleted successfully",
+      "delete-failed": "Failed to delete game night",
+      "rsvp-updated": "RSVP updated successfully",
+      "rsvp-update-failed": "Failed to update RSVP"
+    }
+  },
   "common": {
     "more": "More",
     "save": "Save",
     "actions": "Actions",
     "start": "Start",
+    "all": "All",
     "cancel": "Cancel",
     "dashboard": "Dashboard",
     "new-session": "Add session",
@@ -15,12 +98,18 @@
     "items_one": "{{count}} item",
     "items_other": "{{count}} items",
     "minutes_one": "minute",
+    "never": "never",
+    "accepted": "Accepted",
+    "game-nights": "Game nights",
+    "declined": "Declined",
+    "pending": "Pending",
     "minutes_other": "minutes",
     "locations": "Locations",
     "wins_other": "{{count}} wins",
     "wins_one": "{{count}} win",
     "location": "Location",
     "since": "Since {{date}}",
+    "shame": "Shelf of Shame",
     "duration": "Duration",
     "points_other": "{{count}} points",
     "points_one": "{{count}} point",
@@ -36,14 +125,17 @@
     "settings": "Settings",
     "unknown-error": "Unknown error",
     "winners": "Winners",
-    "loosers": "Loosers",
+    "losers": "Losers",
     "play-time": "Play time",
+    "done": "Done",
     "won": "Won",
     "lost": "Lost",
     "compare": "Compare",
     "rating": "Rating",
     "weight": "Weight",
+    "price": "Price",
     "age": "Age",
+    "none": "None",
     "minutes-abbreviation": "min",
     "edit": "edit",
     "close": "close",
@@ -108,17 +200,32 @@
       "button": ""
     },
     "days": {
-      "0": "Sunday",
-      "1": "Monday",
-      "2": "Tuesday",
-      "3": "Wednesday",
-      "4": "Thursday",
-      "5": "Friday",
-      "6": "Saturday"
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
     }
+  },
+  "shames": {
+    "total-shames": "Total games",
+    "total-value": "Total value of games",
+    "average-value": "Average value of games",
+    "none": {
+      "title": "No Games on the Shelf of Shame!",
+      "description": "Congratulations! You have no games on your Shelf of Shame. Keep up the great work of playing and enjoying your collection."
+    },
+    "days-not-played": "Days not played",
+    "last-session": "Last session"
   },
   "loan": {
     "title": "Loans",
+    "empty": {
+      "title": "No loans yet",
+      "description": "You haven't created any loans yet. Start by lending a game to track who has your games."
+    },
     "mark-as-returned": "Return game",
     "no-returned-loans": "No returned loans yet.",
     "statistics": {
@@ -192,7 +299,7 @@
     "most-played-game": "Most played game",
     "wins": {
       "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
-      "looser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+      "loser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
     },
     "best-game": {
       "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
@@ -240,6 +347,12 @@
   "game": {
     "add": "Add session",
     "sessions": "View sessions",
+    "no-sessions": {
+      "title": "No Sessions Logged Yet",
+      "description": "  Start tracking your game sessions to see detailed statistics, player performance, and session history. Log your first session to unlock all the analytics!",
+      "button": "Log Your First Session",
+      "extra": "Session data includes players, scores, duration, and more"
+    },
     "notifications": {
       "created": "Game is succesfully created",
       "create-failed": "Game creation failed",
@@ -443,10 +556,42 @@
       "type-not-supported": "Image type not supported",
       "error": "Error while uploading image, check logs"
     },
+    "auth": {
+      "username-already-exists": "Username already exists",
+      "oidc-no-local-users": "Cannot create local users when OIDC is enabled",
+      "invalid-role": "Invalid role",
+      "username-required": "Username is required",
+      "cannot-change-oidc-password": "Cannot change password for externally authenticated accounts",
+      "cannot-delete-self": "Cannot delete your own account",
+      "cannot-delete-last-admin": "Cannot delete the last admin account",
+      "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
+      "invalid-credentials": "Invalid username or password",
+      "invalid-refresh-token": "Invalid or expired session"
+    },
     "something-went-wrong": "Something went wrong, please try again later.",
-    "unexpected-error": "An unexpected error occurred."
+    "unexpected-error": "An unexpected error occurred.",
+    "network": "Unable to connect to the server. Please check your connection.",
+    "timeout": "The request took too long. Please try again.",
+    "server": "A server error occurred. Please try again later."
+  },
+  "not-found": {
+    "title": "Page not found",
+    "subtitle": "Looks like this page rolled a critical miss!",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "go-back": "Go Back",
+    "quick-nav": "Quick Navigation",
+    "nav": {
+      "dashboard-description": "View your gaming stats",
+      "games-description": "Browse your collection",
+      "players-description": "Check player profiles",
+      "game-nights-description": "Plan your next session"
+    }
   },
   "location": {
+    "empty": {
+      "title": "No locations added yet",
+      "description": "You haven't added any locations yet. Start by adding your first location to track where you play your games."
+    },
     "new": {
       "button": "Add new Location",
       "title": "Create new location",
@@ -532,10 +677,6 @@
       "label": "Time format",
       "required": "Time format is required"
     },
-    "ui-language": {
-      "label": "Language",
-      "required": "language is required"
-    },
     "currency": {
       "label": "Currency",
       "required": "Currency is required"
@@ -550,8 +691,202 @@
     "feature-request": "Feature request",
     "translations": "Translate the app",
     "save": {
+      "button": "Save settings",
       "failed": "Failed saving settings",
       "successfull": "Settings are successfully saved"
+    },
+    "general": {
+      "public-url": {
+        "label": "Public URL",
+        "placeholder": "https://myboardgametracker.app"
+      },
+      "ui-language": {
+        "label": "Language",
+        "required": "language is required"
+      },
+      "title": "General settings",
+      "description": "Change the general settings of the application.",
+      "date-time": {
+        "title": "Date and Time settings",
+        "description": "Configure the date and time format used in the application.",
+        "date-format": "Date format",
+        "time-format": "Time format"
+      },
+      "currency": {
+        "title": "Currency settings",
+        "description": "Configure the currency used in the application.",
+        "label": "Currency"
+      },
+      "language": {
+        "title": "Language settings",
+        "description": "Configure the language used in the application.",
+        "label": "Language"
+      }
+    },
+    "shame": {
+      "title": "Shelf of Shame settings",
+      "description": "Configure how the Shelf of Shame is calculated and displayed.",
+      "enabled": {
+        "label": "Enable Shelf of Shame",
+        "description": "Track games that haven't been played in a while."
+      },
+      "months": {
+        "label": "Months Threshold"
+      }
+    },
+    "game-nights": {
+      "title": "Game Nights settings",
+      "description": "Configure how game nights are managed and displayed.",
+      "enabled": {
+        "label": "Enable Game Nights",
+        "description": "Enable the game nights feature to plan and manage game night events with your friends."
+      },
+      "public-url": {
+        "label": "Public URL",
+        "placeholder": "https://myboardgametracker.app"
+      },
+      "rsvp-authentication": {
+        "label": "Require authentication for RSVPs",
+        "description": "When enabled, players will need to log in to RSVP for game nights. This adds an extra layer of security and helps prevent spam RSVPs."
+      }
+    },
+    "advanced": {
+      "version-track": {
+        "label": "Version track",
+        "description": "Choose to stay on stable releases or switch to beta releases to get early access to new features.",
+        "stable": {
+          "label": "Stable",
+          "description": "Get only stable releases."
+        },
+        "beta": {
+          "label": "Beta",
+          "description": "Get beta releases with early access to new features."
+        }
+      },
+      "updates": {
+        "title": "Update check settings",
+        "description": "Configure how the application checks for updates.",
+        "enabled": {
+          "label": "Enable update check",
+          "description": "When enabled, the application will automatically check for and install updates."
+        }
+      },
+      "bug": "Report a bug",
+      "translate": "Help us translate the app"
+    },
+    "sidebar": {
+      "general": {
+        "title": "General",
+        "description": "Basic app configuration"
+      },
+      "shelf-of-shame": {
+        "title": "Shelf of Shame",
+        "description": "Configure Shelf of Shame settings"
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "Advanced app configuration"
+      },
+      "game-nights": {
+        "title": "Game Nights",
+        "description": "Configure Game Nights settings"
+      },
+      "account": {
+        "title": "Account",
+        "description": "Profile & user management"
+      }
+    },
+    "account": {
+      "profile": {
+        "title": "My Account",
+        "description": "Manage your profile and password.",
+        "display-name": {
+          "label": "Display name"
+        },
+        "email": {
+          "label": "Email"
+        },
+        "save": "Save profile"
+      },
+      "password": {
+        "change-button": "Change password",
+        "title": "Change Password",
+        "description": "Enter your current password and choose a new one.",
+        "current": {
+          "label": "Current password"
+        },
+        "new": {
+          "label": "New password"
+        },
+        "confirm": {
+          "label": "Confirm new password"
+        },
+        "min-length": "Password must be at least 4 characters",
+        "mismatch": "Passwords do not match",
+        "save": "Change password"
+      },
+      "users": {
+        "title": "User Management",
+        "description": "Create and manage user accounts.",
+        "last-login": "Last login",
+        "role": "Role",
+        "roles": {
+          "user": "User",
+          "reader": "Reader",
+          "admin": "Admin"
+        },
+        "create-button": "Create user",
+        "create": {
+          "title": "Create New User",
+          "description": "Fill out the form to create a new user.",
+          "username": {
+            "label": "Username"
+          },
+          "email": {
+            "label": "Email"
+          },
+          "password": {
+            "label": "Password"
+          },
+          "display-name": {
+            "label": "Display name"
+          },
+          "save": "Create user"
+        },
+        "edit": {
+          "title": "Edit User",
+          "description": "Change the role for \"{{username}}\"."
+        },
+        "reset-password": {
+          "button": "Reset password"
+        },
+        "temp-password": {
+          "title": "Temporary Password",
+          "description": "Password reset for \"{{username}}\". Save this password — it won't be shown again.",
+          "copy": "Copy to clipboard",
+          "copied": "Copied!"
+        },
+        "delete": {
+          "title": "Delete User",
+          "description": "Are you sure you want to delete \"{{username}}\"? This cannot be undone."
+        },
+        "never-logged-in": "Never"
+      },
+      "notifications": {
+        "profile-updated": "Profile updated successfully",
+        "profile-update-failed": "Failed to update profile",
+        "password-changed": "Password changed successfully",
+        "password-change-failed": "Failed to change password. Check your current password.",
+        "user-created": "User created successfully",
+        "user-create-failed": "Failed to create user",
+        "user-deleted": "User deleted successfully",
+        "user-delete-failed": "Failed to delete user",
+        "role-updated": "User role updated successfully",
+        "role-update-failed": "Failed to update user role",
+        "user-updated": "User updated successfully",
+        "user-update-failed": "Failed to update user",
+        "password-reset-failed": "Failed to reset password"
+      }
     }
   },
   "player-session": {
@@ -632,7 +967,7 @@
   },
   "languages": {
     "english": "English",
-    "dutch": "Dutch"
+    "dutch": "Nederlands"
   },
   "log-levels": {
     "debug": "Debug",
@@ -791,7 +1126,7 @@
     },
     "close-loss": {
       "title": "Almost There!",
-      "description": "Loose with a difference of 2 or less points."
+      "description": "Lose with a difference of 2 or less points."
     },
     "marathon-runner": {
       "title": "Marathon Runner",
@@ -813,5 +1148,47 @@
       "title": "Consistent Schedule",
       "description": "Play at least one game session every Saturday for 10 consecutive weeks."
     }
+  },
+  "rsvp": {
+    "youre-invited": "You're Invited!",
+    "let-us-know": "Please let us know if you can make it",
+    "when": "When",
+    "location": "Location",
+    "hosted-by": "Hosted by",
+    "suggested-games": "Games We Might Play",
+    "your-response": "Your Response",
+    "who-are-you": "Who are you?",
+    "select-your-name": "Select your name...",
+    "can-you-make-it": "Can you make it?",
+    "yes-ill-be-there": "Yes, I'll be there!",
+    "maybe": "Maybe",
+    "cant-make-it": "Can't make it",
+    "submit-rsvp": "Submit RSVP",
+    "submitted-title": "RSVP Submitted!",
+    "submitted-thanks": "Thanks for responding, {{name}}! The host will be notified.",
+    "submitted-accepted": "We're excited to see you there!",
+    "submitted-declined": "Sorry you can't make it. Hope to see you next time!",
+    "submitted-maybe": "Let us know when you can confirm!",
+    "whos-coming": "Who's Coming",
+    "not-found": "Game night not found",
+    "not-found-description": "This invitation link may have expired or is invalid.",
+    "rsvp-failed": "Failed to submit RSVP"
+  },
+  "auth": {
+    "login-title": "Welcome Back",
+    "login-subtitle": "Sign in to your account",
+    "username": "Username",
+    "username-placeholder": "Enter your username",
+    "password": "Password",
+    "password-placeholder": "Enter your password",
+    "login": "Sign in",
+    "logging-in": "Signing in...",
+    "authenticating": "Authenticating...",
+    "logout": "Sign out",
+    "invalid-credentials": "Invalid username or password",
+    "or-continue-with": "Or continue with",
+    "session-expired": "Your session has expired. Please sign in again.",
+    "rsvp-login-required": "Authentication Required",
+    "rsvp-login-description": "You need to sign in to respond to this invitation."
   }
 }

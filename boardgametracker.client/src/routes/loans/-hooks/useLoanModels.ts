@@ -1,9 +1,11 @@
-import { useModalState } from '@/hooks/useModalState';
+import { useModalState } from "@/hooks/useModalState";
 
 export const useLoanModals = () => {
-  const deleteModal = useModalState();
+	const createModal = useModalState();
+	const deleteModal = useModalState();
 
-  return {
-    deleteModal,
-  };
+	return {
+		createModal,
+		deleteModal,
+	};
 };

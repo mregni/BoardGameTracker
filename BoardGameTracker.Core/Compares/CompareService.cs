@@ -1,7 +1,7 @@
 ﻿using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Compares.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
-using BoardGameTracker.Core.Sessions.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Compares;
 
@@ -9,16 +9,18 @@ public class CompareService : ICompareService
 {
     private readonly ICompareRepository _compareRepository;
     private readonly IPlayerRepository _playerRepository;
-    
+    private readonly ILogger<CompareService> _logger;
 
-    public CompareService(ICompareRepository compareRepository, IPlayerRepository playerRepository)
+    public CompareService(ICompareRepository compareRepository, IPlayerRepository playerRepository, ILogger<CompareService> logger)
     {
         _compareRepository = compareRepository;
         _playerRepository = playerRepository;
+        _logger = logger;
     }
 
-    public async Task<CompareResultDto> GetPlayerComparisation(int playerOne, int playerTwo)
+    public async Task<CompareResultDto> GetPlayerComparison(int playerOne, int playerTwo)
     {
+        _logger.LogDebug("Comparing players {PlayerOneId} and {PlayerTwoId}", playerOne, playerTwo);
         var sessionCountPlayerOne = await _playerRepository.GetTotalPlayCount(playerOne);
         var sessionCountPlayerTwo = await _playerRepository.GetTotalPlayCount(playerTwo);
         
@@ -27,12 +29,9 @@ public class CompareService : ICompareService
 
         var winCountPlayerOne = await _playerRepository.GetTotalWinCount(playerOne);
         var winCountPlayerTwo = await _playerRepository.GetTotalWinCount(playerTwo);
-        
-        var totalSessionPlayerOne = await _playerRepository.GetTotalPlayCount(playerOne);
-        var totalSessionPlayerTwo = await _playerRepository.GetTotalPlayCount(playerTwo);
-        
-        var winPercentagePlayerOne = totalSessionPlayerOne > 0 ? (double)winCountPlayerOne / totalSessionPlayerOne : 0;
-        var winPercentagePlayerTwo = totalSessionPlayerTwo > 0 ? (double)winCountPlayerTwo / totalSessionPlayerTwo : 0;
+
+        var winPercentagePlayerOne = sessionCountPlayerOne > 0 ? (double)winCountPlayerOne / sessionCountPlayerOne : 0;
+        var winPercentagePlayerTwo = sessionCountPlayerTwo > 0 ? (double)winCountPlayerTwo / sessionCountPlayerTwo : 0;
 
         var totalSessionsTogether = await _compareRepository.GetTotalSessionsTogether(playerOne, playerTwo);
         var minutesPlayedTogether = await _compareRepository.GetMinutesPlayedTogether(playerOne, playerTwo);

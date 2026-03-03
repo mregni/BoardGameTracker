@@ -6,6 +6,7 @@ using BoardGameTracker.Core.Compares;
 using BoardGameTracker.Core.Compares.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -15,13 +16,15 @@ public class CompareServiceTests
 {
     private readonly Mock<ICompareRepository> _compareRepositoryMock;
     private readonly Mock<IPlayerRepository> _playerRepositoryMock;
+    private readonly Mock<ILogger<CompareService>> _loggerMock;
     private readonly CompareService _compareService;
 
     public CompareServiceTests()
     {
         _compareRepositoryMock = new Mock<ICompareRepository>();
         _playerRepositoryMock = new Mock<IPlayerRepository>();
-        _compareService = new CompareService(_compareRepositoryMock.Object, _playerRepositoryMock.Object);
+        _loggerMock = new Mock<ILogger<CompareService>>();
+        _compareService = new CompareService(_compareRepositoryMock.Object, _playerRepositoryMock.Object, _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -31,7 +34,7 @@ public class CompareServiceTests
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnCompareResult_WithAllData()
+    public async Task GetPlayerComparison_ShouldReturnCompareResult_WithAllData()
     {
         // Arrange
         var playerOne = 1;
@@ -42,7 +45,7 @@ public class CompareServiceTests
         SetupCompareRepositoryMocks(playerOne, playerTwo);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.Should().NotBeNull();
@@ -57,7 +60,7 @@ public class CompareServiceTests
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnZeroWinPercentage_WhenPlayerHasNoSessions()
+    public async Task GetPlayerComparison_ShouldReturnZeroWinPercentage_WhenPlayerHasNoSessions()
     {
         // Arrange
         var playerOne = 1;
@@ -68,7 +71,7 @@ public class CompareServiceTests
         SetupCompareRepositoryMocks(playerOne, playerTwo);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.WinPercentage.PlayerOne.Should().Be(0);
@@ -76,7 +79,7 @@ public class CompareServiceTests
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnDirectWins_FromRepository()
+    public async Task GetPlayerComparison_ShouldReturnDirectWins_FromRepository()
     {
         // Arrange
         var playerOne = 1;
@@ -92,7 +95,7 @@ public class CompareServiceTests
         SetupOtherCompareRepositoryMocks(playerOne, playerTwo);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.DirectWins.PlayerOne.Should().Be(7);
@@ -101,7 +104,7 @@ public class CompareServiceTests
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnMostWonGame_FromRepository()
+    public async Task GetPlayerComparison_ShouldReturnMostWonGame_FromRepository()
     {
         // Arrange
         var playerOne = 1;
@@ -119,7 +122,7 @@ public class CompareServiceTests
         SetupOtherCompareRepositoryMocksExceptMostWonGame(playerOne, playerTwo);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.MostWonGame.PlayerOne.Should().NotBeNull();
@@ -131,7 +134,7 @@ public class CompareServiceTests
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnTotalSessionsTogether()
+    public async Task GetPlayerComparison_ShouldReturnTotalSessionsTogether()
     {
         // Arrange
         var playerOne = 1;
@@ -147,7 +150,7 @@ public class CompareServiceTests
         SetupOtherCompareRepositoryMocksExceptSessionsTogether(playerOne, playerTwo);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.TotalSessionsTogether.Should().Be(15);
@@ -155,7 +158,7 @@ public class CompareServiceTests
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnMinutesPlayed_AsInteger()
+    public async Task GetPlayerComparison_ShouldReturnMinutesPlayed_AsInteger()
     {
         // Arrange
         var playerOne = 1;
@@ -171,14 +174,14 @@ public class CompareServiceTests
         SetupOtherCompareRepositoryMocksExceptMinutesPlayed(playerOne, playerTwo);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.MinutesPlayed.Should().Be(750);
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnPreferredGame()
+    public async Task GetPlayerComparison_ShouldReturnPreferredGame()
     {
         // Arrange
         var playerOne = 1;
@@ -194,7 +197,7 @@ public class CompareServiceTests
         SetupOtherCompareRepositoryMocksExceptPreferredGame(playerOne, playerTwo);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.PreferredGame.Should().NotBeNull();
@@ -203,7 +206,7 @@ public class CompareServiceTests
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnNullPreferredGame_WhenNoSharedGames()
+    public async Task GetPlayerComparison_ShouldReturnNullPreferredGame_WhenNoSharedGames()
     {
         // Arrange
         var playerOne = 1;
@@ -218,14 +221,14 @@ public class CompareServiceTests
         SetupOtherCompareRepositoryMocksExceptPreferredGame(playerOne, playerTwo);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.PreferredGame.Should().BeNull();
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnLastWonGame()
+    public async Task GetPlayerComparison_ShouldReturnLastWonGame()
     {
         // Arrange
         var playerOne = 1;
@@ -237,7 +240,7 @@ public class CompareServiceTests
         SetupCompareRepositoryMocksWithLastWonGame(playerOne, playerTwo, lastWonGame);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.LastWonGame.Should().NotBeNull();
@@ -246,7 +249,7 @@ public class CompareServiceTests
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnLongestSessionTogether()
+    public async Task GetPlayerComparison_ShouldReturnLongestSessionTogether()
     {
         // Arrange
         var playerOne = 1;
@@ -262,14 +265,14 @@ public class CompareServiceTests
         SetupOtherCompareRepositoryMocksExceptLongestSession(playerOne, playerTwo);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.LongestSessionTogether.Should().Be(180);
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnFirstGameTogether()
+    public async Task GetPlayerComparison_ShouldReturnFirstGameTogether()
     {
         // Arrange
         var playerOne = 1;
@@ -281,7 +284,7 @@ public class CompareServiceTests
         SetupCompareRepositoryMocksWithFirstGameTogether(playerOne, playerTwo, firstGame);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.FirstGameTogether.Should().NotBeNull();
@@ -290,7 +293,7 @@ public class CompareServiceTests
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldReturnClosestGame()
+    public async Task GetPlayerComparison_ShouldReturnClosestGame()
     {
         // Arrange
         var playerOne = 1;
@@ -302,7 +305,7 @@ public class CompareServiceTests
         SetupCompareRepositoryMocksWithClosestGame(playerOne, playerTwo, closestGame);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
         // Assert
         result.ClosestGame.Should().NotBeNull();
@@ -312,7 +315,7 @@ public class CompareServiceTests
     }
 
     [Fact]
-    public async Task GetPlayerComparisation_ShouldHandleSamePlayerComparison()
+    public async Task GetPlayerComparison_ShouldHandleSamePlayerComparison()
     {
         // Arrange
         var playerId = 1;
@@ -321,7 +324,7 @@ public class CompareServiceTests
         SetupCompareRepositoryMocks(playerId, playerId);
 
         // Act
-        var result = await _compareService.GetPlayerComparisation(playerId, playerId);
+        var result = await _compareService.GetPlayerComparison(playerId, playerId);
 
         // Assert
         result.SessionCounts.PlayerOne.Should().Be(result.SessionCounts.PlayerTwo);

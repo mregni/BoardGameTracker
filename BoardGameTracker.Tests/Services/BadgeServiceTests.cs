@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -20,6 +20,7 @@ public class BadgeServiceTests
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IBadgeEvaluator> _sessionsEvaluatorMock;
     private readonly Mock<IBadgeEvaluator> _winsEvaluatorMock;
+    private readonly Mock<ILogger<BadgeService>> _loggerMock;
     private readonly BadgeService _badgeService;
 
     public BadgeServiceTests()
@@ -28,6 +29,7 @@ public class BadgeServiceTests
         _sessionRepositoryMock = new Mock<ISessionRepository>();
         _sessionsEvaluatorMock = new Mock<IBadgeEvaluator>();
         _winsEvaluatorMock = new Mock<IBadgeEvaluator>();
+        _loggerMock = new Mock<ILogger<BadgeService>>();
 
         _sessionsEvaluatorMock.Setup(x => x.BadgeType).Returns(BadgeType.Sessions);
         _winsEvaluatorMock.Setup(x => x.BadgeType).Returns(BadgeType.Wins);
@@ -41,7 +43,8 @@ public class BadgeServiceTests
         _badgeService = new BadgeService(
             _badgeRepositoryMock.Object,
             _sessionRepositoryMock.Object,
-            evaluators);
+            evaluators,
+            _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()

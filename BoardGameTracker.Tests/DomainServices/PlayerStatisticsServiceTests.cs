@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Players;
 using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -12,12 +13,14 @@ namespace BoardGameTracker.Tests.DomainServices;
 public class PlayerStatisticsServiceTests
 {
     private readonly Mock<IPlayerRepository> _playerRepositoryMock;
+    private readonly Mock<ILogger<PlayerStatisticsService>> _loggerMock;
     private readonly PlayerStatisticsService _service;
 
     public PlayerStatisticsServiceTests()
     {
         _playerRepositoryMock = new Mock<IPlayerRepository>();
-        _service = new PlayerStatisticsService(_playerRepositoryMock.Object);
+        _loggerMock = new Mock<ILogger<PlayerStatisticsService>>();
+        _service = new PlayerStatisticsService(_playerRepositoryMock.Object, _loggerMock.Object);
     }
 
     [Fact]
@@ -30,7 +33,7 @@ public class PlayerStatisticsServiceTests
         _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerId)).ReturnsAsync(25);
         _playerRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(playerId)).ReturnsAsync(3000.0);
         _playerRepositoryMock.Setup(x => x.GetDistinctGameCount(playerId)).ReturnsAsync(15);
-        _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(playerId, 5)).ReturnsAsync(new List<Game>());
+        _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(playerId, 5)).ReturnsAsync(new List<MostPlayedGame>());
 
         // Act
         var result = await _service.CalculateStatisticsAsync(playerId);
@@ -48,26 +51,17 @@ public class PlayerStatisticsServiceTests
     {
         // Arrange
         var playerId = 1;
-        var game1 = new Game("Game 1") { Id = 1 };
-        game1.UpdateImage("game1.png");
-        var game2 = new Game("Game 2") { Id = 2 };
-        game2.UpdateImage("game2.png");
-
-        var mostPlayedGames = new List<Game> { game1, game2 };
+        var mostPlayedGames = new List<MostPlayedGame>
+        {
+            new() { Id = 1, Title = "Game 1", Image = "game1.png", TotalSessions = 10, TotalWins = 5, WinningPercentage = 50.0 },
+            new() { Id = 2, Title = "Game 2", Image = "game2.png", TotalSessions = 8, TotalWins = 4, WinningPercentage = 50.0 }
+        };
 
         _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerId)).ReturnsAsync(20);
         _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerId)).ReturnsAsync(10);
         _playerRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(playerId)).ReturnsAsync(1000.0);
         _playerRepositoryMock.Setup(x => x.GetDistinctGameCount(playerId)).ReturnsAsync(5);
         _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(playerId, 5)).ReturnsAsync(mostPlayedGames);
-
-        // Game 1: 10 plays, 5 wins = 50% win rate
-        _playerRepositoryMock.Setup(x => x.GetWinCount(playerId, 1)).ReturnsAsync(5);
-        _playerRepositoryMock.Setup(x => x.GetPlayCount(playerId, 1)).ReturnsAsync(10);
-
-        // Game 2: 8 plays, 4 wins = 50% win rate
-        _playerRepositoryMock.Setup(x => x.GetWinCount(playerId, 2)).ReturnsAsync(4);
-        _playerRepositoryMock.Setup(x => x.GetPlayCount(playerId, 2)).ReturnsAsync(8);
 
         // Act
         var result = await _service.CalculateStatisticsAsync(playerId);
@@ -95,16 +89,16 @@ public class PlayerStatisticsServiceTests
     {
         // Arrange
         var playerId = 1;
-        var game = new Game("Game with no plays") { Id = 1 };
-        var mostPlayedGames = new List<Game> { game };
+        var mostPlayedGames = new List<MostPlayedGame>
+        {
+            new() { Id = 1, Title = "Game with no plays", TotalSessions = 0, TotalWins = 0, WinningPercentage = 0 }
+        };
 
         _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerId)).ReturnsAsync(0);
         _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerId)).ReturnsAsync(0);
         _playerRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(playerId)).ReturnsAsync(0);
         _playerRepositoryMock.Setup(x => x.GetDistinctGameCount(playerId)).ReturnsAsync(1);
         _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(playerId, 5)).ReturnsAsync(mostPlayedGames);
-        _playerRepositoryMock.Setup(x => x.GetWinCount(playerId, 1)).ReturnsAsync(0);
-        _playerRepositoryMock.Setup(x => x.GetPlayCount(playerId, 1)).ReturnsAsync(0);
 
         // Act
         var result = await _service.CalculateStatisticsAsync(playerId);
@@ -118,18 +112,16 @@ public class PlayerStatisticsServiceTests
     {
         // Arrange
         var playerId = 1;
-        var gameWithoutImage = new Game("Game without image") { Id = 1 };
-        // No image set - should default to empty string
-
-        var mostPlayedGames = new List<Game> { gameWithoutImage };
+        var mostPlayedGames = new List<MostPlayedGame>
+        {
+            new() { Id = 1, Title = "Game without image", Image = string.Empty, TotalSessions = 5, TotalWins = 2, WinningPercentage = 40.0 }
+        };
 
         _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerId)).ReturnsAsync(5);
         _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerId)).ReturnsAsync(2);
         _playerRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(playerId)).ReturnsAsync(300.0);
         _playerRepositoryMock.Setup(x => x.GetDistinctGameCount(playerId)).ReturnsAsync(1);
         _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(playerId, 5)).ReturnsAsync(mostPlayedGames);
-        _playerRepositoryMock.Setup(x => x.GetWinCount(playerId, 1)).ReturnsAsync(2);
-        _playerRepositoryMock.Setup(x => x.GetPlayCount(playerId, 1)).ReturnsAsync(5);
 
         // Act
         var result = await _service.CalculateStatisticsAsync(playerId);
@@ -143,16 +135,16 @@ public class PlayerStatisticsServiceTests
     {
         // Arrange
         var playerId = 1;
-        var game = new Game("Perfect game") { Id = 1 };
-        var mostPlayedGames = new List<Game> { game };
+        var mostPlayedGames = new List<MostPlayedGame>
+        {
+            new() { Id = 1, Title = "Perfect game", TotalSessions = 10, TotalWins = 10, WinningPercentage = 100.0 }
+        };
 
         _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerId)).ReturnsAsync(10);
         _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerId)).ReturnsAsync(10);
         _playerRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(playerId)).ReturnsAsync(600.0);
         _playerRepositoryMock.Setup(x => x.GetDistinctGameCount(playerId)).ReturnsAsync(1);
         _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(playerId, 5)).ReturnsAsync(mostPlayedGames);
-        _playerRepositoryMock.Setup(x => x.GetWinCount(playerId, 1)).ReturnsAsync(10);
-        _playerRepositoryMock.Setup(x => x.GetPlayCount(playerId, 1)).ReturnsAsync(10);
 
         // Act
         var result = await _service.CalculateStatisticsAsync(playerId);

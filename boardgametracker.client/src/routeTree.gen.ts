@@ -9,17 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as BareRouteImport } from './routes/_bare'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShamesIndexRouteImport } from './routes/shames/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as PlayersIndexRouteImport } from './routes/players/index'
 import { Route as LocationsIndexRouteImport } from './routes/locations/index'
 import { Route as LoansIndexRouteImport } from './routes/loans/index'
 import { Route as GamesIndexRouteImport } from './routes/games/index'
+import { Route as GameNightsIndexRouteImport } from './routes/game-nights/index'
 import { Route as CompareIndexRouteImport } from './routes/compare/index'
 import { Route as SessionsNewRouteImport } from './routes/sessions/new'
 import { Route as PlayersPlayerIdRouteImport } from './routes/players/$playerId'
 import { Route as GamesNewRouteImport } from './routes/games/new'
 import { Route as GamesGameIdRouteImport } from './routes/games/$gameId'
+import { Route as BareRsvpRouteImport } from './routes/_bare/rsvp'
+import { Route as BareLoginRouteImport } from './routes/_bare/login'
+import { Route as BareAuthCallbackRouteImport } from './routes/_bare/auth-callback'
 import { Route as SessionsUpdateSessionIdRouteImport } from './routes/sessions/update_.$sessionId'
 import { Route as SessionsNewGameIdRouteImport } from './routes/sessions/new_.$gameId'
 import { Route as PlayersPlayerIdSessionsRouteImport } from './routes/players/$playerId_.sessions'
@@ -28,9 +34,18 @@ import { Route as GamesGameIdUpdateRouteImport } from './routes/games/$gameId_.u
 import { Route as GamesGameIdSessionsRouteImport } from './routes/games/$gameId_.sessions'
 import { Route as GamesImportListUsernameRouteImport } from './routes/games/import/list_.$username'
 
+const BareRoute = BareRouteImport.update({
+  id: '/_bare',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShamesIndexRoute = ShamesIndexRouteImport.update({
+  id: '/shames/',
+  path: '/shames/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsIndexRoute = SettingsIndexRouteImport.update({
@@ -58,6 +73,11 @@ const GamesIndexRoute = GamesIndexRouteImport.update({
   path: '/games/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GameNightsIndexRoute = GameNightsIndexRouteImport.update({
+  id: '/game-nights/',
+  path: '/game-nights/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompareIndexRoute = CompareIndexRouteImport.update({
   id: '/compare/',
   path: '/compare/',
@@ -82,6 +102,21 @@ const GamesGameIdRoute = GamesGameIdRouteImport.update({
   id: '/games/$gameId',
   path: '/games/$gameId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BareRsvpRoute = BareRsvpRouteImport.update({
+  id: '/rsvp',
+  path: '/rsvp',
+  getParentRoute: () => BareRoute,
+} as any)
+const BareLoginRoute = BareLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => BareRoute,
+} as any)
+const BareAuthCallbackRoute = BareAuthCallbackRouteImport.update({
+  id: '/auth-callback',
+  path: '/auth-callback',
+  getParentRoute: () => BareRoute,
 } as any)
 const SessionsUpdateSessionIdRoute = SessionsUpdateSessionIdRouteImport.update({
   id: '/sessions/update_/$sessionId',
@@ -121,16 +156,21 @@ const GamesImportListUsernameRoute = GamesImportListUsernameRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth-callback': typeof BareAuthCallbackRoute
+  '/login': typeof BareLoginRoute
+  '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/new': typeof GamesNewRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/sessions/new': typeof SessionsNewRoute
   '/compare': typeof CompareIndexRoute
+  '/game-nights': typeof GameNightsIndexRoute
   '/games': typeof GamesIndexRoute
   '/loans': typeof LoansIndexRoute
   '/locations': typeof LocationsIndexRoute
   '/players': typeof PlayersIndexRoute
   '/settings': typeof SettingsIndexRoute
+  '/shames': typeof ShamesIndexRoute
   '/games/$gameId/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId/update': typeof GamesGameIdUpdateRoute
   '/games/import/start': typeof GamesImportStartRoute
@@ -141,16 +181,21 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth-callback': typeof BareAuthCallbackRoute
+  '/login': typeof BareLoginRoute
+  '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/new': typeof GamesNewRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/sessions/new': typeof SessionsNewRoute
   '/compare': typeof CompareIndexRoute
+  '/game-nights': typeof GameNightsIndexRoute
   '/games': typeof GamesIndexRoute
   '/loans': typeof LoansIndexRoute
   '/locations': typeof LocationsIndexRoute
   '/players': typeof PlayersIndexRoute
   '/settings': typeof SettingsIndexRoute
+  '/shames': typeof ShamesIndexRoute
   '/games/$gameId/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId/update': typeof GamesGameIdUpdateRoute
   '/games/import/start': typeof GamesImportStartRoute
@@ -162,16 +207,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_bare': typeof BareRouteWithChildren
+  '/_bare/auth-callback': typeof BareAuthCallbackRoute
+  '/_bare/login': typeof BareLoginRoute
+  '/_bare/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/new': typeof GamesNewRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/sessions/new': typeof SessionsNewRoute
   '/compare/': typeof CompareIndexRoute
+  '/game-nights/': typeof GameNightsIndexRoute
   '/games/': typeof GamesIndexRoute
   '/loans/': typeof LoansIndexRoute
   '/locations/': typeof LocationsIndexRoute
   '/players/': typeof PlayersIndexRoute
   '/settings/': typeof SettingsIndexRoute
+  '/shames/': typeof ShamesIndexRoute
   '/games/$gameId_/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId_/update': typeof GamesGameIdUpdateRoute
   '/games/import/start': typeof GamesImportStartRoute
@@ -184,16 +235,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth-callback'
+    | '/login'
+    | '/rsvp'
     | '/games/$gameId'
     | '/games/new'
     | '/players/$playerId'
     | '/sessions/new'
     | '/compare'
+    | '/game-nights'
     | '/games'
     | '/loans'
     | '/locations'
     | '/players'
     | '/settings'
+    | '/shames'
     | '/games/$gameId/sessions'
     | '/games/$gameId/update'
     | '/games/import/start'
@@ -204,16 +260,21 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth-callback'
+    | '/login'
+    | '/rsvp'
     | '/games/$gameId'
     | '/games/new'
     | '/players/$playerId'
     | '/sessions/new'
     | '/compare'
+    | '/game-nights'
     | '/games'
     | '/loans'
     | '/locations'
     | '/players'
     | '/settings'
+    | '/shames'
     | '/games/$gameId/sessions'
     | '/games/$gameId/update'
     | '/games/import/start'
@@ -224,16 +285,22 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_bare'
+    | '/_bare/auth-callback'
+    | '/_bare/login'
+    | '/_bare/rsvp'
     | '/games/$gameId'
     | '/games/new'
     | '/players/$playerId'
     | '/sessions/new'
     | '/compare/'
+    | '/game-nights/'
     | '/games/'
     | '/loans/'
     | '/locations/'
     | '/players/'
     | '/settings/'
+    | '/shames/'
     | '/games/$gameId_/sessions'
     | '/games/$gameId_/update'
     | '/games/import/start'
@@ -245,16 +312,19 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BareRoute: typeof BareRouteWithChildren
   GamesGameIdRoute: typeof GamesGameIdRoute
   GamesNewRoute: typeof GamesNewRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
   SessionsNewRoute: typeof SessionsNewRoute
   CompareIndexRoute: typeof CompareIndexRoute
+  GameNightsIndexRoute: typeof GameNightsIndexRoute
   GamesIndexRoute: typeof GamesIndexRoute
   LoansIndexRoute: typeof LoansIndexRoute
   LocationsIndexRoute: typeof LocationsIndexRoute
   PlayersIndexRoute: typeof PlayersIndexRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
+  ShamesIndexRoute: typeof ShamesIndexRoute
   GamesGameIdSessionsRoute: typeof GamesGameIdSessionsRoute
   GamesGameIdUpdateRoute: typeof GamesGameIdUpdateRoute
   GamesImportStartRoute: typeof GamesImportStartRoute
@@ -266,11 +336,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_bare': {
+      id: '/_bare'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof BareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shames/': {
+      id: '/shames/'
+      path: '/shames'
+      fullPath: '/shames'
+      preLoaderRoute: typeof ShamesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings/': {
@@ -308,6 +392,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/game-nights/': {
+      id: '/game-nights/'
+      path: '/game-nights'
+      fullPath: '/game-nights'
+      preLoaderRoute: typeof GameNightsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/compare/': {
       id: '/compare/'
       path: '/compare'
@@ -342,6 +433,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/games/$gameId'
       preLoaderRoute: typeof GamesGameIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_bare/rsvp': {
+      id: '/_bare/rsvp'
+      path: '/rsvp'
+      fullPath: '/rsvp'
+      preLoaderRoute: typeof BareRsvpRouteImport
+      parentRoute: typeof BareRoute
+    }
+    '/_bare/login': {
+      id: '/_bare/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof BareLoginRouteImport
+      parentRoute: typeof BareRoute
+    }
+    '/_bare/auth-callback': {
+      id: '/_bare/auth-callback'
+      path: '/auth-callback'
+      fullPath: '/auth-callback'
+      preLoaderRoute: typeof BareAuthCallbackRouteImport
+      parentRoute: typeof BareRoute
     }
     '/sessions/update_/$sessionId': {
       id: '/sessions/update_/$sessionId'
@@ -395,18 +507,35 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BareRouteChildren {
+  BareAuthCallbackRoute: typeof BareAuthCallbackRoute
+  BareLoginRoute: typeof BareLoginRoute
+  BareRsvpRoute: typeof BareRsvpRoute
+}
+
+const BareRouteChildren: BareRouteChildren = {
+  BareAuthCallbackRoute: BareAuthCallbackRoute,
+  BareLoginRoute: BareLoginRoute,
+  BareRsvpRoute: BareRsvpRoute,
+}
+
+const BareRouteWithChildren = BareRoute._addFileChildren(BareRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BareRoute: BareRouteWithChildren,
   GamesGameIdRoute: GamesGameIdRoute,
   GamesNewRoute: GamesNewRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,
   SessionsNewRoute: SessionsNewRoute,
   CompareIndexRoute: CompareIndexRoute,
+  GameNightsIndexRoute: GameNightsIndexRoute,
   GamesIndexRoute: GamesIndexRoute,
   LoansIndexRoute: LoansIndexRoute,
   LocationsIndexRoute: LocationsIndexRoute,
   PlayersIndexRoute: PlayersIndexRoute,
   SettingsIndexRoute: SettingsIndexRoute,
+  ShamesIndexRoute: ShamesIndexRoute,
   GamesGameIdSessionsRoute: GamesGameIdSessionsRoute,
   GamesGameIdUpdateRoute: GamesGameIdUpdateRoute,
   GamesImportStartRoute: GamesImportStartRoute,

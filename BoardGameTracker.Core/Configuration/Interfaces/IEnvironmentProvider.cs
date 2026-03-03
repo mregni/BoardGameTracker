@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Serilog.Events;
+﻿using Serilog.Events;
 
 namespace BoardGameTracker.Core.Configuration.Interfaces;
 

@@ -6,12 +6,13 @@ namespace BoardGameTracker.Core.Bgg.Interfaces;
 public interface IBggApi
 {
     [Get("/thing?type=boardgame")]
-    public Task<ApiResponse<BggApiGames>> SearchGame([Query] int id, [Query] int stats);
+    Task<ApiResponse<BggApiGames>> SearchGame([Query] int id, [Query] int stats, CancellationToken cancellationToken = default);
 
     [Get("/thing?type=boardgameexpansion")]
-    public Task<ApiResponse<BggApiGames>> SearchExpansion([Query] int id, [Query] int stats);
+    Task<ApiResponse<BggApiGames>> SearchExpansion([Query] int id, [Query] int stats, CancellationToken cancellationToken = default);
 
     [Get("/collection?brief=0&stats=0")]
-    public Task<ApiResponse<BggApiCollection>> ImportCollection([Query] string username,
-        [Query, AliasAs("subtype")] string subType, [Query, AliasAs("excludesubtype")] string? excludeSubType);
+    Task<ApiResponse<BggApiCollection>> ImportCollection([Query] string username,
+        [Query, AliasAs("subtype")] string subType, [Query, AliasAs("excludesubtype")] string? excludeSubType,
+        CancellationToken cancellationToken = default);
 }

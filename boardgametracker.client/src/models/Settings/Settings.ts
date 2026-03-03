@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export interface Settings {
   dateFormat: string;
@@ -6,31 +6,46 @@ export interface Settings {
   uiLanguage: string;
   currency: string;
   statistics: boolean;
+  updateCheckEnabled: boolean;
+  versionTrack: string;
+  shelfOfShameEnabled: boolean;
+  shelfOfShameMonthsLimit: number;
+  publicUrl: string;
+  gameNightsEnabled: boolean;
+  rsvpAuthenticationEnabled: boolean;
 }
 
 export const SettingsSchema = z.object({
   dateFormat: z
     .string({
-      required_error: 'settings.date-format.required',
+      required_error: "settings.date-format.required",
     })
     .min(1, {
-      message: 'settings.date-format.required',
+      message: "settings.date-format.required",
     }),
   timeFormat: z
     .string({
-      required_error: 'settings.time-format.required',
+      required_error: "settings.time-format.required",
     })
     .min(1, {
-      message: 'settings.time-format.required',
+      message: "settings.time-format.required",
     }),
   uiLanguage: z.string({
-    required_error: 'settings.ui-language.required',
+    required_error: "settings.ui-language.required",
   }),
   currency: z
     .string({
-      required_error: 'settings.currency.required',
+      required_error: "settings.currency.required",
     })
     .min(1, {
-      message: 'settings.currency.required',
+      message: "settings.currency.required",
     }),
+  publicUrl: z.string(),
+  statistics: z.boolean(),
+  updateCheckEnabled: z.boolean(),
+  versionTrack: z.string(),
+  shelfOfShameEnabled: z.boolean(),
+  shelfOfShameMonthsLimit: z.number().min(1),
+  gameNightsEnabled: z.boolean(),
+  rsvpAuthenticationEnabled: z.boolean(),
 });

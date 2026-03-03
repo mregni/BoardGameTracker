@@ -19,7 +19,7 @@
     "settings": "Settings",
     "unknown-error": "Unknown error",
     "winners": "Winners",
-    "loosers": "Loosers",
+    "losers": "Losers",
     "play-time": "Play time",
     "compare": "Compare",
     "rating": "Rating",
@@ -93,7 +93,7 @@
     "title": "Compare players",
     "wins": {
       "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
-      "looser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+      "loser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
     },
     "best-game": {
       "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
@@ -642,7 +642,7 @@
     },
     "close-loss": {
       "title": "Almost There!",
-      "description": "Loose with a difference of 2 or less points."
+      "description": "Lose with a difference of 2 or less points."
     },
     "marathon-runner": {
       "title": "Marathon Runner",

@@ -2,8 +2,8 @@
 
 public enum BadgeLevel
 {
-    Green = 0,
-    Blue = 1,
-    Red = 2,
-    Gold = 3
+    Green,
+    Blue,
+    Red,
+    Gold
 }

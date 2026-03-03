@@ -1,90 +1,88 @@
-import { describe, it, expect, vi } from 'vitest';
-
-import { ErrorFallback } from './ErrorFallback';
-
-import { screen, userEvent, renderWithTheme } from '@/test/test-utils';
+import { describe, expect, it, vi } from "vitest";
+import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { ErrorFallback } from "./ErrorFallback";
 
 // i18next is mocked globally in setup.ts
 
-vi.mock('@/assets/icons/alert-triangle.svg?react', () => ({
-  default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="alert-icon" {...props} />,
+vi.mock("@/assets/icons/alert-triangle.svg?react", () => ({
+	default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="alert-icon" {...props} />,
 }));
 
-describe('ErrorFallback', () => {
-  const defaultProps = {
-    error: new Error('Test error message'),
-    resetErrorBoundary: vi.fn(),
-  };
+describe("ErrorFallback", () => {
+	const defaultProps = {
+		error: new Error("Test error message"),
+		resetErrorBoundary: vi.fn(),
+	};
 
-  describe('Rendering', () => {
-    it('should render error heading', () => {
-      renderWithTheme(<ErrorFallback {...defaultProps} />);
-      expect(screen.getByText('error.something-went-wrong')).toBeInTheDocument();
-    });
+	describe("Rendering", () => {
+		it("should render error heading", () => {
+			renderWithTheme(<ErrorFallback {...defaultProps} />);
+			expect(screen.getByText("error.something-went-wrong")).toBeInTheDocument();
+		});
 
-    it('should render error description', () => {
-      renderWithTheme(<ErrorFallback {...defaultProps} />);
-      expect(screen.getByText('error.unexpected-error')).toBeInTheDocument();
-    });
+		it("should render error description", () => {
+			renderWithTheme(<ErrorFallback {...defaultProps} />);
+			expect(screen.getByText("error.unexpected-error")).toBeInTheDocument();
+		});
 
-    it('should render alert icon', () => {
-      renderWithTheme(<ErrorFallback {...defaultProps} />);
-      expect(screen.getByTestId('alert-icon')).toBeInTheDocument();
-    });
+		it("should render alert icon", () => {
+			renderWithTheme(<ErrorFallback {...defaultProps} />);
+			expect(screen.getByTestId("alert-icon")).toBeInTheDocument();
+		});
 
-    it('should render try again button', () => {
-      renderWithTheme(<ErrorFallback {...defaultProps} />);
-      expect(screen.getByText('common.try-again')).toBeInTheDocument();
-    });
+		it("should render try again button", () => {
+			renderWithTheme(<ErrorFallback {...defaultProps} />);
+			expect(screen.getByText("common.try-again")).toBeInTheDocument();
+		});
 
-    it('should render go home button', () => {
-      renderWithTheme(<ErrorFallback {...defaultProps} />);
-      expect(screen.getByText('common.go-home')).toBeInTheDocument();
-    });
-  });
+		it("should render go home button", () => {
+			renderWithTheme(<ErrorFallback {...defaultProps} />);
+			expect(screen.getByText("common.go-home")).toBeInTheDocument();
+		});
+	});
 
-  describe('Button Actions', () => {
-    it('should call resetErrorBoundary when try again is clicked', async () => {
-      const user = userEvent.setup();
-      const resetErrorBoundary = vi.fn();
-      renderWithTheme(<ErrorFallback {...defaultProps} resetErrorBoundary={resetErrorBoundary} />);
+	describe("Button Actions", () => {
+		it("should call resetErrorBoundary when try again is clicked", async () => {
+			const user = userEvent.setup();
+			const resetErrorBoundary = vi.fn();
+			renderWithTheme(<ErrorFallback {...defaultProps} resetErrorBoundary={resetErrorBoundary} />);
 
-      await user.click(screen.getByText('common.try-again'));
+			await user.click(screen.getByText("common.try-again"));
 
-      expect(resetErrorBoundary).toHaveBeenCalledTimes(1);
-    });
+			expect(resetErrorBoundary).toHaveBeenCalledTimes(1);
+		});
 
-    it('should navigate to home when go home is clicked', async () => {
-      const user = userEvent.setup();
-      const originalLocation = window.location;
+		it("should navigate to home when go home is clicked", async () => {
+			const user = userEvent.setup();
+			const originalLocation = window.location;
 
-      // Mock window.location
-      Object.defineProperty(window, 'location', {
-        value: { href: '' },
-        writable: true,
-      });
+			// Mock window.location
+			Object.defineProperty(window, "location", {
+				value: { href: "" },
+				writable: true,
+			});
 
-      renderWithTheme(<ErrorFallback {...defaultProps} />);
-      await user.click(screen.getByText('common.go-home'));
+			renderWithTheme(<ErrorFallback {...defaultProps} />);
+			await user.click(screen.getByText("common.go-home"));
 
-      expect(window.location.href).toBe('/');
+			expect(window.location.href).toBe("/");
 
-      // Restore
-      Object.defineProperty(window, 'location', {
-        value: originalLocation,
-        writable: true,
-      });
-    });
-  });
+			// Restore
+			Object.defineProperty(window, "location", {
+				value: originalLocation,
+				writable: true,
+			});
+		});
+	});
 
-  describe('Error with Stack Trace', () => {
-    it('should handle error with stack trace', () => {
-      const errorWithStack = new Error('Test error');
-      errorWithStack.stack = 'Error: Test error\n    at TestComponent';
+	describe("Error with Stack Trace", () => {
+		it("should handle error with stack trace", () => {
+			const errorWithStack = new Error("Test error");
+			errorWithStack.stack = "Error: Test error\n    at TestComponent";
 
-      renderWithTheme(<ErrorFallback error={errorWithStack} resetErrorBoundary={vi.fn()} />);
+			renderWithTheme(<ErrorFallback error={errorWithStack} resetErrorBoundary={vi.fn()} />);
 
-      expect(screen.getByText('error.something-went-wrong')).toBeInTheDocument();
-    });
-  });
+			expect(screen.getByText("error.something-went-wrong")).toBeInTheDocument();
+		});
+	});
 });

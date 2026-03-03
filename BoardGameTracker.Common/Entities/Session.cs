@@ -86,9 +86,7 @@ public class Session : HasId
 
     public void AddPlayerSession(int playerId, double? score, bool firstPlay, bool won)
     {
-        Guard.Against.Null(playerId);
-        Guard.Against.Null(firstPlay);
-        Guard.Against.Null(won);
+        Guard.Against.NegativeOrZero(playerId);
 
         var playerSession = new PlayerSession(playerId, score, firstPlay, won);
         if (PlayerSessions.All(ps => ps.PlayerId != playerSession.PlayerId))

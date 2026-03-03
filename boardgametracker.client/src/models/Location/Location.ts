@@ -1,5 +1,5 @@
 export interface Location {
-  id: number;
-  name: string;
-  playCount: number;
+	id: number;
+	name: string;
+	playCount: number;
 }

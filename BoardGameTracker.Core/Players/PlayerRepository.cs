@@ -1,4 +1,5 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -40,15 +41,25 @@ public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<List<Game>> GetMostPlayedGames(int playerId, int count)
+    public async Task<List<MostPlayedGame>> GetMostPlayedGames(int playerId, int count)
     {
         return await _dbContext.PlayerSessions
             .AsNoTracking()
             .Where(x => x.PlayerId == playerId)
             .GroupBy(x => x.Session.Game)
             .OrderByDescending(x => x.Count())
-            .Select(x => x.Key)
             .Take(count)
+            .Select(x => new MostPlayedGame
+            {
+                Id = x.Key.Id,
+                Title = x.Key.Title,
+                Image = x.Key.Image ?? string.Empty,
+                TotalSessions = x.Count(),
+                TotalWins = x.Count(ps => ps.Won),
+                WinningPercentage = x.Count() > 0
+                    ? (double)x.Count(ps => ps.Won) / x.Count() * 100
+                    : 0
+            })
             .ToListAsync();
     }
 
@@ -85,13 +96,6 @@ public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
             .CountAsync(x => x.PlayerSessions.Any(y => y.PlayerId == id));
     }
 
-    public Task<int> GetPlayCount(int playerId, int gameId)
-    {
-        return _dbContext.Sessions
-            .AsNoTracking()
-            .CountAsync(x => x.GameId == gameId && x.PlayerSessions.Any(y => y.PlayerId == playerId));
-    }
-
     public Task<int> GetWinCount(int id, int gameId)
     {
         return _dbContext.Sessions
@@ -99,6 +103,7 @@ public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
             .Where(x => x.GameId == gameId && x.PlayerSessions.Any(y => y.Player.Id == id && y.Won))
             .CountAsync();
     }
+
 
     public Task<int> GetTotalWinCount(int id)
     {

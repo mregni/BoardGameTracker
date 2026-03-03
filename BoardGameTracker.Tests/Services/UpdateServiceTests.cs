@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Core.Common;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Updates;
-using BoardGameTracker.Core.Updates.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -14,26 +15,30 @@ namespace BoardGameTracker.Tests.Services;
 
 public class UpdateServiceTests
 {
-    private readonly Mock<IUpdateRepository> _updateRepositoryMock;
+    private readonly Mock<IConfigRepository> _configRepositoryMock;
     private readonly Mock<IDockerHubApi> _dockerHubApiMock;
     private readonly Mock<ILogger<UpdateService>> _loggerMock;
+    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
     private readonly UpdateService _updateService;
 
     public UpdateServiceTests()
     {
-        _updateRepositoryMock = new Mock<IUpdateRepository>();
+        _configRepositoryMock = new Mock<IConfigRepository>();
         _dockerHubApiMock = new Mock<IDockerHubApi>();
         _loggerMock = new Mock<ILogger<UpdateService>>();
+        _dateTimeProviderMock = new Mock<IDateTimeProvider>();
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
 
         _updateService = new UpdateService(
-            _updateRepositoryMock.Object,
+            _configRepositoryMock.Object,
             _dockerHubApiMock.Object,
-            _loggerMock.Object);
+            _loggerMock.Object,
+            _dateTimeProviderMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
-        _updateRepositoryMock.VerifyNoOtherCalls();
+        _configRepositoryMock.VerifyNoOtherCalls();
         _dockerHubApiMock.VerifyNoOtherCalls();
     }
 
@@ -50,8 +55,8 @@ public class UpdateServiceTests
             { "update_check_last_run", DateTime.UtcNow.ToString("O") }
         };
 
-        _updateRepositoryMock
-            .Setup(x => x.GetUpdateConfigAsync())
+        _configRepositoryMock
+            .Setup(x => x.GetConfigsByPrefixAsync("update_"))
             .ReturnsAsync(config);
 
         // Act
@@ -63,7 +68,7 @@ public class UpdateServiceTests
         result.UpdateAvailable.Should().BeTrue();
         result.LastChecked.Should().NotBeNull();
 
-        _updateRepositoryMock.Verify(x => x.GetUpdateConfigAsync(), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigsByPrefixAsync("update_"), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -76,8 +81,8 @@ public class UpdateServiceTests
             { "update_available", "false" }
         };
 
-        _updateRepositoryMock
-            .Setup(x => x.GetUpdateConfigAsync())
+        _configRepositoryMock
+            .Setup(x => x.GetConfigsByPrefixAsync("update_"))
             .ReturnsAsync(config);
 
         // Act
@@ -96,8 +101,8 @@ public class UpdateServiceTests
             { "update_check_error", "Network error occurred" }
         };
 
-        _updateRepositoryMock
-            .Setup(x => x.GetUpdateConfigAsync())
+        _configRepositoryMock
+            .Setup(x => x.GetConfigsByPrefixAsync("update_"))
             .ReturnsAsync(config);
 
         // Act
@@ -111,8 +116,8 @@ public class UpdateServiceTests
     public async Task GetUpdateStatusAsync_ShouldReturnEmptyConfig_WhenNoConfigExists()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.GetUpdateConfigAsync())
+        _configRepositoryMock
+            .Setup(x => x.GetConfigsByPrefixAsync("update_"))
             .ReturnsAsync(new Dictionary<string, string>());
 
         // Act
@@ -133,13 +138,12 @@ public class UpdateServiceTests
     public async Task GetUpdateSettingsAsync_ShouldReturnSettings_WhenConfigExists()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync("true");
-
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync("12");
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>("update_check_enabled"))
+            .ReturnsAsync(true);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<VersionTrack>("update_track"))
+            .ReturnsAsync(VersionTrack.Stable);
 
         // Act
         var result = await _updateService.GetUpdateSettingsAsync();
@@ -147,47 +151,43 @@ public class UpdateServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Enabled.Should().BeTrue();
-        result.IntervalHours.Should().Be(12);
+        result.VersionTrack.Should().Be(VersionTrack.Stable);
     }
 
     [Fact]
     public async Task GetUpdateSettingsAsync_ShouldReturnDefaultValues_WhenNoConfigExists()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync((string?)null);
-
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync((string?)null);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>("update_check_enabled"))
+            .ReturnsAsync(true);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<VersionTrack>("update_track"))
+            .ReturnsAsync(VersionTrack.Stable);
 
         // Act
         var result = await _updateService.GetUpdateSettingsAsync();
 
         // Assert
-        result.Enabled.Should().BeTrue(); // Default is enabled when not "false"
-        result.IntervalHours.Should().Be(24); // Default is 24 hours
+        result.Enabled.Should().BeTrue(); // Default is enabled
     }
 
     [Fact]
     public async Task GetUpdateSettingsAsync_ShouldReturnDisabled_WhenExplicitlyFalse()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_enabled"))
-            .ReturnsAsync("false");
-
-        _updateRepositoryMock
-            .Setup(x => x.GetConfigValueAsync("update_check_interval_hours"))
-            .ReturnsAsync("48");
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<bool>("update_check_enabled"))
+            .ReturnsAsync(false);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<VersionTrack>("update_track"))
+            .ReturnsAsync(VersionTrack.Stable);
 
         // Act
         var result = await _updateService.GetUpdateSettingsAsync();
 
         // Assert
         result.Enabled.Should().BeFalse();
-        result.IntervalHours.Should().Be(48);
     }
 
     #endregion
@@ -198,53 +198,38 @@ public class UpdateServiceTests
     public async Task UpdateSettingsAsync_ShouldUpdateSettings()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<string>()))
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<bool>()))
+            .Returns(Task.CompletedTask);
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<VersionTrack>()))
             .Returns(Task.CompletedTask);
 
         // Act
-        await _updateService.UpdateSettingsAsync(true, 12);
+        await _updateService.UpdateSettingsAsync(true, VersionTrack.Stable);
 
         // Assert
-        _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", "true"), Times.Once);
-        _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_interval_hours", "12"), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", true), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync("update_track", VersionTrack.Stable), Times.Once);
     }
 
     [Fact]
     public async Task UpdateSettingsAsync_ShouldDisableUpdates()
     {
         // Arrange
-        _updateRepositoryMock
-            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<string>()))
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<bool>()))
+            .Returns(Task.CompletedTask);
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<VersionTrack>()))
             .Returns(Task.CompletedTask);
 
         // Act
-        await _updateService.UpdateSettingsAsync(false, 24);
+        await _updateService.UpdateSettingsAsync(false, VersionTrack.Beta);
 
         // Assert
-        _updateRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", "false"), Times.Once);
-    }
-
-    [Fact]
-    public async Task UpdateSettingsAsync_ShouldThrowException_WhenIntervalLessThanOne()
-    {
-        // Act
-        var action = async () => await _updateService.UpdateSettingsAsync(true, 0);
-
-        // Assert
-        await action.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("Interval must be at least 1 hour*");
-    }
-
-    [Fact]
-    public async Task UpdateSettingsAsync_ShouldThrowException_WhenIntervalNegative()
-    {
-        // Act
-        var action = async () => await _updateService.UpdateSettingsAsync(true, -5);
-
-        // Assert
-        await action.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("Interval must be at least 1 hour*");
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync("update_check_enabled", false), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync("update_track", VersionTrack.Beta), Times.Once);
     }
 
     #endregion

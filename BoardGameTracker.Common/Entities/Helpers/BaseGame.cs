@@ -116,7 +116,7 @@ public abstract class BaseGame : HasId
     {
         if (year.HasValue)
         {
-            Guard.Against.OutOfRange(year.Value, nameof(year), 1900, DateTime.UtcNow.Year + 5);
+            Guard.Against.OutOfRange(year.Value, nameof(year), 1900, DateTime.UtcNow.Year + 10);
         }
         YearPublished = year;
     }

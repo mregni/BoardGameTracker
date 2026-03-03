@@ -18,9 +18,15 @@
       "environmentVariables": {
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ENV ASPNETCORE_URLS": "http://*:5444",
+        "ENV_ASPNETCORE_URLS": "http://*:5444",
         "STATISTICS": "1",
-        "LOGLEVEL": "Info"
+        "LOGLEVEL": "Info",
+        "TZ": "Europe/Brussels",
+        "DB_HOST": "localhost",
+        "DB_USER": "dev",
+        "DB_PASSWORD": "dev",
+        "DB_NAME": "boardgametracker-dev",
+        "DB_PORT": "5432"
       }
     },
     "https": {
@@ -32,8 +38,12 @@
       "environmentVariables": {
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ENV ASPNETCORE_URLS": "http://*:5444",
-        "STATISTICS": "1"
+        "ENV_ASPNETCORE_URLS": "http://*:5444",
+        "STATISTICS": "1",
+        "TZ": "Europe/Brussels",
+        "DB_HOST": "localhost",
+        "DB_USER": "dev",
+        "DB_PASSWORD": "dev"
       }
     }
   }

@@ -1,4 +1,5 @@
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +9,12 @@ namespace BoardGameTracker.Core.Games;
 public class GameSessionRepository : IGameSessionRepository
 {
     private readonly MainDbContext _context;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public GameSessionRepository(MainDbContext context)
+    public GameSessionRepository(MainDbContext context, IDateTimeProvider dateTimeProvider)
     {
         _context = context;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public Task<List<Session>> GetSessions(int gameId, int skip, int? take)
@@ -38,7 +41,7 @@ public class GameSessionRepository : IGameSessionRepository
         return _context.Sessions
             .AsNoTracking()
             .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == gameId && x.Start > DateTime.UtcNow.AddDays(dayCount))
+            .Where(x => x.GameId == gameId && x.Start > _dateTimeProvider.UtcNow.AddDays(dayCount))
             .OrderBy(x => x.Start)
             .ToListAsync();
     }

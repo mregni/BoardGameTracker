@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -11,6 +12,7 @@ using BoardGameTracker.Core.Players;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -24,6 +26,7 @@ public class PlayerServiceTests
     private readonly Mock<IGameSessionRepository> _gameSessionRepositoryMock;
     private readonly Mock<ISessionRepository> _sessionRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ILogger<PlayerService>> _loggerMock;
     private readonly PlayerService _playerService;
 
     public PlayerServiceTests()
@@ -34,6 +37,7 @@ public class PlayerServiceTests
         _gameSessionRepositoryMock = new Mock<IGameSessionRepository>();
         _sessionRepositoryMock = new Mock<ISessionRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _loggerMock = new Mock<ILogger<PlayerService>>();
 
         _playerService = new PlayerService(
             _playerRepositoryMock.Object,
@@ -41,7 +45,8 @@ public class PlayerServiceTests
             _playerStatisticsDomainServiceMock.Object,
             _gameSessionRepositoryMock.Object,
             _sessionRepositoryMock.Object,
-            _unitOfWorkMock.Object);
+            _unitOfWorkMock.Object,
+            _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -110,25 +115,25 @@ public class PlayerServiceTests
     public async Task Create_ShouldCreatePlayer_AndSaveChanges()
     {
         // Arrange
-        var player = new Player("New Player", "player.png");
+        var command = new CreatePlayerCommand { Name = "New Player", Image = "player.png" };
 
         _playerRepositoryMock
-            .Setup(x => x.CreateAsync(player))
-            .ReturnsAsync(player);
+            .Setup(x => x.CreateAsync(It.Is<Player>(p => p.Name == "New Player" && p.Image == "player.png")))
+            .ReturnsAsync((Player p) => p);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
         // Act
-        var result = await _playerService.Create(player);
+        var result = await _playerService.Create(command);
 
         // Assert
         result.Should().NotBeNull();
         result.Name.Should().Be("New Player");
         result.Image.Should().Be("player.png");
 
-        _playerRepositoryMock.Verify(x => x.CreateAsync(player), Times.Once);
+        _playerRepositoryMock.Verify(x => x.CreateAsync(It.Is<Player>(p => p.Name == "New Player" && p.Image == "player.png")), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -201,9 +206,6 @@ public class PlayerServiceTests
             .Setup(x => x.GetByIdAsync(playerId))
             .ReturnsAsync(existingPlayer);
 
-        _playerRepositoryMock
-            .Setup(x => x.UpdateAsync(existingPlayer))
-            .ReturnsAsync(existingPlayer);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -214,16 +216,16 @@ public class PlayerServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.Name.Should().Be("New Name");
+        result.Name.Should().Be("New Name");
         result.Image.Should().Be("new.png");
 
         _imageServiceMock.Verify(x => x.DeleteImage("old.png"), Times.Once);
-        _playerRepositoryMock.Verify(x => x.UpdateAsync(existingPlayer), Times.Once);
+
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
     }
 
     [Fact]
-    public async Task Update_ShouldReturnNull_WhenPlayerDoesNotExist()
+    public async Task Update_ShouldThrowEntityNotFoundException_WhenPlayerDoesNotExist()
     {
         // Arrange
         var command = new UpdatePlayerCommand
@@ -237,10 +239,10 @@ public class PlayerServiceTests
             .ReturnsAsync((Player?)null);
 
         // Act
-        var result = await _playerService.Update(command);
+        var action = async () => await _playerService.Update(command);
 
         // Assert
-        result.Should().BeNull();
+        await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _playerRepositoryMock.Verify(x => x.GetByIdAsync(command.Id), Times.Once);
         VerifyNoOtherCalls();
@@ -264,9 +266,6 @@ public class PlayerServiceTests
             .Setup(x => x.GetByIdAsync(playerId))
             .ReturnsAsync(existingPlayer);
 
-        _playerRepositoryMock
-            .Setup(x => x.UpdateAsync(existingPlayer))
-            .ReturnsAsync(existingPlayer);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -297,9 +296,6 @@ public class PlayerServiceTests
             .Setup(x => x.GetByIdAsync(playerId))
             .ReturnsAsync(existingPlayer);
 
-        _playerRepositoryMock
-            .Setup(x => x.UpdateAsync(existingPlayer))
-            .ReturnsAsync(existingPlayer);
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
@@ -392,23 +388,14 @@ public class PlayerServiceTests
         // Arrange
         var playerId = 1;
         var player = new Player("John", "john.png") { Id = playerId };
-        var sessions = new List<Session>
-        {
-            new Session(1, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow, "Session 1") { Id = 1 },
-            new Session(2, DateTime.UtcNow.AddDays(-2), DateTime.UtcNow.AddDays(-1), "Session 2") { Id = 2 }
-        };
 
         _playerRepositoryMock
             .Setup(x => x.GetByIdAsync(playerId))
             .ReturnsAsync(player);
 
         _sessionRepositoryMock
-            .Setup(x => x.GetByPlayer(playerId, null))
-            .ReturnsAsync(sessions);
-
-        _sessionRepositoryMock
-            .Setup(x => x.DeleteAsync(It.IsAny<int>()))
-            .ReturnsAsync(true);
+            .Setup(x => x.DeleteByPlayerIdAsync(playerId))
+            .Returns(Task.CompletedTask);
 
         _playerRepositoryMock
             .Setup(x => x.DeleteAsync(playerId))
@@ -422,15 +409,14 @@ public class PlayerServiceTests
         await _playerService.Delete(playerId);
 
         // Assert
-        _sessionRepositoryMock.Verify(x => x.DeleteAsync(1), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.DeleteAsync(2), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.DeleteByPlayerIdAsync(playerId), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage("john.png"), Times.Once);
         _playerRepositoryMock.Verify(x => x.DeleteAsync(playerId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
     }
 
     [Fact]
-    public async Task Delete_ShouldDoNothing_WhenPlayerDoesNotExist()
+    public async Task Delete_ShouldThrowEntityNotFoundException_WhenPlayerDoesNotExist()
     {
         // Arrange
         var playerId = 999;
@@ -440,9 +426,11 @@ public class PlayerServiceTests
             .ReturnsAsync((Player?)null);
 
         // Act
-        await _playerService.Delete(playerId);
+        var action = async () => await _playerService.Delete(playerId);
 
         // Assert
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+
         _playerRepositoryMock.Verify(x => x.GetByIdAsync(playerId), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -459,8 +447,8 @@ public class PlayerServiceTests
             .ReturnsAsync(player);
 
         _sessionRepositoryMock
-            .Setup(x => x.GetByPlayer(playerId, null))
-            .ReturnsAsync(new List<Session>());
+            .Setup(x => x.DeleteByPlayerIdAsync(playerId))
+            .Returns(Task.CompletedTask);
 
         _playerRepositoryMock
             .Setup(x => x.DeleteAsync(playerId))
@@ -474,7 +462,7 @@ public class PlayerServiceTests
         await _playerService.Delete(playerId);
 
         // Assert
-        _sessionRepositoryMock.Verify(x => x.DeleteAsync(It.IsAny<int>()), Times.Never);
+        _sessionRepositoryMock.Verify(x => x.DeleteByPlayerIdAsync(playerId), Times.Once);
         _playerRepositoryMock.Verify(x => x.DeleteAsync(playerId), Times.Once);
     }
 

@@ -1,8 +1,8 @@
 export interface BgtSelectItem {
-  value: number;
-  label: string;
+	value: number | string;
+	label: string;
 }
 
 export interface BgtSelectImageItem extends BgtSelectItem {
-  image: string | null;
+	image: string | null;
 }

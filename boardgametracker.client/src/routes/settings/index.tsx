@@ -1,181 +1,125 @@
-import { useTranslation } from 'react-i18next';
-import { createFileRoute } from '@tanstack/react-router';
-import { useForm } from '@tanstack/react-form';
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import CogIcon from "@/assets/icons/cog.svg?react";
+import BgtButton from "@/components/BgtButton/BgtButton";
+import { BgtPage } from "@/components/BgtLayout/BgtPage";
+import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
+import { useAppForm } from "@/hooks/form";
+import { usePermissions } from "@/hooks/usePermissions";
+import { type Settings, SettingsSchema } from "@/models";
+import { getEnvironment, getLanguages, getSettings } from "@/services/queries/settings";
+import { handleFormSubmit } from "@/utils/formUtils";
+import { AccountSettings } from "./-components/AccountSettings";
+import { AdvancedSettings } from "./-components/AdvancedSettings";
+import { GameNightsSettings } from "./-components/GameNightsSettings";
+import { GeneralSettings } from "./-components/GeneralSettings";
+import { type SettingsCategory, SettingsSidebar } from "./-components/SettingsSidebar";
+import { ShelfOfShameSettings } from "./-components/ShelfOfShameSettings";
+import { useSettingsData } from "./-hooks/useSettingsData";
+import { settingsFormOpts } from "./-utils/settingsFormOpts";
 
-import { useToasts } from '../-hooks/useToasts';
-
-import { useSettingsData } from './-hooks/useSettingsData';
-
-import { ToLogLevel } from '@/utils/numberUtils';
-import { getSettings, getLanguages, getEnvironment } from '@/services/queries/settings';
-import { SettingsSchema } from '@/models';
-import BgtPageHeader from '@/components/BgtLayout/BgtPageHeader';
-import { BgtPageContent } from '@/components/BgtLayout/BgtPageContent';
-import { BgtPage } from '@/components/BgtLayout/BgtPage';
-import { BgtHeading } from '@/components/BgtHeading/BgtHeading';
-import { BgtFormField, BgtSelect, BgtInputField } from '@/components/BgtForm';
-import { BgtCard } from '@/components/BgtCard/BgtCard';
-import BgtButton from '@/components/BgtButton/BgtButton';
-import GitHubIcon from '@/assets/icons/github.svg?react';
-import CrowdinIcon from '@/assets/icons/crowdin.svg?react';
-
-export const Route = createFileRoute('/settings/')({
-  component: RouteComponent,
-  loader: ({ context: { queryClient } }) => {
-    queryClient.prefetchQuery(getSettings());
-    queryClient.prefetchQuery(getLanguages());
-    queryClient.prefetchQuery(getEnvironment());
-  },
+export const Route = createFileRoute("/settings/")({
+	component: RouteComponent,
+	loader: ({ context: { queryClient } }) => {
+		queryClient.prefetchQuery(getSettings());
+		queryClient.prefetchQuery(getLanguages());
+		queryClient.prefetchQuery(getEnvironment());
+	},
 });
 
 function RouteComponent() {
-  const { t, i18n } = useTranslation();
-  const { errorToast, successToast } = useToasts();
+	const { settings, saveSettings, isSaving, languages } = useSettingsData();
 
-  const onSaveError = () => {
-    errorToast('settings.save.failed');
-  };
+	if (settings === undefined) {
+		return (
+			<div className="min-h-full flex items-center justify-center">
+				<BgtLoadingSpinner />
+			</div>
+		);
+	}
 
-  const onSaveSuccess = () => {
-    successToast('settings.save.successfull');
-  };
+	return (
+		<SettingsPageContent settings={settings} languages={languages} isSaving={isSaving} saveSettings={saveSettings} />
+	);
+}
 
-  const { settings, saveSettings, isLoading, languages, environment } = useSettingsData({ onSaveSuccess, onSaveError });
+interface SettingsPageContentProps {
+	settings: Settings;
+	languages: { key: string; translationKey: string }[];
+	isSaving: boolean;
+	saveSettings: (settings: Settings) => Promise<Settings>;
+}
 
-  const form = useForm({
-    defaultValues: {
-      uiLanguage: settings?.uiLanguage ?? '',
-      dateFormat: settings?.dateFormat ?? '',
-      timeFormat: settings?.timeFormat ?? '',
-      currency: settings?.currency ?? '',
-    },
-    onSubmit: async ({ value }) => {
-      const validatedData = SettingsSchema.parse(value);
-      if (settings) {
-        await saveSettings({ ...settings, ...validatedData });
-        i18n.changeLanguage(validatedData.uiLanguage);
-      }
-    },
-  });
+function SettingsPageContent({ settings, languages, isSaving, saveSettings }: SettingsPageContentProps) {
+	const { canManageSettings } = usePermissions();
+	const [activeCategory, setActiveCategory] = useState<SettingsCategory>(canManageSettings ? "general" : "account");
+	const { t } = useTranslation();
 
-  if (settings === undefined || environment === undefined) return null;
+	const form = useAppForm({
+		...settingsFormOpts,
+		defaultValues: {
+			uiLanguage: settings.uiLanguage,
+			dateFormat: settings.dateFormat,
+			timeFormat: settings.timeFormat,
+			currency: settings.currency,
+			statistics: settings.statistics,
+			updateCheckEnabled: settings.updateCheckEnabled,
+			versionTrack: settings.versionTrack,
+			shelfOfShameEnabled: settings.shelfOfShameEnabled,
+			shelfOfShameMonthsLimit: settings.shelfOfShameMonthsLimit,
+			publicUrl: settings.publicUrl,
+			gameNightsEnabled: settings.gameNightsEnabled,
+			rsvpAuthenticationEnabled: settings.rsvpAuthenticationEnabled,
+		},
+		onSubmit: async ({ value }) => {
+			const validatedData = SettingsSchema.parse(value);
+			await saveSettings(validatedData);
+		},
+	});
 
-  return (
-    <BgtPage>
-      <BgtPageHeader header={t('common.settings')} actions={[]} />
-      <BgtPageContent>
-        <BgtCard className="p-4">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
-          >
-            <div className="flex flex-row justify-between">
-              <BgtHeading size="6">{t('settings.titles.localisation')}</BgtHeading>
-              <BgtButton size="1" type="submit" disabled={isLoading} variant="primary">
-                {t('common.save')}
-              </BgtButton>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <BgtFormField form={form} name="uiLanguage" schema={SettingsSchema.shape.uiLanguage}>
-                {(field) => (
-                  <BgtSelect
-                    field={field}
-                    disabled={isLoading}
-                    label={t('settings.ui-language.label')}
-                    items={languages.map((value) => ({
-                      label: t(`languages.${value.translationKey}`),
-                      value: value.key,
-                      image: null,
-                    }))}
-                  />
-                )}
-              </BgtFormField>
-              <BgtFormField form={form} name="dateFormat" schema={SettingsSchema.shape.dateFormat}>
-                {(field) => (
-                  <BgtInputField
-                    field={field}
-                    disabled={isLoading}
-                    type="text"
-                    label={t('settings.date-format.label')}
-                  />
-                )}
-              </BgtFormField>
-              <BgtFormField form={form} name="timeFormat" schema={SettingsSchema.shape.timeFormat}>
-                {(field) => (
-                  <BgtInputField
-                    field={field}
-                    disabled={isLoading}
-                    type="text"
-                    label={t('settings.time-format.label')}
-                  />
-                )}
-              </BgtFormField>
-            </div>
-          </form>
-        </BgtCard>
-        <BgtCard className="p-4">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
-          >
-            <div className="flex flex-row justify-between">
-              <BgtHeading size="6">{t('settings.titles.currency')} </BgtHeading>
-              <BgtButton size="1" type="submit" disabled={isLoading} variant="primary">
-                {t('common.save')}
-              </BgtButton>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <BgtFormField form={form} name="currency" schema={SettingsSchema.shape.currency}>
-                {(field) => (
-                  <BgtInputField field={field} disabled={isLoading} type="text" label={t('settings.currency.label')} />
-                )}
-              </BgtFormField>
-            </div>
-          </form>
-        </BgtCard>
-        <BgtCard className="p-4">
-          <BgtHeading size="6">{t('settings.titles.environment')}</BgtHeading>
-          <div className="flex flex-col md:flex-row gap-3 justify-between">
-            <div className="flex flex-row gap-3 pt-3 md:justify-start justify-between">
-              <div className="text-gray-500">
-                <div>{t('settings.environment.name')}</div>
-                <div>{t('settings.environment.port')}</div>
-                <div>{t('settings.environment.statistics')}</div>
-                <div>{t('settings.environment.log-level')}</div>
-                <div>{t('settings.environment.version')}</div>
-              </div>
-              <div>
-                <div className="text-end md:text-start">{environment.environmentName}</div>
-                <div className="text-end md:text-start">{environment.port}</div>
-                <div className="text-end md:text-start">
-                  {environment.enableStatistics ? t('common.enabled') : t('common.disabled')}
-                </div>
-                <div className="text-end md:text-start">{t(ToLogLevel(environment.logLevel))}</div>
-                <div className="text-end md:text-start">{environment.version}</div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <BgtButton
-                onClick={() => window.open('https://github.com/mregni/BoardGameTracker/issues')}
-                variant="primary"
-              >
-                <GitHubIcon className="size-4" />
-                {t('settings.feature-request')}
-              </BgtButton>
-              <BgtButton onClick={() => window.open('https://crowdin.com/project/boardgametracker')} variant="primary">
-                <CrowdinIcon className="size-4" />
-                {t('settings.translations')}
-              </BgtButton>
-            </div>
-          </div>
-        </BgtCard>
-      </BgtPageContent>
-    </BgtPage>
-  );
+	const renderContent = () => {
+		switch (activeCategory) {
+			case "general":
+				return <GeneralSettings form={form} languages={languages} disabled={isSaving} />;
+			case "shelf-of-shame":
+				return <ShelfOfShameSettings form={form} disabled={isSaving} />;
+			case "game-nights":
+				return <GameNightsSettings form={form} disabled={isSaving} />;
+			case "advanced":
+				return <AdvancedSettings form={form} disabled={isSaving} />;
+			case "account":
+				return <AccountSettings />;
+			default:
+				return <GeneralSettings form={form} languages={languages} disabled={isSaving} />;
+		}
+	};
+
+	return (
+		<BgtPage>
+			<BgtPageHeader header={"Settings"} icon={CogIcon} />
+			<BgtPageContent>
+				<div className="flex flex-col lg:flex-row">
+					<SettingsSidebar activeCategory={activeCategory} onCategoryChange={setActiveCategory} canManageSettings={canManageSettings} />
+
+					<div className="flex-1">
+						<form onSubmit={handleFormSubmit(form)}>
+							<div className="flex flex-col gap-4 xl:gap-6 lg:pl-4 xl:pl-6 pt-4 lg:pt-0">{renderContent()}</div>
+							{activeCategory !== "account" && (
+								<div className="mt-6 pt-4 lg:ml-4 xl:ml-6 border-t border-white/10">
+									<div className="flex justify-between flex-wrap gap-3 items-start">
+										<BgtButton onClick={form.handleSubmit} type="submit" disabled={isSaving}>
+											{t("settings.save.button")}
+										</BgtButton>
+									</div>
+								</div>
+							)}
+						</form>
+					</div>
+				</div>
+			</BgtPageContent>
+		</BgtPage>
+	);
 }

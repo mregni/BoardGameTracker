@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Helpers;
@@ -7,6 +8,7 @@ using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Images;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
 using SixLabors.ImageSharp;
 using Xunit;
@@ -16,13 +18,17 @@ namespace BoardGameTracker.Tests.Services;
 public class ImageServiceTests : IDisposable
     {
         private readonly Mock<IDiskProvider> _diskProviderMock;
+        private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
+        private readonly Mock<ILogger<ImageService>> _loggerMock;
         private readonly ImageService _imageService;
         private readonly string _testDirectory;
 
         public ImageServiceTests()
         {
             _diskProviderMock = new Mock<IDiskProvider>();
-            _imageService = new ImageService(_diskProviderMock.Object);
+            _httpClientFactoryMock = new Mock<IHttpClientFactory>();
+            _loggerMock = new Mock<ILogger<ImageService>>();
+            _imageService = new ImageService(_diskProviderMock.Object, _httpClientFactoryMock.Object, _loggerMock.Object);
             _testDirectory = Path.Combine(Path.GetTempPath(), "ImageServiceTests", Guid.NewGuid().ToString());
             Directory.CreateDirectory(_testDirectory);
             

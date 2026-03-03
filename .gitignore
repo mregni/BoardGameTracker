@@ -636,3 +636,9 @@ BoardGameTracker.Host/images/profile/
 
 # Claude Code
 .claude
+
+boardgametracker.client/.tanstack/
+
+BoardGameTracker.Host/config/config.xml
+
+BoardGameTracker.Host/appsettings.Development.json
