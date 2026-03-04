@@ -3,9 +3,10 @@ import Backend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
-let translationFilePath = "/locales/{{lng}}.json";
+const base = import.meta.env.BASE_URL;
+let translationFilePath = `${base}locales/{{lng}}.json`;
 if (import.meta.env.DEV) {
-	translationFilePath = "/locales/base.json";
+	translationFilePath = `${base}locales/base.json`;
 }
 
 void i18n
