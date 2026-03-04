@@ -22,14 +22,9 @@ plugins:
 
 landing_priority:
   - custom-intro
-  - software
   - blog
 
 author: mregni
-
-collections:
-  software:
-    output: true
 
 exclude:
   - .git
