@@ -18,13 +18,17 @@ permalink: /blog/:month-:day-:year-:title/
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
+  - jekyll-theme-rop
 
 landing_priority:
   - custom-intro
   - software
   - blog
 
+author: reggi
+
 exclude:
+  - .git
   - Gemfile
   - Gemfile.lock
   - README.md

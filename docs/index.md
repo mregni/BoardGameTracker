@@ -1,6 +1,6 @@
 ---
 layout: home
-hero_include: index-page-hero.html
+hero_include: home-hero.html
 ---
 
 ## What is BoardGameTracker?

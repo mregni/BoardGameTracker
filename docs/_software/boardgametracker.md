@@ -1,7 +1,7 @@
 ---
 title: BoardGameTracker
 description: A self-hosted board game collection tracker and play session logger.
-repo_url: https://github.com/your-username/BoardGameTracker
+repo_url: https://github.com/mregni/BoardGameTracker
 docs_url: /docs/
 tags:
   - dotnet
