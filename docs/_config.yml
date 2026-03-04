@@ -5,7 +5,7 @@ description: >-
 
 tagline: Track your board game collection and play sessions
 
-url: ""
+url: "https://mregni.github.io/BoardGameTracker"
 baseurl: ""
 
 github_repo_url: https://github.com/mregni/BoardGameTracker
@@ -25,7 +25,7 @@ landing_priority:
   - software
   - blog
 
-author: reggi
+author: mregni
 
 exclude:
   - .git
