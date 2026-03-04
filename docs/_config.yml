@@ -27,6 +27,10 @@ landing_priority:
 
 author: mregni
 
+collections:
+  software:
+    output: true
+
 exclude:
   - .git
   - Gemfile
