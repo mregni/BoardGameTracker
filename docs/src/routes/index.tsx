@@ -16,49 +16,49 @@ function RouteComponent() {
 			<section className="px-6 py-16">
 				<div className="max-w-7xl mx-auto">
 					<div className="text-center mb-12">
-						<h1 className="text-5xl md:text-6xl text-white mb-6">{t("home.title")}</h1>
-						<p className="text-xl text-slate-300 max-w-3xl mx-auto">{t("home.subtitle")}</p>
+						<h1 className="text-5xl md:text-6xl text-white mb-6">{t("home:title")}</h1>
+						<p className="text-xl text-slate-300 max-w-3xl mx-auto">{t("home:subtitle")}</p>
 					</div>
 
 					<div className="rounded-xl overflow-hidden flex justify-center">
-						<img src="images/hero.png" alt={t("home.heroAlt")} className="w-[80%] h-auto" />
+						<img src="images/hero.png" alt={t("home:heroAlt")} className="w-[80%] h-auto" />
 					</div>
 				</div>
 			</section>
 
 			<Section
-				title={t("home.dashboard.title")}
-				description={t("home.dashboard.description")}
-				bullets={t("home.dashboard.bullets", { returnObjects: true }) as string[]}
+				title={t("home:dashboard.title")}
+				description={t("home:dashboard.description")}
+				bullets={t("home:dashboard.bullets", { returnObjects: true }) as string[]}
 				imageSrc="images/dashboard.png"
-				imageAlt={t("home.dashboard.imageAlt")}
+				imageAlt={t("home:dashboard.imageAlt")}
 				background
 			/>
 
 			<Section
-				title={t("home.games.title")}
-				description={t("home.games.description")}
-				bullets={t("home.games.bullets", { returnObjects: true }) as string[]}
+				title={t("home:games.title")}
+				description={t("home:games.description")}
+				bullets={t("home:games.bullets", { returnObjects: true }) as string[]}
 				imageSrc="images/games.png"
-				imageAlt={t("home.games.imageAlt")}
+				imageAlt={t("home:games.imageAlt")}
 				reverse
 			/>
 
 			<Section
-				title={t("home.sessions.title")}
-				description={t("home.sessions.description")}
-				bullets={t("home.sessions.bullets", { returnObjects: true }) as string[]}
+				title={t("home:sessions.title")}
+				description={t("home:sessions.description")}
+				bullets={t("home:sessions.bullets", { returnObjects: true }) as string[]}
 				imageSrc="images/session.png"
-				imageAlt={t("home.sessions.imageAlt")}
+				imageAlt={t("home:sessions.imageAlt")}
 				background
 			/>
 
 			<Section
-				title={t("home.players.title")}
-				description={t("home.players.description")}
-				bullets={t("home.players.bullets", { returnObjects: true }) as string[]}
+				title={t("home:players.title")}
+				description={t("home:players.description")}
+				bullets={t("home:players.bullets", { returnObjects: true }) as string[]}
 				imageSrc="images/player.png"
-				imageAlt={t("home.players.imageAlt")}
+				imageAlt={t("home:players.imageAlt")}
 				reverse
 			/>
 

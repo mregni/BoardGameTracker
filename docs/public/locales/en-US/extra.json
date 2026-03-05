@@ -1,0 +1,50 @@
+{
+  "development": {
+    "title": "Development",
+    "description": "Want to contribute to Board Games Tracker? Here's how to set up a local development environment.",
+    "prerequisites": "Prerequisites",
+    "prerequisiteItems": [
+      ".NET 8 SDK",
+      "Node.js 18+",
+      "PostgreSQL database",
+      "Git"
+    ],
+    "setup": "Setup",
+    "step1Description": "Clone the repository and install the dependencies:",
+    "step2Description": "Set up the database and run the application:",
+    "guidelines": "Guidelines",
+    "guidelinesDescription": "Please follow the existing code style and conventions. Make sure all tests pass before submitting a pull request."
+  },
+  "translations": {
+    "title": "Translations",
+    "description": "Board Games Tracker supports multiple languages. You can help translate the application into your language.",
+    "crowdinButton": "Help Translate on Crowdin",
+    "howTo": "How to contribute",
+    "howToDescription": "Translation files are located in the <code>boardgametracker.client/public/locales</code> folder. Each language has its own folder with JSON translation files.",
+    "steps": "Steps",
+    "stepsItems": [
+      "Fork the repository",
+      "Copy the en-US folder and rename it to your language code",
+      "Translate all values in the JSON files",
+      "Submit a pull request"
+    ]
+  },
+  "bugsFeatures": {
+    "title": "Bugs / Features",
+    "description": "Found a bug or have a feature request? We'd love to hear from you!",
+    "bugs": "Reporting Bugs",
+    "bugsButton": "Report a Bug on GitHub",
+    "bugsDescription": "Please open an issue on GitHub with a clear description of the bug, steps to reproduce, and any relevant screenshots.",
+    "features": "Feature Requests",
+    "featuresButton": "Request a Feature on GitHub",
+    "featuresDescription": "Have an idea for a new feature? Open a GitHub issue with the feature request label and describe what you'd like to see."
+  },
+  "logging": {
+    "title": "Logging",
+    "description": "Board Games Tracker uses structured logging to help you debug issues.",
+    "configuration": "Configuration",
+    "configurationDescription": "Set the <code>LOGLEVEL</code> environment variable to control the logging level. Available levels are <code>debug</code>, <code>info</code>, <code>warn</code>, and <code>error</code>.",
+    "viewing": "Viewing Logs",
+    "viewingDescription": "You can view the application logs using Docker:"
+  }
+}

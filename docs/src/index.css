@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+}
+
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
 @theme {
   /* Custom Breakpoints */
   --breakpoint-2xl: 100rem;

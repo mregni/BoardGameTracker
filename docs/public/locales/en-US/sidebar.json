@@ -1,0 +1,27 @@
+{
+  "getting-started": {
+    "title": "Getting Started",
+    "quick-start-guide": "Quick Start Guide",
+    "docker-compose": "Docker Compose",
+    "environment-variables": "Environment Variables",
+    "proxy-setup": "Proxy Setup"
+  },
+  "user-guide": {
+    "title": "User Guide",
+    "games": "Games",
+    "players": "Players",
+    "locations": "Locations",
+    "add-new-session": "Add New Session",
+    "loans": "Loans",
+    "compare": "Compare",
+    "game-nights": "Game Nights",
+    "settings": "Settings",
+    "authentication": "Authentication"
+  },
+  "extra": {
+    "title": "Extra",
+    "development": "Development",
+    "translations": "Translations",
+    "bugs-features": "Bugs / Features"
+  }
+}

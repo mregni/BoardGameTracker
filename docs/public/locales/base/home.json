@@ -1,0 +1,79 @@
+{
+  "title": "Track Your Board Game Collection",
+  "subtitle": "A self-hosted solution to manage your board game library, track play sessions, and analyze your gaming statistics — all in one beautiful interface.",
+  "heroAlt": "Board Games App Showcase",
+  "dashboard": {
+    "title": "Comprehensive Dashboard",
+    "description": "Get an overview of your gaming activity at a glance. Track your total games, active players, play sessions, and collection value.",
+    "imageAlt": "Dashboard Interface",
+    "bullets": [
+      "View recent activity and most played games",
+      "Track your collection statistics and value",
+      "Monitor top players and recently added games"
+    ]
+  },
+  "games": {
+    "title": "Beautiful Game Library",
+    "description": "Browse your collection with stunning cover art. Filter and search through your games effortlessly with an intuitive interface.",
+    "imageAlt": "Games Collection Grid",
+    "bullets": [
+      "View your collection in a visual grid layout",
+      "Quick search and filtering capabilities",
+      "Track ownership status and expansions"
+    ]
+  },
+  "sessions": {
+    "title": "Easy Session Logging",
+    "description": "Record your game sessions with detailed information. Track locations, duration, scores, and add notes about memorable moments.",
+    "imageAlt": "Add Session Interface",
+    "bullets": [
+      "Quick and intuitive session creation",
+      "Add multiple players with scores",
+      "Record location, duration, and comments"
+    ]
+  },
+  "players": {
+    "title": "Player Statistics",
+    "description": "Track individual player performance with detailed statistics. See win rates, favorite games, and achievement progress for each player.",
+    "imageAlt": "Player Statistics",
+    "bullets": [
+      "Detailed player profiles with avatars",
+      "Win/loss records and performance analytics",
+      "Achievement system and game history"
+    ]
+  },
+  "features": {
+    "title": "More Features",
+    "subtitle": "Additional tools and functionality to enhance your board gaming experience",
+    "gameNight": {
+      "title": "Game Night Planner",
+      "description": "Schedule and organize game nights with your group. Send invitations, vote on games, and coordinate schedules effortlessly."
+    },
+    "shelfOfShame": {
+      "title": "Shelf of Shame",
+      "description": "Track unplayed games in your collection. Get reminders and motivation to finally play those games gathering dust on your shelf."
+    },
+    "locations": {
+      "title": "Locations",
+      "description": "Manage and track different gaming locations. See which venues host the best game nights and track play statistics by location."
+    },
+    "oidc": {
+      "title": "OIDC Support",
+      "description": "Secure authentication with OpenID Connect. Integrate with your existing identity provider for seamless single sign-on."
+    },
+    "loans": {
+      "title": "Game Loan System",
+      "description": "Keep track of games you've lent to friends. Never lose track of your collection with automated loan reminders."
+    },
+    "comparison": {
+      "title": "Player Comparison",
+      "description": "Compare player statistics head-to-head. See matchup records, win rates, and competitive history between players."
+    }
+  },
+  "cta": {
+    "title": "Ready to Start Tracking?",
+    "subtitle": "Self-hosted, open-source, and built for board game enthusiasts.",
+    "getStarted": "Get Started",
+    "viewDocs": "View Documentation"
+  }
+}

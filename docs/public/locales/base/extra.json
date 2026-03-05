@@ -1,0 +1,38 @@
+{
+	"development": {
+		"title": "Development",
+		"description": "Want to contribute to Board Games Tracker? Here's how to set up a local development environment.",
+		"prerequisites": "Prerequisites",
+		"prerequisiteItems": [
+			".NET 8 SDK",
+			"Node.js 18+",
+			"PostgreSQL database",
+			"Git"
+		],
+		"setup": "Setup",
+		"step1Description": "Clone the repository and install the dependencies:",
+		"step2Description": "Set up the database and run the application:",
+		"step3Description": "When starting the application it will first start the API process, when successfull it will open a new command window to run the UI. Browse to <code>http://localhost:5443</code> to access the application. Swagger UI will be avaliable at <code>http://localhost:6554</code>",
+		"step4Description": "For the database, you will need to set up an empty database. On startup, the application itself will run migrations to setup the database."
+	},
+	"translations": {
+		"title": "Translations",
+		"description": "Board Games Tracker supports multiple languages. You can help translate the application into your language with the help of Crowdin tooling.",
+		"howTo": "How to contribute",
+		"crowdinButton": "Help Translate on Crowdin",
+		"howToDescription": "Navigate to the Crowdin project for Board Games Tracker and follow the instructions to contribute translations. If your language is not yet listed, you can send me a message on Crowdin or create a Feature request on GitHub and I will add the new language asap."
+	},
+	"bugsFeatures": {
+		"title": "Bugs / Features",
+		"description": "Found a bug or have a feature request? Feel free to open an issue on GitHub so I can get it fixed asap. I created some usefull templates to report a bug or feature request. Screenshots and logs are always more then welcom when logging a bug.",
+		"bugsButton": "Report a Bug on GitHub",
+		"featuresButton": "Request a Feature on GitHub",
+		"otherButton": "Contact Me"
+	},
+	"logging": {
+		"title": "Logging",
+		"description": "Board Games Tracker uses structured logging to help you (and me) debug issues. To change the log level, you need to stop the application, set the <code>LOGLEVEL</code> environment variable to the desired level, and then restart the application. The available log levels are <code>debug</code>, <code>info</code>, <code>warn</code>, and <code>error</code>. The default log level is <code>warn</code>.",
+		"viewing": "Viewing Logs",
+		"viewingDescription": "You can view the application logs using the following docker command"
+	}
+}

@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocumentationIndexRouteImport } from './routes/documentation/index'
+import { Route as DocumentationUserGuideRouteImport } from './routes/documentation/user-guide'
+import { Route as DocumentationGettingStartedRouteImport } from './routes/documentation/getting-started'
+import { Route as DocumentationExtraRouteImport } from './routes/documentation/extra'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,30 +25,74 @@ const DocumentationIndexRoute = DocumentationIndexRouteImport.update({
   path: '/documentation/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocumentationUserGuideRoute = DocumentationUserGuideRouteImport.update({
+  id: '/documentation/user-guide',
+  path: '/documentation/user-guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentationGettingStartedRoute =
+  DocumentationGettingStartedRouteImport.update({
+    id: '/documentation/getting-started',
+    path: '/documentation/getting-started',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DocumentationExtraRoute = DocumentationExtraRouteImport.update({
+  id: '/documentation/extra',
+  path: '/documentation/extra',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/documentation/extra': typeof DocumentationExtraRoute
+  '/documentation/getting-started': typeof DocumentationGettingStartedRoute
+  '/documentation/user-guide': typeof DocumentationUserGuideRoute
   '/documentation/': typeof DocumentationIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/documentation/extra': typeof DocumentationExtraRoute
+  '/documentation/getting-started': typeof DocumentationGettingStartedRoute
+  '/documentation/user-guide': typeof DocumentationUserGuideRoute
   '/documentation': typeof DocumentationIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/documentation/extra': typeof DocumentationExtraRoute
+  '/documentation/getting-started': typeof DocumentationGettingStartedRoute
+  '/documentation/user-guide': typeof DocumentationUserGuideRoute
   '/documentation/': typeof DocumentationIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/documentation/'
+  fullPaths:
+    | '/'
+    | '/documentation/extra'
+    | '/documentation/getting-started'
+    | '/documentation/user-guide'
+    | '/documentation/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/documentation'
-  id: '__root__' | '/' | '/documentation/'
+  to:
+    | '/'
+    | '/documentation/extra'
+    | '/documentation/getting-started'
+    | '/documentation/user-guide'
+    | '/documentation'
+  id:
+    | '__root__'
+    | '/'
+    | '/documentation/extra'
+    | '/documentation/getting-started'
+    | '/documentation/user-guide'
+    | '/documentation/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DocumentationExtraRoute: typeof DocumentationExtraRoute
+  DocumentationGettingStartedRoute: typeof DocumentationGettingStartedRoute
+  DocumentationUserGuideRoute: typeof DocumentationUserGuideRoute
   DocumentationIndexRoute: typeof DocumentationIndexRoute
 }
 
@@ -65,11 +112,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocumentationIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/documentation/user-guide': {
+      id: '/documentation/user-guide'
+      path: '/documentation/user-guide'
+      fullPath: '/documentation/user-guide'
+      preLoaderRoute: typeof DocumentationUserGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documentation/getting-started': {
+      id: '/documentation/getting-started'
+      path: '/documentation/getting-started'
+      fullPath: '/documentation/getting-started'
+      preLoaderRoute: typeof DocumentationGettingStartedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documentation/extra': {
+      id: '/documentation/extra'
+      path: '/documentation/extra'
+      fullPath: '/documentation/extra'
+      preLoaderRoute: typeof DocumentationExtraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DocumentationExtraRoute: DocumentationExtraRoute,
+  DocumentationGettingStartedRoute: DocumentationGettingStartedRoute,
+  DocumentationUserGuideRoute: DocumentationUserGuideRoute,
   DocumentationIndexRoute: DocumentationIndexRoute,
 }
 export const routeTree = rootRouteImport

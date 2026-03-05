@@ -1,9 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/documentation/")({
-	component: RouteComponent,
+	component: () => <Navigate to="/documentation/getting-started" />,
 });
-
-function RouteComponent() {
-	return <div>Hello "/documentation/"!</div>;
-}

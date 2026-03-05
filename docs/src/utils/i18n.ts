@@ -4,10 +4,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
 const base = import.meta.env.BASE_URL;
-let translationFilePath = `${base}locales/{{lng}}.json`;
-if (import.meta.env.DEV) {
-	translationFilePath = `${base}locales/base.json`;
-}
+const locale = import.meta.env.DEV ? "base" : "{{lng}}";
 
 void i18n
 	.use(Backend)
@@ -17,11 +14,13 @@ void i18n
 		debug: false,
 		supportedLngs: ["en-US"],
 		fallbackLng: "en-US",
+		ns: ["common", "home", "getting-started", "extra", "sidebar"],
+		defaultNS: "common",
 		interpolation: {
 			escapeValue: false,
 		},
 		backend: {
-			loadPath: translationFilePath,
+			loadPath: `${base}locales/${locale}/{{ns}}.json`,
 		},
 		react: {
 			useSuspense: true,
