@@ -4,6 +4,7 @@ import { Spinner } from "./components/Spinner";
 
 const router = createRouter({
 	routeTree,
+	basepath: import.meta.env.BASE_URL,
 	defaultPreload: "intent",
 	defaultViewTransition: true,
 	defaultPendingComponent: Spinner,
