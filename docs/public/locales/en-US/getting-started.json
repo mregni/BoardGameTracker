@@ -1,45 +1,61 @@
 {
-  "installation": {
-    "title": "Installation Guide",
-    "description": "Getting started with Board Games Tracker is straightforward. Follow these steps to set up your own instance:",
-    "prerequisites": "Prerequisites",
-    "prerequisiteItems": [
-      "Node.js 18+ and npm/yarn/pnpm",
-      "PostgreSQL or MySQL database",
-      "A server or hosting environment"
-    ]
-  },
-  "quickStart": {
-    "title": "Quick Start Guide",
-    "description": "Follow these steps to quickly get your Board Games Tracker up and running:",
-    "step1Description": "Start by downloading the <code>docker-compose.yml</code> file from the repository:",
-    "step2Description": "Configure your environment variables in the <code>.env</code> file.",
-    "step3Description": "Once the server is running, open your browser and navigate to <code>http://localhost:3000</code> to see your Board Games Tracker instance. You can now begin configuring your environment and adding your first games!"
-  },
-  "envVars": {
-    "title": "Environment Variables",
-    "description": "Configure your application using environment variables:",
-    "table": {
-      "configOption": "Config Option",
-      "namespace": "Namespace",
-      "variableName": "Variable Name",
-      "fullVariable": "Full Environment Variable"
-    },
-    "rows": {
-      "timezone": { "config": "Timezone" },
-      "jwtSecret": { "config": "JWT Secret", "info": "Used for signing JWT tokens. Change this to a strong, random value with a minimum of 64 characters." },
-      "dbHost": { "config": "Database Host" },
-      "dbPort": { "config": "Database Port" },
-      "dbName": { "config": "Database Name" },
-      "dbUser": { "config": "Database User" },
-      "dbPassword": { "config": "Database Password", "info": "Password used to connect to the database." },
-      "logLevel": { "config": "Log level", "info": "Sets the logging level for the application. Possible values are <code>debug</code>, <code>info</code>, <code>warn</code>, <code>error</code>." },
-      "sentryLogging": { "config": "Enable Sentry logging", "info": "Enables or disables the collection of usage statistics. Set to <code>true</code> to enable, <code>false</code> to disable." },
-      "authBypass": { "config": "Disable authentication", "info": "Set to <code>true</code> to disable authentication and allow anyone to access the application." }
-    }
-  },
-  "proxy": {
-    "title": "Proxy Setup",
-    "description": "Set up a proxy to handle requests to your Board Games Tracker:"
-  }
+	"docker": {
+		"title": "Docker compose",
+		"compose": {
+			"title": "Docker compose",
+			"description": "Here is the ready to use configuration. It will set up both the Board Games Tracker application and a PostgreSQL database."
+		},
+		"run": {
+			"title": "Docker run",
+			"description": "If you want you can use the following docker run command as well. It will start the boardgame tracker docker and presumes the PostgreSQL container is already running."
+		}
+	},
+	"quickStart": {
+		"title": "Quick Start Guide",
+		"description": "Follow these steps to quickly get your Board Games Tracker up and running:",
+		"step1Description": "Download the latest <code>docker-compose.yml</code> file and make any necessary adjustments to the configuration.",
+		"step2Description": "Make sure to upate the <code>DB_PASSWORD</code>, <code>TZ</code> and <code>JWT_SECRET</code> environment variables in the docker compose file. When changes are done you can start the docker stack with the docker up command. It will start the boardgame tracker docker and the needed PostgreSQL container.",
+		"step3Description": "Open your browser to <code>http://localhost:5444</code> and login with the default credentials: <code>admin</code> / <code>admin</code>. Don't forget to change these credentials after your first login."
+	},
+	"envVars": {
+		"title": "Environment Variables",
+		"description": "Configure your application using the followingenvironment variables. Some of them have default values and are not mandatory to set, but you can override them if needed.",
+		"table": {
+			"configOption": "Configration",
+			"variableName": "Variable Name",
+			"defaultValue": "Default value",
+			"info": "Info"
+		},
+		"rows": {
+			"timezone": { "config": "Timezone" },
+			"jwtSecret": {
+				"config": "JWT Secret",
+				"info": "Used for signing JWT tokens. Change this to a strong, random value with minimul of 64 characters."
+			},
+			"dbHost": { "config": "Database Host" },
+			"dbPort": { "config": "Database Port" },
+			"dbName": { "config": "Database Name" },
+			"dbUser": { "config": "Database User" },
+			"dbPassword": {
+				"config": "Database Password",
+				"info": "Password used to connect to the database."
+			},
+			"logLevel": {
+				"config": "Log level",
+				"info": "Sets the logging level for the application. Possible values are <code>debug</code>, <code>info</code>, <code>warn</code>, <code>error</code>."
+			},
+			"sentryLogging": {
+				"config": "Enable Sentry logging",
+				"info": "Enables or disables the collection of usage statistics. Set to <code>true</code> to enable, <code>false</code> to disable."
+			},
+			"authBypass": {
+				"config": "Disable authentication",
+				"info": "Set to <code>true</code> to disable authentication and allow anyone to access the application."
+			}
+		}
+	},
+	"proxy": {
+		"title": "Proxy Setup",
+		"description": "Here are sample Traefik labels you can add to the docker compose to configure Traefik. Make sure to adjust the labels according to your Traefik setup and domain configuration."
+	}
 }

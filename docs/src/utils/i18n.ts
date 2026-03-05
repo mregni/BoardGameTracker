@@ -4,7 +4,6 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
 const base = import.meta.env.BASE_URL;
-const locale = import.meta.env.DEV ? "base" : "{{lng}}";
 
 void i18n
 	.use(Backend)
@@ -20,7 +19,7 @@ void i18n
 			escapeValue: false,
 		},
 		backend: {
-			loadPath: `${base}locales/${locale}/{{ns}}.json`,
+			loadPath: `${base}locales/{{lng}}/{{ns}}.json`,
 		},
 		react: {
 			useSuspense: true,
