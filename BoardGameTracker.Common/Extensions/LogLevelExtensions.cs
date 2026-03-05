@@ -7,7 +7,7 @@ public static class LogLevelExtensions
     public static LogEventLevel  GetEnvironmentLogLevel()
     {
         var logLevelString = Environment.GetEnvironmentVariable("LOGLEVEL") ?? "warn";
-        logLevelString = logLevelString.ToUpper().Trim();
+        logLevelString = logLevelString.ToLower().Trim();
         return logLevelString switch
         {
             "error" => LogEventLevel.Error,
