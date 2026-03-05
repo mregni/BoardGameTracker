@@ -13,23 +13,36 @@ function RouteComponent() {
 
 	return (
 		<>
-			<section className="px-6 py-16">
+			<section className="px-6 py-10">
 				<div className="max-w-7xl mx-auto">
-					<div className="text-center mb-12">
-						<h1 className="text-5xl md:text-6xl text-white mb-6">{t("home:title")}</h1>
-						<p className="text-xl text-slate-300 max-w-3xl mx-auto">{t("home:subtitle")}</p>
+					<div className="text-center mb-6">
+						<h1 className="text-5xl md:text-6xl text-white mb-2">
+							{t("home:title")}
+						</h1>
+						<p className="text-xl text-slate-300 max-w-3xl mx-auto">
+							{t("home:subtitle")}
+						</p>
 					</div>
 
 					<div className="rounded-xl overflow-hidden flex justify-center">
-						<img src="images/hero.png" alt={t("home:heroAlt")} className="w-[80%] h-auto" />
+						<img
+							src="images/hero.png"
+							alt={t("home:heroAlt")}
+							className="w-[80%] h-auto"
+						/>
 					</div>
+					<p className="text-center text-purple-300/70 italic mt-2 text-lg">
+						I created this because I needed proof that my wife always wins
+					</p>
 				</div>
 			</section>
 
 			<Section
 				title={t("home:dashboard.title")}
 				description={t("home:dashboard.description")}
-				bullets={t("home:dashboard.bullets", { returnObjects: true }) as string[]}
+				bullets={
+					t("home:dashboard.bullets", { returnObjects: true }) as string[]
+				}
 				imageSrc="images/dashboard.png"
 				imageAlt={t("home:dashboard.imageAlt")}
 				background
@@ -47,7 +60,9 @@ function RouteComponent() {
 			<Section
 				title={t("home:sessions.title")}
 				description={t("home:sessions.description")}
-				bullets={t("home:sessions.bullets", { returnObjects: true }) as string[]}
+				bullets={
+					t("home:sessions.bullets", { returnObjects: true }) as string[]
+				}
 				imageSrc="images/session.png"
 				imageAlt={t("home:sessions.imageAlt")}
 				background

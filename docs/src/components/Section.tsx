@@ -61,11 +61,7 @@ export const Section = ({
 						</ul>
 					</div>
 					<div className={imageVariants({ reverse })}>
-						<img
-							src={imageSrc}
-							alt={imageAlt}
-							className="w-full h-auto"
-						/>
+						<img src={imageSrc} alt={imageAlt} className="w-full h-auto" />
 					</div>
 				</div>
 			</div>
