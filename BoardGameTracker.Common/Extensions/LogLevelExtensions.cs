@@ -6,13 +6,13 @@ public static class LogLevelExtensions
 {
     public static LogEventLevel  GetEnvironmentLogLevel()
     {
-        var logLevelString = Environment.GetEnvironmentVariable("LOGLEVEL") ?? "WARNING";
-        logLevelString = logLevelString.ToUpper().Trim();
+        var logLevelString = Environment.GetEnvironmentVariable("LOGLEVEL") ?? "warn";
+        logLevelString = logLevelString.ToLower().Trim();
         return logLevelString switch
         {
-            "ERROR" => LogEventLevel.Error,
-            "INFO" => LogEventLevel.Information,
-            "DEBUG" => LogEventLevel.Debug,
+            "error" => LogEventLevel.Error,
+            "info" => LogEventLevel.Information,
+            "debug" => LogEventLevel.Debug,
             _ => LogEventLevel.Warning
         };
     }

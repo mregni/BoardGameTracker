@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+}
+
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
+@theme {
+  /* Custom Breakpoints */
+  --breakpoint-2xl: 100rem;
+  --breakpoint-3xl: 160rem;
+
+  /* Custom Colors */
+  --color-primary: #a855f7;
+  --color-card: #1a0f2e;
+  --color-cancel: #a8a29e;
+  --color-error: #cc1f1f;
+  --color-background: #0a0416;
+}

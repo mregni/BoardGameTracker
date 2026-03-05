@@ -6,6 +6,8 @@ ARG VERSION=0.0.1
 
 # Stage 1: Build Frontend
 FROM --platform=linux/amd64 node:22-alpine AS frontend-build
+ARG SENTRY_AUTH_TOKEN
+ARG VITE_SENTRY_DSN
 WORKDIR /src
 
 # Copy frontend package files
@@ -15,7 +17,9 @@ RUN npm ci
 # Copy frontend source
 COPY boardgametracker.client/ ./
 
-# Build frontend
+# Build frontend (SENTRY_AUTH_TOKEN enables sourcemap upload via @sentry/vite-plugin)
+ENV SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
 RUN npm run build
 
 # Stage 2: Build Backend

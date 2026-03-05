@@ -1,0 +1,72 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.4.1/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"includes": ["**", "!!**/dist", "!**/routeTree.gen.ts", "!**/*.css"]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"lineWidth": 120
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"correctness": {
+				"useHookAtTopLevel": "error",
+				"useExhaustiveDependencies": "warn"
+			},
+			"style": {
+				"noUnusedTemplateLiteral": "off",
+				"useImportType": "warn",
+				"noParameterAssign": "error",
+				"noNonNullAssertion": "off"
+			},
+			"suspicious": {
+				"noConsole": "error",
+				"noDebugger": "error",
+				"noArrayIndexKey": "off",
+				"noShadowRestrictedNames": "warn"
+			},
+			"a11y": {
+				"noStaticElementInteractions": "off",
+				"useKeyWithClickEvents": "off",
+				"useButtonType": "off",
+				"noRedundantAlt": "off"
+			},
+			"performance": {
+				"noDynamicNamespaceImportAccess": "off"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["*.test.ts", "*.test.tsx", "test-utils.tsx"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		}
+	]
+}
