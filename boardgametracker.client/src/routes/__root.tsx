@@ -11,10 +11,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ErrorBoundary/ErrorFallback";
 import { NotFound } from "@/components/NotFound/NotFound";
 import { useAuth } from "@/hooks/useAuth";
-import { initSentry } from "@/utils/sentry";
-import { getEnvironmentCall } from "@/services/settingsService";
-
 import type { MenuItem } from "@/models";
+import { getEnvironmentCall } from "@/services/settingsService";
+import { initSentry } from "@/utils/sentry";
 import { BottomNav } from "./-components/BottomNav";
 import { Sidebar } from "./-components/Sidebar";
 
