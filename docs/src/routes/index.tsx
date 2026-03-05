@@ -26,7 +26,7 @@ function RouteComponent() {
 
 					<div className="rounded-xl overflow-hidden flex justify-center">
 						<img
-							src="images/hero.png"
+							src={`${import.meta.env.BASE_URL}images/hero.png`}
 							alt={t("home:heroAlt")}
 							className="w-[80%] h-auto"
 						/>
@@ -43,7 +43,7 @@ function RouteComponent() {
 				bullets={
 					t("home:dashboard.bullets", { returnObjects: true }) as string[]
 				}
-				imageSrc="images/dashboard.png"
+				imageSrc={`${import.meta.env.BASE_URL}images/dashboard.png`}
 				imageAlt={t("home:dashboard.imageAlt")}
 				background
 			/>
@@ -52,7 +52,7 @@ function RouteComponent() {
 				title={t("home:games.title")}
 				description={t("home:games.description")}
 				bullets={t("home:games.bullets", { returnObjects: true }) as string[]}
-				imageSrc="images/games.png"
+				imageSrc={`${import.meta.env.BASE_URL}images/games.png`}
 				imageAlt={t("home:games.imageAlt")}
 				reverse
 			/>
@@ -63,7 +63,7 @@ function RouteComponent() {
 				bullets={
 					t("home:sessions.bullets", { returnObjects: true }) as string[]
 				}
-				imageSrc="images/session.png"
+				imageSrc={`${import.meta.env.BASE_URL}images/session.png`}
 				imageAlt={t("home:sessions.imageAlt")}
 				background
 			/>
@@ -72,7 +72,7 @@ function RouteComponent() {
 				title={t("home:players.title")}
 				description={t("home:players.description")}
 				bullets={t("home:players.bullets", { returnObjects: true }) as string[]}
-				imageSrc="images/player.png"
+				imageSrc={`${import.meta.env.BASE_URL}images/player.png`}
 				imageAlt={t("home:players.imageAlt")}
 				reverse
 			/>

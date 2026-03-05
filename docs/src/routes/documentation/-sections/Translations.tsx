@@ -26,7 +26,7 @@ export const Translations = () => {
 
 				<Paragraph translationKey="extra:translations.howToDescription" />
 				<img
-					src={"/images/crowdin.png"}
+					src={`${import.meta.env.BASE_URL}images/crowdin.png`}
 					alt={t("extra:development.crowdinAlt")}
 					className="w-full h-auto"
 				/>
