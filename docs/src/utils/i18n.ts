@@ -19,7 +19,7 @@ void i18n
 			escapeValue: false,
 		},
 		backend: {
-			loadPath: `${base}locales/{{lng}}/{{ns}}.json`,
+			loadPath: `${base}/locales/{{lng}}/{{ns}}.json`,
 		},
 		react: {
 			useSuspense: true,
