@@ -11,6 +11,8 @@ import { ErrorBoundary } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ErrorBoundary/ErrorFallback";
 import { NotFound } from "@/components/NotFound/NotFound";
 import { useAuth } from "@/hooks/useAuth";
+import { initSentry } from "@/utils/sentry";
+import { getEnvironmentCall } from "@/services/settingsService";
 
 import type { MenuItem } from "@/models";
 import { BottomNav } from "./-components/BottomNav";
@@ -52,6 +54,18 @@ function RootComponent() {
 			navigate({ to: "/login" });
 		}
 	}, [authChecked, authStatus, isAuthenticated, isBare, navigate]);
+
+	useEffect(() => {
+		if (!isAuthenticated) return;
+
+		getEnvironmentCall()
+			.then((env) => {
+				if (env.enableStatistics) {
+					initSentry();
+				}
+			})
+			.catch(() => {});
+	}, [isAuthenticated]);
 
 	if (!authChecked) {
 		return (

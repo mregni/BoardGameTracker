@@ -20,6 +20,9 @@ export const Logging = () => {
 				<CodeBlock label="Docker Logs">
 					{`docker logs -f boardgametracker`}
 				</CodeBlock>
+				<SubHeader content={t("extra:logging.sentry")} />
+				<Paragraph translationKey="extra:logging.sentry1Description" />
+				<Paragraph translationKey="extra:logging.sentry2Description" />
 			</div>
 		</section>
 	);

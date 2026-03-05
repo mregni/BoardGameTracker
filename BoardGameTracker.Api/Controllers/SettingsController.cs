@@ -62,7 +62,7 @@ public class SettingsController : ControllerBase
     {
         var resources = new UIEnvironmentDto
         {
-            EnableStatistics = _environmentProvider.EnableStatistics,
+            EnableStatistics = _environmentProvider.StatisticsEnabled,
             LogLevel = _environmentProvider.LogLevel,
             EnvironmentName = _environmentProvider.EnvironmentName,
             Port = _environmentProvider.Port,

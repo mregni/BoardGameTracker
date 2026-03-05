@@ -68,7 +68,7 @@ public class SettingsServiceTests
             .ReturnsAsync(configs);
 
         _environmentProviderMock
-            .Setup(x => x.EnableStatistics)
+            .Setup(x => x.StatisticsEnabled)
             .Returns(true);
 
         // Act
@@ -90,7 +90,7 @@ public class SettingsServiceTests
         result.RsvpAuthenticationEnabled.Should().BeTrue();
 
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
-        _environmentProviderMock.Verify(x => x.EnableStatistics, Times.Once);
+        _environmentProviderMock.Verify(x => x.StatisticsEnabled, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -118,7 +118,7 @@ public class SettingsServiceTests
             .ReturnsAsync(configs);
 
         _environmentProviderMock
-            .Setup(x => x.EnableStatistics)
+            .Setup(x => x.StatisticsEnabled)
             .Returns(false);
 
         // Act
@@ -140,7 +140,7 @@ public class SettingsServiceTests
         result.RsvpAuthenticationEnabled.Should().BeFalse();
 
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
-        _environmentProviderMock.Verify(x => x.EnableStatistics, Times.Once);
+        _environmentProviderMock.Verify(x => x.StatisticsEnabled, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -224,7 +224,7 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled), Times.Once);
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
-        _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
+        _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -304,7 +304,7 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled), Times.Once);
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
-        _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
+        _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
         VerifyNoOtherCalls();
     }
 

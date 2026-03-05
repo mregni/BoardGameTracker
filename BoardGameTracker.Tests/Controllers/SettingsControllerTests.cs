@@ -148,7 +148,7 @@ public class SettingsControllerTests
     public void GetEnvironment_ShouldReturnEnvironmentInfo_WhenCalled()
     {
         // Arrange
-        _environmentProviderMock.SetupGet(x => x.EnableStatistics).Returns(true);
+        _environmentProviderMock.SetupGet(x => x.StatisticsEnabled).Returns(true);
         _environmentProviderMock.SetupGet(x => x.LogLevel).Returns(LogEventLevel.Information);
         _environmentProviderMock.SetupGet(x => x.EnvironmentName).Returns("Production");
         _environmentProviderMock.SetupGet(x => x.Port).Returns(5000);
@@ -170,7 +170,7 @@ public class SettingsControllerTests
         environment.Port.Should().Be(5000);
         environment.Version.Should().Be("1.2.3");
 
-        _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
+        _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.LogLevel, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.EnvironmentName, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.Port, Times.Once);
@@ -182,7 +182,7 @@ public class SettingsControllerTests
     public void GetEnvironment_ShouldReturnEnvironmentInfo_WithDifferentLogLevel()
     {
         // Arrange
-        _environmentProviderMock.SetupGet(x => x.EnableStatistics).Returns(false);
+        _environmentProviderMock.SetupGet(x => x.StatisticsEnabled).Returns(false);
         _environmentProviderMock.SetupGet(x => x.LogLevel).Returns(LogEventLevel.Debug);
         _environmentProviderMock.SetupGet(x => x.EnvironmentName).Returns("Development");
         _environmentProviderMock.SetupGet(x => x.Port).Returns(3000);
@@ -204,7 +204,7 @@ public class SettingsControllerTests
         environment.Port.Should().Be(3000);
         environment.Version.Should().Be("2.0.0-beta");
 
-        _environmentProviderMock.VerifyGet(x => x.EnableStatistics, Times.Once);
+        _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.LogLevel, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.EnvironmentName, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.Port, Times.Once);
