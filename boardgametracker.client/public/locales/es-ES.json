@@ -7,25 +7,25 @@
     "rsvp": {
       "title": "Manage RSVPs",
       "manual-note-prefix": "Manually set RSVP status",
-      "manual-note": "for players who responded via phone, text, or in person.",
+      "manual-note": " for players who responded via phone, text, or in person.",
       "accept": "Accept",
       "decline": "Decline",
       "maybe": "Maybe",
       "host": "Host is always attending"
     },
     "empty": {
-      "title": "No game nights found",
+      "title": "No game nights planned yet",
       "description": "Invite players to plan a game night."
     },
     "delete": {
       "title": "Delete game night",
       "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
     },
-    "title": "Game Night Planner",
+    "title": "Game Nights Planner",
     "create": {
       "button": "Create Game Night",
-      "title": "Create Game Night",
-      "description": "Plan a new game night with your friends.",
+      "title": "Create new Game Night",
+      "description": "Fill out the form to create a new game night event.",
       "save": "Create Game Night"
     },
     "edit": {
@@ -33,8 +33,8 @@
       "description": "Update the details of this game night event.",
       "save": "Save Changes"
     },
-    "upcoming": "Upcoming",
-    "past": "Past",
+    "upcoming": "Upcoming game nights",
+    "past": "Past game nights",
     "card": {
       "hosted-by": "Hosted by {{host}}",
       "suggested-games": "Suggested games",
@@ -80,8 +80,8 @@
       "update-failed": "Failed to update game night",
       "deleted": "Game night deleted successfully",
       "delete-failed": "Failed to delete game night",
-      "rsvp-updated": "RSVP status updated successfully",
-      "rsvp-update-failed": "Failed to update RSVP status"
+      "rsvp-updated": "RSVP updated successfully",
+      "rsvp-update-failed": "Failed to update RSVP"
     }
   },
   "common": {
@@ -99,7 +99,7 @@
     "minutes_one": "minute",
     "never": "never",
     "accepted": "Accepted",
-    "game-nights": "Game Nights",
+    "game-nights": "Game nights",
     "declined": "Declined",
     "pending": "Pending",
     "minutes_other": "minutes",
@@ -344,7 +344,7 @@
     }
   },
   "game": {
-    "add": "Add game session",
+    "add": "Add session",
     "sessions": "View sessions",
     "no-sessions": {
       "title": "No Sessions Logged Yet",
@@ -519,7 +519,7 @@
     },
     "name": {
       "placeholder": "Enter name of the player",
-      "required": "player name is required"
+      "required": "Player name is required"
     },
     "new": {
       "button": "Add new player",
@@ -633,7 +633,7 @@
     "total-cost": "Total cost",
     "average-cost": "Average cost",
     "total-playtime": "Total play time",
-    "average-playtime": "Average playtime",
+    "average-playtime": "Average session time",
     "price-per-play": "Price / play",
     "total-play-time": "Total play time",
     "unique-players": "Unique players",
@@ -968,7 +968,7 @@
   },
   "languages": {
     "english": "English",
-    "dutch": "Dutch"
+    "dutch": "Nederlands"
   },
   "log-levels": {
     "debug": "Debug",
