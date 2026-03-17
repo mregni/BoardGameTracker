@@ -45,7 +45,10 @@ function RsvpPage() {
 				icon={AlertTriangle}
 				title={t("auth:rsvp-login-required")}
 				description={t("auth:rsvp-login-description")}
-				action={{ label: t("auth:login"), onClick: () => navigate({ to: "/login", search: { redirect: `/rsvp?linkId=${linkId}` } }) }}
+				action={{
+					label: t("auth:login"),
+					onClick: () => navigate({ to: "/login", search: { redirect: `/rsvp?linkId=${linkId}` } }),
+				}}
 			></BgtEmptyPage>
 		);
 	}
