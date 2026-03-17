@@ -6,7 +6,7 @@ public interface IEnvironmentProvider
 {
     string EnvironmentName { get;  }
     int Port { get; }
-    bool EnableStatistics { get; }
+    bool StatisticsEnabled { get; }
     LogEventLevel LogLevel { get; }
     bool IsDevelopment { get; }
 }

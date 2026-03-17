@@ -13,10 +13,10 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 
 export const TopPlayersCard = (props: Props) => {
 	const { topPlayers, className } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "game"]);
 
 	return (
-		<BgtCard title={t("game.titles.top-players")} icon={Trophy} className={className}>
+		<BgtCard title={t("game:titles.top-players")} icon={Trophy} className={className}>
 			<div className="flex flex-col gap-3">
 				{topPlayers.map((player) => (
 					<TopPlayerCardItem key={player.id} player={player} />
@@ -32,7 +32,7 @@ interface ItemProps {
 
 const TopPlayerCardItem = (props: ItemProps) => {
 	const { player } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "game"]);
 	const { playerById } = usePlayerById();
 
 	const playerObj = playerById(player.id);
@@ -49,7 +49,7 @@ const TopPlayerCardItem = (props: ItemProps) => {
 					{playerObj?.name}
 				</BgtText>
 				<BgtText color="white" opacity={50} size="2">
-					{t("common.win", { count: player.winCount })} • {t("common.game", { count: player.playCount })}
+					{t("win", { count: player.winCount })} • {t("game", { count: player.playCount })}
 				</BgtText>
 			</div>
 		</Link>

@@ -77,9 +77,9 @@ public class EnvironmentProviderTests : IDisposable
     [InlineData(null, false)]
     public void EnableStatistics_ShouldHandleCaseInsensitive_WithValidBooleanValues(string? statisticsValue, bool expected)
     {
-        Environment.SetEnvironmentVariable("STATISTICS", statisticsValue);
+        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", statisticsValue);
 
-        var result = _environmentProvider.EnableStatistics;
+        var result = _environmentProvider.StatisticsEnabled;
 
         result.Should().Be(expected);
     }
@@ -89,15 +89,15 @@ public class EnvironmentProviderTests : IDisposable
     {
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "production");
         Environment.SetEnvironmentVariable("PORT", "8080");
-        Environment.SetEnvironmentVariable("STATISTICS", "true");
+        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", "true");
         Environment.SetEnvironmentVariable("LOGLEVEL", "ERROR");
 
         var environmentName1 = _environmentProvider.EnvironmentName;
         var environmentName2 = _environmentProvider.EnvironmentName;
         var port1 = _environmentProvider.Port;
         var port2 = _environmentProvider.Port;
-        var statistics1 = _environmentProvider.EnableStatistics;
-        var statistics2 = _environmentProvider.EnableStatistics;
+        var statistics1 = _environmentProvider.StatisticsEnabled;
+        var statistics2 = _environmentProvider.StatisticsEnabled;
         var logLevel1 = _environmentProvider.LogLevel;
         var logLevel2 = _environmentProvider.LogLevel;
         var isDev1 = _environmentProvider.IsDevelopment;
@@ -115,20 +115,20 @@ public class EnvironmentProviderTests : IDisposable
     {
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "development");
         Environment.SetEnvironmentVariable("PORT", "3000");
-        Environment.SetEnvironmentVariable("STATISTICS", "false");
+        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", "false");
 
         var initialEnv = _environmentProvider.EnvironmentName;
         var initialPort = _environmentProvider.Port;
-        var initialStats = _environmentProvider.EnableStatistics;
+        var initialStats = _environmentProvider.StatisticsEnabled;
         var initialIsDev = _environmentProvider.IsDevelopment;
 
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "production");
         Environment.SetEnvironmentVariable("PORT", "8080");
-        Environment.SetEnvironmentVariable("STATISTICS", "true");
+        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", "true");
 
         var updatedEnv = _environmentProvider.EnvironmentName;
         var updatedPort = _environmentProvider.Port;
-        var updatedStats = _environmentProvider.EnableStatistics;
+        var updatedStats = _environmentProvider.StatisticsEnabled;
         var updatedIsDev = _environmentProvider.IsDevelopment;
 
         initialEnv.Should().Be("development");
@@ -141,22 +141,14 @@ public class EnvironmentProviderTests : IDisposable
         updatedIsDev.Should().BeFalse();
     }
 
-    [Fact]
-    public void EnableStatistics_ShouldReturnFalse_WhenEnvironmentVariableIsEmptyString()
+    [Theory]
+    [InlineData("")]
+    [InlineData("    ")]
+    public void EnableStatistics_ShouldReturnFalse_WhenEnvironmentVariableIsEmptyString(string input)
     {
-        Environment.SetEnvironmentVariable("STATISTICS", "");
+        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", input);
 
-        var result = _environmentProvider.EnableStatistics;
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public void EnableStatistics_ShouldReturnFalse_WhenEnvironmentVariableIsWhitespace()
-    {
-        Environment.SetEnvironmentVariable("STATISTICS", "   ");
-
-        var result = _environmentProvider.EnableStatistics;
+        var result = _environmentProvider.StatisticsEnabled;
 
         result.Should().BeFalse();
     }

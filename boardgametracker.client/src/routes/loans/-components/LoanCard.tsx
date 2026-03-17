@@ -50,7 +50,7 @@ interface LoanCardProps {
 }
 
 export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }: LoanCardProps) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "loans"]);
 	const navigate = useNavigate();
 	const isActive = loan.returnedDate === null;
 	const isOverdue = loan.dueDate !== null && isAfter(new Date(), loan.dueDate);
@@ -66,7 +66,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 				<div className="flex items-center gap-2 mb-3 bg-error/20 border border-error/30 rounded-lg px-3 py-1.5">
 					<AlertTriangle className="text-error text-xl" />
 					<BgtText color="red" className="uppercase tracking-wider">
-						{t("common.overdue")}
+						{t("overdue")}
 					</BgtText>
 				</div>
 			)}
@@ -106,7 +106,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 				<div className="flex items-center gap-2 text-sm">
 					<Calendar className="text-primary/70 size-5" />
 					<BgtText color="white" opacity={60}>
-						{t("common.loaned")}:
+						{t("loaned")}:
 					</BgtText>
 					<BgtText color="white" opacity={80}>
 						{format(loan.loanDate, dateFormat)}
@@ -116,7 +116,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 					<div className="flex items-center gap-2 text-sm">
 						<Calendar className="text-primary/70 size-5" />
 						<BgtText color="white" opacity={60}>
-							{t("common.due-date")}:
+							{t("due-date")}:
 						</BgtText>
 						<BgtText color="white" opacity={80}>
 							{format(loan.dueDate, dateFormat)}
@@ -127,10 +127,10 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 					<div className="flex items-center gap-2 text-sm">
 						<Clock className={clockIconVariants({ overdue: isActive && isOverdue })} />
 						<BgtText color="white" opacity={60}>
-							{t("common.duration")}:
+							{t("duration")}:
 						</BgtText>
 						<BgtText color={isActive && isOverdue ? "red" : "cyan"}>
-							{isActive ? t("common.day", { count: daysOut }) : daysOut}
+							{isActive ? t("day", { count: daysOut }) : daysOut}
 						</BgtText>
 					</div>
 				)}
@@ -143,7 +143,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 						className="w-full bg-lime-green/20 hover:bg-lime-green/30 text-lime-green border border-lime-green/30 py-1 rounded-lg flex items-center justify-center gap-2 transition-colors"
 					>
 						<Check className="size-5" />
-						{t("loan.mark-as-returned")}
+						{t("loans:mark-as-returned")}
 					</button>
 				)}
 
@@ -153,7 +153,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 						className="w-full bg-error/20 hover:bg-error/30 text-error border border-error/30 py-1 rounded-lg flex items-center justify-center gap-2"
 					>
 						<Trash className="size-5" />
-						{t("loan.delete.button")}
+						{t("loans:delete.button")}
 					</button>
 				)}
 			</div>

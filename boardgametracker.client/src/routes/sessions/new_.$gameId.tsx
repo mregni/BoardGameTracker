@@ -24,7 +24,7 @@ export const Route = createFileRoute("/sessions/new_/$gameId")({
 function RouteComponent() {
 	const { gameId } = Route.useParams();
 	const navigate = useNavigate();
-	const { t } = useTranslation();
+	const { t } = useTranslation("player-session");
 	const { canWrite } = usePermissions();
 
 	const { game, isLoading, isPending, saveSession } = useNewSessionWithGameData({ gameId });
@@ -43,10 +43,10 @@ function RouteComponent() {
 			game={game}
 			minutes={game.maxPlayTime ?? 30}
 			start={addMinutes(new Date(), -(game?.maxPlayTime ?? 30))}
-			buttonText={t("player-session.save-new")}
+			buttonText={t("save-new")}
 			onClick={save}
 			disabled={isLoading || isPending}
-			title={t("player-session.title-new")}
+			title={t("title-new")}
 		/>
 	);
 }

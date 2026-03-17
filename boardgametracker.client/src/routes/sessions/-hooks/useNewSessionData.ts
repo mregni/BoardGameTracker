@@ -21,13 +21,13 @@ export const useNewSessionData = ({ onSuccess }: Props = {}) => {
 	const saveSessionMutation = useMutation({
 		mutationFn: addSessionCall,
 		async onSuccess(sessionResult) {
-			successToast("player-session.new.notifications.created");
+			successToast("player-session:new.notifications.created");
 			onSuccess?.();
 
 			await invalidator.invalidateSession(sessionResult.id, sessionResult.gameId);
 		},
 		onError: () => {
-			errorToast("player-session.new.notifications.create-failed");
+			errorToast("player-session:new.notifications.create-failed");
 		},
 	});
 

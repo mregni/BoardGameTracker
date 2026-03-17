@@ -15,7 +15,7 @@ interface Props extends ModalProps {
 
 export const ManageRSVPsModal = (props: Props) => {
 	const { open, close, gameNight, onUpdateRsvp, isLoading } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["game-nights", "common"]);
 
 	if (!gameNight) return null;
 
@@ -35,11 +35,11 @@ export const ManageRSVPsModal = (props: Props) => {
 	return (
 		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent className="max-w-3xl!">
-				<BgtDialogTitle>{t("game-nights.rsvp.title")}</BgtDialogTitle>
+				<BgtDialogTitle>{t("rsvp.title")}</BgtDialogTitle>
 				<div className="flex flex-col gap-4">
 					<div className=" bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
 						<BgtText size="2" color="blue">
-							<strong>{t("game-nights.rsvp.manual-note-prefix")}</strong> {t("game-nights.rsvp.manual-note")}
+							<strong>{t("rsvp.manual-note-prefix")}</strong> {t("rsvp.manual-note")}
 						</BgtText>
 					</div>
 
@@ -55,7 +55,7 @@ export const ManageRSVPsModal = (props: Props) => {
 												<BgtAvatar title={rsvp.player.name} image={rsvp.player.image} size="large" />
 												<BgtText size="3" weight="medium">
 													{rsvp.player.name}
-													{isHost && <span className="ml-2 text-xs text-gray-400">({t("game-nights.rsvp.host")})</span>}
+													{isHost && <span className="ml-2 text-xs text-gray-400">({t("rsvp.host")})</span>}
 												</BgtText>
 											</div>
 											<div className="flex gap-2">
@@ -66,7 +66,7 @@ export const ManageRSVPsModal = (props: Props) => {
 													disabled={isLoading || isHost}
 													isActive={rsvp.state === GameNightRsvpState.Accepted}
 													variant="green"
-													label={t("game-nights.rsvp.accept")}
+													label={t("rsvp.accept")}
 												/>
 												<RsvpStatusButton
 													rsvpId={rsvp.id}
@@ -75,7 +75,7 @@ export const ManageRSVPsModal = (props: Props) => {
 													disabled={isLoading || isHost}
 													isActive={rsvp.state === GameNightRsvpState.Pending}
 													variant="yellow"
-													label={t("game-nights.rsvp.maybe")}
+													label={t("rsvp.maybe")}
 												/>
 												<RsvpStatusButton
 													rsvpId={rsvp.id}
@@ -84,7 +84,7 @@ export const ManageRSVPsModal = (props: Props) => {
 													disabled={isLoading || isHost}
 													isActive={rsvp.state === GameNightRsvpState.Declined}
 													variant="red"
-													label={t("game-nights.rsvp.decline")}
+													label={t("rsvp.decline")}
 												/>
 											</div>
 										</div>
@@ -94,15 +94,15 @@ export const ManageRSVPsModal = (props: Props) => {
 					</div>
 
 					<div className="grid grid-cols-3 gap-4 mb-6">
-						<RsvpStatBadge count={acceptedCount} label={t("common.accepted")} variant="green" />
-						<RsvpStatBadge count={pendingCount} label={t("common.pending")} variant="amber" />
-						<RsvpStatBadge count={declinedCount} label={t("common.declined")} variant="red" />
+						<RsvpStatBadge count={acceptedCount} label={t("common:accepted")} variant="green" />
+						<RsvpStatBadge count={pendingCount} label={t("common:pending")} variant="amber" />
+						<RsvpStatBadge count={declinedCount} label={t("common:declined")} variant="red" />
 					</div>
 				</div>
 
 				<BgtDialogClose>
 					<BgtButton variant="primary" className="flex-1" onClick={close}>
-						{t("common.done")}
+						{t("common:done")}
 					</BgtButton>
 				</BgtDialogClose>
 			</BgtDialogContent>

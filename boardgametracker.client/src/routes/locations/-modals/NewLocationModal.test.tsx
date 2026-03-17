@@ -33,7 +33,7 @@ describe("NewLocationModal", () => {
 	describe("Rendering", () => {
 		it("should render the modal when open is true", () => {
 			renderWithTheme(<NewLocationModal {...defaultProps} />);
-			expect(screen.getByText("location.new.title")).toBeInTheDocument();
+			expect(screen.getByText("new.title")).toBeInTheDocument();
 		});
 
 		it("should render name input field", () => {
@@ -43,17 +43,17 @@ describe("NewLocationModal", () => {
 
 		it("should render cancel button", () => {
 			renderWithTheme(<NewLocationModal {...defaultProps} />);
-			expect(screen.getByRole("button", { name: "common.cancel" })).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "common:cancel" })).toBeInTheDocument();
 		});
 
 		it("should render save button", () => {
 			renderWithTheme(<NewLocationModal {...defaultProps} />);
-			expect(screen.getByRole("button", { name: "common.save" })).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "common:save" })).toBeInTheDocument();
 		});
 
 		it("should not render when open is false", () => {
 			renderWithTheme(<NewLocationModal {...defaultProps} open={false} />);
-			expect(screen.queryByText("location.new.title")).not.toBeInTheDocument();
+			expect(screen.queryByText("new.title")).not.toBeInTheDocument();
 		});
 	});
 
@@ -63,7 +63,7 @@ describe("NewLocationModal", () => {
 			const closeMock = vi.fn();
 			renderWithTheme(<NewLocationModal {...defaultProps} close={closeMock} />);
 
-			await user.click(screen.getByRole("button", { name: "common.cancel" }));
+			await user.click(screen.getByRole("button", { name: "common:cancel" }));
 
 			expect(closeMock).toHaveBeenCalledTimes(1);
 		});
@@ -86,7 +86,7 @@ describe("NewLocationModal", () => {
 			const input = screen.getByRole("textbox");
 			await user.type(input, "Living Room");
 
-			await user.click(screen.getByRole("button", { name: "common.save" }));
+			await user.click(screen.getByRole("button", { name: "common:save" }));
 
 			await waitFor(() => {
 				expect(mockSaveLocation).toHaveBeenCalledWith({ name: "Living Room" });
@@ -109,7 +109,7 @@ describe("NewLocationModal", () => {
 			renderWithTheme(<NewLocationModal {...defaultProps} />);
 
 			// Submit without entering any data
-			await user.click(screen.getByRole("button", { name: "common.save" }));
+			await user.click(screen.getByRole("button", { name: "common:save" }));
 
 			// saveLocation should not be called when validation fails
 			await waitFor(() => {

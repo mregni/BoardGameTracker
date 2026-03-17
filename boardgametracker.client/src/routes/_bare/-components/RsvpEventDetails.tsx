@@ -17,7 +17,7 @@ interface Props {
 }
 
 export const RsvpEventDetails = ({ gameNight, timeFormat, dateFormat }: Props) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("rsvp");
 
 	return (
 		<BgtCard className="gap-3">
@@ -30,7 +30,7 @@ export const RsvpEventDetails = ({ gameNight, timeFormat, dateFormat }: Props) =
 					<Calendar className="size-5 text-primary shrink-0 mt-0.5" />
 					<div>
 						<BgtText size="1" color="gray">
-							{t("rsvp.when")}
+							{t("when")}
 						</BgtText>
 						<BgtText size="3" weight="medium" color="white">
 							{format(gameNight.startDate, dateFormat)}
@@ -46,7 +46,7 @@ export const RsvpEventDetails = ({ gameNight, timeFormat, dateFormat }: Props) =
 					<MapPin className="size-5 text-primary shrink-0 mt-0.5" />
 					<div>
 						<BgtText size="1" color="gray">
-							{t("rsvp.location")}
+							{t("location")}
 						</BgtText>
 						<BgtText size="3" weight="medium" color="white">
 							{gameNight.location.name}
@@ -58,7 +58,7 @@ export const RsvpEventDetails = ({ gameNight, timeFormat, dateFormat }: Props) =
 					<Users className="size-5 text-primary shrink-0 mt-0.5" />
 					<div>
 						<BgtText size="1" color="gray">
-							{t("rsvp.hosted-by")}
+							{t("hosted-by")}
 						</BgtText>
 						<div className="flex items-center gap-2 mt-1">
 							<BgtAvatar image={gameNight.host.image} title={gameNight.host.name} withTitle />
@@ -71,7 +71,7 @@ export const RsvpEventDetails = ({ gameNight, timeFormat, dateFormat }: Props) =
 				<>
 					<BgtText size="2" color="gray" className="flex items-center gap-3">
 						<Gamepad className="size-5 text-primary" />
-						{t("rsvp.suggested-games")}
+						{t("suggested-games")}
 					</BgtText>
 					<div className="flex flex-wrap gap-2">
 						{gameNight.suggestedGames.map((game) => (

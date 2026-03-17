@@ -58,7 +58,7 @@ export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
 		rows = (
 			<BgtTableRow>
 				<BgtTableCell colSpan={columns.length} className="h-10">
-					{t("common.loading-data")}
+					{t("loading-data")}
 				</BgtTableCell>
 			</BgtTableRow>
 		);

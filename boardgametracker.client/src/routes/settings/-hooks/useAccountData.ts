@@ -23,43 +23,43 @@ export const useAccountData = () => {
 	const updateProfileMutation = useMutation({
 		mutationFn: updateProfileCall,
 		onSuccess: () => {
-			successToast("settings.account.notifications.profile-updated");
+			successToast("settings:account.notifications.profile-updated");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
 		},
 		onError: () => {
-			errorToast("settings.account.notifications.profile-update-failed");
+			errorToast("settings:account.notifications.profile-update-failed");
 		},
 	});
 
 	const changePasswordMutation = useMutation({
 		mutationFn: changePasswordCall,
 		onSuccess: () => {
-			successToast("settings.account.notifications.password-changed");
+			successToast("settings:account.notifications.password-changed");
 		},
 		onError: () => {
-			errorToast("settings.account.notifications.password-change-failed");
+			errorToast("settings:account.notifications.password-change-failed");
 		},
 	});
 
 	const registerUserMutation = useMutation({
 		mutationFn: registerUserCall,
 		onSuccess: () => {
-			successToast("settings.account.notifications.user-created");
+			successToast("settings:account.notifications.user-created");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 		},
 		onError: () => {
-			errorToast("settings.account.notifications.user-create-failed");
+			errorToast("settings:account.notifications.user-create-failed");
 		},
 	});
 
 	const deleteUserMutation = useMutation({
 		mutationFn: deleteUserCall,
 		onSuccess: () => {
-			successToast("settings.account.notifications.user-deleted");
+			successToast("settings:account.notifications.user-deleted");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 		},
 		onError: () => {
-			errorToast("settings.account.notifications.user-delete-failed");
+			errorToast("settings:account.notifications.user-delete-failed");
 		},
 	});
 
@@ -67,11 +67,11 @@ export const useAccountData = () => {
 		mutationFn: ({ userId, ...request }: { userId: string; username: string; email: string | null; role: string }) =>
 			updateUserCall(userId, request),
 		onSuccess: () => {
-			successToast("settings.account.notifications.user-updated");
+			successToast("settings:account.notifications.user-updated");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 		},
 		onError: () => {
-			errorToast("settings.account.notifications.user-update-failed");
+			errorToast("settings:account.notifications.user-update-failed");
 		},
 	});
 

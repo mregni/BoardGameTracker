@@ -24,11 +24,11 @@ export const useBggGameModal = ({ onSuccess }: Props) => {
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 
-			successToast("game.notifications.created");
+			successToast("game:notifications.created");
 			onSuccess?.(data);
 		},
 		onError: () => {
-			errorToast("game.notifications.create-failed");
+			errorToast("game:notifications.create-failed");
 		},
 	});
 

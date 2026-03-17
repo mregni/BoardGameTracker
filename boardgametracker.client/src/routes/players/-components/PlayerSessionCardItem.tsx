@@ -45,12 +45,12 @@ const PlayerSessionCardItemComponent = (props: Props) => {
 				</div>
 				<div className="text-right">
 					<BgtText color={playerSession?.won ? "green" : "red"} weight="bold">
-						{playerSession?.won ? t("common.won") : t("common.lost")}
+						{playerSession?.won ? t("won") : t("lost")}
 					</BgtText>
 
 					{playerSession?.score && (
 						<BgtText color="cyan" weight="bold">
-							{t("common.points", { count: playerSession?.score })}
+							{t("points", { count: playerSession?.score })}
 						</BgtText>
 					)}
 				</div>

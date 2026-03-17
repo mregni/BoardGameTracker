@@ -19,15 +19,15 @@ const SessionExpansionSelectorComponent = ({
 	disabled,
 	onSelectionChange,
 }: SessionExpansionSelectorProps) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	return (
 		<div className="flex flex-col justify-start">
-			<div className="text-[15px] font-medium leading-[35px] uppercase pb-2">{t("game.expansions.title")}</div>
+			<div className="text-[15px] font-medium leading-[35px] uppercase pb-2">{t("expansions.title")}</div>
 			{expansionList.length === 0 && (
 				<BgtText color="primary">
-					{selectedGameId !== undefined && selectedGameId !== 0 && t("game.expansions.none")}
-					{(selectedGameId === undefined || selectedGameId === 0) && t("game.expansions.no-game")}
+					{selectedGameId !== undefined && selectedGameId !== 0 && t("expansions.none")}
+					{(selectedGameId === undefined || selectedGameId === 0) && t("expansions.no-game")}
 				</BgtText>
 			)}
 

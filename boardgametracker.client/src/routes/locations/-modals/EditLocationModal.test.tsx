@@ -41,7 +41,7 @@ describe("EditLocationModal", () => {
 	describe("Rendering", () => {
 		it("should render the modal when open is true", () => {
 			renderWithTheme(<EditLocationModal {...defaultProps} />);
-			expect(screen.getByText("location.edit.title")).toBeInTheDocument();
+			expect(screen.getByText("edit.title")).toBeInTheDocument();
 		});
 
 		it("should render name input field with existing value", () => {
@@ -52,17 +52,17 @@ describe("EditLocationModal", () => {
 
 		it("should render cancel button", () => {
 			renderWithTheme(<EditLocationModal {...defaultProps} />);
-			expect(screen.getByRole("button", { name: "common.cancel" })).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "common:cancel" })).toBeInTheDocument();
 		});
 
 		it("should render save button", () => {
 			renderWithTheme(<EditLocationModal {...defaultProps} />);
-			expect(screen.getByRole("button", { name: "common.save" })).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "common:save" })).toBeInTheDocument();
 		});
 
 		it("should not render when open is false", () => {
 			renderWithTheme(<EditLocationModal {...defaultProps} open={false} />);
-			expect(screen.queryByText("location.edit.title")).not.toBeInTheDocument();
+			expect(screen.queryByText("edit.title")).not.toBeInTheDocument();
 		});
 	});
 
@@ -72,7 +72,7 @@ describe("EditLocationModal", () => {
 			const closeMock = vi.fn();
 			renderWithTheme(<EditLocationModal {...defaultProps} close={closeMock} />);
 
-			await user.click(screen.getByRole("button", { name: "common.cancel" }));
+			await user.click(screen.getByRole("button", { name: "common:cancel" }));
 
 			expect(closeMock).toHaveBeenCalledTimes(1);
 		});
@@ -97,7 +97,7 @@ describe("EditLocationModal", () => {
 			await user.clear(input);
 			await user.type(input, "Kitchen");
 
-			await user.click(screen.getByRole("button", { name: "common.save" }));
+			await user.click(screen.getByRole("button", { name: "common:save" }));
 
 			await waitFor(() => {
 				expect(mockUpdateLocation).toHaveBeenCalledWith({
@@ -130,7 +130,7 @@ describe("EditLocationModal", () => {
 			const input = screen.getByRole("textbox");
 			await user.clear(input);
 
-			await user.click(screen.getByRole("button", { name: "common.save" }));
+			await user.click(screen.getByRole("button", { name: "common:save" }));
 
 			await waitFor(() => {
 				expect(mockUpdateLocation).not.toHaveBeenCalled();

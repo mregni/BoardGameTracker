@@ -39,7 +39,7 @@ public class SettingsService : ISettingsService
             DateFormat = ResolveValue<string>(configs, Constants.AppConfig.DateFormat),
             UiLanguage = ResolveValue<string>(configs, Constants.AppConfig.UiLanguage),
             Currency = ResolveValue<string>(configs, Constants.AppConfig.Currency),
-            Statistics = _environmentProvider.EnableStatistics,
+            Statistics = _environmentProvider.StatisticsEnabled,
             UpdateCheckEnabled = ResolveValue<bool>(configs, Constants.UpdateConfig.CheckEnabled),
             VersionTrack = ResolveValue<VersionTrack>(configs, Constants.UpdateConfig.Track),
             ShelfOfShameEnabled = ResolveValue<bool>(configs, Constants.AppConfig.ShelfOfShameEnabled),

@@ -2,20 +2,20 @@ import { GameState } from "../models";
 
 export const getItemStateTranslationKey = (value: GameState, isLoaned: boolean): string => {
 	if (isLoaned) {
-		return "game.state.on-loan";
+		return "game:state.on-loan";
 	}
 
 	switch (value) {
 		case GameState.Wanted:
-			return "game.state.wanted";
+			return "game:state.wanted";
 		case GameState.Owned:
-			return "game.state.owned";
+			return "game:state.owned";
 		case GameState.PreviouslyOwned:
-			return "game.state.previously-owned";
+			return "game:state.previously-owned";
 		case GameState.NotOwned:
-			return "game.state.not-owned";
+			return "game:state.not-owned";
 		case GameState.ForTrade:
-			return "game.state.for-trade";
+			return "game:state.for-trade";
 		default:
 			return "";
 	}

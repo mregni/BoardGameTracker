@@ -96,7 +96,7 @@ export const BgtSimpleSelect = (props: Props) => {
 				</Select.Trigger>
 				<Select.Portal>
 					<Select.Content
-						className="overflow-hidden bg-input rounded-md w-(--radix-select-trigger-width)"
+						className="overflow-hidden bg-input rounded-md min-w-(--radix-select-trigger-width) w-auto z-[9999]"
 						position="popper"
 						sideOffset={5}
 						style={{ bottom: "auto" }}
@@ -143,7 +143,7 @@ export const BgtSimpleSelect = (props: Props) => {
 									</Select.Item>
 								))
 							) : (
-								<div className="text-[13px] py-2 px-4 text-gray-400">{t("common.no-results")}</div>
+								<div className="text-[13px] py-2 px-4 text-gray-400">{t("no-results")}</div>
 							)}
 						</Select.Viewport>
 					</Select.Content>

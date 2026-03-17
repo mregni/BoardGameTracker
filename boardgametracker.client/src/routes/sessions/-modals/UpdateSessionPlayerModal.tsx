@@ -26,7 +26,7 @@ interface Props {
 
 const UpdateSessionPlayerForm = (props: Props) => {
 	const { open, hasScoring, onClose, playerToEdit, onCancel } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["player-session", "common"]);
 	const { playerById } = usePlayerById();
 
 	const schema = hasScoring ? CreatePlayerSessionSchema : CreatePlayerSessionNoScoringSchema;
@@ -47,9 +47,9 @@ const UpdateSessionPlayerForm = (props: Props) => {
 	return (
 		<BgtDialog open={open}>
 			<BgtDialogContent>
-				<BgtDialogTitle>{t("player-session.update.title")}</BgtDialogTitle>
+				<BgtDialogTitle>{t("update.title")}</BgtDialogTitle>
 				<Dialog.Description>
-					{t("player-session.update.description", {
+					{t("update.description", {
 						name: playerById(playerToEdit?.playerId)?.name,
 					})}
 				</Dialog.Description>
@@ -57,28 +57,22 @@ const UpdateSessionPlayerForm = (props: Props) => {
 					<div className="flex flex-col gap-4 mt-3 mb-6">
 						{hasScoring && (
 							<form.Field name="score" validators={zodValidator(CreatePlayerSessionSchema, "score")}>
-								{(field: AnyFieldApi) => (
-									<BgtInputField field={field} type="number" label={t("player-session.score.label")} />
-								)}
+								{(field: AnyFieldApi) => <BgtInputField field={field} type="number" label={t("score.label")} />}
 							</form.Field>
 						)}
 						<form.Field name="won" validators={zodValidator(schema, "won")}>
-							{(field: AnyFieldApi) => (
-								<BgtSwitch field={field} label={t("player-session.won.label")} className="mt-2" />
-							)}
+							{(field: AnyFieldApi) => <BgtSwitch field={field} label={t("won.label")} className="mt-2" />}
 						</form.Field>
 						<form.Field name="firstPlay" validators={zodValidator(schema, "firstPlay")}>
-							{(field: AnyFieldApi) => (
-								<BgtSwitch field={field} label={t("player-session.first-play.label")} className="mt-2" />
-							)}
+							{(field: AnyFieldApi) => <BgtSwitch field={field} label={t("first-play.label")} className="mt-2" />}
 						</form.Field>
 					</div>
 					<BgtDialogClose>
 						<BgtButton type="button" variant="cancel" onClick={() => onCancel()}>
-							{t("common.cancel")}
+							{t("common:cancel")}
 						</BgtButton>
 						<BgtButton type="submit" variant="primary">
-							{t("player-session.update.save")}
+							{t("update.save")}
 						</BgtButton>
 					</BgtDialogClose>
 				</form>

@@ -98,48 +98,48 @@ describe("useBgtMenuBar", () => {
 		});
 
 		it("should have dashboard as first item", () => {
-			expect(menuItems[0].menuLabel).toBe("common.dashboard");
+			expect(menuItems[0].menuLabel).toBe("common:dashboard");
 			expect(menuItems[0].path).toBe("/");
 		});
 
 		it("should have new session item", () => {
 			const newSession = menuItems.find((item) => item.path === "/sessions/new");
 			expect(newSession).toBeDefined();
-			expect(newSession?.menuLabel).toBe("common.new-session");
+			expect(newSession?.menuLabel).toBe("common:new-session");
 		});
 
 		it("should have games item", () => {
 			const games = menuItems.find((item) => item.path === "/games");
 			expect(games).toBeDefined();
-			expect(games?.menuLabel).toBe("common.games");
+			expect(games?.menuLabel).toBe("common:games");
 		});
 
 		it("should have players item", () => {
 			const players = menuItems.find((item) => item.path === "/players");
 			expect(players).toBeDefined();
-			expect(players?.menuLabel).toBe("common.players");
+			expect(players?.menuLabel).toBe("common:players");
 		});
 
 		it("should have compare item", () => {
 			const compare = menuItems.find((item) => item.path === "/compare");
 			expect(compare).toBeDefined();
-			expect(compare?.menuLabel).toBe("common.compare");
+			expect(compare?.menuLabel).toBe("common:compare");
 		});
 
 		it("should have loans item", () => {
 			const loans = menuItems.find((item) => item.path === "/loans");
 			expect(loans).toBeDefined();
-			expect(loans?.menuLabel).toBe("common.loans");
+			expect(loans?.menuLabel).toBe("common:loans");
 		});
 
 		it("should have locations item", () => {
 			const locations = menuItems.find((item) => item.path === "/locations");
 			expect(locations).toBeDefined();
-			expect(locations?.menuLabel).toBe("common.locations");
+			expect(locations?.menuLabel).toBe("common:locations");
 		});
 
 		it("should have settings as last item", () => {
-			expect(menuItems[menuItems.length - 1].menuLabel).toBe("common.settings");
+			expect(menuItems[menuItems.length - 1].menuLabel).toBe("common:settings");
 			expect(menuItems[menuItems.length - 1].path).toBe("/settings");
 		});
 

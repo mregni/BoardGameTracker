@@ -6,7 +6,7 @@ import { BgtCard } from "../BgtCard/BgtCard";
 import { BgtText } from "../BgtText/BgtText";
 
 export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["error", "common"]);
 
 	return (
 		<div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -18,10 +18,10 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
 
 					<div className="space-y-2">
 						<BgtText color="white" size="5">
-							{t("error.something-went-wrong")}
+							{t("something-went-wrong")}
 						</BgtText>
 						<BgtText color="white" opacity={70}>
-							{t("error.unexpected-error")}
+							{t("unexpected-error")}
 						</BgtText>
 					</div>
 
@@ -44,10 +44,10 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
 
 					<div className="flex gap-3">
 						<BgtButton onClick={resetErrorBoundary} variant="primary">
-							{t("common.try-again")}
+							{t("common:try-again")}
 						</BgtButton>
 						<BgtButton onClick={() => (window.location.href = "/")} variant="primary">
-							{t("common.go-home")}
+							{t("common:go-home")}
 						</BgtButton>
 					</div>
 				</div>

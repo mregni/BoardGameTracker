@@ -14,10 +14,10 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 
 export const RecentActivityCard = (props: Props) => {
 	const { activities, className } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "dashboard"]);
 
 	return (
-		<BgtCard title={t("dashboard.recent-activity")} icon={Calendar} className={className}>
+		<BgtCard title={t("dashboard:recent-activity")} icon={Calendar} className={className}>
 			<div className="flex flex-col gap-3">
 				{activities.map((activity) => (
 					<ActivityItem key={activity.id} activity={activity} />
@@ -32,7 +32,7 @@ interface ItemProps {
 }
 
 const ActivityItem = ({ activity }: ItemProps) => {
-	const { t, i18n } = useTranslation();
+	const { t, i18n } = useTranslation(["common", "dashboard"]);
 
 	return (
 		<BgtCard className="cursor-pointer p-3">
@@ -51,7 +51,7 @@ const ActivityItem = ({ activity }: ItemProps) => {
 								<Link className="font-bold" to="/players/$playerId" params={{ playerId: activity.winnerId }}>
 									{activity.winnerName}
 								</Link>{" "}
-								<span className="lowercase">{t("common.won")}</span>{" "}
+								<span className="lowercase">{t("won")}</span>{" "}
 							</>
 						)}
 						<Link className="text-primary" to="/games/$gameId" params={{ gameId: activity.gameId }}>
@@ -59,8 +59,8 @@ const ActivityItem = ({ activity }: ItemProps) => {
 						</Link>
 					</BgtText>
 					<BgtText color="white" size="2" opacity={50}>
-						{t("common.player", { count: activity.playerCount })} • {activity.durationInMinutes}
-						{t("common.minutes-abbreviation")} • {toRelative(activity.start, i18n.language)}
+						{t("player", { count: activity.playerCount })} • {activity.durationInMinutes}
+						{t("minutes-abbreviation")} • {toRelative(activity.start, i18n.language)}
 					</BgtText>
 				</div>
 				<div className="font-bold">

@@ -8,7 +8,7 @@ interface SessionFormApi {
 		subscribe: (listener: () => void) => () => void;
 		state: { values: { gameId: number } };
 	};
-	setFieldValue: (field: string, value: unknown) => void;
+	setFieldValue: (field: "minutes" | "start", value: number | Date) => void;
 }
 
 interface UseSessionFormStateProps {
@@ -113,6 +113,11 @@ export const useSessionFormState = ({
 		const subscription = form.store.subscribe(() => {
 			const newGameId = form.store.state.values.gameId;
 			if (newGameId !== selectedGameIdRef.current) {
+				// Update ref immediately to prevent infinite loop:
+				// setFieldValue triggers store notifications synchronously,
+				// re-entering this callback before React re-renders
+				selectedGameIdRef.current = newGameId;
+
 				const selectedBoardGame = games.find((g) => g.id === newGameId);
 				if (selectedBoardGame) {
 					form.setFieldValue("minutes", selectedBoardGame.maxPlayTime ?? 30);

@@ -1,14 +1,20 @@
-name: Build and Publish
+name: Deploy Application
 
 on:
   push:
     branches:
       - dev
       - master
+    paths-ignore:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
   pull_request:
     branches:
       - dev
       - master
+    paths-ignore:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
 
 env:
   REGISTRY: ${{ vars.DOCKER_REGISTRY || 'docker.io' }}
@@ -20,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.versioning.outputs.version }}
+      is_master: ${{ github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -158,6 +165,7 @@ jobs:
             boardgametracker.client/coverage
           retention-days: 7
         if: success() || failure()
+
       - name: Code Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.11
         with:
@@ -209,14 +217,27 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata for Docker
-        id: meta
+      - name: Extract metadata for Docker (dev)
+        id: meta-dev
+        if: github.ref == 'refs/heads/dev'
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ needs.version.outputs.version }}
-            type=raw,value=${{ github.ref == 'refs/heads/dev' && 'dev' || 'latest' }}
+            type=raw,value=dev
+
+      - name: Extract metadata for Docker (master)
+        id: meta-master
+        if: github.ref == 'refs/heads/master'
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.version.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.version.outputs.version }}
+            type=semver,pattern={{major}},value=${{ needs.version.outputs.version }}
+            type=raw,value=latest
 
       - name: Build and Push Multi-Architecture Images
         uses: docker/build-push-action@v5
@@ -225,20 +246,22 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ github.ref == 'refs/heads/master' && steps.meta-master.outputs.tags || steps.meta-dev.outputs.tags }}
+          labels: ${{ github.ref == 'refs/heads/master' && steps.meta-master.outputs.labels || steps.meta-dev.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ needs.version.outputs.version }}
             ASPNETCORE_ENVIRONMENT=production
             BUILDKIT_INLINE_CACHE=1
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+            VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
 
   security-scan:
-    needs: [version, build-linux-multiarch]
+    needs: [version, test-and-analyze]
     name: Security Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     if: github.event_name != 'pull_request'
     permissions:
       security-events: write
@@ -248,10 +271,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build local image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:scan
+          cache-from: type=gha
+          build-args: |
+            VERSION=${{ needs.version.outputs.version }}
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}
+          image-ref: ${{ env.IMAGE_NAME }}:scan
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
@@ -266,7 +304,7 @@ jobs:
       - name: Run Trivy vulnerability scanner (fail on critical)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}
+          image-ref: ${{ env.IMAGE_NAME }}:scan
           format: 'table'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
@@ -275,7 +313,7 @@ jobs:
       - name: Generate SBOM
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.version }}
+          image-ref: ${{ env.IMAGE_NAME }}:scan
           format: 'cyclonedx'
           output: 'sbom.json'
 
@@ -285,3 +323,111 @@ jobs:
           name: sbom-${{ needs.version.outputs.version }}
           path: sbom.json
           retention-days: 90
+
+  create-github-release:
+    name: Create GitHub Release
+    needs: [version, build-linux-multiarch]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Release Notes
+        run: |
+          VERSION=${{ needs.version.outputs.version }}
+
+          # Get previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          # Generate changelog
+          if [ -n "$PREVIOUS_TAG" ]; then
+            CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+          fi
+
+          cat > release_notes.md << EOF
+          ## BoardGameTracker v${VERSION}
+
+          ### Docker Images
+
+          **Multi-Architecture Linux:**
+          \`\`\`bash
+          docker pull uping/boardgametracker:${VERSION}
+          docker pull uping/boardgametracker:latest
+          \`\`\`
+
+          Supported platforms:
+          - \`linux/amd64\` - x86_64 architecture
+          - \`linux/arm64\` - ARM 64-bit (Raspberry Pi 4, AWS Graviton)
+
+          ### Changes
+
+          ${CHANGELOG}
+
+          ### Upgrade Notes
+
+          If updating from a previous version:
+          1. Pull the new image: \`docker pull uping/boardgametracker:${VERSION}\`
+          2. Stop and remove the old container
+          3. Start with the new image (database migrations run automatically)
+
+          ### Documentation
+
+          - [Main Repository](https://github.com/mregni/BoardGameTracker)
+          - [Docker Hub](https://hub.docker.com/r/uping/boardgametracker)
+          EOF
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: v${{ needs.version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify-completion:
+    name: Build Summary
+    needs: [version, build-linux-multiarch]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Build Summary
+        run: |
+          VERSION=${{ needs.version.outputs.version }}
+          BRANCH=${{ github.ref_name }}
+
+          if [ "$BRANCH" = "master" ]; then
+            cat >> $GITHUB_STEP_SUMMARY << EOF
+          # Release v${VERSION} Published
+
+          ## Docker Images
+          - \`uping/boardgametracker:${VERSION}\`
+          - \`uping/boardgametracker:latest\`
+
+          **Platforms:** linux/amd64, linux/arm64
+
+          ## Links
+          - [Docker Hub](https://hub.docker.com/r/uping/boardgametracker)
+          - [Release Notes](https://github.com/${{ github.repository }}/releases/tag/v${VERSION})
+          EOF
+          else
+            cat >> $GITHUB_STEP_SUMMARY << EOF
+          # Dev Build ${VERSION} Published
+
+          ## Docker Images
+          - \`uping/boardgametracker:${VERSION}\`
+          - \`uping/boardgametracker:dev\`
+
+          **Platforms:** linux/amd64, linux/arm64
+          EOF
+          fi

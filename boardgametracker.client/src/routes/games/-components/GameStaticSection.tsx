@@ -24,7 +24,7 @@ interface Props {
 
 export const GameStaticSection = (props: Props) => {
 	const { game, playCount, currency, uiLanguage, dateFormat } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "statistics"]);
 	const navigate = useNavigate();
 
 	return (
@@ -54,21 +54,17 @@ export const GameStaticSection = (props: Props) => {
 					<BgtText className={cx("xl:line-clamp-2 line-clamp-3 text-white/70")}>{game.description}</BgtText>
 				</div>
 				<div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-5 gap-3 xl:gap-6">
-					<BgtTextStatistic
-						content={`${game.minPlayers} - ${game.maxPlayers}`}
-						title={t("common.players")}
-						icon={<Users />}
-					/>
+					<BgtTextStatistic content={`${game.minPlayers} - ${game.maxPlayers}`} title={t("players")} icon={<Users />} />
 					<BgtTextStatistic
 						content={`${game.minPlayTime} - ${game.maxPlayTime}`}
-						title={t("common.duration")}
-						suffix={t("common.minutes-abbreviation")}
+						title={t("duration")}
+						suffix={t("minutes-abbreviation")}
 						icon={<Clock />}
 					/>
-					<BgtTextStatistic content={playCount} title={t("statistics.play-count")} icon={<Trophy />} />
+					<BgtTextStatistic content={playCount} title={t("statistics:play-count")} icon={<Trophy />} />
 					<BgtTextStatistic
 						content={game.buyingPrice}
-						title={t("statistics.buy-price")}
+						title={t("statistics:buy-price")}
 						prefix={currency}
 						icon={<Coins />}
 					/>
@@ -83,8 +79,8 @@ export const GameStaticSection = (props: Props) => {
 									format: ["months", "days"],
 								},
 							)}
-							title={t("statistics.in-collection")}
-							suffix={t("common.since", {
+							title={t("statistics:in-collection")}
+							suffix={t("since", {
 								date: toDisplay(game.additionDate, dateFormat, uiLanguage),
 							})}
 						/>

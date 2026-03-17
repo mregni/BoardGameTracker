@@ -14,10 +14,10 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const RecentAddedGamesCard = ({ games, className }: Props) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("dashboard");
 
 	return (
-		<BgtCard title={t("dashboard.recent-added-games")} icon={Sparkles} className={className}>
+		<BgtCard title={t("recent-added-games")} icon={Sparkles} className={className}>
 			<div className="flex flex-col gap-3">
 				{games.map((game) => (
 					<GameCardItem key={game.id} game={game} />

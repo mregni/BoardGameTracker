@@ -20,7 +20,7 @@ export const useUpdateSessionData = ({ sessionId, onSuccess }: Props) => {
 	const updateSessionMutation = useMutation({
 		mutationFn: updateSessionCall,
 		async onSuccess(sessionResult) {
-			successToast("player-session.update.notifications.updated");
+			successToast("player-session:update.notifications.updated");
 			onSuccess?.();
 			for (const x of sessionResult.playerSessions) {
 				queryClient.invalidateQueries({
@@ -36,7 +36,7 @@ export const useUpdateSessionData = ({ sessionId, onSuccess }: Props) => {
 			});
 		},
 		onError: () => {
-			errorToast("player-session.update.notifications.update-failed");
+			errorToast("player-session:update.notifications.update-failed");
 		},
 	});
 

@@ -32,7 +32,7 @@ export const Route = createFileRoute("/players/$playerId")({
 
 function RouteComponent() {
 	const { playerId } = Route.useParams();
-	const { t } = useTranslation();
+	const { t } = useTranslation("player");
 	const { canWrite } = usePermissions();
 
 	const { player, statistics, deletePlayer, badges, sessions, settings, isLoading } = usePlayerData({
@@ -49,7 +49,7 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageHeader backAction={actions.handleBackToPlayers} backText={t("player.back")} />
+			<BgtPageHeader backAction={actions.handleBackToPlayers} backText={t("back")} />
 			<BgtPageContent isLoading={isLoading} data={{ player, statistics, badges, settings }}>
 				{({ player, statistics, badges, settings }) => (
 					<>
@@ -85,7 +85,7 @@ function RouteComponent() {
 							open={modals.deleteModal.isOpen}
 							close={modals.deleteModal.hide}
 							onDelete={actions.handleDelete}
-							description={t("player.delete.description", {
+							description={t("delete.description", {
 								name: player.name,
 							})}
 						/>

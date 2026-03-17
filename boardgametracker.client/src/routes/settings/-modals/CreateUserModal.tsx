@@ -21,14 +21,14 @@ interface Props {
 }
 
 export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["settings", "common"]);
 	const [error, setError] = useState<string | null>(null);
 
 	const roleItems: BgtSelectItem[] = useMemo(
 		() => [
-			{ value: "User", label: t("settings.account.users.roles.user") },
-			{ value: "Reader", label: t("settings.account.users.roles.reader") },
-			{ value: "Admin", label: t("settings.account.users.roles.admin") },
+			{ value: "User", label: t("account.users.roles.user") },
+			{ value: "Reader", label: t("account.users.roles.reader") },
+			{ value: "Admin", label: t("account.users.roles.admin") },
 		],
 		[t],
 	);
@@ -51,7 +51,7 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 				});
 				close();
 			} catch (e) {
-				setError(isApiError(e) ? t(e.message) : t("settings.account.notifications.user-create-failed"));
+				setError(isApiError(e) ? t(e.message) : t("account.notifications.user-create-failed"));
 			}
 		},
 	});
@@ -60,14 +60,14 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
-					<BgtDialogTitle>{t("settings.account.users.create.title")}</BgtDialogTitle>
-					<BgtDialogDescription>{t("settings.account.users.create.description")}</BgtDialogDescription>
+					<BgtDialogTitle>{t("account.users.create.title")}</BgtDialogTitle>
+					<BgtDialogDescription>{t("account.users.create.description")}</BgtDialogDescription>
 					<div className="flex flex-col gap-2 mb-3 mt-3">
 						<form.Field
 							name="username"
 							validators={{
 								onChange: ({ value }) => {
-									if (!value) return t("common.required", "Required");
+									if (!value) return t("common:required", "Required");
 									return undefined;
 								},
 							}}
@@ -76,7 +76,7 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 								<BgtInputField
 									field={field}
 									type="text"
-									label={t("settings.account.users.create.username.label")}
+									label={t("account.users.create.username.label")}
 									disabled={isLoading}
 								/>
 							)}
@@ -85,7 +85,7 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 							name="email"
 							validators={{
 								onChange: ({ value }) => {
-									if (!value) return t("common.required", "Required");
+									if (!value) return t("common:required", "Required");
 									return undefined;
 								},
 							}}
@@ -94,7 +94,7 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 								<BgtInputField
 									field={field}
 									type="text"
-									label={t("settings.account.users.create.email.label")}
+									label={t("account.users.create.email.label")}
 									disabled={isLoading}
 								/>
 							)}
@@ -103,8 +103,8 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 							name="password"
 							validators={{
 								onChange: ({ value }) => {
-									if (!value) return t("common.required", "Required");
-									if (value.length < 4) return t("settings.account.password.min-length");
+									if (!value) return t("common:required", "Required");
+									if (value.length < 4) return t("account.password.min-length");
 									return undefined;
 								},
 							}}
@@ -113,29 +113,24 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 								<BgtInputField
 									field={field}
 									type="password"
-									label={t("settings.account.users.create.password.label")}
+									label={t("account.users.create.password.label")}
 									disabled={isLoading}
 								/>
 							)}
 						</form.Field>
 						<form.Field name="role">
 							{(field) => (
-								<BgtSelect
-									field={field}
-									label={t("settings.account.users.role")}
-									items={roleItems}
-									disabled={isLoading}
-								/>
+								<BgtSelect field={field} label={t("account.users.role")} items={roleItems} disabled={isLoading} />
 							)}
 						</form.Field>
 					</div>
 					{error && <div className="text-error text-sm mb-2">{error}</div>}
 					<BgtDialogClose>
 						<BgtButton variant="cancel" onClick={close} disabled={isLoading}>
-							{t("common.cancel")}
+							{t("common:cancel")}
 						</BgtButton>
 						<BgtButton variant="primary" type="submit" disabled={isLoading}>
-							{t("settings.account.users.create.save")}
+							{t("account.users.create.save")}
 						</BgtButton>
 					</BgtDialogClose>
 				</form>

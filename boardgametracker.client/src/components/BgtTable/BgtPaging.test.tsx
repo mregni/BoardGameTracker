@@ -19,8 +19,8 @@ describe("BgtPaging", () => {
 	describe("Rendering", () => {
 		it("should render pagination when totalCount exceeds countPerPage", () => {
 			renderWithTheme(<BgtPaging {...defaultProps} />);
-			expect(screen.getByText("common.previous-page")).toBeInTheDocument();
-			expect(screen.getByText("common.next-page")).toBeInTheDocument();
+			expect(screen.getByText("previous-page")).toBeInTheDocument();
+			expect(screen.getByText("next-page")).toBeInTheDocument();
 		});
 
 		it("should return null when totalCount is less than countPerPage", () => {
@@ -42,22 +42,22 @@ describe("BgtPaging", () => {
 	describe("Navigation Buttons", () => {
 		it("should disable Previous button on first page", () => {
 			renderWithTheme(<BgtPaging {...defaultProps} page={0} />);
-			expect(screen.getByText("common.previous-page")).toBeDisabled();
+			expect(screen.getByText("previous-page")).toBeDisabled();
 		});
 
 		it("should enable Previous button on non-first page", () => {
 			renderWithTheme(<BgtPaging {...defaultProps} page={2} />);
-			expect(screen.getByText("common.previous-page")).not.toBeDisabled();
+			expect(screen.getByText("previous-page")).not.toBeDisabled();
 		});
 
 		it("should disable Next button on last page", () => {
 			renderWithTheme(<BgtPaging {...defaultProps} page={4} totalCount={50} countPerPage={10} />);
-			expect(screen.getByText("common.next-page")).toBeDisabled();
+			expect(screen.getByText("next-page")).toBeDisabled();
 		});
 
 		it("should enable Next button when not on last page", () => {
 			renderWithTheme(<BgtPaging {...defaultProps} page={0} />);
-			expect(screen.getByText("common.next-page")).not.toBeDisabled();
+			expect(screen.getByText("next-page")).not.toBeDisabled();
 		});
 	});
 
@@ -67,7 +67,7 @@ describe("BgtPaging", () => {
 			const setPage = vi.fn();
 			renderWithTheme(<BgtPaging {...defaultProps} page={2} setPage={setPage} />);
 
-			await user.click(screen.getByText("common.previous-page"));
+			await user.click(screen.getByText("previous-page"));
 
 			expect(setPage).toHaveBeenCalledTimes(1);
 			// Test the function passed to setPage
@@ -80,7 +80,7 @@ describe("BgtPaging", () => {
 			const setPage = vi.fn();
 			renderWithTheme(<BgtPaging {...defaultProps} page={1} setPage={setPage} />);
 
-			await user.click(screen.getByText("common.next-page"));
+			await user.click(screen.getByText("next-page"));
 
 			expect(setPage).toHaveBeenCalledTimes(1);
 			// Test the function passed to setPage
@@ -93,7 +93,7 @@ describe("BgtPaging", () => {
 			const setPage = vi.fn();
 			renderWithTheme(<BgtPaging {...defaultProps} page={0} setPage={setPage} />);
 
-			await user.click(screen.getByText("common.previous-page"));
+			await user.click(screen.getByText("previous-page"));
 
 			expect(setPage).not.toHaveBeenCalled();
 		});
@@ -103,7 +103,7 @@ describe("BgtPaging", () => {
 			const setPage = vi.fn();
 			renderWithTheme(<BgtPaging {...defaultProps} page={4} totalCount={50} countPerPage={10} setPage={setPage} />);
 
-			await user.click(screen.getByText("common.next-page"));
+			await user.click(screen.getByText("next-page"));
 
 			expect(setPage).not.toHaveBeenCalled();
 		});

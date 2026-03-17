@@ -12,7 +12,7 @@ export const GameFormTimeFields = withForm({
 		disabled: false,
 	},
 	render: function Render({ form, disabled }) {
-		const { t } = useTranslation();
+		const { t } = useTranslation(["game", "common"]);
 
 		return (
 			<>
@@ -21,11 +21,11 @@ export const GameFormTimeFields = withForm({
 						{(field: AnyFieldApi) => (
 							<BgtInputField
 								field={field}
-								label={t("game.new.manual.min-time.label")}
+								label={t("new.manual.min-time.label")}
 								type="number"
 								disabled={disabled}
 								className="pr-2"
-								suffixLabel={t("common.minutes-abbreviation")}
+								suffixLabel={t("common:minutes-abbreviation")}
 							/>
 						)}
 					</form.Field>
@@ -33,11 +33,11 @@ export const GameFormTimeFields = withForm({
 						{(field: AnyFieldApi) => (
 							<BgtInputField
 								field={field}
-								label={t("game.new.manual.max-time.label")}
+								label={t("new.manual.max-time.label")}
 								type="number"
 								disabled={disabled}
 								className="pr-2"
-								suffixLabel={t("common.minutes-abbreviation")}
+								suffixLabel={t("common:minutes-abbreviation")}
 							/>
 						)}
 					</form.Field>
@@ -46,7 +46,7 @@ export const GameFormTimeFields = withForm({
 					{(field: AnyFieldApi) => (
 						<BgtInputField
 							field={field}
-							label={t("game.new.manual.min-age.label")}
+							label={t("new.manual.min-age.label")}
 							type="number"
 							disabled={disabled}
 							className="pr-2"

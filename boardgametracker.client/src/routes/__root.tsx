@@ -3,6 +3,7 @@ import {
 	createRootRouteWithContext,
 	type ErrorComponentProps,
 	Outlet,
+	useLocation,
 	useMatch,
 	useNavigate,
 } from "@tanstack/react-router";
@@ -11,8 +12,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import { ErrorFallback } from "@/components/ErrorBoundary/ErrorFallback";
 import { NotFound } from "@/components/NotFound/NotFound";
 import { useAuth } from "@/hooks/useAuth";
-
 import type { MenuItem } from "@/models";
+import { getEnvironmentCall } from "@/services/settingsService";
+import { initSentry } from "@/utils/sentry";
 import { BottomNav } from "./-components/BottomNav";
 import { Sidebar } from "./-components/Sidebar";
 
@@ -35,6 +37,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootComponent() {
 	const isBare = useMatch({ from: "/_bare", shouldThrow: false });
 	const navigate = useNavigate();
+	const location = useLocation();
 	const { isAuthenticated, authStatus, fetchAuthStatus } = useAuth();
 	const [authChecked, setAuthChecked] = useState(false);
 
@@ -49,9 +52,22 @@ function RootComponent() {
 
 		// If auth is enabled and not bypassed, redirect unauthenticated users to login
 		if (authStatus.authEnabled && !authStatus.bypassEnabled && !isAuthenticated && !isBare) {
-			navigate({ to: "/login" });
+			const currentPath = location.pathname + location.search;
+			navigate({ to: "/login", search: { redirect: currentPath } });
 		}
-	}, [authChecked, authStatus, isAuthenticated, isBare, navigate]);
+	}, [authChecked, authStatus, isAuthenticated, isBare, navigate, location]);
+
+	useEffect(() => {
+		if (!isAuthenticated) return;
+
+		getEnvironmentCall()
+			.then((env) => {
+				if (env.enableStatistics) {
+					initSentry();
+				}
+			})
+			.catch(() => {});
+	}, [isAuthenticated]);
 
 	if (!authChecked) {
 		return (

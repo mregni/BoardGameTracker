@@ -76,7 +76,7 @@ describe("BgtDataTable", () => {
 	describe("Loading State", () => {
 		it("should show loading message when isLoading", () => {
 			renderWithTheme(<BgtDataTable columns={testColumns} data={[]} noDataMessage="No data" isLoading />);
-			expect(screen.getByText("common.loading-data")).toBeInTheDocument();
+			expect(screen.getByText("loading-data")).toBeInTheDocument();
 		});
 
 		it("should not show data when loading", () => {

@@ -15,7 +15,7 @@ interface Props {
 
 export const RecentPlayerSessionsCard = (props: Props) => {
 	const { sessions, dateFormat, uiLanguage, playerId } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	const { gameById } = useGameById();
 
@@ -38,9 +38,9 @@ export const RecentPlayerSessionsCard = (props: Props) => {
 		<RecentActivityCard
 			items={sessions}
 			renderItem={renderSession}
-			title={t("game.titles.recent-sessions")}
+			title={t("titles.recent-sessions")}
 			viewAllRoute={`/players/${playerId}/sessions`}
-			viewAllText={t("game.sessions")}
+			viewAllText={t("sessions")}
 			icon={Calendar}
 			getKey={getSessionKey}
 		/>

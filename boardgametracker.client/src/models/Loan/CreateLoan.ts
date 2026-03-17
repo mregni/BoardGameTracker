@@ -2,21 +2,21 @@ import { z } from "zod";
 
 export const CreateLoanSchema = z.object({
 	gameId: z.coerce
-		.number({ required_error: "player-session.new.game.required" })
+		.number({ required_error: "player-session:new.game.required" })
 		.int()
-		.refine((val) => val > 0, { message: "player-session.new.game.required" }),
+		.refine((val) => val > 0, { message: "player-session:new.game.required" }),
 	playerId: z.coerce
 		.number({
-			required_error: "player-session.new.player.required",
-			invalid_type_error: "player-session.new.player.required",
+			required_error: "player-session:new.player.required",
+			invalid_type_error: "player-session:new.player.required",
 		})
 		.int()
 		.refine((val) => val > 0, {
-			message: "player-session.new.player.required",
+			message: "player-session:new.player.required",
 		}),
 	loanDate: z.coerce.date({
 		errorMap: () => {
-			return { message: "loan.new.start.required" };
+			return { message: "loans:new.start.required" };
 		},
 	}),
 	dueDate: z

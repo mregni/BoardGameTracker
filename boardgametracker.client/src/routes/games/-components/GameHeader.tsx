@@ -18,7 +18,7 @@ interface Props {
 
 export const GameHeader = (props: Props) => {
 	const { gameTitle, gameState, isLoaned, canWrite, onAddSession, onEdit, onDelete } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	return (
 		<div className="flex md:flex-row flex-col justify-between">
@@ -38,7 +38,7 @@ export const GameHeader = (props: Props) => {
 			{canWrite && (
 				<div className="flex gap-3 justify-between md:justify-start items-center pt-2 md:pt-0">
 					<BgtButton variant="primary" onClick={onAddSession}>
-						{t("game.add")}
+						{t("add")}
 					</BgtButton>
 					<BgtEditDeleteButtons onDelete={onDelete} onEdit={onEdit} />
 				</div>

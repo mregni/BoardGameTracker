@@ -3,14 +3,14 @@ import { BgtPageContent } from "./BgtPageContent";
 import { BgtPageHeader } from "./BgtPageHeader";
 
 interface Props {
-	children: ReactElement | ReactElement[];
+	children: (ReactElement | null) | (ReactElement | null)[];
 }
 
 const checkComponentName = (
 	child: ReactElement<unknown, string | React.JSXElementConstructor<unknown>>,
 	elementName: string,
 ): boolean => {
-	return (child.type as (props: Props) => JSX.Element)?.name === elementName;
+	return (child?.type as (props: Props) => JSX.Element)?.name === elementName;
 };
 
 export const BgtPage = (props: Props) => {
@@ -20,6 +20,10 @@ export const BgtPage = (props: Props) => {
 	let header: ReactElement | undefined;
 
 	Children.forEach(children, (child) => {
+		if (child == null) {
+			return;
+		}
+
 		if (checkComponentName(child, BgtPageHeader.name)) {
 			header = child;
 		} else if (checkComponentName(child, BgtPageContent.name)) {

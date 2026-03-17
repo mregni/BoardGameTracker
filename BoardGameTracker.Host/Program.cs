@@ -192,7 +192,10 @@ app.MapControllers();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseSentryTracing();
+if (bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out var sentryEnabled) && sentryEnabled)
+{
+    app.UseSentryTracing();
+}
 
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -219,10 +222,11 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 var logger = app.Services.GetService<ILogger<Program>>();
+
 logger.LogInformation("BoardGameTracker started");
 logger.LogInformation("  Environment:  {Environment}", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
 logger.LogInformation("  Log level:    {LogLevel}", LogLevelExtensions.GetEnvironmentLogLevel());
-logger.LogInformation("  Sentry:       {SentryEnabled}", Environment.GetEnvironmentVariable("STATISTICS") == "1" ? "Enabled" : "Disabled");
+logger.LogInformation("  Sentry:       {SentryEnabled}", Environment.GetEnvironmentVariable("STATISTICS_ENABLED")?.ToLower() == "true" ? "Enabled" : "Disabled");
 logger.LogInformation("  HTTP ports:   {HttpPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS") ?? "default");
 logger.LogInformation("  HTTPS ports:  {HttpsPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORTS") ?? "not configured");
 logger.LogInformation("  Timezone:     {Timezone}", Environment.GetEnvironmentVariable("TZ") ?? "system default");

@@ -1,5 +1,6 @@
 import { cx } from "class-variance-authority";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
 import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
@@ -28,6 +29,8 @@ export const MultiSelectField = (props: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
+	const triggerRef = useRef<HTMLButtonElement>(null);
+	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	const filteredOptions = useMemo(() => {
 		return options.filter(
@@ -65,7 +68,13 @@ export const MultiSelectField = (props: Props) => {
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+			const target = event.target as Node;
+			if (
+				containerRef.current &&
+				!containerRef.current.contains(target) &&
+				dropdownRef.current &&
+				!dropdownRef.current.contains(target)
+			) {
 				setIsOpen(false);
 				setSearchTerm("");
 			}
@@ -74,11 +83,28 @@ export const MultiSelectField = (props: Props) => {
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
+	const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+
+	useEffect(() => {
+		if (isOpen && triggerRef.current) {
+			const rect = triggerRef.current.getBoundingClientRect();
+			setDropdownStyle({
+				position: "fixed",
+				top: rect.bottom + 4,
+				left: rect.left,
+				width: rect.width,
+				zIndex: 9999,
+				pointerEvents: "auto",
+			});
+		}
+	}, [isOpen]);
+
 	return (
 		<FormFieldWrapper label={label} errors={[]} className="w-full">
 			<div className="flex flex-col gap-2" ref={containerRef}>
-				<div className="relative">
+				<div>
 					<button
+						ref={triggerRef}
 						type="button"
 						onClick={handleToggle}
 						disabled={disabled}
@@ -92,42 +118,48 @@ export const MultiSelectField = (props: Props) => {
 						{isOpen ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
 					</button>
 
-					{isOpen && (
-						<div className="absolute top-full left-0 right-0 mt-1 bg-input border border-primary/30 rounded-lg overflow-hidden z-50">
-							<div className="p-2 border-b border-gray-700">
-								<div className="flex items-center px-2 bg-input rounded-sm">
-									<SearchIcon className="size-4 text-gray-400 mr-2" />
-									<input
-										ref={searchInputRef}
-										type="text"
-										value={searchTerm}
-										onChange={(e) => setSearchTerm(e.target.value)}
-										placeholder="Search..."
-										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
-									/>
+					{isOpen &&
+						createPortal(
+							<div
+								ref={dropdownRef}
+								style={dropdownStyle}
+								className="bg-input border border-primary/30 rounded-lg overflow-hidden"
+							>
+								<div className="p-2 border-b border-gray-700">
+									<div className="flex items-center px-2 bg-input rounded-sm">
+										<SearchIcon className="size-4 text-gray-400 mr-2" />
+										<input
+											ref={searchInputRef}
+											type="text"
+											value={searchTerm}
+											onChange={(e) => setSearchTerm(e.target.value)}
+											placeholder="Search..."
+											className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
+										/>
+									</div>
 								</div>
-							</div>
-							<div className="max-h-[300px] overflow-y-auto p-1">
-								{filteredOptions.length > 0 ? (
-									filteredOptions.map((option) => (
-										<button
-											key={option.value}
-											type="button"
-											onClick={() => handleSelect(option.value)}
-											className="w-full text-[13px] leading-none rounded-lg h-[45px] flex items-center pl-4 hover:bg-primary/60 transition-colors cursor-pointer"
-										>
-											<div className="flex flex-row justify-start items-center gap-2">
-												{option.image !== undefined && <BgtAvatar title={option.label} image={option.image} />}
-												{option.label}
-											</div>
-										</button>
-									))
-								) : (
-									<div className="text-[13px] py-2 px-4 text-gray-400">No results</div>
-								)}
-							</div>
-						</div>
-					)}
+								<div className="max-h-[300px] overflow-y-auto p-1">
+									{filteredOptions.length > 0 ? (
+										filteredOptions.map((option) => (
+											<button
+												key={option.value}
+												type="button"
+												onClick={() => handleSelect(option.value)}
+												className="w-full text-[13px] leading-none rounded-lg h-[45px] flex items-center pl-4 hover:bg-primary/60 transition-colors cursor-pointer"
+											>
+												<div className="flex flex-row justify-start items-center gap-2">
+													{option.image !== undefined && <BgtAvatar title={option.label} image={option.image} />}
+													{option.label}
+												</div>
+											</button>
+										))
+									) : (
+										<div className="text-[13px] py-2 px-4 text-gray-400">No results</div>
+									)}
+								</div>
+							</div>,
+							document.body,
+						)}
 				</div>
 
 				{selectedItems.length > 0 && (

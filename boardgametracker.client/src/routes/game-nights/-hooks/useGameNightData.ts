@@ -37,44 +37,44 @@ export const useGameNightData = () => {
 	const createMutation = useMutation({
 		mutationFn: createGameNightCall,
 		onSuccess() {
-			successToast("game-nights.notifications.created");
+			successToast("game-nights:notifications.created");
 			invalidateQueries();
 		},
 		onError: () => {
-			errorToast("game-nights.notifications.create-failed");
+			errorToast("game-nights:notifications.create-failed");
 		},
 	});
 
 	const updateMutation = useMutation({
 		mutationFn: updateGameNightCall,
 		onSuccess() {
-			successToast("game-nights.notifications.updated");
+			successToast("game-nights:notifications.updated");
 			invalidateQueries();
 		},
 		onError: () => {
-			errorToast("game-nights.notifications.update-failed");
+			errorToast("game-nights:notifications.update-failed");
 		},
 	});
 
 	const deleteMutation = useMutation({
 		mutationFn: deleteGameNightCall,
 		onSuccess() {
-			successToast("game-nights.notifications.deleted");
+			successToast("game-nights:notifications.deleted");
 			invalidateQueries();
 		},
 		onError: () => {
-			errorToast("game-nights.notifications.delete-failed");
+			errorToast("game-nights:notifications.delete-failed");
 		},
 	});
 
 	const rsvpMutation = useMutation({
 		mutationFn: updateGameNightRsvpCall,
 		onSuccess() {
-			successToast("game-nights.notifications.rsvp-updated");
+			successToast("game-nights:notifications.rsvp-updated");
 			invalidateQueries();
 		},
 		onError: () => {
-			errorToast("game-nights.notifications.rsvp-update-failed");
+			errorToast("game-nights:notifications.rsvp-update-failed");
 		},
 	});
 

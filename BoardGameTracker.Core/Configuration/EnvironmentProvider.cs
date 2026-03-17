@@ -15,8 +15,8 @@ public class EnvironmentProvider : IEnvironmentProvider
         ? parsedPort
         : 7178;
 
-    public bool EnableStatistics =>
-        bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS"), out var enableLogging) && enableLogging;
+    public bool StatisticsEnabled =>
+        bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out var statisticsEnabled) && statisticsEnabled;
 
     public LogEventLevel LogLevel => LogLevelExtensions.GetEnvironmentLogLevel();
     public bool IsDevelopment => EnvironmentName.Equals("development", StringComparison.OrdinalIgnoreCase);

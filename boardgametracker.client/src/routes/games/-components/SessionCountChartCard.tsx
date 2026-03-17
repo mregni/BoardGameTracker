@@ -16,12 +16,12 @@ interface Props extends HtmlHTMLAttributes<HTMLDivElement> {
 
 export const SessionCountChartCard = (props: Props) => {
 	const { playByDayChart, className } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	const chartData = transformSessionCountChartData(playByDayChart, t);
 
 	return (
-		<BgtCard title={t("game.titles.session-count-per-day")} icon={BarChart} className={className}>
+		<BgtCard title={t("titles.session-count-per-day")} icon={BarChart} className={className}>
 			<BgtBarChart index="day" keys={["sessions"]} data={chartData} />
 		</BgtCard>
 	);

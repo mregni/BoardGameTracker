@@ -43,7 +43,7 @@ public class LogLevelExtensionsTests : IDisposable
     [Fact]
     public void GetEnvironmentLogLevel_ShouldReturnDebug_WhenEnvironmentVariableIsDEBUG()
     {
-        Environment.SetEnvironmentVariable("LOGLEVEL", "DEBUG");
+        Environment.SetEnvironmentVariable("LOGLEVEL", "debug");
 
         var result = LogLevelExtensions.GetEnvironmentLogLevel();
 
@@ -53,7 +53,7 @@ public class LogLevelExtensionsTests : IDisposable
     [Fact]
     public void GetEnvironmentLogLevel_ShouldReturnWarning_WhenEnvironmentVariableIsWARNING()
     {
-        Environment.SetEnvironmentVariable("LOGLEVEL", "WARNING");
+        Environment.SetEnvironmentVariable("LOGLEVEL", "warning");
 
         var result = LogLevelExtensions.GetEnvironmentLogLevel();
 
@@ -61,9 +61,13 @@ public class LogLevelExtensionsTests : IDisposable
     }
 
     [Theory]
+    [InlineData(" error ", LogEventLevel.Error)]
     [InlineData(" ERROR ", LogEventLevel.Error)]
+    [InlineData(" info ", LogEventLevel.Information)]
     [InlineData(" INFO ", LogEventLevel.Information)]
+    [InlineData(" debug ", LogEventLevel.Debug)]
     [InlineData(" DEBUG ", LogEventLevel.Debug)]
+    [InlineData(" warning ", LogEventLevel.Warning)]
     [InlineData(" WARNING ", LogEventLevel.Warning)]
     [InlineData("unknown", LogEventLevel.Warning)]
     [InlineData("invalid", LogEventLevel.Warning)]

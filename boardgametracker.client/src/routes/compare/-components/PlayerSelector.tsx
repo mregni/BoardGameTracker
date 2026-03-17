@@ -13,7 +13,7 @@ interface PlayerSelectorProps {
 }
 
 const PlayerSelectorComponent = ({ player, players, isWinner, onPlayerChange }: PlayerSelectorProps) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("compare");
 
 	const playerItems = useMemo(() => players.map((p) => ({ value: p.id, label: p.name, image: p.image })), [players]);
 
@@ -29,7 +29,7 @@ const PlayerSelectorComponent = ({ player, players, isWinner, onPlayerChange }: 
 			<PlayerAvatarWithCrown player={player} isWinner={isWinner} />
 			<BgtSimpleSelect
 				items={playerItems}
-				placeholder={t("compare.select-player")}
+				placeholder={t("select-player")}
 				hasSearch={true}
 				value={player.id}
 				onValueChange={handleValueChange}

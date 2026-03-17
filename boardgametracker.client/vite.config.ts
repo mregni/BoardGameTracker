@@ -1,3 +1,4 @@
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import tsconfigPaths from 'vite-tsconfig-paths';
 import svgr from 'vite-plugin-svgr';
 import { defineConfig } from 'vite';
@@ -6,16 +7,16 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    svgr(),
-    tsconfigPaths(),
-    react(),
-    tanstackRouter({
-      target: 'react',
-      autoCodeSplitting: true,
-    }),
-  ],
+  plugins: [svgr(), tsconfigPaths(), react(), tanstackRouter({
+    target: 'react',
+    autoCodeSplitting: true,
+  }), sentryVitePlugin({
+    org: "boardgametracker",
+    project: "boardgametracker"
+  })],
+
   base: '/',
+
   server: {
     port: 5443,
     strictPort: true,
@@ -32,4 +33,8 @@ export default defineConfig({
       },
     },
   },
+
+  build: {
+    sourcemap: true
+  }
 });

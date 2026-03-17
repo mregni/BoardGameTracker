@@ -21,7 +21,7 @@ import { useNewLoanModal } from "../-hooks/useNewLoanModal";
 
 const NewLoanModal = (props: ModalProps) => {
 	const { open, close } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["loans", "player-session", "common"]);
 
 	const [openCreatePlayerModal, setOpenCreatePlayerModal] = useState(false);
 	const newlyCreatedPlayerIdRef = useRef<number | null>(null);
@@ -92,8 +92,8 @@ const NewLoanModal = (props: ModalProps) => {
 		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
-					<BgtDialogTitle>{t("loan.new.title")}</BgtDialogTitle>
-					<BgtDialogDescription>{t("loan.new.description")}</BgtDialogDescription>
+					<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
+					<BgtDialogDescription>{t("new.description")}</BgtDialogDescription>
 					<div className="flex flex-col gap-4 mt-3 mb-3">
 						<div className="flex flex-col gap-3 w-full">
 							<form.Field name="gameId" validators={zodValidator(CreateLoanSchema, "gameId")}>
@@ -102,9 +102,9 @@ const NewLoanModal = (props: ModalProps) => {
 										field={field}
 										hasSearch
 										items={gamesSelectItems}
-										label={t("player-session.new.game.label")}
+										label={t("player-session:new.game.label")}
 										disabled={isLoading}
-										placeholder={t("player-session.new.game.placeholder")}
+										placeholder={t("player-session:new.game.placeholder")}
 									/>
 								)}
 							</form.Field>
@@ -114,24 +114,24 @@ const NewLoanModal = (props: ModalProps) => {
 										field={field}
 										hasSearch
 										items={playersSelectItems}
-										label={t("loan.new.player.label")}
+										label={t("new.player.label")}
 										disabled={isLoading}
-										placeholder={t("loan.new.player.placeholder")}
+										placeholder={t("new.player.placeholder")}
 									/>
 								)}
 							</form.Field>
 							<div>
 								<BgtButton type="button" variant="text" size="1" onClick={() => setOpenCreatePlayerModal(true)}>
-									+ {t("player-session.new.create-player")}
+									+ {t("player-session:new.create-player")}
 								</BgtButton>
 							</div>
 							<form.Field name="loanDate" validators={zodValidator(CreateLoanSchema, "loanDate")}>
 								{(field: AnyFieldApi) => (
 									<BgtDatePicker
 										field={field}
-										label={t("loan.new.start.label")}
+										label={t("new.start.label")}
 										disabled={isLoading}
-										placeholder={t("loan.new.start.placeholder")}
+										placeholder={t("new.start.placeholder")}
 									/>
 								)}
 							</form.Field>
@@ -139,9 +139,9 @@ const NewLoanModal = (props: ModalProps) => {
 								{(field: AnyFieldApi) => (
 									<BgtDatePicker
 										field={field}
-										label={t("loan.new.end.label")}
+										label={t("new.end.label")}
 										disabled={isLoading}
-										placeholder={t("loan.new.end.placeholder")}
+										placeholder={t("new.end.placeholder")}
 									/>
 								)}
 							</form.Field>
@@ -149,11 +149,11 @@ const NewLoanModal = (props: ModalProps) => {
 					</div>
 					<BgtDialogClose>
 						<BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={close}>
-							{t("common.cancel")}
+							{t("common:cancel")}
 						</BgtButton>
 						<BgtButton type="submit" disabled={isLoading} className="flex-1" variant="primary">
 							{isLoading && <Bars className="size-4" />}
-							{t("loan.new.save")}
+							{t("new.save")}
 						</BgtButton>
 					</BgtDialogClose>
 				</form>

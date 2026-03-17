@@ -21,31 +21,31 @@ const navCards: NavCard[] = [
 	{
 		to: "/",
 		icon: HomeIcon,
-		titleKey: "common.dashboard",
-		descriptionKey: "not-found.nav.dashboard-description",
+		titleKey: "common:dashboard",
+		descriptionKey: "not-found:nav.dashboard-description",
 	},
 	{
 		to: "/games",
 		icon: Game,
-		titleKey: "common.games",
-		descriptionKey: "not-found.nav.games-description",
+		titleKey: "common:games",
+		descriptionKey: "not-found:nav.games-description",
 	},
 	{
 		to: "/players",
 		icon: UsersIcon,
-		titleKey: "common.players",
-		descriptionKey: "not-found.nav.players-description",
+		titleKey: "common:players",
+		descriptionKey: "not-found:nav.players-description",
 	},
 	{
 		to: "/game-nights",
 		icon: CalendarIcon,
-		titleKey: "common.game-nights",
-		descriptionKey: "not-found.nav.game-nights-description",
+		titleKey: "common:game-nights",
+		descriptionKey: "not-found:nav.game-nights-description",
 	},
 ];
 
 export const NotFound = () => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("not-found");
 	const router = useRouter();
 
 	return (
@@ -53,26 +53,26 @@ export const NotFound = () => {
 			<div className="flex flex-col items-center text-center gap-4">
 				<span className="text-8xl md:text-9xl font-black text-primary/60 leading-none">404</span>
 				<BgtText size="6" weight="bold" color="white">
-					{t("not-found.title")}
+					{t("title")}
 				</BgtText>
 				<BgtText color="white" opacity={70}>
-					{t("not-found.subtitle")}
+					{t("subtitle")}
 				</BgtText>
 				<BgtText size="2" color="white" opacity={50}>
-					{t("not-found.description")}
+					{t("description")}
 				</BgtText>
 			</div>
 
 			<BgtButton variant="primary" size="3" onClick={() => router.history.back()}>
 				<ArrowLeft className="size-4" />
-				{t("not-found.go-back")}
+				{t("go-back")}
 			</BgtButton>
 
 			<div className="bg-primary/10 border border-primary/20 rounded-lg p-6 w-full max-w-lg mt-4">
 				<div className="flex items-center justify-center gap-2 mb-4">
 					<MagnifyingGlass className="size-5 text-primary" />
 					<BgtText weight="bold" color="white">
-						{t("not-found.quick-nav")}
+						{t("quick-nav")}
 					</BgtText>
 				</div>
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

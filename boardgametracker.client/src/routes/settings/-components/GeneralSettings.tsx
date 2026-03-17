@@ -14,22 +14,19 @@ export const GeneralSettings = withForm({
 		disabled: false,
 	},
 	render: function Render({ form, languages, disabled }) {
-		const { t } = useTranslation();
+		const { t } = useTranslation(["settings", "language"]);
 
 		return (
 			<>
-				<SettingsSection
-					title={t("settings.general.language.title")}
-					description={t("settings.general.language.description")}
-				>
+				<SettingsSection title={t("general.language.title")} description={t("general.language.description")}>
 					<form.Field name="uiLanguage" validators={zodValidator(SettingsSchema, "uiLanguage")}>
 						{(field: AnyFieldApi) => (
 							<BgtSelect
 								field={field}
 								disabled={disabled}
-								label={t("settings.general.language.label")}
+								label={t("general.language.label")}
 								items={languages.map((value: { key: string; translationKey: string }) => ({
-									label: t(`languages.${value.translationKey}`),
+									label: t(`language:${value.translationKey}`),
 									value: value.key,
 								}))}
 							/>
@@ -37,10 +34,7 @@ export const GeneralSettings = withForm({
 					</form.Field>
 				</SettingsSection>
 
-				<SettingsSection
-					title={t("settings.general.date-time.title")}
-					description={t("settings.general.date-time.description")}
-				>
+				<SettingsSection title={t("general.date-time.title")} description={t("general.date-time.description")}>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 						<form.Field name="dateFormat" validators={zodValidator(SettingsSchema, "dateFormat")}>
 							{(field: AnyFieldApi) => (
@@ -48,7 +42,7 @@ export const GeneralSettings = withForm({
 									field={field}
 									disabled={disabled}
 									type="text"
-									label={t("settings.general.date-time.date-format")}
+									label={t("general.date-time.date-format")}
 									placeholder="MM/DD/YYYY"
 								/>
 							)}
@@ -59,7 +53,7 @@ export const GeneralSettings = withForm({
 									field={field}
 									disabled={disabled}
 									type="text"
-									label={t("settings.general.date-time.time-format")}
+									label={t("general.date-time.time-format")}
 									placeholder="HH:mm"
 								/>
 							)}
@@ -67,17 +61,14 @@ export const GeneralSettings = withForm({
 					</div>
 				</SettingsSection>
 
-				<SettingsSection
-					title={t("settings.general.currency.title")}
-					description={t("settings.general.currency.description")}
-				>
+				<SettingsSection title={t("general.currency.title")} description={t("general.currency.description")}>
 					<form.Field name="currency" validators={zodValidator(SettingsSchema, "currency")}>
 						{(field: AnyFieldApi) => (
 							<BgtInputField
 								field={field}
 								disabled={disabled}
 								type="text"
-								label={t("settings.general.currency.label")}
+								label={t("general.currency.label")}
 								placeholder="USD"
 							/>
 						)}

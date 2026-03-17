@@ -30,20 +30,20 @@ export const Route = createFileRoute("/")({
 function RouteComponent() {
 	const { statistics, settings } = useDashboardData();
 	const navigate = useNavigate();
-	const { t } = useTranslation();
+	const { t } = useTranslation(["statistics", "common", "dashboard"]);
 
 	if (statistics === undefined || settings === undefined) return null;
 
 	if (statistics.totalGames === 0) {
 		return (
 			<BgtEmptyPage
-				header={t("common.dashboard")}
+				header={t("common:dashboard")}
 				icon={Home}
 				emptyIcon={Game}
-				title={t("dashboard.empty.title")}
-				description={t("dashboard.empty.description")}
+				title={t("dashboard:empty.title")}
+				description={t("dashboard:empty.description")}
 				action={{
-					label: t("dashboard.empty.button"),
+					label: t("dashboard:empty.button"),
 					onClick: () => navigate({ to: "/games" }),
 				}}
 			/>
@@ -60,33 +60,33 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageHeader header={t("common.dashboard")} icon={Home} />
+			<BgtPageHeader header={t("common:dashboard")} icon={Home} />
 			<BgtPageContent>
 				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 					<BgtTextStatistic
 						content={statistics.totalGames}
-						title={t("statistics.game-count")}
+						title={t("game-count")}
 						icon={<Game />}
 						textSize="8"
 						iconClassName="size-9"
 					/>
 					<BgtTextStatistic
 						content={statistics.activePlayers}
-						title={t("statistics.player-count")}
+						title={t("player-count")}
 						icon={<Players />}
 						textSize="8"
 						iconClassName="size-9"
 					/>
 					<BgtTextStatistic
 						content={statistics.sessionsPlayed}
-						title={t("statistics.session-count")}
+						title={t("session-count")}
 						icon={<Calendar />}
 						textSize="8"
 						iconClassName="size-9"
 					/>
 					<BgtTextStatistic
 						content={statistics.totalCollectionValue}
-						title={t("statistics.collection-value")}
+						title={t("collection-value")}
 						prefix={settings.currency}
 						icon={<Coins />}
 						textSize="8"
@@ -94,14 +94,14 @@ function RouteComponent() {
 					/>
 				</div>
 				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-					<BgtTextStatistic content={totalPlayedTime} title={t("statistics.total-playtime")} />
+					<BgtTextStatistic content={totalPlayedTime} title={t("total-playtime")} />
 					<BgtTextStatistic
 						content={Math.round(statistics.avgGamePrice ?? 0)}
-						title={t("statistics.average-cost")}
+						title={t("average-cost")}
 						prefix={settings.currency}
 					/>
-					<BgtTextStatistic content={statistics.expansionsOwned} title={t("statistics.expansion-count")} />
-					<BgtTextStatistic content={avgSessionTime} title={t("statistics.average-playtime")} />
+					<BgtTextStatistic content={statistics.expansionsOwned} title={t("expansion-count")} />
+					<BgtTextStatistic content={avgSessionTime} title={t("average-playtime")} />
 				</div>
 				<div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-6 gap-4">
 					<RecentActivityCard activities={statistics.recentActivities} className="col-span-1 2xl:col-span-2" />

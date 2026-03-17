@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const PlayerWinRecordCard = ({ total, wins }: Props) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "player"]);
 
 	const pieData = useMemo(() => {
 		let losses = total - wins;
@@ -21,20 +21,20 @@ export const PlayerWinRecordCard = ({ total, wins }: Props) => {
 		return [
 			{
 				id: "Wins",
-				label: t("common.wins"),
+				label: t("wins"),
 				value: wins,
 			},
 			{
 				id: "Losses",
-				label: t("common.losses"),
+				label: t("losses"),
 				value: losses,
 			},
 		];
 	}, [total, wins, t]);
 
 	return (
-		<BgtCard title={t("player.cards.win-record")} icon={Target}>
-			<BgtPieChart data={pieData} showLegend tooltipPrefix="common.sessions" />
+		<BgtCard title={t("player:cards.win-record")} icon={Target}>
+			<BgtPieChart data={pieData} showLegend tooltipPrefix="common:sessions" />
 		</BgtCard>
 	);
 };

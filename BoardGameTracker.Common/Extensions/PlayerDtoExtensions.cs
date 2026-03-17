@@ -5,8 +5,13 @@ namespace BoardGameTracker.Common.Extensions;
 
 public static class PlayerDtoExtensions
 {
-    public static PlayerDto ToDto(this Player player)
+    public static PlayerDto? ToDto(this Player? player)
     {
+        if (player == null)
+        {
+            return null;
+        }
+        
         return new PlayerDto
         {
             Id = player.Id,
