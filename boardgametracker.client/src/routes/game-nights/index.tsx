@@ -34,7 +34,7 @@ export const Route = createFileRoute("/game-nights/")({
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("game-nights");
 	const { canWrite } = usePermissions();
 	const [filter, setFilter] = useState<FilterType>("all");
 	const [selectedGameNightId, setSelectedGameNightId] = useState<number | null>(null);
@@ -89,11 +89,11 @@ function RouteComponent() {
 	if (gameNights.length === 0) {
 		return (
 			<BgtEmptyPage
-				header={t("game-nights.title")}
+				header={t("title")}
 				icon={Calendar}
-				title={t("game-nights.empty.title")}
-				description={t("game-nights.empty.description")}
-				action={canWrite ? { label: t("game-nights.create.button"), onClick: modals.createModal.show } : undefined}
+				title={t("empty.title")}
+				description={t("empty.description")}
+				action={canWrite ? { label: t("create.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<CreateGameNightModal
 					open={modals.createModal.isOpen}
@@ -112,14 +112,14 @@ function RouteComponent() {
 		<BgtPage>
 			<BgtPageHeader
 				icon={Calendar}
-				header={t("game-nights.title")}
+				header={t("title")}
 				actions={
 					canWrite
 						? [
 								{
 									onClick: modals.createModal.show,
 									variant: "primary",
-									content: "game-nights.create.button",
+									content: "game-nights:create.button",
 								},
 							]
 						: []
@@ -199,8 +199,8 @@ function RouteComponent() {
 								setSelectedGameNightId(null);
 							}}
 							onDelete={actions.handleDelete}
-							title={t("game-nights.delete.title")}
-							description={t("game-nights.delete.description", {
+							title={t("delete.title")}
+							description={t("delete.description", {
 								title: selectedGameNight?.title,
 							})}
 						/>

@@ -16,7 +16,7 @@ interface HeadToHeadProps {
 }
 
 const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLanguage }: HeadToHeadProps) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("compare");
 
 	const { gameById } = useGameById();
 
@@ -26,7 +26,7 @@ const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLang
 				{
 					key: "direct-wins-player-one",
 					isValid: true,
-					text: t("compare.head-to-head.direct-wins", {
+					text: t("head-to-head.direct-wins", {
 						player: playerOne.name,
 						count: compare.directWins.playerOne,
 						opponent: playerTwo.name,
@@ -35,7 +35,7 @@ const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLang
 				{
 					key: "direct-wins-player-two",
 					isValid: true,
-					text: t("compare.head-to-head.direct-wins", {
+					text: t("head-to-head.direct-wins", {
 						player: playerTwo.name,
 						count: compare.directWins.playerTwo,
 						opponent: playerOne.name,
@@ -45,7 +45,7 @@ const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLang
 					? {
 							key: "most-won-player-one",
 							isValid: true,
-							text: t("compare.head-to-head.most-won-game", {
+							text: t("head-to-head.most-won-game", {
 								player: playerOne.name,
 								opponent: playerTwo.name,
 								game: gameById(compare.mostWonGame.playerOne.gameId)?.title,
@@ -57,7 +57,7 @@ const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLang
 					? {
 							key: "most-won-player-two",
 							isValid: true,
-							text: t("compare.head-to-head.most-won-game", {
+							text: t("head-to-head.most-won-game", {
 								player: playerTwo.name,
 								opponent: playerOne.name,
 								game: gameById(compare.mostWonGame.playerTwo.gameId)?.title,
@@ -69,7 +69,7 @@ const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLang
 					? {
 							key: "last-session",
 							isValid: true,
-							text: t("compare.head-to-head.last-session", {
+							text: t("head-to-head.last-session", {
 								player: compare.lastWonGame.playerId === playerOne.id ? playerOne.name : playerTwo.name,
 								game: gameById(compare.lastWonGame.gameId)?.title,
 							}),
@@ -79,7 +79,7 @@ const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLang
 					? {
 							key: "most-played-together",
 							isValid: true,
-							text: t("compare.head-to-head.most-played-together", {
+							text: t("head-to-head.most-played-together", {
 								game: gameById(compare.preferredGame.gameId)?.title,
 								count: compare.preferredGame.sessionCount,
 							}),
@@ -89,7 +89,7 @@ const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLang
 					? {
 							key: "closest-game",
 							isValid: true,
-							text: t("compare.head-to-head.closest-game", {
+							text: t("head-to-head.closest-game", {
 								player: compare.closestGame.playerId === playerOne.id ? playerOne.name : playerTwo.name,
 								points: compare.closestGame.scoringDifference,
 								game: gameById(compare.closestGame.gameId)?.title,
@@ -100,7 +100,7 @@ const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLang
 					? {
 							key: "first-game-together",
 							isValid: true,
-							text: t("compare.head-to-head.first-game-together", {
+							text: t("head-to-head.first-game-together", {
 								game: gameById(compare.firstGameTogether.gameId)?.title,
 								date: toDisplay(compare.firstGameTogether.startDate, dateFormat, uiLanguage),
 							}),
@@ -113,7 +113,7 @@ const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLang
 	return (
 		<div>
 			<BgtHeading size="6" className="text-white pb-6 text-center">
-				{t("compare.head-to-head.title")}
+				{t("head-to-head.title")}
 			</BgtHeading>
 			<div className="space-y-3 max-w-3xl mx-auto">
 				{headToHeadStats.map((stat) => {

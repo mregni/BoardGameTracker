@@ -11,6 +11,7 @@ const callbackSearchSchema = z.object({
 	accessToken: z.string().optional(),
 	refreshToken: z.string().optional(),
 	error: z.string().optional(),
+	redirect: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_bare/auth-callback")({
@@ -20,9 +21,9 @@ export const Route = createFileRoute("/_bare/auth-callback")({
 
 function AuthCallbackPage() {
 	const navigate = useNavigate();
-	const { t } = useTranslation();
+	const { t } = useTranslation("auth");
 	const { setTokens } = useAuth();
-	const { accessToken, refreshToken, error } = Route.useSearch();
+	const { accessToken, refreshToken, error, redirect } = Route.useSearch();
 
 	useEffect(() => {
 		if (error) {
@@ -46,14 +47,14 @@ function AuthCallbackPage() {
 				};
 
 				setTokens(accessToken, refreshToken, user);
-				navigate({ to: "/" });
+				navigate({ to: redirect ?? "/" });
 			} catch {
 				navigate({ to: "/login" });
 			}
 		} else {
 			navigate({ to: "/login" });
 		}
-	}, [accessToken, refreshToken, error, navigate, setTokens]);
+	}, [accessToken, refreshToken, error, navigate, setTokens, redirect]);
 
 	return (
 		<BgtPage>
@@ -61,7 +62,7 @@ function AuthCallbackPage() {
 				<div className="text-center">
 					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
 					<BgtText size="3" color="white" className="mt-4">
-						{t("auth.authenticating")}
+						{t("authenticating")}
 					</BgtText>
 				</div>
 			</BgtPageContent>

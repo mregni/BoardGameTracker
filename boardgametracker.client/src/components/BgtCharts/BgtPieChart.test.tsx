@@ -57,7 +57,7 @@ describe("BgtPieChart", () => {
 
 		it('should display "Total" label', () => {
 			renderWithTheme(<BgtPieChart {...defaultProps} />);
-			expect(screen.getByText("common.total")).toBeInTheDocument();
+			expect(screen.getByText("total")).toBeInTheDocument();
 		});
 	});
 
@@ -119,12 +119,12 @@ describe("BgtPieChart", () => {
 						{ id: "2", label: "Wanted", value: 25 },
 					]}
 					showLegend={true}
-					tooltipPrefix="games.count"
+					tooltipPrefix="games:count"
 				/>,
 			);
 
 			expect(screen.getByText("100")).toBeInTheDocument();
-			expect(screen.getByText("common.total")).toBeInTheDocument();
+			expect(screen.getByText("total")).toBeInTheDocument();
 			expect(screen.getAllByText("Owned").length).toBeGreaterThanOrEqual(1);
 			expect(screen.getAllByText("Wanted").length).toBeGreaterThanOrEqual(1);
 		});

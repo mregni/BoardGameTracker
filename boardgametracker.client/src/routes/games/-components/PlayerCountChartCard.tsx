@@ -15,13 +15,13 @@ interface Props {
 
 export const PlayerCountChartCard = (props: Props) => {
 	const { playerCountChart } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	const chartData = transformPlayerCountChartData(playerCountChart, t);
 
 	return (
-		<BgtCard title={t("game.charts.player-count")} icon={Users}>
-			<BgtPieChart showLegend data={chartData} tooltipPrefix="common.game" />
+		<BgtCard title={t("charts.player-count")} icon={Users}>
+			<BgtPieChart showLegend data={chartData} tooltipPrefix="common:game" />
 		</BgtCard>
 	);
 };

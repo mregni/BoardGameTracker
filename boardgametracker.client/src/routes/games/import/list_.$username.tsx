@@ -33,11 +33,11 @@ const maxImport = 5;
 
 function RouteComponent() {
 	const { username } = Route.useParams();
-	const { t } = useTranslation();
-	const [loadText, setLoadText] = useState("games.import.loading");
+	const { t } = useTranslation(["common", "game", "bgg-import", "games"]);
+	const [loadText, setLoadText] = useState("games:import.loading");
 
 	const onSuccess = () => {
-		setLoadText("games.import.loading");
+		setLoadText("games:import.loading");
 	};
 
 	const {
@@ -91,7 +91,7 @@ function RouteComponent() {
 			{
 				accessorKey: "2",
 				cell: ({ row }) => <div className={cx(row.original.inCollection && "text-gray-500")}>{row.original.title}</div>,
-				header: t("common.name"),
+				header: t("name"),
 			},
 			{
 				accessorKey: "3",
@@ -111,7 +111,7 @@ function RouteComponent() {
 						</span>
 					</div>
 				),
-				header: t("common.name"),
+				header: t("name"),
 			},
 			{
 				accessorKey: "4",
@@ -124,13 +124,13 @@ function RouteComponent() {
 								price: Number(event.target.value),
 							})
 						}
-						placeholder={t("game.price.placeholder")}
+						placeholder={t("game:price.placeholder")}
 						disabled={row.original.inCollection}
 						className="w-[130px]"
 						prefixLabel={settings?.currency}
 					/>
 				),
-				header: t("game.price.label"),
+				header: t("game:price.label"),
 			},
 			{
 				accessorKey: "5",
@@ -145,19 +145,19 @@ function RouteComponent() {
 						}))}
 					/>
 				),
-				header: t("common.state"),
+				header: t("state"),
 			},
 			{
 				accessorKey: "6",
 				cell: ({ row }) => (
 					<BgtSimpleSwitch
-						label={t("game.scoring.label")}
+						label={t("game:scoring.label")}
 						value={row.original.hasScoring}
 						disabled={row.original.inCollection}
 						onChange={(value) => updateGame(row.original.bggId, { hasScoring: value })}
 					/>
 				),
-				header: t("common.scoring"),
+				header: t("scoring"),
 			},
 			{
 				accessorKey: "7",
@@ -173,7 +173,7 @@ function RouteComponent() {
 						disabled={row.original.inCollection}
 					/>
 				),
-				header: t("game.added-date.label"),
+				header: t("game:added-date.label"),
 			},
 		],
 		[settings?.currency, t, updateGame],
@@ -184,19 +184,19 @@ function RouteComponent() {
 	}, [games]);
 
 	const triggerImport = () => {
-		setLoadText("games.import.importing");
+		setLoadText("games:import.importing");
 		startImport(games.filter((game) => game.checked));
 	};
 
 	return (
 		<BgtPage>
-			<BgtPageHeader header={t("bgg-import.title")} actions={[]} />
+			<BgtPageHeader header={t("bgg-import:title")} actions={[]} />
 			<BgtPageContent>
 				<ImportLoader show={() => statusCode !== 200 || processingGames || importing} text={t(loadText)}>
 					<div className="flex flex-row justify-between gap-4 mb-16">
 						<div className="flex flex-col gap-2 flex-1">
 							<BgtText>
-								{t("games.import.intro", {
+								{t("games:import.intro", {
 									count: totalCount,
 									collectionCount: inCollectionCount,
 									maxImport,
@@ -210,7 +210,7 @@ function RouteComponent() {
 						</div>
 						<div>
 							<BgtButton onClick={() => triggerImport()} disabled={checkedCount > maxImport} variant="primary">
-								{t("games.import.start-import", {
+								{t("games:import.start-import", {
 									count: checkedCount,
 									totalCount: maxImport,
 								})}
@@ -223,7 +223,7 @@ function RouteComponent() {
 					<BgtDataTable
 						columns={columns}
 						data={games.slice(page * countPerPage, (page + 1) * countPerPage)}
-						noDataMessage={t("common.no-data")}
+						noDataMessage={t("no-data")}
 						widths={["w-[48px]", "w-[70px]", null, "w-[100px]"]}
 					/>
 

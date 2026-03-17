@@ -22,7 +22,7 @@ import { useBggGameModal } from "../-hooks/useBggGameModal";
 
 export const BggGameModal = (props: ModalProps) => {
 	const { open, close } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["game", "common"]);
 	const navigate = useNavigate();
 
 	const onSuccess = useCallback(
@@ -59,22 +59,22 @@ export const BggGameModal = (props: ModalProps) => {
 	return (
 		<BgtDialog open={open} onClose={handleClose}>
 			<BgtDialogContent>
-				<BgtDialogTitle>{t("game.new.title")}</BgtDialogTitle>
-				<BgtDialogDescription>{t("game.new.bgg-description")}</BgtDialogDescription>
+				<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
+				<BgtDialogDescription>{t("new.bgg-description")}</BgtDialogDescription>
 				<form onSubmit={handleFormSubmit(form)}>
 					<div className="flex flex-col gap-4 mt-3 mb-6">
 						<BgtButton onClick={openBgg} disabled={isPending} variant="primary" type="button">
 							<SquareOutIcon className="size-5" />
-							{t("game.bgg.external-page")}
+							{t("bgg.external-page")}
 						</BgtButton>
 						<form.Field name="bggId" validators={zodValidator(BggSearchSchema, "bggId")}>
 							{(field: AnyFieldApi) => (
 								<BgtInputField
 									field={field}
 									disabled={isPending}
-									label={t("game.bgg.label")}
+									label={t("bgg.label")}
 									type="text"
-									placeholder={t("game.bgg.placeholder")}
+									placeholder={t("bgg.placeholder")}
 								/>
 							)}
 						</form.Field>
@@ -83,9 +83,9 @@ export const BggGameModal = (props: ModalProps) => {
 								<BgtInputField
 									field={field}
 									disabled={isPending}
-									label={t("game.price.label")}
+									label={t("price.label")}
 									type="number"
-									placeholder={t("game.price.placeholder")}
+									placeholder={t("price.placeholder")}
 									prefixLabel={settings?.currency}
 								/>
 							)}
@@ -95,8 +95,8 @@ export const BggGameModal = (props: ModalProps) => {
 								<BgtDatePicker
 									field={field}
 									disabled={isPending}
-									label={t("game.added-date.label")}
-									placeholder={t("game.added-date.placeholder")}
+									label={t("added-date.label")}
+									placeholder={t("added-date.placeholder")}
 								/>
 							)}
 						</form.Field>
@@ -105,7 +105,7 @@ export const BggGameModal = (props: ModalProps) => {
 								<BgtSelect
 									field={field}
 									disabled={isPending}
-									label={t("game.state.label")}
+									label={t("state.label")}
 									items={Object.values(GameState).map((value) => ({
 										label: t(getItemStateTranslationKey(value, false)),
 										value: value,
@@ -114,15 +114,15 @@ export const BggGameModal = (props: ModalProps) => {
 							)}
 						</form.Field>
 						<form.Field name="hasScoring" validators={zodValidator(BggSearchSchema, "hasScoring")}>
-							{(field: AnyFieldApi) => <BgtSwitch field={field} label={t("game.scoring.label")} disabled={isPending} />}
+							{(field: AnyFieldApi) => <BgtSwitch field={field} label={t("scoring.label")} disabled={isPending} />}
 						</form.Field>
 					</div>
 					<BgtDialogClose>
 						<BgtButton variant="cancel" onClick={handleClose} disabled={isPending}>
-							{t("common.cancel")}
+							{t("common:cancel")}
 						</BgtButton>
 						<BgtButton type="submit" variant="primary" disabled={isPending} className="flex-1">
-							{t("game.new.save")}
+							{t("new.save")}
 						</BgtButton>
 					</BgtDialogClose>
 				</form>

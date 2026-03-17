@@ -15,25 +15,25 @@ export const useLocationModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
 	const saveMutation = useMutation({
 		mutationFn: addLocationCall,
 		async onSuccess() {
-			successToast("location.notifications.created");
+			successToast("location:notifications.created");
 			onSaveSuccess?.();
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 		},
 		onError: () => {
-			errorToast("location.notifications.create-failed");
+			errorToast("location:notifications.create-failed");
 		},
 	});
 
 	const updateMutation = useMutation({
 		mutationFn: updateLocationCall,
 		async onSuccess() {
-			successToast("location.notifications.update");
+			successToast("location:notifications.update");
 			onUpdateSuccess?.();
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
 		},
 		onError: () => {
-			errorToast("location.notifications.update-failed");
+			errorToast("location:notifications.update-failed");
 		},
 	});
 

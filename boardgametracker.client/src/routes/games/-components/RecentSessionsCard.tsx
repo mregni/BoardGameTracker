@@ -13,7 +13,7 @@ interface Props {
 
 export const RecentSessionsCard = (props: Props) => {
 	const { sessions, dateFormat, gameId } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	const renderSession = useCallback(
 		(session: Session) => <SessionCardItem session={session} dateFormat={dateFormat} />,
@@ -26,9 +26,9 @@ export const RecentSessionsCard = (props: Props) => {
 		<RecentActivityCard
 			items={sessions}
 			renderItem={renderSession}
-			title={t("game.titles.recent-sessions")}
+			title={t("titles.recent-sessions")}
 			viewAllRoute={`/games/${gameId}/sessions`}
-			viewAllText={t("game.sessions")}
+			viewAllText={t("sessions")}
 			icon={Calendar}
 			getKey={getSessionKey}
 		/>

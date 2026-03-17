@@ -11,7 +11,7 @@ interface CompareEmptyStateProps {
 }
 
 export const CompareEmptyState = ({ playerCount }: CompareEmptyStateProps) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("compare");
 	const navigate = useNavigate();
 
 	const handleAddPlayers = () => {
@@ -33,17 +33,15 @@ export const CompareEmptyState = ({ playerCount }: CompareEmptyStateProps) => {
 				</div>
 
 				<BgtHeading className="mb-3">
-					{playerCount === 0 ? t("compare.empty.no-players.title") : t("compare.empty.insufficient-players.title")}
+					{playerCount === 0 ? t("empty.no-players.title") : t("empty.insufficient-players.title")}
 				</BgtHeading>
 
 				<BgtText color="white" opacity={60} className="mb-8 leading-relaxed">
-					{playerCount === 0
-						? t("compare.empty.no-players.description")
-						: t("compare.empty.insufficient-players.description")}
+					{playerCount === 0 ? t("empty.no-players.description") : t("empty.insufficient-players.description")}
 				</BgtText>
 
 				<BgtButton onClick={handleAddPlayers} className="mt-6">
-					{t("compare.empty.button")}
+					{t("empty.button")}
 				</BgtButton>
 			</div>
 		</div>

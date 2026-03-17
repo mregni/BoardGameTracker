@@ -72,9 +72,8 @@
 		}
 	},
 	"cta": {
-		"title": "Ready to Start Tracking?",
+		"title": "Ready to start tracking?",
 		"subtitle": "Self-hosted, open-source, and built for board game enthusiasts.",
-		"getStarted": "Get Started",
 		"viewDocs": "View Documentation"
 	}
 }

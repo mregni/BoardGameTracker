@@ -18,7 +18,7 @@ export const Route = createFileRoute("/games/$gameId_/update")({
 function RouteComponent() {
 	const { gameId } = Route.useParams();
 	const navigate = useNavigate();
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	const onSuccess = () => {
 		navigate({ to: `/games/${gameId}` });
@@ -42,12 +42,6 @@ function RouteComponent() {
 	};
 
 	return (
-		<GameForm
-			game={game}
-			buttonText={t("game.update.save")}
-			title={t("game.update.title")}
-			onClick={save}
-			disabled={isLoading}
-		/>
+		<GameForm game={game} buttonText={t("update.save")} title={t("update.title")} onClick={save} disabled={isLoading} />
 	);
 }

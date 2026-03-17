@@ -65,7 +65,7 @@ export const BgtPieChart = (props: Props) => {
 						<BgtText color="cyan" size="8">
 							{data.reduce((sum, item) => sum + item.value, 0)}
 						</BgtText>
-						<div className="text-white/50 text-xs uppercase">{t("common.total")}</div>
+						<div className="text-white/50 text-xs uppercase">{t("total")}</div>
 					</div>
 				</div>
 			</div>

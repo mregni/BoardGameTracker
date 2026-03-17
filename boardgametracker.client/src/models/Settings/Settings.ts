@@ -18,27 +18,27 @@ export interface Settings {
 export const SettingsSchema = z.object({
 	dateFormat: z
 		.string({
-			required_error: "settings.date-format.required",
+			required_error: "settings:date-format.required",
 		})
 		.min(1, {
-			message: "settings.date-format.required",
+			message: "settings:date-format.required",
 		}),
 	timeFormat: z
 		.string({
-			required_error: "settings.time-format.required",
+			required_error: "settings:time-format.required",
 		})
 		.min(1, {
-			message: "settings.time-format.required",
+			message: "settings:time-format.required",
 		}),
 	uiLanguage: z.string({
-		required_error: "settings.ui-language.required",
+		required_error: "settings:ui-language.required",
 	}),
 	currency: z
 		.string({
-			required_error: "settings.currency.required",
+			required_error: "settings:currency.required",
 		})
 		.min(1, {
-			message: "settings.currency.required",
+			message: "settings:currency.required",
 		}),
 	publicUrl: z.string(),
 	statistics: z.boolean(),

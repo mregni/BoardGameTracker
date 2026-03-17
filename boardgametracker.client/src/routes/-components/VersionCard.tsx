@@ -8,7 +8,7 @@ interface Props {
 }
 
 export const VersionCard = ({ versionInfo }: Props) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("version");
 
 	if (versionInfo === undefined) return null;
 
@@ -16,13 +16,13 @@ export const VersionCard = ({ versionInfo }: Props) => {
 		<>
 			{versionInfo?.updateAvailable ? (
 				<BgtFancyTextStatistic
-					title={t("version.new")}
+					title={t("new")}
 					content={`v${versionInfo.currentVersion} => v${versionInfo.latestVersion}`}
 				/>
 			) : (
 				<div className="flex items-center justify-between text-xs text-white/40 p-3 border-t border-white/10">
 					<BgtText color="white" size="3" opacity={60}>
-						{t("version.version")}
+						{t("version")}
 					</BgtText>
 					<BgtText color="white" opacity={60} className="font-mono">
 						v{versionInfo?.currentVersion}

@@ -18,7 +18,7 @@ interface Props {
 
 export const PlayerStatisticsGrid = (props: Props) => {
 	const { statistics, settings } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("statistics");
 
 	const totalPlayedTime = formatMinutesToDuration(
 		statistics.totalPlayedTime,
@@ -28,15 +28,15 @@ export const PlayerStatisticsGrid = (props: Props) => {
 
 	return (
 		<div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 xl:gap-6">
-			<BgtTextStatistic content={statistics.playCount} title={t("statistics.play-count")} />
-			<BgtTextStatistic content={totalPlayedTime} title={t("statistics.total-play-time")} />
-			<BgtTextStatistic content={statistics.winCount} title={t("statistics.win-count")} />
+			<BgtTextStatistic content={statistics.playCount} title={t("play-count")} />
+			<BgtTextStatistic content={totalPlayedTime} title={t("total-play-time")} />
+			<BgtTextStatistic content={statistics.winCount} title={t("win-count")} />
 			<BgtTextStatistic
 				content={GetPercentage(statistics.winCount, statistics.playCount)}
-				title={t("statistics.win-percentage")}
+				title={t("win-percentage")}
 				suffix={"%"}
 			/>
-			<BgtTextStatistic content={statistics.distinctGameCount} title={t("statistics.distinct-game-count")} />
+			<BgtTextStatistic content={statistics.distinctGameCount} title={t("distinct-game-count")} />
 		</div>
 	);
 };

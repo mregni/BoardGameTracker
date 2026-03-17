@@ -28,7 +28,7 @@ export const Route = createFileRoute("/loans/")({
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["loans", "common"]);
 	const { canWrite } = usePermissions();
 	const { loans, settings, deleteLoan, returnLoan, isLoading } = useLoans();
 	const { gameById } = useGameById();
@@ -45,11 +45,11 @@ function RouteComponent() {
 	if (loans.length === 0) {
 		return (
 			<BgtEmptyPage
-				header={t("common.loans")}
+				header={t("common:loans")}
 				icon={LeftRightArrowIcon}
-				title={t("loan.empty.title")}
-				description={t("loan.empty.description")}
-				action={canWrite ? { label: t("loan.new.title"), onClick: modals.createModal.show } : undefined}
+				title={t("empty.title")}
+				description={t("empty.description")}
+				action={canWrite ? { label: t("new.title"), onClick: modals.createModal.show } : undefined}
 			>
 				<NewLoanModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
 			</BgtEmptyPage>
@@ -60,14 +60,14 @@ function RouteComponent() {
 		<BgtPage>
 			<BgtPageHeader
 				icon={LeftRightArrowIcon}
-				header={t("common.loans")}
+				header={t("common:loans")}
 				actions={
 					canWrite
 						? [
 								{
 									onClick: modals.createModal.show,
 									variant: "primary",
-									content: "loan.new.title",
+									content: "loans:new.title",
 								},
 							]
 						: []
@@ -78,21 +78,21 @@ function RouteComponent() {
 					<>
 						<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:gap-6">
 							<BgtTextStatistic
-								title={t("loan.statistics.active")}
+								title={t("statistics.active")}
 								content={loans.filter((loan) => loan.returnedDate === null).length}
 							/>
 							<BgtTextStatistic
-								title={t("loan.statistics.returned")}
+								title={t("statistics.returned")}
 								content={loans.filter((loan) => loan.returnedDate !== null).length}
 							/>
-							<BgtTextStatistic title={t("loan.statistics.total-loans")} content={loans.length} />
+							<BgtTextStatistic title={t("statistics.total-loans")} content={loans.length} />
 						</div>
 						<BgtHeading size="5" className="flex items-center gap-2">
 							<Package className="text-primary text-2xl" />
-							{t("loan.statistics.active")} ({loans.filter((loan) => loan.returnedDate === null).length})
+							{t("statistics.active")} ({loans.filter((loan) => loan.returnedDate === null).length})
 						</BgtHeading>
 						{loans.filter((loan) => loan.returnedDate === null).length === 0 ? (
-							<BgtText color="primary">{t("loan.no-active-loans")}</BgtText>
+							<BgtText color="primary">{t("no-active-loans")}</BgtText>
 						) : (
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
 								{loans
@@ -112,10 +112,10 @@ function RouteComponent() {
 						)}
 						<BgtHeading size="5" className="flex items-center gap-2">
 							<History className="text-primary text-2xl" />
-							{t("common.history")} ({loans.filter((loan) => loan.returnedDate !== null).length})
+							{t("common:history")} ({loans.filter((loan) => loan.returnedDate !== null).length})
 						</BgtHeading>
 						{loans.filter((loan) => loan.returnedDate !== null).length === 0 ? (
-							<BgtText color="primary">{t("loan.no-returned-loans")}</BgtText>
+							<BgtText color="primary">{t("no-returned-loans")}</BgtText>
 						) : (
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
 								{loans

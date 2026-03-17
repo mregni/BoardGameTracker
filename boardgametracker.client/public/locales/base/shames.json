@@ -1,0 +1,11 @@
+{
+  "total-shames": "Total games",
+  "total-value": "Total value of games",
+  "average-value": "Average value of games",
+  "none": {
+    "title": "No Games on the Shelf of Shame!",
+    "description": "Congratulations! You have no games on your Shelf of Shame. Keep up the great work of playing and enjoying your collection."
+  },
+  "days-not-played": "Days not played",
+  "last-session": "Last session"
+}

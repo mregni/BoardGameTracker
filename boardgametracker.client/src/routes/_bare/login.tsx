@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtInputField } from "@/components/BgtForm";
@@ -16,15 +17,21 @@ import { getOidcProviderCall } from "@/services/authService";
 import { apiUrl } from "@/utils/apiUrl";
 import { handleFormSubmit } from "@/utils/formUtils";
 
+const loginSearchSchema = z.object({
+	redirect: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_bare/login")({
 	component: LoginPage,
+	validateSearch: loginSearchSchema,
 });
 
 function LoginPage() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("auth");
 	const navigate = useNavigate();
 	const { login, isLoading } = useAuth();
 	const [error, setError] = useState<string | null>(null);
+	const { redirect } = Route.useSearch();
 
 	const { data: oidcProvider } = useQuery<OidcProvider | null>({
 		queryKey: ["oidcProvider"],
@@ -40,16 +47,19 @@ function LoginPage() {
 			setError(null);
 			try {
 				await login({ username: value.username, password: value.password });
-				await navigate({ to: "/" });
+				await navigate({ to: redirect ?? "/" });
 			} catch {
-				setError(t("auth.invalid-credentials"));
+				setError(t("invalid-credentials"));
 			}
 		},
 	});
 
 	const handleOidcLogin = (provider: OidcProvider) => {
-		const redirectUri = `${window.location.origin}/auth-callback`;
-		window.location.href = `${apiUrl}auth/oidc/${provider.name}/login?redirectUri=${encodeURIComponent(redirectUri)}&state=${provider.name}`;
+		const callbackUrl = new URL("/auth-callback", window.location.origin);
+		if (redirect) {
+			callbackUrl.searchParams.set("redirect", redirect);
+		}
+		window.location.href = `${apiUrl}auth/oidc/${provider.name}/login?redirectUri=${encodeURIComponent(callbackUrl.toString())}&state=${provider.name}`;
 	};
 
 	return (
@@ -58,10 +68,10 @@ function LoginPage() {
 				<BgtCard className="w-full max-w-md space-y-6">
 					<div className="text-center">
 						<BgtText size="6" weight="bold" color="white">
-							{t("auth.login-title")}
+							{t("login-title")}
 						</BgtText>
 						<BgtText size="2" color="gray">
-							{t("auth.login-subtitle")}
+							{t("login-subtitle")}
 						</BgtText>
 					</div>
 
@@ -71,8 +81,8 @@ function LoginPage() {
 								<BgtInputField
 									field={field}
 									type="text"
-									label={t("auth.username")}
-									placeholder={t("auth.username-placeholder")}
+									label={t("username")}
+									placeholder={t("username-placeholder")}
 									disabled={isLoading}
 								/>
 							)}
@@ -83,8 +93,8 @@ function LoginPage() {
 								<BgtInputField
 									field={field}
 									type="password"
-									label={t("auth.password")}
-									placeholder={t("auth.password-placeholder")}
+									label={t("password")}
+									placeholder={t("password-placeholder")}
 									disabled={isLoading}
 								/>
 							)}
@@ -99,7 +109,7 @@ function LoginPage() {
 						)}
 
 						<BgtButton type="submit" disabled={isLoading} size="3" className="w-full">
-							{isLoading ? t("auth.logging-in") : t("auth.login")}
+							{isLoading ? t("logging-in") : t("login")}
 						</BgtButton>
 					</form>
 
@@ -110,7 +120,7 @@ function LoginPage() {
 									<div className="w-full border-t border-white/10" />
 								</div>
 								<div className="relative flex justify-center text-sm">
-									<span className="px-2 bg-primary/10 text-gray-400">{t("auth.or-continue-with")}</span>
+									<span className="px-2 bg-primary/10 text-gray-400">{t("or-continue-with")}</span>
 								</div>
 							</div>
 

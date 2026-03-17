@@ -19,11 +19,11 @@ export const useSettingsData = () => {
 	const saveSettingsMutation = useMutation({
 		mutationFn: updateSettingsCall,
 		onSuccess() {
-			successToast("settings.save.successfull");
+			successToast("settings:save.successfull");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.settings] });
 		},
 		onError: () => {
-			errorToast("settings.save.failed");
+			errorToast("settings:save.failed");
 		},
 	});
 

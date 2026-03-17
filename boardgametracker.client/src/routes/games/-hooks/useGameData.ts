@@ -33,10 +33,10 @@ export const useGameData = (props: UseGameDataProps) => {
 				await deleteGameCall(gameId);
 				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
-				successToast("game.delete.successfull");
+				successToast("game:delete.successfull");
 				onDeleteSuccess?.();
 			} catch {
-				errorToast("game.delete.failed");
+				errorToast("game:delete.failed");
 			}
 		}
 	};
@@ -47,10 +47,10 @@ export const useGameData = (props: UseGameDataProps) => {
 			queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.game, gameIdParam],
 			});
-			successToast("expansions.delete.successfull");
+			successToast("expansions:delete.successfull");
 			onDeleteExpansionSuccess?.();
 		} catch {
-			errorToast("expansions.delete.failed");
+			errorToast("expansions:delete.failed");
 		}
 	};
 

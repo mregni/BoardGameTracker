@@ -86,11 +86,11 @@ export const useList = ({ username, onSuccess }: Props) => {
 			// Dashboard includes counts, so this is covered
 			await invalidator.invalidateDashboard();
 
-			successToast("games.import.success");
+			successToast("games:import.success");
 			onSuccess?.();
 		},
 		onError() {
-			errorToast("games.import.failed");
+			errorToast("games:import.failed");
 		},
 	});
 

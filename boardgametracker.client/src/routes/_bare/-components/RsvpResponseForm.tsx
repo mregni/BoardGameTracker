@@ -18,7 +18,7 @@ interface Props {
 const responseOptions = [
 	{
 		state: GameNightRsvpState.Accepted,
-		labelKey: "rsvp.yes-ill-be-there",
+		labelKey: "rsvp:yes-ill-be-there",
 		Icon: Check,
 		active: "border-green-500 bg-green-500/20",
 		inactive: "border-white/10 bg-white/5 hover:border-green-500/50",
@@ -27,7 +27,7 @@ const responseOptions = [
 	},
 	{
 		state: GameNightRsvpState.Pending,
-		labelKey: "rsvp.maybe",
+		labelKey: "rsvp:maybe",
 		Icon: Sparkles,
 		active: "border-yellow-500 bg-yellow-500/20",
 		inactive: "border-white/10 bg-white/5 hover:border-yellow-500/50",
@@ -36,7 +36,7 @@ const responseOptions = [
 	},
 	{
 		state: GameNightRsvpState.Declined,
-		labelKey: "rsvp.cant-make-it",
+		labelKey: "rsvp:cant-make-it",
 		Icon: XIcon,
 		active: "border-red-500 bg-red-500/20",
 		inactive: "border-white/10 bg-white/5 hover:border-red-500/50",
@@ -46,7 +46,7 @@ const responseOptions = [
 ] as const;
 
 export const RsvpResponseForm = ({ invitedPlayers, onSubmit, isSubmitting }: Props) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("rsvp");
 	const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
 	const [selectedResponse, setSelectedResponse] = useState<GameNightRsvpState | null>(null);
 
@@ -62,11 +62,11 @@ export const RsvpResponseForm = ({ invitedPlayers, onSubmit, isSubmitting }: Pro
 	return (
 		<BgtCard className="gap-3">
 			<BgtText size="5" weight="bold">
-				{t("rsvp.your-response")}
+				{t("your-response")}
 			</BgtText>
 
 			<BgtText size="2" weight="medium" className="mb-2">
-				{t("rsvp.who-are-you")}
+				{t("who-are-you")}
 			</BgtText>
 			<select
 				value={selectedPlayerId ?? ""}
@@ -74,7 +74,7 @@ export const RsvpResponseForm = ({ invitedPlayers, onSubmit, isSubmitting }: Pro
 				className="w-full px-4 py-2.5 bg-input border border-primary/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-white text-sm"
 			>
 				<option value="" className="bg-input">
-					{t("rsvp.select-your-name")}
+					{t("select-your-name")}
 				</option>
 				{invitedPlayers.map((rsvp) => (
 					<option key={rsvp.playerId} value={rsvp.playerId} className="bg-input">
@@ -84,7 +84,7 @@ export const RsvpResponseForm = ({ invitedPlayers, onSubmit, isSubmitting }: Pro
 			</select>
 
 			<BgtText size="2" weight="medium" className="mb-2">
-				{t("rsvp.can-you-make-it")}
+				{t("can-you-make-it")}
 			</BgtText>
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
 				{responseOptions.map((option) => {
@@ -110,7 +110,7 @@ export const RsvpResponseForm = ({ invitedPlayers, onSubmit, isSubmitting }: Pro
 			</div>
 
 			<BgtButton onClick={handleSubmit} disabled={!canSubmit} variant="primary" size="3" className="w-full">
-				{t("rsvp.submit-rsvp")}
+				{t("submit-rsvp")}
 			</BgtButton>
 		</BgtCard>
 	);

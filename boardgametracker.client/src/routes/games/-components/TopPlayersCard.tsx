@@ -17,10 +17,10 @@ interface Props {
 
 export const TopPlayersCard = (props: Props) => {
 	const { topPlayers } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "game", "statistics"]);
 
 	return (
-		<BgtCard title={t("game.titles.top-players")} icon={Trophy}>
+		<BgtCard title={t("game:titles.top-players")} icon={Trophy}>
 			<div className="flex flex-col gap-3">
 				{topPlayers.map((player) => (
 					<TopPlayerCardItem key={player.playerId} player={player} />
@@ -36,7 +36,7 @@ interface ItemProps {
 
 const TopPlayerCardItem = (props: ItemProps) => {
 	const { player } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "game", "statistics"]);
 	const { playerById } = usePlayerById();
 	const navigate = useNavigate();
 
@@ -53,7 +53,7 @@ const TopPlayerCardItem = (props: ItemProps) => {
 					{playerById(player.playerId)?.name}
 				</BgtText>
 				<BgtText color="primary" opacity={70}>
-					{t("common.win", { count: player.wins })} • {t("common.game", { count: player.playCount })}
+					{t("win", { count: player.wins })} • {t("game", { count: player.playCount })}
 				</BgtText>
 			</div>
 			<div className="text-right flex flex-col items-end">
@@ -71,7 +71,7 @@ const TopPlayerCardItem = (props: ItemProps) => {
 				</div>
 				{player.averageScore && (
 					<div className="text-white/50 text-sm">
-						{player.averageScore} {t("statistics.average-abreviation")}
+						{player.averageScore} {t("statistics:average-abreviation")}
 					</div>
 				)}
 			</div>

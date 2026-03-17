@@ -13,15 +13,15 @@ export interface BggSearch {
 export const BggSearchSchema = z.object({
 	bggId: z
 		.string({
-			required_error: "game.bgg.required",
+			required_error: "game:bgg.required",
 		})
-		.min(1, { message: "game.bgg.required" }),
+		.min(1, { message: "game:bgg.required" }),
 	price: z.coerce.number({
-		invalid_type_error: "game.price.required",
+		invalid_type_error: "game:price.required",
 	}),
 	date: z.coerce.date({
 		errorMap: () => ({
-			message: "game.added-date.required",
+			message: "game:added-date.required",
 		}),
 	}),
 	state: z.preprocess((value) => Number(value), z.nativeEnum(GameState)),
@@ -30,8 +30,8 @@ export const BggSearchSchema = z.object({
 
 export const BggUserNameSchema = z.object({
 	username: z
-		.string({ required_error: "games.import.start.bgg-username.required" })
-		.min(1, { message: "games.import.start.bgg-username.required" }),
+		.string({ required_error: "games:import.start.bgg-username.required" })
+		.min(1, { message: "games:import.start.bgg-username.required" }),
 });
 
 export type BggUserName = z.infer<typeof BggUserNameSchema>;

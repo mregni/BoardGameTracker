@@ -10,7 +10,7 @@ interface CompareSummaryStatsProps {
 }
 
 const CompareSummaryStatsComponent = ({ compare }: CompareSummaryStatsProps) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("compare");
 
 	const { gameById } = useGameById();
 
@@ -22,7 +22,7 @@ const CompareSummaryStatsComponent = ({ compare }: CompareSummaryStatsProps) => 
 						{compare.totalSessionsTogether}
 					</BgtText>
 					<BgtText color="primary" opacity={70} className="uppercase tracking-wider">
-						{t("compare.total-games-played")}
+						{t("total-games-played")}
 					</BgtText>
 				</div>
 			</BgtCard>
@@ -32,7 +32,7 @@ const CompareSummaryStatsComponent = ({ compare }: CompareSummaryStatsProps) => 
 						{compare.minutesPlayed}
 					</BgtText>
 					<BgtText color="primary" opacity={70} className="uppercase tracking-wider">
-						{t("compare.minutes-played")}
+						{t("minutes-played")}
 					</BgtText>
 				</div>
 			</BgtCard>
@@ -42,7 +42,7 @@ const CompareSummaryStatsComponent = ({ compare }: CompareSummaryStatsProps) => 
 						{compare.preferredGame?.gameId ? gameById(compare.preferredGame.gameId)?.title : "-"}
 					</BgtText>
 					<BgtText color="primary" opacity={70} className="uppercase tracking-wider">
-						{t("compare.most-played-game")}
+						{t("most-played-game")}
 					</BgtText>
 				</div>
 			</BgtCard>

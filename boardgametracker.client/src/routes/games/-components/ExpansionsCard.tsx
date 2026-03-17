@@ -20,11 +20,11 @@ interface Props {
 
 export const ExpansionsCard = (props: Props) => {
 	const { expansions, canWrite, onAddExpansion, onDeleteExpansion } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	return (
 		<BgtCard
-			title={`${t("game.expansions.title")} (${expansions.length})`}
+			title={`${t("expansions.title")} (${expansions.length})`}
 			icon={Package}
 			actions={
 				canWrite
@@ -40,13 +40,13 @@ export const ExpansionsCard = (props: Props) => {
 		>
 			{expansions.length === 0 ? (
 				<div className="text-center py-8">
-					<div className="text-white/50 text-sm">{t("game.expansions.none")}</div>
+					<div className="text-white/50 text-sm">{t("expansions.none")}</div>
 					{canWrite && (
 						<button
 							onClick={onAddExpansion}
 							className="mt-3 text-primary hover:text-primary/80 text-sm transition-colors"
 						>
-							{t("game.expansions.add")}
+							{t("expansions.add")}
 						</button>
 					)}
 				</div>

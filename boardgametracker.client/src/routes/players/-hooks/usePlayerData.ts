@@ -42,10 +42,10 @@ export const usePlayerData = ({ playerId, onDeleteSuccess }: UsePLayerDataProps)
 			await deletePlayerCall(id);
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
-			infoToast("player.delete.successfull");
+			infoToast("player:delete.successfull");
 			onDeleteSuccess?.();
 		} catch {
-			errorToast("player.delete.failed");
+			errorToast("player:delete.failed");
 		}
 	};
 

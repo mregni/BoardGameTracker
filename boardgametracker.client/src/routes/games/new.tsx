@@ -16,7 +16,7 @@ export const Route = createFileRoute("/games/new")({
 
 function RouteComponent() {
 	const navigate = useNavigate();
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	const onSuccess = (game: Game) => {
 		navigate({ to: `/games/${game.id}` });
@@ -29,7 +29,5 @@ function RouteComponent() {
 		navigate({ to: `/games/${result.id}` });
 	};
 
-	return (
-		<GameForm buttonText={t("game.new.save")} title={t("game.new.manual.title")} onClick={save} disabled={isLoading} />
-	);
+	return <GameForm buttonText={t("new.save")} title={t("new.manual.title")} onClick={save} disabled={isLoading} />;
 }

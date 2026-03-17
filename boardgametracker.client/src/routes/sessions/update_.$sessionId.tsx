@@ -20,7 +20,7 @@ export const Route = createFileRoute("/sessions/update_/$sessionId")({
 
 function RouteComponent() {
 	const { sessionId } = Route.useParams();
-	const { t } = useTranslation();
+	const { t } = useTranslation("player-session");
 	const navigate = useNavigate();
 	const { canWrite } = usePermissions();
 
@@ -50,10 +50,10 @@ function RouteComponent() {
 			locationId={session.locationId}
 			playerSessions={session.playerSessions}
 			expansions={session.expansions}
-			buttonText={t("player-session.save-update")}
+			buttonText={t("save-update")}
 			onClick={save}
 			disabled={isPending}
-			title={t("player-session.title-update")}
+			title={t("title-update")}
 		/>
 	);
 }

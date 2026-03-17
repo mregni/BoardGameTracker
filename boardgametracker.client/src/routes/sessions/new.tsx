@@ -22,7 +22,7 @@ export const Route = createFileRoute("/sessions/new")({
 
 function RouteComponent() {
 	const navigate = useNavigate();
-	const { t } = useTranslation();
+	const { t } = useTranslation(["player-session", "dashboard"]);
 	const { canWrite } = usePermissions();
 	const { isPending, saveSession, games } = useNewSessionData();
 
@@ -36,12 +36,12 @@ function RouteComponent() {
 	if (games !== undefined && games.length === 0) {
 		return (
 			<BgtEmptyPage
-				header={t("player-session.title-new")}
+				header={t("title-new")}
 				icon={Game}
-				title={t("dashboard.empty.title")}
-				description={t("dashboard.empty.description")}
+				title={t("dashboard:empty.title")}
+				description={t("dashboard:empty.description")}
 				action={{
-					label: t("dashboard.empty.button"),
+					label: t("dashboard:empty.button"),
 					onClick: () => navigate({ to: "/games" }),
 				}}
 			/>
@@ -51,10 +51,10 @@ function RouteComponent() {
 	return (
 		<SessionForm
 			start={addMinutes(new Date(), -30)}
-			buttonText={t("player-session.save-new")}
+			buttonText={t("save-new")}
 			onClick={save}
 			disabled={isPending}
-			title={t("player-session.title-new")}
+			title={t("title-new")}
 		/>
 	);
 }

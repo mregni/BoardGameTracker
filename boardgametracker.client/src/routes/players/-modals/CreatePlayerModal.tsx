@@ -21,7 +21,7 @@ interface Props extends ModalProps {
 
 export const CreatePlayerModal = (props: Props) => {
 	const { open, close, onPlayerCreated } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["player", "common"]);
 	const [image, setImage] = useState<File | undefined | null>(undefined);
 
 	const { savePlayer, uploadImage, isLoading } = usePlayerModal({});
@@ -65,8 +65,8 @@ export const CreatePlayerModal = (props: Props) => {
 	return (
 		<BgtDialog open={open} onClose={handleCancel}>
 			<BgtDialogContent>
-				<BgtDialogTitle>{t("player.new.title")}</BgtDialogTitle>
-				<BgtDialogDescription>{t("player.new.description")}</BgtDialogDescription>
+				<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
+				<BgtDialogDescription>{t("new.description")}</BgtDialogDescription>
 				<form onSubmit={handleFormSubmit(form)}>
 					<div className="flex flex-row gap-3 mt-3 mb-6">
 						<div className="flex-none">
@@ -89,8 +89,8 @@ export const CreatePlayerModal = (props: Props) => {
 									<BgtInputField
 										field={field}
 										type="text"
-										placeholder={t("player.name.placeholder")}
-										label={t("common.name")}
+										placeholder={t("name.placeholder")}
+										label={t("common:name")}
 										disabled={isLoading}
 									/>
 								)}
@@ -99,11 +99,11 @@ export const CreatePlayerModal = (props: Props) => {
 					</div>
 					<BgtDialogClose>
 						<BgtButton variant="cancel" onClick={handleCancel} disabled={isLoading}>
-							{t("common.cancel")}
+							{t("common:cancel")}
 						</BgtButton>
 						<BgtButton type="submit" variant="primary" disabled={isLoading} className="flex-1">
 							{isLoading && <Bars className="size-4" />}
-							{t("player.new.save")}
+							{t("new.save")}
 						</BgtButton>
 					</BgtDialogClose>
 				</form>

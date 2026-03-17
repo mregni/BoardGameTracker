@@ -10,14 +10,14 @@ import { zodValidator } from "@/utils/zodValidator";
 import { MultiSelectField } from "./MultiSelectField";
 
 export const GameNightFormSchema = z.object({
-	title: z.string().min(1, { message: "game-nights.validation.title-required" }),
+	title: z.string().min(1, { message: "game-nights:validation.title-required" }),
 	startDate: z.coerce.date({
 		errorMap: () => {
-			return { message: "player-session.new.start.required" };
+			return { message: "player-session:new.start.required" };
 		},
 	}),
-	locationId: z.number().min(1, { message: "game-nights.validation.location-required" }),
-	hostId: z.number().min(1, { message: "game-nights.validation.host-required" }),
+	locationId: z.number().min(1, { message: "game-nights:validation.location-required" }),
+	hostId: z.number().min(1, { message: "game-nights:validation.host-required" }),
 	notes: z.string().optional(),
 });
 
@@ -44,7 +44,7 @@ interface Props {
 
 export const GameNightForm = (props: Props) => {
 	const { defaultValues, players, games, locations, isLoading, onSubmit, children, onClose } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("game-nights");
 
 	const playerOptions = useMemo(
 		() =>
@@ -122,16 +122,16 @@ export const GameNightForm = (props: Props) => {
 						<BgtInputField
 							field={field}
 							type="text"
-							label={t("game-nights.form.title.label")}
+							label={t("form.title.label")}
 							disabled={isLoading}
-							placeholder={t("game-nights.form.title.placeholder")}
+							placeholder={t("form.title.placeholder")}
 						/>
 					)}
 				</form.Field>
 
 				<form.Field name="startDate" validators={zodValidator(GameNightFormSchema, "startDate")}>
 					{(field: AnyFieldApi) => (
-						<BgtDateTimePicker field={field} disabled={isLoading} label={t("game-nights.form.start.label")} />
+						<BgtDateTimePicker field={field} disabled={isLoading} label={t("form.start.label")} />
 					)}
 				</form.Field>
 
@@ -142,9 +142,9 @@ export const GameNightForm = (props: Props) => {
 								field={field}
 								hasSearch
 								items={hostOptions}
-								label={t("game-nights.form.host.label")}
+								label={t("form.host.label")}
 								disabled={isLoading}
-								placeholder={t("game-nights.form.host.placeholder")}
+								placeholder={t("form.host.placeholder")}
 							/>
 						)}
 					</form.Field>
@@ -154,9 +154,9 @@ export const GameNightForm = (props: Props) => {
 								field={field}
 								hasSearch
 								items={locationOptions}
-								label={t("game-nights.form.location.label")}
+								label={t("form.location.label")}
 								disabled={isLoading}
-								placeholder={t("game-nights.form.location.placeholder")}
+								placeholder={t("form.location.placeholder")}
 							/>
 						)}
 					</form.Field>
@@ -165,12 +165,12 @@ export const GameNightForm = (props: Props) => {
 				<form.Field name="selectedPlayers">
 					{(field: AnyFieldApi) => (
 						<MultiSelectField
-							label={t("game-nights.form.invited-players.label")}
+							label={t("form.invited-players.label")}
 							options={playerOptions}
 							selected={field.state.value}
 							disabled={isLoading}
 							onChange={(values: number[]) => field.handleChange(values)}
-							placeholder={t("game-nights.form.invited-players.description")}
+							placeholder={t("form.invited-players.description")}
 						/>
 					)}
 				</form.Field>
@@ -178,20 +178,18 @@ export const GameNightForm = (props: Props) => {
 				<form.Field name="selectedGames">
 					{(field: AnyFieldApi) => (
 						<MultiSelectField
-							label={t("game-nights.form.suggested-games.label")}
+							label={t("form.suggested-games.label")}
 							options={gameOptions}
 							selected={field.state.value}
 							disabled={isLoading}
 							onChange={(values: number[]) => field.handleChange(values)}
-							placeholder={t("game-nights.form.suggested-games.description")}
+							placeholder={t("form.suggested-games.description")}
 						/>
 					)}
 				</form.Field>
 
 				<form.Field name="notes" validators={zodValidator(GameNightFormSchema, "notes")}>
-					{(field: AnyFieldApi) => (
-						<BgtTextArea field={field} label={t("game-nights.form.notes.label")} disabled={isLoading} />
-					)}
+					{(field: AnyFieldApi) => <BgtTextArea field={field} label={t("form.notes.label")} disabled={isLoading} />}
 				</form.Field>
 			</div>
 		</form>

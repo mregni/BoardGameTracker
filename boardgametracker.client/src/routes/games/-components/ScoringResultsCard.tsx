@@ -18,7 +18,7 @@ interface Props {
 
 export const ScoringResultsCard = (props: Props) => {
 	const { scoreRankChart } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 	const { playerById } = usePlayerById();
 
 	if (scoreRankChart.length === 0) return null;
@@ -26,15 +26,13 @@ export const ScoringResultsCard = (props: Props) => {
 	const maxScore = scoreRankChart[0].score;
 
 	return (
-		<BgtCard title={t("game.titles.scoring-results")} icon={Target}>
+		<BgtCard title={t("titles.scoring-results")} icon={Target}>
 			<div className="flex flex-col gap-3">
 				{scoreRankChart.map((item, i) => (
 					<div key={i} className="space-y-1">
 						<div className="flex items-center justify-between text-sm">
 							<div className="flex flex-col gap-0.5">
-								<BgtText className="text-white/70 uppercase text-xs">
-									{t(`game.charts.top-scoring.${item.key}`)}
-								</BgtText>
+								<BgtText className="text-white/70 uppercase text-xs">{t(`charts.top-scoring.${item.key}`)}</BgtText>
 								<BgtText color="primary">{playerById(item.playerId)?.name}</BgtText>
 							</div>
 							<BgtText size="5" weight="bold" color="cyan">

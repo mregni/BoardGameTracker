@@ -13,7 +13,7 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 
 export const GameStateChartCard = (props: Props) => {
 	const { data, className } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("dashboard");
 
 	const pieData = useMemo(() => {
 		if (data !== undefined) {
@@ -31,7 +31,7 @@ export const GameStateChartCard = (props: Props) => {
 	if (data === undefined) return null;
 
 	return (
-		<BgtChartCard title={t("dashboard.charts.collection")} icon={GamePad} className={className}>
+		<BgtChartCard title={t("charts.collection")} icon={GamePad} className={className}>
 			<BgtPieChart data={pieData} showLegend tooltipPrefix="" />
 		</BgtChartCard>
 	);

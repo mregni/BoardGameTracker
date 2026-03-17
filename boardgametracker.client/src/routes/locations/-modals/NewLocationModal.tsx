@@ -14,7 +14,7 @@ interface Props {
 
 export const NewLocationModal = (props: Props) => {
 	const { open, close } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["location", "common"]);
 
 	const { saveLocation, isLoading } = useLocationModal({
 		onSaveSuccess: close,
@@ -34,7 +34,7 @@ export const NewLocationModal = (props: Props) => {
 		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
-					<BgtDialogTitle>{t("location.new.title")}</BgtDialogTitle>
+					<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
 					<div className="flex flex-col gap-2 mb-3">
 						<form.Field
 							name="name"
@@ -49,21 +49,16 @@ export const NewLocationModal = (props: Props) => {
 							}}
 						>
 							{(field) => (
-								<BgtInputField
-									field={field}
-									type="text"
-									label={t("location.new.name.placeholder")}
-									disabled={isLoading}
-								/>
+								<BgtInputField field={field} type="text" label={t("new.name.placeholder")} disabled={isLoading} />
 							)}
 						</form.Field>
 					</div>
 					<BgtDialogClose>
 						<BgtButton variant="cancel" onClick={() => close()} disabled={isLoading}>
-							{t("common.cancel")}
+							{t("common:cancel")}
 						</BgtButton>
 						<BgtButton variant="primary" type="submit" disabled={isLoading}>
-							{t("common.save")}
+							{t("common:save")}
 						</BgtButton>
 					</BgtDialogClose>
 				</form>

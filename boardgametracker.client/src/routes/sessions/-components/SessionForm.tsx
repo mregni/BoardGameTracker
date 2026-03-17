@@ -146,7 +146,7 @@ export const SessionForm = (props: Props) => {
 									className="flex-none"
 									onClick={handleCancel}
 								>
-									{t("common.cancel")}
+									{t("cancel")}
 								</BgtButton>
 								<BgtButton type="submit" disabled={disabled} className="flex-1" variant="primary">
 									{disabled && <Bars className="size-4" />}

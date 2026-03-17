@@ -23,10 +23,10 @@ export const useLocationsData = ({ onDeleteSuccess }: Props) => {
 			await deleteLocationCall(id);
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
-			infoToast("location.notifications.deleted");
+			infoToast("location:notifications.deleted");
 			onDeleteSuccess?.();
 		} catch {
-			errorToast("location.notifications.delete-failed");
+			errorToast("location:notifications.delete-failed");
 		}
 	};
 

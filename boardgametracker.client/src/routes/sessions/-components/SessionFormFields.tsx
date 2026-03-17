@@ -15,7 +15,7 @@ export const SessionFormFields = withForm({
 		disabled: false,
 	},
 	render: function Render({ form, games, locations, disabled }) {
-		const { t } = useTranslation();
+		const { t } = useTranslation("player-session");
 
 		const gamesSelectItems = useMemo(
 			() =>
@@ -44,9 +44,9 @@ export const SessionFormFields = withForm({
 							field={field}
 							hasSearch
 							items={gamesSelectItems}
-							label={t("player-session.new.game.label")}
+							label={t("new.game.label")}
 							disabled={disabled}
-							placeholder={t("player-session.new.game.placeholder")}
+							placeholder={t("new.game.placeholder")}
 						/>
 					)}
 				</form.Field>
@@ -56,9 +56,9 @@ export const SessionFormFields = withForm({
 							field={field}
 							hasSearch
 							items={locationsSelectItems}
-							label={t("player-session.new.location.label")}
+							label={t("new.location.label")}
 							disabled={disabled}
-							placeholder={t("player-session.new.location.placeholder")}
+							placeholder={t("new.location.placeholder")}
 						/>
 					)}
 				</form.Field>
@@ -68,20 +68,16 @@ export const SessionFormFields = withForm({
 							field={field}
 							type="number"
 							disabled={disabled}
-							label={t("player-session.new.duration.label")}
-							placeholder={t("player-session.new.duration.placeholder")}
+							label={t("new.duration.label")}
+							placeholder={t("new.duration.placeholder")}
 						/>
 					)}
 				</form.Field>
 				<form.Field name="start" validators={zodValidator(CreateSessionSchema, "start")}>
-					{(field: AnyFieldApi) => (
-						<BgtDateTimePicker field={field} disabled={disabled} label={t("player-session.new.start.label")} />
-					)}
+					{(field: AnyFieldApi) => <BgtDateTimePicker field={field} disabled={disabled} label={t("new.start.label")} />}
 				</form.Field>
 				<form.Field name="comment" validators={zodValidator(CreateSessionSchema, "comment")}>
-					{(field: AnyFieldApi) => (
-						<BgtTextArea field={field} disabled={disabled} label={t("player-session.new.comment.label")} />
-					)}
+					{(field: AnyFieldApi) => <BgtTextArea field={field} disabled={disabled} label={t("new.comment.label")} />}
 				</form.Field>
 			</>
 		);

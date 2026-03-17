@@ -9,6 +9,6 @@ export const GetPercentage = (value: number, total: number): number => {
 };
 
 export const ToLogLevel = (level: number): string => {
-	const levels = ["log-levels.warn", "log-levels.debug", "log-levels.info", "log-levels.warn", "log-levels.error"];
-	return levels[level] || "log-levels.warn";
+	const levels = ["log-levels:warn", "log-levels:debug", "log-levels:info", "log-levels:warn", "log-levels:error"];
+	return levels[level] || "log-levels:warn";
 };

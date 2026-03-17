@@ -9,29 +9,29 @@ interface Props {
 
 export const NoGameNights = (props: Props) => {
 	const { filter, onCreateClick } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("game-nights");
 
 	const getMessage = () => {
 		switch (filter) {
 			case "upcoming":
-				return t("game-nights.empty.upcoming");
+				return t("empty.upcoming");
 			case "past":
-				return t("game-nights.empty.past");
+				return t("empty.past");
 			default:
-				return t("game-nights.empty.all");
+				return t("empty.all");
 		}
 	};
 
 	return (
 		<div className="text-center py-16">
 			<BgtText size="5" weight="bold" className="mb-2">
-				{t("game-nights.empty.title")}
+				{t("empty.title")}
 			</BgtText>
 			<BgtText size="3" color="gray" className="mb-6">
 				{getMessage()}
 			</BgtText>
 			<BgtButton variant="primary" size="3" onClick={onCreateClick}>
-				{t("game-nights.create-first")}
+				{t("create-first")}
 			</BgtButton>
 		</div>
 	);

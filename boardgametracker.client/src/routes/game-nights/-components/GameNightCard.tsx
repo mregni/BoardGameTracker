@@ -25,7 +25,7 @@ interface Props {
 
 export const GameNightCard = (props: Props) => {
 	const { gameNight, settings, canWrite, onEdit, onDelete, onManageRsvps } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "game-nights"]);
 	const navigate = useNavigate();
 
 	const isUpcoming = !isPast(gameNight.startDate);
@@ -45,7 +45,7 @@ export const GameNightCard = (props: Props) => {
 									isUpcoming ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400",
 								)}
 							>
-								{isUpcoming ? t("game-nights.card.upcoming") : t("game-nights.card.past")}
+								{isUpcoming ? t("game-nights:card.upcoming") : t("game-nights:card.past")}
 							</span>
 						</div>
 						<div className="flex flex-wrap gap-4 text-sm">
@@ -63,17 +63,17 @@ export const GameNightCard = (props: Props) => {
 							</BgtText>
 							<BgtText size="2" color="gray" className="flex flex-row gap-2 items-center">
 								<Users className="size-5" />
-								{t("game-nights.card.hosted-by", { host: gameNight.host.name })}
+								{t("game-nights:card.hosted-by", { host: gameNight.host.name })}
 							</BgtText>
 						</div>
 					</div>
 					{canWrite && (
 						<div className="flex gap-2">
 							<BgtButton onClick={() => onEdit(gameNight)} variant="text" size="2">
-								{t("common.edit")}
+								{t("edit")}
 							</BgtButton>
 							<BgtButton onClick={() => onDelete(gameNight)} variant="error" size="2">
-								{t("common.delete.button")}
+								{t("delete.button")}
 							</BgtButton>
 						</div>
 					)}
@@ -81,7 +81,7 @@ export const GameNightCard = (props: Props) => {
 
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 					<RsvpSection
-						title={t("common.accepted")}
+						title={t("accepted")}
 						count={gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Accepted).length}
 						players={gameNight.invitedPlayers
 							.filter((x) => x.state === GameNightRsvpState.Accepted)
@@ -89,7 +89,7 @@ export const GameNightCard = (props: Props) => {
 						variant="accepted"
 					/>
 					<RsvpSection
-						title={t("common.pending")}
+						title={t("pending")}
 						count={gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Pending).length}
 						players={gameNight.invitedPlayers
 							.filter((x) => x.state === GameNightRsvpState.Pending)
@@ -97,7 +97,7 @@ export const GameNightCard = (props: Props) => {
 						variant="pending"
 					/>
 					<RsvpSection
-						title={t("common.declined")}
+						title={t("declined")}
 						count={gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Declined).length}
 						players={gameNight.invitedPlayers
 							.filter((x) => x.state === GameNightRsvpState.Declined)
@@ -109,7 +109,7 @@ export const GameNightCard = (props: Props) => {
 				{gameNight.suggestedGames.length > 0 && (
 					<div className="flex flex-col gap-2">
 						<BgtText size="2" weight="medium" color="gray" className="mb-2">
-							{t("game-nights.card.suggested-games")}:
+							{t("game-nights:card.suggested-games")}:
 						</BgtText>
 						<div className="flex flex-wrap gap-2">
 							{gameNight.suggestedGames.map((game) => (

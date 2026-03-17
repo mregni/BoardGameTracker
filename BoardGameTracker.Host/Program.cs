@@ -192,7 +192,10 @@ app.MapControllers();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseSentryTracing();
+if (bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out var sentryEnabled) && sentryEnabled)
+{
+    app.UseSentryTracing();
+}
 
 app.UseStaticFiles(new StaticFileOptions
 {

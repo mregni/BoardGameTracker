@@ -23,11 +23,11 @@ export const useNewGame = ({ onSuccess }: Props) => {
 		onSuccess: async (data) => {
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.dashboard] });
-			successToast("game.notifications.created");
+			successToast("game:notifications.created");
 			onSuccess?.(data);
 		},
 		onError: () => {
-			errorToast("game.notifications.create-failed");
+			errorToast("game:notifications.create-failed");
 		},
 	});
 

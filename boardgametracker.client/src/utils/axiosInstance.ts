@@ -192,7 +192,8 @@ axiosInstance.interceptors.response.use(
 			} catch (refreshError) {
 				processQueue(refreshError, null);
 				clearAuthState();
-				window.location.href = "/login";
+				const currentPath = window.location.pathname + window.location.search;
+				window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
 				return Promise.reject(classifyError(error));
 			} finally {
 				isRefreshing = false;

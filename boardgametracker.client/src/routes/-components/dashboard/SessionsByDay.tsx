@@ -15,12 +15,12 @@ interface Props {
 
 export const SessionByDayCard = (props: Props) => {
 	const { playByDayChart } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	const chartData = transformSessionCountChartData(playByDayChart, t);
 
 	return (
-		<BgtCard title={t("game.titles.session-count-per-day")} icon={BarChart}>
+		<BgtCard title={t("titles.session-count-per-day")} icon={BarChart}>
 			<BgtBarChart index="day" keys={["sessions"]} data={chartData} />
 		</BgtCard>
 	);

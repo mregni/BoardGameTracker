@@ -3,9 +3,37 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import Backend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
 
-let translationFilePath = "/locales/{{lng}}.json";
+const namespaces = [
+	"version",
+	"game-nights",
+	"common",
+	"shames",
+	"loans",
+	"dashboard",
+	"expansions",
+	"bgg-import",
+	"compare",
+	"game",
+	"games",
+	"images",
+	"player",
+	"error",
+	"not-found",
+	"location",
+	"statistics",
+	"sessions",
+	"settings",
+	"player-session",
+	"language",
+	"log-levels",
+	"badges",
+	"rsvp",
+	"auth",
+] as const;
+
+let translationFilePath = "/locales/{{lng}}/{{ns}}.json";
 if (import.meta.env.DEV) {
-	translationFilePath = "/locales/base.json";
+	translationFilePath = "/locales/base/{{ns}}.json";
 }
 
 void i18n
@@ -16,6 +44,8 @@ void i18n
 		debug: false,
 		supportedLngs: ["en-US", "nl-NL", "nl-BE"],
 		fallbackLng: "en-US",
+		ns: [...namespaces],
+		defaultNS: "common",
 		interpolation: {
 			escapeValue: false,
 			format: (value: string, format) => {
