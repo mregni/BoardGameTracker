@@ -1,13 +1,13 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import LogOut from "@/assets/icons/log-out.svg?react";
+import User from "@/assets/icons/user.svg?react";
+import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
 import { BgtMenuLogo } from "@/components/BgtMenu/BgtMenuLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useMenuInfo } from "../-hooks/useMenuInfo";
 import { VersionCard } from "./VersionCard";
-import User from "@/assets/icons/user.svg?react";
-import LogOut from "@/assets/icons/log-out.svg?react";
-import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 
 export const Sidebar = () => {
 	const { t } = useTranslation("auth");

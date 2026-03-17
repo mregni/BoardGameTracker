@@ -2,14 +2,14 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import LogOut from "@/assets/icons/log-out.svg?react";
 import More from "@/assets/icons/more.svg?react";
+import User from "@/assets/icons/user.svg?react";
+import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { useMenuInfo } from "../-hooks/useMenuInfo";
 import { useAuth } from "@/hooks/useAuth";
-import User from "@/assets/icons/user.svg?react";
-import LogOut from "@/assets/icons/log-out.svg?react";
-import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
+import { useMenuInfo } from "../-hooks/useMenuInfo";
 
 export const BottomNav = () => {
 	const { t } = useTranslation("version");
