@@ -642,3 +642,5 @@ boardgametracker.client/.tanstack/
 BoardGameTracker.Host/config/config.xml
 
 BoardGameTracker.Host/appsettings.Development.json
+
+boardgametracker.client/.env.sentry-build-plugin
