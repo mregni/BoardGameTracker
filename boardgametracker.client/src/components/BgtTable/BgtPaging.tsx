@@ -21,13 +21,13 @@ export const BgtPaging = ({ page, setPage, totalCount, countPerPage }: Props) =>
 	return (
 		<div className="flex flex-row justify-between">
 			<BgtButton variant="text" onClick={() => setPage((prev) => prev - 1)} disabled={page === 0}>
-				{t("common.previous-page")}
+				{t("previous-page")}
 			</BgtButton>
 			<div>
 				{page + 1} / {totalPages}
 			</div>
 			<BgtButton variant="text" onClick={() => setPage((prev) => prev + 1)} disabled={isLastPage}>
-				{t("common.next-page")}
+				{t("next-page")}
 			</BgtButton>
 		</div>
 	);

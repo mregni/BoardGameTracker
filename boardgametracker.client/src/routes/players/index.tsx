@@ -24,7 +24,7 @@ export const Route = createFileRoute("/players/")({
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["player", "common"]);
 	const { canWrite } = usePermissions();
 	const modals = usePlayerModals();
 	const { players, isLoading } = usePlayersData();
@@ -35,11 +35,11 @@ function RouteComponent() {
 	if (players.length === 0) {
 		return (
 			<BgtEmptyPage
-				header={t("common.players")}
+				header={t("common:players")}
 				icon={Users}
-				title={t("player.empty.title")}
-				description={t("player.empty.description")}
-				action={canWrite ? { label: t("player.new.button"), onClick: modals.createModal.show } : undefined}
+				title={t("empty.title")}
+				description={t("empty.description")}
+				action={canWrite ? { label: t("new.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<CreatePlayerModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
 			</BgtEmptyPage>
@@ -49,13 +49,13 @@ function RouteComponent() {
 	return (
 		<BgtPage>
 			<BgtPageHeader
-				header={t("common.players")}
+				header={t("common:players")}
 				icon={Users}
 				actions={
 					canWrite
 						? [
 								{
-									content: "player.new.button",
+									content: "player:new.button",
 									variant: "primary",
 									onClick: modals.createModal.show,
 								},
@@ -66,7 +66,7 @@ function RouteComponent() {
 			<BgtPageContent>
 				<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
 				<BgtText size="3" className="pb-6 text-primary" weight="medium">
-					{t("player.count", { count: filteredPlayers.length })}
+					{t("count", { count: filteredPlayers.length })}
 				</BgtText>
 				<BgtCardList>
 					{filteredPlayers.map((x) => (

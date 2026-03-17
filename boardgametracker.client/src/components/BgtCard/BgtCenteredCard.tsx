@@ -16,7 +16,7 @@ export const BgtCenteredCard = (props: Props) => {
 	}
 
 	return (
-		<div className="grid place-items-center md:h-full" {...rest}>
+		<div className="grid place-items-center md:h-full w-full" {...rest}>
 			<div
 				className={cx(
 					"border-card-border border rounded-lg bg-card p-6 md:p-10 flex flex-col items-center gap-6",

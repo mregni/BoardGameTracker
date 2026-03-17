@@ -17,7 +17,7 @@ export const Route = createFileRoute("/games/import/start")({
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["games", "common"]);
 	const router = useRouter();
 	const navigate = useNavigate();
 
@@ -36,16 +36,16 @@ function RouteComponent() {
 	return (
 		<BgtPage>
 			<BgtPageContent>
-				<BgtCenteredCard title={t("games.import.start.title")} className="max-w-[600px]">
+				<BgtCenteredCard title={t("import.start.title")} className="max-w-[600px]">
 					<form onSubmit={handleFormSubmit(form)}>
 						<div className="flex flex-col gap-5 w-full">
-							<div>{t("games.import.start.description")}</div>
+							<div>{t("import.start.description")}</div>
 							<form.Field name="username" validators={zodValidator(BggUserNameSchema, "username")}>
 								{(field: AnyFieldApi) => (
 									<BgtInputField
 										field={field}
 										disabled={isLoading}
-										label={t("games.import.start.bgg-username.label")}
+										label={t("import.start.bgg-username.label")}
 										type="text"
 									/>
 								)}
@@ -58,11 +58,11 @@ function RouteComponent() {
 									className="flex-none"
 									onClick={() => router.history.back()}
 								>
-									{t("common.cancel")}
+									{t("common:cancel")}
 								</BgtButton>
 								<BgtButton type="submit" disabled={isLoading} className="flex-1" variant="primary">
 									{isLoading && <Bars className="size-4" />}
-									{t("games.import.start.button")}
+									{t("import.start.button")}
 								</BgtButton>
 							</div>
 						</div>

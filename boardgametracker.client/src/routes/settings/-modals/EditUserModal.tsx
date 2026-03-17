@@ -22,14 +22,14 @@ interface Props {
 }
 
 export const EditUserModal = ({ open, close, user, onSubmit, isLoading }: Props) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["settings", "auth", "common"]);
 	const [error, setError] = useState<string | null>(null);
 
 	const roleItems: BgtSelectItem[] = useMemo(
 		() => [
-			{ value: "User", label: t("settings.account.users.roles.user") },
-			{ value: "Reader", label: t("settings.account.users.roles.reader") },
-			{ value: "Admin", label: t("settings.account.users.roles.admin") },
+			{ value: "User", label: t("account.users.roles.user") },
+			{ value: "Reader", label: t("account.users.roles.reader") },
+			{ value: "Admin", label: t("account.users.roles.admin") },
 		],
 		[t],
 	);
@@ -51,7 +51,7 @@ export const EditUserModal = ({ open, close, user, onSubmit, isLoading }: Props)
 				});
 				close();
 			} catch (e) {
-				setError(isApiError(e) ? t(e.message) : t("settings.account.notifications.user-update-failed"));
+				setError(isApiError(e) ? t(e.message) : t("account.notifications.user-update-failed"));
 			}
 		},
 	});
@@ -60,42 +60,37 @@ export const EditUserModal = ({ open, close, user, onSubmit, isLoading }: Props)
 		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
-					<BgtDialogTitle>{t("settings.account.users.edit.title")}</BgtDialogTitle>
+					<BgtDialogTitle>{t("account.users.edit.title")}</BgtDialogTitle>
 					<BgtDialogDescription>
-						{t("settings.account.users.edit.description", { username: user.username })}
+						{t("account.users.edit.description", { username: user.username })}
 					</BgtDialogDescription>
 					<div className="flex flex-col gap-2 mb-3 mt-3">
 						<form.Field name="username">
-							{(field) => <BgtInputField field={field} type="text" label={t("auth.username")} disabled={isLoading} />}
+							{(field) => <BgtInputField field={field} type="text" label={t("auth:username")} disabled={isLoading} />}
 						</form.Field>
 						<form.Field name="email">
 							{(field) => (
 								<BgtInputField
 									field={field}
 									type="text"
-									label={t("settings.account.profile.email.label")}
+									label={t("account.profile.email.label")}
 									disabled={isLoading}
 								/>
 							)}
 						</form.Field>
 						<form.Field name="role">
 							{(field) => (
-								<BgtSelect
-									field={field}
-									label={t("settings.account.users.role")}
-									items={roleItems}
-									disabled={isLoading}
-								/>
+								<BgtSelect field={field} label={t("account.users.role")} items={roleItems} disabled={isLoading} />
 							)}
 						</form.Field>
 					</div>
 					{error && <div className="text-error text-sm mb-2">{error}</div>}
 					<BgtDialogClose>
 						<BgtButton variant="cancel" onClick={close} disabled={isLoading}>
-							{t("common.cancel")}
+							{t("common:cancel")}
 						</BgtButton>
 						<BgtButton variant="primary" type="submit" disabled={isLoading}>
-							{t("common.save")}
+							{t("common:save")}
 						</BgtButton>
 					</BgtDialogClose>
 				</form>

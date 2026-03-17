@@ -17,12 +17,12 @@ describe("ErrorFallback", () => {
 	describe("Rendering", () => {
 		it("should render error heading", () => {
 			renderWithTheme(<ErrorFallback {...defaultProps} />);
-			expect(screen.getByText("error.something-went-wrong")).toBeInTheDocument();
+			expect(screen.getByText("something-went-wrong")).toBeInTheDocument();
 		});
 
 		it("should render error description", () => {
 			renderWithTheme(<ErrorFallback {...defaultProps} />);
-			expect(screen.getByText("error.unexpected-error")).toBeInTheDocument();
+			expect(screen.getByText("unexpected-error")).toBeInTheDocument();
 		});
 
 		it("should render alert icon", () => {
@@ -32,12 +32,12 @@ describe("ErrorFallback", () => {
 
 		it("should render try again button", () => {
 			renderWithTheme(<ErrorFallback {...defaultProps} />);
-			expect(screen.getByText("common.try-again")).toBeInTheDocument();
+			expect(screen.getByText("common:try-again")).toBeInTheDocument();
 		});
 
 		it("should render go home button", () => {
 			renderWithTheme(<ErrorFallback {...defaultProps} />);
-			expect(screen.getByText("common.go-home")).toBeInTheDocument();
+			expect(screen.getByText("common:go-home")).toBeInTheDocument();
 		});
 	});
 
@@ -47,7 +47,7 @@ describe("ErrorFallback", () => {
 			const resetErrorBoundary = vi.fn();
 			renderWithTheme(<ErrorFallback {...defaultProps} resetErrorBoundary={resetErrorBoundary} />);
 
-			await user.click(screen.getByText("common.try-again"));
+			await user.click(screen.getByText("common:try-again"));
 
 			expect(resetErrorBoundary).toHaveBeenCalledTimes(1);
 		});
@@ -63,7 +63,7 @@ describe("ErrorFallback", () => {
 			});
 
 			renderWithTheme(<ErrorFallback {...defaultProps} />);
-			await user.click(screen.getByText("common.go-home"));
+			await user.click(screen.getByText("common:go-home"));
 
 			expect(window.location.href).toBe("/");
 
@@ -82,7 +82,7 @@ describe("ErrorFallback", () => {
 
 			renderWithTheme(<ErrorFallback error={errorWithStack} resetErrorBoundary={vi.fn()} />);
 
-			expect(screen.getByText("error.something-went-wrong")).toBeInTheDocument();
+			expect(screen.getByText("something-went-wrong")).toBeInTheDocument();
 		});
 	});
 });

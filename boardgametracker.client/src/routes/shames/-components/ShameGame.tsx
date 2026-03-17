@@ -30,7 +30,7 @@ const ShameDataLines = ({ content, title }: { content: string; title: string }) 
 };
 
 export const ShameGame = ({ shame, dateFormat, currency }: Props) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "shames"]);
 	const link = `/games/${shame.id}`;
 
 	const daysLastSession = getDaysSincePurchase(shame.lastSessionDate);
@@ -61,7 +61,7 @@ export const ShameGame = ({ shame, dateFormat, currency }: Props) => {
 					</div>
 					<div className="absolute top-2 right-2 bg-red-500/90 backdrop-blur-sm px-2 py-1 rounded-lg z-20">
 						<p className="text-xs font-bold text-white">
-							{daysLastSession > 0 ? t("common.day", { count: daysLastSession }) : t("common.never")}
+							{daysLastSession > 0 ? t("day", { count: daysLastSession }) : t("never")}
 						</p>
 					</div>
 				</div>
@@ -72,14 +72,14 @@ export const ShameGame = ({ shame, dateFormat, currency }: Props) => {
 					<div className="flex flex-col w-full gap-1">
 						<ShameDataLines
 							content={
-								shame.lastSessionDate !== null ? format(new Date(shame.lastSessionDate), dateFormat) : t("common.never")
+								shame.lastSessionDate !== null ? format(new Date(shame.lastSessionDate), dateFormat) : t("never")
 							}
-							title={t("shames.last-session")}
+							title={t("shames:last-session")}
 						/>
 						<div className="flex items-center justify-between text-xs">
 							<BgtText color="white" opacity={50} size="2" className="flex items-center gap-1">
 								<Coins className="size-4" />
-								<span>{t("common.price")}</span>
+								<span>{t("price")}</span>
 							</BgtText>
 							<BgtText color="cyan" weight="bold" size="2">
 								{currency} {shame.price}

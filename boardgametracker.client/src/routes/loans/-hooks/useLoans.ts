@@ -23,9 +23,9 @@ export const useLoans = () => {
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.loans] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-			successToast("loan.delete.successfull");
+			successToast("loans:delete.successfull");
 		} catch {
-			errorToast("loan.delete.failed");
+			errorToast("loans:delete.failed");
 		}
 	};
 
@@ -35,12 +35,12 @@ export const useLoans = () => {
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.loans] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-			successToast("loan.return.successfull");
+			successToast("loans:return.successfull");
 		} catch (e: unknown) {
 			if (isApiError(e) && e.message.includes("Return date cannot be before loan date.")) {
-				errorToast("loan.return.date-failed");
+				errorToast("loans:return.date-failed");
 			} else {
-				errorToast("loan.return.failed");
+				errorToast("loans:return.failed");
 			}
 		}
 	};

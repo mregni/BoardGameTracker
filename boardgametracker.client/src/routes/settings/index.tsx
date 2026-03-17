@@ -56,7 +56,7 @@ interface SettingsPageContentProps {
 function SettingsPageContent({ settings, languages, isSaving, saveSettings }: SettingsPageContentProps) {
 	const { canManageSettings } = usePermissions();
 	const [activeCategory, setActiveCategory] = useState<SettingsCategory>(canManageSettings ? "general" : "account");
-	const { t } = useTranslation();
+	const { t } = useTranslation("settings");
 
 	const form = useAppForm({
 		...settingsFormOpts,
@@ -115,7 +115,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 								<div className="mt-6 pt-4 lg:ml-4 xl:ml-6 border-t border-white/10">
 									<div className="flex justify-between flex-wrap gap-3 items-start">
 										<BgtButton onClick={form.handleSubmit} type="submit" disabled={isSaving}>
-											{t("settings.save.button")}
+											{t("save.button")}
 										</BgtButton>
 									</div>
 								</div>

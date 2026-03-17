@@ -84,29 +84,29 @@ describe("numberUtils", () => {
 
 	describe("ToLogLevel", () => {
 		it("should return warn for level 0", () => {
-			expect(ToLogLevel(0)).toBe("log-levels.warn");
+			expect(ToLogLevel(0)).toBe("log-levels:warn");
 		});
 
 		it("should return debug for level 1", () => {
-			expect(ToLogLevel(1)).toBe("log-levels.debug");
+			expect(ToLogLevel(1)).toBe("log-levels:debug");
 		});
 
 		it("should return info for level 2", () => {
-			expect(ToLogLevel(2)).toBe("log-levels.info");
+			expect(ToLogLevel(2)).toBe("log-levels:info");
 		});
 
 		it("should return warn for level 3", () => {
-			expect(ToLogLevel(3)).toBe("log-levels.warn");
+			expect(ToLogLevel(3)).toBe("log-levels:warn");
 		});
 
 		it("should return error for level 4", () => {
-			expect(ToLogLevel(4)).toBe("log-levels.error");
+			expect(ToLogLevel(4)).toBe("log-levels:error");
 		});
 
 		it("should return warn for out of range levels", () => {
-			expect(ToLogLevel(5)).toBe("log-levels.warn");
-			expect(ToLogLevel(100)).toBe("log-levels.warn");
-			expect(ToLogLevel(-1)).toBe("log-levels.warn");
+			expect(ToLogLevel(5)).toBe("log-levels:warn");
+			expect(ToLogLevel(100)).toBe("log-levels:warn");
+			expect(ToLogLevel(-1)).toBe("log-levels:warn");
 		});
 	});
 });

@@ -52,29 +52,29 @@ describe("BgtImageCard", () => {
 	describe("Game State", () => {
 		it("should render game state when provided", () => {
 			renderWithTheme(<BgtImageCard {...defaultProps} state={GameState.Owned} />);
-			expect(screen.getByText("game.state.owned")).toBeInTheDocument();
+			expect(screen.getByText("game:state.owned")).toBeInTheDocument();
 		});
 
 		it("should not render state when null", () => {
 			renderWithTheme(<BgtImageCard {...defaultProps} state={null as unknown as GameState} />);
-			expect(screen.queryByText("game.state.")).not.toBeInTheDocument();
+			expect(screen.queryByText("game:state.")).not.toBeInTheDocument();
 		});
 
 		it("should not render state when undefined", () => {
 			renderWithTheme(<BgtImageCard {...defaultProps} state={undefined} />);
-			expect(screen.queryByText("game.state.")).not.toBeInTheDocument();
+			expect(screen.queryByText("game:state.")).not.toBeInTheDocument();
 		});
 	});
 
 	describe("Loaned State", () => {
 		it("should not be loaned by default", () => {
 			renderWithTheme(<BgtImageCard {...defaultProps} state={GameState.Owned} />);
-			expect(screen.queryByText("game.state.on-loan")).not.toBeInTheDocument();
+			expect(screen.queryByText("game:state.on-loan")).not.toBeInTheDocument();
 		});
 
 		it("should display loaned state when isLoaned is true", () => {
 			renderWithTheme(<BgtImageCard {...defaultProps} state={GameState.Owned} isLoaned={true} />);
-			expect(screen.getByText("game.state.on-loan")).toBeInTheDocument();
+			expect(screen.getByText("game:state.on-loan")).toBeInTheDocument();
 		});
 	});
 
@@ -91,7 +91,7 @@ describe("BgtImageCard", () => {
 			);
 
 			expect(screen.getByText(/Wingspan/)).toBeInTheDocument();
-			expect(screen.getByText("game.state.owned")).toBeInTheDocument();
+			expect(screen.getByText("game:state.owned")).toBeInTheDocument();
 			expect(screen.getByRole("link")).toHaveAttribute("href", "/games/2");
 		});
 	});

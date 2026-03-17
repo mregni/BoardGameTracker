@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_bare/rsvp")({
 
 function RsvpPage() {
 	const { settings } = useSettingsData();
-	const { t } = useTranslation();
+	const { t } = useTranslation(["rsvp", "auth", "common"]);
 	const navigate = useNavigate();
 	const { linkId } = Route.useSearch();
 	const { isAuthenticated, authStatus } = useAuth();
@@ -41,19 +41,12 @@ function RsvpPage() {
 	if (requiresAuth) {
 		return (
 			<BgtEmptyPage
-				header={t("auth.rsvp-login-required")}
+				showHeader={false}
 				icon={AlertTriangle}
-				title={t("auth.rsvp-login-required")}
-				description={t("auth.rsvp-login-description")}
-			>
-				<button
-					type="button"
-					onClick={() => navigate({ to: "/login" })}
-					className="mt-4 py-2 px-6 bg-primary text-white rounded-md font-medium hover:bg-primary/90 transition-colors"
-				>
-					{t("auth.login")}
-				</button>
-			</BgtEmptyPage>
+				title={t("auth:rsvp-login-required")}
+				description={t("auth:rsvp-login-description")}
+				action={{ label: t("auth:login"), onClick: () => navigate({ to: "/login", search: { redirect: `/rsvp?linkId=${linkId}` } }) }}
+			></BgtEmptyPage>
 		);
 	}
 
@@ -64,10 +57,10 @@ function RsvpPage() {
 	if (!isLoading && !gameNight) {
 		return (
 			<BgtEmptyPage
-				header={t("rsvp.not-found")}
+				header={t("not-found")}
 				icon={AlertTriangle}
-				title={t("rsvp.not-found")}
-				description={t("rsvp.not-found-description")}
+				title={t("not-found")}
+				description={t("not-found-description")}
 			/>
 		);
 	}
@@ -87,10 +80,10 @@ function RsvpPage() {
 									<PartyPopper className="size-6 text-primary" />
 								</div>
 								<BgtText size="7" weight="bold" color="white" className="block">
-									{t("rsvp.youre-invited")}
+									{t("youre-invited")}
 								</BgtText>
 								<BgtText color="gray" size="2">
-									{t("rsvp.let-us-know")}
+									{t("let-us-know")}
 								</BgtText>
 							</div>
 
@@ -108,23 +101,23 @@ function RsvpPage() {
 
 							<BgtCard>
 								<BgtText size="4" weight="bold" className="mb-3">
-									{t("rsvp.whos-coming")}
+									{t("whos-coming")}
 								</BgtText>
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 									<RsvpSection
-										title={t("common.accepted")}
+										title={t("common:accepted")}
 										count={acceptedPlayers.length}
 										players={acceptedPlayers.map((x) => x.player)}
 										variant="accepted"
 									/>
 									<RsvpSection
-										title={t("common.pending")}
+										title={t("common:pending")}
 										count={pendingPlayers.length}
 										players={pendingPlayers.map((x) => x.player)}
 										variant="pending"
 									/>
 									<RsvpSection
-										title={t("common.declined")}
+										title={t("common:declined")}
 										count={declinedPlayers.length}
 										players={declinedPlayers.map((x) => x.player)}
 										variant="declined"

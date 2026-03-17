@@ -8,33 +8,33 @@ describe("ItemStateUtils", () => {
 	describe("getItemStateTranslationKey", () => {
 		describe("when item is loaned", () => {
 			it("should return on-loan key regardless of game state", () => {
-				expect(getItemStateTranslationKey(GameState.Wanted, true)).toBe("game.state.on-loan");
-				expect(getItemStateTranslationKey(GameState.Owned, true)).toBe("game.state.on-loan");
-				expect(getItemStateTranslationKey(GameState.PreviouslyOwned, true)).toBe("game.state.on-loan");
-				expect(getItemStateTranslationKey(GameState.NotOwned, true)).toBe("game.state.on-loan");
-				expect(getItemStateTranslationKey(GameState.ForTrade, true)).toBe("game.state.on-loan");
+				expect(getItemStateTranslationKey(GameState.Wanted, true)).toBe("game:state.on-loan");
+				expect(getItemStateTranslationKey(GameState.Owned, true)).toBe("game:state.on-loan");
+				expect(getItemStateTranslationKey(GameState.PreviouslyOwned, true)).toBe("game:state.on-loan");
+				expect(getItemStateTranslationKey(GameState.NotOwned, true)).toBe("game:state.on-loan");
+				expect(getItemStateTranslationKey(GameState.ForTrade, true)).toBe("game:state.on-loan");
 			});
 		});
 
 		describe("when item is not loaned", () => {
 			it("should return wanted key for Wanted state", () => {
-				expect(getItemStateTranslationKey(GameState.Wanted, false)).toBe("game.state.wanted");
+				expect(getItemStateTranslationKey(GameState.Wanted, false)).toBe("game:state.wanted");
 			});
 
 			it("should return owned key for Owned state", () => {
-				expect(getItemStateTranslationKey(GameState.Owned, false)).toBe("game.state.owned");
+				expect(getItemStateTranslationKey(GameState.Owned, false)).toBe("game:state.owned");
 			});
 
 			it("should return previously-owned key for PreviouslyOwned state", () => {
-				expect(getItemStateTranslationKey(GameState.PreviouslyOwned, false)).toBe("game.state.previously-owned");
+				expect(getItemStateTranslationKey(GameState.PreviouslyOwned, false)).toBe("game:state.previously-owned");
 			});
 
 			it("should return not-owned key for NotOwned state", () => {
-				expect(getItemStateTranslationKey(GameState.NotOwned, false)).toBe("game.state.not-owned");
+				expect(getItemStateTranslationKey(GameState.NotOwned, false)).toBe("game:state.not-owned");
 			});
 
 			it("should return for-trade key for ForTrade state", () => {
-				expect(getItemStateTranslationKey(GameState.ForTrade, false)).toBe("game.state.for-trade");
+				expect(getItemStateTranslationKey(GameState.ForTrade, false)).toBe("game:state.for-trade");
 			});
 
 			it("should return empty string for unknown state", () => {

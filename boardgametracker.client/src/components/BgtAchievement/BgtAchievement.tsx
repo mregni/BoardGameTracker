@@ -13,7 +13,7 @@ interface Props {
 
 export const BgtAchievement = (props: Props) => {
 	const { badge, earned = true } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("badges");
 
 	return (
 		<BgtCard className={cx("col-span-1 p-3", !earned ? "opacity-40 grayscale" : "")}>
@@ -21,8 +21,8 @@ export const BgtAchievement = (props: Props) => {
 				<img src={`/images/badges/${badge.image}`} alt="Badge" className="h-10 aspect-square" />
 				<div className="flex flex-row justify-between w-full items-center">
 					<div className="flex flex-col">
-						<div className="font-bold">{t(`badges.${badge.titleKey}`)}</div>
-						<div className="text-xs line-clamp-1">{t(`badges.${badge.descriptionKey}`)}</div>
+						<div className="font-bold">{t(`${badge.titleKey}`)}</div>
+						<div className="text-xs line-clamp-1">{t(`${badge.descriptionKey}`)}</div>
 					</div>
 					{earned && (
 						<div className="text-green-400">
@@ -37,7 +37,7 @@ export const BgtAchievement = (props: Props) => {
 
 export const BgtAchievementIcon = (props: Props) => {
 	const { badge } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("badges");
 
 	return (
 		<Tooltip.Provider>
@@ -51,8 +51,8 @@ export const BgtAchievementIcon = (props: Props) => {
 						sideOffset={5}
 					>
 						<div className="flex flex-col justify-center">
-							<div className="font-bold">{t(`badges.${badge.titleKey}`)}</div>
-							<div className="text-xs">{t(`badges.${badge.descriptionKey}`)}</div>
+							<div className="font-bold">{t(`${badge.titleKey}`)}</div>
+							<div className="text-xs">{t(`${badge.descriptionKey}`)}</div>
 						</div>
 					</Tooltip.Content>
 				</Tooltip.Portal>

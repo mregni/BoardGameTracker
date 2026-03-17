@@ -26,11 +26,11 @@ export const useNewLoanModal = ({ onSuccess }: Props) => {
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.loans] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-			successToast("loan.notifications.created");
+			successToast("loans:notifications.created");
 			onSuccess?.();
 		},
 		onError: () => {
-			errorToast("loan.notifications.create-failed");
+			errorToast("loans:notifications.create-failed");
 		},
 	});
 

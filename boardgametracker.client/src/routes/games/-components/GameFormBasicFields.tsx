@@ -12,12 +12,12 @@ export const GameFormBasicFields = withForm({
 		disabled: false,
 	},
 	render: function Render({ form, disabled }) {
-		const { t } = useTranslation();
+		const { t } = useTranslation("game");
 
 		return (
 			<form.Field name="title" validators={zodValidator(CreateGameSchema, "title")}>
 				{(field: AnyFieldApi) => (
-					<BgtInputField field={field} type="text" disabled={disabled} label={t("game.new.manual.game-title.label")} />
+					<BgtInputField field={field} type="text" disabled={disabled} label={t("new.manual.game-title.label")} />
 				)}
 			</form.Field>
 		);

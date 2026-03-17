@@ -22,7 +22,7 @@ interface Props extends ModalProps {
 
 export const EditGameNightModal = (props: Props) => {
 	const { open, close, gameNight, players, games, locations, isLoading, onSave } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["game-nights", "common"]);
 
 	if (!gameNight) return null;
 
@@ -61,16 +61,16 @@ export const EditGameNightModal = (props: Props) => {
 					onSubmit={handleSubmit}
 					onClose={close}
 				>
-					<BgtDialogTitle>{t("game-nights.edit.title")}</BgtDialogTitle>
-					<BgtDialogDescription>{t("game-nights.edit.description")}</BgtDialogDescription>
+					<BgtDialogTitle>{t("edit.title")}</BgtDialogTitle>
+					<BgtDialogDescription>{t("edit.description")}</BgtDialogDescription>
 				</GameNightForm>
 				<BgtDialogClose>
 					<BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={close}>
-						{t("common.cancel")}
+						{t("common:cancel")}
 					</BgtButton>
 					<BgtButton type="submit" form="game-night-form" disabled={isLoading} className="flex-1" variant="primary">
 						{isLoading && <Bars className="size-4" />}
-						{t("game-nights.edit.save")}
+						{t("edit.save")}
 					</BgtButton>
 				</BgtDialogClose>
 			</BgtDialogContent>

@@ -17,7 +17,7 @@ interface Props {
 }
 
 export const TempPasswordModal = ({ open, close, username, tempPassword }: Props) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["settings", "common"]);
 	const [copied, setCopied] = useState(false);
 
 	const handleCopy = async () => {
@@ -29,19 +29,17 @@ export const TempPasswordModal = ({ open, close, username, tempPassword }: Props
 	return (
 		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
-				<BgtDialogTitle>{t("settings.account.users.temp-password.title")}</BgtDialogTitle>
-				<BgtDialogDescription>
-					{t("settings.account.users.temp-password.description", { username })}
-				</BgtDialogDescription>
+				<BgtDialogTitle>{t("account.users.temp-password.title")}</BgtDialogTitle>
+				<BgtDialogDescription>{t("account.users.temp-password.description", { username })}</BgtDialogDescription>
 				<div className="my-4 rounded-lg bg-white/5 border border-white/10 p-4">
 					<code className="text-lg font-mono text-white break-all">{tempPassword}</code>
 				</div>
 				<BgtDialogClose>
 					<BgtButton variant="primary" onClick={handleCopy}>
-						{copied ? t("settings.account.users.temp-password.copied") : t("settings.account.users.temp-password.copy")}
+						{copied ? t("account.users.temp-password.copied") : t("account.users.temp-password.copy")}
 					</BgtButton>
 					<BgtButton variant="cancel" onClick={close}>
-						{t("common.close")}
+						{t("common:close")}
 					</BgtButton>
 				</BgtDialogClose>
 			</BgtDialogContent>

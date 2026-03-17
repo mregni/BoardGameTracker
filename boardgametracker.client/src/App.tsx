@@ -27,18 +27,18 @@ const TanStackRouterDevtools = import.meta.env.PROD
 
 function getErrorToastMessage(error: unknown): string {
 	if (!isApiError(error)) {
-		return i18n.t("error.something-went-wrong");
+		return i18n.t("error:something-went-wrong");
 	}
 
 	switch (error.kind) {
 		case "network":
-			return i18n.t("error.network");
+			return i18n.t("error:network");
 		case "timeout":
-			return i18n.t("error.timeout");
+			return i18n.t("error:timeout");
 		case "server":
-			return i18n.t("error.server");
+			return i18n.t("error:server");
 		default:
-			return i18n.t("error.something-went-wrong");
+			return i18n.t("error:something-went-wrong");
 	}
 }
 

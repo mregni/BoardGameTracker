@@ -19,7 +19,7 @@ export const useRsvpData = (linkId: string) => {
 			setIsSubmitted(true);
 		},
 		onError: () => {
-			errorToast("rsvp.rsvp-failed");
+			errorToast("rsvp:rsvp-failed");
 		},
 	});
 

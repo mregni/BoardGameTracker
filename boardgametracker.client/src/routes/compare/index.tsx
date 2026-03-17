@@ -31,7 +31,7 @@ export const Route = createFileRoute("/compare/")({
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation("compare");
 	const navigate = useNavigate();
 	const search = Route.useSearch();
 	const { canWrite } = usePermissions();
@@ -83,20 +83,18 @@ function RouteComponent() {
 	if (players?.length < 2) {
 		return (
 			<BgtEmptyPage
-				header={t("compare.title")}
+				header={t("title")}
 				icon={Users}
-				title={t("compare.empty.insufficient-players.title")}
-				description={t("compare.empty.insufficient-players.description")}
-				action={
-					canWrite ? { label: t("compare.empty.button"), onClick: () => navigate({ to: "/players" }) } : undefined
-				}
+				title={t("empty.insufficient-players.title")}
+				description={t("empty.insufficient-players.description")}
+				action={canWrite ? { label: t("empty.button"), onClick: () => navigate({ to: "/players" }) } : undefined}
 			/>
 		);
 	}
 
 	return (
 		<BgtPage>
-			<BgtPageHeader header={t("compare.title")} icon={Home} />
+			<BgtPageHeader header={t("title")} icon={Home} />
 			<BgtPageContent isLoading={!players} data={{ players }} centered={players?.length < 2}>
 				{({ players }) => {
 					if (!actualCompare || !settings || !playerOne || !playerTwo) {

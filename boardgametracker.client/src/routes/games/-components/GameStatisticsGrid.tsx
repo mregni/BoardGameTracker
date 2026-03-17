@@ -24,7 +24,7 @@ interface Props {
 
 export const GameStatisticsGrid = (props: Props) => {
 	const { gameStats, expansionCount, currency } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("statistics");
 	const { data: settings } = useQuery(getSettings());
 
 	const lastPlayedRelative =
@@ -47,13 +47,13 @@ export const GameStatisticsGrid = (props: Props) => {
 
 	return (
 		<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:gap-6">
-			<BgtTextStatistic content={totalPlayedTime} title={t("statistics.total-play-time")} />
-			<BgtTextStatistic content={gameStats.pricePerPlay} title={t("statistics.price-per-play")} prefix={currency} />
-			<BgtTextStatistic content={RoundDecimal(gameStats.highScore)} title={t("statistics.high-score")} />
-			<BgtTextStatistic content={RoundDecimal(gameStats.averageScore)} title={t("statistics.average-score")} />
-			<BgtTextStatistic content={averagePlayTime} title={t("statistics.average-playtime")} />
-			<BgtTextStatistic content={lastPlayedRelative} title={t("statistics.last-played")} />
-			<BgtTextStatistic content={expansionCount} title={t("statistics.expansion-count")} />
+			<BgtTextStatistic content={totalPlayedTime} title={t("total-play-time")} />
+			<BgtTextStatistic content={gameStats.pricePerPlay} title={t("price-per-play")} prefix={currency} />
+			<BgtTextStatistic content={RoundDecimal(gameStats.highScore)} title={t("high-score")} />
+			<BgtTextStatistic content={RoundDecimal(gameStats.averageScore)} title={t("average-score")} />
+			<BgtTextStatistic content={averagePlayTime} title={t("average-playtime")} />
+			<BgtTextStatistic content={lastPlayedRelative} title={t("last-played")} />
+			<BgtTextStatistic content={expansionCount} title={t("expansion-count")} />
 		</div>
 	);
 };

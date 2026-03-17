@@ -21,27 +21,27 @@ export const Route = createFileRoute("/shames/")({
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["shames", "common"]);
 	const { shames, statistics, settings, isLoading } = useShameData();
 
 	return (
 		<BgtPage>
-			<BgtPageHeader header={t("common.shame")} icon={Game} />
+			<BgtPageHeader header={t("common:shame")} icon={Game} />
 			<BgtPageContent isLoading={isLoading} data={{ statistics, shames, settings }}>
 				{({ statistics, shames, settings }) => (
 					<>
 						<div className="grid grid-cols-1 lg:grid-cols-3 gap-3 xl:gap-6">
-							<BgtTextStatistic content={statistics.count} title={t("shames.total-shames")} icon={<Game />} />
+							<BgtTextStatistic content={statistics.count} title={t("total-shames")} icon={<Game />} />
 							<BgtTextStatistic
 								prefix={settings.currency}
 								content={statistics.totalValue}
-								title={t("shames.total-value")}
+								title={t("total-value")}
 								icon={<Coins />}
 							/>
 							<BgtTextStatistic
 								prefix={settings.currency}
 								content={Math.round(statistics.averageValue ?? 0)}
-								title={t("shames.average-value")}
+								title={t("average-value")}
 								icon={<Coins />}
 							/>
 						</div>

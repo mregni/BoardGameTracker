@@ -10,7 +10,7 @@ export interface Player {
 }
 
 export const CreatePlayerSchema = z.object({
-	name: z.string().min(1, { message: "player.name.required" }),
+	name: z.string().min(1, { message: "player:name.required" }),
 });
 
 export const UpdatePlayerSchema = CreatePlayerSchema.extend({

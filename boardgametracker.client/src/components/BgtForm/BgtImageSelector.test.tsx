@@ -23,12 +23,12 @@ describe("BgtImageSelector", () => {
 	describe("Rendering", () => {
 		it("should render upload area when no image", () => {
 			renderWithTheme(<BgtImageSelector image={undefined} setImage={mockSetImage} />);
-			expect(screen.getByText("images.upload")).toBeInTheDocument();
+			expect(screen.getByText("upload")).toBeInTheDocument();
 		});
 
 		it("should render file types hint", () => {
 			renderWithTheme(<BgtImageSelector image={undefined} setImage={mockSetImage} />);
-			expect(screen.getByText("images.types")).toBeInTheDocument();
+			expect(screen.getByText("types")).toBeInTheDocument();
 		});
 
 		it("should render file input", () => {
@@ -55,7 +55,7 @@ describe("BgtImageSelector", () => {
 		it("should not show upload area when image is set", () => {
 			const testFile = new File(["test"], "test.png", { type: "image/png" });
 			renderWithTheme(<BgtImageSelector image={testFile} setImage={mockSetImage} />);
-			expect(screen.queryByText("images.upload")).not.toBeInTheDocument();
+			expect(screen.queryByText("upload")).not.toBeInTheDocument();
 		});
 
 		it("should show trash icon on hover for removal", () => {
@@ -78,7 +78,7 @@ describe("BgtImageSelector", () => {
 			renderWithTheme(
 				<BgtImageSelector image={undefined} setImage={mockSetImage} defaultImage="https://example.com/image.jpg" />,
 			);
-			expect(screen.queryByText("images.upload")).not.toBeInTheDocument();
+			expect(screen.queryByText("upload")).not.toBeInTheDocument();
 		});
 	});
 
@@ -96,7 +96,7 @@ describe("BgtImageSelector", () => {
 		it("should handle file drop", () => {
 			renderWithTheme(<BgtImageSelector image={undefined} setImage={mockSetImage} />);
 
-			const dropzone = screen.getByText("images.upload").closest("label");
+			const dropzone = screen.getByText("upload").closest("label");
 			const testFile = new File(["test"], "test.png", { type: "image/png" });
 
 			const dataTransfer = {
@@ -137,7 +137,7 @@ describe("BgtImageSelector", () => {
 		it("should prevent default on drag over", () => {
 			renderWithTheme(<BgtImageSelector image={undefined} setImage={mockSetImage} />);
 
-			const dropzone = screen.getByText("images.upload").closest("label");
+			const dropzone = screen.getByText("upload").closest("label");
 			const event = new Event("dragover", { bubbles: true, cancelable: true });
 			const preventDefaultSpy = vi.spyOn(event, "preventDefault");
 

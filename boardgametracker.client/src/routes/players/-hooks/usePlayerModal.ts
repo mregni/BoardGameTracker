@@ -20,27 +20,27 @@ export const usePlayerModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
 	const saveMutation = useMutation({
 		mutationFn: addPlayerCall,
 		async onSuccess() {
-			successToast("player.notifications.created");
+			successToast("player:notifications.created");
 			onSaveSuccess?.();
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.dashboard] });
 		},
 		onError: () => {
-			errorToast("player.notifications.create-failed");
+			errorToast("player:notifications.create-failed");
 		},
 	});
 
 	const updateMutation = useMutation({
 		mutationFn: updatePlayerCall,
 		async onSuccess() {
-			successToast("player.notifications.updated");
+			successToast("player:notifications.updated");
 			onUpdateSuccess?.();
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.player] });
 		},
 		onError: () => {
-			errorToast("player.notifications.update-failed");
+			errorToast("player:notifications.update-failed");
 		},
 	});
 

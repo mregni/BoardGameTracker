@@ -15,17 +15,17 @@ export const ShelfOfShameSettings = withForm({
 		disabled: false,
 	},
 	render: function Render({ form, disabled }) {
-		const { t } = useTranslation();
+		const { t } = useTranslation("settings");
 
 		return (
 			<div className="space-y-6">
-				<SettingsSection title={t("settings.shame.title")} description={t("settings.shame.description")}>
+				<SettingsSection title={t("shame.title")} description={t("shame.description")}>
 					<form.Field name="shelfOfShameEnabled" validators={zodValidator(SettingsSchema, "shelfOfShameEnabled")}>
 						{(field: AnyFieldApi) => (
 							<SettingsToggle
 								field={field}
-								label={t("settings.shame.enabled.label")}
-								description={t("settings.shame.enabled.description")}
+								label={t("shame.enabled.label")}
+								description={t("shame.enabled.description")}
 								disabled={disabled}
 							/>
 						)}
@@ -44,7 +44,7 @@ export const ShelfOfShameSettings = withForm({
 										field={field}
 										disabled={disabled || !shelfOfShameEnabled}
 										type="number"
-										label={t("settings.shame.months.label")}
+										label={t("shame.months.label")}
 										placeholder="3"
 									/>
 								)}

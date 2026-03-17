@@ -31,7 +31,7 @@ interface Props {
 export const GameForm = (props: Props) => {
 	const { onClick, buttonText, disabled, game, title } = props;
 	const { settings } = useGameForm();
-	const { t } = useTranslation();
+	const { t } = useTranslation(["game", "common"]);
 	const router = useRouter();
 	const { poster, setPoster, uploadPoster } = useImageUpload(game?.image);
 
@@ -87,7 +87,7 @@ export const GameForm = (props: Props) => {
 							{game === undefined && (
 								<form.Field name="hasScoring" validators={zodValidator(CreateGameSchema, "hasScoring")}>
 									{(field: AnyFieldApi) => (
-										<BgtSwitch field={field} label={t("game.scoring.label")} className="pt-3" disabled={disabled} />
+										<BgtSwitch field={field} label={t("scoring.label")} className="pt-3" disabled={disabled} />
 									)}
 								</form.Field>
 							)}
@@ -100,7 +100,7 @@ export const GameForm = (props: Props) => {
 									onClick={handleCancel}
 									disabled={disabled}
 								>
-									{t("common.cancel")}
+									{t("common:cancel")}
 								</BgtButton>
 								<BgtButton type="submit" className="flex-1" variant="primary" disabled={disabled}>
 									{buttonText}

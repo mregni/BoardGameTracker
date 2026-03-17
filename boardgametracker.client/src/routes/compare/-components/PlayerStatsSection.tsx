@@ -25,7 +25,7 @@ const PlayerStatsSectionComponent = ({
 	compare,
 	uiLanguage,
 }: PlayerStatsSectionProps) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("compare");
 	const navigate = useNavigate();
 	const statConfigs = getStatConfigs(uiLanguage);
 
@@ -38,7 +38,7 @@ const PlayerStatsSectionComponent = ({
 			<div className="flex items-center gap-3 mb-4">
 				<BgtAvatar onClick={handleAvatarClick} image={player.image} title={player.name} size="large" />
 				<BgtHeading size="3" className="text-xl text-white">
-					{t("compare.stats.player-stats", { player: player.name })}
+					{t("stats.player-stats", { player: player.name })}
 				</BgtHeading>
 			</div>
 

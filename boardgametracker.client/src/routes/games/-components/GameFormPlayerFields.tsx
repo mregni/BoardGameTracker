@@ -14,22 +14,22 @@ export const GameFormPlayerFields = withForm({
 		currency: undefined as string | undefined,
 	},
 	render: function Render({ form, disabled, currency }) {
-		const { t } = useTranslation();
+		const { t } = useTranslation("game");
 
 		return (
 			<>
 				<form.Field name="bggId" validators={zodValidator(CreateGameSchema, "bggId")}>
 					{(field: AnyFieldApi) => (
-						<BgtInputField field={field} type="number" disabled={disabled} label={t("game.bgg.placeholder")} />
+						<BgtInputField field={field} type="number" disabled={disabled} label={t("bgg.placeholder")} />
 					)}
 				</form.Field>
 				<form.Field name="buyingPrice" validators={zodValidator(CreateGameSchema, "buyingPrice")}>
 					{(field: AnyFieldApi) => (
 						<BgtInputField
 							field={field}
-							label={t("game.price.label")}
+							label={t("price.label")}
 							type="number"
-							placeholder={t("game.price.placeholder")}
+							placeholder={t("price.placeholder")}
 							disabled={disabled}
 							prefixLabel={currency}
 						/>
@@ -39,9 +39,9 @@ export const GameFormPlayerFields = withForm({
 					{(field: AnyFieldApi) => (
 						<BgtDatePicker
 							field={field}
-							label={t("game.added-date.label")}
+							label={t("added-date.label")}
 							disabled={disabled}
-							placeholder={t("game.added-date.placeholder")}
+							placeholder={t("added-date.placeholder")}
 						/>
 					)}
 				</form.Field>
@@ -49,7 +49,7 @@ export const GameFormPlayerFields = withForm({
 					{(field: AnyFieldApi) => (
 						<BgtSelect
 							field={field}
-							label={t("game.state.label")}
+							label={t("state.label")}
 							disabled={disabled}
 							items={Object.values(GameState).map((value) => ({
 								label: t(getItemStateTranslationKey(value, false)),
@@ -62,7 +62,7 @@ export const GameFormPlayerFields = withForm({
 					{(field: AnyFieldApi) => (
 						<BgtInputField
 							field={field}
-							label={t("game.new.manual.year.label")}
+							label={t("new.manual.year.label")}
 							type="number"
 							disabled={disabled}
 							className="pr-2"
@@ -71,7 +71,7 @@ export const GameFormPlayerFields = withForm({
 				</form.Field>
 				<form.Field name="description" validators={zodValidator(CreateGameSchema, "description")}>
 					{(field: AnyFieldApi) => (
-						<BgtTextArea field={field} label={t("game.new.manual.description.label")} disabled={disabled} />
+						<BgtTextArea field={field} label={t("new.manual.description.label")} disabled={disabled} />
 					)}
 				</form.Field>
 				<div className="flex flex-row gap-2">
@@ -79,7 +79,7 @@ export const GameFormPlayerFields = withForm({
 						{(field: AnyFieldApi) => (
 							<BgtInputField
 								field={field}
-								label={t("game.new.manual.min-players.label")}
+								label={t("new.manual.min-players.label")}
 								type="number"
 								disabled={disabled}
 								className="pr-2"
@@ -90,7 +90,7 @@ export const GameFormPlayerFields = withForm({
 						{(field: AnyFieldApi) => (
 							<BgtInputField
 								field={field}
-								label={t("game.new.manual.max-players.label")}
+								label={t("new.manual.max-players.label")}
 								type="number"
 								disabled={disabled}
 								className="pr-2"

@@ -54,7 +54,7 @@ describe("RecentActivityCard", () => {
 
 		it("should render view all button", () => {
 			renderWithTheme(<RecentActivityCard {...defaultProps} />);
-			expect(screen.getByText("game.sessions")).toBeInTheDocument();
+			expect(screen.getByText("sessions")).toBeInTheDocument();
 		});
 
 		it("should render custom view all text", () => {
@@ -68,7 +68,7 @@ describe("RecentActivityCard", () => {
 			const user = userEvent.setup();
 			renderWithTheme(<RecentActivityCard {...defaultProps} />);
 
-			await user.click(screen.getByText("game.sessions"));
+			await user.click(screen.getByText("sessions"));
 
 			expect(mockNavigate).toHaveBeenCalledWith({ to: "/sessions" });
 		});
@@ -77,7 +77,7 @@ describe("RecentActivityCard", () => {
 			const user = userEvent.setup();
 			renderWithTheme(<RecentActivityCard {...defaultProps} viewAllRoute="/games" />);
 
-			await user.click(screen.getByText("game.sessions"));
+			await user.click(screen.getByText("sessions"));
 
 			expect(mockNavigate).toHaveBeenCalledWith({ to: "/games" });
 		});
@@ -87,7 +87,7 @@ describe("RecentActivityCard", () => {
 		it("should render with empty items array", () => {
 			renderWithTheme(<RecentActivityCard {...defaultProps} items={[]} />);
 			expect(screen.getByText("Recent Activity")).toBeInTheDocument();
-			expect(screen.getByText("game.sessions")).toBeInTheDocument();
+			expect(screen.getByText("sessions")).toBeInTheDocument();
 		});
 	});
 

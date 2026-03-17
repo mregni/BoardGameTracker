@@ -15,13 +15,13 @@ import { SettingsToggle } from "./SettingsToggle";
 const VERSION_TRACKS = [
 	{
 		id: "stable",
-		label: "settings.advanced.version-track.stable.label",
-		description: "settings.advanced.version-track.stable.description",
+		label: "settings:advanced.version-track.stable.label",
+		description: "settings:advanced.version-track.stable.description",
 	},
 	{
 		id: "beta",
-		label: "settings.advanced.version-track.beta.label",
-		description: "settings.advanced.version-track.beta.description",
+		label: "settings:advanced.version-track.beta.label",
+		description: "settings:advanced.version-track.beta.description",
 	},
 ];
 
@@ -31,20 +31,17 @@ export const AdvancedSettings = withForm({
 		disabled: false,
 	},
 	render: function Render({ form, disabled }) {
-		const { t } = useTranslation();
+		const { t } = useTranslation("settings");
 
 		return (
 			<div className="space-y-6">
-				<SettingsSection
-					title={t("settings.advanced.updates.title")}
-					description={t("settings.advanced.updates.description")}
-				>
+				<SettingsSection title={t("advanced.updates.title")} description={t("advanced.updates.description")}>
 					<form.Field name="updateCheckEnabled" validators={zodValidator(SettingsSchema, "updateCheckEnabled")}>
 						{(field: AnyFieldApi) => (
 							<SettingsToggle
 								field={field}
-								label={t("settings.advanced.updates.enabled.label")}
-								description={t("settings.advanced.updates.enabled.description")}
+								label={t("advanced.updates.enabled.label")}
+								description={t("advanced.updates.enabled.description")}
 								disabled={disabled}
 							/>
 						)}
@@ -54,7 +51,7 @@ export const AdvancedSettings = withForm({
 						{(field: AnyFieldApi) => (
 							<div className="flex flex-col gap-1">
 								<BgtText size="2" weight="medium" color="white">
-									{t("settings.advanced.version-track.label")}
+									{t("advanced.version-track.label")}
 								</BgtText>
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-2">
 									{VERSION_TRACKS.map((track) => (
@@ -94,11 +91,11 @@ export const AdvancedSettings = withForm({
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 					<BgtButton onClick={() => window.open("https://github.com/mregni/BoardGameTracker/issues")} variant="primary">
 						<GitHubIcon className="size-4" />
-						{t("settings.advanced.bug")}
+						{t("advanced.bug")}
 					</BgtButton>
 					<BgtButton onClick={() => window.open("https://crowdin.com/project/boardgametracker")} variant="primary">
 						<CrowdinIcon className="size-4" />
-						{t("settings.advanced.translate")}
+						{t("advanced.translate")}
 					</BgtButton>
 				</div>
 			</div>

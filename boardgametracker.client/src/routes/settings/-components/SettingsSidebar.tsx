@@ -14,28 +14,28 @@ interface CategoryItem {
 const CATEGORIES: CategoryItem[] = [
 	{
 		id: "general",
-		label: "settings.sidebar.general.title",
-		description: "settings.sidebar.general.description",
+		label: "settings:sidebar.general.title",
+		description: "settings:sidebar.general.description",
 	},
 	{
 		id: "shelf-of-shame",
-		label: "settings.sidebar.shelf-of-shame.title",
-		description: "settings.sidebar.shelf-of-shame.description",
+		label: "settings:sidebar.shelf-of-shame.title",
+		description: "settings:sidebar.shelf-of-shame.description",
 	},
 	{
 		id: "game-nights",
-		label: "settings.sidebar.game-nights.title",
-		description: "settings.sidebar.game-nights.description",
+		label: "settings:sidebar.game-nights.title",
+		description: "settings:sidebar.game-nights.description",
 	},
 	{
 		id: "advanced",
-		label: "settings.sidebar.advanced.title",
-		description: "settings.sidebar.advanced.description",
+		label: "settings:sidebar.advanced.title",
+		description: "settings:sidebar.advanced.description",
 	},
 	{
 		id: "account",
-		label: "settings.sidebar.account.title",
-		description: "settings.sidebar.account.description",
+		label: "settings:sidebar.account.title",
+		description: "settings:sidebar.account.description",
 	},
 ];
 

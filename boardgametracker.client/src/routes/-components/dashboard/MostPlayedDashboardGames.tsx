@@ -12,10 +12,10 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 
 export const MostPlayedDashboardGamesCard = (props: Props) => {
 	const { games, className } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["player", "common"]);
 
 	return (
-		<BgtCard title={t("player.cards.most-played-games")} icon={Target} className={className}>
+		<BgtCard title={t("cards.most-played-games")} icon={Target} className={className}>
 			<div className="flex flex-col gap-3">
 				{games.map((game) => (
 					<MostPlayedGameItem key={game.id} game={game} />
@@ -30,7 +30,7 @@ interface MostPlayedGameItemProps {
 }
 
 const MostPlayedGameItem = ({ game }: MostPlayedGameItemProps) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["player", "common"]);
 
 	return (
 		<Link to="/games/$gameId" params={{ gameId: game.id }}>
@@ -42,7 +42,7 @@ const MostPlayedGameItem = ({ game }: MostPlayedGameItemProps) => {
 					<div className="flex-1">
 						<BgtText color="white">{game.title}</BgtText>
 						<BgtText color="white" size="2" opacity={50}>
-							{t("common.sessions", { count: game.totalSessions })}
+							{t("common:sessions", { count: game.totalSessions })}
 						</BgtText>
 					</div>
 				</div>

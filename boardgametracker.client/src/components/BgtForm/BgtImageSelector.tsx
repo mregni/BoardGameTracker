@@ -37,7 +37,7 @@ const ImagePreview = (props: ImagePreviewProps) => {
 
 export const BgtImageSelector = (props: Props) => {
 	const { image, setImage, defaultImage } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation("images");
 	const [isDragging, setIsDragging] = useState(false);
 	const [hasDefaultImage, setHasDefaultImage] = useState(!!defaultImage);
 
@@ -111,9 +111,9 @@ export const BgtImageSelector = (props: Props) => {
 						>
 							<div className="flex flex-col items-center justify-center">
 								<p className="mb-2 text-sm text-gray-500 text-center">
-									<span className="font-semibold">{t("images.upload")}</span>
+									<span className="font-semibold">{t("upload")}</span>
 								</p>
-								<p className="text-xs text-gray-500">{t("images.types")}</p>
+								<p className="text-xs text-gray-500">{t("types")}</p>
 							</div>
 							<input id="dropzone-file" onChange={onImageChangeViaInput} type="file" className="hidden" />
 						</label>

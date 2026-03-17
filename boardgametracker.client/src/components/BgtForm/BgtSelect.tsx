@@ -104,7 +104,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 				</Select.Trigger>
 				<Select.Portal>
 					<Select.Content
-						className="overflow-hidden bg-input rounded-md w-(--radix-select-trigger-width)"
+						className="overflow-hidden bg-input rounded-md w-(--radix-select-trigger-width) z-[9999]"
 						position="popper"
 						sideOffset={5}
 						style={{ bottom: "auto" }}
@@ -151,7 +151,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 									</Select.Item>
 								))
 							) : (
-								<div className="text-[13px] py-2 px-4 text-gray-400">{t("common.no-results")}</div>
+								<div className="text-[13px] py-2 px-4 text-gray-400">{t("no-results")}</div>
 							)}
 						</Select.Viewport>
 					</Select.Content>

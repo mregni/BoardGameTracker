@@ -38,28 +38,28 @@ const formatMinutesToDuration = (minutes: number, uiLanguage: string): string =>
 export const getStatConfigs = (uiLanguage: string): StatConfig[] => [
 	{
 		key: "winCount",
-		translationKey: "compare.stats.total-wins",
+		translationKey: "stats.total-wins",
 		icon: <Trophy className="size-6" />,
 		getRawValue: (data, player) => data.winCount[player],
 		getValue: (data, player) => data.winCount[player],
 	},
 	{
 		key: "winPercentage",
-		translationKey: "compare.stats.win-percentage",
+		translationKey: "stats.win-percentage",
 		icon: <TrendingUp className="size-6" />,
 		getRawValue: (data, player) => data.winPercentage[player],
 		getValue: (data, player) => `${(data.winPercentage[player] * 100).toFixed(0)}%`,
 	},
 	{
 		key: "sessionCounts",
-		translationKey: "compare.stats.sessions",
+		translationKey: "stats.sessions",
 		icon: <GamePad className="size-6" />,
 		getRawValue: (data, player) => data.sessionCounts[player],
 		getValue: (data, player) => data.sessionCounts[player],
 	},
 	{
 		key: "totalDuration",
-		translationKey: "compare.stats.total-duration",
+		translationKey: "stats.total-duration",
 		icon: <Clock className="size-6" />,
 		getRawValue: (data, player) => data.totalDuration[player],
 		getValue: (data, player) => formatMinutesToDuration(data.totalDuration[player], uiLanguage),

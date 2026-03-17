@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,13 +6,19 @@ import More from "@/assets/icons/more.svg?react";
 import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useMenuInfo } from "../-hooks/useMenuInfo";
+import { useAuth } from "@/hooks/useAuth";
+import User from "@/assets/icons/user.svg?react";
+import LogOut from "@/assets/icons/log-out.svg?react";
+import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 
 export const BottomNav = () => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("version");
 	const { versionInfo, menuItems, counts } = useMenuInfo();
 	const [showMoreMenu, setShowMoreMenu] = useState(false);
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname;
+	const { user, isAuthenticated, authStatus, logout } = useAuth();
+	const navigate = useNavigate();
 
 	const handleMoreClick = () => {
 		setShowMoreMenu(!showMoreMenu);
@@ -23,10 +29,16 @@ export const BottomNav = () => {
 	const mobileMenuItems = menuItems.filter((x) => x.mobileVisible);
 	mobileMenuItems.push({
 		icon: More,
-		menuLabel: "common.more",
+		menuLabel: "common:more",
 		path: "more",
 		mobileVisible: true,
 	});
+
+	const showAuth = authStatus?.authEnabled && !authStatus.bypassEnabled;
+	const handleLogout = async () => {
+		await logout();
+		navigate({ to: "/login" });
+	};
 
 	return (
 		<>
@@ -38,12 +50,24 @@ export const BottomNav = () => {
 				<div className="fixed bottom-20 w-full z-40 md:hidden border border-white/10 rounded-t-2xl overflow-hidden shadow-2xl bg-background/95">
 					<div className="px-4 py-3 border-b border-white/10 bg-background font-mono flex justify-between">
 						<BgtText color="white" opacity={40}>
-							{t("version.version")}
+							{t("version")}
 						</BgtText>
 						<BgtText color="white" opacity={40}>
 							{versionInfo?.currentVersion}
 						</BgtText>
 					</div>
+
+					{showAuth && isAuthenticated && user && (
+						<div className="px-2  bg-white/5 flex items-center gap-2 py-2">
+							<div className="w-6 h-6 bg-white/5 rounded-full flex items-center justify-center shrink-0">
+								<User className="text-white/40" />
+							</div>
+							<div className="flex-1 min-w-0">
+								<div className="text-xs text-white/60 truncate">{user.username}</div>
+							</div>
+							<BgtIconButton icon={<LogOut className="size-4" />} onClick={handleLogout} intent="subtile" />
+						</div>
+					)}
 
 					<div>
 						{menuItems

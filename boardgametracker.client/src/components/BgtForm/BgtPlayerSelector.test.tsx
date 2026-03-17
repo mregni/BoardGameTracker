@@ -35,27 +35,27 @@ describe("BgtPlayerSelector", () => {
 	describe("Rendering", () => {
 		it("should render the label", () => {
 			renderWithTheme(<BgtPlayerSelector {...defaultProps} />);
-			expect(screen.getByText("player-session.new.players.label")).toBeInTheDocument();
+			expect(screen.getByText("new.players.label")).toBeInTheDocument();
 		});
 
 		it("should render add player button", () => {
 			renderWithTheme(<BgtPlayerSelector {...defaultProps} />);
 			expect(
 				screen.getByRole("button", {
-					name: /player-session\.new\.players\.add/i,
+					name: /new\.players\.add/i,
 				}),
 			).toBeInTheDocument();
 		});
 
 		it("should render empty state message when no players", () => {
 			renderWithTheme(<BgtPlayerSelector {...defaultProps} />);
-			expect(screen.getByText("player.new.players.none")).toBeInTheDocument();
+			expect(screen.getByText("player:new.players.none")).toBeInTheDocument();
 		});
 
 		it("should not render empty state message when players exist", () => {
 			const players: CreateSessionPlayer[] = [{ playerId: 1, won: false, firstPlay: false, score: 100 }];
 			renderWithTheme(<BgtPlayerSelector {...defaultProps} players={players} />);
-			expect(screen.queryByText("player.new.players.none")).not.toBeInTheDocument();
+			expect(screen.queryByText("player:new.players.none")).not.toBeInTheDocument();
 		});
 	});
 
@@ -87,7 +87,7 @@ describe("BgtPlayerSelector", () => {
 
 			await user.click(
 				screen.getByRole("button", {
-					name: /player-session\.new\.players\.add/i,
+					name: /new\.players\.add/i,
 				}),
 			);
 
@@ -125,7 +125,7 @@ describe("BgtPlayerSelector", () => {
 				(btn) =>
 					btn.className.includes("text-primary") &&
 					!btn.className.includes("text-error") &&
-					!btn.textContent?.includes("player-session.new.players.add"),
+					!btn.textContent?.includes("new.players.add"),
 			);
 
 			if (editButton) {
@@ -140,7 +140,7 @@ describe("BgtPlayerSelector", () => {
 			renderWithTheme(<BgtPlayerSelector {...defaultProps} disabled={true} />);
 			expect(
 				screen.getByRole("button", {
-					name: /player-session\.new\.players\.add/i,
+					name: /new\.players\.add/i,
 				}),
 			).toBeDisabled();
 		});
@@ -151,7 +151,7 @@ describe("BgtPlayerSelector", () => {
 
 			const buttons = screen.getAllByRole("button");
 			// All buttons except possibly labels should be disabled
-			const actionButtons = buttons.filter((btn) => !btn.textContent?.includes("player-session.new.players.label"));
+			const actionButtons = buttons.filter((btn) => !btn.textContent?.includes("new.players.label"));
 			actionButtons.forEach((btn) => {
 				expect(btn).toBeDisabled();
 			});
@@ -166,7 +166,7 @@ describe("BgtPlayerSelector", () => {
 
 		it("should not display empty state message when errors exist", () => {
 			renderWithTheme(<BgtPlayerSelector {...defaultProps} errors={["At least one player is required"]} />);
-			expect(screen.queryByText("player.new.players.none")).not.toBeInTheDocument();
+			expect(screen.queryByText("player:new.players.none")).not.toBeInTheDocument();
 		});
 	});
 

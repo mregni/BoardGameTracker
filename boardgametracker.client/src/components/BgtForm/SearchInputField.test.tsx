@@ -31,7 +31,7 @@ describe("SearchInputField", () => {
 		it("should use translated default placeholder when not provided", () => {
 			renderWithTheme(<SearchInputField {...defaultProps} />);
 			const input = screen.getByRole("textbox");
-			expect(input).toHaveAttribute("placeholder", "COMMON.FILTER-NAME");
+			expect(input).toHaveAttribute("placeholder", "FILTER-NAME");
 		});
 
 		it("should use custom placeholder when provided", () => {

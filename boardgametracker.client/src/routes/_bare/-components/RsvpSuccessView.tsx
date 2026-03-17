@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const RsvpSuccessView = ({ playerName, response }: Props) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("rsvp");
 
 	return (
 		<div className="min-h-screen flex items-center justify-center p-4">
@@ -23,16 +23,16 @@ export const RsvpSuccessView = ({ playerName, response }: Props) => {
 
 						<div className="space-y-2">
 							<BgtText size="6" weight="bold" color="white">
-								{t("rsvp.submitted-title")}
+								{t("submitted-title")}
 							</BgtText>
-							<BgtText color="gray">{t("rsvp.submitted-thanks", { name: playerName })}</BgtText>
+							<BgtText color="gray">{t("submitted-thanks", { name: playerName })}</BgtText>
 						</div>
 
 						<div className="bg-primary/10 border border-primary/30 rounded-lg p-4 w-full">
 							<BgtText size="2" color="white">
-								{response === GameNightRsvpState.Accepted && t("rsvp.submitted-accepted")}
-								{response === GameNightRsvpState.Declined && t("rsvp.submitted-declined")}
-								{response === GameNightRsvpState.Pending && t("rsvp.submitted-maybe")}
+								{response === GameNightRsvpState.Accepted && t("submitted-accepted")}
+								{response === GameNightRsvpState.Declined && t("submitted-declined")}
+								{response === GameNightRsvpState.Pending && t("submitted-maybe")}
 							</BgtText>
 						</div>
 					</div>

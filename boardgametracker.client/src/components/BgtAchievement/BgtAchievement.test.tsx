@@ -22,12 +22,12 @@ describe("BgtAchievement", () => {
 	describe("Rendering", () => {
 		it("should render badge title", () => {
 			renderWithTheme(<BgtAchievement badge={createBadge()} />);
-			expect(screen.getByText("badges.first-win")).toBeInTheDocument();
+			expect(screen.getByText("first-win")).toBeInTheDocument();
 		});
 
 		it("should render badge description", () => {
 			renderWithTheme(<BgtAchievement badge={createBadge()} />);
-			expect(screen.getByText("badges.first-win-desc")).toBeInTheDocument();
+			expect(screen.getByText("first-win-desc")).toBeInTheDocument();
 		});
 
 		it("should render badge image", () => {

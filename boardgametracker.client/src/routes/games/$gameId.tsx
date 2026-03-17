@@ -36,7 +36,7 @@ export const Route = createFileRoute("/games/$gameId")({
 
 function RouteComponent() {
 	const { gameId } = Route.useParams();
-	const { t } = useTranslation();
+	const { t } = useTranslation(["games", "common"]);
 	const { canWrite } = usePermissions();
 
 	const { game, deleteGame, settings, statistics, sessions, deleteExpansion, isLoading } = useGameData({
@@ -55,7 +55,7 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageHeader backAction={actions.handleBackToGames} backText={t("games.back")} />
+			<BgtPageHeader backAction={actions.handleBackToGames} backText={t("back")} />
 			<BgtPageContent isLoading={isLoading} data={{ game, settings, statistics, sessions }}>
 				{({ game, settings, statistics, sessions }) => (
 					<>
@@ -115,7 +115,7 @@ function RouteComponent() {
 							open={modals.deleteModal.isOpen}
 							close={modals.deleteModal.hide}
 							onDelete={actions.handleDelete}
-							description={t("common.delete.description", {
+							description={t("common:delete.description", {
 								title: game.title,
 							})}
 						/>

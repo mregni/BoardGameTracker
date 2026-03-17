@@ -23,7 +23,7 @@ interface Props {
 export const BgtPlayerSelector = (props: Props) => {
 	const { onOpenCreateModal, onEditPlayer, remove, players, disabled } = props;
 	const errors = props.errors ?? [];
-	const { t } = useTranslation();
+	const { t } = useTranslation(["player-session", "player"]);
 	const { playerById } = usePlayerById();
 
 	const hasErrors = errors.length > 0;
@@ -32,7 +32,7 @@ export const BgtPlayerSelector = (props: Props) => {
 		<div className="flex flex-col gap-3 mt-3">
 			<div className="flex flex-col md:flex-row md:justify-between md:items-center">
 				<div className="text-[15px] font-medium leading-[35px] uppercase flex flex-row items-center justify-between w-full">
-					<BgtText>{t("player-session.new.players.label")}</BgtText>
+					<BgtText>{t("new.players.label")}</BgtText>
 					<BgtButton
 						className="w-fit"
 						type="button"
@@ -41,11 +41,11 @@ export const BgtPlayerSelector = (props: Props) => {
 						onClick={onOpenCreateModal}
 						disabled={disabled}
 					>
-						{t("player-session.new.players.add")}
+						{t("new.players.add")}
 					</BgtButton>
 				</div>
 			</div>
-			{players.length === 0 && !hasErrors && <BgtText color={"primary"}>{t("player.new.players.none")}</BgtText>}
+			{players.length === 0 && !hasErrors && <BgtText color={"primary"}>{t("player:new.players.none")}</BgtText>}
 			{players.length === 0 && hasErrors && <BgtText color={"red"}>{String(errors[0])}</BgtText>}
 			{players.map((x, index) => {
 				const player = playerById(x.playerId);

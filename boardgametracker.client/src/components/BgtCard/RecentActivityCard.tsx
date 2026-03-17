@@ -23,7 +23,7 @@ const RecentActivityCardComponent = <T,>({
 	icon,
 	getKey,
 }: RecentActivityCardProps<T>) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 	const navigate = useNavigate();
 
 	const handleViewAll = useCallback(() => {
@@ -37,7 +37,7 @@ const RecentActivityCardComponent = <T,>({
 					<div key={getKey(item)}>{renderItem(item)}</div>
 				))}
 				<BgtButton variant="primary" onClick={handleViewAll} className="flex-1 hidden md:flex">
-					{viewAllText ?? t("game.sessions")}
+					{viewAllText ?? t("sessions")}
 				</BgtButton>
 			</div>
 		</BgtCard>

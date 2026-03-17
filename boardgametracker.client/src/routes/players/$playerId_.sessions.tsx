@@ -32,7 +32,7 @@ export const Route = createFileRoute("/players/$playerId_/sessions")({
 
 function RouteComponent() {
 	const { playerId } = Route.useParams();
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "sessions"]);
 	const navigate = useNavigate();
 	const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
 
@@ -51,12 +51,12 @@ function RouteComponent() {
 						{
 							accessorKey: "0",
 							cell: ({ row }) => format(new Date(row.original.start), settings.dateFormat),
-							header: t("common.date"),
+							header: t("date"),
 						},
 						{
 							accessorKey: "1",
 							cell: ({ row }) => format(new Date(row.original.start), settings.timeFormat),
-							header: t("common.time"),
+							header: t("time"),
 						},
 						{
 							accessorKey: "2",
@@ -73,12 +73,12 @@ function RouteComponent() {
 									</div>
 								);
 							},
-							header: t("common.game"),
+							header: t("game"),
 						},
 						{
 							accessorKey: "3",
-							cell: ({ row }) => `${row.original.minutes} ${t("common.minutes", { count: row.original.minutes })}`,
-							header: t("common.duration"),
+							cell: ({ row }) => `${row.original.minutes} ${t("minutes", { count: row.original.minutes })}`,
+							header: t("duration"),
 						},
 						{
 							accessorKey: "4",
@@ -96,7 +96,7 @@ function RouteComponent() {
 										))}
 								</div>
 							),
-							header: t("common.winners"),
+							header: t("winners"),
 						},
 						{
 							accessorKey: "5",
@@ -114,7 +114,7 @@ function RouteComponent() {
 										))}
 								</div>
 							),
-							header: t("common.other-players"),
+							header: t("other-players"),
 						},
 						{
 							accessorKey: "6",
@@ -127,7 +127,7 @@ function RouteComponent() {
 
 								return highScore[0].score;
 							},
-							header: t("common.high-score"),
+							header: t("high-score"),
 						},
 						{
 							accessorKey: "200",
@@ -137,7 +137,7 @@ function RouteComponent() {
 									onEdit={() => navigate({ to: `/sessions/update/${row.original.id}` })}
 								/>
 							),
-							header: () => <div className="flex justify-end">{t("common.actions")}</div>,
+							header: () => <div className="flex justify-end">{t("actions")}</div>,
 						},
 					];
 
@@ -145,12 +145,12 @@ function RouteComponent() {
 						<>
 							<BgtPageHeader
 								backAction={() => navigate({ to: `/players/${playerId}` })}
-								header={`${player.name} - ${t("sessions.title")}`}
+								header={`${player.name} - ${t("sessions:title")}`}
 								actions={[
 									{
 										onClick: () => navigate({ to: "/sessions/new" }),
 										variant: "primary",
-										content: "sessions.new.button",
+										content: "sessions:new",
 									},
 								]}
 							/>
@@ -158,15 +158,15 @@ function RouteComponent() {
 								<BgtDataTable
 									columns={columns}
 									data={sessions}
-									noDataMessage={t("common.no-data-yet")}
+									noDataMessage={t("no-data-yet")}
 									widths={["w-[70px]", "w-[100px]", "w-[75px]"]}
 								/>
 								<BgtDeleteModal
 									open={sessionToDelete !== null}
 									close={() => setSessionToDelete(null)}
 									onDelete={() => sessionToDelete && deleteSession(sessionToDelete)}
-									title={t("sessions.delete.title")}
-									description={t("sessions.delete.description")}
+									title={t("sessions:delete.title")}
+									description={t("sessions:delete.description")}
 								/>
 							</BgtCard>
 						</>

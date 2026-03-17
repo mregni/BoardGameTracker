@@ -24,7 +24,7 @@ export const Route = createFileRoute("/locations/")({
 });
 
 function RouteComponent() {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["common", "location"]);
 	const { canWrite } = usePermissions();
 	const modals = useLocationModals();
 	const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -41,17 +41,17 @@ function RouteComponent() {
 			{
 				accessorKey: "0",
 				cell: ({ row }) => <div>{row.original.id}</div>,
-				header: t("common.id"),
+				header: t("id"),
 			},
 			{
 				accessorKey: "1",
 				cell: ({ row }) => <div>{row.original.name}</div>,
-				header: t("common.name"),
+				header: t("name"),
 			},
 			{
 				accessorKey: "2",
 				cell: ({ row }) => <div className="flex justify-end">{row.original.playCount}</div>,
-				header: () => <div className="flex justify-end">{t("common.count")}</div>,
+				header: () => <div className="flex justify-end">{t("count")}</div>,
 			},
 			...(canWrite
 				? [
@@ -87,11 +87,11 @@ function RouteComponent() {
 	if (locations.length === 0) {
 		return (
 			<BgtEmptyPage
-				header={t("common.locations")}
+				header={t("locations")}
 				icon={MapPinIcon}
-				title={t("location.empty.title")}
-				description={t("location.empty.description")}
-				action={canWrite ? { label: t("location.new.button"), onClick: modals.createModal.show } : undefined}
+				title={t("location:empty.title")}
+				description={t("location:empty.description")}
+				action={canWrite ? { label: t("location:new.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<NewLocationModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
 			</BgtEmptyPage>
@@ -102,14 +102,14 @@ function RouteComponent() {
 		<BgtPage>
 			<BgtPageHeader
 				icon={MapPinIcon}
-				header={t("common.locations")}
+				header={t("locations")}
 				actions={
 					canWrite
 						? [
 								{
 									onClick: modals.createModal.show,
 									variant: "primary",
-									content: "location.new.button",
+									content: "location:new.button",
 								},
 							]
 						: []
@@ -120,7 +120,7 @@ function RouteComponent() {
 					<BgtDataTable
 						columns={columns}
 						data={locations}
-						noDataMessage={t("common.no-data-yet")}
+						noDataMessage={t("no-data-yet")}
 						widths={["w-[70px]", "w-[100px]", "", "w-[50px]"]}
 					/>
 				</BgtCard>
@@ -131,12 +131,12 @@ function RouteComponent() {
 					close={modals.deleteModal.hide}
 					onDelete={() => selectedLocation && deleteLocation(selectedLocation.id)}
 					description={
-						t("location.delete.description", {
+						t("location:delete.description", {
 							name: selectedLocation?.name ?? "",
 						}) +
 						" " +
 						((selectedLocation?.playCount ?? 0) > 0
-							? t("location.delete.extra-description", {
+							? t("location:delete.extra-description", {
 									count: selectedLocation?.playCount ?? 0,
 								})
 							: "")

@@ -37,7 +37,7 @@ export const Route = createFileRoute("/games/")({
 
 function RouteComponent() {
 	const { category } = Route.useSearch();
-	const { t } = useTranslation();
+	const { t } = useTranslation(["games", "dashboard", "common"]);
 	const navigate = useNavigate();
 	const { games, isLoading } = useGamesData();
 	const { canWrite } = usePermissions();
@@ -69,11 +69,11 @@ function RouteComponent() {
 	if (games.length === 0) {
 		return (
 			<BgtEmptyPage
-				header={t("games.title")}
+				header={t("title")}
 				icon={Game}
-				title={t("dashboard.empty.title")}
-				description={t("dashboard.empty.description")}
-				action={canWrite ? { onClick: modals.createModal.show, label: t("games.new") } : undefined}
+				title={t("dashboard:empty.title")}
+				description={t("dashboard:empty.description")}
+				action={canWrite ? { onClick: modals.createModal.show, label: t("new") } : undefined}
 			>
 				<BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />
 				<CreateGameModal
@@ -89,7 +89,7 @@ function RouteComponent() {
 	return (
 		<BgtPage>
 			<BgtPageHeader
-				header={t("games.title")}
+				header={t("title")}
 				icon={Game}
 				actions={
 					canWrite
@@ -97,7 +97,7 @@ function RouteComponent() {
 								{
 									onClick: modals.createModal.show,
 									variant: "primary",
-									content: "games.new",
+									content: "games:new",
 								},
 							]
 						: []
@@ -108,11 +108,11 @@ function RouteComponent() {
 					<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
 				</div>
 				<BgtText size="3" color="primary" className="pb-6" weight="medium">
-					{t("games.count", { count: filteredGames.length })}
+					{t("count", { count: filteredGames.length })}
 				</BgtText>
 				{categoryFilter !== undefined && (
 					<div className="flex flex-row gap-2 items-center text-sm text-gray-400">
-						<div>{t("common.filter")}:</div>
+						<div>{t("common:filter")}:</div>
 						<BgtBadge color="green" variant="soft" onClose={() => setCategoryFilter(undefined)}>
 							{categoryFilter}
 						</BgtBadge>

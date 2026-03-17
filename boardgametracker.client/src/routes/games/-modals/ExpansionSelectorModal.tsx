@@ -19,7 +19,7 @@ interface Props extends ModalProps {
 
 export const ExpansionSelectorModal = (props: Props) => {
 	const { open, close, gameId, selectedExpansions } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["game", "common"]);
 	const [selectedIds, setSelectedIds] = useState<number[]>(selectedExpansions);
 
 	const { expansions, isLoading, isPending, saveExpansions } = useExpansionSelectorModal({ gameId });
@@ -33,10 +33,10 @@ export const ExpansionSelectorModal = (props: Props) => {
 	return (
 		<BgtDialog open={open}>
 			<BgtDialogContent>
-				<BgtDialogTitle>{t("game.expansions.title")}</BgtDialogTitle>
-				<BgtDialogDescription>{t("game.expansions.description")}</BgtDialogDescription>
+				<BgtDialogTitle>{t("expansions.title")}</BgtDialogTitle>
+				<BgtDialogDescription>{t("expansions.description")}</BgtDialogDescription>
 				<div className="my-4">
-					{isLoading && <div>{t("common.loading-data")}</div>}
+					{isLoading && <div>{t("common:loading-data")}</div>}
 					<BgtCheckboxList
 						items={expansions}
 						selectedIds={selectedExpansions}
@@ -46,10 +46,10 @@ export const ExpansionSelectorModal = (props: Props) => {
 				</div>
 				<BgtDialogClose>
 					<BgtButton variant="cancel" onClick={() => close()} disabled={isLoading || isPending}>
-						{t("common.cancel")}
+						{t("common:cancel")}
 					</BgtButton>
 					<BgtButton type="button" variant="primary" disabled={isLoading} onClick={saveModal || isPending}>
-						{t("game.expansions.update")}
+						{t("expansions.update")}
 					</BgtButton>
 				</BgtDialogClose>
 			</BgtDialogContent>

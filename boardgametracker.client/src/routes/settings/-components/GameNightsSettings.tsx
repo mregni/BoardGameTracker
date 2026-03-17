@@ -15,17 +15,17 @@ export const GameNightsSettings = withForm({
 		disabled: false,
 	},
 	render: function Render({ form, disabled }) {
-		const { t } = useTranslation();
+		const { t } = useTranslation("settings");
 
 		return (
 			<div className="space-y-6">
-				<SettingsSection title={t("settings.game-nights.title")} description={t("settings.game-nights.description")}>
+				<SettingsSection title={t("game-nights.title")} description={t("game-nights.description")}>
 					<form.Field name="gameNightsEnabled" validators={zodValidator(SettingsSchema, "gameNightsEnabled")}>
 						{(field: AnyFieldApi) => (
 							<SettingsToggle
 								field={field}
-								label={t("settings.game-nights.enabled.label")}
-								description={t("settings.game-nights.enabled.description")}
+								label={t("game-nights.enabled.label")}
+								description={t("game-nights.enabled.description")}
 								disabled={disabled}
 							/>
 						)}
@@ -42,8 +42,8 @@ export const GameNightsSettings = withForm({
 											field={field}
 											disabled={disabled || !gameNightsEnabled}
 											type="text"
-											label={t("settings.game-nights.public-url.label")}
-											placeholder={t("settings.game-nights.public-url.placeholder")}
+											label={t("game-nights.public-url.label")}
+											placeholder={t("game-nights.public-url.placeholder")}
 										/>
 									)}
 								</form.Field>
@@ -54,8 +54,8 @@ export const GameNightsSettings = withForm({
 									{(field: AnyFieldApi) => (
 										<SettingsToggle
 											field={field}
-											label={t("settings.game-nights.rsvp-authentication.label")}
-											description={t("settings.game-nights.rsvp-authentication.description")}
+											label={t("game-nights.rsvp-authentication.label")}
+											description={t("game-nights.rsvp-authentication.description")}
 											disabled={disabled || !gameNightsEnabled}
 										/>
 									)}

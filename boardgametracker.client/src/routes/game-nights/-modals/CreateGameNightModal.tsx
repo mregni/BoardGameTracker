@@ -21,7 +21,7 @@ interface Props extends ModalProps {
 
 export const CreateGameNightModal = (props: Props) => {
 	const { open, close, players, games, locations, isLoading, onSave } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["game-nights", "common"]);
 
 	const handleSubmit = async (values: GameNightFormValues) => {
 		const gameNight: CreateGameNight = {
@@ -47,16 +47,16 @@ export const CreateGameNightModal = (props: Props) => {
 					onSubmit={handleSubmit}
 					onClose={close}
 				>
-					<BgtDialogTitle>{t("game-nights.create.title")}</BgtDialogTitle>
-					<BgtDialogDescription>{t("game-nights.create.description")}</BgtDialogDescription>
+					<BgtDialogTitle>{t("create.title")}</BgtDialogTitle>
+					<BgtDialogDescription>{t("create.description")}</BgtDialogDescription>
 				</GameNightForm>
 				<BgtDialogClose>
 					<BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={close}>
-						{t("common.cancel")}
+						{t("common:cancel")}
 					</BgtButton>
 					<BgtButton type="submit" form="game-night-form" disabled={isLoading} className="flex-1" variant="primary">
 						{isLoading && <Bars className="size-4" />}
-						{t("game-nights.create.save")}
+						{t("create.save")}
 					</BgtButton>
 				</BgtDialogClose>
 			</BgtDialogContent>

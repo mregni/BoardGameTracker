@@ -10,7 +10,7 @@ interface GameDetailEmptyStateProps {
 }
 
 export const GameDetailEmptyState = ({ onLogSession }: GameDetailEmptyStateProps) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation("game");
 
 	return (
 		<div className="flex items-center justify-center min-h-[60vh]">
@@ -21,20 +21,20 @@ export const GameDetailEmptyState = ({ onLogSession }: GameDetailEmptyStateProps
 					</div>
 				</div>
 
-				<BgtHeading className="mb-3">{t("game.no-sessions.title")}</BgtHeading>
+				<BgtHeading className="mb-3">{t("no-sessions.title")}</BgtHeading>
 
 				<BgtText color="white" opacity={60} className="mb-8 leading-relaxed">
-					{t("game.no-sessions.description")}
+					{t("no-sessions.description")}
 				</BgtText>
 
 				{onLogSession && (
 					<BgtButton onClick={onLogSession} className="mt-6">
-						<Plus /> {t("game.no-sessions.button")}
+						<Plus /> {t("no-sessions.button")}
 					</BgtButton>
 				)}
 
 				<BgtText color="white" opacity={40} size="2" className="pt-6">
-					{t("game.no-sessions.extra")}
+					{t("no-sessions.extra")}
 				</BgtText>
 			</div>
 		</div>

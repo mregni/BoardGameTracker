@@ -34,10 +34,10 @@ export const useGameSessionsData = ({ gameId, onDeleteSuccess }: UseGameSessions
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] });
-			infoToast("sessions.notifications.deleted");
+			infoToast("sessions:notifications.deleted");
 			onDeleteSuccess?.();
 		} catch {
-			errorToast("sessions.notifications.delete-failed");
+			errorToast("sessions:notifications.delete-failed");
 		}
 	};
 

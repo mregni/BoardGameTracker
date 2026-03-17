@@ -13,12 +13,12 @@ interface Props {
 
 export const FilterTabs = (props: Props) => {
 	const { filter, onFilterChange, allCount, upcomingCount, pastCount } = props;
-	const { t } = useTranslation();
+	const { t } = useTranslation(["game-nights", "common"]);
 
 	const tabs: { key: FilterType; label: string; count: number }[] = [
-		{ key: "all", label: t("common.all"), count: allCount },
-		{ key: "upcoming", label: t("game-nights.upcoming"), count: upcomingCount },
-		{ key: "past", label: t("game-nights.past"), count: pastCount },
+		{ key: "all", label: t("common:all"), count: allCount },
+		{ key: "upcoming", label: t("upcoming"), count: upcomingCount },
+		{ key: "past", label: t("past"), count: pastCount },
 	];
 
 	return (
