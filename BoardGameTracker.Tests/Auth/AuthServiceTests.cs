@@ -760,10 +760,10 @@ public class AuthServiceTests : IDisposable
     #region GetStatus
 
     [Fact]
-    public void GetStatus_ShouldReturnAuthEnabledAndBypassDisabled_WhenNotInDevelopment()
+    public void GetStatus_ShouldReturnAuthEnabled_WhenAuthIsEnabled()
     {
         // Arrange
-        _environmentProviderMock.Setup(x => x.IsDevelopment).Returns(false);
+        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(true);
 
         // Act
         var result = _authService.GetStatus();
@@ -771,55 +771,26 @@ public class AuthServiceTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result.AuthEnabled.Should().BeTrue();
-        result.BypassEnabled.Should().BeFalse();
 
-        _environmentProviderMock.Verify(x => x.IsDevelopment, Times.Once);
+        _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public void GetStatus_ShouldReturnBypassDisabled_WhenInDevelopmentButAuthBypassNotSet()
+    public void GetStatus_ShouldReturnAuthDisabled_WhenAuthIsDisabled()
     {
         // Arrange
-        _environmentProviderMock.Setup(x => x.IsDevelopment).Returns(true);
-        Environment.SetEnvironmentVariable("AUTH_BYPASS", null);
+        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(false);
 
         // Act
         var result = _authService.GetStatus();
 
         // Assert
         result.Should().NotBeNull();
-        result.AuthEnabled.Should().BeTrue();
-        result.BypassEnabled.Should().BeFalse();
+        result.AuthEnabled.Should().BeFalse();
 
-        _environmentProviderMock.Verify(x => x.IsDevelopment, Times.Once);
+        _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
         VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public void GetStatus_ShouldReturnBypassEnabled_WhenInDevelopmentAndAuthBypassIsTrue()
-    {
-        // Arrange
-        _environmentProviderMock.Setup(x => x.IsDevelopment).Returns(true);
-        Environment.SetEnvironmentVariable("AUTH_BYPASS", "true");
-
-        try
-        {
-            // Act
-            var result = _authService.GetStatus();
-
-            // Assert
-            result.Should().NotBeNull();
-            result.AuthEnabled.Should().BeTrue();
-            result.BypassEnabled.Should().BeTrue();
-
-            _environmentProviderMock.Verify(x => x.IsDevelopment, Times.Once);
-            VerifyNoOtherCalls();
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("AUTH_BYPASS", null);
-        }
     }
 
     #endregion

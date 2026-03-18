@@ -290,7 +290,7 @@ public class AuthControllerTests
     public void GetStatus_ShouldReturnAuthStatusResponse()
     {
         // Arrange
-        var expectedStatus = new AuthStatusResponse(AuthEnabled: true, BypassEnabled: false);
+        var expectedStatus = new AuthStatusResponse(AuthEnabled: true);
         _authServiceMock.Setup(x => x.GetStatus()).Returns(expectedStatus);
 
         // Act
@@ -300,7 +300,6 @@ public class AuthControllerTests
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var response = okResult.Value.Should().BeOfType<AuthStatusResponse>().Subject;
         response.AuthEnabled.Should().BeTrue();
-        response.BypassEnabled.Should().BeFalse();
 
         _authServiceMock.Verify(x => x.GetStatus(), Times.Once);
         VerifyNoOtherCalls();

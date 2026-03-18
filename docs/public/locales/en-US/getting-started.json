@@ -48,9 +48,9 @@
 				"config": "Enable Sentry logging",
 				"info": "Enables or disables the collection of usage statistics. Set to <code>true</code> to enable, <code>false</code> to disable."
 			},
-			"authBypass": {
-				"config": "Disable authentication",
-				"info": "Set to <code>true</code> to disable authentication and allow anyone to access the application."
+			"authEnabled": {
+				"config": "Enable authentication",
+				"info": "Set to <code>false</code> to disable authentication and allow anyone to access the application."
 			}
 		}
 	},
