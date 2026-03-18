@@ -50,8 +50,8 @@ function RootComponent() {
 	useEffect(() => {
 		if (!authChecked || !authStatus) return;
 
-		if (authStatus.authEnabled && !isAuthenticated && !isBare) {
-			const currentPath = location.pathname + location.search;
+		if (authStatus.authEnabled && !isAuthenticated && !isBare && location.pathname !== "/login") {
+			const currentPath = location.pathname + location.searchStr;
 			navigate({ to: "/login", search: { redirect: currentPath } });
 		}
 	}, [authChecked, authStatus, isAuthenticated, isBare, navigate, location]);

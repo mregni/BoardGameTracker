@@ -37,7 +37,6 @@ export const BottomNav = () => {
 	const showAuth = authStatus?.authEnabled;
 	const handleLogout = async () => {
 		await logout();
-		navigate({ to: "/login" });
 	};
 
 	return (
