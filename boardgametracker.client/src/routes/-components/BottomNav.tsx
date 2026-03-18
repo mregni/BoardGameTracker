@@ -34,7 +34,7 @@ export const BottomNav = () => {
 		mobileVisible: true,
 	});
 
-	const showAuth = authStatus?.authEnabled && !authStatus.bypassEnabled;
+	const showAuth = authStatus?.authEnabled;
 	const handleLogout = async () => {
 		await logout();
 		navigate({ to: "/login" });

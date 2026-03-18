@@ -24,7 +24,6 @@ export interface OidcProvider {
 
 export interface AuthStatus {
 	authEnabled: boolean;
-	bypassEnabled: boolean;
 }
 
 export interface ProfileResponse {

@@ -13,7 +13,7 @@ export const Sidebar = () => {
 	const { counts, versionInfo, menuItems } = useMenuInfo();
 	const { user, isAuthenticated, authStatus, logout } = useAuth();
 
-	const showAuth = authStatus?.authEnabled && !authStatus.bypassEnabled;
+	const showAuth = authStatus?.authEnabled;
 
 	const handleLogout = async () => {
 		await logout();

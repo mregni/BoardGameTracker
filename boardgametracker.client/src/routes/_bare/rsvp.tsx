@@ -36,7 +36,7 @@ function RsvpPage() {
 		useRsvpData(linkId);
 
 	const requiresAuth =
-		settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !authStatus?.bypassEnabled && !isAuthenticated;
+		settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
 
 	if (requiresAuth) {
 		return (

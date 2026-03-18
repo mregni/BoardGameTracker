@@ -2,6 +2,7 @@ import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useAuth } from "@/hooks/useAuth";
 
 export type SettingsCategory = "general" | "shelf-of-shame" | "game-nights" | "advanced" | "account";
 
@@ -47,11 +48,16 @@ interface Props {
 
 export const SettingsSidebar = ({ activeCategory, onCategoryChange, canManageSettings }: Props) => {
 	const { t } = useTranslation();
+	const authStatus = useAuth((s) => s.authStatus);
+	const showAccountTab = authStatus?.authEnabled;
 
 	return (
 		<div className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r border-white/10 lg:pr-4 max-lg:pb-4">
 			<nav className="space-y-1">
-				{CATEGORIES.filter((c) => canManageSettings || c.id === "account").map((category) => {
+				{CATEGORIES.filter((c) => {
+					if (c.id === "account") return showAccountTab;
+					return canManageSettings;
+				}).map((category) => {
 					const isActive = activeCategory === category.id;
 
 					return (

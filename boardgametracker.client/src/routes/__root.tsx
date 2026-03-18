@@ -50,15 +50,14 @@ function RootComponent() {
 	useEffect(() => {
 		if (!authChecked || !authStatus) return;
 
-		// If auth is enabled and not bypassed, redirect unauthenticated users to login
-		if (authStatus.authEnabled && !authStatus.bypassEnabled && !isAuthenticated && !isBare) {
+		if (authStatus.authEnabled && !isAuthenticated && !isBare) {
 			const currentPath = location.pathname + location.search;
 			navigate({ to: "/login", search: { redirect: currentPath } });
 		}
 	}, [authChecked, authStatus, isAuthenticated, isBare, navigate, location]);
 
 	useEffect(() => {
-		if (!isAuthenticated) return;
+		if (!isAuthenticated && authStatus?.authEnabled) return;
 
 		getEnvironmentCall()
 			.then((env) => {
@@ -67,7 +66,7 @@ function RootComponent() {
 				}
 			})
 			.catch(() => {});
-	}, [isAuthenticated]);
+	}, [isAuthenticated, authStatus]);
 
 	if (!authChecked) {
 		return (
