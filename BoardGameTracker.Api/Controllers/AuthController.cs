@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
@@ -11,6 +12,7 @@ namespace BoardGameTracker.Api.Controllers;
 [ApiController]
 [Route("api/auth")]
 [Authorize]
+[ServiceFilter(typeof(AuthDisabledFilter))]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;

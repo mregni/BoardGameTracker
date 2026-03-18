@@ -9,4 +9,6 @@ public interface IEnvironmentProvider
     bool StatisticsEnabled { get; }
     LogEventLevel LogLevel { get; }
     bool IsDevelopment { get; }
+    bool AuthEnabled { get; }
+    string? JwtSecret { get; }
 }

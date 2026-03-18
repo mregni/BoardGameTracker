@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
@@ -10,6 +11,7 @@ namespace BoardGameTracker.Api.Controllers.Admin;
 [ApiController]
 [Route("api/admin/users")]
 [Authorize(Roles = Constants.AuthRoles.Admin)]
+[ServiceFilter(typeof(AuthDisabledFilter))]
 public class UsersController : ControllerBase
 {
     private readonly IUserAdminService _userAdminService;

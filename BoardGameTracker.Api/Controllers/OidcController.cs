@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/auth/oidc")]
+[ServiceFilter(typeof(AuthDisabledFilter))]
 public class OidcController : ControllerBase
 {
     private readonly IOidcService _oidcService;

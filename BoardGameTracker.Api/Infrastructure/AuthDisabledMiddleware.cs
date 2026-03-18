@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace BoardGameTracker.Api.Infrastructure;
 
-public class AuthBypassMiddleware
+public class AuthDisabledMiddleware
 {
     private readonly RequestDelegate _next;
 
-    public AuthBypassMiddleware(RequestDelegate next)
+    public AuthDisabledMiddleware(RequestDelegate next)
     {
         _next = next;
     }
@@ -19,13 +19,13 @@ public class AuthBypassMiddleware
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, "bypass-admin-id"),
+                new Claim(ClaimTypes.NameIdentifier, "auth-disabled-admin-id"),
                 new Claim(ClaimTypes.Name, "admin"),
                 new Claim(ClaimTypes.Role, Constants.AuthRoles.Admin),
-                new Claim("display_name", "Admin (Bypass)")
+                new Claim("display_name", "Admin")
             };
 
-            var identity = new ClaimsIdentity(claims, "AuthBypass");
+            var identity = new ClaimsIdentity(claims, "AuthDisabled");
             context.User = new ClaimsPrincipal(identity);
         }
 

@@ -1,4 +1,5 @@
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,16 @@ public class RefreshTokenCleanupService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var env = scope.ServiceProvider.GetRequiredService<IEnvironmentProvider>();
+            if (!env.AuthEnabled)
+            {
+                _logger.LogInformation("Auth disabled, skipping refresh token cleanup service");
+                return;
+            }
+        }
+
         while (!stoppingToken.IsCancellationRequested)
         {
             await Task.Delay(Interval, stoppingToken);
