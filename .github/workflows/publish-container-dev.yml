@@ -50,6 +50,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      checks: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -113,7 +114,9 @@ jobs:
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
             /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
             /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**" \
-            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**"
+            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
+            /d:sonar.qualitygate.wait=true \
+            /d:sonar.qualitygate.timeout=300
         if: env.SONAR_TOKEN != ''
 
       - name: Build .NET
@@ -149,12 +152,20 @@ jobs:
           cd boardgametracker.client
           npm run test:coverage
 
+      - name: Publish .NET test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: TestResults/**/*.trx
+          check_name: ".NET Test Results"
+          fail_on: test_failures
+
       - name: End SonarCloud analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
-        if: env.SONAR_TOKEN != '' && github.event_name != 'pull_request'
+        if: env.SONAR_TOKEN != ''
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

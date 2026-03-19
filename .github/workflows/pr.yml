@@ -1,0 +1,146 @@
+name: PR Quality
+
+on:
+  pull_request:
+    branches: [dev, master]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  labeler:
+    name: PR Labeler
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply file-based labels
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/labeler.yml
+
+  size-label:
+    name: PR Size Label
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Label PR by size
+        uses: codelytv/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: "size/XS"
+          xs_max_size: 10
+          s_label: "size/S"
+          s_max_size: 100
+          m_label: "size/M"
+          m_max_size: 500
+          l_label: "size/L"
+          l_max_size: 1000
+          xl_label: "size/XL"
+          fail_if_xl: false
+          message_if_xl: >
+            This PR is very large. Consider breaking it into smaller,
+            more focused pull requests for easier review.
+
+  semantic-title:
+    name: Semantic PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: >
+            The subject "{subject}" found in the pull request title "{title}"
+            should start with a lowercase letter. Example: "feat: add BGG sync"
+
+  i18n-check:
+    name: Translation Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: boardgametracker.client/package-lock.json
+
+      - name: Check translation completeness
+        run: |
+          LOCALES_DIR="boardgametracker.client/public/locales"
+          BASE_DIR="$LOCALES_DIR/base"
+          EXIT_CODE=0
+
+          if [ ! -d "$BASE_DIR" ]; then
+            echo "::error::Base locale directory not found at $BASE_DIR"
+            exit 1
+          fi
+
+          echo "Checking translation completeness against base locale..."
+          echo ""
+
+          # For each locale directory (skip base)
+          for LOCALE_DIR in "$LOCALES_DIR"/*/; do
+            LOCALE=$(basename "$LOCALE_DIR")
+            [ "$LOCALE" = "base" ] && continue
+
+            echo "── $LOCALE ──"
+
+            # For each file in base
+            for BASE_FILE in "$BASE_DIR"/*.json; do
+              FILENAME=$(basename "$BASE_FILE")
+              LOCALE_FILE="$LOCALE_DIR/$FILENAME"
+
+              if [ ! -f "$LOCALE_FILE" ]; then
+                # Missing file is OK if the locale dir is empty (inherits from base)
+                continue
+              fi
+
+              # Compare keys
+              BASE_KEYS=$(jq -r '[paths(scalars)] | map(join(".")) | sort[]' "$BASE_FILE" 2>/dev/null)
+              LOCALE_KEYS=$(jq -r '[paths(scalars)] | map(join(".")) | sort[]' "$LOCALE_FILE" 2>/dev/null)
+
+              MISSING=$(comm -23 <(echo "$BASE_KEYS") <(echo "$LOCALE_KEYS"))
+              EXTRA=$(comm -13 <(echo "$BASE_KEYS") <(echo "$LOCALE_KEYS"))
+
+              if [ -n "$MISSING" ]; then
+                echo "::warning file=$LOCALE_FILE::Missing keys in $LOCALE/$FILENAME:"
+                echo "$MISSING" | while read -r key; do echo "  - $key"; done
+              fi
+
+              if [ -n "$EXTRA" ]; then
+                echo "::notice file=$LOCALE_FILE::Extra keys in $LOCALE/$FILENAME (not in base):"
+                echo "$EXTRA" | while read -r key; do echo "  + $key"; done
+              fi
+            done
+            echo ""
+          done
+
+          exit $EXIT_CODE
+
