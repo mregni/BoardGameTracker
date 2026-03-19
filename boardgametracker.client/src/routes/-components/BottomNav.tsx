@@ -1,4 +1,4 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,7 +18,6 @@ export const BottomNav = () => {
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname;
 	const { user, isAuthenticated, authStatus, logout } = useAuth();
-	const navigate = useNavigate();
 
 	const handleMoreClick = () => {
 		setShowMoreMenu(!showMoreMenu);

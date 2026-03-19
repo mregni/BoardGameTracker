@@ -150,7 +150,7 @@ jobs:
         with:
           files: TestResults/**/*.trx
           check_name: ".NET Test Results"
-          fail_on: test_failures
+          fail_on: "test failures"
 
       - name: End SonarCloud analysis
         env:

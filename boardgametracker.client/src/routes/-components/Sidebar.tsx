@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router";
 import LogOut from "@/assets/icons/log-out.svg?react";
 import User from "@/assets/icons/user.svg?react";
 import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
@@ -9,7 +8,6 @@ import { useMenuInfo } from "../-hooks/useMenuInfo";
 import { VersionCard } from "./VersionCard";
 
 export const Sidebar = () => {
-	const navigate = useNavigate();
 	const { counts, versionInfo, menuItems } = useMenuInfo();
 	const { user, isAuthenticated, authStatus, logout } = useAuth();
 

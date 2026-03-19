@@ -35,8 +35,7 @@ function RsvpPage() {
 	const { gameNight, isLoading, submitRsvp, isSubmitting, isSubmitted, submittedPlayerName, submittedState } =
 		useRsvpData(linkId);
 
-	const requiresAuth =
-		settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
+	const requiresAuth = settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
 
 	if (requiresAuth) {
 		return (
