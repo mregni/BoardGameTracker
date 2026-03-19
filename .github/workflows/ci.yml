@@ -106,7 +106,7 @@ jobs:
             /v:"${{ needs.version.outputs.version }}" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
-            /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
+            /d:sonar.javascript.lcov.reportPaths="coverage/lcov.info" \
             /d:sonar.testExecutionReportPaths="boardgametracker.client/coverage/sonar-report.xml" \
             /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
