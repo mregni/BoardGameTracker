@@ -145,6 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: write
       security-events: write
     steps:
       - name: Checkout
