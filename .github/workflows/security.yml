@@ -195,7 +195,6 @@ jobs:
       contents: read
       issues: write
       pull-requests: write
-      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -316,7 +315,7 @@ jobs:
           target: "http://localhost:5444"
           docker_name: "ghcr.io/zaproxy/zaproxy:stable"
           allow_issue_writing: true
-          fail_action: warn
+          fail_action: "false"
           cmd_options: >-
             -z "-config replacer.full_list(0).description=AuthHeader
             -config replacer.full_list(0).enabled=true
@@ -326,13 +325,6 @@ jobs:
             -config replacer.full_list(0).replacement=Bearer\ ${{ steps.auth.outputs.token }}
             -config replacer.full_list(0).initiators="
           rules_file_name: ".zap/rules.tsv"
-
-      - name: Upload ZAP SARIF
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: report_sarif.json
-          category: zap-baseline
 
       - name: Tear down application stack
         if: always()
