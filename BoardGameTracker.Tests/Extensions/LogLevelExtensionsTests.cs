@@ -6,6 +6,7 @@ using Xunit;
 
 namespace BoardGameTracker.Tests.Extensions;
 
+[Collection("EnvironmentVariables")]
 public class LogLevelExtensionsTests : IDisposable
 {
     private readonly string _originalLogLevel;
