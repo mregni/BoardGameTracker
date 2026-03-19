@@ -213,7 +213,7 @@ app.Use(async (context, next) =>
         "Permissions-Policy", "camera=(), microphone=(), geolocation=()");
     context.Response.Headers.Append(
         "Content-Security-Policy",
-        "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';");
+        "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self';");
     await next();
 });
 

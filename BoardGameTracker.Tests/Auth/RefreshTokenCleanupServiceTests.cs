@@ -69,8 +69,8 @@ public class RefreshTokenCleanupServiceTests
 
         // Act
         await service.StartAsync(cts.Token);
-        await Task.Delay(100);
-        cts.Cancel();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+        await cts.CancelAsync();
 
         try
         {
@@ -97,8 +97,8 @@ public class RefreshTokenCleanupServiceTests
 
         // Act - start and cancel quickly (before the 24h interval elapses)
         await service.StartAsync(cts.Token);
-        await Task.Delay(100);
-        cts.Cancel();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+        await cts.CancelAsync();
 
         try
         {
@@ -125,8 +125,8 @@ public class RefreshTokenCleanupServiceTests
 
         // Act
         await service.StartAsync(cts.Token);
-        await Task.Delay(50);
-        cts.Cancel();
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+        await cts.CancelAsync();
 
         // Assert - should not throw unexpected exceptions
         var act = () => service.StopAsync(CancellationToken.None);
@@ -159,8 +159,8 @@ public class RefreshTokenCleanupServiceTests
 
         // Act - start and cancel quickly
         await service.StartAsync(cts.Token);
-        await Task.Delay(50);
-        cts.Cancel();
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+        await cts.CancelAsync();
 
         // Assert - service should not crash from the exception
         var act = () => service.StopAsync(CancellationToken.None);
@@ -177,8 +177,8 @@ public class RefreshTokenCleanupServiceTests
 
         // Act
         await service.StartAsync(cts.Token);
-        await Task.Delay(50);
-        cts.Cancel();
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+        await cts.CancelAsync();
 
         try
         {
