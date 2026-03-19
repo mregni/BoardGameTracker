@@ -147,6 +147,7 @@ jobs:
           cd boardgametracker.client
           npm run test:coverage
           sed -i 's|^SF:src/|SF:boardgametracker.client/src/|' coverage/lcov.info
+          sed -i 's|path="src/|path="boardgametracker.client/src/|g' coverage/sonar-report.xml
 
       - name: Publish .NET test results
         uses: EnricoMi/publish-unit-test-result-action@v2
