@@ -1,3 +1,4 @@
+using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Common.Extensions;
@@ -10,6 +11,7 @@ namespace BoardGameTracker.Api.Controllers.Admin;
 [ApiController]
 [Route("api/admin/oidc-providers")]
 [Authorize(Roles = Constants.AuthRoles.Admin)]
+[ServiceFilter(typeof(AuthDisabledFilter))]
 public class OidcProvidersController : ControllerBase
 {
     private readonly IOidcProviderService _service;

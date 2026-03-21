@@ -6,6 +6,7 @@ using Xunit;
 
 namespace BoardGameTracker.Tests.Services;
 
+[Collection("EnvironmentVariables")]
 public class EnvironmentProviderTests : IDisposable
 {
     private readonly EnvironmentProvider _environmentProvider;
@@ -20,10 +21,12 @@ public class EnvironmentProviderTests : IDisposable
             ["ENVIRONMENT"] = Environment.GetEnvironmentVariable("ENVIRONMENT"),
             ["PORT"] = Environment.GetEnvironmentVariable("PORT"),
             ["STATISTICS"] = Environment.GetEnvironmentVariable("STATISTICS"),
-            ["LOGLEVEL"] = Environment.GetEnvironmentVariable("LOGLEVEL")
+            ["STATISTICS_ENABLED"] = Environment.GetEnvironmentVariable("STATISTICS_ENABLED"),
+            ["LOGLEVEL"] = Environment.GetEnvironmentVariable("LOGLEVEL"),
+            ["AUTH_ENABLED"] = Environment.GetEnvironmentVariable("AUTH_ENABLED"),
+            ["JWT_SECRET"] = Environment.GetEnvironmentVariable("JWT_SECRET")
         };
 
-        // Clear both environment variables for clean test state
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
         Environment.SetEnvironmentVariable("ENVIRONMENT", null);
     }
@@ -225,5 +228,56 @@ public class EnvironmentProviderTests : IDisposable
         var result = _environmentProvider.IsDevelopment;
 
         result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void AuthEnabled_ShouldReturnTrue_WhenNotSet()
+    {
+        Environment.SetEnvironmentVariable("AUTH_ENABLED", null);
+
+        _environmentProvider.AuthEnabled.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("True", true)]
+    [InlineData("TRUE", true)]
+    [InlineData("false", false)]
+    [InlineData("False", false)]
+    [InlineData("FALSE", false)]
+    [InlineData("yes", true)]
+    [InlineData("no", true)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    [InlineData("something", true)]
+    public void AuthEnabled_ShouldOnlyReturnFalse_WhenExplicitlySetToFalse(string value, bool expected)
+    {
+        Environment.SetEnvironmentVariable("AUTH_ENABLED", value);
+
+        _environmentProvider.AuthEnabled.Should().Be(expected);
+    }
+
+    [Fact]
+    public void JwtSecret_ShouldReturnNull_WhenNotSet()
+    {
+        Environment.SetEnvironmentVariable("JWT_SECRET", null);
+
+        _environmentProvider.JwtSecret.Should().BeNull();
+    }
+
+    [Fact]
+    public void JwtSecret_ShouldReturnValue_WhenSet()
+    {
+        Environment.SetEnvironmentVariable("JWT_SECRET", "my-secret-key");
+
+        _environmentProvider.JwtSecret.Should().Be("my-secret-key");
+    }
+
+    [Fact]
+    public void JwtSecret_ShouldReturnNull_WhenSetToEmpty()
+    {
+        Environment.SetEnvironmentVariable("JWT_SECRET", "");
+
+        _environmentProvider.JwtSecret.Should().BeNull();
     }
 }

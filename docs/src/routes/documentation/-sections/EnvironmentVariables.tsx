@@ -70,10 +70,10 @@ const rows = [
 		info: "getting-started:envVars.rows.sentryLogging.info",
 	},
 	{
-		config: "getting-started:envVars.rows.authBypass.config",
-		variable: "AUTH_BYPASS",
-		default: "false",
-		info: "getting-started:envVars.rows.authBypass.info",
+		config: "getting-started:envVars.rows.authEnabled.config",
+		variable: "AUTH_ENABLED",
+		default: "true",
+		info: "getting-started:envVars.rows.authEnabled.info",
 	},
 ];
 

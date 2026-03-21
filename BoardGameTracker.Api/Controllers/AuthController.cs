@@ -1,9 +1,11 @@
 using System.Security.Claims;
+using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
@@ -11,6 +13,7 @@ namespace BoardGameTracker.Api.Controllers;
 [ApiController]
 [Route("api/auth")]
 [Authorize]
+[ServiceFilter(typeof(AuthDisabledFilter))]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -26,6 +29,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         _logger.LogInformation("Login attempt for user {Username}", request.Username);
@@ -35,6 +39,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("refresh")]
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
     {
         var response = await _authService.RefreshAsync(request.RefreshToken);
@@ -73,6 +78,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("change-password")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
         await _authService.ChangePasswordAsync(GetCurrentUserId(), request);

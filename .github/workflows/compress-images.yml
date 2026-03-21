@@ -1,0 +1,50 @@
+name: Compress Images
+
+on:
+  pull_request:
+    paths:
+      - "**.jpg"
+      - "**.jpeg"
+      - "**.png"
+      - "**.webp"
+  schedule:
+    # Weekly Monday 09:00 UTC
+    - cron: "0 9 * * 1"
+
+jobs:
+  compress:
+    name: Compress Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    # Only run on PRs (not schedule) if there are image changes
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compress images
+        id: calibre
+        uses: calibreapp/image-actions@main
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          compressOnly: ${{ github.event_name == 'schedule' }}
+          jpegQuality: "80"
+          jpegProgressive: true
+          pngQuality: "80"
+          webpQuality: "80"
+
+      - name: Create commit for scheduled run
+        if: github.event_name == 'schedule' && steps.calibre.outputs.markdown != ''
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: compress images [skip ci]" || echo "No changes to commit"
+          git push

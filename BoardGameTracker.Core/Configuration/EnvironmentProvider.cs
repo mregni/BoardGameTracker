@@ -20,4 +20,9 @@ public class EnvironmentProvider : IEnvironmentProvider
 
     public LogEventLevel LogLevel => LogLevelExtensions.GetEnvironmentLogLevel();
     public bool IsDevelopment => EnvironmentName.Equals("development", StringComparison.OrdinalIgnoreCase);
+
+    public bool AuthEnabled =>
+        !string.Equals(Environment.GetEnvironmentVariable("AUTH_ENABLED"), "false", StringComparison.OrdinalIgnoreCase);
+
+    public string? JwtSecret => Environment.GetEnvironmentVariable("JWT_SECRET");
 }

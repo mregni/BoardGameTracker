@@ -1,14 +1,7 @@
-name: Deploy Application
+name: Deploy
 
 on:
   push:
-    branches:
-      - dev
-      - master
-    paths-ignore:
-      - "docs/**"
-      - ".github/workflows/docs.yml"
-  pull_request:
     branches:
       - dev
       - master
@@ -24,10 +17,17 @@ jobs:
   version:
     name: Calculate Version
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.versioning.outputs.version }}
       is_master: ${{ github.ref == 'refs/heads/master' }}
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -37,10 +37,10 @@ jobs:
         uses: PaulHatch/semantic-version@v5.4.0
         id: versioning
         with:
-          enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' || github.event_name == 'pull_request' }}
+          enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
           namespace: beta
           bump_each_commit: true
-          version_format: "${{ (github.ref == 'refs/heads/dev' || github.event_name == 'pull_request') && '${major}.${minor}.${patch}-beta' || '${major}.${minor}.${patch}' }}"
+          version_format: "${{ github.ref == 'refs/heads/dev' && '${major}.${minor}.${patch}-beta' || '${major}.${minor}.${patch}' }}"
           debug: true
 
   test-and-analyze:
@@ -49,8 +49,12 @@ jobs:
     needs: [version]
     permissions:
       contents: read
-      pull-requests: write
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -113,7 +117,9 @@ jobs:
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
             /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
             /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**" \
-            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**"
+            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
+            /d:sonar.qualitygate.wait=true \
+            /d:sonar.qualitygate.timeout=300
         if: env.SONAR_TOKEN != ''
 
       - name: Build .NET
@@ -154,7 +160,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
-        if: env.SONAR_TOKEN != '' && github.event_name != 'pull_request'
+        if: env.SONAR_TOKEN != ''
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -179,20 +185,19 @@ jobs:
       - name: Publish Coverage Summary
         run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
-      - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
-        with:
-          recreate: true
-          path: coveragereport/SummaryGithub.md
-
   build-linux-multiarch:
     needs: [version, test-and-analyze]
     name: Build Multi-Arch Linux Containers
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -262,12 +267,16 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: github.event_name != 'pull_request'
     permissions:
       security-events: write
       actions: read
       contents: read
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -332,6 +341,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -399,8 +413,13 @@ jobs:
     name: Build Summary
     needs: [version, build-linux-multiarch]
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    permissions: {}
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Build Summary
         run: |
           VERSION=${{ needs.version.outputs.version }}

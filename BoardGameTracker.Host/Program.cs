@@ -5,6 +5,7 @@ using Ardalis.GuardClauses;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common.Configuration;
 using BoardGameTracker.Common.Entities.Auth;
+using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
@@ -15,9 +16,11 @@ using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Extensions;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Http;
@@ -53,6 +56,7 @@ builder.Host.UseSerilog();
 
 builder.Services.AddHealthChecks();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddScoped<AuthDisabledFilter>();
 builder.Services.AddProblemDetails();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -82,12 +86,19 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<MainDbContext>()
     .AddDefaultTokenProviders();
 
-var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? builder.Configuration["Jwt:Secret"];
+var environmentProvider = new EnvironmentProvider();
+var authEnabled = environmentProvider.AuthEnabled;
+var jwtSecret = environmentProvider.JwtSecret ?? builder.Configuration["Jwt:Secret"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "boardgametracker-api";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "boardgametracker-client";
 if (string.IsNullOrWhiteSpace(jwtSecret))
 {
-    throw new ArgumentException("JWT_SECRET not set");
+    if (authEnabled)
+    {
+        throw new ArgumentException("JWT_SECRET not set");
+    }
+
+    jwtSecret = "auth-disabled-placeholder-key-not-used";
 }
 
 builder.Services.AddAuthentication(options =>
@@ -110,6 +121,18 @@ builder.Services.AddAuthentication(options =>
     });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("auth", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 10;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 
@@ -181,7 +204,26 @@ app.UseRouting();
 
 app.UseCors("Allow");
 
-app.UseAuthBypassIfEnabled();
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    context.Response.Headers.Append(
+        "Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    context.Response.Headers.Append(
+        "Content-Security-Policy",
+        "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self';");
+    await next();
+});
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+app.UseRateLimiter();
+app.UseAuthDisabledMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -228,10 +270,9 @@ logger.LogInformation("  Environment:  {Environment}", Environment.GetEnvironmen
 logger.LogInformation("  Log level:    {LogLevel}", LogLevelExtensions.GetEnvironmentLogLevel());
 logger.LogInformation("  Sentry:       {SentryEnabled}", Environment.GetEnvironmentVariable("STATISTICS_ENABLED")?.ToLower() == "true" ? "Enabled" : "Disabled");
 logger.LogInformation("  HTTP ports:   {HttpPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS") ?? "default");
-logger.LogInformation("  HTTPS ports:  {HttpsPorts}", Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORTS") ?? "not configured");
 logger.LogInformation("  Timezone:     {Timezone}", Environment.GetEnvironmentVariable("TZ") ?? "system default");
 logger.LogInformation("  DB port:      {DbPort}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432");
-logger.LogInformation("  Auth bypass:  {AuthBypass}", Environment.GetEnvironmentVariable("AUTH_BYPASS")?.ToLower() == "true" ? "Yes" : "No");
+logger.LogInformation("  Auth:         {AuthState}", authEnabled ? "Enabled" : "Disabled");
 
 if (!app.Environment.IsDevelopment())
 {
@@ -258,7 +299,10 @@ if (!app.Environment.IsDevelopment())
 
 RunDbMigrations(app.Services);
 await SeedConfig(app.Services);
-await SeedAuthData(app.Services);
+if (authEnabled)
+{
+    await SeedAuthData(app.Services);
+}
 
 await app.RunAsync();
 

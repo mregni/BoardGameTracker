@@ -26,7 +26,8 @@
         "DB_USER": "dev",
         "DB_PASSWORD": "dev",
         "DB_NAME": "boardgametracker-dev",
-        "DB_PORT": "5432"
+        "DB_PORT": "5432",
+        "AUTH_ENABLED": "true"
       }
     },
     "https": {

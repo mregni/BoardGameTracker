@@ -18,4 +18,4 @@ public record ProfileResponse(
     DateTime? LastLoginAt,
     int? PlayerId);
 
-public record AuthStatusResponse(bool AuthEnabled, bool BypassEnabled);
+public record AuthStatusResponse(bool AuthEnabled);

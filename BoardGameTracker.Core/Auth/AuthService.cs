@@ -214,9 +214,7 @@ public class AuthService : IAuthService
 
     public AuthStatusResponse GetStatus()
     {
-        var authBypass = _environmentProvider.IsDevelopment &&
-            Environment.GetEnvironmentVariable("AUTH_BYPASS")?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
-        return new AuthStatusResponse(AuthEnabled: true, BypassEnabled: authBypass);
+        return new AuthStatusResponse(AuthEnabled: _environmentProvider.AuthEnabled);
     }
 
     private static string GenerateTempPassword(int length = 16)

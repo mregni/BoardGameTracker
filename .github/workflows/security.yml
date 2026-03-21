@@ -1,0 +1,297 @@
+name: Security Scanning
+
+on:
+  pull_request:
+    branches: [dev, master]
+  push:
+    branches: [dev, master]
+
+jobs:
+  dependency-scan-backend:
+    name: Backend Dependency Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup dotnet v8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+
+      - name: Restore packages
+        run: dotnet restore ./BoardGameTracker.sln
+
+      - name: Check for vulnerable packages
+        run: |
+          dotnet list ./BoardGameTracker.sln package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt
+
+          if grep -q "has the following vulnerable packages" vulnerable.txt; then
+            echo "::error::Vulnerable NuGet packages detected"
+            exit 1
+          fi
+
+          echo "No vulnerable packages found."
+
+  dependency-scan-frontend:
+    name: Frontend Dependency Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: boardgametracker.client/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd boardgametracker.client
+          npm ci --ignore-scripts
+
+      - name: Audit for vulnerabilities
+        run: |
+          cd boardgametracker.client
+          npm audit --audit-level=moderate
+
+  secret-detection:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker-scout:
+    name: Docker Scout CVE Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: bgt:scout-scan
+          cache-from: type=gha
+          build-args: |
+            VERSION=0.0.0-security
+
+      - name: Docker Scout CVE scan
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: local://bgt:scout-scan
+          only-severities: critical,high
+          sarif-file: scout-results.sarif
+          exit-code: true
+          only-fixed: true
+
+      - name: Upload Scout SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: scout-results.sarif
+          category: docker-scout
+
+  zap-baseline:
+    name: ZAP Baseline Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build application image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: bgt:security-scan
+          cache-from: type=gha
+          build-args: |
+            VERSION=0.0.0-security
+
+      - name: Generate ephemeral secrets
+        id: secrets
+        run: |
+          DB_PASSWORD=$(openssl rand -base64 24)
+          JWT_SECRET=$(openssl rand -base64 48)
+          echo "::add-mask::$DB_PASSWORD"
+          echo "::add-mask::$JWT_SECRET"
+          echo "db_password=$DB_PASSWORD" >> "$GITHUB_OUTPUT"
+          echo "jwt_secret=$JWT_SECRET" >> "$GITHUB_OUTPUT"
+
+      - name: Start application stack
+        env:
+          SEC_DB_PASSWORD: ${{ steps.secrets.outputs.db_password }}
+          SEC_JWT_SECRET: ${{ steps.secrets.outputs.jwt_secret }}
+        run: |
+          docker compose -f infra/docker-compose.security.yml up -d
+          echo "Waiting for application to become healthy..."
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:5444/api/health > /dev/null 2>&1; then
+              echo "Application is healthy after ${i}s"
+              break
+            fi
+            if [ "$i" -eq 60 ]; then
+              echo "::error::Application failed to become healthy within 60s"
+              docker compose -f infra/docker-compose.security.yml logs
+              exit 1
+            fi
+            sleep 1
+          done
+
+      - name: Authenticate and extract JWT
+        id: auth
+        env:
+          ZAP_TEST_EMAIL: ${{ secrets.ZAP_TEST_EMAIL }}
+          ZAP_TEST_PASSWORD: ${{ secrets.ZAP_TEST_PASSWORD }} 
+        run: |
+          RESPONSE=$(curl -sf -X POST http://localhost:5444/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d "{\"username\": \"${{ env.ZAP_TEST_EMAIL }}\", \"password\": \"${{ env.ZAP_TEST_PASSWORD }}\"}")
+
+          TOKEN=$(echo "$RESPONSE" | jq -r '.accessToken')
+
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "::error::Failed to extract JWT from login response"
+            echo "Response: $RESPONSE"
+            exit 1
+          fi
+
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Configure ZAP Replacer for JWT injection
+        run: |
+          mkdir -p /tmp/zap
+
+          # ZAP Automation Framework context with auth header injection
+          cat > /tmp/zap/af-plan.yaml << 'ZAPEOF'
+          ---
+          env:
+            contexts:
+              - name: "BoardGameTracker"
+                urls:
+                  - "http://localhost:5444"
+                includePaths:
+                  - "http://localhost:5444/api/.*"
+                excludePaths:
+                  - "http://localhost:5444/api/health"
+            parameters:
+              failOnError: true
+              failOnWarning: false
+              progressToStdout: true
+          jobs:
+            - type: requestor
+              parameters:
+                user: ""
+              rules: []
+            - type: passiveScan-config
+              parameters:
+                maxAlertsPerRule: 10
+                scanOnlyInScope: true
+                maxBodySizeInBytesToScan: 10000
+            - type: spider
+              parameters:
+                context: "BoardGameTracker"
+                maxDuration: 5
+                maxDepth: 5
+                maxChildren: 10
+            - type: passiveScan-wait
+              parameters:
+                maxDuration: 5
+            - type: report
+              parameters:
+                template: "sarif-json"
+                reportDir: "/zap/wrk"
+                reportFile: "zap-report"
+                reportTitle: "ZAP Baseline Scan - BoardGameTracker"
+          ZAPEOF
+
+      - name: Run ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: "http://localhost:5444"
+          docker_name: "ghcr.io/zaproxy/zaproxy:stable"
+          allow_issue_writing: true
+          fail_action: "false"
+          cmd_options: >-
+            -z "-config replacer.full_list(0).description=AuthHeader
+            -config replacer.full_list(0).enabled=true
+            -config replacer.full_list(0).matchtype=REQ_HEADER
+            -config replacer.full_list(0).matchstr=Authorization
+            -config replacer.full_list(0).regex=false
+            -config replacer.full_list(0).replacement=Bearer\ ${{ steps.auth.outputs.token }}
+            -config replacer.full_list(0).initiators="
+          rules_file_name: ".zap/rules.tsv"
+
+      - name: Tear down application stack
+        if: always()
+        run: docker compose -f infra/docker-compose.security.yml down -v

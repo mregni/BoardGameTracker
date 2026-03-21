@@ -8,13 +8,13 @@ using Xunit;
 
 namespace BoardGameTracker.Tests.Auth;
 
-public class AuthBypassMiddlewareTests
+public class AuthDisabledMiddlewareTests
 {
     [Fact]
     public async Task InvokeAsync_ShouldSetAdminIdentity_WhenNotAuthenticated()
     {
         // Arrange
-        var middleware = new AuthBypassMiddleware(_ => Task.CompletedTask);
+        var middleware = new AuthDisabledMiddleware(_ => Task.CompletedTask);
         var context = new DefaultHttpContext();
 
         // Act
@@ -22,9 +22,9 @@ public class AuthBypassMiddlewareTests
 
         // Assert
         context.User.Identity!.IsAuthenticated.Should().BeTrue();
-        context.User.Identity.AuthenticationType.Should().Be("AuthBypass");
+        context.User.Identity.AuthenticationType.Should().Be("AuthDisabled");
         context.User.FindFirstValue(ClaimTypes.Name).Should().Be("admin");
-        context.User.FindFirstValue(ClaimTypes.NameIdentifier).Should().Be("bypass-admin-id");
+        context.User.FindFirstValue(ClaimTypes.NameIdentifier).Should().Be("auth-disabled-admin-id");
         context.User.IsInRole(Constants.AuthRoles.Admin).Should().BeTrue();
     }
 
@@ -32,7 +32,7 @@ public class AuthBypassMiddlewareTests
     public async Task InvokeAsync_ShouldNotOverrideIdentity_WhenAlreadyAuthenticated()
     {
         // Arrange
-        var middleware = new AuthBypassMiddleware(_ => Task.CompletedTask);
+        var middleware = new AuthDisabledMiddleware(_ => Task.CompletedTask);
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, "existing-user"),
@@ -57,7 +57,7 @@ public class AuthBypassMiddlewareTests
     {
         // Arrange
         var nextCalled = false;
-        var middleware = new AuthBypassMiddleware(_ =>
+        var middleware = new AuthDisabledMiddleware(_ =>
         {
             nextCalled = true;
             return Task.CompletedTask;
@@ -75,13 +75,13 @@ public class AuthBypassMiddlewareTests
     public async Task InvokeAsync_ShouldIncludeDisplayNameClaim()
     {
         // Arrange
-        var middleware = new AuthBypassMiddleware(_ => Task.CompletedTask);
+        var middleware = new AuthDisabledMiddleware(_ => Task.CompletedTask);
         var context = new DefaultHttpContext();
 
         // Act
         await middleware.InvokeAsync(context);
 
         // Assert
-        context.User.FindFirstValue("display_name").Should().Be("Admin (Bypass)");
+        context.User.FindFirstValue("display_name").Should().Be("Admin");
     }
 }

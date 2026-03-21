@@ -1,0 +1,20 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Security Vulnerability
+    url: https://github.com/mregni/boardgametracker/security/advisories/new
+    about: >
+      Please report security issues privately using GitHub's vulnerability
+      reporting — not as a public issue. We will respond within 72 hours.
+
+  - name: Question / Help / How-to
+    url: https://github.com/mregni/boardgametracker/discussions/categories/q-a
+    about: >
+      For help with setup, configuration, or general questions — use
+      Discussions instead of Issues so the community can benefit too.
+
+  - name: Ideas & Feedback
+    url: https://github.com/mregni/boardgametracker/discussions/categories/ideas
+    about: >
+      For open-ended ideas or feedback that isn't a concrete feature request yet,
+      start a Discussion to gather community input first.
