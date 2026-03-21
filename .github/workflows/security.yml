@@ -6,13 +6,12 @@ on:
   push:
     branches: [dev, master]
 
-permissions:
-  contents: read
-
 jobs:
   dependency-scan-backend:
     name: Backend Dependency Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,6 +38,8 @@ jobs:
   dependency-scan-frontend:
     name: Frontend Dependency Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,6 +64,8 @@ jobs:
   secret-detection:
     name: Secret Detection
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout (full history)
         uses: actions/checkout@v4
@@ -81,7 +84,7 @@ jobs:
       contents: read
       security-events: write
     container:
-      image: semgrep/semgrep
+      image: semgrep/semgrep:1.156.0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -114,7 +117,7 @@ jobs:
       contents: read
       security-events: write
     container:
-      image: semgrep/semgrep
+      image: semgrep/semgrep:1.156.0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
