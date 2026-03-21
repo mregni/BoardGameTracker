@@ -27,7 +27,7 @@ jobs:
           issue-message: |
             Hey @${{ github.actor }}, thanks for opening your first issue on BoardGameTracker!
 
-            To help us triage this as quickly as possible, please make sure you've included:
+            To help me triage this as quickly as possible, please make sure you've included:
             - Your BoardGameTracker version (Settings in the app)
             - Your deployment method (Docker Compose / Docker / bare metal)
             - Steps to reproduce the problem
