@@ -6,7 +6,8 @@ import { SettingsSidebar, type SettingsCategory } from "./SettingsSidebar";
 let mockAuthStatus: { authEnabled: boolean } | null = null;
 
 vi.mock("@/hooks/useAuth", () => ({
-	useAuth: (selector: (state: { authStatus: typeof mockAuthStatus }) => unknown) => selector({ authStatus: mockAuthStatus }),
+	useAuth: (selector: (state: { authStatus: typeof mockAuthStatus }) => unknown) =>
+		selector({ authStatus: mockAuthStatus }),
 }));
 
 const defaultProps = {
