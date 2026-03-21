@@ -1,0 +1,128 @@
+name: Stale Issues & PRs
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+env:
+  REPO_OWNER_USERNAME: mregni
+
+jobs:
+  stale:
+    name: "Stale Issues & PRs"
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Label owner-responded issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ env.REPO_OWNER_USERNAME }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Scanning open issues for comments by '$OWNER'..."
+
+          ISSUES=$(gh issue list \
+            --repo "$REPO" \
+            --state open \
+            --json number \
+            --limit 500 \
+            --jq '.[].number')
+
+          LABELED=0
+          SKIPPED=0
+
+          for ISSUE_NUMBER in $ISSUES; do
+            OWNER_COMMENTED=$(gh api \
+              "repos/$REPO/issues/$ISSUE_NUMBER/comments" \
+              --jq "[.[] | select(.user.login == \"$OWNER\")] | length")
+
+            if [ "$OWNER_COMMENTED" -gt "0" ]; then
+              ALREADY_LABELED=$(gh issue view "$ISSUE_NUMBER" \
+                --repo "$REPO" \
+                --json labels \
+                --jq '[.labels[].name] | contains(["owner-responded"])')
+
+              if [ "$ALREADY_LABELED" = "false" ]; then
+                echo "  Issue #$ISSUE_NUMBER — owner commented, adding label"
+                gh issue edit "$ISSUE_NUMBER" \
+                  --repo "$REPO" \
+                  --add-label "owner-responded"
+                LABELED=$((LABELED + 1))
+              else
+                SKIPPED=$((SKIPPED + 1))
+              fi
+            fi
+          done
+
+          echo ""
+          echo "Done. Newly labeled: $LABELED | Already labeled: $SKIPPED"
+
+      - name: Ensure labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh label create "stale" \
+            --repo "$REPO" \
+            --description "No recent activity" \
+            --color "ededed" \
+            --force
+
+          gh label create "owner-responded" \
+            --repo "$REPO" \
+            --description "Repo owner has commented on this issue" \
+            --color "0075ca" \
+            --force
+
+      - name: Process stale issues and PRs
+        uses: actions/stale@v9
+        with:
+          stale-issue-label: stale
+          stale-issue-message: >
+            This issue has had no activity for 60 days and has been marked
+            as stale. It will be closed in 14 days if there is no further
+            activity. If this is still relevant, please leave a comment.
+          close-issue-message: >
+            Closing due to inactivity. Feel free to reopen if this is
+            still relevant. Thank you for the report.
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+
+          exempt-issue-labels: >
+            owner-responded,
+            bug,
+            security,
+            pinned,
+            enhancement,
+            in progress
+
+          stale-pr-label: stale
+          stale-pr-message: >
+            This pull request has had no activity for 30 days and has been
+            marked as stale. It will be closed in 7 days if there is no
+            further activity. Please rebase and update if you'd like this
+            merged.
+          close-pr-message: >
+            Closing due to inactivity. Please reopen and rebase if you
+            would like to continue with this pull request.
+          days-before-pr-stale: 30
+          days-before-pr-close: 7
+
+          exempt-pr-labels: >
+            pinned,
+            security,
+            in progress,
+            do not merge
+
+          operations-per-run: 100
+          remove-stale-when-updated: true
+          exempt-all-assignees: false

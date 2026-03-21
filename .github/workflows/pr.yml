@@ -27,17 +27,6 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           configuration-path: .github/labeler.yml
 
-  size-label:
-    name: PR Size Label
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@v2
-        with:
-          egress-policy: audit
-
       - name: Remove old size labels
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

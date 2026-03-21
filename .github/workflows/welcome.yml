@@ -1,0 +1,50 @@
+name: Welcome New Contributors
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  welcome:
+    name: "Welcome first-time contributor"
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+          issue-message: |
+            Hey @${{ github.actor }}, thanks for opening your first issue on BoardGameTracker!
+
+            To help us triage this as quickly as possible, please make sure you've included:
+            - Your BoardGameTracker version (Settings in the app)
+            - Your deployment method (Docker Compose / Docker / bare metal)
+            - Steps to reproduce the problem
+            - Any relevant container logs (`docker compose logs boardgametracker --tail=100`)
+
+            I'll take a look as soon as I can. Thanks for taking the time to report!
+
+          pr-message: |
+            Hey @${{ github.actor }}, thanks for opening your first pull request on BoardGameTracker!
+
+            Before I review, here's a quick checklist:
+
+            - [ ] PR title follows conventional commits format (`feat:`, `fix:`, `docs:`, `chore:`, etc.)
+            - [ ] If you added or changed UI text, translation keys are updated in all three locale files
+                  (`en-US.json`, `nl-NL.json`, `nl-BE.json` under `boardgametracker.client/public/locales/`)
+            - [ ] If you changed backend logic, relevant xUnit tests are added or updated
+            - [ ] If you changed an API response shape, the corresponding DTO and extension method are updated
+
+            Don't worry if you're unsure about anything — I'll guide you through the review.
+            Thanks for contributing!

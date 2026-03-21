@@ -1,0 +1,8 @@
+# CODEOWNERS
+#
+# Defines required reviewers for specific paths.
+# Any PR touching these files will require approval from the listed owner(s)
+# before it can be merged, regardless of other branch protection settings.
+
+# ── Default: you review everything ────────────────────────────────────────────
+*   @mregni
