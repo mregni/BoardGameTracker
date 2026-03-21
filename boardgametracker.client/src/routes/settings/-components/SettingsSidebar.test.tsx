@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, userEvent } from "@/test/test-utils";
 
-import { SettingsSidebar, type SettingsCategory } from "./SettingsSidebar";
+import { type SettingsCategory, SettingsSidebar } from "./SettingsSidebar";
 
 let mockAuthStatus: { authEnabled: boolean } | null = null;
 
