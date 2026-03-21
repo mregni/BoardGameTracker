@@ -210,12 +210,12 @@ jobs:
       - name: Authenticate and extract JWT
         id: auth
         env:
-          ZAP_TEST_EMAIL: ${{ secrets.ZAP_TEST_EMAIL }}
+          ZAP_TEST_USERNAME: ${{ secrets.ZAP_TEST_USERNAME }}
           ZAP_TEST_PASSWORD: ${{ secrets.ZAP_TEST_PASSWORD }} 
         run: |
           RESPONSE=$(curl -sf -X POST http://localhost:5444/api/auth/login \
             -H "Content-Type: application/json" \
-            -d "{\"username\": \"${{ env.ZAP_TEST_EMAIL }}\", \"password\": \"${{ env.ZAP_TEST_PASSWORD }}\"}")
+            -d "{\"username\": \"${{ env.ZAP_TEST_USERNAME }}\", \"password\": \"${{ env.ZAP_TEST_PASSWORD }}\"}")
 
           TOKEN=$(echo "$RESPONSE" | jq -r '.accessToken')
 

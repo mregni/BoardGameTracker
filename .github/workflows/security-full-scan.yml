@@ -130,7 +130,7 @@ jobs:
 
           RESPONSE=$(curl -sf -X POST "$APP_URL/api/auth/login" \
             -H "Content-Type: application/json" \
-            -d "{\"username\": \"${{ secrets.ZAP_TEST_EMAIL }}\", \"password\": \"${{ secrets.ZAP_TEST_PASSWORD }}\"}")
+            -d "{\"username\": \"${{ secrets.ZAP_TEST_USERNAME }}\", \"password\": \"${{ secrets.ZAP_TEST_PASSWORD }}\"}")
 
           TOKEN=$(echo "$RESPONSE" | jq -r '.accessToken')
 
