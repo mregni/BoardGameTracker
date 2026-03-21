@@ -11,17 +11,21 @@ on:
     # Weekly Monday 09:00 UTC
     - cron: "0 9 * * 1"
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   compress:
     name: Compress Images
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     # Only run on PRs (not schedule) if there are image changes
     if: github.event_name == 'pull_request' || github.event_name == 'schedule'
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
 

@@ -3,16 +3,20 @@ name: Dependabot Auto-Merge
 on:
   pull_request:
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   automerge:
     name: Auto-Merge Safe Updates
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     if: github.actor == 'dependabot[bot]'
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Fetch Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v2
