@@ -1,0 +1,107 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Renovate config for BoardGameTracker",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    "group:allNonMajor"
+  ],
+
+  "timezone": "Europe/Brussels",
+  "schedule": ["before 6am on Monday"],
+
+  "labels": ["dependencies"],
+  "assignees": ["mregni"],
+
+  "vulnerabilityAlerts": {
+    "labels": ["security", "dependencies"],
+    "assignees": ["mregni"],
+    "schedule": ["at any time"],
+    "automerge": false
+  },
+
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@tanstack/"],
+      "groupName": "TanStack packages",
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "matchPackagePatterns": ["^@radix-ui/"],
+      "groupName": "Radix UI packages",
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "matchPackagePatterns": ["^@nivo/"],
+      "groupName": "Nivo chart packages",
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "matchPackageNames": ["@biomejs/biome"],
+      "groupName": "Biome"
+    },
+    {
+      "matchPackagePatterns": ["^vite", "^@vitejs/"],
+      "groupName": "Vite"
+    },
+    {
+      "matchPackagePatterns": ["^i18next", "^react-i18next"],
+      "groupName": "i18next packages"
+    },
+    {
+      "matchPackagePatterns": ["^vitest", "^@testing-library/", "^@vitest/"],
+      "groupName": "Frontend test packages"
+    },
+    {
+      "matchPackagePatterns": ["^Microsoft.EntityFrameworkCore"],
+      "groupName": "EF Core packages",
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "matchPackagePatterns": ["^Microsoft.AspNetCore.Identity"],
+      "groupName": "ASP.NET Core Identity"
+    },
+    {
+      "matchPackagePatterns": ["^xunit", "^Moq", "^FluentAssertions"],
+      "groupName": "Backend test packages"
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major-update"]
+    },
+    {
+      "matchPackagePatterns": [
+        "^Microsoft.AspNetCore.Authentication",
+        "^System.IdentityModel",
+        "^Microsoft.IdentityModel"
+      ],
+      "automerge": false,
+      "labels": ["dependencies", "security-sensitive"]
+    }
+  ],
+
+  "dockerfile": {
+    "pinDigests": true
+  },
+
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Dependency Dashboard",
+
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2
+}

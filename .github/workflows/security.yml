@@ -213,6 +213,7 @@ jobs:
           only-severities: critical,high
           sarif-file: scout-results.sarif
           exit-code: true
+          only-fixed: true
 
       - name: Upload Scout SARIF
         uses: github/codeql-action/upload-sarif@v3
