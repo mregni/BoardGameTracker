@@ -15,8 +15,6 @@ param location string = resourceGroup().location
 @description('Unique suffix for resource names')
 param suffix string = uniqueString(resourceGroup().id)
 
-// ── Log Analytics Workspace ──
-
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'law-bgt-sec-${suffix}'
   location: location
@@ -27,8 +25,6 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
     retentionInDays: 7
   }
 }
-
-// ── Container Apps Environment ──
 
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: 'cae-bgt-sec-${suffix}'
@@ -43,8 +39,6 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
     }
   }
 }
-
-// ── PostgreSQL Container App (internal only) ──
 
 resource postgresApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: 'postgres-bgt-sec'
@@ -95,8 +89,6 @@ resource postgresApp 'Microsoft.App/containerApps@2024-03-01' = {
     }
   }
 }
-
-// ── BGT API Container App (public HTTP) ──
 
 resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: 'bgt-api-sec'
@@ -166,8 +158,6 @@ resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
     }
   }
 }
-
-// ── Outputs ──
 
 output appFqdn string = bgtApp.properties.configuration.ingress.fqdn
 output appUrl string = 'https://${bgtApp.properties.configuration.ingress.fqdn}'

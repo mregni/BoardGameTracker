@@ -28,8 +28,6 @@ jobs:
         with:
           egress-policy: audit
 
-      # ── Build & Push Image ──
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -55,8 +53,6 @@ jobs:
           build-args: |
             VERSION=0.0.0-security
 
-      # ── Generate Ephemeral Secrets ──
-
       - name: Generate ephemeral secrets
         id: secrets
         run: |
@@ -66,8 +62,6 @@ jobs:
           echo "::add-mask::$JWT_SECRET"
           echo "db_password=$DB_PASSWORD" >> "$GITHUB_OUTPUT"
           echo "jwt_secret=$JWT_SECRET" >> "$GITHUB_OUTPUT"
-
-      # ── Deploy Azure Infrastructure ──
 
       - name: Azure OIDC Login
         uses: azure/login@v2
@@ -101,8 +95,6 @@ jobs:
           echo "app_url=$APP_URL" >> "$GITHUB_OUTPUT"
           echo "Application URL: $APP_URL"
 
-      # ── Wait for Application Health ──
-
       - name: Wait for application to become healthy
         run: |
           APP_URL="${{ steps.deploy.outputs.app_url }}"
@@ -121,16 +113,17 @@ jobs:
             sleep 1
           done
 
-      # ── Authenticate ──
-
       - name: Authenticate and extract JWT
         id: auth
+        env:
+          ZAP_TEST_USERNAME: ${{ secrets.ZAP_TEST_USERNAME }}
+          ZAP_TEST_PASSWORD: ${{ secrets.ZAP_TEST_PASSWORD }}
         run: |
           APP_URL="${{ steps.deploy.outputs.app_url }}"
 
           RESPONSE=$(curl -sf -X POST "$APP_URL/api/auth/login" \
             -H "Content-Type: application/json" \
-            -d "{\"username\": \"${{ secrets.ZAP_TEST_USERNAME }}\", \"password\": \"${{ secrets.ZAP_TEST_PASSWORD }}\"}")
+            -d "{\"username\": \"${{ env.ZAP_TEST_USERNAME }}\", \"password\": \"${{ env.ZAP_TEST_PASSWORD }}\"}")
 
           TOKEN=$(echo "$RESPONSE" | jq -r '.accessToken')
 
@@ -142,8 +135,6 @@ jobs:
           echo "::add-mask::$TOKEN"
           echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
           echo "Authentication successful"
-
-      # ── ZAP Full Active Scan ──
 
       - name: Run ZAP Full Scan
         uses: zaproxy/action-full-scan@v0.12.0
@@ -160,8 +151,6 @@ jobs:
             -config replacer.full_list(0).replacement=Bearer\ ${{ steps.auth.outputs.token }}
             -config replacer.full_list(0).initiators="
           rules_file_name: ".zap/rules.tsv"
-
-      # ── Upload Reports ──
 
       - name: Upload SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
@@ -181,8 +170,6 @@ jobs:
             report_md.md
             report_sarif.json
           retention-days: 90
-
-      # ── Teardown ──
 
       - name: Delete Azure resource group
         if: always()
