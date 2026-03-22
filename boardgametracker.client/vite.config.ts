@@ -10,6 +10,7 @@ export default defineConfig({
   plugins: [svgr(), tsconfigPaths(), react(), tanstackRouter({
     target: 'react',
     autoCodeSplitting: true,
+    routeFileIgnorePattern: '.test.',
   }), sentryVitePlugin({
     org: "boardgametracker",
     project: "boardgametracker"
