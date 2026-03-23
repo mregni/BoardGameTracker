@@ -96,7 +96,7 @@
   ],
 
   "dockerfile": {
-    "pinDigests": true
+    "pinDigests": false
   },
 
   "dependencyDashboard": true,
