@@ -106,7 +106,6 @@ resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
         transport: 'http'
         allowInsecure: false
       }
-      registries: []
     }
     template: {
       containers: [
