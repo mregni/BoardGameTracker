@@ -5,7 +5,7 @@ ARG TARGETOS
 ARG VERSION=0.0.1
 
 # Stage 1: Build Frontend
-FROM --platform=linux/amd64 node:22-alpine AS frontend-build
+FROM --platform=linux/amd64 node:22-alpine@sha256:8094c002d08262dba12645a3b4a15cd6cd627d30bc782f53229a2ec13ee22a00 AS frontend-build
 ARG SENTRY_AUTH_TOKEN
 ARG VITE_SENTRY_DSN
 WORKDIR /src
@@ -23,7 +23,7 @@ ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
 RUN npm run build
 
 # Stage 2: Build Backend
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS backend-build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine@sha256:608d8a4b570b88bd8b1fbb792f00cee88d557eee3a56ebf06b359fdea05a50ed AS backend-build
 ARG VERSION
 WORKDIR /src
 
@@ -59,7 +59,7 @@ RUN ASSEMBLY_VERSION=$(echo "${VERSION}" | cut -d'-' -f1) && \
     /p:BuildWithoutEsproj=true
 
 # Stage 3: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine@sha256:354c2fcfb3c23abc60d98f0380cdb403fba844a62a123b6343a8c9611209995c AS runtime
 
 # Build arguments for runtime configuration
 ARG ASPNETCORE_ENVIRONMENT=production
