@@ -7,102 +7,160 @@
     ":semanticCommits",
     "group:allNonMajor"
   ],
-
   "timezone": "Europe/Brussels",
-  "schedule": ["before 6am on Monday"],
-
-  "labels": ["dependencies"],
-  "assignees": ["mregni"],
-
+  "schedule": [
+    "before 6am on Monday"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "assignees": [
+    "mregni"
+  ],
   "vulnerabilityAlerts": {
-    "labels": ["security", "dependencies"],
-    "assignees": ["mregni"],
-    "schedule": ["at any time"],
+    "labels": [
+      "security",
+      "dependencies"
+    ],
+    "assignees": [
+      "mregni"
+    ],
+    "schedule": [
+      "at any time"
+    ],
     "automerge": false
   },
-
   "packageRules": [
     {
-      "matchPackagePatterns": ["^@tanstack/"],
       "groupName": "TanStack packages",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "/^@tanstack//"
+      ]
     },
     {
-      "matchPackagePatterns": ["^@radix-ui/"],
       "groupName": "Radix UI packages",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "/^@radix-ui//"
+      ]
     },
     {
-      "matchPackagePatterns": ["^@nivo/"],
       "groupName": "Nivo chart packages",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "/^@nivo//"
+      ]
     },
     {
-      "matchPackageNames": ["@biomejs/biome"],
+      "matchPackageNames": [
+        "@biomejs/biome"
+      ],
       "groupName": "Biome"
     },
     {
-      "matchPackagePatterns": ["^vite", "^@vitejs/"],
-      "groupName": "Vite"
+      "groupName": "Vite",
+      "matchPackageNames": [
+        "/^vite/",
+        "/^@vitejs//"
+      ]
     },
     {
-      "matchPackagePatterns": ["^i18next", "^react-i18next"],
-      "groupName": "i18next packages"
+      "groupName": "i18next packages",
+      "matchPackageNames": [
+        "/^i18next/",
+        "/^react-i18next/"
+      ]
     },
     {
-      "matchPackagePatterns": ["^vitest", "^@testing-library/", "^@vitest/"],
-      "groupName": "Frontend test packages"
+      "groupName": "Frontend test packages",
+      "matchPackageNames": [
+        "/^vitest/",
+        "/^@testing-library//",
+        "/^@vitest//"
+      ]
     },
     {
-      "matchPackagePatterns": ["^Microsoft.EntityFrameworkCore"],
       "groupName": "EF Core packages",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "/^Microsoft.EntityFrameworkCore/"
+      ]
     },
     {
-      "matchPackagePatterns": ["^Microsoft.AspNetCore.Identity"],
-      "groupName": "ASP.NET Core Identity"
+      "groupName": "ASP.NET Core Identity",
+      "matchPackageNames": [
+        "/^Microsoft.AspNetCore.Identity/"
+      ]
     },
     {
-      "matchPackagePatterns": ["^xunit", "^Moq", "^FluentAssertions"],
-      "groupName": "Backend test packages"
+      "groupName": "Backend test packages",
+      "matchPackageNames": [
+        "/^xunit/",
+        "/^Moq/",
+        "/^FluentAssertions/"
+      ]
     },
     {
-      "matchUpdateTypes": ["patch"],
+      "matchUpdateTypes": [
+        "patch"
+      ],
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true
     },
     {
-      "matchDepTypes": ["devDependencies"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true
     },
     {
-      "matchUpdateTypes": ["major"],
-      "automerge": false,
-      "labels": ["dependencies", "major-update"]
-    },
-    {
-      "matchPackagePatterns": [
-        "^Microsoft.AspNetCore.Authentication",
-        "^System.IdentityModel",
-        "^Microsoft.IdentityModel"
+      "matchUpdateTypes": [
+        "major"
       ],
       "automerge": false,
-      "labels": ["dependencies", "security-sensitive"]
+      "labels": [
+        "dependencies",
+        "major-update"
+      ]
+    },
+    {
+      "automerge": false,
+      "labels": [
+        "dependencies",
+        "security-sensitive"
+      ],
+      "matchPackageNames": [
+        "/^Microsoft.AspNetCore.Authentication/",
+        "/^System.IdentityModel/",
+        "/^Microsoft.IdentityModel/"
+      ]
     }
   ],
-
   "dockerfile": {
     "pinDigests": false
   },
-
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Dependency Dashboard",
-
   "prConcurrentLimit": 5,
   "prHourlyLimit": 2
 }
-  
