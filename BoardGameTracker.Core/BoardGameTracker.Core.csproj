@@ -14,7 +14,7 @@
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
         <PackageReference Include="Refit" Version="10.1.6" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
     </ItemGroup>
 
     <ItemGroup>
