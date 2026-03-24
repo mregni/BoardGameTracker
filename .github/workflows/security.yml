@@ -242,7 +242,7 @@ jobs:
           fi
 
       - name: Run ZAP API Scan
-        uses: zaproxy/action-api-scan@v0.9.0
+        uses: zaproxy/action-api-scan@v0.10.0
         with:
           target: "http://localhost:5444/swagger/v1/swagger.json"
           format: openapi
