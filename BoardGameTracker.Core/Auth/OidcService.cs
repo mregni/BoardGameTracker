@@ -304,7 +304,7 @@ public class OidcService : IOidcService
         var provider = await _context.OidcProviders
             .FirstOrDefaultAsync(p => p.Name == providerName && p.Enabled);
 
-        return provider ?? throw new InvalidOperationException($"OIDC provider '{providerName}' not found or disabled");
+        return provider ?? throw new EntityNotFoundException(nameof(OidcProvider), providerName);
     }
 
     private async Task<DiscoveryDocument> GetDiscoveryDocumentAsync(OidcProvider provider)
