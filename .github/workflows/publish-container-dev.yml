@@ -225,7 +225,7 @@ jobs:
       - name: Extract metadata for Docker (dev)
         id: meta-dev
         if: github.ref == 'refs/heads/dev'
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
@@ -235,7 +235,7 @@ jobs:
       - name: Extract metadata for Docker (master)
         id: meta-master
         if: github.ref == 'refs/heads/master'
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
