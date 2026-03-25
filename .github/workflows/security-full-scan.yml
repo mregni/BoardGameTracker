@@ -160,7 +160,7 @@ jobs:
           category: zap-full-scan
 
       - name: Upload scan reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: zap-full-scan-reports-${{ github.run_id }}

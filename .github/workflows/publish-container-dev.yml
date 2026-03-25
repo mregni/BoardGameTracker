@@ -163,7 +163,7 @@ jobs:
         if: env.SONAR_TOKEN != ''
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: |
@@ -327,7 +327,7 @@ jobs:
           output: 'sbom.json'
 
       - name: Upload SBOM artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sbom-${{ needs.version.outputs.version }}
           path: sbom.json
