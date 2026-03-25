@@ -22,9 +22,9 @@ jobs:
 
       - uses: actions/first-interaction@v3
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
 
-          issue-message: |
+          issue_message: |
             Hey @${{ github.actor }}, thanks for opening your first issue on BoardGameTracker!
 
             To help me triage this as quickly as possible, please make sure you've included:
@@ -35,7 +35,7 @@ jobs:
 
             I'll take a look as soon as I can. Thanks for taking the time to report!
 
-          pr-message: |
+          pr_message: |
             Hey @${{ github.actor }}, thanks for opening your first pull request on BoardGameTracker!
 
             Before I review, here's a quick checklist:
