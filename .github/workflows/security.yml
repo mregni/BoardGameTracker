@@ -140,7 +140,7 @@ jobs:
           only-fixed: true
 
       - name: Upload Scout SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: scout-results.sarif
