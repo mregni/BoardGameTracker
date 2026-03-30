@@ -37,10 +37,10 @@ public class GlobalExceptionHandler : IExceptionHandler
     private static (int StatusCode, string Message) MapException(Exception exception) => exception switch
     {
         ValidationException or DomainException => (StatusCodes.Status400BadRequest, exception.Message),
-        UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, exception.Message),
-        EntityNotFoundException => (StatusCodes.Status404NotFound, exception.Message),
-        KeyNotFoundException => (StatusCodes.Status404NotFound, exception.Message),
-        ArgumentException => (StatusCodes.Status400BadRequest, exception.Message),
+        UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
+        EntityNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),
+        KeyNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),
+        ArgumentException => (StatusCodes.Status400BadRequest, "Invalid request."),
         _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.")
     };
 }
