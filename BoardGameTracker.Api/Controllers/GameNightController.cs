@@ -79,6 +79,11 @@ public class GameNightController : ControllerBase
     public async Task<IActionResult> GetByLink(Guid linkId)
     {
         var rsvp = await _gameNightService.GetByLinkId(linkId);
+        if (rsvp == null)
+        {
+            return NotFound();
+        }
+
         return Ok(rsvp.ToDto());
     }
 }

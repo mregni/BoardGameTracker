@@ -158,19 +158,31 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
         existing.UpdateTimes(entity.Start, entity.End);
         existing.UpdateComment(entity.Comment);
 
-        if (entity.LocationId != existing.LocationId)
-        {
-            if (entity.LocationId.HasValue)
-            {
-                var location = await _context.Locations.FindAsync(entity.LocationId.Value);
-                existing.SetLocation(location);
-            }
-            else
-            {
-                existing.SetLocation(null);
-            }
-        }
+        await UpdateLocationAsync(existing, entity.LocationId);
+        SyncPlayerSessions(existing, entity);
+        await SyncExpansionsAsync(existing, entity);
 
+        return existing;
+    }
+
+    private async Task UpdateLocationAsync(Session existing, int? newLocationId)
+    {
+        if (newLocationId == existing.LocationId)
+            return;
+
+        if (newLocationId.HasValue)
+        {
+            var location = await _context.Locations.FindAsync(newLocationId.Value);
+            existing.SetLocation(location);
+        }
+        else
+        {
+            existing.SetLocation(null);
+        }
+    }
+
+    private static void SyncPlayerSessions(Session existing, Session entity)
+    {
         var existingPlayerIds = existing.PlayerSessions.Select(ps => ps.PlayerId).ToList();
         var newPlayerIds = entity.PlayerSessions.Select(ps => ps.PlayerId).ToList();
 
@@ -204,7 +216,10 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
                     existingPs.MarkAsLoser();
             }
         }
+    }
 
+    private async Task SyncExpansionsAsync(Session existing, Session entity)
+    {
         var existingExpansionIds = existing.Expansions.Select(e => e.Id).ToList();
         var newExpansionIds = entity.Expansions.Select(e => e.Id).ToList();
 
@@ -227,7 +242,5 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
                 existing.AddExpansion(trackedExpansion);
             }
         }
-
-        return existing;
     }
 }

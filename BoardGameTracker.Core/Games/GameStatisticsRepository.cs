@@ -199,7 +199,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
         return _context.Sessions
             .AsNoTracking()
             .Where(x => x.GameId == gameId)
-            .Select(x => x.PlayerSessions.Count())
+            .Select(x => x.PlayerSessions.Count)
             .GroupBy(x => x)
             .ToListAsync();
     }

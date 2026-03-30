@@ -30,7 +30,7 @@ public class TokenService : ITokenService
         var audience = _configuration["Jwt:Audience"] ?? "boardgametracker-client";
         var expiryMinutes = int.Parse(_configuration["Jwt:AccessTokenExpiryMinutes"] ?? "15");
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)); // NOSONAR - secret loaded from configuration, not hardcoded
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>

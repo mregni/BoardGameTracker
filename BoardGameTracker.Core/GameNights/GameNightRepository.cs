@@ -62,10 +62,10 @@ public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
             .CountAsync();
     }
 
-    public Task<GameNightRsvp?> GetRsvpByPlayerAndGameAsync(int playerId, int gameNightId)
+    public Task<GameNightRsvp?> GetRsvpByPlayerAndGameAsync(int commandPlayerId, int commandGameNightId)
     {
         return _context.Set<GameNightRsvp>()
-            .Where(x =>  x.GameNightId == gameNightId &&  x.PlayerId == playerId)
+            .Where(x =>  x.GameNightId == commandGameNightId &&  x.PlayerId == commandPlayerId)
             .SingleOrDefaultAsync();
             
     }

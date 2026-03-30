@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using BoardGameTracker.Common.Enums;
@@ -49,7 +50,7 @@ public class UpdateService : IUpdateService
         };
 
         if (config.TryGetValue(UpdateConfig.CheckLastRun, out var lastRunStr) &&
-            DateTime.TryParse(lastRunStr, out var lastRun))
+            DateTime.TryParse(lastRunStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out var lastRun))
         {
             updateStatus.LastChecked = lastRun;
         }
@@ -73,7 +74,7 @@ public class UpdateService : IUpdateService
             var response = await _dockerHubApi.GetTags(DOCKER_OWNER, DOCKER_REPO);
             if (!response.IsSuccessStatusCode || response.Content == null)
             {
-                throw new Exception($"Docker Hub API returned status {response.StatusCode}");
+                throw new InvalidOperationException($"Docker Hub API returned status {response.StatusCode}");
             }
 
             var semverTags = response.Content.Results

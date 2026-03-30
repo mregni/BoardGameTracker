@@ -9,9 +9,9 @@ public class Loan : HasId
     public DateTime? DueDate { get; private set; }
     public DateTime? ReturnedDate { get; private set; }
     public int GameId { get; private set; }
-    public Game Game { get; private set; }
+    public Game Game { get; private set; } = null!;
     public int PlayerId { get; private set; }
-    public Player Player { get; private set; }
+    public Player Player { get; private set; } = null!;
 
     public Loan(int gameId, int playerId, DateTime loanDate)
     {

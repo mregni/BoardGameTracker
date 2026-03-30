@@ -101,7 +101,15 @@ public class SessionService : ISessionService
         existingSession.UpdateTimes(command.Start, end);
         existingSession.UpdateComment(command.Comment ?? string.Empty);
 
-        var newExpansionIds = command.ExpansionIds;
+        await SyncExpansions(existingSession, command.ExpansionIds);
+        SyncPlayerSessions(existingSession, command.PlayerSessions);
+        await UpdateLocation(existingSession, command.LocationId);
+
+        return await Update(existingSession);
+    }
+
+    private async Task SyncExpansions(Session existingSession, List<int> newExpansionIds)
+    {
         var currentExpansionIds = existingSession.Expansions.Select(e => e.Id).ToList();
 
         var expansionsToRemove = existingSession.Expansions
@@ -121,8 +129,11 @@ public class SessionService : ISessionService
                 existingSession.AddExpansion(expansion);
             }
         }
+    }
 
-        var newPlayerIds = command.PlayerSessions.Select(ps => ps.PlayerId).ToList();
+    private static void SyncPlayerSessions(Session existingSession, List<CreatePlayerSessionCommand> playerSessionCommands)
+    {
+        var newPlayerIds = playerSessionCommands.Select(ps => ps.PlayerId).ToList();
         var currentPlayerIds = existingSession.PlayerSessions.Select(ps => ps.PlayerId).ToList();
 
         var playerIdsToRemove = currentPlayerIds.Except(newPlayerIds).ToList();
@@ -131,7 +142,7 @@ public class SessionService : ISessionService
             existingSession.RemovePlayerSession(playerId);
         }
 
-        foreach (var psCommand in command.PlayerSessions)
+        foreach (var psCommand in playerSessionCommands)
         {
             var existingPlayerSession = existingSession.PlayerSessions
                 .FirstOrDefault(ps => ps.PlayerId == psCommand.PlayerId);
@@ -154,18 +165,19 @@ public class SessionService : ISessionService
                 existingSession.AddPlayerSession(psCommand.PlayerId, psCommand.Score, psCommand.FirstPlay, psCommand.Won);
             }
         }
+    }
 
-        if (command.LocationId.HasValue)
+    private async Task UpdateLocation(Session existingSession, int? locationId)
+    {
+        if (locationId.HasValue)
         {
-            var location = await _locationService.GetByIdAsync(command.LocationId.Value);
+            var location = await _locationService.GetByIdAsync(locationId.Value);
             existingSession.SetLocation(location);
         }
         else
         {
             existingSession.SetLocation(null);
         }
-
-        return await Update(existingSession);
     }
 
     public Task<Session?> Get(int id)

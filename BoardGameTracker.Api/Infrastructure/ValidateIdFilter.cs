@@ -9,17 +9,16 @@ public class ValidateIdFilter : IActionFilter
     {
         foreach (var (key, value) in context.ActionArguments)
         {
-            if (value is int id && (key.Equals("id", StringComparison.OrdinalIgnoreCase) || key.EndsWith("Id", StringComparison.OrdinalIgnoreCase)))
+            if (value is int id
+                && (key.Equals("id", StringComparison.OrdinalIgnoreCase) || key.EndsWith("Id", StringComparison.OrdinalIgnoreCase))
+                && id <= 0)
             {
-                if (id <= 0)
+                context.Result = new BadRequestObjectResult(new ProblemDetails
                 {
-                    context.Result = new BadRequestObjectResult(new ProblemDetails
-                    {
-                        Status = 400,
-                        Title = $"Invalid {key}. Must be greater than 0."
-                    });
-                    return;
-                }
+                    Status = 400,
+                    Title = $"Invalid {key}. Must be greater than 0."
+                });
+                return;
             }
         }
     }
