@@ -12,7 +12,7 @@ WORKDIR /src
 
 # Copy frontend package files
 COPY boardgametracker.client/package*.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # Copy frontend source
 COPY boardgametracker.client/ ./

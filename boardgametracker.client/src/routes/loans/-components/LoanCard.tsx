@@ -109,7 +109,8 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 						{t("loaned")}:
 					</BgtText>
 					<BgtText color="white" opacity={80}>
-						{format(loan.loanDate, dateFormat)}
+						{format(loan.loanDate, dateFormat)} &bull;{" "}
+						{loan.returnedDate ? format(loan.returnedDate, dateFormat) : t("loans:active")}
 					</BgtText>
 				</div>
 				{loan.dueDate && (
@@ -140,7 +141,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 				{isActive && onReturn && (
 					<button
 						onClick={() => onReturn(loan.id, new Date())}
-						className="w-full bg-lime-green/20 hover:bg-lime-green/30 text-lime-green border border-lime-green/30 py-1 rounded-lg flex items-center justify-center gap-2 transition-colors"
+						className="w-full bg-lime-green/20 hover:bg-lime-green/30 text-lime-green border border-lime-green/30 py-1 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
 					>
 						<Check className="size-5" />
 						{t("loans:mark-as-returned")}
@@ -150,7 +151,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 				{onDelete && (
 					<button
 						onClick={() => onDelete(loan.id)}
-						className="w-full bg-error/20 hover:bg-error/30 text-error border border-error/30 py-1 rounded-lg flex items-center justify-center gap-2"
+						className="w-full bg-error/20 hover:bg-error/30 text-error border border-error/30 py-1 rounded-lg flex items-center justify-center gap-2 cursor-pointer"
 					>
 						<Trash className="size-5" />
 						{t("loans:delete.button")}

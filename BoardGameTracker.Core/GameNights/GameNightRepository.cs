@@ -23,20 +23,10 @@ public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
             .SingleOrDefaultAsync(x => x.Id == id);
     }
 
-    public Task<List<GameNight>> GetFutureGameNightsAsync()
+    public override Task<List<GameNight>> GetAllAsync()
     {
         return GameNightsWithIncludes()
             .AsNoTracking()
-            .Where(x => x.StartDate >= _dateTimeProvider.UtcNow)
-            .OrderBy(x => x.StartDate)
-            .ToListAsync();
-    }
-
-    public Task<List<GameNight>> GetPastGameNightsAsync()
-    {
-        return GameNightsWithIncludes()
-            .AsNoTracking()
-            .Where(x => x.StartDate < _dateTimeProvider.UtcNow)
             .OrderByDescending(x => x.StartDate)
             .ToListAsync();
     }

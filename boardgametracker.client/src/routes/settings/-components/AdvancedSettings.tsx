@@ -89,11 +89,19 @@ export const AdvancedSettings = withForm({
 				</SettingsSection>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-					<BgtButton onClick={() => window.open("https://github.com/mregni/BoardGameTracker/issues")} variant="primary">
+					<BgtButton
+						onClick={() =>
+							window.open("https://github.com/mregni/BoardGameTracker/issues", "_blank", "noopener,noreferrer")
+						}
+						variant="primary"
+					>
 						<GitHubIcon className="size-4" />
 						{t("advanced.bug")}
 					</BgtButton>
-					<BgtButton onClick={() => window.open("https://crowdin.com/project/boardgametracker")} variant="primary">
+					<BgtButton
+						onClick={() => window.open("https://crowdin.com/project/boardgametracker", "_blank", "noopener,noreferrer")}
+						variant="primary"
+					>
 						<CrowdinIcon className="size-4" />
 						{t("advanced.translate")}
 					</BgtButton>

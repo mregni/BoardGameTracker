@@ -32,13 +32,13 @@ public class DiskProvider : IDiskProvider
             _logger.LogInformation("Removing file {Path}", path);
             File.Delete(path);
         }
-        catch (IOException)
+        catch (IOException ex)
         {
-            _logger.LogError("Can't delete file because it seems to be in use");
+            _logger.LogError(ex, "Can't delete file because it seems to be in use");
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            _logger.LogError("Unknown error occurred while deleting file {Path}: {Message}", path, e.Message);
+            _logger.LogError(ex, "Unknown error occurred while deleting file {Path}", path);
         }
     }
    

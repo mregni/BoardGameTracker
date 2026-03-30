@@ -19,6 +19,7 @@ public class LogLevelExtensionsTests : IDisposable
     public void Dispose()
     {
         Environment.SetEnvironmentVariable("LOGLEVEL", _originalLogLevel);
+        GC.SuppressFinalize(this);
     }
 
     [Fact]

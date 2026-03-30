@@ -35,7 +35,7 @@ export const BggGameModal = (props: ModalProps) => {
 	const { save, isPending, settings } = useBggGameModal({ onSuccess });
 
 	const openBgg = useCallback(() => {
-		window.open("https://boardgamegeek.com/browse/boardgame", "_blank");
+		window.open("https://boardgamegeek.com/browse/boardgame", "_blank", "noopener,noreferrer");
 	}, []);
 
 	const handleClose = useCallback(() => {

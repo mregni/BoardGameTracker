@@ -37,6 +37,7 @@ public class EnvironmentProviderTests : IDisposable
         {
             Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
         }
+        GC.SuppressFinalize(this);
     }
 
     [Theory]

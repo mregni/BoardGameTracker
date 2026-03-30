@@ -45,6 +45,8 @@ public class DiskProviderTests: IDisposable
             {
                 Directory.Delete(_testDirectory, true);
             }
+            
+            GC.SuppressFinalize(this);
         }
 
         [Fact]

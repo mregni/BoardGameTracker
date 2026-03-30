@@ -5,8 +5,13 @@ namespace BoardGameTracker.Common.Extensions;
 
 public static class LocationDtoExtensions
 {
-    public static LocationDto ToDto(this Location location)
+    public static LocationDto? ToDto(this Location? location)
     {
+        if (location == null)
+        {
+            return null;
+        }
+
         return new LocationDto
         {
             Id = location.Id,
@@ -16,6 +21,9 @@ public static class LocationDtoExtensions
 
     public static List<LocationDto> ToListDto(this IEnumerable<Location> locations)
     {
-        return locations.Select(l => l.ToDto()).ToList();
+        return locations
+            .Select(l => l.ToDto())
+            .OfType<LocationDto>()
+            .ToList();
     }
 }

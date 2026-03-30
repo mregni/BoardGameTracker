@@ -41,6 +41,7 @@ public class ImageServiceTests : IDisposable
             {
                 Directory.Delete(_testDirectory, true);
             }
+            GC.SuppressFinalize(this);
         }
 
         [Fact]

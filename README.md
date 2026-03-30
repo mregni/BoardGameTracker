@@ -12,9 +12,6 @@
   <a href="https://github.com/mregni/BoardGameTracker/releases">
     <img src="https://img.shields.io/github/v/release/mregni/BoardGameTracker" alt="GitHub release">
   </a>
-  <a href="https://github.com/mregni/BoardGameTracker/actions/workflows/ci.yml">
-    <img src="https://github.com/mregni/BoardGameTracker/actions/workflows/ci.yml/badge.svg" alt="CI">
-  </a>
   <a href="https://github.com/mregni/BoardGameTracker/actions/workflows/publish-container-dev.yml">
     <img src="https://github.com/mregni/BoardGameTracker/actions/workflows/publish-container-dev.yml/badge.svg" alt="Deploy">
   </a>
@@ -23,6 +20,9 @@
   </a>
   <a href="https://sonarcloud.io/summary/new_code?id=mregni_BoardGameTracker">
     <img src="https://sonarcloud.io/api/project_badges/measure?project=mregni_BoardGameTracker&metric=coverage" alt="Coverage">
+  </a>
+  <a href="https://sonarcloud.io/component_measures?id=mregni_BoardGameTracker&metric=security_review_rating&view=list">
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=mregni_BoardGameTracker&metric=security_rating" alt="Security Rating">
   </a>
   <a href="https://sonarcloud.io/summary/new_code?id=mregni_BoardGameTracker">
     <img src="https://sonarcloud.io/api/project_badges/measure?project=mregni_BoardGameTracker&metric=alert_status" alt="Quality Gate Status">
@@ -48,7 +48,7 @@ BoardGameTracker is a self-hosted application designed for board game enthusiast
 - Monitor player performance and win rates
 - Visualize gaming trends over time
 
-**Integration with BoardGameGeek (BGG)** allows seamless import of your game collection.
+**Integration with BoardGameGeek (BGG)** is under review because of authentication on their API.
 
 > ⚠️ **Note**: This project is under active development. Breaking changes may occur between releases.
 

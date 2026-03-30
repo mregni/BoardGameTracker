@@ -23,6 +23,9 @@ public static class PlayerDtoExtensions
 
     public static List<PlayerDto> ToListDto(this IEnumerable<Player> players)
     {
-        return players.Select(p => p.ToDto()).ToList();
+        return players
+            .Select(p => p.ToDto())
+            .OfType<PlayerDto>()
+            .ToList();
     }
 }
