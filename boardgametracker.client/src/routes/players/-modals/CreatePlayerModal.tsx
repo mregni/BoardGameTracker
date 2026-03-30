@@ -79,7 +79,7 @@ export const CreatePlayerModal = (props: Props) => {
 									onChange: ({ value }) => {
 										const result = CreatePlayerSchema.shape.name.safeParse(value);
 										if (!result.success) {
-											return t(result.error.errors[0].message);
+											return t(result.error.issues[0].message);
 										}
 										return undefined;
 									},
