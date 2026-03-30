@@ -6,7 +6,7 @@ export function zodValidator<TSchema extends z.AnyZodObject>(schema: TSchema, na
 	return {
 		onChange: ({ value }: { value: unknown }) => {
 			const result = fieldSchema.safeParse(value);
-			return result.success ? undefined : i18next.t(result.error.errors[0].message);
+			return result.success ? undefined : i18next.t(result.error.issues[0].message);
 		},
 	};
 }

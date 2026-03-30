@@ -42,7 +42,7 @@ export const NewLocationModal = (props: Props) => {
 								onChange: ({ value }) => {
 									const result = CreateLocationSchema.shape.name.safeParse(value);
 									if (!result.success) {
-										return t(result.error.errors[0].message);
+										return t(result.error.issues[0].message);
 									}
 									return undefined;
 								},
