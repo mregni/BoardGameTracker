@@ -32,7 +32,7 @@ export const BgtCard = (props: Props) => {
 						</h2>
 						<div className="flex flex-row gap-2">
 							{actions.map((action, index) => (
-								<BgtButton key={index} variant={action.variant} size="2" onClick={action.onClick}>
+								<BgtButton key={typeof action.content === "string" ? action.content : `action-${index}`} variant={action.variant} size="2" onClick={action.onClick}>
 									{typeof action.content === "string" ? t(action.content) : action.content}
 								</BgtButton>
 							))}

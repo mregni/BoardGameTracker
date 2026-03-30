@@ -41,7 +41,7 @@ export const BgtPageHeader = (props: Props) => {
 						const smallContent = action.smallContent === undefined ? content : action.smallContent;
 
 						return (
-							<Fragment key={index}>
+							<Fragment key={typeof action.content === "string" ? action.content : index}>
 								<div className="hidden lg:block">
 									<BgtButton variant={action.variant} size="3" onClick={action.onClick}>
 										{content}

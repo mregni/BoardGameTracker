@@ -45,7 +45,11 @@ export const ManageRSVPsModal = (props: Props) => {
 
 					<div className="flex flex-col gap-4">
 						{[...gameNight.invitedPlayers]
-							.sort((a, b) => (a.playerId === gameNight.hostId ? 1 : b.playerId === gameNight.hostId ? -1 : 0))
+							.sort((a, b) => {
+								if (a.playerId === gameNight.hostId) return 1;
+								if (b.playerId === gameNight.hostId) return -1;
+								return 0;
+							})
 							.map((rsvp) => {
 								const isHost = rsvp.playerId === gameNight.hostId;
 								return (

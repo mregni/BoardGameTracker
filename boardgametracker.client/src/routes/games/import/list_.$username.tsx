@@ -97,18 +97,14 @@ function RouteComponent() {
 				accessorKey: "3",
 				cell: ({ row }) => (
 					<div>
-						<span
+						<a
 							className="underline text-blue-700 cursor-pointer flex flex-row gap-1"
-							onClick={() =>
-								window.open(
-									`https://boardgamegeek.com/boardgame/${row.original.bggId}`,
-									"_blank",
-									"noopener noreferrer",
-								)
-							}
+							href={`https://boardgamegeek.com/boardgame/${row.original.bggId}`}
+							target="_blank"
+							rel="noopener noreferrer"
 						>
 							{row.original.bggId} <LinkIcon className="size-4" />
-						</span>
+						</a>
 					</div>
 				),
 				header: t("name"),

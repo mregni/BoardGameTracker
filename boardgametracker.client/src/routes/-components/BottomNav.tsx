@@ -41,7 +41,7 @@ export const BottomNav = () => {
 	return (
 		<>
 			{showMoreMenu && (
-				<div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setShowMoreMenu(false)} />
+				<div role="presentation" className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setShowMoreMenu(false)} />
 			)}
 
 			{showMoreMenu && (

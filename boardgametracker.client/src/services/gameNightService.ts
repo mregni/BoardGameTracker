@@ -42,9 +42,3 @@ export const getGameNightByLinkCall = (linkId: string): Promise<GameNight> => {
 		return response.data;
 	});
 };
-
-export const submitRsvpByLinkCall = (rsvp: UpdateGameNightRsvp): Promise<GameNight> => {
-	return axiosInstance.put<GameNight>(`${domain}/rsvp`, { ...rsvp }).then((response) => {
-		return response.data;
-	});
-};

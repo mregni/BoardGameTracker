@@ -33,7 +33,7 @@ function RouteComponent() {
 		navigate({ to: `/games/${result.gameId}` });
 	};
 
-	if (games !== undefined && games.length === 0) {
+	if (games?.length === 0) {
 		return (
 			<BgtEmptyPage
 				header={t("title-new")}

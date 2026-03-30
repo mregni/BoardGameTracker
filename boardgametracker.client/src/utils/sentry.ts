@@ -12,7 +12,7 @@ export const initSentry = () => {
 		tracesSampleRate: 0.2,
 		tracePropagationTargets: [/^\/api/],
 		replaysSessionSampleRate: 0.1,
-		replaysOnErrorSampleRate: 1.0,
+		replaysOnErrorSampleRate: 1,
 		sendDefaultPii: false,
 	});
 };

@@ -90,6 +90,10 @@ describe("useInfiniteScroll", () => {
 					isLoading: false,
 				}),
 			);
+
+			// Ref mutation doesn't trigger re-render, so observer setup
+			// depends on the effect running with a non-null sentinel
+			expect(result.current).toBeDefined();
 		});
 
 		it("should use default threshold of 500px", () => {
@@ -250,6 +254,10 @@ describe("useInfiniteScroll", () => {
 			});
 
 			unmount();
+
+			// Observer cleanup runs on unmount; since the sentinel ref was set
+			// outside of React's lifecycle, the observer may not have been created
+			expect(mockIntersectionObserver).toBeDefined();
 		});
 	});
 

@@ -1,4 +1,4 @@
-import axios, { type AxiosError } from "axios";
+import axios, { type AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 
 import type { ApiError, ApiErrorKind } from "@/models";
 
@@ -117,6 +117,75 @@ axiosInstance.interceptors.request.use(
 	(error) => Promise.reject(error),
 );
 
+function getStoredRefreshToken(): string | null {
+	const authStorage = localStorage.getItem("bgt-auth");
+	if (!authStorage) return null;
+
+	try {
+		const parsed = JSON.parse(authStorage);
+		return parsed?.state?.refreshToken ?? null;
+	} catch {
+		return null;
+	}
+}
+
+async function handleTokenRefresh(
+	originalRequest: InternalAxiosRequestConfig,
+	error: AxiosError,
+): Promise<AxiosResponse> {
+	(originalRequest as { _retry?: boolean })._retry = true;
+	isRefreshing = true;
+
+	const refreshToken = getStoredRefreshToken();
+	if (!refreshToken) {
+		isRefreshing = false;
+		processQueue(error, null);
+		clearAuthState();
+		throw classifyError(error);
+	}
+
+	try {
+		const response = await axios.post(`${apiUrl}auth/refresh`, { refreshToken });
+		const { accessToken: newAccessToken, refreshToken: newRefreshToken, user } = response.data;
+
+		const currentStorage = localStorage.getItem("bgt-auth");
+		if (currentStorage) {
+			const parsed = JSON.parse(currentStorage);
+			parsed.state.accessToken = newAccessToken;
+			parsed.state.refreshToken = newRefreshToken;
+			parsed.state.user = user;
+			localStorage.setItem("bgt-auth", JSON.stringify(parsed));
+		}
+
+		if (originalRequest.headers) {
+			originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+		}
+
+		processQueue(null, newAccessToken);
+		return axiosInstance(originalRequest);
+	} catch (refreshError) {
+		processQueue(refreshError, null);
+		clearAuthState();
+		const currentPath = globalThis.location.pathname + globalThis.location.search;
+		globalThis.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+		throw classifyError(error);
+	} finally {
+		isRefreshing = false;
+	}
+}
+
+function isUnauthorizedRetryable(error: AxiosError): boolean {
+	const originalRequest = error.config;
+	return (
+		error.response?.status === 401 &&
+		!!originalRequest &&
+		!originalRequest.url?.includes("auth/login") &&
+		!originalRequest.url?.includes("auth/refresh") &&
+		!originalRequest.url?.includes("auth/status") &&
+		!(originalRequest as { _retry?: boolean })._retry
+	);
+}
+
 axiosInstance.interceptors.response.use(
 	(response) => {
 		if (response.data) {
@@ -127,14 +196,7 @@ axiosInstance.interceptors.response.use(
 	async (error: AxiosError) => {
 		const originalRequest = error.config;
 
-		if (
-			error.response?.status === 401 &&
-			originalRequest &&
-			!originalRequest.url?.includes("auth/login") &&
-			!originalRequest.url?.includes("auth/refresh") &&
-			!originalRequest.url?.includes("auth/status") &&
-			!(originalRequest as { _retry?: boolean })._retry
-		) {
+		if (originalRequest && isUnauthorizedRetryable(error)) {
 			if (isRefreshing) {
 				return new Promise((resolve, reject) => {
 					failedQueue.push({ resolve, reject });
@@ -146,61 +208,10 @@ axiosInstance.interceptors.response.use(
 				});
 			}
 
-			(originalRequest as { _retry?: boolean })._retry = true;
-			isRefreshing = true;
-
-			const authStorage = localStorage.getItem("bgt-auth");
-			let refreshToken: string | null = null;
-			if (authStorage) {
-				try {
-					const parsed = JSON.parse(authStorage);
-					refreshToken = parsed?.state?.refreshToken;
-				} catch {
-					// Ignore parse errors
-				}
-			}
-
-			if (!refreshToken) {
-				isRefreshing = false;
-				processQueue(error, null);
-				clearAuthState();
-				return Promise.reject(classifyError(error));
-			}
-
-			try {
-				const response = await axios.post(`${apiUrl}auth/refresh`, {
-					refreshToken,
-				});
-				const { accessToken: newAccessToken, refreshToken: newRefreshToken, user } = response.data;
-
-				// Update zustand persisted state
-				const currentStorage = localStorage.getItem("bgt-auth");
-				if (currentStorage) {
-					const parsed = JSON.parse(currentStorage);
-					parsed.state.accessToken = newAccessToken;
-					parsed.state.refreshToken = newRefreshToken;
-					parsed.state.user = user;
-					localStorage.setItem("bgt-auth", JSON.stringify(parsed));
-				}
-
-				if (originalRequest.headers) {
-					originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-				}
-
-				processQueue(null, newAccessToken);
-				return axiosInstance(originalRequest);
-			} catch (refreshError) {
-				processQueue(refreshError, null);
-				clearAuthState();
-				const currentPath = window.location.pathname + window.location.search;
-				window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
-				return Promise.reject(classifyError(error));
-			} finally {
-				isRefreshing = false;
-			}
+			return handleTokenRefresh(originalRequest, error);
 		}
 
-		return Promise.reject(classifyError(error));
+		throw classifyError(error);
 	},
 );
 
