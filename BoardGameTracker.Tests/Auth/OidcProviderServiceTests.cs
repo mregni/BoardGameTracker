@@ -16,7 +16,7 @@ namespace BoardGameTracker.Tests.Auth;
 public class OidcProviderServiceTests : IDisposable
 {
     private readonly MainDbContext _context;
-    private readonly IMemoryCache _cache;
+    private readonly MemoryCache _cache;
     private readonly Mock<ILogger<OidcProviderService>> _loggerMock;
     private readonly OidcProviderService _service;
 
