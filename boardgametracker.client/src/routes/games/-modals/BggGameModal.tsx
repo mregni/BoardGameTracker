@@ -11,19 +11,9 @@ import {
 	BgtDialogDescription,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
-import {
-	BgtDatePicker,
-	BgtInputField,
-	BgtSelect,
-	BgtSwitch,
-} from "@/components/BgtForm";
+import { BgtDatePicker, BgtInputField, BgtSelect, BgtSwitch } from "@/components/BgtForm";
 import { useAppForm } from "@/hooks/form";
-import {
-	BggSearchSchema,
-	type Game,
-	GameState,
-	type ModalProps,
-} from "@/models";
+import { BggSearchSchema, type Game, GameState, type ModalProps } from "@/models";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
@@ -45,11 +35,7 @@ export const BggGameModal = (props: ModalProps) => {
 	const { save, isPending, settings } = useBggGameModal({ onSuccess });
 
 	const openBgg = useCallback(() => {
-		window.open(
-			"https://boardgamegeek.com/browse/boardgame",
-			"_blank",
-			"noopener,noreferrer",
-		);
+		window.open("https://boardgamegeek.com/browse/boardgame", "_blank", "noopener,noreferrer");
 	}, []);
 
 	const handleClose = useCallback(() => {
@@ -77,19 +63,11 @@ export const BggGameModal = (props: ModalProps) => {
 				<BgtDialogDescription>{t("new.bgg-description")}</BgtDialogDescription>
 				<form onSubmit={handleFormSubmit(form)}>
 					<div className="flex flex-col gap-4 mt-3 mb-6">
-						<BgtButton
-							onClick={openBgg}
-							disabled={isPending}
-							variant="primary"
-							type="button"
-						>
+						<BgtButton onClick={openBgg} disabled={isPending} variant="primary" type="button">
 							<SquareOutIcon className="size-5" />
 							{t("bgg.external-page")}
 						</BgtButton>
-						<form.Field
-							name="bggId"
-							validators={zodValidator(BggSearchSchema, "bggId")}
-						>
+						<form.Field name="bggId" validators={zodValidator(BggSearchSchema, "bggId")}>
 							{(field: AnyFieldApi) => (
 								<BgtInputField
 									field={field}
@@ -100,10 +78,7 @@ export const BggGameModal = (props: ModalProps) => {
 								/>
 							)}
 						</form.Field>
-						<form.Field
-							name="price"
-							validators={zodValidator(BggSearchSchema, "price")}
-						>
+						<form.Field name="price" validators={zodValidator(BggSearchSchema, "price")}>
 							{(field: AnyFieldApi) => (
 								<BgtInputField
 									field={field}
@@ -115,10 +90,7 @@ export const BggGameModal = (props: ModalProps) => {
 								/>
 							)}
 						</form.Field>
-						<form.Field
-							name="date"
-							validators={zodValidator(BggSearchSchema, "date")}
-						>
+						<form.Field name="date" validators={zodValidator(BggSearchSchema, "date")}>
 							{(field: AnyFieldApi) => (
 								<BgtDatePicker
 									field={field}
@@ -128,10 +100,7 @@ export const BggGameModal = (props: ModalProps) => {
 								/>
 							)}
 						</form.Field>
-						<form.Field
-							name="state"
-							validators={zodValidator(BggSearchSchema, "state")}
-						>
+						<form.Field name="state" validators={zodValidator(BggSearchSchema, "state")}>
 							{(field: AnyFieldApi) => (
 								<BgtSelect
 									field={field}
@@ -144,33 +113,15 @@ export const BggGameModal = (props: ModalProps) => {
 								/>
 							)}
 						</form.Field>
-						<form.Field
-							name="hasScoring"
-							validators={zodValidator(BggSearchSchema, "hasScoring")}
-						>
-							{(field: AnyFieldApi) => (
-								<BgtSwitch
-									field={field}
-									label={t("scoring.label")}
-									disabled={isPending}
-								/>
-							)}
+						<form.Field name="hasScoring" validators={zodValidator(BggSearchSchema, "hasScoring")}>
+							{(field: AnyFieldApi) => <BgtSwitch field={field} label={t("scoring.label")} disabled={isPending} />}
 						</form.Field>
 					</div>
 					<BgtDialogClose>
-						<BgtButton
-							variant="cancel"
-							onClick={handleClose}
-							disabled={isPending}
-						>
+						<BgtButton variant="cancel" onClick={handleClose} disabled={isPending}>
 							{t("common:cancel")}
 						</BgtButton>
-						<BgtButton
-							type="submit"
-							variant="primary"
-							disabled={isPending}
-							className="flex-1"
-						>
+						<BgtButton type="submit" variant="primary" disabled={isPending} className="flex-1">
 							{t("new.save")}
 						</BgtButton>
 					</BgtDialogClose>

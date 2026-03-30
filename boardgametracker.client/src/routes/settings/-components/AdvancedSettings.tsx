@@ -35,14 +35,8 @@ export const AdvancedSettings = withForm({
 
 		return (
 			<div className="space-y-6">
-				<SettingsSection
-					title={t("advanced.updates.title")}
-					description={t("advanced.updates.description")}
-				>
-					<form.Field
-						name="updateCheckEnabled"
-						validators={zodValidator(SettingsSchema, "updateCheckEnabled")}
-					>
+				<SettingsSection title={t("advanced.updates.title")} description={t("advanced.updates.description")}>
+					<form.Field name="updateCheckEnabled" validators={zodValidator(SettingsSchema, "updateCheckEnabled")}>
 						{(field: AnyFieldApi) => (
 							<SettingsToggle
 								field={field}
@@ -53,10 +47,7 @@ export const AdvancedSettings = withForm({
 						)}
 					</form.Field>
 
-					<form.Field
-						name="versionTrack"
-						validators={zodValidator(SettingsSchema, "versionTrack")}
-					>
+					<form.Field name="versionTrack" validators={zodValidator(SettingsSchema, "versionTrack")}>
 						{(field: AnyFieldApi) => (
 							<div className="flex flex-col gap-1">
 								<BgtText size="2" weight="medium" color="white">
@@ -80,9 +71,7 @@ export const AdvancedSettings = withForm({
 												<span
 													className={cx(
 														"text-sm font-medium",
-														field.state.value === track.id
-															? "text-white"
-															: "text-gray-300",
+														field.state.value === track.id ? "text-white" : "text-gray-300",
 													)}
 												>
 													{t(track.label)}
@@ -102,11 +91,7 @@ export const AdvancedSettings = withForm({
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 					<BgtButton
 						onClick={() =>
-							window.open(
-								"https://github.com/mregni/BoardGameTracker/issues",
-								"_blank",
-								"noopener,noreferrer",
-							)
+							window.open("https://github.com/mregni/BoardGameTracker/issues", "_blank", "noopener,noreferrer")
 						}
 						variant="primary"
 					>
@@ -114,13 +99,7 @@ export const AdvancedSettings = withForm({
 						{t("advanced.bug")}
 					</BgtButton>
 					<BgtButton
-						onClick={() =>
-							window.open(
-								"https://crowdin.com/project/boardgametracker",
-								"_blank",
-								"noopener,noreferrer",
-							)
-						}
+						onClick={() => window.open("https://crowdin.com/project/boardgametracker", "_blank", "noopener,noreferrer")}
 						variant="primary"
 					>
 						<CrowdinIcon className="size-4" />
