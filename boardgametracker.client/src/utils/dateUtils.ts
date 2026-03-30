@@ -12,11 +12,7 @@ import { getDateFnsLocale } from "./localeUtils";
 type DateInput = Date | string | undefined;
 
 const convertDateFormat = (userFormat: string): string => {
-	return userFormat.replace(/YYYY/g, "yyyy").replace(/DD/g, "dd").replace(/MM/g, "MM");
-};
-
-const convertTimeFormat = (userFormat: string): string => {
-	return userFormat.replace(/HH/g, "HH").replace(/hh/g, "hh").replace(/mm/g, "mm").replace(/ss/g, "ss");
+	return userFormat.replace(/YYYY/g, "yyyy").replace(/DD/g, "dd");
 };
 
 export const toInputDate = (date: DateInput, fallbackToToday = true): string => {
@@ -89,8 +85,7 @@ export const toDisplayDateTime = (
 
 	const locale = getDateFnsLocale(uiLanguage);
 	const dateFnsDateFormat = convertDateFormat(dateFormat);
-	const dateFnsTimeFormat = convertTimeFormat(timeFormat);
-	const combinedFormat = `${dateFnsDateFormat} ${dateFnsTimeFormat}`;
+	const combinedFormat = `${dateFnsDateFormat} ${timeFormat}`;
 
 	return format(dateObj, combinedFormat, { locale });
 };
