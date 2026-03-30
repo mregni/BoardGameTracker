@@ -20,7 +20,7 @@ jobs:
     permissions:
       contents: read
     outputs:
-      version: ${{ steps.final-version.outputs.version }}
+      version: ${{ steps.versioning.outputs.version }}
       is_master: ${{ github.ref == 'refs/heads/master' }}
     steps:
       - name: Harden runner
@@ -33,39 +33,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check for git tag
-        id: tag-check
-        run: |
-          TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')
-          if [ -n "$TAG" ]; then
-            echo "version=$TAG" >> $GITHUB_OUTPUT
-            echo "has_tag=true" >> $GITHUB_OUTPUT
-            echo "Found version tag: $TAG"
-          else
-            echo "has_tag=false" >> $GITHUB_OUTPUT
-            echo "No version tag found on HEAD"
-          fi
-
       - name: Git Semantic Version
-        if: steps.tag-check.outputs.has_tag != 'true'
         uses: PaulHatch/semantic-version@v6.0.2
         id: versioning
         with:
+          major_pattern: "(MAJOR)"
+          minor_pattern: "(MINOR)"
           enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
           namespace: beta
           bump_each_commit: true
           version_format: "${{ github.ref == 'refs/heads/dev' && '${major}.${minor}.${patch}-beta' || '${major}.${minor}.${patch}' }}"
           debug: true
-
-      - name: Set final version
-        id: final-version
-        run: |
-          if [ "${{ steps.tag-check.outputs.has_tag }}" = "true" ]; then
-            echo "version=${{ steps.tag-check.outputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${{ steps.versioning.outputs.version }}" >> $GITHUB_OUTPUT
-          fi
-          echo "Final version: $(cat $GITHUB_OUTPUT | grep version)"
 
   test-and-analyze:
     name: Test and SonarCloud Analysis
