@@ -27,7 +27,8 @@
         "DB_PASSWORD": "dev",
         "DB_NAME": "boardgametracker-dev",
         "DB_PORT": "5432",
-        "AUTH_ENABLED": "true"
+        "AUTH_ENABLED": "true",
+        "JWT_SECRET": "your-super-secret-jwt-key-that-is-used-in-dev"
       }
     },
     "https": {
@@ -44,7 +45,8 @@
         "TZ": "Europe/Brussels",
         "DB_HOST": "localhost",
         "DB_USER": "dev",
-        "DB_PASSWORD": "dev"
+        "DB_PASSWORD": "dev",
+        "JWT_SECRET": "your-super-secret-jwt-key-that-is-used-in-dev"
       }
     }
   }

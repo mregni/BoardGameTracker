@@ -5,7 +5,7 @@ namespace BoardGameTracker.Core.GameNights.Interfaces;
 
 public interface IGameNightService
 {
-    Task<List<GameNight>> GetGameNights(bool past);
+    Task<List<GameNight>> GetGameNights();
     Task<GameNight?> GetById(int id);
     Task<GameNight> Create(CreateGameNightCommand command);
     Task<GameNight> Update(UpdateGameNightCommand command);

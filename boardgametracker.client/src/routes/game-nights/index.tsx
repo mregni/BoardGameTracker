@@ -75,16 +75,32 @@ function RouteComponent() {
 	const upcomingCount = useMemo(() => gameNights.filter((gn) => !isPast(gn.startDate)).length, [gameNights]);
 	const pastCount = useMemo(() => gameNights.filter((gn) => isPast(gn.startDate)).length, [gameNights]);
 
+	const upcomingGameNights = useMemo(
+		() =>
+			gameNights
+				.filter((gn) => !isPast(gn.startDate))
+				.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()),
+		[gameNights],
+	);
+
+	const pastGameNights = useMemo(
+		() =>
+			gameNights
+				.filter((gn) => isPast(gn.startDate))
+				.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()),
+		[gameNights],
+	);
+
 	const filteredGameNights = useMemo(() => {
 		switch (filter) {
 			case "upcoming":
-				return gameNights.filter((gn) => !isPast(gn.startDate));
+				return upcomingGameNights;
 			case "past":
-				return gameNights.filter((gn) => isPast(gn.startDate));
+				return pastGameNights;
 			default:
-				return gameNights;
+				return [...upcomingGameNights, ...pastGameNights];
 		}
-	}, [gameNights, filter]);
+	}, [upcomingGameNights, pastGameNights, filter]);
 
 	if (gameNights.length === 0) {
 		return (
@@ -138,6 +154,44 @@ function RouteComponent() {
 
 						{filteredGameNights.length === 0 ? (
 							<NoGameNights filter={filter} onCreateClick={modals.createModal.show} />
+						) : filter === "all" ? (
+							<div className="space-y-4">
+								{upcomingGameNights.map((gameNight) => (
+									<GameNightCard
+										key={gameNight.id}
+										gameNight={gameNight}
+										settings={settings}
+										canWrite={canWrite}
+										onEdit={actions.handleEditGameNight}
+										onDelete={() => {
+											actions.handleDeleteClick(gameNight);
+											modals.deleteModal.show();
+										}}
+										onManageRsvps={actions.handleManageRsvps}
+									/>
+								))}
+								{upcomingGameNights.length > 0 && pastGameNights.length > 0 && (
+									<div className="flex items-center gap-4">
+										<hr className="flex-1" />
+										<span className="text-sm text-white/50">{t("past")}</span>
+										<hr className="flex-1" />
+									</div>
+								)}
+								{pastGameNights.map((gameNight) => (
+									<GameNightCard
+										key={gameNight.id}
+										gameNight={gameNight}
+										settings={settings}
+										canWrite={canWrite}
+										onEdit={actions.handleEditGameNight}
+										onDelete={() => {
+											actions.handleDeleteClick(gameNight);
+											modals.deleteModal.show();
+										}}
+										onManageRsvps={actions.handleManageRsvps}
+									/>
+								))}
+							</div>
 						) : (
 							<div className="space-y-4">
 								{filteredGameNights.map((gameNight) => (

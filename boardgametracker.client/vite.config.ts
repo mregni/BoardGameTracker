@@ -1,34 +1,39 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
-import tsconfigPaths from 'vite-tsconfig-paths';
-import svgr from 'vite-plugin-svgr';
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
-import { tanstackRouter } from '@tanstack/router-plugin/vite';
+import svgr from "vite-plugin-svgr";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [svgr(), tsconfigPaths(), react(), tanstackRouter({
-    target: 'react',
-    autoCodeSplitting: true,
-    routeFileIgnorePattern: '.test.',
-  }), sentryVitePlugin({
-    org: "boardgametracker",
-    project: "boardgametracker"
-  })],
-
-  base: '/',
+  plugins: [
+    tanstackRouter({
+      target: "react",
+      autoCodeSplitting: true,
+      routeFileIgnorePattern: ".test.",
+    }),
+    sentryVitePlugin({
+      org: "boardgametracker",
+      project: "boardgametracker",
+    }),
+    svgr(),
+    react(),
+  ],
+  resolve: {
+    tsconfigPaths: true,
+  },
+  base: "/",
 
   server: {
     port: 5443,
     strictPort: true,
     proxy: {
-      '/api': {
-        target: 'http://localhost:6554/',
+      "/api": {
+        target: "http://localhost:6554/",
         changeOrigin: true,
         secure: false,
       },
-      '/images': {
-        target: 'http://localhost:6554/',
+      "/images": {
+        target: "http://localhost:6554/",
         changeOrigin: true,
         secure: false,
       },
@@ -36,6 +41,6 @@ export default defineConfig({
   },
 
   build: {
-    sourcemap: true
-  }
+    sourcemap: true,
+  },
 });

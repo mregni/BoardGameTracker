@@ -160,9 +160,6 @@ const ProfileSection = ({ profile, updateProfile, isUpdatingProfile, onChangePas
 
 	return (
 		<SettingsSection title={t("account.profile.title")} description={t("account.profile.description")}>
-			<div className="mb-3 text-sm text-white/60">
-				<span className="font-medium text-white/80">{profile.username}</span>
-			</div>
 			<form onSubmit={handleFormSubmit(form)} className="space-y-3">
 				<form.Field name="username">
 					{(field) => (

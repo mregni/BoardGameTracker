@@ -163,14 +163,14 @@ export interface FileRoutesByFullPath {
   '/games/new': typeof GamesNewRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/sessions/new': typeof SessionsNewRoute
-  '/compare': typeof CompareIndexRoute
-  '/game-nights': typeof GameNightsIndexRoute
-  '/games': typeof GamesIndexRoute
-  '/loans': typeof LoansIndexRoute
-  '/locations': typeof LocationsIndexRoute
-  '/players': typeof PlayersIndexRoute
-  '/settings': typeof SettingsIndexRoute
-  '/shames': typeof ShamesIndexRoute
+  '/compare/': typeof CompareIndexRoute
+  '/game-nights/': typeof GameNightsIndexRoute
+  '/games/': typeof GamesIndexRoute
+  '/loans/': typeof LoansIndexRoute
+  '/locations/': typeof LocationsIndexRoute
+  '/players/': typeof PlayersIndexRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/shames/': typeof ShamesIndexRoute
   '/games/$gameId/sessions': typeof GamesGameIdSessionsRoute
   '/games/$gameId/update': typeof GamesGameIdUpdateRoute
   '/games/import/start': typeof GamesImportStartRoute
@@ -242,14 +242,14 @@ export interface FileRouteTypes {
     | '/games/new'
     | '/players/$playerId'
     | '/sessions/new'
-    | '/compare'
-    | '/game-nights'
-    | '/games'
-    | '/loans'
-    | '/locations'
-    | '/players'
-    | '/settings'
-    | '/shames'
+    | '/compare/'
+    | '/game-nights/'
+    | '/games/'
+    | '/loans/'
+    | '/locations/'
+    | '/players/'
+    | '/settings/'
+    | '/shames/'
     | '/games/$gameId/sessions'
     | '/games/$gameId/update'
     | '/games/import/start'
@@ -339,7 +339,7 @@ declare module '@tanstack/react-router' {
     '/_bare': {
       id: '/_bare'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof BareRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -353,56 +353,56 @@ declare module '@tanstack/react-router' {
     '/shames/': {
       id: '/shames/'
       path: '/shames'
-      fullPath: '/shames'
+      fullPath: '/shames/'
       preLoaderRoute: typeof ShamesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings/': {
       id: '/settings/'
       path: '/settings'
-      fullPath: '/settings'
+      fullPath: '/settings/'
       preLoaderRoute: typeof SettingsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/players/': {
       id: '/players/'
       path: '/players'
-      fullPath: '/players'
+      fullPath: '/players/'
       preLoaderRoute: typeof PlayersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/locations/': {
       id: '/locations/'
       path: '/locations'
-      fullPath: '/locations'
+      fullPath: '/locations/'
       preLoaderRoute: typeof LocationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/loans/': {
       id: '/loans/'
       path: '/loans'
-      fullPath: '/loans'
+      fullPath: '/loans/'
       preLoaderRoute: typeof LoansIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/': {
       id: '/games/'
       path: '/games'
-      fullPath: '/games'
+      fullPath: '/games/'
       preLoaderRoute: typeof GamesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/game-nights/': {
       id: '/game-nights/'
       path: '/game-nights'
-      fullPath: '/game-nights'
+      fullPath: '/game-nights/'
       preLoaderRoute: typeof GameNightsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare/': {
       id: '/compare/'
       path: '/compare'
-      fullPath: '/compare'
+      fullPath: '/compare/'
       preLoaderRoute: typeof CompareIndexRouteImport
       parentRoute: typeof rootRouteImport
     }

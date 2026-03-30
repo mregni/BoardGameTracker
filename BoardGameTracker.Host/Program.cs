@@ -100,6 +100,11 @@ if (string.IsNullOrWhiteSpace(jwtSecret))
 
     jwtSecret = "auth-disabled-placeholder-key-not-used";
 }
+else if (authEnabled && jwtSecret.Length < 32)
+{
+    throw new ArgumentException(
+        $"JWT_SECRET must be at least 32 characters long, but was {jwtSecret.Length}.");
+}
 
 builder.Services.AddAuthentication(options =>
     {

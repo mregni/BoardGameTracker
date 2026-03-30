@@ -1,230 +1,233 @@
 {
-  "titles": {
-    "localisation": "Localisation settings",
-    "currency": "Currency settings",
-    "environment": "Environment"
-  },
-  "time-zone": {
-    "label": "Time zone",
-    "required": "Time zone is required"
-  },
-  "date-format": {
-    "label": "Date format",
-    "required": "Date format is required"
-  },
-  "time-format": {
-    "label": "Time format",
-    "required": "Time format is required"
-  },
-  "currency": {
-    "label": "Currency",
-    "required": "Currency is required"
-  },
-  "environment": {
-    "name": "Environment",
-    "port": "Port",
-    "statistics": "Statistics",
-    "log-level": "Log level",
-    "version": "Version"
-  },
-  "feature-request": "Feature request",
-  "translations": "Translate the app",
-  "save": {
-    "button": "Save settings",
-    "failed": "Failed saving settings",
-    "successfull": "Settings are successfully saved"
-  },
-  "general": {
-    "public-url": {
-      "label": "Public URL",
-      "placeholder": "https://myboardgametracker.app"
-    },
-    "ui-language": {
-      "label": "Language",
-      "required": "language is required"
-    },
-    "title": "General settings",
-    "description": "Change the general settings of the application.",
-    "date-time": {
-      "title": "Date and Time settings",
-      "description": "Configure the date and time format used in the application.",
-      "date-format": "Date format",
-      "time-format": "Time format"
-    },
-    "currency": {
-      "title": "Currency settings",
-      "description": "Configure the currency used in the application.",
-      "label": "Currency"
-    },
-    "language": {
-      "title": "Language settings",
-      "description": "Configure the language used in the application.",
-      "label": "Language"
-    }
-  },
-  "shame": {
-    "title": "Shelf of Shame settings",
-    "description": "Configure how the Shelf of Shame is calculated and displayed.",
-    "enabled": {
-      "label": "Enable Shelf of Shame",
-      "description": "Track games that haven't been played in a while."
-    },
-    "months": {
-      "label": "Months Threshold"
-    }
-  },
-  "game-nights": {
-    "title": "Game Nights settings",
-    "description": "Configure how game nights are managed and displayed.",
-    "enabled": {
-      "label": "Enable Game Nights",
-      "description": "Enable the game nights feature to plan and manage game night events with your friends."
-    },
-    "public-url": {
-      "label": "Public URL",
-      "placeholder": "https://myboardgametracker.app"
-    },
-    "rsvp-authentication": {
-      "label": "Require authentication for RSVPs",
-      "description": "When enabled, players will need to log in to RSVP for game nights. This adds an extra layer of security and helps prevent spam RSVPs."
-    }
-  },
-  "advanced": {
-    "version-track": {
-      "label": "Version track",
-      "description": "Choose to stay on stable releases or switch to beta releases to get early access to new features.",
-      "stable": {
-        "label": "Stable",
-        "description": "Get only stable releases."
-      },
-      "beta": {
-        "label": "Beta",
-        "description": "Get beta releases with early access to new features."
-      }
-    },
-    "updates": {
-      "title": "Update check settings",
-      "description": "Configure how the application checks for updates.",
-      "enabled": {
-        "label": "Enable update check",
-        "description": "When enabled, the application will automatically check for and install updates."
-      }
-    },
-    "bug": "Report a bug",
-    "translate": "Help us translate the app"
-  },
-  "sidebar": {
-    "general": {
-      "title": "General",
-      "description": "Basic app configuration"
-    },
-    "shelf-of-shame": {
-      "title": "Shelf of Shame",
-      "description": "Configure Shelf of Shame settings"
-    },
-    "advanced": {
-      "title": "Advanced",
-      "description": "Advanced app configuration"
-    },
-    "game-nights": {
-      "title": "Game Nights",
-      "description": "Configure Game Nights settings"
-    },
-    "account": {
-      "title": "Account",
-      "description": "Profile & user management"
-    }
-  },
-  "account": {
-    "profile": {
-      "title": "My Account",
-      "description": "Manage your profile and password.",
-      "display-name": {
-        "label": "Display name"
-      },
-      "email": {
-        "label": "Email"
-      },
-      "save": "Save profile"
-    },
-    "password": {
-      "change-button": "Change password",
-      "title": "Change Password",
-      "description": "Enter your current password and choose a new one.",
-      "current": {
-        "label": "Current password"
-      },
-      "new": {
-        "label": "New password"
-      },
-      "confirm": {
-        "label": "Confirm new password"
-      },
-      "min-length": "Password must be at least 4 characters",
-      "mismatch": "Passwords do not match",
-      "save": "Change password"
-    },
-    "users": {
-      "title": "User Management",
-      "description": "Create and manage user accounts.",
-      "last-login": "Last login",
-      "role": "Role",
-      "roles": {
-        "user": "User",
-        "reader": "Reader",
-        "admin": "Admin"
-      },
-      "create-button": "Create user",
-      "create": {
-        "title": "Create New User",
-        "description": "Fill out the form to create a new user.",
-        "username": {
-          "label": "Username"
-        },
-        "email": {
-          "label": "Email"
-        },
-        "password": {
-          "label": "Password"
-        },
-        "display-name": {
-          "label": "Display name"
-        },
-        "save": "Create user"
-      },
-      "edit": {
-        "title": "Edit User",
-        "description": "Change the role for \"{{username}}\"."
-      },
-      "reset-password": {
-        "button": "Reset password"
-      },
-      "temp-password": {
-        "title": "Temporary Password",
-        "description": "Password reset for \"{{username}}\". Save this password — it won't be shown again.",
-        "copy": "Copy to clipboard",
-        "copied": "Copied!"
-      },
-      "delete": {
-        "title": "Delete User",
-        "description": "Are you sure you want to delete \"{{username}}\"? This cannot be undone."
-      },
-      "never-logged-in": "Never"
-    },
-    "notifications": {
-      "profile-updated": "Profile updated successfully",
-      "profile-update-failed": "Failed to update profile",
-      "password-changed": "Password changed successfully",
-      "password-change-failed": "Failed to change password. Check your current password.",
-      "user-created": "User created successfully",
-      "user-create-failed": "Failed to create user",
-      "user-deleted": "User deleted successfully",
-      "user-delete-failed": "Failed to delete user",
-      "role-updated": "User role updated successfully",
-      "role-update-failed": "Failed to update user role",
-      "user-updated": "User updated successfully",
-      "user-update-failed": "Failed to update user",
-      "password-reset-failed": "Failed to reset password"
-    }
-  }
+	"titles": {
+		"localisation": "Localisation settings",
+		"currency": "Currency settings",
+		"environment": "Environment"
+	},
+	"time-zone": {
+		"label": "Time zone",
+		"required": "Time zone is required"
+	},
+	"date-format": {
+		"label": "Date format",
+		"required": "Date format is required"
+	},
+	"time-format": {
+		"label": "Time format",
+		"required": "Time format is required"
+	},
+	"currency": {
+		"label": "Currency",
+		"required": "Currency is required"
+	},
+	"environment": {
+		"name": "Environment",
+		"port": "Port",
+		"statistics": "Statistics",
+		"log-level": "Log level",
+		"version": "Version"
+	},
+	"feature-request": "Feature request",
+	"translations": "Translate the app",
+	"save": {
+		"button": "Save settings",
+		"failed": "Failed saving settings",
+		"successfull": "Settings are successfully saved"
+	},
+	"general": {
+		"public-url": {
+			"label": "Public URL",
+			"placeholder": "https://myboardgametracker.app"
+		},
+		"ui-language": {
+			"label": "Language",
+			"required": "language is required"
+		},
+		"title": "General settings",
+		"description": "Change the general settings of the application.",
+		"date-time": {
+			"title": "Date and Time settings",
+			"description": "Configure the date and time format used in the application.",
+			"date-format": "Date format",
+			"time-format": "Time format"
+		},
+		"currency": {
+			"title": "Currency settings",
+			"description": "Configure the currency used in the application.",
+			"label": "Currency"
+		},
+		"language": {
+			"title": "Language settings",
+			"description": "Configure the language used in the application.",
+			"label": "Language"
+		}
+	},
+	"shame": {
+		"title": "Shelf of Shame settings",
+		"description": "Configure how the Shelf of Shame is calculated and displayed.",
+		"enabled": {
+			"label": "Enable Shelf of Shame",
+			"description": "Track games that haven't been played in a while."
+		},
+		"months": {
+			"label": "Months Threshold"
+		}
+	},
+	"game-nights": {
+		"title": "Game Nights settings",
+		"description": "Configure how game nights are managed and displayed.",
+		"enabled": {
+			"label": "Enable Game Nights",
+			"description": "Enable the game nights feature to plan and manage game night events with your friends."
+		},
+		"public-url": {
+			"label": "Public URL",
+			"placeholder": "https://myboardgametracker.app"
+		},
+		"rsvp-authentication": {
+			"label": "Require authentication for RSVPs",
+			"description": "When enabled, players will need to log in to RSVP for game nights. This adds an extra layer of security and helps prevent spam RSVPs."
+		}
+	},
+	"advanced": {
+		"version-track": {
+			"label": "Version track",
+			"description": "Choose to stay on stable releases or switch to beta releases to get early access to new features.",
+			"stable": {
+				"label": "Stable",
+				"description": "Get only stable releases."
+			},
+			"beta": {
+				"label": "Beta",
+				"description": "Get beta releases with early access to new features."
+			}
+		},
+		"updates": {
+			"title": "Update check settings",
+			"description": "Configure how the application checks for updates.",
+			"enabled": {
+				"label": "Enable update check",
+				"description": "When enabled, the application will automatically check for and install updates."
+			}
+		},
+		"bug": "Report a bug",
+		"translate": "Help us translate the app"
+	},
+	"sidebar": {
+		"general": {
+			"title": "General",
+			"description": "Basic app configuration"
+		},
+		"shelf-of-shame": {
+			"title": "Shelf of Shame",
+			"description": "Configure Shelf of Shame settings"
+		},
+		"advanced": {
+			"title": "Advanced",
+			"description": "Advanced app configuration"
+		},
+		"game-nights": {
+			"title": "Game Nights",
+			"description": "Configure Game Nights settings"
+		},
+		"account": {
+			"title": "Account",
+			"description": "Profile & user management"
+		}
+	},
+	"account": {
+		"profile": {
+			"title": "My Account",
+			"description": "Manage your profile and password.",
+			"display-name": {
+				"label": "Display name"
+			},
+			"email": {
+				"label": "Email"
+			},
+			"username": {
+				"label": "Username"
+			},
+			"save": "Save profile"
+		},
+		"password": {
+			"change-button": "Change password",
+			"title": "Change Password",
+			"description": "Enter your current password and choose a new one.",
+			"current": {
+				"label": "Current password"
+			},
+			"new": {
+				"label": "New password"
+			},
+			"confirm": {
+				"label": "Confirm new password"
+			},
+			"min-length": "Password must be at least 4 characters",
+			"mismatch": "Passwords do not match",
+			"save": "Change password"
+		},
+		"users": {
+			"title": "User Management",
+			"description": "Create and manage user accounts.",
+			"last-login": "Last login",
+			"role": "Role",
+			"roles": {
+				"user": "User",
+				"reader": "Reader",
+				"admin": "Admin"
+			},
+			"create-button": "Create user",
+			"create": {
+				"title": "Create New User",
+				"description": "Fill out the form to create a new user.",
+				"username": {
+					"label": "Username"
+				},
+				"email": {
+					"label": "Email"
+				},
+				"password": {
+					"label": "Password"
+				},
+				"display-name": {
+					"label": "Display name"
+				},
+				"save": "Create user"
+			},
+			"edit": {
+				"title": "Edit User",
+				"description": "Change the role for \"{{username}}\"."
+			},
+			"reset-password": {
+				"button": "Reset password"
+			},
+			"temp-password": {
+				"title": "Temporary Password",
+				"description": "Password reset for \"{{username}}\". Save this password — it won't be shown again.",
+				"copy": "Copy to clipboard",
+				"copied": "Copied!"
+			},
+			"delete": {
+				"title": "Delete User",
+				"description": "Are you sure you want to delete \"{{username}}\"? This cannot be undone."
+			},
+			"never-logged-in": "Never"
+		},
+		"notifications": {
+			"profile-updated": "Profile updated successfully",
+			"profile-update-failed": "Failed to update profile",
+			"password-changed": "Password changed successfully",
+			"password-change-failed": "Failed to change password. Check your current password.",
+			"user-created": "User created successfully",
+			"user-create-failed": "Failed to create user",
+			"user-deleted": "User deleted successfully",
+			"user-delete-failed": "Failed to delete user",
+			"role-updated": "User role updated successfully",
+			"role-update-failed": "Failed to update user role",
+			"user-updated": "User updated successfully",
+			"user-update-failed": "Failed to update user",
+			"password-reset-failed": "Failed to reset password"
+		}
+	}
 }

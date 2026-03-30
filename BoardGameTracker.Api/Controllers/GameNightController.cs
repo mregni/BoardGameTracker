@@ -21,9 +21,9 @@ public class GameNightController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetGameNights([FromQuery] bool past = false)
+    public async Task<IActionResult> GetGameNights()
     {
-        var gameNights = await _gameNightService.GetGameNights(past);
+        var gameNights = await _gameNightService.GetGameNights();
         return Ok(gameNights.ToListDto());
     }
 

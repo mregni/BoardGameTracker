@@ -29,12 +29,10 @@ public class GameNightService : IGameNightService
         _logger = logger;
     }
 
-    public Task<List<GameNight>> GetGameNights(bool past)
+    public Task<List<GameNight>> GetGameNights()
     {
-        _logger.LogDebug("Fetching {Type} game nights", past ? "past" : "future");
-        return past
-            ? _gameNightRepository.GetPastGameNightsAsync()
-            : _gameNightRepository.GetFutureGameNightsAsync();
+        _logger.LogDebug("Fetching game nights");
+        return _gameNightRepository.GetAllAsync();
     }
 
     public Task<GameNight?> GetById(int id)
