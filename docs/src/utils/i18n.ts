@@ -5,7 +5,7 @@ import { initReactI18next } from "react-i18next";
 
 const base = import.meta.env.BASE_URL;
 
-void i18n
+i18n
 	.use(Backend)
 	.use(LanguageDetector)
 	.use(initReactI18next)

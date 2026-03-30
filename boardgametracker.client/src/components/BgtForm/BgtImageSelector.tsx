@@ -20,7 +20,7 @@ const ImagePreview = (props: ImagePreviewProps) => {
 
 	return (
 		<div className="group relative">
-			<img alt="preview image" src={src} className="w-28 h-28 rounded-lg" />
+			<img alt="Selected preview" src={src} className="w-28 h-28 rounded-lg" />
 			<div className="absolute top-0 left-0 w-full h-full collapse group-hover:visible">
 				<div className="flex justify-center items-center w-full h-full">
 					<BgtIconButton

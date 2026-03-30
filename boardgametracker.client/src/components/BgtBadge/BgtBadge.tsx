@@ -45,7 +45,21 @@ export const BgtBadge = (props: Props) => {
 	};
 
 	return (
-		<div className={badgeClasses} onClick={onClick} {...rest}>
+		<div
+			className={badgeClasses}
+			onClick={onClick}
+			{...(onClick && {
+				role: "button",
+				tabIndex: 0,
+				onKeyDown: (e: React.KeyboardEvent) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+					}
+				},
+			})}
+			{...rest}
+		>
 			{children}
 			{onClose && <CloseIcon onClick={handleClose} className="cursor-pointer" />}
 		</div>

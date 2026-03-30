@@ -29,9 +29,9 @@ export const Table = ({ columns, rows, headers }: TableProps) => (
 				</tr>
 			</thead>
 			<tbody className="divide-y divide-white/5">
-				{rows.map((row, index) => (
+				{rows.map((row) => (
 					<tr
-						key={index}
+						key={row[columns[0].key]}
 						className="bg-slate-900/50 hover:bg-slate-800/50 transition-colors"
 					>
 						{columns.map((col) => (

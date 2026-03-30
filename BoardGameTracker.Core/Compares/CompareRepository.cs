@@ -205,9 +205,8 @@ public class CompareRepository : ICompareRepository
             {
                 x.GameId,
                 ScoreDifference = Math.Abs(x.PlayerOneScore!.Value - x.PlayerTwoScore!.Value),
-                WinnerId = x.PlayerOneWon ? playerOne : (x.PlayerTwoWon ? playerTwo : (int?)null)
+                WinnerId = x.PlayerOneWon ? playerOne : playerTwo
             })
-            .Where(x => x.WinnerId != null)
             .OrderBy(x => x.ScoreDifference)
             .FirstOrDefault();
 

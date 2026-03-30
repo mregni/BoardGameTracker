@@ -42,7 +42,7 @@ describe("BgtImageSelector", () => {
 		it("should show preview when image is provided", () => {
 			const testFile = new File(["test"], "test.png", { type: "image/png" });
 			renderWithTheme(<BgtImageSelector image={testFile} setImage={mockSetImage} />);
-			const preview = screen.getByAltText("preview image");
+			const preview = screen.getByAltText("Selected preview");
 			expect(preview).toBeInTheDocument();
 		});
 
@@ -70,7 +70,7 @@ describe("BgtImageSelector", () => {
 			renderWithTheme(
 				<BgtImageSelector image={undefined} setImage={mockSetImage} defaultImage="https://example.com/image.jpg" />,
 			);
-			const preview = screen.getByAltText("preview image");
+			const preview = screen.getByAltText("Selected preview");
 			expect(preview).toHaveAttribute("src", "https://example.com/image.jpg");
 		});
 

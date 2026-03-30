@@ -35,15 +35,13 @@ function AuthCallbackPage() {
 			// Decode user from JWT payload
 			try {
 				const payload = JSON.parse(atob(accessToken.split(".")[1]));
+				const roleClaim = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+				const roles = Array.isArray(roleClaim) ? roleClaim : roleClaim ? [roleClaim] : [];
 				const user = {
 					id: payload.sub,
 					username: payload.unique_name,
 					displayName: payload.display_name ?? null,
-					roles: Array.isArray(payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"])
-						? payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
-						: payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
-							? [payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]]
-							: [],
+					roles,
 				};
 
 				setTokens(accessToken, refreshToken, user);

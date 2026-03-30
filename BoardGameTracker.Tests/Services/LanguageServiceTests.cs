@@ -122,7 +122,7 @@ public class LanguageServiceTests
     public async Task GetAllAsync_ShouldPropagateException_WhenRepositoryThrowsDifferentExceptions(Type exceptionType,
         string message)
     {
-        var expectedException = (Exception) Activator.CreateInstance(exceptionType, message);
+        var expectedException = (Exception) Activator.CreateInstance(exceptionType, message)!;
 
         _languageRepositoryMock.Setup(x => x.GetAllAsync()).ThrowsAsync(expectedException);
 

@@ -37,10 +37,10 @@ public class BggImportService : IBggImportService
         _logger = logger;
     }
 
-    public async Task<BggGame?> SearchGame(int id)
+    public async Task<BggGame?> SearchGame(int searchBggId)
     {
-        _logger.LogDebug("Searching BGG for game with id {BggId}", id);
-        var response = await _bggApi.SearchGame(id, 1);
+        _logger.LogDebug("Searching BGG for game with id {BggId}", searchBggId);
+        var response = await _bggApi.SearchGame(searchBggId, 1);
         var firstResult = response.Content?.Games?.FirstOrDefault();
         if (!response.IsSuccessStatusCode || firstResult == null)
         {
@@ -77,6 +77,11 @@ public class BggImportService : IBggImportService
         };
 
         if (importGameResult.StatusCode != HttpStatusCode.OK)
+        {
+            return result;
+        }
+
+        if (importGameResult.Content?.Item == null)
         {
             return result;
         }

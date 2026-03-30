@@ -55,11 +55,11 @@ function LoginPage() {
 	});
 
 	const handleOidcLogin = (provider: OidcProvider) => {
-		const callbackUrl = new URL("/auth-callback", window.location.origin);
+		const callbackUrl = new URL("/auth-callback", globalThis.location.origin);
 		if (redirect) {
 			callbackUrl.searchParams.set("redirect", redirect);
 		}
-		window.location.href = `${apiUrl}auth/oidc/${provider.name}/login?redirectUri=${encodeURIComponent(callbackUrl.toString())}&state=${provider.name}`;
+		globalThis.location.href = `${apiUrl}auth/oidc/${provider.name}/login?redirectUri=${encodeURIComponent(callbackUrl.toString())}&state=${provider.name}`;
 	};
 
 	return (

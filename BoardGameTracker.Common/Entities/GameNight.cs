@@ -5,8 +5,8 @@ namespace BoardGameTracker.Common.Entities;
 
 public class GameNight: HasId
 {
-    public string Title { get; private set; }
-    public string Notes { get; private set; }
+    public string Title { get; private set; } = string.Empty;
+    public string Notes { get; private set; } = string.Empty;
     public Guid LinkId { get; private set; }
     public DateTime StartDate { get; private set; }
 

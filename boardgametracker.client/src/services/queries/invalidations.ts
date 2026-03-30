@@ -3,7 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/models";
 
 export class QueryInvalidator {
-	constructor(private queryClient: QueryClient) {}
+	constructor(private readonly queryClient: QueryClient) {}
 
 	async invalidateGame(gameId: number) {
 		await Promise.all([

@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BgtPlayerAvatar } from "@/components/BgtAvatar/BgtPlayerAvatar";
+import { PlayerSessionAvatars } from "@/components/BgtAvatar/PlayerSessionAvatars";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -66,36 +66,24 @@ function RouteComponent() {
 						{
 							accessorKey: "3",
 							cell: ({ row }) => (
-								<div className="flex flex-row gap-1">
-									{row.original.playerSessions
-										.filter((x) => x.won)
-										.map((player) => (
-											<BgtPlayerAvatar
-												key={`${player.playerId}_${player.sessionId}`}
-												playerSession={player}
-												game={game}
-												player={players.find((x) => x.id === player.playerId)}
-											/>
-										))}
-								</div>
+								<PlayerSessionAvatars
+									playerSessions={row.original.playerSessions}
+									players={players}
+									game={game}
+									won={true}
+								/>
 							),
 							header: t("winners"),
 						},
 						{
 							accessorKey: "4",
 							cell: ({ row }) => (
-								<div className="flex flex-row gap-1">
-									{row.original.playerSessions
-										.filter((x) => !x.won)
-										.map((player) => (
-											<BgtPlayerAvatar
-												key={`${player.playerId}_${player.sessionId}`}
-												player={players.find((x) => x.id === player.playerId)}
-												playerSession={player}
-												game={game}
-											/>
-										))}
-								</div>
+								<PlayerSessionAvatars
+									playerSessions={row.original.playerSessions}
+									players={players}
+									game={game}
+									won={false}
+								/>
 							),
 							header: t("other-players"),
 						},

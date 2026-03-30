@@ -266,7 +266,7 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/images/profile"
 });
 
-var logger = app.Services.GetService<ILogger<Program>>();
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 logger.LogInformation("BoardGameTracker started");
 logger.LogInformation("  Environment:  {Environment}", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));

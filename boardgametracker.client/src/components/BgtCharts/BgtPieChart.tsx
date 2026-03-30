@@ -72,7 +72,7 @@ export const BgtPieChart = (props: Props) => {
 			{showLegend && (
 				<div className="space-y-2">
 					{data.map((item, index) => (
-						<div key={index} className="flex items-center justify-between">
+						<div key={item.label} className="flex items-center justify-between">
 							<div className="flex items-center gap-3">
 								<div className="w-3 h-3 rounded-full" style={{ backgroundColor: pieColors[index] }} />
 								<span className="text-white/70 text-sm">{item.label}</span>

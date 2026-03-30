@@ -28,8 +28,8 @@ export const ScoringResultsCard = (props: Props) => {
 	return (
 		<BgtCard title={t("titles.scoring-results")} icon={Target}>
 			<div className="flex flex-col gap-3">
-				{scoreRankChart.map((item, i) => (
-					<div key={i} className="space-y-1">
+				{scoreRankChart.map((item) => (
+					<div key={item.key} className="space-y-1">
 						<div className="flex items-center justify-between text-sm">
 							<div className="flex flex-col gap-0.5">
 								<BgtText className="text-white/70 uppercase text-xs">{t(`charts.top-scoring.${item.key}`)}</BgtText>

@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
-import { BgtPlayerAvatar } from "@/components/BgtAvatar/BgtPlayerAvatar";
+import { PlayerSessionAvatars } from "@/components/BgtAvatar/PlayerSessionAvatars";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -83,36 +83,26 @@ function RouteComponent() {
 						{
 							accessorKey: "4",
 							cell: ({ row }) => (
-								<div className="flex flex-row gap-1">
-									{row.original.playerSessions
-										.filter((x) => x.won)
-										.map((player) => (
-											<BgtPlayerAvatar
-												key={`${player.playerId}_${player.sessionId}`}
-												player={players.find((x) => x.id === player.playerId)}
-												playerSession={player}
-												game={games.find((x) => x.id === row.original.gameId)}
-											/>
-										))}
-								</div>
+								<PlayerSessionAvatars
+									playerSessions={row.original.playerSessions}
+									players={players}
+									games={games}
+									gameId={row.original.gameId}
+									won={true}
+								/>
 							),
 							header: t("winners"),
 						},
 						{
 							accessorKey: "5",
 							cell: ({ row }) => (
-								<div className="flex flex-row gap-1">
-									{row.original.playerSessions
-										.filter((x) => !x.won)
-										.map((player) => (
-											<BgtPlayerAvatar
-												key={`${player.playerId}_${player.sessionId}`}
-												player={players.find((x) => x.id === player.playerId)}
-												playerSession={player}
-												game={games.find((x) => x.id === row.original.gameId)}
-											/>
-										))}
-								</div>
+								<PlayerSessionAvatars
+									playerSessions={row.original.playerSessions}
+									players={players}
+									games={games}
+									gameId={row.original.gameId}
+									won={false}
+								/>
 							),
 							header: t("other-players"),
 						},

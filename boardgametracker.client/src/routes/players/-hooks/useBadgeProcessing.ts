@@ -31,7 +31,7 @@ export const useBadgeProcessing = (badges: Badge[]) => {
 		let totalHiddenCount = 0;
 
 		Object.values(badgesByType).forEach((typeBadges) => {
-			const sortedBadges = typeBadges.sort((a, b) => {
+			const sortedBadges = [...typeBadges].sort((a, b) => {
 				if (a.level === null) return 1;
 				if (b.level === null) return -1;
 				return badgeLevelRank[b.level] - badgeLevelRank[a.level];

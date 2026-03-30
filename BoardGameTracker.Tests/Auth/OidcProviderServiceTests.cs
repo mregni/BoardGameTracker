@@ -54,7 +54,7 @@ public class OidcProviderServiceTests : IDisposable
     {
         _context.OidcProviders.Add(new OidcProvider("google", "Google", "https://accounts.google.com", "client-id-1"));
         _context.OidcProviders.Add(new OidcProvider("github", "GitHub", "https://github.com", "client-id-2"));
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await _service.GetAllAsync();
 
@@ -72,7 +72,7 @@ public class OidcProviderServiceTests : IDisposable
     {
         var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id-1");
         _context.OidcProviders.Add(provider);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await _service.GetByIdAsync(provider.Id);
 
@@ -125,7 +125,7 @@ public class OidcProviderServiceTests : IDisposable
         result.Scopes.Should().Be("openid profile email");
         result.AutoProvisionUsers.Should().BeTrue();
 
-        var stored = await _context.OidcProviders.FindAsync(result.Id);
+        var stored = await _context.OidcProviders.FindAsync(new object[] { result.Id }, TestContext.Current.CancellationToken);
         stored.Should().NotBeNull();
     }
 
@@ -133,7 +133,7 @@ public class OidcProviderServiceTests : IDisposable
     public async Task CreateAsync_ShouldThrowDomainException_WhenProviderWithSameNameAlreadyExists()
     {
         _context.OidcProviders.Add(new OidcProvider("google", "Google", "https://accounts.google.com", "client-id"));
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var act = async () => await _service.CreateAsync(
             name: "google",
@@ -233,7 +233,7 @@ public class OidcProviderServiceTests : IDisposable
     {
         var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "old-client-id");
         _context.OidcProviders.Add(provider);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await _service.UpdateAsync(
             id: provider.Id,
@@ -297,7 +297,7 @@ public class OidcProviderServiceTests : IDisposable
     {
         var provider = new OidcProvider("github", "GitHub", "https://github.com", "old-id");
         _context.OidcProviders.Add(provider);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         await _service.UpdateAsync(
             id: provider.Id,
@@ -319,7 +319,7 @@ public class OidcProviderServiceTests : IDisposable
             iconUrl: null,
             buttonColor: null);
 
-        var stored = await _context.OidcProviders.FindAsync(provider.Id);
+        var stored = await _context.OidcProviders.FindAsync(new object[] { provider.Id }, TestContext.Current.CancellationToken);
         stored.Should().NotBeNull();
         stored!.DisplayName.Should().Be("GitHub Updated");
         stored.ClientId.Should().Be("new-id");
@@ -330,7 +330,7 @@ public class OidcProviderServiceTests : IDisposable
     {
         var provider = new OidcProvider("custom", "Custom", "https://idp.example.com", "client-id");
         _context.OidcProviders.Add(provider);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await _service.UpdateAsync(
             id: provider.Id,
@@ -371,11 +371,11 @@ public class OidcProviderServiceTests : IDisposable
     {
         var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
         _context.OidcProviders.Add(provider);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         await _service.DeleteAsync(provider.Id);
 
-        var stored = await _context.OidcProviders.FindAsync(provider.Id);
+        var stored = await _context.OidcProviders.FindAsync(new object[] { provider.Id }, TestContext.Current.CancellationToken);
         stored.Should().BeNull();
     }
 
@@ -394,11 +394,11 @@ public class OidcProviderServiceTests : IDisposable
         var provider1 = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id-1");
         var provider2 = new OidcProvider("github", "GitHub", "https://github.com", "client-id-2");
         _context.OidcProviders.AddRange(provider1, provider2);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         await _service.DeleteAsync(provider1.Id);
 
-        var remaining = await _context.OidcProviders.ToListAsync();
+        var remaining = await _context.OidcProviders.ToListAsync(TestContext.Current.CancellationToken);
         remaining.Should().HaveCount(1);
         remaining.Should().Contain(p => p.Name == "github");
         remaining.Should().NotContain(p => p.Name == "google");

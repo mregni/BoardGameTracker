@@ -100,7 +100,7 @@ public class TokenServiceTests : IDisposable
         refreshToken.IsExpired.Should().BeFalse();
         refreshToken.IsRevoked.Should().BeFalse();
 
-        var stored = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == refreshToken.Token);
+        var stored = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
         stored.Should().NotBeNull();
     }
 
@@ -125,7 +125,7 @@ public class TokenServiceTests : IDisposable
         await _tokenService.RevokeRefreshTokenAsync(refreshToken, "Test revocation", "new-token");
 
         // Assert
-        var stored = await _context.RefreshTokens.FirstAsync(t => t.Token == refreshToken.Token);
+        var stored = await _context.RefreshTokens.FirstAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
         stored.IsRevoked.Should().BeTrue();
         stored.IsActive.Should().BeFalse();
     }
@@ -143,7 +143,7 @@ public class TokenServiceTests : IDisposable
         await _tokenService.RevokeAllUserTokensAsync(userId, "Bulk revocation");
 
         // Assert
-        var tokens = await _context.RefreshTokens.Where(t => t.UserId == userId).ToListAsync();
+        var tokens = await _context.RefreshTokens.Where(t => t.UserId == userId).ToListAsync(TestContext.Current.CancellationToken);
         tokens.Should().HaveCount(3);
         tokens.Should().AllSatisfy(t => t.IsRevoked.Should().BeTrue());
     }

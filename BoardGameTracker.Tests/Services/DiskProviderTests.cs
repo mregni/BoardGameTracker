@@ -128,7 +128,7 @@ public class DiskProviderTests: IDisposable
                 x => x.Log(
                     LogLevel.Information,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains(message.Replace("{Path}", args[0].ToString()))),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(message.Replace("{Path}", args[0].ToString()!))),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
@@ -140,7 +140,7 @@ public class DiskProviderTests: IDisposable
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains(message)),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(message)),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
