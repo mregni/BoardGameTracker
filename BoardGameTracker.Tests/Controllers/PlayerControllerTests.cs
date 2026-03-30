@@ -66,7 +66,7 @@ public class PlayerControllerTests
         // Arrange
         _playerServiceMock
             .Setup(x => x.GetList())
-            .ReturnsAsync(new List<Player>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _controller.GetPlayers();
@@ -265,7 +265,7 @@ public class PlayerControllerTests
             WinCount = 5,
             TotalPlayedTime = 300.5,
             DistinctGameCount = 3,
-            MostPlayedGames = new List<MostPlayedGame>()
+            MostPlayedGames = []
         };
 
         _playerServiceMock
@@ -328,7 +328,7 @@ public class PlayerControllerTests
 
         _playerServiceMock
             .Setup(x => x.GetSessions(playerId, count))
-            .ReturnsAsync(new List<Session>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _controller.GetPlayerSessionsById(playerId, count);

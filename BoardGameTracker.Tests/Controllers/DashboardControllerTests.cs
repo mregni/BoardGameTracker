@@ -40,12 +40,12 @@ public class DashboardControllerTests
             AvgGamePrice = 35.5,
             ExpansionsOwned = 15,
             AvgSessionTime = 50,
-            RecentActivities = new List<RecentActivityDto>(),
-            Collection = new List<Common.Models.Charts.GameStateChart>(),
-            MostPlayedGames = new List<MostPlayedGameDto>(),
-            TopPlayers = new List<DashboardTopPlayerDto>(),
-            RecentAddedGames = new List<RecentGameDto>(),
-            SessionsByDayOfWeek = new List<Common.Models.Charts.PlayByDay>()
+            RecentActivities = [],
+            Collection = [],
+            MostPlayedGames = [],
+            TopPlayers = [],
+            RecentAddedGames = [],
+            SessionsByDayOfWeek = []
         };
 
         _dashboardServiceMock
@@ -119,22 +119,10 @@ public class DashboardControllerTests
             TotalGames = 5,
             ActivePlayers = 3,
             SessionsPlayed = 10,
-            RecentActivities = new List<RecentActivityDto>
-            {
-                new() { Id = 1, GameId = 1, GameTitle = "Catan", PlayerCount = 4 }
-            },
-            MostPlayedGames = new List<MostPlayedGameDto>
-            {
-                new() { Id = 1, Title = "Catan", TotalSessions = 10 }
-            },
-            TopPlayers = new List<DashboardTopPlayerDto>
-            {
-                new() { Id = 1, Name = "John", PlayCount = 15, WinCount = 8 }
-            },
-            RecentAddedGames = new List<RecentGameDto>
-            {
-                new() { Id = 2, Title = "Ticket to Ride" }
-            }
+            RecentActivities = [new() {Id = 1, GameId = 1, GameTitle = "Catan", PlayerCount = 4}],
+            MostPlayedGames = [new() {Id = 1, Title = "Catan", TotalSessions = 10}],
+            TopPlayers = [new() {Id = 1, Name = "John", PlayCount = 15, WinCount = 8}],
+            RecentAddedGames = [new() {Id = 2, Title = "Ticket to Ride"}]
         };
 
         _dashboardServiceMock

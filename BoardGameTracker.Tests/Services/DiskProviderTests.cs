@@ -29,7 +29,7 @@ public class DiskProviderTests: IDisposable
             _loggerMock = new Mock<ILogger<DiskProvider>>();
             _diskProvider = new DiskProvider(_loggerMock.Object);
             _testDirectory = Path.Combine(Path.GetTempPath(), "DiskProviderTests", Guid.NewGuid().ToString());
-            _filesToCleanup = new List<string>();
+            _filesToCleanup = [];
             
             Directory.CreateDirectory(_testDirectory);
         }

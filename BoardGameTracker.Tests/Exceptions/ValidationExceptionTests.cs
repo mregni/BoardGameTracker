@@ -73,7 +73,7 @@ public class ValidationExceptionTests
         // Arrange
         var errors = new Dictionary<string, string[]>
         {
-            { "Name", new[] { "Name is required" } }
+            { "Name", ["Name is required"]}
         };
 
         // Act
@@ -89,8 +89,8 @@ public class ValidationExceptionTests
         // Arrange
         var errors = new Dictionary<string, string[]>
         {
-            { "Name", new[] { "Name is required" } },
-            { "Email", new[] { "Email is invalid" } }
+            { "Name", ["Name is required"]},
+            { "Email", ["Email is invalid"]}
         };
 
         // Act
@@ -106,7 +106,7 @@ public class ValidationExceptionTests
         // Arrange
         var errors = new Dictionary<string, string[]>
         {
-            { "Password", new[] { "Password is too short", "Password must contain a number" } }
+            { "Password", ["Password is too short", "Password must contain a number"]}
         };
 
         // Act
@@ -317,9 +317,9 @@ public class ValidationExceptionTests
         // Arrange
         var errors = new Dictionary<string, string[]>
         {
-            { "Name", new[] { "Name is required", "Name is too short" } },
-            { "Email", new[] { "Email is invalid", "Email is already taken", "Email domain not allowed" } },
-            { "Password", new[] { "Password too weak" } }
+            { "Name", ["Name is required", "Name is too short"]},
+            { "Email", ["Email is invalid", "Email is already taken", "Email domain not allowed"]},
+            { "Password", ["Password too weak"]}
         };
 
         // Act
@@ -338,12 +338,12 @@ public class ValidationExceptionTests
         // Arrange
         var errors = new Dictionary<string, string[]>
         {
-            { "Name", new[] { "Name is required" } }
+            { "Name", ["Name is required"]}
         };
         var exception = new ValidationException(errors);
 
         // Act - The errors dictionary is the same reference
-        exception.Errors["Email"] = new[] { "Email is invalid" };
+        exception.Errors["Email"] = ["Email is invalid"];
 
         // Assert
         exception.Errors.Should().HaveCount(2);

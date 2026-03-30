@@ -34,7 +34,7 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
             migrationBuilder.AddPrimaryKey(
                 name: "PK_PlayerSessions",
                 table: "PlayerSessions",
-                columns: new[] { "PlayerId", "SessionId" });
+                columns: ["PlayerId", "SessionId"]);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_PlayerSessions_Players_PlayerId",
@@ -80,7 +80,7 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
             migrationBuilder.AddPrimaryKey(
                 name: "PK_PlayerSession",
                 table: "PlayerSession",
-                columns: new[] { "PlayerId", "SessionId" });
+                columns: ["PlayerId", "SessionId"]);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_PlayerSession_Players_PlayerId",

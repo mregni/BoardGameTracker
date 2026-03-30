@@ -90,7 +90,7 @@ public class GameServiceTests
         // Arrange
         _gameRepositoryMock
             .Setup(x => x.GetGamesOverviewList())
-            .ReturnsAsync(new List<Game>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _gameService.GetGames();

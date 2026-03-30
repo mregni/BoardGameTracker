@@ -249,7 +249,7 @@ public class SettingsControllerTests
         // Arrange
         _languageServiceMock
             .Setup(x => x.GetAllAsync())
-            .ReturnsAsync(new List<Language>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _controller.GetLanguages();

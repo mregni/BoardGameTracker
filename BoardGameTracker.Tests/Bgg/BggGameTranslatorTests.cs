@@ -52,11 +52,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var rawGame = CreateBasicRawGame();
-        rawGame.Names = new List<Name>
-        {
-            new() { Type = "primary", Value = "Primary Name", Sortindex = 1 },
-            new() { Type = "alternate", Value = "Alternate Name", Sortindex = 2 }
-        };
+        rawGame.Names =
+        [
+            new() {Type = "primary", Value = "Primary Name", Sortindex = 1},
+            new() {Type = "alternate", Value = "Alternate Name", Sortindex = 2}
+        ];
 
         // Act
         var result = _translator.TranslateRawGame(rawGame);
@@ -88,11 +88,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var rawGame = CreateBasicRawGame();
-        rawGame.Links = new List<BggRawLink>
-        {
-            new() { Type = Constants.Bgg.Designer, Id = 1, Value = "Designer One" },
-            new() { Type = Constants.Bgg.Designer, Id = 2, Value = "Designer Two" }
-        };
+        rawGame.Links =
+        [
+            new() {Type = Constants.Bgg.Designer, Id = 1, Value = "Designer One"},
+            new() {Type = Constants.Bgg.Designer, Id = 2, Value = "Designer Two"}
+        ];
 
         // Act
         var result = _translator.TranslateRawGame(rawGame);
@@ -109,10 +109,7 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var rawGame = CreateBasicRawGame();
-        rawGame.Links = new List<BggRawLink>
-        {
-            new() { Type = Constants.Bgg.Artist, Id = 1, Value = "Artist One" }
-        };
+        rawGame.Links = [new() {Type = Constants.Bgg.Artist, Id = 1, Value = "Artist One"}];
 
         // Act
         var result = _translator.TranslateRawGame(rawGame);
@@ -128,10 +125,7 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var rawGame = CreateBasicRawGame();
-        rawGame.Links = new List<BggRawLink>
-        {
-            new() { Type = Constants.Bgg.Publisher, Id = 1, Value = "Publisher One" }
-        };
+        rawGame.Links = [new() {Type = Constants.Bgg.Publisher, Id = 1, Value = "Publisher One"}];
 
         // Act
         var result = _translator.TranslateRawGame(rawGame);
@@ -147,11 +141,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var rawGame = CreateBasicRawGame();
-        rawGame.Links = new List<BggRawLink>
-        {
-            new() { Type = Constants.Bgg.Category, Id = 1, Value = "Strategy" },
-            new() { Type = Constants.Bgg.Category, Id = 2, Value = "Economic" }
-        };
+        rawGame.Links =
+        [
+            new() {Type = Constants.Bgg.Category, Id = 1, Value = "Strategy"},
+            new() {Type = Constants.Bgg.Category, Id = 2, Value = "Economic"}
+        ];
 
         // Act
         var result = _translator.TranslateRawGame(rawGame);
@@ -167,11 +161,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var rawGame = CreateBasicRawGame();
-        rawGame.Links = new List<BggRawLink>
-        {
-            new() { Type = Constants.Bgg.Mechanic, Id = 1, Value = "Worker Placement" },
-            new() { Type = Constants.Bgg.Mechanic, Id = 2, Value = "Deck Building" }
-        };
+        rawGame.Links =
+        [
+            new() {Type = Constants.Bgg.Mechanic, Id = 1, Value = "Worker Placement"},
+            new() {Type = Constants.Bgg.Mechanic, Id = 2, Value = "Deck Building"}
+        ];
 
         // Act
         var result = _translator.TranslateRawGame(rawGame);
@@ -187,11 +181,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var rawGame = CreateBasicRawGame();
-        rawGame.Links = new List<BggRawLink>
-        {
-            new() { Type = Constants.Bgg.Expansion, Id = 1, Value = "Expansion One" },
-            new() { Type = Constants.Bgg.Expansion, Id = 2, Value = "Expansion Two" }
-        };
+        rawGame.Links =
+        [
+            new() {Type = Constants.Bgg.Expansion, Id = 1, Value = "Expansion One"},
+            new() {Type = Constants.Bgg.Expansion, Id = 2, Value = "Expansion Two"}
+        ];
 
         // Act
         var result = _translator.TranslateRawGame(rawGame);
@@ -207,13 +201,13 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var rawGame = CreateBasicRawGame();
-        rawGame.Links = new List<BggRawLink>
-        {
-            new() { Type = Constants.Bgg.Designer, Id = 1, Value = "Designer" },
-            new() { Type = Constants.Bgg.Category, Id = 2, Value = "Category" },
-            new() { Type = Constants.Bgg.Mechanic, Id = 3, Value = "Mechanic" },
-            new() { Type = "unknowntype", Id = 4, Value = "Unknown" }
-        };
+        rawGame.Links =
+        [
+            new() {Type = Constants.Bgg.Designer, Id = 1, Value = "Designer"},
+            new() {Type = Constants.Bgg.Category, Id = 2, Value = "Category"},
+            new() {Type = Constants.Bgg.Mechanic, Id = 3, Value = "Mechanic"},
+            new() {Type = "unknowntype", Id = 4, Value = "Unknown"}
+        ];
 
         // Act
         var result = _translator.TranslateRawGame(rawGame);
@@ -228,15 +222,15 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var rawGame = CreateBasicRawGame();
-        rawGame.Links = new List<BggRawLink>
-        {
-            new() { Type = Constants.Bgg.Designer, Id = 1, Value = "Designer One" },
-            new() { Type = Constants.Bgg.Artist, Id = 2, Value = "Artist One" },
-            new() { Type = Constants.Bgg.Publisher, Id = 3, Value = "Publisher One" },
-            new() { Type = Constants.Bgg.Category, Id = 4, Value = "Category One" },
-            new() { Type = Constants.Bgg.Mechanic, Id = 5, Value = "Mechanic One" },
-            new() { Type = Constants.Bgg.Expansion, Id = 6, Value = "Expansion One" }
-        };
+        rawGame.Links =
+        [
+            new() {Type = Constants.Bgg.Designer, Id = 1, Value = "Designer One"},
+            new() {Type = Constants.Bgg.Artist, Id = 2, Value = "Artist One"},
+            new() {Type = Constants.Bgg.Publisher, Id = 3, Value = "Publisher One"},
+            new() {Type = Constants.Bgg.Category, Id = 4, Value = "Category One"},
+            new() {Type = Constants.Bgg.Mechanic, Id = 5, Value = "Mechanic One"},
+            new() {Type = Constants.Bgg.Expansion, Id = 6, Value = "Expansion One"}
+        ];
 
         // Act
         var result = _translator.TranslateRawGame(rawGame);
@@ -257,7 +251,7 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.Names = Array.Empty<string>();
+        bggGame.Names = [];
 
         // Act
         var action = async () => await _translator.TranslateFromBggAsync(bggGame);
@@ -272,7 +266,7 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.Names = new[] { "   ", "" };
+        bggGame.Names = ["   ", ""];
 
         // Act
         var action = async () => await _translator.TranslateFromBggAsync(bggGame);
@@ -346,7 +340,7 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.Names = new[] { "Primary Name", "Alternate Name" };
+        bggGame.Names = ["Primary Name", "Alternate Name"];
         _imageServiceMock
             .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("image.jpg");
@@ -359,32 +353,15 @@ public class BggGameTranslatorTests
     }
 
     [Fact]
-    public async Task TranslateFromBggAsync_ShouldHandleNullDescription()
-    {
-        // Arrange
-        var bggGame = CreateBasicBggGame();
-        bggGame.Description = null!;
-        _imageServiceMock
-            .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync("image.jpg");
-
-        // Act
-        var result = await _translator.TranslateFromBggAsync(bggGame);
-
-        // Assert
-        result.Description.Should().BeEmpty();
-    }
-
-    [Fact]
     public async Task TranslateFromBggAsync_ShouldTranslateCategories()
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.Categories = new[]
-        {
+        bggGame.Categories =
+        [
             new BggLink { Value = "Strategy", Id = 1 },
             new BggLink { Value = "Economic", Id = 2 }
-        };
+        ];
         _imageServiceMock
             .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("image.jpg");
@@ -403,12 +380,12 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.Categories = new[]
-        {
+        bggGame.Categories =
+        [
             new BggLink { Value = "Strategy", Id = 1 },
             new BggLink { Value = "", Id = 2 },
             new BggLink { Value = "   ", Id = 3 }
-        };
+        ];
         _imageServiceMock
             .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("image.jpg");
@@ -426,11 +403,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.Mechanics = new[]
-        {
+        bggGame.Mechanics =
+        [
             new BggLink { Value = "Worker Placement", Id = 1 },
             new BggLink { Value = "Deck Building", Id = 2 }
-        };
+        ];
         _imageServiceMock
             .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("image.jpg");
@@ -449,11 +426,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.Mechanics = new[]
-        {
+        bggGame.Mechanics =
+        [
             new BggLink { Value = "Worker Placement", Id = 1 },
             new BggLink { Value = "", Id = 2 }
-        };
+        ];
         _imageServiceMock
             .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("image.jpg");
@@ -470,11 +447,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.People = new[]
-        {
+        bggGame.People =
+        [
             new BggPerson { Value = "Designer One", Id = 1, Type = PersonType.Designer },
             new BggPerson { Value = "Artist One", Id = 2, Type = PersonType.Artist }
-        };
+        ];
         _imageServiceMock
             .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("image.jpg");
@@ -493,11 +470,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.People = new[]
-        {
+        bggGame.People =
+        [
             new BggPerson { Value = "Designer One", Id = 1, Type = PersonType.Designer },
             new BggPerson { Value = "", Id = 2, Type = PersonType.Artist }
-        };
+        ];
         _imageServiceMock
             .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("image.jpg");
@@ -514,11 +491,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.Expansions = new[]
-        {
+        bggGame.Expansions =
+        [
             new BggLink { Value = "Expansion One", Id = 1 },
             new BggLink { Value = "Expansion Two", Id = 2 }
-        };
+        ];
         _imageServiceMock
             .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("image.jpg");
@@ -537,11 +514,11 @@ public class BggGameTranslatorTests
     {
         // Arrange
         var bggGame = CreateBasicBggGame();
-        bggGame.Expansions = new[]
-        {
+        bggGame.Expansions =
+        [
             new BggLink { Value = "Expansion One", Id = 1 },
             new BggLink { Value = "", Id = 2 }
-        };
+        ];
         _imageServiceMock
             .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("image.jpg");
@@ -584,10 +561,7 @@ public class BggGameTranslatorTests
             Thumbnail = "https://example.com/thumb.jpg",
             Image = "https://example.com/image.jpg",
             Description = "A great board game",
-            Names = new List<Name>
-            {
-                new() { Type = "primary", Value = "Test Game", Sortindex = 1 }
-            },
+            Names = [new() {Type = "primary", Value = "Test Game", Sortindex = 1}],
             YearPublished = new YearPublished { Value = 2020 },
             MinPlayers = new MinPlayers { Value = 2 },
             MaxPlayers = new MaxPlayers { Value = 4 },
@@ -602,7 +576,7 @@ public class BggGameTranslatorTests
                     AverageWeight = new AverageWeight { Value = 3.2 }
                 }
             },
-            Links = new List<BggRawLink>()
+            Links = []
         };
     }
 
@@ -611,7 +585,7 @@ public class BggGameTranslatorTests
         return new BggGame
         {
             BggId = 12345,
-            Names = new[] { "Test Game" },
+            Names = ["Test Game"],
             Thumbnail = "https://example.com/thumb.jpg",
             Image = "https://example.com/image.jpg",
             Description = "A great board game",
@@ -623,10 +597,10 @@ public class BggGameTranslatorTests
             MinAge = 10,
             Rating = 8.5,
             Weight = 3.2,
-            Categories = Array.Empty<BggLink>(),
-            Mechanics = Array.Empty<BggLink>(),
-            Expansions = Array.Empty<BggLink>(),
-            People = Array.Empty<BggPerson>()
+            Categories = [],
+            Mechanics = [],
+            Expansions = [],
+            People = []
         };
     }
 

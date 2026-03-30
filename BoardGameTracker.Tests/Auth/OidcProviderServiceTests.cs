@@ -125,7 +125,7 @@ public class OidcProviderServiceTests : IDisposable
         result.Scopes.Should().Be("openid profile email");
         result.AutoProvisionUsers.Should().BeTrue();
 
-        var stored = await _context.OidcProviders.FindAsync(new object[] { result.Id }, TestContext.Current.CancellationToken);
+        var stored = await _context.OidcProviders.FindAsync([result.Id], TestContext.Current.CancellationToken);
         stored.Should().NotBeNull();
     }
 
@@ -319,7 +319,7 @@ public class OidcProviderServiceTests : IDisposable
             iconUrl: null,
             buttonColor: null);
 
-        var stored = await _context.OidcProviders.FindAsync(new object[] { provider.Id }, TestContext.Current.CancellationToken);
+        var stored = await _context.OidcProviders.FindAsync([provider.Id], TestContext.Current.CancellationToken);
         stored.Should().NotBeNull();
         stored!.DisplayName.Should().Be("GitHub Updated");
         stored.ClientId.Should().Be("new-id");
@@ -375,7 +375,7 @@ public class OidcProviderServiceTests : IDisposable
 
         await _service.DeleteAsync(provider.Id);
 
-        var stored = await _context.OidcProviders.FindAsync(new object[] { provider.Id }, TestContext.Current.CancellationToken);
+        var stored = await _context.OidcProviders.FindAsync([provider.Id], TestContext.Current.CancellationToken);
         stored.Should().BeNull();
     }
 

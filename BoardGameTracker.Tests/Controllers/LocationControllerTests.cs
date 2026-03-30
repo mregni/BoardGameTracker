@@ -66,7 +66,7 @@ public class LocationControllerTests
         // Arrange
         _locationServiceMock
             .Setup(x => x.GetLocations())
-            .ReturnsAsync(new List<Location>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _controller.GetLocations();

@@ -87,7 +87,7 @@ public class BadgeServiceTests
         // Arrange
         _badgeRepositoryMock
             .Setup(x => x.GetAllAsync())
-            .ReturnsAsync(new List<Badge>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _badgeService.GetAllBadgesAsync();
@@ -127,8 +127,8 @@ public class BadgeServiceTests
 
         SetupRepositoriesForAwardTest(
             playerId,
-            new List<Badge> { badge },
-            new Dictionary<int, List<Badge>> { { playerId, new List<Badge>() } },
+            [badge],
+            new Dictionary<int, List<Badge>> { { playerId, []} },
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
         _sessionsEvaluatorMock
@@ -158,8 +158,8 @@ public class BadgeServiceTests
 
         SetupRepositoriesForAwardTest(
             playerId,
-            new List<Badge> { badge },
-            new Dictionary<int, List<Badge>> { { playerId, new List<Badge>() } },
+            [badge],
+            new Dictionary<int, List<Badge>> { { playerId, []} },
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
         _sessionsEvaluatorMock
@@ -184,8 +184,8 @@ public class BadgeServiceTests
 
         SetupRepositoriesForAwardTest(
             playerId,
-            new List<Badge> { earnedBadge },
-            new Dictionary<int, List<Badge>> { { playerId, new List<Badge> { earnedBadge } } },
+            [earnedBadge],
+            new Dictionary<int, List<Badge>> { { playerId, [earnedBadge]} },
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
         // Act
@@ -202,20 +202,20 @@ public class BadgeServiceTests
         // Arrange
         var playerId1 = 1;
         var playerId2 = 2;
-        var session = CreateSessionWithPlayers(new[] { playerId1, playerId2 });
+        var session = CreateSessionWithPlayers([playerId1, playerId2]);
         var badge = Badge.CreateWithId(1, "badge.session.bronze.title", "badge.session.bronze.desc", BadgeType.Sessions, "session-bronze.png", BadgeLevel.Green);
         var playerSessions = new List<Session> { session };
 
         _badgeRepositoryMock
             .Setup(x => x.GetAllAsync())
-            .ReturnsAsync(new List<Badge> { badge });
+            .ReturnsAsync([badge]);
 
         _badgeRepositoryMock
             .Setup(x => x.GetPlayerBadgesBatchAsync(It.Is<IEnumerable<int>>(ids => ids.Contains(playerId1) && ids.Contains(playerId2))))
             .ReturnsAsync(new Dictionary<int, List<Badge>>
             {
-                { playerId1, new List<Badge>() },
-                { playerId2, new List<Badge>() }
+                { playerId1, []},
+                { playerId2, []}
             });
 
         _sessionRepositoryMock
@@ -254,8 +254,8 @@ public class BadgeServiceTests
 
         SetupRepositoriesForAwardTest(
             playerId,
-            new List<Badge> { silverBadge, bronzeBadge }, // Intentionally out of order
-            new Dictionary<int, List<Badge>> { { playerId, new List<Badge>() } },
+            [silverBadge, bronzeBadge], // Intentionally out of order
+            new Dictionary<int, List<Badge>> { { playerId, []} },
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
         var callOrder = new List<BadgeLevel?>();
@@ -287,8 +287,8 @@ public class BadgeServiceTests
 
         SetupRepositoriesForAwardTest(
             playerId,
-            new List<Badge> { bronzeBadge, silverBadge },
-            new Dictionary<int, List<Badge>> { { playerId, new List<Badge>() } },
+            [bronzeBadge, silverBadge],
+            new Dictionary<int, List<Badge>> { { playerId, []} },
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
         _sessionsEvaluatorMock
@@ -316,8 +316,8 @@ public class BadgeServiceTests
 
         SetupRepositoriesForAwardTest(
             playerId,
-            new List<Badge> { badge },
-            new Dictionary<int, List<Badge>> { { playerId, new List<Badge>() } },
+            [badge],
+            new Dictionary<int, List<Badge>> { { playerId, []} },
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
         // Act
@@ -339,8 +339,8 @@ public class BadgeServiceTests
 
         SetupRepositoriesForAwardTest(
             playerId,
-            new List<Badge> { sessionBadge, winBadge },
-            new Dictionary<int, List<Badge>> { { playerId, new List<Badge>() } },
+            [sessionBadge, winBadge],
+            new Dictionary<int, List<Badge>> { { playerId, []} },
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
         _sessionsEvaluatorMock
@@ -376,8 +376,8 @@ public class BadgeServiceTests
 
         SetupRepositoriesForAwardTest(
             playerId,
-            new List<Badge> { badge },
-            new Dictionary<int, List<Badge>> { { playerId, new List<Badge>() } },
+            [badge],
+            new Dictionary<int, List<Badge>> { { playerId, []} },
             new Dictionary<int, List<Session>> { { playerId, playerSessions } });
 
         _sessionsEvaluatorMock

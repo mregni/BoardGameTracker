@@ -50,7 +50,7 @@ public class GameChartServiceTests
         var gameId = 1;
         _gameStatisticsRepositoryMock
             .Setup(x => x.GetPlayByDayChart(gameId))
-            .ReturnsAsync(new List<IGrouping<DayOfWeek, Session>>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _gameChartService.GetPlayByDayChart(gameId);
@@ -73,7 +73,7 @@ public class GameChartServiceTests
         var gameId = 1;
         _gameStatisticsRepositoryMock
             .Setup(x => x.GetPlayerCountChart(gameId))
-            .ReturnsAsync(new List<IGrouping<int, int>>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _gameChartService.GetPlayerCountChart(gameId);
@@ -141,7 +141,7 @@ public class GameChartServiceTests
         var gameId = 1;
         _gameSessionRepositoryMock
             .Setup(x => x.GetSessions(gameId, 0, null))
-            .ReturnsAsync(new List<Session>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _gameChartService.GetTopPlayers(gameId);
