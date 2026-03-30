@@ -48,7 +48,7 @@ BoardGameTracker is a self-hosted application designed for board game enthusiast
 - Monitor player performance and win rates
 - Visualize gaming trends over time
 
-**Integration with BoardGameGeek (BGG)** allows seamless import of your game collection.
+**Integration with BoardGameGeek (BGG)** is under review because of authentication on their API.
 
 > ⚠️ **Note**: This project is under active development. Breaking changes may occur between releases.
 
