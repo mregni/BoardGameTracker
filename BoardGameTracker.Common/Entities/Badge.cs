@@ -12,13 +12,13 @@ public class Badge : HasId
     public string DescriptionKey
     {
         get => _descriptionKey;
-        private set => _descriptionKey = Guard.Against.NullOrWhiteSpace(value, nameof(DescriptionKey));
+        private set => _descriptionKey = Guard.Against.NullOrWhiteSpace(value);
     }
 
     public string TitleKey
     {
         get => _titleKey;
-        private set => _titleKey = Guard.Against.NullOrWhiteSpace(value, nameof(TitleKey));
+        private set => _titleKey = Guard.Against.NullOrWhiteSpace(value);
     }
 
     public BadgeType Type { get; private set; }

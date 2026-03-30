@@ -64,7 +64,6 @@ public class BggGameTranslator : IBggGameTranslator
 
     public async Task<GameImportData> TranslateFromBggAsync(BggGame bggGame)
     {
-        // Validate external data at the boundary
         var gameName = bggGame.Names.FirstOrDefault();
         if (string.IsNullOrWhiteSpace(gameName))
             throw new InvalidOperationException("Game must have a valid name from BGG");
@@ -75,15 +74,13 @@ public class BggGameTranslator : IBggGameTranslator
         if (bggGame.MinPlayTime > bggGame.MaxPlayTime)
             throw new InvalidOperationException($"Invalid play time range from BGG: {bggGame.MinPlayTime}-{bggGame.MaxPlayTime}");
 
-        // Download and store image
         var imageUrl = await _imageService.DownloadImage(bggGame.Image, bggGame.BggId.ToString());
 
-        // Translate to internal model
         return new GameImportData
         {
             Title = gameName,
             BggId = bggGame.BggId,
-            Description = bggGame.Description ?? string.Empty,
+            Description = bggGame.Description,
             YearPublished = bggGame.YearPublished,
             MinPlayers = bggGame.MinPlayers,
             MaxPlayers = bggGame.MaxPlayers,
@@ -101,7 +98,7 @@ public class BggGameTranslator : IBggGameTranslator
     }
 
 
-    private IEnumerable<CategoryData> TranslateCategories(BggLink[] bggCategories)
+    private static List<CategoryData> TranslateCategories(BggLink[] bggCategories)
     {
         return bggCategories
             .Where(c => !string.IsNullOrWhiteSpace(c.Value))
@@ -113,7 +110,7 @@ public class BggGameTranslator : IBggGameTranslator
             .ToList();
     }
 
-    private IEnumerable<MechanicData> TranslateMechanics(BggLink[] bggMechanics)
+    private static List<MechanicData> TranslateMechanics(BggLink[] bggMechanics)
     {
         return bggMechanics
             .Where(m => !string.IsNullOrWhiteSpace(m.Value))
@@ -125,7 +122,7 @@ public class BggGameTranslator : IBggGameTranslator
             .ToList();
     }
 
-    private IEnumerable<PersonData> TranslatePeople(BggPerson[] bggPeople)
+    private static List<PersonData> TranslatePeople(BggPerson[] bggPeople)
     {
         return bggPeople
             .Where(p => !string.IsNullOrWhiteSpace(p.Value))
@@ -137,7 +134,7 @@ public class BggGameTranslator : IBggGameTranslator
             .ToList();
     }
 
-    private IEnumerable<ExpansionData> TranslateExpansions(BggLink[] bggExpansions)
+    private static List<ExpansionData> TranslateExpansions(BggLink[] bggExpansions)
     {
         return bggExpansions
             .Where(e => !string.IsNullOrWhiteSpace(e.Value))

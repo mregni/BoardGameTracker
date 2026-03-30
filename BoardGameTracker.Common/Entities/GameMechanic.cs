@@ -10,7 +10,7 @@ public class GameMechanic : HasId
     public string Name
     {
         get => _name;
-        private set => _name = Guard.Against.NullOrWhiteSpace(value, nameof(Name));
+        private set => _name = Guard.Against.NullOrWhiteSpace(value);
     }
 
     public ICollection<Game> Games { get; private set; }

@@ -5,7 +5,7 @@ interface CodeBlockProps {
 	children: string;
 }
 
-export const CodeBlock = ({ label, children }: CodeBlockProps) => (
+export const CodeBlock = ({ label, children }: Readonly<CodeBlockProps>) => (
 	<div className="bg-slate-900 rounded-lg p-4 border border-white/10">
 		<div className="flex items-center gap-2 mb-3">
 			<Terminal className="w-4 h-4 text-purple-400" />

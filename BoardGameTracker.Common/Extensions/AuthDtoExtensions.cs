@@ -9,16 +9,6 @@ public static class AuthDtoExtensions
         new(user.Id, user.UserName ?? "", user.Email, user.DisplayName,
             roles, user.CreatedAt, user.LastLoginAt, user.PlayerId);
 
-    public static ProfileResponse ToProfileDto(this ApplicationUser user, IEnumerable<string>  roles) =>
-        new(user.Id, user.UserName ?? "", user.Email, user.DisplayName,
-            roles, user.CreatedAt, user.LastLoginAt, user.PlayerId);
-
-    public static UserInfo ToUserInfo(this ApplicationUser user, IEnumerable<string> roles) =>
-        new(user.Id, user.UserName ?? "", user.DisplayName, roles);
-
-    public static OidcProviderListDto ToListDto(this OidcProvider provider) =>
-        new(provider.Id, provider.Name, provider.DisplayName, provider.Enabled);
-
     public static OidcProviderDto ToDto(this OidcProvider provider) =>
         new(provider.Id, provider.Name, provider.DisplayName, provider.Enabled,
             provider.Authority, provider.ClientId, provider.ClientSecret != null,
@@ -31,4 +21,14 @@ public static class AuthDtoExtensions
     public static ExternalLoginDto ToDto(this ExternalLogin login) =>
         new(login.Id, login.Provider, login.ProviderKey, login.ProviderDisplayName,
             login.LinkedAt, login.LastUsedAt);
+
+    public static ProfileResponse ToProfileDto(this ApplicationUser user, IEnumerable<string>  roles) =>
+        new(user.Id, user.UserName ?? "", user.Email, user.DisplayName,
+            roles, user.CreatedAt, user.LastLoginAt, user.PlayerId);
+
+    public static UserInfo ToUserInfo(this ApplicationUser user, IEnumerable<string> roles) =>
+        new(user.Id, user.UserName ?? "", user.DisplayName, roles);
+
+    public static OidcProviderListDto ToListDto(this OidcProvider provider) =>
+        new(provider.Id, provider.Name, provider.DisplayName, provider.Enabled);
 }

@@ -66,19 +66,19 @@ export const Docker = () => {
 
 				<SubHeader content={t("getting-started:docker.run.title")} />
 				<Paragraph translationKey="getting-started:docker.run.description" />
-				<CodeBlock label="Terminal">{`docker run -d \\
-    --name boardgametracker \\
-    --restart unless-stopped \\
-    -p 5444:5444 \\
-    -v ./config:/app/config \\
-    -v ./logs:/app/logs \\
-    -e DB_HOST=db \\
-    -e DB_USER=dbuser \\
-    -e DB_PASSWORD=CHANGEME \\
-    -e DB_NAME=boardgametracker \\
-    -e DB_PORT=5432 \\
-    -e JWT_SECRET=CHANGEME \\
-    -e TZ=UTC \\
+				<CodeBlock label="Terminal">{String.raw`docker run -d \
+    --name boardgametracker \
+    --restart unless-stopped \
+    -p 5444:5444 \
+    -v ./config:/app/config \
+    -v ./logs:/app/logs \
+    -e DB_HOST=db \
+    -e DB_USER=dbuser \
+    -e DB_PASSWORD=CHANGEME \
+    -e DB_NAME=boardgametracker \
+    -e DB_PORT=5432 \
+    -e JWT_SECRET=CHANGEME \
+    -e TZ=UTC \
     uping/boardgametracker:latest`}</CodeBlock>
 			</div>
 		</section>

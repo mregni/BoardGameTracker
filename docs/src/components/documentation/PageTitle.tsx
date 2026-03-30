@@ -4,7 +4,7 @@ interface PageTitleProps {
 	translationKey: string;
 }
 
-export const PageTitle = ({ translationKey }: PageTitleProps) => {
+export const PageTitle = ({ translationKey }: Readonly<PageTitleProps>) => {
 	const { t } = useTranslation();
 
 	return (

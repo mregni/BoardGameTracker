@@ -14,7 +14,7 @@ export default function ExternalLinkButton({
 	children,
 	variant = "primary",
 	className = "",
-}: ExternalLinkButtonProps) {
+}: Readonly<ExternalLinkButtonProps>) {
 	const baseStyles =
 		"inline-flex items-center gap-2 px-6 py-3 rounded-lg transition-all font-medium group";
 

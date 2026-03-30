@@ -79,7 +79,6 @@ export const SessionPlayerManager = withForm({
 					hasScoring={hasScoring}
 					onClose={onUpdatePlayer}
 					onCancel={onCloseModal}
-					selectedPlayerIds={players.map((x: CreateSessionPlayer | CreatePlayerSessionNoScoring) => x.playerId)}
 					playerToEdit={players.find(
 						(x: CreateSessionPlayer | CreatePlayerSessionNoScoring) => x.playerId === playerIdToEdit,
 					)}

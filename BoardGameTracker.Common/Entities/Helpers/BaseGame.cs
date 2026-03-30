@@ -13,7 +13,7 @@ public abstract class BaseGame : HasId
     public string Title
     {
         get => _title;
-        private set => _title = Guard.Against.NullOrWhiteSpace(value, nameof(Title));
+        private set => _title = Guard.Against.NullOrWhiteSpace(value);
     }
 
     public int? YearPublished { get; private set; }
@@ -31,7 +31,7 @@ public abstract class BaseGame : HasId
     public GameState State
     {
         get => _state;
-        private set => _state = Guard.Against.EnumOutOfRange(value, nameof(State));
+        private set => _state = Guard.Against.EnumOutOfRange(value);
     }
 
     [NotMapped] public bool IsLoaned => IsCurrentlyLoaned();
@@ -97,7 +97,7 @@ public abstract class BaseGame : HasId
     {
         if (minAge.HasValue)
         {
-            Guard.Against.NegativeOrZero(minAge.Value, nameof(minAge));
+            Guard.Against.NegativeOrZero(minAge.Value);
         }
         MinAge = minAge;
     }
@@ -125,7 +125,7 @@ public abstract class BaseGame : HasId
     {
         if (bggId.HasValue)
         {
-            Guard.Against.NegativeOrZero(bggId.Value, nameof(bggId));
+            Guard.Against.NegativeOrZero(bggId.Value);
         }
         BggId = bggId;
     }

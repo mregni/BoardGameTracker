@@ -43,7 +43,7 @@ export const BgtDataGuard = <T extends Record<string, unknown>>({
 	}
 
 	// Check if any data property is undefined
-	const hasUndefinedData = Object.values(data).some((value) => value === undefined);
+	const hasUndefinedData = Object.values(data).includes(undefined);
 
 	if (hasUndefinedData) {
 		return <>{fallback}</>;

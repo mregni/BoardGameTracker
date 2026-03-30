@@ -11,7 +11,7 @@ public class Expansion : HasId
     public string Title
     {
         get => _title;
-        private set => _title = Guard.Against.NullOrWhiteSpace(value, nameof(Title));
+        private set => _title = Guard.Against.NullOrWhiteSpace(value);
     }
 
     public int BggId { get; private set; }

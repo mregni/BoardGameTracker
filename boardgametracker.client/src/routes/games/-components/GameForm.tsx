@@ -55,7 +55,7 @@ export const GameForm = (props: Props) => {
 			image: game?.image ?? null,
 		},
 		onSubmit: async ({ value }) => {
-			const validatedData = CreateGameSchema.parse(value) as CreateGame;
+			const validatedData = CreateGameSchema.parse(value);
 			validatedData.image = await uploadPoster(poster);
 			await onClick(validatedData);
 		},

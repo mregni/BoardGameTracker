@@ -5,7 +5,7 @@ interface ParagraphProps {
 	translationKey: string;
 }
 
-export const Paragraph = ({ translationKey }: ParagraphProps) => (
+export const Paragraph = ({ translationKey }: Readonly<ParagraphProps>) => (
 	<p className="text-lg text-white">
 		<Trans i18nKey={translationKey} components={{ code: <InlineCode /> }} />
 	</p>

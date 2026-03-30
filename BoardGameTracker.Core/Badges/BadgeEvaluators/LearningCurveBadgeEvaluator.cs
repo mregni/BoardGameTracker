@@ -24,7 +24,7 @@ public class LearningCurveBadgeEvaluator : IBadgeEvaluator
             .Select(x => x.PlayerSessions.Single(x => x.PlayerId == playerId).Score)
             .ToList();
 
-        if (scores.Any(score => score == null))
+        if (scores.Contains(null))
         {
             return Task.FromResult(false);
         }

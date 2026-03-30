@@ -123,7 +123,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .Where(x => x.GameId == gameId)
             .ToListAsync();
 
-        if (!sessions.Any())
+        if (sessions.Count == 0)
         {
             return 0;
         }

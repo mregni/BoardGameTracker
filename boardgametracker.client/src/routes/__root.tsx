@@ -24,7 +24,7 @@ interface RouterContext {
 }
 
 // Wrapper to adapt ErrorFallback for TanStack Router
-function RouterErrorComponent({ error, reset }: ErrorComponentProps) {
+function RouterErrorComponent({ error, reset }: Readonly<ErrorComponentProps>) {
 	return <ErrorFallback error={error} resetErrorBoundary={reset} />;
 }
 

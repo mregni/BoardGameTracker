@@ -7,7 +7,7 @@ namespace BoardGameTracker.Common.Extensions;
 
 public static class DashboardDtoExtensions
 {
-    public static RecentActivityDto ToRecentActivityDto(this Session session)
+    private static RecentActivityDto ToRecentActivityDto(this Session session)
     {
         var winner = session.PlayerSessions.FirstOrDefault(ps => ps.Won);
         return new RecentActivityDto
@@ -29,7 +29,7 @@ public static class DashboardDtoExtensions
         return sessions.Select(ToRecentActivityDto).ToList();
     }
 
-    public static GameStateChart ToGameStateChart(this IGrouping<GameState, Game> grouping)
+    private static GameStateChart ToGameStateChart(this IGrouping<GameState, Game> grouping)
     {
         return new GameStateChart
         {
@@ -38,12 +38,7 @@ public static class DashboardDtoExtensions
         };
     }
 
-    public static List<GameStateChart> ToListDto(this IEnumerable<IGrouping<GameState, Game>> groupings)
-    {
-        return groupings.Select(g => g.ToGameStateChart()).ToList();
-    }
-
-    public static MostPlayedGameDto ToMostPlayedGameDto(this (int GameId, string Title, string? Image, int PlayCount) tuple)
+    private static MostPlayedGameDto ToMostPlayedGameDto(this (int GameId, string Title, string? Image, int PlayCount) tuple)
     {
         return new MostPlayedGameDto
         {
@@ -54,13 +49,7 @@ public static class DashboardDtoExtensions
         };
     }
 
-    public static List<MostPlayedGameDto> ToListDto(
-        this IEnumerable<(int GameId, string Title, string? Image, int PlayCount)> tuples)
-    {
-        return tuples.Select(t => t.ToMostPlayedGameDto()).ToList();
-    }
-
-    public static DashboardTopPlayerDto ToDashboardTopPlayerDto(
+    private static DashboardTopPlayerDto ToDashboardTopPlayerDto(
         this (int Id, string Name, string? Image, int PlayCount, int WinCount) tuple)
     {
         return new DashboardTopPlayerDto
@@ -73,13 +62,7 @@ public static class DashboardDtoExtensions
         };
     }
 
-    public static List<DashboardTopPlayerDto> ToListDto(
-        this IEnumerable<(int Id, string Name, string? Image, int PlayCount, int WinCount)> tuples)
-    {
-        return tuples.Select(t => t.ToDashboardTopPlayerDto()).ToList();
-    }
-
-    public static RecentGameDto ToRecentAddedGameDto(this Game game)
+    private static RecentGameDto ToRecentAddedGameDto(this Game game)
     {
         return new RecentGameDto
         {
@@ -96,7 +79,7 @@ public static class DashboardDtoExtensions
         return games.Select(g => g.ToRecentAddedGameDto()).ToList();
     }
 
-    public static PlayByDay ToPlayByDay(this IGrouping<DayOfWeek, Session> grouping)
+    private static PlayByDay ToPlayByDay(this IGrouping<DayOfWeek, Session> grouping)
     {
         return new PlayByDay
         {
@@ -108,5 +91,22 @@ public static class DashboardDtoExtensions
     public static List<PlayByDay> ToListDto(this IEnumerable<IGrouping<DayOfWeek, Session>> groupings)
     {
         return groupings.Select(g => g.ToPlayByDay()).ToList();
+    }
+    
+    public static List<DashboardTopPlayerDto> ToListDto(
+        this IEnumerable<(int Id, string Name, string? Image, int PlayCount, int WinCount)> tuples)
+    {
+        return tuples.Select(t => t.ToDashboardTopPlayerDto()).ToList();
+    }
+    
+    public static List<GameStateChart> ToListDto(this IEnumerable<IGrouping<GameState, Game>> groupings)
+    {
+        return groupings.Select(g => g.ToGameStateChart()).ToList();
+    }
+    
+    public static List<MostPlayedGameDto> ToListDto(
+        this IEnumerable<(int GameId, string Title, string? Image, int PlayCount)> tuples)
+    {
+        return tuples.Select(t => t.ToMostPlayedGameDto()).ToList();
     }
 }

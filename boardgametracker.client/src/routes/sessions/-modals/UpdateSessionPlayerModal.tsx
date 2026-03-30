@@ -20,7 +20,6 @@ interface Props {
 	hasScoring: boolean;
 	onClose: (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void;
 	onCancel: () => void;
-	selectedPlayerIds: number[];
 	playerToEdit: CreateSessionPlayer | CreatePlayerSessionNoScoring | undefined;
 }
 

@@ -14,7 +14,7 @@ export const Sidebar = ({
 	activeHash,
 	expandedSections,
 	onToggleSection,
-}: SidebarProps) => (
+}: Readonly<SidebarProps>) => (
 	<aside className="fixed top-16 left-0 w-64 h-[calc(100vh-4rem)] bg-slate-900 border-r border-white/10 overflow-y-auto z-40">
 		<nav className="p-4">
 			{(Object.entries(menuItems) as [ActivePage, (typeof menuItems)[ActivePage]][]).map(
