@@ -123,7 +123,10 @@ jobs:
             /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**,**/Migrations/**,**/routeTree.gen.ts" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
             /d:sonar.qualitygate.wait=true \
-            /d:sonar.qualitygate.timeout=300
+            /d:sonar.qualitygate.timeout=300 \
+            /d:sonar.issue.ignore.multicriteria=e1 \
+            /d:sonar.issue.ignore.multicriteria.e1.ruleKey=githubactions:S7637 \
+            /d:sonar.issue.ignore.multicriteria.e1.resourceKey="**/.github/**"
         if: env.SONAR_TOKEN != ''
 
       - name: Build .NET

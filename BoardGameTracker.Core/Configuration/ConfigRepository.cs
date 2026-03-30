@@ -86,7 +86,7 @@ public class ConfigRepository : IConfigRepository
     private async Task<T> GetConfigValueFromDbAsync<T>(string key)
     {
         var config = await _context.Config
-            .FirstOrDefaultAsync(c => c.Key == key.ToLowerInvariant());
+            .FirstOrDefaultAsync(c => c.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase));
 
         if (config?.Value is null)
             throw new ConfigMissingException(key);

@@ -158,7 +158,7 @@ public partial class UpdateService : IUpdateService
         return version?.ToVersionString() ?? "0.0.0";
     }
 
-    [GeneratedRegex(@"^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$")]
+    [GeneratedRegex(@"^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$", RegexOptions.None, 100)]
     private static partial Regex SemanticVersionRegex();
 
     private static bool IsSemanticVersion(string tag)
