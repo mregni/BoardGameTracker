@@ -83,14 +83,26 @@ function RouteComponent() {
 						{
 							accessorKey: "4",
 							cell: ({ row }) => (
-								<PlayerSessionAvatars playerSessions={row.original.playerSessions} players={players} games={games} gameId={row.original.gameId} won={true} />
+								<PlayerSessionAvatars
+									playerSessions={row.original.playerSessions}
+									players={players}
+									games={games}
+									gameId={row.original.gameId}
+									won={true}
+								/>
 							),
 							header: t("winners"),
 						},
 						{
 							accessorKey: "5",
 							cell: ({ row }) => (
-								<PlayerSessionAvatars playerSessions={row.original.playerSessions} players={players} games={games} gameId={row.original.gameId} won={false} />
+								<PlayerSessionAvatars
+									playerSessions={row.original.playerSessions}
+									players={players}
+									games={games}
+									gameId={row.original.gameId}
+									won={false}
+								/>
 							),
 							header: t("other-players"),
 						},

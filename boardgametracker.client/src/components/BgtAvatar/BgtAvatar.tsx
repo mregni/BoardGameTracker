@@ -64,7 +64,16 @@ export const BgtAvatar = (props: Props) => {
 		<div
 			className={cx("group flex relative min-w-7 flex-row- gap-2 items-center", onClick && "cursor-pointer")}
 			onClick={onClick}
-			{...(onClick && { role: "button", tabIndex: 0, onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } })}
+			{...(onClick && {
+				role: "button",
+				tabIndex: 0,
+				onKeyDown: (e: React.KeyboardEvent) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						onClick();
+					}
+				},
+			})}
 		>
 			{image && <img className={avatarClasses} src={image} alt={title || ""} />}
 			{!image && title && (

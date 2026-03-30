@@ -11,7 +11,14 @@ interface PlayerSessionAvatarsProps {
 	won: boolean;
 }
 
-export const PlayerSessionAvatars = ({ playerSessions, players, game, games, gameId, won }: PlayerSessionAvatarsProps) => {
+export const PlayerSessionAvatars = ({
+	playerSessions,
+	players,
+	game,
+	games,
+	gameId,
+	won,
+}: PlayerSessionAvatarsProps) => {
 	const resolvedGame = game ?? games?.find((x) => x.id === gameId);
 	const filtered = playerSessions.filter((x) => x.won === won);
 
