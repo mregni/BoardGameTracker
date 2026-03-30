@@ -358,7 +358,7 @@ public class GameFactoryTests
     {
         // Arrange
         var data = CreateBasicImportData();
-        data.Categories = Enumerable.Empty<CategoryData>();
+        data.Categories = [];
 
         // Act
         var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
@@ -373,7 +373,7 @@ public class GameFactoryTests
     {
         // Arrange
         var data = CreateBasicImportData();
-        data.Mechanics = Enumerable.Empty<MechanicData>();
+        data.Mechanics = [];
 
         // Act
         var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
@@ -388,7 +388,7 @@ public class GameFactoryTests
     {
         // Arrange
         var data = CreateBasicImportData();
-        data.People = Enumerable.Empty<PersonData>();
+        data.People = [];
 
         // Act
         var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
@@ -448,10 +448,10 @@ public class GameFactoryTests
             Rating = 7.5,
             Weight = 2.5,
             ImageUrl = "test-image.jpg",
-            Categories = Enumerable.Empty<CategoryData>(),
-            Mechanics = Enumerable.Empty<MechanicData>(),
-            People = Enumerable.Empty<PersonData>(),
-            Expansions = Enumerable.Empty<ExpansionData>()
+            Categories = [],
+            Mechanics = [],
+            People = [],
+            Expansions = []
         };
     }
 

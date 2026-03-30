@@ -3,7 +3,7 @@ import { z } from "zod";
 const numericIdSchema = z.string().transform((val) => {
 	const num = Number.parseInt(val, 10);
 	if (Number.isNaN(num)) {
-		throw new Error(`Invalid numeric ID: ${val}`);
+		throw new TypeError(`Invalid numeric ID: ${val}`);
 	}
 	return num;
 });

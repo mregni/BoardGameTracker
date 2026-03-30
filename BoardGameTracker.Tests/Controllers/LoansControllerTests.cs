@@ -69,7 +69,7 @@ public class LoanControllerTests
         // Arrange
         _loanServiceMock
             .Setup(x => x.GetLoans())
-            .ReturnsAsync(new List<Loan>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _controller.GetLoans();

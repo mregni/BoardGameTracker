@@ -366,7 +366,7 @@ public class OidcService : IOidcService
             .Replace('/', '_');
     }
 
-    private class DiscoveryDocument
+    private sealed class DiscoveryDocument
     {
         public string AuthorizationEndpoint { get; init; } = string.Empty;
         public string TokenEndpoint { get; init; } = string.Empty;

@@ -208,10 +208,7 @@ public class SessionServiceTests
             Start = DateTime.UtcNow.AddHours(-2),
             Minutes = 120,
             Comment = "Great game",
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true, Score = 100 }
-            }
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true, Score = 100}]
         };
 
         _sessionRepositoryMock
@@ -254,11 +251,8 @@ public class SessionServiceTests
             GameId = 1,
             Start = DateTime.UtcNow.AddHours(-2),
             Minutes = 120,
-            ExpansionIds = new List<int> { 1, 2 },
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true }
-            }
+            ExpansionIds = [1, 2],
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
         };
 
         _gameServiceMock
@@ -297,10 +291,7 @@ public class SessionServiceTests
             Start = DateTime.UtcNow.AddHours(-2),
             Minutes = 120,
             LocationId = 5,
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true }
-            }
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
         };
 
         _locationServiceMock
@@ -336,12 +327,12 @@ public class SessionServiceTests
             GameId = 1,
             Start = DateTime.UtcNow.AddHours(-2),
             Minutes = 120,
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true, Score = 100 },
-                new CreatePlayerSessionCommand { PlayerId = 2, Won = false, Score = 80 },
-                new CreatePlayerSessionCommand { PlayerId = 3, Won = false, Score = 60 }
-            }
+            PlayerSessions =
+            [
+                new CreatePlayerSessionCommand {PlayerId = 1, Won = true, Score = 100},
+                new CreatePlayerSessionCommand {PlayerId = 2, Won = false, Score = 80},
+                new CreatePlayerSessionCommand {PlayerId = 3, Won = false, Score = 60}
+            ]
         };
 
         _sessionRepositoryMock
@@ -382,10 +373,7 @@ public class SessionServiceTests
             Start = DateTime.UtcNow.AddHours(-2),
             Minutes = 120,
             Comment = "Updated comment",
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true, Score = 100 }
-            }
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true, Score = 100}]
         };
 
         _sessionRepositoryMock
@@ -425,7 +413,7 @@ public class SessionServiceTests
             GameId = 1,
             Start = DateTime.UtcNow,
             Minutes = 60,
-            PlayerSessions = new List<CreatePlayerSessionCommand>()
+            PlayerSessions = []
         };
 
         _sessionRepositoryMock
@@ -455,11 +443,8 @@ public class SessionServiceTests
             GameId = 1,
             Start = DateTime.UtcNow.AddHours(-2),
             Minutes = 120,
-            ExpansionIds = new List<int> { 5 },
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true }
-            }
+            ExpansionIds = [5],
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
         };
 
         _sessionRepositoryMock
@@ -468,7 +453,7 @@ public class SessionServiceTests
 
         _gameServiceMock
             .Setup(x => x.GetGameExpansions(It.Is<List<int>>(ids => ids.Contains(5))))
-            .ReturnsAsync(new List<Expansion> { newExpansion });
+            .ReturnsAsync([newExpansion]);
 
         _sessionRepositoryMock
             .Setup(x => x.Update(existingSession))
@@ -505,10 +490,7 @@ public class SessionServiceTests
             GameId = 1,
             Start = DateTime.UtcNow.AddHours(-2),
             Minutes = 120,
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true } // Only player 1
-            }
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
         };
 
         _sessionRepositoryMock
@@ -552,10 +534,7 @@ public class SessionServiceTests
             Start = DateTime.UtcNow.AddHours(-2),
             Minutes = 120,
             LocationId = null, // Clear location
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true }
-            }
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
         };
 
         _sessionRepositoryMock

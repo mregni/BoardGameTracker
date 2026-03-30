@@ -33,7 +33,7 @@ public class PlayerStatisticsServiceTests
         _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerId)).ReturnsAsync(25);
         _playerRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(playerId)).ReturnsAsync(3000.0);
         _playerRepositoryMock.Setup(x => x.GetDistinctGameCount(playerId)).ReturnsAsync(15);
-        _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(playerId, 5)).ReturnsAsync(new List<MostPlayedGame>());
+        _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(playerId, 5)).ReturnsAsync([]);
 
         // Act
         var result = await _service.CalculateStatisticsAsync(playerId);

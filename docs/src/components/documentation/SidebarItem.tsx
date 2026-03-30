@@ -14,7 +14,7 @@ interface SidebarItemProps {
 	isFirst?: boolean;
 }
 
-export const SidebarItem = ({ item, to, isActive, isFirst }: SidebarItemProps) => {
+export const SidebarItem = ({ item, to, isActive, isFirst }: Readonly<SidebarItemProps>) => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 

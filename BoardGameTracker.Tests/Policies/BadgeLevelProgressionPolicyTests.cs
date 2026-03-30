@@ -335,13 +335,12 @@ public class BadgeLevelProgressionPolicyTests
             current = next;
         }
 
-        levels.Should().BeEquivalentTo(new[]
-        {
+        levels.Should().BeEquivalentTo([
             BadgeLevel.Green,
             BadgeLevel.Blue,
             BadgeLevel.Red,
             BadgeLevel.Gold
-        }, options => options.WithStrictOrdering());
+        ], options => options.WithStrictOrdering());
     }
 
     [Fact]
@@ -360,12 +359,11 @@ public class BadgeLevelProgressionPolicyTests
         }
 
         // Chain stops at Blue because GetPreviousLevel(Blue) returns null
-        levels.Should().BeEquivalentTo(new[]
-        {
+        levels.Should().BeEquivalentTo([
             BadgeLevel.Gold,
             BadgeLevel.Red,
             BadgeLevel.Blue
-        }, options => options.WithStrictOrdering());
+        ], options => options.WithStrictOrdering());
     }
 
     #endregion

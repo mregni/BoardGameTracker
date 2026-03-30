@@ -9,7 +9,7 @@ public class ValidationException : Exception
     {
         Errors = new Dictionary<string, string[]>
         {
-            { "General", new[] { message } }
+            { "General", [message]}
         };
     }
 
@@ -24,7 +24,7 @@ public class ValidationException : Exception
     {
         Errors = new Dictionary<string, string[]>
         {
-            { field, new[] { error } }
+            { field, [error]}
         };
     }
 }

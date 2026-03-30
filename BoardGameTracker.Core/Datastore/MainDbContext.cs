@@ -52,7 +52,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
         SeedDatabase(builder);
     }
 
-    private void BuildIds(ModelBuilder builder)
+    private static void BuildIds(ModelBuilder builder)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var @namespace = typeof(Game).Namespace;

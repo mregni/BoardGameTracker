@@ -181,7 +181,7 @@ public class ShameServiceTests
 
         _gameRepositoryMock
             .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
-            .ReturnsAsync(new List<ShameGame>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _shameService.GetShameGames();
@@ -287,7 +287,7 @@ public class ShameServiceTests
 
         _gameRepositoryMock
             .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
-            .ReturnsAsync(new List<ShameGame>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _shameService.GetShameStatistics();

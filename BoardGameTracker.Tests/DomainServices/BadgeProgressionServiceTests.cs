@@ -305,7 +305,7 @@ public class BadgeProgressionServiceTests
     public async Task GetBadgeProgressionAsync_ShouldReturnEmpty_WhenNoBadgesExist()
     {
         // Arrange
-        _badgeRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync(new List<Badge>());
+        _badgeRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
 
         // Act
         var result = await _service.GetBadgeProgressionAsync(BadgeType.Sessions);
@@ -320,13 +320,13 @@ public class BadgeProgressionServiceTests
 
     private static List<Badge> CreateBadgeProgression(BadgeType type)
     {
-        return new List<Badge>
-        {
+        return
+        [
             Badge.CreateWithId(1, $"{type}.green", "Green badge", type, "green.png", BadgeLevel.Green),
             Badge.CreateWithId(2, $"{type}.blue", "Blue badge", type, "blue.png", BadgeLevel.Blue),
             Badge.CreateWithId(3, $"{type}.red", "Red badge", type, "red.png", BadgeLevel.Red),
             Badge.CreateWithId(4, $"{type}.gold", "Gold badge", type, "gold.png", BadgeLevel.Gold)
-        };
+        ];
     }
 
     #endregion

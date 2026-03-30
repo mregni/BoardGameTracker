@@ -27,7 +27,7 @@ public class BadgeService : IBadgeService
         _logger.LogDebug("Evaluating badges for session {SessionId}", session.Id);
         var playerIds = session.PlayerSessions.Select(ps => ps.PlayerId).Distinct().ToList();
 
-        if (!playerIds.Any())
+        if (playerIds.Count == 0)
         {
             return;
         }

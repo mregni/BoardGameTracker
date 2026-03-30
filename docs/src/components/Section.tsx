@@ -46,7 +46,7 @@ export const Section = ({
 	imageAlt,
 	reverse,
 	background,
-}: SectionProps) => {
+}: Readonly<SectionProps>) => {
 	return (
 		<section className={sectionVariants({ background })}>
 			<div className="max-w-7xl mx-auto">

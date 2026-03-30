@@ -68,7 +68,7 @@ public class BadgeControllerTests
         // Arrange
         _badgeServiceMock
             .Setup(x => x.GetAllBadgesAsync())
-            .ReturnsAsync(new List<Badge>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _controller.GetBadges();

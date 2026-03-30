@@ -14,7 +14,7 @@ using static BoardGameTracker.Common.Constants;
 
 namespace BoardGameTracker.Core.Updates;
 
-public class UpdateService : IUpdateService
+public partial class UpdateService : IUpdateService
 {
     private readonly IConfigRepository _configRepository;
     private readonly IDockerHubApi _dockerHubApi;
@@ -81,7 +81,7 @@ public class UpdateService : IUpdateService
                 .Where(t => IsSemanticVersion(t.Name))
                 .ToList();
 
-            if (!semverTags.Any())
+            if (semverTags.Count == 0)
             {
                 _logger.LogWarning("No valid semantic version tags found on Docker Hub");
                 await _configRepository.SetConfigValueAsync(UpdateConfig.CheckError, "No valid versions found");
@@ -158,23 +158,26 @@ public class UpdateService : IUpdateService
         return version?.ToVersionString() ?? "0.0.0";
     }
 
-    private bool IsSemanticVersion(string tag)
+    [GeneratedRegex(@"^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$")]
+    private static partial Regex SemanticVersionRegex();
+
+    private static bool IsSemanticVersion(string tag)
     {
-        return Regex.IsMatch(tag, @"^\d+\.\d+\.\d+(-[a-zA-Z0-9]+)?$");
+        return SemanticVersionRegex().IsMatch(tag);
     }
 
-    private Version ParseVersion(string versionString)
+    private static Version ParseVersion(string versionString)
     {
         var versionOnly = versionString.Split('-')[0];
         return Version.TryParse(versionOnly, out var version) ? version : new Version(0, 0, 0);
     }
 
-    private bool IsBetaVersion(string versionString)
+    private static bool IsBetaVersion(string versionString)
     {
         return versionString.Contains("-beta", StringComparison.OrdinalIgnoreCase);
     }
 
-    private bool CompareVersions(string current, string latest)
+    private static bool CompareVersions(string current, string latest)
     {
         var currentVer = ParseVersion(current);
         var latestVer = ParseVersion(latest);

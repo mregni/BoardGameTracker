@@ -35,7 +35,7 @@ export const BgtAchievement = (props: Props) => {
 	);
 };
 
-export const BgtAchievementIcon = (props: Props) => {
+export const BgtAchievementIcon = (props: Omit<Props, "earned">) => {
 	const { badge } = props;
 	const { t } = useTranslation("badges");
 

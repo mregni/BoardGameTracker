@@ -88,7 +88,7 @@ public class GlobalExceptionHandlerTests
         var (httpContext, responseBody) = CreateHttpContext();
         var errors = new Dictionary<string, string[]>
         {
-            { "Name", new[] { "Name is required" } }
+            { "Name", ["Name is required"]}
         };
         var exception = new ValidationException(errors);
 

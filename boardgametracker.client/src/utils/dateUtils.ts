@@ -9,6 +9,8 @@ import {
 
 import { getDateFnsLocale } from "./localeUtils";
 
+type DateInput = Date | string | undefined;
+
 const convertDateFormat = (userFormat: string): string => {
 	return userFormat.replace(/YYYY/g, "yyyy").replace(/DD/g, "dd").replace(/MM/g, "MM");
 };
@@ -17,7 +19,7 @@ const convertTimeFormat = (userFormat: string): string => {
 	return userFormat.replace(/HH/g, "HH").replace(/hh/g, "hh").replace(/mm/g, "mm").replace(/ss/g, "ss");
 };
 
-export const toInputDate = (date: Date | string | undefined, fallbackToToday = true): string => {
+export const toInputDate = (date: DateInput, fallbackToToday = true): string => {
 	if (!date && fallbackToToday) {
 		return format(new Date(), "yyyy-MM-dd");
 	}

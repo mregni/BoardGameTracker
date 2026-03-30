@@ -11,13 +11,13 @@ public class GameAccessory : HasId
     public string Title
     {
         get => _title;
-        private set => _title = Guard.Against.NullOrWhiteSpace(value, nameof(Title));
+        private set => _title = Guard.Against.NullOrWhiteSpace(value);
     }
 
     public string Description
     {
         get => _description;
-        private set => _description = Guard.Against.NullOrWhiteSpace(value, nameof(Description));
+        private set => _description = Guard.Against.NullOrWhiteSpace(value);
     }
 
     public Game Game { get; private set; } = null!;

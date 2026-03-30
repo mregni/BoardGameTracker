@@ -98,7 +98,7 @@ public class DashboardServiceTests
             durationMinutes: 90);
 
         _sessionRepositoryMock.Setup(x => x.GetRecentSessions(4))
-            .ReturnsAsync(new List<Session> { session });
+            .ReturnsAsync([session]);
 
         // Act
         var result = await _sut.GetStatistics();
@@ -122,7 +122,7 @@ public class DashboardServiceTests
         var session = CreateSessionWithoutWinner(gameId: 1, gameTitle: "Catan");
 
         _sessionRepositoryMock.Setup(x => x.GetRecentSessions(4))
-            .ReturnsAsync(new List<Session> { session });
+            .ReturnsAsync([session]);
 
         // Act
         var result = await _sut.GetStatistics();
@@ -217,7 +217,7 @@ public class DashboardServiceTests
         game2.UpdateAdditionDate(DateTime.Now.AddDays(-2));
 
         _gameRepositoryMock.Setup(x => x.GetRecentlyAddedGames(4))
-            .ReturnsAsync(new List<Game> { game1, game2 });
+            .ReturnsAsync([game1, game2]);
 
         // Act
         var result = await _sut.GetStatistics();
@@ -293,12 +293,12 @@ public class DashboardServiceTests
         _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount()).ReturnsAsync(0);
 
         // List data
-        _sessionRepositoryMock.Setup(x => x.GetRecentSessions(4)).ReturnsAsync(new List<Session>());
-        _gameStatisticsRepositoryMock.Setup(x => x.GetGamesGroupedByState()).ReturnsAsync(new List<IGrouping<GameState, Game>>());
+        _sessionRepositoryMock.Setup(x => x.GetRecentSessions(4)).ReturnsAsync([]);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetGamesGroupedByState()).ReturnsAsync([]);
         _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGames(4)).ReturnsAsync(new List<(int, string, string?, int)>());
         _playerRepositoryMock.Setup(x => x.GetTopPlayers(4)).ReturnsAsync(new List<(int, string, string?, int, int)>());
-        _gameRepositoryMock.Setup(x => x.GetRecentlyAddedGames(4)).ReturnsAsync(new List<Game>());
-        _sessionRepositoryMock.Setup(x => x.GetSessionsByDayOfWeek()).ReturnsAsync(new List<IGrouping<DayOfWeek, Session>>());
+        _gameRepositoryMock.Setup(x => x.GetRecentlyAddedGames(4)).ReturnsAsync([]);
+        _sessionRepositoryMock.Setup(x => x.GetSessionsByDayOfWeek()).ReturnsAsync([]);
     }
 
     private static Session CreateSessionWithWinner(

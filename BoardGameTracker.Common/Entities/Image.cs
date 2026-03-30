@@ -10,7 +10,7 @@ public class Image: HasId
     public string Path
     {
         get => _path;
-        private set => _path = Guard.Against.NullOrWhiteSpace(value, nameof(Path));
+        private set => _path = Guard.Against.NullOrWhiteSpace(value);
     }
 
     public int? GamePlayId { get; private set; }

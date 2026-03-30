@@ -90,11 +90,11 @@ public class SessionControllerTests
             Start = DateTime.UtcNow.AddHours(-2),
             Minutes = 120,
             Comment = "Great game",
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true, Score = 100 },
-                new CreatePlayerSessionCommand { PlayerId = 2, Won = false, Score = 80 }
-            }
+            PlayerSessions =
+            [
+                new CreatePlayerSessionCommand {PlayerId = 1, Won = true, Score = 100},
+                new CreatePlayerSessionCommand {PlayerId = 2, Won = false, Score = 80}
+            ]
         };
 
         var createdSession = new Session(command.GameId, command.Start, command.Start.AddMinutes(command.Minutes), command.Comment) { Id = 1 };
@@ -132,10 +132,7 @@ public class SessionControllerTests
             Start = DateTime.UtcNow.AddHours(-3),
             Minutes = 180,
             Comment = "Updated comment",
-            PlayerSessions = new List<CreatePlayerSessionCommand>
-            {
-                new CreatePlayerSessionCommand { PlayerId = 1, Won = true, Score = 150 }
-            }
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true, Score = 150}]
         };
 
         var updatedSession = new Session(command.GameId, command.Start, command.Start.AddMinutes(command.Minutes), command.Comment) { Id = command.Id };

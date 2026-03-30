@@ -11,7 +11,7 @@ public class Person : HasId
     public string Name
     {
         get => _name;
-        private set => _name = Guard.Against.NullOrWhiteSpace(value, nameof(Name));
+        private set => _name = Guard.Against.NullOrWhiteSpace(value);
     }
 
     public PersonType Type { get; private set; }

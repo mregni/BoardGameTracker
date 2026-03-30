@@ -90,7 +90,7 @@ public class GameControllerTests
         // Arrange
         _gameServiceMock
             .Setup(x => x.GetGames())
-            .ReturnsAsync(new List<Game>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _controller.GetGames();
@@ -338,7 +338,7 @@ public class GameControllerTests
 
         _gameServiceMock
             .Setup(x => x.GetSessionsForGame(gameId, count))
-            .ReturnsAsync(new List<Session>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _controller.GetGameSessionsById(gameId, count);
@@ -394,7 +394,7 @@ public class GameControllerTests
     {
         // Arrange
         var gameId = 1;
-        var command = new UpdateGameExpansionsCommand { ExpansionBggIds = new[] { 100, 101, 102 } };
+        var command = new UpdateGameExpansionsCommand { ExpansionBggIds = [100, 101, 102]};
         var expansions = new List<Expansion>
         {
             new Expansion("Expansion 1", 100, gameId) { Id = 1 },
@@ -537,11 +537,11 @@ public class GameControllerTests
         // Arrange
         var command = new ImportBggGamesCommand
         {
-            Games = new List<ImportGame>
-            {
-                new ImportGame { BggId = 1, Title = "Game 1", ImageUrl = "https://example.com/img1.jpg" },
-                new ImportGame { BggId = 2, Title = "Game 2", ImageUrl = "https://example.com/img2.jpg" }
-            }
+            Games =
+            [
+                new ImportGame {BggId = 1, Title = "Game 1", ImageUrl = "https://example.com/img1.jpg"},
+                new ImportGame {BggId = 2, Title = "Game 2", ImageUrl = "https://example.com/img2.jpg"}
+            ]
         };
 
         _bggImportServiceMock
@@ -619,7 +619,7 @@ public class GameControllerTests
         var bggGame = new BggGame
         {
             BggId = 123,
-            Names = new[] { "BGG Game" },
+            Names = ["BGG Game"],
             Thumbnail = "https://example.com/thumb.jpg",
             Image = "https://example.com/img.jpg",
             Description = "A great game"

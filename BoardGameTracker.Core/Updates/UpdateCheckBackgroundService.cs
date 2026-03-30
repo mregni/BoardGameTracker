@@ -37,9 +37,9 @@ public class UpdateCheckBackgroundService : BackgroundService
                 _logger.LogInformation("Next update check in {Hours} hours", interval.TotalHours);
                 await Task.Delay(interval, stoppingToken);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                _logger.LogInformation("Update Check Background Service is stopping");
+                _logger.LogInformation(ex, "Update Check Background Service is stopping");
                 break;
             }
             catch (Exception ex)

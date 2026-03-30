@@ -77,7 +77,7 @@ public class LoanServiceTests
         // Arrange
         _loanRepositoryMock
             .Setup(x => x.GetAllAsync())
-            .ReturnsAsync(new List<Loan>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _loanService.GetLoans();

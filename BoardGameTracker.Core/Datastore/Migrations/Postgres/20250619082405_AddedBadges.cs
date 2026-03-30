@@ -56,7 +56,7 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 
             migrationBuilder.InsertData(
                 table: "Badges",
-                columns: new[] { "Id", "DescriptionKey", "Image", "Level", "TitleKey", "Type" },
+                columns: ["Id", "DescriptionKey", "Image", "Level", "TitleKey", "Type"],
                 values: new object[,]
                 {
                     { 1, "different-games.green.description", "different-games-green.png", "Green", "different-games.green.title", "DifferentGames" },
@@ -67,7 +67,7 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 
             migrationBuilder.InsertData(
                 table: "Languages",
-                columns: new[] { "Id", "Key", "TranslationKey" },
+                columns: ["Id", "Key", "TranslationKey"],
                 values: new object[,]
                 {
                     { 1, "en-us", "english" },

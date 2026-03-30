@@ -17,7 +17,7 @@ export const SidebarSection = ({
 	isExpanded,
 	activeHash,
 	onToggle,
-}: SidebarSectionProps) => {
+}: Readonly<SidebarSectionProps>) => {
 	const { t } = useTranslation();
 
 	return (

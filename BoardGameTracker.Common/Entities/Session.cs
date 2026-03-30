@@ -5,7 +5,7 @@ namespace BoardGameTracker.Common.Entities;
 
 public class Session : HasId
 {
-    public string Comment { get; private set; } = string.Empty;
+    public string Comment { get; private set; }
     public int GameId { get; private set; }
 
     private DateTime _start;

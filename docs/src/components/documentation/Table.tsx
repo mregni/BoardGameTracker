@@ -16,7 +16,7 @@ const thClasses =
 	"px-4 py-3 text-left text-sm font-semibold text-purple-300 border-b border-white/10";
 const tdClasses = "px-4 py-3 text-sm text-slate-300 border-b border-white/10";
 
-export const Table = ({ columns, rows, headers }: TableProps) => (
+export const Table = ({ columns, rows, headers }: Readonly<TableProps>) => (
 	<div className="overflow-x-auto rounded-lg border border-white/10">
 		<table className="w-full">
 			<thead className="bg-slate-800/50">

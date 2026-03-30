@@ -74,7 +74,7 @@ public class LocationServiceTests
         // Arrange
         _locationRepositoryMock
             .Setup(x => x.GetAllAsync())
-            .ReturnsAsync(new List<Location>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _locationService.GetLocations();

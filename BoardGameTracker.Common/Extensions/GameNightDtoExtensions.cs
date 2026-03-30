@@ -23,11 +23,6 @@ public static class GameNightDtoExtensions
         };
     }
 
-    public static List<GameNightDto> ToListDto(this IEnumerable<GameNight> gameNights)
-    {
-        return gameNights.Select(g => g.ToDto()).ToList();
-    }
-
     public static GameNightRsvpDto ToDto(this GameNightRsvp rsvp)
     {
         return new GameNightRsvpDto
@@ -38,5 +33,10 @@ public static class GameNightDtoExtensions
             GameNightId = rsvp.GameNightId,
             State = rsvp.State
         };
+    }
+
+    public static List<GameNightDto> ToListDto(this IEnumerable<GameNight> gameNights)
+    {
+        return gameNights.Select(g => g.ToDto()).ToList();
     }
 }

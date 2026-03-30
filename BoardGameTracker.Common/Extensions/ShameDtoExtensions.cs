@@ -5,7 +5,7 @@ namespace BoardGameTracker.Common.Extensions;
 
 public static class ShameDtoExtensions
 {
-    public static ShameDto ToDto(this ShameGame shameGame)
+    private static ShameDto ToDto(this ShameGame shameGame)
     {
         return new ShameDto
         {
@@ -18,11 +18,6 @@ public static class ShameDtoExtensions
         };
     }
 
-    public static List<ShameDto> ToListDto(this IEnumerable<ShameGame> shameGames)
-    {
-        return shameGames.Select(ToDto).ToList();
-    }
-
     public static ShameStatisticsDto ToDto(this ShameStatistics statistics)
     {
         return new ShameStatisticsDto
@@ -31,5 +26,10 @@ public static class ShameDtoExtensions
             TotalValue = statistics.TotalValue,
             AverageValue = statistics.AverageValue
         };
+    }
+
+    public static List<ShameDto> ToListDto(this IEnumerable<ShameGame> shameGames)
+    {
+        return shameGames.Select(ToDto).ToList();
     }
 }

@@ -3,7 +3,7 @@ namespace BoardGameTracker.Common.Models.DockerHub;
 public class DockerHubTagsResponse
 {
     public int Count { get; set; }
-    public List<DockerHubTag> Results { get; set; } = new();
+    public List<DockerHubTag> Results { get; set; } = [];
 }
 
 public class DockerHubTag
@@ -15,7 +15,7 @@ public class DockerHubTag
 public class DockerHubManifestResponse
 {
     public string Architecture { get; set; } = string.Empty;
-    public List<DockerHubManifest> Manifests { get; set; } = new();
+    public List<DockerHubManifest> Manifests { get; set; } = [];
 }
 
 public class DockerHubManifest

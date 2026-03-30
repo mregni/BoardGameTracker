@@ -95,7 +95,7 @@ public class PlayerServiceTests
         // Arrange
         _playerRepositoryMock
             .Setup(x => x.GetAllAsync())
-            .ReturnsAsync(new List<Player>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _playerService.GetList();
@@ -369,7 +369,7 @@ public class PlayerServiceTests
 
         _gameSessionRepositoryMock
             .Setup(x => x.GetSessionsByPlayerId(playerId, null))
-            .ReturnsAsync(new List<Session>());
+            .ReturnsAsync([]);
 
         // Act
         var result = await _playerService.GetSessions(playerId, null);
@@ -481,7 +481,7 @@ public class PlayerServiceTests
             WinCount = 25,
             TotalPlayedTime = 3000.0,
             DistinctGameCount = 10,
-            MostPlayedGames = new List<MostPlayedGame>()
+            MostPlayedGames = []
         };
 
         _playerStatisticsDomainServiceMock

@@ -12,7 +12,7 @@ interface DocumentationLayoutProps {
 export const DocumentationLayout = ({
 	children,
 	activePage,
-}: DocumentationLayoutProps) => {
+}: Readonly<DocumentationLayoutProps>) => {
 	const location = useLocation();
 	const firstItemId = menuItems[activePage].items[0].id;
 	const activeHash = location.hash || firstItemId;

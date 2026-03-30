@@ -6,7 +6,7 @@ interface FeatureCardProps {
 	description: string;
 }
 
-export const FeatureCard = ({ icon: Icon, title, description }: FeatureCardProps) => {
+export const FeatureCard = ({ icon: Icon, title, description }: Readonly<FeatureCardProps>) => {
 	return (
 		<div className="bg-slate-900/50 border border-white/10 rounded-xl p-6 hover:border-purple-500/50 transition-colors">
 			<div className="bg-purple-600 rounded-lg p-3 w-fit mb-4">

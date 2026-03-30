@@ -32,7 +32,7 @@ public class LearningCurveBadgeEvaluatorTests
     public async Task CanAwardBadge_ShouldReturnFalse_WhenLessThan3Sessions()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(2, new[] { 100.0, 90.0 });
+        var sessions = CreateSessionsWithIncreasingScores(2, [100.0, 90.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
@@ -43,7 +43,7 @@ public class LearningCurveBadgeEvaluatorTests
     public async Task CanAwardBadge_ShouldEvaluate_WhenExactly3Sessions()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(3, new[] { 100.0, 90.0, 80.0 });
+        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 90.0, 80.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
@@ -59,7 +59,7 @@ public class LearningCurveBadgeEvaluatorTests
     {
         var badge = CreateBadge(BadgeLevel.Green);
         // Most recent first: 100, 90, 80 (increasing from oldest to newest)
-        var sessions = CreateSessionsWithIncreasingScores(3, new[] { 100.0, 90.0, 80.0 });
+        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 90.0, 80.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
@@ -71,7 +71,7 @@ public class LearningCurveBadgeEvaluatorTests
     {
         var badge = CreateBadge(BadgeLevel.Green);
         // Most recent first: 80, 90, 100 (decreasing from oldest to newest)
-        var sessions = CreateSessionsWithIncreasingScores(3, new[] { 80.0, 90.0, 100.0 });
+        var sessions = CreateSessionsWithIncreasingScores(3, [80.0, 90.0, 100.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
@@ -82,7 +82,7 @@ public class LearningCurveBadgeEvaluatorTests
     public async Task CanAwardBadge_ShouldReturnFalse_WhenScoresAreEqual()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(3, new[] { 100.0, 100.0, 100.0 });
+        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 100.0, 100.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
@@ -94,7 +94,7 @@ public class LearningCurveBadgeEvaluatorTests
     {
         var badge = CreateBadge(BadgeLevel.Green);
         // First two improving but third goes down
-        var sessions = CreateSessionsWithIncreasingScores(3, new[] { 100.0, 95.0, 90.0 });
+        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 95.0, 90.0]);
         // This would be: 100 > 95 (true), but 95 > 90 is also true... wait let me reconsider
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
@@ -107,7 +107,7 @@ public class LearningCurveBadgeEvaluatorTests
     {
         var badge = CreateBadge(BadgeLevel.Green);
         // 100, 80, 90 -> 100 > 80 (true), but 80 > 90 is false
-        var sessions = CreateSessionsWithIncreasingScores(3, new[] { 100.0, 80.0, 90.0 });
+        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 80.0, 90.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
@@ -214,7 +214,7 @@ public class LearningCurveBadgeEvaluatorTests
     public async Task CanAwardBadge_ShouldHandleLargeScoreDifferences()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(3, new[] { 1000.0, 500.0, 100.0 });
+        var sessions = CreateSessionsWithIncreasingScores(3, [1000.0, 500.0, 100.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
@@ -225,7 +225,7 @@ public class LearningCurveBadgeEvaluatorTests
     public async Task CanAwardBadge_ShouldHandleSmallScoreDifferences()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(3, new[] { 100.1, 100.05, 100.0 });
+        var sessions = CreateSessionsWithIncreasingScores(3, [100.1, 100.05, 100.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
@@ -236,7 +236,7 @@ public class LearningCurveBadgeEvaluatorTests
     public async Task CanAwardBadge_ShouldWorkWithAnyBadgeLevel()
     {
         // LearningCurve doesn't use levels
-        var sessions = CreateSessionsWithIncreasingScores(3, new[] { 100.0, 90.0, 80.0 });
+        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 90.0, 80.0]);
 
         foreach (BadgeLevel level in Enum.GetValues(typeof(BadgeLevel)))
         {

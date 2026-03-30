@@ -18,8 +18,6 @@ interface Props {
 	gameStats: GameStats;
 	expansionCount: number;
 	currency: string;
-	uiLanguage: string;
-	dateFormat: string;
 }
 
 export const GameStatisticsGrid = (props: Props) => {

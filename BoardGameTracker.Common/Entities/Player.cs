@@ -10,7 +10,7 @@ public class Player : HasId
     public string Name
     {
         get => _name;
-        private set => _name = Guard.Against.NullOrWhiteSpace(value, nameof(Name));
+        private set => _name = Guard.Against.NullOrWhiteSpace(value);
     }
 
     public string? Image { get; private set; }

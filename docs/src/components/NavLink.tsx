@@ -5,7 +5,7 @@ interface NavLinkProps {
 	label: string;
 }
 
-export const NavLink = ({ to, label }: NavLinkProps) => {
+export const NavLink = ({ to, label }: Readonly<NavLinkProps>) => {
 	return (
 		<Link
 			to={to}

@@ -84,8 +84,6 @@ function RouteComponent() {
 									gameStats={statistics.gameStats}
 									expansionCount={game.expansions.length}
 									currency={settings.currency}
-									dateFormat={settings.dateFormat}
-									uiLanguage={settings.uiLanguage}
 								/>
 								<div className="grid grid-cols-1 lg:grid-cols-2 gap-3 xl:gap-6">
 									<div className="flex flex-col gap-3 xl:gap-6">

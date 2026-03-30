@@ -31,8 +31,8 @@ public class ImageServiceTests : IDisposable
             _imageService = new ImageService(_diskProviderMock.Object, _httpClientFactoryMock.Object, _loggerMock.Object);
             _testDirectory = Path.Combine(Path.GetTempPath(), "ImageServiceTests", Guid.NewGuid().ToString());
             Directory.CreateDirectory(_testDirectory);
-            
-            SetupPathHelper();
+
+        SetupPathHelper();
         }
 
         public void Dispose()
@@ -90,7 +90,7 @@ public class ImageServiceTests : IDisposable
         [Fact]
         public async Task SaveImage_ShouldReturnNoImagePath_WhenFileIsNull()
         {
-            SetupNoImageFile();
+        SetupNoImageFile();
 
             var result = await _imageService.SaveImage(null, UploadFileType.Game);
 
@@ -202,14 +202,14 @@ public class ImageServiceTests : IDisposable
             return ms.ToArray();
         }
 
-        private void SetupPathHelper()
+        private static void SetupPathHelper()
         {
             Directory.CreateDirectory(PathHelper.FullCoverImagePath);
             Directory.CreateDirectory(PathHelper.FullProfileImagePath);
             Directory.CreateDirectory(PathHelper.FullRootImagePath);
         }
 
-        private void SetupNoImageFile()
+        private static void SetupNoImageFile()
         {
             var noImagePath = Path.Combine(PathHelper.FullRootImagePath, "no-image.jpg");
             using var noImage = new Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(50, 50);

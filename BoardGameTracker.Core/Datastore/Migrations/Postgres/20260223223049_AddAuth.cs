@@ -319,7 +319,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                 name: "IX_ExternalLogins_Provider_ProviderKey",
                 schema: "auth",
                 table: "ExternalLogins",
-                columns: new[] { "Provider", "ProviderKey" },
+                columns: ["Provider", "ProviderKey"],
                 unique: true);
 
             migrationBuilder.CreateIndex(
