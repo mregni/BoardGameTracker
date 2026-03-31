@@ -6,7 +6,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./config:/app/config
+      - ./images:/app/images
       - ./logs:/app/logs
     ports:
       - "5444:5444"

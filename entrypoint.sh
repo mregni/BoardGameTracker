@@ -13,5 +13,5 @@ if ! getent passwd appuser > /dev/null 2>&1; then
     adduser -u "$PUID" -G appgroup -D -H appuser
 fi
 
-chown -R "$PUID:$PGID" /app/data /app/images /app/logs /app/config
+chown -R "$PUID:$PGID" /app/images /app/logs
 exec su-exec "$PUID:$PGID" dotnet BoardGameTracker.Host.dll

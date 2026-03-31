@@ -74,7 +74,6 @@ services:
         condition: service_healthy
     volumes:
       - ./images:/app/images
-      - ./data:/app/data
       - ./logs:/app/logs
     ports:
       - "5444:5444"
@@ -138,7 +137,6 @@ docker run -d \
   -e TZ=UTC \
   -p 5444:5444 \
   -v ./images:/app/images \
-  -v ./data:/app/data \
   -v ./logs:/app/logs \
   uping/boardgametracker:latest
 ```

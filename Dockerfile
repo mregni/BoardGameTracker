@@ -69,7 +69,7 @@ WORKDIR /app
 
 RUN apk add --no-cache curl su-exec
 
-RUN mkdir -p /app/data /app/images /app/logs /app/config
+RUN mkdir -p /app/images /app/logs
 
 # Copy published files from backend build stage
 COPY --from=backend-build /app/publish .
