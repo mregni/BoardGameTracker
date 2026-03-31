@@ -416,6 +416,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create major and major.minor tags
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          VERSION=${{ needs.version.outputs.version }}
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          git tag -fa "v${MAJOR}" -m "Release v${VERSION}"
+          git tag -fa "v${MAJOR}.${MINOR}" -m "Release v${VERSION}"
+          git push origin "v${MAJOR}" --force
+          git push origin "v${MAJOR}.${MINOR}" --force
+
   notify-completion:
     name: Build Summary
     needs: [version, build-linux-multiarch]
