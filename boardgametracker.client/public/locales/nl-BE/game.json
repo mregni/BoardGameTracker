@@ -1,0 +1,125 @@
+{
+  "add": "Add session",
+  "sessions": "View sessions",
+  "no-sessions": {
+    "title": "No Sessions Logged Yet",
+    "description": "  Start tracking your game sessions to see detailed statistics, player performance, and session history. Log your first session to unlock all the analytics!",
+    "button": "Log Your First Session",
+    "extra": "Session data includes players, scores, duration, and more"
+  },
+  "notifications": {
+    "created": "Game is succesfully created",
+    "create-failed": "Game creation failed",
+    "not-found": "Could not find game",
+    "duplicate": "Game already exists",
+    "deleted": "Game is succesfully deleted",
+    "updated": "Game is succesfully updated",
+    "update-failed": "Failed updating game"
+  },
+  "added-date": {
+    "label": "Date added",
+    "required": "Date is required"
+  },
+  "bgg": {
+    "label": "BGG id",
+    "placeholder": "BoardGameGeek game id",
+    "required": "BGG id is required",
+    "external-page": "Open BoardGameGeek website"
+  },
+  "update": {
+    "save": "Update game",
+    "title": "Update game"
+  },
+  "expansions": {
+    "title": "Expansions",
+    "description": "Add/delete expansions to this game.",
+    "update": "Update expansions",
+    "none": "No expansions added to this game.",
+    "no-game": "Select a game to view expansions.",
+    "add": "Add your first expansion"
+  },
+  "new": {
+    "description": "Choose a method to create a new game.",
+    "save": "Create game",
+    "title": "Create new game",
+    "bgg-title": "Import game",
+    "bgg-subtext": "Import game data from BoardGameGeek",
+    "bgg-description": "Enter required fields to import a game from BoardGameGeek",
+    "manual-title": "Manual input",
+    "manual-subtext": "Manual input data to create a game",
+    "bgg-import-title": "Import from BoardGameGeek",
+    "bgg-import-subtext": "Import your game collection from BoardGameGeek",
+    "manual": {
+      "title": "Create game",
+      "game-title": {
+        "required": "Game title is required",
+        "label": "Game title"
+      },
+      "year": {
+        "label": "Year published",
+        "required": "Year published is required"
+      },
+      "min-players": {
+        "label": "Minimum players"
+      },
+      "max-players": {
+        "label": "Maximum players"
+      },
+      "min-time": {
+        "label": "Minimum play time"
+      },
+      "max-time": {
+        "label": "Maximum play time"
+      },
+      "min-age": {
+        "label": "Minimum player age"
+      },
+      "description": {
+        "label": "Game description"
+      }
+    }
+  },
+  "price": {
+    "label": "Price",
+    "placeholder": "Game price",
+    "required": "Price is required"
+  },
+  "state": {
+    "for-trade": "For trade",
+    "label": "Game state",
+    "not-owned": "Not self owned",
+    "owned": "Owned",
+    "previously-owned": "Previously owned",
+    "wanted": "Wanted",
+    "on-loan": "On loan"
+  },
+  "details": {
+    "title": "{{title}} details"
+  },
+  "delete": {
+    "successfull": "Game is successfully deleted.",
+    "failed": "Game deletion failed, check logs for more details."
+  },
+  "scoring": {
+    "label": "Game has scoring"
+  },
+  "charts": {
+    "player-count": "Games by player count",
+    "games-week-day": "Games by day of the week",
+    "scoring": "Scoring per game/player",
+    "top-scoring": {
+      "top-score": "Top score",
+      "highest-losing": "Highest losing",
+      "average": "Average",
+      "lowest-winning": "Lowest winning",
+      "lowest": "Lowest"
+    }
+  },
+  "titles": {
+    "top-players": "Top players",
+    "scoring-results": "Scoring results",
+    "recent-sessions": "Recent sessions",
+    "session-count-per-day": "Session count per day",
+    "analytics": "Analytics"
+  }
+}
