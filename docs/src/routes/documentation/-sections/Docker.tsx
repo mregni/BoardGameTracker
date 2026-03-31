@@ -28,7 +28,7 @@ export const Docker = () => {
       db:
         condition: service_healthy
     volumes:
-      - ./config:/app/config
+      - ./images:/app/images
       - ./logs:/app/logs
     ports:
       - "5444:5444"
@@ -70,7 +70,7 @@ export const Docker = () => {
     --name boardgametracker \
     --restart unless-stopped \
     -p 5444:5444 \
-    -v ./config:/app/config \
+    -v ./images:/app/images \
     -v ./logs:/app/logs \
     -e DB_HOST=db \
     -e DB_USER=dbuser \
