@@ -1,0 +1,9 @@
+<Project>
+    <PropertyGroup>
+        <!-- Default version - can be overridden via /p:Version=x.y.z during build -->
+        <Version Condition="'$(Version)' == ''">0.0.1</Version>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        <FileVersion>$(Version)</FileVersion>
+        <InformationalVersion>$(Version)</InformationalVersion>
+    </PropertyGroup>
+</Project>

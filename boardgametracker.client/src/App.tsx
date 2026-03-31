@@ -1,74 +1,110 @@
-import { Route, Routes } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useEffect } from 'react';
-import { AxiosError } from 'axios';
-import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { lazy } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { toast } from "sonner";
+import { BgtLoadingSpinner } from "./components/BgtLoadingSpinner/BgtLoadingSpinner";
+import { ErrorFallback } from "./components/ErrorBoundary/ErrorFallback";
+import { isApiError } from "./models";
+import { routeTree } from "./routeTree.gen";
+import i18n from "./utils/i18n";
 
-import { useToast } from './providers/BgtToastProvider';
-import { SettingsRoutes } from './pages/Settings/SettingsRoutes';
-import { SessionRoutes } from './pages/Sessions/SessionRoutes';
-import { PlayerRoutes } from './pages/Players/PlayerRoutes';
-import { LocationRoutes } from './pages/Locations/LocationRoutes';
-import { GameRoutes } from './pages/Games/GameRoutes';
-import { DashboardPage } from './pages/Dashboard/DashboardPage';
-import { FailResult } from './models';
-import { useSettings } from './hooks/useSettings';
-import BgtMenuBar from './components/BgtLayout/BgtMenuBar';
-import { BgtHeader } from './components/BgtHeader/BgtHeader';
+const TanStackQueryDevtools = import.meta.env.PROD
+	? () => null
+	: lazy(() =>
+			import("@tanstack/react-query-devtools").then((res) => ({
+				default: res.ReactQueryDevtools,
+			})),
+		);
 
-function AppContainer() {
-  const { showErrorToast } = useToast();
+const TanStackRouterDevtools = import.meta.env.PROD
+	? () => null
+	: lazy(() =>
+			import("@tanstack/react-router-devtools").then((res) => ({
+				default: res.TanStackRouterDevtools,
+			})),
+		);
 
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        gcTime: 60 * 60 * 1000, // 1 hour
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        retry: false,
-      },
-    },
-    queryCache: new QueryCache({
-      onError: (_error, query) => {
-        const error = query.state.error as AxiosError<FailResult>;
-        const reason = error.response?.data.reason ?? 'common.unknown-error';
-        showErrorToast(reason);
-      },
-    }),
-  });
+function getErrorToastMessage(error: unknown): string {
+	if (!isApiError(error)) {
+		return i18n.t("error:something-went-wrong");
+	}
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  );
+	switch (error.kind) {
+		case "network":
+			return i18n.t("error:network");
+		case "timeout":
+			return i18n.t("error:timeout");
+		case "server":
+			return i18n.t("error:server");
+		default:
+			return i18n.t("error:something-went-wrong");
+	}
 }
 
-function App() {
-  const { settings } = useSettings();
-  const { i18n } = useTranslation();
+let lastErrorToastTime = 0;
+const ERROR_TOAST_DEBOUNCE_MS = 2000;
 
-  useEffect(() => {
-    i18n.changeLanguage(settings.data?.uiLanguage ?? 'en-US');
-  }, [i18n, settings.data?.uiLanguage]);
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			gcTime: 60 * 60 * 1000, // 1 hour
+			staleTime: 5 * 60 * 1000, // 5 minutes
+			retry: false,
+		},
+	},
+	queryCache: new QueryCache({
+		onError: (error) => {
+			if (isApiError(error) && error.status === 401) return;
+			const now = Date.now();
+			if (now - lastErrorToastTime < ERROR_TOAST_DEBOUNCE_MS) return;
+			lastErrorToastTime = now;
+			toast.error(getErrorToastMessage(error));
+		},
+	}),
+	mutationCache: new MutationCache({
+		onError: (error, _variables, _context, mutation) => {
+			if (mutation.options.onError) return;
+			toast.error(getErrorToastMessage(error));
+		},
+	}),
+});
+const router = createRouter({
+	routeTree,
+	defaultPreload: "intent",
+	defaultViewTransition: true,
+	defaultPendingComponent: BgtLoadingSpinner,
+	defaultPendingMinMs: 200,
+	context: { queryClient },
+});
 
-  if (settings.isLoading || settings.isError) return null;
+declare module "@tanstack/react-router" {
+	interface Register {
+		router: typeof router;
+	}
+}
 
-  return (
-    <div className="flex flex-col md:flex-row h-screen text-white">
-      <BgtMenuBar />
-      <div className="flex-1 bg-custom-gradient flex flex-col">
-        <BgtHeader />
-        <Routes>
-          <Route element={<GameRoutes />} path="/games/*" />
-          <Route element={<PlayerRoutes />} path="/players/*" />
-          <Route element={<SessionRoutes />} path="/sessions/*" />
-          <Route element={<SettingsRoutes />} path="/settings/*" />
-          <Route element={<LocationRoutes />} path="/locations/*" />
-          <Route element={<DashboardPage />} path="*" />
-        </Routes>
-      </div>
-    </div>
-  );
+function AppContainer() {
+	return (
+		<ErrorBoundary
+			FallbackComponent={ErrorFallback}
+			onError={(error, errorInfo) => {
+				if (import.meta.env.DEV) {
+					// biome-ignore lint/suspicious/noConsole: DEV-only error logging for debugging
+					console.error("Error caught by boundary:", error, errorInfo);
+				}
+			}}
+			onReset={() => {
+				queryClient.clear();
+			}}
+		>
+			<QueryClientProvider client={queryClient}>
+				<RouterProvider router={router} context={{ queryClient }} />
+				<TanStackQueryDevtools initialIsOpen />
+				<TanStackRouterDevtools router={router} />
+			</QueryClientProvider>
+		</ErrorBoundary>
+	);
 }
 
 export default AppContainer;

@@ -1,0 +1,69 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
+import { BgtPage } from "@/components/BgtLayout/BgtPage";
+import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import { BgtText } from "@/components/BgtText/BgtText";
+import { useAuth } from "@/hooks/useAuth";
+
+const callbackSearchSchema = z.object({
+	accessToken: z.string().optional(),
+	refreshToken: z.string().optional(),
+	error: z.string().optional(),
+	redirect: z.string().optional(),
+});
+
+export const Route = createFileRoute("/_bare/auth-callback")({
+	component: AuthCallbackPage,
+	validateSearch: callbackSearchSchema,
+});
+
+function AuthCallbackPage() {
+	const navigate = useNavigate();
+	const { t } = useTranslation("auth");
+	const { setTokens } = useAuth();
+	const { accessToken, refreshToken, error, redirect } = Route.useSearch();
+
+	useEffect(() => {
+		if (error) {
+			navigate({ to: "/login" });
+			return;
+		}
+
+		if (accessToken && refreshToken) {
+			// Decode user from JWT payload
+			try {
+				const payload = JSON.parse(atob(accessToken.split(".")[1]));
+				const roleClaim = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+				const roles = Array.isArray(roleClaim) ? roleClaim : roleClaim ? [roleClaim] : [];
+				const user = {
+					id: payload.sub,
+					username: payload.unique_name,
+					displayName: payload.display_name ?? null,
+					roles,
+				};
+
+				setTokens(accessToken, refreshToken, user);
+				navigate({ to: redirect ?? "/" });
+			} catch {
+				navigate({ to: "/login" });
+			}
+		} else {
+			navigate({ to: "/login" });
+		}
+	}, [accessToken, refreshToken, error, navigate, setTokens, redirect]);
+
+	return (
+		<BgtPage>
+			<BgtPageContent centered>
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+					<BgtText size="3" color="white" className="mt-4">
+						{t("authenticating")}
+					</BgtText>
+				</div>
+			</BgtPageContent>
+		</BgtPage>
+	);
+}

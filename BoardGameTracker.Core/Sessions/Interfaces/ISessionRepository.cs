@@ -8,4 +8,12 @@ public interface ISessionRepository: ICrudHelper<Session>
     Task<int> CountAsync();
     Task<double> GetTotalPlayTime();
     Task<double> GetMeanPlayTime();
+    Task<int> CountByPlayer(int playerId);
+    Task<int> CountByPlayerAndGame(int playerId, int gameId);
+    Task<List<Session>> GetByPlayer(int playerId, bool? won = null);
+    Task<List<Session>> GetByPlayerAndGame(int playerId, int gameId);
+    Task<Dictionary<int, List<Session>>> GetByPlayerBatchAsync(IEnumerable<int> playerIds);
+    Task<List<Session>> GetRecentSessions(int count);
+    Task<List<IGrouping<DayOfWeek, Session>>> GetSessionsByDayOfWeek();
+    Task DeleteByPlayerIdAsync(int playerId);
 }

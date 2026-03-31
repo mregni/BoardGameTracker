@@ -2,6 +2,6 @@
 
 public enum UploadFileType
 {
-    Profile = 0,
-    Game = 1,
+    Profile,
+    Game,
 }

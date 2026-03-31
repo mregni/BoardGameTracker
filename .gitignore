@@ -143,6 +143,7 @@ dist
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff
+.idea
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/**/usage.statistics.xml
@@ -632,3 +633,14 @@ FodyWeavers.xsd
 # End of https://www.toptal.com/developers/gitignore/api/rider,visualstudio,visualstudiocode,node
 BoardGameTracker.Host/images/cover/
 BoardGameTracker.Host/images/profile/
+
+# Claude Code
+.claude
+
+boardgametracker.client/.tanstack/
+
+BoardGameTracker.Host/config/config.xml
+
+BoardGameTracker.Host/appsettings.Development.json
+
+boardgametracker.client/.env.sentry-build-plugin

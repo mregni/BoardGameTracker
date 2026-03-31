@@ -1,0 +1,38 @@
+services:
+  boardgametracker:
+    image: bgt:security-scan
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5444:5444"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=production
+      - ASPNETCORE_URLS=http://*:5444
+      - DB_HOST=db
+      - DB_USER=secuser
+      - DB_PASSWORD=${SEC_DB_PASSWORD:-securityscanpassword}
+      - DB_NAME=boardgametracker
+      - DB_PORT=5432
+      - JWT_SECRET=${SEC_JWT_SECRET:-ci-security-scan-jwt-secret-not-for-production}
+      - AUTH_ENABLED=true
+      - TZ=UTC
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=boardgametracker
+      - POSTGRES_USER=secuser
+      - POSTGRES_PASSWORD=${SEC_DB_PASSWORD:-securityscanpassword}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U secuser -d boardgametracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s

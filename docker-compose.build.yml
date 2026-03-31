@@ -1,0 +1,51 @@
+services:
+  boardgametracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-0.0.1}
+        ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-production}
+        ASPNETCORE_URLS: ${ASPNETCORE_URLS:-http://*:5444}
+        TZ: ${TZ:-UTC}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ${DATA_PATH:-./config}:/app/config
+      - ${LOG_PATH:-./logs}:/app/logs
+    ports:
+      - "${APP_PORT:-5444}:5444"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-production}
+      - ASPNETCORE_URLS=${ASPNETCORE_URLS:-http://*:5444}
+      - DB_HOST=db
+      - DB_USER=${DB_USER:-dev}
+      - DB_PASSWORD=${DB_PASSWORD:-CHANGEME}
+      - DB_NAME=${DB_NAME:-boardgametracker}
+      - DB_PORT=5432
+      - JWT_SECRET=${JWT_SECRET:-CHANGEME}
+      - TZ=${TZ:-UTC}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    volumes:
+      - ${DB_PATH:-./postgres-data}:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME:-boardgametracker}
+      - POSTGRES_USER=${DB_USER:-dev}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-CHANGEME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dev} -d ${DB_NAME:-boardgametracker}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

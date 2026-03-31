@@ -1,91 +1,60 @@
-﻿using AutoMapper;
-using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Common.ViewModels.Location;
-using BoardGameTracker.Common.ViewModels.Results;
+using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Locations.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/location")]
+[Authorize]
 public class LocationController : ControllerBase
 {
     private readonly ILocationService _locationService;
-    private readonly IMapper _mapper;
-    private readonly ILogger<LocationController> _logger;
 
-    public LocationController(ILocationService locationService, IMapper mapper, ILogger<LocationController> logger)
+    public LocationController(ILocationService locationService)
     {
         _locationService = locationService;
-        _mapper = mapper;
-        _logger = logger;
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetLocations()
     {
-        var games = await _locationService.GetLocations();
-        var mappedGames = _mapper.Map<IList<LocationViewModel>>(games);
-
-        return new ObjectResult(mappedGames);
+        var locations = await _locationService.GetLocations();
+        return Ok(locations.ToListDto());
     }
-    
+
     [HttpPost]
-    public async Task<IActionResult> CreateLocation([FromBody] CreateLocationViewModel? viewModel)
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> CreateLocation([FromBody] CreateLocationCommand command)
     {
-        if (viewModel == null)
-        {
-            return new BadRequestResult();
-        }
-        
-        try
-        {
-            var location = new Location
-            {
-                Name = viewModel.Name
-            };
-            location = await _locationService.Create(location);
-            
-            var result = _mapper.Map<LocationViewModel>(location);
-            return new OkObjectResult(result);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
-        }
+        var location = await _locationService.Create(command);
+        return Ok(location.ToDto());
     }
-    
-    [HttpPut]
-    public async Task<IActionResult> UpdateLocation([FromBody] LocationViewModel? viewModel)
-    {
-        if (viewModel is null)
-        {
-            return new BadRequestResult();
-        }
 
-        try
-        {
-            var location = _mapper.Map<Location>(viewModel);
-            await _locationService.Update(location);
-            
-            return new OkObjectResult(viewModel);
-        }
-        catch (Exception e)
-        {
-            return StatusCode(500);
-        }
+    [HttpPut]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationCommand command)
+    {
+        var location = await _locationService.Update(command);
+        return Ok(location.ToDto());
     }
-    
+
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> DeleteLocation(int id)
     {
+        var location = await _locationService.GetByIdAsync(id);
+        if (location == null)
+        {
+            return NotFound();
+        }
+
         await _locationService.Delete(id);
-        return new OkObjectResult(new DeletionResultViewModel(ResultState.Success));
+        return NoContent();
     }
 }

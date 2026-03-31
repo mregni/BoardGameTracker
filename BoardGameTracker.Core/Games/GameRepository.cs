@@ -1,7 +1,6 @@
 ﻿using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Entities.Helpers;
-using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -20,36 +19,16 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
     public async Task AddGameCategoriesIfNotExists(IEnumerable<GameCategory> categories)
     {
         await _context.GameCategories.AddRangeIfNotExists(categories);
-        await _context.SaveChangesAsync();
     }
 
     public async Task AddGameMechanicsIfNotExists(IEnumerable<GameMechanic> mechanics)
     {
         await _context.GameMechanics.AddRangeIfNotExists(mechanics);
-        await _context.SaveChangesAsync();
     }
 
     public async Task AddPeopleIfNotExists(IEnumerable<Person> people)
     {
         await _context.People.AddRangeIfNotExists(people);
-        await _context.SaveChangesAsync();
-    }
-
-    public override async Task<Game> CreateAsync(Game entity)
-    {
-        var catIds = entity.Categories.Select(x => x.Id);
-        entity.Categories = await _context.GameCategories.Where(x => catIds.Contains(x.Id)).ToListAsync();
-
-        var mecIds = entity.Mechanics.Select(x => x.Id);
-        entity.Mechanics = await _context.GameMechanics.Where(x => mecIds.Contains(x.Id)).ToListAsync();
-
-        var peopleIds = entity.People.Select(x => x.Id);
-        entity.People = await _context.People.Where(x => peopleIds.Contains(x.Id)).ToListAsync();
-
-        await _context.Games.AddAsync(entity);
-        await _context.SaveChangesAsync();
-
-        return entity;
     }
 
     public Task<Game?> GetGameByBggId(int bggId)
@@ -61,6 +40,10 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
     public Task<List<Game>> GetGamesOverviewList()
     {
         return _context.Games
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(x => x.Expansions)
+            .Include(x => x.Categories)
             .OrderBy(x => x.Title)
             .ToListAsync();
     }
@@ -76,165 +59,16 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
             .SingleOrDefaultAsync(x => x.Id == id);
     }
 
-    public Task<List<Session>> GetSessions(int id, int skip, int? take)
+    public Task<List<Expansion>> GetExpansions(List<int> expansionIds)
     {
-        var query = _context.Sessions
-            .Include(x => x.Location)
-            .Include(x => x.PlayerSessions)
-            .ThenInclude(x => x.Player)
-            .Where(x => x.GameId == id)
-            .OrderByDescending(x => x.Start)
-            .Skip(skip);
-
-        if (take.HasValue)
-        {
-            query = query.Take(take.Value);
-        }
-
-        return query.ToListAsync();
-    }
-
-    public Task<int> GetPlayCount(int id)
-    {
-        return _context.Sessions
-            .Where(x => x.GameId == id)
-            .CountAsync();
-    }
-
-    public async Task<TimeSpan> GetTotalPlayedTime(int id)
-    {
-        var totalDurationInMinutes = await _context.Sessions
-            .Where(x => x.GameId == id)
-            .SumAsync(session => (session.End - session.Start).TotalMinutes);
-
-        return TimeSpan.FromMinutes(totalDurationInMinutes);
-    }
-
-    public async Task<double?> GetPricePerPlay(int id)
-    {
-        var games = await _context.Games
-            .Include(x => x.Sessions)
-            .Where(x => x.Id == id)
+        return _context.Expansions
+            .Where(x => expansionIds.Contains(x.Id))
             .ToListAsync();
-
-        var game = games.First();
-        if (game.Sessions.Count == 0 || !game.BuyingPrice.HasValue)
-        {
-            return null;
-        }
-
-        return Math.Round(game.BuyingPrice.Value / game.Sessions.Count, 2);
     }
 
-    public async Task<DateTime?> GetLastPlayedDateTime(int id)
+    public Task<int> GetTotalExpansionCount()
     {
-        if (await _context.Sessions.AnyAsync(x => x.GameId == id))
-        {
-            return await _context.Sessions
-                .Where(x => x.GameId == id)
-                .OrderByDescending(x => x.Start)
-                .Select(x => x.Start)
-                .FirstOrDefaultAsync();
-        }
-
-        return null;
-    }
-
-    public Task<double?> GetHighestScore(int id)
-    {
-        return _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == id)
-            .SelectMany(x => x.PlayerSessions)
-            .MaxAsync(x => x.Score);
-    }
-
-    public async Task<Player?> GetMostWins(int id)
-    {
-        var playerSession = await _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == id )
-            .SelectMany(x => x.PlayerSessions)
-            .Where(x => x.Won)
-            .GroupBy(x => x.PlayerId)
-            .Select(x => new { PlayerId = x.Key, Count = x.Count()})
-            .OrderByDescending(x => x.Count)
-            .FirstOrDefaultAsync();
-
-        if (playerSession == null)
-        {
-            return null;
-        }
-
-        return await _context.Players.FirstAsync(x => x.Id == playerSession.PlayerId);
-    }
-
-    public async Task<Player?> GetMostWins()
-    {
-        var playerSession = await _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .SelectMany(x => x.PlayerSessions)
-            .Where(x => x.Won)
-            .GroupBy(x => x.PlayerId)
-            .Select(x => new { PlayerId = x.Key, Count = x.Count()})
-            .OrderByDescending(x => x.Count)
-            .FirstOrDefaultAsync();
-
-        if (playerSession == null)
-        {
-            return null;
-        }
-
-        return await _context.Players.FirstAsync(x => x.Id == playerSession.PlayerId);
-    }
-
-    public Task<double?> GetAverageScore(int id)
-    {
-        return _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == id)
-            .SelectMany(x => x.PlayerSessions)
-            .AverageAsync(x => x.Score);
-    }
-
-    public Task<double> GetAveragePlayTime(int id)
-    {
-        if (_context.Sessions.Any(x => x.GameId == id))
-        {
-            return _context.Sessions
-                .Include(x => x.PlayerSessions)
-                .Where(x => x.GameId == id)
-                .AverageAsync(x => (x.End - x.Start).TotalMinutes);
-        }
-
-        return Task.FromResult(0d);
-    }
-
-    public Task<double?> GetMeanPayedAsync()
-    {
-        return _context.Games
-            .AverageAsync(x => x.BuyingPrice);
-    }
-
-    public Task<double?> GetTotalPayedAsync()
-    {
-        return _context.Games.SumAsync(x => x.BuyingPrice);
-    }
-
-    public Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState()
-    {
-        return _context.Games
-            .GroupBy(x => x.State)
-            .ToListAsync();
-            
-    }
-
-    public Task<List<Session>> GetSessionsByGameId(int id)
-    {
-        return _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == id)
-            .ToListAsync();
+        return _context.Expansions.CountAsync();
     }
 
     public Task<int> CountAsync()
@@ -242,123 +76,77 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
         return _context.Games.CountAsync();
     }
 
-    public async Task<int?> GetShortestPlay(int id)
+    public async Task DeleteExpansion(int gameId, int expansionId)
     {
-        var result = await _context.Sessions
-            .Where(x => x.GameId == id)
-            .OrderBy(x => (x.End - x.Start).TotalSeconds)
-            .FirstOrDefaultAsync();
+        var game = await _context.Games
+            .Include(x => x.Expansions)
+            .SingleOrDefaultAsync(x => x.Id == gameId);
 
-        return result?.Id;
+        if (game == null)
+        {
+            return;
+        }
+
+        var expansion = game.Expansions.FirstOrDefault(e => e.Id == expansionId);
+        if (expansion != null)
+        {
+            game.RemoveExpansion(expansion.BggId);
+        }
     }
 
-    public async Task<int?> GetLongestPlay(int id)
+    public Task<List<Game>> GetRecentlyAddedGames(int count)
     {
-        var result = await _context.Sessions
-            .Where(x => x.GameId == id)
-            .OrderByDescending(x => (x.End - x.Start).TotalSeconds)
-            .FirstOrDefaultAsync();
-
-        return result?.Id;
-    }
-
-    public async Task<int?> GetHighScorePlay(int id)
-    {
-        var result = await _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Include(x => x.Game)
-            .Where(x => x.GameId == id && x.Game.HasScoring)
-            .SelectMany(x => x.PlayerSessions)
-            .OrderByDescending(x => x.Score)
-            .FirstOrDefaultAsync();
-
-        return result?.SessionId;
-    }
-
-    public async Task<int?> GetLowestScorePlay(int id)
-    {
-        var result = await _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Include(x => x.Game)
-            .Where(x => x.GameId == id && x.Game.HasScoring)
-            .SelectMany(x => x.PlayerSessions)
-            .OrderBy(x => x.Score)
-            .FirstOrDefaultAsync();
-
-        return result?.SessionId;
-    }
-
-    public Task<int> GetTotalPlayCount(int id)
-    {
-        return _context.Sessions
-            .CountAsync(x => x.GameId == id);
-    }
-
-    public Task<List<IGrouping<DayOfWeek, Session>>> GetPlayByDayChart(int id)
-    {
-        return _context.Sessions
-            .Where(x => x.GameId == id)
-            .GroupBy(x => x.Start.DayOfWeek)
+        return _context.Games
+            .AsNoTracking()
+            .Where(x => x.AdditionDate != null)
+            .OrderByDescending(x => x.AdditionDate)
+            .Take(count)
             .ToListAsync();
     }
 
-    public Task<List<IGrouping<int, int>>> GetPlayerCountChart(int id)
+    public Task<List<Game>> GetGamesWithNoRecentSessions(DateTime cutoffDate)
     {
-        return _context.Sessions
-            .Where(x => x.GameId == id)
-            .Select(x => x.PlayerSessions.Count())
-            .GroupBy(x => x)
+        return _context.Games
+            .AsNoTracking()
+            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
+            .OrderBy(g => g.Title)
             .ToListAsync();
     }
 
-    public Task<PlayerSession?> GetHighestScoringPlayer(int id)
+    public Task<int> CountGamesWithNoRecentSessions(DateTime cutoffDate)
     {
-        return _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == id)
-            .SelectMany(x => x.PlayerSessions)
-            .OrderByDescending(x => x.Score)
-            .FirstOrDefaultAsync();
+        return _context.Games
+            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
+            .CountAsync();
     }
 
-    public Task<PlayerSession?> GetHighestLosingPlayer(int id)
+    public Task<List<ShameGame>> GetShameGames(DateTime cutoffDate)
     {
-        return _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == id)
-            .SelectMany(x => x.PlayerSessions)
-            .Where(x => !x.Won)
-            .OrderByDescending(x => x.Score)
-            .FirstOrDefaultAsync();
-    }
-
-    public Task<PlayerSession?> GetLowestWinning(int id)
-    {
-        return _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == id)
-            .SelectMany(x => x.PlayerSessions)
-            .Where(x => x.Won)
-            .OrderBy(x => x.Score)
-            .FirstOrDefaultAsync();
-    }
-
-    public Task<PlayerSession?> GetLowestScoringPlayer(int id)
-    {
-        return _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == id)
-            .SelectMany(x => x.PlayerSessions)
-            .OrderBy(x => x.Score)
-            .FirstOrDefaultAsync();
-    }
-
-    public Task<List<Session>> GetSessions(int id, int dayCount)
-    {
-        return _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.GameId == id && x.Start > DateTime.UtcNow.AddDays(dayCount))
-            .OrderBy(x => x.Start)
+        return _context.Games
+            .AsNoTracking()
+            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
+            .Select(g => new ShameGame
+            {
+                Id = g.Id,
+                Title = g.Title,
+                Image = g.Image,
+                AdditionDate = g.AdditionDate,
+                Price = g.BuyingPrice != null ? g.BuyingPrice.Amount : null,
+                LastSessionDate = _context.Sessions
+                    .Where(s => s.GameId == g.Id)
+                    .OrderByDescending(s => s.Start)
+                    .Select(s => (DateTime?)s.Start)
+                    .FirstOrDefault()
+            })
+            .OrderBy(g => g.Title)
             .ToListAsync();
     }
+
+    public Task<List<Game>> GetByIdsAsync(IEnumerable<int> ids)
+    {
+        return _context.Games
+            .Where(g => ids.Contains(g.Id))
+            .ToListAsync();
+    }
+
 }

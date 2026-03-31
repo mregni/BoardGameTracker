@@ -1,85 +1,48 @@
-﻿using System.Net;
-using AutoMapper;
-using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Common.ViewModels.Results;
+﻿using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Players.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/player")]
+[Authorize]
 public class PlayerController : ControllerBase
 {
     private readonly IPlayerService _playerService;
-    private readonly IMapper _mapper;
-    private readonly ILogger<PlayerController> _logger;
 
-    public PlayerController(IPlayerService playerService, IMapper mapper, ILogger<PlayerController> logger)
+    public PlayerController(IPlayerService playerService)
     {
         _playerService = playerService;
-        _mapper = mapper;
-        _logger = logger;
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetPlayers()
     {
-        var games = await _playerService.GetList();
-        var mappedGames = _mapper.Map<IList<PlayerViewModel>>(games);
-
-        return new OkObjectResult(mappedGames);
+        var players = await _playerService.GetList();
+        return Ok(players.ToListDto());
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreatePlayer([FromBody] PlayerCreationViewModel? playerCreationViewModel)
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> CreatePlayer([FromBody] CreatePlayerCommand command)
     {
-        if (playerCreationViewModel == null)
-        {
-            return new BadRequestResult();
-        }
-
-        try
-        {
-            var player = _mapper.Map<Player>(playerCreationViewModel);
-            player = await _playerService.Create(player);
-
-            var playerViewModel = _mapper.Map<PlayerViewModel>(player);
-            return new OkObjectResult(playerViewModel);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
-        }    
+        var player = await _playerService.Create(command);
+        return Ok(player.ToDto());
     }
-    
+
     [HttpPut]
-    public async Task<IActionResult> UpdatePlayer([FromBody] PlayerViewModel? viewModel)
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> UpdatePlayer([FromBody] UpdatePlayerCommand command)
     {
-        if (viewModel is not {Id: { }})
-        {
-            return new BadRequestResult();
-        }
-        
-        try
-        {
-            var player = _mapper.Map<Player>(viewModel);
-            player = await _playerService.Update(player);
-            var result = _mapper.Map<PlayerViewModel>(player);
-            return new OkObjectResult(result);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
-        }
+        var player = await _playerService.Update(command);
+        return Ok(player.ToDto());
     }
 
-    
     [HttpGet]
     [Route("{id:int}")]
     public async Task<IActionResult> GetPlayerById(int id)
@@ -87,28 +50,34 @@ public class PlayerController : ControllerBase
         var player = await _playerService.Get(id);
         if (player == null)
         {
-            return new NotFoundResult();
+            return NotFound();
         }
 
-        var viewModel = _mapper.Map<PlayerViewModel>(player);
-        return new OkObjectResult(viewModel);
+        return Ok(player.ToDto());
     }
-     
+
     [HttpDelete]
     [Route("{id:int}")]
-    public async Task<IActionResult> DeleteGameById(int id)
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> DeletePlayerById(int id)
     {
         await _playerService.Delete(id);
-        return new OkObjectResult(new DeletionResultViewModel(ResultState.Success));
+        return NoContent();
     }
-    
+
     [HttpGet]
-    [Route("{id:int}/stats")]
-    public async Task<IActionResult> GetGameStats(int id)
+    [Route("{id:int}/statistics")]
+    public async Task<IActionResult> GetPlayerStats(int id)
     {
         var stats = await _playerService.GetStats(id);
+        return Ok(stats);
+    }
 
-        var statsViewModel = _mapper.Map<PlayerStatisticsViewModel>(stats);
-        return new OkObjectResult(statsViewModel);
+    [HttpGet]
+    [Route("{id:int}/sessions")]
+    public async Task<IActionResult> GetPlayerSessionsById(int id, [FromQuery] int? count)
+    {
+        var sessions = await _playerService.GetSessions(id, count);
+        return Ok(sessions.ToListDto());
     }
 }

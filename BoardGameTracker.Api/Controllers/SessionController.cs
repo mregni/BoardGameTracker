@@ -1,80 +1,65 @@
-﻿using AutoMapper;
-using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Common.ViewModels.Results;
-using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Sessions.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/session")]
+[Authorize]
 public class SessionController : ControllerBase
 {
     private readonly ISessionService _sessionService;
-    private readonly IMapper _mapper;
-    private readonly ILogger<SessionController> _logger;
 
-    public SessionController(ISessionService sessionService, IMapper mapper, ILogger<SessionController> logger)
+    public SessionController(ISessionService sessionService)
     {
         _sessionService = sessionService;
-        _mapper = mapper;
-        _logger = logger;
+    }
+
+    [HttpGet]
+    [Route("{id:int}")]
+    public async Task<IActionResult> GetSession(int id)
+    {
+        var session = await _sessionService.Get(id);
+        if (session == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(session.ToDto());
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateSession([FromBody] SessionViewModel? viewModel)
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> CreateSession([FromBody] CreateSessionCommand command)
     {
-        if (viewModel == null)
-        {
-            return new BadRequestResult();
-        }
-
-        try
-        {
-            var play = _mapper.Map<Session>(viewModel);
-            play = await _sessionService.Create(play);
-
-            var result = _mapper.Map<SessionViewModel>(play);
-            return new OkObjectResult(result);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
-        }
+        var session = await _sessionService.CreateFromCommand(command);
+        return Ok(session.ToDto());
     }
-    
+
     [HttpPut]
-    public async Task<IActionResult> UpdateSession([FromBody] SessionViewModel? updateViewModel)
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> UpdateSession([FromBody] UpdateSessionCommand command)
     {
-        if (updateViewModel is not {Id: not null})
-        {
-            return new BadRequestResult();
-        }
-
-        var play = _mapper.Map<Session>(updateViewModel);
-        try
-        {
-            var result = await _sessionService.Update(play);
-            var viewModel = _mapper.Map<SessionViewModel>(result);
-            return new OkObjectResult(viewModel);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-            return StatusCode(500);
-        }
+        var result = await _sessionService.UpdateFromCommand(command);
+        return Ok(result.ToDto());
     }
-    
+
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> DeleteSession(int id)
     {
+        var session = await _sessionService.Get(id);
+        if (session == null)
+        {
+            return NotFound();
+        }
+
         await _sessionService.Delete(id);
-        return new OkObjectResult(new DeletionResultViewModel(ResultState.Success));
+        return NoContent();
     }
 }

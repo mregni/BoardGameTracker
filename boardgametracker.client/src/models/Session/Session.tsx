@@ -1,15 +1,15 @@
-import { SessionFlag } from '../Games/SessionFlag';
+import type { Expansion } from "../Games/Expansion";
 
-import { PlayerSession } from './PlayerSession';
+import type { PlayerSession } from "./PlayerSession";
 
 export interface Session {
-  id: number;
-  comment: string;
-  ended: boolean;
-  gameId: number;
-  start: Date;
-  minutes: number;
-  playerSessions: PlayerSession[];
-  locationId: number;
-  flags: SessionFlag[];
+	id: number;
+	comment: string;
+	ended: boolean;
+	gameId: number;
+	start: Date;
+	minutes: number;
+	playerSessions: PlayerSession[];
+	expansions: Expansion[];
+	locationId: number;
 }

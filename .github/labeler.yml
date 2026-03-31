@@ -1,0 +1,56 @@
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "BoardGameTracker.Core/**"
+          - "BoardGameTracker.Api/**"
+          - "BoardGameTracker.Common/**"
+          - "BoardGameTracker.Host/**"
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "boardgametracker.client/src/**"
+
+auth:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "BoardGameTracker.Core/**/Auth/**"
+          - "BoardGameTracker.Api/Controllers/AuthController.cs"
+          - "BoardGameTracker.Api/Controllers/OidcController.cs"
+          - "BoardGameTracker.Api/Infrastructure/AuthDisabled*"
+
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "BoardGameTracker.Core/**/Datastore/**"
+          - "**/*Migration*"
+
+docker:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "Dockerfile"
+          - "docker-compose*.yml"
+          - "entrypoint.sh"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "boardgametracker.client/package*.json"
+          - "**/*.csproj"
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "BoardGameTracker.Tests/**"
+          - "boardgametracker.client/**/*.test.*"
+          - "boardgametracker.client/**/*.spec.*"
+
+i18n:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "boardgametracker.client/public/locales/**"

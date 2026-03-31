@@ -1,26 +1,20 @@
-import '@radix-ui/themes/styles.css';
-import './index.css';
-import './utils/i18n';
-import 'react-perfect-scrollbar/dist/css/styles.css';
+import "@radix-ui/themes/styles.css";
+import "./index.css";
+import "./utils/i18n";
+import { Theme } from "@radix-ui/themes";
+import React, { Suspense } from "react";
+import ReactDOM from "react-dom/client";
+import { Toaster } from "sonner";
+import AppContainer from "./App.tsx";
+import { classConfig } from "./config/sonner.ts";
 
-import { BrowserRouter } from 'react-router-dom';
-import ReactDOM from 'react-dom/client';
-import React, { Suspense } from 'react';
-import { Theme } from '@radix-ui/themes';
-
-import { BgtToastProvider } from './providers/BgtToastProvider.tsx';
-import AppContainer from './App.tsx';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <Suspense>
-      <BrowserRouter future={{ v7_startTransition: true }}>
-        <Theme appearance="dark" accentColor="purple" grayColor="gray" panelBackground="solid" scaling="95%">
-          <BgtToastProvider>
-            <AppContainer />
-          </BgtToastProvider>
-        </Theme>
-      </BrowserRouter>
-    </Suspense>
-  </React.StrictMode>
+ReactDOM.createRoot(document.getElementById("root")!).render(
+	<React.StrictMode>
+		<Suspense>
+			<Theme appearance="dark" accentColor="purple" grayColor="gray" panelBackground="solid">
+				<Toaster toastOptions={{ unstyled: true, classNames: classConfig }} />
+				<AppContainer />
+			</Theme>
+		</Suspense>
+	</React.StrictMode>,
 );

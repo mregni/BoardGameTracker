@@ -1,0 +1,55 @@
+import { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtText } from "@/components/BgtText/BgtText";
+import type { CompareResult } from "@/models";
+import { useGameById } from "../../-hooks/useGameById";
+
+interface CompareSummaryStatsProps {
+	compare: CompareResult;
+}
+
+const CompareSummaryStatsComponent = ({ compare }: CompareSummaryStatsProps) => {
+	const { t } = useTranslation("compare");
+
+	const { gameById } = useGameById();
+
+	return (
+		<div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12">
+			<BgtCard>
+				<div className="flex items-center flex-col">
+					<BgtText color="cyan" size="8">
+						{compare.totalSessionsTogether}
+					</BgtText>
+					<BgtText color="primary" opacity={70} className="uppercase tracking-wider">
+						{t("total-games-played")}
+					</BgtText>
+				</div>
+			</BgtCard>
+			<BgtCard>
+				<div className="flex items-center flex-col">
+					<BgtText color="cyan" size="8">
+						{compare.minutesPlayed}
+					</BgtText>
+					<BgtText color="primary" opacity={70} className="uppercase tracking-wider">
+						{t("minutes-played")}
+					</BgtText>
+				</div>
+			</BgtCard>
+			<BgtCard>
+				<div className="flex items-center flex-col">
+					<BgtText color="cyan" size="8" className="line-clamp-1">
+						{compare.preferredGame?.gameId ? gameById(compare.preferredGame.gameId)?.title : "-"}
+					</BgtText>
+					<BgtText color="primary" opacity={70} className="uppercase tracking-wider">
+						{t("most-played-game")}
+					</BgtText>
+				</div>
+			</BgtCard>
+		</div>
+	);
+};
+
+CompareSummaryStatsComponent.displayName = "CompareSummaryStats";
+
+export const CompareSummaryStats = memo(CompareSummaryStatsComponent);

@@ -1,9 +1,31 @@
-﻿using BoardGameTracker.Common.Entities.Helpers;
+﻿using System.Text.Json.Serialization;
+using Ardalis.GuardClauses;
+using BoardGameTracker.Common.Entities.Helpers;
 
 namespace BoardGameTracker.Common.Entities;
 
-public class Expansion : BaseGame
+public class Expansion : HasId
 {
-    public Game BaseGame { get; set; }
-    public int? BaseGameId { get; set; }
+    private string _title = string.Empty;
+
+    public string Title
+    {
+        get => _title;
+        private set => _title = Guard.Against.NullOrWhiteSpace(value);
+    }
+
+    public int BggId { get; private set; }
+
+    [JsonIgnore]
+    public Game Game { get; private set; } = null!;
+    public int GameId { get; private set; }
+    public ICollection<Session> Sessions { get; private set; }
+
+    public Expansion(string title, int bggId, int gameId)
+    {
+        Title = title;
+        BggId = Guard.Against.NegativeOrZero(bggId);
+        GameId = Guard.Against.NegativeOrZero(gameId);
+        Sessions = new List<Session>();
+    }
 }

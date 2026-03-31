@@ -1,14 +1,19 @@
-﻿using System.Reflection;
+using System.Reflection;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Entities.Helpers;
+using BoardGameTracker.Common.Enums;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Datastore;
 
 // dotnet ef migrations add <NAME> --startup-project ../BoardGameTracker.Host --output-dir DataStore/Migrations/Postgres
-public class MainDbContext : DbContext
+public class MainDbContext : IdentityDbContext<ApplicationUser>
 {
     public DbSet<Game> Games { get; set; }
+    public DbSet<Expansion> Expansions { get; set; }
     public DbSet<GameAccessory> GameAccessories { get; set; }
     public DbSet<GameCategory> GameCategories { get; set; }
     public DbSet<GameMechanic> GameMechanics { get; set; }
@@ -18,31 +23,36 @@ public class MainDbContext : DbContext
     public DbSet<Location> Locations { get; set; }
     public DbSet<Config> Config { get; set; }
     public DbSet<Language> Languages { get; set; }
+    public DbSet<PlayerSession> PlayerSessions { get; set; }
+    public DbSet<Badge> Badges { get; set; }
+    public DbSet<Loan> Loans { get; set; }
+    public DbSet<GameNight> GameNights { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<OidcProvider> OidcProviders { get; set; }
+    public DbSet<ExternalLogin> ExternalLogins { get; set; }
 
     public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
     {
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.EnableSensitiveDataLogging();
-        base.OnConfiguring(optionsBuilder);
-
-        optionsBuilder.UseSeeding((context, _) =>
-        {
-            CheckLanguages(context);
-        });
-    }
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        base.OnModelCreating(builder);
+
         BuildIds(builder);
+        ConfigureValueObjects(builder);
         BuildGame(builder);
         BuildGameSessions(builder);
         BuildPlayer(builder);
+        BuildBadges(builder);
+        BuildLoans(builder);
+        BuildGameNights(builder);
+        BuildAuthEntities(builder);
+
+        SeedDatabase(builder);
     }
 
-    private void BuildIds(ModelBuilder builder)
+    private static void BuildIds(ModelBuilder builder)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var @namespace = typeof(Game).Namespace;
@@ -59,11 +69,100 @@ public class MainDbContext : DbContext
         }
     }
 
+    private static void ConfigureValueObjects(ModelBuilder builder)
+    {
+        builder.Entity<Game>()
+            .OwnsOne(g => g.BuyingPrice, cost =>
+            {
+                cost.Property(c => c.Amount)
+                    .HasColumnName(nameof(Game.BuyingPrice))
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+            });
+
+        builder.Entity<Game>()
+            .OwnsOne(g => g.SoldPrice, cost =>
+            {
+                cost.Property(c => c.Amount)
+                    .HasColumnName(nameof(Game.SoldPrice))
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+            });
+
+        builder.Entity<Game>()
+            .OwnsOne(g => g.Rating, cost =>
+            {
+                cost.Property(c => c.Value)
+                    .HasColumnName(nameof(Game.Rating))
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+            });
+
+        builder.Entity<Game>()
+            .OwnsOne(g => g.Weight, cost =>
+            {
+                cost.Property(c => c.Value)
+                    .HasColumnName(nameof(Game.Weight))
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+            });
+
+        builder.Entity<Game>()
+            .OwnsOne(x => x.PlayerCount, pcr =>
+            {
+                pcr.Property(p => p.Min).HasColumnName("MinPlayers");
+                pcr.Property(p => p.Max).HasColumnName("MaxPlayers");
+            });
+
+        builder.Entity<Game>()
+            .OwnsOne(x => x.PlayTime, ptr =>
+            {
+                ptr.Property(p => p.MinMinutes).HasColumnName("MinPlayTime");
+                ptr.Property(p => p.MaxMinutes).HasColumnName("MaxPlayTime");
+            });
+    }
+
+    private static void BuildLoans(ModelBuilder builder)
+    {
+        builder.Entity<Loan>()
+            .HasOne(x => x.Game)
+            .WithMany(x => x.Loans)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Loan>()
+            .HasOne(x => x.Player)
+            .WithMany(x => x.Loans)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+
+    private static void BuildGameNights(ModelBuilder builder)
+    {
+        builder.Entity<GameNight>()
+            .HasMany(x => x.SuggestedGames)
+            .WithMany();
+
+        builder.Entity<GameNight>()
+            .HasMany(x => x.InvitedPlayers)
+            .WithOne(x => x.GameNight)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<GameNightRsvp>()
+            .Property(x => x.State)
+            .HasConversion<string>();
+    }
+
     private static void BuildGame(ModelBuilder builder)
     {
         builder.Entity<Game>()
+            .HasIndex(x => x.BggId)
+            .IsUnique();
+
+        builder.Entity<Game>()
             .HasMany(x => x.Expansions)
-            .WithOne(x => x.BaseGame)
+            .WithOne(x => x.Game)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Game>()
@@ -124,24 +223,140 @@ public class MainDbContext : DbContext
             .WithOne(x => x.Player)
             .HasForeignKey(x => x.PlayerId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Player>()
+            .HasMany(x => x.Badges)
+            .WithMany(x => x.Players);
+
+        builder.Entity<Player>()
+            .HasMany(x => x.GameNightRsvps)
+            .WithOne(x => x.Player)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
-    private static void CheckLanguages(DbContext context)
+    private static void BuildBadges(ModelBuilder builder)
     {
-        var languages = new []
-        {
-            new Language { Key = "en-us", TranslationKey = "english" },
-            new Language { Key = "nl-be", TranslationKey = "dutch" } 
-        };
+        builder.Entity<Badge>()
+            .Property(x => x.Level)
+            .HasConversion<string>();
 
-        foreach (var language in languages)
-        {
-            var dblang = context.Set<Language>().FirstOrDefault(b => b.Key == language.Key);
-            if (dblang == null)
-            {
-                context.Set<Language>().Add(language);
-            }
-        }
-        context.SaveChanges();
+        builder.Entity<Badge>()
+            .Property(x => x.Type)
+            .HasConversion<string>();
+    }
+
+    private static void BuildAuthEntities(ModelBuilder builder)
+    {
+        // Place all Identity tables in the "auth" schema
+        builder.Entity<ApplicationUser>().ToTable("AspNetUsers", "auth");
+        builder.Entity<IdentityRole>().ToTable("AspNetRoles", "auth");
+        builder.Entity<IdentityUserRole<string>>().ToTable("AspNetUserRoles", "auth");
+        builder.Entity<IdentityUserClaim<string>>().ToTable("AspNetUserClaims", "auth");
+        builder.Entity<IdentityUserLogin<string>>().ToTable("AspNetUserLogins", "auth");
+        builder.Entity<IdentityRoleClaim<string>>().ToTable("AspNetRoleClaims", "auth");
+        builder.Entity<IdentityUserToken<string>>().ToTable("AspNetUserTokens", "auth");
+
+        // ApplicationUser -> Player relationship
+        builder.Entity<ApplicationUser>()
+            .HasOne(x => x.Player)
+            .WithMany()
+            .HasForeignKey(x => x.PlayerId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // RefreshToken
+        builder.Entity<RefreshToken>().ToTable("RefreshTokens", "auth");
+        builder.Entity<RefreshToken>().HasKey(x => x.Id);
+        builder.Entity<RefreshToken>()
+            .HasIndex(x => x.Token)
+            .IsUnique();
+        builder.Entity<RefreshToken>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ExternalLogin
+        builder.Entity<ExternalLogin>().ToTable("ExternalLogins", "auth");
+        builder.Entity<ExternalLogin>().HasKey(x => x.Id);
+        builder.Entity<ExternalLogin>()
+            .HasIndex(x => new { x.Provider, x.ProviderKey })
+            .IsUnique();
+        builder.Entity<ExternalLogin>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // OidcProvider
+        builder.Entity<OidcProvider>().ToTable("OidcProviders", "auth");
+        builder.Entity<OidcProvider>().HasKey(x => x.Id);
+        builder.Entity<OidcProvider>()
+            .HasIndex(x => x.Name)
+            .IsUnique();
+    }
+
+    private static void SeedDatabase(ModelBuilder builder)
+    {
+        SeedLanguages(builder);
+        SeedBadges(builder);
+    }
+
+    private static void SeedLanguages(ModelBuilder builder)
+    {
+        builder
+            .Entity<Language>()
+            .HasData(
+                new Language {Id = 1, Key = "en-us", TranslationKey = "english"},
+                new Language {Id = 2, Key = "nl-be", TranslationKey = "dutch"}
+            );
+    }
+
+    private static void SeedBadges(ModelBuilder builder)
+    {
+        builder
+            .Entity<Badge>()
+            .HasData(
+                Badge.CreateWithId(1, "different-games.green.title", "different-games.green.description", BadgeType.DifferentGames, "different-games-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(2, "different-games.blue.title", "different-games.blue.description", BadgeType.DifferentGames, "different-games-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(3, "different-games.red.title", "different-games.red.description", BadgeType.DifferentGames, "different-games-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(4, "different-games.gold.title", "different-games.gold.description", BadgeType.DifferentGames, "different-games-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(5, "sessions.green.title", "sessions.green.description", BadgeType.Sessions, "sessions-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(6, "sessions.blue.title", "sessions.blue.description", BadgeType.Sessions, "sessions-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(7, "sessions.red.title", "sessions.red.description", BadgeType.Sessions, "sessions-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(8, "sessions.gold.title", "sessions.gold.description", BadgeType.Sessions, "sessions-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(9, "wins.green.title", "wins.green.description", BadgeType.Wins, "wins-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(10, "wins.blue.title", "wins.blue.description", BadgeType.Wins, "wins-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(11, "wins.red.title", "wins.red.description", BadgeType.Wins, "wins-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(12, "wins.gold.title", "wins.gold.description", BadgeType.Wins, "wins-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(13, "duration.green.title", "duration.green.description", BadgeType.Duration, "duration-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(14, "duration.blue.title", "duration.blue.description", BadgeType.Duration, "duration-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(15, "duration.red.title", "duration.red.description", BadgeType.Duration, "duration-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(16, "duration.gold.title", "duration.gold.description", BadgeType.Duration, "duration-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(17, "win-percentage.green.title", "win-percentage.green.description", BadgeType.WinPercentage, "win-percentage-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(18, "win-percentage.blue.title", "win-percentage.blue.description", BadgeType.WinPercentage, "win-percentage-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(19, "win-percentage.red.title", "win-percentage.red.description", BadgeType.WinPercentage, "win-percentage-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(20, "win-percentage.gold.title", "win-percentage.gold.description", BadgeType.WinPercentage, "win-percentage-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(21, "solo-specialist.green.title", "solo-specialist.green.description", BadgeType.SoloSpecialist, "solo-specialist-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(22, "solo-specialist.blue.title", "solo-specialist.blue.description", BadgeType.SoloSpecialist, "solo-specialist-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(23, "solo-specialist.red.title", "solo-specialist.red.description", BadgeType.SoloSpecialist, "solo-specialist-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(24, "solo-specialist.gold.title", "solo-specialist.gold.description", BadgeType.SoloSpecialist, "solo-specialist-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(25, "winning-streak.green.title", "winning-streak.green.description", BadgeType.WinningStreak, "winning-streak-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(26, "winning-streak.blue.title", "winning-streak.blue.description", BadgeType.WinningStreak, "winning-streak-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(27, "winning-streak.red.title", "winning-streak.red.description", BadgeType.WinningStreak, "winning-streak-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(28, "winning-streak.gold.title", "winning-streak.gold.description", BadgeType.WinningStreak, "winning-streak-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(29, "social-player.green.title", "social-player.green.description", BadgeType.SocialPlayer, "social-player-green.png", BadgeLevel.Green),
+                Badge.CreateWithId(30, "social-player.blue.title", "social-player.blue.description", BadgeType.SocialPlayer, "social-player-blue.png", BadgeLevel.Blue),
+                Badge.CreateWithId(31, "social-player.red.title", "social-player.red.description", BadgeType.SocialPlayer, "social-player-red.png", BadgeLevel.Red),
+                Badge.CreateWithId(32, "social-player.gold.title", "social-player.gold.description", BadgeType.SocialPlayer, "social-player-gold.png", BadgeLevel.Gold),
+                Badge.CreateWithId(33, "close-win.title", "close-win.description", BadgeType.CloseWin, "close-win.png"),
+                Badge.CreateWithId(34, "close-loss.title", "close-loss.description", BadgeType.CloseLoss, "close-loss.png"),
+                Badge.CreateWithId(35, "marathon-runner.title", "marathon-runner.description", BadgeType.MarathonRunner, "marathon.png"),
+                Badge.CreateWithId(36, "first-try.title", "first-try.description", BadgeType.FirstTry, "first-try.png"),
+                Badge.CreateWithId(37, "learning-curve.title", "learning-curve.description", BadgeType.LearningCurve, "learning-curve.png"),
+                Badge.CreateWithId(38, "monthly-goal.title", "monthly-goal.description", BadgeType.MonthlyGoal, "monthly-goal.png"),
+                Badge.CreateWithId(39, "consistent-schedule.title", "consistent-schedule.description", BadgeType.ConsistentSchedule, "consistent-schedule.png")
+            );
     }
 }

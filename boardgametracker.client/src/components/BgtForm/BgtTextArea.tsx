@@ -1,31 +1,44 @@
-import { DeepMap, FieldError, FieldValues, Path, UseFormRegister } from 'react-hook-form';
-import { ComponentPropsWithoutRef } from 'react';
-import { cx } from 'class-variance-authority';
-import { TextArea } from '@radix-ui/themes';
+import { TextArea } from "@radix-ui/themes";
+import type { AnyFieldApi } from "@tanstack/react-form";
+import { cx } from "class-variance-authority";
+import { memo, useCallback } from "react";
 
-export interface Props<T extends FieldValues> extends ComponentPropsWithoutRef<'div'> {
-  name: Path<T>;
-  register?: UseFormRegister<T>;
-  errors?: Partial<DeepMap<T, FieldError>>;
-  disabled?: boolean;
-  label: string;
+import { FormFieldWrapper } from "./FormFieldWrapper";
+
+export interface BgtTextAreaProps {
+	field: AnyFieldApi;
+	disabled?: boolean;
+	label: string;
+	className?: string;
 }
 
-export const BgtTextArea = <T extends FieldValues>(props: Props<T>) => {
-  const { name, register, disabled = false, className, label } = props;
-  return (
-    <div className="flex flex-col">
-      <div className="flex items-baseline justify-between">
-        <div className="text-[15px] font-medium leading-[35px] uppercase">{label}</div>
-      </div>
-      <div className="bg-input rounded-lg p-2">
-        <TextArea
-          className={cx(className, 'bg-transparent shadow-none focus-within:outline-none')}
-          rows={4}
-          disabled={disabled}
-          {...register?.(name)}
-        />
-      </div>
-    </div>
-  );
+const BgtTextAreaComponent = (props: BgtTextAreaProps) => {
+	const { field, disabled = false, className, label } = props;
+
+	const handleChange = useCallback(
+		(event: React.ChangeEvent<HTMLTextAreaElement>) => {
+			field.handleChange(event.target.value);
+		},
+		[field],
+	);
+
+	return (
+		<FormFieldWrapper label={label} errors={field.state.meta.errors}>
+			<div className="w-full  text-whiterounded-lg border-none ">
+				<TextArea
+					className={cx(
+						"bg-background! shadow-none!border rounded-lg! border-primary/30! focus:border-primary!",
+						className,
+					)}
+					rows={4}
+					disabled={disabled}
+					value={field.state.value ?? ""}
+					onChange={handleChange}
+					onBlur={field.handleBlur}
+				/>
+			</div>
+		</FormFieldWrapper>
+	);
 };
+
+export const BgtTextArea = memo(BgtTextAreaComponent);

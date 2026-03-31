@@ -1,0 +1,129 @@
+import { memo, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
+import { BgtText } from "@/components/BgtText/BgtText";
+import type { CompareResult, Player } from "@/models";
+import { toDisplay } from "@/utils/dateUtils";
+import { useGameById } from "../../-hooks/useGameById";
+
+interface HeadToHeadProps {
+	playerOne: Player;
+	playerTwo: Player;
+	compare: CompareResult;
+	dateFormat: string;
+	uiLanguage: string;
+}
+
+const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLanguage }: HeadToHeadProps) => {
+	const { t } = useTranslation("compare");
+
+	const { gameById } = useGameById();
+
+	const headToHeadStats = useMemo(() => {
+		type Stat = { key: string; isValid: boolean; text: string };
+		const conditionalStat = (key: string, condition: boolean, text: () => string): Stat | null =>
+			condition ? { key, isValid: true, text: text() } : null;
+
+		const p1Won = compare.mostWonGame.playerOne;
+		const p2Won = compare.mostWonGame.playerTwo;
+
+		return [
+			{
+				key: "direct-wins-player-one",
+				isValid: true,
+				text: t("head-to-head.direct-wins", {
+					player: playerOne.name,
+					count: compare.directWins.playerOne,
+					opponent: playerTwo.name,
+				}),
+			},
+			{
+				key: "direct-wins-player-two",
+				isValid: true,
+				text: t("head-to-head.direct-wins", {
+					player: playerTwo.name,
+					count: compare.directWins.playerTwo,
+					opponent: playerOne.name,
+				}),
+			},
+			conditionalStat("most-won-player-one", !!(p1Won?.gameId && p1Won?.count), () =>
+				t("head-to-head.most-won-game", {
+					player: playerOne.name,
+					opponent: playerTwo.name,
+					game: gameById(p1Won!.gameId!)?.title,
+					count: p1Won!.count,
+				}),
+			),
+			conditionalStat("most-won-player-two", !!(p2Won?.gameId && p2Won?.count), () =>
+				t("head-to-head.most-won-game", {
+					player: playerTwo.name,
+					opponent: playerOne.name,
+					game: gameById(p2Won!.gameId!)?.title,
+					count: p2Won!.count,
+				}),
+			),
+			conditionalStat("last-session", !!(compare.lastWonGame?.gameId && compare.lastWonGame?.playerId), () =>
+				t("head-to-head.last-session", {
+					player: compare.lastWonGame!.playerId === playerOne.id ? playerOne.name : playerTwo.name,
+					game: gameById(compare.lastWonGame!.gameId!)?.title,
+				}),
+			),
+			conditionalStat(
+				"most-played-together",
+				!!(compare.preferredGame?.gameId && compare.preferredGame?.sessionCount),
+				() =>
+					t("head-to-head.most-played-together", {
+						game: gameById(compare.preferredGame!.gameId!)?.title,
+						count: compare.preferredGame!.sessionCount,
+					}),
+			),
+			conditionalStat(
+				"closest-game",
+				!!(
+					compare.closestGame?.gameId &&
+					compare.closestGame?.playerId &&
+					compare.closestGame?.scoringDifference != null
+				),
+				() =>
+					t("head-to-head.closest-game", {
+						player: compare.closestGame!.playerId === playerOne.id ? playerOne.name : playerTwo.name,
+						points: compare.closestGame!.scoringDifference,
+						game: gameById(compare.closestGame!.gameId!)?.title,
+					}),
+			),
+			conditionalStat(
+				"first-game-together",
+				!!(compare.firstGameTogether?.gameId && compare.firstGameTogether?.startDate),
+				() =>
+					t("head-to-head.first-game-together", {
+						game: gameById(compare.firstGameTogether!.gameId!)?.title,
+						date: toDisplay(compare.firstGameTogether!.startDate!, dateFormat, uiLanguage),
+					}),
+			),
+		].filter((stat): stat is Stat => stat !== null);
+	}, [t, playerOne, playerTwo, compare, gameById, dateFormat, uiLanguage]);
+
+	return (
+		<div>
+			<BgtHeading size="6" className="text-white pb-6 text-center">
+				{t("head-to-head.title")}
+			</BgtHeading>
+			<div className="space-y-3 max-w-3xl mx-auto">
+				{headToHeadStats.map((stat) => {
+					return (
+						<BgtCard key={stat.key}>
+							<BgtText color="white" opacity={90} className="text-center">
+								{stat.text}
+							</BgtText>
+						</BgtCard>
+					);
+				})}
+			</div>
+		</div>
+	);
+};
+
+HeadToHeadComponent.displayName = "HeadToHead";
+
+export const HeadToHead = memo(HeadToHeadComponent);

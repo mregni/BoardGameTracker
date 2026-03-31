@@ -22,6 +22,632 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("BadgePlayer", b =>
+                {
+                    b.Property<int>("BadgesId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlayersId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("BadgesId", "PlayersId");
+
+                    b.HasIndex("PlayersId");
+
+                    b.ToTable("BadgePlayer");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.ApplicationUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("AspNetUsers", "auth");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.ExternalLogin", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LinkedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("Provider", "ProviderKey")
+                        .IsUnique();
+
+                    b.ToTable("ExternalLogins", "auth");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.OidcProvider", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminGroupValue")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Authority")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AuthorizationEndpoint")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("AutoProvisionUsers")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ButtonColor")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClientSecret")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayNameClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmailClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("IconUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RolesClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Scopes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TokenEndpoint")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserInfoEndpoint")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UsernameClaimType")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("OidcProviders", "auth");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReplacedByToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RevokedReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", "auth");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Badge", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DescriptionKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Level")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Badges");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DescriptionKey = "different-games.green.description",
+                            Image = "different-games-green.png",
+                            Level = "Green",
+                            TitleKey = "different-games.green.title",
+                            Type = "DifferentGames"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DescriptionKey = "different-games.blue.description",
+                            Image = "different-games-blue.png",
+                            Level = "Blue",
+                            TitleKey = "different-games.blue.title",
+                            Type = "DifferentGames"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DescriptionKey = "different-games.red.description",
+                            Image = "different-games-red.png",
+                            Level = "Red",
+                            TitleKey = "different-games.red.title",
+                            Type = "DifferentGames"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            DescriptionKey = "different-games.gold.description",
+                            Image = "different-games-gold.png",
+                            Level = "Gold",
+                            TitleKey = "different-games.gold.title",
+                            Type = "DifferentGames"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DescriptionKey = "sessions.green.description",
+                            Image = "sessions-green.png",
+                            Level = "Green",
+                            TitleKey = "sessions.green.title",
+                            Type = "Sessions"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            DescriptionKey = "sessions.blue.description",
+                            Image = "sessions-blue.png",
+                            Level = "Blue",
+                            TitleKey = "sessions.blue.title",
+                            Type = "Sessions"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            DescriptionKey = "sessions.red.description",
+                            Image = "sessions-red.png",
+                            Level = "Red",
+                            TitleKey = "sessions.red.title",
+                            Type = "Sessions"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            DescriptionKey = "sessions.gold.description",
+                            Image = "sessions-gold.png",
+                            Level = "Gold",
+                            TitleKey = "sessions.gold.title",
+                            Type = "Sessions"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            DescriptionKey = "wins.green.description",
+                            Image = "wins-green.png",
+                            Level = "Green",
+                            TitleKey = "wins.green.title",
+                            Type = "Wins"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            DescriptionKey = "wins.blue.description",
+                            Image = "wins-blue.png",
+                            Level = "Blue",
+                            TitleKey = "wins.blue.title",
+                            Type = "Wins"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            DescriptionKey = "wins.red.description",
+                            Image = "wins-red.png",
+                            Level = "Red",
+                            TitleKey = "wins.red.title",
+                            Type = "Wins"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            DescriptionKey = "wins.gold.description",
+                            Image = "wins-gold.png",
+                            Level = "Gold",
+                            TitleKey = "wins.gold.title",
+                            Type = "Wins"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            DescriptionKey = "duration.green.description",
+                            Image = "duration-green.png",
+                            Level = "Green",
+                            TitleKey = "duration.green.title",
+                            Type = "Duration"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            DescriptionKey = "duration.blue.description",
+                            Image = "duration-blue.png",
+                            Level = "Blue",
+                            TitleKey = "duration.blue.title",
+                            Type = "Duration"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            DescriptionKey = "duration.red.description",
+                            Image = "duration-red.png",
+                            Level = "Red",
+                            TitleKey = "duration.red.title",
+                            Type = "Duration"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            DescriptionKey = "duration.gold.description",
+                            Image = "duration-gold.png",
+                            Level = "Gold",
+                            TitleKey = "duration.gold.title",
+                            Type = "Duration"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            DescriptionKey = "win-percentage.green.description",
+                            Image = "win-percentage-green.png",
+                            Level = "Green",
+                            TitleKey = "win-percentage.green.title",
+                            Type = "WinPercentage"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            DescriptionKey = "win-percentage.blue.description",
+                            Image = "win-percentage-blue.png",
+                            Level = "Blue",
+                            TitleKey = "win-percentage.blue.title",
+                            Type = "WinPercentage"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            DescriptionKey = "win-percentage.red.description",
+                            Image = "win-percentage-red.png",
+                            Level = "Red",
+                            TitleKey = "win-percentage.red.title",
+                            Type = "WinPercentage"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            DescriptionKey = "win-percentage.gold.description",
+                            Image = "win-percentage-gold.png",
+                            Level = "Gold",
+                            TitleKey = "win-percentage.gold.title",
+                            Type = "WinPercentage"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            DescriptionKey = "solo-specialist.green.description",
+                            Image = "solo-specialist-green.png",
+                            Level = "Green",
+                            TitleKey = "solo-specialist.green.title",
+                            Type = "SoloSpecialist"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            DescriptionKey = "solo-specialist.blue.description",
+                            Image = "solo-specialist-blue.png",
+                            Level = "Blue",
+                            TitleKey = "solo-specialist.blue.title",
+                            Type = "SoloSpecialist"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            DescriptionKey = "solo-specialist.red.description",
+                            Image = "solo-specialist-red.png",
+                            Level = "Red",
+                            TitleKey = "solo-specialist.red.title",
+                            Type = "SoloSpecialist"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            DescriptionKey = "solo-specialist.gold.description",
+                            Image = "solo-specialist-gold.png",
+                            Level = "Gold",
+                            TitleKey = "solo-specialist.gold.title",
+                            Type = "SoloSpecialist"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            DescriptionKey = "winning-streak.green.description",
+                            Image = "winning-streak-green.png",
+                            Level = "Green",
+                            TitleKey = "winning-streak.green.title",
+                            Type = "WinningStreak"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            DescriptionKey = "winning-streak.blue.description",
+                            Image = "winning-streak-blue.png",
+                            Level = "Blue",
+                            TitleKey = "winning-streak.blue.title",
+                            Type = "WinningStreak"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            DescriptionKey = "winning-streak.red.description",
+                            Image = "winning-streak-red.png",
+                            Level = "Red",
+                            TitleKey = "winning-streak.red.title",
+                            Type = "WinningStreak"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            DescriptionKey = "winning-streak.gold.description",
+                            Image = "winning-streak-gold.png",
+                            Level = "Gold",
+                            TitleKey = "winning-streak.gold.title",
+                            Type = "WinningStreak"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            DescriptionKey = "social-player.green.description",
+                            Image = "social-player-green.png",
+                            Level = "Green",
+                            TitleKey = "social-player.green.title",
+                            Type = "SocialPlayer"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            DescriptionKey = "social-player.blue.description",
+                            Image = "social-player-blue.png",
+                            Level = "Blue",
+                            TitleKey = "social-player.blue.title",
+                            Type = "SocialPlayer"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            DescriptionKey = "social-player.red.description",
+                            Image = "social-player-red.png",
+                            Level = "Red",
+                            TitleKey = "social-player.red.title",
+                            Type = "SocialPlayer"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            DescriptionKey = "social-player.gold.description",
+                            Image = "social-player-gold.png",
+                            Level = "Gold",
+                            TitleKey = "social-player.gold.title",
+                            Type = "SocialPlayer"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            DescriptionKey = "close-win.description",
+                            Image = "close-win.png",
+                            TitleKey = "close-win.title",
+                            Type = "CloseWin"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            DescriptionKey = "close-loss.description",
+                            Image = "close-loss.png",
+                            TitleKey = "close-loss.title",
+                            Type = "CloseLoss"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            DescriptionKey = "marathon-runner.description",
+                            Image = "marathon.png",
+                            TitleKey = "marathon-runner.title",
+                            Type = "MarathonRunner"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            DescriptionKey = "first-try.description",
+                            Image = "first-try.png",
+                            TitleKey = "first-try.title",
+                            Type = "FirstTry"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            DescriptionKey = "learning-curve.description",
+                            Image = "learning-curve.png",
+                            TitleKey = "learning-curve.title",
+                            Type = "LearningCurve"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            DescriptionKey = "monthly-goal.description",
+                            Image = "monthly-goal.png",
+                            TitleKey = "monthly-goal.title",
+                            Type = "MonthlyGoal"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            DescriptionKey = "consistent-schedule.description",
+                            Image = "consistent-schedule.png",
+                            TitleKey = "consistent-schedule.title",
+                            Type = "ConsistentSchedule"
+                        });
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Config", b =>
                 {
                     b.Property<int>("Id")
@@ -51,64 +677,21 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("AdditionDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("BaseGameId")
+                    b.Property<int>("BggId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("BggId")
-                        .HasColumnType("integer");
-
-                    b.Property<double?>("BuyingPrice")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Image")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("MaxPlayTime")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MaxPlayers")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MinAge")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MinPlayTime")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MinPlayers")
-                        .HasColumnType("integer");
-
-                    b.Property<double?>("Rating")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("SoldPrice")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("State")
+                    b.Property<int>("GameId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<double?>("Weight")
-                        .HasColumnType("double precision");
-
-                    b.Property<int?>("YearPublished")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("BaseGameId");
+                    b.HasIndex("GameId");
 
-                    b.ToTable("Expansion");
+                    b.ToTable("Expansions");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Game", b =>
@@ -125,9 +708,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int?>("BggId")
                         .HasColumnType("integer");
 
-                    b.Property<double?>("BuyingPrice")
-                        .HasColumnType("double precision");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -138,26 +718,8 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<string>("Image")
                         .HasColumnType("text");
 
-                    b.Property<int?>("MaxPlayTime")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MaxPlayers")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("MinAge")
                         .HasColumnType("integer");
-
-                    b.Property<int?>("MinPlayTime")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("MinPlayers")
-                        .HasColumnType("integer");
-
-                    b.Property<double?>("Rating")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("SoldPrice")
-                        .HasColumnType("double precision");
 
                     b.Property<int>("State")
                         .HasColumnType("integer");
@@ -166,13 +728,13 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<double?>("Weight")
-                        .HasColumnType("double precision");
-
                     b.Property<int?>("YearPublished")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BggId")
+                        .IsUnique();
 
                     b.ToTable("Games");
                 });
@@ -237,6 +799,70 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.ToTable("GameMechanics");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.GameNight", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("HostId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("LinkId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HostId");
+
+                    b.HasIndex("LocationId");
+
+                    b.ToTable("GameNights");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.GameNightRsvp", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GameNightId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameNightId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("GameNightRsvp");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Helpers.PlayerSession", b =>
                 {
                     b.Property<int>("PlayerId")
@@ -258,7 +884,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.HasIndex("SessionId");
 
-                    b.ToTable("PlayerSession");
+                    b.ToTable("PlayerSessions");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Image", b =>
@@ -310,6 +936,52 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.HasKey("Id");
 
                     b.ToTable("Languages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Key = "en-us",
+                            TranslationKey = "english"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Key = "nl-be",
+                            TranslationKey = "dutch"
+                        });
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Loan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LoanDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ReturnedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("Loans");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Location", b =>
@@ -447,6 +1119,21 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.ToTable("GameGameMechanic");
                 });
 
+            modelBuilder.Entity("GameGameNight", b =>
+                {
+                    b.Property<int>("GameNightId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SuggestedGamesId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("GameNightId", "SuggestedGamesId");
+
+                    b.HasIndex("SuggestedGamesId");
+
+                    b.ToTable("GameGameNight");
+                });
+
             modelBuilder.Entity("GamePerson", b =>
                 {
                     b.Property<int>("GamesId")
@@ -462,14 +1149,323 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.ToTable("GamePerson");
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", "auth");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", "auth");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", "auth");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", "auth");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", "auth");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", "auth");
+                });
+
+            modelBuilder.Entity("BadgePlayer", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Badge", null)
+                        .WithMany()
+                        .HasForeignKey("BadgesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("PlayersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.ApplicationUser", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.ExternalLogin", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Auth.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.RefreshToken", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Auth.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Expansion", b =>
                 {
-                    b.HasOne("BoardGameTracker.Common.Entities.Game", "BaseGame")
+                    b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
                         .WithMany("Expansions")
-                        .HasForeignKey("BaseGameId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("BaseGame");
+                    b.Navigation("Game");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Game", b =>
+                {
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.Price", "BuyingPrice", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("BuyingPrice");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.Price", "SoldPrice", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("SoldPrice");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.PlayTimeRange", "PlayTime", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("MaxMinutes")
+                                .HasColumnType("integer")
+                                .HasColumnName("MaxPlayTime");
+
+                            b1.Property<int>("MinMinutes")
+                                .HasColumnType("integer")
+                                .HasColumnName("MinPlayTime");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.PlayerCountRange", "PlayerCount", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("Max")
+                                .HasColumnType("integer")
+                                .HasColumnName("MaxPlayers");
+
+                            b1.Property<int>("Min")
+                                .HasColumnType("integer")
+                                .HasColumnName("MinPlayers");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.Rating", "Rating", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<double>("Value")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("double precision")
+                                .HasColumnName("Rating");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.OwnsOne("BoardGameTracker.Common.ValueObjects.Weight", "Weight", b1 =>
+                        {
+                            b1.Property<int>("GameId")
+                                .HasColumnType("integer");
+
+                            b1.Property<double>("Value")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("double precision")
+                                .HasColumnName("Weight");
+
+                            b1.HasKey("GameId");
+
+                            b1.ToTable("Games");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GameId");
+                        });
+
+                    b.Navigation("BuyingPrice");
+
+                    b.Navigation("PlayTime");
+
+                    b.Navigation("PlayerCount");
+
+                    b.Navigation("Rating");
+
+                    b.Navigation("SoldPrice");
+
+                    b.Navigation("Weight");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.GameAccessory", b =>
@@ -481,6 +1477,44 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .IsRequired();
 
                     b.Navigation("Game");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.GameNight", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Player", "Host")
+                        .WithMany()
+                        .HasForeignKey("HostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Host");
+
+                    b.Navigation("Location");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.GameNightRsvp", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.GameNight", "GameNight")
+                        .WithMany("InvitedPlayers")
+                        .HasForeignKey("GameNightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Player", "Player")
+                        .WithMany("GameNightRsvps")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GameNight");
+
+                    b.Navigation("Player");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Helpers.PlayerSession", b =>
@@ -518,6 +1552,25 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("Game");
 
                     b.Navigation("Play");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Loan", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
+                        .WithMany("Loans")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Player", "Player")
+                        .WithMany("Loans")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+
+                    b.Navigation("Player");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Session", b =>
@@ -583,6 +1636,21 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("GameGameNight", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.GameNight", null)
+                        .WithMany()
+                        .HasForeignKey("GameNightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Game", null)
+                        .WithMany()
+                        .HasForeignKey("SuggestedGamesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("GamePerson", b =>
                 {
                     b.HasOne("BoardGameTracker.Common.Entities.Game", null)
@@ -598,13 +1666,71 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Auth.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Auth.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.Auth.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Auth.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Game", b =>
                 {
                     b.Navigation("Accessories");
 
                     b.Navigation("Expansions");
 
+                    b.Navigation("Loans");
+
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.GameNight", b =>
+                {
+                    b.Navigation("InvitedPlayers");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Location", b =>
@@ -614,6 +1740,10 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Player", b =>
                 {
+                    b.Navigation("GameNightRsvps");
+
+                    b.Navigation("Loans");
+
                     b.Navigation("PlayerSessions");
                 });
 

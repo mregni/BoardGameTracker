@@ -1,28 +1,42 @@
-version: "3.8"
 services:
   boardgametracker:
     image: uping/boardgametracker:latest
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
-      - <IMAGE_PATH>:/app/images
-      - <DATA_PATH>:/app/data
+      - ./config:/app/config
+      - ./logs:/app/logs
     ports:
-      - 5444:5444
+      - "5444:5444"
     environment:
       - DB_HOST=db
-      - DB_USER=dev
+      - DB_USER=dbuser
       - DB_PASSWORD=CHANGEME
       - DB_NAME=boardgametracker
       - DB_PORT=5432
+      - JWT_SECRET=CHANGEME
+      - TZ=UTC
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   db:
     image: postgres:16
     restart: unless-stopped
     volumes:
-      - <DB_PATH>:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=boardgametracker
-      - POSTGRES_USER=dev
+      - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=CHANGEME
-    ports:
-      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dbuser -d boardgametracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

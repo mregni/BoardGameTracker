@@ -1,47 +1,40 @@
-import PerfectScrollbar from 'react-perfect-scrollbar';
-import { Children, ReactElement } from 'react';
-
-import BgtPageHeader from './BgtPageHeader';
-import { BgtPageContent } from './BgtPageContent';
+import { Children, type ReactElement } from "react";
+import { BgtPageContent } from "./BgtPageContent";
+import { BgtPageHeader } from "./BgtPageHeader";
 
 interface Props {
-  children: ReactElement | ReactElement[];
+	children: (ReactElement | null) | (ReactElement | null)[];
 }
 
 const checkComponentName = (
-  child: React.ReactElement<any, string | React.JSXElementConstructor<any>>,
-  elementName: string
+	child: ReactElement<unknown, string | React.JSXElementConstructor<unknown>>,
+	elementName: string,
 ): boolean => {
-  return (child.type as (props: Props) => JSX.Element)?.name === elementName;
+	return (child?.type as (props: Props) => JSX.Element)?.name === elementName;
 };
 
 export const BgtPage = (props: Props) => {
-  const { children } = props;
+	const { children } = props;
 
-  let _content, _header;
-  Children.forEach(children, (child) => {
-    if (checkComponentName(child, BgtPageHeader.name)) {
-      return (_header = child);
-    }
+	let content: ReactElement | undefined;
+	let header: ReactElement | undefined;
 
-    if (checkComponentName(child, BgtPageContent.name)) {
-      return (_content = child);
-    }
-  });
+	Children.forEach(children, (child) => {
+		if (child == null) {
+			return;
+		}
 
-  return (
-    <div className="w-full h-full flex flex-col p-3 gap-3">
-      {_header && <div>{_header}</div>}
+		if (checkComponentName(child, BgtPageHeader.name)) {
+			header = child;
+		} else if (checkComponentName(child, BgtPageContent.name)) {
+			content = child;
+		}
+	});
 
-      <PerfectScrollbar
-        options={{
-          wheelSpeed: 0.7,
-          suppressScrollX: true,
-        }}
-        className="md:pr-4"
-      >
-        {_content}
-      </PerfectScrollbar>
-    </div>
-  );
+	return (
+		<div className="min-h-full flex flex-col p-3 xl:px-6 gap-3 xl:gap-6">
+			{header}
+			<div className="flex-1 flex flex-col min-h-0">{content}</div>
+		</div>
+	);
 };

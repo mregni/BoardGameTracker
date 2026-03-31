@@ -1,15 +1,49 @@
-﻿using BoardGameTracker.Common.Enums;
+﻿using Ardalis.GuardClauses;
 
 namespace BoardGameTracker.Common.Entities.Helpers;
 
 public class PlayerSession
 {
-    public int PlayerId { get; set; }
-    public Player Player { get; set; }
-    public int SessionId { get; set; }
-    public Session Session { get; set; }
+    public int PlayerId { get; private set; }
+    public Player Player { get; private set; } = null!;
+    public int SessionId { get; private set; }
+    public Session Session { get; private set; } = null!;
+    public double? Score { get; private set; }
+    public bool FirstPlay { get; private set; }
+    public bool Won { get; private set; }
 
-    public double? Score { get; set; }
-    public bool FirstPlay { get; set; }
-    public bool Won { get; set; }
+    public PlayerSession(int playerId, double? score = null, bool firstPlay = false, bool won = false)
+    {
+        Guard.Against.NegativeOrZero(playerId);
+
+        PlayerId = playerId;
+        Score = score;
+        FirstPlay = firstPlay;
+        Won = won;
+    }
+
+    public void UpdateScore(double? score)
+    {
+        Score = score;
+    }
+
+    public void MarkAsFirstPlay()
+    {
+        FirstPlay = true;
+    }
+
+    public void MarkAsWinner()
+    {
+        Won = true;
+    }
+
+    public void MarkAsLoser()
+    {
+        Won = false;
+    }
+
+    public void UpdateFirstPlay(bool firstPlay)
+    {
+        FirstPlay = firstPlay;
+    }
 }

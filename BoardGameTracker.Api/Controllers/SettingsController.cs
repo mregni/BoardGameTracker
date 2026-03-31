@@ -1,81 +1,82 @@
-﻿using AutoMapper;
-using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.ViewModels;
-using BoardGameTracker.Common.ViewModels.Language;
-using BoardGameTracker.Common.ViewModels.Results;
+using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
+using BoardGameTracker.Core.Settings.Interfaces;
+using BoardGameTracker.Core.Updates.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Sentry;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/settings")]
-public class SettingsController
+[Authorize]
+public class SettingsController : ControllerBase
 {
-    private readonly IConfigFileProvider _configFileProvider;
+    private readonly ISettingsService _settingsService;
     private readonly IEnvironmentProvider _environmentProvider;
     private readonly ILanguageService _languageService;
-    private readonly IMapper _mapper;
-    public SettingsController(IConfigFileProvider configFileProvider, IEnvironmentProvider environmentProvider, ILanguageService languageService, IMapper mapper)
+    private readonly IUpdateService _updateService;
+
+    public SettingsController(
+        ISettingsService settingsService,
+        IEnvironmentProvider environmentProvider,
+        ILanguageService languageService,
+        IUpdateService updateService)
     {
-        _configFileProvider = configFileProvider;
+        _settingsService = settingsService;
         _environmentProvider = environmentProvider;
         _languageService = languageService;
-        _mapper = mapper;
+        _updateService = updateService;
     }
 
     [HttpGet]
-    public IActionResult Get()
+    [AllowAnonymous]
+    public async Task<IActionResult> Get()
     {
-        var uiResources = new UIResourceViewModel
-        {
-            TimeFormat = _configFileProvider.TimeFormat,
-            DateFormat = _configFileProvider.DateFormat,
-            UILanguage = _configFileProvider.UILanguage,
-            Currency = _configFileProvider.Currency,
-            DecimalSeparator = _configFileProvider.DecimalSeparator,
-            Statistics = _environmentProvider.EnableStatistics
-        };
+        var settings = await _settingsService.GetSettingsAsync();
+        return Ok(settings);
+    }
 
-        return new OkObjectResult(uiResources);
+    [HttpGet("version-info")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetVersionInfo()
+    {
+        var status = await _updateService.GetVersionInfoAsync();
+        return Ok(status.ToDto());
     }
 
     [HttpPut]
-    public IActionResult Update([FromBody] UIResourceViewModel model)
+    [Authorize(Roles = Constants.AuthRoles.Admin)]
+    public async Task<IActionResult> Update([FromBody] UIResourceDto model)
     {
-        _configFileProvider.Currency = model.Currency;
-        _configFileProvider.DecimalSeparator = model.DecimalSeparator;
-        _configFileProvider.TimeFormat = model.TimeFormat;
-        _configFileProvider.DateFormat = model.DateFormat;
-        _configFileProvider.UILanguage = model.UILanguage;
-        
-        return new OkObjectResult(model);
+        var updated = await _settingsService.UpdateSettingsAsync(model);
+        return Ok(updated);
     }
 
-    [HttpGet]
-    [Route("environment")]
+    [HttpGet("environment")]
+    [Authorize]
     public IActionResult GetEnvironment()
     {
-        var resources = new UIEnvironmentViewModel
+        var resources = new UIEnvironmentDto
         {
-            EnableStatistics = _environmentProvider.EnableStatistics,
+            EnableStatistics = _environmentProvider.StatisticsEnabled,
             LogLevel = _environmentProvider.LogLevel,
             EnvironmentName = _environmentProvider.EnvironmentName,
-            Port = _environmentProvider.Port
+            Port = _environmentProvider.Port,
+            Version = _updateService.GetCurrentVersion()
         };
-        
-        return new OkObjectResult(resources);
+
+        return Ok(resources);
     }
-    
-    [HttpGet]
-    [Route("languages")]
+
+    [HttpGet("languages")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetLanguages()
     {
         var languages = await _languageService.GetAllAsync();
-
-        var mappedLanguages = _mapper.Map<IList<LanguageViewModel>>(languages);
-        return new OkObjectResult(mappedLanguages);
+        return Ok(languages);
     }
 }

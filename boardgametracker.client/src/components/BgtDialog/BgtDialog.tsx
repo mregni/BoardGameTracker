@@ -1,50 +1,74 @@
-import { HTMLAttributes } from 'react';
-import { cx } from 'class-variance-authority';
-import { Dialog } from '@radix-ui/themes';
+import { Dialog } from "@radix-ui/themes";
+import { cx } from "class-variance-authority";
+import { type ComponentPropsWithoutRef, createContext, type ReactNode, useContext } from "react";
 
-interface BgtDialogProps extends HTMLAttributes<HTMLDivElement> {
-  open: boolean;
+import Cross from "@/assets/icons/x.svg?react";
+
+const DialogCloseContext = createContext<(() => void) | undefined>(undefined);
+
+interface BgtDialogProps {
+	open: boolean;
+	children: ReactNode;
+	onClose?: () => void;
 }
 
-const BgtDialog = (props: BgtDialogProps) => {
-  const { open, children, ...rest } = props;
+export const BgtDialog = (props: BgtDialogProps) => {
+	const { open, children, onClose } = props;
 
-  return (
-    <Dialog.Root open={open} {...rest}>
-      {children}
-    </Dialog.Root>
-  );
+	return (
+		<Dialog.Root open={open}>
+			<DialogCloseContext.Provider value={onClose}>{children}</DialogCloseContext.Provider>
+		</Dialog.Root>
+	);
 };
 
-const BgtDialogContent = (props: HTMLAttributes<HTMLDivElement>) => {
-  const { className, children, ...rest } = props;
-  return (
-    <Dialog.Content className={cx(className, 'bg-card-black')} {...rest}>
-      {children}
-    </Dialog.Content>
-  );
+export const BgtDialogContent = (props: ComponentPropsWithoutRef<typeof Dialog.Content>) => {
+	const { className, children, ...rest } = props;
+	const onClose = useContext(DialogCloseContext);
+	return (
+		<Dialog.Content className={cx("bg-dialog! relative", className)} {...rest}>
+			{onClose && (
+				<button
+					onClick={onClose}
+					className="absolute top-1 right-1 p-1 hover:bg-transparent rounded-lg cursor-pointer hover:scale-110 transition-transform"
+				>
+					<Cross className="size-5" />
+				</button>
+			)}
+			{children}
+		</Dialog.Content>
+	);
 };
 
-const BgtDialogTitle = (props: HTMLAttributes<HTMLDivElement>) => {
-  const { className, children } = props;
-  return <Dialog.Title className={cx('text-2xl font-bold uppercase', className)}>{children}</Dialog.Title>;
+type BgtDialogTitleProps = ComponentPropsWithoutRef<typeof Dialog.Title>;
+
+export const BgtDialogTitle = (props: BgtDialogTitleProps) => {
+	const { className, children, ...rest } = props;
+	return (
+		<Dialog.Title className={cx("text-2xl font-bold uppercase", className)} {...rest}>
+			{children}
+		</Dialog.Title>
+	);
 };
 
-const BgtDialogDescription = (props: HTMLAttributes<HTMLDivElement>) => {
-  const { className, children } = props;
-  return <Dialog.Description className={cx(className)}>{children}</Dialog.Description>;
+type BgtDialogDescriptionProps = ComponentPropsWithoutRef<typeof Dialog.Description>;
+
+export const BgtDialogDescription = (props: BgtDialogDescriptionProps) => {
+	const { className, children, ...rest } = props;
+	return (
+		<Dialog.Description className={cx(className)} {...rest}>
+			{children}
+		</Dialog.Description>
+	);
 };
 
-const BgtDialogClose = (props: HTMLAttributes<HTMLDivElement>) => {
-  const { className, children, ...rest } = props;
+interface BgtDialogCloseProps {
+	className?: string;
+	children: ReactNode;
+}
 
-  return (
-    <div className={cx('flex justify-end gap-3 pt-2', className)} {...rest}>
-      <Dialog.Close>
-        <>{children}</>
-      </Dialog.Close>
-    </div>
-  );
+export const BgtDialogClose = (props: BgtDialogCloseProps) => {
+	const { className, children } = props;
+
+	return <div className={cx("flex justify-between pt-2 gap-3", className)}>{children}</div>;
 };
-
-export { BgtDialog, BgtDialogContent, BgtDialogDescription, BgtDialogClose, BgtDialogTitle };

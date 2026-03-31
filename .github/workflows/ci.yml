@@ -1,0 +1,210 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - master
+    paths-ignore:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
+
+env:
+  REGISTRY: ${{ vars.DOCKER_REGISTRY || 'docker.io' }}
+  IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME || 'uping/boardgametracker' }}
+
+jobs:
+  version:
+    name: Calculate Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.versioning.outputs.version }}
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Git Semantic Version
+        uses: PaulHatch/semantic-version@v6.0.2
+        id: versioning
+        with:
+          enable_prerelease_mode: true
+          namespace: beta
+          bump_each_commit: true
+          version_format: "${major}.${minor}.${patch}-beta"
+          debug: true
+
+  test-and-analyze:
+    name: Test and SonarCloud Analysis
+    runs-on: ubuntu-latest
+    needs: [version]
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: 17
+          distribution: 'zulu'
+
+      - name: Setup dotnet v8
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.x"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20.x"
+          cache: 'npm'
+          cache-dependency-path: boardgametracker.client/package-lock.json
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarCloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v5
+        with:
+          path: ./.sonar/scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarCloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./.sonar/scanner
+          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+
+      - name: Install .NET dependencies
+        run: dotnet restore ./BoardGameTracker.sln
+
+      - name: Begin SonarCloud analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+        run: |
+          ./.sonar/scanner/dotnet-sonarscanner begin \
+            /k:"${{ env.SONAR_PROJECT_KEY }}" \
+            /o:"${{ env.SONAR_ORGANIZATION }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.token="${{ env.SONAR_TOKEN }}" \
+            /v:"${{ needs.version.outputs.version }}" \
+            /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
+            /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
+            /d:sonar.javascript.lcov.reportPaths="coverage/lcov.info" \
+            /d:sonar.testExecutionReportPaths="boardgametracker.client/coverage/sonar-report.xml" \
+            /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**,**/Migrations/**,**/routeTree.gen.ts" \
+            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
+            /d:sonar.qualitygate.wait=true \
+            /d:sonar.qualitygate.timeout=300 \
+            /d:sonar.issue.ignore.multicriteria=e1 \
+            /d:sonar.issue.ignore.multicriteria.e1.ruleKey=githubactions:S7637 \
+            /d:sonar.issue.ignore.multicriteria.e1.resourceKey="**/.github/**"
+        if: env.SONAR_TOKEN != ''
+
+      - name: Build .NET
+        run: dotnet build --no-restore
+
+      - name: Run .NET tests
+        run: |
+          dotnet test ./BoardGameTracker.Tests/BoardGameTracker.Tests.csproj \
+            --no-build \
+            --no-restore \
+            --logger trx \
+            --results-directory "TestResults" \
+            --collect "XPlat Code Coverage;Format=opencover" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/DataStore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs"
+
+      - name: Install frontend dependencies
+        run: |
+          cd boardgametracker.client
+          npm ci --ignore-scripts
+
+      - name: Run Biome format check
+        run: |
+          cd boardgametracker.client
+          npm run format:check
+
+      - name: Run Biome lint
+        run: |
+          cd boardgametracker.client
+          npm run lint
+
+      - name: Run frontend tests with coverage
+        run: |
+          cd boardgametracker.client
+          npm run test:coverage
+          # Convert LCOV/sonar paths to absolute so SonarCloud resolves them regardless of module context
+          sed -i "s|^SF:src/|SF:$(pwd)/src/|" coverage/lcov.info
+          sed -i "s|path=\"src/|path=\"$(pwd)/src/|g" coverage/sonar-report.xml
+
+      - name: Publish .NET test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: TestResults/**/*.trx
+          check_name: ".NET Test Results"
+          fail_on: "test failures"
+
+      - name: End SonarCloud analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ env.SONAR_TOKEN }}"
+        if: env.SONAR_TOKEN != ''
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: |
+            TestResults
+            boardgametracker.client/coverage
+          retention-days: 7
+        if: success() || failure()
+
+      - name: Code Coverage Report
+        uses: danielpalme/ReportGenerator-GitHub-Action@v5.5.4
+        with:
+          reports: "TestResults/**/coverage.opencover.xml;boardgametracker.client/coverage/lcov.info"
+          targetdir: "coveragereport"
+          reporttypes: "MarkdownSummaryGithub;Cobertura"
+          sourcedirs: "boardgametracker.client"
+          assemblyfilters: "-BoardGameTracker.Host;-BoardGameTracker.DataStore"
+          filefilters: "-**/ViewModels/**;-**/Entities/**"
+
+      - name: Publish Coverage Summary
+        run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          recreate: true
+          path: coveragereport/SummaryGithub.md

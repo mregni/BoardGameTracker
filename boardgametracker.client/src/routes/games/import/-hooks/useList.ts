@@ -1,0 +1,110 @@
+import { useMutation, useQueries } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
+import type { ImportGame } from "@/models";
+import { useToasts } from "@/routes/-hooks/useToasts";
+import { importGamesCall } from "@/services/gameService";
+import { getBggCollection, getGames } from "@/services/queries/games";
+import { getSettings } from "@/services/queries/settings";
+
+interface Props {
+	username: string;
+	onSuccess?: () => void;
+}
+
+export const useList = ({ username, onSuccess }: Props) => {
+	const invalidator = useQueryInvalidator();
+	const { successToast, errorToast } = useToasts();
+
+	const [bggCollectionQuery, gamesQuery, settingsQuery] = useQueries({
+		queries: [getBggCollection(username), getGames(), getSettings()],
+	});
+
+	const settings = settingsQuery.data;
+	const statusCode = bggCollectionQuery.data?.statusCode ?? 202;
+
+	const [filterCollected, setFilterCollected] = useState<boolean>(true);
+
+	// Derive all values during render instead of storing in state
+	const processingGames = bggCollectionQuery.isLoading || gamesQuery.isLoading;
+
+	const totalCount = useMemo(() => {
+		return bggCollectionQuery.data?.games?.length ?? 0;
+	}, [bggCollectionQuery.data?.games]);
+
+	const processedGames = useMemo(() => {
+		const bggGames = bggCollectionQuery.data?.games;
+		const collectionGames = gamesQuery.data;
+
+		if (!bggGames) return [];
+
+		if (!collectionGames) {
+			return bggGames.map((game) => ({ ...game, inCollection: false }));
+		}
+
+		const collectionBggIds = new Set(collectionGames.map((game) => game.bggId));
+		return bggGames.map((game) => {
+			const existingGame = collectionGames.find((g) => g.bggId === game.bggId);
+			return {
+				...game,
+				inCollection: collectionBggIds.has(game.bggId),
+				price: existingGame?.buyingPrice ?? 0,
+				addedDate: existingGame?.additionDate ? new Date(existingGame.additionDate) : new Date(game.lastModified),
+				hasScoring: existingGame?.hasScoring ?? true,
+				checked: false,
+			};
+		});
+	}, [bggCollectionQuery.data?.games, gamesQuery.data]);
+
+	const inCollectionCount = useMemo(() => {
+		return processedGames.filter((game) => game.inCollection).length;
+	}, [processedGames]);
+
+	const [localUpdates, setLocalUpdates] = useState<Map<number, Partial<ImportGame>>>(new Map());
+
+	const games = useMemo(() => {
+		const filtered = filterCollected ? processedGames.filter((game) => !game.inCollection) : processedGames;
+		return filtered.map((game) => {
+			const updates = localUpdates.get(game.bggId);
+			return updates ? { ...game, ...updates } : game;
+		});
+	}, [processedGames, filterCollected, localUpdates]);
+
+	const updateGame = useCallback((bggId: number, updates: Partial<ImportGame>) => {
+		setLocalUpdates((prev) => {
+			const next = new Map(prev);
+			next.set(bggId, { ...prev.get(bggId), ...updates });
+			return next;
+		});
+	}, []);
+
+	const startImportMutation = useMutation({
+		mutationFn: importGamesCall,
+		async onSuccess() {
+			// Use centralized invalidation for games
+			await invalidator.invalidateGames();
+			// Dashboard includes counts, so this is covered
+			await invalidator.invalidateDashboard();
+
+			successToast("games:import.success");
+			onSuccess?.();
+		},
+		onError() {
+			errorToast("games:import.failed");
+		},
+	});
+
+	return {
+		games,
+		settings,
+		statusCode,
+		updateGame,
+		filterCollected,
+		setFilterCollected,
+		inCollectionCount,
+		processingGames,
+		totalCount,
+		startImport: startImportMutation.mutateAsync,
+		importing: startImportMutation.isPending,
+	};
+};

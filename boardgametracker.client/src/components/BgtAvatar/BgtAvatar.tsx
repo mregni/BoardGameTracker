@@ -1,73 +1,89 @@
-import { cx } from 'class-variance-authority';
-import { Text } from '@radix-ui/themes';
+import { Text } from "@radix-ui/themes";
+import { cva, cx, type VariantProps } from "class-variance-authority";
 
-export interface Props {
-  title?: string | undefined;
-  image: string | undefined | null;
-  color?: string | undefined;
-  onClick?: () => void;
-  noTooltip?: boolean;
-  size?: 'small' | 'medium' | 'large' | 'big';
+import { StringToHsl } from "@/utils/stringUtils";
+
+const avatarVariants = cva("shadow-gray-800 shadow-md", {
+	variants: {
+		size: {
+			small: "h-5 w-5 rounded-xs",
+			medium: "h-7 w-7 rounded-md",
+			large: "h-11 w-11 rounded-lg",
+			big: "h-20 w-20 md:h-28 md:w-28 rounded-full",
+		},
+		interactive: {
+			true: "hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer",
+			false: "",
+		},
+		disabled: {
+			true: "opacity-50",
+			false: "",
+		},
+		hasImage: {
+			true: "cursor-pointer",
+			false: "cursor-pointer flex justify-center items-center",
+		},
+	},
+	defaultVariants: {
+		size: "medium",
+		interactive: false,
+		disabled: false,
+		hasImage: true,
+	},
+});
+
+export interface Props extends Omit<VariantProps<typeof avatarVariants>, "interactive" | "hasImage"> {
+	title?: string;
+	image: string | undefined | null;
+	onClick?: () => void;
+	withTitle?: boolean;
 }
 
+const TEXT_SIZE_MAP: Record<string, "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"> = {
+	big: "8",
+	large: "5",
+	medium: "3",
+	small: "2",
+};
+
 export const BgtAvatar = (props: Props) => {
-  const { title, image, color, onClick, noTooltip = false, size = 'medium' } = props;
+	const { title, image, onClick, size, disabled, withTitle = false } = props;
 
-  if (!image && title === undefined) return null;
+	if (!image && !title) return null;
 
-  const getSize = (): '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
-    switch (size) {
-      case 'big':
-        return '8';
-      case 'large':
-        return '5';
-      case 'medium':
-        return '3';
-      default:
-        return '2';
-    }
-  };
+	const avatarClasses = avatarVariants({
+		size,
+		interactive: !!onClick,
+		disabled,
+		hasImage: !!image,
+	});
 
-  return (
-    <div className="group flex relative min-w-7">
-      {image && (
-        <img
-          className={cx(
-            'shadow-gray-800 shadow-md',
-            size === 'big' && 'h-28 w-28 rounded-full',
-            size === 'large' && 'h-11 w-11 rounded-lg',
-            size === 'medium' && 'h-7 w-7 rounded-md',
-            size === 'small' && 'h-5 w-5 rounded-sm',
-            onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer'
-          )}
-          onClick={onClick}
-          src={image}
-        />
-      )}
-      {!image && (
-        <div
-          style={{ backgroundColor: color }}
-          onClick={onClick}
-          className={cx(
-            'shadow-gray-800 shadow-md flex justify-center items-center',
-            size === 'big' && 'h-28 w-28 rounded-full',
-            size === 'large' && 'h-11 w-11 rounded-sm',
-            size === 'medium' && 'h-7 w-7 rounded-sm',
-            size === 'small' && 'h-5 w-5 rounded-sm',
-            onClick && 'hover:scale-95 hover:shadow-black hover:shadow-lg hover:cursor-pointer'
-          )}
-        >
-          <Text size={getSize()}>{title![0]}</Text>
-        </div>
-      )}
-      {!noTooltip && title && (
-        <span
-          className="group-hover:opacity-100 group-hover:block bg-black py-1 px-1.5 text-sm text-white absolute hidden left-1/2 z-50
-    -translate-x-1/2 -translate-y-full -top-2 opacity-0 mx-auto font-sans font-normal focus:outline-none shadow-black shadow-md"
-        >
-          {title}
-        </span>
-      )}
-    </div>
-  );
+	const textSize = TEXT_SIZE_MAP[size || "medium"];
+
+	return (
+		<div
+			className={cx("group flex relative min-w-7 flex-row- gap-2 items-center", onClick && "cursor-pointer")}
+			onClick={onClick}
+			{...(onClick && {
+				role: "button",
+				tabIndex: 0,
+				onKeyDown: (e: React.KeyboardEvent) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						onClick();
+					}
+				},
+			})}
+		>
+			{image && <img className={avatarClasses} src={image} alt={title || ""} />}
+			{!image && title && (
+				<div style={{ backgroundColor: StringToHsl(title) }} className={avatarClasses}>
+					<Text size={textSize} className="capitalize">
+						{title[0]}
+					</Text>
+				</div>
+			)}
+			{withTitle && title && <span className={cx(onClick && "cursor-pointer")}>{title}</span>}
+		</div>
+	);
 };

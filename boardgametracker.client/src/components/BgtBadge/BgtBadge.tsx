@@ -1,24 +1,67 @@
-import { ComponentPropsWithoutRef } from 'react';
-import { cx } from 'class-variance-authority';
+import { cva, type VariantProps } from "class-variance-authority";
+import type { ComponentPropsWithoutRef } from "react";
 
-interface Props extends ComponentPropsWithoutRef<'div'> {
-  variant: 'soft';
-  color: 'red' | 'green';
+import CloseIcon from "@/assets/icons/x.svg?react";
+
+const badgeVariants = cva("group px-3 py-1 rounded-full uppercase text-xs flex flex-row gap-2 border", {
+	variants: {
+		variant: {
+			soft: "",
+		},
+		color: {
+			green: "text-card-value bg-[#34FFAA1F]",
+			red: "text-error-dark y bg-error-dark/20 border-error-dark/30",
+			primary: "text-primary bg-primary/20 border-primary/30",
+		},
+		interactive: {
+			true: "cursor-pointer",
+			false: "",
+		},
+	},
+	defaultVariants: {
+		variant: "soft",
+		color: "green",
+		interactive: false,
+	},
+});
+
+interface Props extends Omit<ComponentPropsWithoutRef<"div">, "color">, VariantProps<typeof badgeVariants> {
+	onClose?: () => void;
 }
 
 export const BgtBadge = (props: Props) => {
-  const { className, children, variant, color } = props;
+	const { className, children, variant, color, onClick, onClose, ...rest } = props;
 
-  return (
-    <div
-      className={cx(
-        'px-4 py-2 rounded-md uppercase text-xs',
-        color === 'green' && variant === 'soft' && 'text-mint-green bg-[#34FFAA1F]',
-        color === 'red' && variant === 'soft' && '',
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
+	const badgeClasses = badgeVariants({
+		variant,
+		color,
+		interactive: !!onClick,
+		className,
+	});
+
+	const handleClose = (e: React.MouseEvent<SVGSVGElement>) => {
+		e.stopPropagation();
+		onClose?.();
+	};
+
+	return (
+		<div
+			className={badgeClasses}
+			onClick={onClick}
+			{...(onClick && {
+				role: "button",
+				tabIndex: 0,
+				onKeyDown: (e: React.KeyboardEvent) => {
+					if (e.key === "Enter" || e.key === " ") {
+						e.preventDefault();
+						onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+					}
+				},
+			})}
+			{...rest}
+		>
+			{children}
+			{onClose && <CloseIcon onClick={handleClose} className="cursor-pointer" />}
+		</div>
+	);
 };

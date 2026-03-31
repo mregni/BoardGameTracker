@@ -1,0 +1,136 @@
+import { Link, useRouterState } from "@tanstack/react-router";
+import { cx } from "class-variance-authority";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import LogOut from "@/assets/icons/log-out.svg?react";
+import More from "@/assets/icons/more.svg?react";
+import User from "@/assets/icons/user.svg?react";
+import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
+import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
+import { BgtText } from "@/components/BgtText/BgtText";
+import { useAuth } from "@/hooks/useAuth";
+import { useMenuInfo } from "../-hooks/useMenuInfo";
+
+export const BottomNav = () => {
+	const { t } = useTranslation("version");
+	const { versionInfo, menuItems, counts } = useMenuInfo();
+	const [showMoreMenu, setShowMoreMenu] = useState(false);
+	const routerState = useRouterState();
+	const currentPath = routerState.location.pathname;
+	const { user, isAuthenticated, authStatus, logout } = useAuth();
+
+	const handleMoreClick = () => {
+		setShowMoreMenu(!showMoreMenu);
+	};
+
+	const isMoreMenuActive = menuItems.some((x) => !x.mobileVisible && x.path === currentPath);
+
+	const mobileMenuItems = menuItems.filter((x) => x.mobileVisible);
+	mobileMenuItems.push({
+		icon: More,
+		menuLabel: "common:more",
+		path: "more",
+		mobileVisible: true,
+	});
+
+	const showAuth = authStatus?.authEnabled;
+	const handleLogout = async () => {
+		await logout();
+	};
+
+	return (
+		<>
+			{showMoreMenu && (
+				<div
+					role="presentation"
+					className="fixed inset-0 bg-black/50 z-30 md:hidden"
+					onClick={() => setShowMoreMenu(false)}
+				/>
+			)}
+
+			{showMoreMenu && (
+				<div className="fixed bottom-20 w-full z-40 md:hidden border border-white/10 rounded-t-2xl overflow-hidden shadow-2xl bg-background/95">
+					<div className="px-4 py-3 border-b border-white/10 bg-background font-mono flex justify-between">
+						<BgtText color="white" opacity={40}>
+							{t("version")}
+						</BgtText>
+						<BgtText color="white" opacity={40}>
+							{versionInfo?.currentVersion}
+						</BgtText>
+					</div>
+
+					{showAuth && isAuthenticated && user && (
+						<div className="px-2  bg-white/5 flex items-center gap-2 py-2">
+							<div className="w-6 h-6 bg-white/5 rounded-full flex items-center justify-center shrink-0">
+								<User className="text-white/40" />
+							</div>
+							<div className="flex-1 min-w-0">
+								<div className="text-xs text-white/60 truncate">{user.username}</div>
+							</div>
+							<BgtIconButton icon={<LogOut className="size-4" />} onClick={handleLogout} intent="subtile" />
+						</div>
+					)}
+
+					<div>
+						{menuItems
+							.filter((x) => !x.mobileVisible)
+							.map((item) => (
+								<BgtMenuItem
+									onClick={() => setShowMoreMenu(false)}
+									key={item.path}
+									item={item}
+									count={counts?.find((y) => item.path.endsWith(y.key))?.value}
+									className="m-0!"
+								/>
+							))}
+					</div>
+				</div>
+			)}
+
+			<nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-white/10 z-40 safe-area-inset-bottom">
+				<div className="flex items-center justify-between">
+					{mobileMenuItems.map((item) => {
+						const isActive = item.path === "more" ? isMoreMenuActive || showMoreMenu : currentPath === item.path;
+						const itemClassName =
+							"relative flex flex-col items-center justify-center gap-1 py-2 flex-1 h-20 transition-all active:scale-95";
+
+						const content = (
+							<>
+								{isActive && (
+									<div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-full" />
+								)}
+
+								<div className={cx("relative transition-all", isActive && "scale-110")}>
+									{isActive && <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full" />}
+									<item.icon
+										className={cx(
+											"relative transition-colors size-6",
+											isActive ? "text-primary stroke-[2.5]" : "text-gray-400 stroke-2",
+										)}
+									/>
+								</div>
+								<BgtText size="1" color={isActive ? "primary" : "gray"} className={cx("text-center transition-colors")}>
+									{t(item.menuLabel)}
+								</BgtText>
+							</>
+						);
+
+						if (item.path === "more") {
+							return (
+								<button key={item.path} onClick={handleMoreClick} className={itemClassName}>
+									{content}
+								</button>
+							);
+						}
+
+						return (
+							<Link key={item.path} to={item.path} className={itemClassName}>
+								{content}
+							</Link>
+						);
+					})}
+				</div>
+			</nav>
+		</>
+	);
+};

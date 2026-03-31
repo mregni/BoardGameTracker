@@ -1,0 +1,166 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Renovate config for BoardGameTracker",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    "group:allNonMajor"
+  ],
+  "timezone": "Europe/Brussels",
+  "schedule": [
+    "before 6am on Monday"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "assignees": [
+    "mregni"
+  ],
+  "vulnerabilityAlerts": {
+    "labels": [
+      "security",
+      "dependencies"
+    ],
+    "assignees": [
+      "mregni"
+    ],
+    "schedule": [
+      "at any time"
+    ],
+    "automerge": false
+  },
+  "packageRules": [
+    {
+      "groupName": "TanStack packages",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "/^@tanstack//"
+      ]
+    },
+    {
+      "groupName": "Radix UI packages",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "/^@radix-ui//"
+      ]
+    },
+    {
+      "groupName": "Nivo chart packages",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "/^@nivo//"
+      ]
+    },
+    {
+      "matchPackageNames": [
+        "@biomejs/biome"
+      ],
+      "groupName": "Biome"
+    },
+    {
+      "groupName": "Vite",
+      "matchPackageNames": [
+        "/^vite/",
+        "/^@vitejs//"
+      ]
+    },
+    {
+      "groupName": "i18next packages",
+      "matchPackageNames": [
+        "/^i18next/",
+        "/^react-i18next/"
+      ]
+    },
+    {
+      "groupName": "Frontend test packages",
+      "matchPackageNames": [
+        "/^vitest/",
+        "/^@testing-library//",
+        "/^@vitest//"
+      ]
+    },
+    {
+      "groupName": "EF Core packages",
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "/^Microsoft.EntityFrameworkCore/"
+      ]
+    },
+    {
+      "groupName": "ASP.NET Core Identity",
+      "matchPackageNames": [
+        "/^Microsoft.AspNetCore.Identity/"
+      ]
+    },
+    {
+      "groupName": "Backend test packages",
+      "matchPackageNames": [
+        "/^xunit/",
+        "/^Moq/",
+        "/^FluentAssertions/"
+      ]
+    },
+    {
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "labels": [
+        "dependencies",
+        "major-update"
+      ]
+    },
+    {
+      "automerge": false,
+      "labels": [
+        "dependencies",
+        "security-sensitive"
+      ],
+      "matchPackageNames": [
+        "/^Microsoft.AspNetCore.Authentication/",
+        "/^System.IdentityModel/",
+        "/^Microsoft.IdentityModel/"
+      ]
+    }
+  ],
+  "dockerfile": {
+    "pinDigests": false
+  },
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Dependency Dashboard",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2
+}

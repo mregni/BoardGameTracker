@@ -1,21 +1,97 @@
-﻿# docker run -e DB_HOST=192.168.72.66 -e DB_USER=dev -e DB_PASSWORD=dev -e DB_NAME=boardgametracker-dev -p 6544:5444 -v C:\Users\mikha\Documents\Repositories\BoardGameTracker\BoardGameTracker.Host\data:/app/data -v C:\Users\mikha\Documents\Repositories\BoardGameTracker\BoardGameTracker.Host\images:/app/images
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS with-node
-RUN apt-get update
-RUN apt-get install curl
-RUN curl -sL https://deb.nodesource.com/setup_20.x | bash
-RUN apt-get -y install nodejs
+﻿# Build arguments for multi-arch support
+ARG BUILDPLATFORM
+ARG TARGETPLATFORM
+ARG TARGETOS
+ARG VERSION=0.0.1
 
-FROM with-node AS publish
+# Stage 1: Build Frontend
+FROM --platform=linux/amd64 node:22-alpine AS frontend-build
+ARG SENTRY_AUTH_TOKEN
+ARG VITE_SENTRY_DSN
 WORKDIR /src
-COPY . .
-RUN dotnet restore "./BoardGameTracker.Host/BoardGameTracker.Host.csproj"
-RUN dotnet publish "./BoardGameTracker.Host/BoardGameTracker.Host.csproj" -c Release -o /publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Copy frontend package files
+COPY boardgametracker.client/package*.json ./
+RUN npm ci --ignore-scripts
+
+# Copy frontend source
+COPY boardgametracker.client/ ./
+
+# Build frontend (SENTRY_AUTH_TOKEN enables sourcemap upload via @sentry/vite-plugin)
+ENV SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
+RUN npm run build
+
+# Stage 2: Build Backend
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS backend-build
+ARG VERSION
+WORKDIR /src
+
+# Copy Directory.Build.props (affects MSBuild behavior)
+COPY Directory.Build.props ./
+
+# Copy project files for restore
+COPY BoardGameTracker.Common/BoardGameTracker.Common.csproj BoardGameTracker.Common/
+COPY BoardGameTracker.Core/BoardGameTracker.Core.csproj BoardGameTracker.Core/
+COPY BoardGameTracker.Api/BoardGameTracker.Api.csproj BoardGameTracker.Api/
+COPY BoardGameTracker.Host/BoardGameTracker.Host.csproj BoardGameTracker.Host/
+
+# Restore dependencies
+RUN dotnet restore BoardGameTracker.Host/BoardGameTracker.Host.csproj
+
+# Copy source code
+COPY BoardGameTracker.Common/ BoardGameTracker.Common/
+COPY BoardGameTracker.Core/ BoardGameTracker.Core/
+COPY BoardGameTracker.Api/ BoardGameTracker.Api/
+COPY BoardGameTracker.Host/ BoardGameTracker.Host/
+
+# Copy frontend build output to wwwroot
+COPY --from=frontend-build /src/dist BoardGameTracker.Host/wwwroot
+
+# Build and publish backend
+WORKDIR /src/BoardGameTracker.Host
+RUN ASSEMBLY_VERSION=$(echo "${VERSION}" | cut -d'-' -f1) && \
+    dotnet publish \
+    -c Release \
+    -o /app/publish \
+    --no-restore \
+    /p:Version=${ASSEMBLY_VERSION} \
+    /p:BuildWithoutEsproj=true
+
+# Stage 3: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
+
+# Build arguments for runtime configuration
+ARG ASPNETCORE_ENVIRONMENT=production
+ARG ASPNETCORE_URLS=http://*:5444
+
 WORKDIR /app
-COPY --from=publish /publish .
-ENV ASPNETCORE_ENVIRONMENT=production
+
+RUN apk add --no-cache curl su-exec
+
+RUN mkdir -p /app/data /app/images /app/logs /app/config
+
+# Copy published files from backend build stage
+COPY --from=backend-build /app/publish .
+
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Set environment variables
+ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
 ENV DOTNET_EnableDiagnostics=0
-ENV ASPNETCORE_URLS=http://*:5444
+ENV ASPNETCORE_URLS=${ASPNETCORE_URLS}
+
+# Default PUID/PGID (can be overridden at runtime)
+ENV PUID=1654
+ENV PGID=1654
+
+# Expose port
 EXPOSE 5444
-ENTRYPOINT ["dotnet", "BoardGameTracker.Host.dll"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl --fail http://localhost:5444/api/health || exit 1
+
+ENTRYPOINT ["/entrypoint.sh"]

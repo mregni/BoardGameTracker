@@ -1,29 +1,47 @@
-import { ReactNode } from 'react';
-import { cx } from 'class-variance-authority';
+import { cva, type VariantProps } from "class-variance-authority";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
-interface Props {
-  icon: ReactNode;
-  onClick: () => void;
-  type?: 'normal' | 'danger';
-  disabled?: boolean;
-  className?: string;
+const iconButtonVariants = cva("rounded-lg inline-flex items-center justify-center p-2", {
+	variants: {
+		intent: {
+			primary: "text-primary bg-primary/20 hover:bg-primary/40 transition-colors",
+			danger: "text-error bg-error/20 hover:bg-error/40 transition-colors",
+			header: "text-white hover:text-gray-400 transition-colors",
+			subtile: "text-white/40 hover:text-white/20 transition-colors",
+		},
+		size: {
+			"1": "h-8 w-8",
+			"2": "h-10 w-10",
+		},
+		disabled: {
+			true: "opacity-50 cursor-not-allowed",
+			false: "cursor-pointer",
+		},
+	},
+	defaultVariants: {
+		intent: "primary",
+		size: "1",
+		disabled: false,
+	},
+});
+
+interface Props extends ComponentPropsWithoutRef<"button">, Omit<VariantProps<typeof iconButtonVariants>, "disabled"> {
+	icon: ReactNode;
 }
 
 export const BgtIconButton = (props: Props) => {
-  const { icon, onClick, type = 'normal', disabled, className } = props;
-  return (
-    <button
-      onClick={onClick}
-      type="button"
-      className={cx(
-        '-mx-1.5 -my-1.5 rounded-lg p-1.5 inline-flex items-center justify-center h-8 w-8',
-        className,
-        type === 'normal' && 'text-gray-400 hover:text-gray-600',
-        type === 'danger' && 'text-red-600 hover:text-red-800'
-      )}
-      disabled={disabled}
-    >
-      {icon}
-    </button>
-  );
+	const { icon, onClick, disabled, className, intent, size, ...rest } = props;
+
+	const buttonClasses = iconButtonVariants({
+		intent,
+		size,
+		disabled: !!disabled,
+		className,
+	});
+
+	return (
+		<button onClick={onClick} type="button" className={buttonClasses} disabled={disabled} {...rest}>
+			{icon}
+		</button>
+	);
 };
