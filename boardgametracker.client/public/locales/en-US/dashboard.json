@@ -1,0 +1,12 @@
+{
+  "empty": {
+    "title": "No games in your collection",
+    "description": "You haven't added any games to your collection yet. Start by adding your first game to track your gameplay sessions and statistics.",
+    "button": "Add Your First Game"
+  },
+  "charts": {
+    "collection": "Collection"
+  },
+  "recent-activity": "Recent activity",
+  "recent-added-games": "Recently added games"
+}
