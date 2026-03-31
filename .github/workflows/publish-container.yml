@@ -63,6 +63,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up JDK 17
+        if: github.ref == 'refs/heads/dev'
         uses: actions/setup-java@v5
         with:
           java-version: 17
@@ -81,6 +82,7 @@ jobs:
           cache-dependency-path: boardgametracker.client/package-lock.json
 
       - name: Cache SonarCloud packages
+        if: github.ref == 'refs/heads/dev'
         uses: actions/cache@v5
         with:
           path: ~/.sonar/cache
@@ -88,6 +90,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Cache SonarCloud scanner
+        if: github.ref == 'refs/heads/dev'
         id: cache-sonar-scanner
         uses: actions/cache@v5
         with:
@@ -96,7 +99,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar-scanner
 
       - name: Install SonarCloud scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        if: github.ref == 'refs/heads/dev' && steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         run: |
           mkdir -p ./.sonar/scanner
           dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
@@ -105,6 +108,7 @@ jobs:
         run: dotnet restore ./BoardGameTracker.sln
 
       - name: Begin SonarCloud analysis
+        if: github.ref == 'refs/heads/dev' && env.SONAR_TOKEN != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -127,7 +131,6 @@ jobs:
             /d:sonar.issue.ignore.multicriteria=e1 \
             /d:sonar.issue.ignore.multicriteria.e1.ruleKey=githubactions:S7637 \
             /d:sonar.issue.ignore.multicriteria.e1.resourceKey="**/.github/**"
-        if: env.SONAR_TOKEN != ''
 
       - name: Build .NET
         run: dotnet build --no-restore
@@ -163,11 +166,11 @@ jobs:
           npm run test:coverage
 
       - name: End SonarCloud analysis
+        if: github.ref == 'refs/heads/dev' && env.SONAR_TOKEN != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
-        if: env.SONAR_TOKEN != ''
+        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ env.SONAR_TOKEN }}"
 
       - name: Upload test results
         uses: actions/upload-artifact@v7
