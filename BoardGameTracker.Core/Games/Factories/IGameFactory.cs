@@ -1,10 +1,10 @@
+using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Models;
 
 namespace BoardGameTracker.Core.Games.Factories;
 
 public interface IGameFactory
 {
-    Task<Game> CreateFromImportDataAsync(GameImportData data, bool hasScoring, GameState state, decimal? price, DateTime? additionDate);
+    Task<Game> CreateFromBggAsync(ThingResponse.Item item, bool hasScoring, GameState state, decimal? price, DateTime? additionDate);
 }

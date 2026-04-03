@@ -1,104 +1,118 @@
-using System.Globalization;
 using System.Net;
+using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
-using BoardGameTracker.Core.Bgg.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Games;
 
 public class BggImportService : IBggImportService
 {
-    private readonly IBggApi _bggApi;
-    private readonly IBggGameTranslator _bggGameTranslator;
+    private readonly IBoardGameGeekXmlApi2Client _bggClient;
+    private readonly ISettingsService _settingsService;
     private readonly IGameFactory _gameFactory;
     private readonly IGameRepository _gameRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<BggImportService> _logger;
 
     public BggImportService(
-        IBggApi bggApi,
-        IBggGameTranslator bggGameTranslator,
+        IBoardGameGeekXmlApi2Client bggClient,
+        ISettingsService settingsService,
         IGameFactory gameFactory,
         IGameRepository gameRepository,
         IUnitOfWork unitOfWork,
         ILogger<BggImportService> logger)
     {
-        _bggApi = bggApi;
-        _bggGameTranslator = bggGameTranslator;
+        _bggClient = bggClient;
+        _settingsService = settingsService;
         _gameFactory = gameFactory;
         _gameRepository = gameRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
-    public async Task<BggGame?> SearchGame(int searchBggId)
+    public async Task<Game?> ImportGameFromBgg(BggSearch search)
     {
-        _logger.LogDebug("Searching BGG for game with id {BggId}", searchBggId);
-        var response = await _bggApi.SearchGame(searchBggId, 1);
-        var firstResult = response.Content?.Games?.FirstOrDefault();
-        if (!response.IsSuccessStatusCode || firstResult == null)
+        await EnsureBggConfiguredAsync();
+
+        var existingGame = await _gameRepository.GetGameByBggId(search.BggId);
+        if (existingGame != null)
+        {
+            return existingGame;
+        }
+
+        _logger.LogDebug("Searching BGG for game with id {BggId}", search.BggId);
+        var item = await FetchThingFromBgg(search.BggId);
+        if (item == null)
         {
             return null;
         }
 
-        return _bggGameTranslator.TranslateRawGame(firstResult);
-    }
+        var game = await _gameFactory.CreateFromBggAsync(
+            item,
+            search.HasScoring,
+            search.State,
+            search.Price.HasValue ? (decimal?)search.Price.Value : null,
+            search.AdditionDate);
 
-    public async Task<Game> SearchOnBgg(BggGame rawGame, BggSearch search)
-    {
-        var result = await ProcessBggGameData(rawGame, search);
+        await _gameRepository.CreateAsync(game);
         await _unitOfWork.SaveChangesAsync();
-        return result;
-    }
-
-    public Task<Game?> GetGameByBggId(int bggId)
-    {
-        return _gameRepository.GetGameByBggId(bggId);
+        return game;
     }
 
     public async Task<BggImportResult?> ImportBggCollection(string userName)
     {
+        await EnsureBggConfiguredAsync();
         _logger.LogInformation("Starting BGG collection import for user {UserName}", userName);
-        var importGameResult = await _bggApi.ImportCollection(userName, "boardgame", "boardgameexpansion");
-        if (!importGameResult.IsSuccessStatusCode)
+
+        CollectionResponse response;
+        try
+        {
+            var request = new CollectionRequest(userName, subType: "boardgame,boardgameexpansion");
+            response = await _bggClient.GetCollectionAsync(request);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            _logger.LogWarning(ex, "BGG API key is invalid or expired");
+            throw new ValidationException("Invalid BGG API key. Please check your API key in settings.");
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "BGG API request failed for collection import of user {UserName}", userName);
+            return null;
+        }
+
+        if (!response.Succeeded)
         {
             return null;
         }
 
         var result = new BggImportResult
         {
-            StatusCode = importGameResult.StatusCode
+            StatusCode = HttpStatusCode.OK
         };
 
-        if (importGameResult.StatusCode != HttpStatusCode.OK)
+        if (response.Result == null || response.Result.Count == 0)
         {
             return result;
         }
 
-        if (importGameResult.Content?.Item == null)
+        var list = response.Result.OrderBy(x => x.Name).ToList();
+        result.Games = list.Select(collectionItem => new BggImportGame
         {
-            return result;
-        }
-
-        var list = importGameResult.Content.Item.OrderBy(x => x.Name.Text).ToList();
-        result.Games = list.Select(item => new BggImportGame
-        {
-            BggId = item.Objectid,
-            Title = item.Name.Text,
-            State = item.Status.ToGameState(),
-            ImageUrl = item.Image.Text,
-            LastModified = DateTime.ParseExact(
-                item.Status.LastModified,
-                "yyyy-MM-dd HH:mm:ss",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
-            IsExpansion = item.Subtype == "boardgameexpansion"
+            BggId = collectionItem.ObjectId,
+            Title = collectionItem.Name,
+            State = collectionItem.Status.ToGameState(),
+            ImageUrl = collectionItem.Image ?? string.Empty,
+            LastModified = collectionItem.Status.LastModified,
+            IsExpansion = collectionItem.SubType == "boardgameexpansion"
         }).ToList();
 
         return result;
@@ -106,46 +120,63 @@ public class BggImportService : IBggImportService
 
     public async Task ImportList(IList<ImportGame> games)
     {
+        await EnsureBggConfiguredAsync();
         _logger.LogInformation("Importing {Count} games from BGG", games.Count);
-        var bggGames = await Task.WhenAll(games.Select(g => SearchGame(g.BggId)));
 
-        for (var i = 0; i < games.Count; i++)
+        foreach (var importGame in games)
         {
-            var bggGame = bggGames[i];
-            if (bggGame == null)
+            var item = await FetchThingFromBgg(importGame.BggId);
+            if (item == null)
             {
-                _logger.LogWarning("BGG game with id {BggId} not found, skipping", games[i].BggId);
+                _logger.LogWarning("BGG game with id {BggId} not found, skipping", importGame.BggId);
                 continue;
             }
 
-            var game = games[i];
-            var search = new BggSearch
-            {
-                BggId = game.BggId,
-                HasScoring = game.HasScoring,
-                State = game.State,
-                AdditionDate = game.AddedDate,
-                Price = game.Price
-            };
-            await ProcessBggGameData(bggGame, search);
+            var game = await _gameFactory.CreateFromBggAsync(
+                item,
+                importGame.HasScoring,
+                importGame.State,
+                (decimal)importGame.Price,
+                importGame.AddedDate);
+
+            await _gameRepository.CreateAsync(game);
         }
 
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("BGG import completed, {Count} games processed", games.Count);
     }
 
-    private async Task<Game> ProcessBggGameData(BggGame rawGame, BggSearch search)
+    private async Task<ThingResponse.Item?> FetchThingFromBgg(int bggId)
     {
-        var gameImportData = await _bggGameTranslator.TranslateFromBggAsync(rawGame);
+        try
+        {
+            var request = new ThingRequest([bggId], stats: true);
+            var response = await _bggClient.GetThingAsync(request);
+            if (!response.Succeeded)
+            {
+                return null;
+            }
 
-        var game = await _gameFactory.CreateFromImportDataAsync(
-            gameImportData,
-            search.HasScoring,
-            search.State,
-            search.Price.HasValue ? (decimal?)search.Price.Value : null,
-            search.AdditionDate);
+            return response.Result?.FirstOrDefault();
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            _logger.LogWarning(ex, "BGG API key is invalid or expired");
+            throw new ValidationException("Invalid BGG API key. Please check your API key in settings.");
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "BGG API request failed for game {BggId}", bggId);
+            return null;
+        }
+    }
 
-        await _gameRepository.CreateAsync(game);
-        return game;
+    private async Task EnsureBggConfiguredAsync()
+    {
+        var enabled = await _settingsService.IsBggEnabled();
+        if (!enabled)
+        {
+            throw new BggFeatureDisabledException();
+        }
     }
 }

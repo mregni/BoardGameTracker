@@ -2,8 +2,6 @@
 using BoardGameTracker.Core.Badges;
 using BoardGameTracker.Core.Badges.BadgeEvaluators;
 using BoardGameTracker.Core.Badges.Interfaces;
-using BoardGameTracker.Core.Bgg;
-using BoardGameTracker.Core.Bgg.Interfaces;
 using BoardGameTracker.Core.Compares;
 using BoardGameTracker.Core.Compares.Interfaces;
 using BoardGameTracker.Core.Configuration;
@@ -96,8 +94,6 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IGameStatisticsService, GameStatisticsService>();
         serviceCollection.AddScoped<IPlayerStatisticsService, PlayerStatisticsService>();
         serviceCollection.AddScoped<IBadgeProgressionService, BadgeProgressionService>();
-
-        serviceCollection.AddScoped<IBggGameTranslator, BggGameTranslator>();
 
         serviceCollection.AddScoped<IGameFactory, GameFactory>();
 

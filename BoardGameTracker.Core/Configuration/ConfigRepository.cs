@@ -103,9 +103,10 @@ public class ConfigRepository : IConfigRepository
     {
         return value switch
         {
+            null => string.Empty,
             bool b => b.ToString().ToLowerInvariant(),
             Enum e => e.ToString().ToLowerInvariant(),
-            _ => value?.ToString() ?? string.Empty
+            _ => value.ToString() ?? string.Empty
         };
     }
 }

@@ -10,7 +10,8 @@ using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Auth;
-using BoardGameTracker.Core.Bgg.Interfaces;
+using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
+using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Updates;
@@ -178,15 +179,19 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var refitSettings = new RefitSettings
+builder.Services.AddHttpClient<IBoardGameGeekXmlApi2Client, BoardGameGeekXmlApi2Client>();
+builder.Services.AddScoped<IBoardGameGeekXmlApi2Client>(sp =>
 {
-    ContentSerializer = new XmlContentSerializer()
-};
-builder.Services.AddRefitClient<IBggApi>(refitSettings)
-    .ConfigureHttpClient(options =>
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    var httpClient = httpClientFactory.CreateClient(nameof(IBoardGameGeekXmlApi2Client));
+    var settingsService = sp.GetRequiredService<ISettingsService>();
+    var apiKey = settingsService.GetBggApiKeyAsync().GetAwaiter().GetResult();
+    var options = new BoardGameGeekXmlApi2ClientOptions
     {
-        options.BaseAddress = new Uri("https://boardgamegeek.com/xmlapi2");
-    });
+        AuthorizationToken = apiKey
+    };
+    return new BoardGameGeekXmlApi2Client(httpClient, options);
+});
 
 builder.Services.AddRefitClient<IDockerHubApi>()
     .ConfigureHttpClient(options =>

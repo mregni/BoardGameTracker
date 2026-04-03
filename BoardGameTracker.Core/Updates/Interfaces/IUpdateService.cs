@@ -7,7 +7,5 @@ public interface IUpdateService
 {
     Task<UpdateStatus> GetVersionInfoAsync();
     Task CheckForUpdatesAsync();
-    Task<UpdateSettings> GetUpdateSettingsAsync();
-    Task UpdateSettingsAsync(bool enabled, VersionTrack versionTrack);
     string GetCurrentVersion();
 }
