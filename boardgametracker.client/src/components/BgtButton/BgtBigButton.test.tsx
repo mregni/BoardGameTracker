@@ -2,10 +2,13 @@ import { describe, expect, it, vi } from "vitest";
 import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import BgtBigButton from "./BgtBigButton";
 
+const MockIcon = (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="mock-icon" {...props} />;
+
 describe("BgtBigButton", () => {
 	const defaultProps = {
 		title: "Add Game",
 		subText: "Click to add a new game to your collection",
+		icon: MockIcon,
 		onClick: vi.fn(),
 	};
 
@@ -69,6 +72,7 @@ describe("BgtBigButton", () => {
 				<BgtBigButton
 					title="Start Session"
 					subText="Begin tracking a new game session"
+					icon={MockIcon}
 					onClick={handleClick}
 					disabled={false}
 				/>,
