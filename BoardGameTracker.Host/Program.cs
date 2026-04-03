@@ -17,7 +17,6 @@ using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Extensions;
-using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;

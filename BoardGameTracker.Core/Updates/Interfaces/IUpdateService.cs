@@ -1,4 +1,3 @@
-using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models.Updates;
 
 namespace BoardGameTracker.Core.Updates.Interfaces;

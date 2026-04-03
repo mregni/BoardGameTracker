@@ -1,11 +1,9 @@
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
-using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Settings;
