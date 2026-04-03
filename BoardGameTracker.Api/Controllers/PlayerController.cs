@@ -1,5 +1,4 @@
 ﻿using BoardGameTracker.Common;
-using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Players.Interfaces;
