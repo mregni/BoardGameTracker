@@ -1,23 +1,23 @@
+using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Models.Bgg;
 
 namespace BoardGameTracker.Common.Extensions;
 
 public static class StatusExtensions
 {
-    public static GameState ToGameState(this Status status)
+    public static GameState ToGameState(this CollectionResponse.Status status)
     {
-        if (status.Prevowned == 1)
+        if (status.PreviouslyOwned)
         {
             return GameState.PreviouslyOwned;
         }
 
-        if (status.Fortrade == 1)
+        if (status.ForTrade)
         {
             return GameState.ForTrade;
         }
 
-        if (status.Want == 1)
+        if (status.Want)
         {
             return GameState.Wanted;
         }
