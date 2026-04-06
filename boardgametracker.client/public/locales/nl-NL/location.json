@@ -1,0 +1,32 @@
+{
+  "empty": {
+    "title": "No locations added yet",
+    "description": "You haven't added any locations yet. Start by adding your first location to track where you play your games."
+  },
+  "new": {
+    "button": "Add new Location",
+    "title": "Create new location",
+    "description": "Enter the location name to create a new one.",
+    "name": {
+      "placeholder": "Location name",
+      "required": "Location name is required"
+    },
+    "save": "Create location"
+  },
+  "edit": {
+    "title": "Edit location"
+  },
+  "notifications": {
+    "created": "Location is succesfully created",
+    "create-failed": "Failed creating location",
+    "failed": "Failed creating location",
+    "update": "Location is succesfully updated",
+    "update-failed": "Failed updating location",
+    "deleted": "Location is succesfully deleted",
+    "delete-failed": "Failed deleting location"
+  },
+  "delete": {
+    "description": "Are you sure you want to delete location '{{name}}'?",
+    "extra-description": "The location is connected to {{count}} game sessions, they will be disconnected."
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "empty": {
+    "title": "No players added yet",
+    "description": "You haven't added any players yet. Start by adding your first player to track their game sessions and statistics.",
+    "button": "Add Your First Player"
+  },
+  "back": "Back to players",
+  "count_other": "{{count}} players found",
+  "count_one": "{{count}} player found",
+  "notifications": {
+    "created": "Player is succesfully created",
+    "create-failed": "Failed creating player",
+    "not-found": "Could not find player",
+    "deleted": "Player is succesfully deleted",
+    "delete-failed": "Failed deleting player",
+    "updated": "Player is succesfully updated",
+    "update-failed": "Failed updating player"
+  },
+  "name": {
+    "placeholder": "Enter name of the player",
+    "required": "Player name is required"
+  },
+  "new": {
+    "button": "Add new player",
+    "description": "Fill out the form to create a new player.",
+    "save": "Create player",
+    "title": "Create player",
+    "players": {
+      "none": "No players added yet. Add your first player!"
+    }
+  },
+  "update": {
+    "save": "update player",
+    "title": "Update player",
+    "description": "Change the name or image to update the player."
+  },
+  "delete": {
+    "successfull": "Player is successfully deleted.",
+    "failed": "Player deletion failed, check logs for more details.",
+    "description": "Are you sure you want to delete player {{name}}? This cannot be reversed and will delete all game sessions connected to this player."
+  },
+  "cards": {
+    "games": "Games",
+    "win-record": "Win/Loss Record",
+    "most-played-games": "Most Played Games"
+  },
+  "titles": {
+    "achievements": "Achievements"
+  }
+}

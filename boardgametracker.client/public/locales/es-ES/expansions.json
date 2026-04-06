@@ -1,0 +1,7 @@
+{
+  "label": "Expansions",
+  "delete": {
+    "successfull": "Expansion is successfully deleted.",
+    "failed": "Expansion deletion failed, check logs for more details."
+  }
+}

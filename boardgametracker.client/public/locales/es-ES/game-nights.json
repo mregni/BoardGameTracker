@@ -1,0 +1,81 @@
+{
+  "rsvp": {
+    "title": "Manage RSVPs",
+    "manual-note-prefix": "Manually set RSVP status",
+    "manual-note": " for players who responded via phone, text, or in person.",
+    "accept": "Accept",
+    "decline": "Decline",
+    "maybe": "Maybe",
+    "host": "Host is always attending"
+  },
+  "empty": {
+    "title": "No game nights planned yet",
+    "description": "Invite players to plan a game night."
+  },
+  "delete": {
+    "title": "Delete game night",
+    "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
+  },
+  "title": "Game Nights Planner",
+  "create": {
+    "button": "Create Game Night",
+    "title": "Create new Game Night",
+    "description": "Fill out the form to create a new game night event.",
+    "save": "Create Game Night"
+  },
+  "edit": {
+    "title": "Edit Game Night",
+    "description": "Update the details of this game night event.",
+    "save": "Save Changes"
+  },
+  "upcoming": "Upcoming game nights",
+  "past": "Past game nights",
+  "card": {
+    "hosted-by": "Hosted by {{host}}",
+    "suggested-games": "Suggested games",
+    "rsvp-link": "RSVP Link",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "copy-link": "Copy RSVP link",
+    "copied": "Copied to clipboard",
+    "manage-rsvps": "Manage RSVPs"
+  },
+  "form": {
+    "title": {
+      "label": "Event title",
+      "placeholder": "Enter game night title"
+    },
+    "start": {
+      "label": "Date"
+    },
+    "location": {
+      "label": "Location",
+      "placeholder": "Enter location"
+    },
+    "host": {
+      "label": "Host",
+      "placeholder": "Enter host player"
+    },
+    "invited-players": {
+      "label": "Invited players",
+      "description": "Select players to invite to this game night"
+    },
+    "suggested-games": {
+      "label": "Suggested games",
+      "description": "Select games that you suggest to play during this game night"
+    },
+    "notes": {
+      "label": "Notes"
+    }
+  },
+  "notifications": {
+    "created": "Game night created successfully",
+    "create-failed": "Failed to create game night",
+    "updated": "Game night updated successfully",
+    "update-failed": "Failed to update game night",
+    "deleted": "Game night deleted successfully",
+    "delete-failed": "Failed to delete game night",
+    "rsvp-updated": "RSVP updated successfully",
+    "rsvp-update-failed": "Failed to update RSVP"
+  }
+}

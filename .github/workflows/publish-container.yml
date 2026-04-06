@@ -200,6 +200,9 @@ jobs:
     name: Build Multi-Arch Linux Containers
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    environment:
+      name: ${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
+      url: ${{ github.ref == 'refs/heads/master' && 'https://hub.docker.com/r/uping/boardgametracker' || '' }}
     permissions:
       contents: read
     steps:
@@ -387,24 +390,12 @@ jobs:
           \`\`\`
 
           Supported platforms:
-          - \`linux/amd64\` - x86_64 architecture
-          - \`linux/arm64\` - ARM 64-bit (Raspberry Pi 4, AWS Graviton)
+          - \`linux/amd64\`
+          - \`linux/arm64\`
 
           ### Changes
 
           ${CHANGELOG}
-
-          ### Upgrade Notes
-
-          If updating from a previous version:
-          1. Pull the new image: \`docker pull uping/boardgametracker:${VERSION}\`
-          2. Stop and remove the old container
-          3. Start with the new image (database migrations run automatically)
-
-          ### Documentation
-
-          - [Main Repository](https://github.com/mregni/BoardGameTracker)
-          - [Docker Hub](https://hub.docker.com/r/uping/boardgametracker)
           EOF
 
       - name: Create Release

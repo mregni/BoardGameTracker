@@ -13,7 +13,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ${DATA_PATH:-./config}:/app/config
+      - ${IMAGE_PATH:-./images}:/app/images
       - ${LOG_PATH:-./logs}:/app/logs
     ports:
       - "${APP_PORT:-5444}:5444"

@@ -1,0 +1,53 @@
+{
+  "title": "Compare players",
+  "select-player": "Select player to compare",
+  "total-games-played": "Total games together",
+  "minutes-played": "Minutes played",
+  "most-played-game": "Most played game",
+  "wins": {
+    "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
+    "loser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+  },
+  "best-game": {
+    "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
+  },
+  "total-wins": {
+    "label": "{{player}} won in total {{count}} game sessions."
+  },
+  "win-percentage": {
+    "label": "{{player}} has a win percentage of {{percentage}}%"
+  },
+  "total-duration": {
+    "label": "{{player}} played a total of {{duration}} minutes."
+  },
+  "total-sessions": {
+    "label": "{{player}} played a total of {{count}} game sessions."
+  },
+  "head-to-head": {
+    "title": "Head to Head",
+    "direct-wins": "{{player}} won {{count}} times against {{opponent}}",
+    "most-won-game": "{{player}} won most from {{opponent}} in {{game}} ({{count}} times)",
+    "last-session": "Last session was won by {{player}} in {{game}}",
+    "most-played-together": "Most played together: {{game}} ({{count}} sessions)",
+    "closest-game": "{{player}} won by just {{points}} points in {{game}}",
+    "first-game-together": "First game together: {{game}} on {{date}}"
+  },
+  "stats": {
+    "total-wins": "Total wins",
+    "win-percentage": "Win Percentage",
+    "sessions": "Sessions",
+    "total-duration": "Total gameplay time",
+    "player-stats": "{{player}}'s Stats"
+  },
+  "empty": {
+    "insufficient-players": {
+      "title": "Not enough players to compare",
+      "description": "Not enough players in your database to start comparing statistics and head-to-head performance."
+    },
+    "no-players": {
+      "title": "No players available to compare",
+      "description": "You currently have no players in the database. Please add players to use the compare feature."
+    },
+    "button": "Go to players page"
+  }
+}
