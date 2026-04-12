@@ -1,0 +1,26 @@
+{
+  "bgg": {
+    "id-not-found": "Could not find game on BoardGameGeek"
+  },
+  "image": {
+    "type-not-supported": "Image type not supported",
+    "error": "Error while uploading image, check logs"
+  },
+  "auth": {
+    "username-already-exists": "Username already exists",
+    "oidc-no-local-users": "Cannot create local users when OIDC is enabled",
+    "invalid-role": "Invalid role",
+    "username-required": "Username is required",
+    "cannot-change-oidc-password": "Cannot change password for externally authenticated accounts",
+    "cannot-delete-self": "Cannot delete your own account",
+    "cannot-delete-last-admin": "Cannot delete the last admin account",
+    "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
+    "invalid-credentials": "Invalid username or password",
+    "invalid-refresh-token": "Invalid or expired session"
+  },
+  "something-went-wrong": "Something went wrong, please try again later.",
+  "unexpected-error": "An unexpected error occurred.",
+  "network": "Unable to connect to the server. Please check your connection.",
+  "timeout": "The request took too long. Please try again.",
+  "server": "A server error occurred. Please try again later."
+}
