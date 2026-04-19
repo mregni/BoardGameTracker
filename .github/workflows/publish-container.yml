@@ -3,15 +3,22 @@ name: Deploy
 on:
   push:
     branches:
-      - dev
       - master
     paths-ignore:
       - "docs/**"
       - ".github/workflows/docs.yml"
+  workflow_dispatch:
+    inputs:
+      stable_release:
+        description: 'Create a stable (non-beta) release'
+        required: true
+        default: false
+        type: boolean
 
 env:
   REGISTRY: ${{ vars.DOCKER_REGISTRY || 'docker.io' }}
   IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME || 'uping/boardgametracker' }}
+  IS_STABLE: ${{ github.event_name == 'workflow_dispatch' && inputs.stable_release == true }}
 
 jobs:
   version:
@@ -21,7 +28,7 @@ jobs:
       contents: read
     outputs:
       version: ${{ steps.versioning.outputs.version }}
-      is_master: ${{ github.ref == 'refs/heads/master' }}
+      is_stable: ${{ env.IS_STABLE }}
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@v2
@@ -39,10 +46,10 @@ jobs:
         with:
           major_pattern: "(MAJOR)"
           minor_pattern: "(MINOR)"
-          enable_prerelease_mode: ${{ github.ref == 'refs/heads/dev' }}
+          enable_prerelease_mode: ${{ env.IS_STABLE != 'true' }}
           namespace: beta
           bump_each_commit: true
-          version_format: "${{ github.ref == 'refs/heads/dev' && '${major}.${minor}.${patch}-beta' || '${major}.${minor}.${patch}' }}"
+          version_format: "${{ env.IS_STABLE == 'true' && '${major}.${minor}.${patch}' || '${major}.${minor}.${patch}-beta' }}"
           debug: true
 
   test-and-analyze:
@@ -63,7 +70,6 @@ jobs:
           fetch-depth: 0
 
       - name: Set up JDK 17
-        if: github.ref == 'refs/heads/dev'
         uses: actions/setup-java@v5
         with:
           java-version: 17
@@ -82,7 +88,6 @@ jobs:
           cache-dependency-path: boardgametracker.client/package-lock.json
 
       - name: Cache SonarCloud packages
-        if: github.ref == 'refs/heads/dev'
         uses: actions/cache@v5
         with:
           path: ~/.sonar/cache
@@ -90,7 +95,6 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Cache SonarCloud scanner
-        if: github.ref == 'refs/heads/dev'
         id: cache-sonar-scanner
         uses: actions/cache@v5
         with:
@@ -99,7 +103,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar-scanner
 
       - name: Install SonarCloud scanner
-        if: github.ref == 'refs/heads/dev' && steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         run: |
           mkdir -p ./.sonar/scanner
           dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
@@ -108,7 +112,7 @@ jobs:
         run: dotnet restore ./BoardGameTracker.sln
 
       - name: Begin SonarCloud analysis
-        if: github.ref == 'refs/heads/dev' && env.SONAR_TOKEN != ''
+        if: env.SONAR_TOKEN != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -166,7 +170,7 @@ jobs:
           npm run test:coverage
 
       - name: End SonarCloud analysis
-        if: github.ref == 'refs/heads/dev' && env.SONAR_TOKEN != ''
+        if: env.SONAR_TOKEN != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -201,8 +205,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment:
-      name: ${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
-      url: ${{ github.ref == 'refs/heads/master' && 'https://hub.docker.com/r/uping/boardgametracker' || '' }}
+      name: ${{ env.IS_STABLE == 'true' && 'production' || 'development' }}
+      url: ${{ env.IS_STABLE == 'true' && 'https://hub.docker.com/r/uping/boardgametracker' || '' }}
     permissions:
       contents: read
     steps:
@@ -235,19 +239,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata for Docker (dev)
-        id: meta-dev
-        if: github.ref == 'refs/heads/dev'
+      - name: Extract metadata for Docker (beta)
+        id: meta-beta
+        if: env.IS_STABLE != 'true'
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ needs.version.outputs.version }}
-            type=raw,value=dev
+            type=raw,value=beta
 
-      - name: Extract metadata for Docker (master)
-        id: meta-master
-        if: github.ref == 'refs/heads/master'
+      - name: Extract metadata for Docker (stable)
+        id: meta-stable
+        if: env.IS_STABLE == 'true'
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_NAME }}
@@ -264,8 +268,8 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ github.ref == 'refs/heads/master' && steps.meta-master.outputs.tags || steps.meta-dev.outputs.tags }}
-          labels: ${{ github.ref == 'refs/heads/master' && steps.meta-master.outputs.labels || steps.meta-dev.outputs.labels }}
+          tags: ${{ env.IS_STABLE == 'true' && steps.meta-stable.outputs.tags || steps.meta-beta.outputs.tags }}
+          labels: ${{ env.IS_STABLE == 'true' && steps.meta-stable.outputs.labels || steps.meta-beta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -350,7 +354,7 @@ jobs:
     name: Create GitHub Release
     needs: [version, build-linux-multiarch]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: needs.version.outputs.is_stable == 'true'
     permissions:
       contents: write
     steps:
@@ -436,9 +440,8 @@ jobs:
       - name: Build Summary
         run: |
           VERSION=${{ needs.version.outputs.version }}
-          BRANCH=${{ github.ref_name }}
 
-          if [ "$BRANCH" = "master" ]; then
+          if [ "${{ needs.version.outputs.is_stable }}" = "true" ]; then
             cat >> $GITHUB_STEP_SUMMARY << EOF
           # Release v${VERSION} Published
 
@@ -454,11 +457,11 @@ jobs:
           EOF
           else
             cat >> $GITHUB_STEP_SUMMARY << EOF
-          # Dev Build ${VERSION} Published
+          # Beta Build ${VERSION} Published
 
           ## Docker Images
           - \`uping/boardgametracker:${VERSION}\`
-          - \`uping/boardgametracker:dev\`
+          - \`uping/boardgametracker:beta\`
 
           **Platforms:** linux/amd64, linux/arm64
           EOF
