@@ -14,6 +14,7 @@ import { getEnvironment, getLanguages, getSettings } from "@/services/queries/se
 import { handleFormSubmit } from "@/utils/formUtils";
 import { AccountSettings } from "./-components/AccountSettings";
 import { AdvancedSettings } from "./-components/AdvancedSettings";
+import { BggSettings } from "./-components/BggSettings";
 import { GameNightsSettings } from "./-components/GameNightsSettings";
 import { GeneralSettings } from "./-components/GeneralSettings";
 import { type SettingsCategory, SettingsSidebar } from "./-components/SettingsSidebar";
@@ -73,6 +74,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 			publicUrl: settings.publicUrl,
 			gameNightsEnabled: settings.gameNightsEnabled,
 			rsvpAuthenticationEnabled: settings.rsvpAuthenticationEnabled,
+			bggApiKey: settings.bggApiKey,
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = SettingsSchema.parse(value);
@@ -88,6 +90,8 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 				return <ShelfOfShameSettings form={form} disabled={isSaving} />;
 			case "game-nights":
 				return <GameNightsSettings form={form} disabled={isSaving} />;
+			case "bgg":
+				return <BggSettings form={form} disabled={isSaving} bggStatus={settings.bggStatus} />;
 			case "advanced":
 				return <AdvancedSettings form={form} disabled={isSaving} />;
 			case "account":

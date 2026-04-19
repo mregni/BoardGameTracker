@@ -34,3 +34,4 @@ export const getVersionInfoCall = (): Promise<VersionInfo> => {
 		return response.data;
 	});
 };
+

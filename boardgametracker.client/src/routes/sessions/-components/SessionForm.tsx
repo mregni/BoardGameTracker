@@ -23,6 +23,7 @@ import { sessionFormOpts } from "../-utils/sessionFormOpts";
 import { SessionExpansionSelector } from "./SessionExpansionSelector";
 import { SessionFormFields } from "./SessionFormFields";
 import { SessionPlayerManager } from "./SessionPlayerManager";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
 
 interface Props {
 	game?: Game | undefined;
@@ -108,7 +109,7 @@ export const SessionForm = (props: Props) => {
 	return (
 		<BgtPage>
 			<BgtPageContent centered>
-				<BgtCenteredCard title={title}>
+				<BgtCard title={title}>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-3 w-full">
 							<SessionFormFields form={form} games={games} locations={locations} disabled={disabled} />
@@ -155,7 +156,7 @@ export const SessionForm = (props: Props) => {
 							</div>
 						</div>
 					</form>
-				</BgtCenteredCard>
+				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
 	);

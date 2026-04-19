@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,6 +21,12 @@ import { useList } from "./-hooks/useList";
 
 export const Route = createFileRoute("/games/import/list_/$username")({
 	component: RouteComponent,
+	beforeLoad: async ({ context: { queryClient } }) => {
+		const settings = await queryClient.ensureQueryData(getSettings());
+		if (!settings.bggStatus?.isConfigured) {
+			throw redirect({ to: "/games" });
+		}
+	},
 	loader: async ({ params, context: { queryClient } }) => {
 		queryClient.prefetchQuery(getBggCollection(params.username));
 		queryClient.prefetchQuery(getGames());

@@ -37,6 +37,8 @@ function getErrorToastMessage(error: unknown): string {
 			return i18n.t("error:timeout");
 		case "server":
 			return i18n.t("error:server");
+		case "client":
+			return error.message;
 		default:
 			return i18n.t("error:something-went-wrong");
 	}

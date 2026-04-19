@@ -1,5 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
@@ -9,11 +9,19 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
 import { BggUserNameSchema } from "@/models";
+import { getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
 
 export const Route = createFileRoute("/games/import/start")({
 	component: RouteComponent,
+	beforeLoad: async ({ context: { queryClient } }) => {
+		const settings = await queryClient.ensureQueryData(getSettings());
+		if (!settings.bggStatus?.isConfigured) {
+			throw redirect({ to: "/games" });
+		}
+	},
 });
 
 function RouteComponent() {
@@ -35,8 +43,8 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageContent>
-				<BgtCenteredCard title={t("import.start.title")} className="max-w-[600px]">
+			<BgtPageContent centered>
+				<BgtCard title={t("import.start.title")} className="max-w-[600px]">
 					<form onSubmit={handleFormSubmit(form)}>
 						<div className="flex flex-col gap-5 w-full">
 							<div>{t("import.start.description")}</div>
@@ -67,7 +75,7 @@ function RouteComponent() {
 							</div>
 						</div>
 					</form>
-				</BgtCenteredCard>
+				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
 	);

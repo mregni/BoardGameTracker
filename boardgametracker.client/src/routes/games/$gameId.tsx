@@ -57,76 +57,79 @@ function RouteComponent() {
 		<BgtPage>
 			<BgtPageHeader backAction={actions.handleBackToGames} backText={t("back")} />
 			<BgtPageContent isLoading={isLoading} data={{ game, settings, statistics, sessions }}>
-				{({ game, settings, statistics, sessions }) => (
-					<>
-						<GameHeader
-							gameTitle={game.title}
-							gameState={game.state}
-							isLoaned={game.isLoaned}
-							canWrite={canWrite}
-							onAddSession={actions.handleAddSession}
-							onEdit={actions.handleEdit}
-							onDelete={modals.deleteModal.show}
-						/>
-						<GameStaticSection
-							game={game}
-							playCount={statistics.gameStats.playCount}
-							currency={settings.currency}
-							dateFormat={settings.dateFormat}
-							uiLanguage={settings.uiLanguage}
-						/>
-						{statistics.gameStats.playCount === 0 && (
-							<GameDetailEmptyState onLogSession={canWrite ? actions.handleAddSession : undefined} />
-						)}
-						{statistics.gameStats.playCount !== 0 && (
-							<>
-								<GameStatisticsGrid
-									gameStats={statistics.gameStats}
-									expansionCount={game.expansions.length}
-									currency={settings.currency}
-								/>
-								<div className="grid grid-cols-1 lg:grid-cols-2 gap-3 xl:gap-6">
-									<div className="flex flex-col gap-3 xl:gap-6">
-										<TopPlayersCard topPlayers={statistics.topPlayers} />
-										<RecentSessionsCard
-											sessions={sessions}
-											dateFormat={settings.dateFormat}
-											gameId={gameId.toString()}
-										/>
-										<SessionCountChartCard playByDayChart={statistics.playByDayChart} />
-									</div>
-									<div className="flex flex-col gap-3 xl:gap-6">
-										<ScoringResultsCard scoreRankChart={statistics.scoreRankChart} />
-										<PlayerCountChartCard playerCountChart={statistics.playerCountChart} />
-										<ExpansionsCard
-											expansions={game.expansions}
-											canWrite={canWrite}
-											onAddExpansion={actions.handleAddExpansion}
-											onDeleteExpansion={actions.handleDeleteExpansion}
-										/>
-									</div>
-								</div>
-							</>
-						)}
-						<BgtDeleteModal
-							title={game.title}
-							open={modals.deleteModal.isOpen}
-							close={modals.deleteModal.hide}
-							onDelete={actions.handleDelete}
-							description={t("common:delete.description", {
-								title: game.title,
-							})}
-						/>
-						{modals.expansionModal.isOpen && (
-							<ExpansionSelectorModal
-								open={modals.expansionModal.isOpen}
-								close={modals.expansionModal.hide}
-								gameId={gameId}
-								selectedExpansions={game.expansions.map((x) => x.bggId)}
+				{({ game, settings, statistics, sessions }) => {
+					const bggEnabled = settings.bggStatus?.isConfigured ?? false;
+					return (
+						<>
+							<GameHeader
+								gameTitle={game.title}
+								gameState={game.state}
+								isLoaned={game.isLoaned}
+								canWrite={canWrite}
+								onAddSession={actions.handleAddSession}
+								onEdit={actions.handleEdit}
+								onDelete={modals.deleteModal.show}
 							/>
-						)}
-					</>
-				)}
+							<GameStaticSection
+								game={game}
+								playCount={statistics.gameStats.playCount}
+								currency={settings.currency}
+								dateFormat={settings.dateFormat}
+								uiLanguage={settings.uiLanguage}
+							/>
+							{statistics.gameStats.playCount === 0 && (
+								<GameDetailEmptyState onLogSession={canWrite ? actions.handleAddSession : undefined} />
+							)}
+							{statistics.gameStats.playCount !== 0 && (
+								<>
+									<GameStatisticsGrid
+										gameStats={statistics.gameStats}
+										expansionCount={game.expansions.length}
+										currency={settings.currency}
+									/>
+									<div className="grid grid-cols-1 lg:grid-cols-2 gap-3 xl:gap-6">
+										<div className="flex flex-col gap-3 xl:gap-6">
+											<TopPlayersCard topPlayers={statistics.topPlayers} />
+											<RecentSessionsCard
+												sessions={sessions}
+												dateFormat={settings.dateFormat}
+												gameId={gameId.toString()}
+											/>
+											<SessionCountChartCard playByDayChart={statistics.playByDayChart} />
+										</div>
+										<div className="flex flex-col gap-3 xl:gap-6">
+											<ScoringResultsCard scoreRankChart={statistics.scoreRankChart} />
+											<PlayerCountChartCard playerCountChart={statistics.playerCountChart} />
+											<ExpansionsCard
+												expansions={game.expansions}
+												canWrite={canWrite && bggEnabled}
+												onAddExpansion={actions.handleAddExpansion}
+												onDeleteExpansion={actions.handleDeleteExpansion}
+											/>
+										</div>
+									</div>
+								</>
+							)}
+							<BgtDeleteModal
+								title={game.title}
+								open={modals.deleteModal.isOpen}
+								close={modals.deleteModal.hide}
+								onDelete={actions.handleDelete}
+								description={t("common:delete.description", {
+									title: game.title,
+								})}
+							/>
+							{bggEnabled && modals.expansionModal.isOpen && (
+								<ExpansionSelectorModal
+									open={modals.expansionModal.isOpen}
+									close={modals.expansionModal.hide}
+									gameId={gameId}
+									selectedExpansions={game.expansions.map((x) => x.bggId)}
+								/>
+							)}
+						</>
+					);
+				}}
 			</BgtPageContent>
 		</BgtPage>
 	);

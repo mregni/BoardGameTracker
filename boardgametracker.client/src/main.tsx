@@ -12,9 +12,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>
 		<Suspense>
 			<Theme appearance="dark" accentColor="purple" grayColor="gray" panelBackground="solid">
-				<Toaster toastOptions={{ unstyled: true, classNames: classConfig }} />
 				<AppContainer />
 			</Theme>
+			<Toaster toastOptions={{ unstyled: true, classNames: classConfig }} />
 		</Suspense>
 	</React.StrictMode>,
 );

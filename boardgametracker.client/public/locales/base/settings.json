@@ -130,9 +130,42 @@
 			"title": "Game Nights",
 			"description": "Configure Game Nights settings"
 		},
+		"bgg": {
+			"title": "BGG Integration",
+			"description": "BoardGameGeek API settings"
+		},
 		"account": {
 			"title": "Account",
 			"description": "Profile & user management"
+		}
+	},
+	"bgg": {
+		"title": "BoardGameGeek API",
+		"description": "Configure the BGG API key to enable searching and importing games from BoardGameGeek.",
+		"status": {
+			"title": "Status",
+			"configured": "API key configured",
+			"not-configured": "API key not Configured",
+			"source-env": "BGG API key is set via environment variable (BGG_API_KEY)",
+			"source-db": "BGG API key is stored in the database.",
+			"not-configured-description": "To use BGG integration features, you need to provide a BGG API key. You can either set it via the BGG_API_KEY environment variable or enter it directly in the settings below."
+		},
+		"api-key": {
+			"label": "BGG API Key",
+			"placeholder": "Enter your BGG API key",
+			"save": "Save API Key",
+			"clear": "Remove API Key",
+			"clear-hint": "Save settings to apply the removal.",
+			"read-only": "The API key is read only.",
+			"read-only-description": "The API key is managed via the BGG_API_KEY environment variable and cannot be changed here.",
+			"help-title": "BGG API usage",
+			"help-description": "The BGG API allows the app to search and import game data, import your collection, and more. You can get an API key by following the instructions on the BoardGameGeek <link>request page</link>."
+		},
+		"notifications": {
+			"saved": "BGG API key saved successfully",
+			"save-failed": "Failed to save BGG API key",
+			"cleared": "BGG API key removed",
+			"clear-failed": "Failed to remove BGG API key"
 		}
 	},
 	"account": {

@@ -12,9 +12,7 @@ import { MultiSelectField } from "./MultiSelectField";
 export const GameNightFormSchema = z.object({
 	title: z.string().min(1, { message: "game-nights:validation.title-required" }),
 	startDate: z.coerce.date({
-		errorMap: () => {
-			return { message: "player-session:new.start.required" };
-		},
+		error: "player-session:new.start.required",
 	}),
 	locationId: z.number().min(1, { message: "game-nights:validation.location-required" }),
 	hostId: z.number().min(1, { message: "game-nights:validation.host-required" }),

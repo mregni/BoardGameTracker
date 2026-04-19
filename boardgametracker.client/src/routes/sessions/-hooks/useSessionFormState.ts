@@ -130,7 +130,7 @@ export const useSessionFormState = ({
 				}
 			}
 		});
-		return () => subscription();
+		return () => subscription.unsubscribe();
 	}, [form, games]);
 
 	const addPlayer = useCallback((player: PlayerType) => {

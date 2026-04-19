@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
 
-export type SettingsCategory = "general" | "shelf-of-shame" | "game-nights" | "advanced" | "account";
+export type SettingsCategory = "general" | "shelf-of-shame" | "game-nights" | "bgg" | "advanced" | "account";
 
 interface CategoryItem {
 	id: SettingsCategory;
@@ -27,6 +27,11 @@ const CATEGORIES: CategoryItem[] = [
 		id: "game-nights",
 		label: "settings:sidebar.game-nights.title",
 		description: "settings:sidebar.game-nights.description",
+	},
+	{
+		id: "bgg",
+		label: "settings:sidebar.bgg.title",
+		description: "settings:sidebar.bgg.description",
 	},
 	{
 		id: "advanced",

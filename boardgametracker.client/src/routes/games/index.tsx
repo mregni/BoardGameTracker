@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,6 +17,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { BggGameModal } from "@/routes/games/-modals/BggGameModal";
 import CreateGameModal from "@/routes/games/-modals/CreateGameModal";
 import { getGames } from "@/services/queries/games";
+import { getSettings } from "@/services/queries/settings";
 import { useGameModals } from "./-hooks/useGameModals";
 import { useGamesData } from "./-hooks/useGamesData";
 
@@ -27,6 +29,7 @@ export const Route = createFileRoute("/games/")({
 	component: RouteComponent,
 	loader: ({ context: { queryClient } }) => {
 		queryClient.prefetchQuery(getGames());
+		queryClient.prefetchQuery(getSettings());
 	},
 	validateSearch: (search: Record<string, unknown>): GamesFilterSearch => {
 		return {
@@ -43,6 +46,9 @@ function RouteComponent() {
 	const { canWrite } = usePermissions();
 	const modals = useGameModals();
 	const [categoryFilter, setCategoryFilter] = useState<string | undefined>(category);
+
+	const settingsQuery = useQuery(getSettings());
+	const bggEnabled = settingsQuery.data?.bggStatus?.isConfigured ?? false;
 
 	const categoryPreFilter = useCallback(
 		(items: typeof games) => {
@@ -75,10 +81,11 @@ function RouteComponent() {
 				description={t("dashboard:empty.description")}
 				action={canWrite ? { onClick: modals.createModal.show, label: t("new") } : undefined}
 			>
-				<BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />
+				{bggEnabled && <BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />}
 				<CreateGameModal
 					open={modals.createModal.isOpen}
 					close={modals.createModal.hide}
+					bggEnabled={bggEnabled}
 					openBgg={openBgg}
 					openManual={openManual}
 				/>
@@ -130,10 +137,11 @@ function RouteComponent() {
 						/>
 					))}
 				</BgtCardList>
-				<BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />
+				{bggEnabled && <BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />}
 				<CreateGameModal
 					open={modals.createModal.isOpen}
 					close={modals.createModal.hide}
+					bggEnabled={bggEnabled}
 					openBgg={openBgg}
 					openManual={openManual}
 				/>

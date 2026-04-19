@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
-using BoardGameTracker.Core.Bgg.Interfaces;
+using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Factories;
@@ -16,15 +17,14 @@ using BoardGameTracker.Core.Games.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Refit;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Services;
 
 public class BggImportServiceTests
 {
-    private readonly Mock<IBggApi> _bggApiMock;
-    private readonly Mock<IBggGameTranslator> _bggGameTranslatorMock;
+    private readonly Mock<IBoardGameGeekXmlApi2Client> _bggClientMock;
+    private readonly Mock<ISettingsService> _settingsServiceMock;
     private readonly Mock<IGameFactory> _gameFactoryMock;
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
@@ -33,16 +33,18 @@ public class BggImportServiceTests
 
     public BggImportServiceTests()
     {
-        _bggApiMock = new Mock<IBggApi>();
-        _bggGameTranslatorMock = new Mock<IBggGameTranslator>();
+        _bggClientMock = new Mock<IBoardGameGeekXmlApi2Client>();
+        _settingsServiceMock = new Mock<ISettingsService>();
+        _settingsServiceMock.Setup(x => x.GetBggApiKeyAsync()).ReturnsAsync("test-api-key");
+        _settingsServiceMock.Setup(x => x.IsBggEnabled()).ReturnsAsync(true);
         _gameFactoryMock = new Mock<IGameFactory>();
         _gameRepositoryMock = new Mock<IGameRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _loggerMock = new Mock<ILogger<BggImportService>>();
 
         _bggImportService = new BggImportService(
-            _bggApiMock.Object,
-            _bggGameTranslatorMock.Object,
+            _bggClientMock.Object,
+            _settingsServiceMock.Object,
             _gameFactoryMock.Object,
             _gameRepositoryMock.Object,
             _unitOfWorkMock.Object,
@@ -51,207 +53,102 @@ public class BggImportServiceTests
 
     private void VerifyNoOtherCalls()
     {
-        _bggApiMock.VerifyNoOtherCalls();
-        _bggGameTranslatorMock.VerifyNoOtherCalls();
+        _bggClientMock.VerifyNoOtherCalls();
         _gameFactoryMock.VerifyNoOtherCalls();
         _gameRepositoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
-    #region GetGameByBggId Tests
+    private static ThingResponse CreateFailedThingResponse()
+    {
+        return (ThingResponse)RuntimeHelpers.GetUninitializedObject(typeof(ThingResponse));
+    }
+
+    private static ThingResponse CreateSucceededThingResponse(IEnumerable<ThingResponse.Item> items)
+    {
+        return new ThingResponse(items);
+    }
+
+    private static CollectionResponse CreateFailedCollectionResponse()
+    {
+        return (CollectionResponse)RuntimeHelpers.GetUninitializedObject(typeof(CollectionResponse));
+    }
+
+    private static CollectionResponse CreateSucceededCollectionResponse(IEnumerable<CollectionResponse.Item> items)
+    {
+        var itemCollection = new CollectionResponse.ItemCollection(items);
+        return new CollectionResponse(itemCollection);
+    }
+
+    #region ImportGameFromBgg Tests
 
     [Fact]
-    public async Task GetGameByBggId_ShouldReturnGame_WhenGameExists()
+    public async Task ImportGameFromBgg_ShouldReturnExistingGame_WhenGameAlreadyExistsInRepository()
     {
-        // Arrange
-        var bggId = 12345;
-        var game = new Game("Test Game") { Id = 1 };
-        game.UpdateBggId(bggId);
+        var search = new BggSearch { BggId = 12345, State = GameState.Owned, HasScoring = true };
+        var existingGame = new Game("Existing Game") { Id = 1 };
+        existingGame.UpdateBggId(12345);
 
         _gameRepositoryMock
-            .Setup(x => x.GetGameByBggId(bggId))
-            .ReturnsAsync(game);
+            .Setup(x => x.GetGameByBggId(12345))
+            .ReturnsAsync(existingGame);
 
-        // Act
-        var result = await _bggImportService.GetGameByBggId(bggId);
+        var result = await _bggImportService.ImportGameFromBgg(search);
 
-        // Assert
         result.Should().NotBeNull();
+        result.Should().Be(existingGame);
 
-        _gameRepositoryMock.Verify(x => x.GetGameByBggId(bggId), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(12345), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task GetGameByBggId_ShouldReturnNull_WhenGameDoesNotExist()
+    public async Task ImportGameFromBgg_ShouldReturnNull_WhenBggApiReturnsFailedResponse()
     {
-        // Arrange
-        var bggId = 999;
+        var search = new BggSearch { BggId = 12345, State = GameState.Owned, HasScoring = false };
+        var thingResponse = CreateFailedThingResponse();
 
         _gameRepositoryMock
-            .Setup(x => x.GetGameByBggId(bggId))
+            .Setup(x => x.GetGameByBggId(12345))
             .ReturnsAsync((Game?)null);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(thingResponse);
 
-        // Act
-        var result = await _bggImportService.GetGameByBggId(bggId);
-
-        // Assert
-        result.Should().BeNull();
-
-        _gameRepositoryMock.Verify(x => x.GetGameByBggId(bggId), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    #endregion
-
-    #region SearchGame Tests
-
-    [Fact]
-    public async Task SearchGame_ShouldReturnTranslatedBggGame_WhenApiReturnsSuccessWithGame()
-    {
-        var bggId = 12345;
-        var rawGame = new BggRawGame
-        {
-            Thumbnail = "thumb.jpg",
-            Image = "image.jpg",
-            Description = "A great game",
-            Type = "boardgame"
-        };
-        var bggGame = new BggGame
-        {
-            Thumbnail = "thumb.jpg",
-            Image = "image.jpg",
-            Description = "A great game",
-            BggId = bggId
-        };
-        var apiGames = new BggApiGames { Games = [rawGame] };
-        var response = new ApiResponse<BggApiGames>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            apiGames,
-            new RefitSettings(),
-            null);
-
-        _bggApiMock
-            .Setup(x => x.SearchGame(bggId, 1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-        _bggGameTranslatorMock
-            .Setup(x => x.TranslateRawGame(rawGame))
-            .Returns(bggGame);
-
-        var result = await _bggImportService.SearchGame(bggId);
-
-        result.Should().NotBeNull();
-        result.Should().Be(bggGame);
-
-        _bggApiMock.Verify(x => x.SearchGame(bggId, 1, It.IsAny<CancellationToken>()), Times.Once);
-        _bggGameTranslatorMock.Verify(x => x.TranslateRawGame(rawGame), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task SearchGame_ShouldReturnNull_WhenApiReturnsFailureStatusCode()
-    {
-        var bggId = 12345;
-        var response = new ApiResponse<BggApiGames>(
-            new HttpResponseMessage(HttpStatusCode.ServiceUnavailable),
-            null,
-            new RefitSettings(),
-            null);
-
-        _bggApiMock
-            .Setup(x => x.SearchGame(bggId, 1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var result = await _bggImportService.SearchGame(bggId);
+        var result = await _bggImportService.ImportGameFromBgg(search);
 
         result.Should().BeNull();
 
-        _bggApiMock.Verify(x => x.SearchGame(bggId, 1, It.IsAny<CancellationToken>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(12345), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task SearchGame_ShouldReturnNull_WhenApiReturnsNullContent()
+    public async Task ImportGameFromBgg_ShouldReturnNull_WhenBggApiReturnsEmptyItemList()
     {
-        var bggId = 12345;
-        var response = new ApiResponse<BggApiGames>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            null,
-            new RefitSettings(),
-            null);
+        var search = new BggSearch { BggId = 12345, State = GameState.Owned, HasScoring = false };
+        var thingResponse = CreateSucceededThingResponse([]);
 
-        _bggApiMock
-            .Setup(x => x.SearchGame(bggId, 1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+        _gameRepositoryMock
+            .Setup(x => x.GetGameByBggId(12345))
+            .ReturnsAsync((Game?)null);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(thingResponse);
 
-        var result = await _bggImportService.SearchGame(bggId);
+        var result = await _bggImportService.ImportGameFromBgg(search);
 
         result.Should().BeNull();
 
-        _bggApiMock.Verify(x => x.SearchGame(bggId, 1, It.IsAny<CancellationToken>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(12345), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task SearchGame_ShouldReturnNull_WhenApiReturnsEmptyGamesArray()
+    public async Task ImportGameFromBgg_ShouldCreateAndReturnGame_WhenGameNotExistsAndBggReturnsItem()
     {
-        var bggId = 12345;
-        var apiGames = new BggApiGames { Games = [] };
-        var response = new ApiResponse<BggApiGames>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            apiGames,
-            new RefitSettings(),
-            null);
-
-        _bggApiMock
-            .Setup(x => x.SearchGame(bggId, 1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var result = await _bggImportService.SearchGame(bggId);
-
-        result.Should().BeNull();
-
-        _bggApiMock.Verify(x => x.SearchGame(bggId, 1, It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task SearchGame_ShouldReturnNull_WhenApiReturnsNullGamesArray()
-    {
-        var bggId = 12345;
-        var apiGames = new BggApiGames { Games = null };
-        var response = new ApiResponse<BggApiGames>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            apiGames,
-            new RefitSettings(),
-            null);
-
-        _bggApiMock
-            .Setup(x => x.SearchGame(bggId, 1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var result = await _bggImportService.SearchGame(bggId);
-
-        result.Should().BeNull();
-
-        _bggApiMock.Verify(x => x.SearchGame(bggId, 1, It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    #endregion
-
-    #region SearchOnBgg Tests
-
-    [Fact]
-    public async Task SearchOnBgg_ShouldReturnGame_AndSaveChanges_WhenCalledWithValidData()
-    {
-        var bggGame = new BggGame
-        {
-            Thumbnail = "thumb.jpg",
-            Image = "image.jpg",
-            Description = "A great game",
-            BggId = 42
-        };
         var search = new BggSearch
         {
             BggId = 42,
@@ -260,21 +157,26 @@ public class BggImportServiceTests
             Price = 29.99,
             AdditionDate = new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc)
         };
-        var importData = new GameImportData
+        var rawItem = new ThingResponse.Item
         {
-            Title = "Test Game",
-            BggId = 42,
+            Id = 42,
+            Thumbnail = "thumb.jpg",
+            Image = "image.jpg",
             Description = "A great game",
-            ImageUrl = "image.jpg"
+            Type = "boardgame"
         };
+        var thingResponse = CreateSucceededThingResponse([rawItem]);
         var createdGame = new Game("Test Game") { Id = 1 };
 
-        _bggGameTranslatorMock
-            .Setup(x => x.TranslateFromBggAsync(bggGame))
-            .ReturnsAsync(importData);
+        _gameRepositoryMock
+            .Setup(x => x.GetGameByBggId(42))
+            .ReturnsAsync((Game?)null);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(thingResponse);
         _gameFactoryMock
-            .Setup(x => x.CreateFromImportDataAsync(
-                importData,
+            .Setup(x => x.CreateFromBggAsync(
+                rawItem,
                 true,
                 GameState.Owned,
                 29.99m,
@@ -287,14 +189,15 @@ public class BggImportServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        var result = await _bggImportService.SearchOnBgg(bggGame, search);
+        var result = await _bggImportService.ImportGameFromBgg(search);
 
         result.Should().NotBeNull();
         result.Should().Be(createdGame);
 
-        _bggGameTranslatorMock.Verify(x => x.TranslateFromBggAsync(bggGame), Times.Once);
-        _gameFactoryMock.Verify(x => x.CreateFromImportDataAsync(
-            importData,
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(42), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
+            rawItem,
             true,
             GameState.Owned,
             29.99m,
@@ -305,15 +208,8 @@ public class BggImportServiceTests
     }
 
     [Fact]
-    public async Task SearchOnBgg_ShouldPassNullPrice_WhenSearchHasNoPrice()
+    public async Task ImportGameFromBgg_ShouldPassNullPrice_WhenSearchHasNoPrice()
     {
-        var bggGame = new BggGame
-        {
-            Thumbnail = "thumb.jpg",
-            Image = "image.jpg",
-            Description = "A great game",
-            BggId = 99
-        };
         var search = new BggSearch
         {
             BggId = 99,
@@ -322,21 +218,26 @@ public class BggImportServiceTests
             Price = null,
             AdditionDate = null
         };
-        var importData = new GameImportData
+        var rawItem = new ThingResponse.Item
         {
-            Title = "No Price Game",
-            BggId = 99,
-            Description = "A great game",
-            ImageUrl = "image.jpg"
+            Id = 99,
+            Thumbnail = "thumb.jpg",
+            Image = "image.jpg",
+            Description = "A game",
+            Type = "boardgame"
         };
+        var thingResponse = CreateSucceededThingResponse([rawItem]);
         var createdGame = new Game("No Price Game") { Id = 2 };
 
-        _bggGameTranslatorMock
-            .Setup(x => x.TranslateFromBggAsync(bggGame))
-            .ReturnsAsync(importData);
+        _gameRepositoryMock
+            .Setup(x => x.GetGameByBggId(99))
+            .ReturnsAsync((Game?)null);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(thingResponse);
         _gameFactoryMock
-            .Setup(x => x.CreateFromImportDataAsync(
-                importData,
+            .Setup(x => x.CreateFromBggAsync(
+                rawItem,
                 false,
                 GameState.Wanted,
                 null,
@@ -349,13 +250,14 @@ public class BggImportServiceTests
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
-        var result = await _bggImportService.SearchOnBgg(bggGame, search);
+        var result = await _bggImportService.ImportGameFromBgg(search);
 
         result.Should().Be(createdGame);
 
-        _bggGameTranslatorMock.Verify(x => x.TranslateFromBggAsync(bggGame), Times.Once);
-        _gameFactoryMock.Verify(x => x.CreateFromImportDataAsync(
-            importData,
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(99), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
+            rawItem,
             false,
             GameState.Wanted,
             null,
@@ -365,102 +267,61 @@ public class BggImportServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task ImportGameFromBgg_ShouldThrowBggFeatureDisabledException_WhenApiKeyIsEmpty()
+    {
+        var search = new BggSearch { BggId = 42, State = GameState.Owned, HasScoring = false };
+
+        _settingsServiceMock
+            .Setup(x => x.IsBggEnabled())
+            .ReturnsAsync(false);
+
+        var act = async () => await _bggImportService.ImportGameFromBgg(search);
+
+        await act.Should().ThrowAsync<BggFeatureDisabledException>();
+
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region ImportBggCollection Tests
 
     [Fact]
-    public async Task ImportBggCollection_ShouldReturnNull_WhenApiReturnsFailureStatusCode()
+    public async Task ImportBggCollection_ShouldReturnNull_WhenApiResponseSucceededIsFalse()
     {
         var userName = "testuser";
-        var response = new ApiResponse<BggApiCollection>(
-            new HttpResponseMessage(HttpStatusCode.ServiceUnavailable),
-            null,
-            new RefitSettings(),
-            null);
+        var collectionResponse = CreateFailedCollectionResponse();
 
-        _bggApiMock
-            .Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ReturnsAsync(collectionResponse);
 
         var result = await _bggImportService.ImportBggCollection(userName);
 
         result.Should().BeNull();
 
-        _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()), Times.Once);
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task ImportBggCollection_ShouldReturnResultWithStatusCode_WhenApiReturnsNonOkSuccess()
+    public async Task ImportBggCollection_ShouldReturnResultWithEmptyGames_WhenItemListIsEmpty()
     {
         var userName = "testuser";
-        var response = new ApiResponse<BggApiCollection>(
-            new HttpResponseMessage(HttpStatusCode.Accepted),
-            null,
-            new RefitSettings(),
-            null);
+        var collectionResponse = CreateSucceededCollectionResponse([]);
 
-        _bggApiMock
-            .Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ReturnsAsync(collectionResponse);
 
         var result = await _bggImportService.ImportBggCollection(userName);
 
         result.Should().NotBeNull();
-        result!.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        result!.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         result.Games.Should().BeEmpty();
 
-        _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ImportBggCollection_ShouldReturnResultWithEmptyGames_WhenContentIsNull()
-    {
-        var userName = "testuser";
-        var response = new ApiResponse<BggApiCollection>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            null,
-            new RefitSettings(),
-            null);
-
-        _bggApiMock
-            .Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var result = await _bggImportService.ImportBggCollection(userName);
-
-        result.Should().NotBeNull();
-        result!.StatusCode.Should().Be(HttpStatusCode.OK);
-        result.Games.Should().BeEmpty();
-
-        _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ImportBggCollection_ShouldReturnResultWithEmptyGames_WhenItemListIsNull()
-    {
-        var userName = "testuser";
-        var collection = new BggApiCollection { Item = null! };
-        var response = new ApiResponse<BggApiCollection>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            collection,
-            new RefitSettings(),
-            null);
-
-        _bggApiMock
-            .Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var result = await _bggImportService.ImportBggCollection(userName);
-
-        result.Should().NotBeNull();
-        result!.StatusCode.Should().Be(HttpStatusCode.OK);
-        result.Games.Should().BeEmpty();
-
-        _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()), Times.Once);
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -468,39 +329,35 @@ public class BggImportServiceTests
     public async Task ImportBggCollection_ShouldReturnMappedGames_WhenApiReturnsItemsSuccessfully()
     {
         var userName = "testuser";
-        var items = new List<Item>
+        var lastModified = new DateTime(2024, 3, 15, 10, 30, 0, DateTimeKind.Utc);
+        var items = new List<CollectionResponse.Item>
         {
             new()
             {
-                Objectid = 101,
-                Name = new ImportName { Text = "Catan", Sortindex = 1 },
-                Status = new Status
+                ObjectId = 101,
+                Name = "Catan",
+                Status = new CollectionResponse.Status
                 {
-                    Own = 1,
-                    Prevowned = 0,
-                    Fortrade = 0,
-                    Want = 0,
-                    LastModified = "2024-03-15 10:30:00"
+                    Owned = true,
+                    PreviouslyOwned = false,
+                    ForTrade = false,
+                    Want = false,
+                    LastModified = lastModified
                 },
-                Image = new BoardGameTracker.Common.Models.Bgg.Image { Text ="https://example.com/catan.jpg" },
-                Subtype = "boardgame"
+                Image = "https://example.com/catan.jpg",
+                SubType = "boardgame"
             }
         };
-        var collection = new BggApiCollection { Item = items };
-        var response = new ApiResponse<BggApiCollection>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            collection,
-            new RefitSettings(),
-            null);
+        var collectionResponse = CreateSucceededCollectionResponse(items);
 
-        _bggApiMock
-            .Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ReturnsAsync(collectionResponse);
 
         var result = await _bggImportService.ImportBggCollection(userName);
 
         result.Should().NotBeNull();
-        result!.StatusCode.Should().Be(HttpStatusCode.OK);
+        result!.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         result.Games.Should().HaveCount(1);
 
         var game = result.Games[0];
@@ -509,9 +366,9 @@ public class BggImportServiceTests
         game.ImageUrl.Should().Be("https://example.com/catan.jpg");
         game.State.Should().Be(GameState.Owned);
         game.IsExpansion.Should().BeFalse();
-        game.LastModified.Should().Be(new DateTime(2024, 3, 15, 10, 30, 0, DateTimeKind.Utc));
+        game.LastModified.Should().Be(lastModified);
 
-        _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()), Times.Once);
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -519,88 +376,78 @@ public class BggImportServiceTests
     public async Task ImportBggCollection_ShouldSetIsExpansionTrue_WhenSubtypeIsBoardgameExpansion()
     {
         var userName = "testuser";
-        var items = new List<Item>
+        var items = new List<CollectionResponse.Item>
         {
             new()
             {
-                Objectid = 202,
-                Name = new ImportName { Text = "Catan Expansion", Sortindex = 1 },
-                Status = new Status
+                ObjectId = 202,
+                Name = "Catan Expansion",
+                Status = new CollectionResponse.Status
                 {
-                    Own = 1,
-                    Prevowned = 0,
-                    Fortrade = 0,
-                    Want = 0,
-                    LastModified = "2024-06-01 12:00:00"
+                    Owned = true,
+                    PreviouslyOwned = false,
+                    ForTrade = false,
+                    Want = false,
+                    LastModified = new DateTime(2024, 6, 1, 12, 0, 0, DateTimeKind.Utc)
                 },
-                Image = new BoardGameTracker.Common.Models.Bgg.Image { Text ="https://example.com/expansion.jpg" },
-                Subtype = "boardgameexpansion"
+                Image = "https://example.com/expansion.jpg",
+                SubType = "boardgameexpansion"
             }
         };
-        var collection = new BggApiCollection { Item = items };
-        var response = new ApiResponse<BggApiCollection>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            collection,
-            new RefitSettings(),
-            null);
+        var collectionResponse = CreateSucceededCollectionResponse(items);
 
-        _bggApiMock
-            .Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ReturnsAsync(collectionResponse);
 
         var result = await _bggImportService.ImportBggCollection(userName);
 
         result!.Games.Should().HaveCount(1);
         result.Games[0].IsExpansion.Should().BeTrue();
 
-        _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()), Times.Once);
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Theory]
-    [InlineData(0, 0, 0, 1, GameState.Wanted)]
-    [InlineData(0, 0, 1, 0, GameState.ForTrade)]
-    [InlineData(0, 1, 0, 0, GameState.PreviouslyOwned)]
-    [InlineData(1, 0, 0, 0, GameState.Owned)]
+    [InlineData(false, false, false, true, GameState.Wanted)]
+    [InlineData(false, false, true, false, GameState.ForTrade)]
+    [InlineData(false, true, false, false, GameState.PreviouslyOwned)]
+    [InlineData(true, false, false, false, GameState.Owned)]
     public async Task ImportBggCollection_ShouldMapGameState_BasedOnStatusFlags(
-        int own, int prevOwned, int forTrade, int want, GameState expectedState)
+        bool owned, bool prevOwned, bool forTrade, bool want, GameState expectedState)
     {
         var userName = "testuser";
-        var items = new List<Item>
+        var items = new List<CollectionResponse.Item>
         {
             new()
             {
-                Objectid = 303,
-                Name = new ImportName { Text = "State Game", Sortindex = 1 },
-                Status = new Status
+                ObjectId = 303,
+                Name = "State Game",
+                Status = new CollectionResponse.Status
                 {
-                    Own = own,
-                    Prevowned = prevOwned,
-                    Fortrade = forTrade,
+                    Owned = owned,
+                    PreviouslyOwned = prevOwned,
+                    ForTrade = forTrade,
                     Want = want,
-                    LastModified = "2024-01-01 00:00:00"
+                    LastModified = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                 },
-                Image = new BoardGameTracker.Common.Models.Bgg.Image { Text ="https://example.com/img.jpg" },
-                Subtype = "boardgame"
+                Image = "https://example.com/img.jpg",
+                SubType = "boardgame"
             }
         };
-        var collection = new BggApiCollection { Item = items };
-        var response = new ApiResponse<BggApiCollection>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            collection,
-            new RefitSettings(),
-            null);
+        var collectionResponse = CreateSucceededCollectionResponse(items);
 
-        _bggApiMock
-            .Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ReturnsAsync(collectionResponse);
 
         var result = await _bggImportService.ImportBggCollection(userName);
 
         result!.Games.Should().HaveCount(1);
         result.Games[0].State.Should().Be(expectedState);
 
-        _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()), Times.Once);
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -608,43 +455,46 @@ public class BggImportServiceTests
     public async Task ImportBggCollection_ShouldReturnGamesSortedByName()
     {
         var userName = "testuser";
-        var items = new List<Item>
+        var defaultStatus = new CollectionResponse.Status
+        {
+            Owned = true,
+            PreviouslyOwned = false,
+            ForTrade = false,
+            Want = false,
+            LastModified = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+        };
+        var items = new List<CollectionResponse.Item>
         {
             new()
             {
-                Objectid = 3,
-                Name = new ImportName { Text = "Zombicide", Sortindex = 1 },
-                Status = new Status { Own = 1, Prevowned = 0, Fortrade = 0, Want = 0, LastModified = "2024-01-01 00:00:00" },
-                Image = new BoardGameTracker.Common.Models.Bgg.Image { Text ="z.jpg" },
-                Subtype = "boardgame"
+                ObjectId = 3,
+                Name = "Zombicide",
+                Status = defaultStatus,
+                Image = "z.jpg",
+                SubType = "boardgame"
             },
             new()
             {
-                Objectid = 1,
-                Name = new ImportName { Text = "Agricola", Sortindex = 1 },
-                Status = new Status { Own = 1, Prevowned = 0, Fortrade = 0, Want = 0, LastModified = "2024-01-01 00:00:00" },
-                Image = new BoardGameTracker.Common.Models.Bgg.Image { Text ="a.jpg" },
-                Subtype = "boardgame"
+                ObjectId = 1,
+                Name = "Agricola",
+                Status = defaultStatus,
+                Image = "a.jpg",
+                SubType = "boardgame"
             },
             new()
             {
-                Objectid = 2,
-                Name = new ImportName { Text = "Catan", Sortindex = 1 },
-                Status = new Status { Own = 1, Prevowned = 0, Fortrade = 0, Want = 0, LastModified = "2024-01-01 00:00:00" },
-                Image = new BoardGameTracker.Common.Models.Bgg.Image { Text ="c.jpg" },
-                Subtype = "boardgame"
+                ObjectId = 2,
+                Name = "Catan",
+                Status = defaultStatus,
+                Image = "c.jpg",
+                SubType = "boardgame"
             }
         };
-        var collection = new BggApiCollection { Item = items };
-        var response = new ApiResponse<BggApiCollection>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            collection,
-            new RefitSettings(),
-            null);
+        var collectionResponse = CreateSucceededCollectionResponse(items);
 
-        _bggApiMock
-            .Setup(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ReturnsAsync(collectionResponse);
 
         var result = await _bggImportService.ImportBggCollection(userName);
 
@@ -653,7 +503,21 @@ public class BggImportServiceTests
         result.Games[1].Title.Should().Be("Catan");
         result.Games[2].Title.Should().Be("Zombicide");
 
-        _bggApiMock.Verify(x => x.ImportCollection(userName, "boardgame", "boardgameexpansion", It.IsAny<CancellationToken>()), Times.Once);
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBggCollection_ShouldThrowBggFeatureDisabledException_WhenBggIsDisabled()
+    {
+        _settingsServiceMock
+            .Setup(x => x.IsBggEnabled())
+            .ReturnsAsync(false);
+
+        var act = async () => await _bggImportService.ImportBggCollection("testuser");
+
+        await act.Should().ThrowAsync<BggFeatureDisabledException>();
+
         VerifyNoOtherCalls();
     }
 
@@ -678,47 +542,23 @@ public class BggImportServiceTests
                 AddedDate = addedDate
             }
         };
-        var rawGame = new BggRawGame
+        var rawItem = new ThingResponse.Item
         {
+            Id = 1001,
             Thumbnail = "thumb.jpg",
             Image = "img1.jpg",
             Description = "Great game",
             Type = "boardgame"
         };
-        var bggGame = new BggGame
-        {
-            Thumbnail = "thumb.jpg",
-            Image = "img1.jpg",
-            Description = "Great game",
-            BggId = 1001
-        };
-        var apiGames = new BggApiGames { Games = [rawGame] };
-        var apiResponse = new ApiResponse<BggApiGames>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            apiGames,
-            new RefitSettings(),
-            null);
-        var importData = new GameImportData
-        {
-            Title = "Game One",
-            BggId = 1001,
-            Description = "Great game",
-            ImageUrl = "img1.jpg"
-        };
+        var thingResponse = CreateSucceededThingResponse([rawItem]);
         var createdGame = new Game("Game One") { Id = 10 };
 
-        _bggApiMock
-            .Setup(x => x.SearchGame(1001, 1, default))
-            .ReturnsAsync(apiResponse);
-        _bggGameTranslatorMock
-            .Setup(x => x.TranslateRawGame(rawGame))
-            .Returns(bggGame);
-        _bggGameTranslatorMock
-            .Setup(x => x.TranslateFromBggAsync(bggGame))
-            .ReturnsAsync(importData);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(thingResponse);
         _gameFactoryMock
-            .Setup(x => x.CreateFromImportDataAsync(
-                importData,
+            .Setup(x => x.CreateFromBggAsync(
+                rawItem,
                 true,
                 GameState.Owned,
                 34.99m,
@@ -733,11 +573,9 @@ public class BggImportServiceTests
 
         await _bggImportService.ImportList(importGames);
 
-        _bggApiMock.Verify(x => x.SearchGame(1001, 1, default), Times.Once);
-        _bggGameTranslatorMock.Verify(x => x.TranslateRawGame(rawGame), Times.Once);
-        _bggGameTranslatorMock.Verify(x => x.TranslateFromBggAsync(bggGame), Times.Once);
-        _gameFactoryMock.Verify(x => x.CreateFromImportDataAsync(
-            importData,
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
+            rawItem,
             true,
             GameState.Owned,
             34.99m,
@@ -748,7 +586,7 @@ public class BggImportServiceTests
     }
 
     [Fact]
-    public async Task ImportList_ShouldSkipGame_WhenSearchGameReturnsNull()
+    public async Task ImportList_ShouldSkipGame_WhenFetchThingReturnsNoItems()
     {
         var importGames = new List<ImportGame>
         {
@@ -763,23 +601,50 @@ public class BggImportServiceTests
                 AddedDate = DateTime.UtcNow
             }
         };
-        var apiGames = new BggApiGames { Games = null };
-        var apiResponse = new ApiResponse<BggApiGames>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            apiGames,
-            new RefitSettings(),
-            null);
+        var thingResponse = CreateSucceededThingResponse([]);
 
-        _bggApiMock
-            .Setup(x => x.SearchGame(9999, 1, default))
-            .ReturnsAsync(apiResponse);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(thingResponse);
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync(default))
             .ReturnsAsync(1);
 
         await _bggImportService.ImportList(importGames);
 
-        _bggApiMock.Verify(x => x.SearchGame(9999, 1, default), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportList_ShouldSkipGame_WhenFetchThingReturnsFailedResponse()
+    {
+        var importGames = new List<ImportGame>
+        {
+            new()
+            {
+                Title = "Missing Game",
+                BggId = 9999,
+                ImageUrl = "img.jpg",
+                State = GameState.Owned,
+                HasScoring = false,
+                Price = 0,
+                AddedDate = DateTime.UtcNow
+            }
+        };
+        var thingResponse = CreateFailedThingResponse();
+
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(thingResponse);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        await _bggImportService.ImportList(importGames);
+
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -811,57 +676,27 @@ public class BggImportServiceTests
                 AddedDate = addedDate
             }
         };
-
-        var rawGame = new BggRawGame
+        var rawItem = new ThingResponse.Item
         {
+            Id = 100,
             Thumbnail = "thumb.jpg",
             Image = "found.jpg",
             Description = "Found",
             Type = "boardgame"
         };
-        var bggGame = new BggGame
-        {
-            Thumbnail = "thumb.jpg",
-            Image = "found.jpg",
-            Description = "Found",
-            BggId = 100
-        };
-        var foundApiGames = new BggApiGames { Games = [rawGame] };
-        var foundResponse = new ApiResponse<BggApiGames>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            foundApiGames,
-            new RefitSettings(),
-            null);
-        var missingApiGames = new BggApiGames { Games = null };
-        var missingResponse = new ApiResponse<BggApiGames>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            missingApiGames,
-            new RefitSettings(),
-            null);
-        var importData = new GameImportData
-        {
-            Title = "Found Game",
-            BggId = 100,
-            Description = "Found",
-            ImageUrl = "found.jpg"
-        };
+        var foundThingResponse = CreateSucceededThingResponse([rawItem]);
+        var missingThingResponse = CreateSucceededThingResponse([]);
         var createdGame = new Game("Found Game") { Id = 50 };
 
-        _bggApiMock
-            .Setup(x => x.SearchGame(100, 1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(foundResponse);
-        _bggApiMock
-            .Setup(x => x.SearchGame(200, 1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(missingResponse);
-        _bggGameTranslatorMock
-            .Setup(x => x.TranslateRawGame(rawGame))
-            .Returns(bggGame);
-        _bggGameTranslatorMock
-            .Setup(x => x.TranslateFromBggAsync(bggGame))
-            .ReturnsAsync(importData);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(100))))
+            .ReturnsAsync(foundThingResponse);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(200))))
+            .ReturnsAsync(missingThingResponse);
         _gameFactoryMock
-            .Setup(x => x.CreateFromImportDataAsync(
-                importData,
+            .Setup(x => x.CreateFromBggAsync(
+                rawItem,
                 false,
                 GameState.Owned,
                 25.00m,
@@ -876,12 +711,10 @@ public class BggImportServiceTests
 
         await _bggImportService.ImportList(importGames);
 
-        _bggApiMock.Verify(x => x.SearchGame(100, 1, It.IsAny<CancellationToken>()), Times.Once);
-        _bggApiMock.Verify(x => x.SearchGame(200, 1, It.IsAny<CancellationToken>()), Times.Once);
-        _bggGameTranslatorMock.Verify(x => x.TranslateRawGame(rawGame), Times.Once);
-        _bggGameTranslatorMock.Verify(x => x.TranslateFromBggAsync(bggGame), Times.Once);
-        _gameFactoryMock.Verify(x => x.CreateFromImportDataAsync(
-            importData,
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(100))), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(200))), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
+            rawItem,
             false,
             GameState.Owned,
             25.00m,
@@ -907,7 +740,7 @@ public class BggImportServiceTests
     }
 
     [Fact]
-    public async Task ImportList_ShouldMapBggSearchCorrectly_WhenProcessingGame()
+    public async Task ImportList_ShouldMapSearchFieldsCorrectly_WhenProcessingGame()
     {
         var addedDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var importGames = new List<ImportGame>
@@ -923,48 +756,23 @@ public class BggImportServiceTests
                 AddedDate = addedDate
             }
         };
-
-        var rawGame = new BggRawGame
+        var rawItem = new ThingResponse.Item
         {
+            Id = 555,
             Thumbnail = "thumb.jpg",
             Image = "img.jpg",
             Description = "Mapping test",
             Type = "boardgame"
         };
-        var bggGame = new BggGame
-        {
-            Thumbnail = "thumb.jpg",
-            Image = "img.jpg",
-            Description = "Mapping test",
-            BggId = 555
-        };
-        var apiGames = new BggApiGames { Games = [rawGame] };
-        var apiResponse = new ApiResponse<BggApiGames>(
-            new HttpResponseMessage(HttpStatusCode.OK),
-            apiGames,
-            new RefitSettings(),
-            null);
-        var importData = new GameImportData
-        {
-            Title = "Mapping Test Game",
-            BggId = 555,
-            Description = "Mapping test",
-            ImageUrl = "img.jpg"
-        };
+        var thingResponse = CreateSucceededThingResponse([rawItem]);
         var createdGame = new Game("Mapping Test Game") { Id = 77 };
 
-        _bggApiMock
-            .Setup(x => x.SearchGame(555, 1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(apiResponse);
-        _bggGameTranslatorMock
-            .Setup(x => x.TranslateRawGame(rawGame))
-            .Returns(bggGame);
-        _bggGameTranslatorMock
-            .Setup(x => x.TranslateFromBggAsync(bggGame))
-            .ReturnsAsync(importData);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(thingResponse);
         _gameFactoryMock
-            .Setup(x => x.CreateFromImportDataAsync(
-                importData,
+            .Setup(x => x.CreateFromBggAsync(
+                rawItem,
                 true,
                 GameState.ForTrade,
                 19.50m,
@@ -979,18 +787,29 @@ public class BggImportServiceTests
 
         await _bggImportService.ImportList(importGames);
 
-        _gameFactoryMock.Verify(x => x.CreateFromImportDataAsync(
-            importData,
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
+            rawItem,
             true,
             GameState.ForTrade,
             19.50m,
             addedDate), Times.Once);
-
-        _bggApiMock.Verify(x => x.SearchGame(555, 1, It.IsAny<CancellationToken>()), Times.Once);
-        _bggGameTranslatorMock.Verify(x => x.TranslateRawGame(rawGame), Times.Once);
-        _bggGameTranslatorMock.Verify(x => x.TranslateFromBggAsync(bggGame), Times.Once);
         _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportList_ShouldThrowBggFeatureDisabledException_WhenBggIsDisabled()
+    {
+        _settingsServiceMock
+            .Setup(x => x.IsBggEnabled())
+            .ReturnsAsync(false);
+
+        var act = async () => await _bggImportService.ImportList(new List<ImportGame>());
+
+        await act.Should().ThrowAsync<BggFeatureDisabledException>();
+
         VerifyNoOtherCalls();
     }
 

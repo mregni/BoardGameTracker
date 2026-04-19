@@ -35,6 +35,7 @@ export type { PlayerStatistics } from "./Player/PlayerStatistics";
 export * from "./Session/CreateSession";
 export * from "./Session/PlayerSession";
 export * from "./Session/Session";
+export * from "./Settings/BggConfigStatus";
 export * from "./Settings/Environment";
 export * from "./Settings/Language";
 export * from "./Settings/Settings";

@@ -4,7 +4,6 @@ using BoardGameTracker.Core.Configuration.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 

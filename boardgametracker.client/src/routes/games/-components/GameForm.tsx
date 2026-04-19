@@ -10,6 +10,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
 import type { Game } from "@/models";
 import { type CreateGame, CreateGameSchema } from "@/models/Games/CreateGame";
+import { GameState } from "@/models/Games/GameState";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
@@ -19,6 +20,7 @@ import { gameFormOpts } from "../-utils/gameFormOpts";
 import { GameFormBasicFields } from "./GameFormBasicFields";
 import { GameFormPlayerFields } from "./GameFormPlayerFields";
 import { GameFormTimeFields } from "./GameFormTimeFields";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
 
 interface Props {
 	onClick: (data: CreateGame) => Promise<void>;
@@ -42,7 +44,7 @@ export const GameForm = (props: Props) => {
 			title: game?.title ?? "",
 			hasScoring: game?.hasScoring ?? true,
 			description: game?.description ?? "",
-			state: game?.state ?? 0,
+			state: game?.state ?? GameState.Wanted,
 			yearPublished: game?.yearPublished ?? undefined,
 			maxPlayers: game?.maxPlayers ?? undefined,
 			minPlayers: game?.minPlayers ?? undefined,
@@ -68,7 +70,7 @@ export const GameForm = (props: Props) => {
 	return (
 		<BgtPage>
 			<BgtPageContent centered>
-				<BgtCenteredCard title={title}>
+				<BgtCard title={title}>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-3 w-full">
 							<div className="flex flex-row gap-3">
@@ -108,7 +110,7 @@ export const GameForm = (props: Props) => {
 							</div>
 						</div>
 					</form>
-				</BgtCenteredCard>
+				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
 	);

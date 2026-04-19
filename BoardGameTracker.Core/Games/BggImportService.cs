@@ -159,7 +159,7 @@ public class BggImportService : IBggImportService
 
             return response.Result?.FirstOrDefault();
         }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        catch (HttpRequestException ex) when (ex.Message.Contains("Unauthorized"))
         {
             _logger.LogWarning(ex, "BGG API key is invalid or expired");
             throw new ValidationException("Invalid BGG API key. Please check your API key in settings.");

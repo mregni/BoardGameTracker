@@ -62,9 +62,11 @@ public class SettingsService : ISettingsService
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled,
             model.RsvpAuthenticationEnabled);
-        await _configRepository.SetConfigValueAsync(Constants.BggConfig.ApiKey, model.BggApiKey);
         await _configRepository.SetConfigValueAsync(Constants.UpdateConfig.CheckEnabled, model.UpdateCheckEnabled);
         await _configRepository.SetConfigValueAsync(Constants.UpdateConfig.Track, model.VersionTrack);
+
+        var bggApiKey = model.BggApiKey ?? string.Empty;
+        await _configRepository.SetConfigValueAsync(Constants.BggConfig.ApiKey, bggApiKey);
 
         return await GetSettingsAsync();
     }
@@ -82,7 +84,8 @@ public class SettingsService : ISettingsService
 
     public async Task<bool> IsBggEnabled()
     {
-        return string.IsNullOrEmpty(await GetBggApiKeyAsync());
+        var key = await GetBggApiKeyAsync();
+        return !string.IsNullOrEmpty(key);
     }
 
     private static BggConfigStatusDto GetBggConfigStatusAsync(Dictionary<string, string> configs)

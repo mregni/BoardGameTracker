@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Images.Interfaces;
 using FluentAssertions;
 using Moq;
 using Xunit;
@@ -16,14 +18,15 @@ namespace BoardGameTracker.Tests.Factories;
 public class GameFactoryTests
 {
     private readonly Mock<IGameRepository> _gameRepositoryMock;
+    private readonly Mock<IImageService> _imageServiceMock;
     private readonly GameFactory _factory;
 
     public GameFactoryTests()
     {
         _gameRepositoryMock = new Mock<IGameRepository>();
-        _factory = new GameFactory(_gameRepositoryMock.Object);
+        _imageServiceMock = new Mock<IImageService>();
+        _factory = new GameFactory(_gameRepositoryMock.Object, _imageServiceMock.Object);
 
-        // Default setup - repository accepts all data
         _gameRepositoryMock
             .Setup(x => x.AddGameCategoriesIfNotExists(It.IsAny<IEnumerable<GameCategory>>()))
             .Returns(Task.CompletedTask);
@@ -33,20 +36,20 @@ public class GameFactoryTests
         _gameRepositoryMock
             .Setup(x => x.AddPeopleIfNotExists(It.IsAny<IEnumerable<Person>>()))
             .Returns(Task.CompletedTask);
+        _imageServiceMock
+            .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync("downloaded-image.jpg");
     }
 
-    #region CreateFromImportDataAsync Tests
+    #region CreateFromBggAsync Tests
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldCreateGameWithBasicProperties()
+    public async Task CreateFromBggAsync_ShouldCreateGameWithBasicProperties()
     {
-        // Arrange
-        var data = CreateBasicImportData();
+        var item = CreateBasicItem();
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, true, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, true, GameState.Owned, null, null);
 
-        // Assert
         result.Should().NotBeNull();
         result.Title.Should().Be("Test Game");
         result.HasScoring.Should().BeTrue();
@@ -54,205 +57,140 @@ public class GameFactoryTests
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetImage()
+    public async Task CreateFromBggAsync_ShouldDownloadImage()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.ImageUrl = "game-image.jpg";
+        var item = CreateBasicItem();
+        item.Image = "https://example.com/game.jpg";
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
-        result.Image.Should().Be("game-image.jpg");
+        result.Image.Should().Be("downloaded-image.jpg");
+        _imageServiceMock.Verify(x => x.DownloadImage("https://example.com/game.jpg", item.Id.ToString()), Times.Once);
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetDescription()
+    public async Task CreateFromBggAsync_ShouldSetDescription()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.Description = "A wonderful strategy game";
+        var item = CreateBasicItem();
+        item.Description = "A wonderful strategy game";
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
         result.Description.Should().Be("A wonderful strategy game");
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetYearPublished()
+    public async Task CreateFromBggAsync_ShouldSetYearPublished()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.YearPublished = 2023;
+        var item = CreateBasicItem();
+        item.YearPublished = 2023;
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
         result.YearPublished.Should().Be(2023);
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetPlayerCount()
+    public async Task CreateFromBggAsync_ShouldNotSetYearPublished_WhenNull()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.MinPlayers = 2;
-        data.MaxPlayers = 6;
+        var item = CreateBasicItem();
+        item.YearPublished = null;
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
+        result.YearPublished.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldSetPlayerCount()
+    {
+        var item = CreateBasicItem();
+        item.MinPlayers = 2;
+        item.MaxPlayers = 6;
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
         result.PlayerCount.Should().NotBeNull();
         result.PlayerCount!.Min.Should().Be(2);
         result.PlayerCount!.Max.Should().Be(6);
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetPlayTime()
+    public async Task CreateFromBggAsync_ShouldSetPlayTime()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.MinPlayTime = 45;
-        data.MaxPlayTime = 90;
+        var item = CreateBasicItem();
+        item.MinPlayingTime = 45;
+        item.MaxPlayingTime = 90;
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
         result.PlayTime.Should().NotBeNull();
         result.PlayTime!.MinMinutes.Should().Be(45);
         result.PlayTime!.MaxMinutes.Should().Be(90);
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetMinAge()
+    public async Task CreateFromBggAsync_ShouldSetRatingAndWeight()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.MinAge = 14;
+        var item = CreateBasicItem();
+        item.Statistics = new ThingResponse.Statistics
+        {
+            Ratings = new ThingResponse.Ratings
+            {
+                Average = 8.7,
+                AverageWeight = 3.5
+            }
+        };
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
-        result.MinAge.Should().Be(14);
-    }
-
-    [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetRating()
-    {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.Rating = 8.7;
-
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
-
-        // Assert
         result.Rating.Should().NotBeNull();
         result.Rating!.Value.Should().Be(8.7);
-    }
-
-    [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetWeight()
-    {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.Weight = 3.5;
-
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
-
-        // Assert
         result.Weight.Should().NotBeNull();
         result.Weight!.Value.Should().Be(3.5);
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetBggId()
+    public async Task CreateFromBggAsync_ShouldSetBggId()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.BggId = 12345;
+        var item = CreateBasicItem();
+        item.Id = 12345;
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
         result.BggId.Should().Be(12345);
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetBuyingPrice()
+    public async Task CreateFromBggAsync_ShouldSetBuyingPrice()
     {
-        // Arrange
-        var data = CreateBasicImportData();
+        var item = CreateBasicItem();
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, 49.99m, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, 49.99m, null);
 
-        // Assert
         result.BuyingPrice.Should().NotBeNull();
         result.BuyingPrice!.Amount.Should().Be(49.99m);
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldNotSetBuyingPrice_WhenNull()
+    public async Task CreateFromBggAsync_ShouldNotSetBuyingPrice_WhenNull()
     {
-        // Arrange
-        var data = CreateBasicImportData();
+        var item = CreateBasicItem();
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
         result.BuyingPrice.Should().BeNull();
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetAdditionDate_WhenProvided()
+    public async Task CreateFromBggAsync_ShouldSetAdditionDate_WhenProvided()
     {
-        // Arrange
-        var data = CreateBasicImportData();
+        var item = CreateBasicItem();
         var additionDate = new DateTime(2023, 6, 15);
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, additionDate);
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, additionDate);
 
-        // Assert
         result.AdditionDate.Should().Be(additionDate);
-    }
-
-    [Fact]
-    public async Task CreateFromImportDataAsync_ShouldNotOverrideAdditionDate_WhenNull()
-    {
-        // Arrange
-        var data = CreateBasicImportData();
-
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
-
-        // Assert
-        // When additionDate is null, the game should have its default AdditionDate (set in constructor)
-        result.AdditionDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
-    }
-
-    [Fact]
-    public async Task CreateFromImportDataAsync_ShouldSetGameState()
-    {
-        // Arrange
-        var data = CreateBasicImportData();
-
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Wanted, null, null);
-
-        // Assert
-        result.State.Should().Be(GameState.Wanted);
     }
 
     [Theory]
@@ -260,198 +198,166 @@ public class GameFactoryTests
     [InlineData(GameState.Wanted)]
     [InlineData(GameState.ForTrade)]
     [InlineData(GameState.PreviouslyOwned)]
-    public async Task CreateFromImportDataAsync_ShouldSupportAllGameStates(GameState state)
+    public async Task CreateFromBggAsync_ShouldSupportAllGameStates(GameState state)
     {
-        // Arrange
-        var data = CreateBasicImportData();
+        var item = CreateBasicItem();
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, state, null, null);
+        var result = await _factory.CreateFromBggAsync(item, false, state, null, null);
 
-        // Assert
         result.State.Should().Be(state);
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldAddCategoriesToRepository()
+    public async Task CreateFromBggAsync_ShouldThrow_WhenNameIsEmpty()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.Categories = new List<CategoryData>
-        {
-            new() { Name = "Strategy", BggId = 1 },
-            new() { Name = "Economic", BggId = 2 }
-        };
+        var item = CreateBasicItem();
+        item.Name = "";
 
-        List<GameCategory>? capturedCategories = null;
+        var act = () => _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*valid name*");
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldThrow_WhenMinPlayersExceedsMaxPlayers()
+    {
+        var item = CreateBasicItem();
+        item.MinPlayers = 5;
+        item.MaxPlayers = 2;
+
+        var act = () => _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*player count*");
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldThrow_WhenMinPlayTimeExceedsMaxPlayTime()
+    {
+        var item = CreateBasicItem();
+        item.MinPlayingTime = 90;
+        item.MaxPlayingTime = 30;
+
+        var act = () => _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*play time*");
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldAddCategoriesFromLinks()
+    {
+        var item = CreateBasicItem();
+        item.Links =
+        [
+            new ThingResponse.Link { Type = Constants.Bgg.Category, Id = 1, Value = "Strategy" },
+            new ThingResponse.Link { Type = Constants.Bgg.Category, Id = 2, Value = "Economic" }
+        ];
+
+        List<GameCategory>? captured = null;
         _gameRepositoryMock
             .Setup(x => x.AddGameCategoriesIfNotExists(It.IsAny<IEnumerable<GameCategory>>()))
-            .Callback<IEnumerable<GameCategory>>(c => capturedCategories = c.ToList())
+            .Callback<IEnumerable<GameCategory>>(c => captured = c.ToList())
             .Returns(Task.CompletedTask);
 
-        // Act
-        await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
-        capturedCategories.Should().NotBeNull();
-        capturedCategories.Should().HaveCount(2);
-        capturedCategories.Should().Contain(c => c.Name == "Strategy");
-        capturedCategories.Should().Contain(c => c.Name == "Economic");
+        captured.Should().HaveCount(2);
+        captured.Should().Contain(c => c.Name == "Strategy");
+        captured.Should().Contain(c => c.Name == "Economic");
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldAddMechanicsToRepository()
+    public async Task CreateFromBggAsync_ShouldAddMechanicsFromLinks()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.Mechanics = new List<MechanicData>
-        {
-            new() { Name = "Worker Placement", BggId = 1 },
-            new() { Name = "Deck Building", BggId = 2 }
-        };
+        var item = CreateBasicItem();
+        item.Links =
+        [
+            new ThingResponse.Link { Type = Constants.Bgg.Mechanic, Id = 1, Value = "Worker Placement" },
+            new ThingResponse.Link { Type = Constants.Bgg.Mechanic, Id = 2, Value = "Deck Building" }
+        ];
 
-        List<GameMechanic>? capturedMechanics = null;
+        List<GameMechanic>? captured = null;
         _gameRepositoryMock
             .Setup(x => x.AddGameMechanicsIfNotExists(It.IsAny<IEnumerable<GameMechanic>>()))
-            .Callback<IEnumerable<GameMechanic>>(m => capturedMechanics = m.ToList())
+            .Callback<IEnumerable<GameMechanic>>(m => captured = m.ToList())
             .Returns(Task.CompletedTask);
 
-        // Act
-        await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
-        capturedMechanics.Should().NotBeNull();
-        capturedMechanics.Should().HaveCount(2);
-        capturedMechanics.Should().Contain(m => m.Name == "Worker Placement");
-        capturedMechanics.Should().Contain(m => m.Name == "Deck Building");
+        captured.Should().HaveCount(2);
+        captured.Should().Contain(m => m.Name == "Worker Placement");
+        captured.Should().Contain(m => m.Name == "Deck Building");
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldAddPeopleToRepository()
+    public async Task CreateFromBggAsync_ShouldAddPeopleFromLinks()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.People = new List<PersonData>
-        {
-            new() { Name = "Designer One", Type = "Designer" },
-            new() { Name = "Artist One", Type = "Artist" }
-        };
+        var item = CreateBasicItem();
+        item.Links =
+        [
+            new ThingResponse.Link { Type = Constants.Bgg.Designer, Id = 1, Value = "Designer One" },
+            new ThingResponse.Link { Type = Constants.Bgg.Artist, Id = 2, Value = "Artist One" }
+        ];
 
-        List<Person>? capturedPeople = null;
+        List<Person>? captured = null;
         _gameRepositoryMock
             .Setup(x => x.AddPeopleIfNotExists(It.IsAny<IEnumerable<Person>>()))
-            .Callback<IEnumerable<Person>>(p => capturedPeople = p.ToList())
+            .Callback<IEnumerable<Person>>(p => captured = p.ToList())
             .Returns(Task.CompletedTask);
 
-        // Act
-        await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
-        capturedPeople.Should().NotBeNull();
-        capturedPeople.Should().HaveCount(2);
-        capturedPeople.Should().Contain(p => p.Name == "Designer One" && p.Type == PersonType.Designer);
-        capturedPeople.Should().Contain(p => p.Name == "Artist One" && p.Type == PersonType.Artist);
+        captured.Should().HaveCount(2);
+        captured.Should().Contain(p => p.Name == "Designer One" && p.Type == PersonType.Designer);
+        captured.Should().Contain(p => p.Name == "Artist One" && p.Type == PersonType.Artist);
     }
 
     [Fact]
-    public async Task CreateFromImportDataAsync_ShouldHandleEmptyCategories()
+    public async Task CreateFromBggAsync_ShouldFilterOutEmptyLinkValues()
     {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.Categories = [];
+        var item = CreateBasicItem();
+        item.Links =
+        [
+            new ThingResponse.Link { Type = Constants.Bgg.Category, Id = 1, Value = "Strategy" },
+            new ThingResponse.Link { Type = Constants.Bgg.Category, Id = 2, Value = "" },
+            new ThingResponse.Link { Type = Constants.Bgg.Category, Id = 3, Value = " " }
+        ];
 
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
-
-        // Assert
-        result.Should().NotBeNull();
-        _gameRepositoryMock.Verify(x => x.AddGameCategoriesIfNotExists(It.Is<IEnumerable<GameCategory>>(c => !c.Any())), Times.Once);
-    }
-
-    [Fact]
-    public async Task CreateFromImportDataAsync_ShouldHandleEmptyMechanics()
-    {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.Mechanics = [];
-
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
-
-        // Assert
-        result.Should().NotBeNull();
-        _gameRepositoryMock.Verify(x => x.AddGameMechanicsIfNotExists(It.Is<IEnumerable<GameMechanic>>(m => !m.Any())), Times.Once);
-    }
-
-    [Fact]
-    public async Task CreateFromImportDataAsync_ShouldHandleEmptyPeople()
-    {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.People = [];
-
-        // Act
-        var result = await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
-
-        // Assert
-        result.Should().NotBeNull();
-        _gameRepositoryMock.Verify(x => x.AddPeopleIfNotExists(It.Is<IEnumerable<Person>>(p => !p.Any())), Times.Once);
-    }
-
-    [Fact]
-    public async Task CreateFromImportDataAsync_ShouldCallRepositoryMethodsInOrder()
-    {
-        // Arrange
-        var data = CreateBasicImportData();
-        data.Categories = new List<CategoryData> { new() { Name = "Cat", BggId = 1 } };
-        data.Mechanics = new List<MechanicData> { new() { Name = "Mech", BggId = 1 } };
-        data.People = new List<PersonData> { new() { Name = "Person", Type = "Designer" } };
-
-        var callOrder = new List<string>();
+        List<GameCategory>? captured = null;
         _gameRepositoryMock
             .Setup(x => x.AddGameCategoriesIfNotExists(It.IsAny<IEnumerable<GameCategory>>()))
-            .Callback(() => callOrder.Add("Categories"))
-            .Returns(Task.CompletedTask);
-        _gameRepositoryMock
-            .Setup(x => x.AddGameMechanicsIfNotExists(It.IsAny<IEnumerable<GameMechanic>>()))
-            .Callback(() => callOrder.Add("Mechanics"))
-            .Returns(Task.CompletedTask);
-        _gameRepositoryMock
-            .Setup(x => x.AddPeopleIfNotExists(It.IsAny<IEnumerable<Person>>()))
-            .Callback(() => callOrder.Add("People"))
+            .Callback<IEnumerable<GameCategory>>(c => captured = c.ToList())
             .Returns(Task.CompletedTask);
 
-        // Act
-        await _factory.CreateFromImportDataAsync(data, false, GameState.Owned, null, null);
+        await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        // Assert
-        callOrder.Should().ContainInOrder("Categories", "Mechanics", "People");
+        captured.Should().HaveCount(1);
+        captured.Should().Contain(c => c.Name == "Strategy");
     }
 
     #endregion
 
     #region Helper Methods
 
-    private static GameImportData CreateBasicImportData()
+    private static ThingResponse.Item CreateBasicItem()
     {
-        return new GameImportData
+        return new ThingResponse.Item
         {
-            Title = "Test Game",
-            BggId = 12345,
+            Id = 12345,
+            Name = "Test Game",
+            Type = "boardgame",
             Description = "A test game description",
+            Thumbnail = "thumb.jpg",
+            Image = "image.jpg",
             YearPublished = 2020,
             MinPlayers = 2,
             MaxPlayers = 4,
-            MinPlayTime = 30,
-            MaxPlayTime = 60,
+            MinPlayingTime = 30,
+            MaxPlayingTime = 60,
             MinAge = 10,
-            Rating = 7.5,
-            Weight = 2.5,
-            ImageUrl = "test-image.jpg",
-            Categories = [],
-            Mechanics = [],
-            People = [],
-            Expansions = []
+            Links = []
         };
     }
 

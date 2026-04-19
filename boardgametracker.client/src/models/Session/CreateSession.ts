@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const CreatePlayerSessionNoScoringSchema = z.object({
 	playerId: z.coerce.number({
-		required_error: "player-session:new.player.required",
+		error: "player-session:new.player.required",
 	}),
 	won: z.boolean(),
 	firstPlay: z.boolean(),
@@ -11,8 +11,7 @@ export const CreatePlayerSessionNoScoringSchema = z.object({
 export const CreatePlayerSessionSchema = CreatePlayerSessionNoScoringSchema.extend({
 	score: z
 		.number({
-			required_error: "player-session:score.required",
-			invalid_type_error: "player-session:score.required",
+			error: "player-session:score.required",
 		})
 		.nonnegative({
 			message: "player-session:score.required",
@@ -21,26 +20,22 @@ export const CreatePlayerSessionSchema = CreatePlayerSessionNoScoringSchema.exte
 
 export const CreateSessionSchema = z.object({
 	gameId: z.coerce
-		.number({ required_error: "player-session:new.game.required" })
+		.number({ error: "player-session:new.game.required" })
 		.int()
 		.positive({ message: "player-session:new.game.required" }),
 	locationId: z.coerce
 		.number({
-			required_error: "player-session:new.location.required",
-			invalid_type_error: "player-session:new.location.required",
+			error: "player-session:new.location.required",
 		})
 		.positive({
 			message: "player-session:new.location.required",
 		}),
 	start: z.coerce.date({
-		errorMap: () => {
-			return { message: "player-session:new.start.required" };
-		},
+		error: "player-session:new.start.required",
 	}),
 	minutes: z
 		.number({
-			required_error: "player-session:new.duration.required",
-			invalid_type_error: "player-session:new.duration.required",
+			error: "player-session:new.duration.required",
 		})
 		.positive({
 			message: "player-session:new.duration.required",

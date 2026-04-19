@@ -1,4 +1,5 @@
 import { formOptions } from "@tanstack/react-form";
+import { GameState } from "@/models/Games/GameState";
 
 export const gameFormOpts = formOptions({
 	defaultValues: {
@@ -6,7 +7,7 @@ export const gameFormOpts = formOptions({
 		title: "",
 		hasScoring: true,
 		description: "",
-		state: 0,
+		state: GameState.Wanted as GameState,
 		yearPublished: undefined as number | undefined,
 		maxPlayers: undefined as number | undefined,
 		minPlayers: undefined as number | undefined,
