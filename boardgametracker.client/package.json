@@ -33,7 +33,7 @@
     "@tanstack/react-router": "^1.121.34",
     "@tanstack/react-router-devtools": "^1.121.34",
     "@tanstack/react-table": "^8.15.3",
-    "axios": "^1.13.5",
+    "axios": "^1.15.0",
     "class-variance-authority": "^0.7.0",
     "date-fns": "^4.0.0",
     "i18next": "^26.0.0",
