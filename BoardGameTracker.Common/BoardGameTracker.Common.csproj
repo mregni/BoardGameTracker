@@ -14,7 +14,7 @@
         <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.14" />
         <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.*" />
-        <PackageReference Include="Sentry.AspNetCore" Version="6.2.0" />
+        <PackageReference Include="Sentry.AspNetCore" Version="6.4.0" />
         <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     </ItemGroup>
