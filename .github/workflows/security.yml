@@ -2,7 +2,7 @@ name: Security Scanning
 
 on:
   pull_request:
-    branches: [dev, master]
+    branches: [master]
 
 jobs:
   dependency-scan-backend:
