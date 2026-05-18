@@ -44,7 +44,7 @@ function RouteComponent() {
 	return (
 		<BgtPage>
 			<BgtPageContent centered>
-				<BgtCard title={t("import.start.title")} className="max-w-[600px]">
+				<BgtCard title={t("import.start.title")} className="max-w-150">
 					<form onSubmit={handleFormSubmit(form)}>
 						<div className="flex flex-col gap-5 w-full">
 							<div>{t("import.start.description")}</div>

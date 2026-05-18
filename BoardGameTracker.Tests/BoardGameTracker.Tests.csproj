@@ -33,7 +33,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Api\" />
       <Folder Include="Evaluators\" />
       <Folder Include="Models\" />
     </ItemGroup>

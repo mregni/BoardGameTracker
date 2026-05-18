@@ -14,6 +14,8 @@ import {
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import type { ModalProps } from "@/models";
+import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
+import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 
 interface Props extends ModalProps {
 	bggEnabled: boolean;
@@ -23,7 +25,9 @@ interface Props extends ModalProps {
 
 const CreateGameModal = (props: Props) => {
 	const { open, close, bggEnabled, openBgg, openManual } = props;
-	const { t } = useTranslation(["game", "common"]);
+	const { settings } = useSettingsData();
+
+	const { t } = useTranslation(["game", "common", "settings"]);
 	const navigate = useNavigate();
 
 	const handleBggImport = useCallback(() => {
@@ -36,6 +40,14 @@ const CreateGameModal = (props: Props) => {
 				<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
 				<BgtDialogDescription>{t("new.description")}</BgtDialogDescription>
 				<div className="flex flex-col gap-4 mt-3 mb-3">
+					{!settings?.bggStatus.isConfigured && (
+						<BgtStatus
+							variant={"warning"}
+							title={t("settings:bgg.status.not-configured")}
+							description={t("settings:bgg.status.not-configured-description")}
+						/>
+					)}
+
 					<BgtBigButton
 						title={t("new.bgg-title")}
 						subText={t("new.bgg-subtext")}

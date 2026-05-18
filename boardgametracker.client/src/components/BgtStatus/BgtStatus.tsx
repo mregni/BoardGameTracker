@@ -7,7 +7,7 @@ import Database from "@/assets/icons/database.svg?react";
 
 type Variant = "warning" | "success" | "info";
 
-const containerVariants = cva("mb-6 p-4 rounded-lg border", {
+const containerVariants = cva("p-4 rounded-lg border", {
 	variants: {
 		variant: {
 			warning: "bg-orange-500/10 border-orange-500/20",

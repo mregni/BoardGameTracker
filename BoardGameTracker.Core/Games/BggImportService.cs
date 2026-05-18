@@ -78,12 +78,12 @@ public class BggImportService : IBggImportService
             var request = new CollectionRequest(userName, subType: "boardgame,boardgameexpansion");
             response = await _bggClient.GetCollectionAsync(request);
         }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
         {
             _logger.LogWarning(ex, "BGG API key is invalid or expired");
             throw new ValidationException("Invalid BGG API key. Please check your API key in settings.");
         }
-        catch (HttpRequestException ex)
+        catch (BoardGameGeekHttpException ex)
         {
             _logger.LogWarning(ex, "BGG API request failed for collection import of user {UserName}", userName);
             return null;
@@ -159,12 +159,12 @@ public class BggImportService : IBggImportService
 
             return response.Result?.FirstOrDefault();
         }
-        catch (HttpRequestException ex) when (ex.Message.Contains("Unauthorized"))
+        catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
         {
             _logger.LogWarning(ex, "BGG API key is invalid or expired");
             throw new ValidationException("Invalid BGG API key. Please check your API key in settings.");
         }
-        catch (HttpRequestException ex)
+        catch (BoardGameGeekHttpException ex)
         {
             _logger.LogWarning(ex, "BGG API request failed for game {BggId}", bggId);
             return null;

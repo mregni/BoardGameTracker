@@ -9,6 +9,8 @@ import { BgtSimpleCheckbox, BgtSimpleInputField, BgtSimpleSelect, BgtSimpleSwitc
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
+import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
 import { BgtPaging } from "@/components/BgtTable/BgtPaging";
 import { BgtText } from "@/components/BgtText/BgtText";
@@ -16,8 +18,8 @@ import { GameState, type ImportGame } from "@/models";
 import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
-import { ImportLoader } from "./-components/ImportLoader";
 import { useList } from "./-hooks/useList";
+import Database from "@/assets/icons/database.svg?react";
 
 export const Route = createFileRoute("/games/import/list_/$username")({
 	component: RouteComponent,
@@ -40,14 +42,10 @@ const maxImport = 5;
 function RouteComponent() {
 	const { username } = Route.useParams();
 	const { t } = useTranslation(["common", "game", "bgg-import", "games"]);
-	const [loadText, setLoadText] = useState("games:import.loading");
-
-	const onSuccess = () => {
-		setLoadText("games:import.loading");
-	};
 
 	const {
 		statusCode,
+		bggError,
 		settings,
 		games,
 		updateGame,
@@ -60,7 +58,6 @@ function RouteComponent() {
 		importing,
 	} = useList({
 		username,
-		onSuccess,
 	});
 
 	const [page, setPage] = useState<number>(0);
@@ -128,7 +125,7 @@ function RouteComponent() {
 						}
 						placeholder={t("game:price.placeholder")}
 						disabled={row.original.inCollection}
-						className="w-[130px]"
+						className="w-32.5"
 						prefixLabel={settings?.currency}
 					/>
 				),
@@ -185,52 +182,63 @@ function RouteComponent() {
 		return games.filter((game) => game.checked).length;
 	}, [games]);
 
+	const isLoading = (statusCode !== 200 && !bggError) || processingGames || importing;
+
 	const triggerImport = () => {
-		setLoadText("games:import.importing");
 		startImport(games.filter((game) => game.checked));
 	};
 
 	return (
 		<BgtPage>
-			<BgtPageHeader header={t("bgg-import:title")} actions={[]} />
+			<BgtPageHeader header={t("bgg-import:title")} actions={[]} icon={Database} />
 			<BgtPageContent>
-				<ImportLoader show={() => statusCode !== 200 || processingGames || importing} text={t(loadText)}>
-					<div className="flex flex-row justify-between gap-4 mb-16">
-						<div className="flex flex-col gap-2 flex-1">
-							<BgtText>
-								{t("games:import.intro", {
-									count: totalCount,
-									collectionCount: inCollectionCount,
-									maxImport,
-								})}
-							</BgtText>
-							<BgtSimpleSwitch
-								label={"Hide games that are in your collection already"}
-								value={filterCollected}
-								onChange={(value) => setFilterCollected(value)}
-							/>
-						</div>
-						<div>
-							<BgtButton onClick={() => triggerImport()} disabled={checkedCount > maxImport} variant="primary">
-								{t("games:import.start-import", {
-									count: checkedCount,
-									totalCount: maxImport,
-								})}
-							</BgtButton>
-						</div>
-					</div>
-
-					<BgtPaging page={page} setPage={setPage} totalCount={games.length} countPerPage={countPerPage} />
-
-					<BgtDataTable
-						columns={columns}
-						data={games.slice(page * countPerPage, (page + 1) * countPerPage)}
-						noDataMessage={t("no-data")}
-						widths={["w-[48px]", "w-[70px]", null, "w-[100px]"]}
+				{bggError ? (
+					<BgtStatus
+						variant="warning"
+						title={t("games:import.error-title")}
+						description={t("games:import.error-description")}
 					/>
+				) : isLoading ? (
+					<BgtLoadingSpinner />
+				) : (
+					<>
+						<div className="flex flex-row justify-between gap-4 mb-16">
+							<div className="flex flex-col gap-2 flex-1">
+								<BgtText>
+									{t("games:import.intro", {
+										count: totalCount,
+										collectionCount: inCollectionCount,
+										maxImport,
+									})}
+								</BgtText>
+								<BgtSimpleSwitch
+									label={t("games:import.hide-collected")}
+									value={filterCollected}
+									onChange={(value) => setFilterCollected(value)}
+								/>
+							</div>
+							<div>
+								<BgtButton onClick={() => triggerImport()} disabled={checkedCount > maxImport} variant="primary">
+									{t("games:import.start-import", {
+										count: checkedCount,
+										totalCount: maxImport,
+									})}
+								</BgtButton>
+							</div>
+						</div>
 
-					<BgtPaging page={page} setPage={setPage} totalCount={games.length} countPerPage={countPerPage} />
-				</ImportLoader>
+						<BgtPaging page={page} setPage={setPage} totalCount={games.length} countPerPage={countPerPage} />
+
+						<BgtDataTable
+							columns={columns}
+							data={games.slice(page * countPerPage, (page + 1) * countPerPage)}
+							noDataMessage={t("no-data")}
+							widths={["w-[48px]", "w-[70px]", null, "w-[100px]"]}
+						/>
+
+						<BgtPaging page={page} setPage={setPage} totalCount={games.length} countPerPage={countPerPage} />
+					</>
+				)}
 			</BgtPageContent>
 		</BgtPage>
 	);

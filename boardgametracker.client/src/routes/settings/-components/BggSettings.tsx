@@ -97,7 +97,7 @@ export const BggSettings = withForm({
 											rel="noopener noreferrer"
 											className="text-cyan-400 hover:text-cyan-300 underline"
 										>
-											link
+											{t("bgg.api-key.help-link-text")}
 										</a>
 									),
 								}}
