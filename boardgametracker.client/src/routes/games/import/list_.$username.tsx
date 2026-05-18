@@ -3,6 +3,7 @@ import { cx } from "class-variance-authority";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import LinkIcon from "@/assets/icons/arrow-square-out.svg?react";
+import Database from "@/assets/icons/database.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtSimpleCheckbox, BgtSimpleInputField, BgtSimpleSelect, BgtSimpleSwitch } from "@/components/BgtForm";
@@ -19,7 +20,6 @@ import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { useList } from "./-hooks/useList";
-import Database from "@/assets/icons/database.svg?react";
 
 export const Route = createFileRoute("/games/import/list_/$username")({
 	component: RouteComponent,

@@ -1,15 +1,14 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { Trans, useTranslation } from "react-i18next";
-
+import Info from "@/assets/icons/info.svg?react";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtInputField } from "@/components/BgtForm";
+import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { BgtText } from "@/components/BgtText/BgtText";
-import type { BggConfigStatus } from "@/models";
 import { withForm } from "@/hooks/form";
+import type { BggConfigStatus } from "@/models";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { SettingsSection } from "./SettingsSection";
-import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
-import Info from "@/assets/icons/info.svg?react";
 
 export const BggSettings = withForm({
 	...settingsFormOpts,

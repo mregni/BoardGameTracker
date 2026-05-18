@@ -3,6 +3,7 @@ import { useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtCenteredCard } from "@/components/BgtCard/BgtCenteredCard";
 import { BgtImageSelector, BgtSwitch } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -20,7 +21,6 @@ import { gameFormOpts } from "../-utils/gameFormOpts";
 import { GameFormBasicFields } from "./GameFormBasicFields";
 import { GameFormPlayerFields } from "./GameFormPlayerFields";
 import { GameFormTimeFields } from "./GameFormTimeFields";
-import { BgtCard } from "@/components/BgtCard/BgtCard";
 
 interface Props {
 	onClick: (data: CreateGame) => Promise<void>;

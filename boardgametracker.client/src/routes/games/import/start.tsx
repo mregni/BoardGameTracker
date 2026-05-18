@@ -3,6 +3,7 @@ import { createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/rea
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtCenteredCard } from "@/components/BgtCard/BgtCenteredCard";
 import { BgtInputField } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -12,7 +13,6 @@ import { BggUserNameSchema } from "@/models";
 import { getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
-import { BgtCard } from "@/components/BgtCard/BgtCard";
 
 export const Route = createFileRoute("/games/import/start")({
 	component: RouteComponent,

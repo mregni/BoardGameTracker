@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtCenteredCard } from "@/components/BgtCard/BgtCenteredCard";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
@@ -15,7 +16,6 @@ import {
 	type Expansion,
 	type Game,
 } from "@/models";
-
 import { handleFormSubmit } from "@/utils/formUtils";
 import { useSessionForm } from "../-hooks/useSessionForm";
 import { useSessionFormState } from "../-hooks/useSessionFormState";
@@ -23,7 +23,6 @@ import { sessionFormOpts } from "../-utils/sessionFormOpts";
 import { SessionExpansionSelector } from "./SessionExpansionSelector";
 import { SessionFormFields } from "./SessionFormFields";
 import { SessionPlayerManager } from "./SessionPlayerManager";
-import { BgtCard } from "@/components/BgtCard/BgtCard";
 
 interface Props {
 	game?: Game | undefined;

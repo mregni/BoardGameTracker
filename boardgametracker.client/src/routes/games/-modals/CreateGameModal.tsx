@@ -13,8 +13,8 @@ import {
 	BgtDialogDescription,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
-import type { ModalProps } from "@/models";
 import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
+import type { ModalProps } from "@/models";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 
 interface Props extends ModalProps {
