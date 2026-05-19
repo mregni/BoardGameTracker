@@ -174,4 +174,82 @@ describe("BgtDatePicker", () => {
 			expect(button).toHaveAttribute("type", "button");
 		});
 	});
+
+	describe("Text input", () => {
+		it("should call handleChange with the parsed date when a valid date is typed and blurred", async () => {
+			const user = userEvent.setup();
+			const mockHandleChange = vi.fn();
+			const field = {
+				...createMockField(),
+				handleChange: mockHandleChange,
+			} as unknown as AnyFieldApi;
+
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
+
+			const input = screen.getByPlaceholderText("Pick a date");
+			await user.type(input, "2024-03-15");
+			await user.tab();
+
+			expect(mockHandleChange).toHaveBeenCalledWith("2024-03-15");
+		});
+
+		it("should call handleChange when Enter is pressed in the input", async () => {
+			const user = userEvent.setup();
+			const mockHandleChange = vi.fn();
+			const field = {
+				...createMockField(),
+				handleChange: mockHandleChange,
+			} as unknown as AnyFieldApi;
+
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
+
+			const input = screen.getByPlaceholderText("Pick a date");
+			await user.type(input, "2024-03-15{Enter}");
+
+			expect(mockHandleChange).toHaveBeenCalledWith("2024-03-15");
+		});
+
+		it("should not call handleChange when an invalid date is typed", async () => {
+			const user = userEvent.setup();
+			const mockHandleChange = vi.fn();
+			const field = {
+				...createMockField(),
+				handleChange: mockHandleChange,
+			} as unknown as AnyFieldApi;
+
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
+
+			const input = screen.getByPlaceholderText("Pick a date");
+			await user.type(input, "not-a-date");
+			await user.tab();
+
+			expect(mockHandleChange).not.toHaveBeenCalled();
+		});
+
+		it("should not call handleChange when the input is blurred while empty", async () => {
+			const user = userEvent.setup();
+			const mockHandleChange = vi.fn();
+			const field = {
+				...createMockField(),
+				handleChange: mockHandleChange,
+			} as unknown as AnyFieldApi;
+
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
+
+			const input = screen.getByPlaceholderText("Pick a date");
+			await user.click(input);
+			await user.tab();
+
+			expect(mockHandleChange).not.toHaveBeenCalled();
+		});
+
+		it("should display the formatted date in the input when the field has a value", async () => {
+			const fieldWithValue = createMockField("2024-06-15");
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={fieldWithValue} />);
+
+			await waitFor(() => {
+				expect(screen.getByDisplayValue("2024-06-15")).toBeInTheDocument();
+			});
+		});
+	});
 });

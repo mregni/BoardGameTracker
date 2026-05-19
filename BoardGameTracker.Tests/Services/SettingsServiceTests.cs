@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
@@ -324,6 +325,101 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, It.IsAny<string>()), Times.Once);
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region GetBggApiKeyAsync Tests
+
+    private static async Task<T> WithBggEnvApiKey<T>(string? value, Func<Task<T>> action)
+    {
+        var original = Environment.GetEnvironmentVariable(Constants.BggConfig.EnvApiKeyName);
+        Environment.SetEnvironmentVariable(Constants.BggConfig.EnvApiKeyName, value);
+        try
+        {
+            return await action();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(Constants.BggConfig.EnvApiKeyName, original);
+        }
+    }
+
+    [Fact]
+    public async Task GetBggApiKeyAsync_ShouldReturnDbValue_WhenEnvVariableNotSet()
+    {
+        // Arrange
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
+            .ReturnsAsync("db-api-key");
+
+        // Act
+        var result = await WithBggEnvApiKey(null, () => _settingsService.GetBggApiKeyAsync());
+
+        // Assert
+        result.Should().Be("db-api-key");
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetBggApiKeyAsync_ShouldReturnTrimmedEnvValue_WhenEnvVariableSet()
+    {
+        // Act
+        var result = await WithBggEnvApiKey("  env-api-key  ", () => _settingsService.GetBggApiKeyAsync());
+
+        // Assert
+        result.Should().Be("env-api-key");
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetBggApiKeyAsync_ShouldReturnNull_WhenNeitherEnvNorDbValueSet()
+    {
+        // Arrange
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
+            .ReturnsAsync((string)null!);
+
+        // Act
+        var result = await WithBggEnvApiKey(null, () => _settingsService.GetBggApiKeyAsync());
+
+        // Assert
+        result.Should().BeNull();
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region IsBggEnabled Tests
+
+    [Fact]
+    public async Task IsBggEnabled_ShouldReturnTrue_WhenApiKeyIsConfigured()
+    {
+        // Arrange
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
+            .ReturnsAsync("some-api-key");
+
+        // Act
+        var result = await WithBggEnvApiKey(null, () => _settingsService.IsBggEnabled());
+
+        // Assert
+        result.Should().BeTrue();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task IsBggEnabled_ShouldReturnFalse_WhenApiKeyIsEmpty()
+    {
+        // Act (constructor default returns string.Empty for the API key)
+        var result = await WithBggEnvApiKey(null, () => _settingsService.IsBggEnabled());
+
+        // Assert
+        result.Should().BeFalse();
         VerifyNoOtherCalls();
     }
 
