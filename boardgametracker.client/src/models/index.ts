@@ -31,7 +31,7 @@ export * from "./Location/CreateLocation";
 export * from "./Location/Location";
 export * from "./Menu/MenuItem";
 export * from "./Player/Player";
-export type { PlayerStatistics } from "./Player/PlayerStatistics";
+export type { MostPlayedGame, PlayerStatistics } from "./Player/PlayerStatistics";
 export * from "./Session/CreateSession";
 export * from "./Session/PlayerSession";
 export * from "./Session/Session";

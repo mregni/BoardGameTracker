@@ -1,3 +1,4 @@
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
 import { BgtDatePicker } from "./BgtDatePicker";
@@ -18,19 +19,20 @@ vi.mock("@/utils/localeUtils", () => ({
 	getDateFnsLocale: () => undefined,
 }));
 
-const createMockField = (value: string = "", errors: string[] = []) => ({
-	state: {
-		value,
-		meta: {
-			errors,
-			isTouched: false,
-			isValidating: false,
+const createMockField = (value: string = "", errors: string[] = []) =>
+	({
+		state: {
+			value,
+			meta: {
+				errors,
+				isTouched: false,
+				isValidating: false,
+			},
 		},
-	},
-	handleChange: vi.fn(),
-	handleBlur: vi.fn(),
-	name: "testDate",
-});
+		handleChange: vi.fn(),
+		handleBlur: vi.fn(),
+		name: "testDate",
+	}) as unknown as AnyFieldApi;
 
 describe("BgtDatePicker", () => {
 	const defaultProps = {
@@ -51,7 +53,7 @@ describe("BgtDatePicker", () => {
 
 		it("should render the placeholder when no date is selected", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
-			expect(screen.getByText("Pick a date")).toBeInTheDocument();
+			expect(screen.getByPlaceholderText("Pick a date")).toBeInTheDocument();
 		});
 
 		it("should render calendar icon", () => {
@@ -61,9 +63,8 @@ describe("BgtDatePicker", () => {
 		});
 
 		it("should render with custom className", () => {
-			renderWithProviders(<BgtDatePicker {...defaultProps} className="custom-class" />);
-			const button = screen.getByRole("button");
-			expect(button).toHaveClass("custom-class");
+			const { container } = renderWithProviders(<BgtDatePicker {...defaultProps} className="custom-class" />);
+			expect(container.querySelector(".custom-class")).toBeInTheDocument();
 		});
 	});
 
@@ -128,7 +129,7 @@ describe("BgtDatePicker", () => {
 			const field = {
 				...createMockField(),
 				handleChange: mockHandleChange,
-			};
+			} as unknown as AnyFieldApi;
 
 			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
 

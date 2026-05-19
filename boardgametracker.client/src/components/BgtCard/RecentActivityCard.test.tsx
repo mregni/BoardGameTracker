@@ -12,7 +12,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 describe("RecentActivityCard", () => {
 	interface TestItem {
-		id: number;
+		id: string | number;
 		name: string;
 	}
 

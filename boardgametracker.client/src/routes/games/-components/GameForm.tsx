@@ -4,7 +4,6 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
-import { BgtCenteredCard } from "@/components/BgtCard/BgtCenteredCard";
 import { BgtImageSelector, BgtSwitch } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";

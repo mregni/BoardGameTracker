@@ -1,3 +1,4 @@
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
 import { BgtDateTimePicker } from "./BgtDateTimePicker";
@@ -20,19 +21,20 @@ vi.mock("@/utils/localeUtils", () => ({
 	getDateFnsLocale: () => undefined,
 }));
 
-const createMockField = (value: Date | string = "", errors: string[] = []) => ({
-	state: {
-		value,
-		meta: {
-			errors,
-			isTouched: false,
-			isValidating: false,
+const createMockField = (value: Date | string = "", errors: string[] = []) =>
+	({
+		state: {
+			value,
+			meta: {
+				errors,
+				isTouched: false,
+				isValidating: false,
+			},
 		},
-	},
-	handleChange: vi.fn(),
-	handleBlur: vi.fn(),
-	name: "testDateTime",
-});
+		handleChange: vi.fn(),
+		handleBlur: vi.fn(),
+		name: "testDateTime",
+	}) as unknown as AnyFieldApi;
 
 describe("BgtDateTimePicker", () => {
 	const defaultProps = {
@@ -71,7 +73,7 @@ describe("BgtDateTimePicker", () => {
 			const field = {
 				...createMockField(new Date("2024-06-15T10:30:00")),
 				handleChange: mockHandleChange,
-			};
+			} as unknown as AnyFieldApi;
 
 			renderWithProviders(<BgtDateTimePicker {...defaultProps} field={field} />);
 

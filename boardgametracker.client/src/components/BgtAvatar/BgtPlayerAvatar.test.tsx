@@ -12,12 +12,12 @@ vi.mock("@tanstack/react-router", () => ({
 
 describe("BgtPlayerAvatar", () => {
 	const createPlayerSession = (overrides: Partial<PlayerSession> = {}): PlayerSession => ({
-		id: 1,
 		playerId: 1,
 		sessionId: 1,
 		score: 100,
-		isWinner: false,
+		won: false,
 		firstPlay: false,
+		isBot: false,
 		...overrides,
 	});
 
@@ -25,6 +25,7 @@ describe("BgtPlayerAvatar", () => {
 		id: 1,
 		name: "John Doe",
 		image: "/player.jpg",
+		badges: [],
 		...overrides,
 	});
 

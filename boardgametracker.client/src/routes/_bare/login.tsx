@@ -133,7 +133,7 @@ function LoginPage() {
 									style={oidcProvider.buttonColor ? { borderColor: oidcProvider.buttonColor } : undefined}
 								>
 									{oidcProvider.iconUrl && <img src={oidcProvider.iconUrl} alt="" className="w-5 h-5" />}
-									{oidcProvider.displayName}
+									{oidcProvider.name}
 								</BgtButton>
 							</div>
 						</>

@@ -48,10 +48,6 @@ void i18n
 		defaultNS: "common",
 		interpolation: {
 			escapeValue: false,
-			format: (value: string, format) => {
-				if (format === "capitalize") return `${value.substring(0, 1).toUpperCase()}${value.substring(1)}`;
-				return value;
-			},
 		},
 		backend: {
 			loadPath: translationFilePath,
@@ -60,5 +56,10 @@ void i18n
 			useSuspense: true,
 		},
 	});
+
+i18n.services.formatter?.add(
+	"capitalize",
+	(value: string) => `${value.substring(0, 1).toUpperCase()}${value.substring(1)}`,
+);
 
 export default i18n;

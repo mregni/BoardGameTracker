@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
-import { BgtCenteredCard } from "@/components/BgtCard/BgtCenteredCard";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";

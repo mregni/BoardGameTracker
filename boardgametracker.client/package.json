@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "build2": "tsc && vite build",
+    "typecheck": "tsc --noEmit",
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/",
     "preview": "vite preview",

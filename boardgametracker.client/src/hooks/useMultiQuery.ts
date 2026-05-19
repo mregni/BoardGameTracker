@@ -1,4 +1,4 @@
-import { type UseQueryOptions, useQueries } from "@tanstack/react-query";
+import { type UseQueryOptions, type UseQueryResult, useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 type QueryOptionsArray<T extends readonly unknown[]> = {
@@ -10,7 +10,7 @@ interface MultiQueryResult<T extends readonly unknown[]> {
 	isLoading: boolean;
 	isError: boolean;
 	errors: unknown[];
-	results: ReturnType<typeof useQueries>;
+	results: UseQueryResult[];
 }
 
 export const useMultiQuery = <T extends readonly unknown[]>(
@@ -20,7 +20,7 @@ export const useMultiQuery = <T extends readonly unknown[]>(
 		queries: queries as UseQueryOptions<unknown>[],
 	});
 
-	const data = useMemo(() => results.map((r) => r.data) as T, [results]);
+	const data = useMemo(() => results.map((r) => r.data) as unknown as T, [results]);
 
 	const isLoading = useMemo(() => results.some((r) => r.isLoading), [results]);
 

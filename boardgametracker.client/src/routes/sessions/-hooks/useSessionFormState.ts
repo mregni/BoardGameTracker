@@ -5,7 +5,7 @@ import type { CreatePlayerSessionNoScoring, CreateSessionPlayer, Expansion, Game
 
 interface SessionFormApi {
 	store: {
-		subscribe: (listener: () => void) => () => void;
+		subscribe: (listener: () => void) => { unsubscribe: () => void };
 		state: { values: { gameId: number } };
 	};
 	setFieldValue: (field: "minutes" | "start", value: number | Date) => void;

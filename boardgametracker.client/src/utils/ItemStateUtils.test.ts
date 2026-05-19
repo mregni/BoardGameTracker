@@ -38,7 +38,7 @@ describe("ItemStateUtils", () => {
 			});
 
 			it("should return empty string for unknown state", () => {
-				expect(getItemStateTranslationKey(999 as GameState, false)).toBe("");
+				expect(getItemStateTranslationKey(999 as unknown as GameState, false)).toBe("");
 			});
 		});
 	});

@@ -78,7 +78,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = SettingsSchema.parse(value);
-			await saveSettings(validatedData);
+			await saveSettings({ ...validatedData, bggStatus: settings.bggStatus });
 		},
 	});
 

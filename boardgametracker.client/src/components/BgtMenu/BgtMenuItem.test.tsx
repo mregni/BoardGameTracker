@@ -21,6 +21,7 @@ describe("BgtMenuItem", () => {
 		menuLabel: "menu.games",
 		path: "/games",
 		icon: TestIcon,
+		mobileVisible: false,
 		...overrides,
 	});
 

@@ -1,19 +1,21 @@
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { BgtInputField } from "./BgtInputField";
 
 // i18next is mocked globally in setup.ts
 
-const createMockField = (value: string | number | Date | undefined = "") => ({
-	state: {
-		value,
-		meta: {
-			errors: [] as string[],
+const createMockField = (value: string | number | Date | undefined = "") =>
+	({
+		state: {
+			value,
+			meta: {
+				errors: [] as string[],
+			},
 		},
-	},
-	handleChange: vi.fn(),
-	handleBlur: vi.fn(),
-});
+		handleChange: vi.fn(),
+		handleBlur: vi.fn(),
+	}) as unknown as AnyFieldApi;
 
 describe("BgtInputField", () => {
 	let mockField: ReturnType<typeof createMockField>;

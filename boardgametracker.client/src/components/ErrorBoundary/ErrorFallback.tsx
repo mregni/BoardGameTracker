@@ -31,8 +31,8 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
 								Error Details (Development Only)
 							</summary>
 							<pre className="bg-error/10 border border-error/30 rounded-lg p-4 overflow-auto text-sm text-error">
-								{error.message}
-								{error.stack && (
+								{error instanceof Error ? error.message : String(error)}
+								{error instanceof Error && error.stack && (
 									<>
 										{"\n\n"}
 										{error.stack}

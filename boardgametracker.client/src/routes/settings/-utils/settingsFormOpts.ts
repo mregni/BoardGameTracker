@@ -14,6 +14,6 @@ export const settingsFormOpts = formOptions({
 		publicUrl: "",
 		gameNightsEnabled: false,
 		rsvpAuthenticationEnabled: false,
-		bggApiKey: undefined as string | undefined,
+		bggApiKey: null as string | null,
 	},
 });

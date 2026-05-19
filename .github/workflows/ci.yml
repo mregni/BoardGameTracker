@@ -161,6 +161,11 @@ jobs:
           cd boardgametracker.client
           pnpm lint
 
+      - name: Typecheck frontend
+        run: |
+          cd boardgametracker.client
+          pnpm typecheck
+
       - name: Run frontend tests with coverage
         run: |
           cd boardgametracker.client

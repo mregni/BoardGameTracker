@@ -1,3 +1,4 @@
+import type { Dispatch, SetStateAction } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { BgtImageSelector } from "./BgtImageSelector";
@@ -7,12 +8,12 @@ vi.mock("@/assets/icons/trash.svg?react", () => ({
 }));
 
 describe("BgtImageSelector", () => {
-	let mockSetImage: ReturnType<typeof vi.fn>;
-	let mockCreateObjectURL: ReturnType<typeof vi.fn>;
+	let mockSetImage: Dispatch<SetStateAction<File | undefined | null>>;
+	let mockCreateObjectURL: typeof URL.createObjectURL;
 
 	beforeEach(() => {
-		mockSetImage = vi.fn();
-		mockCreateObjectURL = vi.fn(() => "blob:test-url");
+		mockSetImage = vi.fn() as unknown as Dispatch<SetStateAction<File | undefined | null>>;
+		mockCreateObjectURL = vi.fn(() => "blob:test-url") as unknown as typeof URL.createObjectURL;
 		global.URL.createObjectURL = mockCreateObjectURL;
 	});
 

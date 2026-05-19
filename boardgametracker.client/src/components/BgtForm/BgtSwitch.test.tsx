@@ -1,17 +1,19 @@
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { BgtSwitch } from "./BgtSwitch";
 
-const createMockField = (value: boolean = false) => ({
-	state: {
-		value,
-		meta: {
-			errors: [],
+const createMockField = (value: boolean = false) =>
+	({
+		state: {
+			value,
+			meta: {
+				errors: [],
+			},
 		},
-	},
-	handleChange: vi.fn(),
-	handleBlur: vi.fn(),
-});
+		handleChange: vi.fn(),
+		handleBlur: vi.fn(),
+	}) as unknown as AnyFieldApi;
 
 describe("BgtSwitch", () => {
 	let mockField: ReturnType<typeof createMockField>;

@@ -1,3 +1,4 @@
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithTheme, screen } from "@/test/test-utils";
 import { BgtSelect } from "./BgtSelect";
@@ -20,16 +21,17 @@ vi.mock("@/assets/icons/caret-down.svg?react", () => ({
 	default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="caret-down-icon" {...props} />,
 }));
 
-const createMockField = (value: string = "") => ({
-	state: {
-		value,
-		meta: {
-			errors: [] as string[],
+const createMockField = (value: string = "") =>
+	({
+		state: {
+			value,
+			meta: {
+				errors: [] as string[],
+			},
 		},
-	},
-	handleChange: vi.fn(),
-	handleBlur: vi.fn(),
-});
+		handleChange: vi.fn(),
+		handleBlur: vi.fn(),
+	}) as unknown as AnyFieldApi;
 
 const mockItems = [
 	{ value: "1", label: "Option 1" },

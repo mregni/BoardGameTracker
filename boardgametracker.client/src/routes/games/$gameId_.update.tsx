@@ -34,7 +34,7 @@ function RouteComponent() {
 			...game,
 			...data,
 			image: data.image ?? game.image,
-			additionDate: data.additionDate ? data.additionDate.toISOString() : null,
+			additionDate: data.additionDate ?? null,
 		};
 		const result = await updateGame(updatedGame);
 
