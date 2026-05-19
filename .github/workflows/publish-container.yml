@@ -211,8 +211,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment:
-      name: ${{ env.IS_STABLE == 'true' && 'production' || 'development' }}
-      url: ${{ env.IS_STABLE == 'true' && 'https://hub.docker.com/r/uping/boardgametracker' || '' }}
+      name: ${{ needs.version.outputs.is_stable == 'true' && 'production' || 'development' }}
+      url: ${{ needs.version.outputs.is_stable == 'true' && 'https://hub.docker.com/r/uping/boardgametracker' || '' }}
     permissions:
       contents: read
     steps:
