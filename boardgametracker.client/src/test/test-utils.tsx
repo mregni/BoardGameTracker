@@ -1,9 +1,7 @@
 import { Theme } from "@radix-ui/themes";
-import type { AnyFieldApi } from "@tanstack/react-form";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type RenderOptions, render } from "@testing-library/react";
 import type { ReactElement } from "react";
-import { vi } from "vitest";
 
 const createTestQueryClient = () =>
 	new QueryClient({
@@ -39,21 +37,6 @@ export const renderWithProviders = (ui: ReactElement, options?: Omit<RenderOptio
 export const renderWithTheme = (ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) => {
 	return render(ui, { wrapper: ThemeProvider, ...options });
 };
-
-export const createMockField = <T,>(value: T, errors: string[] = []): AnyFieldApi =>
-	({
-		state: {
-			value,
-			meta: {
-				errors,
-				isTouched: false,
-				isValidating: false,
-			},
-		},
-		handleChange: vi.fn(),
-		handleBlur: vi.fn(),
-		name: "testField",
-	}) as unknown as AnyFieldApi;
 
 export * from "@testing-library/react";
 
