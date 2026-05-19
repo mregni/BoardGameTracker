@@ -133,25 +133,6 @@ public partial class UpdateService : IUpdateService
         }
     }
 
-    public async Task<UpdateSettings> GetUpdateSettingsAsync()
-    {
-        var enabled = await _configRepository.GetConfigValueAsync<bool>(UpdateConfig.CheckEnabled);
-        var versionTrack = await _configRepository.GetConfigValueAsync<VersionTrack>(UpdateConfig.Track);
-        var settings = new UpdateSettings
-        {
-            Enabled = enabled,
-            VersionTrack = versionTrack
-        };
-
-        return settings;
-    }
-
-    public async Task UpdateSettingsAsync(bool enabled, VersionTrack versionTrack)
-    {
-        await _configRepository.SetConfigValueAsync(UpdateConfig.CheckEnabled, enabled);
-        await _configRepository.SetConfigValueAsync(UpdateConfig.Track, versionTrack);
-    }
-
     public string GetCurrentVersion()
     {
         var version = Assembly.GetExecutingAssembly().GetName().Version;

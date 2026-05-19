@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Badge } from "@/models";
+import { type Badge, BadgeLevel, BadgeType } from "@/models";
 
 import { renderWithTheme, screen } from "@/test/test-utils";
 import { BgtAchievement, BgtAchievementIcon } from "./BgtAchievement";
@@ -15,6 +15,8 @@ describe("BgtAchievement", () => {
 		id: 1,
 		titleKey: "first-win",
 		descriptionKey: "first-win-desc",
+		type: BadgeType.wins,
+		level: BadgeLevel.gold,
 		image: "first-win.png",
 		...overrides,
 	});
@@ -60,6 +62,8 @@ describe("BgtAchievementIcon", () => {
 		id: 1,
 		titleKey: "first-win",
 		descriptionKey: "first-win-desc",
+		type: BadgeType.wins,
+		level: BadgeLevel.gold,
 		image: "first-win.png",
 		...overrides,
 	});

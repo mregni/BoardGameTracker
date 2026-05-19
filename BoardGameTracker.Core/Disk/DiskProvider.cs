@@ -1,7 +1,5 @@
-﻿using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Extensions;
+﻿using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Disk.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 

@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using BoardGameTracker.Common.Enums;
 
 namespace BoardGameTracker.Common.DTOs.Commands;

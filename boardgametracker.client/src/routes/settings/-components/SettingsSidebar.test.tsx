@@ -44,7 +44,7 @@ describe("SettingsSidebar", () => {
 			render(<SettingsSidebar {...defaultProps} />);
 
 			const buttons = screen.getAllByRole("button");
-			expect(buttons).toHaveLength(5);
+			expect(buttons).toHaveLength(6);
 		});
 	});
 
@@ -114,7 +114,7 @@ describe("SettingsSidebar", () => {
 			render(<SettingsSidebar {...defaultProps} activeCategory="advanced" />);
 
 			const buttons = screen.getAllByRole("button");
-			expect(buttons[3]).toHaveClass("bg-primary/20");
+			expect(buttons[4]).toHaveClass("bg-primary/20");
 		});
 	});
 

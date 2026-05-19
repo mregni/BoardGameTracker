@@ -7,7 +7,7 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <SpaRoot>..\boardgametracker.client\</SpaRoot>
-        <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+        <SpaProxyLaunchCommand>pnpm dev</SpaProxyLaunchCommand>
         <SpaProxyServerUrl>http://localhost:5443</SpaProxyServerUrl>
     </PropertyGroup>
 
@@ -23,7 +23,6 @@
         </PackageReference>
         <PackageReference Include="Refit" Version="10.1.6" />
         <PackageReference Include="Refit.HttpClientFactory" Version="10.1.6" />
-        <PackageReference Include="Refit.Xml" Version="10.1.6" />
         <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />

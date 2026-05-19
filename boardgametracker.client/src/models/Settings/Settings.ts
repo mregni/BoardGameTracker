@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { BggConfigStatus } from "./BggConfigStatus";
+
 export interface Settings {
 	dateFormat: string;
 	timeFormat: string;
@@ -13,29 +15,31 @@ export interface Settings {
 	publicUrl: string;
 	gameNightsEnabled: boolean;
 	rsvpAuthenticationEnabled: boolean;
+	bggStatus: BggConfigStatus;
+	bggApiKey: string | null;
 }
 
 export const SettingsSchema = z.object({
 	dateFormat: z
 		.string({
-			required_error: "settings:date-format.required",
+			error: "settings:date-format.required",
 		})
 		.min(1, {
 			message: "settings:date-format.required",
 		}),
 	timeFormat: z
 		.string({
-			required_error: "settings:time-format.required",
+			error: "settings:time-format.required",
 		})
 		.min(1, {
 			message: "settings:time-format.required",
 		}),
 	uiLanguage: z.string({
-		required_error: "settings:ui-language.required",
+		error: "settings:ui-language.required",
 	}),
 	currency: z
 		.string({
-			required_error: "settings:currency.required",
+			error: "settings:currency.required",
 		})
 		.min(1, {
 			message: "settings:currency.required",
@@ -48,4 +52,5 @@ export const SettingsSchema = z.object({
 	shelfOfShameMonthsLimit: z.number().min(1),
 	gameNightsEnabled: z.boolean(),
 	rsvpAuthenticationEnabled: z.boolean(),
+	bggApiKey: z.string().nullable(),
 });

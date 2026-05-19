@@ -1,6 +1,6 @@
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Models.Bgg;
+using BoardGameTracker.Common.Models;
 
 namespace BoardGameTracker.Core.Games.Interfaces;
 
@@ -13,7 +13,7 @@ public interface IGameService
     Task<Game> CreateGameFromCommand(CreateGameCommand command);
     Task<List<Session>> GetSessionsForGame(int id, int? count);
     Task<Game> UpdateGame(UpdateGameCommand command);
-    Task<BggLink[]> SearchExpansionsForGame(int id);
+    Task<ExpansionData[]> SearchExpansionsForGame(int id);
     Task<List<Expansion>> UpdateGameExpansions(int gameId, int[] expansionIds);
     Task<List<Expansion>> GetGameExpansions(List<int> expansionIds);
     Task DeleteExpansion(int gameId, int expansionId);

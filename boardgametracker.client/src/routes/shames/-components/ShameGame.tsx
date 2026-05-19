@@ -36,7 +36,7 @@ export const ShameGame = ({ shame, dateFormat, currency }: Props) => {
 	const daysLastSession = getDaysSincePurchase(shame.lastSessionDate);
 
 	return (
-		<Link to={link} from="/shames">
+		<Link to={link} from="/shames/">
 			<div className="flex flex-col justify-center cursor-pointer flex-nowrap relative group gap-1 bg-primary/20 rounded-lg hover:border-primary/50 transition-all border border-white/10">
 				<div className="aspect-square overflow-hidden border border-none transition-all duration-200 relative rounded-t-lg">
 					<div

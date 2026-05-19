@@ -71,12 +71,17 @@ jobs:
         with:
           dotnet-version: "8.x"
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: boardgametracker.client/package.json
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "20.x"
-          cache: 'npm'
-          cache-dependency-path: boardgametracker.client/package-lock.json
+          cache: 'pnpm'
+          cache-dependency-path: boardgametracker.client/pnpm-lock.yaml
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v5
@@ -144,22 +149,27 @@ jobs:
       - name: Install frontend dependencies
         run: |
           cd boardgametracker.client
-          npm ci --ignore-scripts
+          pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Run Biome format check
         run: |
           cd boardgametracker.client
-          npm run format:check
+          pnpm format:check
 
       - name: Run Biome lint
         run: |
           cd boardgametracker.client
-          npm run lint
+          pnpm lint
+
+      - name: Typecheck frontend
+        run: |
+          cd boardgametracker.client
+          pnpm typecheck
 
       - name: Run frontend tests with coverage
         run: |
           cd boardgametracker.client
-          npm run test:coverage
+          pnpm test:coverage
           # Convert LCOV/sonar paths to absolute so SonarCloud resolves them regardless of module context
           sed -i "s|^SF:src/|SF:$(pwd)/src/|" coverage/lcov.info
           sed -i "s|path=\"src/|path=\"$(pwd)/src/|g" coverage/sonar-report.xml

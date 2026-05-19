@@ -1,6 +1,5 @@
 ﻿using BoardGameTracker.Common.Exceptions;
 using Microsoft.AspNetCore.Hosting;
-using Sentry.AspNetCore;
 using Serilog.Events;
 
 namespace BoardGameTracker.Common.Extensions;

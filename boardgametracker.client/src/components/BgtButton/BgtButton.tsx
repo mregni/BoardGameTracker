@@ -6,7 +6,7 @@ const buttonVariants = cva(
 	{
 		variants: {
 			variant: {
-				primary: "bg-primary/60  hover:bg-primary/50 text-white",
+				primary: "bg-primary/60 hover:bg-primary/50 text-white",
 				cancel: "hover:bg-cancel/10 text-cancel border border-cancel/60",
 				error: "bg-error hover:bg-error/80 text-white",
 				text: "text-primary hover:text-primary/70",
@@ -17,7 +17,7 @@ const buttonVariants = cva(
 				"3": "py-3 px-8",
 			},
 			disabled: {
-				true: "text-gray-500 border border-gray-500",
+				true: "cursor-not-allowed opacity-50",
 				false: "hover:cursor-pointer",
 			},
 		},
@@ -37,10 +37,10 @@ const BgtButton = (props: Props) => {
 	const { children, variant, size, type = "button", disabled, className, ...rest } = props;
 
 	const buttonClasses = buttonVariants({
-		className,
 		variant,
 		size,
 		disabled: !!disabled,
+		className,
 	});
 
 	return (

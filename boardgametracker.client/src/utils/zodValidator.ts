@@ -1,7 +1,7 @@
 import i18next from "i18next";
 import type { z } from "zod";
 
-export function zodValidator<TSchema extends z.AnyZodObject>(schema: TSchema, name: keyof z.infer<TSchema> & string) {
+export function zodValidator<TSchema extends z.ZodObject>(schema: TSchema, name: keyof z.infer<TSchema> & string) {
 	const fieldSchema = schema.shape[name] as z.ZodSchema;
 	return {
 		onChange: ({ value }: { value: unknown }) => {

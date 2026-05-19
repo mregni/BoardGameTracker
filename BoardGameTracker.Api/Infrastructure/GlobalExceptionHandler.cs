@@ -36,6 +36,7 @@ public class GlobalExceptionHandler : IExceptionHandler
 
     private static (int StatusCode, string Message) MapException(Exception exception) => exception switch
     {
+        BggFeatureDisabledException => (StatusCodes.Status503ServiceUnavailable, exception.Message),
         ValidationException or DomainException => (StatusCodes.Status400BadRequest, exception.Message),
         UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
         EntityNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),

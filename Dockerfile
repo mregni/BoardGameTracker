@@ -10,9 +10,13 @@ ARG SENTRY_AUTH_TOKEN
 ARG VITE_SENTRY_DSN
 WORKDIR /src
 
+# Enable pnpm via corepack
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable
+
 # Copy frontend package files
-COPY boardgametracker.client/package*.json ./
-RUN npm ci --ignore-scripts
+COPY boardgametracker.client/package.json boardgametracker.client/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy frontend source
 COPY boardgametracker.client/ ./
@@ -20,7 +24,7 @@ COPY boardgametracker.client/ ./
 # Build frontend (SENTRY_AUTH_TOKEN enables sourcemap upload via @sentry/vite-plugin)
 ENV SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
 ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
-RUN npm run build
+RUN pnpm build
 
 # Stage 2: Build Backend
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS backend-build

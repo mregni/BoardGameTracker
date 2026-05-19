@@ -1,3 +1,4 @@
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { BgtCheckbox } from "./BgtCheckbox";
@@ -6,16 +7,17 @@ vi.mock("@/assets/icons/check.svg?react", () => ({
 	default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="check-icon" {...props} />,
 }));
 
-const createMockField = (value: boolean = false) => ({
-	state: {
-		value,
-		meta: {
-			errors: [],
+const createMockField = (value: boolean = false) =>
+	({
+		state: {
+			value,
+			meta: {
+				errors: [],
+			},
 		},
-	},
-	handleChange: vi.fn(),
-	handleBlur: vi.fn(),
-});
+		handleChange: vi.fn(),
+		handleBlur: vi.fn(),
+	}) as unknown as AnyFieldApi;
 
 describe("BgtCheckbox", () => {
 	let mockField: ReturnType<typeof createMockField>;

@@ -54,6 +54,12 @@ public static class Constants
         public const string InvalidRefreshToken = "error.auth.invalid-refresh-token";
     }
 
+    public static class BggConfig
+    {
+        public const string ApiKey = "bgg_api_key";
+        public const string EnvApiKeyName = "BGG_API_KEY";
+    }
+
     public static class UpdateConfig
     {
         public const string Prefix = "update_";

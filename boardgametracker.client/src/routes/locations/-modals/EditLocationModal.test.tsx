@@ -26,6 +26,7 @@ describe("EditLocationModal", () => {
 	const mockLocation: Location = {
 		id: 1,
 		name: "Living Room",
+		playCount: 0,
 	};
 
 	const defaultProps = {
@@ -103,6 +104,7 @@ describe("EditLocationModal", () => {
 				expect(mockUpdateLocation).toHaveBeenCalledWith({
 					id: 1,
 					name: "Kitchen",
+					playCount: 0,
 				});
 			});
 		});
@@ -113,6 +115,7 @@ describe("EditLocationModal", () => {
 			const location: Location = {
 				id: 42,
 				name: "Basement",
+				playCount: 0,
 			};
 			renderWithTheme(<EditLocationModal {...defaultProps} location={location} />);
 

@@ -85,20 +85,13 @@ public class GameController : ControllerBase
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> SearchOnBgg([FromBody] BggSearch search)
     {
-        var existingGame = await _bggImportService.GetGameByBggId(search.BggId);
-        if (existingGame != null)
-        {
-            return Ok(existingGame.ToDto());
-        }
-
-        var game = await _bggImportService.SearchGame(search.BggId);
+        var game = await _bggImportService.ImportGameFromBgg(search);
         if (game == null)
         {
             return BadRequest();
         }
 
-        var dbGame = await _bggImportService.SearchOnBgg(game, search);
-        return Ok(dbGame.ToDto());
+        return Ok(game.ToDto());
     }
 
     [HttpGet("bgg/import")]

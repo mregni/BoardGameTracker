@@ -39,8 +39,10 @@ export const getBggCollection = (username: string) =>
 	queryOptions({
 		queryKey: [QUERY_KEYS.game, QUERY_KEYS.bgg, username],
 		queryFn: () => getBggCollectionCall(username),
-		refetchInterval: (data) => {
-			return data?.state.data?.statusCode === 200 ? false : 1000;
+		retry: false,
+		refetchInterval: (query) => {
+			if (query.state.error) return false;
+			return query.state.data?.statusCode === 200 ? false : 1000;
 		},
 		refetchIntervalInBackground: false,
 	});

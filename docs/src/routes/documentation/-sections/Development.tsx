@@ -33,7 +33,7 @@ export const Development = () => {
 cd BoardGameTracker
 dotnet restore
 cd boardgametracker.client
-npm install`}
+pnpm install`}
 				</CodeBlock>
 
 				<Paragraph translationKey="extra:development.step2Description" />

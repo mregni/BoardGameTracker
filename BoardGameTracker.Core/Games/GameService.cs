@@ -1,11 +1,13 @@
+using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
-using BoardGameTracker.Common.Models.Bgg;
-using BoardGameTracker.Core.Bgg.Interfaces;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Games;
@@ -14,9 +16,9 @@ public class GameService : IGameService
 {
     private readonly IGameRepository _gameRepository;
     private readonly IGameSessionRepository _gameSessionRepository;
-    private readonly IBggApi _bggApi;
+    private readonly IBoardGameGeekXmlApi2Client _bggClient;
+    private readonly ISettingsService _settingsService;
     private readonly IImageService _imageService;
-    private readonly IBggGameTranslator _bggGameTranslator;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<GameService> _logger;
 
@@ -24,16 +26,16 @@ public class GameService : IGameService
         IGameRepository gameRepository,
         IGameSessionRepository gameSessionRepository,
         IImageService imageService,
-        IBggApi bggApi,
-        IBggGameTranslator bggGameTranslator,
+        IBoardGameGeekXmlApi2Client bggClient,
+        ISettingsService settingsService,
         IUnitOfWork unitOfWork,
         ILogger<GameService> logger)
     {
         _gameRepository = gameRepository;
         _gameSessionRepository = gameSessionRepository;
         _imageService = imageService;
-        _bggApi = bggApi;
-        _bggGameTranslator = bggGameTranslator;
+        _bggClient = bggClient;
+        _settingsService = settingsService;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -128,27 +130,33 @@ public class GameService : IGameService
         return game;
     }
 
-    public async Task<BggLink[]> SearchExpansionsForGame(int id)
+    public async Task<ExpansionData[]> SearchExpansionsForGame(int id)
     {
         _logger.LogDebug("Searching expansions for game {GameId}", id);
+        await EnsureBggConfiguredAsync();
         var dbGame = await _gameRepository.GetByIdAsync(id);
         if (dbGame is not {BggId: not null})
         {
             return [];
         }
-        var response = await _bggApi.SearchGame(dbGame.BggId.Value, 0);
-        var firstResult = response.Content?.Games?.FirstOrDefault();
-        if (!response.IsSuccessStatusCode || firstResult == null)
+
+        var request = new ThingRequest([dbGame.BggId.Value]);
+        var response = await _bggClient.GetThingAsync(request);
+        var firstResult = response.Result?.FirstOrDefault();
+        if (!response.Succeeded || firstResult == null)
         {
             return [];
         }
 
-        var game = _bggGameTranslator.TranslateRawGame(firstResult);
-        return game.Expansions;
+        return (firstResult.Links ?? [])
+            .Where(l => l.Type == Constants.Bgg.Expansion && !string.IsNullOrWhiteSpace(l.Value))
+            .Select(l => new ExpansionData { Title = l.Value, BggId = l.Id })
+            .ToArray();
     }
 
     public async Task<List<Expansion>> UpdateGameExpansions(int gameId, int[] expansionIds)
     {
+        await EnsureBggConfiguredAsync();
         _logger.LogDebug("Updating expansions for game {GameId}", gameId);
         var game = await _gameRepository.GetByIdAsync(gameId);
         if (game == null)
@@ -166,19 +174,24 @@ public class GameService : IGameService
             .Where(x => !game.Expansions.Select(y => y.BggId).Contains(x))
             .ToList();
 
-        var expansionResults = await Task.WhenAll(
-            newExpansionsIds.Select(id => _bggApi.SearchExpansion(id, 0)));
-
-        foreach (var expansionResult in expansionResults)
+        var expansionRequests = newExpansionsIds.Select(async expansionId =>
         {
-            var firstResult = expansionResult.Content?.Games?.FirstOrDefault();
-            if (!expansionResult.IsSuccessStatusCode || firstResult == null)
+            var request = new ThingRequest([expansionId], types: ["boardgameexpansion"]);
+            var response = await _bggClient.GetThingAsync(request);
+            return response.Result?.FirstOrDefault();
+        });
+
+        var expansionResults = await Task.WhenAll(expansionRequests);
+
+        foreach (var firstResult in expansionResults)
+        {
+            if (firstResult == null)
             {
                 continue;
             }
 
             var expansion = new Expansion(
-                firstResult.Names.FirstOrDefault()?.Value ?? string.Empty,
+                firstResult.Name ?? string.Empty,
                 firstResult.Id,
                 game.Id
             );
@@ -199,5 +212,12 @@ public class GameService : IGameService
         _logger.LogDebug("Deleting expansion {ExpansionId} from game {GameId}", expansionId, gameId);
         await _gameRepository.DeleteExpansion(gameId, expansionId);
         await  _unitOfWork.SaveChangesAsync();
+    }
+
+    private async Task EnsureBggConfiguredAsync()
+    {
+        var apiKey = await _settingsService.GetBggApiKeyAsync();
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new BggFeatureDisabledException();
     }
 }

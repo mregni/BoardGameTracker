@@ -9,10 +9,9 @@ import { getSettings } from "@/services/queries/settings";
 
 interface Props {
 	username: string;
-	onSuccess?: () => void;
 }
 
-export const useList = ({ username, onSuccess }: Props) => {
+export const useList = ({ username }: Props) => {
 	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
 
@@ -22,6 +21,7 @@ export const useList = ({ username, onSuccess }: Props) => {
 
 	const settings = settingsQuery.data;
 	const statusCode = bggCollectionQuery.data?.statusCode ?? 202;
+	const bggError = bggCollectionQuery.error;
 
 	const [filterCollected, setFilterCollected] = useState<boolean>(true);
 
@@ -87,7 +87,6 @@ export const useList = ({ username, onSuccess }: Props) => {
 			await invalidator.invalidateDashboard();
 
 			successToast("games:import.success");
-			onSuccess?.();
 		},
 		onError() {
 			errorToast("games:import.failed");
@@ -98,6 +97,7 @@ export const useList = ({ username, onSuccess }: Props) => {
 		games,
 		settings,
 		statusCode,
+		bggError,
 		updateGame,
 		filterCollected,
 		setFilterCollected,

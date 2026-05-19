@@ -1,5 +1,5 @@
 import { cx } from "class-variance-authority";
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef, CSSProperties } from "react";
 
 import { StringToRgb } from "../../utils/stringUtils";
 
@@ -13,10 +13,12 @@ export const BgtPoster = (props: Props) => {
 
 	return (
 		<div
-			style={{
-				"--image-url": `url(${image})`,
-				"--fallback-color": StringToRgb(title),
-			}}
+			style={
+				{
+					"--image-url": `url(${image})`,
+					"--fallback-color": StringToRgb(title),
+				} as CSSProperties
+			}
 			className={cx(
 				className,
 				"relative overflow-hidden aspect-square rounded-xl flex justify-center flex-col px-3 w-full bg-cover bg-no-repeat bg-center",

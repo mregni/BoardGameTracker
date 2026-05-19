@@ -1,5 +1,3 @@
-using BoardGameTracker.Common.Enums;
-
 namespace BoardGameTracker.Common.DTOs;
 
 public class SessionDto

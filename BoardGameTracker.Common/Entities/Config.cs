@@ -11,5 +11,5 @@ public class Config: HasId
         get => _key;
         set => _key = value.ToLowerInvariant();
     }
-    public required string Value { get; set; }
+    public string Value { get; set; }
 }

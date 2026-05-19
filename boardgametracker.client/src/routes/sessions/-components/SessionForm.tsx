@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtCenteredCard } from "@/components/BgtCard/BgtCenteredCard";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
@@ -15,7 +15,6 @@ import {
 	type Expansion,
 	type Game,
 } from "@/models";
-
 import { handleFormSubmit } from "@/utils/formUtils";
 import { useSessionForm } from "../-hooks/useSessionForm";
 import { useSessionFormState } from "../-hooks/useSessionFormState";
@@ -108,7 +107,7 @@ export const SessionForm = (props: Props) => {
 	return (
 		<BgtPage>
 			<BgtPageContent centered>
-				<BgtCenteredCard title={title}>
+				<BgtCard title={title}>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-3 w-full">
 							<SessionFormFields form={form} games={games} locations={locations} disabled={disabled} />
@@ -155,7 +154,7 @@ export const SessionForm = (props: Props) => {
 							</div>
 						</div>
 					</form>
-				</BgtCenteredCard>
+				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
 	);

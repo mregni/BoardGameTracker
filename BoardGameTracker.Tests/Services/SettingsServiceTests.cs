@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
@@ -5,7 +6,6 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Settings;
-using BoardGameTracker.Core.Updates.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -16,7 +16,6 @@ namespace BoardGameTracker.Tests.Services;
 public class SettingsServiceTests
 {
     private readonly Mock<IConfigRepository> _configRepositoryMock;
-    private readonly Mock<IUpdateService> _updateServiceMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly Mock<ILogger<SettingsService>> _loggerMock;
     private readonly SettingsService _settingsService;
@@ -24,21 +23,22 @@ public class SettingsServiceTests
     public SettingsServiceTests()
     {
         _configRepositoryMock = new Mock<IConfigRepository>();
-        _updateServiceMock = new Mock<IUpdateService>();
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
+            .ReturnsAsync(string.Empty);
         _environmentProviderMock = new Mock<IEnvironmentProvider>();
         _loggerMock = new Mock<ILogger<SettingsService>>();
 
         _settingsService = new SettingsService(
             _configRepositoryMock.Object,
-            _updateServiceMock.Object,
             _environmentProviderMock.Object,
             _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey), Times.AtMostOnce());
         _configRepositoryMock.VerifyNoOtherCalls();
-        _updateServiceMock.VerifyNoOtherCalls();
         _environmentProviderMock.VerifyNoOtherCalls();
     }
 
@@ -202,8 +202,16 @@ public class SettingsServiceTests
             .Setup(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled))
             .Returns(Task.CompletedTask);
 
-        _updateServiceMock
-            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack))
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(Constants.UpdateConfig.CheckEnabled, model.UpdateCheckEnabled))
+            .Returns(Task.CompletedTask);
+
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(Constants.UpdateConfig.Track, model.VersionTrack))
+            .Returns(Task.CompletedTask);
+
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, It.IsAny<string>()))
             .Returns(Task.CompletedTask);
 
         _configRepositoryMock
@@ -222,8 +230,10 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.UpdateConfig.CheckEnabled, model.UpdateCheckEnabled), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.UpdateConfig.Track, model.VersionTrack), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, It.IsAny<string>()), Times.Once);
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
-        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
         _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
         VerifyNoOtherCalls();
     }
@@ -282,8 +292,16 @@ public class SettingsServiceTests
             .Setup(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled))
             .Returns(Task.CompletedTask);
 
-        _updateServiceMock
-            .Setup(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack))
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(Constants.UpdateConfig.CheckEnabled, model.UpdateCheckEnabled))
+            .Returns(Task.CompletedTask);
+
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(Constants.UpdateConfig.Track, model.VersionTrack))
+            .Returns(Task.CompletedTask);
+
+        _configRepositoryMock
+            .Setup(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, It.IsAny<string>()))
             .Returns(Task.CompletedTask);
 
         _configRepositoryMock
@@ -302,9 +320,189 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.UpdateConfig.CheckEnabled, model.UpdateCheckEnabled), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.UpdateConfig.Track, model.VersionTrack), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, It.IsAny<string>()), Times.Once);
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
-        _updateServiceMock.Verify(x => x.UpdateSettingsAsync(model.UpdateCheckEnabled, model.VersionTrack), Times.Once);
         _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region GetBggApiKeyAsync Tests
+
+    private static async Task<T> WithBggEnvApiKey<T>(string? value, Func<Task<T>> action)
+    {
+        var original = Environment.GetEnvironmentVariable(Constants.BggConfig.EnvApiKeyName);
+        Environment.SetEnvironmentVariable(Constants.BggConfig.EnvApiKeyName, value);
+        try
+        {
+            return await action();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(Constants.BggConfig.EnvApiKeyName, original);
+        }
+    }
+
+    [Fact]
+    public async Task GetBggApiKeyAsync_ShouldReturnDbValue_WhenEnvVariableNotSet()
+    {
+        // Arrange
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
+            .ReturnsAsync("db-api-key");
+
+        // Act
+        var result = await WithBggEnvApiKey(null, () => _settingsService.GetBggApiKeyAsync());
+
+        // Assert
+        result.Should().Be("db-api-key");
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetBggApiKeyAsync_ShouldReturnTrimmedEnvValue_WhenEnvVariableSet()
+    {
+        // Act
+        var result = await WithBggEnvApiKey("  env-api-key  ", () => _settingsService.GetBggApiKeyAsync());
+
+        // Assert
+        result.Should().Be("env-api-key");
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetBggApiKeyAsync_ShouldReturnNull_WhenNeitherEnvNorDbValueSet()
+    {
+        // Arrange
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
+            .ReturnsAsync((string)null!);
+
+        // Act
+        var result = await WithBggEnvApiKey(null, () => _settingsService.GetBggApiKeyAsync());
+
+        // Assert
+        result.Should().BeNull();
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region IsBggEnabled Tests
+
+    [Fact]
+    public async Task IsBggEnabled_ShouldReturnTrue_WhenApiKeyIsConfigured()
+    {
+        // Arrange
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
+            .ReturnsAsync("some-api-key");
+
+        // Act
+        var result = await WithBggEnvApiKey(null, () => _settingsService.IsBggEnabled());
+
+        // Assert
+        result.Should().BeTrue();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task IsBggEnabled_ShouldReturnFalse_WhenApiKeyIsEmpty()
+    {
+        // Act (constructor default returns string.Empty for the API key)
+        var result = await WithBggEnvApiKey(null, () => _settingsService.IsBggEnabled());
+
+        // Assert
+        result.Should().BeFalse();
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region GetBggConfigStatus Tests
+
+    [Fact]
+    public async Task GetSettingsAsync_ShouldReturnEnvBggStatus_WhenApiKeyEnvVariableIsSet()
+    {
+        // Arrange
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+        _environmentProviderMock
+            .Setup(x => x.StatisticsEnabled)
+            .Returns(true);
+
+        // Act
+        var result = await WithBggEnvApiKey("env-api-key", () => _settingsService.GetSettingsAsync());
+
+        // Assert
+        result.BggStatus.Should().NotBeNull();
+        result.BggStatus.IsConfigured.Should().BeTrue();
+        result.BggStatus.Source.Should().Be("env");
+        result.BggStatus.IsReadOnly.Should().BeTrue();
+
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        _environmentProviderMock.Verify(x => x.StatisticsEnabled, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetSettingsAsync_ShouldReturnDbBggStatus_WhenApiKeyIsStoredInDatabase()
+    {
+        // Arrange
+        var configs = new Dictionary<string, string>
+        {
+            { Constants.BggConfig.ApiKey, "db-api-key" }
+        };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(configs);
+        _environmentProviderMock
+            .Setup(x => x.StatisticsEnabled)
+            .Returns(true);
+
+        // Act
+        var result = await WithBggEnvApiKey(null, () => _settingsService.GetSettingsAsync());
+
+        // Assert
+        result.BggStatus.Should().NotBeNull();
+        result.BggStatus.IsConfigured.Should().BeTrue();
+        result.BggStatus.Source.Should().Be("db");
+        result.BggStatus.IsReadOnly.Should().BeFalse();
+
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        _environmentProviderMock.Verify(x => x.StatisticsEnabled, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetSettingsAsync_ShouldReturnNoneBggStatus_WhenApiKeyIsNotConfigured()
+    {
+        // Arrange
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+        _environmentProviderMock
+            .Setup(x => x.StatisticsEnabled)
+            .Returns(true);
+
+        // Act
+        var result = await WithBggEnvApiKey(null, () => _settingsService.GetSettingsAsync());
+
+        // Assert
+        result.BggStatus.Should().NotBeNull();
+        result.BggStatus.IsConfigured.Should().BeFalse();
+        result.BggStatus.Source.Should().Be("none");
+        result.BggStatus.IsReadOnly.Should().BeFalse();
+
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        _environmentProviderMock.Verify(x => x.StatisticsEnabled, Times.Once);
         VerifyNoOtherCalls();
     }
 

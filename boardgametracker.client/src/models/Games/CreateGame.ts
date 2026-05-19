@@ -5,22 +5,20 @@ import { GameState } from "./GameState";
 export const CreateGameSchema = z.object({
 	title: z
 		.string({
-			required_error: "game:new.manual.game-title.required",
+			error: "game:new.manual.game-title.required",
 		})
 		.min(1, { message: "game:new.manual.game-title.required" }),
 	bggId: z.number().int().optional(),
 	buyingPrice: z.coerce.number({
-		invalid_type_error: "game:price.required",
+		error: "game:price.required",
 	}),
 	additionDate: z.coerce.date({
-		errorMap: () => ({
-			message: "game:added-date.required",
-		}),
+		error: "game:added-date.required",
 	}),
 	state: z.nativeEnum(GameState),
 	yearPublished: z.coerce
 		.number({
-			required_error: "game:new.manual.year.required",
+			error: "game:new.manual.year.required",
 		})
 		.min(1, { message: "game:new.manual.year.required" }),
 	description: z.string().optional(),

@@ -52,7 +52,7 @@ export const BggGameModal = (props: ModalProps) => {
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = BggSearchSchema.parse(value);
-			await save(validatedData);
+			await save(validatedData).catch(() => {});
 		},
 	});
 

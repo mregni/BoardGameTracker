@@ -18,6 +18,8 @@ public static class ConfigDefaults
         new(AppConfig.PublicUrl, "http://localhost:5444"),
         new(AppConfig.RsvpAuthenticationEnabled, "false"),
 
+        new(BggConfig.ApiKey, ""),
+
         new(UpdateConfig.Track, "stable"),
         new(UpdateConfig.CheckEnabled, "true"),
         new(UpdateConfig.CheckIntervalHours, "24"),

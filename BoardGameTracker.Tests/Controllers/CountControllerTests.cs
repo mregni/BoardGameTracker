@@ -201,7 +201,7 @@ public class CountControllerTests
 
             // Assert
             var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-            var counts = okResult.Value.Should().BeAssignableTo<BoardGameTracker.Common.DTOs.KeyValuePairDto<int>[]>().Subject;
+            var counts = okResult.Value.Should().BeAssignableTo<Common.DTOs.KeyValuePairDto<int>[]>().Subject;
 
             counts.Should().HaveCount(6);
             counts[0].Key.Should().Be("games");

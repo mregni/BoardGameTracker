@@ -364,8 +364,8 @@ public class GameControllerTests
         var gameId = 1;
         var expansions = new[]
         {
-            new BggLink { Id = 100, Value = "Expansion 1" },
-            new BggLink { Id = 101, Value = "Expansion 2" }
+            new ExpansionData { BggId = 100, Title = "Expansion 1" },
+            new ExpansionData { BggId = 101, Title = "Expansion 2" }
         };
 
         _gameServiceMock
@@ -377,7 +377,7 @@ public class GameControllerTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedExpansions = okResult.Value.Should().BeAssignableTo<BggLink[]>().Subject;
+        var returnedExpansions = okResult.Value.Should().BeAssignableTo<ExpansionData[]>().Subject;
 
         returnedExpansions.Should().HaveCount(2);
 
@@ -563,80 +563,15 @@ public class GameControllerTests
     #region SearchOnBgg Tests
 
     [Fact]
-    public async Task SearchOnBgg_ShouldReturnExistingGame_WhenGameAlreadyExists()
+    public async Task SearchOnBgg_ShouldReturnGame_WhenImportSucceeds()
     {
         // Arrange
         var search = new BggSearch { BggId = 123 };
-        var existingGame = new Game("Existing Game", true) { Id = 1 };
+        var game = new Game("BGG Game", true) { Id = 1 };
 
         _bggImportServiceMock
-            .Setup(x => x.GetGameByBggId(search.BggId))
-            .ReturnsAsync(existingGame);
-
-        // Act
-        var result = await _controller.SearchOnBgg(search);
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var gameDto = okResult.Value.Should().BeAssignableTo<GameDto>().Subject;
-
-        gameDto.Title.Should().Be("Existing Game");
-
-        _bggImportServiceMock.Verify(x => x.GetGameByBggId(search.BggId), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task SearchOnBgg_ShouldReturnBadRequest_WhenGameNotFoundOnBgg()
-    {
-        // Arrange
-        var search = new BggSearch { BggId = 999 };
-
-        _bggImportServiceMock
-            .Setup(x => x.GetGameByBggId(search.BggId))
-            .ReturnsAsync((Game?)null);
-
-        _bggImportServiceMock
-            .Setup(x => x.SearchGame(search.BggId))
-            .ReturnsAsync((BggGame?)null);
-
-        // Act
-        var result = await _controller.SearchOnBgg(search);
-
-        // Assert
-        result.Should().BeOfType<BadRequestResult>();
-
-        _bggImportServiceMock.Verify(x => x.GetGameByBggId(search.BggId), Times.Once);
-        _bggImportServiceMock.Verify(x => x.SearchGame(search.BggId), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task SearchOnBgg_ShouldReturnNewGame_WhenGameFoundOnBgg()
-    {
-        // Arrange
-        var search = new BggSearch { BggId = 123 };
-        var bggGame = new BggGame
-        {
-            BggId = 123,
-            Names = ["BGG Game"],
-            Thumbnail = "https://example.com/thumb.jpg",
-            Image = "https://example.com/img.jpg",
-            Description = "A great game"
-        };
-        var newGame = new Game("BGG Game", true) { Id = 1 };
-
-        _bggImportServiceMock
-            .Setup(x => x.GetGameByBggId(search.BggId))
-            .ReturnsAsync((Game?)null);
-
-        _bggImportServiceMock
-            .Setup(x => x.SearchGame(search.BggId))
-            .ReturnsAsync(bggGame);
-
-        _bggImportServiceMock
-            .Setup(x => x.SearchOnBgg(bggGame, search))
-            .ReturnsAsync(newGame);
+            .Setup(x => x.ImportGameFromBgg(search))
+            .ReturnsAsync(game);
 
         // Act
         var result = await _controller.SearchOnBgg(search);
@@ -647,9 +582,27 @@ public class GameControllerTests
 
         gameDto.Title.Should().Be("BGG Game");
 
-        _bggImportServiceMock.Verify(x => x.GetGameByBggId(search.BggId), Times.Once);
-        _bggImportServiceMock.Verify(x => x.SearchGame(search.BggId), Times.Once);
-        _bggImportServiceMock.Verify(x => x.SearchOnBgg(bggGame, search), Times.Once);
+        _bggImportServiceMock.Verify(x => x.ImportGameFromBgg(search), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SearchOnBgg_ShouldReturnBadRequest_WhenGameNotFoundOnBgg()
+    {
+        // Arrange
+        var search = new BggSearch { BggId = 999 };
+
+        _bggImportServiceMock
+            .Setup(x => x.ImportGameFromBgg(search))
+            .ReturnsAsync((Game?)null);
+
+        // Act
+        var result = await _controller.SearchOnBgg(search);
+
+        // Assert
+        result.Should().BeOfType<BadRequestResult>();
+
+        _bggImportServiceMock.Verify(x => x.ImportGameFromBgg(search), Times.Once);
         VerifyNoOtherCalls();
     }
 

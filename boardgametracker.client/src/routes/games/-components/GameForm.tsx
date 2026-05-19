@@ -3,13 +3,14 @@ import { useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtCenteredCard } from "@/components/BgtCard/BgtCenteredCard";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtImageSelector, BgtSwitch } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
 import type { Game } from "@/models";
 import { type CreateGame, CreateGameSchema } from "@/models/Games/CreateGame";
+import { GameState } from "@/models/Games/GameState";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
@@ -42,7 +43,7 @@ export const GameForm = (props: Props) => {
 			title: game?.title ?? "",
 			hasScoring: game?.hasScoring ?? true,
 			description: game?.description ?? "",
-			state: game?.state ?? 0,
+			state: game?.state ?? GameState.Wanted,
 			yearPublished: game?.yearPublished ?? undefined,
 			maxPlayers: game?.maxPlayers ?? undefined,
 			minPlayers: game?.minPlayers ?? undefined,
@@ -68,7 +69,7 @@ export const GameForm = (props: Props) => {
 	return (
 		<BgtPage>
 			<BgtPageContent centered>
-				<BgtCenteredCard title={title}>
+				<BgtCard title={title}>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-3 w-full">
 							<div className="flex flex-row gap-3">
@@ -108,7 +109,7 @@ export const GameForm = (props: Props) => {
 							</div>
 						</div>
 					</form>
-				</BgtCenteredCard>
+				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
 	);

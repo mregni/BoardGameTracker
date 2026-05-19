@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 
-import type { Badge } from "@/models";
+import { type Badge, BadgeLevel } from "@/models";
 
 export interface BadgeWithEarnedStatus extends Badge {
 	earned: boolean;
 }
+
+const levelOrder: BadgeLevel[] = [BadgeLevel.green, BadgeLevel.blue, BadgeLevel.red, BadgeLevel.gold];
 
 export const useBadgeEarnedStatus = (allBadges: Badge[], playerBadges: Badge[]): BadgeWithEarnedStatus[] => {
 	return useMemo(() => {
@@ -17,14 +19,14 @@ export const useBadgeEarnedStatus = (allBadges: Badge[], playerBadges: Badge[]):
 
 		return badgesWithStatus.sort((a, b) => {
 			if (a.type !== b.type) {
-				return a.type - b.type;
+				return a.type.localeCompare(b.type);
 			}
 
 			if (a.level === null && b.level === null) return 0;
 			if (a.level === null) return 1;
 			if (b.level === null) return -1;
 
-			return a.level - b.level;
+			return levelOrder.indexOf(a.level) - levelOrder.indexOf(b.level);
 		});
 	}, [allBadges, playerBadges]);
 };

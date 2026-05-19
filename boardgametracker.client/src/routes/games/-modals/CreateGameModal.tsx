@@ -1,6 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import Database from "@/assets/icons/database.svg?react";
+import Keyboard from "@/assets/icons/keyboard.svg?react";
+import MagnifyingGlass from "@/assets/icons/magnifying-glass.svg?react";
 import BgtBigButton from "@/components/BgtButton/BgtBigButton";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import {
@@ -10,16 +13,21 @@ import {
 	BgtDialogDescription,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
+import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import type { ModalProps } from "@/models";
+import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 
 interface Props extends ModalProps {
+	bggEnabled: boolean;
 	openBgg: () => void;
 	openManual: () => void;
 }
 
 const CreateGameModal = (props: Props) => {
-	const { open, close, openBgg, openManual } = props;
-	const { t } = useTranslation(["game", "common"]);
+	const { open, close, bggEnabled, openBgg, openManual } = props;
+	const { settings } = useSettingsData();
+
+	const { t } = useTranslation(["game", "common", "settings"]);
 	const navigate = useNavigate();
 
 	const handleBggImport = useCallback(() => {
@@ -32,12 +40,33 @@ const CreateGameModal = (props: Props) => {
 				<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
 				<BgtDialogDescription>{t("new.description")}</BgtDialogDescription>
 				<div className="flex flex-col gap-4 mt-3 mb-3">
-					<BgtBigButton title={t("new.bgg-title")} subText={t("new.bgg-subtext")} onClick={openBgg} />
-					<BgtBigButton title={t("new.manual-title")} subText={t("new.manual-subtext")} onClick={openManual} />
+					{!settings?.bggStatus.isConfigured && (
+						<BgtStatus
+							variant={"warning"}
+							title={t("settings:bgg.status.not-configured")}
+							description={t("settings:bgg.status.not-configured-description")}
+						/>
+					)}
+
+					<BgtBigButton
+						title={t("new.bgg-title")}
+						subText={t("new.bgg-subtext")}
+						icon={MagnifyingGlass}
+						onClick={openBgg}
+						disabled={!bggEnabled}
+					/>
+					<BgtBigButton
+						title={t("new.manual-title")}
+						subText={t("new.manual-subtext")}
+						icon={Keyboard}
+						onClick={openManual}
+					/>
 					<BgtBigButton
 						title={t("new.bgg-import-title")}
 						subText={t("new.bgg-import-subtext")}
+						icon={Database}
 						onClick={handleBggImport}
+						disabled={!bggEnabled}
 					/>
 				</div>
 				<BgtDialogClose>

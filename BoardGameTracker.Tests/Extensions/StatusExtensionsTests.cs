@@ -1,6 +1,7 @@
+using System;
+using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
-using BoardGameTracker.Common.Models.Bgg;
 using FluentAssertions;
 using Xunit;
 
@@ -9,16 +10,16 @@ namespace BoardGameTracker.Tests.Extensions;
 public class StatusExtensionsTests
 {
     [Fact]
-    public void ToGameState_ShouldReturnPreviouslyOwned_WhenPrevownedIs1()
+    public void ToGameState_ShouldReturnPreviouslyOwned_WhenPreviouslyOwnedIsTrue()
     {
         // Arrange
-        var status = new Status
+        var status = new CollectionResponse.Status
         {
-            Prevowned = 1,
-            Fortrade = 0,
-            Want = 0,
-            Own = 0,
-            LastModified = "2023-01-01 00:00:00"
+            PreviouslyOwned = true,
+            ForTrade = false,
+            Want = false,
+            Owned = false,
+            LastModified = new DateTime(2023, 1, 1)
         };
 
         // Act
@@ -29,16 +30,16 @@ public class StatusExtensionsTests
     }
 
     [Fact]
-    public void ToGameState_ShouldReturnForTrade_WhenFortradeIs1()
+    public void ToGameState_ShouldReturnForTrade_WhenForTradeIsTrue()
     {
         // Arrange
-        var status = new Status
+        var status = new CollectionResponse.Status
         {
-            Prevowned = 0,
-            Fortrade = 1,
-            Want = 0,
-            Own = 0,
-            LastModified = "2023-01-01 00:00:00"
+            PreviouslyOwned = false,
+            ForTrade = true,
+            Want = false,
+            Owned = false,
+            LastModified = new DateTime(2023, 1, 1)
         };
 
         // Act
@@ -49,16 +50,16 @@ public class StatusExtensionsTests
     }
 
     [Fact]
-    public void ToGameState_ShouldReturnWanted_WhenWantIs1()
+    public void ToGameState_ShouldReturnWanted_WhenWantIsTrue()
     {
         // Arrange
-        var status = new Status
+        var status = new CollectionResponse.Status
         {
-            Prevowned = 0,
-            Fortrade = 0,
-            Want = 1,
-            Own = 0,
-            LastModified = "2023-01-01 00:00:00"
+            PreviouslyOwned = false,
+            ForTrade = false,
+            Want = true,
+            Owned = false,
+            LastModified = new DateTime(2023, 1, 1)
         };
 
         // Act
@@ -72,13 +73,13 @@ public class StatusExtensionsTests
     public void ToGameState_ShouldReturnOwned_WhenNoOtherStatusSet()
     {
         // Arrange
-        var status = new Status
+        var status = new CollectionResponse.Status
         {
-            Prevowned = 0,
-            Fortrade = 0,
-            Want = 0,
-            Own = 1,
-            LastModified = "2023-01-01 00:00:00"
+            PreviouslyOwned = false,
+            ForTrade = false,
+            Want = false,
+            Owned = true,
+            LastModified = new DateTime(2023, 1, 1)
         };
 
         // Act
@@ -89,16 +90,16 @@ public class StatusExtensionsTests
     }
 
     [Fact]
-    public void ToGameState_ShouldReturnOwned_WhenAllStatusAreZero()
+    public void ToGameState_ShouldReturnOwned_WhenAllStatusAreFalse()
     {
         // Arrange
-        var status = new Status
+        var status = new CollectionResponse.Status
         {
-            Prevowned = 0,
-            Fortrade = 0,
-            Want = 0,
-            Own = 0,
-            LastModified = "2023-01-01 00:00:00"
+            PreviouslyOwned = false,
+            ForTrade = false,
+            Want = false,
+            Owned = false,
+            LastModified = new DateTime(2023, 1, 1)
         };
 
         // Act
@@ -112,13 +113,13 @@ public class StatusExtensionsTests
     public void ToGameState_ShouldPrioritizePreviouslyOwned_WhenMultipleStatusSet()
     {
         // Arrange - All flags set, should prioritize PreviouslyOwned
-        var status = new Status
+        var status = new CollectionResponse.Status
         {
-            Prevowned = 1,
-            Fortrade = 1,
-            Want = 1,
-            Own = 1,
-            LastModified = "2023-01-01 00:00:00"
+            PreviouslyOwned = true,
+            ForTrade = true,
+            Want = true,
+            Owned = true,
+            LastModified = new DateTime(2023, 1, 1)
         };
 
         // Act
@@ -132,13 +133,13 @@ public class StatusExtensionsTests
     public void ToGameState_ShouldPrioritizeForTrade_OverWantedAndOwned()
     {
         // Arrange
-        var status = new Status
+        var status = new CollectionResponse.Status
         {
-            Prevowned = 0,
-            Fortrade = 1,
-            Want = 1,
-            Own = 1,
-            LastModified = "2023-01-01 00:00:00"
+            PreviouslyOwned = false,
+            ForTrade = true,
+            Want = true,
+            Owned = true,
+            LastModified = new DateTime(2023, 1, 1)
         };
 
         // Act
@@ -152,13 +153,13 @@ public class StatusExtensionsTests
     public void ToGameState_ShouldPrioritizeWanted_OverOwned()
     {
         // Arrange
-        var status = new Status
+        var status = new CollectionResponse.Status
         {
-            Prevowned = 0,
-            Fortrade = 0,
-            Want = 1,
-            Own = 1,
-            LastModified = "2023-01-01 00:00:00"
+            PreviouslyOwned = false,
+            ForTrade = false,
+            Want = true,
+            Owned = true,
+            LastModified = new DateTime(2023, 1, 1)
         };
 
         // Act

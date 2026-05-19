@@ -24,7 +24,7 @@ const ImagePreview = (props: ImagePreviewProps) => {
 			<div className="absolute top-0 left-0 w-full h-full collapse group-hover:visible">
 				<div className="flex justify-center items-center w-full h-full">
 					<BgtIconButton
-						size="big"
+						size="2"
 						className="rounded-full! border-solid border bg-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.6)]"
 						icon={<TrashIcon className="size-5" color="white" />}
 						onClick={onRemove}
