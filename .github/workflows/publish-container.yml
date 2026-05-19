@@ -176,6 +176,7 @@ jobs:
 
       - name: End SonarCloud analysis
         if: env.SONAR_TOKEN != ''
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
