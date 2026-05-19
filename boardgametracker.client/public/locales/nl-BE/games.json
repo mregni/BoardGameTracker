@@ -15,7 +15,10 @@
       "button": "Import games"
     },
     "start-import": "Start import ({{count}}/{{totalCount}})",
-    "intro": "We found {{count}} games in your BGG collection, {{collectionCount}} are already included in your local collection. Select what games you want to import. Select max {{maxImport}} games at any time, this is to prevent stress on the bgg website."
+    "intro": "We found {{count}} games in your BGG collection, {{collectionCount}} are already included in your local collection. Select what games you want to import. Select max {{maxImport}} games at any time, this is to prevent stress on the bgg website.",
+    "error-title": "Failed to load BGG collection",
+    "error-description": "Something went wrong while fetching your collection from BoardGameGeek. Please check your API key in settings and try again.",
+    "hide-collected": "Hide games that are in your collection already"
   },
   "title": "Games",
   "new": "Add new game",
