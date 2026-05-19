@@ -139,10 +139,10 @@ dotnet add package Microsoft.EntityFrameworkCore.Design
 
 ```bash
 cd ../
-npm create vite@latest frontend -- --template react-ts
+pnpm create vite frontend --template react-ts
 cd frontend
-npm install @tanstack/react-router axios zustand
-npm install -D @tanstack/router-plugin
+pnpm add @tanstack/react-router axios zustand
+pnpm add -D @tanstack/router-plugin
 ```
 
 ---
@@ -793,11 +793,11 @@ Create `src/frontend/Dockerfile`:
 FROM node:20-alpine AS build
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
 
 COPY . .
-RUN npm run build
+RUN pnpm build
 
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
@@ -1917,7 +1917,7 @@ dotnet ef database update
 
 ```bash
 cd src/frontend
-npm install @tanstack/react-router axios zustand
+pnpm add @tanstack/react-router axios zustand
 ```
 
 ### Step 7.2: Create Axios Instance with Interceptors
@@ -2751,7 +2751,7 @@ export default defineConfig({
 Install the router plugin:
 
 ```bash
-npm install -D @tanstack/router-plugin
+pnpm add -D @tanstack/router-plugin
 ```
 
 The route tree will be auto-generated when you run the dev server.

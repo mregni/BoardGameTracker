@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "pnpm@10.11.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -15,7 +16,7 @@
     "class-variance-authority": "^0.7.1",
     "i18next": "^26.0.0",
     "i18next-browser-languagedetector": "^8.2.1",
-    "i18next-http-backend": "^3.0.2",
+    "i18next-http-backend": "^3.0.5",
     "lucide-react": "^1.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
