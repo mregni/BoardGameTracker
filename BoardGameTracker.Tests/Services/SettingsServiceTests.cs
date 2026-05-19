@@ -424,4 +424,87 @@ public class SettingsServiceTests
     }
 
     #endregion
+
+    #region GetBggConfigStatus Tests
+
+    [Fact]
+    public async Task GetSettingsAsync_ShouldReturnEnvBggStatus_WhenApiKeyEnvVariableIsSet()
+    {
+        // Arrange
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+        _environmentProviderMock
+            .Setup(x => x.StatisticsEnabled)
+            .Returns(true);
+
+        // Act
+        var result = await WithBggEnvApiKey("env-api-key", () => _settingsService.GetSettingsAsync());
+
+        // Assert
+        result.BggStatus.Should().NotBeNull();
+        result.BggStatus.IsConfigured.Should().BeTrue();
+        result.BggStatus.Source.Should().Be("env");
+        result.BggStatus.IsReadOnly.Should().BeTrue();
+
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        _environmentProviderMock.Verify(x => x.StatisticsEnabled, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetSettingsAsync_ShouldReturnDbBggStatus_WhenApiKeyIsStoredInDatabase()
+    {
+        // Arrange
+        var configs = new Dictionary<string, string>
+        {
+            { Constants.BggConfig.ApiKey, "db-api-key" }
+        };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(configs);
+        _environmentProviderMock
+            .Setup(x => x.StatisticsEnabled)
+            .Returns(true);
+
+        // Act
+        var result = await WithBggEnvApiKey(null, () => _settingsService.GetSettingsAsync());
+
+        // Assert
+        result.BggStatus.Should().NotBeNull();
+        result.BggStatus.IsConfigured.Should().BeTrue();
+        result.BggStatus.Source.Should().Be("db");
+        result.BggStatus.IsReadOnly.Should().BeFalse();
+
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        _environmentProviderMock.Verify(x => x.StatisticsEnabled, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetSettingsAsync_ShouldReturnNoneBggStatus_WhenApiKeyIsNotConfigured()
+    {
+        // Arrange
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+        _environmentProviderMock
+            .Setup(x => x.StatisticsEnabled)
+            .Returns(true);
+
+        // Act
+        var result = await WithBggEnvApiKey(null, () => _settingsService.GetSettingsAsync());
+
+        // Assert
+        result.BggStatus.Should().NotBeNull();
+        result.BggStatus.IsConfigured.Should().BeFalse();
+        result.BggStatus.Source.Should().Be("none");
+        result.BggStatus.IsReadOnly.Should().BeFalse();
+
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        _environmentProviderMock.Verify(x => x.StatisticsEnabled, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
 }

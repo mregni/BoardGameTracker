@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
@@ -283,6 +284,49 @@ public class BggImportServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task ImportGameFromBgg_ShouldThrowValidationException_WhenBggReturnsUnauthorized()
+    {
+        var search = new BggSearch { BggId = 12345, State = GameState.Owned, HasScoring = true };
+
+        _gameRepositoryMock
+            .Setup(x => x.GetGameByBggId(12345))
+            .ReturnsAsync((Game?)null);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ThrowsAsync(new BoardGameGeekHttpException("Unauthorized", HttpStatusCode.Unauthorized));
+
+        var act = async () => await _bggImportService.ImportGameFromBgg(search);
+
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage("Invalid BGG API key. Please check your API key in settings.");
+
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(12345), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportGameFromBgg_ShouldReturnNull_WhenBggHttpRequestFails()
+    {
+        var search = new BggSearch { BggId = 12345, State = GameState.Owned, HasScoring = false };
+
+        _gameRepositoryMock
+            .Setup(x => x.GetGameByBggId(12345))
+            .ReturnsAsync((Game?)null);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ThrowsAsync(new BoardGameGeekHttpException("Service unavailable", HttpStatusCode.ServiceUnavailable));
+
+        var result = await _bggImportService.ImportGameFromBgg(search);
+
+        result.Should().BeNull();
+
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(12345), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region ImportBggCollection Tests
@@ -518,6 +562,41 @@ public class BggImportServiceTests
 
         await act.Should().ThrowAsync<BggFeatureDisabledException>();
 
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBggCollection_ShouldThrowValidationException_WhenBggReturnsUnauthorized()
+    {
+        const string userName = "testuser";
+
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ThrowsAsync(new BoardGameGeekHttpException("Unauthorized", HttpStatusCode.Unauthorized));
+
+        var act = async () => await _bggImportService.ImportBggCollection(userName);
+
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage("Invalid BGG API key. Please check your API key in settings.");
+
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBggCollection_ShouldReturnNull_WhenBggHttpRequestFails()
+    {
+        const string userName = "testuser";
+
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ThrowsAsync(new BoardGameGeekHttpException("Service unavailable", HttpStatusCode.ServiceUnavailable));
+
+        var result = await _bggImportService.ImportBggCollection(userName);
+
+        result.Should().BeNull();
+
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
