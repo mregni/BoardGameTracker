@@ -52,9 +52,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="images\badges\" />
-    </ItemGroup>
-    <ItemGroup>
-        <Folder Include="images\common\" />
+        <Content Include="images\**\*.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
     </ItemGroup>
 </Project>
