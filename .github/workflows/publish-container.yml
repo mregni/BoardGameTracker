@@ -18,7 +18,7 @@ on:
 env:
   REGISTRY: ${{ vars.DOCKER_REGISTRY || 'docker.io' }}
   IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME || 'uping/boardgametracker' }}
-  IS_STABLE: ${{ github.event_name == 'workflow_dispatch' && inputs.stable_release == true }}
+  IS_STABLE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.stable_release == 'true' }}
 
 jobs:
   version:

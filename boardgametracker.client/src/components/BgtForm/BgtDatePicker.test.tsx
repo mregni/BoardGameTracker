@@ -15,10 +15,6 @@ vi.mock("@/services/queries/settings", () => ({
 	}),
 }));
 
-vi.mock("@/utils/localeUtils", () => ({
-	getDateFnsLocale: () => undefined,
-}));
-
 const createMockField = (value: string = "", errors: string[] = []) =>
 	({
 		state: {
@@ -51,34 +47,33 @@ describe("BgtDatePicker", () => {
 			expect(screen.getByText("Select Date")).toBeInTheDocument();
 		});
 
-		it("should render the placeholder when no date is selected", () => {
+		it("should render the calendar trigger button", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
-			expect(screen.getByPlaceholderText("Pick a date")).toBeInTheDocument();
+			expect(screen.getByLabelText("Open calendar")).toBeInTheDocument();
 		});
 
-		it("should render calendar icon", () => {
+		it("should render segmented date input", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
-			const button = screen.getByRole("button");
-			expect(button).toBeInTheDocument();
+			// react-aria DateSegment renders each segment as role="spinbutton" (day/month/year)
+			const segments = screen.getAllByRole("spinbutton");
+			expect(segments.length).toBeGreaterThanOrEqual(3);
 		});
 
-		it("should render with custom className", () => {
+		it("should apply custom className to the input group", () => {
 			const { container } = renderWithProviders(<BgtDatePicker {...defaultProps} className="custom-class" />);
 			expect(container.querySelector(".custom-class")).toBeInTheDocument();
 		});
 	});
 
 	describe("Disabled State", () => {
-		it("should disable the button when disabled is true", () => {
-			renderWithProviders(<BgtDatePicker {...defaultProps} disabled={true} />);
-			const button = screen.getByRole("button");
-			expect(button).toBeDisabled();
+		it("should disable the calendar button when disabled is true", () => {
+			renderWithProviders(<BgtDatePicker {...defaultProps} disabled />);
+			expect(screen.getByLabelText("Open calendar")).toBeDisabled();
 		});
 
-		it("should enable the button when disabled is false", () => {
-			renderWithProviders(<BgtDatePicker {...defaultProps} disabled={false} />);
-			const button = screen.getByRole("button");
-			expect(button).not.toBeDisabled();
+		it("should not disable the calendar button by default", () => {
+			renderWithProviders(<BgtDatePicker {...defaultProps} />);
+			expect(screen.getByLabelText("Open calendar")).not.toBeDisabled();
 		});
 	});
 
@@ -92,164 +87,78 @@ describe("BgtDatePicker", () => {
 
 		it("should not display error messages when field has no errors", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
-
 			expect(screen.queryByText("Date is required")).not.toBeInTheDocument();
 		});
 	});
 
 	describe("Popover Interaction", () => {
-		it("should open calendar popover when button is clicked", async () => {
+		it("should open the calendar popover when the calendar button is clicked", async () => {
 			const user = userEvent.setup();
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
 
-			await user.click(screen.getByRole("button"));
+			await user.click(screen.getByLabelText("Open calendar"));
 
 			await waitFor(() => {
-				// The DayPicker should be visible
-				expect(screen.getByRole("grid")).toBeInTheDocument();
+				expect(screen.getByRole("dialog")).toBeInTheDocument();
 			});
+			expect(screen.getByRole("grid")).toBeInTheDocument();
 		});
 
-		it("should not open popover when disabled", async () => {
+		it("should not open the popover when disabled", async () => {
 			const user = userEvent.setup();
-			renderWithProviders(<BgtDatePicker {...defaultProps} disabled={true} />);
+			renderWithProviders(<BgtDatePicker {...defaultProps} disabled />);
 
-			await user.click(screen.getByRole("button"));
+			await user.click(screen.getByLabelText("Open calendar"));
 
-			await waitFor(() => {
-				expect(screen.queryByRole("grid")).not.toBeInTheDocument();
-			});
+			expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		});
 	});
 
 	describe("Date Selection", () => {
-		it("should call handleChange when a date is selected", async () => {
+		it("should call handleChange when a calendar date is selected", async () => {
 			const user = userEvent.setup();
 			const mockHandleChange = vi.fn();
 			const field = {
-				...createMockField(),
+				...createMockField("2024-06-15"),
 				handleChange: mockHandleChange,
 			} as unknown as AnyFieldApi;
 
 			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
 
-			await user.click(screen.getByRole("button"));
+			await user.click(screen.getByLabelText("Open calendar"));
 
 			await waitFor(() => {
 				expect(screen.getByRole("grid")).toBeInTheDocument();
 			});
 
-			// Find and click a day button (today or any available day)
-			const dayButtons = screen.getAllByRole("gridcell");
-			const clickableDay = dayButtons.find(
-				(btn) => btn.querySelector("button") && !btn.querySelector("button")?.disabled,
-			);
+			// Pick a different day in the visible month (June 2024). The cells are buttons.
+			const cells = screen.getAllByRole("button").filter((el) => el.textContent?.trim() === "20");
+			expect(cells.length).toBeGreaterThan(0);
+			await user.click(cells[0]);
 
-			if (clickableDay) {
-				const dayButton = clickableDay.querySelector("button");
-				if (dayButton) {
-					await user.click(dayButton);
-					expect(mockHandleChange).toHaveBeenCalled();
-				}
-			}
+			expect(mockHandleChange).toHaveBeenCalled();
+			expect(mockHandleChange).toHaveBeenCalledWith("2024-06-20");
 		});
 	});
 
 	describe("Pre-selected Date", () => {
-		it("should show formatted date when field has value and settings are loaded", async () => {
+		it("should populate the segments with the field value", async () => {
 			const fieldWithValue = createMockField("2024-06-15");
 			renderWithProviders(<BgtDatePicker {...defaultProps} field={fieldWithValue} />);
 
-			// Wait for settings to load, then the formatted date should be visible
+			// Wait for settings (and thus locale) to load before the segments hydrate the value.
 			await waitFor(() => {
-				expect(screen.queryByText("Pick a date")).not.toBeInTheDocument();
+				const text = screen.getByRole("group", { name: "Select Date" }).textContent ?? "";
+				expect(text).toContain("2024");
+				expect(text).toContain("15");
 			});
 		});
 	});
 
 	describe("Accessibility", () => {
-		it("should have accessible button", () => {
+		it("should expose the input group with the label as an accessible name", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
-			const button = screen.getByRole("button");
-			expect(button).toHaveAttribute("type", "button");
-		});
-	});
-
-	describe("Text input", () => {
-		it("should call handleChange with the parsed date when a valid date is typed and blurred", async () => {
-			const user = userEvent.setup();
-			const mockHandleChange = vi.fn();
-			const field = {
-				...createMockField(),
-				handleChange: mockHandleChange,
-			} as unknown as AnyFieldApi;
-
-			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
-
-			const input = screen.getByPlaceholderText("Pick a date");
-			await user.type(input, "2024-03-15");
-			await user.tab();
-
-			expect(mockHandleChange).toHaveBeenCalledWith("2024-03-15");
-		});
-
-		it("should call handleChange when Enter is pressed in the input", async () => {
-			const user = userEvent.setup();
-			const mockHandleChange = vi.fn();
-			const field = {
-				...createMockField(),
-				handleChange: mockHandleChange,
-			} as unknown as AnyFieldApi;
-
-			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
-
-			const input = screen.getByPlaceholderText("Pick a date");
-			await user.type(input, "2024-03-15{Enter}");
-
-			expect(mockHandleChange).toHaveBeenCalledWith("2024-03-15");
-		});
-
-		it("should not call handleChange when an invalid date is typed", async () => {
-			const user = userEvent.setup();
-			const mockHandleChange = vi.fn();
-			const field = {
-				...createMockField(),
-				handleChange: mockHandleChange,
-			} as unknown as AnyFieldApi;
-
-			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
-
-			const input = screen.getByPlaceholderText("Pick a date");
-			await user.type(input, "not-a-date");
-			await user.tab();
-
-			expect(mockHandleChange).not.toHaveBeenCalled();
-		});
-
-		it("should not call handleChange when the input is blurred while empty", async () => {
-			const user = userEvent.setup();
-			const mockHandleChange = vi.fn();
-			const field = {
-				...createMockField(),
-				handleChange: mockHandleChange,
-			} as unknown as AnyFieldApi;
-
-			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
-
-			const input = screen.getByPlaceholderText("Pick a date");
-			await user.click(input);
-			await user.tab();
-
-			expect(mockHandleChange).not.toHaveBeenCalled();
-		});
-
-		it("should display the formatted date in the input when the field has a value", async () => {
-			const fieldWithValue = createMockField("2024-06-15");
-			renderWithProviders(<BgtDatePicker {...defaultProps} field={fieldWithValue} />);
-
-			await waitFor(() => {
-				expect(screen.getByDisplayValue("2024-06-15")).toBeInTheDocument();
-			});
+			expect(screen.getByRole("group", { name: "Select Date" })).toBeInTheDocument();
 		});
 	});
 });

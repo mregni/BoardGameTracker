@@ -19,6 +19,7 @@ vi.mock("@/services/queries/settings", () => ({
 
 vi.mock("@/utils/localeUtils", () => ({
 	getDateFnsLocale: () => undefined,
+	getDatePickerLocale: () => "en-US",
 }));
 
 const createMockField = (value: Date | string = "", errors: string[] = []) =>

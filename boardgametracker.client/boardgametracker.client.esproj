@@ -6,5 +6,8 @@
     <ShouldRunBuildScript>false</ShouldRunBuildScript>
     <!-- Folder where production build objects will be placed -->
     <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
+    <!-- Project uses pnpm; the JS SDK only knows `npm install`, so disable its auto-install.
+         Install via `pnpm install` (Docker build, CI workflows, and local dev all do this directly). -->
+    <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
   </PropertyGroup>
 </Project>
