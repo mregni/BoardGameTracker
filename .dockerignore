@@ -1,4 +1,4 @@
-﻿**/.dockerignore
+**/.dockerignore
 **/.env
 **/.git
 **/.gitignore
@@ -23,7 +23,9 @@
 **/values.dev.yaml
 **/publish
 **/data
-**/images
+# Exclude only the backend's runtime user-upload dirs (local dev data).
+BoardGameTracker.Host/images/cover
+BoardGameTracker.Host/images/profile
 **/logs
 **/.claude
 **/.plans
