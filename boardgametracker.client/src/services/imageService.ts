@@ -10,7 +10,9 @@ export const uploadImageCall = async (data: ImageUpload): Promise<string> => {
 	}
 	formData.append("type", data.type.toString());
 
-	const response = await axiosInstance.post<string>(domain, formData);
+	const response = await axiosInstance.post<string>(domain, formData, {
+		headers: { "Content-Type": "multipart/form-data" },
+	});
 
 	return response.data;
 };
