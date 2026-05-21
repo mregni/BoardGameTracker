@@ -259,18 +259,6 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(PathHelper.FullCommonImagePath),
-    RequestPath = "/images/common"
-});
-
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(PathHelper.FullBadgeImagePath),
-    RequestPath = "/images/badges"
-});
-
-app.UseStaticFiles(new StaticFileOptions
-{
     FileProvider = new PhysicalFileProvider(PathHelper.FullProfileImagePath),
     RequestPath = "/images/profile"
 });
