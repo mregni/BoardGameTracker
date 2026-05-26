@@ -45,7 +45,7 @@ const TopPlayerCardItem = (props: ItemProps) => {
 		>
 			<BgtAvatar image={playerObj?.image} title={playerObj?.name} size="large" />
 			<div className="flex-1">
-				<BgtText color="white" className="text-white uppercase">
+				<BgtText color="white" className="text-white">
 					{playerObj?.name}
 				</BgtText>
 				<BgtText color="white" opacity={50} size="2">

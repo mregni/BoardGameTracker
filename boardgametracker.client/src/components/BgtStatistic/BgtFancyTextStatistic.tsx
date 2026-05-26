@@ -19,7 +19,7 @@ export const BgtFancyTextStatistic = (props: Props) => {
 				<BgtText size="5" color="cyan" weight="bold">
 					{content.toString()}
 				</BgtText>
-				<BgtText color="white" opacity={70} className=" uppercase mb-1">
+				<BgtText color="white" opacity={70} className="mb-1">
 					{title}
 				</BgtText>
 				<BgtText color="primary" opacity={60} className="text-[10px]">

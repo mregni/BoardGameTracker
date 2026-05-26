@@ -65,10 +65,8 @@ describe("BgtPageHeader", () => {
 
 			renderWithTheme(<BgtPageHeader actions={actions} />);
 
-			// Two buttons rendered (large and small screen versions)
-			const buttons = screen.getAllByText("Save");
-			expect(buttons).toHaveLength(2);
-			await user.click(buttons[0]);
+			const button = screen.getByText("Save");
+			await user.click(button);
 			expect(handleAction).toHaveBeenCalled();
 		});
 
@@ -80,9 +78,8 @@ describe("BgtPageHeader", () => {
 
 			renderWithTheme(<BgtPageHeader actions={actions} />);
 
-			// Two buttons per action (large and small screen versions)
-			expect(screen.getAllByText("Save")).toHaveLength(2);
-			expect(screen.getAllByText("Cancel")).toHaveLength(2);
+			expect(screen.getByText("Save")).toBeInTheDocument();
+			expect(screen.getByText("Cancel")).toBeInTheDocument();
 		});
 
 		it("should translate string action content", () => {
@@ -96,8 +93,7 @@ describe("BgtPageHeader", () => {
 
 			renderWithTheme(<BgtPageHeader actions={actions} />);
 
-			// Two buttons (large and small screen versions)
-			expect(screen.getAllByText("actions.save")).toHaveLength(2);
+			expect(screen.getByText("actions.save")).toBeInTheDocument();
 		});
 
 		it("should render ReactNode action content", () => {
@@ -111,8 +107,7 @@ describe("BgtPageHeader", () => {
 
 			renderWithTheme(<BgtPageHeader actions={actions} />);
 
-			// Two buttons (large and small screen versions)
-			expect(screen.getAllByTestId("custom-action")).toHaveLength(2);
+			expect(screen.getByTestId("custom-action")).toBeInTheDocument();
 		});
 	});
 
@@ -141,15 +136,14 @@ describe("BgtPageHeader", () => {
 
 			expect(screen.getByText("Dashboard")).toBeInTheDocument();
 			expect(screen.getByText("Home")).toBeInTheDocument();
-			// Two buttons (large and small screen versions)
-			const refreshButtons = screen.getAllByText("Refresh");
-			expect(refreshButtons).toHaveLength(2);
+			const refreshButton = screen.getByText("Refresh");
+			// Children still render twice (desktop and mobile slots)
 			expect(screen.getAllByTestId("filter")).toHaveLength(2);
 
 			await user.click(screen.getByText("Home"));
 			expect(handleBack).toHaveBeenCalled();
 
-			await user.click(refreshButtons[0]);
+			await user.click(refreshButton);
 			expect(handleAction).toHaveBeenCalled();
 		});
 	});

@@ -69,6 +69,7 @@ function RouteComponent() {
 						icon={<Game />}
 						textSize="8"
 						iconClassName="size-9"
+						link="/games"
 					/>
 					<BgtTextStatistic
 						content={statistics.activePlayers}
@@ -76,6 +77,7 @@ function RouteComponent() {
 						icon={<Players />}
 						textSize="8"
 						iconClassName="size-9"
+						link="/players"
 					/>
 					<BgtTextStatistic
 						content={statistics.sessionsPlayed}

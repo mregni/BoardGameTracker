@@ -1,6 +1,7 @@
 import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 
+import { BgtSimpleSelect } from "@/components/BgtForm/BgtSimpleSelect";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -56,13 +57,26 @@ export const SettingsSidebar = ({ activeCategory, onCategoryChange, canManageSet
 	const authStatus = useAuth((s) => s.authStatus);
 	const showAccountTab = authStatus?.authEnabled;
 
+	const visibleCategories = CATEGORIES.filter((c) => {
+		if (c.id === "account") return showAccountTab;
+		return canManageSettings;
+	});
+
 	return (
 		<div className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r border-white/10 lg:pr-4 max-lg:pb-4">
-			<nav className="space-y-1">
-				{CATEGORIES.filter((c) => {
-					if (c.id === "account") return showAccountTab;
-					return canManageSettings;
-				}).map((category) => {
+			<div className="lg:hidden">
+				<BgtSimpleSelect
+					className="w-full"
+					value={activeCategory}
+					onValueChange={(value) => onCategoryChange(value as SettingsCategory)}
+					items={visibleCategories.map((category) => ({
+						value: category.id,
+						label: t(category.label),
+					}))}
+				/>
+			</div>
+			<nav className="space-y-1 hidden lg:block">
+				{visibleCategories.map((category) => {
 					const isActive = activeCategory === category.id;
 
 					return (

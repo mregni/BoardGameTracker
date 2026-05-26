@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { cx } from "class-variance-authority";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
+import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
 import Game from "@/assets/icons/gamepad.svg?react";
-import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
 import { SearchInputField } from "@/components/BgtForm";
 import { BgtImageCard } from "@/components/BgtImageCard/BgtImageCard";
 import { BgtCardList } from "@/components/BgtLayout/BgtCardList";
@@ -14,15 +16,18 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useFilteredList } from "@/hooks/useFilteredList";
 import { usePermissions } from "@/hooks/usePermissions";
-import { BggGameModal } from "@/routes/games/-modals/BggGameModal";
 import CreateGameModal from "@/routes/games/-modals/CreateGameModal";
 import { getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
+import { filterGames, type GamesFilterSearch, GamesFilters, type WeightBucket } from "./-components/GamesFilters";
 import { useGameModals } from "./-hooks/useGameModals";
 import { useGamesData } from "./-hooks/useGamesData";
 
-type GamesFilterSearch = {
-	category?: string;
+const WEIGHT_BUCKETS: WeightBucket[] = ["light", "medium", "heavy"];
+
+const parsePositiveInt = (value: unknown): number | undefined => {
+	const parsed = Number(value);
+	return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
 };
 
 export const Route = createFileRoute("/games/")({
@@ -32,30 +37,59 @@ export const Route = createFileRoute("/games/")({
 		queryClient.prefetchQuery(getSettings());
 	},
 	validateSearch: (search: Record<string, unknown>): GamesFilterSearch => {
+		const weight = search.weight as WeightBucket;
 		return {
 			category: search.category ? (search.category as string) : undefined,
+			players: parsePositiveInt(search.players),
+			playTime: parsePositiveInt(search.playTime),
+			weight: WEIGHT_BUCKETS.includes(weight) ? weight : undefined,
 		};
 	},
 });
 
 function RouteComponent() {
-	const { category } = Route.useSearch();
+	const search = Route.useSearch();
+	const { category, players, playTime, weight } = search;
 	const { t } = useTranslation(["games", "dashboard", "common"]);
 	const navigate = useNavigate();
 	const { games, isLoading } = useGamesData();
 	const { canWrite } = usePermissions();
 	const modals = useGameModals();
-	const [categoryFilter, setCategoryFilter] = useState<string | undefined>(category);
+	const [showFilters, setShowFilters] = useState(false);
 
 	const settingsQuery = useQuery(getSettings());
 	const bggEnabled = settingsQuery.data?.bggStatus?.isConfigured ?? false;
 
+	const categories = useMemo(
+		() => [...new Set(games.flatMap((game) => game.categories.map((cat) => cat.name)))].sort(),
+		[games],
+	);
+
+	const updateSearch = useCallback(
+		(partial: Partial<GamesFilterSearch>) => {
+			navigate({
+				to: "/games",
+				search: (prev) => {
+					const next = { ...prev, ...partial };
+					for (const key of Object.keys(next) as (keyof GamesFilterSearch)[]) {
+						if (next[key] === undefined) delete next[key];
+					}
+					return next;
+				},
+			});
+		},
+		[navigate],
+	);
+
 	const categoryPreFilter = useCallback(
 		(items: typeof games) => {
-			if (categoryFilter === undefined) return items;
-			return items.filter((game) => game.categories.some((cat) => cat.name === categoryFilter));
+			let result = items;
+			if (category !== undefined) {
+				result = result.filter((game) => game.categories.some((cat) => cat.name === category));
+			}
+			return filterGames(result, { playerCount: players, maxPlayTime: playTime, weight });
 		},
-		[categoryFilter],
+		[category, players, playTime, weight],
 	);
 
 	const { filterValue, setFilterValue, filtered: filteredGames } = useFilteredList(games, "title", categoryPreFilter);
@@ -67,7 +101,7 @@ function RouteComponent() {
 
 	const openBgg = () => {
 		modals.createModal.hide();
-		modals.bggModal.show();
+		navigate({ to: "/games/bgg" });
 	};
 
 	if (isLoading) return null;
@@ -81,7 +115,6 @@ function RouteComponent() {
 				description={t("dashboard:empty.description")}
 				action={canWrite ? { onClick: modals.createModal.show, label: t("new") } : undefined}
 			>
-				{bggEnabled && <BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />}
 				<CreateGameModal
 					open={modals.createModal.isOpen}
 					close={modals.createModal.hide}
@@ -111,20 +144,40 @@ function RouteComponent() {
 				}
 			></BgtPageHeader>
 			<BgtPageContent>
-				<div className="flex flex-row gap-3">
-					<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
+				<div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2">
+					<div className="w-full md:flex-1 md:min-w-[8rem]">
+						<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
+					</div>
+					<button
+						type="button"
+						onClick={() => setShowFilters((value) => !value)}
+						className="md:hidden flex items-center justify-center gap-1 w-full text-sm text-primary hover:text-primary/80 cursor-pointer"
+					>
+						{showFilters ? t("filters.show-less") : t("filters.show-more")}
+						{showFilters ? <CaretUpIcon className="size-4" /> : <CaretDownIcon className="size-4" />}
+					</button>
+					<div
+						className={cx(
+							"grid w-full transition-[grid-template-rows] duration-300 ease-in-out md:contents",
+							showFilters ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+						)}
+					>
+						<div className="overflow-hidden flex flex-col gap-2 md:contents">
+							<GamesFilters
+								categories={categories}
+								category={category}
+								filters={{ playerCount: players, maxPlayTime: playTime, weight }}
+								onCategoryChange={(value) => updateSearch({ category: value })}
+								onChange={(next) =>
+									updateSearch({ players: next.playerCount, playTime: next.maxPlayTime, weight: next.weight })
+								}
+							/>
+						</div>
+					</div>
 				</div>
 				<BgtText size="3" color="primary" className="pb-6" weight="medium">
 					{t("count", { count: filteredGames.length })}
 				</BgtText>
-				{categoryFilter !== undefined && (
-					<div className="flex flex-row gap-2 items-center text-sm text-gray-400">
-						<div>{t("common:filter")}:</div>
-						<BgtBadge color="green" variant="soft" onClose={() => setCategoryFilter(undefined)}>
-							{categoryFilter}
-						</BgtBadge>
-					</div>
-				)}
 				<BgtCardList>
 					{filteredGames.map((x) => (
 						<BgtImageCard
@@ -137,7 +190,6 @@ function RouteComponent() {
 						/>
 					))}
 				</BgtCardList>
-				{bggEnabled && <BggGameModal open={modals.bggModal.isOpen} close={modals.bggModal.hide} />}
 				<CreateGameModal
 					open={modals.createModal.isOpen}
 					close={modals.createModal.hide}

@@ -107,7 +107,7 @@ export const SessionForm = (props: Props) => {
 	return (
 		<BgtPage>
 			<BgtPageContent centered>
-				<BgtCard title={title}>
+				<BgtCard title={title} className="w-full max-w-xl">
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-3 w-full">
 							<SessionFormFields form={form} games={games} locations={locations} disabled={disabled} />

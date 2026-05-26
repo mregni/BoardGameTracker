@@ -65,7 +65,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 			{isOverdue && isActive && (
 				<div className="flex items-center gap-2 mb-3 bg-error/20 border border-error/30 rounded-lg px-3 py-1.5">
 					<AlertTriangle className="text-error text-xl" />
-					<BgtText color="red" className="uppercase tracking-wider">
+					<BgtText color="red" className="tracking-wider">
 						{t("overdue")}
 					</BgtText>
 				</div>

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { BgtCheckboxList } from "@/components/BgtForm";
+import { BgtCheckboxList, BgtFieldLabel } from "@/components/BgtForm";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { Expansion } from "@/models";
 
@@ -23,7 +23,7 @@ const SessionExpansionSelectorComponent = ({
 
 	return (
 		<div className="flex flex-col justify-start">
-			<div className="text-[15px] font-medium leading-[35px] uppercase pb-2">{t("expansions.title")}</div>
+			<BgtFieldLabel className="pb-2">{t("expansions.title")}</BgtFieldLabel>
 			{expansionList.length === 0 && (
 				<BgtText color="primary">
 					{selectedGameId !== undefined && selectedGameId !== 0 && t("expansions.none")}

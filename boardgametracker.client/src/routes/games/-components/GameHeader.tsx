@@ -26,12 +26,7 @@ export const GameHeader = (props: Props) => {
 				<BgtHeading size="8" className="shrink-0">
 					{gameTitle}
 				</BgtHeading>
-				<BgtText
-					size="2"
-					className="line-clamp-1 uppercase"
-					weight="medium"
-					color={getColorFromGameState(gameState, isLoaned)}
-				>
+				<BgtText size="2" className="line-clamp-1" weight="medium" color={getColorFromGameState(gameState, isLoaned)}>
 					{t(getItemStateTranslationKey(gameState, isLoaned))}
 				</BgtText>
 			</div>

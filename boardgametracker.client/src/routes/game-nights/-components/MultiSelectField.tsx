@@ -110,7 +110,7 @@ export const MultiSelectField = (props: Props) => {
 						disabled={disabled}
 						className={cx(
 							"w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-							"px-4 py-2 h-[45px] inline-flex justify-between items-center text-[15px]",
+							"px-4 py-2 h-11 md:h-10 inline-flex justify-between items-center text-[15px]",
 							disabled && "opacity-50 cursor-not-allowed",
 						)}
 					>
@@ -145,7 +145,7 @@ export const MultiSelectField = (props: Props) => {
 												key={option.value}
 												type="button"
 												onClick={() => handleSelect(option.value)}
-												className="w-full text-[13px] leading-none rounded-lg h-[45px] flex items-center pl-4 hover:bg-primary/60 transition-colors cursor-pointer"
+												className="w-full text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pl-4 hover:bg-primary/60 transition-colors cursor-pointer"
 											>
 												<div className="flex flex-row justify-start items-center gap-2">
 													{option.image !== undefined && <BgtAvatar title={option.label} image={option.image} />}

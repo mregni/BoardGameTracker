@@ -24,6 +24,7 @@ import {
 import CalendarIcon from "@/assets/icons/calendar.svg?react";
 import { getSettings } from "@/services/queries/settings";
 import { getDatePickerLocale } from "@/utils/localeUtils";
+import { BgtFieldLabel } from "./BgtFieldLabel";
 import { BgtFormErrors } from "./BgtFormErrors";
 
 export interface BgtDatePickerProps {
@@ -61,7 +62,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 		<div className="flex flex-col justify-start w-full">
 			{label && (
 				<div className="flex items-baseline justify-between">
-					<div className="text-[15px] font-medium leading-[35px] uppercase">{label}</div>
+					<BgtFieldLabel>{label}</BgtFieldLabel>
 					<BgtFormErrors errors={field.state.meta.errors} />
 				</div>
 			)}
@@ -76,7 +77,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 				>
 					<Group
 						className={cx(
-							"w-full bg-background text-white px-4 py-3 rounded-lg border border-primary/30",
+							"w-full bg-background text-white px-4 h-11 md:h-10 rounded-lg border border-primary/30",
 							"focus-within:border-primary text-left flex items-center justify-between gap-2",
 							className,
 							hasErrors && "border-error bg-error/5",
@@ -126,7 +127,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 									>
 										‹
 									</Button>
-									<Heading className="uppercase text-sm tracking-wider font-medium text-white" />
+									<Heading className="text-sm tracking-wider font-medium text-white" />
 									<Button
 										slot="next"
 										className={cx(
@@ -142,7 +143,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 								<CalendarGrid className="w-full border-separate border-spacing-1">
 									<CalendarGridHeader>
 										{(day) => (
-											<CalendarHeaderCell className="text-white/50 uppercase text-xs text-center py-2 font-normal">
+											<CalendarHeaderCell className="text-white/50 text-xs text-center py-2 font-normal">
 												{day}
 											</CalendarHeaderCell>
 										)}

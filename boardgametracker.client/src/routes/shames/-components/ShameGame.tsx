@@ -66,7 +66,7 @@ export const ShameGame = ({ shame, dateFormat, currency }: Props) => {
 					</div>
 				</div>
 				<div className="flex flex-col items-start justify-start pb-2 px-2">
-					<BgtText size="4" className="line-clamp-1 uppercase w-full" weight="medium">
+					<BgtText size="4" className="line-clamp-1 w-full" weight="medium">
 						{shame.title}
 					</BgtText>
 					<div className="flex flex-col w-full gap-1">

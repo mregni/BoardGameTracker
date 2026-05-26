@@ -22,19 +22,17 @@ export const BgtMostWinnerCard = (props: Props) => {
 			<div className="flex flex-row gap-2">
 				<BgtAvatar image={image} title={name} size="large" onClick={onClick} />
 				<div className="flex flex-col justify-center gap-0">
-					<BgtText weight="medium" size="3" className="uppercase">
+					<BgtText weight="medium" size="3">
 						{name}
 					</BgtText>
-					<BgtText size="1" className="uppercase text-card-value">
+					<BgtText size="1" className="text-card-value">
 						{nameHeader}
 					</BgtText>
 				</div>
 			</div>
 			<div className="flex flex-col gap-2 items-end">
-				<BgtText size="3" className="uppercase">
-					{valueHeader}
-				</BgtText>
-				<BgtText size="1" className="uppercase text-lime-green">
+				<BgtText size="3">{valueHeader}</BgtText>
+				<BgtText size="1" className="text-lime-green">
 					{value}
 				</BgtText>
 			</div>

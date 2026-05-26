@@ -64,7 +64,9 @@ function RouteComponent() {
 				}
 			></BgtPageHeader>
 			<BgtPageContent>
-				<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
+				<div className="w-full md:w-64 xl:w-[300px]">
+					<SearchInputField value={filterValue} onChange={(event) => setFilterValue(event.target.value)} />
+				</div>
 				<BgtText size="3" className="pb-6 text-primary" weight="medium">
 					{t("count", { count: filteredPlayers.length })}
 				</BgtText>

@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef } from "react";
 
 import CloseIcon from "@/assets/icons/x.svg?react";
 
-const badgeVariants = cva("group px-3 py-1 rounded-full uppercase text-xs flex flex-row gap-2 border", {
+const badgeVariants = cva("group px-3 py-1 rounded-full text-xs flex flex-row gap-2 border", {
 	variants: {
 		variant: {
 			soft: "",

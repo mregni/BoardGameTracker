@@ -1,5 +1,6 @@
 import { memo, type ReactNode } from "react";
 
+import { BgtFieldLabel } from "./BgtFieldLabel";
 import { BgtFormErrors } from "./BgtFormErrors";
 
 interface FormFieldWrapperProps {
@@ -13,7 +14,7 @@ const FormFieldWrapperComponent = ({ label, errors = [], children, className = "
 	<div className={`flex flex-col justify-start ${className}`}>
 		{label && (
 			<div className="flex items-baseline justify-between">
-				<div className="text-[15px] font-medium leading-[35px] uppercase">{label}</div>
+				<BgtFieldLabel>{label}</BgtFieldLabel>
 				<BgtFormErrors errors={errors} />
 			</div>
 		)}

@@ -3,6 +3,7 @@ import { cx } from "class-variance-authority";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { BgtDatePicker } from "./BgtDatePicker";
+import { BgtFieldLabel } from "./BgtFieldLabel";
 import { BgtFormErrors } from "./BgtFormErrors";
 
 export interface BgtDateTimePickerProps {
@@ -58,7 +59,7 @@ export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
 	return (
 		<div className="flex flex-col justify-start w-full">
 			<div className="flex items-baseline justify-between">
-				<div className="text-[15px] font-medium leading-[35px] uppercase">{label}</div>
+				<BgtFieldLabel>{label}</BgtFieldLabel>
 				<BgtFormErrors errors={field.state.meta.errors} />
 			</div>
 			<div className="flex gap-2">
@@ -72,7 +73,7 @@ export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
 					disabled={disabled}
 					placeholder="xx:xx"
 					className={cx(
-						"w-32 bg-background text-white px-4 py-3 rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
+						"w-32 bg-background text-white px-4 h-11 md:h-10 rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
 						hasErrors && "border border-error bg-error/5!",
 						disabled && "opacity-50 cursor-not-allowed",
 					)}
