@@ -21,7 +21,7 @@ const CompareSummaryStatsComponent = ({ compare }: CompareSummaryStatsProps) => 
 					<BgtText color="cyan" size="8">
 						{compare.totalSessionsTogether}
 					</BgtText>
-					<BgtText color="primary" opacity={70} className="uppercase tracking-wider">
+					<BgtText color="primary" opacity={70} className="tracking-wider">
 						{t("total-games-played")}
 					</BgtText>
 				</div>
@@ -31,7 +31,7 @@ const CompareSummaryStatsComponent = ({ compare }: CompareSummaryStatsProps) => 
 					<BgtText color="cyan" size="8">
 						{compare.minutesPlayed}
 					</BgtText>
-					<BgtText color="primary" opacity={70} className="uppercase tracking-wider">
+					<BgtText color="primary" opacity={70} className="tracking-wider">
 						{t("minutes-played")}
 					</BgtText>
 				</div>
@@ -41,7 +41,7 @@ const CompareSummaryStatsComponent = ({ compare }: CompareSummaryStatsProps) => 
 					<BgtText color="cyan" size="8" className="line-clamp-1">
 						{compare.preferredGame?.gameId ? gameById(compare.preferredGame.gameId)?.title : "-"}
 					</BgtText>
-					<BgtText color="primary" opacity={70} className="uppercase tracking-wider">
+					<BgtText color="primary" opacity={70} className="tracking-wider">
 						{t("most-played-game")}
 					</BgtText>
 				</div>

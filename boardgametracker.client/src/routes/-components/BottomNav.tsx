@@ -87,7 +87,7 @@ export const BottomNav = () => {
 				</div>
 			)}
 
-			<nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-white/10 z-40 safe-area-inset-bottom">
+			<nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-white/10 z-40">
 				<div className="flex items-center justify-between">
 					{mobileMenuItems.map((item) => {
 						const isActive = item.path === "more" ? isMoreMenuActive || showMoreMenu : currentPath === item.path;

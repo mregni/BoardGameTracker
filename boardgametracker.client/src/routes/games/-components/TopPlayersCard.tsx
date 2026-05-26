@@ -49,9 +49,7 @@ const TopPlayerCardItem = (props: ItemProps) => {
 				size="large"
 			/>
 			<div className="flex-1">
-				<BgtText color="white" className="uppercase">
-					{playerById(player.playerId)?.name}
-				</BgtText>
+				<BgtText color="white">{playerById(player.playerId)?.name}</BgtText>
 				<BgtText color="primary" opacity={70}>
 					{t("win", { count: player.wins })} • {t("game", { count: player.playCount })}
 				</BgtText>
@@ -71,7 +69,7 @@ const TopPlayerCardItem = (props: ItemProps) => {
 				</div>
 				{player.averageScore && (
 					<div className="text-white/50 text-sm">
-						{player.averageScore} {t("statistics:average-abreviation")}
+						{RoundDecimal(player.averageScore, 0.1)} {t("statistics:average-abreviation")}
 					</div>
 				)}
 			</div>

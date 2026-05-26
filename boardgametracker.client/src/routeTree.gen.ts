@@ -22,6 +22,7 @@ import { Route as CompareIndexRouteImport } from './routes/compare/index'
 import { Route as SessionsNewRouteImport } from './routes/sessions/new'
 import { Route as PlayersPlayerIdRouteImport } from './routes/players/$playerId'
 import { Route as GamesNewRouteImport } from './routes/games/new'
+import { Route as GamesBggRouteImport } from './routes/games/bgg'
 import { Route as GamesGameIdRouteImport } from './routes/games/$gameId'
 import { Route as BareRsvpRouteImport } from './routes/_bare/rsvp'
 import { Route as BareLoginRouteImport } from './routes/_bare/login'
@@ -98,6 +99,11 @@ const GamesNewRoute = GamesNewRouteImport.update({
   path: '/games/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesBggRoute = GamesBggRouteImport.update({
+  id: '/games/bgg',
+  path: '/games/bgg',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GamesGameIdRoute = GamesGameIdRouteImport.update({
   id: '/games/$gameId',
   path: '/games/$gameId',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof BareLoginRoute
   '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
+  '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/sessions/new': typeof SessionsNewRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByTo {
   '/login': typeof BareLoginRoute
   '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
+  '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/sessions/new': typeof SessionsNewRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/_bare/login': typeof BareLoginRoute
   '/_bare/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
+  '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/sessions/new': typeof SessionsNewRoute
@@ -239,6 +248,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/rsvp'
     | '/games/$gameId'
+    | '/games/bgg'
     | '/games/new'
     | '/players/$playerId'
     | '/sessions/new'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/rsvp'
     | '/games/$gameId'
+    | '/games/bgg'
     | '/games/new'
     | '/players/$playerId'
     | '/sessions/new'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/_bare/login'
     | '/_bare/rsvp'
     | '/games/$gameId'
+    | '/games/bgg'
     | '/games/new'
     | '/players/$playerId'
     | '/sessions/new'
@@ -314,6 +326,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BareRoute: typeof BareRouteWithChildren
   GamesGameIdRoute: typeof GamesGameIdRoute
+  GamesBggRoute: typeof GamesBggRoute
   GamesNewRoute: typeof GamesNewRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
   SessionsNewRoute: typeof SessionsNewRoute
@@ -427,6 +440,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/bgg': {
+      id: '/games/bgg'
+      path: '/games/bgg'
+      fullPath: '/games/bgg'
+      preLoaderRoute: typeof GamesBggRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/games/$gameId': {
       id: '/games/$gameId'
       path: '/games/$gameId'
@@ -525,6 +545,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BareRoute: BareRouteWithChildren,
   GamesGameIdRoute: GamesGameIdRoute,
+  GamesBggRoute: GamesBggRoute,
   GamesNewRoute: GamesNewRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,
   SessionsNewRoute: SessionsNewRoute,

@@ -26,7 +26,7 @@ export const BgtCard = (props: Props) => {
 			{title && (
 				<div className="mb-4">
 					<div className="flex justify-between items-start w-full">
-						<h2 className="text-white uppercase tracking-wide flex items-center gap-2">
+						<h2 className="text-white tracking-wide flex items-center gap-2">
 							{Icon && <Icon className="size-6 text-primary" />}
 							{title}
 						</h2>

@@ -46,14 +46,14 @@ export const BgtImageCard = (props: Props) => {
 						{state !== null && state !== undefined && (
 							<BgtText
 								size="1"
-								className="line-clamp-1 uppercase w-full"
+								className="line-clamp-1 w-full"
 								weight="medium"
 								color={getColorFromGameState(state, isLoaned)}
 							>
 								{t(getItemStateTranslationKey(state, isLoaned))}
 							</BgtText>
 						)}
-						<BgtText size="4" className="line-clamp-1 uppercase w-full" weight="medium">
+						<BgtText size="4" className="line-clamp-1 w-full" weight="medium">
 							{title}
 						</BgtText>
 					</div>

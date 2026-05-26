@@ -1,4 +1,4 @@
-import { type ComponentType, Fragment, type PropsWithChildren, type SVGProps } from "react";
+import type { ComponentType, PropsWithChildren, SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 import ArrowLeft from "@/assets/icons/arrow-left.svg?react";
 import type { Actions } from "../../models";
@@ -20,7 +20,7 @@ export const BgtPageHeader = (props: Props) => {
 
 	return (
 		<div className="flex flex-col gap-2">
-			<div className="flex-auto flex-col lg:flex-row flex justify-between max-lg:gap-2">
+			<div className="flex-auto flex-row flex justify-between max-lg:gap-2">
 				<div className="flex flex-row gap-3 content-center items-center">
 					{backAction && backText && (
 						<BgtButton variant="text" onClick={backAction} className="pl-0">
@@ -36,25 +36,17 @@ export const BgtPageHeader = (props: Props) => {
 				</div>
 				<div className="flex items-center flex-wrap gap-3">
 					<div className="hidden md:flex">{children}</div>
-					{actions.map((action, index) => {
-						const content = typeof action.content === "string" ? t(action.content) : action.content;
-						const smallContent = action.smallContent === undefined ? content : action.smallContent;
-
-						return (
-							<Fragment key={typeof action.content === "string" ? action.content : index}>
-								<div className="hidden lg:block">
-									<BgtButton variant={action.variant} size="3" onClick={action.onClick}>
-										{content}
-									</BgtButton>
-								</div>
-								<div className="block lg:hidden">
-									<BgtButton variant={action.variant} size="1" onClick={action.onClick}>
-										{smallContent}
-									</BgtButton>
-								</div>
-							</Fragment>
-						);
-					})}
+					{actions.map((action, index) => (
+						<BgtButton
+							key={typeof action.content === "string" ? action.content : index}
+							variant={action.variant}
+							size="3"
+							className="max-lg:py-2 max-lg:px-2 max-lg:text-xs"
+							onClick={action.onClick}
+						>
+							{typeof action.content === "string" ? t(action.content) : action.content}
+						</BgtButton>
+					))}
 				</div>
 			</div>
 			<div className="block md:hidden">{children}</div>

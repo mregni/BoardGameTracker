@@ -8,6 +8,7 @@ import CheckIcon from "@/assets/icons/check.svg?react";
 import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import type { BgtSelectImageItem, BgtSelectItem } from "@/models";
 import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
+import { BgtFieldLabel } from "./BgtFieldLabel";
 
 interface Props {
 	label?: string;
@@ -69,7 +70,7 @@ export const BgtSimpleSelect = (props: Props) => {
 
 	return (
 		<div className={cx("flex flex-col justify-start", className)}>
-			{label && <div className="text-[15px] font-medium leading-[35px] uppercase">{label}</div>}
+			{label && <BgtFieldLabel>{label}</BgtFieldLabel>}
 			<Select.Root
 				disabled={disabled}
 				onValueChange={(val) => {
@@ -88,7 +89,7 @@ export const BgtSimpleSelect = (props: Props) => {
 				<Select.Trigger
 					className={cx(
 						"w-full bg-background font- text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-						"px-4 py-2 h-[45px] shadow-none uppercase inline-flex justify-between items-center rounded-lg leading-none text-[12px] gap-1",
+						"px-4 py-2 h-9 shadow-none inline-flex justify-between items-center rounded-lg leading-none text-[12px] gap-1",
 					)}
 				>
 					<Select.Value placeholder={placeholder} />
@@ -129,7 +130,7 @@ export const BgtSimpleSelect = (props: Props) => {
 									<Select.Item
 										value={item.value.toString()}
 										key={item.value}
-										className="text-[13px] leading-none rounded-lg h-[45px] flex items-center pr-[35px] pl-[25px] relative select-none data-[disabled]:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
+										className="text-[13px] leading-none rounded-lg h-9 flex items-center pr-[35px] pl-[25px] relative select-none data-[disabled]:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
 									>
 										<Select.ItemText>
 											<div className="flex flex-row justify-start items-center gap-2">

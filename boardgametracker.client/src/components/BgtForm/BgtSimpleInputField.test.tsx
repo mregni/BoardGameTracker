@@ -103,10 +103,10 @@ describe("BgtSimpleInputField", () => {
 	});
 
 	describe("Placeholder", () => {
-		it("should display placeholder in uppercase", () => {
+		it("should display placeholder as provided", () => {
 			renderWithTheme(<BgtSimpleInputField {...defaultProps} placeholder="enter text" />);
 			const input = screen.getByRole("textbox");
-			expect(input).toHaveAttribute("placeholder", "ENTER TEXT");
+			expect(input).toHaveAttribute("placeholder", "enter text");
 		});
 
 		it("should handle empty placeholder", () => {
@@ -177,7 +177,7 @@ describe("BgtSimpleInputField", () => {
 			expect(screen.getByText("$")).toBeInTheDocument();
 			expect(screen.getByText("USD")).toBeInTheDocument();
 			expect(screen.getByRole("textbox")).toHaveValue("test");
-			expect(screen.getByRole("textbox")).toHaveAttribute("placeholder", "ENTER VALUE");
+			expect(screen.getByRole("textbox")).toHaveAttribute("placeholder", "enter value");
 		});
 	});
 

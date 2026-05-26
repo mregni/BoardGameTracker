@@ -10,6 +10,7 @@ import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
 import BgtButton from "../BgtButton/BgtButton";
 import { BgtIconButton } from "../BgtIconButton/BgtIconButton";
 import { BgtText } from "../BgtText/BgtText";
+import { BgtFieldLabel } from "./BgtFieldLabel";
 
 interface Props {
 	onOpenCreateModal: () => void;
@@ -31,7 +32,7 @@ export const BgtPlayerSelector = (props: Props) => {
 	return (
 		<div className="flex flex-col gap-3 mt-3">
 			<div className="flex flex-col md:flex-row md:justify-between md:items-center">
-				<div className="text-[15px] font-medium leading-[35px] uppercase flex flex-row items-center justify-between w-full">
+				<BgtFieldLabel className="flex flex-row items-center justify-between w-full">
 					<BgtText>{t("new.players.label")}</BgtText>
 					<BgtButton
 						className="w-fit"
@@ -43,7 +44,7 @@ export const BgtPlayerSelector = (props: Props) => {
 					>
 						{t("new.players.add")}
 					</BgtButton>
-				</div>
+				</BgtFieldLabel>
 			</div>
 			{players.length === 0 && !hasErrors && <BgtText color={"primary"}>{t("player:new.players.none")}</BgtText>}
 			{players.length === 0 && hasErrors && <BgtText color={"red"}>{String(errors[0])}</BgtText>}

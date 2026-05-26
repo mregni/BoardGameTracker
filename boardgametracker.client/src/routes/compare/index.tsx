@@ -49,7 +49,11 @@ function RouteComponent() {
 		return [0, 0];
 	}, [search.left, search.right, players]);
 
-	const { compare: actualCompare, settings } = useCompareData({
+	const {
+		compare: actualCompare,
+		settings,
+		isLoading,
+	} = useCompareData({
 		playerLeft: leftPlayerId,
 		playerRight: rightPlayerId,
 	});
@@ -95,7 +99,7 @@ function RouteComponent() {
 	return (
 		<BgtPage>
 			<BgtPageHeader header={t("title")} icon={Home} />
-			<BgtPageContent isLoading={!players} data={{ players }} centered={players?.length < 2}>
+			<BgtPageContent isLoading={isLoading} data={{ players }} centered={players?.length < 2}>
 				{({ players }) => {
 					if (!actualCompare || !settings || !playerOne || !playerTwo) {
 						return null;

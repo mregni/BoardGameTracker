@@ -10,7 +10,7 @@ export const BgtHeading = (props: Props) => {
 	const { children, className, size = "8", ...rest } = props;
 
 	return (
-		<Heading as="h3" size={size} className={cx("uppercase line-clamp-1", className)} {...rest}>
+		<Heading as="h3" size={size} className={cx("line-clamp-1", className)} {...rest}>
 			{children}
 		</Heading>
 	);

@@ -32,7 +32,7 @@ export const ScoringResultsCard = (props: Props) => {
 					<div key={item.key} className="space-y-1">
 						<div className="flex items-center justify-between text-sm">
 							<div className="flex flex-col gap-0.5">
-								<BgtText className="text-white/70 uppercase text-xs">{t(`charts.top-scoring.${item.key}`)}</BgtText>
+								<BgtText className="text-white/70 text-xs">{t(`charts.top-scoring.${item.key}`)}</BgtText>
 								<BgtText color="primary">{playerById(item.playerId)?.name}</BgtText>
 							</div>
 							<BgtText size="5" weight="bold" color="cyan">

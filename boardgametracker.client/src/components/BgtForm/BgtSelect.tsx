@@ -94,7 +94,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 				<Select.Trigger
 					className={cx(
 						"w-full bg-background font- text-whiterounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-						"px-4 py-2 h-[45px] shadow-none inline-flex justify-between items-center rounded-lg leading-none text-[15px]",
+						"px-4 py-2 h-11 md:h-10 shadow-none inline-flex justify-between items-center rounded-lg leading-none text-[15px]",
 						hasErrors && "border border-error bg-error-dark!",
 						disabled && "opacity-50 cursor-not-allowed",
 					)}
@@ -137,7 +137,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 									<Select.Item
 										value={item.value.toString()}
 										key={item.value}
-										className="text-[13px] leading-none rounded-lg h-[45px] flex items-center pr-[35px] pl-[25px] relative select-none data-disabled:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
+										className="text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pr-[35px] pl-[25px] relative select-none data-disabled:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
 									>
 										<Select.ItemText>
 											<div className="flex flex-row justify-start items-center gap-2">

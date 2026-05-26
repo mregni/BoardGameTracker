@@ -31,13 +31,13 @@ describe("SearchInputField", () => {
 		it("should use translated default placeholder when not provided", () => {
 			renderWithTheme(<SearchInputField {...defaultProps} />);
 			const input = screen.getByRole("textbox");
-			expect(input).toHaveAttribute("placeholder", "FILTER-NAME");
+			expect(input).toHaveAttribute("placeholder", "filter-name");
 		});
 
 		it("should use custom placeholder when provided", () => {
 			renderWithTheme(<SearchInputField {...defaultProps} placeholder="search games" />);
 			const input = screen.getByRole("textbox");
-			expect(input).toHaveAttribute("placeholder", "SEARCH GAMES");
+			expect(input).toHaveAttribute("placeholder", "search games");
 		});
 	});
 
@@ -90,7 +90,7 @@ describe("SearchInputField", () => {
 
 			const input = screen.getByRole("textbox");
 			expect(input).toHaveValue("initial");
-			expect(input).toHaveAttribute("placeholder", "SEARCH");
+			expect(input).toHaveAttribute("placeholder", "search");
 
 			await user.type(input, "x");
 			expect(handleChange).toHaveBeenCalled();

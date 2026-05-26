@@ -85,10 +85,10 @@ function RootComponent() {
 	}
 
 	return (
-		<div className="flex size-full text-white bg-background">
+		<div className="flex w-full text-white bg-background md:h-dvh md:overflow-hidden">
 			<Sidebar />
 
-			<main className="flex-1 overflow-auto pb-20 md:pb-0 h-screen bg-background">
+			<main className="flex-1 pb-20 md:pb-0 min-h-dvh md:min-h-0 md:h-dvh md:overflow-auto bg-background">
 				<ErrorBoundary FallbackComponent={ErrorFallback}>
 					<Outlet />
 				</ErrorBoundary>

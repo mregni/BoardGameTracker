@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, userEvent } from "@/test/test-utils";
+import { render, screen, userEvent, within } from "@/test/test-utils";
 
 import { type SettingsCategory, SettingsSidebar } from "./SettingsSidebar";
 
@@ -26,11 +26,14 @@ describe("SettingsSidebar", () => {
 		it("should render all categories when canManageSettings is true and auth is enabled", () => {
 			render(<SettingsSidebar {...defaultProps} />);
 
-			expect(screen.getByText("settings:sidebar.general.title")).toBeInTheDocument();
-			expect(screen.getByText("settings:sidebar.shelf-of-shame.title")).toBeInTheDocument();
-			expect(screen.getByText("settings:sidebar.game-nights.title")).toBeInTheDocument();
-			expect(screen.getByText("settings:sidebar.advanced.title")).toBeInTheDocument();
-			expect(screen.getByText("settings:sidebar.account.title")).toBeInTheDocument();
+			// The active category label also appears in the mobile dropdown trigger,
+			// so scope these assertions to the desktop navigation list.
+			const nav = within(screen.getByRole("navigation"));
+			expect(nav.getByText("settings:sidebar.general.title")).toBeInTheDocument();
+			expect(nav.getByText("settings:sidebar.shelf-of-shame.title")).toBeInTheDocument();
+			expect(nav.getByText("settings:sidebar.game-nights.title")).toBeInTheDocument();
+			expect(nav.getByText("settings:sidebar.advanced.title")).toBeInTheDocument();
+			expect(nav.getByText("settings:sidebar.account.title")).toBeInTheDocument();
 		});
 
 		it("should render category descriptions", () => {
@@ -149,7 +152,10 @@ describe("SettingsSidebar", () => {
 			const onCategoryChange = vi.fn();
 			render(<SettingsSidebar {...defaultProps} activeCategory="general" onCategoryChange={onCategoryChange} />);
 
-			await user.click(screen.getByText("settings:sidebar.general.title"));
+			// "general" is the active category, so its label also shows in the mobile
+			// dropdown trigger; click the one in the desktop navigation list.
+			const nav = within(screen.getByRole("navigation"));
+			await user.click(nav.getByText("settings:sidebar.general.title"));
 
 			expect(onCategoryChange).toHaveBeenCalledWith("general");
 		});

@@ -45,7 +45,7 @@ const GameCardItem = (props: ItemProps) => {
 		>
 			<BgtAvatar image={game.image} title={game.title} size="large" />
 			<div className="flex-1">
-				<BgtText color="white" className="text-white uppercase">
+				<BgtText color="white" className="text-white">
 					{game.title}
 				</BgtText>
 				<BgtText color="white" opacity={50} size="2">

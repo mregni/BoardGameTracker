@@ -26,7 +26,7 @@ export const BgtDialogContent = (props: ComponentPropsWithoutRef<typeof Dialog.C
 	const { className, children, ...rest } = props;
 	const onClose = useContext(DialogCloseContext);
 	return (
-		<Dialog.Content className={cx("bg-dialog! relative", className)} {...rest}>
+		<Dialog.Content className={cx("bg-dialog! relative w-[calc(100vw-2rem)]", className)} {...rest}>
 			{onClose && (
 				<button
 					onClick={onClose}
@@ -45,7 +45,7 @@ type BgtDialogTitleProps = ComponentPropsWithoutRef<typeof Dialog.Title>;
 export const BgtDialogTitle = (props: BgtDialogTitleProps) => {
 	const { className, children, ...rest } = props;
 	return (
-		<Dialog.Title className={cx("text-2xl font-bold uppercase", className)} {...rest}>
+		<Dialog.Title className={cx("text-2xl font-bold", className)} {...rest}>
 			{children}
 		</Dialog.Title>
 	);
