@@ -18,7 +18,7 @@ export const BgtMostWinnerCard = (props: Props) => {
 	}
 
 	return (
-		<div className="flex flex-row justify-between items-center bg-linear-to-r from-[#9A02FB1A] to-[#09FFC41A] rounded-lg p-3">
+		<div className="flex flex-row justify-between items-center bg-linear-to-r from-[#6366F11A] to-[#09FFC41A] rounded-lg p-3">
 			<div className="flex flex-row gap-2">
 				<BgtAvatar image={image} title={name} size="large" onClick={onClick} />
 				<div className="flex flex-col justify-center gap-0">

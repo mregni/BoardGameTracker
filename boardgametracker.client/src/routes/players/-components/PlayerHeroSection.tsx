@@ -12,7 +12,7 @@ export const PlayerHeroSection = (props: Props) => {
 
 	return (
 		<div className="flex flex-col lg:flex-row gap-6">
-			<div className="aspect-square rounded-lg overflow-hidden bg-[#8502fb]/10 border border-[#8502fb]/20 w-48 mx-auto lg:mx-0">
+			<div className="aspect-square rounded-lg overflow-hidden bg-primary/10 border border-primary/20 w-48 mx-auto lg:mx-0">
 				<BgtPoster title={player.name} image={player.image} />
 			</div>
 

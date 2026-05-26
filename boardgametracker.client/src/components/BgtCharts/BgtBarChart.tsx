@@ -23,7 +23,7 @@ const theme = {
 	},
 	grid: {
 		line: {
-			stroke: "#a855f730",
+			stroke: "#24304430",
 			strokeWidth: 1,
 		},
 	},

@@ -9,20 +9,20 @@
   --breakpoint-3xl: 160rem;
 
   /* Custom Colors */
-  --color-page-black: #121212;
-  --color-card-black: #100c1d;
-  --color-card-light: #141022;
-  --color-card-border: #1e192c;
-  --color-input: #1e1a2d;
-  --color-primary: #a855f7;
-  --color-dialog: #1a0f2e;
-  --color-card: #1a0f2e;
-  --color-cancel: #a8a29e;
-  --color-error: #cc1f1f;
+  --color-page-black: #0e1117;
+  --color-card-black: #0d1420;
+  --color-card-light: #18212f;
+  --color-card-border: #243044;
+  --color-input: #1b2535;
+  --color-primary: #6366f1;
+  --color-dialog: #141c2b;
+  --color-card: #141c2b;
+  --color-cancel: #94a3b8;
+  --color-error: #dc2626;
   --color-card-value: #22d3ee;
-  --color-lime-green: #40fa47;
-  --color-error-dark: #ff1d1d1a;
-  --color-background: #0a0416;
+  --color-lime-green: #34d399;
+  --color-error-dark: #ef44441a;
+  --color-background: #0a0f1a;
 
   /* Font Family */
   --font-family-sans: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
@@ -44,7 +44,7 @@
 .radix-themes {
 	--default-font-family: "Chakra Petch", sans-serif;
 	--heading-font-family: "Chakra Petch", sans-serif;
-	--color-background: #0a0416;
+	--color-background: #0a0f1a;
 	background-color: var(--color-background);
 }
 
