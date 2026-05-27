@@ -126,7 +126,7 @@ function RouteComponent() {
 						placeholder={t("game:price.placeholder")}
 						disabled={row.original.inCollection}
 						className="w-32.5"
-						prefixLabel={settings?.currency}
+						suffixLabel={settings?.currency}
 					/>
 				),
 				header: t("game:price.label"),

@@ -31,7 +31,7 @@ export const GameFormPlayerFields = withForm({
 							type="number"
 							placeholder={t("price.placeholder")}
 							disabled={disabled}
-							prefixLabel={currency}
+							suffixLabel={currency}
 						/>
 					)}
 				</form.Field>

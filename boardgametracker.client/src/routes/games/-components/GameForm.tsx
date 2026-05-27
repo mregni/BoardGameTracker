@@ -68,8 +68,8 @@ export const GameForm = (props: Props) => {
 
 	return (
 		<BgtPage>
-			<BgtPageContent centered>
-				<BgtCard title={title}>
+			<BgtPageContent className="items-center">
+				<BgtCard title={title} className="w-full max-w-2xl">
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-3 w-full">
 							<div className="flex flex-row gap-3">

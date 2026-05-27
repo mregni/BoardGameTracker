@@ -62,7 +62,7 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageContent centered>
+			<BgtPageContent className="items-center">
 				<BgtCard title={t("new.title")} className="w-full max-w-xl">
 					<p className="text-cancel mb-4">{t("new.bgg-description")}</p>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
@@ -90,7 +90,7 @@ function RouteComponent() {
 										label={t("price.label")}
 										type="number"
 										placeholder={t("price.placeholder")}
-										prefixLabel={settings?.currency}
+										suffixLabel={settings?.currency}
 									/>
 								)}
 							</form.Field>

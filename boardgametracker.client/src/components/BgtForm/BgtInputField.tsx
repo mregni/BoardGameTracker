@@ -66,17 +66,15 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 		<FormFieldWrapper label={label} errors={field.state.meta.errors} className="w-full">
 			<div
 				className={cx(
-					"rounded-lg active:border-none flex flex-row gap-2 items-center text-[15px]",
+					"flex flex-row gap-2 items-center rounded-lg bg-background border border-primary/30 px-4 h-11 md:h-10 text-[15px] focus-within:border-primary",
 					className,
-					hasErrors && "border border-error bg-error/5!",
+					hasErrors && "border-error bg-error/5!",
+					disabled && "opacity-50 cursor-not-allowed",
 				)}
 			>
 				{prefixLabel && <BgtText color="white">{prefixLabel}</BgtText>}
 				<input
-					className={cx(
-						"w-full bg-background font- text-white px-4 h-11 md:h-10 rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-						disabled && "opacity-50 cursor-not-allowed",
-					)}
+					className="h-full w-full bg-transparent text-white focus:outline-none disabled:cursor-not-allowed"
 					value={formatInput(field.state.value, type)}
 					disabled={disabled}
 					type={type}
