@@ -26,5 +26,20 @@
   "count_one": "{{count}} game found",
   "cards": {
     "games": "Games"
+  },
+  "filters": {
+    "category": "Categoría",
+    "player-count": "Jugadores",
+    "play-time": "Tiempo de juego",
+    "weight": "Weight",
+    "any": "Any",
+    "player-count-value_one": "{{count}} player",
+    "player-count-value_other": "{{count}} players",
+    "play-time-value": "≤ {{count}} min",
+    "weight-light": "Light (< 2)",
+    "weight-medium": "Medium (2 – 3)",
+    "weight-heavy": "Heavy (> 3)",
+    "show-more": "Mostrar más filtros",
+    "show-less": "Mostrar menos filtros"
   }
 }
