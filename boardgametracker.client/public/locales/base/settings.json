@@ -159,8 +159,7 @@
 			"read-only": "The API key is read only.",
 			"read-only-description": "The API key is managed via the BGG_API_KEY environment variable and cannot be changed here.",
 			"help-title": "BGG API usage",
-			"help-description": "The BGG API allows the app to search and import game data, import your collection, and more. You can get an API key by following the instructions on the BoardGameGeek <link>request page</link>.",
-				"help-link-text": "link"
+			"help-description": "The BGG API allows the app to search and import game data, import your collection, and more. You can get an API key by following the instructions on the BoardGameGeek <requestPage>request page</requestPage>."
 		},
 		"notifications": {
 			"saved": "BGG API key saved successfully",
