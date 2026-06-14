@@ -14,6 +14,8 @@ public static class GameDtoExtensions
             YearPublished = game.YearPublished,
             Description = game.Description,
             Image = game.Image,
+            ShopUrl = game.ShopUrl,
+            Language = game.Language,
             MinPlayers = game.PlayerCount?.Min,
             MaxPlayers = game.PlayerCount?.Max,
             MinPlayTime = game.PlayTime?.MinMinutes,

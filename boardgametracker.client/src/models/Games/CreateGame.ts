@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { GameState } from "./GameState";
 
 export const CreateGameSchema = z.object({
@@ -9,18 +10,19 @@ export const CreateGameSchema = z.object({
 		})
 		.min(1, { message: "game:new.manual.game-title.required" }),
 	bggId: z.number().int().optional(),
-	buyingPrice: z.coerce.number({
-		error: "game:price.required",
-	}),
+	buyingPrice: z.coerce
+		.number()
+		.optional()
+		.transform((value) => value || null),
 	additionDate: z.coerce.date({
 		error: "game:added-date.required",
 	}),
 	state: z.nativeEnum(GameState),
 	yearPublished: z.coerce
-		.number({
-			error: "game:new.manual.year.required",
-		})
-		.min(1, { message: "game:new.manual.year.required" }),
+		.number()
+		.int()
+		.optional()
+		.transform((value) => value || null),
 	description: z.string().optional(),
 	minPlayers: z.coerce.number().int().optional(),
 	maxPlayers: z.coerce.number().int().optional(),
@@ -28,6 +30,17 @@ export const CreateGameSchema = z.object({
 	maxPlayTime: z.coerce.number().int().optional(),
 	minAge: z.coerce.number().int().optional(),
 	image: z.string().nullable().optional(),
+	shopUrl: z
+		.string()
+		.trim()
+		.refine((value) => value === "" || /^https?:\/\//i.test(value), {
+			message: "game:shop-url.invalid",
+		})
+		.optional(),
+	language: z
+		.string()
+		.optional()
+		.transform((value) => (!value || value === LANGUAGE_NONE ? null : value)),
 	hasScoring: z.boolean(),
 });
 

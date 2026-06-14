@@ -26,5 +26,40 @@
   "count_one": "{{count}} game found",
   "cards": {
     "games": "Games"
+  },
+  "filters": {
+    "category": "Category",
+    "player-count": "Players",
+    "play-time": "Play time",
+    "weight": "Weight",
+    "any": "Any",
+    "player-count-value_one": "{{count}} player",
+    "player-count-value_other": "{{count}} players",
+    "play-time-value": "≤ {{count}} min",
+    "weight-light": "Light (< 2)",
+    "weight-medium": "Medium (2 - 3)",
+    "weight-heavy": "Heavy (> 3)",
+    "show-more": "Show more filters",
+    "show-less": "Show less filters"
+  },
+  "columns": {
+    "title": "Title",
+    "language": "Language",
+    "state": "State",
+    "price": "Price",
+    "shop": "Shop",
+    "players": "Players",
+    "play-time": "Play time",
+    "weight": "Weight",
+    "rating": "Rating",
+    "added": "Added",
+    "bgg": "BGG"
+  },
+  "table": {
+    "title": "Game list",
+    "total-games": "Total games",
+    "total-price": "Total price",
+    "mean-price": "Mean price",
+    "empty": "No games match the selected filters."
   }
 }

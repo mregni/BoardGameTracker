@@ -1,9 +1,11 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtDatePicker, BgtInputField, BgtSelect, BgtTextArea } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
 import { CreateGameSchema, GameState } from "@/models";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
+import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { gameFormOpts } from "../-utils/gameFormOpts";
 
@@ -14,7 +16,16 @@ export const GameFormPlayerFields = withForm({
 		currency: undefined as string | undefined,
 	},
 	render: function Render({ form, disabled, currency }) {
-		const { t } = useTranslation("game");
+		const { t, i18n } = useTranslation("game");
+
+		const languageItems = useMemo(
+			() => [
+				{ value: LANGUAGE_NONE, label: t("language.none") },
+				{ value: LANGUAGE_INDEPENDENT, label: t("language-independent") },
+				...COMMON_LANGUAGE_CODES.map((code) => ({ value: code, label: getLanguageName(code, i18n.language) })),
+			],
+			[t, i18n.language],
+		);
 
 		return (
 			<>
@@ -32,6 +43,17 @@ export const GameFormPlayerFields = withForm({
 							placeholder={t("price.placeholder")}
 							disabled={disabled}
 							suffixLabel={currency}
+						/>
+					)}
+				</form.Field>
+				<form.Field name="shopUrl" validators={zodValidator(CreateGameSchema, "shopUrl")}>
+					{(field: AnyFieldApi) => (
+						<BgtInputField
+							field={field}
+							label={t("shop-url.label")}
+							type="text"
+							placeholder={t("shop-url.placeholder")}
+							disabled={disabled}
 						/>
 					)}
 				</form.Field>
@@ -56,6 +78,11 @@ export const GameFormPlayerFields = withForm({
 								value: value,
 							}))}
 						/>
+					)}
+				</form.Field>
+				<form.Field name="language" validators={zodValidator(CreateGameSchema, "language")}>
+					{(field: AnyFieldApi) => (
+						<BgtSelect field={field} label={t("language.label")} disabled={disabled} hasSearch items={languageItems} />
 					)}
 				</form.Field>
 				<form.Field name="yearPublished" validators={zodValidator(CreateGameSchema, "yearPublished")}>

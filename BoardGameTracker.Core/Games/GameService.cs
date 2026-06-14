@@ -78,6 +78,8 @@ public class GameService : IGameService
         var game = new Game(command.Title, command.HasScoring, command.State);
         game.UpdateYearPublished(command.YearPublished);
         game.UpdateImage(command.Image);
+        game.UpdateShopUrl(command.ShopUrl);
+        game.UpdateLanguage(command.Language);
         game.UpdateDescription(command.Description ?? string.Empty);
         game.UpdatePlayerCount(command.MinPlayers, command.MaxPlayers);
         game.UpdatePlayTime(command.MinPlayTime, command.MaxPlayTime);
@@ -115,6 +117,8 @@ public class GameService : IGameService
         game.UpdateState(command.State);
         game.UpdateYearPublished(command.YearPublished);
         game.UpdateImage(command.Image);
+        game.UpdateShopUrl(command.ShopUrl);
+        game.UpdateLanguage(command.Language);
         game.UpdateDescription(command.Description ?? string.Empty);
         game.UpdatePlayerCount(command.MinPlayers, command.MaxPlayers);
         game.UpdatePlayTime(command.MinPlayTime, command.MaxPlayTime);

@@ -6,5 +6,5 @@ namespace BoardGameTracker.Core.Games.Factories;
 
 public interface IGameFactory
 {
-    Task<Game> CreateFromBggAsync(ThingResponse.Item item, bool hasScoring, GameState state, decimal? price, DateTime? additionDate);
+    Task<Game> CreateFromBggAsync(ThingResponse.Item item, bool hasScoring, GameState state, decimal? price, DateTime? additionDate, string? shopUrl = null);
 }

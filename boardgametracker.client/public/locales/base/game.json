@@ -26,6 +26,16 @@
     "required": "BGG id is required",
     "external-page": "Open BoardGameGeek website"
   },
+  "shop-url": {
+    "label": "Shop URL",
+    "placeholder": "https://...",
+    "invalid": "Enter a valid http(s) URL"
+  },
+  "language": {
+    "label": "Language",
+    "none": "Not set"
+  },
+  "language-independent": "Language-independent",
   "update": {
     "save": "Update game",
     "title": "Update game"

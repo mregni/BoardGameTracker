@@ -19,6 +19,8 @@ public abstract class BaseGame : HasId
     public int? YearPublished { get; private set; }
     public string Description { get; private set; } = string.Empty;
     public string? Image { get; private set; }
+    public string? ShopUrl { get; private set; }
+    public string? Language { get; private set; }
 
     public PlayerCountRange? PlayerCount { get; private set; }
     public PlayTimeRange? PlayTime { get; private set; }
@@ -67,6 +69,16 @@ public abstract class BaseGame : HasId
     public void UpdateImage(string? imageUrl)
     {
         Image = imageUrl;
+    }
+
+    public void UpdateShopUrl(string? shopUrl)
+    {
+        ShopUrl = string.IsNullOrWhiteSpace(shopUrl) ? null : shopUrl;
+    }
+
+    public void UpdateLanguage(string? language)
+    {
+        Language = string.IsNullOrWhiteSpace(language) ? null : language;
     }
 
     public void UpdatePlayerCount(int? minPlayers, int? maxPlayers)

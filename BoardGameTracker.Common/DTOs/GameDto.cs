@@ -9,6 +9,8 @@ public class GameDto
     public int? YearPublished { get; set; }
     public string Description { get; set; } = string.Empty;
     public string? Image { get; set; }
+    public string? ShopUrl { get; set; }
+    public string? Language { get; set; }
     public int? MinPlayers { get; set; }
     public int? MaxPlayers { get; set; }
     public int? MinPlayTime { get; set; }

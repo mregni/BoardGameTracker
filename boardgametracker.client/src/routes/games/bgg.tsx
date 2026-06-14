@@ -53,6 +53,7 @@ function RouteComponent() {
 			date: toInputDate(undefined, true),
 			state: GameState.Owned,
 			hasScoring: true,
+			shopUrl: "",
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = BggSearchSchema.parse(value);
@@ -91,6 +92,17 @@ function RouteComponent() {
 										type="number"
 										placeholder={t("price.placeholder")}
 										suffixLabel={settings?.currency}
+									/>
+								)}
+							</form.Field>
+							<form.Field name="shopUrl" validators={zodValidator(BggSearchSchema, "shopUrl")}>
+								{(field: AnyFieldApi) => (
+									<BgtInputField
+										field={field}
+										disabled={isPending}
+										label={t("shop-url.label")}
+										type="text"
+										placeholder={t("shop-url.placeholder")}
 									/>
 								)}
 							</form.Field>

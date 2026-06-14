@@ -181,7 +181,8 @@ public class BggImportServiceTests
                 true,
                 GameState.Owned,
                 29.99m,
-                search.AdditionDate))
+                search.AdditionDate,
+                It.IsAny<string>()))
             .ReturnsAsync(createdGame);
         _gameRepositoryMock
             .Setup(x => x.CreateAsync(createdGame))
@@ -202,7 +203,71 @@ public class BggImportServiceTests
             true,
             GameState.Owned,
             29.99m,
-            search.AdditionDate), Times.Once);
+            search.AdditionDate,
+            It.IsAny<string>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportGameFromBgg_ShouldForwardShopUrl_WhenSearchHasShopUrl()
+    {
+        var search = new BggSearch
+        {
+            BggId = 77,
+            State = GameState.Wanted,
+            HasScoring = false,
+            Price = null,
+            AdditionDate = null,
+            ShopUrl = "https://shop.example.com/game"
+        };
+        var rawItem = new ThingResponse.Item
+        {
+            Id = 77,
+            Thumbnail = "thumb.jpg",
+            Image = "image.jpg",
+            Description = "A wanted game",
+            Type = "boardgame"
+        };
+        var thingResponse = CreateSucceededThingResponse([rawItem]);
+        var createdGame = new Game("Wanted Game") { Id = 3 };
+
+        _gameRepositoryMock
+            .Setup(x => x.GetGameByBggId(77))
+            .ReturnsAsync((Game?)null);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(thingResponse);
+        _gameFactoryMock
+            .Setup(x => x.CreateFromBggAsync(
+                rawItem,
+                false,
+                GameState.Wanted,
+                null,
+                null,
+                "https://shop.example.com/game"))
+            .ReturnsAsync(createdGame);
+        _gameRepositoryMock
+            .Setup(x => x.CreateAsync(createdGame))
+            .ReturnsAsync(createdGame);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        var result = await _bggImportService.ImportGameFromBgg(search);
+
+        result.Should().Be(createdGame);
+
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(77), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
+            rawItem,
+            false,
+            GameState.Wanted,
+            null,
+            null,
+            "https://shop.example.com/game"), Times.Once);
         _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
@@ -242,7 +307,8 @@ public class BggImportServiceTests
                 false,
                 GameState.Wanted,
                 null,
-                null))
+                null,
+                It.IsAny<string>()))
             .ReturnsAsync(createdGame);
         _gameRepositoryMock
             .Setup(x => x.CreateAsync(createdGame))
@@ -262,7 +328,8 @@ public class BggImportServiceTests
             false,
             GameState.Wanted,
             null,
-            null), Times.Once);
+            null,
+            It.IsAny<string>()), Times.Once);
         _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
@@ -641,7 +708,8 @@ public class BggImportServiceTests
                 true,
                 GameState.Owned,
                 34.99m,
-                addedDate))
+                addedDate,
+                It.IsAny<string>()))
             .ReturnsAsync(createdGame);
         _gameRepositoryMock
             .Setup(x => x.CreateAsync(createdGame))
@@ -658,7 +726,8 @@ public class BggImportServiceTests
             true,
             GameState.Owned,
             34.99m,
-            addedDate), Times.Once);
+            addedDate,
+            It.IsAny<string>()), Times.Once);
         _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
@@ -779,7 +848,8 @@ public class BggImportServiceTests
                 false,
                 GameState.Owned,
                 25.00m,
-                addedDate))
+                addedDate,
+                It.IsAny<string>()))
             .ReturnsAsync(createdGame);
         _gameRepositoryMock
             .Setup(x => x.CreateAsync(createdGame))
@@ -797,7 +867,8 @@ public class BggImportServiceTests
             false,
             GameState.Owned,
             25.00m,
-            addedDate), Times.Once);
+            addedDate,
+            It.IsAny<string>()), Times.Once);
         _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
@@ -855,7 +926,8 @@ public class BggImportServiceTests
                 true,
                 GameState.ForTrade,
                 19.50m,
-                addedDate))
+                addedDate,
+                It.IsAny<string>()))
             .ReturnsAsync(createdGame);
         _gameRepositoryMock
             .Setup(x => x.CreateAsync(createdGame))
@@ -872,7 +944,8 @@ public class BggImportServiceTests
             true,
             GameState.ForTrade,
             19.50m,
-            addedDate), Times.Once);
+            addedDate,
+            It.IsAny<string>()), Times.Once);
         _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();

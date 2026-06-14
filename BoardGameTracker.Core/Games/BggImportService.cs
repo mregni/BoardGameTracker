@@ -60,7 +60,8 @@ public class BggImportService : IBggImportService
             search.HasScoring,
             search.State,
             search.Price.HasValue ? (decimal?)search.Price.Value : null,
-            search.AdditionDate);
+            search.AdditionDate,
+            search.ShopUrl);
 
         await _gameRepository.CreateAsync(game);
         await _unitOfWork.SaveChangesAsync();

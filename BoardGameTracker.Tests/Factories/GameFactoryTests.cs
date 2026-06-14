@@ -183,6 +183,26 @@ public class GameFactoryTests
     }
 
     [Fact]
+    public async Task CreateFromBggAsync_ShouldSetShopUrl_WhenProvided()
+    {
+        var item = CreateBasicItem();
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null, "https://shop.example.com/game");
+
+        result.ShopUrl.Should().Be("https://shop.example.com/game");
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldNotSetShopUrl_WhenNull()
+    {
+        var item = CreateBasicItem();
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.ShopUrl.Should().BeNull();
+    }
+
+    [Fact]
     public async Task CreateFromBggAsync_ShouldSetAdditionDate_WhenProvided()
     {
         var item = CreateBasicItem();

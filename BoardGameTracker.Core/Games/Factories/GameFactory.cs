@@ -19,7 +19,7 @@ public class GameFactory : IGameFactory
         _imageService = imageService;
     }
 
-    public async Task<Game> CreateFromBggAsync(ThingResponse.Item item, bool hasScoring, GameState state, decimal? price, DateTime? additionDate)
+    public async Task<Game> CreateFromBggAsync(ThingResponse.Item item, bool hasScoring, GameState state, decimal? price, DateTime? additionDate, string? shopUrl = null)
     {
         var name = item.Name;
         if (string.IsNullOrWhiteSpace(name))
@@ -71,6 +71,7 @@ public class GameFactory : IGameFactory
         game.UpdateWeight(item.Statistics?.Ratings?.AverageWeight ?? 0);
         game.UpdateBggId(item.Id);
         game.UpdateBuyingPrice(price);
+        game.UpdateShopUrl(shopUrl);
 
         if (additionDate.HasValue)
         {

@@ -8,6 +8,7 @@
   "dashboard": "Dashboard",
   "new-session": "Add session",
   "games": "Games",
+  "games-table": "Game list",
   "items_one": "{{count}} item",
   "items_other": "{{count}} items",
   "minutes_one": "minute",

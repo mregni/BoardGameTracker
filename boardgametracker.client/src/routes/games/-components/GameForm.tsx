@@ -13,6 +13,7 @@ import { type CreateGame, CreateGameSchema } from "@/models/Games/CreateGame";
 import { GameState } from "@/models/Games/GameState";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { useGameForm } from "../-hooks/useGameForm";
 import { useImageUpload } from "../-hooks/useImageUpload";
@@ -51,9 +52,11 @@ export const GameForm = (props: Props) => {
 			minPlayTime: game?.minPlayTime ?? undefined,
 			minAge: game?.minAge ?? undefined,
 			bggId: game?.bggId ?? undefined,
-			buyingPrice: game?.buyingPrice ?? 0,
+			buyingPrice: game?.buyingPrice ?? undefined,
 			additionDate: toInputDate(game?.additionDate ?? undefined, true),
 			image: game?.image ?? null,
+			shopUrl: game?.shopUrl ?? "",
+			language: game?.language ?? LANGUAGE_NONE,
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = CreateGameSchema.parse(value);

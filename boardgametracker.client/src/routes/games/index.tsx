@@ -131,17 +131,22 @@ function RouteComponent() {
 			<BgtPageHeader
 				header={t("title")}
 				icon={Game}
-				actions={
-					canWrite
+				actions={[
+					{
+						onClick: () => navigate({ to: "/games/table" }),
+						variant: "cancel",
+						content: "common:games-table",
+					},
+					...(canWrite
 						? [
 								{
 									onClick: modals.createModal.show,
-									variant: "primary",
+									variant: "primary" as const,
 									content: "games:new",
 								},
 							]
-						: []
-				}
+						: []),
+				]}
 			></BgtPageHeader>
 			<BgtPageContent>
 				<div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2">
