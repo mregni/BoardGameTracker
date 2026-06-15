@@ -1,4 +1,5 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore;
@@ -108,7 +109,7 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
     {
         return _context.Games
             .AsNoTracking()
-            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
+            .Where(g => g.State == GameState.Owned && !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
             .OrderBy(g => g.Title)
             .ToListAsync();
     }
@@ -116,7 +117,7 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
     public Task<int> CountGamesWithNoRecentSessions(DateTime cutoffDate)
     {
         return _context.Games
-            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
+            .Where(g => g.State == GameState.Owned && !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
             .CountAsync();
     }
 
@@ -124,7 +125,7 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
     {
         return _context.Games
             .AsNoTracking()
-            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
+            .Where(g => g.State == GameState.Owned && !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
             .Select(g => new ShameGame
             {
                 Id = g.Id,
