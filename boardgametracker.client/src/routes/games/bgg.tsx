@@ -63,8 +63,8 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageContent className="items-center">
-				<BgtCard title={t("new.title")} className="w-full max-w-xl">
+			<BgtPageContent className="flex-1 items-center">
+				<BgtCard title={t("new.title")} className="w-full max-w-xl my-auto">
 					<p className="text-cancel mb-4">{t("new.bgg-description")}</p>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-4 mb-6">
