@@ -26,6 +26,7 @@ export const useUpdateGame = ({ gameId, onSuccess }: Props) => {
 				queryKey: [QUERY_KEYS.games, gameId],
 			});
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] });
 			successToast("game:notifications.updated");
 			onSuccess?.();
 		},
