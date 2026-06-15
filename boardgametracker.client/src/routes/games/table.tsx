@@ -19,7 +19,10 @@ import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 import { RoundDecimal } from "@/utils/numberUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
+import { EditableNumberCell } from "./-components/EditableNumberCell";
+import { EditableSelectCell } from "./-components/EditableSelectCell";
 import { useGamesData } from "./-hooks/useGamesData";
+import { useInlineGameUpdate } from "./-hooks/useInlineGameUpdate";
 
 export const Route = createFileRoute("/games/table")({
 	component: RouteComponent,
@@ -31,20 +34,13 @@ function RouteComponent() {
 	const { t, i18n } = useTranslation(["games", "game", "common"]);
 	const router = useRouter();
 	const { games, isLoading } = useGamesData();
+	const { updateGame } = useInlineGameUpdate();
 	const settingsQuery = useQuery(getSettings());
 	const currency = settingsQuery.data?.currency;
 	const dateFormat = settingsQuery.data?.dateFormat;
 
 	const [stateFilter, setStateFilter] = useState<string>(GameState.Wanted);
 	const [languageFilter, setLanguageFilter] = useState<string>(ANY);
-
-	const languageLabel = useCallback(
-		(code: string | null) => {
-			if (!code) return "-";
-			return code === LANGUAGE_INDEPENDENT ? t("game:language-independent") : getLanguageName(code, i18n.language);
-		},
-		[t, i18n.language],
-	);
 
 	const formatRange = useCallback((min: number | null, max: number | null, suffix = ""): string => {
 		if (min == null && max == null) return "-";
@@ -80,6 +76,19 @@ function RouteComponent() {
 	const languageItems = useMemo(
 		() => [
 			{ value: ANY, label: t("games:filters.any") },
+			{ value: LANGUAGE_NONE, label: t("game:language.none") },
+			{ value: LANGUAGE_INDEPENDENT, label: t("game:language-independent") },
+			...COMMON_LANGUAGE_CODES.map((code) => ({ value: code, label: getLanguageName(code, i18n.language) })),
+		],
+		[t, i18n.language],
+	);
+
+	const stateEditItems = useMemo(
+		() => Object.values(GameState).map((value) => ({ value, label: t(getItemStateTranslationKey(value, false)) })),
+		[t],
+	);
+	const languageEditItems = useMemo(
+		() => [
 			{ value: LANGUAGE_NONE, label: t("game:language.none") },
 			{ value: LANGUAGE_INDEPENDENT, label: t("game:language-independent") },
 			...COMMON_LANGUAGE_CODES.map((code) => ({ value: code, label: getLanguageName(code, i18n.language) })),
@@ -133,13 +142,28 @@ function RouteComponent() {
 			{
 				accessorKey: "language",
 				header: t("games:columns.language"),
-				cell: ({ row }) => languageLabel(row.original.language),
+				cell: ({ row }) => (
+					<EditableSelectCell
+						value={row.original.language ?? LANGUAGE_NONE}
+						items={languageEditItems}
+						hasSearch
+						onChange={(language) =>
+							updateGame({ ...row.original, language: language === LANGUAGE_NONE ? null : language })
+						}
+					/>
+				),
 				meta: { hideOnMobile: true },
 			},
 			{
 				accessorKey: "state",
 				header: t("games:columns.state"),
-				cell: ({ row }) => t(getItemStateTranslationKey(row.original.state, row.original.isLoaned)),
+				cell: ({ row }) => (
+					<EditableSelectCell
+						value={row.original.state}
+						items={stateEditItems}
+						onChange={(state) => updateGame({ ...row.original, state: state as GameState })}
+					/>
+				),
 				meta: { hideOnMobile: true },
 			},
 			{
@@ -152,7 +176,15 @@ function RouteComponent() {
 			{
 				accessorKey: "buyingPrice",
 				header: t("games:columns.price"),
-				cell: ({ row }) => (row.original.buyingPrice != null ? `${currency} ${row.original.buyingPrice}` : "-"),
+				cell: ({ row }) => (
+					<EditableNumberCell
+						value={row.original.buyingPrice}
+						step={0.01}
+						min={0}
+						prefix={currency}
+						onChange={(buyingPrice) => updateGame({ ...row.original, buyingPrice })}
+					/>
+				),
 				meta: { hideOnMobile: true },
 			},
 			{
@@ -196,7 +228,7 @@ function RouteComponent() {
 					),
 			},
 		],
-		[t, currency, dateFormat, languageLabel, formatRange],
+		[t, currency, dateFormat, formatRange, updateGame, stateEditItems, languageEditItems],
 	);
 
 	return (
