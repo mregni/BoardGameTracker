@@ -14,8 +14,8 @@
         <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.17" />
         <PackageReference Include="BoardGamer.BoardGameGeek" Version="0.10.0" />
-        <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.*" />
-        <PackageReference Include="Sentry.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.2*" />
+        <PackageReference Include="Sentry.AspNetCore" Version="6.6.0" />
         <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     </ItemGroup>
