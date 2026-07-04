@@ -91,7 +91,7 @@ function RouteComponent() {
 										label={t("price.label")}
 										type="number"
 										placeholder={t("price.placeholder")}
-										suffixLabel={settings?.currency}
+										prefixLabel={settings?.currency}
 									/>
 								)}
 							</form.Field>

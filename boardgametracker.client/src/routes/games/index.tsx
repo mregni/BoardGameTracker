@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useCallback, useMemo, useState } from "react";
@@ -16,11 +15,9 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useFilteredList } from "@/hooks/useFilteredList";
 import { usePermissions } from "@/hooks/usePermissions";
-import CreateGameModal from "@/routes/games/-modals/CreateGameModal";
 import { getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { filterGames, type GamesFilterSearch, GamesFilters, type WeightBucket } from "./-components/GamesFilters";
-import { useGameModals } from "./-hooks/useGameModals";
 import { useGamesData } from "./-hooks/useGamesData";
 
 const WEIGHT_BUCKETS: WeightBucket[] = ["light", "medium", "heavy"];
@@ -54,11 +51,7 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const { games, isLoading } = useGamesData();
 	const { canWrite } = usePermissions();
-	const modals = useGameModals();
 	const [showFilters, setShowFilters] = useState(false);
-
-	const settingsQuery = useQuery(getSettings());
-	const bggEnabled = settingsQuery.data?.bggStatus?.isConfigured ?? false;
 
 	const categories = useMemo(
 		() => [...new Set(games.flatMap((game) => game.categories.map((cat) => cat.name)))].sort(),
@@ -94,16 +87,6 @@ function RouteComponent() {
 
 	const { filterValue, setFilterValue, filtered: filteredGames } = useFilteredList(games, "title", categoryPreFilter);
 
-	const openManual = () => {
-		modals.createModal.hide();
-		navigate({ to: "/games/new" });
-	};
-
-	const openBgg = () => {
-		modals.createModal.hide();
-		navigate({ to: "/games/bgg" });
-	};
-
 	if (isLoading) return null;
 
 	if (games.length === 0) {
@@ -113,16 +96,8 @@ function RouteComponent() {
 				icon={Game}
 				title={t("dashboard:empty.title")}
 				description={t("dashboard:empty.description")}
-				action={canWrite ? { onClick: modals.createModal.show, label: t("new") } : undefined}
-			>
-				<CreateGameModal
-					open={modals.createModal.isOpen}
-					close={modals.createModal.hide}
-					bggEnabled={bggEnabled}
-					openBgg={openBgg}
-					openManual={openManual}
-				/>
-			</BgtEmptyPage>
+				action={canWrite ? { onClick: () => navigate({ to: "/games/add" }), label: t("new") } : undefined}
+			/>
 		);
 	}
 
@@ -140,7 +115,7 @@ function RouteComponent() {
 					...(canWrite
 						? [
 								{
-									onClick: modals.createModal.show,
+									onClick: () => navigate({ to: "/games/add" }),
 									variant: "primary" as const,
 									content: "games:new",
 								},
@@ -195,13 +170,6 @@ function RouteComponent() {
 						/>
 					))}
 				</BgtCardList>
-				<CreateGameModal
-					open={modals.createModal.isOpen}
-					close={modals.createModal.hide}
-					bggEnabled={bggEnabled}
-					openBgg={openBgg}
-					openManual={openManual}
-				/>
 			</BgtPageContent>
 		</BgtPage>
 	);

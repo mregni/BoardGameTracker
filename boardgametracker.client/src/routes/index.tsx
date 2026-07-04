@@ -70,6 +70,8 @@ function RouteComponent() {
 						textSize="8"
 						iconClassName="size-9"
 						link="/games"
+						addLink="/games/add"
+						addLabel={t("common:add-game")}
 					/>
 					<BgtTextStatistic
 						content={statistics.activePlayers}
@@ -78,6 +80,8 @@ function RouteComponent() {
 						textSize="8"
 						iconClassName="size-9"
 						link="/players"
+						addLink="/players/new"
+						addLabel={t("common:add-player")}
 					/>
 					<BgtTextStatistic
 						content={statistics.sessionsPlayed}
@@ -85,6 +89,8 @@ function RouteComponent() {
 						icon={<Calendar />}
 						textSize="8"
 						iconClassName="size-9"
+						addLink="/sessions/new"
+						addLabel={t("common:new-session")}
 					/>
 					<BgtTextStatistic
 						content={statistics.totalCollectionValue}

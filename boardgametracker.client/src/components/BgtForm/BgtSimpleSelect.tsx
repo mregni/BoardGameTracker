@@ -88,12 +88,14 @@ export const BgtSimpleSelect = (props: Props) => {
 			>
 				<Select.Trigger
 					className={cx(
-						"w-full bg-background font- text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-						"px-4 py-2 h-9 shadow-none inline-flex justify-between items-center rounded-lg leading-none text-[12px] gap-1",
+						"relative w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
+						"pl-4 pr-9 py-2 h-9 shadow-none flex items-center leading-none text-[12px]",
 					)}
 				>
-					<Select.Value placeholder={placeholder} />
-					<Select.Icon>{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}</Select.Icon>
+					<Select.Value placeholder={placeholder} className="min-w-0 flex-1 truncate text-left" />
+					<Select.Icon className="absolute right-3 top-1/2 -translate-y-1/2">
+						{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
+					</Select.Icon>
 				</Select.Trigger>
 				<Select.Portal>
 					<Select.Content

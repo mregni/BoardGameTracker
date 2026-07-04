@@ -1,7 +1,7 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { BgtDatePicker, BgtInputField, BgtSelect, BgtTextArea } from "@/components/BgtForm";
+import { BgtDatePicker, BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
 import { CreateGameSchema, GameState } from "@/models";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
@@ -42,7 +42,7 @@ export const GameFormPlayerFields = withForm({
 							type="number"
 							placeholder={t("price.placeholder")}
 							disabled={disabled}
-							suffixLabel={currency}
+							prefixLabel={currency}
 						/>
 					)}
 				</form.Field>
@@ -87,44 +87,24 @@ export const GameFormPlayerFields = withForm({
 				</form.Field>
 				<form.Field name="yearPublished" validators={zodValidator(CreateGameSchema, "yearPublished")}>
 					{(field: AnyFieldApi) => (
-						<BgtInputField
-							field={field}
-							label={t("new.manual.year.label")}
-							type="number"
-							disabled={disabled}
-							className="pr-2"
-						/>
+						<BgtInputField field={field} label={t("new.manual.year.label")} type="number" disabled={disabled} />
 					)}
 				</form.Field>
-				<form.Field name="description" validators={zodValidator(CreateGameSchema, "description")}>
+				<form.Field name="minAge" validators={zodValidator(CreateGameSchema, "minAge")}>
 					{(field: AnyFieldApi) => (
-						<BgtTextArea field={field} label={t("new.manual.description.label")} disabled={disabled} />
+						<BgtInputField field={field} label={t("new.manual.min-age.label")} type="number" disabled={disabled} />
 					)}
 				</form.Field>
-				<div className="flex flex-row gap-2">
-					<form.Field name="minPlayers" validators={zodValidator(CreateGameSchema, "minPlayers")}>
-						{(field: AnyFieldApi) => (
-							<BgtInputField
-								field={field}
-								label={t("new.manual.min-players.label")}
-								type="number"
-								disabled={disabled}
-								className="pr-2"
-							/>
-						)}
-					</form.Field>
-					<form.Field name="maxPlayers" validators={zodValidator(CreateGameSchema, "maxPlayers")}>
-						{(field: AnyFieldApi) => (
-							<BgtInputField
-								field={field}
-								label={t("new.manual.max-players.label")}
-								type="number"
-								disabled={disabled}
-								className="pr-2"
-							/>
-						)}
-					</form.Field>
-				</div>
+				<form.Field name="minPlayers" validators={zodValidator(CreateGameSchema, "minPlayers")}>
+					{(field: AnyFieldApi) => (
+						<BgtInputField field={field} label={t("new.manual.min-players.label")} type="number" disabled={disabled} />
+					)}
+				</form.Field>
+				<form.Field name="maxPlayers" validators={zodValidator(CreateGameSchema, "maxPlayers")}>
+					{(field: AnyFieldApi) => (
+						<BgtInputField field={field} label={t("new.manual.max-players.label")} type="number" disabled={disabled} />
+					)}
+				</form.Field>
 			</>
 		);
 	},

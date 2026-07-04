@@ -1,5 +1,5 @@
-import { cx } from "class-variance-authority";
 import { type KeyboardEvent, useEffect, useState } from "react";
+import { BgtInputContainer } from "@/components/BgtForm";
 
 interface Props {
 	value: number | null;
@@ -8,10 +8,11 @@ interface Props {
 	min?: number;
 	max?: number;
 	prefix?: string;
+	suffix?: string;
 	className?: string;
 }
 
-export const EditableNumberCell = ({ value, onChange, step = 1, min, max, prefix, className }: Props) => {
+export const EditableNumberCell = ({ value, onChange, step = 1, min, max, prefix, suffix, className }: Props) => {
 	const [draft, setDraft] = useState(value?.toString() ?? "");
 
 	useEffect(() => {
@@ -42,13 +43,7 @@ export const EditableNumberCell = ({ value, onChange, step = 1, min, max, prefix
 	};
 
 	return (
-		<div
-			className={cx(
-				"inline-flex items-center gap-1 h-9 w-24 px-3 bg-background text-white text-[12px] rounded-lg border border-primary/30 focus-within:border-primary",
-				className,
-			)}
-		>
-			{prefix && <span className="text-cancel">{prefix}</span>}
+		<BgtInputContainer prefix={prefix} suffix={suffix} className={className ?? "h-9 w-24 text-[12px]"}>
 			<input
 				type="number"
 				value={draft}
@@ -58,8 +53,8 @@ export const EditableNumberCell = ({ value, onChange, step = 1, min, max, prefix
 				onChange={(event) => setDraft(event.target.value)}
 				onBlur={commit}
 				onKeyDown={onKeyDown}
-				className="w-full min-w-0 bg-transparent outline-none"
+				className="w-full min-w-0 bg-transparent text-white outline-none"
 			/>
-		</div>
+		</BgtInputContainer>
 	);
 };

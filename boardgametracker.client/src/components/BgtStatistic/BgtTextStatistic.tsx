@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { cloneElement, isValidElement } from "react";
+import Plus from "@/assets/icons/plus.svg?react";
 import { BgtCard } from "../BgtCard/BgtCard";
 import { BgtText } from "../BgtText/BgtText";
 
@@ -13,10 +14,12 @@ interface Props {
 	iconClassName?: string;
 	textSize?: "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 	link?: string;
+	addLink?: string;
+	addLabel?: string;
 }
 
 export const BgtTextStatistic = (props: Props) => {
-	const { title, content, suffix, prefix, icon, iconClassName, textSize = "5", link } = props;
+	const { title, content, suffix, prefix, icon, iconClassName, textSize = "5", link, addLink, addLabel } = props;
 
 	if (content === null || content === undefined) return null;
 
@@ -40,6 +43,27 @@ export const BgtTextStatistic = (props: Props) => {
 			</BgtText>
 		</BgtCard>
 	);
+
+	if (addLink) {
+		return (
+			<div className="relative col-span-1 h-full">
+				{link ? (
+					<Link to={link} className="block h-full">
+						{card}
+					</Link>
+				) : (
+					card
+				)}
+				<Link
+					to={addLink}
+					aria-label={addLabel}
+					className="absolute bottom-3 right-3 z-10 inline-flex items-center justify-center size-8 rounded-lg bg-primary/80 text-white transition-colors hover:bg-primary"
+				>
+					<Plus className="size-4" />
+				</Link>
+			</div>
+		);
+	}
 
 	if (link) {
 		return (

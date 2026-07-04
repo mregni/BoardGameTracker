@@ -4,6 +4,7 @@ import Calendar from "@/assets/icons/calendar.svg?react";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { RecentActivity } from "@/models";
 import { toRelative } from "@/utils/dateUtils";
@@ -18,11 +19,15 @@ export const RecentActivityCard = (props: Props) => {
 
 	return (
 		<BgtCard title={t("dashboard:recent-activity")} icon={Calendar} className={className}>
-			<div className="flex flex-col gap-3">
-				{activities.map((activity) => (
-					<ActivityItem key={activity.id} activity={activity} />
-				))}
-			</div>
+			{activities.length === 0 ? (
+				<BgtNoData />
+			) : (
+				<div className="flex flex-col gap-3">
+					{activities.map((activity) => (
+						<ActivityItem key={activity.id} activity={activity} />
+					))}
+				</div>
+			)}
 		</BgtCard>
 	);
 };

@@ -1,9 +1,11 @@
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtTextArea } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
@@ -16,6 +18,7 @@ import {
 	type Game,
 } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 import { useSessionForm } from "../-hooks/useSessionForm";
 import { useSessionFormState } from "../-hooks/useSessionFormState";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
@@ -106,11 +109,20 @@ export const SessionForm = (props: Props) => {
 
 	return (
 		<BgtPage>
-			<BgtPageContent className="items-center">
-				<BgtCard title={title} className="w-full max-w-xl">
+			<BgtPageContent className="flex-1 items-center">
+				<BgtCard title={title} className="w-full max-w-3xl my-auto">
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
-						<div className="flex flex-col gap-3 w-full">
-							<SessionFormFields form={form} games={games} locations={locations} disabled={disabled} />
+						<div className="flex flex-col gap-4 w-full">
+							<div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-3">
+								<SessionFormFields form={form} games={games} locations={locations} disabled={disabled} />
+								<div className="lg:col-span-2">
+									<form.Field name="comment" validators={zodValidator(CreateSessionSchema, "comment")}>
+										{(field: AnyFieldApi) => (
+											<BgtTextArea field={field} disabled={disabled} label={t("player-session:new.comment.label")} />
+										)}
+									</form.Field>
+								</div>
+							</div>
 
 							<SessionExpansionSelector
 								expansionList={expansionList}

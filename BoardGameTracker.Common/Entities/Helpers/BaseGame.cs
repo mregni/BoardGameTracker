@@ -73,7 +73,19 @@ public abstract class BaseGame : HasId
 
     public void UpdateShopUrl(string? shopUrl)
     {
-        ShopUrl = string.IsNullOrWhiteSpace(shopUrl) ? null : shopUrl;
+        if (string.IsNullOrWhiteSpace(shopUrl))
+        {
+            ShopUrl = null;
+            return;
+        }
+
+        if (!Uri.TryCreate(shopUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new ArgumentException("ShopUrl must be an absolute http(s) URL.", nameof(shopUrl));
+        }
+
+        ShopUrl = shopUrl;
     }
 
     public void UpdateLanguage(string? language)

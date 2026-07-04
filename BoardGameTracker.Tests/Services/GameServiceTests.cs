@@ -251,6 +251,8 @@ public class GameServiceTests
             State = GameState.Owned,
             YearPublished = 2020,
             Image = "image.png",
+            ShopUrl = "https://shop.example.com/game",
+            Language = "en",
             Description = "A great game",
             MinPlayers = 2,
             MaxPlayers = 4,
@@ -276,6 +278,8 @@ public class GameServiceTests
         result.Title.Should().Be("New Game");
         result.HasScoring.Should().BeTrue();
         result.State.Should().Be(GameState.Owned);
+        result.ShopUrl.Should().Be("https://shop.example.com/game");
+        result.Language.Should().Be("en");
 
         _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
@@ -326,6 +330,8 @@ public class GameServiceTests
             HasScoring = true,
             State = GameState.Owned,
             Description = "Updated description",
+            ShopUrl = "https://shop.example.com/updated",
+            Language = "nl",
             BuyingPrice = 39.99m,
             SoldPrice = 25.00m,
             Rating = 7.5,
@@ -348,6 +354,8 @@ public class GameServiceTests
         result.Title.Should().Be("Updated Game");
         result.HasScoring.Should().BeTrue();
         result.State.Should().Be(GameState.Owned);
+        result.ShopUrl.Should().Be("https://shop.example.com/updated");
+        result.Language.Should().Be("nl");
 
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);

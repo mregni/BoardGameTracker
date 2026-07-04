@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import Target from "@/assets/icons/target.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { MostPlayedGame } from "@/models";
 
@@ -16,11 +17,15 @@ export const MostPlayedDashboardGamesCard = (props: Props) => {
 
 	return (
 		<BgtCard title={t("cards.most-played-games")} icon={Target} className={className}>
-			<div className="flex flex-col gap-3">
-				{games.map((game) => (
-					<MostPlayedGameItem key={game.id} game={game} />
-				))}
-			</div>
+			{games.length === 0 ? (
+				<BgtNoData />
+			) : (
+				<div className="flex flex-col gap-3">
+					{games.map((game) => (
+						<MostPlayedGameItem key={game.id} game={game} />
+					))}
+				</div>
+			)}
 		</BgtCard>
 	);
 };

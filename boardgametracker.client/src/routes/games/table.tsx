@@ -4,7 +4,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import List from "@/assets/icons/list.svg?react";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtSimpleSelect } from "@/components/BgtForm";
@@ -231,14 +230,13 @@ function RouteComponent() {
 		[t, currency, dateFormat, formatRange, updateGame, stateEditItems, languageEditItems],
 	);
 
+	// Pin the inline-edit dropdown columns (language = 5, state = 6) so the table-fixed
+	// layout doesn't stretch them to the widest value (e.g. "Language-independent").
+	const columnWidths: (string | null)[] = [null, null, null, null, null, "w-52", "w-52"];
+
 	return (
 		<BgtPage>
-			<BgtPageHeader
-				header={t("games:table.title")}
-				icon={List}
-				backAction={() => router.history.back()}
-				backText={t("games:back")}
-			/>
+			<BgtPageHeader header={t("games:table.title")} backAction={() => router.history.back()} />
 			<BgtPageContent>
 				<div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2">
 					<BgtSimpleSelect
@@ -263,7 +261,13 @@ function RouteComponent() {
 					/>
 					<BgtTextStatistic title={t("games:table.mean-price")} content={meanPrice} prefix={currency} />
 				</div>
-				<BgtDataTable columns={columns} data={filtered} isLoading={isLoading} noDataMessage={t("games:table.empty")} />
+				<BgtDataTable
+					columns={columns}
+					data={filtered}
+					isLoading={isLoading}
+					noDataMessage={t("games:table.empty")}
+					widths={columnWidths}
+				/>
 			</BgtPageContent>
 		</BgtPage>
 	);

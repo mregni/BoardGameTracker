@@ -17,7 +17,7 @@ export const EditableSelectCell = ({ value, items, onChange, hasSearch = false, 
 			items={items}
 			hasSearch={hasSearch}
 			onValueChange={(next) => onChange(String(next))}
-			className={cx("w-36", className)}
+			className={cx("w-full", className)}
 		/>
 	);
 };

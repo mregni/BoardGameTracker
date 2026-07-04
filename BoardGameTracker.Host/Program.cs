@@ -322,8 +322,6 @@ static void CreateFolders(IServiceProvider serviceProvider)
     diskProvider.EnsureFolder(PathHelper.FullRootImagePath);
     diskProvider.EnsureFolder(PathHelper.FullCoverImagePath);
     diskProvider.EnsureFolder(PathHelper.FullProfileImagePath);
-    diskProvider.EnsureFolder(PathHelper.FullBadgeImagePath);
-    diskProvider.EnsureFolder(PathHelper.FullCommonImagePath);
 }
 
 static async Task SeedConfig(IServiceProvider serviceProvider)

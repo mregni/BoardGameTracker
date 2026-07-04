@@ -6,6 +6,7 @@ import type { GameStateChart } from "@/models";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { BgtChartCard } from "../../../components/BgtCard/BgtChartCard";
 import { BgtPieChart } from "../../../components/BgtCharts/BgtPieChart";
+import { BgtNoData } from "../../../components/BgtNoData/BgtNoData";
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
 	data: GameStateChart[];
@@ -30,9 +31,11 @@ export const GameStateChartCard = (props: Props) => {
 
 	if (data === undefined) return null;
 
+	const hasData = pieData.some((slice) => slice.value > 0);
+
 	return (
 		<BgtChartCard title={t("charts.collection")} icon={GamePad} className={className}>
-			<BgtPieChart data={pieData} showLegend tooltipPrefix="" />
+			{hasData ? <BgtPieChart data={pieData} showLegend tooltipPrefix="" /> : <BgtNoData />}
 		</BgtChartCard>
 	);
 };

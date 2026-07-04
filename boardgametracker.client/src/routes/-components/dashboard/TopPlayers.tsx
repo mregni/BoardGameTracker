@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { DashboardTopPlayer } from "@/models";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
@@ -17,11 +18,15 @@ export const TopPlayersCard = (props: Props) => {
 
 	return (
 		<BgtCard title={t("game:titles.top-players")} icon={Trophy} className={className}>
-			<div className="flex flex-col gap-3">
-				{topPlayers.map((player) => (
-					<TopPlayerCardItem key={player.id} player={player} />
-				))}
-			</div>
+			{topPlayers.length === 0 ? (
+				<BgtNoData />
+			) : (
+				<div className="flex flex-col gap-3">
+					{topPlayers.map((player) => (
+						<TopPlayerCardItem key={player.id} player={player} />
+					))}
+				</div>
+			)}
 		</BgtCard>
 	);
 };

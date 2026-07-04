@@ -16,40 +16,25 @@ export const GameFormTimeFields = withForm({
 
 		return (
 			<>
-				<div className="flex flex-row gap-2">
-					<form.Field name="minPlayTime" validators={zodValidator(CreateGameSchema, "minPlayTime")}>
-						{(field: AnyFieldApi) => (
-							<BgtInputField
-								field={field}
-								label={t("new.manual.min-time.label")}
-								type="number"
-								disabled={disabled}
-								className="pr-2"
-								suffixLabel={t("common:minutes-abbreviation")}
-							/>
-						)}
-					</form.Field>
-					<form.Field name="maxPlayTime" validators={zodValidator(CreateGameSchema, "maxPlayTime")}>
-						{(field: AnyFieldApi) => (
-							<BgtInputField
-								field={field}
-								label={t("new.manual.max-time.label")}
-								type="number"
-								disabled={disabled}
-								className="pr-2"
-								suffixLabel={t("common:minutes-abbreviation")}
-							/>
-						)}
-					</form.Field>
-				</div>
-				<form.Field name="minAge" validators={zodValidator(CreateGameSchema, "minAge")}>
+				<form.Field name="minPlayTime" validators={zodValidator(CreateGameSchema, "minPlayTime")}>
 					{(field: AnyFieldApi) => (
 						<BgtInputField
 							field={field}
-							label={t("new.manual.min-age.label")}
+							label={t("new.manual.min-time.label")}
 							type="number"
 							disabled={disabled}
-							className="pr-2"
+							suffixLabel={t("common:minutes-abbreviation")}
+						/>
+					)}
+				</form.Field>
+				<form.Field name="maxPlayTime" validators={zodValidator(CreateGameSchema, "maxPlayTime")}>
+					{(field: AnyFieldApi) => (
+						<BgtInputField
+							field={field}
+							label={t("new.manual.max-time.label")}
+							type="number"
+							disabled={disabled}
+							suffixLabel={t("common:minutes-abbreviation")}
 						/>
 					)}
 				</form.Field>

@@ -5,6 +5,7 @@ export { BgtDateTimePicker } from "./BgtDateTimePicker";
 export { BgtFieldLabel } from "./BgtFieldLabel";
 export { BgtFormErrors } from "./BgtFormErrors";
 export { BgtImageSelector } from "./BgtImageSelector";
+export { BgtInputContainer } from "./BgtInputContainer";
 export { BgtInputField } from "./BgtInputField";
 export { BgtPlayerSelector } from "./BgtPlayerSelector";
 export { BgtSelect } from "./BgtSelect";
