@@ -14,16 +14,11 @@
   "labels": [
     "dependencies"
   ],
-  "assignees": [
-    "mregni"
-  ],
+  "rebaseWhen": "conflicted",
   "vulnerabilityAlerts": {
     "labels": [
       "security",
       "dependencies"
-    ],
-    "assignees": [
-      "mregni"
     ],
     "schedule": [
       "at any time"
