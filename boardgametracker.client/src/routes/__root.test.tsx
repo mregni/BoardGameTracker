@@ -1,3 +1,4 @@
+import { QueryClient } from "@tanstack/react-query";
 import type { FC, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@/test/test-utils";
@@ -13,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 		authStatus: { authEnabled: boolean } | null;
 		fetchAuthStatus: ReturnType<typeof vi.fn>;
 	},
+	routeContext: {} as { queryClient: import("@tanstack/react-query").QueryClient },
 	captured: {} as { Root: FC; Error: FC<{ error: Error; reset: () => void }> },
 }));
 
@@ -20,7 +22,7 @@ vi.mock("@tanstack/react-router", () => ({
 	createRootRouteWithContext: () => (config: { component: FC; errorComponent: FC }) => {
 		mocks.captured.Root = config.component;
 		mocks.captured.Error = config.errorComponent;
-		return config;
+		return { ...config, useRouteContext: () => mocks.routeContext };
 	},
 	Outlet: () => <div data-testid="outlet" />,
 	useMatch: (...args: unknown[]) => mocks.useMatch(...args),
@@ -33,7 +35,10 @@ vi.mock("@/hooks/useAuth", () => ({
 }));
 
 vi.mock("@/services/settingsService", () => ({
+	getSettingsCall: vi.fn(),
 	getEnvironmentCall: () => mocks.getEnvironmentCall(),
+	getLanguagesCall: vi.fn(),
+	getVersionInfoCall: vi.fn(),
 }));
 
 vi.mock("@/utils/sentry", () => ({
@@ -70,6 +75,7 @@ describe("RootComponent", () => {
 			authStatus: { authEnabled: false },
 			fetchAuthStatus: vi.fn().mockResolvedValue(undefined),
 		};
+		mocks.routeContext.queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 		mocks.useMatch.mockReturnValue(null);
 		mocks.useLocation.mockReturnValue({ pathname: "/", searchStr: "" });
 		mocks.getEnvironmentCall.mockResolvedValue({ enableStatistics: false });

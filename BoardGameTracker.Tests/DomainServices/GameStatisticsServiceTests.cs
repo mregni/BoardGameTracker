@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
-using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -15,7 +14,6 @@ public class GameStatisticsServiceTests
 {
     private readonly Mock<IGameSessionRepository> _gameSessionRepositoryMock;
     private readonly Mock<IGameStatisticsRepository> _gameStatisticsRepositoryMock;
-    private readonly Mock<IPlayerRepository> _playerRepositoryMock;
     private readonly Mock<ILogger<GameStatisticsService>> _loggerMock;
     private readonly GameStatisticsService _service;
 
@@ -23,13 +21,11 @@ public class GameStatisticsServiceTests
     {
         _gameSessionRepositoryMock = new Mock<IGameSessionRepository>();
         _gameStatisticsRepositoryMock = new Mock<IGameStatisticsRepository>();
-        _playerRepositoryMock = new Mock<IPlayerRepository>();
         _loggerMock = new Mock<ILogger<GameStatisticsService>>();
 
         _service = new GameStatisticsService(
             _gameSessionRepositoryMock.Object,
             _gameStatisticsRepositoryMock.Object,
-            _playerRepositoryMock.Object,
             _loggerMock.Object);
     }
 
@@ -210,8 +206,7 @@ public class GameStatisticsServiceTests
         var player = new Player("John Doe", "john.jpg") { Id = playerId };
 
         SetupDefaultRepositoryMocks(gameId);
-        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync(player);
-        _playerRepositoryMock.Setup(x => x.GetWinCount(playerId, gameId)).ReturnsAsync(15);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync((player, 15));
 
         // Act
         var result = await _service.CalculateStatisticsAsync(gameId);
@@ -230,7 +225,7 @@ public class GameStatisticsServiceTests
         // Arrange
         var gameId = 1;
         SetupDefaultRepositoryMocks(gameId);
-        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync((Player?)null);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync(((Player?)null, 0));
 
         // Act
         var result = await _service.CalculateStatisticsAsync(gameId);
@@ -248,8 +243,7 @@ public class GameStatisticsServiceTests
         var player = new Player("Jane Doe") { Id = playerId }; // No image
 
         SetupDefaultRepositoryMocks(gameId);
-        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync(player);
-        _playerRepositoryMock.Setup(x => x.GetWinCount(playerId, gameId)).ReturnsAsync(10);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync((player, 10));
 
         // Act
         var result = await _service.CalculateStatisticsAsync(gameId);
@@ -282,21 +276,6 @@ public class GameStatisticsServiceTests
     }
 
     [Fact]
-    public async Task CalculateStatisticsAsync_ShouldNotCallGetWinCount_WhenNoMostWinsPlayer()
-    {
-        // Arrange
-        var gameId = 1;
-        SetupDefaultRepositoryMocks(gameId);
-        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync((Player?)null);
-
-        // Act
-        await _service.CalculateStatisticsAsync(gameId);
-
-        // Assert
-        _playerRepositoryMock.Verify(x => x.GetWinCount(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
-    }
-
-    [Fact]
     public async Task CalculateStatisticsAsync_ShouldReturnCompleteStatistics()
     {
         // Arrange
@@ -312,8 +291,7 @@ public class GameStatisticsServiceTests
         _gameStatisticsRepositoryMock.Setup(x => x.GetAveragePlayTime(gameId)).ReturnsAsync(60.0);
         _gameStatisticsRepositoryMock.Setup(x => x.GetAverageScore(gameId)).ReturnsAsync(150.0);
         _gameStatisticsRepositoryMock.Setup(x => x.GetExpansionCount(gameId)).ReturnsAsync(5);
-        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync(player);
-        _playerRepositoryMock.Setup(x => x.GetWinCount(10, gameId)).ReturnsAsync(20);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync((player, 20));
 
         // Act
         var result = await _service.CalculateStatisticsAsync(gameId);
@@ -347,7 +325,7 @@ public class GameStatisticsServiceTests
         _gameStatisticsRepositoryMock.Setup(x => x.GetAveragePlayTime(gameId)).ReturnsAsync(0);
         _gameStatisticsRepositoryMock.Setup(x => x.GetAverageScore(gameId)).ReturnsAsync((double?)null);
         _gameStatisticsRepositoryMock.Setup(x => x.GetExpansionCount(gameId)).ReturnsAsync((int?)null);
-        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync((Player?)null);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetMostWins(gameId)).ReturnsAsync(((Player?)null, 0));
     }
 
     #endregion

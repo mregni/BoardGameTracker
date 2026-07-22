@@ -7,7 +7,7 @@ namespace BoardGameTracker.Core.Games.Interfaces;
 /// <summary>
 /// Repository for basic CRUD operations on games
 /// </summary>
-public interface IGameRepository: ICrudHelper<Game>
+public interface IGameRepository: IRepository<Game>
 {
     Task AddGameCategoriesIfNotExists(IEnumerable<GameCategory> categories);
     Task AddGameMechanicsIfNotExists(IEnumerable<GameMechanic> mechanics);

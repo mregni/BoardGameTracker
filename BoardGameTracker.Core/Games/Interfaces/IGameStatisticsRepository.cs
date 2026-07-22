@@ -8,8 +8,7 @@ public interface IGameStatisticsRepository
 {
     Task<double?> GetPricePerPlay(int gameId);
     Task<double?> GetHighestScore(int gameId);
-    Task<Player?> GetMostWins(int gameId);
-    Task<Player?> GetMostWins();
+    Task<(Player? Player, int WinCount)> GetMostWins(int gameId);
     Task<double?> GetAverageScore(int gameId);
     Task<int?> GetExpansionCount(int gameId);
     Task<double> GetAveragePlayTime(int gameId);

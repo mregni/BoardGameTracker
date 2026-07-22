@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common;
@@ -13,6 +14,7 @@ using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -140,7 +142,7 @@ public class GameServiceTests
         var game = new Game("Test Game") { Id = gameId };
 
         _gameRepositoryMock
-            .Setup(x => x.GetByIdAsync(gameId))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameByIdWithDetailsForReadSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(game);
 
         var result = await _gameService.GetGameById(gameId);
@@ -148,7 +150,11 @@ public class GameServiceTests
         result.Should().NotBeNull();
         result!.Id.Should().Be(gameId);
 
-        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        _gameRepositoryMock.Verify(
+            x => x.SingleOrDefaultAsync(
+                It.Is<GameByIdWithDetailsForReadSpec>(s => s.IsSatisfiedBy(game)),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -158,14 +164,16 @@ public class GameServiceTests
         var gameId = 999;
 
         _gameRepositoryMock
-            .Setup(x => x.GetByIdAsync(gameId))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameByIdWithDetailsForReadSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Game?)null);
 
         var result = await _gameService.GetGameById(gameId);
 
         result.Should().BeNull();
 
-        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        _gameRepositoryMock.Verify(
+            x => x.SingleOrDefaultAsync(It.IsAny<GameByIdWithDetailsForReadSpec>(), It.IsAny<CancellationToken>()),
+            Times.Once);
         VerifyNoOtherCalls();
     }
 

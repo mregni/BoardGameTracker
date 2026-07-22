@@ -1,6 +1,5 @@
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Games.Interfaces;
-using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Games;
@@ -9,18 +8,15 @@ public class GameStatisticsService : IGameStatisticsService
 {
     private readonly IGameSessionRepository _gameSessionRepository;
     private readonly IGameStatisticsRepository _gameStatisticsRepository;
-    private readonly IPlayerRepository _playerRepository;
     private readonly ILogger<GameStatisticsService> _logger;
 
     public GameStatisticsService(
         IGameSessionRepository gameSessionRepository,
         IGameStatisticsRepository gameStatisticsRepository,
-        IPlayerRepository playerRepository,
         ILogger<GameStatisticsService> logger)
     {
         _gameSessionRepository = gameSessionRepository;
         _gameStatisticsRepository = gameStatisticsRepository;
-        _playerRepository = playerRepository;
         _logger = logger;
     }
 
@@ -39,10 +35,9 @@ public class GameStatisticsService : IGameStatisticsService
             ExpansionCount = await _gameStatisticsRepository.GetExpansionCount(gameId),
         };
 
-        var mostWinPlayer = await _gameStatisticsRepository.GetMostWins(gameId);
+        var (mostWinPlayer, wins) = await _gameStatisticsRepository.GetMostWins(gameId);
         if (mostWinPlayer != null)
         {
-            var wins = await _playerRepository.GetWinCount(mostWinPlayer.Id, gameId);
             stats.MostWinsPlayer = new MostWinningPlayer
             {
                 Id = mostWinPlayer.Id,

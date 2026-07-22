@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Ardalis.Specification" Version="9.3.1" />
         <PackageReference Include="BoardGamer.BoardGameGeek" Version="0.10.0" />
         <PackageReference Include="coverlet.collector" Version="8.0.1">
           <PrivateAssets>all</PrivateAssets>

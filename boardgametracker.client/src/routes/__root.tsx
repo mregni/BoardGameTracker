@@ -13,7 +13,7 @@ import { ErrorFallback } from "@/components/ErrorBoundary/ErrorFallback";
 import { NotFound } from "@/components/NotFound/NotFound";
 import { useAuth } from "@/hooks/useAuth";
 import type { MenuItem } from "@/models";
-import { getEnvironmentCall } from "@/services/settingsService";
+import { getEnvironment } from "@/services/queries/settings";
 import { initSentry } from "@/utils/sentry";
 import { BottomNav } from "./-components/BottomNav";
 import { Sidebar } from "./-components/Sidebar";
@@ -38,6 +38,7 @@ function RootComponent() {
 	const isBare = useMatch({ from: "/_bare", shouldThrow: false });
 	const navigate = useNavigate();
 	const location = useLocation();
+	const { queryClient } = Route.useRouteContext();
 	const { isAuthenticated, authStatus, fetchAuthStatus } = useAuth();
 	const [authChecked, setAuthChecked] = useState(false);
 
@@ -57,16 +58,18 @@ function RootComponent() {
 	}, [authChecked, authStatus, isAuthenticated, isBare, navigate, location]);
 
 	useEffect(() => {
+		if (!authChecked) return;
 		if (!isAuthenticated && authStatus?.authEnabled) return;
 
-		getEnvironmentCall()
+		queryClient
+			.fetchQuery(getEnvironment())
 			.then((env) => {
 				if (env.enableStatistics) {
 					initSentry();
 				}
 			})
 			.catch(() => {});
-	}, [isAuthenticated, authStatus]);
+	}, [authChecked, isAuthenticated, authStatus, queryClient]);
 
 	if (!authChecked) {
 		return (

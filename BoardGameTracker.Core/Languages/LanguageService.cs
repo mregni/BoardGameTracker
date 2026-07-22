@@ -1,4 +1,5 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -6,10 +7,10 @@ namespace BoardGameTracker.Core.Languages;
 
 public class LanguageService : ILanguageService
 {
-    private readonly ILanguageRepository _languageRepository;
+    private readonly IRepository<Language> _languageRepository;
     private readonly ILogger<LanguageService> _logger;
 
-    public LanguageService(ILanguageRepository languageRepository, ILogger<LanguageService> logger)
+    public LanguageService(IRepository<Language> languageRepository, ILogger<LanguageService> logger)
     {
         _languageRepository = languageRepository;
         _logger = logger;

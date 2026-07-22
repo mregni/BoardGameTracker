@@ -3,7 +3,7 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 
 namespace BoardGameTracker.Core.Badges.Interfaces;
 
-public interface IBadgeRepository : ICrudHelper<Badge>
+public interface IBadgeRepository : IRepository<Badge>
 {
     Task<List<Badge>> GetPlayerBadgesAsync(int playerId);
     Task<Dictionary<int, List<Badge>>> GetPlayerBadgesBatchAsync(IEnumerable<int> playerIds);

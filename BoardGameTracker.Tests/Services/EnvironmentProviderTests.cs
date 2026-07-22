@@ -158,14 +158,14 @@ public class EnvironmentProviderTests : IDisposable
     }
 
     [Fact]
-    public void EnvironmentName_ShouldDefaultToDevelopment_WhenNoEnvironmentVariablesSet()
+    public void EnvironmentName_ShouldDefaultToProduction_WhenNoEnvironmentVariablesSet()
     {
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
         Environment.SetEnvironmentVariable("ENVIRONMENT", null);
 
         var result = _environmentProvider.EnvironmentName;
 
-        result.Should().Be("development");
+        result.Should().Be("production");
     }
 
     [Fact]
@@ -211,14 +211,14 @@ public class EnvironmentProviderTests : IDisposable
     }
 
     [Fact]
-    public void IsDevelopment_ShouldReturnTrue_WhenNoEnvironmentSet()
+    public void IsDevelopment_ShouldReturnFalse_WhenNoEnvironmentSet()
     {
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
         Environment.SetEnvironmentVariable("ENVIRONMENT", null);
 
         var result = _environmentProvider.IsDevelopment;
 
-        result.Should().BeTrue();
+        result.Should().BeFalse();
     }
 
     [Fact]

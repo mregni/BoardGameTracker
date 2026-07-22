@@ -484,7 +484,7 @@ public class GameControllerTests
             .ReturnsAsync(playerScoringChart);
 
         _gameChartServiceMock
-            .Setup(x => x.GetScoringRankedChart(gameId))
+            .Setup(x => x.GetScoringRankedChart(gameId, stats.AverageScore))
             .ReturnsAsync(scoringRankChart);
 
         // Act
@@ -501,7 +501,7 @@ public class GameControllerTests
         _gameChartServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
         _gameChartServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
         _gameChartServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
-        _gameChartServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
+        _gameChartServiceMock.Verify(x => x.GetScoringRankedChart(gameId, stats.AverageScore), Times.Once);
         VerifyNoOtherCalls();
     }
 

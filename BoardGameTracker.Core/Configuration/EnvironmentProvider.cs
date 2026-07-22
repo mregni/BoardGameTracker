@@ -6,10 +6,7 @@ namespace BoardGameTracker.Core.Configuration;
 
 public class EnvironmentProvider : IEnvironmentProvider
 {
-    public string EnvironmentName =>
-        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-        ?? Environment.GetEnvironmentVariable("ENVIRONMENT")
-        ?? "development";
+    public string EnvironmentName => EnvironmentExtensions.GetEnvironmentName();
 
     public int Port => int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var parsedPort) && parsedPort >= 0
         ? parsedPort

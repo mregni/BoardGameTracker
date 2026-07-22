@@ -1,11 +1,12 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Badges.Interfaces;
+using BoardGameTracker.Core.Badges.Specifications;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Badges;
 
-public class BadgeRepository : CrudHelper<Badge>,IBadgeRepository
+public class BadgeRepository : EfRepository<Badge>, IBadgeRepository
 {
     private readonly MainDbContext _context;
     public BadgeRepository(MainDbContext context) : base(context)
@@ -15,9 +16,7 @@ public class BadgeRepository : CrudHelper<Badge>,IBadgeRepository
 
     public Task<List<Badge>> GetPlayerBadgesAsync(int playerId)
     {
-        return _context.Badges
-            .Where(x => x.Players.Any(p => p.Id == playerId))
-            .ToListAsync();
+        return ListAsync(new BadgesByPlayerSpec(playerId));
     }
 
     public async Task<Dictionary<int, List<Badge>>> GetPlayerBadgesBatchAsync(IEnumerable<int> playerIds)

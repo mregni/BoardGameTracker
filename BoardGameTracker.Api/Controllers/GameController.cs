@@ -152,7 +152,7 @@ public class GameController : ControllerBase
         var playByDayChart = await _gameChartService.GetPlayByDayChart(id);
         var playerCountChart = await _gameChartService.GetPlayerCountChart(id);
         var playerScoringChart = await _gameChartService.GetPlayerScoringChart(id);
-        var scoringRankChart = await _gameChartService.GetScoringRankedChart(id);
+        var scoringRankChart = await _gameChartService.GetScoringRankedChart(id, stats.AverageScore);
 
         return Ok(new GameStatisticsResponse
         {

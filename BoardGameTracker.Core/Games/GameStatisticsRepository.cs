@@ -36,43 +36,16 @@ public class GameStatisticsRepository : IGameStatisticsRepository
         return Math.Round(gameData.BuyingPrice.Value / gameData.SessionCount, 2);
     }
 
-    public async Task<double?> GetHighestScore(int gameId)
+    public Task<double?> GetHighestScore(int gameId)
     {
-        var hasAnySessions = await _context.Sessions
-            .AsNoTracking()
-            .Where(x => x.GameId == gameId)
-            .AnyAsync();
-
-        if (!hasAnySessions)
-        {
-            return null;
-        }
-
-        return await GameSessionsWithPlayerSessions(gameId)
+        return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
             .MaxAsync(x => x.Score);
     }
 
-    public Task<Player?> GetMostWins(int gameId)
+    public async Task<(Player? Player, int WinCount)> GetMostWins(int gameId)
     {
-        return GetMostWinsInternal(gameId);
-    }
-
-    public Task<Player?> GetMostWins()
-    {
-        return GetMostWinsInternal(null);
-    }
-
-    private async Task<Player?> GetMostWinsInternal(int? gameId)
-    {
-        var sessionsQuery = SessionsWithPlayerSessions();
-
-        if (gameId.HasValue)
-        {
-            sessionsQuery = sessionsQuery.Where(x => x.GameId == gameId.Value);
-        }
-
-        var playerSession = await sessionsQuery
+        var playerSession = await GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
             .Where(x => x.Won)
             .GroupBy(x => x.PlayerId)
@@ -82,27 +55,19 @@ public class GameStatisticsRepository : IGameStatisticsRepository
 
         if (playerSession == null)
         {
-            return null;
+            return (null, 0);
         }
 
-        return await _context.Players
+        var player = await _context.Players
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == playerSession.PlayerId);
+
+        return (player, playerSession.Count);
     }
 
-    public async Task<double?> GetAverageScore(int gameId)
+    public Task<double?> GetAverageScore(int gameId)
     {
-        var hasAnySessions = await _context.Sessions
-            .AsNoTracking()
-            .Where(x => x.GameId == gameId)
-            .AnyAsync();
-
-        if (!hasAnySessions)
-        {
-            return null;
-        }
-
-        return await GameSessionsWithPlayerSessions(gameId)
+        return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
             .AverageAsync(x => x.Score);
     }
@@ -118,17 +83,12 @@ public class GameStatisticsRepository : IGameStatisticsRepository
 
     public async Task<double> GetAveragePlayTime(int gameId)
     {
-        var sessions = await _context.Sessions
+        var average = await _context.Sessions
             .AsNoTracking()
             .Where(x => x.GameId == gameId)
-            .ToListAsync();
+            .AverageAsync(x => (double?)(x.End - x.Start).TotalMinutes);
 
-        if (sessions.Count == 0)
-        {
-            return 0;
-        }
-
-        return sessions.Average(x => (x.End - x.Start).TotalMinutes);
+        return average ?? 0;
     }
 
     public async Task<double?> GetMeanPayedAsync()

@@ -6,6 +6,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -49,7 +50,7 @@ public class GameService : IGameService
     public Task<Game?> GetGameById(int id)
     {
         _logger.LogDebug("Fetching game {GameId}", id);
-        return _gameRepository.GetByIdAsync(id);
+        return _gameRepository.SingleOrDefaultAsync(new GameByIdWithDetailsForReadSpec(id));
     }
 
     public async Task Delete(int id)

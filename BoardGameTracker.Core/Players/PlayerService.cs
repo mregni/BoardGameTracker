@@ -6,6 +6,7 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
+using BoardGameTracker.Core.Players.Specifications;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -64,7 +65,7 @@ public class PlayerService : IPlayerService
     public async Task<Player> Update(UpdatePlayerCommand command)
     {
         _logger.LogDebug("Updating player {PlayerId}", command.Id);
-        var dbPlayer = await _playerRepository.GetByIdAsync(command.Id);
+        var dbPlayer = await _playerRepository.SingleOrDefaultAsync(new PlayerByIdForUpdateSpec(command.Id));
         if (dbPlayer == null)
         {
             throw new EntityNotFoundException(nameof(Player), command.Id);

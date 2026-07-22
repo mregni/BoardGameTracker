@@ -70,15 +70,14 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IGameNightService, GameNightService>();
         serviceCollection.AddScoped<ISettingsService, SettingsService>();
 
+        serviceCollection.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+        serviceCollection.AddScoped(typeof(IReadRepository<>), typeof(EfReadRepository<>));
+
         serviceCollection.AddScoped<IGameRepository, GameRepository>();
         serviceCollection.AddScoped<IGameSessionRepository, GameSessionRepository>();
         serviceCollection.AddScoped<IGameStatisticsRepository, GameStatisticsRepository>();
         serviceCollection.AddScoped<IPlayerRepository, PlayerRepository>();
         serviceCollection.AddScoped<ISessionRepository, SessionRepository>();
-        serviceCollection.AddScoped<ILocationRepository, LocationRepository>();
-        serviceCollection.AddScoped<ILoanRepository, LoanRepository>();
-        serviceCollection.AddScoped<IDashboardRepository, DashboardRepository>();
-        serviceCollection.AddScoped<ILanguageRepository, LanguageRepository>();
         serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
         serviceCollection.AddScoped<ICompareRepository, CompareRepository>();
         serviceCollection.AddScoped<IGameNightRepository, GameNightRepository>();
