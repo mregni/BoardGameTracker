@@ -3,6 +3,13 @@ name: Security Scanning
 on:
   pull_request:
     branches: [master]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".github/images/**"
+      - "LICENSE"
+      - "crowdin.yml"
+      - ".vscode/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
