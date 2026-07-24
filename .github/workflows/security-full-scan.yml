@@ -12,7 +12,6 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
   RESOURCE_GROUP: bgt-security-scan-${{ github.run_id }}
   AZURE_LOCATION: westeurope
 
@@ -23,6 +22,7 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: read
+      packages: write
       id-token: write
       security-events: write
       actions: read
@@ -34,6 +34,10 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Compute image name
+        id: image
+        run: echo "name=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -52,7 +56,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:security-scan-${{ github.run_id }}
+          provenance: false
+          tags: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:security-scan-${{ github.run_id }}
           cache-from: type=gha
           build-args: |
             VERSION=0.0.0-security
@@ -84,9 +89,10 @@ jobs:
       - name: Deploy Bicep template
         id: deploy
         env:
-          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
           SEC_DB_PASSWORD: ${{ steps.secrets.outputs.db_password }}
           SEC_JWT_SECRET: ${{ steps.secrets.outputs.jwt_secret }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           RESULT=$(az deployment group create \
             --resource-group "$RESOURCE_GROUP" \
@@ -95,6 +101,8 @@ jobs:
               imageName="$IMAGE_REF" \
               dbPassword="$SEC_DB_PASSWORD" \
               jwtSecret="$SEC_JWT_SECRET" \
+              registryUsername="$GITHUB_ACTOR" \
+              registryPassword="$GHCR_TOKEN" \
             --query "properties.outputs" \
             --output json)
 

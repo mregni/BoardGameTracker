@@ -9,6 +9,13 @@ param dbPassword string
 @secure()
 param jwtSecret string
 
+@description('Username for pulling the image from ghcr.io')
+param registryUsername string
+
+@description('Token for pulling the image from ghcr.io')
+@secure()
+param registryPassword string
+
 @description('Azure region for all resources')
 param location string = resourceGroup().location
 
@@ -99,6 +106,14 @@ resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: [
         { name: 'db-password', value: dbPassword }
         { name: 'jwt-secret', value: jwtSecret }
+        { name: 'ghcr-token', value: registryPassword }
+      ]
+      registries: [
+        {
+          server: 'ghcr.io'
+          username: registryUsername
+          passwordSecretRef: 'ghcr-token'
+        }
       ]
       ingress: {
         external: true
