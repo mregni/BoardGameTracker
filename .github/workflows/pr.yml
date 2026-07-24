@@ -3,7 +3,7 @@ name: PR Quality
 on:
   pull_request:
     branches: [master]
-    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+    types: [opened, synchronize, reopened, edited]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
