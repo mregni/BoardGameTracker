@@ -5,6 +5,10 @@ on:
     branches: [master]
     types: [opened, synchronize, reopened, edited, labeled, unlabeled]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   labeler:
     name: PR Labeler

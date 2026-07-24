@@ -8,6 +8,10 @@ on:
       - "docs/**"
       - ".github/workflows/docs.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   REGISTRY: ${{ vars.DOCKER_REGISTRY || 'docker.io' }}
   IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME || 'uping/boardgametracker' }}
