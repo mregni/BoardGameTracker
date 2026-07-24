@@ -115,19 +115,22 @@ jobs:
         env:
           APP_URL: ${{ steps.deploy.outputs.app_url }}
         run: |
+          set -euo pipefail
+
           echo "Polling $APP_URL/api/settings ..."
 
-          for i in $(seq 1 120); do
-            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" "$APP_URL/api/settings" 2>/dev/null || echo "000")
+          for i in $(seq 1 60); do
+            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "$APP_URL/api/settings" 2>/dev/null || echo "000")
+            echo "Attempt $i: HTTP $HTTP_CODE"
             if [ "$HTTP_CODE" = "200" ]; then
-              echo "Application is healthy after ${i}s"
+              echo "Application is healthy"
               break
             fi
-            if [ "$i" -eq 120 ]; then
-              echo "::error::Application did not become healthy within 120s (last HTTP $HTTP_CODE)"
+            if [ "$i" -eq 60 ]; then
+              echo "::error::Application did not become healthy (last HTTP $HTTP_CODE)"
               exit 1
             fi
-            sleep 1
+            sleep 5
           done
 
       - name: Authenticate and extract JWT
@@ -200,7 +203,7 @@ jobs:
 
       - name: Upload SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4
-        if: always()
+        if: always() && hashFiles('report_sarif.json') != ''
         with:
           sarif_file: report_sarif.json
           category: zap-full-scan
@@ -216,6 +219,25 @@ jobs:
             report_md.md
             report_sarif.json
           retention-days: 90
+
+      - name: Collect Azure diagnostics
+        if: failure()
+        run: |
+          az extension add --name containerapp --upgrade || true
+
+          echo "=== bgt-api-sec status ==="
+          az containerapp show -g "$RESOURCE_GROUP" -n bgt-api-sec \
+            --query "{provisioning: properties.provisioningState, running: properties.runningStatus}" -o json || true
+          az containerapp revision list -g "$RESOURCE_GROUP" -n bgt-api-sec -o table || true
+
+          echo "=== bgt-api-sec system log ==="
+          az containerapp logs show -g "$RESOURCE_GROUP" -n bgt-api-sec --type system --tail 100 || true
+
+          echo "=== bgt-api-sec console log ==="
+          az containerapp logs show -g "$RESOURCE_GROUP" -n bgt-api-sec --type console --tail 100 || true
+
+          echo "=== postgres-bgt-sec console log ==="
+          az containerapp logs show -g "$RESOURCE_GROUP" -n postgres-bgt-sec --type console --tail 50 || true
 
       - name: Delete Azure resource group
         if: always()
