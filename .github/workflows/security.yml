@@ -40,6 +40,8 @@ jobs:
 
       - name: Check for vulnerable packages
         run: |
+          set -euo pipefail
+
           dotnet list ./BoardGameTracker.sln package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt
 
           if grep -q "has the following vulnerable packages" vulnerable.txt; then
@@ -83,7 +85,7 @@ jobs:
       - name: Audit for vulnerabilities
         run: |
           cd boardgametracker.client
-          pnpm audit --audit-level=moderate
+          pnpm audit --audit-level=high --prod
 
   secret-detection:
     name: Secret Detection
