@@ -98,13 +98,14 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+          VERSION: ${{ steps.versioning.outputs.version }}
         run: |
           ./.sonar/scanner/dotnet-sonarscanner begin \
-            /k:"${{ env.SONAR_PROJECT_KEY }}" \
-            /o:"${{ env.SONAR_ORGANIZATION }}" \
+            /k:"$SONAR_PROJECT_KEY" \
+            /o:"$SONAR_ORGANIZATION" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.token="${{ env.SONAR_TOKEN }}" \
-            /v:"${{ steps.versioning.outputs.version }}" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /v:"$VERSION" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
             /d:sonar.javascript.lcov.reportPaths="coverage/lcov.info" \
@@ -171,7 +172,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ env.SONAR_TOKEN }}"
+        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN"
         if: env.SONAR_TOKEN != ''
 
       - name: Upload test results

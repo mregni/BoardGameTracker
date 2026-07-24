@@ -77,20 +77,24 @@ jobs:
       - name: Create resource group
         run: |
           az group create \
-            --name "${{ env.RESOURCE_GROUP }}" \
-            --location "${{ env.AZURE_LOCATION }}" \
-            --tags purpose=security-scan run_id=${{ github.run_id }}
+            --name "$RESOURCE_GROUP" \
+            --location "$AZURE_LOCATION" \
+            --tags purpose=security-scan run_id="$GITHUB_RUN_ID"
 
       - name: Deploy Bicep template
         id: deploy
+        env:
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          SEC_DB_PASSWORD: ${{ steps.secrets.outputs.db_password }}
+          SEC_JWT_SECRET: ${{ steps.secrets.outputs.jwt_secret }}
         run: |
           RESULT=$(az deployment group create \
-            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --resource-group "$RESOURCE_GROUP" \
             --template-file infra/security-scan.bicep \
             --parameters \
-              imageName="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}" \
-              dbPassword="${{ steps.secrets.outputs.db_password }}" \
-              jwtSecret="${{ steps.secrets.outputs.jwt_secret }}" \
+              imageName="$IMAGE_REF" \
+              dbPassword="$SEC_DB_PASSWORD" \
+              jwtSecret="$SEC_JWT_SECRET" \
             --query "properties.outputs" \
             --output json)
 
@@ -100,8 +104,9 @@ jobs:
           echo "Application URL: $APP_URL"
 
       - name: Wait for application to become healthy
+        env:
+          APP_URL: ${{ steps.deploy.outputs.app_url }}
         run: |
-          APP_URL="${{ steps.deploy.outputs.app_url }}"
           echo "Polling $APP_URL/api/settings ..."
 
           for i in $(seq 1 120); do
@@ -122,17 +127,28 @@ jobs:
         env:
           ZAP_TEST_USERNAME: ${{ secrets.ZAP_TEST_USERNAME }}
           ZAP_TEST_PASSWORD: ${{ secrets.ZAP_TEST_PASSWORD }}
+          APP_URL: ${{ steps.deploy.outputs.app_url }}
         run: |
-          APP_URL="${{ steps.deploy.outputs.app_url }}"
+          set -euo pipefail
+
+          PAYLOAD=$(jq -n \
+            --arg u "$ZAP_TEST_USERNAME" \
+            --arg p "$ZAP_TEST_PASSWORD" \
+            '{username: $u, password: $p}')
 
           RESPONSE=$(curl -sf -X POST "$APP_URL/api/auth/login" \
             -H "Content-Type: application/json" \
-            -d "{\"username\": \"${{ env.ZAP_TEST_USERNAME }}\", \"password\": \"${{ env.ZAP_TEST_PASSWORD }}\"}")
+            --data-binary "$PAYLOAD")
 
-          TOKEN=$(echo "$RESPONSE" | jq -r '.accessToken')
+          TOKEN=$(printf '%s' "$RESPONSE" | jq -r '.accessToken // empty')
 
-          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+          if [ -z "$TOKEN" ]; then
             echo "::error::Failed to extract JWT from login response"
+            exit 1
+          fi
+
+          if ! printf '%s' "$TOKEN" | grep -Eq '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'; then
+            echo "::error::Login response did not contain a well-formed JWT"
             exit 1
           fi
 
@@ -179,7 +195,7 @@ jobs:
         if: always()
         run: |
           az group delete \
-            --name "${{ env.RESOURCE_GROUP }}" \
+            --name "$RESOURCE_GROUP" \
             --yes \
             --no-wait
           echo "Resource group deletion initiated (async)"

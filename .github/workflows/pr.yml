@@ -34,11 +34,10 @@ jobs:
       - name: Remove old size labels
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          REPO=${{ github.repository }}
           for LABEL in "size/XS" "size/S" "size/M" "size/L" "size/XL"; do
-            gh api "repos/$REPO/issues/$PR_NUMBER/labels/$LABEL" -X DELETE 2>/dev/null || true
+            gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/labels/$LABEL" -X DELETE 2>/dev/null || true
           done
 
       - name: Label PR by size
