@@ -1,5 +1,8 @@
 name: "BoardGameTracker CodeQL Config"
 
+queries:
+  - uses: security-extended
+
 query-filters:
   - exclude:
       id: cs/log-forging
