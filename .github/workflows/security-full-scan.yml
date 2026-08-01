@@ -201,23 +201,15 @@ jobs:
             -config replacer.full_list(0).initiators="
           rules_file_name: ".zap/rules.tsv"
 
-      - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
-        if: always() && hashFiles('report_sarif.json') != ''
-        with:
-          sarif_file: report_sarif.json
-          category: zap-full-scan
-
       - name: Upload scan reports
         uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: zap-full-scan-reports-${{ github.run_id }}
+          name: zap-api-scan-reports-${{ github.run_id }}
           path: |
             report_html.html
             report_json.json
             report_md.md
-            report_sarif.json
           retention-days: 90
 
       - name: Collect Azure diagnostics
