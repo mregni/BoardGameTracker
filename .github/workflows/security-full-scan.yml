@@ -228,8 +228,8 @@ jobs:
           echo "=== bgt-api-sec console log ==="
           az containerapp logs show -g "$RESOURCE_GROUP" -n bgt-api-sec --type console --tail 100 || true
 
-          echo "=== postgres-bgt-sec console log ==="
-          az containerapp logs show -g "$RESOURCE_GROUP" -n postgres-bgt-sec --type console --tail 50 || true
+          echo "=== postgres sidecar console log ==="
+          az containerapp logs show -g "$RESOURCE_GROUP" -n bgt-api-sec --container postgres --type console --tail 50 || true
 
       - name: Delete Azure resource group
         if: always()

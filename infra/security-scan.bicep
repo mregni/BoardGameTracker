@@ -52,57 +52,6 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
-resource postgresApp 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'postgres-bgt-sec'
-  location: location
-  tags: tags
-  properties: {
-    managedEnvironmentId: containerAppEnv.id
-    configuration: {
-      secrets: [
-        { name: 'db-password', value: dbPassword }
-      ]
-      ingress: {
-        external: false
-        targetPort: 5432
-        transport: 'tcp'
-        exposedPort: 5432
-      }
-    }
-    template: {
-      containers: [
-        {
-          name: 'postgres'
-          image: 'docker.io/library/postgres:16-alpine'
-          resources: {
-            cpu: json('0.5')
-            memory: '1Gi'
-          }
-          env: [
-            { name: 'POSTGRES_DB', value: 'boardgametracker' }
-            { name: 'POSTGRES_USER', value: 'bgtuser' }
-            { name: 'POSTGRES_PASSWORD', secretRef: 'db-password' }
-          ]
-          probes: [
-            {
-              type: 'Readiness'
-              tcpSocket: {
-                port: 5432
-              }
-              initialDelaySeconds: 5
-              periodSeconds: 10
-            }
-          ]
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
-      }
-    }
-  }
-}
-
 resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: 'bgt-api-sec'
   location: location
@@ -132,6 +81,19 @@ resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
     template: {
       containers: [
         {
+          name: 'postgres'
+          image: 'docker.io/library/postgres:16-alpine'
+          resources: {
+            cpu: json('0.5')
+            memory: '1Gi'
+          }
+          env: [
+            { name: 'POSTGRES_DB', value: 'boardgametracker' }
+            { name: 'POSTGRES_USER', value: 'bgtuser' }
+            { name: 'POSTGRES_PASSWORD', secretRef: 'db-password' }
+          ]
+        }
+        {
           name: 'bgt-api'
           image: imageName
           resources: {
@@ -141,7 +103,7 @@ resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
           env: [
             { name: 'ASPNETCORE_ENVIRONMENT', value: 'production' }
             { name: 'ASPNETCORE_URLS', value: 'http://*:5444' }
-            { name: 'DB_HOST', value: postgresApp.properties.configuration.ingress.fqdn }
+            { name: 'DB_HOST', value: 'localhost' }
             { name: 'DB_PORT', value: '5432' }
             { name: 'DB_USER', value: 'bgtuser' }
             { name: 'DB_PASSWORD', secretRef: 'db-password' }
