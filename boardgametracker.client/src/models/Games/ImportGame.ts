@@ -1,10 +1,5 @@
 import type { GameState } from "./GameState";
 
-export interface BggImportResults {
-	statusCode: number;
-	games: ImportGame[];
-}
-
 export interface ImportGame {
 	title: string;
 	bggId: number;

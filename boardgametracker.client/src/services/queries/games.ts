@@ -39,12 +39,9 @@ export const getBggCollection = (username: string) =>
 	queryOptions({
 		queryKey: [QUERY_KEYS.game, QUERY_KEYS.bgg, username],
 		queryFn: () => getBggCollectionCall(username),
+		// The backend blocks until BGG has the collection ready, so the response is terminal:
+		// the games array on success, or an HTTP error surfaced as `error`. No polling needed.
 		retry: false,
-		refetchInterval: (query) => {
-			if (query.state.error) return false;
-			return query.state.data?.statusCode === 200 ? false : 1000;
-		},
-		refetchIntervalInBackground: false,
 	});
 
 export const getShames = createListQuery(QUERY_KEYS.shames, getShamesCall);

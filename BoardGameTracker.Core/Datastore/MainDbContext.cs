@@ -1,4 +1,3 @@
-using System.Reflection;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Entities.Helpers;
@@ -39,7 +38,6 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(builder);
 
-        BuildIds(builder);
         ConfigureValueObjects(builder);
         BuildGame(builder);
         BuildGameSessions(builder);
@@ -50,23 +48,6 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
         BuildAuthEntities(builder);
 
         SeedDatabase(builder);
-    }
-
-    private static void BuildIds(ModelBuilder builder)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        var @namespace = typeof(Game).Namespace;
-        var types = assembly.GetTypes()
-            .Where(t => t.Namespace == @namespace)
-            .ToArray();
-
-        foreach (var type in types)
-        {
-            if (typeof(HasId).IsAssignableFrom(type) && !type.IsAbstract)
-            {
-                builder.Entity(type).HasKey("Id");
-            }
-        }
     }
 
     private static void ConfigureValueObjects(ModelBuilder builder)

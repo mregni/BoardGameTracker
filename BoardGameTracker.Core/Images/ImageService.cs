@@ -14,6 +14,7 @@ namespace BoardGameTracker.Core.Images;
 public class ImageService : IImageService
 {
     private const int ImageSize = 512;
+    private const long MaxDownloadBytes = 15 * 1024 * 1024;
 
     private readonly IDiskProvider _diskProvider;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -36,8 +37,19 @@ public class ImageService : IImageService
 
             if (response.IsSuccessStatusCode)
             {
+                if (response.Content.Headers.ContentLength is > MaxDownloadBytes)
+                {
+                    _logger.LogWarning("Image at {ImageUrl} exceeds the {Max} byte limit, using placeholder", imageUrl, MaxDownloadBytes);
+                    return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
+                }
+
                 var fileName = CreateFileNameFromUrl(imageUrl, imageFileName);
-                var imageContent = await response.Content.ReadAsByteArrayAsync();
+                var imageContent = await ReadWithLimitAsync(response.Content, MaxDownloadBytes);
+                if (imageContent == null)
+                {
+                    _logger.LogWarning("Image at {ImageUrl} exceeds the {Max} byte limit, using placeholder", imageUrl, MaxDownloadBytes);
+                    return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
+                }
 
                 using var image = Image.Load(imageContent);
                 image.Mutate(x => x.Resize(ImageSize, ImageSize));
@@ -89,18 +101,45 @@ public class ImageService : IImageService
 
     public void DeleteImage(string? image)
     {
-        if (image == null)
+        if (string.IsNullOrWhiteSpace(image))
         {
             return;
         }
-        
-        _diskProvider.DeleteFile(image);
+
+        var physicalPath = PathHelper.MapImageWebPathToPhysical(image);
+        if (physicalPath == null)
+        {
+            _logger.LogWarning("Refusing to delete image outside the images directory: {Image}", image);
+            return;
+        }
+
+        _diskProvider.DeleteFile(physicalPath);
     }
 
     private static string CreateFileNameFromUrl(string imageUrl, string fileName)
     {
-        var extension = Path.GetExtension(imageUrl);
+        var urlPath = Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri) ? uri.AbsolutePath : imageUrl;
+        var extension = Path.GetExtension(urlPath);
         return $"{fileName}{extension}";
+    }
+
+    private static async Task<byte[]?> ReadWithLimitAsync(HttpContent content, long maxBytes)
+    {
+        await using var stream = await content.ReadAsStreamAsync();
+        using var buffer = new MemoryStream();
+        var chunk = new byte[81920];
+        int read;
+        while ((read = await stream.ReadAsync(chunk)) > 0)
+        {
+            if (buffer.Length + read > maxBytes)
+            {
+                return null;
+            }
+
+            buffer.Write(chunk, 0, read);
+        }
+
+        return buffer.ToArray();
     }
 
     private static string CreateNoImageImages(string fileName, string absolutePath, string relativePath)

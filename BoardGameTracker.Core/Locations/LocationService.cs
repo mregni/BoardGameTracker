@@ -24,7 +24,7 @@ public class LocationService : ILocationService
     public Task<List<Location>> GetLocations()
     {
         _logger.LogDebug("Fetching all locations");
-        return _locationRepository.ListAsync(new LocationsWithSessionsSpec());
+        return _locationRepository.ListAsync(new LocationsOrderedByNameSpec());
     }
 
     public Task<Location?> GetByIdAsync(int id)

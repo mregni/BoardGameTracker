@@ -514,7 +514,7 @@ public class GameControllerTests
     {
         // Arrange
         var username = "testuser";
-        var importResult = new BggImportResult();
+        var importResult = new List<BggImportGame>();
 
         _bggImportServiceMock
             .Setup(x => x.ImportBggCollection(username))
@@ -525,7 +525,7 @@ public class GameControllerTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().BeAssignableTo<BggImportResult>();
+        okResult.Value.Should().BeAssignableTo<IList<BggImportGame>>();
 
         _bggImportServiceMock.Verify(x => x.ImportBggCollection(username), Times.Once);
         VerifyNoOtherCalls();

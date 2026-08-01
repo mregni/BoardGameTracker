@@ -220,11 +220,6 @@ public class AuthService : IAuthService
     private static string GenerateTempPassword(int length = 16)
     {
         const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%";
-        return string.Create(length, chars, static (span, chars) =>
-        {
-            var bytes = RandomNumberGenerator.GetBytes(span.Length);
-            for (var i = 0; i < span.Length; i++)
-                span[i] = chars[bytes[i] % chars.Length];
-        });
+        return new string(RandomNumberGenerator.GetItems<char>(chars, length));
     }
 }

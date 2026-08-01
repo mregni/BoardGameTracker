@@ -40,6 +40,7 @@ public class BggImportServiceTests
         _settingsServiceMock.Setup(x => x.IsBggEnabled()).ReturnsAsync(true);
         _gameFactoryMock = new Mock<IGameFactory>();
         _gameRepositoryMock = new Mock<IGameRepository>();
+        _gameRepositoryMock.Setup(x => x.GetGameByBggId(It.IsAny<int>())).ReturnsAsync((Game?)null);
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _loggerMock = new Mock<ILogger<BggImportService>>();
 
@@ -68,11 +69,6 @@ public class BggImportServiceTests
     private static ThingResponse CreateSucceededThingResponse(IEnumerable<ThingResponse.Item> items)
     {
         return new ThingResponse(items);
-    }
-
-    private static CollectionResponse CreateFailedCollectionResponse()
-    {
-        return (CollectionResponse)RuntimeHelpers.GetUninitializedObject(typeof(CollectionResponse));
     }
 
     private static CollectionResponse CreateSucceededCollectionResponse(IEnumerable<CollectionResponse.Item> items)
@@ -399,25 +395,7 @@ public class BggImportServiceTests
     #region ImportBggCollection Tests
 
     [Fact]
-    public async Task ImportBggCollection_ShouldReturnNull_WhenApiResponseSucceededIsFalse()
-    {
-        var userName = "testuser";
-        var collectionResponse = CreateFailedCollectionResponse();
-
-        _bggClientMock
-            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
-            .ReturnsAsync(collectionResponse);
-
-        var result = await _bggImportService.ImportBggCollection(userName);
-
-        result.Should().BeNull();
-
-        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ImportBggCollection_ShouldReturnResultWithEmptyGames_WhenItemListIsEmpty()
+    public async Task ImportBggCollection_ShouldReturnEmptyList_WhenItemListIsEmpty()
     {
         var userName = "testuser";
         var collectionResponse = CreateSucceededCollectionResponse([]);
@@ -428,9 +406,7 @@ public class BggImportServiceTests
 
         var result = await _bggImportService.ImportBggCollection(userName);
 
-        result.Should().NotBeNull();
-        result!.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
-        result.Games.Should().BeEmpty();
+        result.Should().BeEmpty();
 
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
         VerifyNoOtherCalls();
@@ -467,54 +443,14 @@ public class BggImportServiceTests
 
         var result = await _bggImportService.ImportBggCollection(userName);
 
-        result.Should().NotBeNull();
-        result!.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
-        result.Games.Should().HaveCount(1);
+        result.Should().HaveCount(1);
 
-        var game = result.Games[0];
+        var game = result[0];
         game.BggId.Should().Be(101);
         game.Title.Should().Be("Catan");
         game.ImageUrl.Should().Be("https://example.com/catan.jpg");
         game.State.Should().Be(GameState.Owned);
-        game.IsExpansion.Should().BeFalse();
         game.LastModified.Should().Be(lastModified);
-
-        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ImportBggCollection_ShouldSetIsExpansionTrue_WhenSubtypeIsBoardgameExpansion()
-    {
-        var userName = "testuser";
-        var items = new List<CollectionResponse.Item>
-        {
-            new()
-            {
-                ObjectId = 202,
-                Name = "Catan Expansion",
-                Status = new CollectionResponse.Status
-                {
-                    Owned = true,
-                    PreviouslyOwned = false,
-                    ForTrade = false,
-                    Want = false,
-                    LastModified = new DateTime(2024, 6, 1, 12, 0, 0, DateTimeKind.Utc)
-                },
-                Image = "https://example.com/expansion.jpg",
-                SubType = "boardgameexpansion"
-            }
-        };
-        var collectionResponse = CreateSucceededCollectionResponse(items);
-
-        _bggClientMock
-            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
-            .ReturnsAsync(collectionResponse);
-
-        var result = await _bggImportService.ImportBggCollection(userName);
-
-        result!.Games.Should().HaveCount(1);
-        result.Games[0].IsExpansion.Should().BeTrue();
 
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
         VerifyNoOtherCalls();
@@ -555,8 +491,8 @@ public class BggImportServiceTests
 
         var result = await _bggImportService.ImportBggCollection(userName);
 
-        result!.Games.Should().HaveCount(1);
-        result.Games[0].State.Should().Be(expectedState);
+        result.Should().HaveCount(1);
+        result[0].State.Should().Be(expectedState);
 
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
         VerifyNoOtherCalls();
@@ -609,10 +545,10 @@ public class BggImportServiceTests
 
         var result = await _bggImportService.ImportBggCollection(userName);
 
-        result!.Games.Should().HaveCount(3);
-        result.Games[0].Title.Should().Be("Agricola");
-        result.Games[1].Title.Should().Be("Catan");
-        result.Games[2].Title.Should().Be("Zombicide");
+        result.Should().HaveCount(3);
+        result[0].Title.Should().Be("Agricola");
+        result[1].Title.Should().Be("Catan");
+        result[2].Title.Should().Be("Zombicide");
 
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
         VerifyNoOtherCalls();
@@ -651,7 +587,7 @@ public class BggImportServiceTests
     }
 
     [Fact]
-    public async Task ImportBggCollection_ShouldReturnNull_WhenBggHttpRequestFails()
+    public async Task ImportBggCollection_ShouldPropagateBggHttpException_WhenBggHttpRequestFails()
     {
         const string userName = "testuser";
 
@@ -659,11 +595,67 @@ public class BggImportServiceTests
             .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
             .ThrowsAsync(new BoardGameGeekHttpException("Service unavailable", HttpStatusCode.ServiceUnavailable));
 
-        var result = await _bggImportService.ImportBggCollection(userName);
+        var act = async () => await _bggImportService.ImportBggCollection(userName);
 
-        result.Should().BeNull();
+        // Propagates so the global handler maps it to 502, rather than being swallowed to an empty 200.
+        await act.Should().ThrowAsync<BoardGameGeekHttpException>();
 
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBggCollection_ShouldThrowBggCollectionPreparingException_WhenRetriesExhausted()
+    {
+        const string userName = "testuser";
+
+        // The BGG client throws a bare Exception("Retries exhausted") when the collection is still being
+        // prepared (HTTP 202) after all internal retries; the service maps that to a 504-worthy exception.
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ThrowsAsync(new Exception("Retries exhausted"));
+
+        var act = async () => await _bggImportService.ImportBggCollection(userName);
+
+        await act.Should().ThrowAsync<BggCollectionPreparingException>();
+
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBggCollection_ShouldThrowBggRateLimitException_WhenBggReturnsTooManyRequests()
+    {
+        const string userName = "testuser";
+
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ThrowsAsync(new BoardGameGeekHttpException("Too many requests", HttpStatusCode.TooManyRequests));
+
+        var act = async () => await _bggImportService.ImportBggCollection(userName);
+
+        await act.Should().ThrowAsync<BggRateLimitException>();
+
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBggCollection_ShouldRequestSingleBoardgameSubtype()
+    {
+        var collectionResponse = CreateSucceededCollectionResponse([]);
+
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ReturnsAsync(collectionResponse);
+
+        await _bggImportService.ImportBggCollection("testuser");
+
+        _bggClientMock.Verify(x => x.GetCollectionAsync(
+            It.Is<CollectionRequest>(r =>
+                r.RelativeUrl.ToString().Contains("subtype=boardgame")
+                && !r.RelativeUrl.ToString().Contains("boardgameexpansion"))),
+            Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -720,6 +712,7 @@ public class BggImportServiceTests
 
         await _bggImportService.ImportList(importGames);
 
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(1001), Times.Once);
         _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
         _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
             rawItem,
@@ -729,6 +722,39 @@ public class BggImportServiceTests
             addedDate,
             It.IsAny<string>()), Times.Once);
         _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportList_ShouldSkipGame_WhenAlreadyInDatabase()
+    {
+        var importGames = new List<ImportGame>
+        {
+            new()
+            {
+                Title = "Existing Game",
+                BggId = 4242,
+                ImageUrl = "img.jpg",
+                State = GameState.Owned,
+                HasScoring = true,
+                Price = 10.00,
+                AddedDate = DateTime.UtcNow
+            }
+        };
+        var existingGame = new Game("Existing Game") { Id = 7 };
+        existingGame.UpdateBggId(4242);
+
+        _gameRepositoryMock
+            .Setup(x => x.GetGameByBggId(4242))
+            .ReturnsAsync(existingGame);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(0);
+
+        await _bggImportService.ImportList(importGames);
+
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(4242), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -760,6 +786,7 @@ public class BggImportServiceTests
 
         await _bggImportService.ImportList(importGames);
 
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(9999), Times.Once);
         _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
@@ -792,6 +819,7 @@ public class BggImportServiceTests
 
         await _bggImportService.ImportList(importGames);
 
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(9999), Times.Once);
         _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
@@ -860,6 +888,8 @@ public class BggImportServiceTests
 
         await _bggImportService.ImportList(importGames);
 
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(100), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(200), Times.Once);
         _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(100))), Times.Once);
         _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(200))), Times.Once);
         _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
@@ -938,6 +968,7 @@ public class BggImportServiceTests
 
         await _bggImportService.ImportList(importGames);
 
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(555), Times.Once);
         _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
         _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
             rawItem,

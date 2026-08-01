@@ -121,13 +121,15 @@ public class ImageServiceTests : IDisposable
         }
 
         [Fact]
-        public void DeleteImage_ShouldCallDiskProviderDelete_WhenImagePathProvided()
+        public void DeleteImage_ShouldMapWebPathToPhysicalPath_WhenUnderImagesRoot()
         {
-            const string imagePath = "/images/test.jpg";
+            const string imagePath = "/images/cover/test.jpg";
+            var expectedPhysical = PathHelper.MapImageWebPathToPhysical(imagePath);
 
             _imageService.DeleteImage(imagePath);
 
-            _diskProviderMock.Verify(x => x.DeleteFile(imagePath), Times.Once);
+            expectedPhysical.Should().NotBeNull();
+            _diskProviderMock.Verify(x => x.DeleteFile(expectedPhysical!), Times.Once);
             _diskProviderMock.VerifyNoOtherCalls();
         }
 
@@ -140,15 +142,15 @@ public class ImageServiceTests : IDisposable
         }
 
         [Theory]
-        [InlineData("/images/game1.jpg")]
         [InlineData("/profiles/user.png")]
         [InlineData(@"C:\temp\image.gif")]
+        [InlineData("/images/../../secret.txt")]
         [InlineData("")]
-        public void DeleteImage_ShouldPassCorrectPath_WithDifferentImagePaths(string imagePath)
+        [InlineData("   ")]
+        public void DeleteImage_ShouldNotCallDiskProvider_WhenPathIsInvalidOrOutsideImagesRoot(string imagePath)
         {
             _imageService.DeleteImage(imagePath);
 
-            _diskProviderMock.Verify(x => x.DeleteFile(imagePath), Times.Once);
             _diskProviderMock.VerifyNoOtherCalls();
         }
 

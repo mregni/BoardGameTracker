@@ -8,7 +8,7 @@ using Xunit;
 
 namespace BoardGameTracker.Tests.Specifications.Locations;
 
-public class LocationsWithSessionsSpecTests
+public class LocationsOrderedByNameSpecTests
 {
     [Fact]
     public void Evaluate_ShouldOrderByNameAscending()
@@ -18,14 +18,17 @@ public class LocationsWithSessionsSpecTests
         var charlie = new Location("Charlie") { Id = 3 };
         var locations = new List<Location> { bravo, alpha, charlie };
 
-        var result = new LocationsWithSessionsSpec().Evaluate(locations).ToList();
+        var result = new LocationsOrderedByNameSpec().Evaluate(locations).ToList();
 
         result.Select(x => x.Name).Should().ContainInOrder("Alpha", "Bravo", "Charlie");
     }
 
     [Fact]
-    public void Spec_ShouldIncludeSessions()
+    public void Spec_ShouldNotTrack_AndNotInclude()
     {
-        new LocationsWithSessionsSpec().IncludeExpressions.Should().ContainSingle();
+        var spec = new LocationsOrderedByNameSpec();
+
+        spec.AsNoTracking.Should().BeTrue();
+        spec.IncludeExpressions.Should().BeEmpty();
     }
 }

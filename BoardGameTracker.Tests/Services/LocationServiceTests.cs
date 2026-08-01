@@ -53,7 +53,7 @@ public class LocationServiceTests
         };
 
         _locationRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<LocationsWithSessionsSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.IsAny<LocationsOrderedByNameSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(locations);
 
         // Act
@@ -65,7 +65,7 @@ public class LocationServiceTests
         result.Should().Contain(l => l.Name == "Game Store");
         result.Should().Contain(l => l.Name == "Friend's House");
 
-        _locationRepositoryMock.Verify(x => x.ListAsync(It.IsAny<LocationsWithSessionsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _locationRepositoryMock.Verify(x => x.ListAsync(It.IsAny<LocationsOrderedByNameSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -74,7 +74,7 @@ public class LocationServiceTests
     {
         // Arrange
         _locationRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<LocationsWithSessionsSpec>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ListAsync(It.IsAny<LocationsOrderedByNameSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 
         // Act
@@ -83,7 +83,7 @@ public class LocationServiceTests
         // Assert
         result.Should().BeEmpty();
 
-        _locationRepositoryMock.Verify(x => x.ListAsync(It.IsAny<LocationsWithSessionsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _locationRepositoryMock.Verify(x => x.ListAsync(It.IsAny<LocationsOrderedByNameSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

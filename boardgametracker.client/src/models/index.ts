@@ -14,7 +14,7 @@ export * from "./constants";
 
 export * from "./Dashboard/DashboardStatistics";
 export * from "./GameNight/GameNight";
-export * from "./Games/BggImportResults";
+export * from "./Games/ImportGame";
 export * from "./Games/BggSearch";
 export * from "./Games/CreateGame";
 export * from "./Games/Expansion";

@@ -13,7 +13,7 @@ public sealed class SessionsByPlayerSpec : Specification<Session>
 
         if (won.HasValue)
         {
-            Query.Where(x => x.PlayerSessions.Any(y => y.Won == won.Value));
+            Query.Where(x => x.PlayerSessions.Any(y => y.PlayerId == playerId && y.Won == won.Value));
         }
     }
 }

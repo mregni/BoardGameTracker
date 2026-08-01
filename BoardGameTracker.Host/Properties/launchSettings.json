@@ -20,7 +20,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ENV_ASPNETCORE_URLS": "http://*:5444",
         "STATISTICS_ENABLED": "true",
-        "LOGLEVEL": "debug",
+        "LOGLEVEL": "info",
         "TZ": "Europe/Brussels",
         "DB_HOST": "localhost",
         "DB_USER": "dev",

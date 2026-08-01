@@ -25,9 +25,9 @@ public class GameFactory : IGameFactory
         if (string.IsNullOrWhiteSpace(name))
             throw new InvalidOperationException("Game must have a valid name from BGG");
 
-        var minPlayers = item.MinPlayers;
-        var maxPlayers = item.MaxPlayers;
-        if (minPlayers > maxPlayers)
+        int? minPlayers = item.MinPlayers > 0 ? item.MinPlayers : null;
+        int? maxPlayers = item.MaxPlayers > 0 ? item.MaxPlayers : null;
+        if (minPlayers.HasValue && maxPlayers.HasValue && minPlayers > maxPlayers)
             throw new InvalidOperationException($"Invalid player count range from BGG: {minPlayers}-{maxPlayers}");
 
         var minPlayTime = item.MinPlayingTime ?? 0;
@@ -67,8 +67,8 @@ public class GameFactory : IGameFactory
         game.UpdatePlayerCount(minPlayers, maxPlayers);
         game.UpdatePlayTime(minPlayTime, maxPlayTime);
         game.UpdateMinAge(item.MinAge ?? 0);
-        game.UpdateRating(item.Statistics?.Ratings?.Average ?? 0);
-        game.UpdateWeight(item.Statistics?.Ratings?.AverageWeight ?? 0);
+        game.UpdateRating(item.Statistics?.Ratings?.Average);
+        game.UpdateWeight(item.Statistics?.Ratings?.AverageWeight);
         game.UpdateBggId(item.Id);
         game.UpdateBuyingPrice(price);
         game.UpdateShopUrl(shopUrl);

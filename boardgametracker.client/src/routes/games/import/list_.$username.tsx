@@ -44,7 +44,6 @@ function RouteComponent() {
 	const { t } = useTranslation(["common", "game", "bgg-import", "games"]);
 
 	const {
-		statusCode,
 		bggError,
 		settings,
 		games,
@@ -182,7 +181,7 @@ function RouteComponent() {
 		return games.filter((game) => game.checked).length;
 	}, [games]);
 
-	const isLoading = (statusCode !== 200 && !bggError) || processingGames || importing;
+	const isLoading = processingGames || importing;
 
 	const triggerImport = () => {
 		startImport(games.filter((game) => game.checked));

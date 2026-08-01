@@ -1,3 +1,4 @@
+using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -37,6 +38,9 @@ public class GlobalExceptionHandler : IExceptionHandler
     private static (int StatusCode, string Message) MapException(Exception exception) => exception switch
     {
         BggFeatureDisabledException => (StatusCodes.Status503ServiceUnavailable, exception.Message),
+        BggRateLimitException => (StatusCodes.Status429TooManyRequests, exception.Message),
+        BggCollectionPreparingException => (StatusCodes.Status504GatewayTimeout, exception.Message),
+        BoardGameGeekHttpException => (StatusCodes.Status502BadGateway, "The BoardGameGeek service is currently unavailable. Please try again later."),
         ValidationException or DomainException => (StatusCodes.Status400BadRequest, exception.Message),
         UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
         EntityNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),

@@ -1,6 +1,6 @@
 import type { CreateGame, Expansion, ExpansionLink, ExpansionUpdate } from "@/models/";
 import type { ShameStatistics } from "@/models/Games/ShameStatistics";
-import type { BggImportResults, BggSearch, Game, GameStatistics, ImportGame, Session, Shame } from "../models";
+import type { BggSearch, Game, GameStatistics, ImportGame, Session, Shame } from "../models";
 import { axiosInstance } from "../utils/axiosInstance";
 
 const domain = "game";
@@ -35,8 +35,8 @@ export const addGameWithBggCall = (search: BggSearch): Promise<Game> => {
 	});
 };
 
-export const getBggCollectionCall = (username: string): Promise<BggImportResults> => {
-	return axiosInstance.get<BggImportResults>(`${domain}/bgg/import`, { params: { username } }).then((response) => {
+export const getBggCollectionCall = (username: string): Promise<ImportGame[]> => {
+	return axiosInstance.get<ImportGame[]>(`${domain}/bgg/import`, { params: { username } }).then((response) => {
 		return response.data;
 	});
 };

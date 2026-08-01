@@ -129,7 +129,10 @@ public class GameService : IGameService
         game.UpdateSoldPrice(command.SoldPrice);
         game.UpdateRating(command.Rating);
         game.UpdateWeight(command.Weight);
-        game.UpdateAdditionDate(command.AdditionDate);
+        if (command.AdditionDate.HasValue)
+        {
+            game.UpdateAdditionDate(command.AdditionDate);
+        }
 
         await _unitOfWork.SaveChangesAsync();
         return game;
@@ -195,11 +198,13 @@ public class GameService : IGameService
                 continue;
             }
 
-            var expansion = new Expansion(
-                firstResult.Name ?? string.Empty,
-                firstResult.Id,
-                game.Id
-            );
+            if (string.IsNullOrWhiteSpace(firstResult.Name) || firstResult.Id <= 0)
+            {
+                _logger.LogWarning("Skipping malformed BGG expansion (id {BggId}) for game {GameId}", firstResult.Id, game.Id);
+                continue;
+            }
+
+            var expansion = new Expansion(firstResult.Name, firstResult.Id, game.Id);
             game.AddExpansion(expansion);
         }
 

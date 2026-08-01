@@ -14,6 +14,7 @@ using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.DockerHub;
+using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Extensions;
@@ -178,18 +179,14 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddHttpClient<IBoardGameGeekXmlApi2Client, BoardGameGeekXmlApi2Client>();
+builder.Services.AddHttpClient(nameof(IBoardGameGeekXmlApi2Client));
 builder.Services.AddScoped<IBoardGameGeekXmlApi2Client>(sp =>
 {
     var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-    var httpClient = httpClientFactory.CreateClient(nameof(IBoardGameGeekXmlApi2Client));
     var settingsService = sp.GetRequiredService<ISettingsService>();
-    var apiKey = settingsService.GetBggApiKeyAsync().GetAwaiter().GetResult();
-    var options = new BoardGameGeekXmlApi2ClientOptions
-    {
-        AuthorizationToken = apiKey
-    };
-    return new BoardGameGeekXmlApi2Client(httpClient, options);
+    return new LazyBoardGameGeekClient(
+        () => httpClientFactory.CreateClient(nameof(IBoardGameGeekXmlApi2Client)),
+        settingsService);
 });
 
 builder.Services.AddRefitClient<IDockerHubApi>()
@@ -206,6 +203,10 @@ var app = builder.Build();
 CreateFolders(app.Services);
 
 app.UseSerilogRequestLogging();
+
+// Must run in every environment and early in the pipeline so GlobalExceptionHandler
+// (IExceptionHandler) maps domain exceptions to their status codes instead of leaking a raw 500.
+app.UseExceptionHandler();
 
 app.UseForwardedHeaders();
 
@@ -276,7 +277,6 @@ logger.LogInformation("  Auth:         {AuthState}", authEnabled ? "Enabled" : "
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
     app.UseSpaStaticFiles();
     app.UseStaticFiles();
     app.UseSpa(config => {

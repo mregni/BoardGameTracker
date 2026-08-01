@@ -288,8 +288,8 @@ public class OidcService : IOidcService
 
         if (!string.IsNullOrEmpty(provider.RolesClaimType) && !string.IsNullOrEmpty(provider.AdminGroupValue))
         {
-            var groupsClaim = GetClaimValue(userInfo, provider.RolesClaimType);
-            if (groupsClaim != null && groupsClaim.Contains(provider.AdminGroupValue, StringComparison.OrdinalIgnoreCase))
+            var groups = GetClaimValues(userInfo, provider.RolesClaimType);
+            if (groups.Any(g => string.Equals(g, provider.AdminGroupValue, StringComparison.OrdinalIgnoreCase)))
             {
                 role = Constants.AuthRoles.Admin;
                 _logger.LogInformation("Assigning Admin role to OIDC user {Username} based on group claim", user.UserName);
@@ -345,6 +345,33 @@ public class OidcService : IOidcService
         return value.ValueKind == JsonValueKind.Array
             ? string.Join(",", value.EnumerateArray().Select(v => v.GetString()))
             : value.GetString();
+    }
+
+    private static IReadOnlyList<string> GetClaimValues(JsonElement userInfo, string claimType)
+    {
+        if (!userInfo.TryGetProperty(claimType, out var value))
+        {
+            return [];
+        }
+
+        if (value.ValueKind == JsonValueKind.Array)
+        {
+            return value.EnumerateArray()
+                .Select(v => v.GetString())
+                .Where(v => !string.IsNullOrWhiteSpace(v))
+                .Select(v => v!.Trim())
+                .ToList();
+        }
+
+        var scalar = value.GetString();
+        if (string.IsNullOrWhiteSpace(scalar))
+        {
+            return [];
+        }
+
+        return scalar
+            .Split([',', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
     }
 
     private static string GenerateCodeVerifier()

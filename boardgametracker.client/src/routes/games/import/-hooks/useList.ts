@@ -20,7 +20,6 @@ export const useList = ({ username }: Props) => {
 	});
 
 	const settings = settingsQuery.data;
-	const statusCode = bggCollectionQuery.data?.statusCode ?? 202;
 	const bggError = bggCollectionQuery.error;
 
 	const [filterCollected, setFilterCollected] = useState<boolean>(true);
@@ -29,11 +28,11 @@ export const useList = ({ username }: Props) => {
 	const processingGames = bggCollectionQuery.isLoading || gamesQuery.isLoading;
 
 	const totalCount = useMemo(() => {
-		return bggCollectionQuery.data?.games?.length ?? 0;
-	}, [bggCollectionQuery.data?.games]);
+		return bggCollectionQuery.data?.length ?? 0;
+	}, [bggCollectionQuery.data]);
 
 	const processedGames = useMemo(() => {
-		const bggGames = bggCollectionQuery.data?.games;
+		const bggGames = bggCollectionQuery.data;
 		const collectionGames = gamesQuery.data;
 
 		if (!bggGames) return [];
@@ -54,7 +53,7 @@ export const useList = ({ username }: Props) => {
 				checked: false,
 			};
 		});
-	}, [bggCollectionQuery.data?.games, gamesQuery.data]);
+	}, [bggCollectionQuery.data, gamesQuery.data]);
 
 	const inCollectionCount = useMemo(() => {
 		return processedGames.filter((game) => game.inCollection).length;
@@ -96,7 +95,6 @@ export const useList = ({ username }: Props) => {
 	return {
 		games,
 		settings,
-		statusCode,
 		bggError,
 		updateGame,
 		filterCollected,
