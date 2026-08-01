@@ -23,6 +23,8 @@ using BoardGameTracker.Core.Loans;
 using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations;
 using BoardGameTracker.Core.Locations.Interfaces;
+using BoardGameTracker.Core.Maintenance;
+using BoardGameTracker.Core.Maintenance.Interfaces;
 using BoardGameTracker.Core.Players;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions;
@@ -69,6 +71,9 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IUpdateService, UpdateService>();
         serviceCollection.AddScoped<IGameNightService, GameNightService>();
         serviceCollection.AddScoped<ISettingsService, SettingsService>();
+        serviceCollection.AddScoped<IMaintenanceRepository, MaintenanceRepository>();
+        serviceCollection.AddScoped<IMaintenanceSeeder, MaintenanceSeeder>();
+        serviceCollection.AddScoped<IResetService, ResetService>();
 
         serviceCollection.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         serviceCollection.AddScoped(typeof(IReadRepository<>), typeof(EfReadRepository<>));

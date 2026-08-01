@@ -120,6 +120,12 @@ public class ImageService : IImageService
         _diskProvider.DeleteFile(physicalPath);
     }
 
+    public void ClearAllImages()
+    {
+        _diskProvider.ClearFolder(PathHelper.FullCoverImagePath);
+        _diskProvider.ClearFolder(PathHelper.FullProfileImagePath);
+    }
+
     private static async Task<byte[]?> ReadWithLimitAsync(HttpContent content, long maxBytes)
     {
         await using var stream = await content.ReadAsStreamAsync();

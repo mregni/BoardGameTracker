@@ -111,7 +111,36 @@
 			}
 		},
 		"bug": "Report a bug",
-		"translate": "Help us translate the app"
+		"translate": "Help us translate the app",
+		"danger": {
+			"title": "Danger Zone",
+			"description": "Irreversible actions. Proceed with caution.",
+			"reset": {
+				"button": "Reset data",
+				"confirm": {
+					"title": "Reset data",
+					"description": "This permanently deletes all games, sessions, players, people, locations, loans, game nights, badge awards, and uploaded images. Your settings, user accounts, and login are kept. This cannot be undone.",
+					"keyword": "RESET",
+					"input-label": "Type RESET to confirm",
+					"button": "Reset data"
+				}
+			},
+			"factory-reset": {
+				"button": "Factory reset",
+				"confirm": {
+					"title": "Factory reset",
+					"description": "This permanently deletes EVERYTHING — all data, all settings, and all user accounts — and resets the app to its initial state. The default admin login (admin / admin) is recreated and you will be logged out. Change that password immediately. This cannot be undone.",
+					"keyword": "FACTORY RESET",
+					"input-label": "Type FACTORY RESET to confirm",
+					"button": "Factory reset everything"
+				}
+			},
+			"notifications": {
+				"reset-success": "Data reset successfully",
+				"reset-failed": "Failed to reset data",
+				"factory-reset-failed": "Failed to factory reset"
+			}
+		}
 	},
 	"sidebar": {
 		"general": {

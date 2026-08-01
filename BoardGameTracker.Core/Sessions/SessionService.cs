@@ -5,6 +5,7 @@ using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
+using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -16,15 +17,17 @@ public class SessionService : ISessionService
     private readonly IBadgeService _badgeService;
     private readonly IGameService _gameService;
     private readonly ILocationService _locationService;
+    private readonly IPlayerService _playerService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<SessionService> _logger;
 
-    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IUnitOfWork unitOfWork, ILogger<SessionService> logger)
+    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IPlayerService playerService, IUnitOfWork unitOfWork, ILogger<SessionService> logger)
     {
         _sessionRepository = sessionRepository;
         _badgeService = badgeService;
         _gameService = gameService;
         _locationService = locationService;
+        _playerService = playerService;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -62,6 +65,15 @@ public class SessionService : ISessionService
     public async Task<Session> CreateFromCommand(CreateSessionCommand command)
     {
         _logger.LogDebug("Creating session from command for game {GameId}", command.GameId);
+
+        var game = await _gameService.GetGameById(command.GameId);
+        if (game == null)
+        {
+            throw new EntityNotFoundException(nameof(Game), command.GameId);
+        }
+
+        await EnsurePlayersExistAsync(command.PlayerSessions.Select(ps => ps.PlayerId));
+
         var end = command.Start.AddMinutes(command.Minutes);
         var session = new Session(command.GameId, command.Start, end, command.Comment ?? string.Empty);
 
@@ -82,6 +94,11 @@ public class SessionService : ISessionService
         if (command.LocationId.HasValue)
         {
             var location = await _locationService.GetByIdAsync(command.LocationId.Value);
+            if (location == null)
+            {
+                throw new EntityNotFoundException(nameof(Location), command.LocationId.Value);
+            }
+
             session.SetLocation(location);
         }
 
@@ -96,6 +113,8 @@ public class SessionService : ISessionService
         {
             throw new EntityNotFoundException(nameof(Session), command.Id);
         }
+
+        await EnsurePlayersExistAsync(command.PlayerSessions.Select(ps => ps.PlayerId));
 
         var end = command.Start.AddMinutes(command.Minutes);
         existingSession.UpdateTimes(command.Start, end);
@@ -172,11 +191,28 @@ public class SessionService : ISessionService
         if (locationId.HasValue)
         {
             var location = await _locationService.GetByIdAsync(locationId.Value);
+            if (location == null)
+            {
+                throw new EntityNotFoundException(nameof(Location), locationId.Value);
+            }
+
             existingSession.SetLocation(location);
         }
         else
         {
             existingSession.SetLocation(null);
+        }
+    }
+
+    private async Task EnsurePlayersExistAsync(IEnumerable<int> playerIds)
+    {
+        foreach (var playerId in playerIds.Distinct())
+        {
+            var player = await _playerService.Get(playerId);
+            if (player == null)
+            {
+                throw new EntityNotFoundException(nameof(Player), playerId);
+            }
         }
     }
 

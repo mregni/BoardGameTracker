@@ -229,6 +229,16 @@ public class ImageServiceTests : IDisposable
             exception.Should().Be(expectedException);
         }
 
+        [Fact]
+        public void ClearAllImages_ShouldClearCoverAndProfileFolders()
+        {
+            _imageService.ClearAllImages();
+
+            _diskProviderMock.Verify(x => x.ClearFolder(PathHelper.FullCoverImagePath), Times.Once);
+            _diskProviderMock.Verify(x => x.ClearFolder(PathHelper.FullProfileImagePath), Times.Once);
+            _diskProviderMock.VerifyNoOtherCalls();
+        }
+
         private static IFormFile CreateMockFormFile(string fileName, byte[] content, long length = -1)
         {
             var formFileMock = new Mock<IFormFile>();

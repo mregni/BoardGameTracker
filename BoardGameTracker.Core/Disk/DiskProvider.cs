@@ -56,4 +56,17 @@ public class DiskProvider : IDiskProvider
             Directory.CreateDirectory(path);
         }
     }
+
+    public void ClearFolder(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+
+        foreach (var file in Directory.EnumerateFiles(path))
+        {
+            DeleteFile(file);
+        }
+    }
 }

@@ -8,4 +8,5 @@ public interface IDiskProvider
     Task<string> WriteFile(Image image, string fileName, string path, IImageEncoder? encoder = null);
     void EnsureFolder(string path);
     void DeleteFile(string path);
+    void ClearFolder(string path);
 }
