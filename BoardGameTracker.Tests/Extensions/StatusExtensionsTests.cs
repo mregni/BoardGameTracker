@@ -70,6 +70,66 @@ public class StatusExtensionsTests
     }
 
     [Fact]
+    public void ToGameState_ShouldReturnWanted_WhenWantToBuyIsTrue()
+    {
+        var status = new CollectionResponse.Status
+        {
+            WantToBuy = true,
+            Owned = false,
+            LastModified = new DateTime(2023, 1, 1)
+        };
+
+        var result = status.ToGameState();
+
+        result.Should().Be(GameState.Wanted);
+    }
+
+    [Fact]
+    public void ToGameState_ShouldReturnWanted_WhenWishlistIsTrue()
+    {
+        var status = new CollectionResponse.Status
+        {
+            Wishlist = true,
+            Owned = false,
+            LastModified = new DateTime(2023, 1, 1)
+        };
+
+        var result = status.ToGameState();
+
+        result.Should().Be(GameState.Wanted);
+    }
+
+    [Fact]
+    public void ToGameState_ShouldReturnWanted_WhenPreorderedIsTrue()
+    {
+        var status = new CollectionResponse.Status
+        {
+            Preordered = true,
+            Owned = false,
+            LastModified = new DateTime(2023, 1, 1)
+        };
+
+        var result = status.ToGameState();
+
+        result.Should().Be(GameState.Wanted);
+    }
+
+    [Fact]
+    public void ToGameState_ShouldReturnOwned_WhenOwnedGameIsAlsoWantToPlay()
+    {
+        var status = new CollectionResponse.Status
+        {
+            Owned = true,
+            WantToPlay = true,
+            LastModified = new DateTime(2023, 1, 1)
+        };
+
+        var result = status.ToGameState();
+
+        result.Should().Be(GameState.Owned);
+    }
+
+    [Fact]
     public void ToGameState_ShouldReturnOwned_WhenNoOtherStatusSet()
     {
         // Arrange

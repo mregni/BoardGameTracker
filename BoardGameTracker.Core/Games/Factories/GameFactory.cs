@@ -66,7 +66,7 @@ public class GameFactory : IGameFactory
         game.UpdateYearPublished(item.YearPublished);
         game.UpdatePlayerCount(minPlayers, maxPlayers);
         game.UpdatePlayTime(minPlayTime, maxPlayTime);
-        game.UpdateMinAge(item.MinAge ?? 0);
+        game.UpdateMinAge(item.MinAge > 0 ? item.MinAge : null);
         game.UpdateRating(item.Statistics?.Ratings?.Average);
         game.UpdateWeight(item.Statistics?.Ratings?.AverageWeight);
         game.UpdateBggId(item.Id);

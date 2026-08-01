@@ -245,7 +245,6 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(504);
         problemDetails.Title.Should().Be("BoardGameGeek is still preparing your collection. Please try again in a moment.");
 
-        // 504 >= 500, so the handler logs it as an error.
         _loggerMock.Verify(
             x => x.Log(
                 LogLevel.Error,

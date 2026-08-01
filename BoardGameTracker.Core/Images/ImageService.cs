@@ -6,6 +6,7 @@ using BoardGameTracker.Core.Images.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
 
 
@@ -15,6 +16,7 @@ public class ImageService : IImageService
 {
     private const int ImageSize = 512;
     private const long MaxDownloadBytes = 15 * 1024 * 1024;
+    private static readonly WebpEncoder WebpImageEncoder = new() { Quality = 80 };
 
     private readonly IDiskProvider _diskProvider;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -43,7 +45,7 @@ public class ImageService : IImageService
                     return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
                 }
 
-                var fileName = CreateFileNameFromUrl(imageUrl, imageFileName);
+                var fileName = $"{imageFileName}.webp";
                 var imageContent = await ReadWithLimitAsync(response.Content, MaxDownloadBytes);
                 if (imageContent == null)
                 {
@@ -53,7 +55,7 @@ public class ImageService : IImageService
 
                 using var image = Image.Load(imageContent);
                 image.Mutate(x => x.Resize(ImageSize, ImageSize));
-                var newFileName = await _diskProvider.WriteFile(image, fileName, PathHelper.FullCoverImagePath);
+                var newFileName = await _diskProvider.WriteFile(image, fileName, PathHelper.FullCoverImagePath, WebpImageEncoder);
                 var path = Path.Combine(PathHelper.CoverImagePath, newFileName);
                 return $"/{path.Replace("\\", "/")}";
             }
@@ -94,7 +96,9 @@ public class ImageService : IImageService
 
         using var image = await Image.LoadAsync(file.OpenReadStream());
         image.Mutate(x => x.Resize(ImageSize, ImageSize));
-        var newFileName = await _diskProvider.WriteFile(image, file.FileName, fullPath);
+
+        var outputFileName = Path.ChangeExtension(file.FileName, ".webp");
+        var newFileName = await _diskProvider.WriteFile(image, outputFileName, fullPath, WebpImageEncoder);
         var path = Path.Combine(folder, newFileName);
         return $"/{path.Replace("\\", "/")}";
     }
@@ -114,13 +118,6 @@ public class ImageService : IImageService
         }
 
         _diskProvider.DeleteFile(physicalPath);
-    }
-
-    private static string CreateFileNameFromUrl(string imageUrl, string fileName)
-    {
-        var urlPath = Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri) ? uri.AbsolutePath : imageUrl;
-        var extension = Path.GetExtension(urlPath);
-        return $"{fileName}{extension}";
     }
 
     private static async Task<byte[]?> ReadWithLimitAsync(HttpContent content, long maxBytes)

@@ -107,6 +107,18 @@ export class QueryInvalidator {
 		});
 	}
 
+	async invalidateCounts() {
+		await this.queryClient.invalidateQueries({
+			queryKey: [QUERY_KEYS.counts],
+		});
+	}
+
+	async invalidateShames() {
+		await this.queryClient.invalidateQueries({
+			queryKey: [QUERY_KEYS.shames],
+		});
+	}
+
 	async invalidateSettings() {
 		await this.queryClient.invalidateQueries({
 			queryKey: [QUERY_KEYS.settings],

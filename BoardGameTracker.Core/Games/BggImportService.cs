@@ -76,8 +76,6 @@ public class BggImportService : IBggImportService
         CollectionResponse response;
         try
         {
-            // BGG's collection "subtype" accepts a single value; a comma-joined value is invalid and
-            // returns an empty collection. "boardgame" already includes expansions in the result.
             var request = new CollectionRequest(userName, subType: "boardgame");
             response = await _bggClient.GetCollectionAsync(request);
         }
@@ -93,22 +91,15 @@ public class BggImportService : IBggImportService
         }
         catch (BoardGameGeekHttpException ex)
         {
-            // Any other upstream BGG HTTP error (5xx, 404, ...). Let it propagate so the global handler
-            // maps BoardGameGeekHttpException to 502 Bad Gateway instead of swallowing it to an empty 200.
             _logger.LogWarning(ex, "BGG API request failed for collection import of user {UserName}", userName);
             throw;
         }
         catch (Exception ex) when (ex.Message == "Retries exhausted")
         {
-            // The client polls BGG's 202 "collection still being prepared" response internally and, once it
-            // runs out of retries, throws a bare Exception("Retries exhausted"). Surface it as 504 so the
-            // client knows the collection isn't ready yet and can retry later.
             _logger.LogWarning(ex, "BGG collection for user {UserName} was still being prepared after retries", userName);
             throw new BggCollectionPreparingException();
         }
 
-        // response.Succeeded is always true on a returned CollectionResponse (the client throws on every
-        // non-2xx), so a non-null response is a ready collection. An empty collection is a legitimate 200.
         if (response.Result == null || response.Result.Count == 0)
         {
             return new List<BggImportGame>();

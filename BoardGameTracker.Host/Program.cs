@@ -21,6 +21,7 @@ using BoardGameTracker.Core.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -154,7 +155,7 @@ builder.Services.AddCors(options =>
                 .AllowAnyHeader());
 });
 
-builder.Services
+var mvcBuilder = builder.Services
     .AddControllers(options =>
     {
         options.ReturnHttpNotAcceptable = true;
@@ -163,8 +164,15 @@ builder.Services
     .AddJsonOptions(options =>
     {
         ApplySerializerSettings(options.JsonSerializerOptions);
-    })
-    .AddControllersAsServices();
+    });
+
+var apiAssembly = typeof(GlobalExceptionHandler).Assembly;
+if (mvcBuilder.PartManager.ApplicationParts.OfType<AssemblyPart>().All(part => part.Assembly != apiAssembly))
+{
+    mvcBuilder.AddApplicationPart(apiAssembly);
+}
+
+mvcBuilder.AddControllersAsServices();
 
 var version = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
@@ -204,8 +212,6 @@ CreateFolders(app.Services);
 
 app.UseSerilogRequestLogging();
 
-// Must run in every environment and early in the pipeline so GlobalExceptionHandler
-// (IExceptionHandler) maps domain exceptions to their status codes instead of leaking a raw 500.
 app.UseExceptionHandler();
 
 app.UseForwardedHeaders();

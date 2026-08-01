@@ -1,5 +1,5 @@
-import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/models";
+import { useMutation, useQueries } from "@tanstack/react-query";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { updateGameCall } from "@/services/gameService";
 import { getGame } from "@/services/queries/games";
@@ -9,7 +9,7 @@ interface Props {
 	onSuccess?: () => void;
 }
 export const useUpdateGame = ({ gameId, onSuccess }: Props) => {
-	const queryClient = useQueryClient();
+	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
 
 	const [gameQuery] = useQueries({
@@ -21,12 +21,7 @@ export const useUpdateGame = ({ gameId, onSuccess }: Props) => {
 	const saveGameMutation = useMutation({
 		mutationFn: updateGameCall,
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-			await queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.games, gameId],
-			});
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] });
+			await Promise.all([invalidator.invalidateGame(gameId), invalidator.invalidateShames()]);
 			successToast("game:notifications.updated");
 			onSuccess?.();
 		},

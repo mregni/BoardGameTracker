@@ -12,10 +12,6 @@ public static class PathHelper
     public static readonly string FullCoverImagePath = Path.Combine(CurrentDir, CoverImagePath);
     public static readonly string FullProfileImagePath = Path.Combine(CurrentDir, ProfileImagePath);
 
-    /// <summary>
-    /// Maps a stored web-relative image path (e.g. "/images/cover/foo.jpg") to its physical path on disk.
-    /// Returns null if the resolved path would fall outside the images root (path-traversal guard).
-    /// </summary>
     public static string? MapImageWebPathToPhysical(string webPath)
     {
         if (string.IsNullOrWhiteSpace(webPath))

@@ -230,8 +230,6 @@ function RouteComponent() {
 		[t, currency, dateFormat, formatRange, updateGame, stateEditItems, languageEditItems],
 	);
 
-	// Pin the inline-edit dropdown columns (language = 5, state = 6) so the table-fixed
-	// layout doesn't stretch them to the widest value (e.g. "Language-independent").
 	const columnWidths: (string | null)[] = [null, null, null, null, null, "w-52", "w-52"];
 
 	return (

@@ -17,7 +17,7 @@ public static class StatusExtensions
             return GameState.ForTrade;
         }
 
-        if (status.Want)
+        if (status.Want || status.WantToBuy || status.Wishlist || status.Preordered)
         {
             return GameState.Wanted;
         }

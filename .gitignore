@@ -644,3 +644,6 @@ BoardGameTracker.Host/config/config.xml
 BoardGameTracker.Host/appsettings.Development.json
 
 boardgametracker.client/.env.sentry-build-plugin
+
+# Local patched NuGet packages (testing upstream fix)
+local-packages/

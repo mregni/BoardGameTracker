@@ -39,6 +39,11 @@
     "weight-light": "Light (< 2)",
     "weight-medium": "Medium (2 - 3)",
     "weight-heavy": "Heavy (> 3)",
+    "age": "Age",
+    "age-0-6": "≤ 6",
+    "age-7-9": "7 - 9",
+    "age-10-12": "10 - 12",
+    "age-13plus": "13+",
     "show-more": "Show more filters",
     "show-less": "Show less filters"
   },

@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import type { GameState } from "@/models";
 import { StringToRgb } from "@/utils/stringUtils";
@@ -19,27 +18,25 @@ export const BgtImageCard = (props: Props) => {
 	const { t } = useTranslation();
 
 	return (
-		<Link to={link} from="/">
+		<Link to={link} from="/" className="[content-visibility:auto] [contain-intrinsic-size:auto_280px]">
 			<div className="flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1 group">
-				<div className="aspect-square rounded-lg overflow-hidden border border-none transition-all duration-200 relative">
-					<div
-						style={
-							{
-								"--image-url": `url(${image})`,
-								"--fallback-color": StringToRgb(title),
-							} as React.CSSProperties
-						}
-						className={cx(
-							"w-full overflow-hidden aspect-square z-10 flex flex-col justify-center relative",
-							"bg-cover bg-no-repeat bg-center object-cover group-hover:scale-105 transition-transform duration-200",
-							image && "bg-(image:--image-url)",
-							!image && "bg-(--fallback-color)",
-						)}
-					>
-						{!image && (
+				<div className="aspect-square rounded-lg overflow-hidden transition-all duration-200 relative">
+					{image ? (
+						<img
+							src={image}
+							alt={title}
+							loading="lazy"
+							decoding="async"
+							className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+						/>
+					) : (
+						<div
+							style={{ "--fallback-color": StringToRgb(title) } as React.CSSProperties}
+							className="w-full h-full flex flex-col justify-center bg-(--fallback-color)"
+						>
 							<span className="flex justify-center align-middle h-max font-bold text-3xl capitalize">{title[0]}</span>
-						)}
-					</div>
+						</div>
+					)}
 				</div>
 				<div className="flex flex-row justify-between items-end">
 					<div className="flex flex-col items-start justify-start">

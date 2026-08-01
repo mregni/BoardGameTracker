@@ -597,7 +597,6 @@ public class BggImportServiceTests
 
         var act = async () => await _bggImportService.ImportBggCollection(userName);
 
-        // Propagates so the global handler maps it to 502, rather than being swallowed to an empty 200.
         await act.Should().ThrowAsync<BoardGameGeekHttpException>();
 
         _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
@@ -609,8 +608,6 @@ public class BggImportServiceTests
     {
         const string userName = "testuser";
 
-        // The BGG client throws a bare Exception("Retries exhausted") when the collection is still being
-        // prepared (HTTP 202) after all internal retries; the service maps that to a 504-worthy exception.
         _bggClientMock
             .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
             .ThrowsAsync(new Exception("Retries exhausted"));

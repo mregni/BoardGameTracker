@@ -17,10 +17,17 @@ import { useFilteredList } from "@/hooks/useFilteredList";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
-import { filterGames, type GamesFilterSearch, GamesFilters, type WeightBucket } from "./-components/GamesFilters";
+import {
+	type AgeBucket,
+	filterGames,
+	type GamesFilterSearch,
+	GamesFilters,
+	type WeightBucket,
+} from "./-components/GamesFilters";
 import { useGamesData } from "./-hooks/useGamesData";
 
 const WEIGHT_BUCKETS: WeightBucket[] = ["light", "medium", "heavy"];
+const AGE_BUCKETS: AgeBucket[] = ["0-6", "7-9", "10-12", "13plus"];
 
 const parsePositiveInt = (value: unknown): number | undefined => {
 	const parsed = Number(value);
@@ -35,18 +42,20 @@ export const Route = createFileRoute("/games/")({
 	},
 	validateSearch: (search: Record<string, unknown>): GamesFilterSearch => {
 		const weight = search.weight as WeightBucket;
+		const age = search.age as AgeBucket;
 		return {
 			category: search.category ? (search.category as string) : undefined,
 			players: parsePositiveInt(search.players),
 			playTime: parsePositiveInt(search.playTime),
 			weight: WEIGHT_BUCKETS.includes(weight) ? weight : undefined,
+			age: AGE_BUCKETS.includes(age) ? age : undefined,
 		};
 	},
 });
 
 function RouteComponent() {
 	const search = Route.useSearch();
-	const { category, players, playTime, weight } = search;
+	const { category, players, playTime, weight, age } = search;
 	const { t } = useTranslation(["games", "dashboard", "common"]);
 	const navigate = useNavigate();
 	const { games, isLoading } = useGamesData();
@@ -80,9 +89,9 @@ function RouteComponent() {
 			if (category !== undefined) {
 				result = result.filter((game) => game.categories.some((cat) => cat.name === category));
 			}
-			return filterGames(result, { playerCount: players, maxPlayTime: playTime, weight });
+			return filterGames(result, { playerCount: players, maxPlayTime: playTime, weight, age });
 		},
-		[category, players, playTime, weight],
+		[category, players, playTime, weight, age],
 	);
 
 	const { filterValue, setFilterValue, filtered: filteredGames } = useFilteredList(games, "title", categoryPreFilter);
@@ -146,10 +155,15 @@ function RouteComponent() {
 							<GamesFilters
 								categories={categories}
 								category={category}
-								filters={{ playerCount: players, maxPlayTime: playTime, weight }}
+								filters={{ playerCount: players, maxPlayTime: playTime, weight, age }}
 								onCategoryChange={(value) => updateSearch({ category: value })}
 								onChange={(next) =>
-									updateSearch({ players: next.playerCount, playTime: next.maxPlayTime, weight: next.weight })
+									updateSearch({
+										players: next.playerCount,
+										playTime: next.maxPlayTime,
+										weight: next.weight,
+										age: next.age,
+									})
 								}
 							/>
 						</div>

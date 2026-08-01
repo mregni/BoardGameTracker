@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Webp;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Services;
@@ -48,15 +50,15 @@ public class ImageServiceTests : IDisposable
         public async Task SaveImage_ShouldReturnGameImagePath_WhenTypeIsGame()
         {
             var formFile = CreateMockFormFile("test.jpg", CreateTestImageBytes());
-            const string expectedFileName = "unique-game-image.jpg";
-        
-            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), "test.jpg", PathHelper.FullCoverImagePath))
+            const string expectedFileName = "unique-game-image.webp";
+
+            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), "test.webp", PathHelper.FullCoverImagePath, It.IsAny<IImageEncoder?>()))
                            .ReturnsAsync(expectedFileName);
-        
+
             var result = await _imageService.SaveImage(formFile, UploadFileType.Game);
-        
+
             result.Should().Be($"/{PathHelper.CoverImagePath}/{expectedFileName}".Replace("\\", "/"));
-            _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Image>(), "test.jpg", PathHelper.FullCoverImagePath), Times.Once);
+            _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Image>(), "test.webp", PathHelper.FullCoverImagePath, It.IsAny<IImageEncoder?>()), Times.Once);
             _diskProviderMock.VerifyNoOtherCalls();
         }
         
@@ -64,15 +66,15 @@ public class ImageServiceTests : IDisposable
         public async Task SaveImage_ShouldReturnProfileImagePath_WhenTypeIsProfile()
         {
             var formFile = CreateMockFormFile("profile.png", CreateTestImageBytes());
-            const string expectedFileName = "unique-profile-image.png";
+            const string expectedFileName = "unique-profile-image.webp";
         
-            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), "profile.png", PathHelper.FullProfileImagePath))
+            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), "profile.webp", PathHelper.FullProfileImagePath, It.IsAny<IImageEncoder?>()))
                            .ReturnsAsync(expectedFileName);
-        
+
             var result = await _imageService.SaveImage(formFile, UploadFileType.Profile);
-        
+
             result.Should().Be($"/{PathHelper.ProfileImagePath}/{expectedFileName}".Replace("\\", "/"));
-            _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Image>(), "profile.png", PathHelper.FullProfileImagePath), Times.Once);
+            _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Image>(), "profile.webp", PathHelper.FullProfileImagePath, It.IsAny<IImageEncoder?>()), Times.Once);
             _diskProviderMock.VerifyNoOtherCalls();
         }
         
@@ -110,14 +112,15 @@ public class ImageServiceTests : IDisposable
             const string expectedFileName = "unique-file.jpg";
             var expectedFullPath = type == UploadFileType.Game ? PathHelper.FullCoverImagePath : PathHelper.FullProfileImagePath;
             var expectedFolder = type == UploadFileType.Game ? PathHelper.CoverImagePath : PathHelper.ProfileImagePath;
-        
-            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), "test.jpg", expectedFullPath))
+            const string expectedName = "test.webp";
+
+            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), expectedName, expectedFullPath, It.IsAny<IImageEncoder?>()))
                            .ReturnsAsync(expectedFileName);
-        
+
             var result = await _imageService.SaveImage(formFile, type);
-        
+
             result.Should().Be($"/{expectedFolder}/{expectedFileName}".Replace("\\", "/"));
-            _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Image>(), "test.jpg", expectedFullPath), Times.Once);
+            _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Image>(), expectedName, expectedFullPath, It.IsAny<IImageEncoder?>()), Times.Once);
         }
 
         [Fact]
@@ -160,8 +163,8 @@ public class ImageServiceTests : IDisposable
             var formFile = CreateMockFormFile("test.jpg", CreateTestImageBytes());
             Image? capturedImage = null;
 
-            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), It.IsAny<string>(), It.IsAny<string>()))
-                           .Callback<Image, string, string>((img, name, path) => capturedImage = img)
+            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IImageEncoder?>()))
+                           .Callback<Image, string, string, IImageEncoder?>((img, name, path, enc) => capturedImage = img)
                            .ReturnsAsync("result.jpg");
 
             await _imageService.SaveImage(formFile, UploadFileType.Game);
@@ -170,12 +173,54 @@ public class ImageServiceTests : IDisposable
         }
 
         [Fact]
+        public async Task SaveImage_ShouldEncodeGameCoverAsWebp_WhenTypeIsGame()
+        {
+            var formFile = CreateMockFormFile("cover.png", CreateTestImageBytes());
+            string? capturedName = null;
+            IImageEncoder? capturedEncoder = null;
+
+            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IImageEncoder?>()))
+                           .Callback<Image, string, string, IImageEncoder?>((_, name, _, enc) =>
+                           {
+                               capturedName = name;
+                               capturedEncoder = enc;
+                           })
+                           .ReturnsAsync("cover.webp");
+
+            await _imageService.SaveImage(formFile, UploadFileType.Game);
+
+            capturedName.Should().Be("cover.webp");
+            capturedEncoder.Should().BeOfType<WebpEncoder>();
+        }
+
+        [Fact]
+        public async Task SaveImage_ShouldEncodeProfileAsWebp_WhenTypeIsProfile()
+        {
+            var formFile = CreateMockFormFile("avatar.png", CreateTestImageBytes());
+            string? capturedName = null;
+            IImageEncoder? capturedEncoder = null;
+
+            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IImageEncoder?>()))
+                           .Callback<Image, string, string, IImageEncoder?>((_, name, _, enc) =>
+                           {
+                               capturedName = name;
+                               capturedEncoder = enc;
+                           })
+                           .ReturnsAsync("avatar.webp");
+
+            await _imageService.SaveImage(formFile, UploadFileType.Profile);
+
+            capturedName.Should().Be("avatar.webp");
+            capturedEncoder.Should().BeOfType<WebpEncoder>();
+        }
+
+        [Fact]
         public async Task SaveImage_ShouldThrowException_WhenDiskProviderThrows()
         {
             var formFile = CreateMockFormFile("test.jpg", CreateTestImageBytes());
             var expectedException = new IOException("Disk error");
         
-            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), It.IsAny<string>(), It.IsAny<string>()))
+            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IImageEncoder?>()))
                            .ThrowsAsync(expectedException);
         
             var exception = await Assert.ThrowsAsync<IOException>(
