@@ -84,7 +84,7 @@ jobs:
           az group create \
             --name "$RESOURCE_GROUP" \
             --location "$AZURE_LOCATION" \
-            --tags purpose=security-scan run_id="$GITHUB_RUN_ID"
+            --tags name=boardgametracker purpose=security-scan run_id="$GITHUB_RUN_ID"
 
       - name: Deploy Bicep template
         id: deploy

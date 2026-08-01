@@ -22,9 +22,14 @@ param location string = resourceGroup().location
 @description('Unique suffix for resource names')
 param suffix string = uniqueString(resourceGroup().id)
 
+var tags = {
+  name: 'boardgametracker'
+}
+
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'law-bgt-sec-${suffix}'
   location: location
+  tags: tags
   properties: {
     sku: {
       name: 'PerGB2018'
@@ -35,6 +40,7 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: 'cae-bgt-sec-${suffix}'
   location: location
+  tags: tags
   properties: {
     appLogsConfiguration: {
       destination: 'log-analytics'
@@ -49,6 +55,7 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
 resource postgresApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: 'postgres-bgt-sec'
   location: location
+  tags: tags
   properties: {
     managedEnvironmentId: containerAppEnv.id
     configuration: {
@@ -99,6 +106,7 @@ resource postgresApp 'Microsoft.App/containerApps@2024-03-01' = {
 resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: 'bgt-api-sec'
   location: location
+  tags: tags
   properties: {
     managedEnvironmentId: containerAppEnv.id
     configuration: {
