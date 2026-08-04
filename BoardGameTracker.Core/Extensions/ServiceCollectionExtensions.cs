@@ -23,6 +23,8 @@ using BoardGameTracker.Core.Loans;
 using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations;
 using BoardGameTracker.Core.Locations.Interfaces;
+using BoardGameTracker.Core.Manuals;
+using BoardGameTracker.Core.Manuals.Interfaces;
 using BoardGameTracker.Core.Maintenance;
 using BoardGameTracker.Core.Maintenance.Interfaces;
 using BoardGameTracker.Core.Players;
@@ -60,6 +62,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IGameChartService, GameChartService>();
         serviceCollection.AddScoped<IShameService, ShameService>();
         serviceCollection.AddScoped<IImageService, ImageService>();
+        serviceCollection.AddScoped<IManualService, ManualService>();
         serviceCollection.AddScoped<IPlayerService, PlayerService>();
         serviceCollection.AddScoped<ISessionService, SessionService>();
         serviceCollection.AddScoped<ILocationService, LocationService>();

@@ -82,13 +82,15 @@ public class GameNightService : IGameNightService
         gameNight.Update(command.Title, command.Notes, command.StartDate, command.HostId, command.LocationId);
         gameNight.SetSuggestedGames(games);
 
-        var existingPlayerIds = gameNight.InvitedPlayers.Select(p => p.PlayerId).ToHashSet();
-        var newPlayerIds = command.InvitedPlayerIds.ToHashSet();
+        var desiredPlayerIds = command.InvitedPlayerIds.ToHashSet();
+        desiredPlayerIds.Add(command.HostId);
 
-        var toRemove = gameNight.InvitedPlayers.Where(p => !newPlayerIds.Contains(p.PlayerId)).ToList();
+        var existingPlayerIds = gameNight.InvitedPlayers.Select(p => p.PlayerId).ToHashSet();
+
+        var toRemove = gameNight.InvitedPlayers.Where(p => !desiredPlayerIds.Contains(p.PlayerId)).ToList();
         gameNight.RemoveInvitedPlayers(toRemove);
 
-        var toAdd = newPlayerIds.Except(existingPlayerIds);
+        var toAdd = desiredPlayerIds.Except(existingPlayerIds);
         gameNight.AddInvitedPlayers(toAdd);
 
         await _unitOfWork.SaveChangesAsync();

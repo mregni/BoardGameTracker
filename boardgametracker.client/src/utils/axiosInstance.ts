@@ -12,6 +12,10 @@ function convertDatesInObject(obj: any): any {
 		return obj;
 	}
 
+	if (obj instanceof Blob || obj instanceof ArrayBuffer) {
+		return obj;
+	}
+
 	if (typeof obj === "string" && isoDatePattern.test(obj)) {
 		return new Date(obj);
 	}

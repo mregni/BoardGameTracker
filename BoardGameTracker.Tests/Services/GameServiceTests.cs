@@ -16,6 +16,7 @@ using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Manuals.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -30,6 +31,7 @@ public class GameServiceTests
     private readonly Mock<IBoardGameGeekXmlApi2Client> _bggClientMock;
     private readonly Mock<ISettingsService> _settingsServiceMock;
     private readonly Mock<IImageService> _imageServiceMock;
+    private readonly Mock<IManualService> _manualServiceMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<GameService>> _loggerMock;
     private readonly GameService _gameService;
@@ -42,6 +44,7 @@ public class GameServiceTests
         _settingsServiceMock = new Mock<ISettingsService>();
         _settingsServiceMock.Setup(x => x.GetBggApiKeyAsync()).ReturnsAsync("test-api-key");
         _imageServiceMock = new Mock<IImageService>();
+        _manualServiceMock = new Mock<IManualService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _loggerMock = new Mock<ILogger<GameService>>();
 
@@ -49,6 +52,7 @@ public class GameServiceTests
             _gameRepositoryMock.Object,
             _gameSessionRepositoryMock.Object,
             _imageServiceMock.Object,
+            _manualServiceMock.Object,
             _bggClientMock.Object,
             _settingsServiceMock.Object,
             _unitOfWorkMock.Object,
@@ -61,6 +65,7 @@ public class GameServiceTests
         _gameSessionRepositoryMock.VerifyNoOtherCalls();
         _bggClientMock.VerifyNoOtherCalls();
         _imageServiceMock.VerifyNoOtherCalls();
+        _manualServiceMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
@@ -203,6 +208,7 @@ public class GameServiceTests
         await _gameService.Delete(gameId);
 
         _imageServiceMock.Verify(x => x.DeleteImage("game-image.png"), Times.Once);
+        _manualServiceMock.Verify(x => x.DeleteManualFilesForGame(gameId), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
         _gameRepositoryMock.Verify(x => x.DeleteAsync(gameId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);

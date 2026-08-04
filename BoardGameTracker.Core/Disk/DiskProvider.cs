@@ -32,6 +32,17 @@ public class DiskProvider : IDiskProvider
         return uniqueFileName;
     }
 
+    public async Task<string> WriteFile(Stream stream, string fileName, string path)
+    {
+        var uniqueFileName = fileName.GenerateUniqueFileName();
+        var filePath = Path.Combine(path, uniqueFileName);
+
+        await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        await stream.CopyToAsync(fileStream);
+
+        return uniqueFileName;
+    }
+
     public void DeleteFile(string path)
     {
         try
@@ -68,5 +79,15 @@ public class DiskProvider : IDiskProvider
         {
             DeleteFile(file);
         }
+    }
+
+    public bool FileExists(string path)
+    {
+        return File.Exists(path);
+    }
+
+    public Stream OpenRead(string path)
+    {
+        return File.OpenRead(path);
     }
 }

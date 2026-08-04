@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { GetPercentage, RoundDecimal, ToLogLevel } from "./numberUtils";
+import { formatFileSize, GetPercentage, RoundDecimal, ToLogLevel } from "./numberUtils";
 
 describe("numberUtils", () => {
 	describe("RoundDecimal", () => {
@@ -107,6 +107,26 @@ describe("numberUtils", () => {
 			expect(ToLogLevel(5)).toBe("log-levels:warn");
 			expect(ToLogLevel(100)).toBe("log-levels:warn");
 			expect(ToLogLevel(-1)).toBe("log-levels:warn");
+		});
+	});
+
+	describe("formatFileSize", () => {
+		it("should format bytes below a kilobyte", () => {
+			expect(formatFileSize(0)).toBe("0 B");
+			expect(formatFileSize(512)).toBe("512 B");
+			expect(formatFileSize(1023)).toBe("1023 B");
+		});
+
+		it("should format kilobytes with one decimal", () => {
+			expect(formatFileSize(1024)).toBe("1.0 KB");
+			expect(formatFileSize(1536)).toBe("1.5 KB");
+			expect(formatFileSize(1048575)).toBe("1024.0 KB");
+		});
+
+		it("should format megabytes with one decimal", () => {
+			expect(formatFileSize(1048576)).toBe("1.0 MB");
+			expect(formatFileSize(5242880)).toBe("5.0 MB");
+			expect(formatFileSize(1572864)).toBe("1.5 MB");
 		});
 	});
 });

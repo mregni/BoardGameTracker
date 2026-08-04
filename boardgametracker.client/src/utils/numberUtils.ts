@@ -14,3 +14,16 @@ export const ToLogLevel = (level: number): string => {
 	const levels = ["log-levels:warn", "log-levels:debug", "log-levels:info", "log-levels:warn", "log-levels:error"];
 	return levels[level] || "log-levels:warn";
 };
+
+export const formatFileSize = (bytes: number): string => {
+	if (bytes < 1024) {
+		return `${bytes} B`;
+	}
+
+	const kilobytes = bytes / 1024;
+	if (kilobytes < 1024) {
+		return `${kilobytes.toFixed(1)} KB`;
+	}
+
+	return `${(kilobytes / 1024).toFixed(1)} MB`;
+};

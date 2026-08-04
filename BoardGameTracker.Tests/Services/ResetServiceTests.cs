@@ -5,6 +5,7 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Maintenance;
 using BoardGameTracker.Core.Maintenance.Interfaces;
+using BoardGameTracker.Core.Manuals.Interfaces;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ public class ResetServiceTests
     private readonly Mock<IMaintenanceRepository> _maintenanceRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IImageService> _imageServiceMock;
+    private readonly Mock<IManualService> _manualServiceMock;
     private readonly Mock<IMaintenanceSeeder> _maintenanceSeederMock;
     private readonly Mock<IDbContextTransaction> _transactionMock;
     private readonly Mock<ILogger<ResetService>> _loggerMock;
@@ -28,6 +30,7 @@ public class ResetServiceTests
         _maintenanceRepositoryMock = new Mock<IMaintenanceRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _imageServiceMock = new Mock<IImageService>();
+        _manualServiceMock = new Mock<IManualService>();
         _maintenanceSeederMock = new Mock<IMaintenanceSeeder>();
         _transactionMock = new Mock<IDbContextTransaction>();
         _loggerMock = new Mock<ILogger<ResetService>>();
@@ -42,6 +45,7 @@ public class ResetServiceTests
             _maintenanceRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _imageServiceMock.Object,
+            _manualServiceMock.Object,
             _maintenanceSeederMock.Object,
             _loggerMock.Object);
     }
@@ -51,6 +55,7 @@ public class ResetServiceTests
         _maintenanceRepositoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
         _imageServiceMock.VerifyNoOtherCalls();
+        _manualServiceMock.VerifyNoOtherCalls();
         _maintenanceSeederMock.VerifyNoOtherCalls();
         _transactionMock.VerifyNoOtherCalls();
     }
@@ -65,6 +70,7 @@ public class ResetServiceTests
         _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
         _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
         _imageServiceMock.Verify(x => x.ClearAllImages(), Times.Once);
+        _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -84,6 +90,7 @@ public class ResetServiceTests
         _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
         _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
         _imageServiceMock.Verify(x => x.ClearAllImages(), Times.Never);
+        _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -98,6 +105,7 @@ public class ResetServiceTests
         _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
         _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
         _imageServiceMock.Verify(x => x.ClearAllImages(), Times.Once);
+        _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Once);
         _maintenanceSeederMock.Verify(x => x.ReseedDefaultsAsync(It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -118,6 +126,7 @@ public class ResetServiceTests
         _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
         _transactionMock.Verify(x => x.DisposeAsync(), Times.Once);
         _imageServiceMock.Verify(x => x.ClearAllImages(), Times.Never);
+        _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Never);
         _maintenanceSeederMock.Verify(x => x.ReseedDefaultsAsync(It.IsAny<CancellationToken>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();

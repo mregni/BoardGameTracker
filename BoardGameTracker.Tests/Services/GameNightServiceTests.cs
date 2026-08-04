@@ -413,6 +413,51 @@ public class GameNightServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task Update_ShouldKeepHostAsAccepted_WhenHostNotInInvitedPlayerIds()
+    {
+        var hostRsvp = GameNightRsvp.Create(1, GameNightRsvpState.Accepted);
+        var guestRsvp = GameNightRsvp.Create(2, GameNightRsvpState.Pending);
+        var existingGameNight = GameNight.Create("Title", "Notes", DateTime.UtcNow, 1, 1);
+        existingGameNight.SetInvitedPlayers([hostRsvp, guestRsvp]);
+
+        var command = new UpdateGameNightCommand
+        {
+            Id = 1,
+            Title = "Title",
+            Notes = "Notes",
+            StartDate = DateTime.UtcNow,
+            HostId = 1,
+            LocationId = 1,
+            SuggestedGameIds = [],
+            InvitedPlayerIds = [2, 3]
+        };
+
+        _gameNightRepositoryMock
+            .Setup(x => x.GetByIdAsync(command.Id))
+            .ReturnsAsync(existingGameNight);
+
+        _gameRepositoryMock
+            .Setup(x => x.GetByIdsAsync(command.SuggestedGameIds))
+            .ReturnsAsync([]);
+
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        var result = await _gameNightService.Update(command);
+
+        result.InvitedPlayers.Should().HaveCount(3);
+        result.InvitedPlayers.Should().Contain(p => p.PlayerId == 1 && p.State == GameNightRsvpState.Accepted);
+        result.InvitedPlayers.Should().Contain(p => p.PlayerId == 2);
+        result.InvitedPlayers.Should().Contain(p => p.PlayerId == 3);
+
+        _gameNightRepositoryMock.Verify(x => x.GetByIdAsync(command.Id), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdsAsync(command.SuggestedGameIds), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region Delete Tests

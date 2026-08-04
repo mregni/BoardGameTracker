@@ -1,4 +1,4 @@
-import type { CreateGameNight, GameNight, GameNightStatistics, UpdateGameNightRsvp } from "@/models";
+import type { CreateGameNight, GameNight, GameNightStatistics, UpdateGameNight, UpdateGameNightRsvp } from "@/models";
 import { axiosInstance } from "@/utils/axiosInstance";
 
 const domain = "gamenight";
@@ -21,7 +21,7 @@ export const createGameNightCall = (gameNight: CreateGameNight): Promise<GameNig
 	});
 };
 
-export const updateGameNightCall = (gameNight: GameNight): Promise<GameNight> => {
+export const updateGameNightCall = (gameNight: UpdateGameNight): Promise<GameNight> => {
 	return axiosInstance.put<GameNight>(domain, { ...gameNight }).then((response) => {
 		return response.data;
 	});

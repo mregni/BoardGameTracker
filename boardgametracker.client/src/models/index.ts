@@ -14,15 +14,16 @@ export * from "./constants";
 
 export * from "./Dashboard/DashboardStatistics";
 export * from "./GameNight/GameNight";
-export * from "./Games/ImportGame";
 export * from "./Games/BggSearch";
 export * from "./Games/CreateGame";
 export * from "./Games/Expansion";
 export * from "./Games/ExpansionLink";
 export * from "./Games/Game";
+export * from "./Games/GameManual";
 export * from "./Games/GameState";
 export * from "./Games/GameStatistics";
 export * from "./Games/GameType";
+export * from "./Games/ImportGame";
 export * from "./Games/PersonType";
 export * from "./Games/Shame";
 export * from "./Games/ShameStatistics";

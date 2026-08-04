@@ -17,7 +17,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.14")
+                .HasAnnotation("ProductVersion", "9.0.16")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1007,6 +1007,42 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.ToTable("Locations");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Manual", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UploadDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId");
+
+                    b.ToTable("Manuals");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Person", b =>
                 {
                     b.Property<int>("Id")
@@ -1579,6 +1615,17 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("Player");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Manual", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
+                        .WithMany("Manuals")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Session", b =>
                 {
                     b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
@@ -1730,6 +1777,8 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("Expansions");
 
                     b.Navigation("Loans");
+
+                    b.Navigation("Manuals");
 
                     b.Navigation("Sessions");
                 });

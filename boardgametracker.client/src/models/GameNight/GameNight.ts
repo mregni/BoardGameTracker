@@ -40,6 +40,10 @@ export interface CreateGameNight {
 	invitedPlayerIds: number[];
 }
 
+export interface UpdateGameNight extends CreateGameNight {
+	id: number;
+}
+
 export interface UpdateGameNightRsvp {
 	id: number;
 	gameNightId: number;

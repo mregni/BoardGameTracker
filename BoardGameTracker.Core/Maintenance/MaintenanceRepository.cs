@@ -24,6 +24,7 @@ public class MaintenanceRepository : IMaintenanceRepository
         await _context.Sessions.ExecuteDeleteAsync(cancellationToken);
         await _context.Expansions.ExecuteDeleteAsync(cancellationToken);
         await _context.GameAccessories.ExecuteDeleteAsync(cancellationToken);
+        await _context.Manuals.ExecuteDeleteAsync(cancellationToken);
         await _context.Games.ExecuteDeleteAsync(cancellationToken);
         await _context.People.ExecuteDeleteAsync(cancellationToken);
         await _context.GameCategories.ExecuteDeleteAsync(cancellationToken);

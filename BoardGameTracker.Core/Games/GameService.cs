@@ -8,6 +8,7 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Manuals.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +21,7 @@ public class GameService : IGameService
     private readonly IBoardGameGeekXmlApi2Client _bggClient;
     private readonly ISettingsService _settingsService;
     private readonly IImageService _imageService;
+    private readonly IManualService _manualService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<GameService> _logger;
 
@@ -27,6 +29,7 @@ public class GameService : IGameService
         IGameRepository gameRepository,
         IGameSessionRepository gameSessionRepository,
         IImageService imageService,
+        IManualService manualService,
         IBoardGameGeekXmlApi2Client bggClient,
         ISettingsService settingsService,
         IUnitOfWork unitOfWork,
@@ -35,6 +38,7 @@ public class GameService : IGameService
         _gameRepository = gameRepository;
         _gameSessionRepository = gameSessionRepository;
         _imageService = imageService;
+        _manualService = manualService;
         _bggClient = bggClient;
         _settingsService = settingsService;
         _unitOfWork = unitOfWork;
@@ -63,6 +67,7 @@ public class GameService : IGameService
         }
 
         _imageService.DeleteImage(game.Image);
+        await _manualService.DeleteManualFilesForGame(game.Id);
         await _gameRepository.DeleteAsync(game.Id);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Game {GameId} deleted", id);

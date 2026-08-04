@@ -14,6 +14,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Game> Games { get; set; }
     public DbSet<Expansion> Expansions { get; set; }
     public DbSet<GameAccessory> GameAccessories { get; set; }
+    public DbSet<Manual> Manuals { get; set; }
     public DbSet<GameCategory> GameCategories { get; set; }
     public DbSet<GameMechanic> GameMechanics { get; set; }
     public DbSet<Person> People { get; set; }
@@ -165,6 +166,12 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<Game>()
             .HasMany(x => x.Accessories)
+            .WithOne(x => x.Game)
+            .HasForeignKey(x => x.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Game>()
+            .HasMany(x => x.Manuals)
             .WithOne(x => x.Game)
             .HasForeignKey(x => x.GameId)
             .OnDelete(DeleteBehavior.Cascade);

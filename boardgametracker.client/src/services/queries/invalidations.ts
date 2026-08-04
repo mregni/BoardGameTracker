@@ -20,6 +20,9 @@ export class QueryInvalidator {
 			this.queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.expansions],
 			}),
+			this.queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.manuals],
+			}),
 			this.invalidateDashboard(),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] }),
 		]);

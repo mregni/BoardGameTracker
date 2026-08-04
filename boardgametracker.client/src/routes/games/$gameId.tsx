@@ -13,6 +13,7 @@ import { GameDetailEmptyState } from "./-components/GameDetailEmptyState";
 import { GameHeader } from "./-components/GameHeader";
 import { GameStaticSection } from "./-components/GameStaticSection";
 import { GameStatisticsGrid } from "./-components/GameStatisticsGrid";
+import { ManualsCard } from "./-components/ManualsCard";
 import { PlayerCountChartCard } from "./-components/PlayerCountChartCard";
 import { RecentSessionsCard } from "./-components/RecentSessionsCard";
 import { ScoringResultsCard } from "./-components/ScoringResultsCard";
@@ -77,6 +78,20 @@ function RouteComponent() {
 								dateFormat={settings.dateFormat}
 								uiLanguage={settings.uiLanguage}
 							/>
+							<div className="grid grid-cols-1 lg:grid-cols-2 gap-3 xl:gap-6">
+								<ManualsCard
+									gameId={gameId}
+									canWrite={canWrite}
+									dateFormat={settings.dateFormat}
+									uiLanguage={settings.uiLanguage}
+								/>
+								<ExpansionsCard
+									expansions={game.expansions}
+									canWrite={canWrite && bggEnabled}
+									onAddExpansion={actions.handleAddExpansion}
+									onDeleteExpansion={actions.handleDeleteExpansion}
+								/>
+							</div>
 							{statistics.gameStats.playCount === 0 && (
 								<GameDetailEmptyState onLogSession={canWrite ? actions.handleAddSession : undefined} />
 							)}
@@ -100,12 +115,6 @@ function RouteComponent() {
 										<div className="flex flex-col gap-3 xl:gap-6">
 											<ScoringResultsCard scoreRankChart={statistics.scoreRankChart} />
 											<PlayerCountChartCard playerCountChart={statistics.playerCountChart} />
-											<ExpansionsCard
-												expansions={game.expansions}
-												canWrite={canWrite && bggEnabled}
-												onAddExpansion={actions.handleAddExpansion}
-												onDeleteExpansion={actions.handleDeleteExpansion}
-											/>
 										</div>
 									</div>
 								</>
