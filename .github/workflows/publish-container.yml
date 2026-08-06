@@ -5,8 +5,13 @@ on:
     branches:
       - master
     paths-ignore:
+      - "**/*.md"
       - "docs/**"
       - ".github/workflows/docs.yml"
+      - ".github/images/**"
+      - "LICENSE"
+      - "crowdin.yml"
+      - ".vscode/**"
   workflow_dispatch:
     inputs:
       stable_release:
@@ -14,6 +19,10 @@ on:
         required: true
         default: false
         type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 env:
   REGISTRY: ${{ vars.DOCKER_REGISTRY || 'docker.io' }}
@@ -327,7 +336,7 @@ jobs:
             VERSION=${{ needs.version.outputs.version }}
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:scan
           format: 'sarif'
@@ -342,7 +351,7 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
       - name: Run Trivy vulnerability scanner (fail on critical)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:scan
           format: 'table'
@@ -351,7 +360,7 @@ jobs:
           timeout: '10m'
 
       - name: Generate SBOM
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:scan
           format: 'cyclonedx'
