@@ -49,7 +49,7 @@ public class PlayerService : IPlayerService
     public async Task<Player> Create(CreatePlayerCommand command)
     {
         _logger.LogDebug("Creating player {Name}", command.Name);
-        var player = new Player(command.Name, command.Image);
+        var player = new Player(command.Name, command.Image, command.Email);
         await _playerRepository.CreateAsync(player);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Player {PlayerId} ({Name}) created", player.Id, player.Name);
@@ -78,8 +78,9 @@ public class PlayerService : IPlayerService
         }
         
         dbPlayer.UpdateName(command.Name);
+        dbPlayer.UpdateEmail(command.Email);
         await _unitOfWork.SaveChangesAsync();
-        
+
         return dbPlayer;
     }
 

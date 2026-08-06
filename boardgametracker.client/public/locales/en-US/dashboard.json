@@ -1,4 +1,7 @@
 {
+  "welcome-back-title": "Welcome back, {{name}}!",
+  "welcome-back_one": "You've played {{count}} session.",
+  "welcome-back_other": "You've played {{count}} sessions.",
   "empty": {
     "title": "No games in your collection",
     "description": "You haven't added any games to your collection yet. Start by adding your first game to track your gameplay sessions and statistics.",

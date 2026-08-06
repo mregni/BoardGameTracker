@@ -4,4 +4,6 @@ public record RegisterRequest(
     string Username,
     string Email,
     string Password,
-    string? Role);
+    string? Role,
+    bool CreatePlayer = false,
+    int? PlayerId = null);

@@ -56,3 +56,7 @@ export interface GameNightStatistics {
 	pendingResponses: number;
 	gamesPlanned: number;
 }
+
+export interface SendInvitesResult {
+	sent: number;
+}

@@ -77,6 +77,13 @@ public class AuthController : ControllerBase
         return Ok(profile);
     }
 
+    [HttpGet("linkable-players")]
+    public async Task<IActionResult> GetLinkablePlayers()
+    {
+        var players = await _authService.GetLinkablePlayersAsync(GetCurrentUserId());
+        return Ok(players);
+    }
+
     [HttpPost("change-password")]
     [EnableRateLimiting("auth")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
@@ -92,6 +99,24 @@ public class AuthController : ControllerBase
         _logger.LogInformation("Admin {AdminId} resetting password for user {UserId}", GetCurrentUserId(), userId);
         var response = await _authService.ResetPasswordAsync(userId);
         return Ok(response);
+    }
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        await _authService.ForgotPasswordAsync(request.Username);
+        return Ok();
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
+    public async Task<IActionResult> ResetPasswordWithToken([FromBody] ResetPasswordConfirmRequest request)
+    {
+        await _authService.ResetPasswordWithTokenAsync(request);
+        return Ok();
     }
 
     [HttpGet("status")]

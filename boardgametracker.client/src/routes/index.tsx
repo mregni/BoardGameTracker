@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
@@ -5,12 +6,17 @@ import Coins from "@/assets/icons/coins.svg?react";
 import Game from "@/assets/icons/gamepad.svg?react";
 import Home from "@/assets/icons/home.svg?react";
 import Players from "@/assets/icons/users.svg?react";
+import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
+import { BgtText } from "@/components/BgtText/BgtText";
+import { useAuth } from "@/hooks/useAuth";
+import { getProfile } from "@/services/queries/auth";
 import { getDashboardStatistics } from "@/services/queries/dashboard";
+import { getPlayerStatistics } from "@/services/queries/players";
 import { formatMinutesToDuration } from "@/utils/dateUtils";
 import { GameStateChartCard } from "./-components/dashboard/GameStateChart";
 import { MostPlayedDashboardGamesCard } from "./-components/dashboard/MostPlayedDashboardGames";
@@ -31,6 +37,17 @@ function RouteComponent() {
 	const { statistics, settings } = useDashboardData();
 	const navigate = useNavigate();
 	const { t } = useTranslation(["statistics", "common", "dashboard"]);
+
+	const authStatus = useAuth((s) => s.authStatus);
+	const isAuthenticated = useAuth((s) => s.isAuthenticated);
+	const username = useAuth((s) => s.user?.username);
+	const canPersonalize = !!authStatus?.authEnabled && isAuthenticated;
+
+	const { data: profile } = useQuery({ ...getProfile(), enabled: canPersonalize });
+	const { data: personalStats } = useQuery({
+		...getPlayerStatistics(profile?.playerId ?? 0),
+		enabled: profile?.playerId != null,
+	});
 
 	if (statistics === undefined || settings === undefined) return null;
 
@@ -62,6 +79,14 @@ function RouteComponent() {
 		<BgtPage>
 			<BgtPageHeader header={t("common:dashboard")} icon={Home} />
 			<BgtPageContent>
+				{profile?.playerId != null && personalStats && (
+					<BgtCard className="gap-1">
+						<BgtText size="5" weight="bold" color="white">
+							{t("dashboard:welcome-back-title", { name: username ?? "" })}
+						</BgtText>
+						<BgtText color="gray">{t("dashboard:welcome-back", { count: personalStats.playCount })}</BgtText>
+					</BgtCard>
+				)}
 				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 					<BgtTextStatistic
 						content={statistics.totalGames}

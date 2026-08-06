@@ -1,13 +1,14 @@
 import { cx } from "class-variance-authority";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Check from "@/assets/icons/check.svg?react";
 import Sparkles from "@/assets/icons/sparkles.svg?react";
 import XIcon from "@/assets/icons/x.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtSimpleSelect } from "@/components/BgtForm";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { GameNightRsvpState, type GameNightRsvps } from "@/models";
+import { type BgtSelectItem, GameNightRsvpState, type GameNightRsvps } from "@/models";
 
 interface Props {
 	invitedPlayers: GameNightRsvps[];
@@ -52,6 +53,11 @@ export const RsvpResponseForm = ({ invitedPlayers, onSubmit, isSubmitting }: Pro
 
 	const canSubmit = selectedPlayerId !== null && selectedResponse !== null && !isSubmitting;
 
+	const playerItems: BgtSelectItem[] = useMemo(
+		() => invitedPlayers.map((rsvp) => ({ value: rsvp.playerId, label: rsvp.player.name })),
+		[invitedPlayers],
+	);
+
 	const handleSubmit = () => {
 		if (selectedPlayerId === null || selectedResponse === null) return;
 		const rsvp = invitedPlayers.find((p) => p.playerId === selectedPlayerId);
@@ -68,20 +74,12 @@ export const RsvpResponseForm = ({ invitedPlayers, onSubmit, isSubmitting }: Pro
 			<BgtText size="2" weight="medium" className="mb-2">
 				{t("who-are-you")}
 			</BgtText>
-			<select
-				value={selectedPlayerId ?? ""}
-				onChange={(e) => setSelectedPlayerId(e.target.value ? Number(e.target.value) : null)}
-				className="w-full px-4 py-2.5 bg-input border border-primary/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-white text-sm"
-			>
-				<option value="" className="bg-input">
-					{t("select-your-name")}
-				</option>
-				{invitedPlayers.map((rsvp) => (
-					<option key={rsvp.playerId} value={rsvp.playerId} className="bg-input">
-						{rsvp.player.name}
-					</option>
-				))}
-			</select>
+			<BgtSimpleSelect
+				items={playerItems}
+				placeholder={t("select-your-name")}
+				value={selectedPlayerId}
+				onValueChange={(value) => setSelectedPlayerId(Number(value))}
+			/>
 
 			<BgtText size="2" weight="medium" className="mb-2">
 				{t("can-you-make-it")}

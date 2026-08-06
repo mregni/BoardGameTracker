@@ -84,4 +84,4 @@ public record ExternalLoginDto(
 
 public record UpdateUserRoleRequest(string Role);
 
-public record AdminUpdateUserRequest(string Username, string? Email, string Role);
+public record AdminUpdateUserRequest(string Username, string? Email, string Role, int? PlayerId = null);

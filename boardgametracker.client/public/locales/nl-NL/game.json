@@ -46,12 +46,13 @@
     "update": "Update expansions",
     "none": "No expansions added to this game.",
     "no-game": "Select a game to view expansions.",
-    "add": "Add your first expansion"
+    "add": "Add"
   },
   "manuals": {
     "title": "Manuals",
+    "description": "Upload, download or delete manuals for this game.",
     "none": "No manuals uploaded for this game.",
-    "add": "Upload your first manual",
+    "add": "Upload",
     "upload-success": "Manual(s) uploaded successfully.",
     "upload-failed": "Manual upload failed, check logs for more details.",
     "delete-success": "Manual deleted successfully.",

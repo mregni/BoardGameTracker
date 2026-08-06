@@ -2,11 +2,14 @@ import type {
 	AdminUpdateUserRequest,
 	AuthStatus,
 	ChangePasswordRequest,
+	ForgotPasswordRequest,
 	LoginRequest,
 	LoginResponse,
 	OidcProvider,
+	PlayerLink,
 	ProfileResponse,
 	RegisterRequest,
+	ResetPasswordConfirmRequest,
 	ResetPasswordResponse,
 	UpdateProfileRequest,
 	UserDto,
@@ -57,6 +60,10 @@ export const changePasswordCall = (request: ChangePasswordRequest): Promise<void
 	return axiosInstance.post(`${domain}/change-password`, request);
 };
 
+export const getLinkablePlayersCall = (): Promise<PlayerLink[]> => {
+	return axiosInstance.get<PlayerLink[]>(`${domain}/linkable-players`).then((response) => response.data);
+};
+
 export const registerUserCall = (request: RegisterRequest): Promise<UserDto> => {
 	return axiosInstance.post<UserDto>(`${domain}/register`, request).then((response) => {
 		return response.data;
@@ -67,6 +74,14 @@ export const resetPasswordCall = (userId: string): Promise<ResetPasswordResponse
 	return axiosInstance.post<ResetPasswordResponse>(`${domain}/reset-password/${userId}`).then((response) => {
 		return response.data;
 	});
+};
+
+export const forgotPasswordCall = (request: ForgotPasswordRequest): Promise<void> => {
+	return axiosInstance.post(`${domain}/forgot-password`, request);
+};
+
+export const confirmResetPasswordCall = (request: ResetPasswordConfirmRequest): Promise<void> => {
+	return axiosInstance.post(`${domain}/reset-password`, request);
 };
 
 export const getUsersCall = (): Promise<UserDto[]> => {

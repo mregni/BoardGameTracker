@@ -10,10 +10,11 @@ public static class DbSeeder
     public static async Task SeedAuthData(
         RoleManager<IdentityRole> roleManager,
         UserManager<ApplicationUser> userManager,
-        ILogger logger)
+        ILogger logger,
+        string? adminPassword = null)
     {
         await SeedRoles(roleManager, logger);
-        await SeedDefaultAdmin(userManager, logger);
+        await SeedDefaultAdmin(userManager, logger, adminPassword);
     }
 
     private static async Task SeedRoles(RoleManager<IdentityRole> roleManager, ILogger logger)
@@ -30,7 +31,10 @@ public static class DbSeeder
         }
     }
 
-    private static async Task SeedDefaultAdmin(UserManager<ApplicationUser> userManager, ILogger logger)
+    private static async Task SeedDefaultAdmin(
+        UserManager<ApplicationUser> userManager,
+        ILogger logger,
+        string? adminPassword)
     {
         const string adminUsername = "admin";
         var existingAdmin = await userManager.FindByNameAsync(adminUsername);
@@ -39,18 +43,33 @@ public static class DbSeeder
             return;
         }
 
-        var admin = new ApplicationUser(adminUsername, "admin@boardgametracker.local", "Administrator");
-        var result = await userManager.CreateAsync(admin, "admin");
+        const string defaultPassword = "admin";
+        var useDefault = string.IsNullOrWhiteSpace(adminPassword);
+        var password = useDefault ? defaultPassword : adminPassword!;
 
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(admin, Constants.AuthRoles.Admin);
-            logger.LogInformation("Created default admin user (username: admin, password: admin)");
-        }
-        else
+        var admin = new ApplicationUser(adminUsername, null, "Administrator");
+        admin.PasswordHash = userManager.PasswordHasher.HashPassword(admin, password);
+        var result = await userManager.CreateAsync(admin);
+
+        if (!result.Succeeded)
         {
             logger.LogWarning("Failed to create default admin user: {Errors}",
                 string.Join(", ", result.Errors.Select(e => e.Description)));
+            return;
+        }
+
+        await userManager.AddToRoleAsync(admin, Constants.AuthRoles.Admin);
+
+        if (useDefault)
+        {
+            logger.LogWarning(
+                "Created default admin user (username: {Username}, password: {Password}). " +
+                "Change it after your first login, or set ADMIN_PASSWORD to choose a different one.",
+                adminUsername, defaultPassword);
+        }
+        else
+        {
+            logger.LogInformation("Created default admin user '{Username}' using ADMIN_PASSWORD", adminUsername);
         }
     }
 }

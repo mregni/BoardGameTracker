@@ -30,6 +30,7 @@ export interface ProfileResponse {
 	id: string;
 	username: string;
 	email: string | null;
+	displayName: string | null;
 	roles: string;
 	createdAt: Date;
 	lastLoginAt: Date | null;
@@ -37,12 +38,28 @@ export interface ProfileResponse {
 }
 
 export interface UpdateProfileRequest {
-	username: string;
+	displayName: string | null;
 	email: string | null;
+	playerId: number | null;
+}
+
+export interface PlayerLink {
+	id: number;
+	name: string;
 }
 
 export interface ChangePasswordRequest {
 	currentPassword: string;
+	newPassword: string;
+}
+
+export interface ForgotPasswordRequest {
+	username: string;
+}
+
+export interface ResetPasswordConfirmRequest {
+	userId: string;
+	token: string;
 	newPassword: string;
 }
 
@@ -51,6 +68,8 @@ export interface RegisterRequest {
 	email: string;
 	password: string;
 	role: string;
+	createPlayer?: boolean;
+	playerId?: number | null;
 }
 
 export interface UserDto {
@@ -71,4 +90,5 @@ export interface AdminUpdateUserRequest {
 	username: string;
 	email: string | null;
 	role: string;
+	playerId: number | null;
 }

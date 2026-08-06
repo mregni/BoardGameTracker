@@ -3,12 +3,19 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtInputField } from "@/components/BgtForm";
+import { BgtFieldLabel, BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import { useAuth } from "@/hooks/useAuth";
 import { useModalState } from "@/hooks/useModalState";
-import type { ResetPasswordResponse, UserDto } from "@/models";
+import type {
+	BgtSelectItem,
+	PlayerLink,
+	ProfileResponse,
+	ResetPasswordResponse,
+	UpdateProfileRequest,
+	UserDto,
+} from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -28,6 +35,8 @@ export const AccountSettings = () => {
 		profile,
 		isProfileLoading,
 		users,
+		linkablePlayers,
+		players,
 		isAdmin,
 		updateProfile,
 		isUpdatingProfile,
@@ -59,6 +68,7 @@ export const AccountSettings = () => {
 		<>
 			<ProfileSection
 				profile={profile}
+				linkablePlayers={linkablePlayers}
 				updateProfile={updateProfile}
 				isUpdatingProfile={isUpdatingProfile}
 				onChangePassword={changePasswordModal.show}
@@ -95,6 +105,8 @@ export const AccountSettings = () => {
 				<CreateUserModal
 					open={createUserModal.isOpen}
 					close={createUserModal.hide}
+					players={players}
+					users={users}
 					onSubmit={registerUser}
 					isLoading={isRegistering}
 				/>
@@ -105,6 +117,8 @@ export const AccountSettings = () => {
 					open={true}
 					close={() => setEditTarget(null)}
 					user={editTarget}
+					players={players}
+					users={users}
 					onSubmit={updateUser}
 					isLoading={isUpdatingUser}
 				/>
@@ -136,24 +150,41 @@ export const AccountSettings = () => {
 };
 
 interface ProfileSectionProps {
-	profile: { username: string; email: string | null };
-	updateProfile: (req: { username: string; email: string | null }) => Promise<unknown>;
+	profile: ProfileResponse;
+	linkablePlayers: PlayerLink[];
+	updateProfile: (req: UpdateProfileRequest) => Promise<unknown>;
 	isUpdatingProfile: boolean;
 	onChangePassword: () => void;
 }
 
-const ProfileSection = ({ profile, updateProfile, isUpdatingProfile, onChangePassword }: ProfileSectionProps) => {
+const ProfileSection = ({
+	profile,
+	linkablePlayers,
+	updateProfile,
+	isUpdatingProfile,
+	onChangePassword,
+}: ProfileSectionProps) => {
 	const { t } = useTranslation(["settings", "auth", "common"]);
+
+	const playerItems: BgtSelectItem[] = useMemo(
+		() => [
+			{ value: 0, label: t("account.profile.player.none") },
+			...linkablePlayers.map((p) => ({ value: p.id, label: p.name })),
+		],
+		[linkablePlayers, t],
+	);
 
 	const form = useForm({
 		defaultValues: {
-			username: profile.username ?? "",
+			displayName: profile.displayName ?? "",
 			email: profile.email ?? "",
+			playerId: profile.playerId ?? 0,
 		},
 		onSubmit: async ({ value }) => {
 			await updateProfile({
-				username: value.username || "",
+				displayName: value.displayName || null,
 				email: value.email || null,
+				playerId: value.playerId ? value.playerId : null,
 			});
 		},
 	});
@@ -161,12 +192,16 @@ const ProfileSection = ({ profile, updateProfile, isUpdatingProfile, onChangePas
 	return (
 		<SettingsSection title={t("account.profile.title")} description={t("account.profile.description")}>
 			<form onSubmit={handleFormSubmit(form)} className="space-y-3">
-				<form.Field name="username">
+				<div>
+					<BgtFieldLabel>{t("account.profile.username.label")}</BgtFieldLabel>
+					<div className="text-[15px] text-white/70">{profile.username}</div>
+				</div>
+				<form.Field name="displayName">
 					{(field) => (
 						<BgtInputField
 							field={field}
 							type="text"
-							label={t("account.profile.username.label")}
+							label={t("account.profile.display-name.label")}
 							disabled={isUpdatingProfile}
 						/>
 					)}
@@ -177,6 +212,17 @@ const ProfileSection = ({ profile, updateProfile, isUpdatingProfile, onChangePas
 							field={field}
 							type="text"
 							label={t("account.profile.email.label")}
+							disabled={isUpdatingProfile}
+						/>
+					)}
+				</form.Field>
+				<form.Field name="playerId">
+					{(field) => (
+						<BgtSelect
+							field={field}
+							label={t("account.profile.player.label")}
+							items={playerItems}
+							hasSearch
 							disabled={isUpdatingProfile}
 						/>
 					)}

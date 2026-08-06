@@ -37,10 +37,10 @@ public class OidcController : ControllerBase
 
     [HttpGet("{provider}/login")]
     [AllowAnonymous]
-    public async Task<IActionResult> Login(string provider, [FromQuery] string redirectUri, [FromQuery] string? state = null)
+    public async Task<IActionResult> Login(string provider, [FromQuery] string redirectUri)
     {
         _logger.LogInformation("OIDC login initiated for provider {Provider}", provider);
-        var url = await _oidcService.GetAuthorizationUrlAsync(provider, redirectUri, state);
+        var url = await _oidcService.GetAuthorizationUrlAsync(provider, redirectUri);
         return Ok(new AuthorizationUrlResponse(url));
     }
 
@@ -55,10 +55,10 @@ public class OidcController : ControllerBase
 
     [HttpGet("{provider}/link")]
     [Authorize]
-    public async Task<IActionResult> LinkLogin(string provider, [FromQuery] string redirectUri, [FromQuery] string? state = null)
+    public async Task<IActionResult> LinkLogin(string provider, [FromQuery] string redirectUri)
     {
         _logger.LogInformation("OIDC link initiated for provider {Provider} by user {UserId}", provider, GetCurrentUserId());
-        var url = await _oidcService.GetAuthorizationUrlAsync(provider, redirectUri, state);
+        var url = await _oidcService.GetAuthorizationUrlAsync(provider, redirectUri);
         return Ok(new AuthorizationUrlResponse(url));
     }
 

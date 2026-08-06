@@ -12,6 +12,8 @@ using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Disk;
 using BoardGameTracker.Core.Disk.Interfaces;
+using BoardGameTracker.Core.Email;
+using BoardGameTracker.Core.Email.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -63,6 +65,9 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IShameService, ShameService>();
         serviceCollection.AddScoped<IImageService, ImageService>();
         serviceCollection.AddScoped<IManualService, ManualService>();
+        serviceCollection.AddScoped<IEmailService, EmailService>();
+        serviceCollection.AddScoped<ISmtpSender, MailKitSmtpSender>();
+        serviceCollection.AddScoped<IPublicUrlBuilder, PublicUrlBuilder>();
         serviceCollection.AddScoped<IPlayerService, PlayerService>();
         serviceCollection.AddScoped<ISessionService, SessionService>();
         serviceCollection.AddScoped<ILocationService, LocationService>();

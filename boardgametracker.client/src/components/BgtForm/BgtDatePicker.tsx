@@ -111,7 +111,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 					<Popover
 						placement="bottom end"
 						offset={5}
-						className="bg-background border border-primary/30 rounded-lg p-4 shadow-lg z-50"
+						className="bg-background border border-primary/30 rounded-lg p-4 shadow-lg z-50 pointer-events-auto"
 					>
 						<Dialog className="outline-none">
 							<Calendar className="text-white w-72">

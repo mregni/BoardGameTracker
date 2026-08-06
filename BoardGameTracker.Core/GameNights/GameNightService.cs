@@ -1,9 +1,13 @@
+using System.Net;
 using Ardalis.GuardClauses;
+using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.Email.Interfaces;
 using BoardGameTracker.Core.GameNights.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -15,17 +19,23 @@ public class GameNightService : IGameNightService
     private readonly IGameNightRepository _gameNightRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGameRepository _gameRepository;
+    private readonly IEmailService _emailService;
+    private readonly IPublicUrlBuilder _publicUrlBuilder;
     private readonly ILogger<GameNightService> _logger;
 
     public GameNightService(
         IGameNightRepository gameNightRepository,
         IUnitOfWork unitOfWork,
         IGameRepository gameRepository,
+        IEmailService emailService,
+        IPublicUrlBuilder publicUrlBuilder,
         ILogger<GameNightService> logger)
     {
         _gameNightRepository = gameNightRepository;
         _unitOfWork = unitOfWork;
         _gameRepository = gameRepository;
+        _emailService = emailService;
+        _publicUrlBuilder = publicUrlBuilder;
         _logger = logger;
     }
 
@@ -44,9 +54,9 @@ public class GameNightService : IGameNightService
     public async Task<GameNight> Create(CreateGameNightCommand command)
     {
         _logger.LogDebug("Creating game night {Title}", command.Title);
-        var games = await _gameRepository.GetByIdsAsync(command.SuggestedGameIds);
+        var games = await _gameRepository.GetByIdsAsync(command.SuggestedGameIds ?? []);
 
-        var players = command.InvitedPlayerIds.Select(playerId => GameNightRsvp.Create(playerId, GameNightRsvpState.Pending)).ToList();
+        var players = (command.InvitedPlayerIds ?? []).Select(playerId => GameNightRsvp.Create(playerId, GameNightRsvpState.Pending)).ToList();
         if (players.All(x => x.PlayerId != command.HostId))
         {
             players.Add(GameNightRsvp.Create(command.HostId, GameNightRsvpState.Accepted));
@@ -77,12 +87,12 @@ public class GameNightService : IGameNightService
             throw new EntityNotFoundException(nameof(GameNight), command.Id);
         }
 
-        var games = await _gameRepository.GetByIdsAsync(command.SuggestedGameIds);
+        var games = await _gameRepository.GetByIdsAsync(command.SuggestedGameIds ?? []);
 
         gameNight.Update(command.Title, command.Notes, command.StartDate, command.HostId, command.LocationId);
         gameNight.SetSuggestedGames(games);
 
-        var desiredPlayerIds = command.InvitedPlayerIds.ToHashSet();
+        var desiredPlayerIds = (command.InvitedPlayerIds ?? []).ToHashSet();
         desiredPlayerIds.Add(command.HostId);
 
         var existingPlayerIds = gameNight.InvitedPlayers.Select(p => p.PlayerId).ToHashSet();
@@ -128,6 +138,50 @@ public class GameNightService : IGameNightService
         rsvp.UpdateState(command.State);
         await _unitOfWork.SaveChangesAsync();
         return rsvp;
+    }
+
+    public async Task<SendInvitesResultDto> SendInvitesAsync(int id)
+    {
+        _logger.LogDebug("Sending invites for game night {GameNightId}", id);
+        var gameNight = await _gameNightRepository.GetByIdAsync(id);
+        if (gameNight == null)
+        {
+            throw new EntityNotFoundException(nameof(GameNight), id);
+        }
+
+        if (!_emailService.IsConfigured)
+        {
+            throw new DomainException(Constants.Errors.EmailNotConfigured);
+        }
+
+        var rsvpUrl = await _publicUrlBuilder.BuildRsvpUrlAsync(gameNight.LinkId);
+        var htmlUrl = WebUtility.HtmlEncode(rsvpUrl);
+        var title = WebUtility.HtmlEncode(gameNight.Title);
+        var subject = $"You're invited: {gameNight.Title}";
+        var body = $"<p>You're invited to <strong>{title}</strong>.</p><p><a href=\"{htmlUrl}\">Respond to the invitation</a></p>";
+
+        var result = new SendInvitesResultDto();
+        foreach (var rsvp in gameNight.InvitedPlayers.Where(p => p.State == GameNightRsvpState.Pending))
+        {
+            var email = rsvp.Player?.Email;
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                continue;
+            }
+
+            try
+            {
+                await _emailService.SendAsync(email, subject, body);
+                result.Sent++;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to send invite to player {PlayerId} for game night {GameNightId}", rsvp.PlayerId, id);
+            }
+        }
+
+        _logger.LogInformation("Game night {GameNightId} invites: {Sent} sent", id, result.Sent);
+        return result;
     }
 
     public Task<int> CountFutureGameNights()

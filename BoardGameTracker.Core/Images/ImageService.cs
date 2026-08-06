@@ -1,4 +1,6 @@
-﻿using BoardGameTracker.Common.Enums;
+﻿using BoardGameTracker.Common;
+using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Disk.Interfaces;
@@ -16,6 +18,8 @@ public class ImageService : IImageService
 {
     private const int ImageSize = 512;
     private const long MaxDownloadBytes = 15 * 1024 * 1024;
+    private const long MaxUploadBytes = 15 * 1024 * 1024;
+    private const long MaxUploadPixels = 50_000_000;
     private static readonly WebpEncoder WebpImageEncoder = new() { Quality = 80 };
 
     private readonly IDiskProvider _diskProvider;
@@ -94,7 +98,36 @@ public class ImageService : IImageService
             return CreateNoImageImages(folder, fullPath, folder);
         }
 
-        using var image = await Image.LoadAsync(file.OpenReadStream());
+        if (file.Length > MaxUploadBytes)
+        {
+            throw new ValidationException(Constants.Errors.ImageTooLarge);
+        }
+
+        using var buffered = new MemoryStream();
+        await using (var uploadStream = file.OpenReadStream())
+        {
+            await uploadStream.CopyToAsync(buffered);
+        }
+
+        buffered.Position = 0;
+        ImageInfo imageInfo;
+        try
+        {
+            imageInfo = Image.Identify(buffered);
+        }
+        catch (Exception ex) when (ex is UnknownImageFormatException or InvalidImageContentException)
+        {
+            _logger.LogWarning(ex, "Rejected upload of type {UploadType}: unsupported image format", type);
+            throw new ValidationException(Constants.Errors.ImageUnsupportedFormat);
+        }
+
+        if ((long)imageInfo.Width * imageInfo.Height > MaxUploadPixels)
+        {
+            throw new ValidationException(Constants.Errors.ImageTooLarge);
+        }
+
+        buffered.Position = 0;
+        using var image = await Image.LoadAsync(buffered);
         image.Mutate(x => x.Resize(ImageSize, ImageSize));
 
         var outputFileName = Path.ChangeExtension(file.FileName, ".webp");
@@ -145,12 +178,18 @@ public class ImageService : IImageService
         return buffer.ToArray();
     }
 
-    private static string CreateNoImageImages(string fileName, string absolutePath, string relativePath)
+    private string CreateNoImageImages(string fileName, string absolutePath, string relativePath)
     {
         const string noImageFile = "no-image.jpg";
         fileName += Path.GetExtension(noImageFile);
-        
+
         var sourcePath = Path.Combine(PathHelper.FullRootImagePath, noImageFile);
+        if (!File.Exists(sourcePath))
+        {
+            _logger.LogWarning("Placeholder image {SourcePath} is missing, storing no image instead", sourcePath);
+            return string.Empty;
+        }
+
         var destinationPath = Path.Combine(absolutePath, fileName.GenerateUniqueFileName());
         File.Copy(sourcePath, destinationPath);
         var path = Path.Combine(relativePath, Path.GetFileName(destinationPath));

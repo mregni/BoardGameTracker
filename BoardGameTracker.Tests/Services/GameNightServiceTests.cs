@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.Email.Interfaces;
 using BoardGameTracker.Core.GameNights;
 using BoardGameTracker.Core.GameNights.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -21,6 +24,8 @@ public class GameNightServiceTests
     private readonly Mock<IGameNightRepository> _gameNightRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGameRepository> _gameRepositoryMock;
+    private readonly Mock<IEmailService> _emailServiceMock;
+    private readonly Mock<IPublicUrlBuilder> _publicUrlBuilderMock;
     private readonly Mock<ILogger<GameNightService>> _loggerMock;
     private readonly GameNightService _gameNightService;
 
@@ -29,12 +34,16 @@ public class GameNightServiceTests
         _gameNightRepositoryMock = new Mock<IGameNightRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _gameRepositoryMock = new Mock<IGameRepository>();
+        _emailServiceMock = new Mock<IEmailService>();
+        _publicUrlBuilderMock = new Mock<IPublicUrlBuilder>();
         _loggerMock = new Mock<ILogger<GameNightService>>();
 
         _gameNightService = new GameNightService(
             _gameNightRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _gameRepositoryMock.Object,
+            _emailServiceMock.Object,
+            _publicUrlBuilderMock.Object,
             _loggerMock.Object);
     }
 
@@ -43,6 +52,8 @@ public class GameNightServiceTests
         _gameNightRepositoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
         _gameRepositoryMock.VerifyNoOtherCalls();
+        _emailServiceMock.VerifyNoOtherCalls();
+        _publicUrlBuilderMock.VerifyNoOtherCalls();
     }
 
     #region GetGameNights Tests
@@ -479,6 +490,126 @@ public class GameNightServiceTests
 
         _gameNightRepositoryMock.Verify(x => x.DeleteAsync(gameNightId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region SendInvites Tests
+
+    private static GameNightRsvp RsvpWithPlayer(int playerId, GameNightRsvpState state, Player player)
+    {
+        var rsvp = GameNightRsvp.Create(playerId, state);
+        typeof(GameNightRsvp).GetProperty(nameof(GameNightRsvp.Player))!.SetValue(rsvp, player);
+        return rsvp;
+    }
+
+    [Fact]
+    public async Task SendInvitesAsync_ShouldThrow_WhenGameNightNotFound()
+    {
+        _gameNightRepositoryMock.Setup(x => x.GetByIdAsync(99)).ReturnsAsync((GameNight?)null);
+
+        var act = () => _gameNightService.SendInvitesAsync(99);
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+
+        _gameNightRepositoryMock.Verify(x => x.GetByIdAsync(99), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SendInvitesAsync_ShouldThrow_WhenEmailNotConfigured()
+    {
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
+        _gameNightRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(gameNight);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(false);
+
+        var act = () => _gameNightService.SendInvitesAsync(1);
+
+        await act.Should().ThrowAsync<DomainException>();
+
+        _gameNightRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SendInvitesAsync_ShouldSendToPlayersWithEmailAndSkipOthers()
+    {
+        var withEmail = RsvpWithPlayer(1, GameNightRsvpState.Pending, new Player("Alice", null, "alice@test.com"));
+        var noEmail = RsvpWithPlayer(2, GameNightRsvpState.Pending, new Player("Bob"));
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
+        gameNight.SetInvitedPlayers([withEmail, noEmail]);
+
+        _gameNightRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(gameNight);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        _publicUrlBuilderMock.Setup(x => x.BuildRsvpUrlAsync(gameNight.LinkId)).ReturnsAsync("http://x/rsvp");
+        _emailServiceMock
+            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await _gameNightService.SendInvitesAsync(1);
+
+        result.Sent.Should().Be(1);
+
+        _gameNightRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        _publicUrlBuilderMock.Verify(x => x.BuildRsvpUrlAsync(gameNight.LinkId), Times.Once);
+        _emailServiceMock.Verify(x => x.SendAsync("alice@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SendInvitesAsync_ShouldOnlyEmailPendingPlayers()
+    {
+        var pending = RsvpWithPlayer(1, GameNightRsvpState.Pending, new Player("Alice", null, "alice@test.com"));
+        var accepted = RsvpWithPlayer(2, GameNightRsvpState.Accepted, new Player("Host", null, "host@test.com"));
+        var declined = RsvpWithPlayer(3, GameNightRsvpState.Declined, new Player("Bob", null, "bob@test.com"));
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow, 2, 1);
+        gameNight.SetInvitedPlayers([pending, accepted, declined]);
+
+        _gameNightRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(gameNight);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        _publicUrlBuilderMock.Setup(x => x.BuildRsvpUrlAsync(gameNight.LinkId)).ReturnsAsync("http://x/rsvp");
+        _emailServiceMock
+            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await _gameNightService.SendInvitesAsync(1);
+
+        result.Sent.Should().Be(1);
+
+        _gameNightRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        _publicUrlBuilderMock.Verify(x => x.BuildRsvpUrlAsync(gameNight.LinkId), Times.Once);
+        _emailServiceMock.Verify(x => x.SendAsync("alice@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+        _emailServiceMock.Verify(x => x.SendAsync("host@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        _emailServiceMock.Verify(x => x.SendAsync("bob@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SendInvitesAsync_ShouldNotCountAsSent_WhenSendThrows()
+    {
+        var withEmail = RsvpWithPlayer(1, GameNightRsvpState.Pending, new Player("Alice", null, "alice@test.com"));
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
+        gameNight.SetInvitedPlayers([withEmail]);
+
+        _gameNightRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(gameNight);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        _publicUrlBuilderMock.Setup(x => x.BuildRsvpUrlAsync(gameNight.LinkId)).ReturnsAsync("http://x/rsvp");
+        _emailServiceMock
+            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("smtp down"));
+
+        var result = await _gameNightService.SendInvitesAsync(1);
+
+        result.Sent.Should().Be(0);
+
+        _gameNightRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        _publicUrlBuilderMock.Verify(x => x.BuildRsvpUrlAsync(gameNight.LinkId), Times.Once);
+        _emailServiceMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

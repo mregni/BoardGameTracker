@@ -25,6 +25,7 @@ describe("BgtPlayerAvatar", () => {
 		id: 1,
 		name: "John Doe",
 		image: "/player.jpg",
+		email: null,
 		badges: [],
 		...overrides,
 	});

@@ -120,6 +120,7 @@ public class BggImportService : IBggImportService
 
     public async Task ImportList(IList<ImportGame> games)
     {
+        ArgumentNullException.ThrowIfNull(games);
         await EnsureBggConfiguredAsync();
         _logger.LogInformation("Importing {Count} games from BGG", games.Count);
 

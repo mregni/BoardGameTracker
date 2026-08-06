@@ -43,6 +43,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Content Include="images\no-image.jpg">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>

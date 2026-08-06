@@ -14,6 +14,7 @@ import { useAppForm } from "@/hooks/form";
 import { useAuth } from "@/hooks/useAuth";
 import type { OidcProvider } from "@/models/Auth/Auth";
 import { getOidcProviderCall } from "@/services/authService";
+import { getSettings } from "@/services/queries/settings";
 import { apiUrl } from "@/utils/apiUrl";
 import { handleFormSubmit } from "@/utils/formUtils";
 
@@ -38,6 +39,8 @@ function LoginPage() {
 		queryFn: getOidcProviderCall,
 	});
 
+	const { data: settings } = useQuery(getSettings());
+
 	const form = useAppForm({
 		defaultValues: {
 			username: "",
@@ -59,7 +62,7 @@ function LoginPage() {
 		if (redirect) {
 			callbackUrl.searchParams.set("redirect", redirect);
 		}
-		globalThis.location.href = `${apiUrl}auth/oidc/${provider.name}/login?redirectUri=${encodeURIComponent(callbackUrl.toString())}&state=${provider.name}`;
+		globalThis.location.href = `${apiUrl}auth/oidc/${provider.name}/login?redirectUri=${encodeURIComponent(callbackUrl.toString())}`;
 	};
 
 	return (
@@ -111,6 +114,18 @@ function LoginPage() {
 						<BgtButton type="submit" disabled={isLoading} size="3" className="w-full">
 							{isLoading ? t("logging-in") : t("login")}
 						</BgtButton>
+
+						{settings?.emailEnabled && (
+							<div className="text-center">
+								<button
+									type="button"
+									onClick={() => navigate({ to: "/forgot-password" })}
+									className="text-primary hover:text-primary/80 text-sm transition-colors"
+								>
+									{t("forgot-link")}
+								</button>
+							</div>
+						)}
 					</form>
 
 					{oidcProvider && (

@@ -194,6 +194,7 @@ jobs:
         env:
           SEC_DB_PASSWORD: ${{ steps.secrets.outputs.db_password }}
           SEC_JWT_SECRET: ${{ steps.secrets.outputs.jwt_secret }}
+          SEC_ADMIN_PASSWORD: ${{ secrets.ZAP_TEST_PASSWORD }}
         run: |
           docker compose -f infra/docker-compose.security.yml up -d
           echo "Waiting for application to become healthy..."

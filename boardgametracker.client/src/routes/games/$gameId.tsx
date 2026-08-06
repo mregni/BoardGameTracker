@@ -3,17 +3,18 @@ import { useTranslation } from "react-i18next";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { useModalState } from "@/hooks/useModalState";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getGame, getGameSessionsShortList, getGameStatistics } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { gameIdParamSchema } from "@/utils/routeSchemas";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
-import { ExpansionsCard } from "./-components/ExpansionsCard";
+import { ExpansionsDialog } from "./-components/ExpansionsDialog";
 import { GameDetailEmptyState } from "./-components/GameDetailEmptyState";
 import { GameHeader } from "./-components/GameHeader";
 import { GameStaticSection } from "./-components/GameStaticSection";
 import { GameStatisticsGrid } from "./-components/GameStatisticsGrid";
-import { ManualsCard } from "./-components/ManualsCard";
+import { ManualsDialog } from "./-components/ManualsDialog";
 import { PlayerCountChartCard } from "./-components/PlayerCountChartCard";
 import { RecentSessionsCard } from "./-components/RecentSessionsCard";
 import { ScoringResultsCard } from "./-components/ScoringResultsCard";
@@ -21,6 +22,7 @@ import { SessionCountChartCard } from "./-components/SessionCountChartCard";
 import { TopPlayersCard } from "./-components/TopPlayersCard";
 import { useGameActions } from "./-hooks/useGameActions";
 import { useGameData } from "./-hooks/useGameData";
+import { useGameManuals } from "./-hooks/useGameManuals";
 import { useGameModals } from "./-hooks/useGameModals";
 import { ExpansionSelectorModal } from "./-modals/ExpansionSelectorModal";
 
@@ -45,6 +47,9 @@ function RouteComponent() {
 	});
 
 	const modals = useGameModals();
+	const manualsDialog = useModalState();
+	const expansionsDialog = useModalState();
+	const { manuals = [] } = useGameManuals(gameId);
 
 	const actions = useGameActions({
 		gameId,
@@ -77,21 +82,26 @@ function RouteComponent() {
 								currency={settings.currency}
 								dateFormat={settings.dateFormat}
 								uiLanguage={settings.uiLanguage}
+								manualCount={manuals.length}
+								onOpenManuals={manualsDialog.show}
+								onOpenExpansions={expansionsDialog.show}
 							/>
-							<div className="grid grid-cols-1 lg:grid-cols-2 gap-3 xl:gap-6">
-								<ManualsCard
-									gameId={gameId}
-									canWrite={canWrite}
-									dateFormat={settings.dateFormat}
-									uiLanguage={settings.uiLanguage}
-								/>
-								<ExpansionsCard
-									expansions={game.expansions}
-									canWrite={canWrite && bggEnabled}
-									onAddExpansion={actions.handleAddExpansion}
-									onDeleteExpansion={actions.handleDeleteExpansion}
-								/>
-							</div>
+							<ManualsDialog
+								gameId={gameId}
+								open={manualsDialog.isOpen}
+								close={manualsDialog.hide}
+								canWrite={canWrite}
+								dateFormat={settings.dateFormat}
+								uiLanguage={settings.uiLanguage}
+							/>
+							<ExpansionsDialog
+								expansions={game.expansions}
+								open={expansionsDialog.isOpen}
+								close={expansionsDialog.hide}
+								canWrite={canWrite && bggEnabled}
+								onAddExpansion={actions.handleAddExpansion}
+								onDeleteExpansion={actions.handleDeleteExpansion}
+							/>
 							{statistics.gameStats.playCount === 0 && (
 								<GameDetailEmptyState onLogSession={canWrite ? actions.handleAddSession : undefined} />
 							)}

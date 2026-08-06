@@ -38,7 +38,10 @@
     "past": "Past",
     "copy-link": "Copy RSVP link",
     "copied": "Copied to clipboard",
-    "manage-rsvps": "Manage RSVPs"
+    "manage-rsvps": "Manage RSVPs",
+    "email-invites": "Email invites",
+    "invites-sent": "Invites sent: {{sent}} sent",
+    "invites-failed": "Failed to send invites"
   },
   "form": {
     "title": {

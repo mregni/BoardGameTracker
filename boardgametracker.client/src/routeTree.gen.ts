@@ -28,7 +28,9 @@ import { Route as GamesBggRouteImport } from './routes/games/bgg'
 import { Route as GamesAddRouteImport } from './routes/games/add'
 import { Route as GamesGameIdRouteImport } from './routes/games/$gameId'
 import { Route as BareRsvpRouteImport } from './routes/_bare/rsvp'
+import { Route as BareResetPasswordRouteImport } from './routes/_bare/reset-password'
 import { Route as BareLoginRouteImport } from './routes/_bare/login'
+import { Route as BareForgotPasswordRouteImport } from './routes/_bare/forgot-password'
 import { Route as BareAuthCallbackRouteImport } from './routes/_bare/auth-callback'
 import { Route as SessionsUpdateSessionIdRouteImport } from './routes/sessions/update_.$sessionId'
 import { Route as SessionsNewGameIdRouteImport } from './routes/sessions/new_.$gameId'
@@ -132,9 +134,19 @@ const BareRsvpRoute = BareRsvpRouteImport.update({
   path: '/rsvp',
   getParentRoute: () => BareRoute,
 } as any)
+const BareResetPasswordRoute = BareResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => BareRoute,
+} as any)
 const BareLoginRoute = BareLoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => BareRoute,
+} as any)
+const BareForgotPasswordRoute = BareForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => BareRoute,
 } as any)
 const BareAuthCallbackRoute = BareAuthCallbackRouteImport.update({
@@ -181,7 +193,9 @@ const GamesImportListUsernameRoute = GamesImportListUsernameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth-callback': typeof BareAuthCallbackRoute
+  '/forgot-password': typeof BareForgotPasswordRoute
   '/login': typeof BareLoginRoute
+  '/reset-password': typeof BareResetPasswordRoute
   '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/add': typeof GamesAddRoute
@@ -210,7 +224,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth-callback': typeof BareAuthCallbackRoute
+  '/forgot-password': typeof BareForgotPasswordRoute
   '/login': typeof BareLoginRoute
+  '/reset-password': typeof BareResetPasswordRoute
   '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/add': typeof GamesAddRoute
@@ -241,7 +257,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_bare': typeof BareRouteWithChildren
   '/_bare/auth-callback': typeof BareAuthCallbackRoute
+  '/_bare/forgot-password': typeof BareForgotPasswordRoute
   '/_bare/login': typeof BareLoginRoute
+  '/_bare/reset-password': typeof BareResetPasswordRoute
   '/_bare/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/add': typeof GamesAddRoute
@@ -272,7 +290,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth-callback'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/rsvp'
     | '/games/$gameId'
     | '/games/add'
@@ -301,7 +321,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth-callback'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/rsvp'
     | '/games/$gameId'
     | '/games/add'
@@ -331,7 +353,9 @@ export interface FileRouteTypes {
     | '/'
     | '/_bare'
     | '/_bare/auth-callback'
+    | '/_bare/forgot-password'
     | '/_bare/login'
+    | '/_bare/reset-password'
     | '/_bare/rsvp'
     | '/games/$gameId'
     | '/games/add'
@@ -521,11 +545,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BareRsvpRouteImport
       parentRoute: typeof BareRoute
     }
+    '/_bare/reset-password': {
+      id: '/_bare/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof BareResetPasswordRouteImport
+      parentRoute: typeof BareRoute
+    }
     '/_bare/login': {
       id: '/_bare/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof BareLoginRouteImport
+      parentRoute: typeof BareRoute
+    }
+    '/_bare/forgot-password': {
+      id: '/_bare/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof BareForgotPasswordRouteImport
       parentRoute: typeof BareRoute
     }
     '/_bare/auth-callback': {
@@ -589,13 +627,17 @@ declare module '@tanstack/react-router' {
 
 interface BareRouteChildren {
   BareAuthCallbackRoute: typeof BareAuthCallbackRoute
+  BareForgotPasswordRoute: typeof BareForgotPasswordRoute
   BareLoginRoute: typeof BareLoginRoute
+  BareResetPasswordRoute: typeof BareResetPasswordRoute
   BareRsvpRoute: typeof BareRsvpRoute
 }
 
 const BareRouteChildren: BareRouteChildren = {
   BareAuthCallbackRoute: BareAuthCallbackRoute,
+  BareForgotPasswordRoute: BareForgotPasswordRoute,
   BareLoginRoute: BareLoginRoute,
+  BareResetPasswordRoute: BareResetPasswordRoute,
   BareRsvpRoute: BareRsvpRoute,
 }
 

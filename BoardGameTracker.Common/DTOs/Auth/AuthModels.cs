@@ -6,7 +6,7 @@ public record RefreshTokenRequest(string RefreshToken);
 
 public record LogoutRequest(string? RefreshToken);
 
-public record UpdateProfileRequest(string? DisplayName, string? Email);
+public record UpdateProfileRequest(string? DisplayName, string? Email, int? PlayerId);
 
 public record ProfileResponse(
     string Id,
@@ -19,3 +19,7 @@ public record ProfileResponse(
     int? PlayerId);
 
 public record AuthStatusResponse(bool AuthEnabled);
+
+public record ForgotPasswordRequest(string Username);
+
+public record ResetPasswordConfirmRequest(string UserId, string Token, string NewPassword);

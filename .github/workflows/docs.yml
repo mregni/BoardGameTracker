@@ -48,12 +48,10 @@ jobs:
         uses: actions/configure-pages@v6
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
-        env:
-          VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4

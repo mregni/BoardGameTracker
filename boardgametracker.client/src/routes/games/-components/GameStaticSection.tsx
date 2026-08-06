@@ -4,6 +4,8 @@ import { formatDuration, intervalToDuration } from "date-fns";
 import { useTranslation } from "react-i18next";
 import Clock from "@/assets/icons/clock.svg?react";
 import Coins from "@/assets/icons/coins.svg?react";
+import List from "@/assets/icons/list.svg?react";
+import Package from "@/assets/icons/package.svg?react";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import Users from "@/assets/icons/users.svg?react";
 import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
@@ -20,11 +22,14 @@ interface Props {
 	currency: string;
 	uiLanguage: string;
 	dateFormat: string;
+	manualCount: number;
+	onOpenManuals: () => void;
+	onOpenExpansions: () => void;
 }
 
 export const GameStaticSection = (props: Props) => {
-	const { game, playCount, currency, uiLanguage, dateFormat } = props;
-	const { t } = useTranslation(["common", "statistics"]);
+	const { game, playCount, currency, uiLanguage, dateFormat, manualCount, onOpenManuals, onOpenExpansions } = props;
+	const { t } = useTranslation(["common", "statistics", "game"]);
 	const navigate = useNavigate();
 
 	return (
@@ -53,7 +58,7 @@ export const GameStaticSection = (props: Props) => {
 				<div>
 					<BgtText className={cx("xl:line-clamp-2 line-clamp-3 text-white/70")}>{game.description}</BgtText>
 				</div>
-				<div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-5 gap-3 xl:gap-6">
+				<div className="grid grid-cols-2 md:grid-cols-4 2xl:grid-cols-7 gap-3 xl:gap-6">
 					<BgtTextStatistic content={`${game.minPlayers} - ${game.maxPlayers}`} title={t("players")} icon={<Users />} />
 					<BgtTextStatistic
 						content={`${game.minPlayTime} - ${game.maxPlayTime}`}
@@ -67,6 +72,18 @@ export const GameStaticSection = (props: Props) => {
 						title={t("statistics:buy-price")}
 						prefix={currency}
 						icon={<Coins />}
+					/>
+					<BgtTextStatistic
+						content={manualCount}
+						title={t("game:manuals.title")}
+						icon={<List />}
+						onClick={onOpenManuals}
+					/>
+					<BgtTextStatistic
+						content={game.expansions.length}
+						title={t("game:expansions.title")}
+						icon={<Package />}
+						onClick={onOpenExpansions}
 					/>
 					{game.additionDate && (
 						<BgtFancyTextStatistic

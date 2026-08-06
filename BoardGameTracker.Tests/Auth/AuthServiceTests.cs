@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
+using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Core.Email.Interfaces;
+using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -25,6 +30,9 @@ public class AuthServiceTests : IDisposable
     private readonly Mock<SignInManager<ApplicationUser>> _signInManagerMock;
     private readonly Mock<ITokenService> _tokenServiceMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
+    private readonly Mock<IPlayerService> _playerServiceMock;
+    private readonly Mock<IEmailService> _emailServiceMock;
+    private readonly Mock<IPublicUrlBuilder> _publicUrlBuilderMock;
     private readonly MainDbContext _context;
     private readonly Mock<ILogger<AuthService>> _loggerMock;
     private readonly AuthService _authService;
@@ -45,6 +53,9 @@ public class AuthServiceTests : IDisposable
 
         _tokenServiceMock = new Mock<ITokenService>();
         _environmentProviderMock = new Mock<IEnvironmentProvider>();
+        _playerServiceMock = new Mock<IPlayerService>();
+        _emailServiceMock = new Mock<IEmailService>();
+        _publicUrlBuilderMock = new Mock<IPublicUrlBuilder>();
 
         var options = new DbContextOptionsBuilder<MainDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -58,6 +69,9 @@ public class AuthServiceTests : IDisposable
             _signInManagerMock.Object,
             _tokenServiceMock.Object,
             _environmentProviderMock.Object,
+            _playerServiceMock.Object,
+            _emailServiceMock.Object,
+            _publicUrlBuilderMock.Object,
             _context,
             _loggerMock.Object);
 
@@ -77,6 +91,9 @@ public class AuthServiceTests : IDisposable
         _signInManagerMock.VerifyNoOtherCalls();
         _tokenServiceMock.VerifyNoOtherCalls();
         _environmentProviderMock.VerifyNoOtherCalls();
+        _playerServiceMock.VerifyNoOtherCalls();
+        _emailServiceMock.VerifyNoOtherCalls();
+        _publicUrlBuilderMock.VerifyNoOtherCalls();
     }
 
     #region LoginAsync
@@ -93,7 +110,7 @@ public class AuthServiceTests : IDisposable
         var expiry = DateTime.UtcNow.AddHours(1);
 
         _userManagerMock.Setup(x => x.FindByNameAsync("testuser")).ReturnsAsync(user);
-        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "password123", false))
+        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "password123", true))
             .ReturnsAsync(SignInResult.Success);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
@@ -113,7 +130,7 @@ public class AuthServiceTests : IDisposable
         result.User.Roles.Should().Contain("User");
 
         _userManagerMock.Verify(x => x.FindByNameAsync("testuser"), Times.Once);
-        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "password123", false), Times.Once);
+        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "password123", true), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
         _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles), Times.Once);
@@ -150,7 +167,7 @@ public class AuthServiceTests : IDisposable
         var user = new ApplicationUser("testuser", "test@test.com");
 
         _userManagerMock.Setup(x => x.FindByNameAsync("testuser")).ReturnsAsync(user);
-        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "wrongpassword", false))
+        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "wrongpassword", true))
             .ReturnsAsync(SignInResult.Failed);
 
         // Act
@@ -161,7 +178,7 @@ public class AuthServiceTests : IDisposable
             .WithMessage(Constants.Errors.InvalidCredentials);
 
         _userManagerMock.Verify(x => x.FindByNameAsync("testuser"), Times.Once);
-        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "wrongpassword", false), Times.Once);
+        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "wrongpassword", true), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -534,7 +551,7 @@ public class AuthServiceTests : IDisposable
         // Arrange
         var userId = "user-id-123";
         var user = new ApplicationUser("testuser", "old@test.com", "Old Name");
-        var request = new UpdateProfileRequest("New Name", "new@test.com");
+        var request = new UpdateProfileRequest("New Name", "new@test.com", null);
         var roles = new List<string> { "User" };
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
@@ -561,7 +578,7 @@ public class AuthServiceTests : IDisposable
         // Arrange
         var userId = "user-id-123";
         var user = new ApplicationUser("testuser", "original@test.com", "Old Name");
-        var request = new UpdateProfileRequest("New Name", null);
+        var request = new UpdateProfileRequest("New Name", null, null);
         var roles = new List<string> { "User" };
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
@@ -587,7 +604,7 @@ public class AuthServiceTests : IDisposable
     {
         // Arrange
         var userId = "nonexistent-user-id";
-        var request = new UpdateProfileRequest("New Name", null);
+        var request = new UpdateProfileRequest("New Name", null, null);
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId))
             .ReturnsAsync((ApplicationUser?)null);
@@ -599,6 +616,298 @@ public class AuthServiceTests : IDisposable
         await act.Should().ThrowAsync<EntityNotFoundException>();
 
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region PlayerLinking
+
+    [Fact]
+    public async Task RegisterAsync_ShouldCreateAndLinkPlayer_WhenCreatePlayerIsTrue()
+    {
+        var request = new RegisterRequest("newuser", "new@test.com", "password123", null, CreatePlayer: true);
+        _userManagerMock.Setup(x => x.FindByNameAsync("newuser")).ReturnsAsync((ApplicationUser?)null);
+        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), "password123")).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(new List<string> { "User" });
+        _playerServiceMock.Setup(x => x.Create(It.IsAny<CreatePlayerCommand>())).ReturnsAsync(new Player("newuser") { Id = 5 });
+
+        var result = await _authService.RegisterAsync(request);
+
+        result.PlayerId.Should().Be(5);
+
+        _playerServiceMock.Verify(x => x.Create(It.Is<CreatePlayerCommand>(c => c.Name == "newuser" && c.Email == "new@test.com")), Times.Once);
+        _userManagerMock.Verify(x => x.FindByNameAsync("newuser"), Times.Once);
+        _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>(), "password123"), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), Constants.AuthRoles.User), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RegisterAsync_ShouldLinkExistingPlayer_WhenPlayerIdProvided()
+    {
+        _context.Players.Add(new Player("Existing") { Id = 7 });
+        await _context.SaveChangesAsync();
+
+        var request = new RegisterRequest("newuser", "new@test.com", "password123", null, PlayerId: 7);
+        _userManagerMock.Setup(x => x.FindByNameAsync("newuser")).ReturnsAsync((ApplicationUser?)null);
+        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), "password123")).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(new List<string> { "User" });
+
+        var result = await _authService.RegisterAsync(request);
+
+        result.PlayerId.Should().Be(7);
+
+        _userManagerMock.Verify(x => x.FindByNameAsync("newuser"), Times.Once);
+        _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>(), "password123"), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), Constants.AuthRoles.User), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RegisterAsync_ShouldNotCreateUser_WhenLinkedPlayerAlreadyTaken()
+    {
+        _context.Players.Add(new Player("Taken") { Id = 8 });
+        var otherUser = new ApplicationUser("other", "o@test.com");
+        otherUser.LinkPlayer(8);
+        _context.Users.Add(otherUser);
+        await _context.SaveChangesAsync();
+
+        var request = new RegisterRequest("newuser", "new@test.com", "password123", null, PlayerId: 8);
+        _userManagerMock.Setup(x => x.FindByNameAsync("newuser")).ReturnsAsync((ApplicationUser?)null);
+
+        var act = () => _authService.RegisterAsync(request);
+
+        await act.Should().ThrowAsync<DomainException>();
+
+        _userManagerMock.Verify(x => x.FindByNameAsync("newuser"), Times.Once);
+        _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_ShouldLinkPlayer_WhenPlayerIdProvided()
+    {
+        _context.Players.Add(new Player("Target") { Id = 3 });
+        await _context.SaveChangesAsync();
+
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "test@test.com", "Name");
+        var request = new UpdateProfileRequest("Name", null, 3);
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+
+        var result = await _authService.UpdateProfileAsync(userId, request);
+
+        result.PlayerId.Should().Be(3);
+        user.PlayerId.Should().Be(3);
+
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_ShouldUnlinkPlayer_WhenPlayerIdIsNull()
+    {
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "test@test.com", "Name");
+        user.LinkPlayer(3);
+        var request = new UpdateProfileRequest("Name", null, null);
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+
+        var result = await _authService.UpdateProfileAsync(userId, request);
+
+        result.PlayerId.Should().BeNull();
+        user.PlayerId.Should().BeNull();
+
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_ShouldThrowDomainException_WhenPlayerLinkedToAnotherUser()
+    {
+        _context.Players.Add(new Player("Target") { Id = 3 });
+        var otherUser = new ApplicationUser("other", "other@test.com");
+        otherUser.LinkPlayer(3);
+        _context.Users.Add(otherUser);
+        await _context.SaveChangesAsync();
+
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "test@test.com", "Name");
+        var request = new UpdateProfileRequest("Name", null, 3);
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+
+        var act = () => _authService.UpdateProfileAsync(userId, request);
+
+        await act.Should().ThrowAsync<DomainException>();
+
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLinkablePlayersAsync_ShouldExcludePlayersLinkedToOtherUsers()
+    {
+        _context.Players.Add(new Player("Alice") { Id = 1 });
+        _context.Players.Add(new Player("Bob") { Id = 2 });
+        var linkedUser = new ApplicationUser("bobuser", "bob@test.com");
+        linkedUser.LinkPlayer(2);
+        _context.Users.Add(linkedUser);
+        await _context.SaveChangesAsync();
+
+        var result = await _authService.GetLinkablePlayersAsync("current-user");
+
+        result.Should().ContainSingle(p => p.Id == 1 && p.Name == "Alice");
+        result.Should().NotContain(p => p.Id == 2);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLinkablePlayersAsync_ShouldIncludeCallersOwnLinkedPlayer()
+    {
+        _context.Players.Add(new Player("Alice") { Id = 1 });
+        _context.Players.Add(new Player("Mine") { Id = 9 });
+        var caller = new ApplicationUser("me", "me@test.com");
+        caller.LinkPlayer(9);
+        _context.Users.Add(caller);
+        await _context.SaveChangesAsync();
+
+        var result = await _authService.GetLinkablePlayersAsync(caller.Id);
+
+        result.Should().Contain(p => p.Id == 9 && p.Name == "Mine");
+        result.Should().Contain(p => p.Id == 1);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region ForgotPassword / ResetPasswordWithToken
+
+    [Fact]
+    public async Task ForgotPasswordAsync_ShouldDoNothing_WhenUserNotFound()
+    {
+        _userManagerMock.Setup(x => x.FindByNameAsync("ghost")).ReturnsAsync((ApplicationUser?)null);
+
+        await _authService.ForgotPasswordAsync("ghost");
+
+        _userManagerMock.Verify(x => x.FindByNameAsync("ghost"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_ShouldDoNothing_WhenUserHasNoEmail()
+    {
+        var user = new ApplicationUser("nomail", "");
+        _userManagerMock.Setup(x => x.FindByNameAsync("nomail")).ReturnsAsync(user);
+
+        await _authService.ForgotPasswordAsync("nomail");
+
+        _userManagerMock.Verify(x => x.FindByNameAsync("nomail"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_ShouldNotSend_WhenEmailNotConfigured()
+    {
+        var user = new ApplicationUser("user", "u@test.com");
+        _userManagerMock.Setup(x => x.FindByNameAsync("user")).ReturnsAsync(user);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(false);
+
+        await _authService.ForgotPasswordAsync("user");
+
+        _userManagerMock.Verify(x => x.FindByNameAsync("user"), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_ShouldGenerateTokenAndSendEmail_WhenConfigured()
+    {
+        var user = new ApplicationUser("user", "u@test.com");
+        _userManagerMock.Setup(x => x.FindByNameAsync("user")).ReturnsAsync(user);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        _userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("reset-token");
+        _publicUrlBuilderMock.Setup(x => x.BuildResetUrlAsync(user.Id, "reset-token")).ReturnsAsync("http://x/reset");
+        _emailServiceMock
+            .Setup(x => x.SendAsync("u@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await _authService.ForgotPasswordAsync("user");
+
+        _userManagerMock.Verify(x => x.FindByNameAsync("user"), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        _userManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(user), Times.Once);
+        _publicUrlBuilderMock.Verify(x => x.BuildResetUrlAsync(user.Id, "reset-token"), Times.Once);
+        _emailServiceMock.Verify(x => x.SendAsync("u@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ResetPasswordWithTokenAsync_ShouldSucceed_WhenTokenValid()
+    {
+        var user = new ApplicationUser("user", "u@test.com");
+        var request = new ResetPasswordConfirmRequest("user-id", "token", "newpass");
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-id")).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.ResetPasswordAsync(user, "token", "newpass")).ReturnsAsync(IdentityResult.Success);
+        _tokenServiceMock.Setup(x => x.RevokeAllUserTokensAsync(user.Id, It.IsAny<string>())).Returns(Task.CompletedTask);
+
+        await _authService.ResetPasswordWithTokenAsync(request);
+
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-id"), Times.Once);
+        _userManagerMock.Verify(x => x.ResetPasswordAsync(user, "token", "newpass"), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync(user.Id, It.IsAny<string>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ResetPasswordWithTokenAsync_ShouldThrow_WhenUserNotFound()
+    {
+        var request = new ResetPasswordConfirmRequest("ghost", "token", "newpass");
+        _userManagerMock.Setup(x => x.FindByIdAsync("ghost")).ReturnsAsync((ApplicationUser?)null);
+
+        var act = () => _authService.ResetPasswordWithTokenAsync(request);
+
+        await act.Should().ThrowAsync<ValidationException>();
+
+        _userManagerMock.Verify(x => x.FindByIdAsync("ghost"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ResetPasswordWithTokenAsync_ShouldThrow_WhenResetFails()
+    {
+        var user = new ApplicationUser("user", "u@test.com");
+        var request = new ResetPasswordConfirmRequest("user-id", "bad-token", "newpass");
+        _userManagerMock.Setup(x => x.FindByIdAsync("user-id")).ReturnsAsync(user);
+        _userManagerMock
+            .Setup(x => x.ResetPasswordAsync(user, "bad-token", "newpass"))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Invalid token" }));
+
+        var act = () => _authService.ResetPasswordWithTokenAsync(request);
+
+        await act.Should().ThrowAsync<ValidationException>();
+
+        _userManagerMock.Verify(x => x.FindByIdAsync("user-id"), Times.Once);
+        _userManagerMock.Verify(x => x.ResetPasswordAsync(user, "bad-token", "newpass"), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -626,6 +935,7 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.ChangePasswordAsync(user, "oldpassword", "newpassword"), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync(userId, "Password changed"), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -705,6 +1015,7 @@ public class AuthServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.ResetPasswordAsync(user, resetToken, It.IsAny<string>()), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync(userId, "Password reset by admin"), Times.Once);
         VerifyNoOtherCalls();
     }
 

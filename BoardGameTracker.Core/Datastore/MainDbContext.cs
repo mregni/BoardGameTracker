@@ -35,6 +35,14 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
     {
     }
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeValueConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<UtcNullableDateTimeValueConverter>();
+    }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -252,6 +260,11 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(x => x.PlayerId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ApplicationUser>()
+            .HasIndex(x => x.PlayerId)
+            .IsUnique()
+            .HasFilter("\"PlayerId\" IS NOT NULL");
 
         // RefreshToken
         builder.Entity<RefreshToken>().ToTable("RefreshTokens", "auth");

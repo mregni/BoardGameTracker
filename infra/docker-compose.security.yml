@@ -16,6 +16,8 @@ services:
       - DB_PORT=5432
       - JWT_SECRET=${SEC_JWT_SECRET:-ci-security-scan-jwt-secret-not-for-production}
       - AUTH_ENABLED=true
+      - ADMIN_PASSWORD=${SEC_ADMIN_PASSWORD:-ci-security-scan-admin-not-for-production}
+      - SWAGGER_ENABLED=true
       - TZ=UTC
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]

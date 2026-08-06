@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { cloneElement, isValidElement } from "react";
+import CaretRight from "@/assets/icons/caret-right.svg?react";
 import Plus from "@/assets/icons/plus.svg?react";
 import { BgtCard } from "../BgtCard/BgtCard";
 import { BgtText } from "../BgtText/BgtText";
@@ -16,12 +17,27 @@ interface Props {
 	link?: string;
 	addLink?: string;
 	addLabel?: string;
+	onClick?: () => void;
 }
 
 export const BgtTextStatistic = (props: Props) => {
-	const { title, content, suffix, prefix, icon, iconClassName, textSize = "5", link, addLink, addLabel } = props;
+	const {
+		title,
+		content,
+		suffix,
+		prefix,
+		icon,
+		iconClassName,
+		textSize = "5",
+		link,
+		addLink,
+		addLabel,
+		onClick,
+	} = props;
 
 	if (content === null || content === undefined) return null;
+
+	const isInteractive = Boolean(link || onClick);
 
 	const iconWithClasses =
 		icon && isValidElement(icon)
@@ -31,10 +47,16 @@ export const BgtTextStatistic = (props: Props) => {
 			: icon;
 
 	const card = (
-		<BgtCard className={cx("col-span-1 h-full", link && "transition-colors hover:border-primary/50 cursor-pointer")}>
+		<BgtCard
+			className={cx(
+				"col-span-1 h-full",
+				isInteractive && "border-primary/25 transition-colors hover:border-primary/60 cursor-pointer",
+			)}
+		>
 			<div className="flex items-center gap-2 text-primary/70 mb-2">
 				{iconWithClasses}
 				<span>{title}</span>
+				{isInteractive && <CaretRight className="size-4 ml-auto shrink-0 text-primary" />}
 			</div>
 			<BgtText size={textSize} color="cyan" weight="bold">
 				{prefix && <span>{prefix}&nbsp;</span>}
@@ -70,6 +92,14 @@ export const BgtTextStatistic = (props: Props) => {
 			<Link to={link} className="col-span-1">
 				{card}
 			</Link>
+		);
+	}
+
+	if (onClick) {
+		return (
+			<button type="button" onClick={onClick} className="col-span-1 h-full text-left">
+				{card}
+			</button>
 		);
 	}
 

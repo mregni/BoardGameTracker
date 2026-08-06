@@ -1,4 +1,11 @@
-import type { CreateGameNight, GameNight, GameNightStatistics, UpdateGameNight, UpdateGameNightRsvp } from "@/models";
+import type {
+	CreateGameNight,
+	GameNight,
+	GameNightStatistics,
+	SendInvitesResult,
+	UpdateGameNight,
+	UpdateGameNightRsvp,
+} from "@/models";
 import { axiosInstance } from "@/utils/axiosInstance";
 
 const domain = "gamenight";
@@ -29,6 +36,10 @@ export const updateGameNightCall = (gameNight: UpdateGameNight): Promise<GameNig
 
 export const deleteGameNightCall = (id: number): Promise<void> => {
 	return axiosInstance.delete(`${domain}/${id}`);
+};
+
+export const sendInvitesCall = (id: number): Promise<SendInvitesResult> => {
+	return axiosInstance.post<SendInvitesResult>(`${domain}/${id}/send-invites`).then((response) => response.data);
 };
 
 export const updateGameNightRsvpCall = (rsvp: UpdateGameNightRsvp): Promise<GameNight> => {

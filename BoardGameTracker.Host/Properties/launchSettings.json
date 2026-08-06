@@ -28,7 +28,14 @@
         "DB_NAME": "boardgametracker-dev",
         "DB_PORT": "5432",
         "AUTH_ENABLED": "true",
-        "JWT_SECRET": "your-super-secret-jwt-key-that-is-used-in-dev"
+        "JWT_SECRET": "your-super-secret-jwt-key-that-is-used-in-dev",
+        "SMTP_HOST": "mail.smtp2go.com",
+        "SMTP_PORT": "2525",
+        "SMTP_USERNAME": "nobelenoedelMailer",
+        "SMTP_PASSWORD": "Y^AcpJYnoSHR3PC*@7",
+        "SMTP_USE_SSL": "true",
+        "SMTP_FROM_ADDRESS": "noreply@nobelenoedel.be",
+        "SMTP_FROM_NAME": "BoardGameTracker"
       }
     },
     "https": {

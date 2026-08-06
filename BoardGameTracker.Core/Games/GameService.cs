@@ -169,6 +169,7 @@ public class GameService : IGameService
 
     public async Task<List<Expansion>> UpdateGameExpansions(int gameId, int[] expansionIds)
     {
+        ArgumentNullException.ThrowIfNull(expansionIds);
         await EnsureBggConfiguredAsync();
         _logger.LogDebug("Updating expansions for game {GameId}", gameId);
         var game = await _gameRepository.GetByIdAsync(gameId);

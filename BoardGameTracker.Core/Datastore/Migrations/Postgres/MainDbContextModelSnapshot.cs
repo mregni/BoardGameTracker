@@ -110,7 +110,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.HasIndex("PlayerId");
+                    b.HasIndex("PlayerId")
+                        .IsUnique()
+                        .HasFilter("\"PlayerId\" IS NOT NULL");
 
                     b.ToTable("AspNetUsers", "auth");
                 });
@@ -1070,6 +1072,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
 
                     b.Property<string>("Image")
                         .HasColumnType("text");

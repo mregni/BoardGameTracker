@@ -210,6 +210,10 @@
 			"username": {
 				"label": "Username"
 			},
+			"player": {
+				"label": "Linked player",
+				"none": "Not linked"
+			},
 			"save": "Save profile"
 		},
 		"password": {
@@ -239,6 +243,10 @@
 				"reader": "Reader",
 				"admin": "Admin"
 			},
+			"player": {
+				"label": "Linked player",
+				"none": "Not linked"
+			},
 			"create-button": "Create user",
 			"create": {
 				"title": "Create New User",
@@ -254,6 +262,12 @@
 				},
 				"display-name": {
 					"label": "Display name"
+				},
+				"player": {
+					"label": "Player",
+					"create": "Create a new player",
+					"link": "Link an existing player",
+					"none": "No player"
 				},
 				"save": "Create user"
 			},

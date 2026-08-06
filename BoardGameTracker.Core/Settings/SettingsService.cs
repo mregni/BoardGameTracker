@@ -43,6 +43,7 @@ public class SettingsService : ISettingsService
             GameNightsEnabled = ResolveValue<bool>(configs, Constants.AppConfig.GameNightsEnabled),
             PublicUrl = ResolveValue<string>(configs, Constants.AppConfig.PublicUrl),
             RsvpAuthenticationEnabled = ResolveValue<bool>(configs, Constants.AppConfig.RsvpAuthenticationEnabled),
+            EmailEnabled = _environmentProvider.EmailEnabled,
             BggStatus = GetBggConfigStatusAsync(configs),
             BggApiKey = string.Empty //Never return key to UI
         };

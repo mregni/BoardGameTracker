@@ -1,3 +1,4 @@
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 
@@ -5,6 +6,7 @@ namespace BoardGameTracker.Core.GameNights.Interfaces;
 
 public interface IGameNightService
 {
+    Task<SendInvitesResultDto> SendInvitesAsync(int id);
     Task<List<GameNight>> GetGameNights();
     Task<GameNight?> GetById(int id);
     Task<GameNight> Create(CreateGameNightCommand command);
