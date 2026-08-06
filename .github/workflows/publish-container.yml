@@ -21,7 +21,7 @@ on:
         type: boolean
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.event_name }}
   cancel-in-progress: false
 
 env:
