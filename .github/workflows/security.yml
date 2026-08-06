@@ -33,12 +33,17 @@ jobs:
 
       - name: Check for vulnerable packages
         run: |
-          set -euo pipefail
+          set -uo pipefail
 
-          dotnet list ./BoardGameTracker.sln package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt
+          dotnet list ./BoardGameTracker.sln package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt || true
 
           if grep -q "has the following vulnerable packages" vulnerable.txt; then
             echo "::error::Vulnerable NuGet packages detected"
+            exit 1
+          fi
+
+          if ! grep -q "has no vulnerable packages" vulnerable.txt; then
+            echo "::error::dotnet list package produced no vulnerability verdict"
             exit 1
           fi
 
