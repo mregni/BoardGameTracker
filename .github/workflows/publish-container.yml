@@ -123,13 +123,14 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
           ./.sonar/scanner/dotnet-sonarscanner begin \
-            /k:"${{ env.SONAR_PROJECT_KEY }}" \
-            /o:"${{ env.SONAR_ORGANIZATION }}" \
+            /k:"$SONAR_PROJECT_KEY" \
+            /o:"$SONAR_ORGANIZATION" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.token="${{ env.SONAR_TOKEN }}" \
-            /v:"${{ needs.version.outputs.version }}" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /v:"$VERSION" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
             /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
@@ -180,7 +181,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ env.SONAR_TOKEN }}"
+        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="$SONAR_TOKEN"
 
       - name: Upload test results
         uses: actions/upload-artifact@v7
@@ -232,9 +233,11 @@ jobs:
           package_json_file: boardgametracker.client/package.json
 
       - name: Update package.json version
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
           cd boardgametracker.client
-          pnpm version ${{ needs.version.outputs.version }} --no-git-tag-version --allow-same-version
+          pnpm version "$VERSION" --no-git-tag-version --allow-same-version
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -380,9 +383,9 @@ jobs:
           fetch-depth: 0
 
       - name: Generate Release Notes
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
-          VERSION=${{ needs.version.outputs.version }}
-
           # Get previous tag
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
 
@@ -426,10 +429,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create major and major.minor tags
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          VERSION=${{ needs.version.outputs.version }}
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
           git tag -fa "v${MAJOR}" -m "Release v${VERSION}"
@@ -449,10 +453,11 @@ jobs:
           egress-policy: audit
 
       - name: Build Summary
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          IS_STABLE_RELEASE: ${{ needs.version.outputs.is_stable }}
         run: |
-          VERSION=${{ needs.version.outputs.version }}
-
-          if [ "${{ needs.version.outputs.is_stable }}" = "true" ]; then
+          if [ "$IS_STABLE_RELEASE" = "true" ]; then
             cat >> $GITHUB_STEP_SUMMARY << EOF
           # Release v${VERSION} Published
 
@@ -464,7 +469,7 @@ jobs:
 
           ## Links
           - [Docker Hub](https://hub.docker.com/r/uping/boardgametracker)
-          - [Release Notes](https://github.com/${{ github.repository }}/releases/tag/v${VERSION})
+          - [Release Notes](https://github.com/${GITHUB_REPOSITORY}/releases/tag/v${VERSION})
           EOF
           else
             cat >> $GITHUB_STEP_SUMMARY << EOF
