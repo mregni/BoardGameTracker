@@ -19,7 +19,7 @@ jobs:
       checks: write
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@v2
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2
         with:
           egress-policy: audit
 
@@ -29,7 +29,7 @@ jobs:
           fetch-depth: 0
 
       - name: Git Semantic Version
-        uses: PaulHatch/semantic-version@v6.0.3
+        uses: PaulHatch/semantic-version@502226b17e3e242e4befd0a45690fcbb27dd1373 # v6.0.3
         id: versioning
         with:
           enable_prerelease_mode: true
@@ -50,7 +50,7 @@ jobs:
           dotnet-version: "8.x"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           package_json_file: boardgametracker.client/package.json
 
@@ -154,7 +154,7 @@ jobs:
           sed -i "s|path=\"src/|path=\"$(pwd)/src/|g" coverage/sonar-report.xml
 
       - name: Publish .NET test results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2
         if: always()
         with:
           files: TestResults/**/*.trx
@@ -179,7 +179,7 @@ jobs:
         if: success() || failure()
 
       - name: Code Coverage Report
-        uses: danielpalme/ReportGenerator-GitHub-Action@v5.5.10
+        uses: danielpalme/ReportGenerator-GitHub-Action@049f7ec958c672fd31d5cc1cb01622dc8d2e23ab # v5.5.10
         with:
           reports: "TestResults/**/coverage.opencover.xml;boardgametracker.client/coverage/lcov.info"
           targetdir: "coveragereport"
@@ -192,7 +192,7 @@ jobs:
         run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
       - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v3
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3
         with:
           recreate: true
           path: coveragereport/SummaryGithub.md
