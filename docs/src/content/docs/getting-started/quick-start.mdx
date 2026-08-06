@@ -1,0 +1,30 @@
+---
+title: Quick Start Guide
+description: Get BoardGameTracker up and running in a few minutes with Docker.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Follow these steps to quickly get your BoardGameTracker up and running with Docker.
+
+<Steps>
+
+1. Download the latest `docker-compose.yml` file and make any adjustments you need to the configuration.
+
+   ```sh
+   wget https://raw.githubusercontent.com/mregni/BoardGameTracker/refs/heads/dev/docker-compose.yml
+   ```
+
+2. Update the `DB_PASSWORD`, `TZ` and `JWT_SECRET` values in the compose file, then start the stack. This launches the BoardGameTracker container together with the PostgreSQL database it needs.
+
+   ```sh
+   docker-compose up -d
+   ```
+
+3. Open your browser at `http://localhost:5444` and log in.
+
+</Steps>
+
+<Aside type="caution" title="Default login">
+The default credentials are `admin` / `admin`. Change the password immediately after your first login.
+</Aside>

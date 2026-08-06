@@ -1,0 +1,69 @@
+---
+title: BoardGameTracker
+description: Self-hosted board game collection, play-session and statistics tracker.
+template: splash
+hero:
+  title: Track Your Board Game Collection
+  tagline: A self-hosted solution to manage your board game library, track play sessions, and analyze your gaming statistics.
+  image:
+    file: ../../assets/hero.png
+    alt: BoardGameTracker dashboard, game library and session views
+  actions:
+    - text: Read the docs
+      link: /BoardGameTracker/getting-started/quick-start/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/mregni/BoardGameTracker
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Everything for your game shelf
+
+<CardGrid>
+	<Card title="Comprehensive dashboard">
+		Get an overview of your gaming activity at a glance — total games, active
+		players, play sessions, and collection value.
+	</Card>
+	<Card title="Beautiful game library">
+		Browse your collection with cover art, quick search and filtering, and keep
+		track of ownership status and expansions.
+	</Card>
+	<Card title="Easy session logging">
+		Record play sessions with players, scores, location, duration, and notes
+		about the memorable moments.
+	</Card>
+	<Card title="Player statistics">
+		Detailed player profiles with win/loss records, favourite games, and
+		achievement progress.
+	</Card>
+</CardGrid>
+
+## And a lot more
+
+<CardGrid>
+	<Card title="Game night planner">
+		Schedule and organise game nights, invite players, and coordinate everyone's
+		schedule.
+	</Card>
+	<Card title="Shelf of shame">
+		Keep an eye on the games you own but have never played, and get a nudge to
+		finally get them to the table.
+	</Card>
+	<Card title="Locations">
+		Manage your gaming locations and see which venues host the best game nights.
+	</Card>
+	<Card title="OIDC support">
+		Secure authentication with OpenID Connect for single sign-on.
+	</Card>
+	<Card title="Game loan system">
+		Keep track of the games you have lent out to friends so nothing gets lost.
+	</Card>
+	<Card title="Player comparison">
+		Compare players head-to-head with matchup records, win rates, and shared
+		play history.
+	</Card>
+</CardGrid>

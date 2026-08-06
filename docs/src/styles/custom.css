@@ -1,0 +1,36 @@
+/* BoardGameTracker docs theme — matches the app palette (indigo accent, navy surfaces, Chakra Petch). */
+
+:root {
+	--sl-font: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+
+	/* Accent — indigo #6366f1 (app --color-primary) */
+	--sl-color-accent-low: #1e1b4b;
+	--sl-color-accent: #6366f1;
+	--sl-color-accent-high: #c7d2fe;
+
+	/* Grays — navy scale (dark theme): gray-1 lightest → black darkest */
+	--sl-color-white: #ffffff;
+	--sl-color-gray-1: #eef1f7;
+	--sl-color-gray-2: #c3cad6;
+	--sl-color-gray-3: #8b95a7;
+	--sl-color-gray-4: #55617a;
+	--sl-color-gray-5: #243044;
+	--sl-color-gray-6: #141c2b;
+	--sl-color-black: #0a0f1a;
+}
+
+/* Light theme — every gray overridden in :root above is re-declared with a light value. */
+:root[data-theme="light"] {
+	--sl-color-white: hsl(224, 10%, 10%);
+	--sl-color-gray-1: hsl(224, 14%, 16%);
+	--sl-color-gray-2: hsl(224, 10%, 23%);
+	--sl-color-gray-3: hsl(224, 7%, 36%);
+	--sl-color-gray-4: hsl(224, 6%, 56%);
+	--sl-color-gray-5: hsl(224, 6%, 77%);
+	--sl-color-gray-6: hsl(224, 20%, 94%);
+	--sl-color-black: hsl(0, 0%, 100%);
+
+	--sl-color-accent-low: #e0e2fb;
+	--sl-color-accent: #5b54e6;
+	--sl-color-accent-high: #2b2a6b;
+}

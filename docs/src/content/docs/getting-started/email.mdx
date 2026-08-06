@@ -1,0 +1,47 @@
+---
+title: Email (SMTP)
+description: Configure SMTP so BoardGameTracker can email game-night invites and password resets.
+---
+
+import { Aside, Badge } from '@astrojs/starlight/components';
+
+<Badge text="Optional" variant="tip" size="medium" />
+
+BoardGameTracker can send emails for two optional features:
+
+- **Game-night invites** — email an RSVP link to the players you invite to a game night.
+- **Password reset** — let users request a password-reset link by email.
+
+Email stays disabled until SMTP is configured. It is enabled only when both `SMTP_HOST` and `SMTP_FROM_ADDRESS` are set; until then the related buttons and links stay hidden.
+
+## Configuration
+
+| Configuration | Variable | Default | Info |
+| --- | --- | --- | --- |
+| SMTP host | `SMTP_HOST` | | Hostname of your SMTP server. Leave empty to keep email disabled. |
+| SMTP port | `SMTP_PORT` | `587` | Port of your SMTP server. |
+| SMTP username | `SMTP_USERNAME` | | Username to authenticate with. Leave empty for a server that needs no authentication. |
+| SMTP password | `SMTP_PASSWORD` | | Password to authenticate with. |
+| Use TLS | `SMTP_USE_SSL` | `true` | Set to `false` for a server without TLS, such as a local mail catcher. |
+| From address | `SMTP_FROM_ADDRESS` | | Address emails are sent from. Required to enable email. |
+| From name | `SMTP_FROM_NAME` | `BoardGameTracker` | Display name shown as the sender. |
+
+## Ports & TLS
+
+For most providers, use port `587` with `SMTP_USE_SSL=true` (STARTTLS). Providers that use implicit TLS (SMTPS) listen on port `465`, which is detected automatically. For a local mail catcher such as Mailhog or smtp4dev, set `SMTP_USE_SSL=false`.
+
+## Example
+
+```sh title=".env"
+SMTP_HOST=smtp.your-provider.com
+SMTP_PORT=587
+SMTP_USERNAME=your-user
+SMTP_PASSWORD=your-password
+SMTP_USE_SSL=true
+SMTP_FROM_ADDRESS=noreply@your-domain.com
+SMTP_FROM_NAME=BoardGameTracker
+```
+
+<Aside type="tip">
+After changing any `SMTP_*` variable, restart the container so the new configuration is picked up.
+</Aside>

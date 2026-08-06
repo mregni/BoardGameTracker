@@ -1,0 +1,20 @@
+---
+title: Logging
+description: Configure log levels and view logs for BoardGameTracker.
+---
+
+BoardGameTracker uses structured logging to help you (and me) debug issues. To change the log level, stop the application, set the `LOGLEVEL` environment variable to the desired level, then restart the application. The available log levels are `debug`, `info`, `warn`, and `error`. The default log level is `warn`.
+
+## Viewing logs
+
+You can view the application logs with the following Docker command:
+
+```sh title="Docker logs"
+docker logs -f boardgametracker
+```
+
+## Sentry integration
+
+BoardGameTracker is integrated with Sentry for error tracking. You can enable or disable this feature by setting the `STATISTICS_ENABLED` environment variable. When `true`, any unhandled exceptions are sent to Sentry along with relevant context and metadata to help diagnose and fix issues quickly. No IP address, server name or hardware info is ever sent to Sentry — only stack traces and spans.
+
+By enabling this you help improve the application by providing valuable insight into any errors that occur. For privacy reasons this feature is disabled by default.
