@@ -8,125 +8,113 @@ import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 
 interface Props {
-  username: string;
+	username: string;
 }
 
 export const useList = ({ username }: Props) => {
-  const invalidator = useQueryInvalidator();
-  const { successToast, errorToast } = useToasts();
+	const invalidator = useQueryInvalidator();
+	const { successToast, errorToast } = useToasts();
 
-  const [bggCollectionQuery, gamesQuery, settingsQuery] = useQueries({
-    queries: [getBggCollection(username), getGames(), getSettings()],
-  });
+	const [bggCollectionQuery, gamesQuery, settingsQuery] = useQueries({
+		queries: [getBggCollection(username), getGames(), getSettings()],
+	});
 
-  const settings = settingsQuery.data;
-  const bggError = bggCollectionQuery.error;
+	const settings = settingsQuery.data;
+	const bggError = bggCollectionQuery.error;
 
-  const [filterCollected, setFilterCollected] = useState<boolean>(true);
+	const [filterCollected, setFilterCollected] = useState<boolean>(true);
 
-  const processingGames = bggCollectionQuery.isLoading || gamesQuery.isLoading;
+	const processingGames = bggCollectionQuery.isLoading || gamesQuery.isLoading;
 
-  const totalCount = useMemo(() => {
-    return bggCollectionQuery.data?.length ?? 0;
-  }, [bggCollectionQuery.data]);
+	const totalCount = useMemo(() => {
+		return bggCollectionQuery.data?.length ?? 0;
+	}, [bggCollectionQuery.data]);
 
-  const processedGames = useMemo(() => {
-    const bggGames = bggCollectionQuery.data;
-    const collectionGames = gamesQuery.data;
+	const processedGames = useMemo(() => {
+		const bggGames = bggCollectionQuery.data;
+		const collectionGames = gamesQuery.data;
 
-    if (!bggGames) return [];
+		if (!bggGames) return [];
 
-    if (!collectionGames) {
-      return bggGames.map((game) => ({ ...game, inCollection: false }));
-    }
+		if (!collectionGames) {
+			return bggGames.map((game) => ({ ...game, inCollection: false }));
+		}
 
-    const collectionBggIds = new Set(collectionGames.map((game) => game.bggId));
-    return bggGames.map((game) => {
-      const existingGame = collectionGames.find((g) => g.bggId === game.bggId);
-      return {
-        ...game,
-        inCollection: collectionBggIds.has(game.bggId),
-        price: existingGame?.buyingPrice ?? 0,
-        addedDate: existingGame?.additionDate
-          ? new Date(existingGame.additionDate)
-          : new Date(game.lastModified),
-        hasScoring: existingGame?.hasScoring ?? true,
-        checked: false,
-      };
-    });
-  }, [bggCollectionQuery.data, gamesQuery.data]);
+		const collectionBggIds = new Set(collectionGames.map((game) => game.bggId));
+		return bggGames.map((game) => {
+			const existingGame = collectionGames.find((g) => g.bggId === game.bggId);
+			return {
+				...game,
+				inCollection: collectionBggIds.has(game.bggId),
+				price: existingGame?.buyingPrice ?? 0,
+				addedDate: existingGame?.additionDate ? new Date(existingGame.additionDate) : new Date(game.lastModified),
+				hasScoring: existingGame?.hasScoring ?? true,
+				checked: false,
+			};
+		});
+	}, [bggCollectionQuery.data, gamesQuery.data]);
 
-  const inCollectionCount = useMemo(() => {
-    return processedGames.filter((game) => game.inCollection).length;
-  }, [processedGames]);
+	const inCollectionCount = useMemo(() => {
+		return processedGames.filter((game) => game.inCollection).length;
+	}, [processedGames]);
 
-  const [localUpdates, setLocalUpdates] = useState<
-    Map<number, Partial<ImportGame>>
-  >(new Map());
+	const [localUpdates, setLocalUpdates] = useState<Map<number, Partial<ImportGame>>>(new Map());
 
-  const games = useMemo(() => {
-    const filtered = filterCollected
-      ? processedGames.filter((game) => !game.inCollection)
-      : processedGames;
-    return filtered.map((game) => {
-      const updates = localUpdates.get(game.bggId);
-      const merged = updates ? { ...game, ...updates } : game;
-      return merged.inCollection ? { ...merged, checked: false } : merged;
-    });
-  }, [processedGames, filterCollected, localUpdates]);
+	const games = useMemo(() => {
+		const filtered = filterCollected ? processedGames.filter((game) => !game.inCollection) : processedGames;
+		return filtered.map((game) => {
+			const updates = localUpdates.get(game.bggId);
+			const merged = updates ? { ...game, ...updates } : game;
+			return merged.inCollection ? { ...merged, checked: false } : merged;
+		});
+	}, [processedGames, filterCollected, localUpdates]);
 
-  const updateGame = useCallback(
-    (bggId: number, updates: Partial<ImportGame>) => {
-      setLocalUpdates((prev) => {
-        const next = new Map(prev);
-        next.set(bggId, { ...prev.get(bggId), ...updates });
-        return next;
-      });
-    },
-    [],
-  );
+	const updateGame = useCallback((bggId: number, updates: Partial<ImportGame>) => {
+		setLocalUpdates((prev) => {
+			const next = new Map(prev);
+			next.set(bggId, { ...prev.get(bggId), ...updates });
+			return next;
+		});
+	}, []);
 
-  const setSelection = useCallback(
-    (changes: { bggId: number; checked: boolean }[]) => {
-      setLocalUpdates((prev) => {
-        const next = new Map(prev);
-        for (const { bggId, checked } of changes) {
-          next.set(bggId, { ...next.get(bggId), checked });
-        }
-        return next;
-      });
-    },
-    [],
-  );
+	const setSelection = useCallback((changes: { bggId: number; checked: boolean }[]) => {
+		setLocalUpdates((prev) => {
+			const next = new Map(prev);
+			for (const { bggId, checked } of changes) {
+				next.set(bggId, { ...next.get(bggId), checked });
+			}
+			return next;
+		});
+	}, []);
 
-  const startImportMutation = useMutation({
-    mutationFn: importGamesCall,
-    async onSuccess() {
-      await Promise.all([
-        invalidator.invalidateGames(),
-        invalidator.invalidateCounts(),
-        invalidator.invalidateDashboard(),
-      ]);
+	const startImportMutation = useMutation({
+		mutationFn: importGamesCall,
+		async onSuccess() {
+			await Promise.all([
+				invalidator.invalidateGames(),
+				invalidator.invalidateCounts(),
+				invalidator.invalidateDashboard(),
+			]);
 
-      successToast("games:import.success");
-    },
-    onError() {
-      errorToast("games:import.failed");
-    },
-  });
+			successToast("games:import.success");
+		},
+		onError() {
+			errorToast("games:import.failed");
+		},
+	});
 
-  return {
-    games,
-    settings,
-    bggError,
-    updateGame,
-    setSelection,
-    filterCollected,
-    setFilterCollected,
-    inCollectionCount,
-    processingGames,
-    totalCount,
-    startImport: startImportMutation.mutateAsync,
-    importing: startImportMutation.isPending,
-  };
+	return {
+		games,
+		settings,
+		bggError,
+		updateGame,
+		setSelection,
+		filterCollected,
+		setFilterCollected,
+		inCollectionCount,
+		processingGames,
+		totalCount,
+		startImport: startImportMutation.mutateAsync,
+		importing: startImportMutation.isPending,
+	};
 };
