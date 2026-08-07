@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using Ardalis.GuardClauses;
 using BoardGameTracker.Common;
@@ -137,7 +138,55 @@ public class GameNightService : IGameNightService
         
         rsvp.UpdateState(command.State);
         await _unitOfWork.SaveChangesAsync();
+        await NotifyHostOfRsvpAsync(rsvp);
         return rsvp;
+    }
+
+    private async Task NotifyHostOfRsvpAsync(GameNightRsvp rsvp)
+    {
+        var gameNight = rsvp.GameNight;
+        if (gameNight == null || !_emailService.IsConfigured)
+        {
+            return;
+        }
+
+        if (rsvp.PlayerId == gameNight.HostId)
+        {
+            return;
+        }
+
+        var hostEmail = gameNight.Host?.Email;
+        if (string.IsNullOrWhiteSpace(hostEmail))
+        {
+            _logger.LogInformation(
+                "Skipping RSVP notification for game night {GameNightId}: host has no email address", gameNight.Id);
+            return;
+        }
+
+        var playerName = WebUtility.HtmlEncode(rsvp.Player?.Name ?? rsvp.PlayerId.ToString());
+        var title = WebUtility.HtmlEncode(gameNight.Title);
+        var date = gameNight.StartDate.ToString("dd MMMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture);
+        var response = rsvp.State switch
+        {
+            GameNightRsvpState.Accepted => "will come to",
+            GameNightRsvpState.Declined => "will not come to",
+            _ => "is not sure about"
+        };
+
+        var subject = $"RSVP update: {gameNight.Title}";
+        var body = $"<p><strong>{playerName}</strong> {response} game night <strong>{title}</strong> on {date}.</p>";
+
+        try
+        {
+            await _emailService.SendAsync(hostEmail, subject, body);
+            _logger.LogInformation(
+                "Sent RSVP notification to host of game night {GameNightId} for player {PlayerId}", gameNight.Id, rsvp.PlayerId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "Failed to send RSVP notification to host of game night {GameNightId}", gameNight.Id);
+        }
     }
 
     public async Task<SendInvitesResultDto> SendInvitesAsync(int id)

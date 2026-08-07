@@ -9,6 +9,8 @@ public sealed class RsvpByIdSpec : Specification<GameNightRsvp>
     {
         Query
             .Where(x => x.Id == rsvpId)
-            .Include(x => x.Player);
+            .Include(x => x.Player)
+            .Include(x => x.GameNight)
+            .ThenInclude(x => x.Host);
     }
 }
