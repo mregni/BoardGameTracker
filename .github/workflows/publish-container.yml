@@ -67,6 +67,8 @@ jobs:
     needs: [version]
     env:
       SONAR_SCANNER_VERSION: "11.2.1"
+      SONAR_PROJECT_KEY: mregni_BoardGameTracker
+      SONAR_ORGANIZATION: uping
     permissions:
       contents: read
     steps:
@@ -131,8 +133,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
           VERSION: ${{ needs.version.outputs.version }}
         run: |
           ./.sonar/scanner/dotnet-sonarscanner begin \
