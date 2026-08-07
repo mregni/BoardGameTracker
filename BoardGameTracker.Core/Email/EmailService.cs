@@ -36,7 +36,6 @@ public class EmailService : IEmailService
         message.Subject = subject;
         message.Body = new BodyBuilder { HtmlBody = htmlBody, TextBody = textBody }.ToMessageBody();
 
-        _logger.LogDebug("Sending email to {To} with subject {Subject}", to, subject);
         await _smtpSender.SendAsync(
             message,
             _environmentProvider.SmtpHost!,

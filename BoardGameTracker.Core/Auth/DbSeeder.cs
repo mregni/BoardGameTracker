@@ -60,14 +60,7 @@ public static class DbSeeder
 
         await userManager.AddToRoleAsync(admin, Constants.AuthRoles.Admin);
 
-        if (useDefault)
-        {
-            logger.LogWarning(
-                "Created default admin user (username: {Username}, password: {Password}). " +
-                "Change it after your first login, or set ADMIN_PASSWORD to choose a different one.",
-                adminUsername, defaultPassword);
-        }
-        else
+        if (!useDefault)
         {
             logger.LogInformation("Created default admin user '{Username}' using ADMIN_PASSWORD", adminUsername);
         }
