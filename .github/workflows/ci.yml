@@ -13,6 +13,8 @@ jobs:
   test-and-analyze:
     name: Test and SonarCloud Analysis
     runs-on: ubuntu-latest
+    env:
+      SONAR_SCANNER_VERSION: "11.2.1"
     permissions:
       contents: read
       pull-requests: write
@@ -73,14 +75,13 @@ jobs:
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ./.sonar/scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
+          key: ${{ runner.os }}-sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}
 
       - name: Install SonarCloud scanner
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         run: |
           mkdir -p ./.sonar/scanner
-          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner --version "$SONAR_SCANNER_VERSION"
 
       - name: Install .NET dependencies
         run: dotnet restore ./BoardGameTracker.sln
