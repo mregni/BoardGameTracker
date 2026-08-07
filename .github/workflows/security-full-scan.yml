@@ -6,9 +6,12 @@ on:
     - cron: "0 1 * * 1-5"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
   RESOURCE_GROUP: bgt-security-scan-${{ github.run_id }}
   AZURE_LOCATION: westeurope
 
@@ -19,23 +22,28 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: read
+      packages: write
       id-token: write
       security-events: write
       actions: read
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@v2
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Compute image name
+        id: image
+        run: echo "name=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
 
       - name: Login to GHCR
-        uses: docker/login-action@v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -43,12 +51,13 @@ jobs:
 
       - name: Build and push image
         id: build
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:security-scan-${{ github.run_id }}
+          provenance: false
+          tags: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:security-scan-${{ github.run_id }}
           cache-from: type=gha
           build-args: |
             VERSION=0.0.0-security
@@ -64,7 +73,7 @@ jobs:
           echo "jwt_secret=$JWT_SECRET" >> "$GITHUB_OUTPUT"
 
       - name: Azure OIDC Login
-        uses: azure/login@v3
+        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -73,20 +82,27 @@ jobs:
       - name: Create resource group
         run: |
           az group create \
-            --name "${{ env.RESOURCE_GROUP }}" \
-            --location "${{ env.AZURE_LOCATION }}" \
-            --tags purpose=security-scan run_id=${{ github.run_id }}
+            --name "$RESOURCE_GROUP" \
+            --location "$AZURE_LOCATION" \
+            --tags name=boardgametracker purpose=security-scan run_id="$GITHUB_RUN_ID"
 
       - name: Deploy Bicep template
         id: deploy
+        env:
+          IMAGE_REF: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
+          SEC_DB_PASSWORD: ${{ steps.secrets.outputs.db_password }}
+          SEC_JWT_SECRET: ${{ steps.secrets.outputs.jwt_secret }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           RESULT=$(az deployment group create \
-            --resource-group "${{ env.RESOURCE_GROUP }}" \
+            --resource-group "$RESOURCE_GROUP" \
             --template-file infra/security-scan.bicep \
             --parameters \
-              imageName="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}" \
-              dbPassword="${{ steps.secrets.outputs.db_password }}" \
-              jwtSecret="${{ steps.secrets.outputs.jwt_secret }}" \
+              imageName="$IMAGE_REF" \
+              dbPassword="$SEC_DB_PASSWORD" \
+              jwtSecret="$SEC_JWT_SECRET" \
+              registryUsername="$GITHUB_ACTOR" \
+              registryPassword="$GHCR_TOKEN" \
             --query "properties.outputs" \
             --output json)
 
@@ -96,21 +112,25 @@ jobs:
           echo "Application URL: $APP_URL"
 
       - name: Wait for application to become healthy
+        env:
+          APP_URL: ${{ steps.deploy.outputs.app_url }}
         run: |
-          APP_URL="${{ steps.deploy.outputs.app_url }}"
+          set -euo pipefail
+
           echo "Polling $APP_URL/api/settings ..."
 
-          for i in $(seq 1 120); do
-            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" "$APP_URL/api/settings" 2>/dev/null || echo "000")
+          for i in $(seq 1 60); do
+            HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "$APP_URL/api/settings" 2>/dev/null || echo "000")
+            echo "Attempt $i: HTTP $HTTP_CODE"
             if [ "$HTTP_CODE" = "200" ]; then
-              echo "Application is healthy after ${i}s"
+              echo "Application is healthy"
               break
             fi
-            if [ "$i" -eq 120 ]; then
-              echo "::error::Application did not become healthy within 120s (last HTTP $HTTP_CODE)"
+            if [ "$i" -eq 60 ]; then
+              echo "::error::Application did not become healthy (last HTTP $HTTP_CODE)"
               exit 1
             fi
-            sleep 1
+            sleep 5
           done
 
       - name: Authenticate and extract JWT
@@ -118,17 +138,28 @@ jobs:
         env:
           ZAP_TEST_USERNAME: ${{ secrets.ZAP_TEST_USERNAME }}
           ZAP_TEST_PASSWORD: ${{ secrets.ZAP_TEST_PASSWORD }}
+          APP_URL: ${{ steps.deploy.outputs.app_url }}
         run: |
-          APP_URL="${{ steps.deploy.outputs.app_url }}"
+          set -euo pipefail
+
+          PAYLOAD=$(jq -n \
+            --arg u "$ZAP_TEST_USERNAME" \
+            --arg p "$ZAP_TEST_PASSWORD" \
+            '{username: $u, password: $p}')
 
           RESPONSE=$(curl -sf -X POST "$APP_URL/api/auth/login" \
             -H "Content-Type: application/json" \
-            -d "{\"username\": \"${{ env.ZAP_TEST_USERNAME }}\", \"password\": \"${{ env.ZAP_TEST_PASSWORD }}\"}")
+            --data-binary "$PAYLOAD")
 
-          TOKEN=$(echo "$RESPONSE" | jq -r '.accessToken')
+          TOKEN=$(printf '%s' "$RESPONSE" | jq -r '.accessToken // empty')
 
-          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+          if [ -z "$TOKEN" ]; then
             echo "::error::Failed to extract JWT from login response"
+            exit 1
+          fi
+
+          if ! printf '%s' "$TOKEN" | grep -Eq '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'; then
+            echo "::error::Login response did not contain a well-formed JWT"
             exit 1
           fi
 
@@ -136,12 +167,30 @@ jobs:
           echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
           echo "Authentication successful"
 
-      - name: Run ZAP Full Scan
-        uses: zaproxy/action-full-scan@v0.13.0
+      - name: Validate OpenAPI spec is served
+        env:
+          APP_URL: ${{ steps.deploy.outputs.app_url }}
+        run: |
+          set -euo pipefail
+
+          curl -sf "$APP_URL/swagger/v1/swagger.json" -o /tmp/swagger.json
+
+          ENDPOINT_COUNT=$(jq '[.paths | keys[]] | length' /tmp/swagger.json)
+          echo "OpenAPI spec contains $ENDPOINT_COUNT endpoint paths"
+
+          if [ "$ENDPOINT_COUNT" -lt 10 ]; then
+            echo "::error::OpenAPI spec has suspiciously few endpoints ($ENDPOINT_COUNT)"
+            exit 1
+          fi
+
+      - name: Run ZAP API Scan
+        uses: zaproxy/action-api-scan@5158fe4d9d8fcc75ea204db81317cce7f9e5453d # v0.10.0
         with:
-          target: ${{ steps.deploy.outputs.app_url }}
+          target: "${{ steps.deploy.outputs.app_url }}/swagger/v1/swagger.json"
+          format: openapi
           docker_name: "ghcr.io/zaproxy/zaproxy:stable"
           allow_issue_writing: false
+          fail_action: "false"
           cmd_options: >-
             -z "-config replacer.full_list(0).description=AuthHeader
             -config replacer.full_list(0).enabled=true
@@ -152,30 +201,133 @@ jobs:
             -config replacer.full_list(0).initiators="
           rules_file_name: ".zap/rules.tsv"
 
-      - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
-        with:
-          sarif_file: report_sarif.json
-          category: zap-full-scan
-
       - name: Upload scan reports
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
-          name: zap-full-scan-reports-${{ github.run_id }}
+          name: zap-api-scan-reports-${{ github.run_id }}
           path: |
             report_html.html
             report_json.json
             report_md.md
-            report_sarif.json
           retention-days: 90
+
+      - name: Collect Azure diagnostics
+        if: failure()
+        run: |
+          az extension add --name containerapp --upgrade || true
+
+          echo "=== bgt-api-sec status ==="
+          az containerapp show -g "$RESOURCE_GROUP" -n bgt-api-sec \
+            --query "{provisioning: properties.provisioningState, running: properties.runningStatus}" -o json || true
+          az containerapp revision list -g "$RESOURCE_GROUP" -n bgt-api-sec -o table || true
+
+          echo "=== bgt-api-sec system log ==="
+          az containerapp logs show -g "$RESOURCE_GROUP" -n bgt-api-sec --type system --tail 100 || true
+
+          echo "=== bgt-api-sec console log ==="
+          az containerapp logs show -g "$RESOURCE_GROUP" -n bgt-api-sec --type console --tail 100 || true
+
+          echo "=== postgres sidecar console log ==="
+          az containerapp logs show -g "$RESOURCE_GROUP" -n bgt-api-sec --container postgres --type console --tail 50 || true
 
       - name: Delete Azure resource group
         if: always()
         run: |
           az group delete \
-            --name "${{ env.RESOURCE_GROUP }}" \
+            --name "$RESOURCE_GROUP" \
             --yes \
             --no-wait
           echo "Resource group deletion initiated (async)"
+
+  docker-scout:
+    name: Docker Scout CVE Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build image for scanning
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: bgt:scout-scan
+          cache-from: type=gha
+          build-args: |
+            VERSION=0.0.0-security
+
+      - name: Docker Scout CVE scan
+        uses: docker/scout-action@bacf462e8d090c09660de30a6ccc718035f961e3 # v1
+        with:
+          command: cves
+          image: local://bgt:scout-scan
+          only-severities: critical,high
+          sarif-file: scout-results.sarif
+          exit-code: true
+          only-fixed: true
+
+      - name: Upload Scout SARIF
+        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4
+        if: always()
+        with:
+          sarif_file: scout-results.sarif
+          category: docker-scout
+
+  full-dependency-audit:
+    name: Full Frontend Dependency Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          package_json_file: boardgametracker.client/package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "20.x"
+          cache: "pnpm"
+          cache-dependency-path: boardgametracker.client/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: |
+          cd boardgametracker.client
+          pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Audit all dependencies (informational)
+        continue-on-error: true
+        run: |
+          cd boardgametracker.client
+          pnpm audit --audit-level=moderate

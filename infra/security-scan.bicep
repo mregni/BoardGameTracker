@@ -9,26 +9,38 @@ param dbPassword string
 @secure()
 param jwtSecret string
 
+@description('Username for pulling the image from ghcr.io')
+param registryUsername string
+
+@description('Token for pulling the image from ghcr.io')
+@secure()
+param registryPassword string
+
 @description('Azure region for all resources')
 param location string = resourceGroup().location
 
 @description('Unique suffix for resource names')
 param suffix string = uniqueString(resourceGroup().id)
 
+var tags = {
+  name: 'boardgametracker'
+}
+
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'law-bgt-sec-${suffix}'
   location: location
+  tags: tags
   properties: {
     sku: {
       name: 'PerGB2018'
     }
-    retentionInDays: 7
   }
 }
 
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: 'cae-bgt-sec-${suffix}'
   location: location
+  tags: tags
   properties: {
     appLogsConfiguration: {
       destination: 'log-analytics'
@@ -40,20 +52,30 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
-resource postgresApp 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'postgres-bgt-sec'
+resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
+  name: 'bgt-api-sec'
   location: location
+  tags: tags
   properties: {
     managedEnvironmentId: containerAppEnv.id
     configuration: {
       secrets: [
         { name: 'db-password', value: dbPassword }
+        { name: 'jwt-secret', value: jwtSecret }
+        { name: 'ghcr-token', value: registryPassword }
+      ]
+      registries: [
+        {
+          server: 'ghcr.io'
+          username: registryUsername
+          passwordSecretRef: 'ghcr-token'
+        }
       ]
       ingress: {
-        external: false
-        targetPort: 5432
-        transport: 'tcp'
-        exposedPort: 5432
+        external: true
+        targetPort: 5444
+        transport: 'http'
+        allowInsecure: false
       }
     }
     template: {
@@ -70,45 +92,7 @@ resource postgresApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'POSTGRES_USER', value: 'bgtuser' }
             { name: 'POSTGRES_PASSWORD', secretRef: 'db-password' }
           ]
-          probes: [
-            {
-              type: 'Readiness'
-              tcpSocket: {
-                port: 5432
-              }
-              initialDelaySeconds: 5
-              periodSeconds: 10
-            }
-          ]
         }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
-      }
-    }
-  }
-}
-
-resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'bgt-api-sec'
-  location: location
-  properties: {
-    managedEnvironmentId: containerAppEnv.id
-    configuration: {
-      secrets: [
-        { name: 'db-password', value: dbPassword }
-        { name: 'jwt-secret', value: jwtSecret }
-      ]
-      ingress: {
-        external: true
-        targetPort: 5444
-        transport: 'http'
-        allowInsecure: false
-      }
-    }
-    template: {
-      containers: [
         {
           name: 'bgt-api'
           image: imageName
@@ -119,7 +103,7 @@ resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
           env: [
             { name: 'ASPNETCORE_ENVIRONMENT', value: 'production' }
             { name: 'ASPNETCORE_URLS', value: 'http://*:5444' }
-            { name: 'DB_HOST', value: postgresApp.properties.configuration.ingress.fqdn }
+            { name: 'DB_HOST', value: 'localhost' }
             { name: 'DB_PORT', value: '5432' }
             { name: 'DB_USER', value: 'bgtuser' }
             { name: 'DB_PASSWORD', secretRef: 'db-password' }

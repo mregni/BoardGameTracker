@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@v2
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2
         with:
           egress-policy: audit
 
@@ -84,7 +84,7 @@ jobs:
             --force
 
       - name: Process stale issues and PRs
-        uses: actions/stale@v10
+        uses: actions/stale@1e223db275d687790206a7acac4d1a11bd6fe629 # v10
         with:
           stale-issue-label: stale
           stale-issue-message: >

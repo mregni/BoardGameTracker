@@ -5,7 +5,8 @@
     "config:recommended",
     ":dependencyDashboard",
     ":semanticCommits",
-    "group:allNonMajor"
+    "group:allNonMajor",
+    "helpers:pinGitHubActionDigests"
   ],
   "timezone": "Europe/Brussels",
   "schedule": [
