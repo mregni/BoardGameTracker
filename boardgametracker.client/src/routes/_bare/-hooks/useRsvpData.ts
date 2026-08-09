@@ -4,6 +4,7 @@ import type { GameNightRsvpState } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { updateGameNightRsvpCall } from "@/services/gameNightService";
 import { getGameNightByLink } from "@/services/queries/gameNights";
+import { getGameNightManuals } from "@/services/queries/manuals";
 
 export const useRsvpData = (linkId: string) => {
 	const { errorToast } = useToasts();
@@ -12,6 +13,7 @@ export const useRsvpData = (linkId: string) => {
 	const [submittedState, setSubmittedState] = useState<GameNightRsvpState | null>(null);
 
 	const { data: gameNight, isLoading } = useQuery(getGameNightByLink(linkId));
+	const { data: manuals } = useQuery(getGameNightManuals(linkId));
 
 	const rsvpMutation = useMutation({
 		mutationFn: updateGameNightRsvpCall,
@@ -37,6 +39,7 @@ export const useRsvpData = (linkId: string) => {
 
 	return {
 		gameNight,
+		manuals: manuals ?? [],
 		isLoading,
 		submitRsvp,
 		isSubmitting: rsvpMutation.isPending,

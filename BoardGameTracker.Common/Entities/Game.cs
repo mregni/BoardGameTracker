@@ -12,6 +12,7 @@ public class Game : BaseGame
     public ICollection<GameCategory> Categories { get; private set; }
     public ICollection<GameMechanic> Mechanics { get; private set; }
     public ICollection<Person> People { get; private set; }
+    public ICollection<Manual> Manuals { get; private set; }
 
     public Game(string title, bool hasScoring = false, GameState state = GameState.Owned) : base(title, state)
     {
@@ -21,6 +22,7 @@ public class Game : BaseGame
         Categories = new List<GameCategory>();
         Mechanics = new List<GameMechanic>();
         People = new List<Person>();
+        Manuals = new List<Manual>();
     }
 
     public void UpdateHasScoring(bool hasScoring)

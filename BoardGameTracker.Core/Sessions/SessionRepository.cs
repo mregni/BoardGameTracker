@@ -2,11 +2,12 @@
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Sessions.Interfaces;
+using BoardGameTracker.Core.Sessions.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Sessions;
 
-public class SessionRepository : CrudHelper<Session>, ISessionRepository
+public class SessionRepository : EfRepository<Session>, ISessionRepository
 {
     private readonly MainDbContext _context;
 
@@ -14,47 +15,30 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
     {
         _context = context;
     }
-    
+
     public Task<int> CountAsync()
     {
         return _context.Sessions.CountAsync();
     }
-    
+
     public Task<int> CountByPlayer(int playerId)
     {
-        return _context.Sessions
-            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == playerId))
-            .CountAsync();
+        return CountAsync(new SessionsByPlayerSpec(playerId));
     }
 
     public Task<int> CountByPlayerAndGame(int playerId, int gameId)
     {
-        return _context.Sessions
-            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == playerId))
-            .Where(x => x.GameId == gameId)
-            .CountAsync();
+        return CountAsync(new SessionsByPlayerAndGameSpec(playerId, gameId));
     }
 
     public Task<List<Session>> GetByPlayer(int playerId, bool? won = null)
     {
-        var query = _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == playerId));
-
-        if (won.HasValue)
-        {
-            query = query.Where(x => x.PlayerSessions.Any(y => y.Won == won));
-        }
-
-        return query.ToListAsync();
+        return ListAsync(new SessionsByPlayerSpec(playerId, won));
     }
 
     public Task<List<Session>> GetByPlayerAndGame(int playerId, int gameId)
     {
-        return _context.Sessions
-            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == playerId))
-            .Where(x => x.GameId == gameId)
-            .ToListAsync();
+        return ListAsync(new SessionsByPlayerAndGameSpec(playerId, gameId));
     }
 
     public async Task<double> GetTotalPlayTime()
@@ -110,22 +94,12 @@ public class SessionRepository : CrudHelper<Session>, ISessionRepository
 
     public override Task<Session?> GetByIdAsync(int id)
     {
-        return _context.Sessions
-            .Include(x => x.PlayerSessions)
-            .Include(x => x.Expansions)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        return FirstOrDefaultAsync(new SessionByIdWithDetailsSpec(id));
     }
 
     public Task<List<Session>> GetRecentSessions(int count)
     {
-        return _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.Game)
-            .Include(x => x.PlayerSessions)
-                .ThenInclude(ps => ps.Player)
-            .OrderByDescending(x => x.Start)
-            .Take(count)
-            .ToListAsync();
+        return ListAsync(new RecentSessionsSpec(count));
     }
 
     public Task<List<IGrouping<DayOfWeek, Session>>> GetSessionsByDayOfWeek()

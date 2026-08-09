@@ -20,12 +20,17 @@ import { Route as GamesIndexRouteImport } from './routes/games/index'
 import { Route as GameNightsIndexRouteImport } from './routes/game-nights/index'
 import { Route as CompareIndexRouteImport } from './routes/compare/index'
 import { Route as SessionsNewRouteImport } from './routes/sessions/new'
+import { Route as PlayersNewRouteImport } from './routes/players/new'
 import { Route as PlayersPlayerIdRouteImport } from './routes/players/$playerId'
+import { Route as GamesTableRouteImport } from './routes/games/table'
 import { Route as GamesNewRouteImport } from './routes/games/new'
 import { Route as GamesBggRouteImport } from './routes/games/bgg'
+import { Route as GamesAddRouteImport } from './routes/games/add'
 import { Route as GamesGameIdRouteImport } from './routes/games/$gameId'
 import { Route as BareRsvpRouteImport } from './routes/_bare/rsvp'
+import { Route as BareResetPasswordRouteImport } from './routes/_bare/reset-password'
 import { Route as BareLoginRouteImport } from './routes/_bare/login'
+import { Route as BareForgotPasswordRouteImport } from './routes/_bare/forgot-password'
 import { Route as BareAuthCallbackRouteImport } from './routes/_bare/auth-callback'
 import { Route as SessionsUpdateSessionIdRouteImport } from './routes/sessions/update_.$sessionId'
 import { Route as SessionsNewGameIdRouteImport } from './routes/sessions/new_.$gameId'
@@ -89,9 +94,19 @@ const SessionsNewRoute = SessionsNewRouteImport.update({
   path: '/sessions/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlayersNewRoute = PlayersNewRouteImport.update({
+  id: '/players/new',
+  path: '/players/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlayersPlayerIdRoute = PlayersPlayerIdRouteImport.update({
   id: '/players/$playerId',
   path: '/players/$playerId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesTableRoute = GamesTableRouteImport.update({
+  id: '/games/table',
+  path: '/games/table',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesNewRoute = GamesNewRouteImport.update({
@@ -104,6 +119,11 @@ const GamesBggRoute = GamesBggRouteImport.update({
   path: '/games/bgg',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamesAddRoute = GamesAddRouteImport.update({
+  id: '/games/add',
+  path: '/games/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GamesGameIdRoute = GamesGameIdRouteImport.update({
   id: '/games/$gameId',
   path: '/games/$gameId',
@@ -114,9 +134,19 @@ const BareRsvpRoute = BareRsvpRouteImport.update({
   path: '/rsvp',
   getParentRoute: () => BareRoute,
 } as any)
+const BareResetPasswordRoute = BareResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => BareRoute,
+} as any)
 const BareLoginRoute = BareLoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => BareRoute,
+} as any)
+const BareForgotPasswordRoute = BareForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => BareRoute,
 } as any)
 const BareAuthCallbackRoute = BareAuthCallbackRouteImport.update({
@@ -163,12 +193,17 @@ const GamesImportListUsernameRoute = GamesImportListUsernameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth-callback': typeof BareAuthCallbackRoute
+  '/forgot-password': typeof BareForgotPasswordRoute
   '/login': typeof BareLoginRoute
+  '/reset-password': typeof BareResetPasswordRoute
   '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
+  '/games/add': typeof GamesAddRoute
   '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
+  '/games/table': typeof GamesTableRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
+  '/players/new': typeof PlayersNewRoute
   '/sessions/new': typeof SessionsNewRoute
   '/compare/': typeof CompareIndexRoute
   '/game-nights/': typeof GameNightsIndexRoute
@@ -189,12 +224,17 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth-callback': typeof BareAuthCallbackRoute
+  '/forgot-password': typeof BareForgotPasswordRoute
   '/login': typeof BareLoginRoute
+  '/reset-password': typeof BareResetPasswordRoute
   '/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
+  '/games/add': typeof GamesAddRoute
   '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
+  '/games/table': typeof GamesTableRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
+  '/players/new': typeof PlayersNewRoute
   '/sessions/new': typeof SessionsNewRoute
   '/compare': typeof CompareIndexRoute
   '/game-nights': typeof GameNightsIndexRoute
@@ -217,12 +257,17 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_bare': typeof BareRouteWithChildren
   '/_bare/auth-callback': typeof BareAuthCallbackRoute
+  '/_bare/forgot-password': typeof BareForgotPasswordRoute
   '/_bare/login': typeof BareLoginRoute
+  '/_bare/reset-password': typeof BareResetPasswordRoute
   '/_bare/rsvp': typeof BareRsvpRoute
   '/games/$gameId': typeof GamesGameIdRoute
+  '/games/add': typeof GamesAddRoute
   '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
+  '/games/table': typeof GamesTableRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
+  '/players/new': typeof PlayersNewRoute
   '/sessions/new': typeof SessionsNewRoute
   '/compare/': typeof CompareIndexRoute
   '/game-nights/': typeof GameNightsIndexRoute
@@ -245,12 +290,17 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth-callback'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/rsvp'
     | '/games/$gameId'
+    | '/games/add'
     | '/games/bgg'
     | '/games/new'
+    | '/games/table'
     | '/players/$playerId'
+    | '/players/new'
     | '/sessions/new'
     | '/compare/'
     | '/game-nights/'
@@ -271,12 +321,17 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth-callback'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/rsvp'
     | '/games/$gameId'
+    | '/games/add'
     | '/games/bgg'
     | '/games/new'
+    | '/games/table'
     | '/players/$playerId'
+    | '/players/new'
     | '/sessions/new'
     | '/compare'
     | '/game-nights'
@@ -298,12 +353,17 @@ export interface FileRouteTypes {
     | '/'
     | '/_bare'
     | '/_bare/auth-callback'
+    | '/_bare/forgot-password'
     | '/_bare/login'
+    | '/_bare/reset-password'
     | '/_bare/rsvp'
     | '/games/$gameId'
+    | '/games/add'
     | '/games/bgg'
     | '/games/new'
+    | '/games/table'
     | '/players/$playerId'
+    | '/players/new'
     | '/sessions/new'
     | '/compare/'
     | '/game-nights/'
@@ -326,9 +386,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BareRoute: typeof BareRouteWithChildren
   GamesGameIdRoute: typeof GamesGameIdRoute
+  GamesAddRoute: typeof GamesAddRoute
   GamesBggRoute: typeof GamesBggRoute
   GamesNewRoute: typeof GamesNewRoute
+  GamesTableRoute: typeof GamesTableRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
+  PlayersNewRoute: typeof PlayersNewRoute
   SessionsNewRoute: typeof SessionsNewRoute
   CompareIndexRoute: typeof CompareIndexRoute
   GameNightsIndexRoute: typeof GameNightsIndexRoute
@@ -426,11 +489,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SessionsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/players/new': {
+      id: '/players/new'
+      path: '/players/new'
+      fullPath: '/players/new'
+      preLoaderRoute: typeof PlayersNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/players/$playerId': {
       id: '/players/$playerId'
       path: '/players/$playerId'
       fullPath: '/players/$playerId'
       preLoaderRoute: typeof PlayersPlayerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/table': {
+      id: '/games/table'
+      path: '/games/table'
+      fullPath: '/games/table'
+      preLoaderRoute: typeof GamesTableRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/new': {
@@ -447,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesBggRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/add': {
+      id: '/games/add'
+      path: '/games/add'
+      fullPath: '/games/add'
+      preLoaderRoute: typeof GamesAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/games/$gameId': {
       id: '/games/$gameId'
       path: '/games/$gameId'
@@ -461,11 +545,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BareRsvpRouteImport
       parentRoute: typeof BareRoute
     }
+    '/_bare/reset-password': {
+      id: '/_bare/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof BareResetPasswordRouteImport
+      parentRoute: typeof BareRoute
+    }
     '/_bare/login': {
       id: '/_bare/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof BareLoginRouteImport
+      parentRoute: typeof BareRoute
+    }
+    '/_bare/forgot-password': {
+      id: '/_bare/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof BareForgotPasswordRouteImport
       parentRoute: typeof BareRoute
     }
     '/_bare/auth-callback': {
@@ -529,13 +627,17 @@ declare module '@tanstack/react-router' {
 
 interface BareRouteChildren {
   BareAuthCallbackRoute: typeof BareAuthCallbackRoute
+  BareForgotPasswordRoute: typeof BareForgotPasswordRoute
   BareLoginRoute: typeof BareLoginRoute
+  BareResetPasswordRoute: typeof BareResetPasswordRoute
   BareRsvpRoute: typeof BareRsvpRoute
 }
 
 const BareRouteChildren: BareRouteChildren = {
   BareAuthCallbackRoute: BareAuthCallbackRoute,
+  BareForgotPasswordRoute: BareForgotPasswordRoute,
   BareLoginRoute: BareLoginRoute,
+  BareResetPasswordRoute: BareResetPasswordRoute,
   BareRsvpRoute: BareRsvpRoute,
 }
 
@@ -545,9 +647,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BareRoute: BareRouteWithChildren,
   GamesGameIdRoute: GamesGameIdRoute,
+  GamesAddRoute: GamesAddRoute,
   GamesBggRoute: GamesBggRoute,
   GamesNewRoute: GamesNewRoute,
+  GamesTableRoute: GamesTableRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,
+  PlayersNewRoute: PlayersNewRoute,
   SessionsNewRoute: SessionsNewRoute,
   CompareIndexRoute: CompareIndexRoute,
   GameNightsIndexRoute: GameNightsIndexRoute,

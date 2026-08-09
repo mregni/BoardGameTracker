@@ -2,21 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
+using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Auth;
 
-public class UserAdminServiceTests
+public class UserAdminServiceTests : IDisposable
 {
     private readonly Mock<IUserStore<ApplicationUser>> _userStoreMock;
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
+    private readonly MainDbContext _context;
     private readonly Mock<ILogger<UserAdminService>> _loggerMock;
     private readonly UserAdminService _service;
 
@@ -27,18 +31,41 @@ public class UserAdminServiceTests
             _userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         _loggerMock = new Mock<ILogger<UserAdminService>>();
 
+        var options = new DbContextOptionsBuilder<MainDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+        _context = new MainDbContext(options);
+
         _service = new UserAdminService(
             _userManagerMock.Object,
-            null!,
+            _context,
             _loggerMock.Object);
 
         _userManagerMock.Invocations.Clear();
+    }
+
+    public void Dispose()
+    {
+        _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private void VerifyNoOtherCalls()
     {
         _userManagerMock.VerifyNoOtherCalls();
         _loggerMock.VerifyNoOtherCalls();
+    }
+
+    private void VerifyInformationLogged()
+    {
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     #region GetByIdAsync
@@ -286,7 +313,7 @@ public class UserAdminServiceTests
             .ReturnsAsync(updatedRoles);
 
         // Act
-        var result = await _service.UpdateUserAsync(targetUserId, "newuser", "new@test.com", Constants.AuthRoles.Reader, currentUserId);
+        var result = await _service.UpdateUserAsync(targetUserId, "newuser", "new@test.com", Constants.AuthRoles.Reader, null, currentUserId);
 
         // Assert
         result.Should().NotBeNull();
@@ -330,7 +357,7 @@ public class UserAdminServiceTests
             .ReturnsAsync(updatedRoles);
 
         // Act
-        var result = await _service.UpdateUserAsync(targetUserId, "sameuser", "new@test.com", Constants.AuthRoles.Admin, currentUserId);
+        var result = await _service.UpdateUserAsync(targetUserId, "sameuser", "new@test.com", Constants.AuthRoles.Admin, null, currentUserId);
 
         // Assert
         result.Should().NotBeNull();
@@ -365,7 +392,7 @@ public class UserAdminServiceTests
         _userManagerMock.Setup(x => x.FindByNameAsync("takenuser")).ReturnsAsync(existingUser);
 
         // Act
-        var act = () => _service.UpdateUserAsync(targetUserId, "takenuser", null, Constants.AuthRoles.User, currentUserId);
+        var act = () => _service.UpdateUserAsync(targetUserId, "takenuser", null, Constants.AuthRoles.User, null, currentUserId);
 
         // Assert
         await act.Should().ThrowAsync<ValidationException>()
@@ -380,7 +407,7 @@ public class UserAdminServiceTests
     public async Task UpdateUserAsync_ShouldThrowValidationException_WhenUsernameIsEmpty()
     {
         // Act
-        var act = () => _service.UpdateUserAsync("user-1", "", null, Constants.AuthRoles.User, "admin-1");
+        var act = () => _service.UpdateUserAsync("user-1", "", null, Constants.AuthRoles.User, null, "admin-1");
 
         // Assert
         await act.Should().ThrowAsync<ValidationException>()
@@ -393,7 +420,7 @@ public class UserAdminServiceTests
     public async Task UpdateUserAsync_ShouldThrowValidationException_WhenRoleIsInvalid()
     {
         // Act
-        var act = () => _service.UpdateUserAsync("user-1", "validuser", null, "InvalidRole", "admin-1");
+        var act = () => _service.UpdateUserAsync("user-1", "validuser", null, "InvalidRole", null, "admin-1");
 
         // Assert
         await act.Should().ThrowAsync<ValidationException>()
@@ -414,7 +441,7 @@ public class UserAdminServiceTests
             .ReturnsAsync(new List<ApplicationUser> { adminUser });
 
         // Act
-        var act = () => _service.UpdateUserAsync(adminUserId, "admin", null, Constants.AuthRoles.User, adminUserId);
+        var act = () => _service.UpdateUserAsync(adminUserId, "admin", null, Constants.AuthRoles.User, null, adminUserId);
 
         // Assert
         await act.Should().ThrowAsync<DomainException>()
@@ -422,6 +449,88 @@ public class UserAdminServiceTests
 
         _userManagerMock.Verify(x => x.FindByIdAsync(adminUserId), Times.Once);
         _userManagerMock.Verify(x => x.GetUsersInRoleAsync(Constants.AuthRoles.Admin), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_ShouldLinkPlayer_WhenPlayerIdProvided()
+    {
+        _context.Players.Add(new Player("Target") { Id = 5 });
+        await _context.SaveChangesAsync();
+
+        var currentUserId = "admin-1";
+        var targetUserId = "user-2";
+        var targetUser = new ApplicationUser("bob", "b@test.com");
+        var roles = new List<string> { Constants.AuthRoles.User };
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(targetUserId)).ReturnsAsync(targetUser);
+        _userManagerMock.Setup(x => x.UpdateAsync(targetUser)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.RemoveFromRolesAsync(targetUser, roles)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.SetupSequence(x => x.GetRolesAsync(targetUser)).ReturnsAsync(roles).ReturnsAsync(roles);
+
+        var result = await _service.UpdateUserAsync(targetUserId, "bob", "b@test.com", Constants.AuthRoles.User, 5, currentUserId);
+
+        result.PlayerId.Should().Be(5);
+        targetUser.PlayerId.Should().Be(5);
+
+        _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
+        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, roles), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.User), Times.Once);
+        VerifyInformationLogged();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_ShouldUnlinkPlayer_WhenPlayerIdIsNull()
+    {
+        var currentUserId = "admin-1";
+        var targetUserId = "user-2";
+        var targetUser = new ApplicationUser("bob", "b@test.com");
+        targetUser.LinkPlayer(5);
+        var roles = new List<string> { Constants.AuthRoles.User };
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(targetUserId)).ReturnsAsync(targetUser);
+        _userManagerMock.Setup(x => x.UpdateAsync(targetUser)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.RemoveFromRolesAsync(targetUser, roles)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.SetupSequence(x => x.GetRolesAsync(targetUser)).ReturnsAsync(roles).ReturnsAsync(roles);
+
+        var result = await _service.UpdateUserAsync(targetUserId, "bob", "b@test.com", Constants.AuthRoles.User, null, currentUserId);
+
+        result.PlayerId.Should().BeNull();
+        targetUser.PlayerId.Should().BeNull();
+
+        _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
+        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, roles), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.User), Times.Once);
+        VerifyInformationLogged();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_ShouldThrowDomainException_WhenPlayerLinkedToAnotherUser()
+    {
+        _context.Players.Add(new Player("Target") { Id = 5 });
+        var otherUser = new ApplicationUser("other", "o@test.com");
+        otherUser.LinkPlayer(5);
+        _context.Users.Add(otherUser);
+        await _context.SaveChangesAsync();
+
+        var currentUserId = "admin-1";
+        var targetUserId = "user-2";
+        var targetUser = new ApplicationUser("bob", "b@test.com");
+        _userManagerMock.Setup(x => x.FindByIdAsync(targetUserId)).ReturnsAsync(targetUser);
+
+        var act = () => _service.UpdateUserAsync(targetUserId, "bob", "b@test.com", Constants.AuthRoles.User, 5, currentUserId);
+
+        await act.Should().ThrowAsync<DomainException>();
+
+        _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         VerifyNoOtherCalls();
     }
 

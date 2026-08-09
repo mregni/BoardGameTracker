@@ -20,20 +20,18 @@ export const useList = ({ username }: Props) => {
 	});
 
 	const settings = settingsQuery.data;
-	const statusCode = bggCollectionQuery.data?.statusCode ?? 202;
 	const bggError = bggCollectionQuery.error;
 
 	const [filterCollected, setFilterCollected] = useState<boolean>(true);
 
-	// Derive all values during render instead of storing in state
 	const processingGames = bggCollectionQuery.isLoading || gamesQuery.isLoading;
 
 	const totalCount = useMemo(() => {
-		return bggCollectionQuery.data?.games?.length ?? 0;
-	}, [bggCollectionQuery.data?.games]);
+		return bggCollectionQuery.data?.length ?? 0;
+	}, [bggCollectionQuery.data]);
 
 	const processedGames = useMemo(() => {
-		const bggGames = bggCollectionQuery.data?.games;
+		const bggGames = bggCollectionQuery.data;
 		const collectionGames = gamesQuery.data;
 
 		if (!bggGames) return [];
@@ -54,7 +52,7 @@ export const useList = ({ username }: Props) => {
 				checked: false,
 			};
 		});
-	}, [bggCollectionQuery.data?.games, gamesQuery.data]);
+	}, [bggCollectionQuery.data, gamesQuery.data]);
 
 	const inCollectionCount = useMemo(() => {
 		return processedGames.filter((game) => game.inCollection).length;
@@ -66,7 +64,8 @@ export const useList = ({ username }: Props) => {
 		const filtered = filterCollected ? processedGames.filter((game) => !game.inCollection) : processedGames;
 		return filtered.map((game) => {
 			const updates = localUpdates.get(game.bggId);
-			return updates ? { ...game, ...updates } : game;
+			const merged = updates ? { ...game, ...updates } : game;
+			return merged.inCollection ? { ...merged, checked: false } : merged;
 		});
 	}, [processedGames, filterCollected, localUpdates]);
 
@@ -78,13 +77,24 @@ export const useList = ({ username }: Props) => {
 		});
 	}, []);
 
+	const setSelection = useCallback((changes: { bggId: number; checked: boolean }[]) => {
+		setLocalUpdates((prev) => {
+			const next = new Map(prev);
+			for (const { bggId, checked } of changes) {
+				next.set(bggId, { ...next.get(bggId), checked });
+			}
+			return next;
+		});
+	}, []);
+
 	const startImportMutation = useMutation({
 		mutationFn: importGamesCall,
 		async onSuccess() {
-			// Use centralized invalidation for games
-			await invalidator.invalidateGames();
-			// Dashboard includes counts, so this is covered
-			await invalidator.invalidateDashboard();
+			await Promise.all([
+				invalidator.invalidateGames(),
+				invalidator.invalidateCounts(),
+				invalidator.invalidateDashboard(),
+			]);
 
 			successToast("games:import.success");
 		},
@@ -96,9 +106,9 @@ export const useList = ({ username }: Props) => {
 	return {
 		games,
 		settings,
-		statusCode,
 		bggError,
 		updateGame,
+		setSelection,
 		filterCollected,
 		setFilterCollected,
 		inCollectionCount,

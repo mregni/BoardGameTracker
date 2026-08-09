@@ -8,7 +8,7 @@ import {
 	BgtDialogDescription,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
-import type { Game, GameNight, Location, ModalProps, Player } from "@/models";
+import type { Game, GameNight, Location, ModalProps, Player, UpdateGameNight } from "@/models";
 import { GameNightForm, type GameNightFormValues } from "../-components/GameNightForm";
 
 interface Props extends ModalProps {
@@ -17,7 +17,7 @@ interface Props extends ModalProps {
 	games: Game[];
 	locations: Location[];
 	isLoading: boolean;
-	onSave: (gameNight: GameNight) => Promise<unknown>;
+	onSave: (gameNight: UpdateGameNight) => Promise<unknown>;
 }
 
 export const EditGameNightModal = (props: Props) => {
@@ -28,14 +28,14 @@ export const EditGameNightModal = (props: Props) => {
 
 	const handleSubmit = async (values: GameNightFormValues) => {
 		await onSave({
-			...gameNight,
+			id: gameNight.id,
 			title: values.title,
 			notes: values.notes,
 			startDate: values.startDate,
 			hostId: values.hostId,
 			locationId: values.locationId,
-			suggestedGames: games.filter((g) => values.suggestedGameIds.includes(g.id)),
-			invitedPlayers: gameNight.invitedPlayers,
+			suggestedGameIds: values.suggestedGameIds,
+			invitedPlayerIds: values.invitedPlayerIds,
 		});
 	};
 

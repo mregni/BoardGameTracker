@@ -6,6 +6,7 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
+using BoardGameTracker.Core.Players.Specifications;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -48,7 +49,7 @@ public class PlayerService : IPlayerService
     public async Task<Player> Create(CreatePlayerCommand command)
     {
         _logger.LogDebug("Creating player {Name}", command.Name);
-        var player = new Player(command.Name, command.Image);
+        var player = new Player(command.Name, command.Image, command.Email);
         await _playerRepository.CreateAsync(player);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Player {PlayerId} ({Name}) created", player.Id, player.Name);
@@ -64,7 +65,7 @@ public class PlayerService : IPlayerService
     public async Task<Player> Update(UpdatePlayerCommand command)
     {
         _logger.LogDebug("Updating player {PlayerId}", command.Id);
-        var dbPlayer = await _playerRepository.GetByIdAsync(command.Id);
+        var dbPlayer = await _playerRepository.SingleOrDefaultAsync(new PlayerByIdForUpdateSpec(command.Id));
         if (dbPlayer == null)
         {
             throw new EntityNotFoundException(nameof(Player), command.Id);
@@ -77,8 +78,9 @@ public class PlayerService : IPlayerService
         }
         
         dbPlayer.UpdateName(command.Name);
+        dbPlayer.UpdateEmail(command.Email);
         await _unitOfWork.SaveChangesAsync();
-        
+
         return dbPlayer;
     }
 

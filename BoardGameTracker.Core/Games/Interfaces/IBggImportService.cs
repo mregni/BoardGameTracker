@@ -7,6 +7,6 @@ namespace BoardGameTracker.Core.Games.Interfaces;
 public interface IBggImportService
 {
     Task<Game?> ImportGameFromBgg(BggSearch search);
-    Task<BggImportResult?> ImportBggCollection(string userName);
+    Task<IList<BggImportGame>> ImportBggCollection(string userName);
     Task ImportList(IList<ImportGame> games);
 }

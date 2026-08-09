@@ -1,7 +1,7 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { BgtDateTimePicker, BgtInputField, BgtSelect, BgtTextArea } from "@/components/BgtForm";
+import { BgtDateTimePicker, BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
 import { CreateSessionSchema, type Game, type Location } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
@@ -75,9 +75,6 @@ export const SessionFormFields = withForm({
 				</form.Field>
 				<form.Field name="start" validators={zodValidator(CreateSessionSchema, "start")}>
 					{(field: AnyFieldApi) => <BgtDateTimePicker field={field} disabled={disabled} label={t("new.start.label")} />}
-				</form.Field>
-				<form.Field name="comment" validators={zodValidator(CreateSessionSchema, "comment")}>
-					{(field: AnyFieldApi) => <BgtTextArea field={field} disabled={disabled} label={t("new.comment.label")} />}
 				</form.Field>
 			</>
 		);

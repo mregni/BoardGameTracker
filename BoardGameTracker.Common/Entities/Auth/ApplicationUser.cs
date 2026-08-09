@@ -12,7 +12,7 @@ public class ApplicationUser : IdentityUser
 
     private ApplicationUser() { }
 
-    public ApplicationUser(string userName, string email, string? displayName = null)
+    public ApplicationUser(string userName, string? email, string? displayName = null)
     {
         UserName = userName;
         Email = email;

@@ -6,7 +6,9 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Manuals.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +21,7 @@ public class GameService : IGameService
     private readonly IBoardGameGeekXmlApi2Client _bggClient;
     private readonly ISettingsService _settingsService;
     private readonly IImageService _imageService;
+    private readonly IManualService _manualService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<GameService> _logger;
 
@@ -26,6 +29,7 @@ public class GameService : IGameService
         IGameRepository gameRepository,
         IGameSessionRepository gameSessionRepository,
         IImageService imageService,
+        IManualService manualService,
         IBoardGameGeekXmlApi2Client bggClient,
         ISettingsService settingsService,
         IUnitOfWork unitOfWork,
@@ -34,6 +38,7 @@ public class GameService : IGameService
         _gameRepository = gameRepository;
         _gameSessionRepository = gameSessionRepository;
         _imageService = imageService;
+        _manualService = manualService;
         _bggClient = bggClient;
         _settingsService = settingsService;
         _unitOfWork = unitOfWork;
@@ -49,7 +54,7 @@ public class GameService : IGameService
     public Task<Game?> GetGameById(int id)
     {
         _logger.LogDebug("Fetching game {GameId}", id);
-        return _gameRepository.GetByIdAsync(id);
+        return _gameRepository.SingleOrDefaultAsync(new GameByIdWithDetailsForReadSpec(id));
     }
 
     public async Task Delete(int id)
@@ -62,6 +67,7 @@ public class GameService : IGameService
         }
 
         _imageService.DeleteImage(game.Image);
+        await _manualService.DeleteManualFilesForGame(game.Id);
         await _gameRepository.DeleteAsync(game.Id);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Game {GameId} deleted", id);
@@ -78,6 +84,8 @@ public class GameService : IGameService
         var game = new Game(command.Title, command.HasScoring, command.State);
         game.UpdateYearPublished(command.YearPublished);
         game.UpdateImage(command.Image);
+        game.UpdateShopUrl(command.ShopUrl);
+        game.UpdateLanguage(command.Language);
         game.UpdateDescription(command.Description ?? string.Empty);
         game.UpdatePlayerCount(command.MinPlayers, command.MaxPlayers);
         game.UpdatePlayTime(command.MinPlayTime, command.MaxPlayTime);
@@ -115,6 +123,8 @@ public class GameService : IGameService
         game.UpdateState(command.State);
         game.UpdateYearPublished(command.YearPublished);
         game.UpdateImage(command.Image);
+        game.UpdateShopUrl(command.ShopUrl);
+        game.UpdateLanguage(command.Language);
         game.UpdateDescription(command.Description ?? string.Empty);
         game.UpdatePlayerCount(command.MinPlayers, command.MaxPlayers);
         game.UpdatePlayTime(command.MinPlayTime, command.MaxPlayTime);
@@ -124,7 +134,10 @@ public class GameService : IGameService
         game.UpdateSoldPrice(command.SoldPrice);
         game.UpdateRating(command.Rating);
         game.UpdateWeight(command.Weight);
-        game.UpdateAdditionDate(command.AdditionDate);
+        if (command.AdditionDate.HasValue)
+        {
+            game.UpdateAdditionDate(command.AdditionDate);
+        }
 
         await _unitOfWork.SaveChangesAsync();
         return game;
@@ -156,6 +169,7 @@ public class GameService : IGameService
 
     public async Task<List<Expansion>> UpdateGameExpansions(int gameId, int[] expansionIds)
     {
+        ArgumentNullException.ThrowIfNull(expansionIds);
         await EnsureBggConfiguredAsync();
         _logger.LogDebug("Updating expansions for game {GameId}", gameId);
         var game = await _gameRepository.GetByIdAsync(gameId);
@@ -190,11 +204,13 @@ public class GameService : IGameService
                 continue;
             }
 
-            var expansion = new Expansion(
-                firstResult.Name ?? string.Empty,
-                firstResult.Id,
-                game.Id
-            );
+            if (string.IsNullOrWhiteSpace(firstResult.Name) || firstResult.Id <= 0)
+            {
+                _logger.LogWarning("Skipping malformed BGG expansion (id {BggId}) for game {GameId}", firstResult.Id, game.Id);
+                continue;
+            }
+
+            var expansion = new Expansion(firstResult.Name, firstResult.Id, game.Id);
             game.AddExpansion(expansion);
         }
 

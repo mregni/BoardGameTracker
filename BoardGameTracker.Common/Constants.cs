@@ -51,7 +51,15 @@ public static class Constants
         public const string CannotDeleteLastAdmin = "error.auth.cannot-delete-last-admin";
         public const string CannotRemoveLastAdmin = "error.auth.cannot-remove-last-admin";
         public const string InvalidCredentials = "error.auth.invalid-credentials";
+        public const string AccountLockedOut = "error.auth.account-locked-out";
         public const string InvalidRefreshToken = "error.auth.invalid-refresh-token";
+        public const string InvalidRedirectUri = "error.auth.invalid-redirect-uri";
+        public const string InvalidAuthSession = "error.auth.invalid-auth-session";
+        public const string PlayerAlreadyLinked = "error.auth.player-already-linked";
+        public const string EmailNotConfigured = "error.email.not-configured";
+        public const string ImageTooLarge = "error.image.too-large";
+        public const string ImageUnsupportedFormat = "error.image.unsupported-format";
+        public const string InvalidResetToken = "error.auth.invalid-reset-token";
     }
 
     public static class BggConfig

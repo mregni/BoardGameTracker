@@ -14,15 +14,17 @@ public class Player : HasId
     }
 
     public string? Image { get; private set; }
+    public string? Email { get; private set; }
     public ICollection<PlayerSession> PlayerSessions { get; private set; }
     public ICollection<Badge> Badges { get; private set; }
     public ICollection<Loan> Loans { get; private set; }
     public ICollection<GameNightRsvp> GameNightRsvps { get; private set; }
 
-    public Player(string name, string? image = null)
+    public Player(string name, string? image = null, string? email = null)
     {
         Name = name;
         Image = image;
+        Email = email;
         PlayerSessions = new List<PlayerSession>();
         Badges = new List<Badge>();
         Loans = new List<Loan>();
@@ -37,5 +39,10 @@ public class Player : HasId
     public void UpdateImage(string? imageUrl)
     {
         Image = imageUrl;
+    }
+
+    public void UpdateEmail(string? email)
+    {
+        Email = email;
     }
 }

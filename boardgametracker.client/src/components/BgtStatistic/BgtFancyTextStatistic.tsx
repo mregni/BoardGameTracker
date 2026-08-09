@@ -13,7 +13,7 @@ export const BgtFancyTextStatistic = (props: Props) => {
 	if (content === null || content === undefined) return null;
 
 	return (
-		<BgtCard className="col-span-1 bg-linear-to-br from-primary/20 to-[#ec4899]/10 border border-primary/30 rounded-lg p-4 relative overflow-hidden group hover:border-primary/50 transition-all">
+		<BgtCard className="col-span-1 bg-linear-to-br from-primary/20 to-[#22d3ee]/10 border border-primary/30 rounded-lg p-4 relative overflow-hidden group hover:border-primary/50 transition-all">
 			<div className="absolute top-0 right-0 w-16 h-16 bg-primary/10 rounded-full -mr-8 -mt-8 group-hover:scale-110 transition-transform" />
 			<div className="relative">
 				<BgtText size="5" color="cyan" weight="bold">

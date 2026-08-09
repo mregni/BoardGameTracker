@@ -484,7 +484,7 @@ public class GameControllerTests
             .ReturnsAsync(playerScoringChart);
 
         _gameChartServiceMock
-            .Setup(x => x.GetScoringRankedChart(gameId))
+            .Setup(x => x.GetScoringRankedChart(gameId, stats.AverageScore))
             .ReturnsAsync(scoringRankChart);
 
         // Act
@@ -501,7 +501,7 @@ public class GameControllerTests
         _gameChartServiceMock.Verify(x => x.GetPlayByDayChart(gameId), Times.Once);
         _gameChartServiceMock.Verify(x => x.GetPlayerCountChart(gameId), Times.Once);
         _gameChartServiceMock.Verify(x => x.GetPlayerScoringChart(gameId), Times.Once);
-        _gameChartServiceMock.Verify(x => x.GetScoringRankedChart(gameId), Times.Once);
+        _gameChartServiceMock.Verify(x => x.GetScoringRankedChart(gameId, stats.AverageScore), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -514,7 +514,7 @@ public class GameControllerTests
     {
         // Arrange
         var username = "testuser";
-        var importResult = new BggImportResult();
+        var importResult = new List<BggImportGame>();
 
         _bggImportServiceMock
             .Setup(x => x.ImportBggCollection(username))
@@ -525,7 +525,7 @@ public class GameControllerTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().BeAssignableTo<BggImportResult>();
+        okResult.Value.Should().BeAssignableTo<IList<BggImportGame>>();
 
         _bggImportServiceMock.Verify(x => x.ImportBggCollection(username), Times.Once);
         VerifyNoOtherCalls();

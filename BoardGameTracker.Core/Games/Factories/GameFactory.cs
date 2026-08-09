@@ -19,15 +19,15 @@ public class GameFactory : IGameFactory
         _imageService = imageService;
     }
 
-    public async Task<Game> CreateFromBggAsync(ThingResponse.Item item, bool hasScoring, GameState state, decimal? price, DateTime? additionDate)
+    public async Task<Game> CreateFromBggAsync(ThingResponse.Item item, bool hasScoring, GameState state, decimal? price, DateTime? additionDate, string? shopUrl = null)
     {
         var name = item.Name;
         if (string.IsNullOrWhiteSpace(name))
             throw new InvalidOperationException("Game must have a valid name from BGG");
 
-        var minPlayers = item.MinPlayers;
-        var maxPlayers = item.MaxPlayers;
-        if (minPlayers > maxPlayers)
+        int? minPlayers = item.MinPlayers > 0 ? item.MinPlayers : null;
+        int? maxPlayers = item.MaxPlayers > 0 ? item.MaxPlayers : null;
+        if (minPlayers.HasValue && maxPlayers.HasValue && minPlayers > maxPlayers)
             throw new InvalidOperationException($"Invalid player count range from BGG: {minPlayers}-{maxPlayers}");
 
         var minPlayTime = item.MinPlayingTime ?? 0;
@@ -66,11 +66,12 @@ public class GameFactory : IGameFactory
         game.UpdateYearPublished(item.YearPublished);
         game.UpdatePlayerCount(minPlayers, maxPlayers);
         game.UpdatePlayTime(minPlayTime, maxPlayTime);
-        game.UpdateMinAge(item.MinAge ?? 0);
-        game.UpdateRating(item.Statistics?.Ratings?.Average ?? 0);
-        game.UpdateWeight(item.Statistics?.Ratings?.AverageWeight ?? 0);
+        game.UpdateMinAge(item.MinAge > 0 ? item.MinAge : null);
+        game.UpdateRating(item.Statistics?.Ratings?.Average);
+        game.UpdateWeight(item.Statistics?.Ratings?.AverageWeight);
         game.UpdateBggId(item.Id);
         game.UpdateBuyingPrice(price);
+        game.UpdateShopUrl(shopUrl);
 
         if (additionDate.HasValue)
         {

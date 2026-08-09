@@ -20,6 +20,11 @@
     "placeholder": "Enter name of the player",
     "required": "Player name is required"
   },
+  "email": {
+    "label": "Email",
+    "placeholder": "Enter email of the player",
+    "invalid": "Enter a valid email address"
+  },
   "new": {
     "button": "Add new player",
     "description": "Fill out the form to create a new player.",

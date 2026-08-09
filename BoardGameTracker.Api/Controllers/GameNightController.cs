@@ -43,6 +43,15 @@ public class GameNightController : ControllerBase
         return Ok(gameNight.ToDto());
     }
 
+    [HttpPost]
+    [Route("{id:int}/send-invites")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> SendInvites(int id)
+    {
+        var result = await _gameNightService.SendInvitesAsync(id);
+        return Ok(result);
+    }
+
     [HttpDelete]
     [Route("{id:int}")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]

@@ -20,6 +20,9 @@ export class QueryInvalidator {
 			this.queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.expansions],
 			}),
+			this.queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.manuals],
+			}),
 			this.invalidateDashboard(),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] }),
 		]);
@@ -104,6 +107,18 @@ export class QueryInvalidator {
 	async invalidateGames() {
 		await this.queryClient.invalidateQueries({
 			queryKey: [QUERY_KEYS.games],
+		});
+	}
+
+	async invalidateCounts() {
+		await this.queryClient.invalidateQueries({
+			queryKey: [QUERY_KEYS.counts],
+		});
+	}
+
+	async invalidateShames() {
+		await this.queryClient.invalidateQueries({
+			queryKey: [QUERY_KEYS.shames],
 		});
 	}
 

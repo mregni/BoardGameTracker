@@ -1,7 +1,9 @@
+using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Games.Specifications;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -91,11 +93,10 @@ public class GameChartServiceTests
     {
         // Arrange
         var gameId = 1;
-        var game = new Game("Test Game", false) { Id = gameId };
 
         _gameRepositoryMock
-            .Setup(x => x.GetByIdAsync(gameId))
-            .ReturnsAsync(game);
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((bool?)false);
 
         // Act
         var result = await _gameChartService.GetPlayerScoringChart(gameId);
@@ -103,7 +104,9 @@ public class GameChartServiceTests
         // Assert
         result.Should().BeNull();
 
-        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        _gameRepositoryMock.Verify(
+            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()),
+            Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -114,8 +117,8 @@ public class GameChartServiceTests
         var gameId = 999;
 
         _gameRepositoryMock
-            .Setup(x => x.GetByIdAsync(gameId))
-            .ReturnsAsync((Game?)null);
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((bool?)null);
 
         // Act
         var result = await _gameChartService.GetPlayerScoringChart(gameId);
@@ -123,7 +126,9 @@ public class GameChartServiceTests
         // Assert
         result.Should().BeNull();
 
-        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        _gameRepositoryMock.Verify(
+            x => x.FirstOrDefaultAsync(It.IsAny<GameHasScoringSpec>(), It.IsAny<CancellationToken>()),
+            Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -137,7 +142,7 @@ public class GameChartServiceTests
         // Arrange
         var gameId = 1;
         _gameSessionRepositoryMock
-            .Setup(x => x.GetSessions(gameId, 0, null))
+            .Setup(x => x.GetSessionsByGameId(gameId, null))
             .ReturnsAsync([]);
 
         // Act
@@ -146,7 +151,7 @@ public class GameChartServiceTests
         // Assert
         result.Should().BeEmpty();
 
-        _gameSessionRepositoryMock.Verify(x => x.GetSessions(gameId, 0, null), Times.Once);
+        _gameSessionRepositoryMock.Verify(x => x.GetSessionsByGameId(gameId, null), Times.Once);
         VerifyNoOtherCalls();
     }
 

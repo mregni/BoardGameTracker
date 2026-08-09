@@ -16,7 +16,7 @@ services:
       - DB_PASSWORD=CHANGEME
       - DB_NAME=boardgametracker
       - DB_PORT=5432
-      - JWT_SECRET=CHANGEME
+      - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
       - TZ=UTC
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]

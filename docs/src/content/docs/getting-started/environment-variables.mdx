@@ -1,0 +1,43 @@
+---
+title: Environment Variables
+description: All environment variables used to configure BoardGameTracker.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Configure your application using the following environment variables. Some of them have default values and are not mandatory to set, but you can override them if needed.
+
+| Configuration | Variable | Default | Info |
+| --- | --- | --- | --- |
+| Timezone | `TZ` | `UTC` | |
+| JWT secret | `JWT_SECRET` | | Used for signing JWT tokens. Change this to a strong, random value of at least 32 characters (64 or more recommended). |
+| Database host | `DB_HOST` | `db` | |
+| Database port | `DB_PORT` | `5432` | |
+| Database name | `DB_NAME` | `boardgametracker` | |
+| Database user | `DB_USER` | `dbuser` | |
+| Database password | `DB_PASSWORD` | | Password used to connect to the database. |
+| Log level | `LOGLEVEL` | `warn` | Sets the logging level for the application. Possible values are `debug`, `info`, `warn`, `error`. |
+| Enable Sentry logging | `STATISTICS_ENABLED` | `false` | Enables or disables the collection of usage statistics. Set to `true` to enable, `false` to disable. |
+| Enable authentication | `AUTH_ENABLED` | `true` | Set to `false` to disable authentication and allow anyone to access the application. |
+| Admin password | `ADMIN_PASSWORD` | | Initial password for the default `admin` account, applied when that account is first created. If left empty the default password `admin` is used — change it after your first login. |
+| Trusted proxies | `TRUSTED_PROXIES` | | Comma-separated list of reverse-proxy IP addresses to trust, so the real client IP is read from forwarded headers. |
+| CORS origins | `CORS_ORIGINS` | | Comma-separated list of extra origins allowed to call the API. |
+| Swagger UI | `SWAGGER_ENABLED` | `false` | Set to `true` to expose the Swagger API UI. Enabled automatically in development. |
+
+## Email (SMTP)
+
+BoardGameTracker can also send game-night invites and password-reset emails. See the [Email (SMTP)](/BoardGameTracker/getting-started/email/) page for ports, TLS and a full example.
+
+| Configuration | Variable | Default | Info |
+| --- | --- | --- | --- |
+| SMTP host | `SMTP_HOST` | | Hostname of your SMTP server. Leave empty to keep email disabled. |
+| SMTP port | `SMTP_PORT` | `587` | Port of your SMTP server. Port `465` (implicit TLS) is detected automatically. |
+| SMTP username | `SMTP_USERNAME` | | Username to authenticate with. Leave empty for a server that needs no authentication. |
+| SMTP password | `SMTP_PASSWORD` | | Password to authenticate with. |
+| Use TLS | `SMTP_USE_SSL` | `true` | Set to `false` for a server without TLS, such as a local mail catcher. |
+| From address | `SMTP_FROM_ADDRESS` | | Address emails are sent from. Required to enable email. |
+| From name | `SMTP_FROM_NAME` | `BoardGameTracker` | Display name shown as the sender. |
+
+<Aside type="note">
+Email is enabled only when both `SMTP_HOST` and `SMTP_FROM_ADDRESS` are set; until then the game-night invite and password-reset options stay hidden. Restart the container after changing any `SMTP_*` variable.
+</Aside>

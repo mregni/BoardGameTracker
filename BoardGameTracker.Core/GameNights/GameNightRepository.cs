@@ -1,12 +1,14 @@
+using Ardalis.Specification.EntityFrameworkCore;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.GameNights.Interfaces;
+using BoardGameTracker.Core.GameNights.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.GameNights;
 
-public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
+public class GameNightRepository : EfRepository<GameNight>, IGameNightRepository
 {
     private readonly MainDbContext _context;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -19,23 +21,19 @@ public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
 
     public override Task<GameNight?> GetByIdAsync(int id)
     {
-        return GameNightsWithIncludes()
-            .SingleOrDefaultAsync(x => x.Id == id);
+        return SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(id));
     }
 
     public override Task<List<GameNight>> GetAllAsync()
     {
-        return GameNightsWithIncludes()
-            .AsNoTracking()
-            .OrderByDescending(x => x.StartDate)
-            .ToListAsync();
+        return ListAsync(new GameNightsOverviewSpec());
     }
 
     public Task<GameNightRsvp?> GetRsvpByIdAsync(int rsvpId)
     {
         return _context.Set<GameNightRsvp>()
-            .Include(x => x.Player)
-            .SingleOrDefaultAsync(x => x.Id == rsvpId);
+            .WithSpecification(new RsvpByIdSpec(rsvpId))
+            .SingleOrDefaultAsync();
     }
 
     public Task<GameNightRsvp> UpdateRsvpAsync(GameNightRsvp rsvp)
@@ -46,33 +44,18 @@ public class GameNightRepository : CrudHelper<GameNight>, IGameNightRepository
 
     public Task<int> GetFutureGameNightsCountAsync()
     {
-        return _context.GameNights
-            .AsNoTracking()
-            .Where(x => x.StartDate >= _dateTimeProvider.UtcNow)
-            .CountAsync();
+        return CountAsync(new FutureGameNightsSpec(_dateTimeProvider.UtcNow));
     }
 
     public Task<GameNightRsvp?> GetRsvpByPlayerAndGameAsync(int commandPlayerId, int commandGameNightId)
     {
         return _context.Set<GameNightRsvp>()
-            .Where(x =>  x.GameNightId == commandGameNightId &&  x.PlayerId == commandPlayerId)
+            .WithSpecification(new RsvpByPlayerAndGameNightSpec(commandPlayerId, commandGameNightId))
             .SingleOrDefaultAsync();
-            
     }
 
     public Task<GameNight?> GetGameNightByLinkId(Guid linkId)
     {
-        return GameNightsWithIncludes()
-            .SingleOrDefaultAsync(x => x.LinkId == linkId);
-    }
-
-    private IQueryable<GameNight> GameNightsWithIncludes()
-    {
-        return _context.GameNights
-            .Include(x => x.Host)
-            .Include(x => x.Location)
-            .Include(x => x.SuggestedGames)
-            .Include(x => x.InvitedPlayers)
-                .ThenInclude(x => x.Player);
+        return SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));
     }
 }

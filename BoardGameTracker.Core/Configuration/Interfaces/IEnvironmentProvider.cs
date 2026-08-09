@@ -11,4 +11,16 @@ public interface IEnvironmentProvider
     bool IsDevelopment { get; }
     bool AuthEnabled { get; }
     string? JwtSecret { get; }
+    string? AdminPassword { get; }
+    IReadOnlyList<string> TrustedProxies { get; }
+    IReadOnlyList<string> CorsOrigins { get; }
+    bool SwaggerEnabled { get; }
+    string? SmtpHost { get; }
+    int SmtpPort { get; }
+    string? SmtpUsername { get; }
+    string? SmtpPassword { get; }
+    bool SmtpUseSsl { get; }
+    string? SmtpFromAddress { get; }
+    string? SmtpFromName { get; }
+    bool EmailEnabled { get; }
 }

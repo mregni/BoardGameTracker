@@ -1,0 +1,42 @@
+---
+title: Development
+description: Set up a local development environment to contribute to BoardGameTracker.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Want to contribute to BoardGameTracker? Here's how to set up a local development environment.
+
+## Prerequisites
+
+- .NET 8 SDK
+- Node.js 18+
+- PostgreSQL database
+- Git
+
+## Setup
+
+<Steps>
+
+1. Clone the repository and install the dependencies:
+
+   ```sh title="Clone & install"
+   git clone https://github.com/mregni/BoardGameTracker.git
+   cd BoardGameTracker
+   dotnet restore
+   cd boardgametracker.client
+   pnpm install
+   ```
+
+2. Set up the database and run the application:
+
+   ```sh title="Run"
+   set JWT_SECRET=CHANGEME
+   dotnet run --project BoardGameTracker.Host
+   ```
+
+   When it starts, the application first launches the API process; once that succeeds it opens a new command window to run the UI. Browse to `http://localhost:5443` to access the application. Swagger UI is available at `http://localhost:6554`.
+
+3. For the database you only need an empty database — on startup the application runs the migrations to set up the schema.
+
+</Steps>

@@ -1,6 +1,8 @@
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Ardalis.GuardClauses;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common.Configuration;
@@ -14,12 +16,14 @@ using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.DockerHub;
+using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -64,6 +68,19 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
+
+    var trustedProxies = new EnvironmentProvider().TrustedProxies;
+    foreach (var proxy in trustedProxies)
+    {
+        if (IPAddress.TryParse(proxy, out var address))
+        {
+            options.KnownProxies.Add(address);
+        }
+        else if (System.Net.IPNetwork.TryParse(proxy, out var network))
+        {
+            options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(network.BaseAddress, network.PrefixLength));
+        }
+    }
 });
 
 builder.Services.Configure<HttpClientFactoryOptions>(options =>
@@ -80,8 +97,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         options.Password.RequireLowercase = false;
         options.Password.RequireUppercase = false;
         options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequiredLength = 4;
+        options.Password.RequiredLength = 8;
         options.User.RequireUniqueEmail = false;
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     })
     .AddEntityFrameworkStores<MainDbContext>()
     .AddDefaultTokenProviders();
@@ -121,6 +141,7 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
+            ClockSkew = TimeSpan.FromSeconds(30),
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         };
     });
@@ -129,12 +150,14 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("auth", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 10;
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-        limiterOptions.QueueLimit = 0;
-    });
+    options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
@@ -143,17 +166,29 @@ builder.Services.AddMemoryCache();
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddResponseCompression();
+var corsOrigins = environmentProvider.CorsOrigins;
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("Allow",
-        policyBuilder =>
+    options.AddPolicy("Allow", policyBuilder =>
+    {
+        if (corsOrigins.Count > 0)
+        {
+            policyBuilder
+                .WithOrigins([.. corsOrigins])
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        }
+        else if (environmentProvider.IsDevelopment)
+        {
             policyBuilder
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
-                .AllowAnyHeader());
+                .AllowAnyHeader();
+        }
+    });
 });
 
-builder.Services
+var mvcBuilder = builder.Services
     .AddControllers(options =>
     {
         options.ReturnHttpNotAcceptable = true;
@@ -162,8 +197,15 @@ builder.Services
     .AddJsonOptions(options =>
     {
         ApplySerializerSettings(options.JsonSerializerOptions);
-    })
-    .AddControllersAsServices();
+    });
+
+var apiAssembly = typeof(GlobalExceptionHandler).Assembly;
+if (mvcBuilder.PartManager.ApplicationParts.OfType<AssemblyPart>().All(part => part.Assembly != apiAssembly))
+{
+    mvcBuilder.AddApplicationPart(apiAssembly);
+}
+
+mvcBuilder.AddControllersAsServices();
 
 var version = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
@@ -178,18 +220,14 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddHttpClient<IBoardGameGeekXmlApi2Client, BoardGameGeekXmlApi2Client>();
+builder.Services.AddHttpClient(nameof(IBoardGameGeekXmlApi2Client));
 builder.Services.AddScoped<IBoardGameGeekXmlApi2Client>(sp =>
 {
     var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-    var httpClient = httpClientFactory.CreateClient(nameof(IBoardGameGeekXmlApi2Client));
     var settingsService = sp.GetRequiredService<ISettingsService>();
-    var apiKey = settingsService.GetBggApiKeyAsync().GetAwaiter().GetResult();
-    var options = new BoardGameGeekXmlApi2ClientOptions
-    {
-        AuthorizationToken = apiKey
-    };
-    return new BoardGameGeekXmlApi2Client(httpClient, options);
+    return new LazyBoardGameGeekClient(
+        () => httpClientFactory.CreateClient(nameof(IBoardGameGeekXmlApi2Client)),
+        settingsService);
 });
 
 builder.Services.AddRefitClient<IDockerHubApi>()
@@ -209,30 +247,38 @@ app.UseSerilogRequestLogging();
 
 app.UseForwardedHeaders();
 
-app.UseRouting();
-
-app.UseCors("Allow");
-
+var hstsEnabled = !app.Environment.IsDevelopment();
 app.Use(async (context, next) =>
 {
-    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Append("X-Frame-Options", "DENY");
-    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
-    context.Response.Headers.Append("Cross-Origin-Resource-Policy", "same-origin");
-    context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin");
-    context.Response.Headers.Append("Cross-Origin-Embedder-Policy", "require-corp");
-    context.Response.Headers.Append(
-        "Permissions-Policy", "camera=(), microphone=(), geolocation=()");
-    context.Response.Headers.Append(
-        "Content-Security-Policy",
-        "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';");
+    context.Response.OnStarting(() =>
+    {
+        var headers = context.Response.Headers;
+        headers["X-Content-Type-Options"] = "nosniff";
+        headers["X-Frame-Options"] = "DENY";
+        headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+        headers["Cross-Origin-Resource-Policy"] = "same-origin";
+        headers["Cross-Origin-Opener-Policy"] = "same-origin";
+        headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+        headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+        headers["Content-Security-Policy"] =
+            "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
+
+        if (hstsEnabled && context.Request.IsHttps)
+        {
+            headers["Strict-Transport-Security"] = "max-age=2592000";
+        }
+
+        return Task.CompletedTask;
+    });
+
     await next();
 });
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHsts();
-}
+app.UseExceptionHandler();
+
+app.UseRouting();
+
+app.UseCors("Allow");
 
 app.UseRateLimiter();
 app.UseAuthDisabledMiddleware();
@@ -243,8 +289,11 @@ app.MapHealthChecks("/api/health");
 
 app.MapControllers();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+if (environmentProvider.SwaggerEnabled)
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 if (bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out var sentryEnabled) && sentryEnabled)
 {
@@ -276,10 +325,11 @@ logger.LogInformation("  Auth:         {AuthState}", authEnabled ? "Enabled" : "
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
     app.UseSpaStaticFiles();
     app.UseStaticFiles();
-    app.UseSpa(config => {
+    app.UseWhen(
+        context => HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method),
+        spaBranch => spaBranch.UseSpa(config => {
         config.Options.SourcePath = "wwwroot";
         config.Options.DefaultPageStaticFileOptions = new StaticFileOptions
         {
@@ -294,14 +344,14 @@ if (!app.Environment.IsDevelopment())
                 };
             }
         };
-    });
+    }));
 }
 
 RunDbMigrations(app.Services);
 await SeedConfig(app.Services);
 if (authEnabled)
 {
-    await SeedAuthData(app.Services);
+    await SeedAuthData(app.Services, environmentProvider.AdminPassword);
 }
 
 await app.RunAsync();
@@ -322,8 +372,7 @@ static void CreateFolders(IServiceProvider serviceProvider)
     diskProvider.EnsureFolder(PathHelper.FullRootImagePath);
     diskProvider.EnsureFolder(PathHelper.FullCoverImagePath);
     diskProvider.EnsureFolder(PathHelper.FullProfileImagePath);
-    diskProvider.EnsureFolder(PathHelper.FullBadgeImagePath);
-    diskProvider.EnsureFolder(PathHelper.FullCommonImagePath);
+    diskProvider.EnsureFolder(PathHelper.FullManualsPath);
 }
 
 static async Task SeedConfig(IServiceProvider serviceProvider)
@@ -333,13 +382,13 @@ static async Task SeedConfig(IServiceProvider serviceProvider)
     await configRepository.SeedConfigAsync(ConfigDefaults.All);
 }
 
-static async Task SeedAuthData(IServiceProvider serviceProvider)
+static async Task SeedAuthData(IServiceProvider serviceProvider, string? adminPassword)
 {
     using var scope = serviceProvider.CreateScope();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var seedLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    await DbSeeder.SeedAuthData(roleManager, userManager, seedLogger);
+    await DbSeeder.SeedAuthData(roleManager, userManager, seedLogger, adminPassword);
 }
 
 static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)

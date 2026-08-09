@@ -3,8 +3,7 @@ import { cx } from "class-variance-authority";
 import { format } from "date-fns";
 import { memo } from "react";
 
-import { BgtText } from "../BgtText/BgtText";
-
+import { BgtInputContainer } from "./BgtInputContainer";
 import { FormFieldWrapper } from "./FormFieldWrapper";
 
 export interface BgtInputFieldProps {
@@ -64,19 +63,15 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 
 	return (
 		<FormFieldWrapper label={label} errors={field.state.meta.errors} className="w-full">
-			<div
-				className={cx(
-					"rounded-lg active:border-none flex flex-row gap-2 items-center text-[15px]",
-					className,
-					hasErrors && "border border-error bg-error/5!",
-				)}
+			<BgtInputContainer
+				prefix={prefixLabel}
+				suffix={suffixLabel}
+				hasErrors={hasErrors}
+				disabled={disabled}
+				className={cx("h-11 md:h-10 text-[15px]", className)}
 			>
-				{prefixLabel && <BgtText color="white">{prefixLabel}</BgtText>}
 				<input
-					className={cx(
-						"w-full bg-background font- text-white px-4 h-11 md:h-10 rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-						disabled && "opacity-50 cursor-not-allowed",
-					)}
+					className="h-full w-full bg-transparent text-white focus:outline-none disabled:cursor-not-allowed"
 					value={formatInput(field.state.value, type)}
 					disabled={disabled}
 					type={type}
@@ -87,8 +82,7 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 					onBlur={field.handleBlur}
 					placeholder={placeholder}
 				/>
-				{suffixLabel && <BgtText color="white">{suffixLabel}</BgtText>}
-			</div>
+			</BgtInputContainer>
 		</FormFieldWrapper>
 	);
 };

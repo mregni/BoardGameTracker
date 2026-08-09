@@ -3,11 +3,13 @@ import { BgtSimpleSelect } from "@/components/BgtForm/BgtSimpleSelect";
 import type { BgtSelectItem, Game } from "@/models";
 
 export type WeightBucket = "light" | "medium" | "heavy";
+export type AgeBucket = "0-6" | "7-9" | "10-12" | "13plus";
 
 export interface GameFilterState {
 	playerCount?: number;
 	maxPlayTime?: number;
 	weight?: WeightBucket;
+	age?: AgeBucket;
 }
 
 export interface GamesFilterSearch {
@@ -15,6 +17,7 @@ export interface GamesFilterSearch {
 	players?: number;
 	playTime?: number;
 	weight?: WeightBucket;
+	age?: AgeBucket;
 }
 
 const ANY = "any";
@@ -22,6 +25,16 @@ const ANY = "any";
 const PLAYER_COUNTS = [1, 2, 3, 4, 5, 6, 7, 8];
 const PLAY_TIMES = [30, 60, 90, 120, 180];
 const WEIGHTS: WeightBucket[] = ["light", "medium", "heavy"];
+const AGES: AgeBucket[] = ["0-6", "7-9", "10-12", "13plus"];
+
+const matchesAge = (game: Game, bucket: AgeBucket): boolean => {
+	const age = game.minAge;
+	if (age === null || age <= 0) return false;
+	if (bucket === "0-6") return age <= 6;
+	if (bucket === "7-9") return age >= 7 && age <= 9;
+	if (bucket === "10-12") return age >= 10 && age <= 12;
+	return age >= 13;
+};
 
 const matchesPlayerCount = (game: Game, count: number): boolean => {
 	const lo = game.minPlayers ?? game.maxPlayers;
@@ -45,6 +58,7 @@ export const filterGames = (games: Game[], filters: GameFilterState): Game[] => 
 			if (game.maxPlayTime === null || game.maxPlayTime <= 0 || game.maxPlayTime > filters.maxPlayTime) return false;
 		}
 		if (filters.weight !== undefined && !matchesWeight(game, filters.weight)) return false;
+		if (filters.age !== undefined && !matchesAge(game, filters.age)) return false;
 		return true;
 	});
 };
@@ -74,6 +88,7 @@ export const GamesFilters = (props: Props) => {
 		PLAY_TIMES.map((m) => ({ value: m, label: t("games:filters.play-time-value", { count: m }) })),
 	);
 	const weightItems = withAny(WEIGHTS.map((w) => ({ value: w, label: t(`games:filters.weight-${w}`) })));
+	const ageItems = withAny(AGES.map((a) => ({ value: a, label: t(`games:filters.age-${a}`) })));
 
 	return (
 		<>
@@ -105,6 +120,13 @@ export const GamesFilters = (props: Props) => {
 				value={filters.weight ?? null}
 				items={weightItems}
 				onValueChange={(value) => onChange({ ...filters, weight: value === ANY ? undefined : (value as WeightBucket) })}
+			/>
+			<BgtSimpleSelect
+				className="w-full md:w-36"
+				placeholder={t("games:filters.age")}
+				value={filters.age ?? null}
+				items={ageItems}
+				onValueChange={(value) => onChange({ ...filters, age: value === ANY ? undefined : (value as AgeBucket) })}
 			/>
 		</>
 	);

@@ -56,12 +56,12 @@ public class OidcService : IOidcService
         return await _context.OidcProviders.AnyAsync(p => p.Enabled);
     }
 
-    public async Task<string> GetAuthorizationUrlAsync(string providerName, string redirectUri, string? state = null)
+    public async Task<string> GetAuthorizationUrlAsync(string providerName, string redirectUri)
     {
         if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var uri) ||
             (uri.Scheme != "http" && uri.Scheme != "https"))
         {
-            throw new InvalidOperationException("Invalid redirect URI");
+            throw new ValidationException(Constants.Errors.InvalidRedirectUri);
         }
 
         var provider = await GetProviderOrThrow(providerName);
@@ -72,8 +72,8 @@ public class OidcService : IOidcService
         var codeVerifier = GenerateCodeVerifier();
         var codeChallenge = GenerateCodeChallenge(codeVerifier);
 
-        var cacheKey = $"oidc_pkce_{state ?? providerName}";
-        _cache.Set(cacheKey, codeVerifier, TimeSpan.FromMinutes(10));
+        var generatedState = GenerateState();
+        _cache.Set(PkceCacheKey(generatedState), codeVerifier, TimeSpan.FromMinutes(10));
 
         var queryParams = new Dictionary<string, string>
         {
@@ -82,13 +82,9 @@ public class OidcService : IOidcService
             ["scope"] = provider.Scopes,
             ["redirect_uri"] = redirectUri,
             ["code_challenge"] = codeChallenge,
-            ["code_challenge_method"] = "S256"
+            ["code_challenge_method"] = "S256",
+            ["state"] = generatedState
         };
-
-        if (state != null)
-        {
-            queryParams["state"] = state;
-        }
 
         var queryString = string.Join("&", queryParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
 
@@ -236,9 +232,14 @@ public class OidcService : IOidcService
         var discovery = await GetDiscoveryDocumentAsync(provider);
         var tokenEndpoint = provider.TokenEndpoint ?? discovery.TokenEndpoint;
 
-        var cacheKey = $"oidc_pkce_{state ?? providerName}";
+        if (string.IsNullOrWhiteSpace(state))
+        {
+            throw new ValidationException(Constants.Errors.InvalidAuthSession);
+        }
+
+        var cacheKey = PkceCacheKey(state);
         var codeVerifier = _cache.Get<string>(cacheKey)
-            ?? throw new InvalidOperationException("Invalid or expired authentication session");
+            ?? throw new ValidationException(Constants.Errors.InvalidAuthSession);
         _cache.Remove(cacheKey);
 
         var tokenRequest = new Dictionary<string, string>
@@ -288,8 +289,8 @@ public class OidcService : IOidcService
 
         if (!string.IsNullOrEmpty(provider.RolesClaimType) && !string.IsNullOrEmpty(provider.AdminGroupValue))
         {
-            var groupsClaim = GetClaimValue(userInfo, provider.RolesClaimType);
-            if (groupsClaim != null && groupsClaim.Contains(provider.AdminGroupValue, StringComparison.OrdinalIgnoreCase))
+            var groups = GetClaimValues(userInfo, provider.RolesClaimType);
+            if (groups.Any(g => string.Equals(g, provider.AdminGroupValue, StringComparison.OrdinalIgnoreCase)))
             {
                 role = Constants.AuthRoles.Admin;
                 _logger.LogInformation("Assigning Admin role to OIDC user {Username} based on group claim", user.UserName);
@@ -345,6 +346,45 @@ public class OidcService : IOidcService
         return value.ValueKind == JsonValueKind.Array
             ? string.Join(",", value.EnumerateArray().Select(v => v.GetString()))
             : value.GetString();
+    }
+
+    private static IReadOnlyList<string> GetClaimValues(JsonElement userInfo, string claimType)
+    {
+        if (!userInfo.TryGetProperty(claimType, out var value))
+        {
+            return [];
+        }
+
+        if (value.ValueKind == JsonValueKind.Array)
+        {
+            return value.EnumerateArray()
+                .Select(v => v.GetString())
+                .Where(v => !string.IsNullOrWhiteSpace(v))
+                .Select(v => v!.Trim())
+                .ToList();
+        }
+
+        var scalar = value.GetString();
+        if (string.IsNullOrWhiteSpace(scalar))
+        {
+            return [];
+        }
+
+        return scalar
+            .Split([',', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+    }
+
+    private static string PkceCacheKey(string state) => $"oidc_pkce_{state}";
+
+    private static string GenerateState()
+    {
+        var bytes = new byte[32];
+        RandomNumberGenerator.Fill(bytes);
+        return Convert.ToBase64String(bytes)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
     }
 
     private static string GenerateCodeVerifier()

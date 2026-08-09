@@ -26,6 +26,16 @@
     "required": "BGG id is required",
     "external-page": "Open BoardGameGeek website"
   },
+  "shop-url": {
+    "label": "Shop URL",
+    "placeholder": "https://...",
+    "invalid": "Enter a valid http(s) URL"
+  },
+  "language": {
+    "label": "Language",
+    "none": "Not set"
+  },
+  "language-independent": "Language-independent",
   "update": {
     "save": "Update game",
     "title": "Update game"
@@ -36,7 +46,18 @@
     "update": "Update expansions",
     "none": "No expansions added to this game.",
     "no-game": "Select a game to view expansions.",
-    "add": "Add your first expansion"
+    "add": "Add"
+  },
+  "manuals": {
+    "title": "Manuals",
+    "description": "Upload, download or delete manuals for this game.",
+    "none": "No manuals uploaded for this game.",
+    "add": "Upload",
+    "upload-success": "Manual(s) uploaded successfully.",
+    "upload-failed": "Manual upload failed, check logs for more details.",
+    "delete-success": "Manual deleted successfully.",
+    "delete-failed": "Manual deletion failed, check logs for more details.",
+    "download-failed": "Manual download failed, check logs for more details."
   },
   "new": {
     "description": "Choose a method to create a new game.",

@@ -1,34 +1,39 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
+using BoardGameTracker.Core.Players.Specifications;
+using BoardGameTracker.Core.Sessions.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Players;
 
-public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
+public class PlayerRepository : EfRepository<Player>, IPlayerRepository
 {
     private readonly MainDbContext _dbContext;
+    private readonly IReadRepository<Session> _sessionReadRepository;
+    private readonly IReadRepository<PlayerSession> _playerSessionReadRepository;
 
-    public PlayerRepository(MainDbContext dbContext): base(dbContext)
+    public PlayerRepository(
+        MainDbContext dbContext,
+        IReadRepository<Session> sessionReadRepository,
+        IReadRepository<PlayerSession> playerSessionReadRepository) : base(dbContext)
     {
         _dbContext = dbContext;
+        _sessionReadRepository = sessionReadRepository;
+        _playerSessionReadRepository = playerSessionReadRepository;
     }
 
     public override Task<Player?> GetByIdAsync(int id)
     {
-        return _dbContext.Players
-            .AsNoTracking()
-            .Include(x => x.Badges)
-            .SingleOrDefaultAsync(x => x.Id == id);
+        return SingleOrDefaultAsync(new PlayerByIdWithBadgesSpec(id));
     }
 
     public override Task<List<Player>> GetAllAsync()
     {
-        return _dbContext.Players
-            .AsNoTracking()
-            .OrderBy(x => x.Name)
-            .ToListAsync();
+        return ListAsync(new PlayersOrderedByNameSpec());
     }
     public async Task<Game?> GetBestGame(int id)
     {
@@ -84,33 +89,22 @@ public class PlayerRepository : CrudHelper<Player>, IPlayerRepository
 
     public Task<int> CountAsync()
     {
-        return _dbContext.Players
-            .AsNoTracking()
-            .CountAsync();
+        return base.CountAsync();
     }
 
     public Task<int> GetTotalPlayCount(int id)
     {
-        return _dbContext.Sessions
-            .AsNoTracking()
-            .CountAsync(x => x.PlayerSessions.Any(y => y.PlayerId == id));
+        return _sessionReadRepository.CountAsync(new SessionsByPlayerSpec(id));
     }
 
     public Task<int> GetWinCount(int id, int gameId)
     {
-        return _dbContext.Sessions
-            .AsNoTracking()
-            .Where(x => x.GameId == gameId && x.PlayerSessions.Any(y => y.Player.Id == id && y.Won))
-            .CountAsync();
+        return _sessionReadRepository.CountAsync(new WonSessionsByPlayerAndGameSpec(id, gameId));
     }
-
 
     public Task<int> GetTotalWinCount(int id)
     {
-        return _dbContext.PlayerSessions
-            .AsNoTracking()
-            .Where(ps => ps.PlayerId == id && ps.Won)
-            .CountAsync();
+        return _playerSessionReadRepository.CountAsync(new WonPlayerSessionsByPlayerSpec(id));
     }
 
     public async Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopPlayers(int count)

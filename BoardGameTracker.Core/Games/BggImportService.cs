@@ -60,14 +60,15 @@ public class BggImportService : IBggImportService
             search.HasScoring,
             search.State,
             search.Price.HasValue ? (decimal?)search.Price.Value : null,
-            search.AdditionDate);
+            search.AdditionDate,
+            search.ShopUrl);
 
         await _gameRepository.CreateAsync(game);
         await _unitOfWork.SaveChangesAsync();
         return game;
     }
 
-    public async Task<BggImportResult?> ImportBggCollection(string userName)
+    public async Task<IList<BggImportGame>> ImportBggCollection(string userName)
     {
         await EnsureBggConfiguredAsync();
         _logger.LogInformation("Starting BGG collection import for user {UserName}", userName);
@@ -75,7 +76,7 @@ public class BggImportService : IBggImportService
         CollectionResponse response;
         try
         {
-            var request = new CollectionRequest(userName, subType: "boardgame,boardgameexpansion");
+            var request = new CollectionRequest(userName, subType: "boardgame");
             response = await _bggClient.GetCollectionAsync(request);
         }
         catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
@@ -83,67 +84,104 @@ public class BggImportService : IBggImportService
             _logger.LogWarning(ex, "BGG API key is invalid or expired");
             throw new ValidationException("Invalid BGG API key. Please check your API key in settings.");
         }
+        catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            _logger.LogWarning(ex, "BGG rate-limited the collection request for user {UserName}", userName);
+            throw new BggRateLimitException();
+        }
         catch (BoardGameGeekHttpException ex)
         {
             _logger.LogWarning(ex, "BGG API request failed for collection import of user {UserName}", userName);
-            return null;
+            throw;
         }
-
-        if (!response.Succeeded)
+        catch (Exception ex) when (ex.Message == "Retries exhausted")
         {
-            return null;
+            _logger.LogWarning(ex, "BGG collection for user {UserName} was still being prepared after retries", userName);
+            throw new BggCollectionPreparingException();
         }
-
-        var result = new BggImportResult
-        {
-            StatusCode = HttpStatusCode.OK
-        };
 
         if (response.Result == null || response.Result.Count == 0)
         {
-            return result;
+            return new List<BggImportGame>();
         }
 
-        var list = response.Result.OrderBy(x => x.Name).ToList();
-        result.Games = list.Select(collectionItem => new BggImportGame
-        {
-            BggId = collectionItem.ObjectId,
-            Title = collectionItem.Name,
-            State = collectionItem.Status.ToGameState(),
-            ImageUrl = collectionItem.Image ?? string.Empty,
-            LastModified = collectionItem.Status.LastModified,
-            IsExpansion = collectionItem.SubType == "boardgameexpansion"
-        }).ToList();
-
-        return result;
+        return response.Result
+            .OrderBy(x => x.Name)
+            .Select(collectionItem => new BggImportGame
+            {
+                BggId = collectionItem.ObjectId,
+                Title = collectionItem.Name,
+                State = collectionItem.Status.ToGameState(),
+                ImageUrl = collectionItem.Image ?? string.Empty,
+                LastModified = collectionItem.Status.LastModified
+            })
+            .ToList();
     }
 
     public async Task ImportList(IList<ImportGame> games)
     {
+        ArgumentNullException.ThrowIfNull(games);
         await EnsureBggConfiguredAsync();
         _logger.LogInformation("Importing {Count} games from BGG", games.Count);
 
+        var imported = 0;
         foreach (var importGame in games)
         {
-            var item = await FetchThingFromBgg(importGame.BggId);
-            if (item == null)
+            try
             {
-                _logger.LogWarning("BGG game with id {BggId} not found, skipping", importGame.BggId);
-                continue;
+                var existingGame = await _gameRepository.GetGameByBggId(importGame.BggId);
+                if (existingGame != null)
+                {
+                    _logger.LogDebug("BGG game with id {BggId} already imported, skipping", importGame.BggId);
+                    continue;
+                }
+
+                var item = await FetchThingFromBgg(importGame.BggId);
+                if (item == null)
+                {
+                    _logger.LogWarning("BGG game with id {BggId} not found, skipping", importGame.BggId);
+                    continue;
+                }
+
+                var game = await _gameFactory.CreateFromBggAsync(
+                    item,
+                    importGame.HasScoring,
+                    importGame.State,
+                    ToSafeDecimalPrice(importGame.Price),
+                    importGame.AddedDate);
+
+                await _gameRepository.CreateAsync(game);
+                imported++;
             }
-
-            var game = await _gameFactory.CreateFromBggAsync(
-                item,
-                importGame.HasScoring,
-                importGame.State,
-                (decimal)importGame.Price,
-                importGame.AddedDate);
-
-            await _gameRepository.CreateAsync(game);
+            catch (ValidationException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to import BGG game {BggId}, skipping", importGame.BggId);
+            }
         }
 
         await _unitOfWork.SaveChangesAsync();
-        _logger.LogInformation("BGG import completed, {Count} games processed", games.Count);
+        _logger.LogInformation("BGG import completed, {Imported}/{Count} games imported", imported, games.Count);
+    }
+
+    private static decimal? ToSafeDecimalPrice(double value)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+        {
+            return null;
+        }
+
+        try
+        {
+            return (decimal)value;
+        }
+        catch (OverflowException)
+        {
+            return null;
+        }
     }
 
     private async Task<ThingResponse.Item?> FetchThingFromBgg(int bggId)

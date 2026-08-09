@@ -3,7 +3,7 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 
 namespace BoardGameTracker.Core.GameNights.Interfaces;
 
-public interface IGameNightRepository : ICrudHelper<GameNight>
+public interface IGameNightRepository : IRepository<GameNight>
 {
     Task<GameNightRsvp?> GetRsvpByIdAsync(int rsvpId);
     Task<GameNightRsvp> UpdateRsvpAsync(GameNightRsvp rsvp);

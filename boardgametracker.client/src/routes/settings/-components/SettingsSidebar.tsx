@@ -20,6 +20,16 @@ const CATEGORIES: CategoryItem[] = [
 		description: "settings:sidebar.general.description",
 	},
 	{
+		id: "account",
+		label: "settings:sidebar.account.title",
+		description: "settings:sidebar.account.description",
+	},
+	{
+		id: "bgg",
+		label: "settings:sidebar.bgg.title",
+		description: "settings:sidebar.bgg.description",
+	},
+	{
 		id: "shelf-of-shame",
 		label: "settings:sidebar.shelf-of-shame.title",
 		description: "settings:sidebar.shelf-of-shame.description",
@@ -30,19 +40,9 @@ const CATEGORIES: CategoryItem[] = [
 		description: "settings:sidebar.game-nights.description",
 	},
 	{
-		id: "bgg",
-		label: "settings:sidebar.bgg.title",
-		description: "settings:sidebar.bgg.description",
-	},
-	{
 		id: "advanced",
 		label: "settings:sidebar.advanced.title",
 		description: "settings:sidebar.advanced.description",
-	},
-	{
-		id: "account",
-		label: "settings:sidebar.account.title",
-		description: "settings:sidebar.account.description",
 	},
 ];
 

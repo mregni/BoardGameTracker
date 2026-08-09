@@ -39,6 +39,7 @@ public class SettingsServiceTests
     {
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey), Times.AtMostOnce());
         _configRepositoryMock.VerifyNoOtherCalls();
+        _environmentProviderMock.Verify(x => x.EmailEnabled, Times.AtMostOnce());
         _environmentProviderMock.VerifyNoOtherCalls();
     }
 

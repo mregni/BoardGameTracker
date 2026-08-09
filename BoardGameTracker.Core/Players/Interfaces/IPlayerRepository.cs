@@ -4,7 +4,7 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 
 namespace BoardGameTracker.Core.Players.Interfaces;
 
-public interface IPlayerRepository: ICrudHelper<Player>
+public interface IPlayerRepository: IRepository<Player>
 {
     Task<Game?> GetBestGame(int id);
     Task<List<MostPlayedGame>> GetMostPlayedGames(int playerId, int count);

@@ -78,7 +78,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = SettingsSchema.parse(value);
-			await saveSettings({ ...validatedData, bggStatus: settings.bggStatus });
+			await saveSettings({ ...validatedData, bggStatus: settings.bggStatus, emailEnabled: settings.emailEnabled });
 		},
 	});
 
@@ -101,6 +101,8 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 		}
 	};
 
+	const content = <div className="flex flex-col gap-4 xl:gap-6 lg:pl-4 xl:pl-6 pt-4 lg:pt-0">{renderContent()}</div>;
+
 	return (
 		<BgtPage>
 			<BgtPageHeader header={"Settings"} icon={CogIcon} />
@@ -113,18 +115,20 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 					/>
 
 					<div className="flex-1">
-						<form onSubmit={handleFormSubmit(form)}>
-							<div className="flex flex-col gap-4 xl:gap-6 lg:pl-4 xl:pl-6 pt-4 lg:pt-0">{renderContent()}</div>
-							{activeCategory !== "account" && (
+						{activeCategory === "account" ? (
+							content
+						) : (
+							<form onSubmit={handleFormSubmit(form)}>
+								{content}
 								<div className="mt-6 pt-4 lg:ml-4 xl:ml-6 border-t border-white/10">
 									<div className="flex justify-between flex-wrap gap-3 items-start">
-										<BgtButton onClick={form.handleSubmit} type="submit" disabled={isSaving}>
+										<BgtButton type="submit" disabled={isSaving}>
 											{t("save.button")}
 										</BgtButton>
 									</div>
 								</div>
-							)}
-						</form>
+							</form>
+						)}
 					</div>
 				</div>
 			</BgtPageContent>

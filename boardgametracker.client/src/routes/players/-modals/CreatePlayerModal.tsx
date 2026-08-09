@@ -29,6 +29,7 @@ export const CreatePlayerModal = (props: Props) => {
 	const form = useForm({
 		defaultValues: {
 			name: "",
+			email: "",
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = CreatePlayerSchema.parse(value);
@@ -37,6 +38,7 @@ export const CreatePlayerModal = (props: Props) => {
 				id: 0,
 				name: validatedData.name,
 				image: null,
+				email: validatedData.email || null,
 				badges: [],
 			};
 
@@ -91,6 +93,28 @@ export const CreatePlayerModal = (props: Props) => {
 										type="text"
 										placeholder={t("name.placeholder")}
 										label={t("common:name")}
+										disabled={isLoading}
+									/>
+								)}
+							</form.Field>
+							<form.Field
+								name="email"
+								validators={{
+									onChange: ({ value }) => {
+										const result = CreatePlayerSchema.shape.email.safeParse(value);
+										if (!result.success) {
+											return t(result.error.issues[0].message);
+										}
+										return undefined;
+									},
+								}}
+							>
+								{(field) => (
+									<BgtInputField
+										field={field}
+										type="text"
+										placeholder={t("email.placeholder")}
+										label={t("email.label")}
 										disabled={isLoading}
 									/>
 								)}

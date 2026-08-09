@@ -1,13 +1,15 @@
-﻿using BoardGameTracker.Common.Entities;
+using Ardalis.Specification.EntityFrameworkCore;
+using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Games.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Games;
 
-public class GameRepository : CrudHelper<Game>, IGameRepository
+public class GameRepository : EfRepository<Game>, IGameRepository
 {
     private readonly MainDbContext _context;
 
@@ -33,36 +35,23 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
 
     public Task<Game?> GetGameByBggId(int bggId)
     {
-        return _context.Games
-            .SingleOrDefaultAsync(x => x.BggId == bggId);
+        return SingleOrDefaultAsync(new GameByBggIdSpec(bggId));
     }
 
     public Task<List<Game>> GetGamesOverviewList()
     {
-        return _context.Games
-            .AsNoTracking()
-            .AsSplitQuery()
-            .Include(x => x.Expansions)
-            .Include(x => x.Categories)
-            .OrderBy(x => x.Title)
-            .ToListAsync();
+        return ListAsync(new GamesOverviewSpec());
     }
 
     public override Task<Game?> GetByIdAsync(int id)
     {
-        return _context.Games
-            .Include(x => x.Accessories)
-            .Include(x => x.Categories)
-            .Include(x => x.Expansions)
-            .Include(x => x.Mechanics)
-            .Include(x => x.People)
-            .SingleOrDefaultAsync(x => x.Id == id);
+        return SingleOrDefaultAsync(new GameByIdWithDetailsSpec(id));
     }
 
     public Task<List<Expansion>> GetExpansions(List<int> expansionIds)
     {
         return _context.Expansions
-            .Where(x => expansionIds.Contains(x.Id))
+            .WithSpecification(new ExpansionsByIdsSpec(expansionIds))
             .ToListAsync();
     }
 
@@ -96,57 +85,26 @@ public class GameRepository : CrudHelper<Game>, IGameRepository
 
     public Task<List<Game>> GetRecentlyAddedGames(int count)
     {
-        return _context.Games
-            .AsNoTracking()
-            .Where(x => x.AdditionDate != null)
-            .OrderByDescending(x => x.AdditionDate)
-            .Take(count)
-            .ToListAsync();
+        return ListAsync(new RecentlyAddedGamesSpec(count));
     }
 
     public Task<List<Game>> GetGamesWithNoRecentSessions(DateTime cutoffDate)
     {
-        return _context.Games
-            .AsNoTracking()
-            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
-            .OrderBy(g => g.Title)
-            .ToListAsync();
+        return ListAsync(new GamesWithNoRecentSessionsSpec(cutoffDate));
     }
 
     public Task<int> CountGamesWithNoRecentSessions(DateTime cutoffDate)
     {
-        return _context.Games
-            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
-            .CountAsync();
+        return CountAsync(new GamesWithNoRecentSessionsSpec(cutoffDate));
     }
 
     public Task<List<ShameGame>> GetShameGames(DateTime cutoffDate)
     {
-        return _context.Games
-            .AsNoTracking()
-            .Where(g => !_context.Sessions.Any(s => s.GameId == g.Id && s.Start >= cutoffDate))
-            .Select(g => new ShameGame
-            {
-                Id = g.Id,
-                Title = g.Title,
-                Image = g.Image,
-                AdditionDate = g.AdditionDate,
-                Price = g.BuyingPrice != null ? g.BuyingPrice.Amount : null,
-                LastSessionDate = _context.Sessions
-                    .Where(s => s.GameId == g.Id)
-                    .OrderByDescending(s => s.Start)
-                    .Select(s => (DateTime?)s.Start)
-                    .FirstOrDefault()
-            })
-            .OrderBy(g => g.Title)
-            .ToListAsync();
+        return ListAsync(new ShameGamesSpec(cutoffDate));
     }
 
     public Task<List<Game>> GetByIdsAsync(IEnumerable<int> ids)
     {
-        return _context.Games
-            .Where(g => ids.Contains(g.Id))
-            .ToListAsync();
+        return ListAsync(new GamesByIdsSpec(ids));
     }
-
 }

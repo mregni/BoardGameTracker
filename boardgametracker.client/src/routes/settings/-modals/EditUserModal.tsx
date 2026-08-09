@@ -10,18 +10,27 @@ import {
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
-import { type BgtSelectItem, isApiError, type UserDto } from "@/models";
+import { type BgtSelectItem, isApiError, type Player, type UserDto } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { buildLinkablePlayerItems } from "../-utils/playerLinkOptions";
 
 interface Props {
 	open: boolean;
 	close: () => void;
 	user: UserDto;
-	onSubmit: (data: { userId: string; username: string; email: string | null; role: string }) => Promise<unknown>;
+	players: Player[];
+	users: UserDto[];
+	onSubmit: (data: {
+		userId: string;
+		username: string;
+		email: string | null;
+		role: string;
+		playerId: number | null;
+	}) => Promise<unknown>;
 	isLoading: boolean;
 }
 
-export const EditUserModal = ({ open, close, user, onSubmit, isLoading }: Props) => {
+export const EditUserModal = ({ open, close, user, players, users, onSubmit, isLoading }: Props) => {
 	const { t } = useTranslation(["settings", "auth", "common"]);
 	const [error, setError] = useState<string | null>(null);
 
@@ -34,11 +43,17 @@ export const EditUserModal = ({ open, close, user, onSubmit, isLoading }: Props)
 		[t],
 	);
 
+	const playerItems: BgtSelectItem[] = useMemo(
+		() => [{ value: 0, label: t("account.users.player.none") }, ...buildLinkablePlayerItems(players, users, user.id)],
+		[players, users, user.id, t],
+	);
+
 	const form = useForm({
 		defaultValues: {
 			username: user.username,
 			email: user.email ?? "",
 			role: user.roles[0] ?? "User",
+			playerId: user.playerId ?? 0,
 		},
 		onSubmit: async ({ value }) => {
 			setError(null);
@@ -48,6 +63,7 @@ export const EditUserModal = ({ open, close, user, onSubmit, isLoading }: Props)
 					username: value.username,
 					email: value.email || null,
 					role: value.role,
+					playerId: value.playerId ? value.playerId : null,
 				});
 				close();
 			} catch (e) {
@@ -81,6 +97,17 @@ export const EditUserModal = ({ open, close, user, onSubmit, isLoading }: Props)
 						<form.Field name="role">
 							{(field) => (
 								<BgtSelect field={field} label={t("account.users.role")} items={roleItems} disabled={isLoading} />
+							)}
+						</form.Field>
+						<form.Field name="playerId">
+							{(field) => (
+								<BgtSelect
+									field={field}
+									label={t("account.users.player.label")}
+									items={playerItems}
+									hasSearch
+									disabled={isLoading}
+								/>
 							)}
 						</form.Field>
 					</div>

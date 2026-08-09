@@ -9,6 +9,7 @@ import { withForm } from "@/hooks/form";
 import { SettingsSchema } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
+import { DangerZoneSection } from "./DangerZoneSection";
 import { SettingsSection } from "./SettingsSection";
 import { SettingsToggle } from "./SettingsToggle";
 
@@ -106,6 +107,8 @@ export const AdvancedSettings = withForm({
 						{t("advanced.translate")}
 					</BgtButton>
 				</div>
+
+				<DangerZoneSection />
 			</div>
 		);
 	},

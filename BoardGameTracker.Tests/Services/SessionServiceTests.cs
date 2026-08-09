@@ -8,6 +8,7 @@ using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
+using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
@@ -23,6 +24,7 @@ public class SessionServiceTests
     private readonly Mock<IBadgeService> _badgeServiceMock;
     private readonly Mock<IGameService> _gameServiceMock;
     private readonly Mock<ILocationService> _locationServiceMock;
+    private readonly Mock<IPlayerService> _playerServiceMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<SessionService>> _loggerMock;
     private readonly SessionService _sessionService;
@@ -33,6 +35,7 @@ public class SessionServiceTests
         _badgeServiceMock = new Mock<IBadgeService>();
         _gameServiceMock = new Mock<IGameService>();
         _locationServiceMock = new Mock<ILocationService>();
+        _playerServiceMock = new Mock<IPlayerService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _loggerMock = new Mock<ILogger<SessionService>>();
 
@@ -41,8 +44,12 @@ public class SessionServiceTests
             _badgeServiceMock.Object,
             _gameServiceMock.Object,
             _locationServiceMock.Object,
+            _playerServiceMock.Object,
             _unitOfWorkMock.Object,
             _loggerMock.Object);
+
+        _gameServiceMock.Setup(x => x.GetGameById(It.IsAny<int>())).ReturnsAsync(new Game("Test Game"));
+        _playerServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync(new Player("Test Player"));
     }
 
     private void VerifyNoOtherCalls()
@@ -51,6 +58,7 @@ public class SessionServiceTests
         _badgeServiceMock.VerifyNoOtherCalls();
         _gameServiceMock.VerifyNoOtherCalls();
         _locationServiceMock.VerifyNoOtherCalls();
+        _playerServiceMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
@@ -354,6 +362,78 @@ public class SessionServiceTests
         result.PlayerSessions.Should().HaveCount(3);
     }
 
+    [Fact]
+    public async Task CreateFromCommand_ShouldThrowEntityNotFound_WhenGameDoesNotExist()
+    {
+        var command = new CreateSessionCommand
+        {
+            GameId = 10,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 120,
+            PlayerSessions = []
+        };
+
+        _gameServiceMock
+            .Setup(x => x.GetGameById(10))
+            .ReturnsAsync((Game?)null);
+
+        var action = async () => await _sessionService.CreateFromCommand(command);
+
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+
+        _gameServiceMock.Verify(x => x.GetGameById(10), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldThrowEntityNotFound_WhenLocationDoesNotExist()
+    {
+        var command = new CreateSessionCommand
+        {
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 120,
+            LocationId = 99,
+            PlayerSessions = []
+        };
+
+        _locationServiceMock
+            .Setup(x => x.GetByIdAsync(99))
+            .ReturnsAsync((Location?)null);
+
+        var action = async () => await _sessionService.CreateFromCommand(command);
+
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+
+        _gameServiceMock.Verify(x => x.GetGameById(1), Times.Once);
+        _locationServiceMock.Verify(x => x.GetByIdAsync(99), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldThrowEntityNotFound_WhenPlayerDoesNotExist()
+    {
+        var command = new CreateSessionCommand
+        {
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 120,
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 5, Won = true}]
+        };
+
+        _playerServiceMock
+            .Setup(x => x.Get(5))
+            .ReturnsAsync((Player?)null);
+
+        var action = async () => await _sessionService.CreateFromCommand(command);
+
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+
+        _gameServiceMock.Verify(x => x.GetGameById(1), Times.Once);
+        _playerServiceMock.Verify(x => x.Get(5), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region UpdateFromCommand Tests
@@ -558,6 +638,71 @@ public class SessionServiceTests
 
         // Assert
         result.LocationId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldThrowEntityNotFound_WhenLocationDoesNotExist()
+    {
+        var sessionId = 1;
+        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Comment") { Id = sessionId };
+
+        var command = new UpdateSessionCommand
+        {
+            Id = sessionId,
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 120,
+            LocationId = 99,
+            PlayerSessions = []
+        };
+
+        _sessionRepositoryMock
+            .Setup(x => x.GetByIdAsync(sessionId))
+            .ReturnsAsync(existingSession);
+
+        _locationServiceMock
+            .Setup(x => x.GetByIdAsync(99))
+            .ReturnsAsync((Location?)null);
+
+        var action = async () => await _sessionService.UpdateFromCommand(command);
+
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
+        _locationServiceMock.Verify(x => x.GetByIdAsync(99), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldThrowEntityNotFound_WhenPlayerDoesNotExist()
+    {
+        var sessionId = 1;
+        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Comment") { Id = sessionId };
+
+        var command = new UpdateSessionCommand
+        {
+            Id = sessionId,
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 120,
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 5, Won = true}]
+        };
+
+        _sessionRepositoryMock
+            .Setup(x => x.GetByIdAsync(sessionId))
+            .ReturnsAsync(existingSession);
+
+        _playerServiceMock
+            .Setup(x => x.Get(5))
+            .ReturnsAsync((Player?)null);
+
+        var action = async () => await _sessionService.UpdateFromCommand(command);
+
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
+        _playerServiceMock.Verify(x => x.Get(5), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     #endregion

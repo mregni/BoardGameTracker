@@ -100,7 +100,7 @@ public class UserAdminService : IUserAdminService
         return user.ToDto(updatedRoles);
     }
 
-    public async Task<UserDto> UpdateUserAsync(string userId, string username, string? email, string role, string currentUserId)
+    public async Task<UserDto> UpdateUserAsync(string userId, string username, string? email, string role, int? playerId, string currentUserId)
     {
         if (string.IsNullOrWhiteSpace(username))
         {
@@ -136,6 +136,20 @@ public class UserAdminService : IUserAdminService
         }
 
         user.UpdateEmail(email);
+
+        if (playerId != user.PlayerId)
+        {
+            if (playerId.HasValue)
+            {
+                await PlayerLinkGuard.EnsureLinkableAsync(_context, playerId.Value, userId);
+                user.LinkPlayer(playerId.Value);
+            }
+            else
+            {
+                user.UnlinkPlayer();
+            }
+        }
+
         await _userManager.UpdateAsync(user);
 
         var currentRoles = await _userManager.GetRolesAsync(user);

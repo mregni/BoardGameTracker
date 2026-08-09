@@ -40,6 +40,10 @@ export interface CreateGameNight {
 	invitedPlayerIds: number[];
 }
 
+export interface UpdateGameNight extends CreateGameNight {
+	id: number;
+}
+
 export interface UpdateGameNightRsvp {
 	id: number;
 	gameNightId: number;
@@ -51,4 +55,8 @@ export interface GameNightStatistics {
 	upcomingCount: number;
 	pendingResponses: number;
 	gamesPlanned: number;
+}
+
+export interface SendInvitesResult {
+	sent: number;
 }

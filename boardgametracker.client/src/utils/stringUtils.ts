@@ -1,3 +1,8 @@
+export const SafeHttpUrl = (value: string | null | undefined): string | null => {
+	if (!value) return null;
+	return /^https?:\/\//i.test(value.trim()) ? value : null;
+};
+
 export const StringToHsl = (value: string | undefined): string => {
 	if (value === undefined) {
 		return "hsl(0, 85%, 35%)";

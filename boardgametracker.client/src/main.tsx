@@ -11,7 +11,7 @@ import { classConfig } from "./config/sonner.ts";
 ReactDOM.createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>
 		<Suspense>
-			<Theme appearance="dark" accentColor="purple" grayColor="gray" panelBackground="solid">
+			<Theme appearance="dark" accentColor="indigo" grayColor="slate" panelBackground="solid">
 				<AppContainer />
 			</Theme>
 			<Toaster toastOptions={{ unstyled: true, classNames: classConfig }} />

@@ -1,6 +1,9 @@
-﻿using BoardGameTracker.Common.Models;
+using Ardalis.Specification.EntityFrameworkCore;
+using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Compare;
 using BoardGameTracker.Core.Compares.Interfaces;
+using BoardGameTracker.Core.Compares.Specifications;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,16 +20,10 @@ public class CompareRepository : ICompareRepository
 
     public async Task<CompareRow<int>> GetDirectWins(int playerOne, int playerTwo)
     {
-        var player1Wins = await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo))
+        var player1Wins = await SessionsTogether(playerOne, playerTwo)
             .CountAsync(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne && ps.Won));
 
-        var player2Wins = await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo))
+        var player2Wins = await SessionsTogether(playerOne, playerTwo)
             .CountAsync(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo && ps.Won));
 
         return new CompareRow<int>(player1Wins, player2Wins);
@@ -34,11 +31,8 @@ public class CompareRepository : ICompareRepository
 
     public async Task<CompareRow<MostWonGame?>> GetMostWonGame(int playerOne, int playerTwo)
     {
-        var player1Game = await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerOne && ps.Won))
+        var player1Game = await SessionsTogether(playerOne, playerTwo)
+            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne && ps.Won))
             .GroupBy(s => s.GameId)
             .OrderByDescending(g => g.Count())
             .Select(g => new MostWonGame
@@ -48,11 +42,8 @@ public class CompareRepository : ICompareRepository
             })
             .FirstOrDefaultAsync();
 
-        var player2Game = await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo && ps.Won))
+        var player2Game = await SessionsTogether(playerOne, playerTwo)
+            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo && ps.Won))
             .GroupBy(s => s.GameId)
             .OrderByDescending(g => g.Count())
             .Select(g => new MostWonGame
@@ -67,28 +58,18 @@ public class CompareRepository : ICompareRepository
 
     public async Task<int> GetTotalSessionsTogether(int playerOne, int playerTwo)
     {
-        return await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo))
-            .CountAsync();
+        return await SessionsTogether(playerOne, playerTwo).CountAsync();
     }
 
     public async Task<double> GetMinutesPlayedTogether(int playerOne, int playerTwo)
     {
-        return await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo))
+        return await SessionsTogether(playerOne, playerTwo)
             .SumAsync(s => (s.End - s.Start).TotalMinutes);
     }
 
     public async Task<PreferredGame?> GetPreferredGame(int playerOne, int playerTwo)
     {
-        var result = await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo))
+        var result = await SessionsTogether(playerOne, playerTwo)
             .GroupBy(s => s.GameId)
             .OrderByDescending(g => g.Count())
             .Select(g => new { GameId = g.Key, Count = g.Count() })
@@ -108,10 +89,7 @@ public class CompareRepository : ICompareRepository
 
     public async Task<LastWonGame?> GetLastWonGame(int playerOne, int playerTwo)
     {
-        var lastSession = await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo))
+        var lastSession = await SessionsTogether(playerOne, playerTwo)
             .Include(s => s.PlayerSessions)
             .OrderByDescending(s => s.Start)
             .FirstOrDefaultAsync();
@@ -138,10 +116,7 @@ public class CompareRepository : ICompareRepository
 
     public async Task<int?> GetLongestSessionTogether(int playerOne, int playerTwo)
     {
-        var longestDuration = await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo))
+        var longestDuration = await SessionsTogether(playerOne, playerTwo)
             .Select(s => (int?)(s.End - s.Start).TotalMinutes)
             .OrderByDescending(duration => duration)
             .FirstOrDefaultAsync();
@@ -151,10 +126,7 @@ public class CompareRepository : ICompareRepository
 
     public async Task<FirstGameTogether?> GetFirstGameTogether(int playerOne, int playerTwo)
     {
-        var firstSession = await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo))
+        var firstSession = await SessionsTogether(playerOne, playerTwo)
             .OrderBy(s => s.Start)
             .FirstOrDefaultAsync();
 
@@ -172,11 +144,8 @@ public class CompareRepository : ICompareRepository
 
     public async Task<ClosestGame?> GetClosestGame(int playerOne, int playerTwo)
     {
-        var sessionScores = await _context.Sessions
-            .AsNoTracking()
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne) &&
-                        s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo) &&
-                        s.Game.HasScoring)
+        var sessionScores = await SessionsTogether(playerOne, playerTwo)
+            .Where(s => s.Game.HasScoring)
             .Select(s => new
             {
                 GameId = s.GameId,
@@ -221,5 +190,10 @@ public class CompareRepository : ICompareRepository
             GameId = closestSession.GameId,
             ScoringDifference = closestSession.ScoreDifference
         };
+    }
+
+    private IQueryable<Session> SessionsTogether(int playerOne, int playerTwo)
+    {
+        return _context.Sessions.WithSpecification(new SessionsWithBothPlayersSpec(playerOne, playerTwo));
     }
 }

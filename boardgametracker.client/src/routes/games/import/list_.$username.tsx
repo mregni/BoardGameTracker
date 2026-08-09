@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import LinkIcon from "@/assets/icons/arrow-square-out.svg?react";
 import Database from "@/assets/icons/database.svg?react";
@@ -37,18 +37,18 @@ export const Route = createFileRoute("/games/import/list_/$username")({
 });
 
 const countPerPage = 50;
-const maxImport = 5;
+const maxImport = 25;
 
 function RouteComponent() {
 	const { username } = Route.useParams();
 	const { t } = useTranslation(["common", "game", "bgg-import", "games"]);
 
 	const {
-		statusCode,
 		bggError,
 		settings,
 		games,
 		updateGame,
+		setSelection,
 		filterCollected,
 		setFilterCollected,
 		inCollectionCount,
@@ -62,10 +62,26 @@ function RouteComponent() {
 
 	const [page, setPage] = useState<number>(0);
 
+	const checkedCount = useMemo(() => games.filter((game) => game.checked).length, [games]);
+	const selectableGames = useMemo(() => games.filter((game) => !game.inCollection), [games]);
+	const selectionCap = Math.min(maxImport, selectableGames.length);
+	const allSelected = selectionCap > 0 && checkedCount >= selectionCap;
+
+	const toggleSelectAll = useCallback(
+		(checked: boolean) => {
+			setSelection(
+				selectableGames.map((game, index) => ({ bggId: game.bggId, checked: checked && index < maxImport })),
+			);
+			if (checked) setPage(0);
+		},
+		[selectableGames, setSelection],
+	);
+
 	const columns: DataTableProps<ImportGame>["columns"] = useMemo(
 		() => [
 			{
 				accessorKey: "0",
+				enableSorting: false,
 				cell: ({ row }) => (
 					<BgtSimpleCheckbox
 						id={""}
@@ -77,7 +93,15 @@ function RouteComponent() {
 						}}
 					/>
 				),
-				header: "",
+				header: () => (
+					<BgtSimpleCheckbox
+						id="select-all-import"
+						label=""
+						disabled={selectionCap === 0}
+						checked={allSelected}
+						onCheckedChange={toggleSelectAll}
+					/>
+				),
 			},
 			{
 				accessorKey: "1",
@@ -126,7 +150,7 @@ function RouteComponent() {
 						placeholder={t("game:price.placeholder")}
 						disabled={row.original.inCollection}
 						className="w-32.5"
-						prefixLabel={settings?.currency}
+						suffixLabel={settings?.currency}
 					/>
 				),
 				header: t("game:price.label"),
@@ -175,14 +199,10 @@ function RouteComponent() {
 				header: t("game:added-date.label"),
 			},
 		],
-		[settings?.currency, t, updateGame],
+		[settings?.currency, t, updateGame, allSelected, selectionCap, toggleSelectAll],
 	);
 
-	const checkedCount = useMemo(() => {
-		return games.filter((game) => game.checked).length;
-	}, [games]);
-
-	const isLoading = (statusCode !== 200 && !bggError) || processingGames || importing;
+	const isLoading = processingGames || importing;
 
 	const triggerImport = () => {
 		startImport(games.filter((game) => game.checked));

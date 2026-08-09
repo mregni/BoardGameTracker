@@ -32,7 +32,12 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      "/images": {
+      "/images/cover": {
+        target: "http://localhost:6554/",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/images/profile": {
         target: "http://localhost:6554/",
         changeOrigin: true,
         secure: false,

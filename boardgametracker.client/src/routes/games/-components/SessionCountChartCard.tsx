@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import BarChart from "@/assets/icons/bar-chart.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtBarChart } from "@/components/BgtCharts/BgtBarChart";
+import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { transformSessionCountChartData } from "../-utils/gameDataTransformers";
 
 interface PlayByDayItem {
@@ -18,11 +19,12 @@ export const SessionCountChartCard = (props: Props) => {
 	const { playByDayChart, className } = props;
 	const { t } = useTranslation("game");
 
+	const hasData = playByDayChart.some((day) => day.playCount > 0);
 	const chartData = transformSessionCountChartData(playByDayChart, t);
 
 	return (
 		<BgtCard title={t("titles.session-count-per-day")} icon={BarChart} className={className}>
-			<BgtBarChart index="day" keys={["sessions"]} data={chartData} />
+			{hasData ? <BgtBarChart index="day" keys={["sessions"]} data={chartData} /> : <BgtNoData />}
 		</BgtCard>
 	);
 };

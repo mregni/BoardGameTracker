@@ -117,7 +117,7 @@ describe("SettingsSidebar", () => {
 			render(<SettingsSidebar {...defaultProps} activeCategory="advanced" />);
 
 			const buttons = screen.getAllByRole("button");
-			expect(buttons[4]).toHaveClass("bg-primary/20");
+			expect(buttons[5]).toHaveClass("bg-primary/20");
 		});
 	});
 

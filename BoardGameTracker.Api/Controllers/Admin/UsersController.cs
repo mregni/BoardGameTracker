@@ -47,7 +47,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> UpdateUser(string id, [FromBody] AdminUpdateUserRequest request)
     {
         var currentUserId = GetCurrentUserId();
-        var user = await _userAdminService.UpdateUserAsync(id, request.Username, request.Email, request.Role, currentUserId);
+        var user = await _userAdminService.UpdateUserAsync(id, request.Username, request.Email, request.Role, request.PlayerId, currentUserId);
         return Ok(user);
     }
 

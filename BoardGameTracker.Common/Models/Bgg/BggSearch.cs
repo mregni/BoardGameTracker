@@ -9,4 +9,5 @@ public class BggSearch
     public double? Price { get; set; }
     public DateTime? AdditionDate { get; set; }
     public bool HasScoring { get; set; }
+    public string? ShopUrl { get; set; }
 }

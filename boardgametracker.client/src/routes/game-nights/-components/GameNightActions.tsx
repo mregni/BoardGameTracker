@@ -1,9 +1,12 @@
+import { useMutation } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { GameNight } from "@/models";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
+import { sendInvitesCall } from "@/services/gameNightService";
 
 interface Props {
 	gameNight: GameNight;
@@ -26,6 +29,16 @@ export const GameNightActions = (props: Props) => {
 		setTimeout(() => setCopied(false), 2000);
 	}, [rsvpLink]);
 
+	const sendInvitesMutation = useMutation({
+		mutationFn: () => sendInvitesCall(gameNight.id),
+		onSuccess: (result) => {
+			toast.success(t("card.invites-sent", { sent: result.sent }));
+		},
+		onError: () => {
+			toast.error(t("card.invites-failed"));
+		},
+	});
+
 	return (
 		<div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
 			<div className="flex items-center justify-between gap-4 flex-wrap">
@@ -43,6 +56,16 @@ export const GameNightActions = (props: Props) => {
 					<BgtButton variant="cancel" size="1" onClick={() => onManageRsvps(gameNight)}>
 						{t("card.manage-rsvps")}
 					</BgtButton>
+					{settings?.emailEnabled && (
+						<BgtButton
+							variant="cancel"
+							size="1"
+							onClick={() => sendInvitesMutation.mutate()}
+							disabled={sendInvitesMutation.isPending}
+						>
+							{t("card.email-invites")}
+						</BgtButton>
+					)}
 					<BgtButton variant="primary" size="1" onClick={onCopyLink} disabled={copied}>
 						{copied ? t("card.copied") : t("card.copy-link")}
 					</BgtButton>

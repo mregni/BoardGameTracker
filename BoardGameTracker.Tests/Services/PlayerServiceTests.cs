@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
@@ -10,6 +11,7 @@ using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Players;
 using BoardGameTracker.Core.Players.Interfaces;
+using BoardGameTracker.Core.Players.Specifications;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -203,7 +205,7 @@ public class PlayerServiceTests
         };
 
         _playerRepositoryMock
-            .Setup(x => x.GetByIdAsync(playerId))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingPlayer);
 
 
@@ -235,7 +237,7 @@ public class PlayerServiceTests
         };
 
         _playerRepositoryMock
-            .Setup(x => x.GetByIdAsync(command.Id))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Player?)null);
 
         // Act
@@ -244,7 +246,7 @@ public class PlayerServiceTests
         // Assert
         await action.Should().ThrowAsync<EntityNotFoundException>();
 
-        _playerRepositoryMock.Verify(x => x.GetByIdAsync(command.Id), Times.Once);
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -263,7 +265,7 @@ public class PlayerServiceTests
         };
 
         _playerRepositoryMock
-            .Setup(x => x.GetByIdAsync(playerId))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingPlayer);
 
 
@@ -293,7 +295,7 @@ public class PlayerServiceTests
         };
 
         _playerRepositoryMock
-            .Setup(x => x.GetByIdAsync(playerId))
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingPlayer);
 
 

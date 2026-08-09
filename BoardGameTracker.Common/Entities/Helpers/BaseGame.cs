@@ -19,6 +19,8 @@ public abstract class BaseGame : HasId
     public int? YearPublished { get; private set; }
     public string Description { get; private set; } = string.Empty;
     public string? Image { get; private set; }
+    public string? ShopUrl { get; private set; }
+    public string? Language { get; private set; }
 
     public PlayerCountRange? PlayerCount { get; private set; }
     public PlayTimeRange? PlayTime { get; private set; }
@@ -67,6 +69,28 @@ public abstract class BaseGame : HasId
     public void UpdateImage(string? imageUrl)
     {
         Image = imageUrl;
+    }
+
+    public void UpdateShopUrl(string? shopUrl)
+    {
+        if (string.IsNullOrWhiteSpace(shopUrl))
+        {
+            ShopUrl = null;
+            return;
+        }
+
+        if (!Uri.TryCreate(shopUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new ArgumentException("ShopUrl must be an absolute http(s) URL.", nameof(shopUrl));
+        }
+
+        ShopUrl = shopUrl;
+    }
+
+    public void UpdateLanguage(string? language)
+    {
+        Language = string.IsNullOrWhiteSpace(language) ? null : language;
     }
 
     public void UpdatePlayerCount(int? minPlayers, int? maxPlayers)

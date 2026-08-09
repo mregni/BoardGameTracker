@@ -1,12 +1,16 @@
+using System.Net;
 using System.Security.Cryptography;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Core.Email.Interfaces;
+using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,6 +23,9 @@ public class AuthService : IAuthService
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
     private readonly IEnvironmentProvider _environmentProvider;
+    private readonly IPlayerService _playerService;
+    private readonly IEmailService _emailService;
+    private readonly IPublicUrlBuilder _publicUrlBuilder;
     private readonly MainDbContext _context;
     private readonly ILogger<AuthService> _logger;
 
@@ -27,6 +34,9 @@ public class AuthService : IAuthService
         SignInManager<ApplicationUser> signInManager,
         ITokenService tokenService,
         IEnvironmentProvider environmentProvider,
+        IPlayerService playerService,
+        IEmailService emailService,
+        IPublicUrlBuilder publicUrlBuilder,
         MainDbContext context,
         ILogger<AuthService> logger)
     {
@@ -34,6 +44,9 @@ public class AuthService : IAuthService
         _signInManager = signInManager;
         _tokenService = tokenService;
         _environmentProvider = environmentProvider;
+        _playerService = playerService;
+        _emailService = emailService;
+        _publicUrlBuilder = publicUrlBuilder;
         _context = context;
         _logger = logger;
     }
@@ -47,7 +60,13 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException(Constants.Errors.InvalidCredentials);
         }
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+        if (result.IsLockedOut)
+        {
+            _logger.LogWarning("Login attempt for locked out user {Username}", request.Username);
+            throw new UnauthorizedAccessException(Constants.Errors.AccountLockedOut);
+        }
+
         if (!result.Succeeded)
         {
             _logger.LogWarning("Failed login attempt for user {Username}: invalid password", request.Username);
@@ -131,6 +150,11 @@ public class AuthService : IAuthService
             throw new ValidationException(Constants.Errors.InvalidRole);
         }
 
+        if (!request.CreatePlayer && request.PlayerId.HasValue)
+        {
+            await PlayerLinkGuard.EnsureLinkableAsync(_context, request.PlayerId.Value, null);
+        }
+
         var user = new ApplicationUser(request.Username, request.Email, request.Username);
         var result = await _userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
@@ -139,6 +163,22 @@ public class AuthService : IAuthService
         }
 
         await _userManager.AddToRoleAsync(user, role);
+
+        if (request.CreatePlayer)
+        {
+            var player = await _playerService.Create(new CreatePlayerCommand
+            {
+                Name = user.DisplayName ?? request.Username,
+                Email = request.Email
+            });
+            user.LinkPlayer(player.Id);
+            await _userManager.UpdateAsync(user);
+        }
+        else if (request.PlayerId.HasValue)
+        {
+            user.LinkPlayer(request.PlayerId.Value);
+            await _userManager.UpdateAsync(user);
+        }
 
         _logger.LogInformation("Admin created new user: {Username} with role {Role}", request.Username, role);
 
@@ -166,12 +206,39 @@ public class AuthService : IAuthService
             user.UpdateEmail(request.Email);
         }
 
+        if (request.PlayerId != user.PlayerId)
+        {
+            if (request.PlayerId.HasValue)
+            {
+                await PlayerLinkGuard.EnsureLinkableAsync(_context, request.PlayerId.Value, userId);
+                user.LinkPlayer(request.PlayerId.Value);
+            }
+            else
+            {
+                user.UnlinkPlayer();
+            }
+        }
+
         await _userManager.UpdateAsync(user);
 
         _logger.LogInformation("User {UserId} updated their profile", userId);
 
         var roles = await _userManager.GetRolesAsync(user);
         return user.ToProfileDto(roles);
+    }
+
+    public async Task<List<PlayerLinkDto>> GetLinkablePlayersAsync(string currentUserId)
+    {
+        var linkedByOthers = await _context.Users
+            .Where(u => u.PlayerId != null && u.Id != currentUserId)
+            .Select(u => u.PlayerId!.Value)
+            .ToListAsync();
+
+        return await _context.Players
+            .Where(p => !linkedByOthers.Contains(p.Id))
+            .OrderBy(p => p.Name)
+            .Select(p => new PlayerLinkDto(p.Id, p.Name))
+            .ToListAsync();
     }
 
     public async Task ChangePasswordAsync(string userId, ChangePasswordRequest request)
@@ -191,6 +258,7 @@ public class AuthService : IAuthService
             throw new ValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
         }
 
+        await _tokenService.RevokeAllUserTokensAsync(userId, "Password changed");
         _logger.LogDebug("User {UserId} changed their password", userId);
     }
 
@@ -207,9 +275,66 @@ public class AuthService : IAuthService
             throw new ValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
         }
 
+        await _tokenService.RevokeAllUserTokensAsync(userId, "Password reset by admin");
         _logger.LogInformation("Admin reset password for user {Username}", user.UserName);
 
         return new ResetPasswordResponse(tempPassword);
+    }
+
+    public async Task ForgotPasswordAsync(string username)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+        if (user == null)
+        {
+            _logger.LogInformation("Forgot-password requested for an unknown account");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(user.Email))
+        {
+            _logger.LogWarning("Forgot-password requested for user {UserId} but no email address is set", user.Id);
+            return;
+        }
+
+        if (!_emailService.IsConfigured)
+        {
+            _logger.LogWarning("Forgot-password requested but email is not configured");
+            return;
+        }
+
+        try
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetUrl = await _publicUrlBuilder.BuildResetUrlAsync(user.Id, token);
+            const string subject = "Reset your BoardGameTracker password";
+            var htmlUrl = WebUtility.HtmlEncode(resetUrl);
+            var body = $"<p>A password reset was requested for your account.</p><p><a href=\"{htmlUrl}\">Reset your password</a></p><p>If you didn't request this, you can safely ignore this email.</p>";
+            await _emailService.SendAsync(user.Email, subject, body);
+            _logger.LogInformation("Sent password reset email to user {UserId}", user.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to send password reset email");
+        }
+    }
+
+    public async Task ResetPasswordWithTokenAsync(ResetPasswordConfirmRequest request)
+    {
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        if (user == null)
+        {
+            throw new ValidationException(Constants.Errors.InvalidResetToken);
+        }
+
+        var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Failed password reset attempt for user {UserId}", request.UserId);
+            throw new ValidationException(Constants.Errors.InvalidResetToken);
+        }
+
+        await _tokenService.RevokeAllUserTokensAsync(user.Id, "Password reset");
+        _logger.LogInformation("User {UserId} reset their password via emailed token", user.Id);
     }
 
     public AuthStatusResponse GetStatus()
@@ -220,11 +345,6 @@ public class AuthService : IAuthService
     private static string GenerateTempPassword(int length = 16)
     {
         const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%";
-        return string.Create(length, chars, static (span, chars) =>
-        {
-            var bytes = RandomNumberGenerator.GetBytes(span.Length);
-            for (var i = 0; i < span.Length; i++)
-                span[i] = chars[bytes[i] % chars.Length];
-        });
+        return new string(RandomNumberGenerator.GetItems<char>(chars, length));
     }
 }

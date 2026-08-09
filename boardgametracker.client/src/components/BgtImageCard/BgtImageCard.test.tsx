@@ -36,10 +36,12 @@ describe("BgtImageCard", () => {
 	});
 
 	describe("Image Handling", () => {
-		it("should apply background image style when image provided", () => {
-			const { container } = renderWithTheme(<BgtImageCard {...defaultProps} />);
-			const imageDiv = container.querySelector('[style*="--image-url"]');
-			expect(imageDiv).toBeInTheDocument();
+		it("should render a lazy async image when image provided", () => {
+			renderWithTheme(<BgtImageCard {...defaultProps} />);
+			const img = screen.getByRole("img");
+			expect(img).toHaveAttribute("src", "/game.jpg");
+			expect(img).toHaveAttribute("loading", "lazy");
+			expect(img).toHaveAttribute("decoding", "async");
 		});
 
 		it("should apply fallback color when no image", () => {

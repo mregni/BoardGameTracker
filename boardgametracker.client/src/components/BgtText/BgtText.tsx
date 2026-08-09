@@ -8,7 +8,7 @@ const textVariants = cva("", {
 			amber: "text-amber-500",
 			orange: "text-orange-500",
 			red: "text-red-500",
-			purple: "text-purple-500",
+			purple: "text-slate-400",
 			blue: "text-blue-500",
 			cyan: "text-cyan-500",
 			green: "text-green-500",

@@ -11,6 +11,7 @@ public class WinningStreakBadgeEvaluator : IBadgeEvaluator
     {
         var winStreakCount = playerSessions
             .OrderByDescending(x => x.Start)
+            .ThenByDescending(x => x.Id)
             .Select(x => x.PlayerSessions.Single(y => y.PlayerId == playerId).Won)
             .TakeWhile(x => x)
             .Count();

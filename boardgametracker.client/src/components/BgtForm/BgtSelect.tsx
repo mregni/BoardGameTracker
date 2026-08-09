@@ -43,6 +43,11 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 		return item && typeof item === "object" && "image" in item && item.image !== null;
 	}, []);
 
+	const selectedHasImage = useMemo(() => {
+		const selected = items.find((item) => item.value.toString() === currentValue);
+		return !!selected && isSelectImageItem(selected);
+	}, [items, currentValue, isSelectImageItem]);
+
 	const hasErrors = field.state.meta.errors.length > 0;
 
 	const handleValueChange = useCallback(
@@ -93,8 +98,9 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 			>
 				<Select.Trigger
 					className={cx(
-						"w-full bg-background font- text-whiterounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-						"px-4 py-2 h-11 md:h-10 shadow-none inline-flex justify-between items-center rounded-lg leading-none text-[15px]",
+						"w-full bg-background text-white border border-primary/30 focus:border-primary focus:outline-none",
+						"py-2 h-11 md:h-10 shadow-none inline-flex justify-between items-center rounded-lg leading-none text-[15px]",
+						selectedHasImage ? "pl-2 pr-4" : "px-4",
 						hasErrors && "border border-error bg-error-dark!",
 						disabled && "opacity-50 cursor-not-allowed",
 					)}

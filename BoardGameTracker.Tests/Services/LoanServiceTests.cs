@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
@@ -7,7 +8,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Loans;
-using BoardGameTracker.Core.Loans.Interfaces;
+using BoardGameTracker.Core.Loans.Specifications;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -17,7 +18,7 @@ namespace BoardGameTracker.Tests.Services;
 
 public class LoanServiceTests
 {
-    private readonly Mock<ILoanRepository> _loanRepositoryMock;
+    private readonly Mock<IRepository<Loan>> _loanRepositoryMock;
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<LoanService>> _loggerMock;
@@ -25,7 +26,7 @@ public class LoanServiceTests
 
     public LoanServiceTests()
     {
-        _loanRepositoryMock = new Mock<ILoanRepository>();
+        _loanRepositoryMock = new Mock<IRepository<Loan>>();
         _gameRepositoryMock = new Mock<IGameRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _loggerMock = new Mock<ILogger<LoanService>>();
@@ -57,7 +58,7 @@ public class LoanServiceTests
         };
 
         _loanRepositoryMock
-            .Setup(x => x.GetAllAsync())
+            .Setup(x => x.ListAsync(It.IsAny<LoansOrderedByDateSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(loans);
 
         // Act
@@ -67,7 +68,7 @@ public class LoanServiceTests
         result.Should().HaveCount(2);
         result.Should().BeEquivalentTo(loans);
 
-        _loanRepositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
+        _loanRepositoryMock.Verify(x => x.ListAsync(It.IsAny<LoansOrderedByDateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -76,7 +77,7 @@ public class LoanServiceTests
     {
         // Arrange
         _loanRepositoryMock
-            .Setup(x => x.GetAllAsync())
+            .Setup(x => x.ListAsync(It.IsAny<LoansOrderedByDateSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 
         // Act
@@ -85,7 +86,7 @@ public class LoanServiceTests
         // Assert
         result.Should().BeEmpty();
 
-        _loanRepositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
+        _loanRepositoryMock.Verify(x => x.ListAsync(It.IsAny<LoansOrderedByDateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -478,7 +479,7 @@ public class LoanServiceTests
         var expectedCount = 5;
 
         _loanRepositoryMock
-            .Setup(x => x.CountActiveLoans())
+            .Setup(x => x.CountAsync(It.IsAny<ActiveLoansSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedCount);
 
         // Act
@@ -487,7 +488,7 @@ public class LoanServiceTests
         // Assert
         result.Should().Be(expectedCount);
 
-        _loanRepositoryMock.Verify(x => x.CountActiveLoans(), Times.Once);
+        _loanRepositoryMock.Verify(x => x.CountAsync(It.IsAny<ActiveLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -496,7 +497,7 @@ public class LoanServiceTests
     {
         // Arrange
         _loanRepositoryMock
-            .Setup(x => x.CountActiveLoans())
+            .Setup(x => x.CountAsync(It.IsAny<ActiveLoansSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(0);
 
         // Act
@@ -505,7 +506,7 @@ public class LoanServiceTests
         // Assert
         result.Should().Be(0);
 
-        _loanRepositoryMock.Verify(x => x.CountActiveLoans(), Times.Once);
+        _loanRepositoryMock.Verify(x => x.CountAsync(It.IsAny<ActiveLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

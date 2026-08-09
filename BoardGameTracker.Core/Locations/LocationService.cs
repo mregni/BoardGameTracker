@@ -3,17 +3,18 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
+using BoardGameTracker.Core.Locations.Specifications;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Locations;
 
 public class LocationService : ILocationService
 {
-    private readonly ILocationRepository _locationRepository;
+    private readonly IRepository<Location> _locationRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<LocationService> _logger;
 
-    public LocationService(ILocationRepository locationRepository, IUnitOfWork unitOfWork, ILogger<LocationService> logger)
+    public LocationService(IRepository<Location> locationRepository, IUnitOfWork unitOfWork, ILogger<LocationService> logger)
     {
         _locationRepository = locationRepository;
         _unitOfWork = unitOfWork;
@@ -23,7 +24,7 @@ public class LocationService : ILocationService
     public Task<List<Location>> GetLocations()
     {
         _logger.LogDebug("Fetching all locations");
-        return _locationRepository.GetAllAsync();
+        return _locationRepository.ListAsync(new LocationsOrderedByNameSpec());
     }
 
     public Task<Location?> GetByIdAsync(int id)

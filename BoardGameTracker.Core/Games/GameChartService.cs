@@ -3,6 +3,7 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Games.Specifications;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Games;
@@ -47,7 +48,7 @@ public class GameChartService : IGameChartService
     public async Task<List<TopPlayerDto>> GetTopPlayers(int id)
     {
         _logger.LogDebug("Getting top players for game {GameId}", id);
-        var sessions = await _gameSessionRepository.GetSessions(id, 0, null);
+        var sessions = await _gameSessionRepository.GetSessionsByGameId(id, null);
         var playerSessions = sessions
             .SelectMany(x => x.PlayerSessions)
             .GroupBy(x => x.PlayerId)
@@ -64,8 +65,8 @@ public class GameChartService : IGameChartService
     public async Task<Dictionary<DateTime, XValue[]>?> GetPlayerScoringChart(int id)
     {
         _logger.LogDebug("Getting player scoring chart for game {GameId}", id);
-        var game = await _gameRepository.GetByIdAsync(id);
-        if (game is not {HasScoring: true})
+        var hasScoring = await _gameRepository.FirstOrDefaultAsync(new GameHasScoringSpec(id));
+        if (hasScoring is not true)
         {
             return null;
         }
@@ -106,7 +107,7 @@ public class GameChartService : IGameChartService
         return chartData;
     }
 
-    public async Task<List<ScoreRank>> GetScoringRankedChart(int id)
+    public async Task<List<ScoreRank>> GetScoringRankedChart(int id, double? averageScore)
     {
         _logger.LogDebug("Getting scoring ranked chart for game {GameId}", id);
         var list = new List<ScoreRank>();
@@ -116,8 +117,7 @@ public class GameChartService : IGameChartService
         var highestLosing = await _gameStatisticsRepository.GetHighestLosingPlayer(id);
         list.AddIfNotNull(ScoreRank.MakeHighestLosingRank(highestLosing));
 
-        var average = await _gameStatisticsRepository.GetAverageScore(id);
-        list.AddIfNotNull(ScoreRank.MakeAverageRank(average));
+        list.AddIfNotNull(ScoreRank.MakeAverageRank(averageScore));
 
         var lowestWinning = await _gameStatisticsRepository.GetLowestWinning(id);
         list.AddIfNotNull(ScoreRank.MakeLowestWinningRank(lowestWinning));

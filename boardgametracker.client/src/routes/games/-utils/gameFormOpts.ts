@@ -1,5 +1,6 @@
 import { formOptions } from "@tanstack/react-form";
 import { GameState } from "@/models/Games/GameState";
+import { LANGUAGE_NONE } from "@/utils/languageUtils";
 
 export const gameFormOpts = formOptions({
 	defaultValues: {
@@ -15,8 +16,10 @@ export const gameFormOpts = formOptions({
 		minPlayTime: undefined as number | undefined,
 		minAge: undefined as number | undefined,
 		bggId: undefined as number | undefined,
-		buyingPrice: 0,
+		buyingPrice: undefined as number | undefined,
 		additionDate: "",
 		image: null as string | null,
+		shopUrl: "",
+		language: LANGUAGE_NONE,
 	},
 });

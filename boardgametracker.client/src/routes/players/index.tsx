@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Users from "@/assets/icons/users.svg?react";
 import { SearchInputField } from "@/components/BgtForm";
@@ -12,9 +12,7 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import { useFilteredList } from "@/hooks/useFilteredList";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getPlayers } from "@/services/queries/players";
-import { usePlayerModals } from "./-hooks/usePlayerModals";
 import { usePlayersData } from "./-hooks/usePlayersData";
-import { CreatePlayerModal } from "./-modals/CreatePlayerModal";
 
 export const Route = createFileRoute("/players/")({
 	component: RouteComponent,
@@ -26,7 +24,7 @@ export const Route = createFileRoute("/players/")({
 function RouteComponent() {
 	const { t } = useTranslation(["player", "common"]);
 	const { canWrite } = usePermissions();
-	const modals = usePlayerModals();
+	const navigate = useNavigate();
 	const { players, isLoading } = usePlayersData();
 	const { filterValue, setFilterValue, filtered: filteredPlayers } = useFilteredList(players, "name");
 
@@ -39,10 +37,8 @@ function RouteComponent() {
 				icon={Users}
 				title={t("empty.title")}
 				description={t("empty.description")}
-				action={canWrite ? { label: t("new.button"), onClick: modals.createModal.show } : undefined}
-			>
-				<CreatePlayerModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
-			</BgtEmptyPage>
+				action={canWrite ? { label: t("new.button"), onClick: () => navigate({ to: "/players/new" }) } : undefined}
+			/>
 		);
 	}
 
@@ -57,7 +53,7 @@ function RouteComponent() {
 								{
 									content: "player:new.button",
 									variant: "primary",
-									onClick: modals.createModal.show,
+									onClick: () => navigate({ to: "/players/new" }),
 								},
 							]
 						: []
@@ -75,7 +71,6 @@ function RouteComponent() {
 						<BgtImageCard key={x.id} title={x.name} image={x.image} link={`/players/${x.id}`} />
 					))}
 				</BgtCardList>
-				<CreatePlayerModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
 			</BgtPageContent>
 		</BgtPage>
 	);

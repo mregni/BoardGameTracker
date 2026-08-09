@@ -22,8 +22,8 @@ public static class WebHostBuilderExtensions
         {
             builder.UseSentry(o =>
             {
-                o.Environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "development";
-                o.Debug = LogLevelExtensions.GetEnvironmentLogLevel() == LogEventLevel.Debug;
+                o.Environment = EnvironmentExtensions.GetEnvironmentName();
+                o.Debug = EnvironmentExtensions.IsDevelopment() && LogLevelExtensions.GetEnvironmentLogLevel() == LogEventLevel.Debug;
                 o.TracesSampleRate = 0.1;
                 o.SendDefaultPii = false;
                 o.Dsn = "https://3d89aa9317b0a7b3108edbafd31da95a@o4506121302573056.ingest.us.sentry.io/4506121326559232";

@@ -17,7 +17,23 @@ public static class PlayerDtoExtensions
             Id = player.Id,
             Name = player.Name,
             Image = player.Image,
+            Email = player.Email,
             Badges = player.Badges?.Select(b => b.ToDto()).ToList()
+        };
+    }
+
+    public static PlayerDto? ToPublicDto(this Player? player)
+    {
+        if (player == null)
+        {
+            return null;
+        }
+
+        return new PlayerDto
+        {
+            Id = player.Id,
+            Name = player.Name,
+            Image = player.Image
         };
     }
 

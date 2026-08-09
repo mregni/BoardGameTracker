@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useCallback, useMemo, useState } from "react";
@@ -16,14 +15,19 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useFilteredList } from "@/hooks/useFilteredList";
 import { usePermissions } from "@/hooks/usePermissions";
-import CreateGameModal from "@/routes/games/-modals/CreateGameModal";
 import { getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
-import { filterGames, type GamesFilterSearch, GamesFilters, type WeightBucket } from "./-components/GamesFilters";
-import { useGameModals } from "./-hooks/useGameModals";
+import {
+	type AgeBucket,
+	filterGames,
+	type GamesFilterSearch,
+	GamesFilters,
+	type WeightBucket,
+} from "./-components/GamesFilters";
 import { useGamesData } from "./-hooks/useGamesData";
 
 const WEIGHT_BUCKETS: WeightBucket[] = ["light", "medium", "heavy"];
+const AGE_BUCKETS: AgeBucket[] = ["0-6", "7-9", "10-12", "13plus"];
 
 const parsePositiveInt = (value: unknown): number | undefined => {
 	const parsed = Number(value);
@@ -38,27 +42,25 @@ export const Route = createFileRoute("/games/")({
 	},
 	validateSearch: (search: Record<string, unknown>): GamesFilterSearch => {
 		const weight = search.weight as WeightBucket;
+		const age = search.age as AgeBucket;
 		return {
 			category: search.category ? (search.category as string) : undefined,
 			players: parsePositiveInt(search.players),
 			playTime: parsePositiveInt(search.playTime),
 			weight: WEIGHT_BUCKETS.includes(weight) ? weight : undefined,
+			age: AGE_BUCKETS.includes(age) ? age : undefined,
 		};
 	},
 });
 
 function RouteComponent() {
 	const search = Route.useSearch();
-	const { category, players, playTime, weight } = search;
+	const { category, players, playTime, weight, age } = search;
 	const { t } = useTranslation(["games", "dashboard", "common"]);
 	const navigate = useNavigate();
 	const { games, isLoading } = useGamesData();
 	const { canWrite } = usePermissions();
-	const modals = useGameModals();
 	const [showFilters, setShowFilters] = useState(false);
-
-	const settingsQuery = useQuery(getSettings());
-	const bggEnabled = settingsQuery.data?.bggStatus?.isConfigured ?? false;
 
 	const categories = useMemo(
 		() => [...new Set(games.flatMap((game) => game.categories.map((cat) => cat.name)))].sort(),
@@ -87,22 +89,12 @@ function RouteComponent() {
 			if (category !== undefined) {
 				result = result.filter((game) => game.categories.some((cat) => cat.name === category));
 			}
-			return filterGames(result, { playerCount: players, maxPlayTime: playTime, weight });
+			return filterGames(result, { playerCount: players, maxPlayTime: playTime, weight, age });
 		},
-		[category, players, playTime, weight],
+		[category, players, playTime, weight, age],
 	);
 
 	const { filterValue, setFilterValue, filtered: filteredGames } = useFilteredList(games, "title", categoryPreFilter);
-
-	const openManual = () => {
-		modals.createModal.hide();
-		navigate({ to: "/games/new" });
-	};
-
-	const openBgg = () => {
-		modals.createModal.hide();
-		navigate({ to: "/games/bgg" });
-	};
 
 	if (isLoading) return null;
 
@@ -113,16 +105,8 @@ function RouteComponent() {
 				icon={Game}
 				title={t("dashboard:empty.title")}
 				description={t("dashboard:empty.description")}
-				action={canWrite ? { onClick: modals.createModal.show, label: t("new") } : undefined}
-			>
-				<CreateGameModal
-					open={modals.createModal.isOpen}
-					close={modals.createModal.hide}
-					bggEnabled={bggEnabled}
-					openBgg={openBgg}
-					openManual={openManual}
-				/>
-			</BgtEmptyPage>
+				action={canWrite ? { onClick: () => navigate({ to: "/games/add" }), label: t("new") } : undefined}
+			/>
 		);
 	}
 
@@ -131,17 +115,22 @@ function RouteComponent() {
 			<BgtPageHeader
 				header={t("title")}
 				icon={Game}
-				actions={
-					canWrite
+				actions={[
+					{
+						onClick: () => navigate({ to: "/games/table" }),
+						variant: "cancel",
+						content: "common:games-table",
+					},
+					...(canWrite
 						? [
 								{
-									onClick: modals.createModal.show,
-									variant: "primary",
+									onClick: () => navigate({ to: "/games/add" }),
+									variant: "primary" as const,
 									content: "games:new",
 								},
 							]
-						: []
-				}
+						: []),
+				]}
 			></BgtPageHeader>
 			<BgtPageContent>
 				<div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-2">
@@ -166,10 +155,15 @@ function RouteComponent() {
 							<GamesFilters
 								categories={categories}
 								category={category}
-								filters={{ playerCount: players, maxPlayTime: playTime, weight }}
+								filters={{ playerCount: players, maxPlayTime: playTime, weight, age }}
 								onCategoryChange={(value) => updateSearch({ category: value })}
 								onChange={(next) =>
-									updateSearch({ players: next.playerCount, playTime: next.maxPlayTime, weight: next.weight })
+									updateSearch({
+										players: next.playerCount,
+										playTime: next.maxPlayTime,
+										weight: next.weight,
+										age: next.age,
+									})
 								}
 							/>
 						</div>
@@ -190,13 +184,6 @@ function RouteComponent() {
 						/>
 					))}
 				</BgtCardList>
-				<CreateGameModal
-					open={modals.createModal.isOpen}
-					close={modals.createModal.hide}
-					bggEnabled={bggEnabled}
-					openBgg={openBgg}
-					openManual={openManual}
-				/>
 			</BgtPageContent>
 		</BgtPage>
 	);

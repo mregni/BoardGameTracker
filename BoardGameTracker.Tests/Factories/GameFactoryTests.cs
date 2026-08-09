@@ -102,6 +102,39 @@ public class GameFactoryTests
     }
 
     [Fact]
+    public async Task CreateFromBggAsync_ShouldSetMinAge()
+    {
+        var item = CreateBasicItem();
+        item.MinAge = 12;
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.MinAge.Should().Be(12);
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldNotSetMinAge_WhenZero()
+    {
+        var item = CreateBasicItem();
+        item.MinAge = 0;
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.MinAge.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldNotSetMinAge_WhenNull()
+    {
+        var item = CreateBasicItem();
+        item.MinAge = null;
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.MinAge.Should().BeNull();
+    }
+
+    [Fact]
     public async Task CreateFromBggAsync_ShouldSetPlayerCount()
     {
         var item = CreateBasicItem();
@@ -180,6 +213,26 @@ public class GameFactoryTests
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
         result.BuyingPrice.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldSetShopUrl_WhenProvided()
+    {
+        var item = CreateBasicItem();
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null, "https://shop.example.com/game");
+
+        result.ShopUrl.Should().Be("https://shop.example.com/game");
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldNotSetShopUrl_WhenNull()
+    {
+        var item = CreateBasicItem();
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.ShopUrl.Should().BeNull();
     }
 
     [Fact]

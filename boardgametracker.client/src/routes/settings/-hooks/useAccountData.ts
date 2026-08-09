@@ -10,7 +10,8 @@ import {
 	updateProfileCall,
 	updateUserCall,
 } from "@/services/authService";
-import { getProfile, getUsers } from "@/services/queries/auth";
+import { getLinkablePlayers, getProfile, getUsers } from "@/services/queries/auth";
+import { getPlayers } from "@/services/queries/players";
 
 export const useAccountData = () => {
 	const queryClient = useQueryClient();
@@ -19,12 +20,15 @@ export const useAccountData = () => {
 
 	const profileQuery = useQuery(getProfile());
 	const usersQuery = useQuery({ ...getUsers(), enabled: isAdmin });
+	const linkablePlayersQuery = useQuery(getLinkablePlayers());
+	const playersQuery = useQuery({ ...getPlayers(), enabled: isAdmin });
 
 	const updateProfileMutation = useMutation({
 		mutationFn: updateProfileCall,
 		onSuccess: () => {
 			successToast("settings:account.notifications.profile-updated");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 		},
 		onError: () => {
 			errorToast("settings:account.notifications.profile-update-failed");
@@ -46,6 +50,7 @@ export const useAccountData = () => {
 		onSuccess: () => {
 			successToast("settings:account.notifications.user-created");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 		},
 		onError: () => {
 			errorToast("settings:account.notifications.user-create-failed");
@@ -64,11 +69,20 @@ export const useAccountData = () => {
 	});
 
 	const updateUserMutation = useMutation({
-		mutationFn: ({ userId, ...request }: { userId: string; username: string; email: string | null; role: string }) =>
-			updateUserCall(userId, request),
+		mutationFn: ({
+			userId,
+			...request
+		}: {
+			userId: string;
+			username: string;
+			email: string | null;
+			role: string;
+			playerId: number | null;
+		}) => updateUserCall(userId, request),
 		onSuccess: () => {
 			successToast("settings:account.notifications.user-updated");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 		},
 		onError: () => {
 			errorToast("settings:account.notifications.user-update-failed");
@@ -79,6 +93,8 @@ export const useAccountData = () => {
 		profile: profileQuery.data,
 		isProfileLoading: profileQuery.isLoading,
 		users: usersQuery.data ?? [],
+		linkablePlayers: linkablePlayersQuery.data ?? [],
+		players: playersQuery.data ?? [],
 		isAdmin,
 		updateProfile: updateProfileMutation.mutateAsync,
 		isUpdatingProfile: updateProfileMutation.isPending,

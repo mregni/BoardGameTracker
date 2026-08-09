@@ -1,4 +1,3 @@
-using System.Reflection;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Entities.Helpers;
@@ -15,6 +14,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Game> Games { get; set; }
     public DbSet<Expansion> Expansions { get; set; }
     public DbSet<GameAccessory> GameAccessories { get; set; }
+    public DbSet<Manual> Manuals { get; set; }
     public DbSet<GameCategory> GameCategories { get; set; }
     public DbSet<GameMechanic> GameMechanics { get; set; }
     public DbSet<Person> People { get; set; }
@@ -35,11 +35,18 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
     {
     }
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeValueConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<UtcNullableDateTimeValueConverter>();
+    }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
-        BuildIds(builder);
         ConfigureValueObjects(builder);
         BuildGame(builder);
         BuildGameSessions(builder);
@@ -50,23 +57,6 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
         BuildAuthEntities(builder);
 
         SeedDatabase(builder);
-    }
-
-    private static void BuildIds(ModelBuilder builder)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        var @namespace = typeof(Game).Namespace;
-        var types = assembly.GetTypes()
-            .Where(t => t.Namespace == @namespace)
-            .ToArray();
-
-        foreach (var type in types)
-        {
-            if (typeof(HasId).IsAssignableFrom(type) && !type.IsAbstract)
-            {
-                builder.Entity(type).HasKey("Id");
-            }
-        }
     }
 
     private static void ConfigureValueObjects(ModelBuilder builder)
@@ -187,6 +177,12 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
             .WithOne(x => x.Game)
             .HasForeignKey(x => x.GameId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Game>()
+            .HasMany(x => x.Manuals)
+            .WithOne(x => x.Game)
+            .HasForeignKey(x => x.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     private static void BuildGameSessions(ModelBuilder builder)
@@ -264,6 +260,11 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(x => x.PlayerId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ApplicationUser>()
+            .HasIndex(x => x.PlayerId)
+            .IsUnique()
+            .HasFilter("\"PlayerId\" IS NOT NULL");
 
         // RefreshToken
         builder.Entity<RefreshToken>().ToTable("RefreshTokens", "auth");

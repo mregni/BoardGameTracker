@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
-import { BgtImageSelector, BgtSwitch } from "@/components/BgtForm";
+import { BgtImageSelector, BgtSwitch, BgtTextArea } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
@@ -13,6 +13,7 @@ import { type CreateGame, CreateGameSchema } from "@/models/Games/CreateGame";
 import { GameState } from "@/models/Games/GameState";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { useGameForm } from "../-hooks/useGameForm";
 import { useImageUpload } from "../-hooks/useImageUpload";
@@ -51,9 +52,11 @@ export const GameForm = (props: Props) => {
 			minPlayTime: game?.minPlayTime ?? undefined,
 			minAge: game?.minAge ?? undefined,
 			bggId: game?.bggId ?? undefined,
-			buyingPrice: game?.buyingPrice ?? 0,
+			buyingPrice: game?.buyingPrice ?? undefined,
 			additionDate: toInputDate(game?.additionDate ?? undefined, true),
 			image: game?.image ?? null,
+			shopUrl: game?.shopUrl ?? "",
+			language: game?.language ?? LANGUAGE_NONE,
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = CreateGameSchema.parse(value);
@@ -68,10 +71,10 @@ export const GameForm = (props: Props) => {
 
 	return (
 		<BgtPage>
-			<BgtPageContent centered>
-				<BgtCard title={title}>
+			<BgtPageContent className="flex-1 items-center">
+				<BgtCard title={title} className="w-full max-w-4xl my-auto">
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
-						<div className="flex flex-col gap-3 w-full">
+						<div className="flex flex-col gap-4 w-full">
 							<div className="flex flex-row gap-3">
 								<div className="flex-none">
 									<BgtImageSelector image={poster} setImage={setPoster} defaultImage={game?.image} />
@@ -81,9 +84,17 @@ export const GameForm = (props: Props) => {
 								</div>
 							</div>
 
-							<GameFormPlayerFields form={form} disabled={disabled} currency={settings?.currency} />
-
-							<GameFormTimeFields form={form} disabled={disabled} />
+							<div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-3">
+								<GameFormPlayerFields form={form} disabled={disabled} currency={settings?.currency} />
+								<GameFormTimeFields form={form} disabled={disabled} />
+								<div className="lg:col-span-2">
+									<form.Field name="description" validators={zodValidator(CreateGameSchema, "description")}>
+										{(field: AnyFieldApi) => (
+											<BgtTextArea field={field} label={t("new.manual.description.label")} disabled={disabled} />
+										)}
+									</form.Field>
+								</div>
+							</div>
 
 							{game === undefined && (
 								<form.Field name="hasScoring" validators={zodValidator(CreateGameSchema, "hasScoring")}>

@@ -14,7 +14,7 @@ public static class GameNightDtoExtensions
             Notes = gameNight.Notes,
             StartDate = gameNight.StartDate,
             HostId = gameNight.HostId,
-            Host = gameNight.Host.ToDto(),
+            Host = gameNight.Host.ToPublicDto(),
             LocationId = gameNight.LocationId,
             Location = gameNight.Location.ToDto(),
             LinkId =  gameNight.LinkId,
@@ -29,7 +29,7 @@ public static class GameNightDtoExtensions
         {
             Id = rsvp.Id,
             PlayerId = rsvp.PlayerId,
-            Player = rsvp.Player.ToDto(),
+            Player = rsvp.Player.ToPublicDto(),
             GameNightId = rsvp.GameNightId,
             State = rsvp.State
         };

@@ -1,3 +1,4 @@
+using Ardalis.GuardClauses;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 
@@ -23,22 +24,22 @@ public class GameNight: HasId
     {
         return new GameNight()
         {
-            Title = title,
-            Notes =  notes,
-            StartDate = startDate,
-            HostId = hostId,
-            LocationId = locationId,
+            Title = Guard.Against.NullOrWhiteSpace(title),
+            Notes = notes ?? string.Empty,
+            StartDate = Guard.Against.Default(startDate),
+            HostId = Guard.Against.NegativeOrZero(hostId),
+            LocationId = Guard.Against.NegativeOrZero(locationId),
             LinkId = Guid.NewGuid(),
         };
     }
 
     public void Update(string title, string notes, DateTime startDate, int hostId, int locationId)
     {
-        Title = title;
-        Notes = notes;
-        StartDate = startDate;
-        HostId = hostId;
-        LocationId = locationId;
+        Title = Guard.Against.NullOrWhiteSpace(title);
+        Notes = notes ?? string.Empty;
+        StartDate = Guard.Against.Default(startDate);
+        HostId = Guard.Against.NegativeOrZero(hostId);
+        LocationId = Guard.Against.NegativeOrZero(locationId);
     }
 
     public void SetInvitedPlayers(IEnumerable<GameNightRsvp> gameNightRsvps)

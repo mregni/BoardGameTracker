@@ -4,18 +4,19 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Loans.Interfaces;
+using BoardGameTracker.Core.Loans.Specifications;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Loans;
 
 public class LoanService : ILoanService
 {
-    private readonly ILoanRepository _loanRepository;
+    private readonly IRepository<Loan> _loanRepository;
     private readonly IGameRepository _gameRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<LoanService> _logger;
 
-    public LoanService(ILoanRepository loanRepository, IGameRepository gameRepository, IUnitOfWork unitOfWork, ILogger<LoanService> logger)
+    public LoanService(IRepository<Loan> loanRepository, IGameRepository gameRepository, IUnitOfWork unitOfWork, ILogger<LoanService> logger)
     {
         _loanRepository = loanRepository;
         _gameRepository = gameRepository;
@@ -26,7 +27,7 @@ public class LoanService : ILoanService
     public Task<List<Loan>> GetLoans()
     {
         _logger.LogDebug("Fetching all loans");
-        return _loanRepository.GetAllAsync();
+        return _loanRepository.ListAsync(new LoansOrderedByDateSpec());
     }
 
     public Task<Loan?> GetLoanById(int id)
@@ -94,6 +95,6 @@ public class LoanService : ILoanService
 
     public Task<int> CountActiveLoans()
     {
-        return _loanRepository.CountActiveLoans();
+        return _loanRepository.CountAsync(new ActiveLoansSpec());
     }
 }

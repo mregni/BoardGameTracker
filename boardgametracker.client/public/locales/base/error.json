@@ -4,7 +4,9 @@
   },
   "image": {
     "type-not-supported": "Image type not supported",
-    "error": "Error while uploading image, check logs"
+    "error": "Error while uploading image, check logs",
+    "too-large": "Image is too large",
+    "unsupported-format": "Unsupported image format"
   },
   "auth": {
     "username-already-exists": "Username already exists",
@@ -16,7 +18,10 @@
     "cannot-delete-last-admin": "Cannot delete the last admin account",
     "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
     "invalid-credentials": "Invalid username or password",
-    "invalid-refresh-token": "Invalid or expired session"
+    "account-locked-out": "Too many failed attempts. Try again later.",
+    "invalid-refresh-token": "Invalid or expired session",
+    "invalid-redirect-uri": "Invalid redirect URI",
+    "invalid-auth-session": "Invalid or expired authentication session"
   },
   "something-went-wrong": "Something went wrong, please try again later.",
   "unexpected-error": "An unexpected error occurred.",

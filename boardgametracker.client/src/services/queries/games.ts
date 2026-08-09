@@ -40,11 +40,6 @@ export const getBggCollection = (username: string) =>
 		queryKey: [QUERY_KEYS.game, QUERY_KEYS.bgg, username],
 		queryFn: () => getBggCollectionCall(username),
 		retry: false,
-		refetchInterval: (query) => {
-			if (query.state.error) return false;
-			return query.state.data?.statusCode === 200 ? false : 1000;
-		},
-		refetchIntervalInBackground: false,
 	});
 
 export const getShames = createListQuery(QUERY_KEYS.shames, getShamesCall);

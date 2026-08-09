@@ -3,6 +3,8 @@ import { persist } from "zustand/middleware";
 import type { AuthStatus, LoginRequest, OidcProvider, User } from "@/models/Auth/Auth";
 import { getAuthStatusCall, getOidcProviderCall, loginCall, logoutCall } from "@/services/authService";
 
+let authStatusRequest: Promise<AuthStatus> | null = null;
+
 interface AuthState {
 	accessToken: string | null;
 	refreshToken: string | null;
@@ -79,10 +81,16 @@ export const useAuth = create<AuthState>()(
 				return user?.roles.includes(role) ?? false;
 			},
 
-			fetchAuthStatus: async () => {
-				const status = await getAuthStatusCall();
-				set({ authStatus: status });
-				return status;
+			fetchAuthStatus: () => {
+				authStatusRequest ??= getAuthStatusCall()
+					.then((status) => {
+						set({ authStatus: status });
+						return status;
+					})
+					.finally(() => {
+						authStatusRequest = null;
+					});
+				return authStatusRequest;
 			},
 
 			fetchOidcProvider: async () => {

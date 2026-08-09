@@ -1,0 +1,16 @@
+---
+title: Proxy Setup
+description: Sample reverse-proxy configuration for running BoardGameTracker behind Traefik.
+---
+
+Here are sample Traefik labels you can add to the Docker Compose file to put BoardGameTracker behind Traefik. Adjust the labels to match your Traefik setup and domain configuration.
+
+```yaml title="docker-compose.yml"
+labels:
+  traefik.enable: true
+  traefik.http.routers.boardgametracker-rtr.entrypoints: websecure
+  traefik.http.routers.boardgametracker-rtr.rule: Host(`games.example.com`)
+  traefik.http.routers.boardgametracker-rtr.middlewares: local-only@file
+  traefik.http.routers.boardgametracker-rtr.service: boardgametracker-svc
+  traefik.http.services.boardgametracker-svc.loadbalancer.server.port: 5444
+```

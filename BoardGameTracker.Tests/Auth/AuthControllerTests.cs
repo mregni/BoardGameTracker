@@ -214,7 +214,7 @@ public class AuthControllerTests
     {
         // Arrange
         SetupAuthenticatedUser("user-id");
-        var request = new UpdateProfileRequest("Updated Name", "new@test.com");
+        var request = new UpdateProfileRequest("Updated Name", "new@test.com", null);
         var expectedProfile = new ProfileResponse(
             "user-id", "testuser", "new@test.com", "Updated Name",
             new List<string> { "User" }, DateTime.UtcNow, null, null);

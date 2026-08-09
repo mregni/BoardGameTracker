@@ -95,10 +95,16 @@ public class GameController : ControllerBase
     }
 
     [HttpGet("bgg/import")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     public async Task<IActionResult> ImportBgg([FromQuery] string username)
     {
-        var result = await _bggImportService.ImportBggCollection(username);
-        return Ok(result);
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return BadRequest();
+        }
+
+        var games = await _bggImportService.ImportBggCollection(username.Trim());
+        return Ok(games);
     }
 
     [HttpPost("bgg/import")]
@@ -152,7 +158,7 @@ public class GameController : ControllerBase
         var playByDayChart = await _gameChartService.GetPlayByDayChart(id);
         var playerCountChart = await _gameChartService.GetPlayerCountChart(id);
         var playerScoringChart = await _gameChartService.GetPlayerScoringChart(id);
-        var scoringRankChart = await _gameChartService.GetScoringRankedChart(id);
+        var scoringRankChart = await _gameChartService.GetScoringRankedChart(id, stats.AverageScore);
 
         return Ok(new GameStatisticsResponse
         {

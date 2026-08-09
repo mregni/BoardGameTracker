@@ -13,6 +13,7 @@ import { GameNightRsvpState } from "@/models";
 import { RsvpSection } from "@/routes/game-nights/-components/RsvpSection";
 import { useSettingsData } from "../settings/-hooks/useSettingsData";
 import { RsvpEventDetails } from "./-components/RsvpEventDetails";
+import { RsvpManuals } from "./-components/RsvpManuals";
 import { RsvpResponseForm } from "./-components/RsvpResponseForm";
 import { RsvpSuccessView } from "./-components/RsvpSuccessView";
 import { useRsvpData } from "./-hooks/useRsvpData";
@@ -32,7 +33,7 @@ function RsvpPage() {
 	const navigate = useNavigate();
 	const { linkId } = Route.useSearch();
 	const { isAuthenticated, authStatus } = useAuth();
-	const { gameNight, isLoading, submitRsvp, isSubmitting, isSubmitted, submittedPlayerName, submittedState } =
+	const { gameNight, manuals, isLoading, submitRsvp, isSubmitting, isSubmitted, submittedPlayerName, submittedState } =
 		useRsvpData(linkId);
 
 	const requiresAuth = settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
@@ -94,6 +95,8 @@ function RsvpPage() {
 								timeFormat={settings.timeFormat}
 								dateFormat={settings.dateFormat}
 							/>
+
+							<RsvpManuals linkId={linkId} manuals={manuals} />
 
 							<RsvpResponseForm
 								invitedPlayers={gameNight.invitedPlayers}

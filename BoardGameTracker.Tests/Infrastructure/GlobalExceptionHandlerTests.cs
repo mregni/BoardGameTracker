@@ -213,6 +213,50 @@ public class GlobalExceptionHandlerTests
     }
 
     [Fact]
+    public async Task TryHandleAsync_WithBggRateLimitException_ShouldReturn429WithExceptionMessage()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new BggRateLimitException();
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(429);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(429);
+        problemDetails.Title.Should().Be("BoardGameGeek is rate-limiting requests. Please wait a moment and try again.");
+
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithBggCollectionPreparingException_ShouldReturn504WithExceptionMessage()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new BggCollectionPreparingException();
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(504);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(504);
+        problemDetails.Title.Should().Be("BoardGameGeek is still preparing your collection. Please try again in a moment.");
+
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => true),
+                exception,
+                It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
+            Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task TryHandleAsync_WithGenericException_ShouldReturn500WithGenericMessage()
     {
         var (httpContext, responseBody) = CreateHttpContext();

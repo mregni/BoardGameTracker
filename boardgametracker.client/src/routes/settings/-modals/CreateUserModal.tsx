@@ -10,17 +10,20 @@ import {
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
-import { type BgtSelectItem, isApiError, type RegisterRequest } from "@/models";
+import { type BgtSelectItem, isApiError, type Player, type RegisterRequest, type UserDto } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { buildLinkablePlayerItems } from "../-utils/playerLinkOptions";
 
 interface Props {
 	open: boolean;
 	close: () => void;
+	players: Player[];
+	users: UserDto[];
 	onSubmit: (request: RegisterRequest) => Promise<unknown>;
 	isLoading: boolean;
 }
 
-export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => {
+export const CreateUserModal = ({ open, close, players, users, onSubmit, isLoading }: Props) => {
 	const { t } = useTranslation(["settings", "common"]);
 	const [error, setError] = useState<string | null>(null);
 
@@ -33,12 +36,25 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 		[t],
 	);
 
+	const playerModeItems: BgtSelectItem[] = useMemo(
+		() => [
+			{ value: "create", label: t("account.users.create.player.create") },
+			{ value: "link", label: t("account.users.create.player.link") },
+			{ value: "none", label: t("account.users.create.player.none") },
+		],
+		[t],
+	);
+
+	const playerItems: BgtSelectItem[] = useMemo(() => buildLinkablePlayerItems(players, users), [players, users]);
+
 	const form = useForm({
 		defaultValues: {
 			username: "",
 			email: "",
 			password: "",
 			role: "User",
+			playerMode: "create",
+			playerId: 0,
 		},
 		onSubmit: async ({ value }) => {
 			setError(null);
@@ -48,6 +64,8 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 					email: value.email,
 					password: value.password,
 					role: value.role,
+					createPlayer: value.playerMode === "create",
+					playerId: value.playerMode === "link" && value.playerId ? value.playerId : null,
 				});
 				close();
 			} catch (e) {
@@ -123,6 +141,33 @@ export const CreateUserModal = ({ open, close, onSubmit, isLoading }: Props) => 
 								<BgtSelect field={field} label={t("account.users.role")} items={roleItems} disabled={isLoading} />
 							)}
 						</form.Field>
+						<form.Field name="playerMode">
+							{(field) => (
+								<BgtSelect
+									field={field}
+									label={t("account.users.create.player.label")}
+									items={playerModeItems}
+									disabled={isLoading}
+								/>
+							)}
+						</form.Field>
+						<form.Subscribe selector={(state) => state.values.playerMode}>
+							{(playerMode) =>
+								playerMode === "link" ? (
+									<form.Field name="playerId">
+										{(field) => (
+											<BgtSelect
+												field={field}
+												label={t("account.users.player.label")}
+												items={playerItems}
+												hasSearch
+												disabled={isLoading}
+											/>
+										)}
+									</form.Field>
+								) : null
+							}
+						</form.Subscribe>
 					</div>
 					{error && <div className="text-error text-sm mb-2">{error}</div>}
 					<BgtDialogClose>

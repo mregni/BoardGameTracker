@@ -89,15 +89,14 @@ export const BggSettings = withForm({
 								i18nKey="bgg.api-key.help-description"
 								ns="settings"
 								components={{
-									link: (
+									requestPage: (
+										// biome-ignore lint/a11y/useAnchorContent: Trans injects the link text from the translation
 										<a
-											href="https://boardgamegeek.com/applications/create"
+											href="https://boardgamegeek.com/applications"
 											target="_blank"
 											rel="noopener noreferrer"
 											className="text-cyan-400 hover:text-cyan-300 underline"
-										>
-											{t("bgg.api-key.help-link-text")}
-										</a>
+										/>
 									),
 								}}
 							/>
