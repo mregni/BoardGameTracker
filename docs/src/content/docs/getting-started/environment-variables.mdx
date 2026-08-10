@@ -41,3 +41,15 @@ BoardGameTracker can also send game-night invites and password-reset emails. See
 <Aside type="note">
 Email is enabled only when both `SMTP_HOST` and `SMTP_FROM_ADDRESS` are set; until then the game-night invite and password-reset options stay hidden. Restart the container after changing any `SMTP_*` variable.
 </Aside>
+
+## Rules assistant (RAG)
+
+The optional [rules assistant](/BoardGameTracker/getting-started/rag/) answers questions about your uploaded rulebooks using a local AI model. See that page for hardware guidance and setup.
+
+| Configuration | Variable | Default | Info |
+| --- | --- | --- | --- |
+| Enable rules assistant | `RAG_ENABLED` | `false` | Master switch. Set to `true` to enable rulebook Q&A. Requires the Ollama service and enough hardware to run a language model. |
+| AI base URL | `AI_BASE_URL` | `http://ollama:11434` | Endpoint of the Ollama (or OpenAI-compatible) server. |
+| Chat model | `AI_CHAT_MODEL` | `qwen3:4b` | The language model used to write answers. Pick one that fits your hardware. |
+| AI provider | `AI_PROVIDER` | `ollama` | `ollama` for local inference, or `openai` for an OpenAI-compatible endpoint. |
+| AI API key | `AI_API_KEY` | | Only needed when `AI_PROVIDER=openai`. |

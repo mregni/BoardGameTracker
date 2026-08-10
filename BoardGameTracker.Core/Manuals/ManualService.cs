@@ -4,11 +4,13 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Common.Models;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Disk.Interfaces;
-using BoardGameTracker.Core.GameNights.Interfaces;
+using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Manuals.Interfaces;
 using BoardGameTracker.Core.Manuals.Specifications;
+using BoardGameTracker.Core.Rag.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -22,21 +24,30 @@ public class ManualService : IManualService
 
     private readonly IRepository<Manual> _manualRepository;
     private readonly IDiskProvider _diskProvider;
-    private readonly IGameNightRepository _gameNightRepository;
+    private readonly IReadRepository<GameNight> _gameNightRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IManualIndexingQueue _indexingQueue;
+    private readonly IPdfPageRenderer _pageRenderer;
+    private readonly IEnvironmentProvider _environmentProvider;
     private readonly ILogger<ManualService> _logger;
 
     public ManualService(
         IRepository<Manual> manualRepository,
         IDiskProvider diskProvider,
-        IGameNightRepository gameNightRepository,
+        IReadRepository<GameNight> gameNightRepository,
         IUnitOfWork unitOfWork,
+        IManualIndexingQueue indexingQueue,
+        IPdfPageRenderer pageRenderer,
+        IEnvironmentProvider environmentProvider,
         ILogger<ManualService> logger)
     {
         _manualRepository = manualRepository;
         _diskProvider = diskProvider;
         _gameNightRepository = gameNightRepository;
         _unitOfWork = unitOfWork;
+        _indexingQueue = indexingQueue;
+        _pageRenderer = pageRenderer;
+        _environmentProvider = environmentProvider;
         _logger = logger;
     }
 
@@ -86,8 +97,34 @@ public class ManualService : IManualService
             throw;
         }
 
+        if (_environmentProvider.RagEnabled)
+        {
+            foreach (var manual in manuals)
+            {
+                _indexingQueue.Enqueue(manual.Id);
+            }
+        }
+
         _logger.LogInformation("Uploaded {Count} manual(s) for game {GameId}", manuals.Count, gameId);
         return manuals;
+    }
+
+    public async Task RequeueManualForIndexing(int id)
+    {
+        _logger.LogDebug("Requeueing manual {ManualId} for indexing", id);
+        var manual = await _manualRepository.GetByIdAsync(id);
+        if (manual == null)
+        {
+            throw new EntityNotFoundException(nameof(Manual), id);
+        }
+
+        manual.ResetIndexState();
+        await _unitOfWork.SaveChangesAsync();
+
+        if (_environmentProvider.RagEnabled)
+        {
+            _indexingQueue.Enqueue(id);
+        }
     }
 
     public async Task DeleteManual(int id)
@@ -100,6 +137,7 @@ public class ManualService : IManualService
         }
 
         _diskProvider.DeleteFile(GetPhysicalPath(manual.StoredFileName));
+        _pageRenderer.DeleteFigures(id);
         await _manualRepository.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Manual {ManualId} deleted", id);
@@ -116,9 +154,37 @@ public class ManualService : IManualService
         return OpenDownload(manual);
     }
 
+    public async Task<ManualDownload?> GetManualPageImage(int id, int page, CancellationToken cancellationToken = default)
+    {
+        var manual = await _manualRepository.GetByIdAsync(id);
+        if (manual == null)
+        {
+            throw new EntityNotFoundException(nameof(Manual), id);
+        }
+
+        var pdfPath = GetPhysicalPath(manual.StoredFileName);
+        if (!_diskProvider.FileExists(pdfPath))
+        {
+            throw new EntityNotFoundException(nameof(Manual), id);
+        }
+
+        var stream = await _pageRenderer.RenderPageAsync(pdfPath, id, page, cancellationToken);
+        if (stream == null)
+        {
+            return null;
+        }
+
+        return new ManualDownload
+        {
+            Stream = stream,
+            ContentType = "image/png",
+            FileName = $"page-{page}.png"
+        };
+    }
+
     public async Task<ManualDownload> GetManualForGameNightDownload(Guid linkId, int manualId)
     {
-        var gameNight = await _gameNightRepository.GetGameNightByLinkId(linkId);
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));
         var manual = await _manualRepository.GetByIdAsync(manualId);
         if (gameNight == null || manual == null || gameNight.SuggestedGames.All(g => g.Id != manual.GameId))
         {
@@ -130,7 +196,7 @@ public class ManualService : IManualService
 
     public async Task<List<GameNightManualsDto>> GetManualsForGameNight(Guid linkId)
     {
-        var gameNight = await _gameNightRepository.GetGameNightByLinkId(linkId);
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));
         if (gameNight == null || gameNight.SuggestedGames.Count == 0)
         {
             return [];
@@ -157,12 +223,14 @@ public class ManualService : IManualService
         foreach (var manual in manuals)
         {
             _diskProvider.DeleteFile(GetPhysicalPath(manual.StoredFileName));
+            _pageRenderer.DeleteFigures(manual.Id);
         }
     }
 
     public void ClearAllManuals()
     {
         _diskProvider.ClearFolder(PathHelper.FullManualsPath);
+        _pageRenderer.ClearAllFigures();
     }
 
     private static void ValidateFile(IFormFile file)

@@ -44,6 +44,7 @@ public class SettingsService : ISettingsService
             PublicUrl = ResolveValue<string>(configs, Constants.AppConfig.PublicUrl),
             RsvpAuthenticationEnabled = ResolveValue<bool>(configs, Constants.AppConfig.RsvpAuthenticationEnabled),
             EmailEnabled = _environmentProvider.EmailEnabled,
+            RagEnabled = _environmentProvider.RagEnabled,
             BggStatus = GetBggConfigStatusAsync(configs),
             BggApiKey = string.Empty //Never return key to UI
         };

@@ -14,6 +14,7 @@ public static class PathHelper
     public static readonly string FullProfileImagePath = Path.Combine(CurrentDir, ProfileImagePath);
 
     public static readonly string FullManualsPath = Path.Combine(CurrentDir, ManualsPath);
+    public static readonly string FullManualFiguresPath = Path.Combine(CurrentDir, ManualsPath, "figures");
 
     public static string? MapImageWebPathToPhysical(string webPath)
     {

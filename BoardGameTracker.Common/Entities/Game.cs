@@ -48,7 +48,7 @@ public class Game : BaseGame
         }
     }
 
-    public Loan LoanToPlayer(int playerId, DateTime loanDate, DateTime? dueDate = null)
+    public Loan LoanToPlayer(int playerId, DateTime loanDate)
     {
         var loan = new Loan(Id, playerId, loanDate);
         Loans.Add(loan);

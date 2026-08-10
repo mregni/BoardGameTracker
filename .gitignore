@@ -647,3 +647,7 @@ boardgametracker.client/.env.sentry-build-plugin
 
 # Local patched NuGet packages (testing upstream fix)
 local-packages/
+
+BoardGameTracker.Host/manuals/
+
+BoardGameTracker.Host/Properties/launchSettings.json

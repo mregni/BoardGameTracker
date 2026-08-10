@@ -42,9 +42,14 @@ using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Updates.Interfaces;
+using BoardGameTracker.Core.Rag;
+using BoardGameTracker.Core.Rag.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
+using Pgvector.EntityFrameworkCore;
+using Pgvector.Npgsql;
 
 namespace BoardGameTracker.Core.Extensions;
 
@@ -65,6 +70,21 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IShameService, ShameService>();
         serviceCollection.AddScoped<IImageService, ImageService>();
         serviceCollection.AddScoped<IManualService, ManualService>();
+
+        serviceCollection.AddSingleton<IManualIndexingQueue, ManualIndexingQueue>();
+        serviceCollection.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
+        serviceCollection.AddSingleton<IPdfPageRenderer, PdfPageRenderer>();
+        serviceCollection.AddSingleton<IRulebookChunker, RulebookChunker>();
+        serviceCollection.AddScoped<IRagSettingsProvider, RagSettingsProvider>();
+        serviceCollection.AddScoped<IAiClientFactory, AiClientFactory>();
+        serviceCollection.AddScoped<IManualChunkRepository, ManualChunkRepository>();
+        serviceCollection.AddScoped<IManualIndexingService, ManualIndexingService>();
+        serviceCollection.AddScoped<IRagService, RagService>();
+
+        if (bool.TryParse(Environment.GetEnvironmentVariable("RAG_ENABLED"), out var ragEnabled) && ragEnabled)
+        {
+            serviceCollection.AddHostedService<ManualIndexingBackgroundService>();
+        }
         serviceCollection.AddScoped<IEmailService, EmailService>();
         serviceCollection.AddScoped<ISmtpSender, MailKitSmtpSender>();
         serviceCollection.AddScoped<IPublicUrlBuilder, PublicUrlBuilder>();
@@ -87,13 +107,11 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped(typeof(IReadRepository<>), typeof(EfReadRepository<>));
 
         serviceCollection.AddScoped<IGameRepository, GameRepository>();
-        serviceCollection.AddScoped<IGameSessionRepository, GameSessionRepository>();
         serviceCollection.AddScoped<IGameStatisticsRepository, GameStatisticsRepository>();
         serviceCollection.AddScoped<IPlayerRepository, PlayerRepository>();
         serviceCollection.AddScoped<ISessionRepository, SessionRepository>();
         serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
         serviceCollection.AddScoped<ICompareRepository, CompareRepository>();
-        serviceCollection.AddScoped<IGameNightRepository, GameNightRepository>();
 
         serviceCollection.AddScoped<IUnitOfWork, UnitOfWork>();
         serviceCollection.AddScoped<ITokenService, TokenService>();
@@ -127,12 +145,26 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IBadgeEvaluator, SocialPlayerBadgeEvaluator>();
         serviceCollection.AddScoped<IBadgeEvaluator, WinningStreakBadgeEvaluator>();
         
-        serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
+        serviceCollection.AddSingleton(serviceProvider =>
         {
             var dbConnectionProvider = serviceProvider.GetService<IDbConnectionProvider>();
             if (dbConnectionProvider == null)
             {
                 throw new ServiceNotResolvedException("dbConnectionProvider could not be resolved");
+            }
+
+            var connectionString = dbConnectionProvider.GetPostgresConnectionString(dbConnectionProvider.PostgresMainDb);
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+            dataSourceBuilder.UseVector();
+            return dataSourceBuilder.Build();
+        });
+
+        serviceCollection.AddDbContext<MainDbContext>((serviceProvider, options) =>
+        {
+            var dataSource = serviceProvider.GetService<NpgsqlDataSource>();
+            if (dataSource == null)
+            {
+                throw new ServiceNotResolvedException("NpgsqlDataSource could not be resolved");
             }
 
             var environmentProvider = serviceProvider.GetService<IEnvironmentProvider>();
@@ -141,10 +173,9 @@ public static class ServiceCollectionExtensions
                 throw new ServiceNotResolvedException("environmentProvider could not be resolved");
             }
 
-            var connectionString = dbConnectionProvider.GetPostgresConnectionString(dbConnectionProvider.PostgresMainDb);
             options
                 .EnableSensitiveDataLogging(environmentProvider.IsDevelopment)
-                .UseNpgsql(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+                .UseNpgsql(dataSource, o => o.UseVector().UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         });
 
         return serviceCollection;

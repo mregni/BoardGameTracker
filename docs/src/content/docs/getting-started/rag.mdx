@@ -1,0 +1,143 @@
+---
+title: Rules Assistant (RAG)
+description: Ask natural-language questions about your game rulebooks, answered locally by AI.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The rules assistant lets you ask natural-language questions about a game's uploaded rulebook(s) — for example *"how many cards do you start with?"* — and get an answer with page citations. Answers are grounded in the manuals you uploaded: the assistant only uses their content.
+
+It runs **fully locally** by default through [Ollama](https://ollama.com/), so your rulebooks and questions never leave your server. No API keys and no cloud services are required.
+
+<Aside type="caution">
+The rules assistant is **disabled by default** and needs enough hardware to run a local language model. On a low-powered server (for example a Raspberry Pi or a small NAS), leave it disabled.
+</Aside>
+
+## Enabling it
+
+1. Set `RAG_ENABLED=true` for the `boardgametracker` container.
+2. Start the bundled Ollama service (it is opt-in through a compose profile):
+
+   ```bash
+   docker compose --profile rag up -d
+   ```
+3. Pull the models once, or let the app download them lazily on first use:
+
+   ```bash
+   docker compose exec ollama ollama pull bge-m3
+   docker compose exec ollama ollama pull qwen3:4b
+   ```
+
+Once enabled, every uploaded manual is indexed automatically in the background. Manuals uploaded before enabling are indexed on the next start.
+
+## Models
+
+| Role | Model | Configurable |
+| --- | --- | --- |
+| Embeddings (search) | `bge-m3` | Fixed — chosen for multilingual rulebooks (English, Dutch, French, German, …). |
+| Chat (answers) | `qwen3:4b` | Yes — set `AI_CHAT_MODEL`. |
+
+The embedding model is fixed so the vector search stays consistent. The chat model is up to you — pick one that fits your hardware.
+
+## Which chat model should I use?
+
+Larger models give better answers but need more memory, and ideally a GPU. Set your choice with `AI_CHAT_MODEL` and `ollama pull` it.
+
+| Your hardware | Suggested `AI_CHAT_MODEL` |
+| --- | --- |
+| Raspberry Pi / under 8 GB RAM | Not recommended — keep the assistant disabled. |
+| ~8 GB RAM, CPU only | `qwen3:4b` (default) or `mistral:7b` |
+| 16 GB RAM, or a 6–8 GB GPU | `qwen3:8b` |
+| 12–16 GB GPU | `qwen3:14b`, `gemma3:12b`, or `qwen3:30b-a3b` |
+| 24 GB+ GPU | `command-r` |
+
+The `bge-m3` embedding model runs fine on CPU across the board.
+
+## GPU acceleration (NVIDIA)
+
+By default Ollama runs on the CPU. To use an NVIDIA GPU for much faster answers:
+
+1. Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) on the host.
+2. Start the bundled **`docker-compose.gpu.yml`** — a complete, ready-to-run stack with the assistant enabled and the GPU reserved for Ollama:
+
+   ```bash
+   docker compose -f docker-compose.gpu.yml up -d
+   ```
+
+The full file:
+
+```yaml
+services:
+  boardgametracker:
+    image: uping/boardgametracker:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./images:/app/images
+      - ./logs:/app/logs
+      - ./manuals:/app/manuals
+    ports:
+      - "5444:5444"
+    environment:
+      - DB_HOST=db
+      - DB_USER=dbuser
+      - DB_PASSWORD=CHANGEME
+      - DB_NAME=boardgametracker
+      - DB_PORT=5432
+      - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
+      - TZ=UTC
+      - RAG_ENABLED=true
+      - AI_BASE_URL=http://ollama:11434
+      - AI_CHAT_MODEL=qwen3:8b
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=boardgametracker
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=CHANGEME
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dbuser -d boardgametracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ./ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+```
+
+A 6 GB card such as a GTX 1060 comfortably runs `qwen3:8b`.
+
+## Rulebook page images
+
+Each answer's citations include a thumbnail of the actual rulebook page they were drawn from, so you can check the source at a glance. Pages are rendered on the server on demand and cached — no configuration is needed, as the container ships with the renderer (`poppler-utils`) built in. If the renderer is ever unavailable, answers simply fall back to text-only citations.
+
+## Using a hosted model instead
+
+If you would rather use a hosted, OpenAI-compatible endpoint instead of local Ollama, set `AI_PROVIDER=openai`, point `AI_BASE_URL` at the endpoint, and set `AI_API_KEY`. Note that this sends rulebook text and questions to that provider.
+
+<Aside type="note">
+Changing `AI_CHAT_MODEL` takes effect on the next request, but pull the new model first (`ollama pull <model>`) — only indexing downloads models automatically, so the first question after a model change would otherwise fail. The database (`pgvector/pgvector:pg16`) image is required whether or not the assistant is enabled.
+</Aside>

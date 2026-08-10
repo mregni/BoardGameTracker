@@ -1,6 +1,7 @@
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Manuals.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +16,12 @@ public class ManualController : ControllerBase
     private const long MaxUploadBytes = 1024L * 1024 * 1024;
 
     private readonly IManualService _manualService;
+    private readonly IEnvironmentProvider _environmentProvider;
 
-    public ManualController(IManualService manualService)
+    public ManualController(IManualService manualService, IEnvironmentProvider environmentProvider)
     {
         _manualService = manualService;
+        _environmentProvider = environmentProvider;
     }
 
     [HttpGet]
@@ -40,6 +43,20 @@ public class ManualController : ControllerBase
         return Ok(manuals.ToListDto());
     }
 
+    [HttpPost]
+    [Route("{id:int}/reindex")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    public async Task<IActionResult> ReindexManual(int id)
+    {
+        if (!_environmentProvider.RagEnabled)
+        {
+            return NotFound();
+        }
+
+        await _manualService.RequeueManualForIndexing(id);
+        return NoContent();
+    }
+
     [HttpDelete]
     [Route("{id:int}")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
@@ -55,6 +72,24 @@ public class ManualController : ControllerBase
     {
         var download = await _manualService.GetManualForDownload(id);
         return File(download.Stream, download.ContentType, download.FileName);
+    }
+
+    [HttpGet]
+    [Route("{id:int}/page/{page:int}/image")]
+    public async Task<IActionResult> GetManualPageImage(int id, int page, CancellationToken cancellationToken)
+    {
+        if (!_environmentProvider.RagEnabled)
+        {
+            return NotFound();
+        }
+
+        var image = await _manualService.GetManualPageImage(id, page, cancellationToken);
+        if (image == null)
+        {
+            return NotFound();
+        }
+
+        return File(image.Stream, image.ContentType);
     }
 
     [HttpGet]

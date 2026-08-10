@@ -40,6 +40,7 @@ export default defineConfig({
 						"getting-started/quick-start",
 						"getting-started/docker",
 						"getting-started/environment-variables",
+						"getting-started/rag",
 						"getting-started/email",
 						"getting-started/proxy",
 					],

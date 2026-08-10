@@ -14,7 +14,11 @@ public static class ManualDtoExtensions
             Title = manual.Title,
             FileSizeBytes = manual.FileSizeBytes,
             UploadDate = manual.UploadDate,
-            ContentType = manual.ContentType
+            ContentType = manual.ContentType,
+            IndexStatus = manual.IndexStatus,
+            IndexedChunkCount = manual.IndexedChunkCount,
+            IndexError = manual.IndexError,
+            IndexedDate = manual.IndexedDate
         };
     }
 

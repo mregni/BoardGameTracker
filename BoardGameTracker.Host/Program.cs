@@ -66,7 +66,7 @@ builder.Services.AddProblemDetails();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.KnownNetworks.Clear();
+    options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 
     var trustedProxies = new EnvironmentProvider().TrustedProxies;
@@ -78,7 +78,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
         }
         else if (System.Net.IPNetwork.TryParse(proxy, out var network))
         {
-            options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(network.BaseAddress, network.PrefixLength));
+            options.KnownIPNetworks.Add(network);
         }
     }
 });
@@ -162,6 +162,8 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient(BoardGameTracker.Core.Rag.AiClientFactory.HttpClientName)
+    .ConfigureHttpClient(client => client.Timeout = System.Threading.Timeout.InfiniteTimeSpan);
 builder.Services.AddMemoryCache();
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -218,6 +220,21 @@ builder.Services.AddSwaggerGen(options =>
         Version = version,
         Description = "BoardGameTracker API for managing board game collections and play sessions"
     });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Call POST /api/auth/login and the token is captured automatically, or paste a JWT here.",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        { new OpenApiSecuritySchemeReference("Bearer", document), new List<string>() }
+    });
 });
 
 builder.Services.AddHttpClient(nameof(IBoardGameGeekXmlApi2Client));
@@ -248,6 +265,7 @@ app.UseSerilogRequestLogging();
 app.UseForwardedHeaders();
 
 var hstsEnabled = !app.Environment.IsDevelopment();
+var swaggerEnabled = environmentProvider.SwaggerEnabled;
 app.Use(async (context, next) =>
 {
     context.Response.OnStarting(() =>
@@ -260,8 +278,11 @@ app.Use(async (context, next) =>
         headers["Cross-Origin-Opener-Policy"] = "same-origin";
         headers["Cross-Origin-Embedder-Policy"] = "require-corp";
         headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
-        headers["Content-Security-Policy"] =
-            "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
+
+        var isSwagger = swaggerEnabled && context.Request.Path.StartsWithSegments("/swagger");
+        headers["Content-Security-Policy"] = isSwagger
+            ? "default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';"
+            : "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
 
         if (hstsEnabled && context.Request.IsHttps)
         {
@@ -292,7 +313,11 @@ app.MapControllers();
 if (environmentProvider.SwaggerEnabled)
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.UseResponseInterceptor(
+            "(res) => { try { if (res.status >= 200 && res.status < 300) { var body = res.obj || (res.text ? JSON.parse(res.text) : null); if (body && body.accessToken && window.ui) { window.ui.preauthorizeApiKey('Bearer', body.accessToken); console.log('[Swagger] Bearer token captured from auth response.'); } } } catch (e) { console.warn('[Swagger] auth interceptor failed', e); } return res; }");
+    });
 }
 
 if (bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out var sentryEnabled) && sentryEnabled)

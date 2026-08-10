@@ -1,5 +1,6 @@
 using Ardalis.GuardClauses;
 using BoardGameTracker.Common.Entities.Helpers;
+using BoardGameTracker.Common.Enums;
 
 namespace BoardGameTracker.Common.Entities;
 
@@ -33,6 +34,13 @@ public class Manual : HasId
     public Game Game { get; private set; } = null!;
     public int GameId { get; private set; }
 
+    public ManualIndexStatus IndexStatus { get; private set; } = ManualIndexStatus.Pending;
+    public int IndexedChunkCount { get; private set; }
+    public string? IndexError { get; private set; }
+    public DateTime? IndexedDate { get; private set; }
+
+    public ICollection<ManualChunk> Chunks { get; private set; } = new List<ManualChunk>();
+
     public Manual(string title, string storedFileName, string contentType, long fileSizeBytes, int gameId, DateTime uploadDate)
     {
         Title = title;
@@ -41,5 +49,33 @@ public class Manual : HasId
         FileSizeBytes = fileSizeBytes;
         GameId = Guard.Against.NegativeOrZero(gameId);
         UploadDate = uploadDate;
+    }
+
+    public void MarkIndexing()
+    {
+        IndexStatus = ManualIndexStatus.Indexing;
+        IndexError = null;
+    }
+
+    public void MarkIndexed(int chunkCount, DateTime indexedDate)
+    {
+        IndexStatus = ManualIndexStatus.Indexed;
+        IndexedChunkCount = Guard.Against.Negative(chunkCount);
+        IndexError = null;
+        IndexedDate = indexedDate;
+    }
+
+    public void MarkFailed(string error)
+    {
+        IndexStatus = ManualIndexStatus.Failed;
+        IndexError = error;
+    }
+
+    public void ResetIndexState()
+    {
+        IndexStatus = ManualIndexStatus.Pending;
+        IndexedChunkCount = 0;
+        IndexError = null;
+        IndexedDate = null;
     }
 }

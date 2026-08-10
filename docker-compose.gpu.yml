@@ -19,8 +19,9 @@ services:
       - DB_PORT=5432
       - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
       - TZ=UTC
-      - RAG_ENABLED=false
+      - RAG_ENABLED=true
       - AI_BASE_URL=http://ollama:11434
+      - AI_CHAT_MODEL=qwen3:8b
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
       interval: 30s
@@ -46,7 +47,13 @@ services:
 
   ollama:
     image: ollama/ollama:latest
-    profiles: ["rag"]
     restart: unless-stopped
     volumes:
       - ./ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
