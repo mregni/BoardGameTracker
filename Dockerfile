@@ -27,7 +27,7 @@ ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
 RUN pnpm build
 
 # Stage 2: Build Backend
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS backend-build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS backend-build
 ARG VERSION
 WORKDIR /src
 
@@ -63,7 +63,7 @@ RUN ASSEMBLY_VERSION=$(echo "${VERSION}" | cut -d'-' -f1) && \
     /p:BuildWithoutEsproj=true
 
 # Stage 3: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
 
 # Build arguments for runtime configuration
 ARG ASPNETCORE_ENVIRONMENT=production
@@ -71,7 +71,7 @@ ARG ASPNETCORE_URLS=http://*:5444
 
 WORKDIR /app
 
-RUN apk add --no-cache curl su-exec
+RUN apk add --no-cache curl su-exec poppler-utils
 
 RUN mkdir -p /app/images /app/logs /app/manuals
 
