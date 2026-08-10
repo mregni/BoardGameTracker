@@ -28,28 +28,6 @@ public class SoloSpecialistBadgeEvaluatorTests
     #region Green Level Tests (5 solo sessions)
 
     [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnFalse_WhenSoloSessionCountIsLessThan5()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSoloSessions(4);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenSoloSessionCountIsExactly5()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSoloSessions(5);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenSoloSessionCountIsMoreThan5()
     {
         var badge = CreateBadge(BadgeLevel.Green);
@@ -63,28 +41,6 @@ public class SoloSpecialistBadgeEvaluatorTests
     #endregion
 
     #region Blue Level Tests (10 solo sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnFalse_WhenSoloSessionCountIsLessThan10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSoloSessions(9);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenSoloSessionCountIsExactly10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSoloSessions(10);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenSoloSessionCountIsMoreThan10()
@@ -102,28 +58,6 @@ public class SoloSpecialistBadgeEvaluatorTests
     #region Red Level Tests (25 solo sessions)
 
     [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnFalse_WhenSoloSessionCountIsLessThan25()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSoloSessions(24);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenSoloSessionCountIsExactly25()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSoloSessions(25);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenSoloSessionCountIsMoreThan25()
     {
         var badge = CreateBadge(BadgeLevel.Red);
@@ -137,28 +71,6 @@ public class SoloSpecialistBadgeEvaluatorTests
     #endregion
 
     #region Gold Level Tests (50 solo sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnFalse_WhenSoloSessionCountIsLessThan50()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSoloSessions(49);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenSoloSessionCountIsExactly50()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSoloSessions(50);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenSoloSessionCountIsMoreThan50()

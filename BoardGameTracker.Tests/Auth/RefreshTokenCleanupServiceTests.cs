@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Configuration.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -14,6 +13,8 @@ namespace BoardGameTracker.Tests.Auth;
 
 public class RefreshTokenCleanupServiceTests
 {
+    private static readonly TimeSpan SignalTimeout = TimeSpan.FromSeconds(5);
+
     private readonly Mock<IServiceScopeFactory> _scopeFactoryMock;
     private readonly Mock<ILogger<RefreshTokenCleanupService>> _loggerMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
@@ -27,6 +28,7 @@ public class RefreshTokenCleanupServiceTests
         _tokenServiceMock = new Mock<ITokenService>();
 
         SetupServiceScope();
+        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(true);
     }
 
     private void SetupServiceScope()
@@ -45,152 +47,99 @@ public class RefreshTokenCleanupServiceTests
             .Returns(_tokenServiceMock.Object);
     }
 
-    private void VerifyNoOtherCalls()
+    private async Task RunUntilAsync(Task signal)
     {
-        _environmentProviderMock.VerifyNoOtherCalls();
-        _tokenServiceMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public void Constructor_ShouldNotThrow()
-    {
-        // Act & Assert
-        var service = new RefreshTokenCleanupService(_scopeFactoryMock.Object, _loggerMock.Object);
-        service.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldReturnImmediately_WhenAuthIsDisabled()
-    {
-        // Arrange
-        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(false);
-        var service = new RefreshTokenCleanupService(_scopeFactoryMock.Object, _loggerMock.Object);
-        var cts = new CancellationTokenSource();
-
-        // Act
-        await service.StartAsync(cts.Token);
-        await Task.Delay(100, TestContext.Current.CancellationToken);
-        await cts.CancelAsync();
-
+        var service = new TestableRefreshTokenCleanupService(_scopeFactoryMock.Object, _loggerMock.Object);
+        await service.StartAsync(CancellationToken.None);
         try
+        {
+            await signal.WaitAsync(SignalTimeout);
+        }
+        finally
         {
             await service.StopAsync(CancellationToken.None);
         }
-        catch (OperationCanceledException)
-        {
-            // Expected
-        }
-
-        // Assert
-        _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
-        _tokenServiceMock.Verify(x => x.CleanupExpiredTokensAsync(), Times.Never);
-        VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldNotCleanupBeforeInterval_WhenAuthIsEnabled()
+    public async Task ExecuteAsync_ShouldCleanUpExpiredTokens_WhenAuthIsEnabled()
     {
-        // Arrange
-        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(true);
-        var service = new RefreshTokenCleanupService(_scopeFactoryMock.Object, _loggerMock.Object);
-        var cts = new CancellationTokenSource();
-
-        // Act - start and cancel quickly (before the 24h interval elapses)
-        await service.StartAsync(cts.Token);
-        await Task.Delay(100, TestContext.Current.CancellationToken);
-        await cts.CancelAsync();
-
-        try
-        {
-            await service.StopAsync(CancellationToken.None);
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected
-        }
-
-        // Assert - cleanup should not have been called yet (interval is 24h)
-        _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
-        _tokenServiceMock.Verify(x => x.CleanupExpiredTokensAsync(), Times.Never);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldStopGracefully_WhenCancelled()
-    {
-        // Arrange
-        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(true);
-        var service = new RefreshTokenCleanupService(_scopeFactoryMock.Object, _loggerMock.Object);
-        var cts = new CancellationTokenSource();
-
-        // Act
-        await service.StartAsync(cts.Token);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-        await cts.CancelAsync();
-
-        // Assert - should not throw unexpected exceptions
-        var act = () => service.StopAsync(CancellationToken.None);
-        await act.Should().NotThrowAsync<Exception>();
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldHandleCleanupException()
-    {
-        // Arrange
-        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(true);
+        var cleanupStarted = new TaskCompletionSource();
         _tokenServiceMock
             .Setup(x => x.CleanupExpiredTokensAsync())
-            .ThrowsAsync(new InvalidOperationException("Database error"));
+            .Callback(() => cleanupStarted.TrySetResult())
+            .Returns(Task.CompletedTask);
 
-        // Use a real scope factory that returns fresh scopes so we can trigger cleanup
-        var scopeMock = new Mock<IServiceScope>();
-        var scopedProviderMock = new Mock<IServiceProvider>();
-        scopeMock.Setup(x => x.ServiceProvider).Returns(scopedProviderMock.Object);
-        scopedProviderMock
-            .Setup(x => x.GetService(typeof(IEnvironmentProvider)))
-            .Returns(_environmentProviderMock.Object);
-        scopedProviderMock
-            .Setup(x => x.GetService(typeof(ITokenService)))
-            .Returns(_tokenServiceMock.Object);
-        _scopeFactoryMock.Setup(x => x.CreateScope()).Returns(scopeMock.Object);
+        await RunUntilAsync(cleanupStarted.Task);
 
-        var service = new RefreshTokenCleanupService(_scopeFactoryMock.Object, _loggerMock.Object);
-        var cts = new CancellationTokenSource();
-
-        // Act - start and cancel quickly
-        await service.StartAsync(cts.Token);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-        await cts.CancelAsync();
-
-        // Assert - service should not crash from the exception
-        var act = () => service.StopAsync(CancellationToken.None);
-        await act.Should().NotThrowAsync<Exception>();
+        _tokenServiceMock.Verify(x => x.CleanupExpiredTokensAsync(), Times.AtLeastOnce);
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldCheckAuthEnabled_InScopedContext()
+    public async Task ExecuteAsync_ShouldNeverCleanUp_WhenAuthIsDisabled()
     {
-        // Arrange
         _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(false);
-        var service = new RefreshTokenCleanupService(_scopeFactoryMock.Object, _loggerMock.Object);
-        var cts = new CancellationTokenSource();
+        var service = new TestableRefreshTokenCleanupService(_scopeFactoryMock.Object, _loggerMock.Object);
 
-        // Act
-        await service.StartAsync(cts.Token);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-        await cts.CancelAsync();
+        await service.StartAsync(CancellationToken.None);
+        await service.ExecuteTask!.WaitAsync(SignalTimeout);
+        await service.StopAsync(CancellationToken.None);
 
-        try
-        {
-            await service.StopAsync(CancellationToken.None);
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected
-        }
-
-        // Assert - should have created a scope to check auth status
-        _scopeFactoryMock.Verify(x => x.CreateScope(), Times.Once);
         _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
+        _scopeFactoryMock.Verify(x => x.CreateScope(), Times.Once);
+        _tokenServiceMock.Verify(x => x.CleanupExpiredTokensAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldKeepRunning_WhenCleanupThrows()
+    {
+        var secondAttempt = new TaskCompletionSource();
+        var attempts = 0;
+        _tokenServiceMock
+            .Setup(x => x.CleanupExpiredTokensAsync())
+            .Callback(() =>
+            {
+                if (Interlocked.Increment(ref attempts) >= 2)
+                {
+                    secondAttempt.TrySetResult();
+                }
+            })
+            .ThrowsAsync(new InvalidOperationException("database unavailable"));
+
+        await RunUntilAsync(secondAttempt.Task);
+
+        _tokenServiceMock.Verify(x => x.CleanupExpiredTokensAsync(), Times.AtLeast(2));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldCreateAScopePerCleanup()
+    {
+        var secondCleanup = new TaskCompletionSource();
+        var cleanups = 0;
+        _tokenServiceMock
+            .Setup(x => x.CleanupExpiredTokensAsync())
+            .Callback(() =>
+            {
+                if (Interlocked.Increment(ref cleanups) >= 2)
+                {
+                    secondCleanup.TrySetResult();
+                }
+            })
+            .Returns(Task.CompletedTask);
+
+        await RunUntilAsync(secondCleanup.Task);
+
+        _scopeFactoryMock.Verify(x => x.CreateScope(), Times.AtLeast(3));
+    }
+
+    private sealed class TestableRefreshTokenCleanupService : RefreshTokenCleanupService
+    {
+        public TestableRefreshTokenCleanupService(
+            IServiceScopeFactory scopeFactory,
+            ILogger<RefreshTokenCleanupService> logger) : base(scopeFactory, logger)
+        {
+        }
+
+        protected override TimeSpan Interval => TimeSpan.FromMilliseconds(10);
     }
 }

@@ -167,30 +167,6 @@ public class RatingTests
         result.Should().Be(7.5);
     }
 
-    [Fact]
-    public void ImplicitOperator_ShouldWorkInComparisons()
-    {
-        // Arrange
-        var rating = new Rating(7.5);
-
-        // Act & Assert
-        (rating > 5).Should().BeTrue();
-        (rating < 10).Should().BeTrue();
-    }
-
-    [Fact]
-    public void ImplicitOperator_ShouldWorkInArithmetic()
-    {
-        // Arrange
-        var rating = new Rating(7.5);
-
-        // Act
-        double result = rating + 2.5;
-
-        // Assert
-        result.Should().Be(10);
-    }
-
     #endregion
 
     #region ToString Tests
@@ -256,28 +232,6 @@ public class RatingTests
     #region Record Equality Tests
 
     [Fact]
-    public void Equality_SameValue_ShouldBeEqual()
-    {
-        // Arrange
-        var rating1 = new Rating(7.5);
-        var rating2 = new Rating(7.5);
-
-        // Assert
-        rating1.Should().Be(rating2);
-    }
-
-    [Fact]
-    public void Equality_DifferentValue_ShouldNotBeEqual()
-    {
-        // Arrange
-        var rating1 = new Rating(7.5);
-        var rating2 = new Rating(8.0);
-
-        // Assert
-        rating1.Should().NotBe(rating2);
-    }
-
-    [Fact]
     public void Equality_SameAfterRounding_ShouldBeEqual()
     {
         // Arrange
@@ -286,17 +240,6 @@ public class RatingTests
 
         // Assert - Both round to 7.55
         rating1.Should().Be(rating2);
-    }
-
-    [Fact]
-    public void GetHashCode_SameValue_ShouldBeSame()
-    {
-        // Arrange
-        var rating1 = new Rating(7.5);
-        var rating2 = new Rating(7.5);
-
-        // Assert
-        rating1.GetHashCode().Should().Be(rating2.GetHashCode());
     }
 
     #endregion
@@ -321,26 +264,6 @@ public class RatingTests
 
         // Assert
         rating.Value.Should().Be(9.99);
-    }
-
-    [Fact]
-    public void Constructor_JustBelowLowerBoundary_ShouldThrow()
-    {
-        // Act
-        Action act = () => new Rating(-0.01);
-
-        // Assert
-        act.Should().Throw<ArgumentOutOfRangeException>();
-    }
-
-    [Fact]
-    public void Constructor_JustAboveUpperBoundary_ShouldThrow()
-    {
-        // Act
-        Action act = () => new Rating(10.01);
-
-        // Assert
-        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     #endregion

@@ -69,6 +69,40 @@ public class SessionQuerySpecsTests
     }
 
     [Fact]
+    public void SessionsByPlayerRecentFirstSpec_ShouldLimitToCount_WhenCountIsProvided()
+    {
+        var sessions = PlayerSessionsAcrossThreeDays(5);
+
+        var result = new SessionsByPlayerRecentFirstSpec(5, 2).Evaluate(sessions).ToList();
+
+        result.Select(x => x.Id).Should().Equal(3, 2);
+    }
+
+    [Fact]
+    public void SessionsByPlayerRecentFirstSpec_ShouldReturnEverythingRecentFirst_WhenCountIsNull()
+    {
+        var sessions = PlayerSessionsAcrossThreeDays(5);
+
+        var result = new SessionsByPlayerRecentFirstSpec(5).Evaluate(sessions).ToList();
+
+        result.Select(x => x.Id).Should().Equal(3, 2, 1);
+    }
+
+    private static Session[] PlayerSessionsAcrossThreeDays(int playerId)
+    {
+        var first = SessionFor(1, 1, new DateTime(2030, 1, 1));
+        var second = SessionFor(2, 1, new DateTime(2030, 1, 2));
+        var third = SessionFor(3, 1, new DateTime(2030, 1, 3));
+
+        foreach (var session in new[] { first, second, third })
+        {
+            session.AddPlayerSession(playerId, null, false, false);
+        }
+
+        return [first, second, third];
+    }
+
+    [Fact]
     public void SessionsByGamePagedSpec_ShouldSkipAndTakeInDescendingOrder()
     {
         var day1 = SessionFor(1, 1, new DateTime(2030, 1, 1));

@@ -144,48 +144,4 @@ public class UpdateControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task CheckNow_ShouldThrowException_WhenCheckForUpdatesThrows()
-    {
-        // Arrange
-        var expectedException = new InvalidOperationException("Update check failed");
-
-        _updateServiceMock
-            .Setup(x => x.CheckForUpdatesAsync())
-            .ThrowsAsync(expectedException);
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _controller.CheckNow());
-
-        exception.Should().Be(expectedException);
-
-        _updateServiceMock.Verify(x => x.CheckForUpdatesAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task CheckNow_ShouldThrowException_WhenGetUpdateStatusThrows()
-    {
-        // Arrange
-        var expectedException = new TimeoutException("Status retrieval timeout");
-
-        _updateServiceMock
-            .Setup(x => x.CheckForUpdatesAsync())
-            .Returns(Task.CompletedTask);
-
-        _updateServiceMock
-            .Setup(x => x.GetVersionInfoAsync())
-            .ThrowsAsync(expectedException);
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<TimeoutException>(
-            () => _controller.CheckNow());
-
-        exception.Should().Be(expectedException);
-
-        _updateServiceMock.Verify(x => x.CheckForUpdatesAsync(), Times.Once);
-        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
 }

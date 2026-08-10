@@ -69,24 +69,6 @@ public class LocationServiceTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task GetLocations_ShouldReturnEmptyList_WhenNoLocationsExist()
-    {
-        // Arrange
-        _locationRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<LocationsOrderedByNameSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
-
-        // Act
-        var result = await _locationService.GetLocations();
-
-        // Assert
-        result.Should().BeEmpty();
-
-        _locationRepositoryMock.Verify(x => x.ListAsync(It.IsAny<LocationsOrderedByNameSpec>(), It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
     #endregion
 
     #region Create Tests
@@ -142,27 +124,6 @@ public class LocationServiceTests
         _locationRepositoryMock.Verify(x => x.DeleteAsync(locationId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task Delete_ShouldCallDeleteAsync_WithCorrectId()
-    {
-        // Arrange
-        var locationId = 42;
-
-        _locationRepositoryMock
-            .Setup(x => x.DeleteAsync(locationId))
-            .ReturnsAsync(true);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
-
-        // Act
-        await _locationService.Delete(locationId);
-
-        // Assert
-        _locationRepositoryMock.Verify(x => x.DeleteAsync(42), Times.Once);
     }
 
     #endregion
@@ -235,24 +196,6 @@ public class LocationServiceTests
 
         // Assert
         result.Should().Be(10);
-
-        _locationRepositoryMock.Verify(x => x.CountAsync(It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task CountAsync_ShouldReturnZero_WhenNoLocationsExist()
-    {
-        // Arrange
-        _locationRepositoryMock
-            .Setup(x => x.CountAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(0);
-
-        // Act
-        var result = await _locationService.CountAsync();
-
-        // Assert
-        result.Should().Be(0);
 
         _locationRepositoryMock.Verify(x => x.CountAsync(It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();

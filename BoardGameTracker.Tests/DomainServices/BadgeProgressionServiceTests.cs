@@ -68,7 +68,7 @@ public class BadgeProgressionServiceTests
     }
 
     [Fact]
-    public async Task GetNextAvailableBadgeAsync_ShouldReturnGreenBadge_WhenPlayerHasGreen_DueToDefaultEnumBug()
+    public async Task GetNextAvailableBadgeAsync_ShouldReturnBlueBadge_WhenPlayerHasGreen()
     {
         // Arrange
         var badges = CreateBadgeProgression(BadgeType.Sessions);
@@ -83,10 +83,8 @@ public class BadgeProgressionServiceTests
         var result = await _service.GetNextAvailableBadgeAsync(player, BadgeType.Sessions);
 
         // Assert
-        // Note: Due to Green being default(BadgeLevel), the code treats having Green
-        // the same as having no badges. This is a known implementation issue.
         result.Should().NotBeNull();
-        result!.Level.Should().Be(BadgeLevel.Green);
+        result!.Level.Should().Be(BadgeLevel.Blue);
     }
 
     [Fact]

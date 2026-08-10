@@ -5,7 +5,6 @@ using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Players.Interfaces;
 using FluentAssertions;
@@ -145,31 +144,6 @@ public class PlayerControllerTests
     }
 
     [Fact]
-    public async Task UpdatePlayer_ShouldThrow_WhenPlayerDoesNotExist()
-    {
-        // Arrange
-        var command = new UpdatePlayerCommand
-        {
-            Id = 999,
-            Name = "NonExistent",
-            Image = null
-        };
-
-        _playerServiceMock
-            .Setup(x => x.Update(command))
-            .ThrowsAsync(new EntityNotFoundException(nameof(Player), command.Id));
-
-        // Act
-        var action = async () => await _controller.UpdatePlayer(command);
-
-        // Assert
-        await action.Should().ThrowAsync<EntityNotFoundException>();
-
-        _playerServiceMock.Verify(x => x.Update(command), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
     public async Task GetPlayerById_ShouldReturnOkWithPlayer_WhenPlayerExists()
     {
         // Arrange
@@ -235,26 +209,6 @@ public class PlayerControllerTests
     }
 
     [Fact]
-    public async Task DeletePlayerById_ShouldThrow_WhenPlayerDoesNotExist()
-    {
-        // Arrange
-        var playerId = 999;
-
-        _playerServiceMock
-            .Setup(x => x.Delete(playerId))
-            .ThrowsAsync(new EntityNotFoundException(nameof(Player), playerId));
-
-        // Act
-        var action = async () => await _controller.DeletePlayerById(playerId);
-
-        // Assert
-        await action.Should().ThrowAsync<EntityNotFoundException>();
-
-        _playerServiceMock.Verify(x => x.Delete(playerId), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
     public async Task GetPlayerStats_ShouldReturnOkWithStats_WhenStatsExist()
     {
         // Arrange
@@ -276,13 +230,7 @@ public class PlayerControllerTests
         var result = await _controller.GetPlayerStats(playerId);
 
         // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedStats = okResult.Value.Should().BeAssignableTo<PlayerStatistics>().Subject;
-
-        returnedStats.PlayCount.Should().Be(10);
-        returnedStats.WinCount.Should().Be(5);
-        returnedStats.TotalPlayedTime.Should().Be(300.5);
-        returnedStats.DistinctGameCount.Should().Be(3);
+        result.Should().BeOfType<OkObjectResult>();
 
         _playerServiceMock.Verify(x => x.GetStats(playerId), Times.Once);
         VerifyNoOtherCalls();

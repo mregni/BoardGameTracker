@@ -25,46 +25,6 @@ public class MarathonRunnerBadgeEvaluatorTests
         _evaluator.BadgeType.Should().Be(BadgeType.MarathonRunner);
     }
 
-    #region Duration Threshold Tests (240 minutes = 4 hours)
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenSessionDurationIsLessThan240Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var session = CreateSessionWithDuration(239);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenSessionDurationIsExactly240Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var session = CreateSessionWithDuration(240);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenSessionDurationIsMoreThan240Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var session = CreateSessionWithDuration(300);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
     #region Edge Cases
 
     [Fact]
@@ -86,18 +46,6 @@ public class MarathonRunnerBadgeEvaluatorTests
         result.Should().BeFalse(); // Should only check current session
     }
 
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_ForVeryLongSession()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var session = CreateSessionWithDuration(600); // 10 hours
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeTrue();
-    }
-
     [Theory]
     [InlineData(239, false)]
     [InlineData(240, true)]
@@ -105,6 +53,7 @@ public class MarathonRunnerBadgeEvaluatorTests
     [InlineData(300, true)]
     [InlineData(360, true)]
     [InlineData(480, true)]
+    [InlineData(600, true)]
     public async Task CanAwardBadge_ShouldHandleVariousDurations(int durationMinutes, bool expectedResult)
     {
         var badge = CreateBadge(BadgeLevel.Green);

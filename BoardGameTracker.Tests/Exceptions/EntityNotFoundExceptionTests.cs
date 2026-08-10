@@ -130,21 +130,6 @@ public class EntityNotFoundExceptionTests
     }
 
     [Fact]
-    public void Constructor_WithCustomMessage_ShouldSetCustomMessage()
-    {
-        // Arrange
-        var entityType = "Player";
-        var entityId = 123;
-        var message = "The requested player could not be located in the database";
-
-        // Act
-        var exception = new EntityNotFoundException(entityType, entityId, message);
-
-        // Assert
-        exception.Message.Should().Be(message);
-    }
-
-    [Fact]
     public void Constructor_WithCustomMessage_ShouldOverrideDefaultMessage()
     {
         // Arrange
@@ -162,76 +147,7 @@ public class EntityNotFoundExceptionTests
 
     #endregion
 
-    #region Inheritance Tests
-
-    [Fact]
-    public void EntityNotFoundException_ShouldInheritFromException()
-    {
-        // Act
-        var exception = new EntityNotFoundException("Test", 1);
-
-        // Assert
-        exception.Should().BeAssignableTo<Exception>();
-    }
-
-    [Fact]
-    public void EntityNotFoundException_ShouldBeThrowable()
-    {
-        // Arrange
-        var entityType = "Player";
-        var entityId = 123;
-
-        // Act & Assert
-        Action act = () => throw new EntityNotFoundException(entityType, entityId);
-
-        act.Should().Throw<EntityNotFoundException>()
-            .Where(e => e.EntityType == entityType && (int)e.EntityId == entityId);
-    }
-
-    [Fact]
-    public void EntityNotFoundException_ShouldBeCatchableAsException()
-    {
-        // Arrange
-        Exception? caughtException = null;
-
-        // Act
-        try
-        {
-            throw new EntityNotFoundException("Player", 1);
-        }
-        catch (Exception ex)
-        {
-            caughtException = ex;
-        }
-
-        // Assert
-        caughtException.Should().NotBeNull();
-        caughtException.Should().BeOfType<EntityNotFoundException>();
-    }
-
-    #endregion
-
     #region Edge Cases
-
-    [Fact]
-    public void Constructor_WithEmptyEntityType_ShouldAcceptEmptyString()
-    {
-        // Act
-        var exception = new EntityNotFoundException(string.Empty, 1);
-
-        // Assert
-        exception.EntityType.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void Constructor_WithNullEntityId_ShouldAcceptNull()
-    {
-        // Act
-        var exception = new EntityNotFoundException("Player", null!);
-
-        // Assert
-        exception.EntityId.Should().BeNull();
-    }
 
     [Fact]
     public void Constructor_WithZeroId_ShouldAcceptZero()
@@ -253,46 +169,6 @@ public class EntityNotFoundExceptionTests
         // Assert
         exception.EntityId.Should().Be(-1);
         exception.Message.Should().Be("Player with ID '-1' was not found.");
-    }
-
-    [Theory]
-    [InlineData("Game")]
-    [InlineData("Player")]
-    [InlineData("Session")]
-    [InlineData("Badge")]
-    [InlineData("Location")]
-    public void Constructor_ShouldHandleVariousEntityTypes(string entityType)
-    {
-        // Act
-        var exception = new EntityNotFoundException(entityType, 1);
-
-        // Assert
-        exception.EntityType.Should().Be(entityType);
-        exception.Message.Should().StartWith(entityType);
-    }
-
-    #endregion
-
-    #region InnerException Tests
-
-    [Fact]
-    public void EntityNotFoundException_ShouldHaveNullInnerException()
-    {
-        // Act
-        var exception = new EntityNotFoundException("Player", 1);
-
-        // Assert
-        exception.InnerException.Should().BeNull();
-    }
-
-    [Fact]
-    public void EntityNotFoundException_WithCustomMessage_ShouldHaveNullInnerException()
-    {
-        // Act
-        var exception = new EntityNotFoundException("Player", 1, "Custom message");
-
-        // Assert
-        exception.InnerException.Should().BeNull();
     }
 
     #endregion

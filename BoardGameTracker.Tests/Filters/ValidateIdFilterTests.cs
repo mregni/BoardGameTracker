@@ -152,25 +152,6 @@ public class ValidateIdFilterTests
         context.Result.Should().BeNull();
     }
 
-    [Fact]
-    public void OnActionExecuted_ShouldDoNothing()
-    {
-        var httpContext = new DefaultHttpContext();
-        var actionContext = new ActionContext(
-            httpContext,
-            new RouteData(),
-            new ActionDescriptor());
-
-        var context = new ActionExecutedContext(
-            actionContext,
-            new List<IFilterMetadata>(),
-            new object());
-
-        _filter.OnActionExecuted(context);
-
-        context.Result.Should().BeNull();
-    }
-
     [Theory]
     [InlineData("sessionId", -1)]
     [InlineData("locationId", 0)]

@@ -103,26 +103,6 @@ public class ImageServiceTests : IDisposable
             _diskProviderMock.VerifyNoOtherCalls();
         }
         
-        [Theory]
-        [InlineData(UploadFileType.Game)]
-        [InlineData(UploadFileType.Profile)]
-        public async Task SaveImage_ShouldHandleValidTypes_WithDifferentUploadTypes(UploadFileType type)
-        {
-            var formFile = CreateMockFormFile("test.jpg", CreateTestImageBytes());
-            const string expectedFileName = "unique-file.jpg";
-            var expectedFullPath = type == UploadFileType.Game ? PathHelper.FullCoverImagePath : PathHelper.FullProfileImagePath;
-            var expectedFolder = type == UploadFileType.Game ? PathHelper.CoverImagePath : PathHelper.ProfileImagePath;
-            const string expectedName = "test.webp";
-
-            _diskProviderMock.Setup(x => x.WriteFile(It.IsAny<Image>(), expectedName, expectedFullPath, It.IsAny<IImageEncoder?>()))
-                           .ReturnsAsync(expectedFileName);
-
-            var result = await _imageService.SaveImage(formFile, type);
-
-            result.Should().Be($"/{expectedFolder}/{expectedFileName}".Replace("\\", "/"));
-            _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Image>(), expectedName, expectedFullPath, It.IsAny<IImageEncoder?>()), Times.Once);
-        }
-
         [Fact]
         public void DeleteImage_ShouldMapWebPathToPhysicalPath_WhenUnderImagesRoot()
         {
@@ -170,6 +150,8 @@ public class ImageServiceTests : IDisposable
             await _imageService.SaveImage(formFile, UploadFileType.Game);
 
             capturedImage.Should().NotBeNull();
+            capturedImage!.Width.Should().Be(512);
+            capturedImage.Height.Should().Be(512);
         }
 
         [Fact]

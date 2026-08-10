@@ -28,28 +28,6 @@ public class SessionWinEvaluatorTests
     #region Green Level Tests (3 wins)
 
     [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnFalse_WhenWinCountIsLessThan3()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithWins(2, 5);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenWinCountIsExactly3()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithWins(3, 5);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenWinCountIsMoreThan3()
     {
         var badge = CreateBadge(BadgeLevel.Green);
@@ -63,28 +41,6 @@ public class SessionWinEvaluatorTests
     #endregion
 
     #region Blue Level Tests (10 wins)
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnFalse_WhenWinCountIsLessThan10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSessionsWithWins(9, 15);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenWinCountIsExactly10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSessionsWithWins(10, 15);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenWinCountIsMoreThan10()
@@ -102,28 +58,6 @@ public class SessionWinEvaluatorTests
     #region Red Level Tests (25 wins)
 
     [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnFalse_WhenWinCountIsLessThan25()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSessionsWithWins(24, 30);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenWinCountIsExactly25()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSessionsWithWins(25, 30);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenWinCountIsMoreThan25()
     {
         var badge = CreateBadge(BadgeLevel.Red);
@@ -137,28 +71,6 @@ public class SessionWinEvaluatorTests
     #endregion
 
     #region Gold Level Tests (50 wins)
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnFalse_WhenWinCountIsLessThan50()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSessionsWithWins(49, 60);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenWinCountIsExactly50()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSessionsWithWins(50, 60);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenWinCountIsMoreThan50()

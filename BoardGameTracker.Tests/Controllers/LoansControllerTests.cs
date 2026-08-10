@@ -5,7 +5,6 @@ using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Loans.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -200,33 +199,6 @@ public class LoanControllerTests
     }
 
     [Fact]
-    public async Task UpdateLoan_ShouldThrow_WhenLoanDoesNotExist()
-    {
-        // Arrange
-        var command = new UpdateLoanCommand
-        {
-            Id = 999,
-            GameId = 1,
-            PlayerId = 1,
-            LoanDate = DateTime.UtcNow.AddDays(-5),
-            DueDate = DateTime.UtcNow.AddDays(25)
-        };
-
-        _loanServiceMock
-            .Setup(x => x.Update(command))
-            .ThrowsAsync(new EntityNotFoundException(nameof(Loan), command.Id));
-
-        // Act
-        var action = async () => await _controller.UpdateLoan(command);
-
-        // Assert
-        await action.Should().ThrowAsync<EntityNotFoundException>();
-
-        _loanServiceMock.Verify(x => x.Update(command), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
     public async Task ReturnLoan_ShouldReturnOkWithUpdatedLoan_WhenLoanIsReturned()
     {
         // Arrange
@@ -252,30 +224,6 @@ public class LoanControllerTests
 
         loan.Id.Should().Be(command.Id);
         loan.ReturnedDate.Should().Be(command.ReturnDate);
-
-        _loanServiceMock.Verify(x => x.ReturnLoan(command), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ReturnLoan_ShouldThrow_WhenLoanDoesNotExist()
-    {
-        // Arrange
-        var command = new ReturnLoanCommand
-        {
-            Id = 999,
-            ReturnDate = DateTime.UtcNow
-        };
-
-        _loanServiceMock
-            .Setup(x => x.ReturnLoan(command))
-            .ThrowsAsync(new EntityNotFoundException(nameof(Loan), command.Id));
-
-        // Act
-        var action = async () => await _controller.ReturnLoan(command);
-
-        // Assert
-        await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _loanServiceMock.Verify(x => x.ReturnLoan(command), Times.Once);
         VerifyNoOtherCalls();

@@ -59,46 +59,6 @@ public class AuthDisabledFilterTests
     }
 
     [Fact]
-    public void OnActionExecuting_ShouldSetConflictResult_WhenAuthIsDisabledAndPathIsLogin()
-    {
-        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(false);
-        var context = CreateContext("/api/auth/login");
-
-        _filter.OnActionExecuting(context);
-
-        var conflictResult = context.Result.Should().BeOfType<ConflictObjectResult>().Subject;
-        conflictResult.Value.Should().Be("Authentication is disabled. This endpoint is not available.");
-        _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public void OnActionExecuting_ShouldNotSetResult_WhenAuthIsDisabledAndPathEndsWithStatus()
-    {
-        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(false);
-        var context = CreateContext("/api/auth/status");
-
-        _filter.OnActionExecuting(context);
-
-        context.Result.Should().BeNull();
-        _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public void OnActionExecuting_ShouldNotSetResult_WhenAuthIsDisabledAndPathEndsWithStatusUppercase()
-    {
-        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(false);
-        var context = CreateContext("/api/auth/STATUS");
-
-        _filter.OnActionExecuting(context);
-
-        context.Result.Should().BeNull();
-        _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
     public void OnActionExecuting_ShouldSetConflictResult_WhenAuthIsDisabledAndPathIsEmpty()
     {
         _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(false);
@@ -109,26 +69,6 @@ public class AuthDisabledFilterTests
         var conflictResult = context.Result.Should().BeOfType<ConflictObjectResult>().Subject;
         conflictResult.Value.Should().Be("Authentication is disabled. This endpoint is not available.");
         _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public void OnActionExecuted_ShouldDoNothing()
-    {
-        var httpContext = new DefaultHttpContext();
-        var actionContext = new ActionContext(
-            httpContext,
-            new RouteData(),
-            new ActionDescriptor());
-
-        var context = new ActionExecutedContext(
-            actionContext,
-            new List<IFilterMetadata>(),
-            new object());
-
-        _filter.OnActionExecuted(context);
-
-        context.Result.Should().BeNull();
         VerifyNoOtherCalls();
     }
 

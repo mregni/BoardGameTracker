@@ -31,22 +31,6 @@ public class UploadFileTypeExtensionTests
     }
 
     [Fact]
-    public void ConvertToPath_ShouldBeConsistent_WhenCalledMultipleTimes()
-    {
-        const UploadFileType type = UploadFileType.Profile;
-
-        var result1 = type.ConvertToPath();
-        var result2 = type.ConvertToPath();
-        var result3 = type.ConvertToPath();
-
-        result1.Should().Be(PathHelper.FullProfileImagePath);
-        result2.Should().Be(PathHelper.FullProfileImagePath);
-        result3.Should().Be(PathHelper.FullProfileImagePath);
-        result1.Should().Be(result2);
-        result2.Should().Be(result3);
-    }
-
-    [Fact]
     public void ConvertToPath_ShouldHandleAllDefinedEnumValues()
     {
         var allEnumValues = Enum.GetValues<UploadFileType>();

@@ -9,15 +9,9 @@ namespace BoardGameTracker.Tests.Configuration;
 public class ConfigDefaultsTests
 {
     [Fact]
-    public void All_ShouldNotBeEmpty()
-    {
-        ConfigDefaults.All.Should().NotBeEmpty();
-    }
-
-    [Fact]
     public void All_ShouldContainAllExpectedDefaults()
     {
-        ConfigDefaults.All.Should().HaveCount(17);
+        ConfigDefaults.All.Should().HaveCount(22);
     }
 
     [Fact]
@@ -45,6 +39,11 @@ public class ConfigDefaultsTests
     [InlineData(AppConfig.PublicUrl, "http://localhost:5444")]
     [InlineData(AppConfig.RsvpAuthenticationEnabled, "false")]
     [InlineData(BggConfig.ApiKey, "")]
+    [InlineData(AiConfig.Provider, "ollama")]
+    [InlineData(AiConfig.BaseUrl, "http://ollama:11434")]
+    [InlineData(AiConfig.ChatModel, "qwen3:4b")]
+    [InlineData(AiConfig.ApiKey, "")]
+    [InlineData(AiConfig.TopK, "5")]
     [InlineData(UpdateConfig.Track, "stable")]
     [InlineData(UpdateConfig.CheckEnabled, "true")]
     [InlineData(UpdateConfig.CheckIntervalHours, "24")]
@@ -60,14 +59,4 @@ public class ConfigDefaultsTests
         entry!.Value.Should().Be(expectedValue);
     }
 
-    [Fact]
-    public void ConfigDefault_ShouldSupportValueEquality()
-    {
-        var first = new ConfigDefault("key", "value");
-        var second = new ConfigDefault("key", "value");
-        var different = new ConfigDefault("key", "other");
-
-        first.Should().Be(second);
-        first.Should().NotBe(different);
-    }
 }

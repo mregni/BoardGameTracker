@@ -70,16 +70,6 @@ public class BadgeLevelProgressionPolicyTests
         result.Should().BeFalse();
     }
 
-    [Fact]
-    public void CanProgressTo_ShouldReturnFalse_WhenAtMaxLevel()
-    {
-        // Act - Gold cannot progress anywhere
-        var result = _policy.CanProgressTo(BadgeLevel.Gold, BadgeLevel.Gold);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
     #endregion
 
     #region GetNextLevel Tests
@@ -139,18 +129,11 @@ public class BadgeLevelProgressionPolicyTests
     }
 
     [Fact]
-    public void GetPreviousLevel_ShouldReturnNull_WhenCurrentIsBlue()
+    public void GetPreviousLevel_ShouldReturnGreen_WhenCurrentIsBlue()
     {
-        // Note: Due to the implementation using `!= default`, and Green being the default (0),
-        // this returns null even though logically Green should be returned.
-        // This is an edge case in the implementation.
-
-        // Act
         var result = _policy.GetPreviousLevel(BadgeLevel.Blue);
 
-        // Assert
-        // The implementation returns null because Green == default(BadgeLevel)
-        result.Should().BeNull();
+        result.Should().Be(BadgeLevel.Green);
     }
 
     [Fact]
@@ -314,15 +297,6 @@ public class BadgeLevelProgressionPolicyTests
     #region Integration Tests
 
     [Fact]
-    public void FullProgressionPath_ShouldBeValid()
-    {
-        // Green -> Blue -> Red -> Gold
-        _policy.CanProgressTo(BadgeLevel.Green, BadgeLevel.Blue).Should().BeTrue();
-        _policy.CanProgressTo(BadgeLevel.Blue, BadgeLevel.Red).Should().BeTrue();
-        _policy.CanProgressTo(BadgeLevel.Red, BadgeLevel.Gold).Should().BeTrue();
-    }
-
-    [Fact]
     public void GetNextLevel_ChainedCalls_ShouldTraverseAllLevels()
     {
         // Start at Green and traverse to the end
@@ -344,11 +318,8 @@ public class BadgeLevelProgressionPolicyTests
     }
 
     [Fact]
-    public void GetPreviousLevel_ChainedCalls_ShouldTraverseUntilBlue()
+    public void GetPreviousLevel_ChainedCalls_ShouldTraverseDownToGreen()
     {
-        // Start at Gold and traverse backwards
-        // Note: Due to the implementation bug with Green being default(BadgeLevel),
-        // the chain stops at Blue instead of reaching Green
         var current = BadgeLevel.Gold;
         var levels = new List<BadgeLevel> { current };
 
@@ -358,11 +329,11 @@ public class BadgeLevelProgressionPolicyTests
             current = previous;
         }
 
-        // Chain stops at Blue because GetPreviousLevel(Blue) returns null
         levels.Should().BeEquivalentTo([
             BadgeLevel.Gold,
             BadgeLevel.Red,
-            BadgeLevel.Blue
+            BadgeLevel.Blue,
+            BadgeLevel.Green
         ], options => options.WithStrictOrdering());
     }
 

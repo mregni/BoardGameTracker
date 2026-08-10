@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using BoardGameTracker.Common.Exceptions;
 using FluentAssertions;
@@ -192,69 +191,6 @@ public class ValidationExceptionTests
         exception.Errors.Should().HaveCount(1);
     }
 
-    [Theory]
-    [InlineData("Email", "Email is invalid")]
-    [InlineData("Age", "Age must be positive")]
-    [InlineData("Password", "Password is too weak")]
-    public void Constructor_WithFieldAndError_ShouldHandleVariousFields(string field, string error)
-    {
-        // Act
-        var exception = new ValidationException(field, error);
-
-        // Assert
-        exception.Errors.Should().ContainKey(field);
-        exception.Errors[field].Should().Contain(error);
-        exception.Message.Should().Be(error);
-    }
-
-    #endregion
-
-    #region Inheritance Tests
-
-    [Fact]
-    public void ValidationException_ShouldInheritFromException()
-    {
-        // Act
-        var exception = new ValidationException("Test");
-
-        // Assert
-        exception.Should().BeAssignableTo<Exception>();
-    }
-
-    [Fact]
-    public void ValidationException_ShouldBeThrowable()
-    {
-        // Arrange
-        var message = "Validation failed";
-
-        // Act & Assert
-        Action act = () => throw new ValidationException(message);
-
-        act.Should().Throw<ValidationException>()
-            .WithMessage(message);
-    }
-
-    [Fact]
-    public void ValidationException_ShouldBeCatchableAsException()
-    {
-        // Arrange
-        Exception? caughtException = null;
-
-        // Act
-        try
-        {
-            throw new ValidationException("Test");
-        }
-        catch (Exception ex)
-        {
-            caughtException = ex;
-        }
-
-        // Assert
-        caughtException.Should().NotBeNull();
-        caughtException.Should().BeOfType<ValidationException>();
-    }
-
     #endregion
 
     #region Edge Cases
@@ -295,20 +231,6 @@ public class ValidationExceptionTests
 
     #endregion
 
-    #region InnerException Tests
-
-    [Fact]
-    public void ValidationException_ShouldHaveNullInnerException()
-    {
-        // Act
-        var exception = new ValidationException("Test");
-
-        // Assert
-        exception.InnerException.Should().BeNull();
-    }
-
-    #endregion
-
     #region Complex Scenarios Tests
 
     [Fact]
@@ -330,23 +252,6 @@ public class ValidationExceptionTests
         exception.Errors["Name"].Should().HaveCount(2);
         exception.Errors["Email"].Should().HaveCount(3);
         exception.Errors["Password"].Should().HaveCount(1);
-    }
-
-    [Fact]
-    public void Constructor_WithDictionary_ShouldBeModifiable()
-    {
-        // Arrange
-        var errors = new Dictionary<string, string[]>
-        {
-            { "Name", ["Name is required"]}
-        };
-        var exception = new ValidationException(errors);
-
-        // Act - The errors dictionary is the same reference
-        exception.Errors["Email"] = ["Email is invalid"];
-
-        // Assert
-        exception.Errors.Should().HaveCount(2);
     }
 
     #endregion

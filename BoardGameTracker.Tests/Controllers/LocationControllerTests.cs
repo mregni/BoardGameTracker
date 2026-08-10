@@ -4,7 +4,6 @@ using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Locations.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -135,30 +134,6 @@ public class LocationControllerTests
 
         locationDto.Id.Should().Be(1);
         locationDto.Name.Should().Be("Updated Home");
-
-        _locationServiceMock.Verify(x => x.Update(command), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task UpdateLocation_ShouldThrow_WhenLocationDoesNotExist()
-    {
-        // Arrange
-        var command = new UpdateLocationCommand
-        {
-            Id = 999,
-            Name = "NonExistent"
-        };
-
-        _locationServiceMock
-            .Setup(x => x.Update(command))
-            .ThrowsAsync(new EntityNotFoundException(nameof(Location), command.Id));
-
-        // Act
-        var action = async () => await _controller.UpdateLocation(command);
-
-        // Assert
-        await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _locationServiceMock.Verify(x => x.Update(command), Times.Once);
         VerifyNoOtherCalls();

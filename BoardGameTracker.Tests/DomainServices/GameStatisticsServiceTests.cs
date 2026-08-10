@@ -1,8 +1,12 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Ardalis.Specification;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Sessions.Specifications;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -12,19 +16,19 @@ namespace BoardGameTracker.Tests.DomainServices;
 
 public class GameStatisticsServiceTests
 {
-    private readonly Mock<IGameSessionRepository> _gameSessionRepositoryMock;
+    private readonly Mock<IReadRepository<Session>> _sessionRepositoryMock;
     private readonly Mock<IGameStatisticsRepository> _gameStatisticsRepositoryMock;
     private readonly Mock<ILogger<GameStatisticsService>> _loggerMock;
     private readonly GameStatisticsService _service;
 
     public GameStatisticsServiceTests()
     {
-        _gameSessionRepositoryMock = new Mock<IGameSessionRepository>();
+        _sessionRepositoryMock = new Mock<IReadRepository<Session>>();
         _gameStatisticsRepositoryMock = new Mock<IGameStatisticsRepository>();
         _loggerMock = new Mock<ILogger<GameStatisticsService>>();
 
         _service = new GameStatisticsService(
-            _gameSessionRepositoryMock.Object,
+            _sessionRepositoryMock.Object,
             _gameStatisticsRepositoryMock.Object,
             _loggerMock.Object);
     }
@@ -37,7 +41,7 @@ public class GameStatisticsServiceTests
         // Arrange
         var gameId = 1;
         SetupDefaultRepositoryMocks(gameId);
-        _gameSessionRepositoryMock.Setup(x => x.GetPlayCount(gameId)).ReturnsAsync(25);
+        _sessionRepositoryMock.Setup(x => x.CountAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>())).ReturnsAsync(25);
 
         // Act
         var result = await _service.CalculateStatisticsAsync(gameId);
@@ -52,7 +56,7 @@ public class GameStatisticsServiceTests
         // Arrange
         var gameId = 1;
         SetupDefaultRepositoryMocks(gameId);
-        _gameSessionRepositoryMock.Setup(x => x.GetTotalPlayedTime(gameId)).ReturnsAsync(1500.5);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPlayedTime(gameId)).ReturnsAsync(1500.5);
 
         // Act
         var result = await _service.CalculateStatisticsAsync(gameId);
@@ -158,7 +162,7 @@ public class GameStatisticsServiceTests
         var gameId = 1;
         var lastPlayed = new DateTime(2024, 1, 15, 18, 30, 0);
         SetupDefaultRepositoryMocks(gameId);
-        _gameSessionRepositoryMock.Setup(x => x.GetLastPlayedDateTime(gameId)).ReturnsAsync(lastPlayed);
+        _sessionRepositoryMock.Setup(x => x.FirstOrDefaultAsync(It.Is<ISpecification<Session, DateTime?>>(s => s is LastPlayedDateSpec), It.IsAny<CancellationToken>())).ReturnsAsync(lastPlayed);
 
         // Act
         var result = await _service.CalculateStatisticsAsync(gameId);
@@ -173,7 +177,7 @@ public class GameStatisticsServiceTests
         // Arrange
         var gameId = 1;
         SetupDefaultRepositoryMocks(gameId);
-        _gameSessionRepositoryMock.Setup(x => x.GetLastPlayedDateTime(gameId)).ReturnsAsync((DateTime?)null);
+        _sessionRepositoryMock.Setup(x => x.FirstOrDefaultAsync(It.Is<ISpecification<Session, DateTime?>>(s => s is LastPlayedDateSpec), It.IsAny<CancellationToken>())).ReturnsAsync((DateTime?)null);
 
         // Act
         var result = await _service.CalculateStatisticsAsync(gameId);
@@ -264,9 +268,9 @@ public class GameStatisticsServiceTests
         await _service.CalculateStatisticsAsync(gameId);
 
         // Assert
-        _gameSessionRepositoryMock.Verify(x => x.GetPlayCount(gameId), Times.Once);
-        _gameSessionRepositoryMock.Verify(x => x.GetTotalPlayedTime(gameId), Times.Once);
-        _gameSessionRepositoryMock.Verify(x => x.GetLastPlayedDateTime(gameId), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.CountAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _gameStatisticsRepositoryMock.Verify(x => x.GetTotalPlayedTime(gameId), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.Is<ISpecification<Session, DateTime?>>(s => s is LastPlayedDateSpec), It.IsAny<CancellationToken>()), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetPricePerPlay(gameId), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetHighestScore(gameId), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetAveragePlayTime(gameId), Times.Once);
@@ -283,9 +287,9 @@ public class GameStatisticsServiceTests
         var lastPlayed = new DateTime(2024, 6, 15);
         var player = new Player("Winner", "winner.jpg") { Id = 10 };
 
-        _gameSessionRepositoryMock.Setup(x => x.GetPlayCount(gameId)).ReturnsAsync(50);
-        _gameSessionRepositoryMock.Setup(x => x.GetTotalPlayedTime(gameId)).ReturnsAsync(3000.0);
-        _gameSessionRepositoryMock.Setup(x => x.GetLastPlayedDateTime(gameId)).ReturnsAsync(lastPlayed);
+        _sessionRepositoryMock.Setup(x => x.CountAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>())).ReturnsAsync(50);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPlayedTime(gameId)).ReturnsAsync(3000.0);
+        _sessionRepositoryMock.Setup(x => x.FirstOrDefaultAsync(It.Is<ISpecification<Session, DateTime?>>(s => s is LastPlayedDateSpec), It.IsAny<CancellationToken>())).ReturnsAsync(lastPlayed);
         _gameStatisticsRepositoryMock.Setup(x => x.GetPricePerPlay(gameId)).ReturnsAsync(1.50);
         _gameStatisticsRepositoryMock.Setup(x => x.GetHighestScore(gameId)).ReturnsAsync(250.0);
         _gameStatisticsRepositoryMock.Setup(x => x.GetAveragePlayTime(gameId)).ReturnsAsync(60.0);
@@ -317,9 +321,9 @@ public class GameStatisticsServiceTests
 
     private void SetupDefaultRepositoryMocks(int gameId)
     {
-        _gameSessionRepositoryMock.Setup(x => x.GetPlayCount(gameId)).ReturnsAsync(0);
-        _gameSessionRepositoryMock.Setup(x => x.GetTotalPlayedTime(gameId)).ReturnsAsync(0);
-        _gameSessionRepositoryMock.Setup(x => x.GetLastPlayedDateTime(gameId)).ReturnsAsync((DateTime?)null);
+        _sessionRepositoryMock.Setup(x => x.CountAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPlayedTime(gameId)).ReturnsAsync(0);
+        _sessionRepositoryMock.Setup(x => x.FirstOrDefaultAsync(It.Is<ISpecification<Session, DateTime?>>(s => s is LastPlayedDateSpec), It.IsAny<CancellationToken>())).ReturnsAsync((DateTime?)null);
         _gameStatisticsRepositoryMock.Setup(x => x.GetPricePerPlay(gameId)).ReturnsAsync((double?)null);
         _gameStatisticsRepositoryMock.Setup(x => x.GetHighestScore(gameId)).ReturnsAsync((double?)null);
         _gameStatisticsRepositoryMock.Setup(x => x.GetAveragePlayTime(gameId)).ReturnsAsync(0);

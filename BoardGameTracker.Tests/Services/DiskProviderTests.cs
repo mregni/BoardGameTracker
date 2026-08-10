@@ -100,7 +100,7 @@ public class DiskProviderTests: IDisposable
         }
 
         [Fact]
-        public void DeleteFile_ShouldLogUnknownError_WhenUnexpectedExceptionOccurs()
+        public void DeleteFile_ShouldLogInUseError_WhenDirectoryDoesNotExist()
         {
             var invalidPath =Path.Combine("Z", "nonexistent-path", "file.txt");
 

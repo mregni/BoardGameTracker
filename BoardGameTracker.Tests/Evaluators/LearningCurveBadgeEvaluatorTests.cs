@@ -39,17 +39,6 @@ public class LearningCurveBadgeEvaluatorTests
         result.Should().BeFalse();
     }
 
-    [Fact]
-    public async Task CanAwardBadge_ShouldEvaluate_WhenExactly3Sessions()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 90.0, 80.0]);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
     #endregion
 
     #region Score Improvement Tests
@@ -90,16 +79,14 @@ public class LearningCurveBadgeEvaluatorTests
     }
 
     [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenOnlyPartialImprovement()
+    public async Task CanAwardBadge_ShouldReturnFalse_WhenMostRecentScoreIsWorse()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        // First two improving but third goes down
-        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 95.0, 90.0]);
-        // This would be: 100 > 95 (true), but 95 > 90 is also true... wait let me reconsider
+        var sessions = CreateSessionsWithIncreasingScores(3, [95.0, 100.0, 90.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
-        result.Should().BeTrue(); // 100 > 95 > 90, all improving
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -190,16 +177,7 @@ public class LearningCurveBadgeEvaluatorTests
     public async Task CanAwardBadge_ShouldOnlyUseThreeMostRecentSessions()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = new List<Session>();
-
-        // Create 5 sessions with improving scores (most recent first)
-        // The 3 most recent should be: 100, 90, 80
-        for (var i = 0; i < 5; i++)
-        {
-            var session = CreateSession(GameId, i);
-            session.AddPlayerSession(PlayerId, 100 - i * 10, false, false);
-            sessions.Add(session);
-        }
+        var sessions = CreateSessionsWithIncreasingScores(5, [100.0, 90.0, 80.0, 95.0, 85.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 

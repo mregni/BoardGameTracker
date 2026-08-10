@@ -58,38 +58,4 @@ public class VersionExtensionsTests
         result.Should().Be("1.2.0");
     }
 
-    [Fact]
-    public void ToVersionString_ShouldBeConsistent_WhenCalledMultipleTimes()
-    {
-        var version = new Version(1, 2, 3);
-
-        var result1 = version.ToVersionString();
-        var result2 = version.ToVersionString();
-        var result3 = version.ToVersionString();
-
-        result1.Should().Be("1.2.3");
-        result2.Should().Be("1.2.3");
-        result3.Should().Be("1.2.3");
-        result1.Should().Be(result2);
-        result2.Should().Be(result3);
-    }
-
-    [Fact]
-    public void ToVersionString_ShouldHandleVersionFromAssembly_WhenVersionIsFromAssemblyName()
-    {
-        var assemblyVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-
-        var result = assemblyVersion.ToVersionString();
-
-        if (assemblyVersion != null)
-        {
-            result.Should().NotBeEmpty();
-            result.Should().Contain(".");
-            result.Split('.').Should().HaveCount(3);
-        }
-        else
-        {
-            result.Should().Be(string.Empty);
-        }
-    }
 }

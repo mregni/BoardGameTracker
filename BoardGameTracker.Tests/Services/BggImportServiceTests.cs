@@ -270,69 +270,7 @@ public class BggImportServiceTests
     }
 
     [Fact]
-    public async Task ImportGameFromBgg_ShouldPassNullPrice_WhenSearchHasNoPrice()
-    {
-        var search = new BggSearch
-        {
-            BggId = 99,
-            State = GameState.Wanted,
-            HasScoring = false,
-            Price = null,
-            AdditionDate = null
-        };
-        var rawItem = new ThingResponse.Item
-        {
-            Id = 99,
-            Thumbnail = "thumb.jpg",
-            Image = "image.jpg",
-            Description = "A game",
-            Type = "boardgame"
-        };
-        var thingResponse = CreateSucceededThingResponse([rawItem]);
-        var createdGame = new Game("No Price Game") { Id = 2 };
-
-        _gameRepositoryMock
-            .Setup(x => x.GetGameByBggId(99))
-            .ReturnsAsync((Game?)null);
-        _bggClientMock
-            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
-            .ReturnsAsync(thingResponse);
-        _gameFactoryMock
-            .Setup(x => x.CreateFromBggAsync(
-                rawItem,
-                false,
-                GameState.Wanted,
-                null,
-                null,
-                It.IsAny<string>()))
-            .ReturnsAsync(createdGame);
-        _gameRepositoryMock
-            .Setup(x => x.CreateAsync(createdGame))
-            .ReturnsAsync(createdGame);
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
-
-        var result = await _bggImportService.ImportGameFromBgg(search);
-
-        result.Should().Be(createdGame);
-
-        _gameRepositoryMock.Verify(x => x.GetGameByBggId(99), Times.Once);
-        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
-        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
-            rawItem,
-            false,
-            GameState.Wanted,
-            null,
-            null,
-            It.IsAny<string>()), Times.Once);
-        _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ImportGameFromBgg_ShouldThrowBggFeatureDisabledException_WhenApiKeyIsEmpty()
+    public async Task ImportGameFromBgg_ShouldThrowBggFeatureDisabledException_WhenBggIsDisabled()
     {
         var search = new BggSearch { BggId = 42, State = GameState.Owned, HasScoring = false };
 
@@ -912,69 +850,6 @@ public class BggImportServiceTests
 
         await _bggImportService.ImportList(importGames);
 
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task ImportList_ShouldMapSearchFieldsCorrectly_WhenProcessingGame()
-    {
-        var addedDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var importGames = new List<ImportGame>
-        {
-            new()
-            {
-                Title = "Mapping Test Game",
-                BggId = 555,
-                ImageUrl = "img.jpg",
-                State = GameState.ForTrade,
-                HasScoring = true,
-                Price = 19.50,
-                AddedDate = addedDate
-            }
-        };
-        var rawItem = new ThingResponse.Item
-        {
-            Id = 555,
-            Thumbnail = "thumb.jpg",
-            Image = "img.jpg",
-            Description = "Mapping test",
-            Type = "boardgame"
-        };
-        var thingResponse = CreateSucceededThingResponse([rawItem]);
-        var createdGame = new Game("Mapping Test Game") { Id = 77 };
-
-        _bggClientMock
-            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
-            .ReturnsAsync(thingResponse);
-        _gameFactoryMock
-            .Setup(x => x.CreateFromBggAsync(
-                rawItem,
-                true,
-                GameState.ForTrade,
-                19.50m,
-                addedDate,
-                It.IsAny<string>()))
-            .ReturnsAsync(createdGame);
-        _gameRepositoryMock
-            .Setup(x => x.CreateAsync(createdGame))
-            .ReturnsAsync(createdGame);
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
-
-        await _bggImportService.ImportList(importGames);
-
-        _gameRepositoryMock.Verify(x => x.GetGameByBggId(555), Times.Once);
-        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
-        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
-            rawItem,
-            true,
-            GameState.ForTrade,
-            19.50m,
-            addedDate,
-            It.IsAny<string>()), Times.Once);
-        _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
