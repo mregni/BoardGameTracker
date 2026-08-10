@@ -1,0 +1,36 @@
+{
+  "title": "Asistente de reglas",
+  "menu": "Reglas",
+  "ask-button": "Preguntar al manual",
+  "ask-button-disabled": "Sube un manual antes de entrar al chat",
+  "select-game": "Selecciona un juego",
+  "all-manuals": "Todos los manuales",
+  "sources": "Fuentes",
+  "untitled-manual": "Manual",
+  "page": "página {{page}}",
+  "unknown-page": "página desconocida",
+  "you": "Tú",
+  "assistant": "Asistente",
+  "thinking": "Pensando…",
+  "retry": "Reintentar",
+  "empty": {
+    "no-game": {
+      "title": "Elige un juego para empezar",
+      "description": "Elige un juego arriba para hacer preguntas sobre su manual."
+    },
+    "no-manuals": {
+      "title": "Aún no hay manual",
+      "description": "Este juego no tiene manuales. Sube un manual en la página del juego primero."
+    },
+    "not-indexed": {
+      "title": "El manual no está listo",
+      "description": "El manual todavía se está indexando. Vuelve en un momento."
+    },
+    "ask-something": "Haz una pregunta sobre las reglas para empezar."
+  },
+  "composer": {
+    "placeholder": "Haz una pregunta sobre las reglas…",
+    "disabled-placeholder": "Selecciona un juego con un manual indexado para hacer una pregunta.",
+    "send": "Enviar"
+  }
+}

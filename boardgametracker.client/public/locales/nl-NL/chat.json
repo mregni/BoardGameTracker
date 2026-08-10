@@ -1,0 +1,36 @@
+{
+  "title": "Spelregelassistent",
+  "menu": "Spelregelchat",
+  "ask-button": "Vraag de spelregels",
+  "ask-button-disabled": "Upload eerst een handleiding voordat je de chat opent",
+  "select-game": "Kies een spel",
+  "all-manuals": "Alle handleidingen",
+  "sources": "Bronnen",
+  "untitled-manual": "Handleiding",
+  "page": "pagina {{page}}",
+  "unknown-page": "onbekende pagina",
+  "you": "Jij",
+  "assistant": "Assistent",
+  "thinking": "Aan het nadenken…",
+  "retry": "Opnieuw proberen",
+  "empty": {
+    "no-game": {
+      "title": "Kies een spel om te beginnen",
+      "description": "Kies hierboven een spel om vragen te stellen over de spelregels."
+    },
+    "no-manuals": {
+      "title": "Nog geen handleiding",
+      "description": "Dit spel heeft geen handleidingen. Upload eerst een handleiding op de spelpagina."
+    },
+    "not-indexed": {
+      "title": "Handleiding nog niet klaar",
+      "description": "De handleiding wordt nog geïndexeerd. Probeer het zo meteen opnieuw."
+    },
+    "ask-something": "Stel een vraag over de regels om te beginnen."
+  },
+  "composer": {
+    "placeholder": "Stel een vraag over de regels…",
+    "disabled-placeholder": "Kies een spel met een geïndexeerde handleiding om een vraag te stellen.",
+    "send": "Versturen"
+  }
+}

@@ -83,6 +83,7 @@ function RouteComponent() {
 								dateFormat={settings.dateFormat}
 								uiLanguage={settings.uiLanguage}
 								manualCount={manuals.length}
+								ragEnabled={settings.ragEnabled}
 								onOpenManuals={manualsDialog.show}
 								onOpenExpansions={expansionsDialog.show}
 							/>
@@ -91,6 +92,7 @@ function RouteComponent() {
 								open={manualsDialog.isOpen}
 								close={manualsDialog.hide}
 								canWrite={canWrite}
+								ragEnabled={settings.ragEnabled}
 								dateFormat={settings.dateFormat}
 								uiLanguage={settings.uiLanguage}
 							/>

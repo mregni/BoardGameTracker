@@ -57,7 +57,16 @@
     "upload-failed": "Manual upload failed, check logs for more details.",
     "delete-success": "Manual deleted successfully.",
     "delete-failed": "Manual deletion failed, check logs for more details.",
-    "download-failed": "Manual download failed, check logs for more details."
+    "download-failed": "Manual download failed, check logs for more details.",
+    "status": {
+      "pending": "In wachtrij",
+      "indexing": "Indexeren…",
+      "indexed": "Geïndexeerd",
+      "failed": "Mislukt"
+    },
+    "reindex": "Opnieuw indexeren",
+    "reindex-success": "Opnieuw indexeren gestart.",
+    "reindex-failed": "Opnieuw indexeren mislukt, controleer de logs voor meer details."
   },
   "new": {
     "description": "Choose a method to create a new game.",

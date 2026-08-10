@@ -1,0 +1,36 @@
+{
+  "title": "Rulebook Assistant",
+  "menu": "Rulebook chat",
+  "ask-button": "Ask the rulebook",
+  "ask-button-disabled": "Upload a rulebook before entering chat",
+  "select-game": "Select a game",
+  "all-manuals": "All rulebooks",
+  "sources": "Sources",
+  "untitled-manual": "Rulebook",
+  "page": "page {{page}}",
+  "unknown-page": "unknown page",
+  "you": "You",
+  "assistant": "Assistant",
+  "thinking": "Thinking…",
+  "retry": "Retry",
+  "empty": {
+    "no-game": {
+      "title": "Pick a game to start",
+      "description": "Choose a game above to ask questions about its rulebook."
+    },
+    "no-manuals": {
+      "title": "No rulebook yet",
+      "description": "This game has no manuals. Upload a rulebook on the game page first."
+    },
+    "not-indexed": {
+      "title": "Rulebook not ready",
+      "description": "The rulebook is still being indexed. Check back in a moment."
+    },
+    "ask-something": "Ask a question about the rules to get started."
+  },
+  "composer": {
+    "placeholder": "Ask a question about the rules…",
+    "disabled-placeholder": "Select a game with an indexed rulebook to ask a question.",
+    "send": "Send"
+  }
+}

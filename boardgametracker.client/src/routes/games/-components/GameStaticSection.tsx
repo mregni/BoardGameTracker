@@ -15,6 +15,7 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import type { Game } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { BgtPoster } from "../../-components/BgtPoster";
+import { RulebookChatButton } from "./RulebookChatButton";
 
 interface Props {
 	game: Game;
@@ -23,12 +24,23 @@ interface Props {
 	uiLanguage: string;
 	dateFormat: string;
 	manualCount: number;
+	ragEnabled: boolean;
 	onOpenManuals: () => void;
 	onOpenExpansions: () => void;
 }
 
 export const GameStaticSection = (props: Props) => {
-	const { game, playCount, currency, uiLanguage, dateFormat, manualCount, onOpenManuals, onOpenExpansions } = props;
+	const {
+		game,
+		playCount,
+		currency,
+		uiLanguage,
+		dateFormat,
+		manualCount,
+		ragEnabled,
+		onOpenManuals,
+		onOpenExpansions,
+	} = props;
 	const { t } = useTranslation(["common", "statistics", "game"]);
 	const navigate = useNavigate();
 
@@ -58,6 +70,11 @@ export const GameStaticSection = (props: Props) => {
 				<div>
 					<BgtText className={cx("xl:line-clamp-2 line-clamp-3 text-white/70")}>{game.description}</BgtText>
 				</div>
+				{ragEnabled && (
+					<div className="flex">
+						<RulebookChatButton gameId={game.id} disabled={manualCount === 0} />
+					</div>
+				)}
 				<div className="grid grid-cols-2 md:grid-cols-4 2xl:grid-cols-7 gap-3 xl:gap-6">
 					<BgtTextStatistic content={`${game.minPlayers} - ${game.maxPlayers}`} title={t("players")} icon={<Users />} />
 					<BgtTextStatistic

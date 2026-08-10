@@ -1,4 +1,5 @@
 import { useQueries } from "@tanstack/react-query";
+import ChatIcon from "@/assets/icons/chat.svg?react";
 import CogIcon from "@/assets/icons/cog.svg?react";
 import Game from "@/assets/icons/gamepad.svg?react";
 import HomeIcon from "@/assets/icons/home.svg?react";
@@ -54,6 +55,12 @@ export const menuItems: MenuItem[] = [
 		mobileVisible: false,
 	},
 	{
+		menuLabel: "chat:menu",
+		path: "/chat",
+		icon: ChatIcon,
+		mobileVisible: false,
+	},
+	{
 		menuLabel: "common:game-nights",
 		path: "/game-nights",
 		icon: UsersIcon,
@@ -89,6 +96,7 @@ export const useMenuInfo = () => {
 		if (item.path === "/sessions/new" && !canWrite) return false;
 		if (item.path === "/shames" && !settingsQuery.data?.shelfOfShameEnabled) return false;
 		if (item.path === "/game-nights" && !settingsQuery.data?.gameNightsEnabled) return false;
+		if (item.path === "/chat" && !settingsQuery.data?.ragEnabled) return false;
 		return true;
 	});
 

@@ -16,6 +16,7 @@ export interface Settings {
 	gameNightsEnabled: boolean;
 	rsvpAuthenticationEnabled: boolean;
 	emailEnabled: boolean;
+	ragEnabled: boolean;
 	bggStatus: BggConfigStatus;
 	bggApiKey: string | null;
 }

@@ -1,12 +1,15 @@
 import { type ChangeEvent, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Download from "@/assets/icons/download.svg?react";
+import FileText from "@/assets/icons/file-text.svg?react";
 import List from "@/assets/icons/list.svg?react";
+import Refresh from "@/assets/icons/refresh.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtDialog, BgtDialogContent, BgtDialogDescription, BgtDialogTitle } from "@/components/BgtDialog/BgtDialog";
 import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtText } from "@/components/BgtText/BgtText";
+import type { GameManual, ManualIndexStatus } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { formatFileSize } from "@/utils/numberUtils";
 import { useGameManuals } from "../-hooks/useGameManuals";
@@ -16,13 +19,40 @@ interface Props {
 	open: boolean;
 	close: () => void;
 	canWrite: boolean;
+	ragEnabled: boolean;
 	dateFormat: string;
 	uiLanguage: string;
 }
 
-export const ManualsDialog = ({ gameId, open, close, canWrite, dateFormat, uiLanguage }: Props) => {
+const statusStyles: Record<ManualIndexStatus, string> = {
+	pending: "bg-white/10 text-white/60",
+	indexing: "bg-primary/20 text-primary",
+	indexed: "bg-green-500/20 text-green-400",
+	failed: "bg-error/20 text-error",
+};
+
+const ManualStatusBadge = ({ manual }: { manual: GameManual }) => {
 	const { t } = useTranslation("game");
-	const { manuals = [], uploadManuals, deleteManual, downloadManual } = useGameManuals(gameId);
+	return (
+		<span
+			className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${statusStyles[manual.indexStatus]}`}
+			title={manual.indexStatus === "failed" ? (manual.indexError ?? undefined) : undefined}
+		>
+			{t(`manuals.status.${manual.indexStatus}`)}
+		</span>
+	);
+};
+
+export const ManualsDialog = ({ gameId, open, close, canWrite, ragEnabled, dateFormat, uiLanguage }: Props) => {
+	const { t } = useTranslation("game");
+	const {
+		manuals = [],
+		uploadManuals,
+		deleteManual,
+		downloadManual,
+		reindexManual,
+		isReindexing,
+	} = useGameManuals(gameId, ragEnabled && open);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const openFilePicker = () => fileInputRef.current?.click();
@@ -63,17 +93,29 @@ export const ManualsDialog = ({ gameId, open, close, canWrite, dateFormat, uiLan
 								className="flex items-center gap-3 bg-primary/5 rounded-lg p-4 border border-primary/10 group"
 							>
 								<div className="shrink-0 w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-									<List className="text-primary" />
+									<FileText className="size-6 text-primary" />
 								</div>
 								<div className="flex-1 min-w-0">
 									<BgtText color="white" className="truncate">
 										{manual.title}
 									</BgtText>
-									<BgtText size="1" color="gray">
-										{formatFileSize(manual.fileSizeBytes)} · {toDisplay(manual.uploadDate, dateFormat, uiLanguage)}
-									</BgtText>
+									<div className="flex items-center gap-2 flex-wrap">
+										<BgtText size="1" color="gray">
+											{formatFileSize(manual.fileSizeBytes)} · {toDisplay(manual.uploadDate, dateFormat, uiLanguage)}
+										</BgtText>
+										{ragEnabled && <ManualStatusBadge manual={manual} />}
+									</div>
 								</div>
 								<div className="flex gap-1">
+									{canWrite && ragEnabled && (
+										<BgtIconButton
+											icon={<Refresh />}
+											intent="primary"
+											disabled={isReindexing}
+											title={t("manuals.reindex")}
+											onClick={() => reindexManual(manual.id)}
+										/>
+									)}
 									<BgtIconButton
 										icon={<Download />}
 										intent="primary"

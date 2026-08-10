@@ -25,6 +25,7 @@ export * from "./Games/GameStatistics";
 export * from "./Games/GameType";
 export * from "./Games/ImportGame";
 export * from "./Games/PersonType";
+export * from "./Games/RagAnswer";
 export * from "./Games/Shame";
 export * from "./Games/ShameStatistics";
 export * from "./Images/ImageUpload";
