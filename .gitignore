@@ -651,3 +651,5 @@ local-packages/
 BoardGameTracker.Host/manuals/
 
 BoardGameTracker.Host/Properties/launchSettings.json
+/*.md
+!/README.md
