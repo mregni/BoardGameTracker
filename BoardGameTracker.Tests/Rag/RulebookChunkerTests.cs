@@ -63,4 +63,62 @@ public class RulebookChunkerTests
         result.Should().Contain(c => c.PageNumber == 1);
         result.Should().Contain(c => c.PageNumber == 2);
     }
+
+    [Fact]
+    public void Chunk_ShouldReturnSingleFullChunk_WhenTextIsExactlyMaxChunkLength()
+    {
+        var text = new string('a', 1000);
+
+        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+
+        result.Should().ContainSingle().Which.Content.Should().Be(text);
+    }
+
+    [Fact]
+    public void Chunk_ShouldBreakAtNewline_WhenNewlineFallsWithinOverlapWindow()
+    {
+        var text = new string('a', 900) + "\n" + new string('b', 400);
+
+        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+
+        result.Should().HaveCount(2);
+        result[0].Content.Should().Be(new string('a', 900));
+        result[1].Content.Should().Be(new string('a', 199) + "\n" + new string('b', 400));
+    }
+
+    [Fact]
+    public void Chunk_ShouldBreakAfterSentenceEnd_WhenPunctuationFollowedByWhitespaceFallsWithinOverlapWindow()
+    {
+        var text = new string('a', 900) + ". " + new string('b', 300);
+
+        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+
+        result.Should().HaveCount(2);
+        result[0].Content.Should().Be(new string('a', 900) + ".");
+        result[1].Content.Should().Be(new string('a', 199) + ". " + new string('b', 300));
+    }
+
+    [Fact]
+    public void Chunk_ShouldHardSplitAtMaxLengthWithOverlap_WhenNoBoundaryExists()
+    {
+        var text = new string('a', 1500);
+
+        var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
+
+        result.Should().HaveCount(2);
+        result[0].Content.Should().Be(new string('a', 1000));
+        result[1].Content.Should().Be(new string('a', 700));
+    }
+
+    [Theory]
+    [InlineData("First line.\r\nSecond line.", "First line.\nSecond line.")]
+    [InlineData("Draw  two \t cards.", "Draw two cards.")]
+    [InlineData("Line one\n   indented", "Line one\nindented")]
+    [InlineData("  padded text  ", "padded text")]
+    public void Chunk_ShouldNormalizeWhitespace_WhenTextContainsCarriageReturnsTabsOrRepeatedSpaces(string input, string expected)
+    {
+        var result = _chunker.Chunk(new List<PdfPageText> { new(1, input) });
+
+        result.Should().ContainSingle().Which.Content.Should().Be(expected);
+    }
 }

@@ -10,6 +10,7 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Rag;
 using BoardGameTracker.Core.Rag.Interfaces;
+using BoardGameTracker.Core.Rag.Specifications;
 using FluentAssertions;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -103,6 +104,87 @@ public class ManualIndexingServiceTests
     }
 
     [Fact]
+    public async Task EnqueuePendingAsync_ShouldEnqueueEachManualId_WhenManualsArePending()
+    {
+        var first = CreateManual(5);
+        var second = CreateManual(8);
+        _manualRepoMock
+            .Setup(x => x.ListAsync(It.IsAny<ManualsToIndexSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Manual> { first, second });
+
+        await _service.EnqueuePendingAsync();
+
+        _queueMock.Verify(x => x.Enqueue(5), Times.Once);
+        _queueMock.Verify(x => x.Enqueue(8), Times.Once);
+        _queueMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EnqueuePendingAsync_ShouldNotEnqueue_WhenNoManualsArePending()
+    {
+        _manualRepoMock
+            .Setup(x => x.ListAsync(It.IsAny<ManualsToIndexSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Manual>());
+
+        await _service.EnqueuePendingAsync();
+
+        _queueMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task IndexAsync_ShouldMarkFailedWithExceptionMessage_WhenPdfReadThrows()
+    {
+        var manual = CreateManual();
+        _manualRepoMock.Setup(x => x.GetByIdAsync(manual.Id)).ReturnsAsync(manual);
+        _diskProviderMock.Setup(x => x.OpenRead(It.IsAny<string>())).Throws(new IOException("disk unreadable"));
+
+        await _service.IndexAsync(manual.Id);
+
+        manual.IndexStatus.Should().Be(ManualIndexStatus.Failed);
+        manual.IndexError.Should().Be("disk unreadable");
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.IsAny<List<ManualChunk>>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task IndexAsync_ShouldNotThrow_WhenPersistingTheFailureAlsoThrows()
+    {
+        var manual = CreateManual();
+        _manualRepoMock.Setup(x => x.GetByIdAsync(manual.Id)).ReturnsAsync(manual);
+        _factoryMock
+            .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("models unavailable"));
+        _unitOfWorkMock
+            .SetupSequence(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1)
+            .ThrowsAsync(new InvalidOperationException("database gone"));
+
+        var act = () => _service.IndexAsync(manual.Id);
+
+        await act.Should().NotThrowAsync();
+        manual.IndexStatus.Should().Be(ManualIndexStatus.Failed);
+        manual.IndexError.Should().Be("models unavailable");
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task IndexAsync_ShouldMarkFailedWithoutOpeningFile_WhenStoredFileNameEscapesManualsDirectory()
+    {
+        var manual = new Manual("Base Rules", Path.Combine("..", "evil.pdf"), "application/pdf", 100, 1, DateTime.UtcNow)
+        {
+            Id = 5
+        };
+        _manualRepoMock.Setup(x => x.GetByIdAsync(manual.Id)).ReturnsAsync(manual);
+
+        await _service.IndexAsync(manual.Id);
+
+        manual.IndexStatus.Should().Be(ManualIndexStatus.Failed);
+        manual.IndexError.Should().Contain("evil.pdf").And.Contain("not found");
+        _diskProviderMock.Verify(x => x.OpenRead(It.IsAny<string>()), Times.Never);
+        _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.IsAny<List<ManualChunk>>()), Times.Never);
+    }
+
+    [Fact]
     public async Task IndexAsync_ManualNotFound_DoesNothing()
     {
         _manualRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((Manual?)null);
@@ -121,11 +203,11 @@ public class ManualIndexingServiceTests
             .ReturnsAsync(embeddings);
     }
 
-    private static Manual CreateManual()
+    private static Manual CreateManual(int id = 5)
     {
         return new Manual("Base Rules", "stored.pdf", "application/pdf", 100, 1, DateTime.UtcNow)
         {
-            Id = 5
+            Id = id
         };
     }
 }
