@@ -4,13 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Ardalis.Specification;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Disk.Interfaces;
-using BoardGameTracker.Core.GameNights.Interfaces;
+using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Manuals;
 using BoardGameTracker.Core.Manuals.Specifications;
+using BoardGameTracker.Core.Rag.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -23,8 +26,11 @@ public class ManualServiceTests
 {
     private readonly Mock<IRepository<Manual>> _manualRepositoryMock;
     private readonly Mock<IDiskProvider> _diskProviderMock;
-    private readonly Mock<IGameNightRepository> _gameNightRepositoryMock;
+    private readonly Mock<IReadRepository<GameNight>> _gameNightRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IManualIndexingQueue> _indexingQueueMock;
+    private readonly Mock<IPdfPageRenderer> _pageRendererMock;
+    private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly Mock<ILogger<ManualService>> _loggerMock;
     private readonly ManualService _manualService;
 
@@ -32,8 +38,11 @@ public class ManualServiceTests
     {
         _manualRepositoryMock = new Mock<IRepository<Manual>>();
         _diskProviderMock = new Mock<IDiskProvider>();
-        _gameNightRepositoryMock = new Mock<IGameNightRepository>();
+        _gameNightRepositoryMock = new Mock<IReadRepository<GameNight>>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _indexingQueueMock = new Mock<IManualIndexingQueue>();
+        _pageRendererMock = new Mock<IPdfPageRenderer>();
+        _environmentProviderMock = new Mock<IEnvironmentProvider>();
         _loggerMock = new Mock<ILogger<ManualService>>();
 
         _manualService = new ManualService(
@@ -41,6 +50,9 @@ public class ManualServiceTests
             _diskProviderMock.Object,
             _gameNightRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            _indexingQueueMock.Object,
+            _pageRendererMock.Object,
+            _environmentProviderMock.Object,
             _loggerMock.Object);
     }
 
@@ -50,6 +62,7 @@ public class ManualServiceTests
         _diskProviderMock.VerifyNoOtherCalls();
         _gameNightRepositoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
+        _pageRendererMock.VerifyNoOtherCalls();
     }
 
     private static IFormFile CreateFormFile(string fileName = "rulebook.pdf", string contentType = "application/pdf", long length = 1024)
@@ -169,6 +182,7 @@ public class ManualServiceTests
 
         _manualRepositoryMock.Verify(x => x.GetByIdAsync(7), Times.Once);
         _diskProviderMock.Verify(x => x.DeleteFile(It.Is<string>(p => p.EndsWith("stored-rulebook.pdf"))), Times.Once);
+        _pageRendererMock.Verify(x => x.DeleteFigures(7), Times.Once);
         _manualRepositoryMock.Verify(x => x.DeleteAsync(7), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
@@ -221,19 +235,74 @@ public class ManualServiceTests
     }
 
     [Fact]
+    public async Task GetManualPageImage_ShouldThrow_WhenManualDoesNotExist()
+    {
+        _manualRepositoryMock.Setup(x => x.GetByIdAsync(99)).ReturnsAsync((Manual?)null);
+
+        var act = async () => await _manualService.GetManualPageImage(99, 1);
+
+        await act.Should().ThrowAsync<EntityNotFoundException>();
+
+        _manualRepositoryMock.Verify(x => x.GetByIdAsync(99), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetManualPageImage_ShouldReturnPng_WhenRendered()
+    {
+        var manual = CreateManual(3, 5, "Catan.pdf");
+        _manualRepositoryMock.Setup(x => x.GetByIdAsync(3)).ReturnsAsync(manual);
+        _diskProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+        _pageRendererMock
+            .Setup(x => x.RenderPageAsync(It.IsAny<string>(), 3, 2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MemoryStream());
+
+        var result = await _manualService.GetManualPageImage(3, 2);
+
+        result.Should().NotBeNull();
+        result!.ContentType.Should().Be("image/png");
+        result.FileName.Should().Be("page-2.png");
+
+        _manualRepositoryMock.Verify(x => x.GetByIdAsync(3), Times.Once);
+        _diskProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once);
+        _pageRendererMock.Verify(x => x.RenderPageAsync(It.IsAny<string>(), 3, 2, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetManualPageImage_ShouldReturnNull_WhenRendererUnavailable()
+    {
+        var manual = CreateManual(3, 5, "Catan.pdf");
+        _manualRepositoryMock.Setup(x => x.GetByIdAsync(3)).ReturnsAsync(manual);
+        _diskProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+        _pageRendererMock
+            .Setup(x => x.RenderPageAsync(It.IsAny<string>(), 3, 2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Stream?)null);
+
+        var result = await _manualService.GetManualPageImage(3, 2);
+
+        result.Should().BeNull();
+
+        _manualRepositoryMock.Verify(x => x.GetByIdAsync(3), Times.Once);
+        _diskProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once);
+        _pageRendererMock.Verify(x => x.RenderPageAsync(It.IsAny<string>(), 3, 2, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task GetManualForGameNightDownload_ShouldThrow_WhenManualNotInNight()
     {
         var linkId = Guid.NewGuid();
         var gameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
         gameNight.SetSuggestedGames(new List<Game> { new("Catan") { Id = 5 } });
-        _gameNightRepositoryMock.Setup(x => x.GetGameNightByLinkId(linkId)).ReturnsAsync(gameNight);
+        _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>())).ReturnsAsync(gameNight);
         _manualRepositoryMock.Setup(x => x.GetByIdAsync(11)).ReturnsAsync(CreateManual(11, 99));
 
         var act = async () => await _manualService.GetManualForGameNightDownload(linkId, 11);
 
         await act.Should().ThrowAsync<EntityNotFoundException>();
 
-        _gameNightRepositoryMock.Verify(x => x.GetGameNightByLinkId(linkId), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         _manualRepositoryMock.Verify(x => x.GetByIdAsync(11), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -244,7 +313,7 @@ public class ManualServiceTests
         var linkId = Guid.NewGuid();
         var gameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
         gameNight.SetSuggestedGames(new List<Game> { new("Catan") { Id = 5 } });
-        _gameNightRepositoryMock.Setup(x => x.GetGameNightByLinkId(linkId)).ReturnsAsync(gameNight);
+        _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>())).ReturnsAsync(gameNight);
         _manualRepositoryMock.Setup(x => x.GetByIdAsync(11)).ReturnsAsync(CreateManual(11, 5, "Catan.pdf"));
         _diskProviderMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
         _diskProviderMock.Setup(x => x.OpenRead(It.IsAny<string>())).Returns(new MemoryStream());
@@ -253,7 +322,7 @@ public class ManualServiceTests
 
         result.FileName.Should().Be("Catan.pdf");
 
-        _gameNightRepositoryMock.Verify(x => x.GetGameNightByLinkId(linkId), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         _manualRepositoryMock.Verify(x => x.GetByIdAsync(11), Times.Once);
         _diskProviderMock.Verify(x => x.FileExists(It.IsAny<string>()), Times.Once);
         _diskProviderMock.Verify(x => x.OpenRead(It.IsAny<string>()), Times.Once);
@@ -266,7 +335,7 @@ public class ManualServiceTests
         var linkId = Guid.NewGuid();
         var gameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
         gameNight.SetSuggestedGames(new List<Game> { new("Catan") { Id = 1 }, new("Wingspan") { Id = 2 } });
-        _gameNightRepositoryMock.Setup(x => x.GetGameNightByLinkId(linkId)).ReturnsAsync(gameNight);
+        _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>())).ReturnsAsync(gameNight);
         _manualRepositoryMock
             .Setup(x => x.ListAsync(It.IsAny<ManualsByGameIdsSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Manual> { CreateManual(1, 1), CreateManual(2, 1) });
@@ -278,7 +347,7 @@ public class ManualServiceTests
         result[0].GameTitle.Should().Be("Catan");
         result[0].Manuals.Should().HaveCount(2);
 
-        _gameNightRepositoryMock.Verify(x => x.GetGameNightByLinkId(linkId), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         _manualRepositoryMock.Verify(x => x.ListAsync(It.IsAny<ManualsByGameIdsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -287,13 +356,13 @@ public class ManualServiceTests
     public async Task GetManualsForGameNight_ShouldReturnEmpty_WhenNightNotFound()
     {
         var linkId = Guid.NewGuid();
-        _gameNightRepositoryMock.Setup(x => x.GetGameNightByLinkId(linkId)).ReturnsAsync((GameNight?)null);
+        _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>())).ReturnsAsync((GameNight?)null);
 
         var result = await _manualService.GetManualsForGameNight(linkId);
 
         result.Should().BeEmpty();
 
-        _gameNightRepositoryMock.Verify(x => x.GetGameNightByLinkId(linkId), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -309,6 +378,8 @@ public class ManualServiceTests
         _manualRepositoryMock.Verify(x => x.ListAsync(It.IsAny<ManualsByGameIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         _diskProviderMock.Verify(x => x.DeleteFile(It.Is<string>(p => p.EndsWith("stored-a.pdf"))), Times.Once);
         _diskProviderMock.Verify(x => x.DeleteFile(It.Is<string>(p => p.EndsWith("stored-b.pdf"))), Times.Once);
+        _pageRendererMock.Verify(x => x.DeleteFigures(1), Times.Once);
+        _pageRendererMock.Verify(x => x.DeleteFigures(2), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -318,6 +389,7 @@ public class ManualServiceTests
         _manualService.ClearAllManuals();
 
         _diskProviderMock.Verify(x => x.ClearFolder(It.IsAny<string>()), Times.Once);
+        _pageRendererMock.Verify(x => x.ClearAllFigures(), Times.Once);
         VerifyNoOtherCalls();
     }
 }

@@ -91,6 +91,14 @@ public class GameStatisticsRepository : IGameStatisticsRepository
         return average ?? 0;
     }
 
+    public Task<double> GetTotalPlayedTime(int gameId)
+    {
+        return _context.Sessions
+            .AsNoTracking()
+            .Where(x => x.GameId == gameId)
+            .SumAsync(x => (x.End - x.Start).TotalMinutes);
+    }
+
     public async Task<double?> GetMeanPayedAsync()
     {
         var count = await _context.Games

@@ -3,7 +3,7 @@ using BoardGameTracker.Common.Entities;
 
 namespace BoardGameTracker.Core.GameNights.Specifications;
 
-public sealed class RsvpByPlayerAndGameNightSpec : Specification<GameNightRsvp>
+public sealed class RsvpByPlayerAndGameNightSpec : SingleResultSpecification<GameNightRsvp>
 {
     public RsvpByPlayerAndGameNightSpec(int playerId, int gameNightId)
     {

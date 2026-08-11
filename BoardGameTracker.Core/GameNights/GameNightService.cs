@@ -7,9 +7,11 @@ using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Email.Interfaces;
 using BoardGameTracker.Core.GameNights.Interfaces;
+using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -17,39 +19,45 @@ namespace BoardGameTracker.Core.GameNights;
 
 public class GameNightService : IGameNightService
 {
-    private readonly IGameNightRepository _gameNightRepository;
+    private readonly IRepository<GameNight> _gameNightRepository;
+    private readonly IReadRepository<GameNightRsvp> _rsvpRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGameRepository _gameRepository;
     private readonly IEmailService _emailService;
     private readonly IPublicUrlBuilder _publicUrlBuilder;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<GameNightService> _logger;
 
     public GameNightService(
-        IGameNightRepository gameNightRepository,
+        IRepository<GameNight> gameNightRepository,
+        IReadRepository<GameNightRsvp> rsvpRepository,
         IUnitOfWork unitOfWork,
         IGameRepository gameRepository,
         IEmailService emailService,
         IPublicUrlBuilder publicUrlBuilder,
+        IDateTimeProvider dateTimeProvider,
         ILogger<GameNightService> logger)
     {
         _gameNightRepository = gameNightRepository;
+        _rsvpRepository = rsvpRepository;
         _unitOfWork = unitOfWork;
         _gameRepository = gameRepository;
         _emailService = emailService;
         _publicUrlBuilder = publicUrlBuilder;
+        _dateTimeProvider = dateTimeProvider;
         _logger = logger;
     }
 
     public Task<List<GameNight>> GetGameNights()
     {
         _logger.LogDebug("Fetching game nights");
-        return _gameNightRepository.GetAllAsync();
+        return _gameNightRepository.ListAsync(new GameNightsOverviewSpec());
     }
 
     public Task<GameNight?> GetById(int id)
     {
         _logger.LogDebug("Fetching game night {GameNightId}", id);
-        return _gameNightRepository.GetByIdAsync(id);
+        return _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(id));
     }
 
     public async Task<GameNight> Create(CreateGameNightCommand command)
@@ -82,7 +90,7 @@ public class GameNightService : IGameNightService
     public async Task<GameNight> Update(UpdateGameNightCommand command)
     {
         _logger.LogDebug("Updating game night {GameNightId}", command.Id);
-        var gameNight = await _gameNightRepository.GetByIdAsync(command.Id);
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(command.Id));
         if (gameNight == null)
         {
             throw new EntityNotFoundException(nameof(GameNight), command.Id);
@@ -124,14 +132,14 @@ public class GameNightService : IGameNightService
         if (command.Id.HasValue)
         {
             _logger.LogDebug("Updating RSVP {RsvpId}", command.Id);
-            rsvp = await _gameNightRepository.GetRsvpByIdAsync(command.Id.Value);
+            rsvp = await _rsvpRepository.SingleOrDefaultAsync(new RsvpByIdSpec(command.Id.Value));
         }
         else
         {
             Guard.Against.Null(command.GameNightId);
             Guard.Against.Null(command.PlayerId);
             _logger.LogDebug("Updating RSVP via rsvp page with gameNightId {GameNightId}, playerId: {PlayerId}", command.GameNightId, command.PlayerId);
-            rsvp = await _gameNightRepository.GetRsvpByPlayerAndGameAsync(command.PlayerId.Value, command.GameNightId.Value);
+            rsvp = await _rsvpRepository.SingleOrDefaultAsync(new RsvpByPlayerAndGameNightSpec(command.PlayerId.Value, command.GameNightId.Value));
         }
         
         Guard.Against.Null(rsvp);
@@ -192,7 +200,7 @@ public class GameNightService : IGameNightService
     public async Task<SendInvitesResultDto> SendInvitesAsync(int id)
     {
         _logger.LogDebug("Sending invites for game night {GameNightId}", id);
-        var gameNight = await _gameNightRepository.GetByIdAsync(id);
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(id));
         if (gameNight == null)
         {
             throw new EntityNotFoundException(nameof(GameNight), id);
@@ -235,11 +243,11 @@ public class GameNightService : IGameNightService
 
     public Task<int> CountFutureGameNights()
     {
-        return _gameNightRepository.GetFutureGameNightsCountAsync();
+        return _gameNightRepository.CountAsync(new FutureGameNightsSpec(_dateTimeProvider.UtcNow));
     }
 
     public Task<GameNight?> GetByLinkId(Guid linkId)
     {
-        return _gameNightRepository.GetGameNightByLinkId(linkId);
+        return _gameNightRepository.SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));
     }
 }

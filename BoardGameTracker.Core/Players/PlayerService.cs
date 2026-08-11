@@ -8,6 +8,7 @@ using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Players.Specifications;
 using BoardGameTracker.Core.Sessions.Interfaces;
+using BoardGameTracker.Core.Sessions.Specifications;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Players;
@@ -17,7 +18,6 @@ public class PlayerService : IPlayerService
     private readonly IPlayerRepository _playerRepository;
     private readonly IImageService _imageService;
     private readonly IPlayerStatisticsService _playerStatisticsService;
-    private readonly IGameSessionRepository _gameSessionRepository;
     private readonly ISessionRepository _sessionRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PlayerService> _logger;
@@ -26,7 +26,6 @@ public class PlayerService : IPlayerService
         IPlayerRepository playerRepository,
         IImageService imageService,
         IPlayerStatisticsService playerStatisticsService,
-        IGameSessionRepository gameSessionRepository,
         ISessionRepository sessionRepository,
         IUnitOfWork unitOfWork,
         ILogger<PlayerService> logger)
@@ -34,7 +33,6 @@ public class PlayerService : IPlayerService
         _playerRepository = playerRepository;
         _imageService = imageService;
         _playerStatisticsService = playerStatisticsService;
-        _gameSessionRepository = gameSessionRepository;
         _sessionRepository = sessionRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
@@ -92,7 +90,7 @@ public class PlayerService : IPlayerService
     public Task<List<Session>> GetSessions(int id, int? count)
     {
         _logger.LogDebug("Fetching sessions for player {PlayerId}", id);
-        return _gameSessionRepository.GetSessionsByPlayerId(id, count);
+        return _sessionRepository.ListAsync(new SessionsByPlayerRecentFirstSpec(id, count));
     }
 
     public async Task Delete(int id)

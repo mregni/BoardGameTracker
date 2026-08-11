@@ -12,6 +12,7 @@ public interface IGameStatisticsRepository
     Task<double?> GetAverageScore(int gameId);
     Task<int?> GetExpansionCount(int gameId);
     Task<double> GetAveragePlayTime(int gameId);
+    Task<double> GetTotalPlayedTime(int gameId);
     Task<double?> GetMeanPayedAsync();
     Task<double?> GetTotalPayedAsync();
     Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState();

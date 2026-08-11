@@ -29,8 +29,8 @@ public class BadgeProgressionService : IBadgeProgressionService
 
         var highestLevel = playerBadges
             .Where(b => b.Level.HasValue)
-            .Select(b => b.Level!.Value)
-            .OrderByDescending(level => _progressionPolicy.GetLevelOrder(level))
+            .Select(b => (BadgeLevel?)b.Level!.Value)
+            .OrderByDescending(level => _progressionPolicy.GetLevelOrder(level!.Value))
             .FirstOrDefault();
 
         foreach (var badge in badgesOfType.OrderBy(b => _progressionPolicy.GetLevelOrder(b.Level ?? BadgeLevel.Green)))
@@ -38,12 +38,7 @@ public class BadgeProgressionService : IBadgeProgressionService
             if (!badge.Level.HasValue)
                 continue;
 
-            if (highestLevel == default)
-            {
-                if (_progressionPolicy.IsStartingLevel(badge.Level.Value))
-                    return badge;
-            }
-            else if (CanAwardBadge(highestLevel, badge.Level.Value))
+            if (CanAwardBadge(highestLevel, badge.Level.Value))
             {
                 return badge;
             }
