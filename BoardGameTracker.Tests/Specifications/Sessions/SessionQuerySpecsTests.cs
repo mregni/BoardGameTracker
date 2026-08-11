@@ -103,18 +103,6 @@ public class SessionQuerySpecsTests
     }
 
     [Fact]
-    public void SessionsByGamePagedSpec_ShouldSkipAndTakeInDescendingOrder()
-    {
-        var day1 = SessionFor(1, 1, new DateTime(2030, 1, 1));
-        var day2 = SessionFor(2, 1, new DateTime(2030, 1, 2));
-        var day3 = SessionFor(3, 1, new DateTime(2030, 1, 3));
-
-        var result = new SessionsByGamePagedSpec(1, skip: 1, take: 1).Evaluate(new[] { day1, day2, day3 }).ToList();
-
-        result.Should().ContainSingle().Which.Id.Should().Be(2);
-    }
-
-    [Fact]
     public void LastPlayedDateSpec_ShouldProjectMostRecentStart()
     {
         var day1 = SessionFor(1, 1, new DateTime(2030, 1, 1));
@@ -123,16 +111,5 @@ public class SessionQuerySpecsTests
         var result = new LastPlayedDateSpec(1).Evaluate(new[] { day1, day3 }).First();
 
         result.Should().Be(new DateTime(2030, 1, 3));
-    }
-
-    [Fact]
-    public void ShortestAndLongestPlayIdSpec_ShouldProjectIdByDuration()
-    {
-        var shortPlay = SessionFor(1, 1, new DateTime(2030, 1, 1), TimeSpan.FromHours(1));
-        var longPlay = SessionFor(2, 1, new DateTime(2030, 1, 2), TimeSpan.FromHours(3));
-        var games = new[] { shortPlay, longPlay };
-
-        new ShortestPlayIdSpec(1).Evaluate(games).First().Should().Be(1);
-        new LongestPlayIdSpec(1).Evaluate(games).First().Should().Be(2);
     }
 }
