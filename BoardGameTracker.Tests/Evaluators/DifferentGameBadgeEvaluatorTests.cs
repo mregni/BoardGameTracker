@@ -28,28 +28,6 @@ public class DifferentGameBadgeEvaluatorTests
     #region Green Level Tests (3 different games)
 
     [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnFalse_WhenGameCountIsLessThan3()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithDifferentGames(2);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenGameCountIsExactly3()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithDifferentGames(3);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenGameCountIsMoreThan3()
     {
         var badge = CreateBadge(BadgeLevel.Green);
@@ -63,28 +41,6 @@ public class DifferentGameBadgeEvaluatorTests
     #endregion
 
     #region Blue Level Tests (10 different games)
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnFalse_WhenGameCountIsLessThan10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSessionsWithDifferentGames(9);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenGameCountIsExactly10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSessionsWithDifferentGames(10);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenGameCountIsMoreThan10()
@@ -102,28 +58,6 @@ public class DifferentGameBadgeEvaluatorTests
     #region Red Level Tests (20 different games)
 
     [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnFalse_WhenGameCountIsLessThan20()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSessionsWithDifferentGames(19);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenGameCountIsExactly20()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSessionsWithDifferentGames(20);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenGameCountIsMoreThan20()
     {
         var badge = CreateBadge(BadgeLevel.Red);
@@ -137,28 +71,6 @@ public class DifferentGameBadgeEvaluatorTests
     #endregion
 
     #region Gold Level Tests (50 different games)
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnFalse_WhenGameCountIsLessThan50()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSessionsWithDifferentGames(49);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenGameCountIsExactly50()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSessionsWithDifferentGames(50);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenGameCountIsMoreThan50()

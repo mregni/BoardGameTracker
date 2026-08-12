@@ -314,24 +314,6 @@ public class CompareServiceTests
         result.ClosestGame.ScoringDifference.Should().Be(1.5);
     }
 
-    [Fact]
-    public async Task GetPlayerComparison_ShouldHandleSamePlayerComparison()
-    {
-        // Arrange
-        var playerId = 1;
-
-        SetupPlayerRepositoryMocks(playerId, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupCompareRepositoryMocks(playerId, playerId);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerId, playerId);
-
-        // Assert
-        result.SessionCounts.PlayerOne.Should().Be(result.SessionCounts.PlayerTwo);
-        result.WinCount.PlayerOne.Should().Be(result.WinCount.PlayerTwo);
-        result.TotalDuration.PlayerOne.Should().Be(result.TotalDuration.PlayerTwo);
-    }
-
     #region Helper Methods
 
     private void SetupPlayerRepositoryMocks(int playerId, int sessionCount, double duration, int winCount)

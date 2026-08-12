@@ -21,11 +21,15 @@ public class UpdateCheckBackgroundService : BackgroundService
         _logger = logger;
     }
 
+    protected virtual TimeSpan StartupDelay => TimeSpan.FromMinutes(1);
+
+    protected virtual TimeSpan ErrorRetryDelay => TimeSpan.FromHours(1);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Update Check Background Service started");
 
-        await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+        await Task.Delay(StartupDelay, stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -45,7 +49,7 @@ public class UpdateCheckBackgroundService : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in Update Check Background Service");
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                await Task.Delay(ErrorRetryDelay, stoppingToken);
             }
         }
     }

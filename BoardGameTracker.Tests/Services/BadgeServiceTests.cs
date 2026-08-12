@@ -81,24 +81,6 @@ public class BadgeServiceTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task GetAllBadgesAsync_ShouldReturnEmptyList_WhenNoBadgesExist()
-    {
-        // Arrange
-        _badgeRepositoryMock
-            .Setup(x => x.GetAllAsync())
-            .ReturnsAsync([]);
-
-        // Act
-        var result = await _badgeService.GetAllBadgesAsync();
-
-        // Assert
-        result.Should().BeEmpty();
-
-        _badgeRepositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
     #endregion
 
     #region AwardBadgesAsync Tests

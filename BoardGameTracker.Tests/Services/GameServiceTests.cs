@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Ardalis.Specification;
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
@@ -17,6 +18,7 @@ using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Manuals.Interfaces;
+using BoardGameTracker.Core.Sessions.Specifications;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -27,7 +29,7 @@ namespace BoardGameTracker.Tests.Services;
 public class GameServiceTests
 {
     private readonly Mock<IGameRepository> _gameRepositoryMock;
-    private readonly Mock<IGameSessionRepository> _gameSessionRepositoryMock;
+    private readonly Mock<IReadRepository<Session>> _sessionRepositoryMock;
     private readonly Mock<IBoardGameGeekXmlApi2Client> _bggClientMock;
     private readonly Mock<ISettingsService> _settingsServiceMock;
     private readonly Mock<IImageService> _imageServiceMock;
@@ -39,7 +41,7 @@ public class GameServiceTests
     public GameServiceTests()
     {
         _gameRepositoryMock = new Mock<IGameRepository>();
-        _gameSessionRepositoryMock = new Mock<IGameSessionRepository>();
+        _sessionRepositoryMock = new Mock<IReadRepository<Session>>();
         _bggClientMock = new Mock<IBoardGameGeekXmlApi2Client>();
         _settingsServiceMock = new Mock<ISettingsService>();
         _settingsServiceMock.Setup(x => x.GetBggApiKeyAsync()).ReturnsAsync("test-api-key");
@@ -50,7 +52,7 @@ public class GameServiceTests
 
         _gameService = new GameService(
             _gameRepositoryMock.Object,
-            _gameSessionRepositoryMock.Object,
+            _sessionRepositoryMock.Object,
             _imageServiceMock.Object,
             _manualServiceMock.Object,
             _bggClientMock.Object,
@@ -62,7 +64,7 @@ public class GameServiceTests
     private void VerifyNoOtherCalls()
     {
         _gameRepositoryMock.VerifyNoOtherCalls();
-        _gameSessionRepositoryMock.VerifyNoOtherCalls();
+        _sessionRepositoryMock.VerifyNoOtherCalls();
         _bggClientMock.VerifyNoOtherCalls();
         _imageServiceMock.VerifyNoOtherCalls();
         _manualServiceMock.VerifyNoOtherCalls();
@@ -466,15 +468,15 @@ public class GameServiceTests
             new Session(gameId, DateTime.UtcNow.AddDays(-2), DateTime.UtcNow.AddDays(-2).AddHours(3), "Session 2")
         };
 
-        _gameSessionRepositoryMock
-            .Setup(x => x.GetSessionsByGameId(gameId, count))
+        _sessionRepositoryMock
+            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessions);
 
         var result = await _gameService.GetSessionsForGame(gameId, count);
 
         result.Should().HaveCount(2);
 
-        _gameSessionRepositoryMock.Verify(x => x.GetSessionsByGameId(gameId, count), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

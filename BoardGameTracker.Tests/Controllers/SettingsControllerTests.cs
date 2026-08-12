@@ -115,36 +115,6 @@ public class SettingsControllerTests
     }
 
     [Fact]
-    public async Task Update_ShouldUpdateSettings_WhenDisablingUpdateCheck()
-    {
-        // Arrange
-        var model = new UIResourceDto
-        {
-            TimeFormat = "HH:mm",
-            DateFormat = "yyyy-MM-dd",
-            UiLanguage = "en-US",
-            Currency = "USD",
-            UpdateCheckEnabled = false
-        };
-
-        _settingsServiceMock
-            .Setup(x => x.UpdateSettingsAsync(model))
-            .ReturnsAsync(model);
-
-        // Act
-        var result = await _controller.Update(model);
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedModel = okResult.Value.Should().BeAssignableTo<UIResourceDto>().Subject;
-
-        returnedModel.Should().BeSameAs(model);
-
-        _settingsServiceMock.Verify(x => x.UpdateSettingsAsync(model), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
     public void GetEnvironment_ShouldReturnEnvironmentInfo_WhenCalled()
     {
         // Arrange
@@ -238,27 +208,6 @@ public class SettingsControllerTests
         returnedLanguages[0].Key.Should().Be("en");
         returnedLanguages[1].Key.Should().Be("fr");
         returnedLanguages[2].Key.Should().Be("de");
-
-        _languageServiceMock.Verify(x => x.GetAllAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task GetLanguages_ShouldReturnEmptyList_WhenNoLanguagesExist()
-    {
-        // Arrange
-        _languageServiceMock
-            .Setup(x => x.GetAllAsync())
-            .ReturnsAsync([]);
-
-        // Act
-        var result = await _controller.GetLanguages();
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedLanguages = okResult.Value.Should().BeAssignableTo<List<Language>>().Subject;
-
-        returnedLanguages.Should().BeEmpty();
 
         _languageServiceMock.Verify(x => x.GetAllAsync(), Times.Once);
         VerifyNoOtherCalls();

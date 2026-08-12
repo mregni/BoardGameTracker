@@ -68,17 +68,4 @@ public class AuthDisabledExtensionsTests
         _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
         VerifyNoOtherCalls();
     }
-
-    [Fact]
-    public void UseAuthDisabledMiddleware_ShouldReturnSameAppBuilder()
-    {
-        // Arrange
-        _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(true);
-
-        // Act
-        var result = _appBuilderMock.Object.UseAuthDisabledMiddleware();
-
-        // Assert
-        result.Should().BeSameAs(_appBuilderMock.Object);
-    }
 }

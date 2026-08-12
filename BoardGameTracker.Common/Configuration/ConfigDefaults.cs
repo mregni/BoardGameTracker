@@ -20,6 +20,12 @@ public static class ConfigDefaults
 
         new(BggConfig.ApiKey, ""),
 
+        new(AiConfig.Provider, AiConfig.OllamaProvider),
+        new(AiConfig.BaseUrl, "http://ollama:11434"),
+        new(AiConfig.ChatModel, "qwen3:4b"),
+        new(AiConfig.ApiKey, ""),
+        new(AiConfig.TopK, "5"),
+
         new(UpdateConfig.Track, "stable"),
         new(UpdateConfig.CheckEnabled, "true"),
         new(UpdateConfig.CheckIntervalHours, "24"),

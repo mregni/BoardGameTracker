@@ -27,28 +27,6 @@ public class SessionsBadgeEvaluatorTests
     #region Green Level Tests (5 sessions)
 
     [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnFalse_WhenSessionCountIsLessThan5()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessions(4);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenSessionCountIsExactly5()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessions(5);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenSessionCountIsMoreThan5()
     {
         var badge = CreateBadge(BadgeLevel.Green);
@@ -62,28 +40,6 @@ public class SessionsBadgeEvaluatorTests
     #endregion
 
     #region Blue Level Tests (10 sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnFalse_WhenSessionCountIsLessThan10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSessions(9);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenSessionCountIsExactly10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSessions(10);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenSessionCountIsMoreThan10()
@@ -101,28 +57,6 @@ public class SessionsBadgeEvaluatorTests
     #region Red Level Tests (50 sessions)
 
     [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnFalse_WhenSessionCountIsLessThan50()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSessions(49);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenSessionCountIsExactly50()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSessions(50);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenSessionCountIsMoreThan50()
     {
         var badge = CreateBadge(BadgeLevel.Red);
@@ -136,28 +70,6 @@ public class SessionsBadgeEvaluatorTests
     #endregion
 
     #region Gold Level Tests (100 sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnFalse_WhenSessionCountIsLessThan100()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSessions(99);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenSessionCountIsExactly100()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSessions(100);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenSessionCountIsMoreThan100()

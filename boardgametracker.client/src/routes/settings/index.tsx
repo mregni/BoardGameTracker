@@ -78,7 +78,12 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = SettingsSchema.parse(value);
-			await saveSettings({ ...validatedData, bggStatus: settings.bggStatus, emailEnabled: settings.emailEnabled });
+			await saveSettings({
+				...validatedData,
+				bggStatus: settings.bggStatus,
+				emailEnabled: settings.emailEnabled,
+				ragEnabled: settings.ragEnabled,
+			});
 		},
 	});
 

@@ -25,6 +25,14 @@ export const deleteManualCall = (id: number): Promise<void> => {
 	return axiosInstance.delete(`${domain}/${id}`);
 };
 
+export const reindexManualCall = (id: number): Promise<void> => {
+	return axiosInstance.post(`${domain}/${id}/reindex`);
+};
+
+export const getManualPageImageCall = (url: string): Promise<Blob> => {
+	return axiosInstance.get<Blob>(url, { responseType: "blob" }).then((response) => response.data);
+};
+
 export const getGameNightManualsCall = (linkId: string): Promise<GameNightManuals[]> => {
 	return axiosInstance.get<GameNightManuals[]>(`${domain}/gamenight/${linkId}`).then((response) => response.data);
 };

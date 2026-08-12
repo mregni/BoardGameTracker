@@ -57,7 +57,16 @@
     "upload-failed": "Manual upload failed, check logs for more details.",
     "delete-success": "Manual deleted successfully.",
     "delete-failed": "Manual deletion failed, check logs for more details.",
-    "download-failed": "Manual download failed, check logs for more details."
+    "download-failed": "Manual download failed, check logs for more details.",
+    "status": {
+      "pending": "Pendiente",
+      "indexing": "Indexando…",
+      "indexed": "Indexado",
+      "failed": "Fallido"
+    },
+    "reindex": "Reindexar",
+    "reindex-success": "Reindexación iniciada.",
+    "reindex-failed": "La reindexación falló, revisa los registros para más detalles."
   },
   "new": {
     "description": "Choose a method to create a new game.",

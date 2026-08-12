@@ -1,9 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Ardalis.Specification;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Common;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
+using BoardGameTracker.Core.Sessions.Specifications;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -14,29 +18,32 @@ namespace BoardGameTracker.Tests.Services;
 public class GameChartServiceTests
 {
     private readonly Mock<IGameRepository> _gameRepositoryMock;
-    private readonly Mock<IGameSessionRepository> _gameSessionRepositoryMock;
+    private readonly Mock<IReadRepository<Session>> _sessionRepositoryMock;
     private readonly Mock<IGameStatisticsRepository> _gameStatisticsRepositoryMock;
+    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
     private readonly Mock<ILogger<GameChartService>> _loggerMock;
     private readonly GameChartService _gameChartService;
 
     public GameChartServiceTests()
     {
         _gameRepositoryMock = new Mock<IGameRepository>();
-        _gameSessionRepositoryMock = new Mock<IGameSessionRepository>();
+        _sessionRepositoryMock = new Mock<IReadRepository<Session>>();
+        _dateTimeProviderMock = new Mock<IDateTimeProvider>();
         _gameStatisticsRepositoryMock = new Mock<IGameStatisticsRepository>();
         _loggerMock = new Mock<ILogger<GameChartService>>();
 
         _gameChartService = new GameChartService(
             _gameRepositoryMock.Object,
-            _gameSessionRepositoryMock.Object,
+            _sessionRepositoryMock.Object,
             _gameStatisticsRepositoryMock.Object,
+            _dateTimeProviderMock.Object,
             _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
         _gameRepositoryMock.VerifyNoOtherCalls();
-        _gameSessionRepositoryMock.VerifyNoOtherCalls();
+        _sessionRepositoryMock.VerifyNoOtherCalls();
         _gameStatisticsRepositoryMock.VerifyNoOtherCalls();
     }
 
@@ -141,8 +148,8 @@ public class GameChartServiceTests
     {
         // Arrange
         var gameId = 1;
-        _gameSessionRepositoryMock
-            .Setup(x => x.GetSessionsByGameId(gameId, null))
+        _sessionRepositoryMock
+            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 
         // Act
@@ -151,7 +158,7 @@ public class GameChartServiceTests
         // Assert
         result.Should().BeEmpty();
 
-        _gameSessionRepositoryMock.Verify(x => x.GetSessionsByGameId(gameId, null), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

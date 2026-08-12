@@ -15,6 +15,17 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import type { Game } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { BgtPoster } from "../../-components/BgtPoster";
+import { RulebookChatButton } from "./RulebookChatButton";
+
+const formatMinMax = (min: number | null, max: number | null): string | null => {
+	if (min == null && max == null) {
+		return null;
+	}
+	if (min != null && max != null) {
+		return `${min} - ${max}`;
+	}
+	return `${min ?? max}`;
+};
 
 interface Props {
 	game: Game;
@@ -23,14 +34,28 @@ interface Props {
 	uiLanguage: string;
 	dateFormat: string;
 	manualCount: number;
+	ragEnabled: boolean;
 	onOpenManuals: () => void;
 	onOpenExpansions: () => void;
 }
 
 export const GameStaticSection = (props: Props) => {
-	const { game, playCount, currency, uiLanguage, dateFormat, manualCount, onOpenManuals, onOpenExpansions } = props;
+	const {
+		game,
+		playCount,
+		currency,
+		uiLanguage,
+		dateFormat,
+		manualCount,
+		ragEnabled,
+		onOpenManuals,
+		onOpenExpansions,
+	} = props;
 	const { t } = useTranslation(["common", "statistics", "game"]);
 	const navigate = useNavigate();
+
+	const playersContent = formatMinMax(game.minPlayers, game.maxPlayers);
+	const durationContent = formatMinMax(game.minPlayTime, game.maxPlayTime);
 
 	return (
 		<div className="flex flex-col lg:flex-row gap-6">
@@ -58,14 +83,23 @@ export const GameStaticSection = (props: Props) => {
 				<div>
 					<BgtText className={cx("xl:line-clamp-2 line-clamp-3 text-white/70")}>{game.description}</BgtText>
 				</div>
+				{ragEnabled && (
+					<div className="flex">
+						<RulebookChatButton gameId={game.id} disabled={manualCount === 0} />
+					</div>
+				)}
 				<div className="grid grid-cols-2 md:grid-cols-4 2xl:grid-cols-7 gap-3 xl:gap-6">
-					<BgtTextStatistic content={`${game.minPlayers} - ${game.maxPlayers}`} title={t("players")} icon={<Users />} />
-					<BgtTextStatistic
-						content={`${game.minPlayTime} - ${game.maxPlayTime}`}
-						title={t("duration")}
-						suffix={t("minutes-abbreviation")}
-						icon={<Clock />}
-					/>
+					{playersContent !== null && (
+						<BgtTextStatistic content={playersContent} title={t("players")} icon={<Users />} />
+					)}
+					{durationContent !== null && (
+						<BgtTextStatistic
+							content={durationContent}
+							title={t("duration")}
+							suffix={t("minutes-abbreviation")}
+							icon={<Clock />}
+						/>
+					)}
 					<BgtTextStatistic content={playCount} title={t("statistics:play-count")} icon={<Trophy />} />
 					<BgtTextStatistic
 						content={game.buyingPrice}

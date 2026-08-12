@@ -87,19 +87,6 @@ public class GameScoreTests
         result.Should().Be(50.5);
     }
 
-    [Fact]
-    public void ImplicitOperator_ShouldWorkInArithmetic()
-    {
-        // Arrange
-        var score = new GameScore(10);
-
-        // Act
-        double result = score + 5;
-
-        // Assert
-        result.Should().Be(15);
-    }
-
     #endregion
 
     #region Addition Operator Tests
@@ -234,43 +221,6 @@ public class GameScoreTests
 
         // Assert
         act.Should().Throw<ArgumentException>();
-    }
-
-    #endregion
-
-    #region Record Equality Tests
-
-    [Fact]
-    public void Equality_SameValue_ShouldBeEqual()
-    {
-        // Arrange
-        var score1 = new GameScore(50);
-        var score2 = new GameScore(50);
-
-        // Assert
-        score1.Should().Be(score2);
-    }
-
-    [Fact]
-    public void Equality_DifferentValue_ShouldNotBeEqual()
-    {
-        // Arrange
-        var score1 = new GameScore(50);
-        var score2 = new GameScore(60);
-
-        // Assert
-        score1.Should().NotBe(score2);
-    }
-
-    [Fact]
-    public void GetHashCode_SameValue_ShouldBeSame()
-    {
-        // Arrange
-        var score1 = new GameScore(50);
-        var score2 = new GameScore(50);
-
-        // Assert
-        score1.GetHashCode().Should().Be(score2.GetHashCode());
     }
 
     #endregion

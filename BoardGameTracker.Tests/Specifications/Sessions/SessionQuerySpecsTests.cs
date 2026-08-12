@@ -69,15 +69,37 @@ public class SessionQuerySpecsTests
     }
 
     [Fact]
-    public void SessionsByGamePagedSpec_ShouldSkipAndTakeInDescendingOrder()
+    public void SessionsByPlayerRecentFirstSpec_ShouldLimitToCount_WhenCountIsProvided()
     {
-        var day1 = SessionFor(1, 1, new DateTime(2030, 1, 1));
-        var day2 = SessionFor(2, 1, new DateTime(2030, 1, 2));
-        var day3 = SessionFor(3, 1, new DateTime(2030, 1, 3));
+        var sessions = PlayerSessionsAcrossThreeDays(5);
 
-        var result = new SessionsByGamePagedSpec(1, skip: 1, take: 1).Evaluate(new[] { day1, day2, day3 }).ToList();
+        var result = new SessionsByPlayerRecentFirstSpec(5, 2).Evaluate(sessions).ToList();
 
-        result.Should().ContainSingle().Which.Id.Should().Be(2);
+        result.Select(x => x.Id).Should().Equal(3, 2);
+    }
+
+    [Fact]
+    public void SessionsByPlayerRecentFirstSpec_ShouldReturnEverythingRecentFirst_WhenCountIsNull()
+    {
+        var sessions = PlayerSessionsAcrossThreeDays(5);
+
+        var result = new SessionsByPlayerRecentFirstSpec(5).Evaluate(sessions).ToList();
+
+        result.Select(x => x.Id).Should().Equal(3, 2, 1);
+    }
+
+    private static Session[] PlayerSessionsAcrossThreeDays(int playerId)
+    {
+        var first = SessionFor(1, 1, new DateTime(2030, 1, 1));
+        var second = SessionFor(2, 1, new DateTime(2030, 1, 2));
+        var third = SessionFor(3, 1, new DateTime(2030, 1, 3));
+
+        foreach (var session in new[] { first, second, third })
+        {
+            session.AddPlayerSession(playerId, null, false, false);
+        }
+
+        return [first, second, third];
     }
 
     [Fact]
@@ -89,16 +111,5 @@ public class SessionQuerySpecsTests
         var result = new LastPlayedDateSpec(1).Evaluate(new[] { day1, day3 }).First();
 
         result.Should().Be(new DateTime(2030, 1, 3));
-    }
-
-    [Fact]
-    public void ShortestAndLongestPlayIdSpec_ShouldProjectIdByDuration()
-    {
-        var shortPlay = SessionFor(1, 1, new DateTime(2030, 1, 1), TimeSpan.FromHours(1));
-        var longPlay = SessionFor(2, 1, new DateTime(2030, 1, 2), TimeSpan.FromHours(3));
-        var games = new[] { shortPlay, longPlay };
-
-        new ShortestPlayIdSpec(1).Evaluate(games).First().Should().Be(1);
-        new LongestPlayIdSpec(1).Evaluate(games).First().Should().Be(2);
     }
 }

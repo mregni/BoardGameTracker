@@ -10,13 +10,14 @@ public class RefreshTokenCleanupService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<RefreshTokenCleanupService> _logger;
-    private static readonly TimeSpan Interval = TimeSpan.FromHours(24);
 
     public RefreshTokenCleanupService(IServiceScopeFactory scopeFactory, ILogger<RefreshTokenCleanupService> logger)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
     }
+
+    protected virtual TimeSpan Interval => TimeSpan.FromHours(24);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

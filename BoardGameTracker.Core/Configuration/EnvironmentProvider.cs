@@ -15,13 +15,23 @@ public class EnvironmentProvider : IEnvironmentProvider
     public bool StatisticsEnabled =>
         bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out var statisticsEnabled) && statisticsEnabled;
 
+    public bool RagEnabled =>
+        bool.TryParse(Environment.GetEnvironmentVariable("RAG_ENABLED"), out var ragEnabled) && ragEnabled;
+
     public LogEventLevel LogLevel => LogLevelExtensions.GetEnvironmentLogLevel();
     public bool IsDevelopment => EnvironmentName.Equals("development", StringComparison.OrdinalIgnoreCase);
 
     public bool AuthEnabled =>
         !string.Equals(Environment.GetEnvironmentVariable("AUTH_ENABLED"), "false", StringComparison.OrdinalIgnoreCase);
 
-    public string? JwtSecret => Environment.GetEnvironmentVariable("JWT_SECRET");
+    public string? JwtSecret
+    {
+        get
+        {
+            var value = Environment.GetEnvironmentVariable("JWT_SECRET");
+            return string.IsNullOrWhiteSpace(value) ? null : value;
+        }
+    }
 
     public string? AdminPassword => Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
 

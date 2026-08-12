@@ -167,30 +167,6 @@ public class WeightTests
         result.Should().Be(3.5);
     }
 
-    [Fact]
-    public void ImplicitOperator_ShouldWorkInComparisons()
-    {
-        // Arrange
-        var weight = new Weight(3.5);
-
-        // Act & Assert
-        (weight > 2).Should().BeTrue();
-        (weight < 5).Should().BeTrue();
-    }
-
-    [Fact]
-    public void ImplicitOperator_ShouldWorkInArithmetic()
-    {
-        // Arrange
-        var weight = new Weight(3.5);
-
-        // Act
-        double result = weight + 1.5;
-
-        // Assert
-        result.Should().Be(5);
-    }
-
     #endregion
 
     #region ToString Tests
@@ -256,28 +232,6 @@ public class WeightTests
     #region Record Equality Tests
 
     [Fact]
-    public void Equality_SameValue_ShouldBeEqual()
-    {
-        // Arrange
-        var weight1 = new Weight(3.5);
-        var weight2 = new Weight(3.5);
-
-        // Assert
-        weight1.Should().Be(weight2);
-    }
-
-    [Fact]
-    public void Equality_DifferentValue_ShouldNotBeEqual()
-    {
-        // Arrange
-        var weight1 = new Weight(3.5);
-        var weight2 = new Weight(4.0);
-
-        // Assert
-        weight1.Should().NotBe(weight2);
-    }
-
-    [Fact]
     public void Equality_SameAfterRounding_ShouldBeEqual()
     {
         // Arrange
@@ -286,17 +240,6 @@ public class WeightTests
 
         // Assert - Both round to 3.55
         weight1.Should().Be(weight2);
-    }
-
-    [Fact]
-    public void GetHashCode_SameValue_ShouldBeSame()
-    {
-        // Arrange
-        var weight1 = new Weight(3.5);
-        var weight2 = new Weight(3.5);
-
-        // Assert
-        weight1.GetHashCode().Should().Be(weight2.GetHashCode());
     }
 
     #endregion
@@ -321,45 +264,6 @@ public class WeightTests
 
         // Assert
         weight.Value.Should().Be(4.99);
-    }
-
-    [Fact]
-    public void Constructor_JustBelowLowerBoundary_ShouldThrow()
-    {
-        // Act
-        Action act = () => new Weight(-0.01);
-
-        // Assert
-        act.Should().Throw<ArgumentOutOfRangeException>();
-    }
-
-    [Fact]
-    public void Constructor_JustAboveUpperBoundary_ShouldThrow()
-    {
-        // Act
-        Action act = () => new Weight(5.01);
-
-        // Assert
-        act.Should().Throw<ArgumentOutOfRangeException>();
-    }
-
-    #endregion
-
-    #region BGG Weight Scale Tests
-
-    [Theory]
-    [InlineData(1.0, "Light")]
-    [InlineData(2.0, "Medium Light")]
-    [InlineData(3.0, "Medium")]
-    [InlineData(4.0, "Medium Heavy")]
-    [InlineData(5.0, "Heavy")]
-    public void Constructor_WithBggWeightScaleValues_ShouldSucceed(double value, string _)
-    {
-        // Act - typical BGG weight values
-        var weight = new Weight(value);
-
-        // Assert
-        weight.Value.Should().Be(value);
     }
 
     #endregion

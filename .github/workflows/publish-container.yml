@@ -144,8 +144,10 @@ jobs:
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
             /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
-            /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**,**/Migrations/**,**/routeTree.gen.ts" \
-            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
+            /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**,**/Migrations/**,**/routeTree.gen.ts,**/*.png,**/*.jpg,**/*.jpeg,**/*.gif,**/*.ico,**/*.webp,**/*.pdf" \
+            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
+            /d:sonar.cpd.exclusions="**/Migrations/**/*.cs" \
+            /d:sonar.typescript.tsconfigPaths="boardgametracker.client/tsconfig.json" \
             /d:sonar.issue.ignore.multicriteria=e1 \
             /d:sonar.issue.ignore.multicriteria.e1.ruleKey=githubactions:S7637 \
             /d:sonar.issue.ignore.multicriteria.e1.resourceKey="**/.github/**"
@@ -161,7 +163,7 @@ jobs:
             --logger trx \
             --results-directory "TestResults" \
             --collect "XPlat Code Coverage;Format=opencover" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/DataStore/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs"
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/Datastore/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/obj/**/*.cs"
 
       - name: Install frontend dependencies
         run: |

@@ -8,6 +8,7 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
+using BoardGameTracker.Core.Sessions.Specifications;
 using BoardGameTracker.Core.Manuals.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,7 @@ namespace BoardGameTracker.Core.Games;
 public class GameService : IGameService
 {
     private readonly IGameRepository _gameRepository;
-    private readonly IGameSessionRepository _gameSessionRepository;
+    private readonly IReadRepository<Session> _sessionRepository;
     private readonly IBoardGameGeekXmlApi2Client _bggClient;
     private readonly ISettingsService _settingsService;
     private readonly IImageService _imageService;
@@ -27,7 +28,7 @@ public class GameService : IGameService
 
     public GameService(
         IGameRepository gameRepository,
-        IGameSessionRepository gameSessionRepository,
+        IReadRepository<Session> sessionRepository,
         IImageService imageService,
         IManualService manualService,
         IBoardGameGeekXmlApi2Client bggClient,
@@ -36,7 +37,7 @@ public class GameService : IGameService
         ILogger<GameService> logger)
     {
         _gameRepository = gameRepository;
-        _gameSessionRepository = gameSessionRepository;
+        _sessionRepository = sessionRepository;
         _imageService = imageService;
         _manualService = manualService;
         _bggClient = bggClient;
@@ -106,7 +107,7 @@ public class GameService : IGameService
     public Task<List<Session>> GetSessionsForGame(int id, int? count)
     {
         _logger.LogDebug("Fetching sessions for game {GameId}", id);
-        return _gameSessionRepository.GetSessionsByGameId(id, count);
+        return _sessionRepository.ListAsync(new SessionsByGameSpec(id, count));
     }
 
     public async Task<Game> UpdateGame(UpdateGameCommand command)

@@ -12,6 +12,7 @@ const namespaces = [
 	"dashboard",
 	"expansions",
 	"bgg-import",
+	"chat",
 	"compare",
 	"game",
 	"games",

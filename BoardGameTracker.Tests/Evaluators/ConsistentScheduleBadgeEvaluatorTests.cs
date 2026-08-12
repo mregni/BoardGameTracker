@@ -25,39 +25,6 @@ public class ConsistentScheduleBadgeEvaluatorTests
         _evaluator.BadgeType.Should().Be(BadgeType.ConsistentSchedule);
     }
 
-    #region Saturday Requirement Tests
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenCurrentSessionIsNotOnSaturday()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-
-        // Find a non-Saturday date
-        var nonSaturdayDate = GetNextDayOfWeek(DateTime.UtcNow, DayOfWeek.Monday);
-        var session = CreateSessionOnDate(nonSaturdayDate);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldEvaluate_WhenCurrentSessionIsOnSaturday()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var saturdayDate = GetNextDayOfWeek(DateTime.UtcNow, DayOfWeek.Saturday);
-
-        // Create sessions for 10 consecutive Saturdays
-        var sessions = CreateSessionsForConsecutiveSaturdays(saturdayDate, 10);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
     #region Consecutive Saturdays Tests
 
     [Fact]

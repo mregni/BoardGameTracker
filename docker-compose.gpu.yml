@@ -1,0 +1,59 @@
+services:
+  boardgametracker:
+    image: uping/boardgametracker:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./images:/app/images
+      - ./logs:/app/logs
+      - ./manuals:/app/manuals
+    ports:
+      - "5444:5444"
+    environment:
+      - DB_HOST=db
+      - DB_USER=dbuser
+      - DB_PASSWORD=CHANGEME
+      - DB_NAME=boardgametracker
+      - DB_PORT=5432
+      - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
+      - TZ=UTC
+      - RAG_ENABLED=true
+      - AI_BASE_URL=http://ollama:11434
+      - AI_CHAT_MODEL=qwen3:8b
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=boardgametracker
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=CHANGEME
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dbuser -d boardgametracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ./ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

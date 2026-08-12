@@ -1,0 +1,116 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Ardalis.Specification;
+using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.Rag;
+using BoardGameTracker.Core.Rag.Interfaces;
+using BoardGameTracker.Core.Rag.Specifications;
+using FluentAssertions;
+using Microsoft.Extensions.AI;
+using Moq;
+using Pgvector;
+using Xunit;
+
+namespace BoardGameTracker.Tests.Rag;
+
+public class RagServiceTests
+{
+    private readonly Mock<IReadRepository<ManualChunk>> _chunkRepoMock = new();
+    private readonly Mock<IRepository<Manual>> _manualRepoMock = new();
+    private readonly Mock<IAiClientFactory> _factoryMock = new();
+    private readonly Mock<IRagSettingsProvider> _settingsMock = new();
+    private readonly Mock<IEmbeddingGenerator<string, Embedding<float>>> _embedderMock = new();
+    private readonly Mock<IChatClient> _chatMock = new();
+    private readonly RagService _service;
+
+    public RagServiceTests()
+    {
+        _settingsMock.Setup(x => x.GetAsync())
+            .ReturnsAsync(new RagSettings("ollama", "http://ollama:11434", "qwen3:4b", "bge-m3", 1024, null, 5));
+        _factoryMock.Setup(x => x.CreateEmbeddingGeneratorAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_embedderMock.Object);
+        _factoryMock.Setup(x => x.CreateChatClientAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_chatMock.Object);
+        _embedderMock.Setup(x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new GeneratedEmbeddings<Embedding<float>>(new[] { new Embedding<float>(new float[1024]) }));
+
+        _service = new RagService(_chunkRepoMock.Object, _manualRepoMock.Object, _factoryMock.Object, _settingsMock.Object);
+    }
+
+    [Fact]
+    public async Task AskAsync_EmptyQuestion_ReturnsNoContextWithoutCallingModels()
+    {
+        var result = await _service.AskAsync(1, "   ");
+
+        result.HasContext.Should().BeFalse();
+        _factoryMock.Verify(x => x.CreateChatClientAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AskAsync_NoMatches_ReturnsNoContextWithoutCallingChat()
+    {
+        _chunkRepoMock
+            .Setup(x => x.ListAsync(It.Is<ISpecification<ManualChunk, ManualChunkMatch>>(s => s is NearestManualChunksSpec), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ManualChunkMatch>());
+
+        var result = await _service.AskAsync(1, "how many cards?");
+
+        result.HasContext.Should().BeFalse();
+        result.Citations.Should().BeEmpty();
+        _chatMock.Verify(
+            x => x.GetResponseAsync(It.IsAny<IEnumerable<ChatMessage>>(), It.IsAny<ChatOptions?>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task AskAsync_WithMatches_ScopesByGameIdAndReturnsAnswerWithDedupedCitations()
+    {
+        const int gameId = 42;
+        var chunk1 = CreateChunk(1, gameId, 3, "You start with 7 cards.");
+        var chunk2 = CreateChunk(1, gameId, 3, "More about the draw phase.");
+        var chunk3 = CreateChunk(2, gameId, 5, "Expansion setup rule.");
+
+        NearestManualChunksSpec? capturedSpec = null;
+        _chunkRepoMock
+            .Setup(x => x.ListAsync(It.Is<ISpecification<ManualChunk, ManualChunkMatch>>(s => s is NearestManualChunksSpec && s.Take == 5), It.IsAny<CancellationToken>()))
+            .Callback<ISpecification<ManualChunk, ManualChunkMatch>, CancellationToken>((spec, _) => capturedSpec = (NearestManualChunksSpec) spec)
+            .ReturnsAsync(new List<ManualChunkMatch>
+            {
+                new(chunk1, 0.10),
+                new(chunk2, 0.20),
+                new(chunk3, 0.30)
+            });
+        _manualRepoMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(CreateManual(1, "Base Rules"));
+        _manualRepoMock.Setup(x => x.GetByIdAsync(2)).ReturnsAsync(CreateManual(2, "Expansion Rules"));
+        _chatMock
+            .Setup(x => x.GetResponseAsync(It.IsAny<IEnumerable<ChatMessage>>(), It.IsAny<ChatOptions?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, "You start with 7 cards (page 3).")));
+
+        var result = await _service.AskAsync(gameId, "how many cards?");
+
+        result.HasContext.Should().BeTrue();
+        result.Answer.Should().Contain("7 cards");
+        result.Citations.Should().HaveCount(2);
+        result.Citations.Should().Contain(c => c.ManualId == 1 && c.Page == 3 && c.Title == "Base Rules");
+        result.Citations.Should().Contain(c => c.ManualId == 2 && c.Page == 5 && c.Title == "Expansion Rules");
+        _chunkRepoMock.Verify(x => x.ListAsync(It.Is<ISpecification<ManualChunk, ManualChunkMatch>>(s => s is NearestManualChunksSpec && s.Take == 5), It.IsAny<CancellationToken>()), Times.Once);
+        capturedSpec.Should().NotBeNull();
+        capturedSpec!.IsSatisfiedBy(CreateChunk(1, gameId, 3, "in scope")).Should().BeTrue();
+        capturedSpec.IsSatisfiedBy(CreateChunk(1, gameId + 1, 3, "other game")).Should().BeFalse();
+    }
+
+    private static ManualChunk CreateChunk(int manualId, int gameId, int page, string content) =>
+        new(manualId, gameId, 0, content, page, new Vector(new float[1024]));
+
+    private static Manual CreateManual(int id, string title)
+    {
+        var manual = new Manual(title, "stored.pdf", "application/pdf", 100, 1, DateTime.UtcNow)
+        {
+            Id = id
+        };
+        return manual;
+    }
+}

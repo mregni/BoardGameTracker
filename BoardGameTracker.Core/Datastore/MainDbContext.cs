@@ -15,6 +15,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Expansion> Expansions { get; set; }
     public DbSet<GameAccessory> GameAccessories { get; set; }
     public DbSet<Manual> Manuals { get; set; }
+    public DbSet<ManualChunk> ManualChunks { get; set; }
     public DbSet<GameCategory> GameCategories { get; set; }
     public DbSet<GameMechanic> GameMechanics { get; set; }
     public DbSet<Person> People { get; set; }
@@ -49,6 +50,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
 
         ConfigureValueObjects(builder);
         BuildGame(builder);
+        BuildManualChunks(builder);
         BuildGameSessions(builder);
         BuildPlayer(builder);
         BuildBadges(builder);
@@ -183,6 +185,35 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
             .WithOne(x => x.Game)
             .HasForeignKey(x => x.GameId)
             .OnDelete(DeleteBehavior.Cascade);
+    }
+
+    private void BuildManualChunks(ModelBuilder builder)
+    {
+        builder.Entity<Manual>()
+            .Property(x => x.IndexStatus)
+            .HasConversion<string>();
+
+        var chunk = builder.Entity<ManualChunk>();
+        chunk
+            .HasOne(x => x.Manual)
+            .WithMany(x => x.Chunks)
+            .HasForeignKey(x => x.ManualId)
+            .OnDelete(DeleteBehavior.Cascade);
+        chunk.HasIndex(x => x.GameId);
+
+        if (Database.IsNpgsql())
+        {
+            builder.HasPostgresExtension("vector");
+            chunk.Property(x => x.Embedding).HasColumnType("vector(1024)");
+            chunk
+                .HasIndex(x => x.Embedding)
+                .HasMethod("hnsw")
+                .HasOperators("vector_cosine_ops");
+        }
+        else
+        {
+            chunk.Ignore(x => x.Embedding);
+        }
     }
 
     private static void BuildGameSessions(ModelBuilder builder)

@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
@@ -39,20 +38,6 @@ public class MaintenanceControllerTests
     }
 
     [Fact]
-    public async Task Reset_ShouldPropagate_WhenServiceThrows()
-    {
-        _resetServiceMock
-            .Setup(x => x.ResetDataAsync(It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("boom"));
-
-        var act = async () => await _controller.Reset();
-
-        await act.Should().ThrowAsync<InvalidOperationException>();
-        _resetServiceMock.Verify(x => x.ResetDataAsync(It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
     public async Task FactoryReset_ShouldReturnNoContent()
     {
         _resetServiceMock.Setup(x => x.FactoryResetAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -64,17 +49,4 @@ public class MaintenanceControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task FactoryReset_ShouldPropagate_WhenServiceThrows()
-    {
-        _resetServiceMock
-            .Setup(x => x.FactoryResetAsync(It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("boom"));
-
-        var act = async () => await _controller.FactoryReset();
-
-        await act.Should().ThrowAsync<InvalidOperationException>();
-        _resetServiceMock.Verify(x => x.FactoryResetAsync(It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
 }

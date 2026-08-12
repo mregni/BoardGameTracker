@@ -17,6 +17,7 @@ public class UIResourceDto
     public bool GameNightsEnabled { get; set; }
     public bool RsvpAuthenticationEnabled { get; set; }
     public bool EmailEnabled { get; set; }
+    public bool RagEnabled { get; set; }
     public BggConfigStatusDto BggStatus { get; set; } = new();
     public string? BggApiKey { get; set; } = string.Empty;
 }

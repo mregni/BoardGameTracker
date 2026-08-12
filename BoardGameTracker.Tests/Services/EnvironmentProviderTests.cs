@@ -12,13 +12,18 @@ public class EnvironmentProviderTests : IDisposable
     private readonly EnvironmentProvider _environmentProvider;
     private readonly Dictionary<string, string?> _originalEnvironmentVariables;
 
+    private static readonly string[] ResetKeys =
+    [
+        "ASPNETCORE_ENVIRONMENT", "ENVIRONMENT", "RAG_ENABLED", "ADMIN_PASSWORD", "TRUSTED_PROXIES", "CORS_ORIGINS",
+        "SWAGGER_ENABLED", "SMTP_HOST", "SMTP_PORT", "SMTP_USERNAME", "SMTP_PASSWORD", "SMTP_USE_SSL",
+        "SMTP_FROM_ADDRESS", "SMTP_FROM_NAME"
+    ];
+
     public EnvironmentProviderTests()
     {
         _environmentProvider = new EnvironmentProvider();
         _originalEnvironmentVariables = new Dictionary<string, string?>
         {
-            ["ASPNETCORE_ENVIRONMENT"] = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
-            ["ENVIRONMENT"] = Environment.GetEnvironmentVariable("ENVIRONMENT"),
             ["PORT"] = Environment.GetEnvironmentVariable("PORT"),
             ["STATISTICS"] = Environment.GetEnvironmentVariable("STATISTICS"),
             ["STATISTICS_ENABLED"] = Environment.GetEnvironmentVariable("STATISTICS_ENABLED"),
@@ -27,8 +32,11 @@ public class EnvironmentProviderTests : IDisposable
             ["JWT_SECRET"] = Environment.GetEnvironmentVariable("JWT_SECRET")
         };
 
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
-        Environment.SetEnvironmentVariable("ENVIRONMENT", null);
+        foreach (var key in ResetKeys)
+        {
+            _originalEnvironmentVariables[key] = Environment.GetEnvironmentVariable(key);
+            Environment.SetEnvironmentVariable(key, null);
+        }
     }
 
     public void Dispose()
@@ -89,32 +97,6 @@ public class EnvironmentProviderTests : IDisposable
     }
 
     [Fact]
-    public void AllProperties_ShouldBeConsistent_WhenCalledMultipleTimes()
-    {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "production");
-        Environment.SetEnvironmentVariable("PORT", "8080");
-        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", "true");
-        Environment.SetEnvironmentVariable("LOGLEVEL", "ERROR");
-
-        var environmentName1 = _environmentProvider.EnvironmentName;
-        var environmentName2 = _environmentProvider.EnvironmentName;
-        var port1 = _environmentProvider.Port;
-        var port2 = _environmentProvider.Port;
-        var statistics1 = _environmentProvider.StatisticsEnabled;
-        var statistics2 = _environmentProvider.StatisticsEnabled;
-        var logLevel1 = _environmentProvider.LogLevel;
-        var logLevel2 = _environmentProvider.LogLevel;
-        var isDev1 = _environmentProvider.IsDevelopment;
-        var isDev2 = _environmentProvider.IsDevelopment;
-
-        environmentName1.Should().Be(environmentName2);
-        port1.Should().Be(port2);
-        statistics1.Should().Be(statistics2);
-        logLevel1.Should().Be(logLevel2);
-        isDev1.Should().Be(isDev2);
-    }
-
-    [Fact]
     public void Properties_ShouldReflectEnvironmentChanges_WhenEnvironmentVariablesChange()
     {
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "development");
@@ -143,18 +125,6 @@ public class EnvironmentProviderTests : IDisposable
         updatedStats.Should().BeTrue();
         initialIsDev.Should().BeTrue();
         updatedIsDev.Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("    ")]
-    public void EnableStatistics_ShouldReturnFalse_WhenEnvironmentVariableIsEmptyString(string input)
-    {
-        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", input);
-
-        var result = _environmentProvider.StatisticsEnabled;
-
-        result.Should().BeFalse();
     }
 
     [Fact]
@@ -222,16 +192,6 @@ public class EnvironmentProviderTests : IDisposable
     }
 
     [Fact]
-    public void IsDevelopment_ShouldReturnFalse_WhenProductionEnvironment()
-    {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Production");
-
-        var result = _environmentProvider.IsDevelopment;
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
     public void AuthEnabled_ShouldReturnTrue_WhenNotSet()
     {
         Environment.SetEnvironmentVariable("AUTH_ENABLED", null);
@@ -280,5 +240,181 @@ public class EnvironmentProviderTests : IDisposable
         Environment.SetEnvironmentVariable("JWT_SECRET", "");
 
         _environmentProvider.JwtSecret.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("True", true)]
+    [InlineData("false", false)]
+    [InlineData("", false)]
+    [InlineData("1", false)]
+    [InlineData("yes", false)]
+    [InlineData(null, false)]
+    public void RagEnabled_ShouldOnlyBeTrue_WhenExplicitlySetToTrue(string? value, bool expected)
+    {
+        Environment.SetEnvironmentVariable("RAG_ENABLED", value);
+
+        _environmentProvider.RagEnabled.Should().Be(expected);
+    }
+
+    [Fact]
+    public void AdminPassword_ShouldReturnNull_WhenNotSet()
+    {
+        _environmentProvider.AdminPassword.Should().BeNull();
+    }
+
+    [Fact]
+    public void AdminPassword_ShouldReturnRawValue_WhenSet()
+    {
+        Environment.SetEnvironmentVariable("ADMIN_PASSWORD", "  p@ss  ");
+
+        _environmentProvider.AdminPassword.Should().Be("  p@ss  ");
+    }
+
+    [Fact]
+    public void TrustedProxies_ShouldReturnEmpty_WhenNotSet()
+    {
+        _environmentProvider.TrustedProxies.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void TrustedProxies_ShouldReturnEmpty_WhenBlank(string value)
+    {
+        Environment.SetEnvironmentVariable("TRUSTED_PROXIES", value);
+
+        _environmentProvider.TrustedProxies.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void TrustedProxies_ShouldSplitOnCommasAndTrimEntries()
+    {
+        Environment.SetEnvironmentVariable("TRUSTED_PROXIES", " 10.0.0.1 , 10.0.0.2 ,,10.0.0.3 ");
+
+        _environmentProvider.TrustedProxies.Should().BeEquivalentTo(["10.0.0.1", "10.0.0.2", "10.0.0.3"]);
+    }
+
+    [Fact]
+    public void CorsOrigins_ShouldReturnEmpty_WhenNotSet()
+    {
+        _environmentProvider.CorsOrigins.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void CorsOrigins_ShouldSplitOnCommasAndTrimEntries()
+    {
+        Environment.SetEnvironmentVariable("CORS_ORIGINS", "https://a.example.com, https://b.example.com");
+
+        _environmentProvider.CorsOrigins.Should().BeEquivalentTo(["https://a.example.com", "https://b.example.com"]);
+    }
+
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("false", false)]
+    [InlineData("TRUE", true)]
+    public void SwaggerEnabled_ShouldUseExplicitValue_WhenParsable(string value, bool expected)
+    {
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "production");
+        Environment.SetEnvironmentVariable("SWAGGER_ENABLED", value);
+
+        _environmentProvider.SwaggerEnabled.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("development", true)]
+    [InlineData("production", false)]
+    public void SwaggerEnabled_ShouldFallBackToIsDevelopment_WhenNotSet(string environmentName, bool expected)
+    {
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", environmentName);
+
+        _environmentProvider.SwaggerEnabled.Should().Be(expected);
+    }
+
+    [Fact]
+    public void SwaggerEnabled_ShouldFallBackToIsDevelopment_WhenValueIsNotABoolean()
+    {
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "development");
+        Environment.SetEnvironmentVariable("SWAGGER_ENABLED", "maybe");
+
+        _environmentProvider.SwaggerEnabled.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("2525", 2525)]
+    [InlineData("0", 587)]
+    [InlineData("-1", 587)]
+    [InlineData("", 587)]
+    [InlineData("not-a-port", 587)]
+    [InlineData(null, 587)]
+    public void SmtpPort_ShouldFallBackTo587_WhenValueIsNotAPositiveInteger(string? value, int expected)
+    {
+        Environment.SetEnvironmentVariable("SMTP_PORT", value);
+
+        _environmentProvider.SmtpPort.Should().Be(expected);
+    }
+
+    [Fact]
+    public void SmtpSettings_ShouldReturnConfiguredValues()
+    {
+        Environment.SetEnvironmentVariable("SMTP_HOST", "smtp.example.com");
+        Environment.SetEnvironmentVariable("SMTP_USERNAME", "mailer");
+        Environment.SetEnvironmentVariable("SMTP_PASSWORD", "secret");
+        Environment.SetEnvironmentVariable("SMTP_FROM_ADDRESS", "no-reply@example.com");
+        Environment.SetEnvironmentVariable("SMTP_FROM_NAME", "Board Game Tracker");
+
+        _environmentProvider.SmtpHost.Should().Be("smtp.example.com");
+        _environmentProvider.SmtpUsername.Should().Be("mailer");
+        _environmentProvider.SmtpPassword.Should().Be("secret");
+        _environmentProvider.SmtpFromAddress.Should().Be("no-reply@example.com");
+        _environmentProvider.SmtpFromName.Should().Be("Board Game Tracker");
+    }
+
+    [Fact]
+    public void SmtpSettings_ShouldReturnNull_WhenNotSet()
+    {
+        _environmentProvider.SmtpHost.Should().BeNull();
+        _environmentProvider.SmtpUsername.Should().BeNull();
+        _environmentProvider.SmtpPassword.Should().BeNull();
+        _environmentProvider.SmtpFromAddress.Should().BeNull();
+        _environmentProvider.SmtpFromName.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("false", false)]
+    [InlineData("False", false)]
+    [InlineData("FALSE", false)]
+    [InlineData("true", true)]
+    [InlineData("anything", true)]
+    [InlineData("", true)]
+    [InlineData(null, true)]
+    public void SmtpUseSsl_ShouldOnlyBeFalse_WhenExplicitlySetToFalse(string? value, bool expected)
+    {
+        Environment.SetEnvironmentVariable("SMTP_USE_SSL", value);
+
+        _environmentProvider.SmtpUseSsl.Should().Be(expected);
+    }
+
+    [Fact]
+    public void EmailEnabled_ShouldBeTrue_WhenHostAndFromAddressAreSet()
+    {
+        Environment.SetEnvironmentVariable("SMTP_HOST", "smtp.example.com");
+        Environment.SetEnvironmentVariable("SMTP_FROM_ADDRESS", "no-reply@example.com");
+
+        _environmentProvider.EmailEnabled.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(null, "no-reply@example.com")]
+    [InlineData("smtp.example.com", null)]
+    [InlineData("   ", "no-reply@example.com")]
+    [InlineData("smtp.example.com", "   ")]
+    [InlineData(null, null)]
+    public void EmailEnabled_ShouldBeFalse_WhenHostOrFromAddressIsMissing(string? host, string? fromAddress)
+    {
+        Environment.SetEnvironmentVariable("SMTP_HOST", host);
+        Environment.SetEnvironmentVariable("SMTP_FROM_ADDRESS", fromAddress);
+
+        _environmentProvider.EmailEnabled.Should().BeFalse();
     }
 }

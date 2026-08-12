@@ -24,10 +24,7 @@ public class BadgeLevelProgressionPolicy : IBadgeLevelProgressionPolicy
     public BadgeLevel? GetNextLevel(BadgeLevel current)
     {
         var currentOrder = LevelHierarchy.GetValueOrDefault(current, 0);
-        var nextOrder = currentOrder + 1;
-
-        var nextLevel = LevelHierarchy.FirstOrDefault(kvp => kvp.Value == nextOrder);
-        return nextLevel.Key != default ? nextLevel.Key : null;
+        return FindLevelByOrder(currentOrder + 1);
     }
 
     public BadgeLevel? GetPreviousLevel(BadgeLevel current)
@@ -38,8 +35,20 @@ public class BadgeLevelProgressionPolicy : IBadgeLevelProgressionPolicy
         if (previousOrder < 1)
             return null;
 
-        var previousLevel = LevelHierarchy.FirstOrDefault(kvp => kvp.Value == previousOrder);
-        return previousLevel.Key != default ? previousLevel.Key : null;
+        return FindLevelByOrder(previousOrder);
+    }
+
+    private static BadgeLevel? FindLevelByOrder(int order)
+    {
+        foreach (var (level, levelOrder) in LevelHierarchy)
+        {
+            if (levelOrder == order)
+            {
+                return level;
+            }
+        }
+
+        return null;
     }
 
     public bool IsMaxLevel(BadgeLevel level)

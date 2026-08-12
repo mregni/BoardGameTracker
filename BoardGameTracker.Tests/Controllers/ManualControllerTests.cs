@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Manuals.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -19,17 +21,20 @@ namespace BoardGameTracker.Tests.Controllers;
 public class ManualControllerTests
 {
     private readonly Mock<IManualService> _manualServiceMock;
+    private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly ManualController _controller;
 
     public ManualControllerTests()
     {
         _manualServiceMock = new Mock<IManualService>();
-        _controller = new ManualController(_manualServiceMock.Object);
+        _environmentProviderMock = new Mock<IEnvironmentProvider>();
+        _controller = new ManualController(_manualServiceMock.Object, _environmentProviderMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
         _manualServiceMock.VerifyNoOtherCalls();
+        _environmentProviderMock.VerifyNoOtherCalls();
     }
 
     private static Manual CreateManual(int id, int gameId)
@@ -71,6 +76,34 @@ public class ManualControllerTests
     }
 
     [Fact]
+    public async Task ReindexManual_ShouldReturnNoContent_WhenRagEnabled()
+    {
+        _environmentProviderMock.Setup(x => x.RagEnabled).Returns(true);
+
+        var result = await _controller.ReindexManual(9);
+
+        result.Should().BeOfType<NoContentResult>();
+
+        _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
+        _manualServiceMock.Verify(x => x.RequeueManualForIndexing(9), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ReindexManual_ShouldReturnNotFound_WhenRagDisabled()
+    {
+        _environmentProviderMock.Setup(x => x.RagEnabled).Returns(false);
+
+        var result = await _controller.ReindexManual(9);
+
+        result.Should().BeOfType<NotFoundResult>();
+
+        _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
+        _manualServiceMock.Verify(x => x.RequeueManualForIndexing(It.IsAny<int>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task DeleteManual_ShouldReturnNoContent()
     {
         var result = await _controller.DeleteManual(7);
@@ -95,6 +128,55 @@ public class ManualControllerTests
         fileResult.FileDownloadName.Should().Be("Catan.pdf");
 
         _manualServiceMock.Verify(x => x.GetManualForDownload(3), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetManualPageImage_ShouldReturnNotFound_WhenRagDisabled()
+    {
+        _environmentProviderMock.Setup(x => x.RagEnabled).Returns(false);
+
+        var result = await _controller.GetManualPageImage(3, 2, CancellationToken.None);
+
+        result.Should().BeOfType<NotFoundResult>();
+
+        _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
+        _manualServiceMock.Verify(x => x.GetManualPageImage(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetManualPageImage_ShouldReturnPng_WhenRendered()
+    {
+        _environmentProviderMock.Setup(x => x.RagEnabled).Returns(true);
+        _manualServiceMock
+            .Setup(x => x.GetManualPageImage(3, 2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ManualDownload { Stream = new MemoryStream(), ContentType = "image/png", FileName = "page-2.png" });
+
+        var result = await _controller.GetManualPageImage(3, 2, CancellationToken.None);
+
+        var fileResult = result.Should().BeOfType<FileStreamResult>().Subject;
+        fileResult.ContentType.Should().Be("image/png");
+
+        _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
+        _manualServiceMock.Verify(x => x.GetManualPageImage(3, 2, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetManualPageImage_ShouldReturnNotFound_WhenImageUnavailable()
+    {
+        _environmentProviderMock.Setup(x => x.RagEnabled).Returns(true);
+        _manualServiceMock
+            .Setup(x => x.GetManualPageImage(3, 2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ManualDownload?)null);
+
+        var result = await _controller.GetManualPageImage(3, 2, CancellationToken.None);
+
+        result.Should().BeOfType<NotFoundResult>();
+
+        _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
+        _manualServiceMock.Verify(x => x.GetManualPageImage(3, 2, It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

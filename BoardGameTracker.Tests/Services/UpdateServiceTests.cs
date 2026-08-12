@@ -45,7 +45,7 @@ public class UpdateServiceTests
     #region GetUpdateStatusAsync Tests
 
     [Fact]
-    public async Task GetUpdateStatusAsync_ShouldReturnUpdateStatus_WhenConfigExists()
+    public async Task GetVersionInfoAsync_ShouldReturnUpdateStatus_WhenConfigExists()
     {
         // Arrange
         var config = new Dictionary<string, string>
@@ -73,7 +73,7 @@ public class UpdateServiceTests
     }
 
     [Fact]
-    public async Task GetUpdateStatusAsync_ShouldReturnNoUpdateAvailable_WhenConfigIsFalse()
+    public async Task GetVersionInfoAsync_ShouldReturnNoUpdateAvailable_WhenConfigIsFalse()
     {
         // Arrange
         var config = new Dictionary<string, string>
@@ -93,7 +93,7 @@ public class UpdateServiceTests
     }
 
     [Fact]
-    public async Task GetUpdateStatusAsync_ShouldIncludeErrorMessage_WhenPresent()
+    public async Task GetVersionInfoAsync_ShouldIncludeErrorMessage_WhenPresent()
     {
         // Arrange
         var config = new Dictionary<string, string>
@@ -113,7 +113,7 @@ public class UpdateServiceTests
     }
 
     [Fact]
-    public async Task GetUpdateStatusAsync_ShouldReturnEmptyConfig_WhenNoConfigExists()
+    public async Task GetVersionInfoAsync_ShouldReturnEmptyConfig_WhenNoConfigExists()
     {
         // Arrange
         _configRepositoryMock

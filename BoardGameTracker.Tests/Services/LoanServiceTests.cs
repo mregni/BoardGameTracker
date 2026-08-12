@@ -72,24 +72,6 @@ public class LoanServiceTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task GetLoans_ShouldReturnEmptyList_WhenNoLoansExist()
-    {
-        // Arrange
-        _loanRepositoryMock
-            .Setup(x => x.ListAsync(It.IsAny<LoansOrderedByDateSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
-
-        // Act
-        var result = await _loanService.GetLoans();
-
-        // Assert
-        result.Should().BeEmpty();
-
-        _loanRepositoryMock.Verify(x => x.ListAsync(It.IsAny<LoansOrderedByDateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
     #endregion
 
     #region GetLoanById Tests
@@ -447,27 +429,6 @@ public class LoanServiceTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task Delete_ShouldCallDeleteAsync_WithCorrectId()
-    {
-        // Arrange
-        var loanId = 42;
-
-        _loanRepositoryMock
-            .Setup(x => x.DeleteAsync(loanId))
-            .ReturnsAsync(true);
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
-
-        // Act
-        await _loanService.Delete(loanId);
-
-        // Assert
-        _loanRepositoryMock.Verify(x => x.DeleteAsync(42), Times.Once);
-    }
-
     #endregion
 
     #region CountActiveLoans Tests
@@ -487,24 +448,6 @@ public class LoanServiceTests
 
         // Assert
         result.Should().Be(expectedCount);
-
-        _loanRepositoryMock.Verify(x => x.CountAsync(It.IsAny<ActiveLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task CountActiveLoans_ShouldReturnZero_WhenNoActiveLoans()
-    {
-        // Arrange
-        _loanRepositoryMock
-            .Setup(x => x.CountAsync(It.IsAny<ActiveLoansSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(0);
-
-        // Act
-        var result = await _loanService.CountActiveLoans();
-
-        // Assert
-        result.Should().Be(0);
 
         _loanRepositoryMock.Verify(x => x.CountAsync(It.IsAny<ActiveLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();

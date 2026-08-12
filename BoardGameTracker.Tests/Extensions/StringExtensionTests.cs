@@ -172,7 +172,7 @@ public class StringExtensionTests
         [InlineData("hELLO", "HELLO")]
         [InlineData("ümlaut test", "Ümlaut test")]
         [InlineData(" test", " test")]
-        public void FirstCharToUpper_ShouldReturnEmptyString_WhenInputIsEmpty(string input, string output)
+        public void FirstCharToUpper_ShouldUppercaseFirstChar(string input, string output)
         {
             var result = input.FirstCharToUpper();
 

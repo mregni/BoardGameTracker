@@ -22,6 +22,7 @@ vi.mock("@/services/queries/settings", () => ({
 			Promise.resolve({
 				shelfOfShameEnabled: true,
 				gameNightsEnabled: true,
+				ragEnabled: true,
 			}),
 	}),
 }));
@@ -93,8 +94,8 @@ const createWrapper = () => {
 
 describe("useBgtMenuBar", () => {
 	describe("menuItems", () => {
-		it("should have 10 menu items", () => {
-			expect(menuItems).toHaveLength(10);
+		it("should have 11 menu items", () => {
+			expect(menuItems).toHaveLength(11);
 		});
 
 		it("should have dashboard as first item", () => {

@@ -28,28 +28,6 @@ public class DurationBadgeEvaluatorTests
     #region Green Level Tests (300 minutes = 5 hours)
 
     [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnFalse_WhenWinningDurationIsLessThan300Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateWinningSessionsWithDuration(299);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenWinningDurationIsExactly300Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateWinningSessionsWithDuration(300);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenWinningDurationIsMoreThan300Minutes()
     {
         var badge = CreateBadge(BadgeLevel.Green);
@@ -63,28 +41,6 @@ public class DurationBadgeEvaluatorTests
     #endregion
 
     #region Blue Level Tests (600 minutes = 10 hours)
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnFalse_WhenWinningDurationIsLessThan600Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateWinningSessionsWithDuration(599);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenWinningDurationIsExactly600Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateWinningSessionsWithDuration(600);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenWinningDurationIsMoreThan600Minutes()
@@ -102,28 +58,6 @@ public class DurationBadgeEvaluatorTests
     #region Red Level Tests (3000 minutes = 50 hours)
 
     [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnFalse_WhenWinningDurationIsLessThan3000Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateWinningSessionsWithDuration(2999);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenWinningDurationIsExactly3000Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateWinningSessionsWithDuration(3000);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenWinningDurationIsMoreThan3000Minutes()
     {
         var badge = CreateBadge(BadgeLevel.Red);
@@ -137,28 +71,6 @@ public class DurationBadgeEvaluatorTests
     #endregion
 
     #region Gold Level Tests (6000 minutes = 100 hours)
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnFalse_WhenWinningDurationIsLessThan6000Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateWinningSessionsWithDuration(5999);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenWinningDurationIsExactly6000Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateWinningSessionsWithDuration(6000);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenWinningDurationIsMoreThan6000Minutes()

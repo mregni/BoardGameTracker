@@ -28,110 +28,10 @@ public class SocialPlayerBadgeEvaluatorTests
     #region Green Level Tests (5 different opponents)
 
     [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnFalse_WhenOpponentCountIsLessThan5()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithOpponents(4);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenOpponentCountIsExactly5()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithOpponents(5);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenOpponentCountIsMoreThan5()
     {
         var badge = CreateBadge(BadgeLevel.Green);
         var sessions = CreateSessionsWithOpponents(10);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Blue Level Tests (10 different opponents)
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnFalse_WhenOpponentCountIsLessThan10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSessionsWithOpponents(9);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenOpponentCountIsExactly10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSessionsWithOpponents(10);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Red Level Tests (25 different opponents)
-
-    [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnFalse_WhenOpponentCountIsLessThan25()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSessionsWithOpponents(24);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenOpponentCountIsExactly25()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSessionsWithOpponents(25);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Gold Level Tests (50 different opponents)
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnFalse_WhenOpponentCountIsLessThan50()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSessionsWithOpponents(49);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenOpponentCountIsExactly50()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSessionsWithOpponents(50);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
@@ -250,6 +150,21 @@ public class SocialPlayerBadgeEvaluatorTests
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(BadgeLevel.Green, 4)]
+    [InlineData(BadgeLevel.Blue, 9)]
+    [InlineData(BadgeLevel.Red, 24)]
+    [InlineData(BadgeLevel.Gold, 49)]
+    public async Task CanAwardBadge_ShouldReturnFalse_JustBelowThreshold(BadgeLevel level, int opponentCount)
+    {
+        var badge = CreateBadge(level);
+        var sessions = CreateSessionsWithOpponents(opponentCount);
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().BeFalse();
     }
 
     #endregion

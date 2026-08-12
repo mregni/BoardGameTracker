@@ -79,4 +79,19 @@ public static class Constants
         public const string AvailableVersion = "update_available_version";
         public const string Available = "update_available";
     }
+
+    public static class AiConfig
+    {
+        public const string Provider = "ai_provider";
+        public const string BaseUrl = "ai_base_url";
+        public const string ChatModel = "ai_chat_model";
+        public const string ApiKey = "ai_api_key";
+        public const string TopK = "ai_top_k";
+
+        public const string OllamaProvider = "ollama";
+        public const string OpenAiProvider = "openai";
+
+        public const string EmbeddingModel = "bge-m3";
+        public const int EmbeddingDimensions = 1024;
+    }
 }

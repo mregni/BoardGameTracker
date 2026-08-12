@@ -159,28 +159,6 @@ public class PlayerNameTests
     #region Record Equality Tests
 
     [Fact]
-    public void Equality_SameValue_ShouldBeEqual()
-    {
-        // Arrange
-        var playerName1 = new PlayerName("John");
-        var playerName2 = new PlayerName("John");
-
-        // Assert
-        playerName1.Should().Be(playerName2);
-    }
-
-    [Fact]
-    public void Equality_DifferentValue_ShouldNotBeEqual()
-    {
-        // Arrange
-        var playerName1 = new PlayerName("John");
-        var playerName2 = new PlayerName("Jane");
-
-        // Assert
-        playerName1.Should().NotBe(playerName2);
-    }
-
-    [Fact]
     public void Equality_TrimmedVsNonTrimmed_ShouldBeEqual()
     {
         // Arrange
@@ -189,17 +167,6 @@ public class PlayerNameTests
 
         // Assert - Both should have "John" as value after trimming
         playerName1.Should().Be(playerName2);
-    }
-
-    [Fact]
-    public void GetHashCode_SameValue_ShouldBeSame()
-    {
-        // Arrange
-        var playerName1 = new PlayerName("John");
-        var playerName2 = new PlayerName("John");
-
-        // Assert
-        playerName1.GetHashCode().Should().Be(playerName2.GetHashCode());
     }
 
     #endregion

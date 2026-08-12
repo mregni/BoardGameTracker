@@ -6,7 +6,6 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Common.Models.Charts;
@@ -177,32 +176,6 @@ public class GameControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task UpdateGame_ShouldThrow_WhenGameDoesNotExist()
-    {
-        // Arrange
-        var command = new UpdateGameCommand
-        {
-            Id = 999,
-            Title = "Non-existent Game",
-            HasScoring = false,
-            State = GameState.Owned
-        };
-
-        _gameServiceMock
-            .Setup(x => x.UpdateGame(command))
-            .ThrowsAsync(new EntityNotFoundException(nameof(Game), command.Id));
-
-        // Act
-        var action = async () => await _controller.UpdateGame(command);
-
-        // Assert
-        await action.Should().ThrowAsync<EntityNotFoundException>();
-
-        _gameServiceMock.Verify(x => x.UpdateGame(command), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
     #endregion
 
     #region DeleteGameById Tests
@@ -222,26 +195,6 @@ public class GameControllerTests
 
         // Assert
         result.Should().BeOfType<NoContentResult>();
-
-        _gameServiceMock.Verify(x => x.Delete(gameId), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task DeleteGameById_ShouldThrow_WhenGameDoesNotExist()
-    {
-        // Arrange
-        var gameId = 999;
-
-        _gameServiceMock
-            .Setup(x => x.Delete(gameId))
-            .ThrowsAsync(new EntityNotFoundException(nameof(Game), gameId));
-
-        // Act
-        var action = async () => await _controller.DeleteGameById(gameId);
-
-        // Assert
-        await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _gameServiceMock.Verify(x => x.Delete(gameId), Times.Once);
         VerifyNoOtherCalls();

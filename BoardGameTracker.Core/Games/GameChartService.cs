@@ -1,9 +1,13 @@
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Charts;
+using BoardGameTracker.Core.Common;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
+using BoardGameTracker.Core.Sessions.Specifications;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Games;
@@ -11,19 +15,22 @@ namespace BoardGameTracker.Core.Games;
 public class GameChartService : IGameChartService
 {
     private readonly IGameRepository _gameRepository;
-    private readonly IGameSessionRepository _gameSessionRepository;
+    private readonly IReadRepository<Session> _sessionRepository;
     private readonly IGameStatisticsRepository _gameStatisticsRepository;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<GameChartService> _logger;
 
     public GameChartService(
         IGameRepository gameRepository,
-        IGameSessionRepository gameSessionRepository,
+        IReadRepository<Session> sessionRepository,
         IGameStatisticsRepository gameStatisticsRepository,
+        IDateTimeProvider dateTimeProvider,
         ILogger<GameChartService> logger)
     {
         _gameRepository = gameRepository;
-        _gameSessionRepository = gameSessionRepository;
+        _sessionRepository = sessionRepository;
         _gameStatisticsRepository = gameStatisticsRepository;
+        _dateTimeProvider = dateTimeProvider;
         _logger = logger;
     }
 
@@ -48,7 +55,7 @@ public class GameChartService : IGameChartService
     public async Task<List<TopPlayerDto>> GetTopPlayers(int id)
     {
         _logger.LogDebug("Getting top players for game {GameId}", id);
-        var sessions = await _gameSessionRepository.GetSessionsByGameId(id, null);
+        var sessions = await _sessionRepository.ListAsync(new SessionsByGameSpec(id));
         var playerSessions = sessions
             .SelectMany(x => x.PlayerSessions)
             .GroupBy(x => x.PlayerId)
@@ -71,7 +78,8 @@ public class GameChartService : IGameChartService
             return null;
         }
 
-        var sessions = await _gameSessionRepository.GetSessions(id, -Constants.Game.ChartHistoryDays);
+        var cutoff = _dateTimeProvider.UtcNow.AddDays(-Constants.Game.ChartHistoryDays);
+        var sessions = await _sessionRepository.ListAsync(new SessionsByGameSinceSpec(id, cutoff));
 
         var uniquePlayerIds = sessions
             .SelectMany(session => session.PlayerSessions)

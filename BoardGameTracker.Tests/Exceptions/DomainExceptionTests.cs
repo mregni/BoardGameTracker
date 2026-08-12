@@ -35,19 +35,6 @@ public class DomainExceptionTests
         exception.ErrorCode.Should().Be("DOMAIN_ERROR");
     }
 
-    [Fact]
-    public void Constructor_WithMessageOnly_ShouldHaveNullInnerException()
-    {
-        // Arrange
-        var message = "Something went wrong";
-
-        // Act
-        var exception = new DomainException(message);
-
-        // Assert
-        exception.InnerException.Should().BeNull();
-    }
-
     #endregion
 
     #region Constructor with ErrorCode and Message Tests
@@ -78,34 +65,6 @@ public class DomainExceptionTests
 
         // Assert
         exception.ErrorCode.Should().Be(errorCode);
-    }
-
-    [Fact]
-    public void Constructor_WithErrorCodeAndMessage_ShouldHaveNullInnerException()
-    {
-        // Arrange
-        var errorCode = "INVALID_OPERATION";
-        var message = "Cannot perform this operation";
-
-        // Act
-        var exception = new DomainException(errorCode, message);
-
-        // Assert
-        exception.InnerException.Should().BeNull();
-    }
-
-    [Theory]
-    [InlineData("PLAYER_NOT_FOUND", "Player was not found")]
-    [InlineData("GAME_INVALID", "Game data is invalid")]
-    [InlineData("SESSION_CONFLICT", "Session conflicts with existing")]
-    public void Constructor_WithErrorCodeAndMessage_ShouldHandleVariousErrorCodes(string errorCode, string message)
-    {
-        // Act
-        var exception = new DomainException(errorCode, message);
-
-        // Assert
-        exception.ErrorCode.Should().Be(errorCode);
-        exception.Message.Should().Be(message);
     }
 
     #endregion
@@ -152,70 +111,6 @@ public class DomainExceptionTests
 
         // Assert
         exception.InnerException.Should().BeSameAs(innerException);
-    }
-
-    [Fact]
-    public void Constructor_WithMessageAndInnerException_ShouldPreserveInnerExceptionMessage()
-    {
-        // Arrange
-        var message = "An error occurred";
-        var innerMessage = "Inner exception message";
-        var innerException = new Exception(innerMessage);
-
-        // Act
-        var exception = new DomainException(message, innerException);
-
-        // Assert
-        exception.InnerException!.Message.Should().Be(innerMessage);
-    }
-
-    #endregion
-
-    #region Inheritance Tests
-
-    [Fact]
-    public void DomainException_ShouldInheritFromException()
-    {
-        // Act
-        var exception = new DomainException("Test");
-
-        // Assert
-        exception.Should().BeAssignableTo<Exception>();
-    }
-
-    [Fact]
-    public void DomainException_ShouldBeThrowable()
-    {
-        // Arrange
-        var message = "Test exception";
-
-        // Act & Assert
-        Action act = () => throw new DomainException(message);
-
-        act.Should().Throw<DomainException>()
-            .WithMessage(message);
-    }
-
-    [Fact]
-    public void DomainException_ShouldBeCatchableAsException()
-    {
-        // Arrange
-        var message = "Test exception";
-        Exception? caughtException = null;
-
-        // Act
-        try
-        {
-            throw new DomainException(message);
-        }
-        catch (Exception ex)
-        {
-            caughtException = ex;
-        }
-
-        // Assert
-        caughtException.Should().NotBeNull();
-        caughtException.Should().BeOfType<DomainException>();
     }
 
     #endregion

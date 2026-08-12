@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Pgvector;
 
 #nullable disable
 
@@ -17,9 +18,10 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.16")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("BadgePlayer", b =>
@@ -1027,6 +1029,19 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int>("GameId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("IndexError")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IndexStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("IndexedChunkCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("IndexedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("StoredFileName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1043,6 +1058,48 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.HasIndex("GameId");
 
                     b.ToTable("Manuals");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.ManualChunk", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChunkIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Vector>("Embedding")
+                        .IsRequired()
+                        .HasColumnType("vector(1024)");
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ManualId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PageNumber")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Embedding");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Embedding"), "hnsw");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Embedding"), new[] { "vector_cosine_ops" });
+
+                    b.HasIndex("GameId");
+
+                    b.HasIndex("ManualId");
+
+                    b.ToTable("ManualChunks");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Person", b =>
@@ -1631,6 +1688,17 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("Game");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.ManualChunk", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Manual", "Manual")
+                        .WithMany("Chunks")
+                        .HasForeignKey("ManualId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Manual");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Session", b =>
                 {
                     b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
@@ -1796,6 +1864,11 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Location", b =>
                 {
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Manual", b =>
+                {
+                    b.Navigation("Chunks");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Player", b =>
