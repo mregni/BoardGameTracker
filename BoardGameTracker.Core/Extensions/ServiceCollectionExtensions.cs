@@ -83,6 +83,7 @@ public static class ServiceCollectionExtensions
 
         if (bool.TryParse(Environment.GetEnvironmentVariable("RAG_ENABLED"), out var ragEnabled) && ragEnabled)
         {
+            serviceCollection.AddHostedService<ModelProvisioningBackgroundService>();
             serviceCollection.AddHostedService<ManualIndexingBackgroundService>();
         }
         serviceCollection.AddScoped<IEmailService, EmailService>();
