@@ -69,7 +69,7 @@ public class ModelProvisioningBackgroundServiceTests
             .Callback(() => Interlocked.Increment(ref attempts))
             .Returns(Task.CompletedTask);
 
-        await RunUntilAsync(Task.Delay(200));
+        await RunUntilAsync(Task.Delay(200, TestContext.Current.CancellationToken));
 
         attempts.Should().Be(1);
     }
