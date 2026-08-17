@@ -29,7 +29,7 @@ public class RagServiceTests
     public RagServiceTests()
     {
         _settingsMock.Setup(x => x.GetAsync())
-            .ReturnsAsync(new RagSettings("ollama", "http://ollama:11434", "qwen3:4b", "bge-m3", 1024, null, 5));
+            .ReturnsAsync(new RagSettings("ollama", "http://ollama:11434", "qwen3:4b", null, "http://ollama:11434", "bge-m3", 1024, -1, 5));
         _factoryMock.Setup(x => x.CreateEmbeddingGeneratorAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(_embedderMock.Object);
         _factoryMock.Setup(x => x.CreateChatClientAsync(It.IsAny<CancellationToken>()))

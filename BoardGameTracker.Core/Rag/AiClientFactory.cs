@@ -4,6 +4,7 @@ using BoardGameTracker.Core.Rag.Interfaces;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using OllamaSharp;
+using OllamaSharp.Models;
 using OpenAI;
 
 namespace BoardGameTracker.Core.Rag;
@@ -30,25 +31,26 @@ public class AiClientFactory : IAiClientFactory
         CancellationToken cancellationToken = default)
     {
         var settings = await _settingsProvider.GetAsync();
-        if (IsOllama(settings))
+        if (settings.EmbeddingNumGpu >= 0)
         {
-            return CreateOllama(settings, settings.EmbeddingModel);
+            return new OllamaEmbeddingGenerator(
+                CreateOllamaApiClient(settings.EmbeddingBaseUrl),
+                settings.EmbeddingModel,
+                settings.EmbeddingNumGpu);
         }
 
-        return CreateOpenAiClient(settings)
-            .GetEmbeddingClient(settings.EmbeddingModel)
-            .AsIEmbeddingGenerator();
+        return CreateOllama(settings.EmbeddingBaseUrl, settings.EmbeddingModel);
     }
 
     public async Task<IChatClient> CreateChatClientAsync(CancellationToken cancellationToken = default)
     {
         var settings = await _settingsProvider.GetAsync();
-        if (IsOllama(settings))
+        if (IsOllama(settings.ChatProvider))
         {
-            return CreateOllama(settings, settings.ChatModel);
+            return CreateOllama(settings.ChatBaseUrl, settings.ChatModel);
         }
 
-        return CreateOpenAiClient(settings)
+        return CreateOpenAiClient(settings.ChatBaseUrl, settings.ChatApiKey)
             .GetChatClient(settings.ChatModel)
             .AsIChatClient();
     }
@@ -56,26 +58,27 @@ public class AiClientFactory : IAiClientFactory
     public async Task EnsureModelsAvailableAsync(CancellationToken cancellationToken = default)
     {
         var settings = await _settingsProvider.GetAsync();
-        if (!IsOllama(settings))
-        {
-            return;
-        }
 
-        var client = CreateOllamaApiClient(settings);
-        await EnsureModelPulledAsync(client, settings.EmbeddingModel, cancellationToken);
-        await EnsureModelPulledAsync(client, settings.ChatModel, cancellationToken);
+        var embeddingClient = CreateOllamaApiClient(settings.EmbeddingBaseUrl);
+        await EnsureModelPulledAsync(embeddingClient, settings.EmbeddingModel, cancellationToken);
+
+        if (IsOllama(settings.ChatProvider))
+        {
+            var chatClient = CreateOllamaApiClient(settings.ChatBaseUrl);
+            await EnsureModelPulledAsync(chatClient, settings.ChatModel, cancellationToken);
+        }
     }
 
-    private OllamaApiClient CreateOllamaApiClient(RagSettings settings)
+    private OllamaApiClient CreateOllamaApiClient(string baseUrl)
     {
         var httpClient = _httpClientFactory.CreateClient(HttpClientName);
-        httpClient.BaseAddress = new Uri(settings.BaseUrl);
+        httpClient.BaseAddress = new Uri(baseUrl);
         return new OllamaApiClient(httpClient);
     }
 
-    private OllamaApiClient CreateOllama(RagSettings settings, string model)
+    private OllamaApiClient CreateOllama(string baseUrl, string model)
     {
-        var client = CreateOllamaApiClient(settings);
+        var client = CreateOllamaApiClient(baseUrl);
         client.SelectedModel = model;
         return client;
     }
@@ -95,12 +98,48 @@ public class AiClientFactory : IAiClientFactory
         _logger.LogInformation("Finished pulling AI model {Model}", model);
     }
 
-    private static OpenAIClient CreateOpenAiClient(RagSettings settings)
+    private static OpenAIClient CreateOpenAiClient(string baseUrl, string? apiKey)
     {
-        var options = new OpenAIClientOptions { Endpoint = new Uri(settings.BaseUrl) };
-        return new OpenAIClient(new ApiKeyCredential(settings.ApiKey ?? string.Empty), options);
+        var options = new OpenAIClientOptions { Endpoint = new Uri(baseUrl) };
+        return new OpenAIClient(new ApiKeyCredential(apiKey ?? string.Empty), options);
     }
 
-    private static bool IsOllama(RagSettings settings) =>
-        string.Equals(settings.Provider, Constants.AiConfig.OllamaProvider, StringComparison.OrdinalIgnoreCase);
+    private static bool IsOllama(string provider) =>
+        string.Equals(provider, Constants.AiConfig.OllamaProvider, StringComparison.OrdinalIgnoreCase);
+
+    private sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
+    {
+        private readonly OllamaApiClient _client;
+        private readonly string _model;
+        private readonly int _numGpu;
+
+        public OllamaEmbeddingGenerator(OllamaApiClient client, string model, int numGpu)
+        {
+            _client = client;
+            _model = model;
+            _numGpu = numGpu;
+        }
+
+        public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
+            IEnumerable<string> values,
+            EmbeddingGenerationOptions? options = null,
+            CancellationToken cancellationToken = default)
+        {
+            var request = new EmbedRequest
+            {
+                Model = _model,
+                Input = values.ToList(),
+                Options = new RequestOptions { NumGpu = _numGpu }
+            };
+
+            var response = await _client.EmbedAsync(request, cancellationToken);
+            return new GeneratedEmbeddings<Embedding<float>>(
+                response.Embeddings.Select(embedding => new Embedding<float>(embedding)));
+        }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) =>
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
+
+        public void Dispose() => _client.Dispose();
+    }
 }

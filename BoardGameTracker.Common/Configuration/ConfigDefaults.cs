@@ -24,6 +24,8 @@ public static class ConfigDefaults
         new(AiConfig.BaseUrl, "http://ollama:11434"),
         new(AiConfig.ChatModel, "qwen3:4b"),
         new(AiConfig.ApiKey, ""),
+        new(AiConfig.EmbeddingBaseUrl, "http://ollama:11434"),
+        new(AiConfig.EmbeddingNumGpu, "-1"),
         new(AiConfig.TopK, "5"),
 
         new(UpdateConfig.Track, "stable"),

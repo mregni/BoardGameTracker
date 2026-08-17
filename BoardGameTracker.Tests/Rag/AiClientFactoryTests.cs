@@ -38,23 +38,39 @@ public class AiClientFactoryTests
             Mock.Of<ILogger<AiClientFactory>>());
     }
 
-    private void SetupSettings(string provider, string chatModel = "qwen3:4b", string embeddingModel = "bge-m3")
+    private void SetupSettings(string chatProvider, string chatModel = "qwen3:4b", string embeddingModel = "bge-m3",
+        int embeddingNumGpu = -1)
     {
         _settingsProviderMock
             .Setup(x => x.GetAsync())
-            .ReturnsAsync(new RagSettings(provider, BaseUrl, chatModel, embeddingModel, 1024, "api-key", 5));
+            .ReturnsAsync(new RagSettings(chatProvider, BaseUrl, chatModel, "api-key", BaseUrl, embeddingModel, 1024,
+                embeddingNumGpu, 5));
     }
 
-    [Fact]
-    public async Task CreateEmbeddingGeneratorAsync_ShouldReturnOllamaClient_WhenProviderIsOllama()
+    [Theory]
+    [InlineData("ollama")]
+    [InlineData("openai")]
+    public async Task CreateEmbeddingGeneratorAsync_ShouldReturnAutoPlacedOllamaClient_WhenNumGpuIsUnset(string chatProvider)
     {
-        SetupSettings(Constants.AiConfig.OllamaProvider);
+        SetupSettings(chatProvider, embeddingNumGpu: -1);
 
         var generator = await _factory.CreateEmbeddingGeneratorAsync();
 
         var ollama = generator.Should().BeOfType<OllamaApiClient>().Subject;
         ollama.SelectedModel.Should().Be("bge-m3");
         ollama.Uri.Should().Be(new Uri(BaseUrl));
+    }
+
+    [Fact]
+    public async Task CreateEmbeddingGeneratorAsync_ShouldPinToCpu_WhenNumGpuIsZero()
+    {
+        SetupSettings(Constants.AiConfig.OllamaProvider, embeddingNumGpu: 0);
+
+        var generator = await _factory.CreateEmbeddingGeneratorAsync();
+        await generator.GenerateAsync(["hello"]);
+
+        generator.Should().NotBeOfType<OllamaApiClient>();
+        _handler.LastEmbedBody.Should().Contain("\"num_gpu\":0");
     }
 
     [Fact]
@@ -81,17 +97,6 @@ public class AiClientFactoryTests
     }
 
     [Fact]
-    public async Task CreateEmbeddingGeneratorAsync_ShouldNotUseOllama_WhenProviderIsOpenAi()
-    {
-        SetupSettings(Constants.AiConfig.OpenAiProvider);
-
-        var generator = await _factory.CreateEmbeddingGeneratorAsync();
-
-        generator.Should().NotBeOfType<OllamaApiClient>();
-        _httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Never);
-    }
-
-    [Fact]
     public async Task CreateChatClientAsync_ShouldNotUseOllama_WhenProviderIsOpenAi()
     {
         SetupSettings(Constants.AiConfig.OpenAiProvider);
@@ -103,14 +108,14 @@ public class AiClientFactoryTests
     }
 
     [Fact]
-    public async Task EnsureModelsAvailableAsync_ShouldDoNothing_WhenProviderIsNotOllama()
+    public async Task EnsureModelsAvailableAsync_ShouldOnlyEnsureEmbeddingModel_WhenChatProviderIsNotOllama()
     {
         SetupSettings(Constants.AiConfig.OpenAiProvider);
+        _handler.LocalModels = [];
 
         await _factory.EnsureModelsAvailableAsync();
 
-        _httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Never);
-        _handler.Requests.Should().BeEmpty();
+        _handler.PullRequestCount.Should().Be(1);
     }
 
     [Fact]
@@ -162,8 +167,9 @@ public class AiClientFactoryTests
         public List<string> Requests { get; } = [];
         public IReadOnlyList<string> LocalModels { get; set; } = [];
         public int PullRequestCount { get; private set; }
+        public string? LastEmbedBody { get; private set; }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var path = request.RequestUri!.AbsolutePath;
             Requests.Add(path);
@@ -171,12 +177,18 @@ public class AiClientFactoryTests
             if (path.Contains("pull", StringComparison.OrdinalIgnoreCase))
             {
                 PullRequestCount++;
-                return Task.FromResult(Json("""{"status":"success"}"""));
+                return Json("""{"status":"success"}""");
+            }
+
+            if (path.Contains("embed", StringComparison.OrdinalIgnoreCase))
+            {
+                LastEmbedBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
+                return Json("""{"embeddings":[[0.1,0.2,0.3]]}""");
             }
 
             var models = string.Join(",", LocalModels.Select(m =>
                 $$"""{"name":"{{m}}","model":"{{m}}","modified_at":"2026-01-01T00:00:00Z","size":1,"digest":"d"}"""));
-            return Task.FromResult(Json($$"""{"models":[{{models}}]}"""));
+            return Json($$"""{"models":[{{models}}]}""");
         }
 
         private static HttpResponseMessage Json(string body) => new(HttpStatusCode.OK)

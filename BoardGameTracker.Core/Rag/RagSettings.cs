@@ -1,10 +1,12 @@
 namespace BoardGameTracker.Core.Rag;
 
 public record RagSettings(
-    string Provider,
-    string BaseUrl,
+    string ChatProvider,
+    string ChatBaseUrl,
     string ChatModel,
+    string? ChatApiKey,
+    string EmbeddingBaseUrl,
     string EmbeddingModel,
     int EmbeddingDimensions,
-    string? ApiKey,
+    int EmbeddingNumGpu,
     int TopK);
