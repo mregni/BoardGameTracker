@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Http;
@@ -350,8 +351,8 @@ logger.LogInformation("  Auth:         {AuthState}", authEnabled ? "Enabled" : "
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseSpaStaticFiles();
-    app.UseStaticFiles();
+    app.UseSpaStaticFiles(new StaticFileOptions { OnPrepareResponse = SetUnhashedAssetCacheHeaders });
+    app.UseStaticFiles(new StaticFileOptions { OnPrepareResponse = SetUnhashedAssetCacheHeaders });
     app.UseWhen(
         context => HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method),
         spaBranch => spaBranch.UseSpa(config => {
@@ -382,6 +383,20 @@ if (authEnabled)
 await app.RunAsync();
 
 await Log.CloseAndFlushAsync();
+
+static void SetUnhashedAssetCacheHeaders(StaticFileResponseContext context)
+{
+    if (!context.Context.Request.Path.StartsWithSegments("/locales", StringComparison.OrdinalIgnoreCase))
+    {
+        return;
+    }
+
+    context.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+    {
+        NoCache = true,
+        MustRevalidate = true
+    };
+}
 
 static void RunDbMigrations(IServiceProvider serviceProvider)
 {

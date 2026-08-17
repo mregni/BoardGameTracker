@@ -30,7 +30,7 @@ services:
       - TZ=${TZ:-UTC}
       - RAG_ENABLED=${RAG_ENABLED:-false}
       - AI_BASE_URL=${AI_BASE_URL:-http://ollama:11434}
-      - AI_CHAT_MODEL=${AI_CHAT_MODEL:-qwen3:4b}
+      - AI_CHAT_MODEL=${AI_CHAT_MODEL:-llama3.2:3b}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
       interval: 30s
