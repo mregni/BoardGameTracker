@@ -21,20 +21,40 @@ public class RagSettingsProviderTests
     [Fact]
     public async Task GetAsync_ResolvesConfiguredValuesAndFixesEmbeddingModel()
     {
-        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.Provider)).ReturnsAsync("ollama");
-        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.BaseUrl)).ReturnsAsync("http://ollama:11434");
-        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ChatModel)).ReturnsAsync("qwen3:4b");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.Provider)).ReturnsAsync("openai");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.BaseUrl)).ReturnsAsync("https://api.anthropic.com/v1");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ChatModel)).ReturnsAsync("claude-sonnet-4");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ApiKey)).ReturnsAsync("sk-ant-123");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.EmbeddingBaseUrl)).ReturnsAsync("http://ollama:11434");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<int>(Constants.AiConfig.EmbeddingNumGpu)).ReturnsAsync(0);
         _configRepositoryMock.Setup(x => x.GetConfigValueAsync<int>(Constants.AiConfig.TopK)).ReturnsAsync(5);
-        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ApiKey)).ReturnsAsync(string.Empty);
 
         var settings = await _provider.GetAsync();
 
-        settings.Provider.Should().Be("ollama");
-        settings.BaseUrl.Should().Be("http://ollama:11434");
-        settings.ChatModel.Should().Be("qwen3:4b");
+        settings.ChatProvider.Should().Be("openai");
+        settings.ChatBaseUrl.Should().Be("https://api.anthropic.com/v1");
+        settings.ChatModel.Should().Be("claude-sonnet-4");
+        settings.ChatApiKey.Should().Be("sk-ant-123");
         settings.TopK.Should().Be(5);
-        settings.ApiKey.Should().BeNull();
+        settings.EmbeddingBaseUrl.Should().Be("http://ollama:11434");
         settings.EmbeddingModel.Should().Be(Constants.AiConfig.EmbeddingModel);
         settings.EmbeddingDimensions.Should().Be(Constants.AiConfig.EmbeddingDimensions);
+        settings.EmbeddingNumGpu.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetAsync_NormalizesBlankChatApiKeyToNull()
+    {
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.Provider)).ReturnsAsync("ollama");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.BaseUrl)).ReturnsAsync("http://ollama:11434");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ChatModel)).ReturnsAsync("qwen3:4b");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ApiKey)).ReturnsAsync(string.Empty);
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.EmbeddingBaseUrl)).ReturnsAsync("http://ollama:11434");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<int>(Constants.AiConfig.EmbeddingNumGpu)).ReturnsAsync(-1);
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<int>(Constants.AiConfig.TopK)).ReturnsAsync(5);
+
+        var settings = await _provider.GetAsync();
+
+        settings.ChatApiKey.Should().BeNull();
     }
 }

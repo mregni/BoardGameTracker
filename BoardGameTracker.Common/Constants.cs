@@ -88,6 +88,9 @@ public static class Constants
         public const string ApiKey = "ai_api_key";
         public const string TopK = "ai_top_k";
 
+        public const string EmbeddingBaseUrl = "ai_embedding_base_url";
+        public const string EmbeddingNumGpu = "ai_embedding_num_gpu";
+
         public const string OllamaProvider = "ollama";
         public const string OpenAiProvider = "openai";
 

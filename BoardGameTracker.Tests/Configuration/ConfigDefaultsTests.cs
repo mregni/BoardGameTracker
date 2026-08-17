@@ -11,7 +11,7 @@ public class ConfigDefaultsTests
     [Fact]
     public void All_ShouldContainAllExpectedDefaults()
     {
-        ConfigDefaults.All.Should().HaveCount(22);
+        ConfigDefaults.All.Should().HaveCount(24);
     }
 
     [Fact]
@@ -43,6 +43,8 @@ public class ConfigDefaultsTests
     [InlineData(AiConfig.BaseUrl, "http://ollama:11434")]
     [InlineData(AiConfig.ChatModel, "qwen3:4b")]
     [InlineData(AiConfig.ApiKey, "")]
+    [InlineData(AiConfig.EmbeddingBaseUrl, "http://ollama:11434")]
+    [InlineData(AiConfig.EmbeddingNumGpu, "-1")]
     [InlineData(AiConfig.TopK, "5")]
     [InlineData(UpdateConfig.Track, "stable")]
     [InlineData(UpdateConfig.CheckEnabled, "true")]
