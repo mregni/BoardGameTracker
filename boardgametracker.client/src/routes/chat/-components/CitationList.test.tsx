@@ -1,14 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 import type { RagCitation } from "@/models";
-import { getManualPageImageCall } from "@/services/manualService";
 import { render, screen } from "@/test/test-utils";
 import { CitationList } from "./CitationList";
-
-vi.mock("@/services/manualService", () => ({
-	getManualPageImageCall: vi.fn(),
-}));
-
-const getManualPageImageCallMock = vi.mocked(getManualPageImageCall);
 
 const buildCitation = (overrides: Partial<RagCitation> = {}): RagCitation => ({
 	manualId: 1,
@@ -21,74 +15,59 @@ const buildCitation = (overrides: Partial<RagCitation> = {}): RagCitation => ({
 });
 
 describe("CitationList", () => {
-	beforeEach(() => {
-		getManualPageImageCallMock.mockReset();
-		URL.createObjectURL = vi.fn(() => "blob:mock-url");
-		URL.revokeObjectURL = vi.fn();
-	});
-
 	it("should render the sources header", () => {
-		render(<CitationList citations={[buildCitation()]} />);
+		render(<CitationList citations={[buildCitation()]} onSelect={vi.fn()} />);
 
 		expect(screen.getByText("sources")).toBeInTheDocument();
 	});
 
-	it("should render the title, page and rounded score", () => {
-		render(<CitationList citations={[buildCitation()]} />);
-
-		expect(screen.getByText(/Base rules · page/)).toBeInTheDocument();
-		expect(screen.getByText("87%")).toBeInTheDocument();
-	});
-
-	it("should fall back to untitled-manual when the title is empty", () => {
-		render(<CitationList citations={[buildCitation({ title: "" })]} />);
-
-		expect(screen.getByText(/untitled-manual · page/)).toBeInTheDocument();
-	});
-
-	it("should show unknown-page when the page is null", () => {
-		render(<CitationList citations={[buildCitation({ page: null })]} />);
-
-		expect(screen.getByText(/Base rules · unknown-page/)).toBeInTheDocument();
-	});
-
-	it("should clamp negative scores to zero", () => {
-		render(<CitationList citations={[buildCitation({ score: -0.5 })]} />);
-
-		expect(screen.getByText("0%")).toBeInTheDocument();
-	});
-
-	it("should render one entry per citation", () => {
+	it("should render one chip per citation", () => {
 		render(
 			<CitationList
-				citations={[buildCitation(), buildCitation({ manualId: 2, title: "Expansion rules", page: 9, score: 0.5 })]}
+				citations={[buildCitation(), buildCitation({ manualId: 2, page: 9 })]}
+				onSelect={vi.fn()}
 			/>,
 		);
 
-		expect(screen.getByText(/Base rules · page/)).toBeInTheDocument();
-		expect(screen.getByText(/Expansion rules · page/)).toBeInTheDocument();
-		expect(screen.getByText("50%")).toBeInTheDocument();
+		expect(screen.getAllByRole("button")).toHaveLength(2);
+		expect(screen.getAllByText("page")).toHaveLength(2);
 	});
 
-	it("should render the page image when the citation has an image url", async () => {
-		getManualPageImageCallMock.mockResolvedValue(new Blob(["image-data"]));
-		render(<CitationList citations={[buildCitation({ imageUrl: "/manuals/1/pages/4" })]} />);
+	it("should flag only the first citation as the top match", () => {
+		render(
+			<CitationList
+				citations={[buildCitation(), buildCitation({ manualId: 2, page: 9 })]}
+				onSelect={vi.fn()}
+			/>,
+		);
 
-		expect(await screen.findByRole("img", { name: "Base rules · page" })).toBeInTheDocument();
-		expect(getManualPageImageCallMock).toHaveBeenCalledWith("/manuals/1/pages/4");
+		expect(screen.getAllByText("top-match")).toHaveLength(1);
 	});
 
-	it("should use the untitled fallback without a page suffix in the image alt", async () => {
-		getManualPageImageCallMock.mockResolvedValue(new Blob(["image-data"]));
-		render(<CitationList citations={[buildCitation({ title: "", page: null, imageUrl: "/manuals/1/pages/4" })]} />);
+	it("should show unknown-page when the page is null", () => {
+		render(<CitationList citations={[buildCitation({ page: null })]} onSelect={vi.fn()} />);
 
-		expect(await screen.findByRole("img", { name: "untitled-manual" })).toBeInTheDocument();
+		expect(screen.getByText("unknown-page")).toBeInTheDocument();
 	});
 
-	it("should not render an image when the citation has no image url", () => {
-		render(<CitationList citations={[buildCitation({ imageUrl: null })]} />);
+	it("should call onSelect with the citation index when a chip is clicked", async () => {
+		const user = userEvent.setup();
+		const onSelect = vi.fn();
+		render(
+			<CitationList
+				citations={[buildCitation(), buildCitation({ manualId: 2, page: 9 })]}
+				onSelect={onSelect}
+			/>,
+		);
+
+		await user.click(screen.getAllByRole("button")[1]);
+
+		expect(onSelect).toHaveBeenCalledWith(1);
+	});
+
+	it("should not render any image (images live in the sources panel)", () => {
+		render(<CitationList citations={[buildCitation({ imageUrl: "/manuals/1/pages/4" })]} onSelect={vi.fn()} />);
 
 		expect(screen.queryByRole("img")).not.toBeInTheDocument();
-		expect(getManualPageImageCallMock).not.toHaveBeenCalled();
 	});
 });
