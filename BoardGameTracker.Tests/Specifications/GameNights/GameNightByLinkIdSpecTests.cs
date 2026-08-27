@@ -18,4 +18,10 @@ public class GameNightByLinkIdSpecTests
         new GameNightByLinkIdSpec(linkId).IsSatisfiedBy(gameNight).Should().BeTrue();
         new GameNightByLinkIdSpec(Guid.NewGuid()).IsSatisfiedBy(gameNight).Should().BeFalse();
     }
+
+    [Fact]
+    public void Spec_ShouldIncludeDetailGraph()
+    {
+        new GameNightByLinkIdSpec(Guid.NewGuid()).IncludeExpressions.Should().HaveCount(5);
+    }
 }

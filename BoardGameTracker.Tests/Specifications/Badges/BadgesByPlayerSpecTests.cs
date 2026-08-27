@@ -34,11 +34,14 @@ public class BadgesByPlayerSpecTests
         result.Should().ContainSingle().Which.Id.Should().Be(1);
     }
 
-    [Fact]
-    public void IsSatisfiedBy_ShouldBeFalse_WhenPlayerDoesNotHoldBadge()
+    [Theory]
+    [InlineData(5, true)]
+    [InlineData(7, true)]
+    [InlineData(99, false)]
+    public void IsSatisfiedBy_ShouldMatchOnlyPlayersHoldingTheBadge(int playerId, bool expected)
     {
-        var badge = BadgeForPlayers(1, 5);
+        var badge = BadgeForPlayers(1, 5, 7);
 
-        new BadgesByPlayerSpec(99).IsSatisfiedBy(badge).Should().BeFalse();
+        new BadgesByPlayerSpec(playerId).IsSatisfiedBy(badge).Should().Be(expected);
     }
 }

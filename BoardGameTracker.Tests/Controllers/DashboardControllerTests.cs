@@ -28,7 +28,6 @@ public class DashboardControllerTests
     [Fact]
     public async Task GetDashboardStatistics_ShouldReturnOkWithStatistics_WhenDataExists()
     {
-        // Arrange
         var statistics = new DashboardStatisticsDto
         {
             TotalGames = 25,
@@ -51,11 +50,10 @@ public class DashboardControllerTests
             .Setup(x => x.GetStatistics())
             .ReturnsAsync(statistics);
 
-        // Act
         var result = await _controller.GetDashboardStatistics();
 
-        // Assert
-        result.Should().BeOfType<OkObjectResult>();
+        result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeSameAs(statistics);
 
         _dashboardServiceMock.Verify(x => x.GetStatistics(), Times.Once);
         VerifyNoOtherCalls();

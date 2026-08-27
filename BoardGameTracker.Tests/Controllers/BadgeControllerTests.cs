@@ -83,61 +83,30 @@ public class BadgeControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task GetBadges_ShouldReturnBadgesWithNullLevel_WhenBadgeLevelIsNull()
+    [Theory]
+    [InlineData(null)]
+    [InlineData(BadgeLevel.Green)]
+    [InlineData(BadgeLevel.Blue)]
+    [InlineData(BadgeLevel.Red)]
+    [InlineData(BadgeLevel.Gold)]
+    public async Task GetBadges_ShouldReturnBadgeLevel_ForEachLevel(BadgeLevel? level)
     {
-        // Arrange
         var badges = new List<Badge>
         {
-            Badge.CreateWithId(1, "badge_firsttry_title", "badge_firsttry_desc", BadgeType.FirstTry, "firsttry.png", null)
+            Badge.CreateWithId(1, "badge_sessions_title", "badge_sessions_desc", BadgeType.Sessions, "sessions.png", level)
         };
 
         _badgeServiceMock
             .Setup(x => x.GetAllBadgesAsync())
             .ReturnsAsync(badges);
 
-        // Act
         var result = await _controller.GetBadges();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var returnedBadges = okResult.Value.Should().BeAssignableTo<List<BadgeDto>>().Subject;
 
         returnedBadges.Should().HaveCount(1);
-        returnedBadges[0].Level.Should().BeNull();
-
-        _badgeServiceMock.Verify(x => x.GetAllBadgesAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task GetBadges_ShouldReturnAllBadgeLevels()
-    {
-        // Arrange
-        var badges = new List<Badge>
-        {
-            Badge.CreateWithId(1, "title1", "desc1", BadgeType.Sessions, "img1.png", BadgeLevel.Green),
-            Badge.CreateWithId(2, "title2", "desc2", BadgeType.Sessions, "img2.png", BadgeLevel.Blue),
-            Badge.CreateWithId(3, "title3", "desc3", BadgeType.Sessions, "img3.png", BadgeLevel.Red),
-            Badge.CreateWithId(4, "title4", "desc4", BadgeType.Sessions, "img4.png", BadgeLevel.Gold)
-        };
-
-        _badgeServiceMock
-            .Setup(x => x.GetAllBadgesAsync())
-            .ReturnsAsync(badges);
-
-        // Act
-        var result = await _controller.GetBadges();
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedBadges = okResult.Value.Should().BeAssignableTo<List<BadgeDto>>().Subject;
-
-        returnedBadges.Should().HaveCount(4);
-        returnedBadges[0].Level.Should().Be(BadgeLevel.Green);
-        returnedBadges[1].Level.Should().Be(BadgeLevel.Blue);
-        returnedBadges[2].Level.Should().Be(BadgeLevel.Red);
-        returnedBadges[3].Level.Should().Be(BadgeLevel.Gold);
+        returnedBadges[0].Level.Should().Be(level);
 
         _badgeServiceMock.Verify(x => x.GetAllBadgesAsync(), Times.Once);
         VerifyNoOtherCalls();

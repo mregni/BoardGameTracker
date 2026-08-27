@@ -34,7 +34,7 @@ public class PlayerSpecsTests
         spec.IsSatisfiedBy(player).Should().BeTrue();
         new PlayerByIdWithBadgesSpec(8).IsSatisfiedBy(player).Should().BeFalse();
         spec.AsNoTracking.Should().BeTrue();
-        spec.IncludeExpressions.Should().NotBeEmpty();
+        spec.IncludeExpressions.Should().HaveCount(1);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class PlayerSpecsTests
         var spec = new PlayerByIdForUpdateSpec(7);
 
         spec.IsSatisfiedBy(player).Should().BeTrue();
-        // Tracked on purpose: PlayerService.Update mutates the result and relies on change tracking (fixes bug C2).
+        new PlayerByIdForUpdateSpec(8).IsSatisfiedBy(player).Should().BeFalse();
         spec.AsNoTracking.Should().BeFalse();
     }
 

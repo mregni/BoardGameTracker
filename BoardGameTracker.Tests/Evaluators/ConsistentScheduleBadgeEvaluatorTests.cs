@@ -27,44 +27,19 @@ public class ConsistentScheduleBadgeEvaluatorTests
 
     #region Consecutive Saturdays Tests
 
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenLessThan10ConsecutiveSaturdays()
+    [Theory]
+    [InlineData(9, false)]
+    [InlineData(10, true)]
+    [InlineData(15, true)]
+    public async Task CanAwardBadge_ShouldRequire10ConsecutiveSaturdays(int weekCount, bool expected)
     {
         var badge = CreateBadge(BadgeLevel.Green);
         var saturdayDate = GetNextDayOfWeek(DateTime.UtcNow, DayOfWeek.Saturday);
-
-        // Create sessions for only 9 consecutive Saturdays
-        var sessions = CreateSessionsForConsecutiveSaturdays(saturdayDate, 9);
+        var sessions = CreateSessionsForConsecutiveSaturdays(saturdayDate, weekCount);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenExactly10ConsecutiveSaturdays()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var saturdayDate = GetNextDayOfWeek(DateTime.UtcNow, DayOfWeek.Saturday);
-
-        var sessions = CreateSessionsForConsecutiveSaturdays(saturdayDate, 10);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenMoreThan10ConsecutiveSaturdays()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var saturdayDate = GetNextDayOfWeek(DateTime.UtcNow, DayOfWeek.Saturday);
-
-        var sessions = CreateSessionsForConsecutiveSaturdays(saturdayDate, 15);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
+        result.Should().Be(expected);
     }
 
     [Fact]
@@ -159,19 +134,21 @@ public class ConsistentScheduleBadgeEvaluatorTests
         result.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task CanAwardBadge_ShouldWorkWithAnyBadgeLevel()
+    [Theory]
+    [InlineData(null)]
+    [InlineData(BadgeLevel.Green)]
+    [InlineData(BadgeLevel.Blue)]
+    [InlineData(BadgeLevel.Red)]
+    [InlineData(BadgeLevel.Gold)]
+    public async Task CanAwardBadge_ShouldIgnoreBadgeLevel(BadgeLevel? level)
     {
-        // ConsistentSchedule doesn't use levels
+        var badge = CreateBadge(level);
         var saturdayDate = GetNextDayOfWeek(DateTime.UtcNow, DayOfWeek.Saturday);
         var sessions = CreateSessionsForConsecutiveSaturdays(saturdayDate, 10);
 
-        foreach (BadgeLevel level in Enum.GetValues(typeof(BadgeLevel)))
-        {
-            var badge = CreateBadge(level);
-            var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-            result.Should().BeTrue();
-        }
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().BeTrue();
     }
 
     [Theory]

@@ -43,6 +43,11 @@ public class RulebookChunker : IRulebookChunker
                 end = FindBoundary(normalized, start, end);
             }
 
+            if (end < normalized.Length && char.IsHighSurrogate(normalized[end - 1]) && char.IsLowSurrogate(normalized[end]))
+            {
+                end--;
+            }
+
             var chunk = normalized.Substring(start, end - start).Trim();
             if (!string.IsNullOrWhiteSpace(chunk))
             {

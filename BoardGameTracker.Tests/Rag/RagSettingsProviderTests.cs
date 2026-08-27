@@ -18,6 +18,18 @@ public class RagSettingsProviderTests
         _provider = new RagSettingsProvider(_configRepositoryMock.Object);
     }
 
+    private void VerifyAllConfigValuesReadOnce()
+    {
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AiConfig.Provider), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AiConfig.BaseUrl), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ChatModel), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ApiKey), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<string>(Constants.AiConfig.EmbeddingBaseUrl), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AiConfig.EmbeddingNumGpu), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AiConfig.TopK), Times.Once);
+        _configRepositoryMock.VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task GetAsync_ResolvesConfiguredValuesAndFixesEmbeddingModel()
     {
@@ -40,15 +52,19 @@ public class RagSettingsProviderTests
         settings.EmbeddingModel.Should().Be(Constants.AiConfig.EmbeddingModel);
         settings.EmbeddingDimensions.Should().Be(Constants.AiConfig.EmbeddingDimensions);
         settings.EmbeddingNumGpu.Should().Be(0);
+        VerifyAllConfigValuesReadOnce();
     }
 
-    [Fact]
-    public async Task GetAsync_NormalizesBlankChatApiKeyToNull()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GetAsync_NormalizesBlankChatApiKeyToNull(string? apiKey)
     {
         _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.Provider)).ReturnsAsync("ollama");
         _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.BaseUrl)).ReturnsAsync("http://ollama:11434");
         _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ChatModel)).ReturnsAsync("qwen3:4b");
-        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ApiKey)).ReturnsAsync(string.Empty);
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.ApiKey)).ReturnsAsync(apiKey!);
         _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(Constants.AiConfig.EmbeddingBaseUrl)).ReturnsAsync("http://ollama:11434");
         _configRepositoryMock.Setup(x => x.GetConfigValueAsync<int>(Constants.AiConfig.EmbeddingNumGpu)).ReturnsAsync(-1);
         _configRepositoryMock.Setup(x => x.GetConfigValueAsync<int>(Constants.AiConfig.TopK)).ReturnsAsync(5);
@@ -56,5 +72,6 @@ public class RagSettingsProviderTests
         var settings = await _provider.GetAsync();
 
         settings.ChatApiKey.Should().BeNull();
+        VerifyAllConfigValuesReadOnce();
     }
 }

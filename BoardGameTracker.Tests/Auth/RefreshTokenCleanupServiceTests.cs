@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Configuration.Interfaces;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -109,6 +111,14 @@ public class RefreshTokenCleanupServiceTests
         await RunUntilAsync(secondAttempt.Task);
 
         _tokenServiceMock.Verify(x => x.CleanupExpiredTokensAsync(), Times.AtLeast(2));
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
     }
 
     [Fact]
@@ -129,7 +139,9 @@ public class RefreshTokenCleanupServiceTests
 
         await RunUntilAsync(secondCleanup.Task);
 
-        _scopeFactoryMock.Verify(x => x.CreateScope(), Times.AtLeast(3));
+        var scopeCount = _scopeFactoryMock.Invocations
+            .Count(i => i.Method.Name == nameof(IServiceScopeFactory.CreateScope));
+        scopeCount.Should().Be(cleanups + 1);
     }
 
     private sealed class TestableRefreshTokenCleanupService : RefreshTokenCleanupService

@@ -25,21 +25,6 @@ public class WinningStreakBadgeEvaluatorTests
         _evaluator.BadgeType.Should().Be(BadgeType.WinningStreak);
     }
 
-    #region Green Level Tests (5 consecutive wins)
-
-    [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenStreakIsMoreThan5()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithWinStreak(8);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
     #region Streak Breaking Tests
 
     [Fact]
@@ -48,7 +33,6 @@ public class WinningStreakBadgeEvaluatorTests
         var badge = CreateBadge(BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Create 3 recent wins
         for (var i = 0; i < 3; i++)
         {
             var session = CreateSession(1, i);
@@ -56,12 +40,10 @@ public class WinningStreakBadgeEvaluatorTests
             sessions.Add(session);
         }
 
-        // Then a loss (breaks the streak)
         var lossSession = CreateSession(1, 3);
         lossSession.AddPlayerSession(PlayerId, null, false, false);
         sessions.Add(lossSession);
 
-        // Then 10 more wins (don't count because streak was broken)
         for (var i = 4; i < 14; i++)
         {
             var session = CreateSession(1, i);
@@ -71,7 +53,7 @@ public class WinningStreakBadgeEvaluatorTests
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
-        result.Should().BeFalse(); // Only 3 consecutive wins from most recent
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -80,12 +62,10 @@ public class WinningStreakBadgeEvaluatorTests
         var badge = CreateBadge(BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Most recent session is a loss
         var recentLoss = CreateSession(1, 0);
         recentLoss.AddPlayerSession(PlayerId, null, false, false);
         sessions.Add(recentLoss);
 
-        // Followed by 10 wins
         for (var i = 1; i <= 10; i++)
         {
             var session = CreateSession(1, i);
@@ -95,7 +75,31 @@ public class WinningStreakBadgeEvaluatorTests
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
-        result.Should().BeFalse(); // Streak is 0 because most recent is a loss
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CanAwardBadge_ShouldBreakSameStartTiesByIdDescending()
+    {
+        var badge = CreateBadge(BadgeLevel.Green);
+        var start = DateTime.UtcNow.AddHours(-2);
+        var end = DateTime.UtcNow;
+        var sessions = new List<Session>();
+
+        var loss = new Session(1, start, end, "Loss session") { Id = 1 };
+        loss.AddPlayerSession(PlayerId, null, false, false);
+        sessions.Add(loss);
+
+        for (var i = 0; i < 5; i++)
+        {
+            var win = new Session(1, start, end, "Win session") { Id = i + 2 };
+            win.AddPlayerSession(PlayerId, null, false, true);
+            sessions.Add(win);
+        }
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+
+        result.Should().BeTrue();
     }
 
     #endregion
@@ -131,34 +135,36 @@ public class WinningStreakBadgeEvaluatorTests
         result.Should().BeFalse();
     }
 
-    [Theory]
-    [InlineData(BadgeLevel.Green, 5)]
-    [InlineData(BadgeLevel.Blue, 10)]
-    [InlineData(BadgeLevel.Red, 15)]
-    [InlineData(BadgeLevel.Gold, 25)]
-    public async Task CanAwardBadge_ShouldReturnTrue_AtExactThreshold(BadgeLevel level, int streakCount)
+    [Fact]
+    public async Task CanAwardBadge_ShouldReturnFalse_WhenSessionListIsEmpty()
     {
-        var badge = CreateBadge(level);
-        var sessions = CreateSessionsWithWinStreak(streakCount);
+        var badge = CreateBadge(BadgeLevel.Green);
+        var currentSession = CreateSession(1, 0);
+        var sessions = new List<Session>();
 
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, currentSession, sessions);
 
-        result.Should().BeTrue();
+        result.Should().BeFalse();
     }
 
     [Theory]
-    [InlineData(BadgeLevel.Green, 4)]
-    [InlineData(BadgeLevel.Blue, 9)]
-    [InlineData(BadgeLevel.Red, 14)]
-    [InlineData(BadgeLevel.Gold, 24)]
-    public async Task CanAwardBadge_ShouldReturnFalse_JustBelowThreshold(BadgeLevel level, int streakCount)
+    [InlineData(BadgeLevel.Green, 4, false)]
+    [InlineData(BadgeLevel.Green, 5, true)]
+    [InlineData(BadgeLevel.Green, 8, true)]
+    [InlineData(BadgeLevel.Blue, 9, false)]
+    [InlineData(BadgeLevel.Blue, 10, true)]
+    [InlineData(BadgeLevel.Red, 14, false)]
+    [InlineData(BadgeLevel.Red, 15, true)]
+    [InlineData(BadgeLevel.Gold, 24, false)]
+    [InlineData(BadgeLevel.Gold, 25, true)]
+    public async Task CanAwardBadge_ShouldEvaluateStreakLengthPerLevel(BadgeLevel level, int streakCount, bool expected)
     {
         var badge = CreateBadge(level);
         var sessions = CreateSessionsWithWinStreak(streakCount);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
-        result.Should().BeFalse();
+        result.Should().Be(expected);
     }
 
     #endregion

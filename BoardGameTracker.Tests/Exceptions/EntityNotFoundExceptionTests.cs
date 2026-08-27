@@ -10,58 +10,24 @@ public class EntityNotFoundExceptionTests
     #region Constructor with EntityType and EntityId Tests
 
     [Fact]
-    public void Constructor_WithEntityTypeAndId_ShouldSetEntityType()
+    public void Constructor_WithEntityTypeAndId_ShouldSetProperties()
     {
-        // Arrange
-        var entityType = "Player";
-        var entityId = 123;
+        var exception = new EntityNotFoundException("Player", 123);
 
-        // Act
-        var exception = new EntityNotFoundException(entityType, entityId);
-
-        // Assert
-        exception.EntityType.Should().Be(entityType);
-    }
-
-    [Fact]
-    public void Constructor_WithEntityTypeAndId_ShouldSetEntityId()
-    {
-        // Arrange
-        var entityType = "Player";
-        var entityId = 123;
-
-        // Act
-        var exception = new EntityNotFoundException(entityType, entityId);
-
-        // Assert
-        exception.EntityId.Should().Be(entityId);
-    }
-
-    [Fact]
-    public void Constructor_WithEntityTypeAndId_ShouldGenerateDefaultMessage()
-    {
-        // Arrange
-        var entityType = "Player";
-        var entityId = 123;
-
-        // Act
-        var exception = new EntityNotFoundException(entityType, entityId);
-
-        // Assert
-        exception.Message.Should().Be("Player with ID '123' was not found.");
+        exception.EntityType.Should().Be("Player");
+        exception.EntityId.Should().Be(123);
     }
 
     [Theory]
+    [InlineData("Player", 123, "Player with ID '123' was not found.")]
     [InlineData("Game", 1, "Game with ID '1' was not found.")]
     [InlineData("Session", 42, "Session with ID '42' was not found.")]
     [InlineData("Badge", 100, "Badge with ID '100' was not found.")]
     public void Constructor_WithEntityTypeAndId_ShouldGenerateCorrectMessage(
         string entityType, int entityId, string expectedMessage)
     {
-        // Act
         var exception = new EntityNotFoundException(entityType, entityId);
 
-        // Assert
         exception.Message.Should().Be(expectedMessage);
     }
 
@@ -77,7 +43,7 @@ public class EntityNotFoundExceptionTests
 
         // Assert
         exception.EntityId.Should().Be(entityId);
-        exception.Message.Should().Contain("12345678-1234-1234-1234-123456789012");
+        exception.Message.Should().Be("User with ID '12345678-1234-1234-1234-123456789012' was not found.");
     }
 
     [Fact]

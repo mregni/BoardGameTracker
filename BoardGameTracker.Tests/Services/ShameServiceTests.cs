@@ -16,6 +16,8 @@ namespace BoardGameTracker.Tests.Services;
 
 public class ShameServiceTests
 {
+    private static readonly DateTime FixedUtcNow = new(2024, 6, 1, 12, 0, 0, DateTimeKind.Utc);
+
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly Mock<IConfigRepository> _configRepositoryMock;
     private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
@@ -28,7 +30,7 @@ public class ShameServiceTests
         _configRepositoryMock = new Mock<IConfigRepository>();
         _dateTimeProviderMock = new Mock<IDateTimeProvider>();
         _loggerMock = new Mock<ILogger<ShameService>>();
-        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(FixedUtcNow);
 
         _shameService = new ShameService(
             _gameRepositoryMock.Object,
@@ -43,13 +45,31 @@ public class ShameServiceTests
         _configRepositoryMock.VerifyNoOtherCalls();
     }
 
+    private void SetupShameGames(int configuredMonths, List<ShameGame> shameGames)
+    {
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
+            .ReturnsAsync(configuredMonths);
+
+        _gameRepositoryMock
+            .Setup(x => x.GetShameGames(FixedUtcNow.AddMonths(-configuredMonths)))
+            .ReturnsAsync(shameGames);
+    }
+
+    private void VerifyShameGamesCalls(int configuredMonths)
+    {
+        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetShameGames(FixedUtcNow.AddMonths(-configuredMonths)), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #region CountShelfOfShameGames Tests
 
-    [Fact]
-    public async Task CountShelfOfShameGames_ShouldReturnCount_WhenFeatureEnabled()
+    [Theory]
+    [InlineData(6)]
+    [InlineData(12)]
+    public async Task CountShelfOfShameGames_ShouldCountGamesOlderThanConfiguredCutoff_WhenFeatureEnabled(int configuredMonths)
     {
-        // Arrange
-        var configuredMonths = 6;
         var expectedCount = 5;
 
         _configRepositoryMock
@@ -61,65 +81,32 @@ public class ShameServiceTests
             .ReturnsAsync(configuredMonths);
 
         _gameRepositoryMock
-            .Setup(x => x.CountGamesWithNoRecentSessions(It.IsAny<DateTime>()))
+            .Setup(x => x.CountGamesWithNoRecentSessions(FixedUtcNow.AddMonths(-configuredMonths)))
             .ReturnsAsync(expectedCount);
 
-        // Act
         var result = await _shameService.CountShelfOfShameGames();
 
-        // Assert
         result.Should().Be(expectedCount);
 
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled), Times.Once);
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths), Times.Once);
-        _gameRepositoryMock.Verify(x => x.CountGamesWithNoRecentSessions(It.IsAny<DateTime>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.CountGamesWithNoRecentSessions(FixedUtcNow.AddMonths(-configuredMonths)), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task CountShelfOfShameGames_ShouldReturnZero_WhenFeatureDisabled()
     {
-        // Arrange
         _configRepositoryMock
             .Setup(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled))
             .ReturnsAsync(false);
 
-        // Act
         var result = await _shameService.CountShelfOfShameGames();
 
-        // Assert
         result.Should().Be(0);
 
         _configRepositoryMock.Verify(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled), Times.Once);
         VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task CountShelfOfShameGames_ShouldUseCutoffDate_BasedOnConfiguredMonths()
-    {
-        // Arrange
-        var configuredMonths = 12;
-        DateTime capturedCutoffDate = default;
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled))
-            .ReturnsAsync(true);
-
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
-            .ReturnsAsync(configuredMonths);
-
-        _gameRepositoryMock
-            .Setup(x => x.CountGamesWithNoRecentSessions(It.IsAny<DateTime>()))
-            .Callback<DateTime>(date => capturedCutoffDate = date)
-            .ReturnsAsync(0);
-
-        // Act
-        await _shameService.CountShelfOfShameGames();
-
-        // Assert
-        var expectedCutoffDate = DateTime.UtcNow.AddMonths(-configuredMonths);
-        capturedCutoffDate.Should().BeCloseTo(expectedCutoffDate, TimeSpan.FromSeconds(5));
     }
 
     #endregion
@@ -129,7 +116,6 @@ public class ShameServiceTests
     [Fact]
     public async Task GetShameGames_ShouldReturnShameGames_WithLastSessionDate()
     {
-        // Arrange
         var configuredMonths = 6;
         var shameGames = new List<ShameGame>
         {
@@ -138,7 +124,7 @@ public class ShameServiceTests
                 Id = 1,
                 Title = "Unplayed Game 1",
                 Price = 50.00m,
-                LastSessionDate = DateTime.UtcNow.AddMonths(-8)
+                LastSessionDate = FixedUtcNow.AddMonths(-8)
             },
             new ShameGame
             {
@@ -149,45 +135,28 @@ public class ShameServiceTests
             }
         };
 
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
-            .ReturnsAsync(configuredMonths);
+        SetupShameGames(configuredMonths, shameGames);
 
-        _gameRepositoryMock
-            .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
-            .ReturnsAsync(shameGames);
-
-        // Act
         var result = await _shameService.GetShameGames();
 
-        // Assert
         result.Should().HaveCount(2);
         result[0].Title.Should().Be("Unplayed Game 1");
-        result[0].LastSessionDate.Should().NotBeNull();
+        result[0].LastSessionDate.Should().Be(FixedUtcNow.AddMonths(-8));
         result[1].LastSessionDate.Should().BeNull();
 
-        _configRepositoryMock.Verify(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths), Times.Once);
-        _gameRepositoryMock.Verify(x => x.GetShameGames(It.IsAny<DateTime>()), Times.Once);
-        VerifyNoOtherCalls();
+        VerifyShameGamesCalls(configuredMonths);
     }
 
     [Fact]
     public async Task GetShameGames_ShouldReturnEmptyList_WhenNoGames()
     {
-        // Arrange
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
-            .ReturnsAsync(6);
+        SetupShameGames(6, []);
 
-        _gameRepositoryMock
-            .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
-            .ReturnsAsync([]);
-
-        // Act
         var result = await _shameService.GetShameGames();
 
-        // Assert
         result.Should().BeEmpty();
+
+        VerifyShameGamesCalls(6);
     }
 
     #endregion
@@ -197,7 +166,6 @@ public class ShameServiceTests
     [Fact]
     public async Task GetShameStatistics_ShouldReturnCorrectStatistics_WithPricedGames()
     {
-        // Arrange
         var shameGames = new List<ShameGame>
         {
             new ShameGame { Id = 1, Title = "Game 1", Price = 50.00m },
@@ -205,27 +173,20 @@ public class ShameServiceTests
             new ShameGame { Id = 3, Title = "Game 3", Price = 20.00m }
         };
 
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
-            .ReturnsAsync(6);
+        SetupShameGames(6, shameGames);
 
-        _gameRepositoryMock
-            .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
-            .ReturnsAsync(shameGames);
-
-        // Act
         var result = await _shameService.GetShameStatistics();
 
-        // Assert
         result.Count.Should().Be(3);
         result.TotalValue.Should().Be(100.00m);
         result.AverageValue.Should().BeApproximately(33.33m, 0.01m);
+
+        VerifyShameGamesCalls(6);
     }
 
     [Fact]
     public async Task GetShameStatistics_ShouldHandleGamesWithoutPrice()
     {
-        // Arrange
         var shameGames = new List<ShameGame>
         {
             new ShameGame { Id = 1, Title = "Game 1", Price = 50.00m },
@@ -233,69 +194,69 @@ public class ShameServiceTests
             new ShameGame { Id = 3, Title = "Game 3", Price = 30.00m }
         };
 
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
-            .ReturnsAsync(6);
+        SetupShameGames(6, shameGames);
 
-        _gameRepositoryMock
-            .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
-            .ReturnsAsync(shameGames);
-
-        // Act
         var result = await _shameService.GetShameStatistics();
 
-        // Assert
         result.Count.Should().Be(3);
         result.TotalValue.Should().Be(80.00m);
-        result.AverageValue.Should().Be(40.00m); // Average of games with price only
+        result.AverageValue.Should().Be(40.00m);
+
+        VerifyShameGamesCalls(6);
     }
 
     [Fact]
     public async Task GetShameStatistics_ShouldReturnNullValues_WhenNoGamesHavePrice()
     {
-        // Arrange
         var shameGames = new List<ShameGame>
         {
             new ShameGame { Id = 1, Title = "Game 1", Price = null },
             new ShameGame { Id = 2, Title = "Game 2", Price = null }
         };
 
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
-            .ReturnsAsync(6);
+        SetupShameGames(6, shameGames);
 
-        _gameRepositoryMock
-            .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
-            .ReturnsAsync(shameGames);
-
-        // Act
         var result = await _shameService.GetShameStatistics();
 
-        // Assert
         result.Count.Should().Be(2);
         result.TotalValue.Should().BeNull();
         result.AverageValue.Should().BeNull();
+
+        VerifyShameGamesCalls(6);
+    }
+
+    [Fact]
+    public async Task GetShameStatistics_ShouldReturnNullTotalValueAndZeroAverage_WhenAllPricesAreZero()
+    {
+        var shameGames = new List<ShameGame>
+        {
+            new ShameGame { Id = 1, Title = "Game 1", Price = 0m },
+            new ShameGame { Id = 2, Title = "Game 2", Price = 0m }
+        };
+
+        SetupShameGames(6, shameGames);
+
+        var result = await _shameService.GetShameStatistics();
+
+        result.Count.Should().Be(2);
+        result.TotalValue.Should().BeNull();
+        result.AverageValue.Should().Be(0m);
+
+        VerifyShameGamesCalls(6);
     }
 
     [Fact]
     public async Task GetShameStatistics_ShouldReturnZeroCount_WhenNoGames()
     {
-        // Arrange
-        _configRepositoryMock
-            .Setup(x => x.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths))
-            .ReturnsAsync(6);
+        SetupShameGames(6, []);
 
-        _gameRepositoryMock
-            .Setup(x => x.GetShameGames(It.IsAny<DateTime>()))
-            .ReturnsAsync([]);
-
-        // Act
         var result = await _shameService.GetShameStatistics();
 
-        // Assert
         result.Count.Should().Be(0);
         result.TotalValue.Should().BeNull();
         result.AverageValue.Should().BeNull();
+
+        VerifyShameGamesCalls(6);
     }
 
     #endregion

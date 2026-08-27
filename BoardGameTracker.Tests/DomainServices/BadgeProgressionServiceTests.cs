@@ -50,12 +50,62 @@ public class BadgeProgressionServiceTests
 
     #region GetNextAvailableBadgeAsync Tests
 
+    [Theory]
+    [InlineData(null, BadgeLevel.Green)]
+    [InlineData(BadgeLevel.Green, BadgeLevel.Blue)]
+    [InlineData(BadgeLevel.Blue, BadgeLevel.Red)]
+    [InlineData(BadgeLevel.Red, BadgeLevel.Gold)]
+    [InlineData(BadgeLevel.Gold, null)]
+    public async Task GetNextAvailableBadgeAsync_ShouldReturnFollowingLevel(BadgeLevel? ownedLevel, BadgeLevel? expectedLevel)
+    {
+        // Arrange
+        var badges = CreateBadgeProgression(BadgeType.Sessions);
+        var player = new Player("Test Player");
+        if (ownedLevel.HasValue)
+        {
+            player.Badges.Add(badges.First(b => b.Level == ownedLevel.Value));
+        }
+
+        _badgeRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync(badges);
+
+        // Act
+        var result = await _service.GetNextAvailableBadgeAsync(player, BadgeType.Sessions);
+
+        // Assert
+        if (expectedLevel.HasValue)
+        {
+            result.Should().NotBeNull();
+            result!.Level.Should().Be(expectedLevel.Value);
+        }
+        else
+        {
+            result.Should().BeNull();
+        }
+    }
+
     [Fact]
-    public async Task GetNextAvailableBadgeAsync_ShouldReturnGreenBadge_WhenPlayerHasNoBadges()
+    public async Task GetNextAvailableBadgeAsync_ShouldReturnNull_WhenNoBadgesExist()
     {
         // Arrange
         var player = new Player("Test Player");
+        _badgeRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
+
+        // Act
+        var result = await _service.GetNextAvailableBadgeAsync(player, BadgeType.Sessions);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetNextAvailableBadgeAsync_ShouldIgnorePlayerBadgesWithoutLevel()
+    {
+        // Arrange
         var badges = CreateBadgeProgression(BadgeType.Sessions);
+        var badgeWithoutLevel = Badge.CreateWithId(100, "No Level", "Desc", BadgeType.Sessions, "icon.png", null);
+
+        var player = new Player("Test Player");
+        player.Badges.Add(badgeWithoutLevel);
 
         _badgeRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync(badges);
 
@@ -65,65 +115,6 @@ public class BadgeProgressionServiceTests
         // Assert
         result.Should().NotBeNull();
         result!.Level.Should().Be(BadgeLevel.Green);
-    }
-
-    [Fact]
-    public async Task GetNextAvailableBadgeAsync_ShouldReturnBlueBadge_WhenPlayerHasGreen()
-    {
-        // Arrange
-        var badges = CreateBadgeProgression(BadgeType.Sessions);
-        var greenBadge = badges.First(b => b.Level == BadgeLevel.Green);
-
-        var player = new Player("Test Player");
-        player.Badges.Add(greenBadge);
-
-        _badgeRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync(badges);
-
-        // Act
-        var result = await _service.GetNextAvailableBadgeAsync(player, BadgeType.Sessions);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Level.Should().Be(BadgeLevel.Blue);
-    }
-
-    [Fact]
-    public async Task GetNextAvailableBadgeAsync_ShouldReturnRedBadge_WhenPlayerHasBlue()
-    {
-        // Arrange
-        var badges = CreateBadgeProgression(BadgeType.Sessions);
-        var blueBadge = badges.First(b => b.Level == BadgeLevel.Blue);
-
-        var player = new Player("Test Player");
-        player.Badges.Add(blueBadge);
-
-        _badgeRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync(badges);
-
-        // Act
-        var result = await _service.GetNextAvailableBadgeAsync(player, BadgeType.Sessions);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Level.Should().Be(BadgeLevel.Red);
-    }
-
-    [Fact]
-    public async Task GetNextAvailableBadgeAsync_ShouldReturnNull_WhenPlayerHasGold()
-    {
-        // Arrange
-        var badges = CreateBadgeProgression(BadgeType.Sessions);
-        var goldBadge = badges.First(b => b.Level == BadgeLevel.Gold);
-
-        var player = new Player("Test Player");
-        player.Badges.Add(goldBadge);
-
-        _badgeRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync(badges);
-
-        // Act
-        var result = await _service.GetNextAvailableBadgeAsync(player, BadgeType.Sessions);
-
-        // Assert
-        result.Should().BeNull();
     }
 
     [Fact]

@@ -31,15 +31,21 @@ public class SessionRepositorySpecsTests
         spec.IncludeExpressions.Should().HaveCount(1);
     }
 
-    [Fact]
-    public void SessionsByPlayerSpec_ShouldApplyWonFilter_WhenProvided()
+    [Theory]
+    [InlineData(true, new[] { 1 })]
+    [InlineData(false, new[] { 2, 3 })]
+    public void SessionsByPlayerSpec_ShouldApplyWonFilterForThatPlayer_WhenProvided(bool won, int[] expectedIds)
     {
-        var won = SessionWithPlayer(1, 1, 5, won: true);
-        var lost = SessionWithPlayer(2, 1, 5, won: false);
+        var playerWon = SessionWithPlayer(1, 1, 5, won: true);
+        var playerLost = SessionWithPlayer(2, 1, 5, won: false);
+        var playerLostOtherPlayerWon = SessionWithPlayer(3, 1, 5, won: false);
+        playerLostOtherPlayerWon.AddPlayerSession(6, null, false, true);
 
-        var result = new SessionsByPlayerSpec(5, won: true).Evaluate(new[] { won, lost }).ToList();
+        var result = new SessionsByPlayerSpec(5, won)
+            .Evaluate(new[] { playerWon, playerLost, playerLostOtherPlayerWon })
+            .ToList();
 
-        result.Should().ContainSingle().Which.Id.Should().Be(1);
+        result.Select(x => x.Id).Should().BeEquivalentTo(expectedIds);
     }
 
     [Fact]
@@ -47,8 +53,9 @@ public class SessionRepositorySpecsTests
     {
         var match = SessionWithPlayer(1, 7, 5, won: false);
         var wrongGame = SessionWithPlayer(2, 9, 5, won: false);
+        var wrongPlayer = SessionWithPlayer(3, 7, 6, won: false);
 
-        var result = new SessionsByPlayerAndGameSpec(5, 7).Evaluate(new[] { match, wrongGame }).ToList();
+        var result = new SessionsByPlayerAndGameSpec(5, 7).Evaluate(new[] { match, wrongGame, wrongPlayer }).ToList();
 
         result.Should().ContainSingle().Which.Id.Should().Be(1);
     }
@@ -90,8 +97,8 @@ public class SessionRepositorySpecsTests
 
         var result = spec.Evaluate(new[] { day1, day2, day3 }).ToList();
 
-        result.Select(x => x.Id).Should().ContainInOrder(3, 2);
-        result.Should().HaveCount(2);
+        result.Select(x => x.Id).Should().Equal(3, 2);
+        spec.IncludeExpressions.Should().HaveCount(3);
         spec.AsNoTracking.Should().BeTrue();
     }
 }

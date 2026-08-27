@@ -31,6 +31,25 @@ public class GlobalExceptionHandlerTests
         _loggerMock.VerifyNoOtherCalls();
     }
 
+    private void VerifyErrorLogged(Exception exception)
+    {
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                exception,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    private sealed class FakeDbException : System.Data.Common.DbException
+    {
+        public FakeDbException(string? sqlState) => SqlState = sqlState;
+
+        public override string? SqlState { get; }
+    }
+
     private static (HttpContext httpContext, MemoryStream responseBody) CreateHttpContext()
     {
         var httpContext = new DefaultHttpContext();
@@ -123,7 +142,7 @@ public class GlobalExceptionHandlerTests
     }
 
     [Fact]
-    public async Task TryHandleAsync_WithEntityNotFoundException_ShouldReturn404WithExceptionMessage()
+    public async Task TryHandleAsync_WithEntityNotFoundException_ShouldReturn404WithGenericMessage()
     {
         var (httpContext, responseBody) = CreateHttpContext();
         var exception = new EntityNotFoundException("Game", 123);
@@ -159,7 +178,7 @@ public class GlobalExceptionHandlerTests
     }
 
     [Fact]
-    public async Task TryHandleAsync_WithKeyNotFoundException_ShouldReturn404WithExceptionMessage()
+    public async Task TryHandleAsync_WithKeyNotFoundException_ShouldReturn404WithGenericMessage()
     {
         var (httpContext, responseBody) = CreateHttpContext();
         var exception = new KeyNotFoundException("The key was not found in the dictionary");
@@ -177,7 +196,7 @@ public class GlobalExceptionHandlerTests
     }
 
     [Fact]
-    public async Task TryHandleAsync_WithArgumentException_ShouldReturn400WithExceptionMessage()
+    public async Task TryHandleAsync_WithArgumentException_ShouldReturn400WithGenericMessage()
     {
         var (httpContext, responseBody) = CreateHttpContext();
         var exception = new ArgumentException("Invalid argument provided");
@@ -227,14 +246,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(504);
         problemDetails.Title.Should().Be("BoardGameGeek is still preparing your collection. Please try again in a moment.");
 
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => true),
-                exception,
-                It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
-            Times.Once);
+        VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
 
@@ -254,14 +266,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
         problemDetails.Title.Should().NotBe("This is a sensitive internal error message");
 
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => true),
-                exception,
-                It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
-            Times.Once);
+        VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
 
@@ -281,14 +286,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
         problemDetails.Title.Should().NotContain("Object reference not set");
 
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => true),
-                exception,
-                It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
-            Times.Once);
+        VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
 
@@ -307,14 +305,7 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(500);
         problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
 
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => true),
-                exception,
-                It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
-            Times.Once);
+        VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
 
@@ -362,14 +353,89 @@ public class GlobalExceptionHandlerTests
 
     #endregion
 
-    [Theory]
-    [InlineData("Validation error 1")]
-    [InlineData("Validation error 2")]
-    [InlineData("Different validation message")]
-    public async Task TryHandleAsync_WithValidationException_ShouldHandleVariousMessages(string message)
+    [Fact]
+    public async Task TryHandleAsync_WithBggFeatureDisabledException_ShouldReturn503WithExceptionMessage()
     {
         var (httpContext, responseBody) = CreateHttpContext();
-        var exception = new ValidationException(message);
+        var exception = new BggFeatureDisabledException();
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(503);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(503);
+        problemDetails.Title.Should().Be(exception.Message);
+
+        VerifyErrorLogged(exception);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithConfigMissingException_ShouldReturn503WithGenericMessage()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new ConfigMissingException("BGG_API_KEY");
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(503);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(503);
+        problemDetails.Title.Should().Be("The requested feature is not configured.");
+        problemDetails.Title.Should().NotContain("BGG_API_KEY");
+
+        VerifyErrorLogged(exception);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithBoardGameGeekHttpException_ShouldReturn502WithGenericMessage()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2.BoardGameGeekHttpException(
+            "Sensitive upstream detail", System.Net.HttpStatusCode.BadGateway);
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(502);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(502);
+        problemDetails.Title.Should().Be("The BoardGameGeek service is currently unavailable. Please try again later.");
+        problemDetails.Title.Should().NotContain("Sensitive upstream detail");
+
+        VerifyErrorLogged(exception);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithDbUpdateConcurrencyException_ShouldReturn409WithRetryMessage()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException("Concurrency conflict");
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(409);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(409);
+        problemDetails.Title.Should().Be("The resource was modified by another request. Please retry.");
+
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithDbUpdateException_ShouldReturn400WithGenericMessage()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new Microsoft.EntityFrameworkCore.DbUpdateException("FK violation");
 
         var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
 
@@ -377,9 +443,50 @@ public class GlobalExceptionHandlerTests
         httpContext.Response.StatusCode.Should().Be(400);
 
         var problemDetails = await GetProblemDetailsFromResponse(responseBody);
-        problemDetails.Title.Should().Be(message);
+        problemDetails.Status.Should().Be(400);
+        problemDetails.Title.Should().Be("The request references data that does not exist or conflicts with existing data.");
 
         VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData("22001")]
+    [InlineData("23505")]
+    public async Task TryHandleAsync_WithClientDataDbException_ShouldReturn400WithoutLogging(string sqlState)
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new FakeDbException(sqlState);
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(400);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(400);
+        problemDetails.Title.Should().Be("The request contains invalid data.");
+
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("42P01")]
+    [InlineData(null)]
+    public async Task TryHandleAsync_WithNonClientDataDbException_ShouldReturn500AndLog(string? sqlState)
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new FakeDbException(sqlState);
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(500);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(500);
+        problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
+
+        VerifyErrorLogged(exception);
+        VerifyNoOtherCalls();
+    }
 }

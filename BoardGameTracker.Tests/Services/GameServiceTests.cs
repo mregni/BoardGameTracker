@@ -117,6 +117,7 @@ public class GameServiceTests
 
         var result = await _gameService.GetGames();
 
+        result.Should().BeSameAs(games);
         result.Should().HaveCount(2);
 
         _gameRepositoryMock.Verify(x => x.GetGamesOverviewList(), Times.Once);
@@ -294,8 +295,22 @@ public class GameServiceTests
         result.Title.Should().Be("New Game");
         result.HasScoring.Should().BeTrue();
         result.State.Should().Be(GameState.Owned);
+        result.YearPublished.Should().Be(2020);
+        result.Image.Should().Be("image.png");
         result.ShopUrl.Should().Be("https://shop.example.com/game");
         result.Language.Should().Be("en");
+        result.Description.Should().Be("A great game");
+        result.PlayerCount.Should().NotBeNull();
+        result.PlayerCount!.Min.Should().Be(2);
+        result.PlayerCount.Max.Should().Be(4);
+        result.PlayTime.Should().NotBeNull();
+        result.PlayTime!.MinMinutes.Should().Be(30);
+        result.PlayTime.MaxMinutes.Should().Be(60);
+        result.MinAge.Should().Be(10);
+        result.BggId.Should().Be(12345);
+        result.BuyingPrice.Should().NotBeNull();
+        result.BuyingPrice!.Amount.Should().Be(49.99m);
+        result.AdditionDate.Should().Be(new DateTime(2023, 1, 15));
 
         _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
@@ -370,8 +385,17 @@ public class GameServiceTests
         result.Title.Should().Be("Updated Game");
         result.HasScoring.Should().BeTrue();
         result.State.Should().Be(GameState.Owned);
+        result.Description.Should().Be("Updated description");
         result.ShopUrl.Should().Be("https://shop.example.com/updated");
         result.Language.Should().Be("nl");
+        result.BuyingPrice.Should().NotBeNull();
+        result.BuyingPrice!.Amount.Should().Be(39.99m);
+        result.SoldPrice.Should().NotBeNull();
+        result.SoldPrice!.Amount.Should().Be(25.00m);
+        result.Rating.Should().NotBeNull();
+        result.Rating!.Value.Should().Be(7.5);
+        result.Weight.Should().NotBeNull();
+        result.Weight!.Value.Should().Be(2.8);
 
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
@@ -467,6 +491,7 @@ public class GameServiceTests
             new Session(gameId, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(-1).AddHours(2), "Session 1"),
             new Session(gameId, DateTime.UtcNow.AddDays(-2), DateTime.UtcNow.AddDays(-2).AddHours(3), "Session 2")
         };
+        var otherGameSession = new Session(2, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow, "Other game");
 
         _sessionRepositoryMock
             .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()))
@@ -474,9 +499,16 @@ public class GameServiceTests
 
         var result = await _gameService.GetSessionsForGame(gameId, count);
 
+        result.Should().BeSameAs(sessions);
         result.Should().HaveCount(2);
 
-        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _sessionRepositoryMock.Verify(
+            x => x.ListAsync(
+                It.Is<ISpecification<Session>>(s => s is SessionsByGameSpec
+                    && ((SessionsByGameSpec)s).IsSatisfiedBy(sessions[0])
+                    && !((SessionsByGameSpec)s).IsSatisfiedBy(otherGameSession)),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -484,26 +516,15 @@ public class GameServiceTests
 
     #region SearchExpansionsForGame Tests
 
-    [Fact]
-    public async Task SearchExpansionsForGame_ShouldThrowBggFeatureDisabledException_WhenApiKeyIsNull()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task SearchExpansionsForGame_ShouldThrowBggFeatureDisabledException_WhenApiKeyIsMissing(string? apiKey)
     {
         _settingsServiceMock
             .Setup(x => x.GetBggApiKeyAsync())
-            .ReturnsAsync((string?)null);
-
-        var action = async () => await _gameService.SearchExpansionsForGame(1);
-
-        await action.Should().ThrowAsync<BggFeatureDisabledException>();
-
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task SearchExpansionsForGame_ShouldThrowBggFeatureDisabledException_WhenApiKeyIsEmpty()
-    {
-        _settingsServiceMock
-            .Setup(x => x.GetBggApiKeyAsync())
-            .ReturnsAsync(string.Empty);
+            .ReturnsAsync(apiKey);
 
         var action = async () => await _gameService.SearchExpansionsForGame(1);
 
@@ -666,6 +687,40 @@ public class GameServiceTests
     }
 
     [Fact]
+    public async Task SearchExpansionsForGame_ShouldExcludeExpansionLinks_WithBlankTitle()
+    {
+        var gameId = 1;
+        var bggId = 12345;
+        var game = new Game("Test Game") { Id = gameId };
+        game.UpdateBggId(bggId);
+
+        var links = new[]
+        {
+            new ThingResponse.Link { Type = Constants.Bgg.Expansion, Id = 101, Value = "Expansion One" },
+            new ThingResponse.Link { Type = Constants.Bgg.Expansion, Id = 102, Value = " " },
+            new ThingResponse.Link { Type = Constants.Bgg.Expansion, Id = 103, Value = "" }
+        };
+        var thingItem = CreateThingItemWithExpansionLinks(bggId, "Test Game", links);
+        var thingResponse = CreateSucceededThingResponse([thingItem]);
+
+        _gameRepositoryMock
+            .Setup(x => x.GetByIdAsync(gameId))
+            .ReturnsAsync(game);
+
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(thingResponse);
+
+        var result = await _gameService.SearchExpansionsForGame(gameId);
+
+        result.Should().ContainSingle(e => e.Title == "Expansion One" && e.BggId == 101);
+
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task SearchExpansionsForGame_ShouldReturnEmptyArray_WhenAllLinksAreNonExpansionType()
     {
         var gameId = 1;
@@ -702,16 +757,29 @@ public class GameServiceTests
 
     #region UpdateGameExpansions Tests
 
-    [Fact]
-    public async Task UpdateGameExpansions_ShouldThrowBggFeatureDisabledException_WhenApiKeyIsNull()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task UpdateGameExpansions_ShouldThrowBggFeatureDisabledException_WhenApiKeyIsMissing(string? apiKey)
     {
         _settingsServiceMock
             .Setup(x => x.GetBggApiKeyAsync())
-            .ReturnsAsync((string?)null);
+            .ReturnsAsync(apiKey);
 
         var action = async () => await _gameService.UpdateGameExpansions(1, [100]);
 
         await action.Should().ThrowAsync<BggFeatureDisabledException>();
+
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateGameExpansions_ShouldThrowArgumentNullException_WhenExpansionIdsIsNull()
+    {
+        var action = async () => await _gameService.UpdateGameExpansions(1, null!);
+
+        await action.Should().ThrowAsync<ArgumentNullException>();
 
         VerifyNoOtherCalls();
     }
@@ -875,6 +943,38 @@ public class GameServiceTests
         var result = await _gameService.UpdateGameExpansions(gameId, [101, 102]);
 
         result.Should().HaveCount(2);
+
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Exactly(2));
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateGameExpansions_ShouldSkipMalformedBggResults()
+    {
+        var gameId = 1;
+        var game = new Game("Test Game") { Id = gameId };
+
+        _gameRepositoryMock
+            .Setup(x => x.GetByIdAsync(gameId))
+            .ReturnsAsync(game);
+
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(101))))
+            .ReturnsAsync(CreateSucceededThingResponse([CreateThingItem(101, " ")]));
+
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(102))))
+            .ReturnsAsync(CreateSucceededThingResponse([CreateThingItem(0, "Zero Id Expansion")]));
+
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        var result = await _gameService.UpdateGameExpansions(gameId, [101, 102]);
+
+        result.Should().BeEmpty();
 
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
         _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Exactly(2));

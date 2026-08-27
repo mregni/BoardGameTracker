@@ -20,19 +20,26 @@ public class RsvpSpecTests
     }
 
     [Fact]
-    public void RsvpByIdSpec_ShouldIncludePlayer()
+    public void RsvpByIdSpec_ShouldIncludePlayerAndGameNightWithHost()
     {
-        new RsvpByIdSpec(1).IncludeExpressions.Should().NotBeEmpty();
+        new RsvpByIdSpec(1).IncludeExpressions.Should().HaveCount(3);
+    }
+
+    [Theory]
+    [InlineData(5, 0, true)]
+    [InlineData(9, 0, false)]
+    [InlineData(5, 99, false)]
+    [InlineData(9, 99, false)]
+    public void RsvpByPlayerAndGameNightSpec_ShouldMatchOnBothPlayerAndGameNight(int playerId, int gameNightId, bool expected)
+    {
+        var rsvp = GameNightRsvp.Create(5, GameNightRsvpState.Pending);
+
+        new RsvpByPlayerAndGameNightSpec(playerId, gameNightId).IsSatisfiedBy(rsvp).Should().Be(expected);
     }
 
     [Fact]
-    public void RsvpByPlayerAndGameNightSpec_ShouldMatchOnBothPlayerAndGameNight()
+    public void RsvpByPlayerAndGameNightSpec_ShouldIncludePlayerAndGameNightWithHost()
     {
-        // GameNightId is not publicly settable, so it defaults to 0 here — the spec must AND both predicates.
-        var rsvp = GameNightRsvp.Create(5, GameNightRsvpState.Pending);
-
-        new RsvpByPlayerAndGameNightSpec(5, 0).IsSatisfiedBy(rsvp).Should().BeTrue();
-        new RsvpByPlayerAndGameNightSpec(9, 0).IsSatisfiedBy(rsvp).Should().BeFalse();
-        new RsvpByPlayerAndGameNightSpec(5, 99).IsSatisfiedBy(rsvp).Should().BeFalse();
+        new RsvpByPlayerAndGameNightSpec(1, 1).IncludeExpressions.Should().HaveCount(3);
     }
 }

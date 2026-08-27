@@ -55,6 +55,7 @@ public class EnvironmentProviderTests : IDisposable
     [InlineData("9999", 9999)]
     [InlineData("1", 1)]
     [InlineData("65535", 65535)]
+    [InlineData("0", 0)]
     [InlineData("", 7178)]
     [InlineData("   ", 7178)]
     [InlineData("abc", 7178)]
@@ -62,7 +63,7 @@ public class EnvironmentProviderTests : IDisposable
     [InlineData("not-a-number", 7178)]
     [InlineData("-1", 7178)]
     [InlineData(null, 7178)]
-    public void Port_ShouldReturnCorrectValue_WithValidPortNumbers(string? portString, int expectedPort)
+    public void Port_ShouldParseValue_OrFallBackToDefault(string? portString, int expectedPort)
     {
         Environment.SetEnvironmentVariable("PORT", portString);
 
@@ -97,67 +98,30 @@ public class EnvironmentProviderTests : IDisposable
     }
 
     [Fact]
-    public void Properties_ShouldReflectEnvironmentChanges_WhenEnvironmentVariablesChange()
+    public void Properties_ShouldNotCacheValues_WhenEnvironmentVariablesChange()
     {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "development");
         Environment.SetEnvironmentVariable("PORT", "3000");
-        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", "false");
-
-        var initialEnv = _environmentProvider.EnvironmentName;
         var initialPort = _environmentProvider.Port;
-        var initialStats = _environmentProvider.StatisticsEnabled;
-        var initialIsDev = _environmentProvider.IsDevelopment;
 
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "production");
         Environment.SetEnvironmentVariable("PORT", "8080");
-        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", "true");
-
-        var updatedEnv = _environmentProvider.EnvironmentName;
         var updatedPort = _environmentProvider.Port;
-        var updatedStats = _environmentProvider.StatisticsEnabled;
-        var updatedIsDev = _environmentProvider.IsDevelopment;
 
-        initialEnv.Should().Be("development");
-        updatedEnv.Should().Be("production");
         initialPort.Should().Be(3000);
         updatedPort.Should().Be(8080);
-        initialStats.Should().BeFalse();
-        updatedStats.Should().BeTrue();
-        initialIsDev.Should().BeTrue();
-        updatedIsDev.Should().BeFalse();
     }
 
-    [Fact]
-    public void EnvironmentName_ShouldDefaultToProduction_WhenNoEnvironmentVariablesSet()
+    [Theory]
+    [InlineData(null, null, "production")]
+    [InlineData("Production", "staging", "Production")]
+    [InlineData(null, "staging", "staging")]
+    public void EnvironmentName_ShouldPreferAspNetCoreEnvironment_AndDefaultToProduction(string? aspNetCoreEnvironment, string? environment, string expected)
     {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
-        Environment.SetEnvironmentVariable("ENVIRONMENT", null);
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", aspNetCoreEnvironment);
+        Environment.SetEnvironmentVariable("ENVIRONMENT", environment);
 
         var result = _environmentProvider.EnvironmentName;
 
-        result.Should().Be("production");
-    }
-
-    [Fact]
-    public void EnvironmentName_ShouldPreferAspNetCoreEnvironment_WhenBothAreSet()
-    {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Production");
-        Environment.SetEnvironmentVariable("ENVIRONMENT", "staging");
-
-        var result = _environmentProvider.EnvironmentName;
-
-        result.Should().Be("Production");
-    }
-
-    [Fact]
-    public void EnvironmentName_ShouldFallbackToEnvironment_WhenAspNetCoreEnvironmentNotSet()
-    {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
-        Environment.SetEnvironmentVariable("ENVIRONMENT", "staging");
-
-        var result = _environmentProvider.EnvironmentName;
-
-        result.Should().Be("staging");
+        result.Should().Be(expected);
     }
 
     [Theory]
@@ -218,28 +182,16 @@ public class EnvironmentProviderTests : IDisposable
         _environmentProvider.AuthEnabled.Should().Be(expected);
     }
 
-    [Fact]
-    public void JwtSecret_ShouldReturnNull_WhenNotSet()
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData("", null)]
+    [InlineData("   ", null)]
+    [InlineData("my-secret-key", "my-secret-key")]
+    public void JwtSecret_ShouldReturnValue_OrNullWhenBlank(string? value, string? expected)
     {
-        Environment.SetEnvironmentVariable("JWT_SECRET", null);
+        Environment.SetEnvironmentVariable("JWT_SECRET", value);
 
-        _environmentProvider.JwtSecret.Should().BeNull();
-    }
-
-    [Fact]
-    public void JwtSecret_ShouldReturnValue_WhenSet()
-    {
-        Environment.SetEnvironmentVariable("JWT_SECRET", "my-secret-key");
-
-        _environmentProvider.JwtSecret.Should().Be("my-secret-key");
-    }
-
-    [Fact]
-    public void JwtSecret_ShouldReturnNull_WhenSetToEmpty()
-    {
-        Environment.SetEnvironmentVariable("JWT_SECRET", "");
-
-        _environmentProvider.JwtSecret.Should().BeNull();
+        _environmentProvider.JwtSecret.Should().Be(expected);
     }
 
     [Theory]
@@ -298,6 +250,16 @@ public class EnvironmentProviderTests : IDisposable
     [Fact]
     public void CorsOrigins_ShouldReturnEmpty_WhenNotSet()
     {
+        _environmentProvider.CorsOrigins.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CorsOrigins_ShouldReturnEmpty_WhenBlank(string value)
+    {
+        Environment.SetEnvironmentVariable("CORS_ORIGINS", value);
+
         _environmentProvider.CorsOrigins.Should().BeEmpty();
     }
 

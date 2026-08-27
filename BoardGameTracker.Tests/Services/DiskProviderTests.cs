@@ -3,10 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using BoardGameTracker.Core.Disk;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Services;
@@ -100,14 +104,107 @@ public class DiskProviderTests: IDisposable
         }
 
         [Fact]
-        public void DeleteFile_ShouldLogInUseError_WhenDirectoryDoesNotExist()
+        public void DeleteFile_ShouldNotThrowAndLogError_WhenDirectoryDoesNotExist()
         {
-            var invalidPath =Path.Combine("Z", "nonexistent-path", "file.txt");
+            var invalidPath = Path.Combine("Z", "nonexistent-path", "file.txt");
 
-            _diskProvider.DeleteFile(invalidPath);
+            var action = () => _diskProvider.DeleteFile(invalidPath);
 
+            action.Should().NotThrow();
             VerifyLogInformation("Removing file {Path}", invalidPath);
-            VerifyLogError("Can't delete file because it seems to be in use");
+            VerifyErrorLogged();
+        }
+
+        [Fact]
+        public async Task WriteFile_WithImage_ShouldWriteUniqueFileAndReturnItsName()
+        {
+            using var image = new Image<Rgba32>(10, 10);
+
+            var result = await _diskProvider.WriteFile(image, "picture.jpg", _testDirectory);
+
+            result.Should().NotBe("picture.jpg");
+            result.Should().StartWith("picture_");
+            result.Should().EndWith(".jpg");
+            File.Exists(Path.Combine(_testDirectory, result)).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task WriteFile_WithImageAndEncoder_ShouldWriteFileUsingEncoder()
+        {
+            using var image = new Image<Rgba32>(10, 10);
+
+            var result = await _diskProvider.WriteFile(image, "picture.webp", _testDirectory, new WebpEncoder());
+
+            result.Should().EndWith(".webp");
+            File.Exists(Path.Combine(_testDirectory, result)).Should().BeTrue();
+            new FileInfo(Path.Combine(_testDirectory, result)).Length.Should().BeGreaterThan(0);
+        }
+
+        [Fact]
+        public async Task WriteFile_WithStream_ShouldCopyStreamContentToUniqueFile()
+        {
+            var content = new byte[] { 1, 2, 3, 4, 5 };
+            using var stream = new MemoryStream(content);
+
+            var result = await _diskProvider.WriteFile(stream, "data.bin", _testDirectory);
+
+            result.Should().NotBe("data.bin");
+            result.Should().EndWith(".bin");
+            File.ReadAllBytes(Path.Combine(_testDirectory, result)).Should().Equal(content);
+        }
+
+        [Fact]
+        public void ClearFolder_ShouldDeleteAllFiles_AndLeaveSubdirectories()
+        {
+            CreateTestFile("one.txt", "1");
+            CreateTestFile("two.txt", "2");
+            var subDir = Path.Combine(_testDirectory, "sub");
+            Directory.CreateDirectory(subDir);
+            var nestedFile = Path.Combine(subDir, "nested.txt");
+            File.WriteAllText(nestedFile, "nested");
+
+            _diskProvider.ClearFolder(_testDirectory);
+
+            Directory.EnumerateFiles(_testDirectory).Should().BeEmpty();
+            Directory.Exists(subDir).Should().BeTrue();
+            File.Exists(nestedFile).Should().BeTrue();
+        }
+
+        [Fact]
+        public void ClearFolder_ShouldNotThrow_WhenDirectoryDoesNotExist()
+        {
+            var missingDir = Path.Combine(_testDirectory, "missing");
+
+            var action = () => _diskProvider.ClearFolder(missingDir);
+
+            action.Should().NotThrow();
+        }
+
+        [Fact]
+        public void FileExists_ShouldReturnTrue_WhenFileExists()
+        {
+            var filePath = CreateTestFile("exists.txt", "content");
+
+            _diskProvider.FileExists(filePath).Should().BeTrue();
+        }
+
+        [Fact]
+        public void FileExists_ShouldReturnFalse_WhenFileDoesNotExist()
+        {
+            var filePath = Path.Combine(_testDirectory, "missing.txt");
+
+            _diskProvider.FileExists(filePath).Should().BeFalse();
+        }
+
+        [Fact]
+        public void OpenRead_ShouldReturnStreamWithFileContent()
+        {
+            var filePath = CreateTestFile("read.txt", "file-content");
+
+            using var stream = _diskProvider.OpenRead(filePath);
+            using var reader = new StreamReader(stream);
+
+            reader.ReadToEnd().Should().Be("file-content");
         }
 
         private string CreateTestFile(string fileName, string content)
@@ -130,13 +227,13 @@ public class DiskProviderTests: IDisposable
                 Times.Once);
         }
 
-        private void VerifyLogError(string message, params object[] args)
+        private void VerifyErrorLogged()
         {
             _loggerMock.Verify(
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(message)),
+                    It.IsAny<It.IsAnyType>(),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);

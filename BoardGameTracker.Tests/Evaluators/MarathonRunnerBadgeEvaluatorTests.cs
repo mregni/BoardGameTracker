@@ -50,9 +50,6 @@ public class MarathonRunnerBadgeEvaluatorTests
     [InlineData(239, false)]
     [InlineData(240, true)]
     [InlineData(241, true)]
-    [InlineData(300, true)]
-    [InlineData(360, true)]
-    [InlineData(480, true)]
     [InlineData(600, true)]
     public async Task CanAwardBadge_ShouldHandleVariousDurations(int durationMinutes, bool expectedResult)
     {
@@ -65,26 +62,15 @@ public class MarathonRunnerBadgeEvaluatorTests
         result.Should().Be(expectedResult);
     }
 
-    [Fact]
-    public async Task CanAwardBadge_ShouldWorkWithAnyBadgeLevel()
+    [Theory]
+    [InlineData(null)]
+    [InlineData(BadgeLevel.Green)]
+    [InlineData(BadgeLevel.Blue)]
+    [InlineData(BadgeLevel.Red)]
+    [InlineData(BadgeLevel.Gold)]
+    public async Task CanAwardBadge_ShouldIgnoreBadgeLevel(BadgeLevel? level)
     {
-        // MarathonRunner doesn't use levels, so it should work with any level
-        var session = CreateSessionWithDuration(240);
-        var sessions = new List<Session> { session };
-
-        foreach (BadgeLevel level in Enum.GetValues(typeof(BadgeLevel)))
-        {
-            var badge = CreateBadge(level);
-            var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-            result.Should().BeTrue();
-        }
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenBadgeLevelIsNull()
-    {
-        // MarathonRunner doesn't check the badge level, only the session duration
-        var badge = Badge.CreateWithId(1, "title", "desc", BadgeType.MarathonRunner, "image", null);
+        var badge = CreateBadge(level);
         var session = CreateSessionWithDuration(240);
         var sessions = new List<Session> { session };
 

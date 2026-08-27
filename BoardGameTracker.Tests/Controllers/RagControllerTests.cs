@@ -46,14 +46,16 @@ public class RagControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task Ask_ShouldReturnOkWithAnswer_WhenRagEnabled()
+    [Theory]
+    [InlineData(3)]
+    [InlineData(null)]
+    public async Task Ask_ShouldReturnOkWithAnswer_WhenRagEnabled(int? manualId)
     {
         _environmentProviderMock.Setup(x => x.RagEnabled).Returns(true);
-        var command = new AskRagCommand { Question = "How does scoring work?", ManualId = 3 };
+        var command = new AskRagCommand { Question = "How does scoring work?", ManualId = manualId };
         var answer = new RagAnswerDto { Answer = "Count the points.", HasContext = true };
         _ragServiceMock
-            .Setup(x => x.AskAsync(5, "How does scoring work?", 3, It.IsAny<CancellationToken>()))
+            .Setup(x => x.AskAsync(5, "How does scoring work?", manualId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(answer);
 
         var result = await _controller.Ask(5, command, CancellationToken.None);
@@ -61,25 +63,7 @@ public class RagControllerTests
         result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(answer);
 
         _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
-        _ragServiceMock.Verify(x => x.AskAsync(5, "How does scoring work?", 3, It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task Ask_ShouldPassNullManualId_WhenCommandHasNoManualId()
-    {
-        _environmentProviderMock.Setup(x => x.RagEnabled).Returns(true);
-        var command = new AskRagCommand { Question = "What is the setup?" };
-        _ragServiceMock
-            .Setup(x => x.AskAsync(8, "What is the setup?", null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new RagAnswerDto());
-
-        var result = await _controller.Ask(8, command, CancellationToken.None);
-
-        result.Should().BeOfType<OkObjectResult>();
-
-        _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
-        _ragServiceMock.Verify(x => x.AskAsync(8, "What is the setup?", null, It.IsAny<CancellationToken>()), Times.Once);
+        _ragServiceMock.Verify(x => x.AskAsync(5, "How does scoring work?", manualId, It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 }

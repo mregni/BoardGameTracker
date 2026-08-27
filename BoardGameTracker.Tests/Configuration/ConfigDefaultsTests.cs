@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using BoardGameTracker.Common.Configuration;
 using FluentAssertions;
@@ -8,18 +9,46 @@ namespace BoardGameTracker.Tests.Configuration;
 
 public class ConfigDefaultsTests
 {
-    [Fact]
-    public void All_ShouldContainAllExpectedDefaults()
+    public static IEnumerable<object[]> ExpectedDefaults()
     {
-        ConfigDefaults.All.Should().HaveCount(24);
+        yield return new object[] { AppConfig.Currency, "€" };
+        yield return new object[] { AppConfig.DateFormat, "yy-MM-dd" };
+        yield return new object[] { AppConfig.TimeFormat, "HH:mm" };
+        yield return new object[] { AppConfig.UiLanguage, "en-us" };
+        yield return new object[] { AppConfig.ShelfOfShameEnabled, "true" };
+        yield return new object[] { AppConfig.ShelfOfShameMonths, "6" };
+        yield return new object[] { AppConfig.GameNightsEnabled, "true" };
+        yield return new object[] { AppConfig.PublicUrl, "http://localhost:5444" };
+        yield return new object[] { AppConfig.RsvpAuthenticationEnabled, "false" };
+        yield return new object[] { BggConfig.ApiKey, "" };
+        yield return new object[] { AiConfig.Provider, "ollama" };
+        yield return new object[] { AiConfig.BaseUrl, "http://ollama:11434" };
+        yield return new object[] { AiConfig.ChatModel, "qwen3:4b" };
+        yield return new object[] { AiConfig.ApiKey, "" };
+        yield return new object[] { AiConfig.EmbeddingBaseUrl, "http://ollama:11434" };
+        yield return new object[] { AiConfig.EmbeddingNumGpu, "-1" };
+        yield return new object[] { AiConfig.TopK, "5" };
+        yield return new object[] { UpdateConfig.Track, "stable" };
+        yield return new object[] { UpdateConfig.CheckEnabled, "true" };
+        yield return new object[] { UpdateConfig.CheckIntervalHours, "24" };
+        yield return new object[] { UpdateConfig.CheckError, "" };
+        yield return new object[] { UpdateConfig.CheckLastRun, "" };
+        yield return new object[] { UpdateConfig.AvailableVersion, "" };
+        yield return new object[] { UpdateConfig.Available, "false" };
+    }
+
+    [Fact]
+    public void All_ShouldContainExactlyTheExpectedKeys()
+    {
+        var expectedKeys = ExpectedDefaults().Select(x => (string)x[0]);
+
+        ConfigDefaults.All.Select(x => x.Key).Should().BeEquivalentTo(expectedKeys);
     }
 
     [Fact]
     public void All_ShouldHaveUniqueKeys()
     {
-        var keys = ConfigDefaults.All.Select(x => x.Key).ToList();
-
-        keys.Should().OnlyHaveUniqueItems();
+        ConfigDefaults.All.Select(x => x.Key).Should().OnlyHaveUniqueItems();
     }
 
     [Fact]
@@ -28,31 +57,14 @@ public class ConfigDefaultsTests
         ConfigDefaults.All.Should().OnlyContain(x => !string.IsNullOrWhiteSpace(x.Key));
     }
 
+    [Fact]
+    public void All_ShouldNotContainNullValues()
+    {
+        ConfigDefaults.All.Should().OnlyContain(x => x.Value != null);
+    }
+
     [Theory]
-    [InlineData(AppConfig.Currency, "€")]
-    [InlineData(AppConfig.DateFormat, "yy-MM-dd")]
-    [InlineData(AppConfig.TimeFormat, "HH:mm")]
-    [InlineData(AppConfig.UiLanguage, "en-us")]
-    [InlineData(AppConfig.ShelfOfShameEnabled, "true")]
-    [InlineData(AppConfig.ShelfOfShameMonths, "6")]
-    [InlineData(AppConfig.GameNightsEnabled, "true")]
-    [InlineData(AppConfig.PublicUrl, "http://localhost:5444")]
-    [InlineData(AppConfig.RsvpAuthenticationEnabled, "false")]
-    [InlineData(BggConfig.ApiKey, "")]
-    [InlineData(AiConfig.Provider, "ollama")]
-    [InlineData(AiConfig.BaseUrl, "http://ollama:11434")]
-    [InlineData(AiConfig.ChatModel, "qwen3:4b")]
-    [InlineData(AiConfig.ApiKey, "")]
-    [InlineData(AiConfig.EmbeddingBaseUrl, "http://ollama:11434")]
-    [InlineData(AiConfig.EmbeddingNumGpu, "-1")]
-    [InlineData(AiConfig.TopK, "5")]
-    [InlineData(UpdateConfig.Track, "stable")]
-    [InlineData(UpdateConfig.CheckEnabled, "true")]
-    [InlineData(UpdateConfig.CheckIntervalHours, "24")]
-    [InlineData(UpdateConfig.CheckError, "")]
-    [InlineData(UpdateConfig.CheckLastRun, "")]
-    [InlineData(UpdateConfig.AvailableVersion, "")]
-    [InlineData(UpdateConfig.Available, "false")]
+    [MemberData(nameof(ExpectedDefaults))]
     public void All_ShouldContainExpectedDefaultValue_ForEachKey(string key, string expectedValue)
     {
         var entry = ConfigDefaults.All.SingleOrDefault(x => x.Key == key);
@@ -60,5 +72,4 @@ public class ConfigDefaultsTests
         entry.Should().NotBeNull();
         entry!.Value.Should().Be(expectedValue);
     }
-
 }

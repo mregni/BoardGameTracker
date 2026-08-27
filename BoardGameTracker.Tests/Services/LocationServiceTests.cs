@@ -71,6 +71,50 @@ public class LocationServiceTests
 
     #endregion
 
+    #region GetByIdAsync Tests
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnLocation_WhenLocationExists()
+    {
+        // Arrange
+        var location = new Location("Living Room") { Id = 1 };
+
+        _locationRepositoryMock
+            .Setup(x => x.GetByIdAsync(1))
+            .ReturnsAsync(location);
+
+        // Act
+        var result = await _locationService.GetByIdAsync(1);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(1);
+        result.Name.Should().Be("Living Room");
+
+        _locationRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnNull_WhenLocationDoesNotExist()
+    {
+        // Arrange
+        _locationRepositoryMock
+            .Setup(x => x.GetByIdAsync(999))
+            .ReturnsAsync((Location?)null);
+
+        // Act
+        var result = await _locationService.GetByIdAsync(999);
+
+        // Assert
+        result.Should().BeNull();
+
+        _locationRepositoryMock.Verify(x => x.GetByIdAsync(999), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
     #region Create Tests
 
     [Fact]

@@ -25,91 +25,57 @@ public class FirstTryBadgeEvaluatorTests
         _evaluator.BadgeType.Should().Be(BadgeType.FirstTry);
     }
 
-    #region First Play Win Tests
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenFirstPlayAndWon()
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, false)]
+    public async Task CanAwardBadge_ShouldRequireWinOnFirstPlay(bool firstPlay, bool won, bool expected)
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var session = CreateSession(gameId: 1);
-        session.AddPlayerSession(PlayerId, null, false, won: true);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenFirstPlayButLost()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var session = CreateSession(gameId: 1);
-        session.AddPlayerSession(PlayerId, null, false, won: false);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenNotFirstPlayButWon()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-
-        // First session of the game (played earlier)
-        var firstSession = CreateSession(gameId: 1, dayOffset: 1);
-        firstSession.AddPlayerSession(PlayerId, null, false, won: false);
-
-        // Second session of the same game (current) - won this time
         var currentSession = CreateSession(gameId: 1, dayOffset: 0);
+        currentSession.AddPlayerSession(PlayerId, null, false, won);
+        var sessions = new List<Session> { currentSession };
+
+        if (!firstPlay)
+        {
+            var earlierSession = CreateSession(gameId: 1, dayOffset: 1);
+            earlierSession.AddPlayerSession(PlayerId, null, false, false);
+            sessions.Add(earlierSession);
+        }
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, currentSession, sessions);
+
+        result.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task CanAwardBadge_ShouldReturnFalse_WhenHistoryContainsNoSessionForCurrentGame()
+    {
+        var badge = CreateBadge(BadgeLevel.Green);
+        var currentSession = CreateSession(gameId: 1);
         currentSession.AddPlayerSession(PlayerId, null, false, won: true);
 
-        var sessions = new List<Session> { currentSession, firstSession };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, currentSession, sessions);
-
-        result.Should().BeFalse(); // Not first try
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenNotFirstPlayAndLost()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-
-        // First session of the game
-        var firstSession = CreateSession(gameId: 1, dayOffset: 1);
-        firstSession.AddPlayerSession(PlayerId, null, false, won: true);
-
-        // Second session - lost
-        var currentSession = CreateSession(gameId: 1, dayOffset: 0);
-        currentSession.AddPlayerSession(PlayerId, null, false, won: false);
-
-        var sessions = new List<Session> { currentSession, firstSession };
+        var otherGameSession = CreateSession(gameId: 2, dayOffset: 1);
+        otherGameSession.AddPlayerSession(PlayerId, null, false, won: false);
+        var sessions = new List<Session> { otherGameSession };
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, currentSession, sessions);
 
         result.Should().BeFalse();
     }
-
-    #endregion
-
-    #region Different Games Tests
 
     [Fact]
     public async Task CanAwardBadge_ShouldCheckGameIdCorrectly()
     {
         var badge = CreateBadge(BadgeLevel.Green);
 
-        // Sessions for different games
         var otherGameSession1 = CreateSession(gameId: 2, dayOffset: 2);
         otherGameSession1.AddPlayerSession(PlayerId, null, false, won: false);
 
         var otherGameSession2 = CreateSession(gameId: 3, dayOffset: 1);
         otherGameSession2.AddPlayerSession(PlayerId, null, false, won: false);
 
-        // First and only session for game 1 - won
         var currentSession = CreateSession(gameId: 1, dayOffset: 0);
         currentSession.AddPlayerSession(PlayerId, null, false, won: true);
 
@@ -117,7 +83,7 @@ public class FirstTryBadgeEvaluatorTests
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, currentSession, sessions);
 
-        result.Should().BeTrue(); // First try for this specific game
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -125,7 +91,6 @@ public class FirstTryBadgeEvaluatorTests
     {
         var badge = CreateBadge(BadgeLevel.Green);
 
-        // Player has played 10 sessions of other games
         var sessions = new List<Session>();
         for (var i = 0; i < 10; i++)
         {
@@ -134,7 +99,6 @@ public class FirstTryBadgeEvaluatorTests
             sessions.Add(otherSession);
         }
 
-        // First session for game 1 - won
         var currentSession = CreateSession(gameId: 1, dayOffset: 0);
         currentSession.AddPlayerSession(PlayerId, null, false, won: true);
         sessions.Insert(0, currentSession);
@@ -144,30 +108,15 @@ public class FirstTryBadgeEvaluatorTests
         result.Should().BeTrue();
     }
 
-    #endregion
-
-    #region Edge Cases
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldWorkWithAnyBadgeLevel()
+    [Theory]
+    [InlineData(null)]
+    [InlineData(BadgeLevel.Green)]
+    [InlineData(BadgeLevel.Blue)]
+    [InlineData(BadgeLevel.Red)]
+    [InlineData(BadgeLevel.Gold)]
+    public async Task CanAwardBadge_ShouldIgnoreBadgeLevel(BadgeLevel? level)
     {
-        // FirstTry doesn't use levels (single achievement)
-        var session = CreateSession(gameId: 1);
-        session.AddPlayerSession(PlayerId, null, false, won: true);
-        var sessions = new List<Session> { session };
-
-        foreach (BadgeLevel level in Enum.GetValues(typeof(BadgeLevel)))
-        {
-            var badge = CreateBadge(level);
-            var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-            result.Should().BeTrue();
-        }
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenBadgeLevelIsNull()
-    {
-        var badge = Badge.CreateWithId(1, "title", "desc", BadgeType.FirstTry, "image", null);
+        var badge = CreateBadge(level);
         var session = CreateSession(gameId: 1);
         session.AddPlayerSession(PlayerId, null, false, won: true);
         var sessions = new List<Session> { session };
@@ -182,19 +131,15 @@ public class FirstTryBadgeEvaluatorTests
     {
         var badge = CreateBadge(BadgeLevel.Green);
         var session = CreateSession(gameId: 1);
-        session.AddPlayerSession(PlayerId, null, false, won: true); // Player 1 won
-        session.AddPlayerSession(2, null, false, won: false); // Player 2 lost
-        session.AddPlayerSession(3, null, false, won: false); // Player 3 lost
+        session.AddPlayerSession(PlayerId, null, false, won: true);
+        session.AddPlayerSession(2, null, false, won: false);
+        session.AddPlayerSession(3, null, false, won: false);
         var sessions = new List<Session> { session };
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
         result.Should().BeTrue();
     }
-
-    #endregion
-
-    #region Helper Methods
 
     private static Badge CreateBadge(BadgeLevel? level)
     {
@@ -207,6 +152,4 @@ public class FirstTryBadgeEvaluatorTests
         var end = DateTime.UtcNow.AddDays(-dayOffset);
         return new Session(gameId, start, end, $"Session for game {gameId}");
     }
-
-    #endregion
 }

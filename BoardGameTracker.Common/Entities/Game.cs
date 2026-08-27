@@ -1,6 +1,7 @@
 ﻿using Ardalis.GuardClauses;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Exceptions;
 
 namespace BoardGameTracker.Common.Entities;
 
@@ -50,6 +51,11 @@ public class Game : BaseGame
 
     public Loan LoanToPlayer(int playerId, DateTime loanDate)
     {
+        if (IsLoanedOn(loanDate))
+        {
+            throw new DomainException(Constants.Errors.GameAlreadyOnLoan);
+        }
+
         var loan = new Loan(Id, playerId, loanDate);
         Loans.Add(loan);
         return loan;

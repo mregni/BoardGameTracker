@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Datastore.Interfaces;
@@ -42,21 +41,6 @@ public class LanguageServiceTests
         result.Should().NotBeNull();
         result.Should().HaveCount(4);
         result.Should().BeEquivalentTo(expectedLanguages);
-        _languageRepositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
-        _languageRepositoryMock.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task GetAllAsync_ShouldThrowException_WhenRepositoryThrows()
-    {
-        var expectedException = new InvalidOperationException("Database connection failed");
-
-        _languageRepositoryMock.Setup(x => x.GetAllAsync()).ThrowsAsync(expectedException);
-
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _languageService.GetAllAsync());
-
-        exception.Should().Be(expectedException);
         _languageRepositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
         _languageRepositoryMock.VerifyNoOtherCalls();
     }

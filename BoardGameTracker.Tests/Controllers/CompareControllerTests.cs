@@ -28,7 +28,6 @@ public class CompareControllerTests
     [Fact]
     public async Task GetPlayerComparison_ShouldReturnOkWithCompareResult_WhenPlayersExist()
     {
-        // Arrange
         var playerOne = 1;
         var playerTwo = 2;
         var compareResult = new CompareResultDto
@@ -46,11 +45,10 @@ public class CompareControllerTests
             .Setup(x => x.GetPlayerComparison(playerOne, playerTwo))
             .ReturnsAsync(compareResult);
 
-        // Act
         var result = await _controller.GetPlayerComparison(playerOne, playerTwo);
 
-        // Assert
-        result.Should().BeOfType<OkObjectResult>();
+        result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeSameAs(compareResult);
 
         _compareServiceMock.Verify(x => x.GetPlayerComparison(playerOne, playerTwo), Times.Once);
         VerifyNoOtherCalls();

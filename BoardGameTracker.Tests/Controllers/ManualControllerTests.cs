@@ -117,13 +117,15 @@ public class ManualControllerTests
     [Fact]
     public async Task DownloadManual_ShouldReturnPdfFile()
     {
+        var stream = new MemoryStream();
         _manualServiceMock
             .Setup(x => x.GetManualForDownload(3))
-            .ReturnsAsync(new ManualDownload { Stream = new MemoryStream(), ContentType = "application/pdf", FileName = "Catan.pdf" });
+            .ReturnsAsync(new ManualDownload { Stream = stream, ContentType = "application/pdf", FileName = "Catan.pdf" });
 
         var result = await _controller.DownloadManual(3);
 
         var fileResult = result.Should().BeOfType<FileStreamResult>().Subject;
+        fileResult.FileStream.Should().BeSameAs(stream);
         fileResult.ContentType.Should().Be("application/pdf");
         fileResult.FileDownloadName.Should().Be("Catan.pdf");
 
@@ -149,13 +151,15 @@ public class ManualControllerTests
     public async Task GetManualPageImage_ShouldReturnPng_WhenRendered()
     {
         _environmentProviderMock.Setup(x => x.RagEnabled).Returns(true);
+        var stream = new MemoryStream();
         _manualServiceMock
             .Setup(x => x.GetManualPageImage(3, 2, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ManualDownload { Stream = new MemoryStream(), ContentType = "image/png", FileName = "page-2.png" });
+            .ReturnsAsync(new ManualDownload { Stream = stream, ContentType = "image/png", FileName = "page-2.png" });
 
         var result = await _controller.GetManualPageImage(3, 2, CancellationToken.None);
 
         var fileResult = result.Should().BeOfType<FileStreamResult>().Subject;
+        fileResult.FileStream.Should().BeSameAs(stream);
         fileResult.ContentType.Should().Be("image/png");
 
         _environmentProviderMock.Verify(x => x.RagEnabled, Times.Once);
@@ -184,13 +188,15 @@ public class ManualControllerTests
     public async Task GetManualsForGameNight_ShouldReturnOk()
     {
         var linkId = Guid.NewGuid();
+        var manuals = new List<GameNightManualsDto>();
         _manualServiceMock
             .Setup(x => x.GetManualsForGameNight(linkId))
-            .ReturnsAsync(new List<GameNightManualsDto>());
+            .ReturnsAsync(manuals);
 
         var result = await _controller.GetManualsForGameNight(linkId);
 
-        result.Should().BeOfType<OkObjectResult>();
+        result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeSameAs(manuals);
 
         _manualServiceMock.Verify(x => x.GetManualsForGameNight(linkId), Times.Once);
         VerifyNoOtherCalls();
@@ -200,13 +206,15 @@ public class ManualControllerTests
     public async Task DownloadGameNightManual_ShouldReturnPdfFile()
     {
         var linkId = Guid.NewGuid();
+        var stream = new MemoryStream();
         _manualServiceMock
             .Setup(x => x.GetManualForGameNightDownload(linkId, 11))
-            .ReturnsAsync(new ManualDownload { Stream = new MemoryStream(), ContentType = "application/pdf", FileName = "Catan.pdf" });
+            .ReturnsAsync(new ManualDownload { Stream = stream, ContentType = "application/pdf", FileName = "Catan.pdf" });
 
         var result = await _controller.DownloadGameNightManual(linkId, 11);
 
         var fileResult = result.Should().BeOfType<FileStreamResult>().Subject;
+        fileResult.FileStream.Should().BeSameAs(stream);
         fileResult.ContentType.Should().Be("application/pdf");
         fileResult.FileDownloadName.Should().Be("Catan.pdf");
 

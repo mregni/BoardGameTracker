@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -20,6 +21,7 @@ public class LazyBoardGameGeekClientTests
 
     private readonly Mock<ISettingsService> _settingsServiceMock;
     private readonly Mock<HttpMessageHandler> _handlerMock;
+    private readonly List<HttpRequestMessage> _sentRequests = [];
     private int _httpClientFactoryCalls;
     private readonly LazyBoardGameGeekClient _client;
 
@@ -31,6 +33,7 @@ public class LazyBoardGameGeekClientTests
         _handlerMock = new Mock<HttpMessageHandler>();
         _handlerMock.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((request, _) => _sentRequests.Add(request))
             .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(EmptyItemsXml, Encoding.UTF8, "application/xml")
@@ -58,10 +61,21 @@ public class LazyBoardGameGeekClientTests
         var first = await _client.GetThingAsync(new ThingRequest([1]));
         var second = await _client.GetThingAsync(new ThingRequest([2]));
 
-        first.Should().NotBeNull();
-        second.Should().NotBeNull();
+        first.Succeeded.Should().BeTrue();
+        second.Succeeded.Should().BeTrue();
         _settingsServiceMock.Verify(x => x.GetBggApiKeyAsync(), Times.Once);
         _settingsServiceMock.VerifyNoOtherCalls();
         _httpClientFactoryCalls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetThingAsync_ShouldSendResolvedApiKeyOnEachRequest()
+    {
+        await _client.GetThingAsync(new ThingRequest([1]));
+        await _client.GetThingAsync(new ThingRequest([2]));
+
+        _sentRequests.Should().HaveCount(2);
+        _sentRequests.Should().OnlyContain(r =>
+            r.Headers.Authorization != null && r.Headers.Authorization.ToString().Contains("test-api-key"));
     }
 }

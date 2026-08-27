@@ -26,84 +26,40 @@ public class LearningCurveBadgeEvaluatorTests
         _evaluator.BadgeType.Should().Be(BadgeType.LearningCurve);
     }
 
-    #region Minimum Sessions Requirement Tests
-
     [Fact]
     public async Task CanAwardBadge_ShouldReturnFalse_WhenLessThan3Sessions()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(2, [100.0, 90.0]);
+        var sessions = CreateSessionsWithScores([100.0, 90.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().BeFalse();
     }
 
-    #endregion
+    public static TheoryData<double[], bool> ScorePatterns => new()
+    {
+        { [100.0, 90.0, 80.0], true },
+        { [80.0, 90.0, 100.0], false },
+        { [100.0, 100.0, 100.0], false },
+        { [95.0, 100.0, 90.0], false },
+        { [100.0, 80.0, 90.0], false },
+        { [100.0, 90.0, 90.0], false },
+        { [1000.0, 500.0, 100.0], true },
+        { [100.1, 100.05, 100.0], true }
+    };
 
-    #region Score Improvement Tests
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenScoresAreIncreasing()
+    [Theory]
+    [MemberData(nameof(ScorePatterns))]
+    public async Task CanAwardBadge_ShouldEvaluateScoreProgression(double[] scoresMostRecentFirst, bool expected)
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        // Most recent first: 100, 90, 80 (increasing from oldest to newest)
-        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 90.0, 80.0]);
+        var sessions = CreateSessionsWithScores(scoresMostRecentFirst);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
-        result.Should().BeTrue();
+        result.Should().Be(expected);
     }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenScoresAreDecreasing()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        // Most recent first: 80, 90, 100 (decreasing from oldest to newest)
-        var sessions = CreateSessionsWithIncreasingScores(3, [80.0, 90.0, 100.0]);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenScoresAreEqual()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 100.0, 100.0]);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenMostRecentScoreIsWorse()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(3, [95.0, 100.0, 90.0]);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenMiddleScoreBreaksImprovement()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        // 100, 80, 90 -> 100 > 80 (true), but 80 > 90 is false
-        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 80.0, 90.0]);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region Null Score Tests
 
     [Fact]
     public async Task CanAwardBadge_ShouldReturnFalse_WhenAnyScoreIsNull()
@@ -142,17 +98,12 @@ public class LearningCurveBadgeEvaluatorTests
         result.Should().BeFalse();
     }
 
-    #endregion
-
-    #region Game-Specific Tests
-
     [Fact]
     public async Task CanAwardBadge_ShouldOnlyConsiderSessionsOfCurrentGame()
     {
         var badge = CreateBadge(BadgeLevel.Green);
         var sessions = new List<Session>();
 
-        // Sessions for game 1 (current game) - only 2 sessions
         for (var i = 0; i < 2; i++)
         {
             var session = CreateSession(GameId, i);
@@ -160,7 +111,6 @@ public class LearningCurveBadgeEvaluatorTests
             sessions.Add(session);
         }
 
-        // Sessions for different games
         for (var i = 2; i < 5; i++)
         {
             var session = CreateSession(GameId + i, i);
@@ -170,63 +120,52 @@ public class LearningCurveBadgeEvaluatorTests
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
-        result.Should().BeFalse(); // Only 2 sessions for game 1, needs 3
+        result.Should().BeFalse();
     }
 
     [Fact]
     public async Task CanAwardBadge_ShouldOnlyUseThreeMostRecentSessions()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(5, [100.0, 90.0, 80.0, 95.0, 85.0]);
+        var sessions = CreateSessionsWithScores([100.0, 90.0, 80.0, 95.0, 85.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().BeTrue();
     }
 
-    #endregion
-
-    #region Edge Cases
-
     [Fact]
-    public async Task CanAwardBadge_ShouldHandleLargeScoreDifferences()
+    public async Task CanAwardBadge_ShouldOrderSessionsByStartDate_NotListOrder()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(3, [1000.0, 500.0, 100.0]);
+        var newest = CreateSession(GameId, 0);
+        newest.AddPlayerSession(PlayerId, 100, false, false);
+        var middle = CreateSession(GameId, 1);
+        middle.AddPlayerSession(PlayerId, 90, false, false);
+        var oldest = CreateSession(GameId, 2);
+        oldest.AddPlayerSession(PlayerId, 80, false, false);
+        var sessions = new List<Session> { oldest, newest, middle };
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, newest, sessions);
+
+        result.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(BadgeLevel.Green)]
+    [InlineData(BadgeLevel.Blue)]
+    [InlineData(BadgeLevel.Red)]
+    [InlineData(BadgeLevel.Gold)]
+    public async Task CanAwardBadge_ShouldIgnoreBadgeLevel(BadgeLevel? level)
+    {
+        var badge = CreateBadge(level);
+        var sessions = CreateSessionsWithScores([100.0, 90.0, 80.0]);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
         result.Should().BeTrue();
     }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldHandleSmallScoreDifferences()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessionsWithIncreasingScores(3, [100.1, 100.05, 100.0]);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldWorkWithAnyBadgeLevel()
-    {
-        // LearningCurve doesn't use levels
-        var sessions = CreateSessionsWithIncreasingScores(3, [100.0, 90.0, 80.0]);
-
-        foreach (BadgeLevel level in Enum.GetValues(typeof(BadgeLevel)))
-        {
-            var badge = CreateBadge(level);
-            var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-            result.Should().BeTrue();
-        }
-    }
-
-    #endregion
-
-    #region Helper Methods
 
     private static Badge CreateBadge(BadgeLevel? level)
     {
@@ -240,17 +179,15 @@ public class LearningCurveBadgeEvaluatorTests
         return new Session(gameId, start, end, $"Session {dayOffset}");
     }
 
-    private static List<Session> CreateSessionsWithIncreasingScores(int count, double[] scores)
+    private static List<Session> CreateSessionsWithScores(double[] scoresMostRecentFirst)
     {
         var sessions = new List<Session>();
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < scoresMostRecentFirst.Length; i++)
         {
             var session = CreateSession(GameId, i);
-            session.AddPlayerSession(PlayerId, scores[i], false, false);
+            session.AddPlayerSession(PlayerId, scoresMostRecentFirst[i], false, false);
             sessions.Add(session);
         }
         return sessions;
     }
-
-    #endregion
 }

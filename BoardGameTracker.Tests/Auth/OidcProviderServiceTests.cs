@@ -155,7 +155,7 @@ public class OidcProviderServiceTests : IDisposable
             buttonColor: null);
 
         await act.Should().ThrowAsync<DomainException>()
-            .WithMessage("Only one OIDC provider is supported. Delete the existing provider first.");
+            .WithMessage("*Only one OIDC provider*");
     }
 
     [Fact]
@@ -263,6 +263,11 @@ public class OidcProviderServiceTests : IDisposable
         result.Enabled.Should().BeFalse();
         result.Scopes.Should().Be("openid email");
         result.AutoProvisionUsers.Should().BeFalse();
+
+        var stored = await _context.OidcProviders.FindAsync([provider.Id], TestContext.Current.CancellationToken);
+        stored.Should().NotBeNull();
+        stored!.DisplayName.Should().Be("Google Updated");
+        stored.ClientId.Should().Be("new-client-id");
     }
 
     [Fact]
@@ -293,11 +298,12 @@ public class OidcProviderServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateAsync_ShouldPersistChanges_WhenUpdateSucceeds()
+    public async Task UpdateAsync_ShouldInvalidateCachedDiscoveryDocument()
     {
         var provider = new OidcProvider("github", "GitHub", "https://github.com", "old-id");
         _context.OidcProviders.Add(provider);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _cache.Set("oidc_discovery_github", "cached-document");
 
         await _service.UpdateAsync(
             id: provider.Id,
@@ -319,10 +325,7 @@ public class OidcProviderServiceTests : IDisposable
             iconUrl: null,
             buttonColor: null);
 
-        var stored = await _context.OidcProviders.FindAsync([provider.Id], TestContext.Current.CancellationToken);
-        stored.Should().NotBeNull();
-        stored!.DisplayName.Should().Be("GitHub Updated");
-        stored.ClientId.Should().Be("new-id");
+        _cache.TryGetValue("oidc_discovery_github", out _).Should().BeFalse();
     }
 
     [Fact]
@@ -402,6 +405,35 @@ public class OidcProviderServiceTests : IDisposable
         remaining.Should().HaveCount(1);
         remaining.Should().Contain(p => p.Name == "github");
         remaining.Should().NotContain(p => p.Name == "google");
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ShouldRemoveAssociatedExternalLogins()
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "key-1"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-2", "google", "key-2"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-3", "other", "key-3"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _service.DeleteAsync(provider.Id);
+
+        var remainingLogins = await _context.ExternalLogins.ToListAsync(TestContext.Current.CancellationToken);
+        remainingLogins.Should().ContainSingle(x => x.Provider == "other");
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ShouldInvalidateCachedDiscoveryDocument()
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _cache.Set("oidc_discovery_google", "cached-document");
+
+        await _service.DeleteAsync(provider.Id);
+
+        _cache.TryGetValue("oidc_discovery_google", out _).Should().BeFalse();
     }
 
     #endregion

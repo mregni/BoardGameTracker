@@ -33,289 +33,6 @@ public class CompareServiceTests
         _playerRepositoryMock.VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnCompareResult_WithAllData()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.5, winCount: 5);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 8, duration: 400.0, winCount: 3);
-        SetupCompareRepositoryMocks(playerOne, playerTwo);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.SessionCounts.PlayerOne.Should().Be(10);
-        result.SessionCounts.PlayerTwo.Should().Be(8);
-        result.TotalDuration.PlayerOne.Should().Be(500.5);
-        result.TotalDuration.PlayerTwo.Should().Be(400.0);
-        result.WinCount.PlayerOne.Should().Be(5);
-        result.WinCount.PlayerTwo.Should().Be(3);
-        result.WinPercentage.PlayerOne.Should().Be(0.5); // 5/10
-        result.WinPercentage.PlayerTwo.Should().Be(0.375); // 3/8
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnZeroWinPercentage_WhenPlayerHasNoSessions()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 0, duration: 0, winCount: 0);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 5, duration: 200.0, winCount: 2);
-        SetupCompareRepositoryMocks(playerOne, playerTwo);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.WinPercentage.PlayerOne.Should().Be(0);
-        result.WinPercentage.PlayerTwo.Should().Be(0.4); // 2/5
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnDirectWins_FromRepository()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-        var expectedDirectWins = new CompareRow<int>(7, 3);
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.0, winCount: 7);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 10, duration: 500.0, winCount: 3);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetDirectWins(playerOne, playerTwo))
-            .ReturnsAsync(expectedDirectWins);
-        SetupOtherCompareRepositoryMocks(playerOne, playerTwo);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.DirectWins.PlayerOne.Should().Be(7);
-        result.DirectWins.PlayerTwo.Should().Be(3);
-        _compareRepositoryMock.Verify(x => x.GetDirectWins(playerOne, playerTwo), Times.Once);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnMostWonGame_FromRepository()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-        var mostWonGame = new CompareRow<MostWonGame?>(
-            new MostWonGame { GameId = 1, Count = 5 },
-            new MostWonGame { GameId = 2, Count = 3 });
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 10, duration: 500.0, winCount: 3);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMostWonGame(playerOne, playerTwo))
-            .ReturnsAsync(mostWonGame);
-        SetupOtherCompareRepositoryMocksExceptMostWonGame(playerOne, playerTwo);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.MostWonGame.PlayerOne.Should().NotBeNull();
-        result.MostWonGame.PlayerOne!.GameId.Should().Be(1);
-        result.MostWonGame.PlayerOne.Count.Should().Be(5);
-        result.MostWonGame.PlayerTwo.Should().NotBeNull();
-        result.MostWonGame.PlayerTwo!.GameId.Should().Be(2);
-        result.MostWonGame.PlayerTwo.Count.Should().Be(3);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnTotalSessionsTogether()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-        var expectedSessionsTogether = 15;
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 20, duration: 1000.0, winCount: 10);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 18, duration: 900.0, winCount: 8);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetTotalSessionsTogether(playerOne, playerTwo))
-            .ReturnsAsync(expectedSessionsTogether);
-        SetupOtherCompareRepositoryMocksExceptSessionsTogether(playerOne, playerTwo);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.TotalSessionsTogether.Should().Be(15);
-        _compareRepositoryMock.Verify(x => x.GetTotalSessionsTogether(playerOne, playerTwo), Times.Once);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnMinutesPlayed_AsInteger()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-        var minutesPlayedTogether = 750.7; // Should be truncated to 750
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 10, duration: 500.0, winCount: 5);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMinutesPlayedTogether(playerOne, playerTwo))
-            .ReturnsAsync(minutesPlayedTogether);
-        SetupOtherCompareRepositoryMocksExceptMinutesPlayed(playerOne, playerTwo);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.MinutesPlayed.Should().Be(750);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnPreferredGame()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-        var preferredGame = new PreferredGame { GameId = 5, SessionCount = 10 };
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 10, duration: 500.0, winCount: 5);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetPreferredGame(playerOne, playerTwo))
-            .ReturnsAsync(preferredGame);
-        SetupOtherCompareRepositoryMocksExceptPreferredGame(playerOne, playerTwo);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.PreferredGame.Should().NotBeNull();
-        result.PreferredGame!.GameId.Should().Be(5);
-        result.PreferredGame.SessionCount.Should().Be(10);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnNullPreferredGame_WhenNoSharedGames()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 10, duration: 500.0, winCount: 5);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetPreferredGame(playerOne, playerTwo))
-            .ReturnsAsync((PreferredGame?)null);
-        SetupOtherCompareRepositoryMocksExceptPreferredGame(playerOne, playerTwo);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.PreferredGame.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnLastWonGame()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-        var lastWonGame = new LastWonGame { PlayerId = playerOne, GameId = 3 };
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupCompareRepositoryMocksWithLastWonGame(playerOne, playerTwo, lastWonGame);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.LastWonGame.Should().NotBeNull();
-        result.LastWonGame!.PlayerId.Should().Be(playerOne);
-        result.LastWonGame.GameId.Should().Be(3);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnLongestSessionTogether()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-        var longestSession = 180; // 3 hours
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 10, duration: 500.0, winCount: 5);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLongestSessionTogether(playerOne, playerTwo))
-            .ReturnsAsync(longestSession);
-        SetupOtherCompareRepositoryMocksExceptLongestSession(playerOne, playerTwo);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.LongestSessionTogether.Should().Be(180);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnFirstGameTogether()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-        var firstGame = new FirstGameTogether { GameId = 7, StartDate = new DateTime(2020, 1, 15) };
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupCompareRepositoryMocksWithFirstGameTogether(playerOne, playerTwo, firstGame);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.FirstGameTogether.Should().NotBeNull();
-        result.FirstGameTogether!.GameId.Should().Be(7);
-        result.FirstGameTogether.StartDate.Should().Be(new DateTime(2020, 1, 15));
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnClosestGame()
-    {
-        // Arrange
-        var playerOne = 1;
-        var playerTwo = 2;
-        var closestGame = new ClosestGame { PlayerId = playerTwo, GameId = 4, ScoringDifference = 1.5 };
-
-        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 10, duration: 500.0, winCount: 5);
-        SetupCompareRepositoryMocksWithClosestGame(playerOne, playerTwo, closestGame);
-
-        // Act
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
-
-        // Assert
-        result.ClosestGame.Should().NotBeNull();
-        result.ClosestGame!.PlayerId.Should().Be(playerTwo);
-        result.ClosestGame.GameId.Should().Be(4);
-        result.ClosestGame.ScoringDifference.Should().Be(1.5);
-    }
-
-    #region Helper Methods
-
     private void SetupPlayerRepositoryMocks(int playerId, int sessionCount, double duration, int winCount)
     {
         _playerRepositoryMock
@@ -331,7 +48,7 @@ public class CompareServiceTests
             .ReturnsAsync(winCount);
     }
 
-    private void SetupCompareRepositoryMocks(int playerOne, int playerTwo)
+    private void SetupCompareRepositoryDefaults(int playerOne, int playerTwo)
     {
         _compareRepositoryMock
             .Setup(x => x.GetDirectWins(playerOne, playerTwo))
@@ -370,332 +87,172 @@ public class CompareServiceTests
             .ReturnsAsync((ClosestGame?)null);
     }
 
-    private void SetupOtherCompareRepositoryMocks(int playerOne, int playerTwo)
+    private void VerifyAllRepositoryCalls(int playerOne, int playerTwo)
     {
-        _compareRepositoryMock
-            .Setup(x => x.GetMostWonGame(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<MostWonGame?>(new MostWonGame(), new MostWonGame()));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetTotalSessionsTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMinutesPlayedTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetPreferredGame(playerOne, playerTwo))
-            .ReturnsAsync((PreferredGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLastWonGame(playerOne, playerTwo))
-            .ReturnsAsync((LastWonGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLongestSessionTogether(playerOne, playerTwo))
-            .ReturnsAsync((int?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetFirstGameTogether(playerOne, playerTwo))
-            .ReturnsAsync((FirstGameTogether?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetClosestGame(playerOne, playerTwo))
-            .ReturnsAsync((ClosestGame?)null);
+        _playerRepositoryMock.Verify(x => x.GetTotalPlayCount(playerOne), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetTotalPlayCount(playerTwo), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetPlayLengthInMinutes(playerOne), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetPlayLengthInMinutes(playerTwo), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetTotalWinCount(playerOne), Times.Once);
+        _playerRepositoryMock.Verify(x => x.GetTotalWinCount(playerTwo), Times.Once);
+        _compareRepositoryMock.Verify(x => x.GetDirectWins(playerOne, playerTwo), Times.Once);
+        _compareRepositoryMock.Verify(x => x.GetMostWonGame(playerOne, playerTwo), Times.Once);
+        _compareRepositoryMock.Verify(x => x.GetTotalSessionsTogether(playerOne, playerTwo), Times.Once);
+        _compareRepositoryMock.Verify(x => x.GetMinutesPlayedTogether(playerOne, playerTwo), Times.Once);
+        _compareRepositoryMock.Verify(x => x.GetPreferredGame(playerOne, playerTwo), Times.Once);
+        _compareRepositoryMock.Verify(x => x.GetLastWonGame(playerOne, playerTwo), Times.Once);
+        _compareRepositoryMock.Verify(x => x.GetLongestSessionTogether(playerOne, playerTwo), Times.Once);
+        _compareRepositoryMock.Verify(x => x.GetFirstGameTogether(playerOne, playerTwo), Times.Once);
+        _compareRepositoryMock.Verify(x => x.GetClosestGame(playerOne, playerTwo), Times.Once);
+        VerifyNoOtherCalls();
     }
 
-    private void SetupOtherCompareRepositoryMocksExceptMostWonGame(int playerOne, int playerTwo)
+    [Fact]
+    public async Task GetPlayerComparison_ShouldMapAllRepositoryValues()
     {
+        var playerOne = 1;
+        var playerTwo = 2;
+
+        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.5, winCount: 5);
+        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 8, duration: 400.0, winCount: 3);
+        SetupCompareRepositoryDefaults(playerOne, playerTwo);
+
         _compareRepositoryMock
             .Setup(x => x.GetDirectWins(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<int>(0, 0));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetTotalSessionsTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMinutesPlayedTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetPreferredGame(playerOne, playerTwo))
-            .ReturnsAsync((PreferredGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLastWonGame(playerOne, playerTwo))
-            .ReturnsAsync((LastWonGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLongestSessionTogether(playerOne, playerTwo))
-            .ReturnsAsync((int?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetFirstGameTogether(playerOne, playerTwo))
-            .ReturnsAsync((FirstGameTogether?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetClosestGame(playerOne, playerTwo))
-            .ReturnsAsync((ClosestGame?)null);
-    }
-
-    private void SetupOtherCompareRepositoryMocksExceptSessionsTogether(int playerOne, int playerTwo)
-    {
-        _compareRepositoryMock
-            .Setup(x => x.GetDirectWins(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<int>(0, 0));
+            .ReturnsAsync(new CompareRow<int>(7, 3));
 
         _compareRepositoryMock
             .Setup(x => x.GetMostWonGame(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<MostWonGame?>(new MostWonGame(), new MostWonGame()));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMinutesPlayedTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetPreferredGame(playerOne, playerTwo))
-            .ReturnsAsync((PreferredGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLastWonGame(playerOne, playerTwo))
-            .ReturnsAsync((LastWonGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLongestSessionTogether(playerOne, playerTwo))
-            .ReturnsAsync((int?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetFirstGameTogether(playerOne, playerTwo))
-            .ReturnsAsync((FirstGameTogether?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetClosestGame(playerOne, playerTwo))
-            .ReturnsAsync((ClosestGame?)null);
-    }
-
-    private void SetupOtherCompareRepositoryMocksExceptMinutesPlayed(int playerOne, int playerTwo)
-    {
-        _compareRepositoryMock
-            .Setup(x => x.GetDirectWins(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<int>(0, 0));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMostWonGame(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<MostWonGame?>(new MostWonGame(), new MostWonGame()));
+            .ReturnsAsync(new CompareRow<MostWonGame?>(
+                new MostWonGame { GameId = 1, Count = 5 },
+                new MostWonGame { GameId = 2, Count = 3 }));
 
         _compareRepositoryMock
             .Setup(x => x.GetTotalSessionsTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetPreferredGame(playerOne, playerTwo))
-            .ReturnsAsync((PreferredGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLastWonGame(playerOne, playerTwo))
-            .ReturnsAsync((LastWonGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLongestSessionTogether(playerOne, playerTwo))
-            .ReturnsAsync((int?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetFirstGameTogether(playerOne, playerTwo))
-            .ReturnsAsync((FirstGameTogether?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetClosestGame(playerOne, playerTwo))
-            .ReturnsAsync((ClosestGame?)null);
-    }
-
-    private void SetupOtherCompareRepositoryMocksExceptPreferredGame(int playerOne, int playerTwo)
-    {
-        _compareRepositoryMock
-            .Setup(x => x.GetDirectWins(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<int>(0, 0));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMostWonGame(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<MostWonGame?>(new MostWonGame(), new MostWonGame()));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetTotalSessionsTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
+            .ReturnsAsync(15);
 
         _compareRepositoryMock
             .Setup(x => x.GetMinutesPlayedTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLastWonGame(playerOne, playerTwo))
-            .ReturnsAsync((LastWonGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLongestSessionTogether(playerOne, playerTwo))
-            .ReturnsAsync((int?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetFirstGameTogether(playerOne, playerTwo))
-            .ReturnsAsync((FirstGameTogether?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetClosestGame(playerOne, playerTwo))
-            .ReturnsAsync((ClosestGame?)null);
-    }
-
-    private void SetupOtherCompareRepositoryMocksExceptLongestSession(int playerOne, int playerTwo)
-    {
-        _compareRepositoryMock
-            .Setup(x => x.GetDirectWins(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<int>(0, 0));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMostWonGame(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<MostWonGame?>(new MostWonGame(), new MostWonGame()));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetTotalSessionsTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMinutesPlayedTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
+            .ReturnsAsync(600.0);
 
         _compareRepositoryMock
             .Setup(x => x.GetPreferredGame(playerOne, playerTwo))
-            .ReturnsAsync((PreferredGame?)null);
+            .ReturnsAsync(new PreferredGame { GameId = 5, SessionCount = 10 });
 
         _compareRepositoryMock
             .Setup(x => x.GetLastWonGame(playerOne, playerTwo))
-            .ReturnsAsync((LastWonGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetFirstGameTogether(playerOne, playerTwo))
-            .ReturnsAsync((FirstGameTogether?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetClosestGame(playerOne, playerTwo))
-            .ReturnsAsync((ClosestGame?)null);
-    }
-
-    private void SetupCompareRepositoryMocksWithLastWonGame(int playerOne, int playerTwo, LastWonGame lastWonGame)
-    {
-        _compareRepositoryMock
-            .Setup(x => x.GetDirectWins(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<int>(0, 0));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMostWonGame(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<MostWonGame?>(new MostWonGame(), new MostWonGame()));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetTotalSessionsTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMinutesPlayedTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetPreferredGame(playerOne, playerTwo))
-            .ReturnsAsync((PreferredGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLastWonGame(playerOne, playerTwo))
-            .ReturnsAsync(lastWonGame);
+            .ReturnsAsync(new LastWonGame { PlayerId = playerOne, GameId = 3 });
 
         _compareRepositoryMock
             .Setup(x => x.GetLongestSessionTogether(playerOne, playerTwo))
-            .ReturnsAsync((int?)null);
+            .ReturnsAsync(180);
 
         _compareRepositoryMock
             .Setup(x => x.GetFirstGameTogether(playerOne, playerTwo))
-            .ReturnsAsync((FirstGameTogether?)null);
+            .ReturnsAsync(new FirstGameTogether { GameId = 7, StartDate = new DateTime(2020, 1, 15) });
 
         _compareRepositoryMock
             .Setup(x => x.GetClosestGame(playerOne, playerTwo))
-            .ReturnsAsync((ClosestGame?)null);
+            .ReturnsAsync(new ClosestGame { PlayerId = playerTwo, GameId = 4, ScoringDifference = 1.5 });
+
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
+
+        result.Should().NotBeNull();
+        result.SessionCounts.PlayerOne.Should().Be(10);
+        result.SessionCounts.PlayerTwo.Should().Be(8);
+        result.TotalDuration.PlayerOne.Should().Be(500.5);
+        result.TotalDuration.PlayerTwo.Should().Be(400.0);
+        result.WinCount.PlayerOne.Should().Be(5);
+        result.WinCount.PlayerTwo.Should().Be(3);
+        result.WinPercentage.PlayerOne.Should().Be(0.5);
+        result.WinPercentage.PlayerTwo.Should().Be(0.375);
+        result.DirectWins.PlayerOne.Should().Be(7);
+        result.DirectWins.PlayerTwo.Should().Be(3);
+        result.MostWonGame.PlayerOne!.GameId.Should().Be(1);
+        result.MostWonGame.PlayerOne.Count.Should().Be(5);
+        result.MostWonGame.PlayerTwo!.GameId.Should().Be(2);
+        result.MostWonGame.PlayerTwo.Count.Should().Be(3);
+        result.TotalSessionsTogether.Should().Be(15);
+        result.MinutesPlayed.Should().Be(600);
+        result.PreferredGame!.GameId.Should().Be(5);
+        result.PreferredGame.SessionCount.Should().Be(10);
+        result.LastWonGame!.PlayerId.Should().Be(playerOne);
+        result.LastWonGame.GameId.Should().Be(3);
+        result.LongestSessionTogether.Should().Be(180);
+        result.FirstGameTogether!.GameId.Should().Be(7);
+        result.FirstGameTogether.StartDate.Should().Be(new DateTime(2020, 1, 15));
+        result.ClosestGame!.PlayerId.Should().Be(playerTwo);
+        result.ClosestGame.GameId.Should().Be(4);
+        result.ClosestGame.ScoringDifference.Should().Be(1.5);
+
+        VerifyAllRepositoryCalls(playerOne, playerTwo);
     }
 
-    private void SetupCompareRepositoryMocksWithFirstGameTogether(int playerOne, int playerTwo, FirstGameTogether firstGame)
+    [Fact]
+    public async Task GetPlayerComparison_ShouldReturnNullsAndZeroes_WhenPlayersShareNoData()
     {
-        _compareRepositoryMock
-            .Setup(x => x.GetDirectWins(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<int>(0, 0));
+        var playerOne = 1;
+        var playerTwo = 2;
 
-        _compareRepositoryMock
-            .Setup(x => x.GetMostWonGame(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<MostWonGame?>(new MostWonGame(), new MostWonGame()));
+        SetupPlayerRepositoryMocks(playerOne, sessionCount: 0, duration: 0, winCount: 0);
+        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 0, duration: 0, winCount: 0);
+        SetupCompareRepositoryDefaults(playerOne, playerTwo);
 
-        _compareRepositoryMock
-            .Setup(x => x.GetTotalSessionsTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
+
+        result.WinPercentage.PlayerOne.Should().Be(0);
+        result.WinPercentage.PlayerTwo.Should().Be(0);
+        result.TotalSessionsTogether.Should().Be(0);
+        result.MinutesPlayed.Should().Be(0);
+        result.PreferredGame.Should().BeNull();
+        result.LastWonGame.Should().BeNull();
+        result.LongestSessionTogether.Should().BeNull();
+        result.FirstGameTogether.Should().BeNull();
+        result.ClosestGame.Should().BeNull();
+
+        VerifyAllRepositoryCalls(playerOne, playerTwo);
+    }
+
+    [Theory]
+    [InlineData(0, 0, 0)]
+    [InlineData(10, 5, 0.5)]
+    [InlineData(8, 3, 0.375)]
+    [InlineData(5, 2, 0.4)]
+    public async Task GetPlayerComparison_ShouldComputeWinPercentage(int sessionCount, int winCount, double expectedPercentage)
+    {
+        var playerOne = 1;
+        var playerTwo = 2;
+
+        SetupPlayerRepositoryMocks(playerOne, sessionCount, duration: 100.0, winCount);
+        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 4, duration: 100.0, winCount: 1);
+        SetupCompareRepositoryDefaults(playerOne, playerTwo);
+
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
+
+        result.WinPercentage.PlayerOne.Should().Be(expectedPercentage);
+        result.WinPercentage.PlayerTwo.Should().Be(0.25);
+
+        VerifyAllRepositoryCalls(playerOne, playerTwo);
+    }
+
+    [Fact]
+    public async Task GetPlayerComparison_ShouldTruncateMinutesPlayedToInteger()
+    {
+        var playerOne = 1;
+        var playerTwo = 2;
+
+        SetupPlayerRepositoryMocks(playerOne, sessionCount: 10, duration: 500.0, winCount: 5);
+        SetupPlayerRepositoryMocks(playerTwo, sessionCount: 10, duration: 500.0, winCount: 5);
+        SetupCompareRepositoryDefaults(playerOne, playerTwo);
 
         _compareRepositoryMock
             .Setup(x => x.GetMinutesPlayedTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
+            .ReturnsAsync(750.7);
 
-        _compareRepositoryMock
-            .Setup(x => x.GetPreferredGame(playerOne, playerTwo))
-            .ReturnsAsync((PreferredGame?)null);
+        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
 
-        _compareRepositoryMock
-            .Setup(x => x.GetLastWonGame(playerOne, playerTwo))
-            .ReturnsAsync((LastWonGame?)null);
+        result.MinutesPlayed.Should().Be(750);
 
-        _compareRepositoryMock
-            .Setup(x => x.GetLongestSessionTogether(playerOne, playerTwo))
-            .ReturnsAsync((int?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetFirstGameTogether(playerOne, playerTwo))
-            .ReturnsAsync(firstGame);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetClosestGame(playerOne, playerTwo))
-            .ReturnsAsync((ClosestGame?)null);
+        VerifyAllRepositoryCalls(playerOne, playerTwo);
     }
-
-    private void SetupCompareRepositoryMocksWithClosestGame(int playerOne, int playerTwo, ClosestGame closestGame)
-    {
-        _compareRepositoryMock
-            .Setup(x => x.GetDirectWins(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<int>(0, 0));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMostWonGame(playerOne, playerTwo))
-            .ReturnsAsync(new CompareRow<MostWonGame?>(new MostWonGame(), new MostWonGame()));
-
-        _compareRepositoryMock
-            .Setup(x => x.GetTotalSessionsTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetMinutesPlayedTogether(playerOne, playerTwo))
-            .ReturnsAsync(0);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetPreferredGame(playerOne, playerTwo))
-            .ReturnsAsync((PreferredGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLastWonGame(playerOne, playerTwo))
-            .ReturnsAsync((LastWonGame?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetLongestSessionTogether(playerOne, playerTwo))
-            .ReturnsAsync((int?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetFirstGameTogether(playerOne, playerTwo))
-            .ReturnsAsync((FirstGameTogether?)null);
-
-        _compareRepositoryMock
-            .Setup(x => x.GetClosestGame(playerOne, playerTwo))
-            .ReturnsAsync(closestGame);
-    }
-
-    #endregion
 }
