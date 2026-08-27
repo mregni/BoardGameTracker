@@ -41,7 +41,6 @@ public class AuthControllerTests
     [Fact]
     public async Task Login_ShouldReturnOk_WhenCredentialsAreValid()
     {
-        // Arrange
         var request = new LoginRequest("admin", "admin");
         var expectedResponse = new LoginResponse(
             "jwt-token", "refresh-token", DateTime.UtcNow.AddHours(1),
@@ -49,15 +48,10 @@ public class AuthControllerTests
 
         _authServiceMock.Setup(x => x.LoginAsync(request)).ReturnsAsync(expectedResponse);
 
-        // Act
         var result = await _controller.Login(request);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value.Should().BeOfType<LoginResponse>().Subject;
-        response.AccessToken.Should().Be("jwt-token");
-        response.User.Username.Should().Be("admin");
-        response.User.Roles.Should().Contain("Admin");
+        okResult.Value.Should().BeSameAs(expectedResponse);
 
         _authServiceMock.Verify(x => x.LoginAsync(request), Times.Once);
         VerifyNoOtherCalls();
@@ -89,7 +83,6 @@ public class AuthControllerTests
     [Fact]
     public async Task Refresh_ShouldReturnOk_WhenTokenIsValid()
     {
-        // Arrange
         var request = new RefreshTokenRequest("valid-token");
         var expectedResponse = new LoginResponse(
             "new-jwt", "new-refresh", DateTime.UtcNow.AddHours(1),
@@ -97,13 +90,10 @@ public class AuthControllerTests
 
         _authServiceMock.Setup(x => x.RefreshAsync("valid-token")).ReturnsAsync(expectedResponse);
 
-        // Act
         var result = await _controller.Refresh(request);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value.Should().BeOfType<LoginResponse>().Subject;
-        response.AccessToken.Should().Be("new-jwt");
+        okResult.Value.Should().BeSameAs(expectedResponse);
 
         _authServiceMock.Verify(x => x.RefreshAsync("valid-token"), Times.Once);
         VerifyNoOtherCalls();
@@ -158,7 +148,6 @@ public class AuthControllerTests
     [Fact]
     public async Task Register_ShouldReturnOk_WhenRequestIsValid()
     {
-        // Arrange
         SetupAuthenticatedUser("admin-id");
         var request = new RegisterRequest("newuser", "new@test.com", "password", null);
         var expectedDto = new UserDto("user-id", "newuser", "new@test.com", "New User",
@@ -166,13 +155,10 @@ public class AuthControllerTests
 
         _authServiceMock.Setup(x => x.RegisterAsync(request)).ReturnsAsync(expectedDto);
 
-        // Act
         var result = await _controller.Register(request);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value.Should().BeOfType<UserDto>().Subject;
-        response.Username.Should().Be("newuser");
+        okResult.Value.Should().BeSameAs(expectedDto);
 
         _authServiceMock.Verify(x => x.RegisterAsync(request), Times.Once);
         VerifyNoOtherCalls();
@@ -185,7 +171,6 @@ public class AuthControllerTests
     [Fact]
     public async Task GetProfile_ShouldReturnOk_WhenAuthenticated()
     {
-        // Arrange
         SetupAuthenticatedUser("user-id");
         var expectedProfile = new ProfileResponse(
             "user-id", "testuser", "test@test.com", "Test",
@@ -193,13 +178,10 @@ public class AuthControllerTests
 
         _authServiceMock.Setup(x => x.GetProfileAsync("user-id")).ReturnsAsync(expectedProfile);
 
-        // Act
         var result = await _controller.GetProfile();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value.Should().BeOfType<ProfileResponse>().Subject;
-        response.Username.Should().Be("testuser");
+        okResult.Value.Should().BeSameAs(expectedProfile);
 
         _authServiceMock.Verify(x => x.GetProfileAsync("user-id"), Times.Once);
         VerifyNoOtherCalls();
@@ -212,7 +194,6 @@ public class AuthControllerTests
     [Fact]
     public async Task UpdateProfile_ShouldReturnOk_WhenAuthenticated()
     {
-        // Arrange
         SetupAuthenticatedUser("user-id");
         var request = new UpdateProfileRequest("Updated Name", "new@test.com", null);
         var expectedProfile = new ProfileResponse(
@@ -221,13 +202,10 @@ public class AuthControllerTests
 
         _authServiceMock.Setup(x => x.UpdateProfileAsync("user-id", request)).ReturnsAsync(expectedProfile);
 
-        // Act
         var result = await _controller.UpdateProfile(request);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value.Should().BeOfType<ProfileResponse>().Subject;
-        response.DisplayName.Should().Be("Updated Name");
+        okResult.Value.Should().BeSameAs(expectedProfile);
 
         _authServiceMock.Verify(x => x.UpdateProfileAsync("user-id", request), Times.Once);
         VerifyNoOtherCalls();
@@ -264,19 +242,15 @@ public class AuthControllerTests
     [Fact]
     public async Task ResetPassword_ShouldReturnOk_WithTempPassword()
     {
-        // Arrange
         SetupAuthenticatedUser("admin-id");
         var expectedResponse = new ResetPasswordResponse("temp-password-123");
         _authServiceMock.Setup(x => x.ResetPasswordAsync("target-user-id"))
             .ReturnsAsync(expectedResponse);
 
-        // Act
         var result = await _controller.ResetPassword("target-user-id");
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value.Should().BeOfType<ResetPasswordResponse>().Subject;
-        response.TempPassword.Should().Be("temp-password-123");
+        okResult.Value.Should().BeSameAs(expectedResponse);
 
         _authServiceMock.Verify(x => x.ResetPasswordAsync("target-user-id"), Times.Once);
         VerifyNoOtherCalls();
@@ -289,19 +263,127 @@ public class AuthControllerTests
     [Fact]
     public void GetStatus_ShouldReturnAuthStatusResponse()
     {
-        // Arrange
         var expectedStatus = new AuthStatusResponse(AuthEnabled: true);
         _authServiceMock.Setup(x => x.GetStatus()).Returns(expectedStatus);
 
-        // Act
         var result = _controller.GetStatus();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var response = okResult.Value.Should().BeOfType<AuthStatusResponse>().Subject;
-        response.AuthEnabled.Should().BeTrue();
+        okResult.Value.Should().BeSameAs(expectedStatus);
 
         _authServiceMock.Verify(x => x.GetStatus(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region GetLinkablePlayers
+
+    [Fact]
+    public async Task GetLinkablePlayers_ShouldReturnOk_WhenAuthenticated()
+    {
+        SetupAuthenticatedUser("user-id");
+        var expectedPlayers = new List<PlayerLinkDto> { new(1, "Alice") };
+        _authServiceMock.Setup(x => x.GetLinkablePlayersAsync("user-id")).ReturnsAsync(expectedPlayers);
+
+        var result = await _controller.GetLinkablePlayers();
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.Value.Should().BeSameAs(expectedPlayers);
+
+        _authServiceMock.Verify(x => x.GetLinkablePlayersAsync("user-id"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region ForgotPassword
+
+    [Fact]
+    public async Task ForgotPassword_ShouldReturnOk()
+    {
+        var request = new ForgotPasswordRequest("someuser");
+        _authServiceMock.Setup(x => x.ForgotPasswordAsync("someuser")).Returns(Task.CompletedTask);
+
+        var result = await _controller.ForgotPassword(request);
+
+        result.Should().BeOfType<OkResult>();
+
+        _authServiceMock.Verify(x => x.ForgotPasswordAsync("someuser"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region ResetPasswordWithToken
+
+    [Fact]
+    public async Task ResetPasswordWithToken_ShouldReturnOk_WhenTokenIsValid()
+    {
+        var request = new ResetPasswordConfirmRequest("user-id", "token", "new-password");
+        _authServiceMock.Setup(x => x.ResetPasswordWithTokenAsync(request)).Returns(Task.CompletedTask);
+
+        var result = await _controller.ResetPasswordWithToken(request);
+
+        result.Should().BeOfType<OkResult>();
+
+        _authServiceMock.Verify(x => x.ResetPasswordWithTokenAsync(request), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region ExternalLogins
+
+    [Fact]
+    public async Task GetExternalLogins_ShouldReturnOk_WhenAuthenticated()
+    {
+        SetupAuthenticatedUser("user-id");
+        var expectedLogins = new List<ExternalLoginDto>
+        {
+            new(1, "google", "key-1", "Google", DateTime.UtcNow, null)
+        };
+        _oidcServiceMock.Setup(x => x.GetExternalLoginsAsync("user-id")).ReturnsAsync(expectedLogins);
+
+        var result = await _controller.GetExternalLogins();
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.Value.Should().BeSameAs(expectedLogins);
+
+        _oidcServiceMock.Verify(x => x.GetExternalLoginsAsync("user-id"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UnlinkExternalLogin_ShouldReturnNoContent_WhenAuthenticated()
+    {
+        SetupAuthenticatedUser("user-id");
+        _oidcServiceMock.Setup(x => x.UnlinkExternalLoginAsync("user-id", 4)).Returns(Task.CompletedTask);
+
+        var result = await _controller.UnlinkExternalLogin(4);
+
+        result.Should().BeOfType<NoContentResult>();
+
+        _oidcServiceMock.Verify(x => x.UnlinkExternalLoginAsync("user-id", 4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region Unauthenticated
+
+    [Fact]
+    public async Task GetProfile_ShouldThrowUnauthorizedAccessException_WhenUserIdClaimIsMissing()
+    {
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+
+        var act = () => _controller.GetProfile();
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+
         VerifyNoOtherCalls();
     }
 

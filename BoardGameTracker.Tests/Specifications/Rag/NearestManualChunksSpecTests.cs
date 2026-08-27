@@ -13,39 +13,27 @@ public class NearestManualChunksSpecTests
 
     private static Vector QueryVector() => new(new float[1024]);
 
-    [Fact]
-    public void IsSatisfiedBy_ShouldMatchOnlyChunksOfRequestedGame_WhenManualIdIsNull()
+    [Theory]
+    [InlineData(null, 10, 1, true)]
+    [InlineData(null, 11, 1, true)]
+    [InlineData(null, 10, 2, false)]
+    [InlineData(10, 10, 1, true)]
+    [InlineData(10, 11, 1, false)]
+    [InlineData(10, 10, 2, false)]
+    public void IsSatisfiedBy_ShouldMatchOnlyRequestedGameAndOptionalManual(int? specManualId, int chunkManualId, int chunkGameId, bool expected)
     {
-        var spec = new NearestManualChunksSpec(1, QueryVector(), 5);
+        var spec = new NearestManualChunksSpec(1, QueryVector(), 5, specManualId);
 
-        spec.IsSatisfiedBy(CreateChunk(10, 1)).Should().BeTrue();
-        spec.IsSatisfiedBy(CreateChunk(10, 2)).Should().BeFalse();
+        spec.IsSatisfiedBy(CreateChunk(chunkManualId, chunkGameId)).Should().Be(expected);
     }
 
     [Fact]
-    public void IsSatisfiedBy_ShouldMatchChunksFromAnyManual_WhenManualIdIsNull()
-    {
-        var spec = new NearestManualChunksSpec(1, QueryVector(), 5);
-
-        spec.IsSatisfiedBy(CreateChunk(10, 1)).Should().BeTrue();
-        spec.IsSatisfiedBy(CreateChunk(11, 1)).Should().BeTrue();
-    }
-
-    [Fact]
-    public void IsSatisfiedBy_ShouldMatchOnlyRequestedManual_WhenManualIdIsSupplied()
-    {
-        var spec = new NearestManualChunksSpec(1, QueryVector(), 5, 10);
-
-        spec.IsSatisfiedBy(CreateChunk(10, 1)).Should().BeTrue();
-        spec.IsSatisfiedBy(CreateChunk(11, 1)).Should().BeFalse();
-        spec.IsSatisfiedBy(CreateChunk(10, 2)).Should().BeFalse();
-    }
-
-    [Fact]
-    public void Take_ShouldEqualRequestedK_WhenSpecIsConstructed()
+    public void Spec_ShouldTakeRequestedK_ProjectMatches_AndNotTrack()
     {
         var spec = new NearestManualChunksSpec(1, QueryVector(), 7);
 
         spec.Take.Should().Be(7);
+        spec.Selector.Should().NotBeNull();
+        spec.AsNoTracking.Should().BeTrue();
     }
 }

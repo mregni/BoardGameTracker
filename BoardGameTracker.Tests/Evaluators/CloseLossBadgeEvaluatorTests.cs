@@ -30,8 +30,6 @@ public class CloseLossBadgeEvaluatorTests
         _evaluator.BadgeType.Should().Be(BadgeType.CloseLoss);
     }
 
-    #region Basic Requirements Tests
-
     [Fact]
     public async Task CanAwardBadge_ShouldReturnFalse_WhenSoloSession()
     {
@@ -43,11 +41,11 @@ public class CloseLossBadgeEvaluatorTests
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
         result.Should().BeFalse();
-        _gameRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<int>()), Times.Never);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenAnyScoreIsNull()
+    public async Task CanAwardBadge_ShouldReturnFalse_WhenOpponentScoreIsNull()
     {
         var badge = CreateBadge(BadgeLevel.Green);
         var session = CreateSession();
@@ -58,6 +56,22 @@ public class CloseLossBadgeEvaluatorTests
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
         result.Should().BeFalse();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CanAwardBadge_ShouldReturnFalse_WhenOwnScoreIsNull()
+    {
+        var badge = CreateBadge(BadgeLevel.Green);
+        var session = CreateSession();
+        session.AddPlayerSession(PlayerId, null, false, false);
+        session.AddPlayerSession(2, 100, false, true);
+        var sessions = new List<Session> { session };
+
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
+
+        result.Should().BeFalse();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -72,6 +86,7 @@ public class CloseLossBadgeEvaluatorTests
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
         result.Should().BeFalse();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -89,6 +104,8 @@ public class CloseLossBadgeEvaluatorTests
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
         result.Should().BeFalse();
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -105,115 +122,35 @@ public class CloseLossBadgeEvaluatorTests
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
         result.Should().BeFalse();
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
     }
 
-    #endregion
-
-    #region Close Loss to Highest Scorer Tests
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenLoseByExactly1Point_ToHighest()
+    [Theory]
+    [InlineData(99, 100, true)]
+    [InlineData(98, 100, true)]
+    [InlineData(97, 100, false)]
+    [InlineData(98.5, 100, true)]
+    [InlineData(11, 10, true)]
+    [InlineData(12, 10, true)]
+    [InlineData(13, 10, false)]
+    [InlineData(100, 100, false)]
+    public async Task CanAwardBadge_ShouldEvaluateScoreDifferenceToWinner(double playerScore, double winnerScore, bool expected)
     {
         var badge = CreateBadge(BadgeLevel.Green);
         SetupGameWithScoring();
 
         var session = CreateSession();
-        session.AddPlayerSession(PlayerId, 99, false, false);
-        session.AddPlayerSession(2, 100, false, true);  // Winner
+        session.AddPlayerSession(PlayerId, playerScore, false, false);
+        session.AddPlayerSession(2, winnerScore, false, true);
         var sessions = new List<Session> { session };
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
-        result.Should().BeTrue();
+        result.Should().Be(expected);
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
     }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenLoseByExactly2Points_ToHighest()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        SetupGameWithScoring();
-
-        var session = CreateSession();
-        session.AddPlayerSession(PlayerId, 98, false, false);
-        session.AddPlayerSession(2, 100, false, true);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenLoseByMoreThan2Points_ToHighest()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        SetupGameWithScoring();
-
-        var session = CreateSession();
-        session.AddPlayerSession(PlayerId, 97, false, false);
-        session.AddPlayerSession(2, 100, false, true);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region Close Loss to Lowest Scorer Tests (Golf-style games)
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenLoseByExactly1Point_ToLowest()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        SetupGameWithScoring();
-
-        var session = CreateSession();
-        session.AddPlayerSession(PlayerId, 11, false, false);
-        session.AddPlayerSession(2, 10, false, true);  // Winner with lowest
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnTrue_WhenLoseByExactly2Points_ToLowest()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        SetupGameWithScoring();
-
-        var session = CreateSession();
-        session.AddPlayerSession(PlayerId, 12, false, false);
-        session.AddPlayerSession(2, 10, false, true);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldReturnFalse_WhenLoseByMoreThan2Points_ToLowest()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        SetupGameWithScoring();
-
-        var session = CreateSession();
-        session.AddPlayerSession(PlayerId, 13, false, false);
-        session.AddPlayerSession(2, 10, false, true);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeFalse();
-    }
-
-    #endregion
-
-    #region Multiple Players Tests
 
     [Fact]
     public async Task CanAwardBadge_ShouldReturnTrue_WhenCloseToFirstPlace()
@@ -222,14 +159,16 @@ public class CloseLossBadgeEvaluatorTests
         SetupGameWithScoring();
 
         var session = CreateSession();
-        session.AddPlayerSession(PlayerId, 99, false, false);  // Close to winner
-        session.AddPlayerSession(2, 100, false, true);         // Winner
-        session.AddPlayerSession(3, 50, false, false);         // Far from everyone
+        session.AddPlayerSession(PlayerId, 99, false, false);
+        session.AddPlayerSession(2, 100, false, true);
+        session.AddPlayerSession(3, 50, false, false);
         var sessions = new List<Session> { session };
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
         result.Should().BeTrue();
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -239,14 +178,16 @@ public class CloseLossBadgeEvaluatorTests
         SetupGameWithScoring();
 
         var session = CreateSession();
-        session.AddPlayerSession(PlayerId, 52, false, false);  // Close to last
-        session.AddPlayerSession(2, 100, false, true);         // Winner
-        session.AddPlayerSession(3, 50, false, false);         // Last place
+        session.AddPlayerSession(PlayerId, 52, false, false);
+        session.AddPlayerSession(2, 100, false, true);
+        session.AddPlayerSession(3, 50, false, false);
         var sessions = new List<Session> { session };
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
         result.Should().BeTrue();
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -256,7 +197,7 @@ public class CloseLossBadgeEvaluatorTests
         SetupGameWithScoring();
 
         var session = CreateSession();
-        session.AddPlayerSession(PlayerId, 75, false, false);  // Middle, not close to anyone
+        session.AddPlayerSession(PlayerId, 75, false, false);
         session.AddPlayerSession(2, 100, false, true);
         session.AddPlayerSession(3, 50, false, false);
         var sessions = new List<Session> { session };
@@ -264,48 +205,31 @@ public class CloseLossBadgeEvaluatorTests
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
 
         result.Should().BeFalse();
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
     }
 
-    #endregion
-
-    #region Edge Cases
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldHandleDecimalScores()
+    [Theory]
+    [InlineData(BadgeLevel.Green)]
+    [InlineData(BadgeLevel.Blue)]
+    [InlineData(BadgeLevel.Red)]
+    [InlineData(BadgeLevel.Gold)]
+    public async Task CanAwardBadge_ShouldIgnoreBadgeLevel(BadgeLevel level)
     {
-        var badge = CreateBadge(BadgeLevel.Green);
+        var badge = CreateBadge(level);
         SetupGameWithScoring();
 
-        var session = CreateSession();
-        session.AddPlayerSession(PlayerId, 98.5, false, false);
-        session.AddPlayerSession(2, 100.0, false, true);
-        var sessions = new List<Session> { session };
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-
-        result.Should().BeTrue(); // 1.5 points difference
-    }
-
-    [Fact]
-    public async Task CanAwardBadge_ShouldWorkWithAnyBadgeLevel()
-    {
-        SetupGameWithScoring();
         var session = CreateSession();
         session.AddPlayerSession(PlayerId, 99, false, false);
         session.AddPlayerSession(2, 100, false, true);
         var sessions = new List<Session> { session };
 
-        foreach (BadgeLevel level in Enum.GetValues(typeof(BadgeLevel)))
-        {
-            var badge = CreateBadge(level);
-            var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
-            result.Should().BeTrue();
-        }
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, session, sessions);
+
+        result.Should().BeTrue();
+        VerifyGameLookup();
+        VerifyNoOtherCalls();
     }
-
-    #endregion
-
-    #region Helper Methods
 
     private static Badge CreateBadge(BadgeLevel? level)
     {
@@ -325,5 +249,13 @@ public class CloseLossBadgeEvaluatorTests
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(GameId)).ReturnsAsync(game);
     }
 
-    #endregion
+    private void VerifyGameLookup()
+    {
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(GameId), Times.Once);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _gameRepositoryMock.VerifyNoOtherCalls();
+    }
 }

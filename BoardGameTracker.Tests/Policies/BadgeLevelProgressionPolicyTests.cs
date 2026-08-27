@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges;
 using FluentAssertions;
@@ -8,6 +8,8 @@ namespace BoardGameTracker.Tests.Policies;
 
 public class BadgeLevelProgressionPolicyTests
 {
+    private const BadgeLevel UndefinedLevel = (BadgeLevel)99;
+
     private readonly BadgeLevelProgressionPolicy _policy;
 
     public BadgeLevelProgressionPolicyTests()
@@ -21,7 +23,17 @@ public class BadgeLevelProgressionPolicyTests
     [InlineData(BadgeLevel.Green, BadgeLevel.Blue, true)]
     [InlineData(BadgeLevel.Blue, BadgeLevel.Red, true)]
     [InlineData(BadgeLevel.Red, BadgeLevel.Gold, true)]
-    public void CanProgressTo_ShouldReturnTrue_WhenProgressingToNextLevel(BadgeLevel current, BadgeLevel next, bool expected)
+    [InlineData(BadgeLevel.Green, BadgeLevel.Red, false)]
+    [InlineData(BadgeLevel.Green, BadgeLevel.Gold, false)]
+    [InlineData(BadgeLevel.Blue, BadgeLevel.Gold, false)]
+    [InlineData(BadgeLevel.Blue, BadgeLevel.Green, false)]
+    [InlineData(BadgeLevel.Red, BadgeLevel.Blue, false)]
+    [InlineData(BadgeLevel.Gold, BadgeLevel.Red, false)]
+    [InlineData(BadgeLevel.Green, BadgeLevel.Green, false)]
+    [InlineData(BadgeLevel.Blue, BadgeLevel.Blue, false)]
+    [InlineData(BadgeLevel.Red, BadgeLevel.Red, false)]
+    [InlineData(BadgeLevel.Gold, BadgeLevel.Gold, false)]
+    public void CanProgressTo_ShouldOnlyAllowSingleStepForward(BadgeLevel current, BadgeLevel next, bool expected)
     {
         // Act
         var result = _policy.CanProgressTo(current, next);
@@ -30,41 +42,21 @@ public class BadgeLevelProgressionPolicyTests
         result.Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData(BadgeLevel.Green, BadgeLevel.Red)]   // Skipping Blue
-    [InlineData(BadgeLevel.Green, BadgeLevel.Gold)]  // Skipping Blue and Red
-    [InlineData(BadgeLevel.Blue, BadgeLevel.Gold)]   // Skipping Red
-    public void CanProgressTo_ShouldReturnFalse_WhenSkippingLevels(BadgeLevel current, BadgeLevel next)
+    [Fact]
+    public void CanProgressTo_PinsCurrentBehavior_WhenCurrentLevelIsUndefined()
     {
         // Act
-        var result = _policy.CanProgressTo(current, next);
+        var result = _policy.CanProgressTo(UndefinedLevel, BadgeLevel.Green);
 
         // Assert
-        result.Should().BeFalse();
+        result.Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData(BadgeLevel.Blue, BadgeLevel.Green)]
-    [InlineData(BadgeLevel.Red, BadgeLevel.Blue)]
-    [InlineData(BadgeLevel.Gold, BadgeLevel.Red)]
-    public void CanProgressTo_ShouldReturnFalse_WhenGoingBackwards(BadgeLevel current, BadgeLevel next)
+    [Fact]
+    public void CanProgressTo_ShouldReturnFalse_WhenNextLevelIsUndefined()
     {
         // Act
-        var result = _policy.CanProgressTo(current, next);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData(BadgeLevel.Green)]
-    [InlineData(BadgeLevel.Blue)]
-    [InlineData(BadgeLevel.Red)]
-    [InlineData(BadgeLevel.Gold)]
-    public void CanProgressTo_ShouldReturnFalse_WhenProgressingToSameLevel(BadgeLevel level)
-    {
-        // Act
-        var result = _policy.CanProgressTo(level, level);
+        var result = _policy.CanProgressTo(BadgeLevel.Gold, UndefinedLevel);
 
         // Assert
         result.Should().BeFalse();
@@ -74,140 +66,94 @@ public class BadgeLevelProgressionPolicyTests
 
     #region GetNextLevel Tests
 
-    [Fact]
-    public void GetNextLevel_ShouldReturnBlue_WhenCurrentIsGreen()
+    [Theory]
+    [InlineData(BadgeLevel.Green, BadgeLevel.Blue)]
+    [InlineData(BadgeLevel.Blue, BadgeLevel.Red)]
+    [InlineData(BadgeLevel.Red, BadgeLevel.Gold)]
+    [InlineData(BadgeLevel.Gold, null)]
+    public void GetNextLevel_ShouldReturnFollowingLevel(BadgeLevel current, BadgeLevel? expected)
     {
         // Act
-        var result = _policy.GetNextLevel(BadgeLevel.Green);
+        var result = _policy.GetNextLevel(current);
 
         // Assert
-        result.Should().Be(BadgeLevel.Blue);
+        result.Should().Be(expected);
     }
 
     [Fact]
-    public void GetNextLevel_ShouldReturnRed_WhenCurrentIsBlue()
+    public void GetNextLevel_PinsCurrentBehavior_WhenLevelIsUndefined()
     {
         // Act
-        var result = _policy.GetNextLevel(BadgeLevel.Blue);
+        var result = _policy.GetNextLevel(UndefinedLevel);
 
         // Assert
-        result.Should().Be(BadgeLevel.Red);
-    }
-
-    [Fact]
-    public void GetNextLevel_ShouldReturnGold_WhenCurrentIsRed()
-    {
-        // Act
-        var result = _policy.GetNextLevel(BadgeLevel.Red);
-
-        // Assert
-        result.Should().Be(BadgeLevel.Gold);
-    }
-
-    [Fact]
-    public void GetNextLevel_ShouldReturnNull_WhenCurrentIsGold()
-    {
-        // Act
-        var result = _policy.GetNextLevel(BadgeLevel.Gold);
-
-        // Assert
-        result.Should().BeNull();
+        result.Should().Be(BadgeLevel.Green);
     }
 
     #endregion
 
     #region GetPreviousLevel Tests
 
-    [Fact]
-    public void GetPreviousLevel_ShouldReturnNull_WhenCurrentIsGreen()
+    [Theory]
+    [InlineData(BadgeLevel.Green, null)]
+    [InlineData(BadgeLevel.Blue, BadgeLevel.Green)]
+    [InlineData(BadgeLevel.Red, BadgeLevel.Blue)]
+    [InlineData(BadgeLevel.Gold, BadgeLevel.Red)]
+    public void GetPreviousLevel_ShouldReturnPrecedingLevel(BadgeLevel current, BadgeLevel? expected)
     {
         // Act
-        var result = _policy.GetPreviousLevel(BadgeLevel.Green);
+        var result = _policy.GetPreviousLevel(current);
+
+        // Assert
+        result.Should().Be(expected);
+    }
+
+    [Fact]
+    public void GetPreviousLevel_ShouldReturnNull_WhenLevelIsUndefined()
+    {
+        // Act
+        var result = _policy.GetPreviousLevel(UndefinedLevel);
 
         // Assert
         result.Should().BeNull();
-    }
-
-    [Fact]
-    public void GetPreviousLevel_ShouldReturnGreen_WhenCurrentIsBlue()
-    {
-        var result = _policy.GetPreviousLevel(BadgeLevel.Blue);
-
-        result.Should().Be(BadgeLevel.Green);
-    }
-
-    [Fact]
-    public void GetPreviousLevel_ShouldReturnBlue_WhenCurrentIsRed()
-    {
-        // Act
-        var result = _policy.GetPreviousLevel(BadgeLevel.Red);
-
-        // Assert
-        result.Should().Be(BadgeLevel.Blue);
-    }
-
-    [Fact]
-    public void GetPreviousLevel_ShouldReturnRed_WhenCurrentIsGold()
-    {
-        // Act
-        var result = _policy.GetPreviousLevel(BadgeLevel.Gold);
-
-        // Assert
-        result.Should().Be(BadgeLevel.Red);
     }
 
     #endregion
 
     #region IsMaxLevel Tests
 
-    [Fact]
-    public void IsMaxLevel_ShouldReturnTrue_WhenLevelIsGold()
-    {
-        // Act
-        var result = _policy.IsMaxLevel(BadgeLevel.Gold);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
     [Theory]
-    [InlineData(BadgeLevel.Green)]
-    [InlineData(BadgeLevel.Blue)]
-    [InlineData(BadgeLevel.Red)]
-    public void IsMaxLevel_ShouldReturnFalse_WhenLevelIsNotGold(BadgeLevel level)
+    [InlineData(BadgeLevel.Gold, true)]
+    [InlineData(BadgeLevel.Green, false)]
+    [InlineData(BadgeLevel.Blue, false)]
+    [InlineData(BadgeLevel.Red, false)]
+    [InlineData(UndefinedLevel, false)]
+    public void IsMaxLevel_ShouldOnlyReturnTrueForGold(BadgeLevel level, bool expected)
     {
         // Act
         var result = _policy.IsMaxLevel(level);
 
         // Assert
-        result.Should().BeFalse();
+        result.Should().Be(expected);
     }
 
     #endregion
 
     #region IsStartingLevel Tests
 
-    [Fact]
-    public void IsStartingLevel_ShouldReturnTrue_WhenLevelIsGreen()
-    {
-        // Act
-        var result = _policy.IsStartingLevel(BadgeLevel.Green);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
     [Theory]
-    [InlineData(BadgeLevel.Blue)]
-    [InlineData(BadgeLevel.Red)]
-    [InlineData(BadgeLevel.Gold)]
-    public void IsStartingLevel_ShouldReturnFalse_WhenLevelIsNotGreen(BadgeLevel level)
+    [InlineData(BadgeLevel.Green, true)]
+    [InlineData(BadgeLevel.Blue, false)]
+    [InlineData(BadgeLevel.Red, false)]
+    [InlineData(BadgeLevel.Gold, false)]
+    [InlineData(UndefinedLevel, false)]
+    public void IsStartingLevel_ShouldOnlyReturnTrueForGreen(BadgeLevel level, bool expected)
     {
         // Act
         var result = _policy.IsStartingLevel(level);
 
         // Assert
-        result.Should().BeFalse();
+        result.Should().Be(expected);
     }
 
     #endregion
@@ -219,6 +165,7 @@ public class BadgeLevelProgressionPolicyTests
     [InlineData(BadgeLevel.Blue, 2)]
     [InlineData(BadgeLevel.Red, 3)]
     [InlineData(BadgeLevel.Gold, 4)]
+    [InlineData(UndefinedLevel, 0)]
     public void GetLevelOrder_ShouldReturnCorrectOrder(BadgeLevel level, int expectedOrder)
     {
         // Act
@@ -232,109 +179,28 @@ public class BadgeLevelProgressionPolicyTests
 
     #region CompareLevels Tests
 
-    [Fact]
-    public void CompareLevels_ShouldReturnNegative_WhenFirstLevelIsLower()
-    {
-        // Act
-        var result = _policy.CompareLevels(BadgeLevel.Green, BadgeLevel.Gold);
-
-        // Assert
-        result.Should().BeNegative();
-    }
-
-    [Fact]
-    public void CompareLevels_ShouldReturnPositive_WhenFirstLevelIsHigher()
-    {
-        // Act
-        var result = _policy.CompareLevels(BadgeLevel.Gold, BadgeLevel.Green);
-
-        // Assert
-        result.Should().BePositive();
-    }
-
     [Theory]
-    [InlineData(BadgeLevel.Green)]
-    [InlineData(BadgeLevel.Blue)]
-    [InlineData(BadgeLevel.Red)]
-    [InlineData(BadgeLevel.Gold)]
-    public void CompareLevels_ShouldReturnZero_WhenLevelsAreEqual(BadgeLevel level)
+    [InlineData(BadgeLevel.Green, BadgeLevel.Blue, -1)]
+    [InlineData(BadgeLevel.Blue, BadgeLevel.Red, -1)]
+    [InlineData(BadgeLevel.Red, BadgeLevel.Gold, -1)]
+    [InlineData(BadgeLevel.Green, BadgeLevel.Gold, -1)]
+    [InlineData(BadgeLevel.Blue, BadgeLevel.Green, 1)]
+    [InlineData(BadgeLevel.Red, BadgeLevel.Blue, 1)]
+    [InlineData(BadgeLevel.Gold, BadgeLevel.Red, 1)]
+    [InlineData(BadgeLevel.Gold, BadgeLevel.Green, 1)]
+    [InlineData(BadgeLevel.Green, BadgeLevel.Green, 0)]
+    [InlineData(BadgeLevel.Blue, BadgeLevel.Blue, 0)]
+    [InlineData(BadgeLevel.Red, BadgeLevel.Red, 0)]
+    [InlineData(BadgeLevel.Gold, BadgeLevel.Gold, 0)]
+    [InlineData(UndefinedLevel, BadgeLevel.Green, -1)]
+    [InlineData(BadgeLevel.Green, UndefinedLevel, 1)]
+    public void CompareLevels_ShouldReturnExpectedSign(BadgeLevel level1, BadgeLevel level2, int expectedSign)
     {
         // Act
-        var result = _policy.CompareLevels(level, level);
+        var result = _policy.CompareLevels(level1, level2);
 
         // Assert
-        result.Should().Be(0);
-    }
-
-    [Theory]
-    [InlineData(BadgeLevel.Green, BadgeLevel.Blue)]
-    [InlineData(BadgeLevel.Blue, BadgeLevel.Red)]
-    [InlineData(BadgeLevel.Red, BadgeLevel.Gold)]
-    public void CompareLevels_ShouldReturnNegative_WhenComparingAdjacentLevelsAscending(BadgeLevel lower, BadgeLevel higher)
-    {
-        // Act
-        var result = _policy.CompareLevels(lower, higher);
-
-        // Assert
-        result.Should().BeNegative();
-    }
-
-    [Theory]
-    [InlineData(BadgeLevel.Blue, BadgeLevel.Green)]
-    [InlineData(BadgeLevel.Red, BadgeLevel.Blue)]
-    [InlineData(BadgeLevel.Gold, BadgeLevel.Red)]
-    public void CompareLevels_ShouldReturnPositive_WhenComparingAdjacentLevelsDescending(BadgeLevel higher, BadgeLevel lower)
-    {
-        // Act
-        var result = _policy.CompareLevels(higher, lower);
-
-        // Assert
-        result.Should().BePositive();
-    }
-
-    #endregion
-
-    #region Integration Tests
-
-    [Fact]
-    public void GetNextLevel_ChainedCalls_ShouldTraverseAllLevels()
-    {
-        // Start at Green and traverse to the end
-        var current = BadgeLevel.Green;
-        var levels = new List<BadgeLevel> { current };
-
-        while (_policy.GetNextLevel(current) is { } next)
-        {
-            levels.Add(next);
-            current = next;
-        }
-
-        levels.Should().BeEquivalentTo([
-            BadgeLevel.Green,
-            BadgeLevel.Blue,
-            BadgeLevel.Red,
-            BadgeLevel.Gold
-        ], options => options.WithStrictOrdering());
-    }
-
-    [Fact]
-    public void GetPreviousLevel_ChainedCalls_ShouldTraverseDownToGreen()
-    {
-        var current = BadgeLevel.Gold;
-        var levels = new List<BadgeLevel> { current };
-
-        while (_policy.GetPreviousLevel(current) is { } previous)
-        {
-            levels.Add(previous);
-            current = previous;
-        }
-
-        levels.Should().BeEquivalentTo([
-            BadgeLevel.Gold,
-            BadgeLevel.Red,
-            BadgeLevel.Blue,
-            BadgeLevel.Green
-        ], options => options.WithStrictOrdering());
+        Math.Sign(result).Should().Be(expectedSign);
     }
 
     #endregion

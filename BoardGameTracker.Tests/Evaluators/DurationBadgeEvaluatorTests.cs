@@ -25,66 +25,6 @@ public class DurationBadgeEvaluatorTests
         _evaluator.BadgeType.Should().Be(BadgeType.Duration);
     }
 
-    #region Green Level Tests (300 minutes = 5 hours)
-
-    [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenWinningDurationIsMoreThan300Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateWinningSessionsWithDuration(400);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Blue Level Tests (600 minutes = 10 hours)
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenWinningDurationIsMoreThan600Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateWinningSessionsWithDuration(800);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Red Level Tests (3000 minutes = 50 hours)
-
-    [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenWinningDurationIsMoreThan3000Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateWinningSessionsWithDuration(4000);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Gold Level Tests (6000 minutes = 100 hours)
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenWinningDurationIsMoreThan6000Minutes()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateWinningSessionsWithDuration(7000);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
     #region Edge Cases
 
     [Fact]
@@ -162,34 +102,39 @@ public class DurationBadgeEvaluatorTests
         result.Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData(BadgeLevel.Green, 300)]
-    [InlineData(BadgeLevel.Blue, 600)]
-    [InlineData(BadgeLevel.Red, 3000)]
-    [InlineData(BadgeLevel.Gold, 6000)]
-    public async Task CanAwardBadge_ShouldReturnTrue_AtExactThreshold(BadgeLevel level, int minutes)
+    [Fact]
+    public async Task CanAwardBadge_ShouldReturnFalse_WhenSessionListIsEmpty()
     {
-        var badge = CreateBadge(level);
-        var sessions = CreateWinningSessionsWithDuration(minutes);
+        var badge = CreateBadge(BadgeLevel.Green);
+        var currentSession = CreateSessionWithDuration(100, 0);
+        var sessions = new List<Session>();
 
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, currentSession, sessions);
 
-        result.Should().BeTrue();
+        result.Should().BeFalse();
     }
 
     [Theory]
-    [InlineData(BadgeLevel.Green, 299)]
-    [InlineData(BadgeLevel.Blue, 599)]
-    [InlineData(BadgeLevel.Red, 2999)]
-    [InlineData(BadgeLevel.Gold, 5999)]
-    public async Task CanAwardBadge_ShouldReturnFalse_JustBelowThreshold(BadgeLevel level, int minutes)
+    [InlineData(BadgeLevel.Green, 299, false)]
+    [InlineData(BadgeLevel.Green, 300, true)]
+    [InlineData(BadgeLevel.Green, 400, true)]
+    [InlineData(BadgeLevel.Blue, 599, false)]
+    [InlineData(BadgeLevel.Blue, 600, true)]
+    [InlineData(BadgeLevel.Blue, 800, true)]
+    [InlineData(BadgeLevel.Red, 2999, false)]
+    [InlineData(BadgeLevel.Red, 3000, true)]
+    [InlineData(BadgeLevel.Red, 4000, true)]
+    [InlineData(BadgeLevel.Gold, 5999, false)]
+    [InlineData(BadgeLevel.Gold, 6000, true)]
+    [InlineData(BadgeLevel.Gold, 7000, true)]
+    public async Task CanAwardBadge_ShouldEvaluateWinningDurationPerLevel(BadgeLevel level, int minutes, bool expected)
     {
         var badge = CreateBadge(level);
         var sessions = CreateWinningSessionsWithDuration(minutes);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
-        result.Should().BeFalse();
+        result.Should().Be(expected);
     }
 
     #endregion

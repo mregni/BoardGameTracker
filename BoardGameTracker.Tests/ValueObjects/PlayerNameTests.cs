@@ -9,115 +9,68 @@ public class PlayerNameTests
 {
     #region Constructor Tests
 
-    [Fact]
-    public void Constructor_WithValidName_ShouldSetValue()
+    [Theory]
+    [InlineData("John Doe")]
+    [InlineData("J")]
+    [InlineData("Alice")]
+    [InlineData("Player One")]
+    [InlineData("Jane-Doe")]
+    [InlineData("O'Brien")]
+    [InlineData("John@#$%")]
+    [InlineData("Mühler Straße")]
+    [InlineData("Player1")]
+    public void Constructor_WithVariousValidNames_ShouldSucceed(string name)
     {
-        // Arrange
-        var name = "John Doe";
-
-        // Act
         var playerName = new PlayerName(name);
 
-        // Assert
         playerName.Value.Should().Be(name);
     }
 
     [Fact]
     public void Constructor_WithValidName_ShouldTrimWhitespace()
     {
-        // Arrange
-        var name = "  John Doe  ";
+        var playerName = new PlayerName("  John Doe  ");
 
-        // Act
-        var playerName = new PlayerName(name);
-
-        // Assert
         playerName.Value.Should().Be("John Doe");
-    }
-
-    [Fact]
-    public void Constructor_WithSingleCharacter_ShouldSucceed()
-    {
-        // Arrange
-        var name = "J";
-
-        // Act
-        var playerName = new PlayerName(name);
-
-        // Assert
-        playerName.Value.Should().Be("J");
     }
 
     [Fact]
     public void Constructor_WithMaxLength_ShouldSucceed()
     {
-        // Arrange
         var name = new string('a', 100);
 
-        // Act
         var playerName = new PlayerName(name);
 
-        // Assert
         playerName.Value.Should().Be(name);
     }
 
     [Fact]
-    public void Constructor_WithNullValue_ShouldThrowException()
+    public void Constructor_WithNullValue_ShouldThrowArgumentNullException()
     {
-        // Act
         Action act = () => new PlayerName(null!);
 
-        // Assert
-        act.Should().Throw<ArgumentException>();
+        act.Should().Throw<ArgumentNullException>();
     }
 
-    [Fact]
-    public void Constructor_WithEmptyString_ShouldThrowException()
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Constructor_WithEmptyOrWhitespace_ShouldThrowException(string name)
     {
-        // Act
-        Action act = () => new PlayerName(string.Empty);
+        Action act = () => new PlayerName(name);
 
-        // Assert
-        act.Should().Throw<ArgumentException>();
-    }
-
-    [Fact]
-    public void Constructor_WithWhitespaceOnly_ShouldThrowException()
-    {
-        // Act
-        Action act = () => new PlayerName("   ");
-
-        // Assert
         act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
     public void Constructor_WithExceedingMaxLength_ShouldThrowException()
     {
-        // Arrange
         var name = new string('a', 101);
 
-        // Act
         Action act = () => new PlayerName(name);
 
-        // Assert
         act.Should().Throw<ArgumentException>()
             .WithMessage("*cannot exceed 100 characters*");
-    }
-
-    [Theory]
-    [InlineData("Alice")]
-    [InlineData("Bob")]
-    [InlineData("Player One")]
-    [InlineData("Jane-Doe")]
-    [InlineData("O'Brien")]
-    public void Constructor_WithVariousValidNames_ShouldSucceed(string name)
-    {
-        // Act
-        var playerName = new PlayerName(name);
-
-        // Assert
-        playerName.Value.Should().Be(name);
     }
 
     #endregion
@@ -127,13 +80,10 @@ public class PlayerNameTests
     [Fact]
     public void ExplicitOperator_ShouldConvertToString()
     {
-        // Arrange
         var playerName = new PlayerName("John Doe");
 
-        // Act
         string result = (string)playerName;
 
-        // Assert
         result.Should().Be("John Doe");
     }
 
@@ -144,14 +94,9 @@ public class PlayerNameTests
     [Fact]
     public void ToString_ShouldReturnValue()
     {
-        // Arrange
         var playerName = new PlayerName("Jane Smith");
 
-        // Act
-        var result = playerName.ToString();
-
-        // Assert
-        result.Should().Be("Jane Smith");
+        playerName.ToString().Should().Be("Jane Smith");
     }
 
     #endregion
@@ -161,55 +106,10 @@ public class PlayerNameTests
     [Fact]
     public void Equality_TrimmedVsNonTrimmed_ShouldBeEqual()
     {
-        // Arrange
         var playerName1 = new PlayerName("John");
         var playerName2 = new PlayerName("  John  ");
 
-        // Assert - Both should have "John" as value after trimming
         playerName1.Should().Be(playerName2);
-    }
-
-    #endregion
-
-    #region Edge Cases
-
-    [Fact]
-    public void Constructor_WithSpecialCharacters_ShouldSucceed()
-    {
-        // Arrange
-        var name = "John@#$%";
-
-        // Act
-        var playerName = new PlayerName(name);
-
-        // Assert
-        playerName.Value.Should().Be(name);
-    }
-
-    [Fact]
-    public void Constructor_WithUnicodeCharacters_ShouldSucceed()
-    {
-        // Arrange
-        var name = "Mühler Straße";
-
-        // Act
-        var playerName = new PlayerName(name);
-
-        // Assert
-        playerName.Value.Should().Be(name);
-    }
-
-    [Fact]
-    public void Constructor_WithNumbers_ShouldSucceed()
-    {
-        // Arrange
-        var name = "Player1";
-
-        // Act
-        var playerName = new PlayerName(name);
-
-        // Assert
-        playerName.Value.Should().Be(name);
     }
 
     #endregion

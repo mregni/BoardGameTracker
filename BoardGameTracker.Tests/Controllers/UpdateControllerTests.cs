@@ -27,121 +27,38 @@ public class UpdateControllerTests
         _updateServiceMock.VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task CheckNow_ShouldCheckForUpdatesAndReturnStatus_WhenUpdateIsAvailable()
+    public static TheoryData<UpdateStatus> UpdateStatuses => new()
     {
-        // Arrange
-        var updatedStatus = new UpdateStatus
-        {
-            CurrentVersion = "1.0.0",
-            LatestVersion = "1.2.0",
-            UpdateAvailable = true,
-            LastChecked = DateTime.UtcNow,
-            ErrorMessage = null
-        };
+        new UpdateStatus { CurrentVersion = "1.0.0", LatestVersion = "1.2.0", UpdateAvailable = true, LastChecked = DateTime.UtcNow, ErrorMessage = null },
+        new UpdateStatus { CurrentVersion = "3.0.0", LatestVersion = "3.0.0", UpdateAvailable = false, LastChecked = DateTime.UtcNow, ErrorMessage = null },
+        new UpdateStatus { CurrentVersion = "2.0.0", LatestVersion = null, UpdateAvailable = false, LastChecked = DateTime.UtcNow, ErrorMessage = "Network timeout" }
+    };
 
+    [Theory]
+    [MemberData(nameof(UpdateStatuses))]
+    public async Task CheckNow_ShouldCheckForUpdatesAndReturnStatus(UpdateStatus updateStatus)
+    {
         _updateServiceMock
             .Setup(x => x.CheckForUpdatesAsync())
             .Returns(Task.CompletedTask);
 
         _updateServiceMock
             .Setup(x => x.GetVersionInfoAsync())
-            .ReturnsAsync(updatedStatus);
+            .ReturnsAsync(updateStatus);
 
-        // Act
         var result = await _controller.CheckNow();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
 
-        statusDto.CurrentVersion.Should().Be("1.0.0");
-        statusDto.LatestVersion.Should().Be("1.2.0");
-        statusDto.UpdateAvailable.Should().BeTrue();
-        statusDto.LastChecked.Should().Be(updatedStatus.LastChecked);
-        statusDto.ErrorMessage.Should().BeNull();
+        statusDto.CurrentVersion.Should().Be(updateStatus.CurrentVersion);
+        statusDto.LatestVersion.Should().Be(updateStatus.LatestVersion);
+        statusDto.UpdateAvailable.Should().Be(updateStatus.UpdateAvailable);
+        statusDto.LastChecked.Should().Be(updateStatus.LastChecked);
+        statusDto.ErrorMessage.Should().Be(updateStatus.ErrorMessage);
 
         _updateServiceMock.Verify(x => x.CheckForUpdatesAsync(), Times.Once);
         _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
     }
-
-    [Fact]
-    public async Task CheckNow_ShouldCheckForUpdatesAndReturnStatus_WhenNoUpdateIsAvailable()
-    {
-        // Arrange
-        var updatedStatus = new UpdateStatus
-        {
-            CurrentVersion = "3.0.0",
-            LatestVersion = "3.0.0",
-            UpdateAvailable = false,
-            LastChecked = DateTime.UtcNow,
-            ErrorMessage = null
-        };
-
-        _updateServiceMock
-            .Setup(x => x.CheckForUpdatesAsync())
-            .Returns(Task.CompletedTask);
-
-        _updateServiceMock
-            .Setup(x => x.GetVersionInfoAsync())
-            .ReturnsAsync(updatedStatus);
-
-        // Act
-        var result = await _controller.CheckNow();
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
-
-        statusDto.CurrentVersion.Should().Be("3.0.0");
-        statusDto.LatestVersion.Should().Be("3.0.0");
-        statusDto.UpdateAvailable.Should().BeFalse();
-        statusDto.LastChecked.Should().Be(updatedStatus.LastChecked);
-        statusDto.ErrorMessage.Should().BeNull();
-
-        _updateServiceMock.Verify(x => x.CheckForUpdatesAsync(), Times.Once);
-        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task CheckNow_ShouldCheckForUpdatesAndReturnStatus_WhenErrorOccurs()
-    {
-        // Arrange
-        var errorStatus = new UpdateStatus
-        {
-            CurrentVersion = "2.0.0",
-            LatestVersion = null,
-            UpdateAvailable = false,
-            LastChecked = DateTime.UtcNow,
-            ErrorMessage = "Network timeout"
-        };
-
-        _updateServiceMock
-            .Setup(x => x.CheckForUpdatesAsync())
-            .Returns(Task.CompletedTask);
-
-        _updateServiceMock
-            .Setup(x => x.GetVersionInfoAsync())
-            .ReturnsAsync(errorStatus);
-
-        // Act
-        var result = await _controller.CheckNow();
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
-
-        statusDto.CurrentVersion.Should().Be("2.0.0");
-        statusDto.LatestVersion.Should().BeNull();
-        statusDto.UpdateAvailable.Should().BeFalse();
-        statusDto.LastChecked.Should().Be(errorStatus.LastChecked);
-        statusDto.ErrorMessage.Should().Be("Network timeout");
-
-        _updateServiceMock.Verify(x => x.CheckForUpdatesAsync(), Times.Once);
-        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
 }

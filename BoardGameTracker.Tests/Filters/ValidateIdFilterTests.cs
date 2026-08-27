@@ -35,35 +35,9 @@ public class ValidateIdFilterTests
     }
 
     [Fact]
-    public void OnActionExecuting_ShouldSetBadRequestResult_WhenIdParameterIsZero()
+    public void OnActionExecuting_ShouldNotSetResult_WhenIdValueIsNonIntNumeric()
     {
-        var context = CreateContext(new Dictionary<string, object?> { { "id", 0 } });
-
-        _filter.OnActionExecuting(context);
-
-        var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
-        problemDetails.Status.Should().Be(400);
-        problemDetails.Title.Should().Be("Invalid id. Must be greater than 0.");
-    }
-
-    [Fact]
-    public void OnActionExecuting_ShouldSetBadRequestResult_WhenIdParameterIsNegative()
-    {
-        var context = CreateContext(new Dictionary<string, object?> { { "id", -5 } });
-
-        _filter.OnActionExecuting(context);
-
-        var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
-        problemDetails.Status.Should().Be(400);
-        problemDetails.Title.Should().Be("Invalid id. Must be greater than 0.");
-    }
-
-    [Fact]
-    public void OnActionExecuting_ShouldNotSetResult_WhenIdParameterIsPositive()
-    {
-        var context = CreateContext(new Dictionary<string, object?> { { "id", 1 } });
+        var context = CreateContext(new Dictionary<string, object?> { { "id", 5L } });
 
         _filter.OnActionExecuting(context);
 
@@ -71,21 +45,9 @@ public class ValidateIdFilterTests
     }
 
     [Fact]
-    public void OnActionExecuting_ShouldSetBadRequestResult_WhenPlayerIdParameterIsZero()
+    public void OnActionExecuting_ShouldNotSetResult_WhenIdValueIsNull()
     {
-        var context = CreateContext(new Dictionary<string, object?> { { "playerId", 0 } });
-
-        _filter.OnActionExecuting(context);
-
-        var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
-        problemDetails.Title.Should().Be("Invalid playerId. Must be greater than 0.");
-    }
-
-    [Fact]
-    public void OnActionExecuting_ShouldNotSetResult_WhenGameNightIdParameterIsPositive()
-    {
-        var context = CreateContext(new Dictionary<string, object?> { { "gameNightId", 42 } });
+        var context = CreateContext(new Dictionary<string, object?> { { "id", null } });
 
         _filter.OnActionExecuting(context);
 
@@ -93,15 +55,15 @@ public class ValidateIdFilterTests
     }
 
     [Fact]
-    public void OnActionExecuting_ShouldSetBadRequestResult_WhenIdParameterIsUppercaseAndZero()
+    public void OnActionExecuting_ShouldSetBadRequestResult_WhenNullableIntIdIsZero()
     {
-        var context = CreateContext(new Dictionary<string, object?> { { "Id", 0 } });
+        var context = CreateContext(new Dictionary<string, object?> { { "id", (int?)0 } });
 
         _filter.OnActionExecuting(context);
 
         var badRequestResult = context.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
         var problemDetails = badRequestResult.Value.Should().BeOfType<ProblemDetails>().Subject;
-        problemDetails.Title.Should().Be("Invalid Id. Must be greater than 0.");
+        problemDetails.Title.Should().Be("Invalid id. Must be greater than 0.");
     }
 
     [Fact]
@@ -153,6 +115,10 @@ public class ValidateIdFilterTests
     }
 
     [Theory]
+    [InlineData("id", 0)]
+    [InlineData("id", -5)]
+    [InlineData("Id", 0)]
+    [InlineData("playerId", 0)]
     [InlineData("sessionId", -1)]
     [InlineData("locationId", 0)]
     [InlineData("badgeId", -100)]
@@ -169,6 +135,8 @@ public class ValidateIdFilterTests
     }
 
     [Theory]
+    [InlineData("id", 1)]
+    [InlineData("gameNightId", 42)]
     [InlineData("sessionId", 1)]
     [InlineData("locationId", 50)]
     [InlineData("badgeId", 999)]

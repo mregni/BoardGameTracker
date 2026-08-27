@@ -24,66 +24,6 @@ public class SessionsBadgeEvaluatorTests
         _evaluator.BadgeType.Should().Be(BadgeType.Sessions);
     }
 
-    #region Green Level Tests (5 sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenSessionCountIsMoreThan5()
-    {
-        var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSessions(10);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Blue Level Tests (10 sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenSessionCountIsMoreThan10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSessions(25);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Red Level Tests (50 sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenSessionCountIsMoreThan50()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSessions(75);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Gold Level Tests (100 sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenSessionCountIsMoreThan100()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSessions(150);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
     #region Edge Cases
 
     [Fact]
@@ -110,33 +50,26 @@ public class SessionsBadgeEvaluatorTests
     }
 
     [Theory]
-    [InlineData(BadgeLevel.Green, 5)]
-    [InlineData(BadgeLevel.Blue, 10)]
-    [InlineData(BadgeLevel.Red, 50)]
-    [InlineData(BadgeLevel.Gold, 100)]
-    public async Task CanAwardBadge_ShouldReturnTrue_AtExactThreshold(BadgeLevel level, int sessionCount)
+    [InlineData(BadgeLevel.Green, 4, false)]
+    [InlineData(BadgeLevel.Green, 5, true)]
+    [InlineData(BadgeLevel.Green, 10, true)]
+    [InlineData(BadgeLevel.Blue, 9, false)]
+    [InlineData(BadgeLevel.Blue, 10, true)]
+    [InlineData(BadgeLevel.Blue, 25, true)]
+    [InlineData(BadgeLevel.Red, 49, false)]
+    [InlineData(BadgeLevel.Red, 50, true)]
+    [InlineData(BadgeLevel.Red, 75, true)]
+    [InlineData(BadgeLevel.Gold, 99, false)]
+    [InlineData(BadgeLevel.Gold, 100, true)]
+    [InlineData(BadgeLevel.Gold, 150, true)]
+    public async Task CanAwardBadge_ShouldEvaluateSessionCountPerLevel(BadgeLevel level, int sessionCount, bool expected)
     {
         var badge = CreateBadge(level);
         var sessions = CreateSessions(sessionCount);
 
         var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
 
-        result.Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData(BadgeLevel.Green, 4)]
-    [InlineData(BadgeLevel.Blue, 9)]
-    [InlineData(BadgeLevel.Red, 49)]
-    [InlineData(BadgeLevel.Gold, 99)]
-    public async Task CanAwardBadge_ShouldReturnFalse_JustBelowThreshold(BadgeLevel level, int sessionCount)
-    {
-        var badge = CreateBadge(level);
-        var sessions = CreateSessions(sessionCount);
-
-        var result = await _evaluator.CanAwardBadge(1, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
+        result.Should().Be(expected);
     }
 
     #endregion

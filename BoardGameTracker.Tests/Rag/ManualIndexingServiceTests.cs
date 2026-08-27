@@ -53,6 +53,29 @@ public class ManualIndexingServiceTests
             Mock.Of<ILogger<ManualIndexingService>>());
     }
 
+    private void VerifyNoOtherCalls()
+    {
+        _manualRepoMock.VerifyNoOtherCalls();
+        _chunkWriteRepoMock.VerifyNoOtherCalls();
+        _chunkRepoMock.VerifyNoOtherCalls();
+        _extractorMock.VerifyNoOtherCalls();
+        _chunkerMock.VerifyNoOtherCalls();
+        _factoryMock.VerifyNoOtherCalls();
+        _queueMock.VerifyNoOtherCalls();
+        _diskProviderMock.VerifyNoOtherCalls();
+        _unitOfWorkMock.VerifyNoOtherCalls();
+        _embedderMock.VerifyNoOtherCalls();
+    }
+
+    private void VerifyExtractionPipeline(Manual manual)
+    {
+        _manualRepoMock.Verify(x => x.GetByIdAsync(manual.Id), Times.Once);
+        _factoryMock.Verify(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _diskProviderMock.Verify(x => x.OpenRead(It.IsAny<string>()), Times.Once);
+        _extractorMock.Verify(x => x.Extract(It.IsAny<Stream>()), Times.Once);
+        _chunkerMock.Verify(x => x.Chunk(It.IsAny<IReadOnlyList<PdfPageText>>()), Times.Once);
+    }
+
     [Fact]
     public async Task IndexAsync_NoExtractableText_MarksFailedWithoutEmbedding()
     {
@@ -68,6 +91,9 @@ public class ManualIndexingServiceTests
             x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()),
             Times.Never);
         _chunkRepoMock.Verify(x => x.DeleteByManualAsync(It.IsAny<int>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        VerifyExtractionPipeline(manual);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -84,6 +110,14 @@ public class ManualIndexingServiceTests
         manual.IndexStatus.Should().Be(ManualIndexStatus.Failed);
         manual.IndexError.Should().Contain("dimension");
         _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.IsAny<List<ManualChunk>>()), Times.Never);
+        _factoryMock.Verify(x => x.CreateEmbeddingGeneratorAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _embedderMock.Verify(
+            x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        _chunkRepoMock.Verify(x => x.DeleteByManualAsync(manual.Id), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        VerifyExtractionPipeline(manual);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -99,8 +133,24 @@ public class ManualIndexingServiceTests
 
         manual.IndexStatus.Should().Be(ManualIndexStatus.Indexed);
         manual.IndexedChunkCount.Should().Be(2);
+        manual.IndexError.Should().BeNull();
         _chunkRepoMock.Verify(x => x.DeleteByManualAsync(manual.Id), Times.Once);
-        _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.Is<List<ManualChunk>>(l => l.Count == 2)), Times.Once);
+        _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.Is<List<ManualChunk>>(l =>
+            l.Count == 2 &&
+            l[0].ManualId == manual.Id && l[0].GameId == manual.GameId &&
+            l[0].ChunkIndex == 0 && l[0].Content == "first" && l[0].PageNumber == 1 &&
+            l[1].ManualId == manual.Id && l[1].GameId == manual.GameId &&
+            l[1].ChunkIndex == 1 && l[1].Content == "second" && l[1].PageNumber == 2)), Times.Once);
+        _factoryMock.Verify(x => x.CreateEmbeddingGeneratorAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _embedderMock.Verify(
+            x => x.GenerateAsync(
+                It.Is<IEnumerable<string>>(v => v.SequenceEqual(new[] { "first", "second" })),
+                It.IsAny<EmbeddingGenerationOptions?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        VerifyExtractionPipeline(manual);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -116,7 +166,8 @@ public class ManualIndexingServiceTests
 
         _queueMock.Verify(x => x.Enqueue(5), Times.Once);
         _queueMock.Verify(x => x.Enqueue(8), Times.Once);
-        _queueMock.VerifyNoOtherCalls();
+        _manualRepoMock.Verify(x => x.ListAsync(It.IsAny<ManualsToIndexSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -128,7 +179,8 @@ public class ManualIndexingServiceTests
 
         await _service.EnqueuePendingAsync();
 
-        _queueMock.VerifyNoOtherCalls();
+        _manualRepoMock.Verify(x => x.ListAsync(It.IsAny<ManualsToIndexSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -144,6 +196,10 @@ public class ManualIndexingServiceTests
         manual.IndexError.Should().Be("disk unreadable");
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
         _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.IsAny<List<ManualChunk>>()), Times.Never);
+        _manualRepoMock.Verify(x => x.GetByIdAsync(manual.Id), Times.Once);
+        _factoryMock.Verify(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _diskProviderMock.Verify(x => x.OpenRead(It.IsAny<string>()), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -165,6 +221,9 @@ public class ManualIndexingServiceTests
         manual.IndexStatus.Should().Be(ManualIndexStatus.Failed);
         manual.IndexError.Should().Be("models unavailable");
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        _manualRepoMock.Verify(x => x.GetByIdAsync(manual.Id), Times.Once);
+        _factoryMock.Verify(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -182,6 +241,10 @@ public class ManualIndexingServiceTests
         manual.IndexError.Should().Contain("evil.pdf").And.Contain("not found");
         _diskProviderMock.Verify(x => x.OpenRead(It.IsAny<string>()), Times.Never);
         _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.IsAny<List<ManualChunk>>()), Times.Never);
+        _manualRepoMock.Verify(x => x.GetByIdAsync(manual.Id), Times.Once);
+        _factoryMock.Verify(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -192,6 +255,8 @@ public class ManualIndexingServiceTests
         await _service.IndexAsync(999);
 
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _manualRepoMock.Verify(x => x.GetByIdAsync(999), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     private void SetupEmbeddings(int count, int dimensions)

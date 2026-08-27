@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using BoardGameTracker.Common.Extensions;
 using FluentAssertions;
 using Xunit;
@@ -12,50 +13,25 @@ public class VersionExtensionsTests
     {
         Version? version = null;
 
-        var result = version.ToVersionString();
+        version.ToVersionString().Should().Be(string.Empty);
+    }
 
-        result.Should().NotBeNull();
-        result.Should().Be(string.Empty);
+    public static IEnumerable<object[]> VersionCases()
+    {
+        yield return new object[] { new Version(0, 0, 0), "0.0.0" };
+        yield return new object[] { new Version(1, 0, 0), "1.0.0" };
+        yield return new object[] { new Version(1, 2, 3), "1.2.3" };
+        yield return new object[] { new Version(2, 5, 10), "2.5.10" };
+        yield return new object[] { new Version(10, 20, 30), "10.20.30" };
+        yield return new object[] { new Version(100, 200, 300), "100.200.300" };
+        yield return new object[] { new Version(1, 2, 3, 4), "1.2.3" };
+        yield return new object[] { new Version(1, 2), "1.2.0" };
     }
 
     [Theory]
-    [InlineData(0, 0, 0, "0.0.0")]
-    [InlineData(1, 0, 0, "1.0.0")]
-    [InlineData(1, 2, 3, "1.2.3")]
-    [InlineData(2, 5, 10, "2.5.10")]
-    [InlineData(10, 20, 30, "10.20.30")]
-    [InlineData(100, 200, 300, "100.200.300")]
-    public void ToVersionString_ShouldReturnCorrectFormat_WithDifferentVersionNumbers(int major, int minor, int build,
-        string expected)
+    [MemberData(nameof(VersionCases))]
+    public void ToVersionString_ShouldReturnMajorMinorBuild(Version version, string expected)
     {
-        var version = new Version(major, minor, build);
-
-        var result = version.ToVersionString();
-
-        result.Should().NotBeNull();
-        result.Should().Be(expected);
+        version.ToVersionString().Should().Be(expected);
     }
-
-    [Fact]
-    public void ToVersionString_ShouldHandleVersionWithRevision_WhenRevisionIsProvided()
-    {
-        var version = new Version(1, 2, 3, 4);
-
-        var result = version.ToVersionString();
-
-        result.Should().NotBeNull();
-        result.Should().Be("1.2.3");
-    }
-
-    [Fact]
-    public void ToVersionString_ShouldReturnFormattedString_WhenVersionHasOnlyMajorMinor()
-    {
-        var version = new Version(1, 2);
-
-        var result = version.ToVersionString();
-
-        result.Should().NotBeNull();
-        result.Should().Be("1.2.0");
-    }
-
 }

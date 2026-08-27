@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BoardGameTracker.Common.Enums;
@@ -11,41 +11,27 @@ namespace BoardGameTracker.Tests.Extensions;
 
 public class UploadFileTypeExtensionTests
 {
-    [Theory]
-    [InlineData(UploadFileType.Game)]
-    public void ConvertToPath_ShouldReturnEmptyString_WhenTypeIsNotProfile(UploadFileType type)
+    public static IEnumerable<object[]> PathCases()
     {
-        var result = type.ConvertToPath();
-
-        result.Should().Be(string.Empty);
+        yield return new object[] { UploadFileType.Profile, PathHelper.FullProfileImagePath };
+        yield return new object[] { UploadFileType.Game, string.Empty };
+        yield return new object[] { (UploadFileType) 999, string.Empty };
     }
 
-    [Fact]
-    public void ConvertToPath_ShouldReturnEmptyString_WhenTypeIsUndefinedEnumValue()
+    [Theory]
+    [MemberData(nameof(PathCases))]
+    public void ConvertToPath_ShouldReturnExpectedPath(UploadFileType type, string expected)
     {
-        const UploadFileType type = (UploadFileType) 999;
-
-        var result = type.ConvertToPath();
-
-        result.Should().Be(string.Empty);
+        type.ConvertToPath().Should().Be(expected);
     }
 
     [Fact]
     public void ConvertToPath_ShouldHandleAllDefinedEnumValues()
     {
-        var allEnumValues = Enum.GetValues<UploadFileType>();
-        var results = new Dictionary<UploadFileType, string>();
-
-        foreach (var enumValue in allEnumValues)
+        foreach (var enumValue in Enum.GetValues<UploadFileType>())
         {
-            results[enumValue] = enumValue.ConvertToPath();
-        }
-
-        results[UploadFileType.Profile].Should().Be(PathHelper.FullProfileImagePath);
-
-        foreach (var kvp in results.Where(x => x.Key != UploadFileType.Profile))
-        {
-            kvp.Value.Should().Be(string.Empty, $"because {kvp.Key} should return empty string");
+            var expected = enumValue == UploadFileType.Profile ? PathHelper.FullProfileImagePath : string.Empty;
+            enumValue.ConvertToPath().Should().Be(expected);
         }
     }
 }

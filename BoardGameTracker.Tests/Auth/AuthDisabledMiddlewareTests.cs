@@ -13,26 +13,28 @@ public class AuthDisabledMiddlewareTests
     [Fact]
     public async Task InvokeAsync_ShouldSetAdminIdentity_WhenNotAuthenticated()
     {
-        // Arrange
         var middleware = new AuthDisabledMiddleware(_ => Task.CompletedTask);
         var context = new DefaultHttpContext();
 
-        // Act
         await middleware.InvokeAsync(context);
 
-        // Assert
         context.User.Identity!.IsAuthenticated.Should().BeTrue();
         context.User.Identity.AuthenticationType.Should().Be("AuthDisabled");
         context.User.FindFirstValue(ClaimTypes.Name).Should().Be("admin");
         context.User.FindFirstValue(ClaimTypes.NameIdentifier).Should().Be("auth-disabled-admin-id");
+        context.User.FindFirstValue("display_name").Should().Be("Admin");
         context.User.IsInRole(Constants.AuthRoles.Admin).Should().BeTrue();
     }
 
     [Fact]
-    public async Task InvokeAsync_ShouldNotOverrideIdentity_WhenAlreadyAuthenticated()
+    public async Task InvokeAsync_ShouldNotOverrideIdentityAndShouldCallNext_WhenAlreadyAuthenticated()
     {
-        // Arrange
-        var middleware = new AuthDisabledMiddleware(_ => Task.CompletedTask);
+        var nextCalled = false;
+        var middleware = new AuthDisabledMiddleware(_ =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        });
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, "existing-user"),
@@ -44,18 +46,16 @@ public class AuthDisabledMiddlewareTests
             User = new ClaimsPrincipal(identity)
         };
 
-        // Act
         await middleware.InvokeAsync(context);
 
-        // Assert
         context.User.FindFirstValue(ClaimTypes.NameIdentifier).Should().Be("existing-user");
         context.User.FindFirstValue(ClaimTypes.Name).Should().Be("existing");
+        nextCalled.Should().BeTrue();
     }
 
     [Fact]
     public async Task InvokeAsync_ShouldCallNextMiddleware()
     {
-        // Arrange
         var nextCalled = false;
         var middleware = new AuthDisabledMiddleware(_ =>
         {
@@ -64,24 +64,8 @@ public class AuthDisabledMiddlewareTests
         });
         var context = new DefaultHttpContext();
 
-        // Act
         await middleware.InvokeAsync(context);
 
-        // Assert
         nextCalled.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task InvokeAsync_ShouldIncludeDisplayNameClaim()
-    {
-        // Arrange
-        var middleware = new AuthDisabledMiddleware(_ => Task.CompletedTask);
-        var context = new DefaultHttpContext();
-
-        // Act
-        await middleware.InvokeAsync(context);
-
-        // Assert
-        context.User.FindFirstValue("display_name").Should().Be("Admin");
     }
 }

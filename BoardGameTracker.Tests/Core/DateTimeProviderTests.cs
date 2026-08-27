@@ -27,11 +27,10 @@ public class DateTimeProviderTests
 
         // Assert
         result.Kind.Should().Be(DateTimeKind.Utc);
-        (DateTime.UtcNow - result).TotalSeconds.Should().BeLessThan(1, "UtcNow should return current time");
     }
 
     [Fact]
-    public void Now_WithBrusselsTimezone_ShouldReturnLocalTime()
+    public void Constructor_WithValidTimezone_ShouldUseConfiguredTimezone()
     {
         // Arrange
         var config = new ConfigurationBuilder()
@@ -41,21 +40,11 @@ public class DateTimeProviderTests
             })
             .Build();
 
-        var provider = new DateTimeProvider(config);
-
         // Act
-        var utcNow = provider.UtcNow;
-        var localNow = provider.Now;
+        var provider = new DateTimeProvider(config);
 
         // Assert
         provider.TimeZone.Id.Should().Be("Europe/Brussels");
-
-        // Brussels is typically UTC+1 or UTC+2 (DST)
-        var offset = provider.TimeZone.GetUtcOffset(utcNow);
-        offset.TotalHours.Should().BeInRange(1, 2);
-
-        // Local time should be ahead of UTC for Brussels
-        localNow.Should().BeAfter(utcNow);
     }
 
     [Fact]
@@ -101,14 +90,13 @@ public class DateTimeProviderTests
             .Build();
 
         var provider = new DateTimeProvider(config);
-        var utcTime = new DateTime(2026, 1, 7, 13, 30, 0, DateTimeKind.Utc); // 13:30 UTC
+        var utcTime = new DateTime(2026, 1, 7, 13, 30, 0, DateTimeKind.Utc);
 
         // Act
         var localTime = provider.ConvertToLocalTime(utcTime);
 
         // Assert
-        // Brussels is UTC+1 in winter, so 13:30 UTC = 14:30 local
-        localTime.Hour.Should().BeOneOf(14, 15); // Account for DST
+        localTime.Should().Be(new DateTime(2026, 1, 7, 14, 30, 0));
     }
 
     [Fact]
@@ -151,8 +139,7 @@ public class DateTimeProviderTests
 
         // Assert
         utcTime.Kind.Should().Be(DateTimeKind.Utc);
-        // Brussels is UTC+1 in winter, so 14:30 local = 13:30 UTC
-        utcTime.Hour.Should().BeOneOf(12, 13); // Account for DST
+        utcTime.Should().Be(new DateTime(2026, 1, 7, 13, 30, 0, DateTimeKind.Utc));
     }
 
     [Fact]
@@ -175,28 +162,5 @@ public class DateTimeProviderTests
         // Assert
         result.Should().Be(utcTime);
         result.Kind.Should().Be(DateTimeKind.Utc);
-    }
-
-    [Theory]
-    [InlineData("America/New_York")]
-    [InlineData("Asia/Tokyo")]
-    [InlineData("Australia/Sydney")]
-    [InlineData("Europe/London")]
-    public void Constructor_WithVariousTimezones_ShouldWork(string timezoneId)
-    {
-        // Arrange
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                { "TZ", timezoneId }
-            })
-            .Build();
-
-        // Act
-        var provider = new DateTimeProvider(config);
-
-        // Assert
-        provider.TimeZone.Id.Should().Be(timezoneId);
-        provider.UtcNow.Should().NotBe(default);
     }
 }

@@ -43,16 +43,18 @@ public class GameFactoryTests
 
     #region CreateFromBggAsync Tests
 
-    [Fact]
-    public async Task CreateFromBggAsync_ShouldCreateGameWithBasicProperties()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateFromBggAsync_ShouldCreateGameWithBasicProperties(bool hasScoring)
     {
         var item = CreateBasicItem();
 
-        var result = await _factory.CreateFromBggAsync(item, true, GameState.Owned, null, null);
+        var result = await _factory.CreateFromBggAsync(item, hasScoring, GameState.Owned, null, null);
 
         result.Should().NotBeNull();
         result.Title.Should().Be("Test Game");
-        result.HasScoring.Should().BeTrue();
+        result.HasScoring.Should().Be(hasScoring);
         result.State.Should().Be(GameState.Owned);
     }
 
@@ -101,37 +103,18 @@ public class GameFactoryTests
         result.YearPublished.Should().BeNull();
     }
 
-    [Fact]
-    public async Task CreateFromBggAsync_ShouldSetMinAge()
+    [Theory]
+    [InlineData(12, 12)]
+    [InlineData(0, null)]
+    [InlineData(null, null)]
+    public async Task CreateFromBggAsync_ShouldSetMinAge(int? minAge, int? expected)
     {
         var item = CreateBasicItem();
-        item.MinAge = 12;
+        item.MinAge = minAge;
 
         var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        result.MinAge.Should().Be(12);
-    }
-
-    [Fact]
-    public async Task CreateFromBggAsync_ShouldNotSetMinAge_WhenZero()
-    {
-        var item = CreateBasicItem();
-        item.MinAge = 0;
-
-        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
-
-        result.MinAge.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task CreateFromBggAsync_ShouldNotSetMinAge_WhenNull()
-    {
-        var item = CreateBasicItem();
-        item.MinAge = null;
-
-        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
-
-        result.MinAge.Should().BeNull();
+        result.MinAge.Should().Be(expected);
     }
 
     [Fact]
@@ -148,6 +131,21 @@ public class GameFactoryTests
         result.PlayerCount!.Max.Should().Be(6);
     }
 
+    [Theory]
+    [InlineData(0, 6)]
+    [InlineData(2, 0)]
+    [InlineData(0, 0)]
+    public async Task CreateFromBggAsync_ShouldNotSetPlayerCount_WhenAnyValueIsZero(int minPlayers, int maxPlayers)
+    {
+        var item = CreateBasicItem();
+        item.MinPlayers = minPlayers;
+        item.MaxPlayers = maxPlayers;
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.PlayerCount.Should().BeNull();
+    }
+
     [Fact]
     public async Task CreateFromBggAsync_ShouldSetPlayTime()
     {
@@ -160,6 +158,20 @@ public class GameFactoryTests
         result.PlayTime.Should().NotBeNull();
         result.PlayTime!.MinMinutes.Should().Be(45);
         result.PlayTime!.MaxMinutes.Should().Be(90);
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldSetZeroPlayTime_WhenTimesAreNull()
+    {
+        var item = CreateBasicItem();
+        item.MinPlayingTime = null;
+        item.MaxPlayingTime = null;
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.PlayTime.Should().NotBeNull();
+        result.PlayTime!.MinMinutes.Should().Be(0);
+        result.PlayTime!.MaxMinutes.Should().Be(0);
     }
 
     [Fact]
@@ -181,6 +193,29 @@ public class GameFactoryTests
         result.Rating!.Value.Should().Be(8.7);
         result.Weight.Should().NotBeNull();
         result.Weight!.Value.Should().Be(3.5);
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldNotSetRatingAndWeight_WhenStatisticsAreNull()
+    {
+        var item = CreateBasicItem();
+        item.Statistics = null;
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.Rating.Should().BeNull();
+        result.Weight.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldDownloadImageWithEmptyUrl_WhenImageIsNull()
+    {
+        var item = CreateBasicItem();
+        item.Image = null;
+
+        await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        _imageServiceMock.Verify(x => x.DownloadImage(string.Empty, item.Id.ToString()), Times.Once);
     }
 
     [Fact]
@@ -215,24 +250,16 @@ public class GameFactoryTests
         result.BuyingPrice.Should().BeNull();
     }
 
-    [Fact]
-    public async Task CreateFromBggAsync_ShouldSetShopUrl_WhenProvided()
+    [Theory]
+    [InlineData("https://shop.example.com/game", "https://shop.example.com/game")]
+    [InlineData(null, null)]
+    public async Task CreateFromBggAsync_ShouldSetShopUrl_WhenProvided(string? shopUrl, string? expected)
     {
         var item = CreateBasicItem();
 
-        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null, "https://shop.example.com/game");
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null, shopUrl);
 
-        result.ShopUrl.Should().Be("https://shop.example.com/game");
-    }
-
-    [Fact]
-    public async Task CreateFromBggAsync_ShouldNotSetShopUrl_WhenNull()
-    {
-        var item = CreateBasicItem();
-
-        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
-
-        result.ShopUrl.Should().BeNull();
+        result.ShopUrl.Should().Be(expected);
     }
 
     [Fact]
@@ -351,7 +378,8 @@ public class GameFactoryTests
         item.Links =
         [
             new ThingResponse.Link { Type = Constants.Bgg.Designer, Id = 1, Value = "Designer One" },
-            new ThingResponse.Link { Type = Constants.Bgg.Artist, Id = 2, Value = "Artist One" }
+            new ThingResponse.Link { Type = Constants.Bgg.Artist, Id = 2, Value = "Artist One" },
+            new ThingResponse.Link { Type = Constants.Bgg.Publisher, Id = 3, Value = "Publisher One" }
         ];
 
         List<Person>? captured = null;
@@ -362,9 +390,10 @@ public class GameFactoryTests
 
         await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
 
-        captured.Should().HaveCount(2);
+        captured.Should().HaveCount(3);
         captured.Should().Contain(p => p.Name == "Designer One" && p.Type == PersonType.Designer);
         captured.Should().Contain(p => p.Name == "Artist One" && p.Type == PersonType.Artist);
+        captured.Should().Contain(p => p.Name == "Publisher One" && p.Type == PersonType.Publisher);
     }
 
     [Fact]

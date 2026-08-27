@@ -47,6 +47,12 @@ public class AiClientFactoryTests
                 embeddingNumGpu, 5));
     }
 
+    private void VerifyNoOtherCalls()
+    {
+        _httpClientFactoryMock.VerifyNoOtherCalls();
+        _settingsProviderMock.VerifyNoOtherCalls();
+    }
+
     [Theory]
     [InlineData("ollama")]
     [InlineData("openai")]
@@ -59,6 +65,9 @@ public class AiClientFactoryTests
         var ollama = generator.Should().BeOfType<OllamaApiClient>().Subject;
         ollama.SelectedModel.Should().Be("bge-m3");
         ollama.Uri.Should().Be(new Uri(BaseUrl));
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -71,6 +80,10 @@ public class AiClientFactoryTests
 
         generator.Should().NotBeOfType<OllamaApiClient>();
         _handler.LastEmbedBody.Should().Contain("\"num_gpu\":0");
+        _handler.LastEmbedBody.Should().Contain("bge-m3");
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -81,6 +94,9 @@ public class AiClientFactoryTests
         var client = await _factory.CreateChatClientAsync();
 
         client.Should().BeOfType<OllamaApiClient>().Which.SelectedModel.Should().Be("qwen3:4b");
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -94,79 +110,81 @@ public class AiClientFactoryTests
         var client = await _factory.CreateChatClientAsync();
 
         client.Should().BeOfType<OllamaApiClient>();
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task CreateChatClientAsync_ShouldNotUseOllama_WhenProviderIsOpenAi()
+    [Theory]
+    [InlineData("openai")]
+    [InlineData("anthropic")]
+    [InlineData("some-unknown-provider")]
+    public async Task CreateChatClientAsync_ShouldFallBackToOpenAiClient_WhenProviderIsNotOllama(string provider)
     {
-        SetupSettings(Constants.AiConfig.OpenAiProvider);
+        SetupSettings(provider);
 
         var client = await _factory.CreateChatClientAsync();
 
         client.Should().NotBeOfType<OllamaApiClient>();
+        client.GetType().Name.Should().Contain("OpenAI");
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    public static TheoryData<string, string, string[], string[]> EnsureModelCases => new()
+    {
+        { "openai", "gpt-4o", new string[0], new[] { "bge-m3" } },
+        { "ollama", "qwen3:4b", new[] { "bge-m3", "qwen3:4b" }, new string[0] },
+        { "ollama", "qwen3", new[] { "bge-m3:latest", "qwen3:4b" }, new string[0] },
+        { "ollama", "qwen3:4b", new[] { "BGE-M3:latest", "qwen3:4b" }, new string[0] },
+        { "ollama", "qwen3:4b", new string[0], new[] { "bge-m3", "qwen3:4b" } },
+        { "ollama", "qwen3:4b", new[] { "bge-m3:latest" }, new[] { "qwen3:4b" } }
+    };
+
+    [Theory]
+    [MemberData(nameof(EnsureModelCases))]
+    public async Task EnsureModelsAvailableAsync_ShouldPullExactlyTheMissingModels(
+        string provider, string chatModel, string[] localModels, string[] expectedPulledModels)
+    {
+        SetupSettings(provider, chatModel: chatModel);
+        _handler.LocalModels = localModels;
+
+        await _factory.EnsureModelsAvailableAsync();
+
+        _handler.PullRequests.Should().HaveCount(expectedPulledModels.Length);
+        foreach (var model in expectedPulledModels)
+        {
+            _handler.PullRequests.Should().ContainSingle(body => body.Contains(model));
+        }
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(
+            x => x.CreateClient(AiClientFactory.HttpClientName),
+            Times.Exactly(provider == Constants.AiConfig.OllamaProvider ? 2 : 1));
+        VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task EnsureModelsAvailableAsync_ShouldOnlyEnsureEmbeddingModel_WhenChatProviderIsNotOllama()
+    public async Task EnsureModelsAvailableAsync_ShouldThrow_WhenPullingAModelFails()
     {
-        SetupSettings(Constants.AiConfig.OpenAiProvider);
+        SetupSettings(Constants.AiConfig.OllamaProvider);
         _handler.LocalModels = [];
+        _handler.FailPulls = true;
 
-        await _factory.EnsureModelsAvailableAsync();
+        await FluentActions.Awaiting(() => _factory.EnsureModelsAvailableAsync())
+            .Should().ThrowAsync<Exception>();
 
-        _handler.PullRequestCount.Should().Be(1);
-    }
-
-    [Fact]
-    public async Task EnsureModelsAvailableAsync_ShouldNotPull_WhenBothModelsAreAlreadyLocal()
-    {
-        SetupSettings(Constants.AiConfig.OllamaProvider);
-        _handler.LocalModels = ["bge-m3", "qwen3:4b"];
-
-        await _factory.EnsureModelsAvailableAsync();
-
-        _handler.PullRequestCount.Should().Be(0);
-    }
-
-    [Fact]
-    public async Task EnsureModelsAvailableAsync_ShouldNotPull_WhenLocalModelOnlyDiffersByTag()
-    {
-        SetupSettings(Constants.AiConfig.OllamaProvider, chatModel: "qwen3", embeddingModel: "bge-m3");
-        _handler.LocalModels = ["bge-m3:latest", "qwen3:4b"];
-
-        await _factory.EnsureModelsAvailableAsync();
-
-        _handler.PullRequestCount.Should().Be(0);
-    }
-
-    [Fact]
-    public async Task EnsureModelsAvailableAsync_ShouldPullEveryMissingModel()
-    {
-        SetupSettings(Constants.AiConfig.OllamaProvider);
-        _handler.LocalModels = [];
-
-        await _factory.EnsureModelsAvailableAsync();
-
-        _handler.PullRequestCount.Should().Be(2);
-    }
-
-    [Fact]
-    public async Task EnsureModelsAvailableAsync_ShouldOnlyPullTheMissingModel()
-    {
-        SetupSettings(Constants.AiConfig.OllamaProvider);
-        _handler.LocalModels = ["bge-m3:latest"];
-
-        await _factory.EnsureModelsAvailableAsync();
-
-        _handler.PullRequestCount.Should().Be(1);
+        _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
+        _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     private sealed class RecordingHandler : HttpMessageHandler
     {
         public List<string> Requests { get; } = [];
         public IReadOnlyList<string> LocalModels { get; set; } = [];
-        public int PullRequestCount { get; private set; }
+        public List<string> PullRequests { get; } = [];
+        public bool FailPulls { get; set; }
         public string? LastEmbedBody { get; private set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -176,7 +194,16 @@ public class AiClientFactoryTests
 
             if (path.Contains("pull", StringComparison.OrdinalIgnoreCase))
             {
-                PullRequestCount++;
+                PullRequests.Add(request.Content is null
+                    ? string.Empty
+                    : await request.Content.ReadAsStringAsync(cancellationToken));
+                if (FailPulls)
+                {
+                    return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                    {
+                        Content = new StringContent("""{"error":"pull failed"}""", Encoding.UTF8, "application/json")
+                    };
+                }
                 return Json("""{"status":"success"}""");
             }
 

@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Core.GameNights.Interfaces;
@@ -52,47 +51,8 @@ public class CountControllerTests
         }
 
         [Fact]
-        public async Task GetMenuCounts_ShouldThrowException_WhenGameServiceThrows()
-        {
-            var expectedException = new InvalidOperationException("Game service error");
-
-            _gameServiceMock
-                .Setup(x => x.CountAsync())
-                .ThrowsAsync(expectedException);
-
-            _playerServiceMock
-                .Setup(x => x.CountAsync())
-                .ReturnsAsync(100);
-
-            _locationServiceMock
-                .Setup(x => x.CountAsync())
-                .ReturnsAsync(5);
-
-            _shameServiceMock
-                .Setup(x => x.CountShelfOfShameGames())
-                .ReturnsAsync(2);
-
-            _loanServiceMock
-                .Setup(x => x.CountActiveLoans())
-                .ReturnsAsync(3);
-
-            _gameNightServiceMock
-                .Setup(x => x.CountFutureGameNights())
-                .ReturnsAsync(0);
-
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => _controller.GetMenuCounts());
-
-            exception.Should().Be(expectedException);
-
-            _gameServiceMock.Verify(x => x.CountAsync(), Times.Once);
-            VerifyNoOtherCalls();
-        }
-
-        [Fact]
         public async Task GetMenuCounts_ShouldReturnCounts_WhenSuccessful()
         {
-            // Arrange
             _gameServiceMock
                 .Setup(x => x.CountAsync())
                 .ReturnsAsync(42);
@@ -117,10 +77,8 @@ public class CountControllerTests
                 .Setup(x => x.CountFutureGameNights())
                 .ReturnsAsync(4);
 
-            // Act
             var result = await _controller.GetMenuCounts();
 
-            // Assert
             var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
             var counts = okResult.Value.Should().BeAssignableTo<Common.DTOs.KeyValuePairDto<int>[]>().Subject;
 

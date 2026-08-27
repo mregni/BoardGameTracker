@@ -86,7 +86,7 @@ public class AuthDisabledFilterTests
 
         context.Result.Should().BeNull();
         _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
-        _environmentProviderMock.Invocations.Clear();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -94,6 +94,8 @@ public class AuthDisabledFilterTests
     [InlineData("/api/auth/login")]
     [InlineData("/api/auth/register")]
     [InlineData("/api/settings")]
+    [InlineData("/mystatus")]
+    [InlineData("/api/auth/mystatus")]
     public void OnActionExecuting_ShouldSetConflictResult_WhenAuthIsDisabledAndVariousNonStatusPaths(string path)
     {
         _environmentProviderMock.Setup(x => x.AuthEnabled).Returns(false);
@@ -104,6 +106,6 @@ public class AuthDisabledFilterTests
         var conflictResult = context.Result.Should().BeOfType<ConflictObjectResult>().Subject;
         conflictResult.Value.Should().Be("Authentication is disabled. This endpoint is not available.");
         _environmentProviderMock.Verify(x => x.AuthEnabled, Times.Once);
-        _environmentProviderMock.Invocations.Clear();
+        VerifyNoOtherCalls();
     }
 }

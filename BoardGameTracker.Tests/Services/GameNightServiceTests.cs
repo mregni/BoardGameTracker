@@ -277,6 +277,43 @@ public class GameNightServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task Create_ShouldTreatNullCollections_AsEmpty()
+    {
+        var command = new CreateGameNightCommand
+        {
+            Title = "Game Night",
+            Notes = string.Empty,
+            StartDate = DateTime.UtcNow.AddDays(1),
+            HostId = 1,
+            LocationId = 1,
+            SuggestedGameIds = null!,
+            InvitedPlayerIds = null!
+        };
+
+        _gameRepositoryMock
+            .Setup(x => x.GetByIdsAsync(It.Is<List<int>>(ids => ids.Count == 0)))
+            .ReturnsAsync([]);
+
+        _gameNightRepositoryMock
+            .Setup(x => x.CreateAsync(It.IsAny<GameNight>()))
+            .ReturnsAsync((GameNight g) => g);
+
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        var result = await _gameNightService.Create(command);
+
+        result.SuggestedGames.Should().BeEmpty();
+        result.InvitedPlayers.Should().ContainSingle(p => p.PlayerId == 1 && p.State == GameNightRsvpState.Accepted);
+
+        _gameRepositoryMock.Verify(x => x.GetByIdsAsync(It.Is<List<int>>(ids => ids.Count == 0)), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<GameNight>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region Update Tests
@@ -658,6 +695,65 @@ public class GameNightServiceTests
     }
 
     [Fact]
+    public async Task UpdateRsvp_ShouldThrowArgumentNullException_WhenIdAndGameNightIdAreNull()
+    {
+        var command = new UpdateRsvpCommand
+        {
+            Id = null,
+            GameNightId = null,
+            PlayerId = 3,
+            State = GameNightRsvpState.Accepted
+        };
+
+        var action = async () => await _gameNightService.UpdateRsvp(command);
+
+        await action.Should().ThrowAsync<ArgumentNullException>();
+
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRsvp_ShouldThrowArgumentNullException_WhenIdAndPlayerIdAreNull()
+    {
+        var command = new UpdateRsvpCommand
+        {
+            Id = null,
+            GameNightId = 10,
+            PlayerId = null,
+            State = GameNightRsvpState.Accepted
+        };
+
+        var action = async () => await _gameNightService.UpdateRsvp(command);
+
+        await action.Should().ThrowAsync<ArgumentNullException>();
+
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRsvp_ShouldThrow_WhenRsvpNotFoundByPlayerAndGameNight()
+    {
+        var command = new UpdateRsvpCommand
+        {
+            Id = null,
+            GameNightId = 10,
+            PlayerId = 3,
+            State = GameNightRsvpState.Accepted
+        };
+
+        _rsvpRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByPlayerAndGameNightSpec), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GameNightRsvp?)null);
+
+        var action = async () => await _gameNightService.UpdateRsvp(command);
+
+        await action.Should().ThrowAsync<ArgumentNullException>();
+
+        _rsvpRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByPlayerAndGameNightSpec), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task UpdateRsvp_ShouldUpdateState_WhenRsvpIsFound()
     {
         var rsvp = GameNightRsvp.Create(1, GameNightRsvpState.Pending);
@@ -684,37 +780,6 @@ public class GameNightServiceTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task UpdateRsvp_ShouldEmailHost_WhenPlayerResponds()
-    {
-        var rsvp = RsvpWithGameNight(2, GameNightRsvpState.Pending, new Player("Kathleen"),
-            hostId: 1, host: new Player("Mikhael", null, "host@test.com"));
-        var command = new UpdateRsvpCommand { Id = 7, State = GameNightRsvpState.Accepted };
-
-        _rsvpRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>())).ReturnsAsync(rsvp);
-        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
-        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
-        _emailServiceMock
-            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
-        await _gameNightService.UpdateRsvp(command);
-
-        _emailServiceMock.Verify(
-            x => x.SendAsync(
-                "host@test.com",
-                It.Is<string>(s => s.Contains("Games night")),
-                It.Is<string>(b => b.Contains("Kathleen") && b.Contains("will come to")),
-                It.IsAny<string?>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        _rsvpRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
-        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
-        VerifyNoOtherCalls();
-    }
-
     [Theory]
     [InlineData(GameNightRsvpState.Accepted, "will come to")]
     [InlineData(GameNightRsvpState.Declined, "will not come to")]
@@ -735,8 +800,12 @@ public class GameNightServiceTests
         await _gameNightService.UpdateRsvp(command);
 
         _emailServiceMock.Verify(
-            x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(b => b.Contains(expected)),
-                It.IsAny<string?>(), It.IsAny<CancellationToken>()),
+            x => x.SendAsync(
+                "host@test.com",
+                It.Is<string>(s => s.Contains("Games night")),
+                It.Is<string>(b => b.Contains("Kathleen") && b.Contains(expected)),
+                It.IsAny<string?>(),
+                It.IsAny<CancellationToken>()),
             Times.Once);
 
         _rsvpRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>()), Times.Once);

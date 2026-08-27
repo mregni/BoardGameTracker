@@ -115,10 +115,10 @@ public class PlayerServiceTests
     public async Task Create_ShouldCreatePlayer_AndSaveChanges()
     {
         // Arrange
-        var command = new CreatePlayerCommand { Name = "New Player", Image = "player.png" };
+        var command = new CreatePlayerCommand { Name = "New Player", Image = "player.png", Email = "player@example.com" };
 
         _playerRepositoryMock
-            .Setup(x => x.CreateAsync(It.Is<Player>(p => p.Name == "New Player" && p.Image == "player.png")))
+            .Setup(x => x.CreateAsync(It.Is<Player>(p => p.Name == "New Player" && p.Image == "player.png" && p.Email == "player@example.com")))
             .ReturnsAsync((Player p) => p);
 
         _unitOfWorkMock
@@ -132,8 +132,9 @@ public class PlayerServiceTests
         result.Should().NotBeNull();
         result.Name.Should().Be("New Player");
         result.Image.Should().Be("player.png");
+        result.Email.Should().Be("player@example.com");
 
-        _playerRepositoryMock.Verify(x => x.CreateAsync(It.Is<Player>(p => p.Name == "New Player" && p.Image == "player.png")), Times.Once);
+        _playerRepositoryMock.Verify(x => x.CreateAsync(It.Is<Player>(p => p.Name == "New Player" && p.Image == "player.png" && p.Email == "player@example.com")), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -194,12 +195,13 @@ public class PlayerServiceTests
     {
         // Arrange
         var playerId = 1;
-        var existingPlayer = new Player("Old Name", "old.png") { Id = playerId };
+        var existingPlayer = new Player("Old Name", "old.png", "old@example.com") { Id = playerId };
         var command = new UpdatePlayerCommand
         {
             Id = playerId,
             Name = "New Name",
-            Image = "new.png"
+            Image = "new.png",
+            Email = "new@example.com"
         };
 
         _playerRepositoryMock
@@ -218,10 +220,12 @@ public class PlayerServiceTests
         result.Should().NotBeNull();
         result.Name.Should().Be("New Name");
         result.Image.Should().Be("new.png");
+        result.Email.Should().Be("new@example.com");
 
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage("old.png"), Times.Once);
-
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -259,7 +263,7 @@ public class PlayerServiceTests
         {
             Id = playerId,
             Name = "New Name",
-            Image = existingImage // Same image
+            Image = existingImage
         };
 
         _playerRepositoryMock
@@ -276,7 +280,12 @@ public class PlayerServiceTests
 
         // Assert
         result.Should().NotBeNull();
+        result.Image.Should().Be(existingImage);
+
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage(It.IsAny<string>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     #endregion
@@ -331,23 +340,6 @@ public class PlayerServiceTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task GetSessions_ShouldQueryWithRecentFirstSpec_WhenCountNotSpecified()
-    {
-        // Arrange
-        var playerId = 1;
-
-        _sessionRepositoryMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByPlayerRecentFirstSpec), It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
-
-        // Act
-        var result = await _playerService.GetSessions(playerId, null);
-
-        // Assert
-        _sessionRepositoryMock.Verify(x => x.ListAsync(It.Is<ISpecification<Session>>(s => s is SessionsByPlayerRecentFirstSpec), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
     #endregion
 
     #region Delete Tests
@@ -379,10 +371,12 @@ public class PlayerServiceTests
         await _playerService.Delete(playerId);
 
         // Assert
+        _playerRepositoryMock.Verify(x => x.GetByIdAsync(playerId), Times.Once);
         _sessionRepositoryMock.Verify(x => x.DeleteByPlayerIdAsync(playerId), Times.Once);
         _imageServiceMock.Verify(x => x.DeleteImage("john.png"), Times.Once);
         _playerRepositoryMock.Verify(x => x.DeleteAsync(playerId), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]

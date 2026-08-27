@@ -14,23 +14,19 @@ public class LoansOrderedByDateSpecTests
     [Fact]
     public void Evaluate_ShouldOrderByLoanDateDescending()
     {
-        // Arrange
         var oldest = new Loan(1, 1, DateTime.UtcNow.AddDays(-10)) { Id = 1 };
         var newest = new Loan(2, 1, DateTime.UtcNow.AddDays(-1)) { Id = 2 };
         var middle = new Loan(3, 1, DateTime.UtcNow.AddDays(-5)) { Id = 3 };
         var loans = new List<Loan> { oldest, newest, middle };
 
-        // Act
         var result = new LoansOrderedByDateSpec().Evaluate(loans).ToList();
 
-        // Assert
-        result.Select(x => x.Id).Should().ContainInOrder(2, 3, 1);
+        result.Select(x => x.Id).Should().Equal(2, 3, 1);
     }
 
     [Fact]
     public void Spec_ShouldBeNoTracking()
     {
-        // The read-list spec must not track — regression guard for the dropped AsNoTracking.
         new LoansOrderedByDateSpec().AsNoTracking.Should().BeTrue();
     }
 }
