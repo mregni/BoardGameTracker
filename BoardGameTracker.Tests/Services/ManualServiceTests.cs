@@ -73,7 +73,7 @@ public class ManualServiceTests
         file.Setup(f => f.FileName).Returns(fileName);
         file.Setup(f => f.ContentType).Returns(contentType);
         file.Setup(f => f.Length).Returns(length);
-        file.Setup(f => f.OpenReadStream()).Returns(() => new MemoryStream(new byte[length]));
+        file.Setup(f => f.OpenReadStream()).Returns(() => new MemoryStream(new byte[Math.Min(length, 1024)]));
         return file.Object;
     }
 
@@ -124,16 +124,39 @@ public class ManualServiceTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task UploadManuals_ShouldThrow_WhenFileExceedsMaxSize()
+    [Theory]
+    [InlineData("rulebook.txt", "application/pdf", 1024L, "*not a PDF*")]
+    [InlineData("rulebook.pdf", "text/plain", 1024L, "*not a PDF*")]
+    [InlineData("empty.pdf", "application/pdf", 0L, "*empty*")]
+    [InlineData("big.pdf", "application/pdf", 201L * 1024 * 1024, "*exceeds*")]
+    public async Task UploadManuals_ShouldThrowAndWriteNothing_WhenFileIsInvalid(
+        string fileName, string contentType, long length, string expectedMessage)
     {
-        var files = new List<IFormFile> { CreateFormFile("big.pdf", length: 201L * 1024 * 1024) };
+        var files = new List<IFormFile> { CreateFormFile(fileName, contentType, length) };
 
         var act = async () => await _manualService.UploadManuals(1, files);
 
-        await act.Should().ThrowAsync<ValidationException>();
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(expectedMessage);
 
         _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UploadManuals_ShouldAcceptFile_AtExactMaxSize()
+    {
+        var files = new List<IFormFile> { CreateFormFile("max.pdf", length: 200L * 1024 * 1024) };
+        _diskProviderMock
+            .Setup(x => x.WriteFile(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync("stored-max.pdf");
+
+        var result = await _manualService.UploadManuals(1, files);
+
+        result.Should().HaveCount(1);
+
+        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        _manualRepositoryMock.Verify(x => x.CreateRangeAsync(It.Is<List<Manual>>(l => l.Count == 1)), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -158,28 +181,26 @@ public class ManualServiceTests
     }
 
     [Fact]
-    public async Task UploadManuals_ShouldThrowAndWriteNothing_WhenAFileIsEmpty()
+    public async Task UploadManuals_ShouldDeleteAllWrittenFiles_WhenSaveChangesFails()
     {
-        var files = new List<IFormFile> { CreateFormFile("empty.pdf", length: 0) };
+        var files = new List<IFormFile> { CreateFormFile("a.pdf"), CreateFormFile("b.pdf") };
+        _diskProviderMock
+            .Setup(x => x.WriteFile(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((Stream _, string fileName, string _) => $"stored-{fileName}");
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("save failed"));
 
         var act = async () => await _manualService.UploadManuals(1, files);
 
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("*empty*");
+        await act.Should().ThrowAsync<InvalidOperationException>();
 
-        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task UploadManuals_ShouldThrowAndWriteNothing_WhenExtensionIsNotPdf()
-    {
-        var files = new List<IFormFile> { CreateFormFile("rulebook.txt") };
-
-        var act = async () => await _manualService.UploadManuals(1, files);
-
-        await act.Should().ThrowAsync<ValidationException>().WithMessage("*not a PDF*");
-
-        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
+        _diskProviderMock.Verify(x => x.DeleteFile(It.Is<string>(p => p.EndsWith("stored-a.pdf"))), Times.Once);
+        _diskProviderMock.Verify(x => x.DeleteFile(It.Is<string>(p => p.EndsWith("stored-b.pdf"))), Times.Once);
+        _manualRepositoryMock.Verify(x => x.CreateRangeAsync(It.Is<List<Manual>>(l => l.Count == 2)), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _indexingQueueMock.Verify(x => x.Enqueue(It.IsAny<int>()), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -566,6 +587,22 @@ public class ManualServiceTests
 
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         _manualRepositoryMock.Verify(x => x.ListAsync(It.IsAny<ManualsByGameIdsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetManualsForGameNight_ShouldReturnEmptyWithoutQueryingManuals_WhenNightHasNoSuggestedGames()
+    {
+        var linkId = Guid.NewGuid();
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
+        _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>())).ReturnsAsync(gameNight);
+
+        var result = await _manualService.GetManualsForGameNight(linkId);
+
+        result.Should().BeEmpty();
+
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _manualRepositoryMock.Verify(x => x.ListAsync(It.IsAny<ManualsByGameIdsSpec>(), It.IsAny<CancellationToken>()), Times.Never);
         VerifyNoOtherCalls();
     }
 

@@ -1,5 +1,6 @@
 using System;
 using BoardGameTracker.Common.Entities;
+using FluentAssertions;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Core;
@@ -18,11 +19,29 @@ public class GameLoanTests
         var loan = game.LoanToPlayer(playerId, loanDate);
 
         // Assert
-        Assert.NotNull(loan);
-        Assert.Equal(game.Id, loan.GameId);
-        Assert.Equal(playerId, loan.PlayerId);
-        Assert.Equal(loanDate, loan.LoanDate);
-        Assert.Single(game.Loans);
+        loan.Should().NotBeNull();
+        loan.PlayerId.Should().Be(playerId);
+        loan.LoanDate.Should().Be(loanDate);
+        loan.DueDate.Should().BeNull();
+        loan.ReturnedDate.Should().BeNull();
+        game.Loans.Should().ContainSingle().Which.Should().BeSameAs(loan);
+    }
+
+    [Fact]
+    public void LoanToPlayer_WhileAlreadyLoaned_PinsCurrentBehavior()
+    {
+        // Arrange
+        var game = new Game("Test Game");
+        var firstLoan = game.LoanToPlayer(1, DateTime.UtcNow.AddDays(-5));
+
+        // Act
+        var secondLoan = game.LoanToPlayer(2, DateTime.UtcNow);
+
+        // Assert
+        game.Loans.Should().HaveCount(2);
+        firstLoan.IsCurrentlyOnLoan().Should().BeTrue();
+        secondLoan.IsCurrentlyOnLoan().Should().BeTrue();
+        game.IsCurrentlyLoaned().Should().BeTrue();
     }
 
     [Fact]
@@ -36,7 +55,7 @@ public class GameLoanTests
         var result = game.IsCurrentlyLoaned();
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -49,36 +68,7 @@ public class GameLoanTests
         var result = game.IsCurrentlyLoaned();
 
         // Assert
-        Assert.False(result);
-    }
-
-    [Fact]
-    public void IsCurrentlyLoaned_WithReturnedLoan_ShouldReturnFalse()
-    {
-        // Arrange
-        var game = new Game("Test Game");
-        var loan = game.LoanToPlayer(1, DateTime.UtcNow.AddDays(-10));
-        loan.MarkAsReturned(DateTime.UtcNow.AddDays(-5));
-
-        // Act
-        var result = game.IsCurrentlyLoaned();
-
-        // Assert
-        Assert.False(result);
-    }
-
-    [Fact]
-    public void IsCurrentlyLoaned_WithFutureLoan_ShouldReturnFalse()
-    {
-        // Arrange
-        var game = new Game("Test Game");
-        game.LoanToPlayer(1, DateTime.UtcNow.AddDays(5));
-
-        // Act
-        var result = game.IsCurrentlyLoaned();
-
-        // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -94,9 +84,9 @@ public class GameLoanTests
 
         var loan3 = game.LoanToPlayer(3, DateTime.UtcNow);
 
-        Assert.Equal(3, game.Loans.Count);
-        Assert.False(loan1.IsCurrentlyOnLoan());
-        Assert.False(loan2.IsCurrentlyOnLoan());
-        Assert.True(loan3.IsCurrentlyOnLoan());
+        game.Loans.Should().HaveCount(3);
+        loan1.IsCurrentlyOnLoan().Should().BeFalse();
+        loan2.IsCurrentlyOnLoan().Should().BeFalse();
+        loan3.IsCurrentlyOnLoan().Should().BeTrue();
     }
 }

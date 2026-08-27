@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using BoardGameTracker.Common.Extensions;
 using FluentAssertions;
 using Serilog.Events;
@@ -22,71 +22,46 @@ public class LogLevelExtensionsTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    [Fact]
-    public void GetEnvironmentLogLevel_ShouldReturnError_WhenEnvironmentVariableIsERROR()
-    {
-        Environment.SetEnvironmentVariable("LOGLEVEL", "ERROR");
-
-        var result = LogLevelExtensions.GetEnvironmentLogLevel();
-
-        result.Should().Be(LogEventLevel.Error);
-    }
-
-    [Fact]
-    public void GetEnvironmentLogLevel_ShouldReturnInformation_WhenEnvironmentVariableIsINFO()
-    {
-        Environment.SetEnvironmentVariable("LOGLEVEL", "INFO");
-
-        var result = LogLevelExtensions.GetEnvironmentLogLevel();
-
-        result.Should().Be(LogEventLevel.Information);
-    }
-
-    [Fact]
-    public void GetEnvironmentLogLevel_ShouldReturnDebug_WhenEnvironmentVariableIsDEBUG()
-    {
-        Environment.SetEnvironmentVariable("LOGLEVEL", "debug");
-
-        var result = LogLevelExtensions.GetEnvironmentLogLevel();
-
-        result.Should().Be(LogEventLevel.Debug);
-    }
-
-    [Fact]
-    public void GetEnvironmentLogLevel_ShouldReturnWarning_WhenEnvironmentVariableIsWARNING()
-    {
-        Environment.SetEnvironmentVariable("LOGLEVEL", "warning");
-
-        var result = LogLevelExtensions.GetEnvironmentLogLevel();
-
-        result.Should().Be(LogEventLevel.Warning);
-    }
-
     [Theory]
+    [InlineData("ERROR", LogEventLevel.Error)]
     [InlineData(" error ", LogEventLevel.Error)]
     [InlineData(" ERROR ", LogEventLevel.Error)]
+    [InlineData("INFO", LogEventLevel.Information)]
     [InlineData(" info ", LogEventLevel.Information)]
     [InlineData(" INFO ", LogEventLevel.Information)]
+    [InlineData("debug", LogEventLevel.Debug)]
     [InlineData(" debug ", LogEventLevel.Debug)]
     [InlineData(" DEBUG ", LogEventLevel.Debug)]
-    [InlineData(" warning ", LogEventLevel.Warning)]
-    [InlineData(" WARNING ", LogEventLevel.Warning)]
-    [InlineData("unknown", LogEventLevel.Warning)]
-    [InlineData("invalid", LogEventLevel.Warning)]
-    [InlineData("TRACE", LogEventLevel.Warning)]
-    [InlineData("CRITICAL", LogEventLevel.Warning)]
-    [InlineData("FATAL", LogEventLevel.Warning)]
-    [InlineData("random", LogEventLevel.Warning)]
-    [InlineData("123", LogEventLevel.Warning)]
-    [InlineData("!@#", LogEventLevel.Warning)]
-    [InlineData(" ", LogEventLevel.Warning)]
-    [InlineData(null, LogEventLevel.Warning)]
-    public void GetEnvironmentLogLevel_ShouldReturnWarning_WhenEnvironmentVariableIsUnknownValue(string? value, LogEventLevel logLevel)
+    public void GetEnvironmentLogLevel_ShouldMapTrimmedCaseInsensitiveValue(string value, LogEventLevel expected)
     {
         Environment.SetEnvironmentVariable("LOGLEVEL", value);
 
         var result = LogLevelExtensions.GetEnvironmentLogLevel();
 
-        result.Should().Be(logLevel);
+        result.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("warning")]
+    [InlineData("warn")]
+    [InlineData("WARNING")]
+    [InlineData(" warning ")]
+    [InlineData("unknown")]
+    [InlineData("invalid")]
+    [InlineData("TRACE")]
+    [InlineData("CRITICAL")]
+    [InlineData("FATAL")]
+    [InlineData("random")]
+    [InlineData("123")]
+    [InlineData("!@#")]
+    [InlineData(" ")]
+    [InlineData(null)]
+    public void GetEnvironmentLogLevel_ShouldFallBackToWarning_ForUnrecognizedValue(string? value)
+    {
+        Environment.SetEnvironmentVariable("LOGLEVEL", value);
+
+        var result = LogLevelExtensions.GetEnvironmentLogLevel();
+
+        result.Should().Be(LogEventLevel.Warning);
     }
 }

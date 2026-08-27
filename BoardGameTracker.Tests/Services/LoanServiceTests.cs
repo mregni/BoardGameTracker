@@ -122,14 +122,16 @@ public class LoanServiceTests
 
     #region LoanGameToPlayer Tests
 
-    [Fact]
-    public async Task LoanGameToPlayer_ShouldCreateLoan_WhenGameExists()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task LoanGameToPlayer_ShouldCreateLoan_WhenGameExists(bool hasDueDate)
     {
         // Arrange
         var gameId = 1;
         var playerId = 2;
         var loanDate = DateTime.UtcNow;
-        var dueDate = DateTime.UtcNow.AddDays(14);
+        DateTime? dueDate = hasDueDate ? DateTime.UtcNow.AddDays(14) : null;
 
         var game = new Game("Test Game") { Id = gameId };
         var command = new CreateLoanCommand
@@ -191,43 +193,7 @@ public class LoanServiceTests
         await action.Should().ThrowAsync<EntityNotFoundException>();
 
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(command.GameId), Times.Once);
-    }
-
-    [Fact]
-    public async Task LoanGameToPlayer_ShouldCreateLoanWithoutDueDate_WhenDueDateIsNull()
-    {
-        // Arrange
-        var gameId = 1;
-        var playerId = 2;
-        var loanDate = DateTime.UtcNow;
-
-        var game = new Game("Test Game") { Id = gameId };
-        var command = new CreateLoanCommand
-        {
-            GameId = gameId,
-            PlayerId = playerId,
-            LoanDate = loanDate,
-            DueDate = null
-        };
-
-        _gameRepositoryMock
-            .Setup(x => x.GetByIdAsync(gameId))
-            .ReturnsAsync(game);
-
-        _loanRepositoryMock
-            .Setup(x => x.CreateAsync(It.IsAny<Loan>()))
-            .ReturnsAsync((Loan l) => l);
-
-
-        _unitOfWorkMock
-            .Setup(x => x.SaveChangesAsync(default))
-            .ReturnsAsync(1);
-
-        // Act
-        var result = await _loanService.LoanGameToPlayer(command);
-
-        // Assert
-        result.DueDate.Should().BeNull();
+        VerifyNoOtherCalls();
     }
 
     #endregion
@@ -374,7 +340,7 @@ public class LoanServiceTests
         var loanId = 1;
         var originalLoanDate = DateTime.UtcNow.AddDays(-10);
         var loan = new Loan(1, 1, originalLoanDate) { Id = loanId };
-        loan.SetDueDate(DateTime.UtcNow.AddDays(5)); // Initially had a due date
+        loan.SetDueDate(DateTime.UtcNow.AddDays(5));
 
         var command = new UpdateLoanCommand
         {
@@ -400,6 +366,10 @@ public class LoanServiceTests
         // Assert
         result.Should().NotBeNull();
         result.DueDate.Should().BeNull();
+
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(loanId), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     #endregion

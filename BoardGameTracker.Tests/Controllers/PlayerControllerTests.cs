@@ -211,7 +211,6 @@ public class PlayerControllerTests
     [Fact]
     public async Task GetPlayerStats_ShouldReturnOkWithStats_WhenStatsExist()
     {
-        // Arrange
         var playerId = 1;
         var stats = new PlayerStatistics
         {
@@ -226,11 +225,10 @@ public class PlayerControllerTests
             .Setup(x => x.GetStats(playerId))
             .ReturnsAsync(stats);
 
-        // Act
         var result = await _controller.GetPlayerStats(playerId);
 
-        // Assert
-        result.Should().BeOfType<OkObjectResult>();
+        result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeSameAs(stats);
 
         _playerServiceMock.Verify(x => x.GetStats(playerId), Times.Once);
         VerifyNoOtherCalls();

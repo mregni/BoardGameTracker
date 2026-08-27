@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BoardGameTracker.Common.ValueObjects;
 using FluentAssertions;
 using Xunit;
@@ -10,43 +11,24 @@ public class SessionTimeRangeTests
     #region Constructor Tests
 
     [Fact]
-    public void Constructor_WithValidTimes_ShouldSetStart()
+    public void Constructor_WithValidTimes_ShouldSetStartAndEnd()
     {
-        // Arrange
         var start = new DateTime(2024, 1, 15, 10, 0, 0);
         var end = new DateTime(2024, 1, 15, 12, 0, 0);
 
-        // Act
         var range = new SessionTimeRange(start, end);
 
-        // Assert
         range.Start.Should().Be(start);
-    }
-
-    [Fact]
-    public void Constructor_WithValidTimes_ShouldSetEnd()
-    {
-        // Arrange
-        var start = new DateTime(2024, 1, 15, 10, 0, 0);
-        var end = new DateTime(2024, 1, 15, 12, 0, 0);
-
-        // Act
-        var range = new SessionTimeRange(start, end);
-
-        // Assert
         range.End.Should().Be(end);
     }
 
     [Fact]
     public void Constructor_WithSameStartAndEnd_ShouldSucceed()
     {
-        // Arrange
         var time = new DateTime(2024, 1, 15, 10, 0, 0);
 
-        // Act
         var range = new SessionTimeRange(time, time);
 
-        // Assert
         range.Start.Should().Be(time);
         range.End.Should().Be(time);
     }
@@ -54,171 +36,71 @@ public class SessionTimeRangeTests
     [Fact]
     public void Constructor_WithEndBeforeStart_ShouldThrowException()
     {
-        // Arrange
         var start = new DateTime(2024, 1, 15, 12, 0, 0);
         var end = new DateTime(2024, 1, 15, 10, 0, 0);
 
-        // Act
         Action act = () => new SessionTimeRange(start, end);
 
-        // Assert
         act.Should().Throw<ArgumentException>()
-            .WithMessage("*end time cannot be before start time*");
+            .WithMessage("*end time cannot be before start time*")
+            .WithParameterName("end");
     }
 
-    [Fact]
-    public void Constructor_WithDefaultStart_ShouldThrowException()
+    public static IEnumerable<object[]> DefaultGuardCases()
     {
-        // Arrange
-        var start = default(DateTime);
-        var end = new DateTime(2024, 1, 15, 12, 0, 0);
-
-        // Act
-        Action act = () => new SessionTimeRange(start, end);
-
-        // Assert
-        act.Should().Throw<ArgumentException>();
+        var valid = new DateTime(2024, 1, 15, 12, 0, 0);
+        yield return new object[] { default(DateTime), valid, "start" };
+        yield return new object[] { valid, default(DateTime), "end" };
+        yield return new object[] { default(DateTime), default(DateTime), "start" };
     }
 
-    [Fact]
-    public void Constructor_WithDefaultEnd_ShouldThrowException()
+    [Theory]
+    [MemberData(nameof(DefaultGuardCases))]
+    public void Constructor_WithDefaultDateTime_ShouldThrowForOffendingParameter(DateTime start, DateTime end, string expectedParam)
     {
-        // Arrange
-        var start = new DateTime(2024, 1, 15, 10, 0, 0);
-        var end = default(DateTime);
-
-        // Act
         Action act = () => new SessionTimeRange(start, end);
 
-        // Assert
-        act.Should().Throw<ArgumentException>();
-    }
-
-    [Fact]
-    public void Constructor_WithBothDefault_ShouldThrowException()
-    {
-        // Arrange
-        var start = default(DateTime);
-        var end = default(DateTime);
-
-        // Act
-        Action act = () => new SessionTimeRange(start, end);
-
-        // Assert
-        act.Should().Throw<ArgumentException>();
+        act.Should().Throw<ArgumentException>().WithParameterName(expectedParam);
     }
 
     #endregion
 
     #region Duration Tests
 
-    [Fact]
-    public void Duration_ShouldCalculateCorrectly()
+    public static IEnumerable<object[]> DurationCases()
     {
-        // Arrange
-        var start = new DateTime(2024, 1, 15, 10, 0, 0);
-        var end = new DateTime(2024, 1, 15, 12, 0, 0);
-        var range = new SessionTimeRange(start, end);
-
-        // Act
-        var duration = range.Duration;
-
-        // Assert
-        duration.Should().Be(TimeSpan.FromHours(2));
+        yield return new object[] { new DateTime(2024, 1, 15, 10, 0, 0), new DateTime(2024, 1, 15, 12, 0, 0), TimeSpan.FromHours(2) };
+        yield return new object[] { new DateTime(2024, 1, 15, 10, 0, 0), new DateTime(2024, 1, 15, 10, 0, 0), TimeSpan.Zero };
+        yield return new object[] { new DateTime(2024, 1, 15, 10, 0, 0), new DateTime(2024, 1, 15, 10, 0, 1), TimeSpan.FromSeconds(1) };
+        yield return new object[] { new DateTime(2024, 1, 15, 0, 0, 0), new DateTime(2024, 1, 16, 0, 0, 0), TimeSpan.FromDays(1) };
+        yield return new object[] { new DateTime(2024, 1, 15, 10, 0, 0, 0), new DateTime(2024, 1, 15, 10, 0, 0, 100), TimeSpan.FromMilliseconds(100) };
     }
 
-    [Fact]
-    public void Duration_WithSameStartAndEnd_ShouldBeZero()
+    [Theory]
+    [MemberData(nameof(DurationCases))]
+    public void Duration_ShouldCalculateCorrectly(DateTime start, DateTime end, TimeSpan expected)
     {
-        // Arrange
-        var time = new DateTime(2024, 1, 15, 10, 0, 0);
-        var range = new SessionTimeRange(time, time);
-
-        // Act
-        var duration = range.Duration;
-
-        // Assert
-        duration.Should().Be(TimeSpan.Zero);
-    }
-
-    #endregion
-
-    #region Edge Cases
-
-    [Fact]
-    public void Constructor_WithOneSecondDifference_ShouldSucceed()
-    {
-        // Arrange
-        var start = new DateTime(2024, 1, 15, 10, 0, 0);
-        var end = new DateTime(2024, 1, 15, 10, 0, 1);
-
-        // Act
         var range = new SessionTimeRange(start, end);
 
-        // Assert
-        range.Duration.Should().Be(TimeSpan.FromSeconds(1));
-    }
-
-    [Fact]
-    public void Constructor_WithLongSession_ShouldSucceed()
-    {
-        // Arrange - 24 hour session
-        var start = new DateTime(2024, 1, 15, 0, 0, 0);
-        var end = new DateTime(2024, 1, 16, 0, 0, 0);
-
-        // Act
-        var range = new SessionTimeRange(start, end);
-
-        // Assert
-        range.Duration.Should().Be(TimeSpan.FromDays(1));
-    }
-
-    [Fact]
-    public void Constructor_WithMillisecondDifference_ShouldSucceed()
-    {
-        // Arrange
-        var start = new DateTime(2024, 1, 15, 10, 0, 0, 0);
-        var end = new DateTime(2024, 1, 15, 10, 0, 0, 100);
-
-        // Act
-        var range = new SessionTimeRange(start, end);
-
-        // Assert
-        range.Duration.Should().Be(TimeSpan.FromMilliseconds(100));
+        range.Duration.Should().Be(expected);
     }
 
     #endregion
 
     #region DateTime Kind Tests
 
-    [Fact]
-    public void Constructor_WithUtcTimes_ShouldSucceed()
+    [Theory]
+    [InlineData(DateTimeKind.Utc)]
+    [InlineData(DateTimeKind.Local)]
+    public void Constructor_ShouldPreserveDateTimeKind(DateTimeKind kind)
     {
-        // Arrange
-        var start = new DateTime(2024, 1, 15, 10, 0, 0, DateTimeKind.Utc);
-        var end = new DateTime(2024, 1, 15, 12, 0, 0, DateTimeKind.Utc);
+        var start = new DateTime(2024, 1, 15, 10, 0, 0, kind);
+        var end = new DateTime(2024, 1, 15, 12, 0, 0, kind);
 
-        // Act
         var range = new SessionTimeRange(start, end);
 
-        // Assert
-        range.Start.Kind.Should().Be(DateTimeKind.Utc);
-        range.End.Kind.Should().Be(DateTimeKind.Utc);
-    }
-
-    [Fact]
-    public void Constructor_WithLocalTimes_ShouldSucceed()
-    {
-        // Arrange
-        var start = new DateTime(2024, 1, 15, 10, 0, 0, DateTimeKind.Local);
-        var end = new DateTime(2024, 1, 15, 12, 0, 0, DateTimeKind.Local);
-
-        // Act
-        var range = new SessionTimeRange(start, end);
-
-        // Assert
-        range.Start.Kind.Should().Be(DateTimeKind.Local);
-        range.End.Kind.Should().Be(DateTimeKind.Local);
+        range.Start.Kind.Should().Be(kind);
+        range.End.Kind.Should().Be(kind);
     }
 
     #endregion

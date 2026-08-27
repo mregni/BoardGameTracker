@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Core.Rag;
@@ -79,5 +81,34 @@ public class ManualIndexingQueueTests
 
         await FluentActions.Awaiting(() => _queue.DequeueAsync(cts.Token).AsTask())
             .Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task DequeueAsync_ShouldDeliverEveryItem_WhenItemsAreEnqueuedConcurrently()
+    {
+        var ids = Enumerable.Range(1, 100).ToList();
+
+        await Task.WhenAll(ids.Select(id => Task.Run(() => _queue.Enqueue(id))));
+
+        var dequeued = new List<int>();
+        for (var i = 0; i < ids.Count; i++)
+        {
+            dequeued.Add(await _queue.DequeueAsync(CancellationToken.None));
+        }
+
+        dequeued.Should().BeEquivalentTo(ids);
+    }
+
+    [Fact]
+    public async Task DequeueAsync_ShouldStillDeliverItems_AfterAPreviousDequeueWasCancelled()
+    {
+        using var cts = new CancellationTokenSource();
+        var cancelledDequeue = _queue.DequeueAsync(cts.Token).AsTask();
+        await cts.CancelAsync();
+        await FluentActions.Awaiting(() => cancelledDequeue).Should().ThrowAsync<OperationCanceledException>();
+
+        _queue.Enqueue(11);
+
+        (await _queue.DequeueAsync(CancellationToken.None)).Should().Be(11);
     }
 }

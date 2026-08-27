@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Core.Rag;
 using BoardGameTracker.Core.Rag.Interfaces;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -15,17 +17,16 @@ public class ManualIndexingBackgroundServiceTests
     private static readonly TimeSpan SignalTimeout = TimeSpan.FromSeconds(5);
 
     private readonly Mock<IServiceScopeFactory> _scopeFactoryMock = new();
+    private readonly Mock<IServiceScope> _scopeMock = new();
+    private readonly Mock<IServiceProvider> _scopedProviderMock = new();
     private readonly Mock<IManualIndexingQueue> _queueMock = new();
     private readonly Mock<IManualIndexingService> _indexingServiceMock = new();
 
     public ManualIndexingBackgroundServiceTests()
     {
-        var scopeMock = new Mock<IServiceScope>();
-        var scopedProviderMock = new Mock<IServiceProvider>();
-
-        _scopeFactoryMock.Setup(x => x.CreateScope()).Returns(scopeMock.Object);
-        scopeMock.Setup(x => x.ServiceProvider).Returns(scopedProviderMock.Object);
-        scopedProviderMock
+        _scopeFactoryMock.Setup(x => x.CreateScope()).Returns(_scopeMock.Object);
+        _scopeMock.Setup(x => x.ServiceProvider).Returns(_scopedProviderMock.Object);
+        _scopedProviderMock
             .Setup(x => x.GetService(typeof(IManualIndexingService)))
             .Returns(_indexingServiceMock.Object);
     }
@@ -66,19 +67,59 @@ public class ManualIndexingBackgroundServiceTests
         }
     }
 
+    private void VerifyScopedInfrastructure(int scopeCount)
+    {
+        _scopeFactoryMock.Verify(x => x.CreateScope(), Times.Exactly(scopeCount));
+        _scopeMock.VerifyGet(x => x.ServiceProvider, Times.Exactly(scopeCount));
+        _scopeMock.Verify(x => x.Dispose(), Times.Exactly(scopeCount));
+        _scopedProviderMock.Verify(x => x.GetService(typeof(IManualIndexingService)), Times.Exactly(scopeCount));
+        _queueMock.Verify(x => x.DequeueAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _scopeFactoryMock.VerifyNoOtherCalls();
+        _scopeMock.VerifyNoOtherCalls();
+        _scopedProviderMock.VerifyNoOtherCalls();
+        _queueMock.VerifyNoOtherCalls();
+        _indexingServiceMock.VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task ExecuteAsync_ShouldBackfillPendingManuals_BeforeProcessingTheQueue()
     {
-        var backfilled = new TaskCompletionSource();
+        var calls = new List<string>();
+        var indexed = new TaskCompletionSource();
         _indexingServiceMock
             .Setup(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()))
-            .Callback(() => backfilled.TrySetResult())
+            .Callback(() =>
+            {
+                lock (calls)
+                {
+                    calls.Add("backfill");
+                }
+            })
             .Returns(Task.CompletedTask);
-        SetupQueueToBlockAfter();
+        _indexingServiceMock
+            .Setup(x => x.IndexAsync(7, It.IsAny<CancellationToken>()))
+            .Callback(() =>
+            {
+                lock (calls)
+                {
+                    calls.Add("index");
+                }
+                indexed.TrySetResult();
+            })
+            .Returns(Task.CompletedTask);
+        SetupQueueToBlockAfter(7);
 
-        await RunUntilAsync(CreateService(), backfilled.Task);
+        await RunUntilAsync(CreateService(), indexed.Task);
 
+        calls.Should().Equal("backfill", "index");
         _indexingServiceMock.Verify(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _indexingServiceMock.Verify(x => x.IndexAsync(7, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyScopedInfrastructure(2);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -97,7 +138,10 @@ public class ManualIndexingBackgroundServiceTests
 
         await RunUntilAsync(CreateService(), indexed.Task);
 
+        _indexingServiceMock.Verify(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()), Times.Once);
         _indexingServiceMock.Verify(x => x.IndexAsync(7, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyScopedInfrastructure(2);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -116,7 +160,10 @@ public class ManualIndexingBackgroundServiceTests
 
         await RunUntilAsync(CreateService(), indexed.Task);
 
+        _indexingServiceMock.Verify(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()), Times.Once);
         _indexingServiceMock.Verify(x => x.IndexAsync(42, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyScopedInfrastructure(2);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -138,12 +185,41 @@ public class ManualIndexingBackgroundServiceTests
 
         await RunUntilAsync(CreateService(), secondIndexed.Task);
 
+        _indexingServiceMock.Verify(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()), Times.Once);
         _indexingServiceMock.Verify(x => x.IndexAsync(1, It.IsAny<CancellationToken>()), Times.Once);
         _indexingServiceMock.Verify(x => x.IndexAsync(2, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyScopedInfrastructure(3);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldCreateAScopePerIndexedManual()
+    public async Task ExecuteAsync_ShouldContinueProcessing_WhenIndexingThrowsOperationCanceled()
+    {
+        _indexingServiceMock
+            .Setup(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var secondIndexed = new TaskCompletionSource();
+        _indexingServiceMock
+            .Setup(x => x.IndexAsync(1, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+        _indexingServiceMock
+            .Setup(x => x.IndexAsync(2, It.IsAny<CancellationToken>()))
+            .Callback(() => secondIndexed.TrySetResult())
+            .Returns(Task.CompletedTask);
+        SetupQueueToBlockAfter(1, 2);
+
+        await RunUntilAsync(CreateService(), secondIndexed.Task);
+
+        _indexingServiceMock.Verify(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _indexingServiceMock.Verify(x => x.IndexAsync(1, It.IsAny<CancellationToken>()), Times.Once);
+        _indexingServiceMock.Verify(x => x.IndexAsync(2, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyScopedInfrastructure(3);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldCreateAndDisposeAScopePerIndexedManual()
     {
         _indexingServiceMock
             .Setup(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()))
@@ -165,6 +241,46 @@ public class ManualIndexingBackgroundServiceTests
 
         await RunUntilAsync(CreateService(), secondIndexed.Task);
 
-        _scopeFactoryMock.Verify(x => x.CreateScope(), Times.AtLeast(3));
+        _indexingServiceMock.Verify(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _indexingServiceMock.Verify(x => x.IndexAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        VerifyScopedInfrastructure(3);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldStopCleanly_WhenServiceIsStopped()
+    {
+        _indexingServiceMock
+            .Setup(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var dequeueReached = new TaskCompletionSource();
+        _queueMock
+            .Setup(x => x.DequeueAsync(It.IsAny<CancellationToken>()))
+            .Returns((CancellationToken ct) =>
+            {
+                dequeueReached.TrySetResult();
+                return new ValueTask<int>(Task.Run(async () =>
+                {
+                    await Task.Delay(Timeout.Infinite, ct);
+                    return 0;
+                }, ct));
+            });
+
+        var service = CreateService();
+        await service.StartAsync(CancellationToken.None);
+        await dequeueReached.Task.WaitAsync(SignalTimeout);
+        await service.StopAsync(CancellationToken.None);
+
+        service.ExecuteTask.Should().NotBeNull();
+        service.ExecuteTask!.IsCompleted.Should().BeTrue();
+        service.ExecuteTask.IsFaulted.Should().BeFalse();
+        _indexingServiceMock.Verify(x => x.EnqueuePendingAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _queueMock.Verify(x => x.DequeueAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _scopeFactoryMock.Verify(x => x.CreateScope(), Times.Once);
+        _scopeMock.VerifyGet(x => x.ServiceProvider, Times.Once);
+        _scopeMock.Verify(x => x.Dispose(), Times.Once);
+        _scopedProviderMock.Verify(x => x.GetService(typeof(IManualIndexingService)), Times.Once);
+        VerifyNoOtherCalls();
     }
 }

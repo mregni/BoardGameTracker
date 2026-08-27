@@ -19,10 +19,12 @@ public class FutureGameNightsSpecTests
         var future = GameNight.Create("Future", "", now.AddDays(1), 1, 1);
         var exactly = GameNight.Create("Now", "", now, 1, 1);
         var nights = new List<GameNight> { past, future, exactly };
+        var spec = new FutureGameNightsSpec(now);
 
-        var result = new FutureGameNightsSpec(now).Evaluate(nights).ToList();
+        var result = spec.Evaluate(nights).ToList();
 
-        result.Should().HaveCount(2);
-        result.Should().OnlyContain(x => x.StartDate >= now);
+        result.Select(x => x.Title).Should().BeEquivalentTo("Future", "Now");
+        result.Should().NotContain(x => x.Title == "Past");
+        spec.AsNoTracking.Should().BeTrue();
     }
 }

@@ -25,67 +25,19 @@ public class SoloSpecialistBadgeEvaluatorTests
         _evaluator.BadgeType.Should().Be(BadgeType.SoloSpecialist);
     }
 
-    #region Green Level Tests (5 solo sessions)
+    #region Edge Cases
 
     [Fact]
-    public async Task CanAwardBadge_GreenLevel_ShouldReturnTrue_WhenSoloSessionCountIsMoreThan5()
+    public async Task CanAwardBadge_ShouldReturnFalse_WhenSessionListIsEmpty()
     {
         var badge = CreateBadge(BadgeLevel.Green);
-        var sessions = CreateSoloSessions(10);
+        var currentSession = CreateSession(1, 0);
+        var sessions = new List<Session>();
 
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
+        var result = await _evaluator.CanAwardBadge(PlayerId, badge, currentSession, sessions);
 
-        result.Should().BeTrue();
+        result.Should().BeFalse();
     }
-
-    #endregion
-
-    #region Blue Level Tests (10 solo sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_BlueLevel_ShouldReturnTrue_WhenSoloSessionCountIsMoreThan10()
-    {
-        var badge = CreateBadge(BadgeLevel.Blue);
-        var sessions = CreateSoloSessions(15);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Red Level Tests (25 solo sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_RedLevel_ShouldReturnTrue_WhenSoloSessionCountIsMoreThan25()
-    {
-        var badge = CreateBadge(BadgeLevel.Red);
-        var sessions = CreateSoloSessions(35);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Gold Level Tests (50 solo sessions)
-
-    [Fact]
-    public async Task CanAwardBadge_GoldLevel_ShouldReturnTrue_WhenSoloSessionCountIsMoreThan50()
-    {
-        var badge = CreateBadge(BadgeLevel.Gold);
-        var sessions = CreateSoloSessions(60);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeTrue();
-    }
-
-    #endregion
-
-    #region Edge Cases
 
     [Fact]
     public async Task CanAwardBadge_ShouldReturnFalse_WhenBadgeLevelIsNull()
@@ -147,33 +99,26 @@ public class SoloSpecialistBadgeEvaluatorTests
     }
 
     [Theory]
-    [InlineData(BadgeLevel.Green, 5)]
-    [InlineData(BadgeLevel.Blue, 10)]
-    [InlineData(BadgeLevel.Red, 25)]
-    [InlineData(BadgeLevel.Gold, 50)]
-    public async Task CanAwardBadge_ShouldReturnTrue_AtExactThreshold(BadgeLevel level, int soloCount)
+    [InlineData(BadgeLevel.Green, 4, false)]
+    [InlineData(BadgeLevel.Green, 5, true)]
+    [InlineData(BadgeLevel.Green, 10, true)]
+    [InlineData(BadgeLevel.Blue, 9, false)]
+    [InlineData(BadgeLevel.Blue, 10, true)]
+    [InlineData(BadgeLevel.Blue, 15, true)]
+    [InlineData(BadgeLevel.Red, 24, false)]
+    [InlineData(BadgeLevel.Red, 25, true)]
+    [InlineData(BadgeLevel.Red, 35, true)]
+    [InlineData(BadgeLevel.Gold, 49, false)]
+    [InlineData(BadgeLevel.Gold, 50, true)]
+    [InlineData(BadgeLevel.Gold, 60, true)]
+    public async Task CanAwardBadge_ShouldEvaluateSoloSessionCountPerLevel(BadgeLevel level, int soloCount, bool expected)
     {
         var badge = CreateBadge(level);
         var sessions = CreateSoloSessions(soloCount);
 
         var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
 
-        result.Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData(BadgeLevel.Green, 4)]
-    [InlineData(BadgeLevel.Blue, 9)]
-    [InlineData(BadgeLevel.Red, 24)]
-    [InlineData(BadgeLevel.Gold, 49)]
-    public async Task CanAwardBadge_ShouldReturnFalse_JustBelowThreshold(BadgeLevel level, int soloCount)
-    {
-        var badge = CreateBadge(level);
-        var sessions = CreateSoloSessions(soloCount);
-
-        var result = await _evaluator.CanAwardBadge(PlayerId, badge, sessions[0], sessions);
-
-        result.Should().BeFalse();
+        result.Should().Be(expected);
     }
 
     #endregion

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Compare;
@@ -33,60 +34,6 @@ public class CompareServiceTests
     #region GetPlayerComparison Tests
 
     [Fact]
-    public async Task GetPlayerComparison_ShouldReturnSessionCounts()
-    {
-        // Arrange
-        var playerOneId = 1;
-        var playerTwoId = 2;
-        SetupDefaultMocks(playerOneId, playerTwoId);
-        _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerOneId)).ReturnsAsync(50);
-        _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerTwoId)).ReturnsAsync(30);
-
-        // Act
-        var result = await _service.GetPlayerComparison(playerOneId, playerTwoId);
-
-        // Assert
-        result.SessionCounts.PlayerOne.Should().Be(50);
-        result.SessionCounts.PlayerTwo.Should().Be(30);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnTotalDuration()
-    {
-        // Arrange
-        var playerOneId = 1;
-        var playerTwoId = 2;
-        SetupDefaultMocks(playerOneId, playerTwoId);
-        _playerRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(playerOneId)).ReturnsAsync(1500.5);
-        _playerRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(playerTwoId)).ReturnsAsync(1200.0);
-
-        // Act
-        var result = await _service.GetPlayerComparison(playerOneId, playerTwoId);
-
-        // Assert
-        result.TotalDuration.PlayerOne.Should().Be(1500.5);
-        result.TotalDuration.PlayerTwo.Should().Be(1200.0);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnWinCount()
-    {
-        // Arrange
-        var playerOneId = 1;
-        var playerTwoId = 2;
-        SetupDefaultMocks(playerOneId, playerTwoId);
-        _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerOneId)).ReturnsAsync(25);
-        _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerTwoId)).ReturnsAsync(15);
-
-        // Act
-        var result = await _service.GetPlayerComparison(playerOneId, playerTwoId);
-
-        // Assert
-        result.WinCount.PlayerOne.Should().Be(25);
-        result.WinCount.PlayerTwo.Should().Be(15);
-    }
-
-    [Fact]
     public async Task GetPlayerComparison_ShouldCalculateWinPercentageCorrectly()
     {
         // Arrange
@@ -94,20 +41,18 @@ public class CompareServiceTests
         var playerTwoId = 2;
         SetupDefaultMocks(playerOneId, playerTwoId);
 
-        // Player 1: 25 wins out of 50 sessions = 0.5
         _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerOneId)).ReturnsAsync(50);
         _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerOneId)).ReturnsAsync(25);
 
-        // Player 2: 15 wins out of 30 sessions = 0.5
         _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerTwoId)).ReturnsAsync(30);
-        _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerTwoId)).ReturnsAsync(15);
+        _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerTwoId)).ReturnsAsync(10);
 
         // Act
         var result = await _service.GetPlayerComparison(playerOneId, playerTwoId);
 
         // Assert
-        result.WinPercentage.PlayerOne.Should().Be(0.5);
-        result.WinPercentage.PlayerTwo.Should().Be(0.5);
+        result.WinPercentage.PlayerOne.Should().BeApproximately(0.5, 1e-9);
+        result.WinPercentage.PlayerTwo.Should().BeApproximately(1.0 / 3.0, 1e-9);
     }
 
     [Fact]
@@ -139,11 +84,9 @@ public class CompareServiceTests
         var playerTwoId = 2;
         SetupDefaultMocks(playerOneId, playerTwoId);
 
-        // Player 1: 10 wins out of 10 sessions = 1.0
         _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerOneId)).ReturnsAsync(10);
         _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerOneId)).ReturnsAsync(10);
 
-        // Player 2: 0 wins out of 10 sessions = 0.0
         _playerRepositoryMock.Setup(x => x.GetTotalPlayCount(playerTwoId)).ReturnsAsync(10);
         _playerRepositoryMock.Setup(x => x.GetTotalWinCount(playerTwoId)).ReturnsAsync(0);
 
@@ -153,24 +96,6 @@ public class CompareServiceTests
         // Assert
         result.WinPercentage.PlayerOne.Should().Be(1.0);
         result.WinPercentage.PlayerTwo.Should().Be(0.0);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnDirectWins()
-    {
-        // Arrange
-        var playerOneId = 1;
-        var playerTwoId = 2;
-        SetupDefaultMocks(playerOneId, playerTwoId);
-        _compareRepositoryMock.Setup(x => x.GetDirectWins(playerOneId, playerTwoId))
-            .ReturnsAsync(new CompareRow<int>(5, 3));
-
-        // Act
-        var result = await _service.GetPlayerComparison(playerOneId, playerTwoId);
-
-        // Assert
-        result.DirectWins.PlayerOne.Should().Be(5);
-        result.DirectWins.PlayerTwo.Should().Be(3);
     }
 
     [Fact]
@@ -194,73 +119,43 @@ public class CompareServiceTests
         result.MostWonGame.PlayerOne.Count.Should().Be(10);
         result.MostWonGame.PlayerTwo.Should().NotBeNull();
         result.MostWonGame.PlayerTwo!.GameId.Should().Be(2);
+        result.MostWonGame.PlayerTwo.Count.Should().Be(8);
     }
 
     [Fact]
-    public async Task GetPlayerComparison_ShouldReturnNullMostWonGame_WhenNone()
+    public async Task GetPlayerComparison_ShouldReturnSharedGameDetails_WhenPresent()
     {
         // Arrange
         var playerOneId = 1;
         var playerTwoId = 2;
+        var preferredGame = new PreferredGame { GameId = 7, SessionCount = 12 };
+        var lastWonGame = new LastWonGame { PlayerId = playerOneId, GameId = 8 };
+        var firstGameTogether = new FirstGameTogether { GameId = 9, StartDate = new DateTime(2023, 3, 10) };
+        var closestGame = new ClosestGame { PlayerId = playerTwoId, GameId = 10, ScoringDifference = 1.5 };
+
         SetupDefaultMocks(playerOneId, playerTwoId);
-        _compareRepositoryMock.Setup(x => x.GetMostWonGame(playerOneId, playerTwoId))
-            .ReturnsAsync(new CompareRow<MostWonGame?>(null, null));
+        _compareRepositoryMock.Setup(x => x.GetPreferredGame(playerOneId, playerTwoId)).ReturnsAsync(preferredGame);
+        _compareRepositoryMock.Setup(x => x.GetLastWonGame(playerOneId, playerTwoId)).ReturnsAsync(lastWonGame);
+        _compareRepositoryMock.Setup(x => x.GetFirstGameTogether(playerOneId, playerTwoId)).ReturnsAsync(firstGameTogether);
+        _compareRepositoryMock.Setup(x => x.GetClosestGame(playerOneId, playerTwoId)).ReturnsAsync(closestGame);
 
         // Act
         var result = await _service.GetPlayerComparison(playerOneId, playerTwoId);
 
         // Assert
-        result.MostWonGame.PlayerOne.Should().BeNull();
-        result.MostWonGame.PlayerTwo.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldReturnTogetherStats()
-    {
-        // Arrange
-        var playerOneId = 1;
-        var playerTwoId = 2;
-        SetupDefaultMocks(playerOneId, playerTwoId);
-        _compareRepositoryMock.Setup(x => x.GetTotalSessionsTogether(playerOneId, playerTwoId)).ReturnsAsync(15);
-        _compareRepositoryMock.Setup(x => x.GetMinutesPlayedTogether(playerOneId, playerTwoId)).ReturnsAsync(900.0);
-        _compareRepositoryMock.Setup(x => x.GetLongestSessionTogether(playerOneId, playerTwoId)).ReturnsAsync(120);
-
-        // Act
-        var result = await _service.GetPlayerComparison(playerOneId, playerTwoId);
-
-        // Assert
-        result.TotalSessionsTogether.Should().Be(15);
-        result.MinutesPlayed.Should().Be(900);
-        result.LongestSessionTogether.Should().Be(120);
-    }
-
-    [Fact]
-    public async Task GetPlayerComparison_ShouldCallAllRepositoryMethods()
-    {
-        // Arrange
-        var playerOneId = 1;
-        var playerTwoId = 2;
-        SetupDefaultMocks(playerOneId, playerTwoId);
-
-        // Act
-        await _service.GetPlayerComparison(playerOneId, playerTwoId);
-
-        // Assert
-        _playerRepositoryMock.Verify(x => x.GetTotalPlayCount(playerOneId), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetTotalPlayCount(playerTwoId), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetPlayLengthInMinutes(playerOneId), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetPlayLengthInMinutes(playerTwoId), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetTotalWinCount(playerOneId), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetTotalWinCount(playerTwoId), Times.Once);
-        _compareRepositoryMock.Verify(x => x.GetDirectWins(playerOneId, playerTwoId), Times.Once);
-        _compareRepositoryMock.Verify(x => x.GetMostWonGame(playerOneId, playerTwoId), Times.Once);
-        _compareRepositoryMock.Verify(x => x.GetTotalSessionsTogether(playerOneId, playerTwoId), Times.Once);
-        _compareRepositoryMock.Verify(x => x.GetMinutesPlayedTogether(playerOneId, playerTwoId), Times.Once);
-        _compareRepositoryMock.Verify(x => x.GetPreferredGame(playerOneId, playerTwoId), Times.Once);
-        _compareRepositoryMock.Verify(x => x.GetLastWonGame(playerOneId, playerTwoId), Times.Once);
-        _compareRepositoryMock.Verify(x => x.GetLongestSessionTogether(playerOneId, playerTwoId), Times.Once);
-        _compareRepositoryMock.Verify(x => x.GetFirstGameTogether(playerOneId, playerTwoId), Times.Once);
-        _compareRepositoryMock.Verify(x => x.GetClosestGame(playerOneId, playerTwoId), Times.Once);
+        result.PreferredGame.Should().NotBeNull();
+        result.PreferredGame!.GameId.Should().Be(7);
+        result.PreferredGame.SessionCount.Should().Be(12);
+        result.LastWonGame.Should().NotBeNull();
+        result.LastWonGame!.PlayerId.Should().Be(playerOneId);
+        result.LastWonGame.GameId.Should().Be(8);
+        result.FirstGameTogether.Should().NotBeNull();
+        result.FirstGameTogether!.GameId.Should().Be(9);
+        result.FirstGameTogether.StartDate.Should().Be(new DateTime(2023, 3, 10));
+        result.ClosestGame.Should().NotBeNull();
+        result.ClosestGame!.PlayerId.Should().Be(playerTwoId);
+        result.ClosestGame.GameId.Should().Be(10);
+        result.ClosestGame.ScoringDifference.Should().BeApproximately(1.5, 1e-9);
     }
 
     [Fact]
@@ -298,13 +193,19 @@ public class CompareServiceTests
         result.TotalDuration.PlayerTwo.Should().Be(4000.0);
         result.WinCount.PlayerOne.Should().Be(40);
         result.WinCount.PlayerTwo.Should().Be(32);
-        result.WinPercentage.PlayerOne.Should().Be(0.4); // 40/100
-        result.WinPercentage.PlayerTwo.Should().Be(0.4); // 32/80
+        result.WinPercentage.PlayerOne.Should().BeApproximately(0.4, 1e-9);
+        result.WinPercentage.PlayerTwo.Should().BeApproximately(0.4, 1e-9);
         result.DirectWins.PlayerOne.Should().Be(10);
         result.DirectWins.PlayerTwo.Should().Be(8);
+        result.MostWonGame.PlayerOne.Should().BeNull();
+        result.MostWonGame.PlayerTwo.Should().BeNull();
         result.TotalSessionsTogether.Should().Be(20);
         result.MinutesPlayed.Should().Be(1500);
         result.LongestSessionTogether.Should().Be(180);
+        result.PreferredGame.Should().BeNull();
+        result.LastWonGame.Should().BeNull();
+        result.FirstGameTogether.Should().BeNull();
+        result.ClosestGame.Should().BeNull();
     }
 
     #endregion

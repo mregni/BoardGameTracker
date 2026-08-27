@@ -115,47 +115,146 @@ public class TokenServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RevokeRefreshTokenAsync_ShouldRevokeToken()
+    public async Task RevokeRefreshTokenAsync_ShouldRevokeTokenWithReasonAndReplacement()
     {
-        // Arrange
         var userId = "test-user-id";
         var refreshToken = await _tokenService.GenerateRefreshTokenAsync(userId);
 
-        // Act
         await _tokenService.RevokeRefreshTokenAsync(refreshToken, "Test revocation", "new-token");
 
-        // Assert
         var stored = await _context.RefreshTokens.FirstAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
         stored.IsRevoked.Should().BeTrue();
         stored.IsActive.Should().BeFalse();
+        stored.RevokedReason.Should().Be("Test revocation");
+        stored.ReplacedByToken.Should().Be("new-token");
     }
 
     [Fact]
-    public async Task RevokeAllUserTokensAsync_ShouldRevokeAllActiveTokens()
+    public async Task RevokeAllUserTokensAsync_ShouldRevokeOnlyActiveTokensOfThatUser()
     {
-        // Arrange
         var userId = "test-user-id";
         await _tokenService.GenerateRefreshTokenAsync(userId);
         await _tokenService.GenerateRefreshTokenAsync(userId);
-        await _tokenService.GenerateRefreshTokenAsync(userId);
+        var preRevoked = await _tokenService.GenerateRefreshTokenAsync(userId);
+        await _tokenService.RevokeRefreshTokenAsync(preRevoked, "Original reason");
+        var otherUsersToken = await _tokenService.GenerateRefreshTokenAsync("other-user-id");
 
-        // Act
         await _tokenService.RevokeAllUserTokensAsync(userId, "Bulk revocation");
 
-        // Assert
         var tokens = await _context.RefreshTokens.Where(t => t.UserId == userId).ToListAsync(TestContext.Current.CancellationToken);
         tokens.Should().HaveCount(3);
         tokens.Should().AllSatisfy(t => t.IsRevoked.Should().BeTrue());
+        tokens.Where(t => t.Token != preRevoked.Token)
+            .Should().AllSatisfy(t => t.RevokedReason.Should().Be("Bulk revocation"));
+
+        var storedPreRevoked = await _context.RefreshTokens.FirstAsync(t => t.Token == preRevoked.Token, TestContext.Current.CancellationToken);
+        storedPreRevoked.RevokedReason.Should().Be("Original reason");
+
+        var storedOther = await _context.RefreshTokens.FirstAsync(t => t.Token == otherUsersToken.Token, TestContext.Current.CancellationToken);
+        storedOther.IsRevoked.Should().BeFalse();
     }
 
     [Fact]
-    public void GetAccessTokenExpiry_ShouldReturnFutureDate()
+    public async Task GetRefreshTokenAsync_ShouldReturnToken_WhenExists()
     {
-        // Act
+        var user = new ApplicationUser("testuser", "test@test.com");
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+        var created = await _tokenService.GenerateRefreshTokenAsync(user.Id);
+
+        var result = await _tokenService.GetRefreshTokenAsync(created.Token);
+
+        result.Should().NotBeNull();
+        result!.Token.Should().Be(created.Token);
+        result.UserId.Should().Be(user.Id);
+        result.User.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void GenerateAccessToken_ShouldOmitDisplayNameClaim_WhenDisplayNameIsNull()
+    {
+        var user = new ApplicationUser("testuser", "test@test.com");
+        var roles = new List<string> { "User" };
+
+        var token = _tokenService.GenerateAccessToken(user, roles);
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        jwtToken.Claims.Should().NotContain(c => c.Type == "display_name");
+    }
+
+    [Fact]
+    public void GenerateAccessToken_ShouldThrowInvalidOperationException_WhenSecretIsMissing()
+    {
+        var originalSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
+        Environment.SetEnvironmentVariable("JWT_SECRET", null);
+        try
+        {
+            var config = new ConfigurationBuilder().Build();
+            var service = new TokenService(config, _context);
+            var user = new ApplicationUser("testuser", "test@test.com");
+
+            var act = () => service.GenerateAccessToken(user, new List<string>());
+
+            act.Should().Throw<InvalidOperationException>();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("JWT_SECRET", originalSecret);
+        }
+    }
+
+    [Fact]
+    public void GetAccessTokenExpiry_ShouldReturnConfiguredExpiry()
+    {
         var expiry = _tokenService.GetAccessTokenExpiry();
 
-        // Assert
-        expiry.Should().BeAfter(DateTime.UtcNow);
-        expiry.Should().BeBefore(DateTime.UtcNow.AddMinutes(61));
+        expiry.Should().BeCloseTo(DateTime.UtcNow.AddMinutes(60), TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task CleanupExpiredTokensAsync_ShouldRemoveTokensExpiredOverThirtyDaysAgo()
+    {
+        var oldExpired = RefreshToken.Create("test-user-id", -31);
+        var active = RefreshToken.Create("test-user-id", 7);
+        _context.RefreshTokens.AddRange(oldExpired, active);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _tokenService.CleanupExpiredTokensAsync();
+
+        var remaining = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        remaining.Should().ContainSingle(t => t.Token == active.Token);
+    }
+
+    [Fact]
+    public async Task CleanupExpiredTokensAsync_ShouldRemoveTokensRevokedOverThirtyDaysAgo()
+    {
+        var oldRevoked = RefreshToken.Create("test-user-id", 90);
+        oldRevoked.Revoke("Old revocation");
+        typeof(RefreshToken).GetProperty(nameof(RefreshToken.RevokedAt))!
+            .SetValue(oldRevoked, DateTime.UtcNow.AddDays(-31));
+        var active = RefreshToken.Create("test-user-id", 7);
+        _context.RefreshTokens.AddRange(oldRevoked, active);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _tokenService.CleanupExpiredTokensAsync();
+
+        var remaining = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        remaining.Should().ContainSingle(t => t.Token == active.Token);
+    }
+
+    [Fact]
+    public async Task CleanupExpiredTokensAsync_ShouldKeepRecentlyExpiredAndRecentlyRevokedTokens()
+    {
+        var recentlyExpired = RefreshToken.Create("test-user-id", -1);
+        var recentlyRevoked = RefreshToken.Create("test-user-id", 7);
+        recentlyRevoked.Revoke("Recent revocation");
+        _context.RefreshTokens.AddRange(recentlyExpired, recentlyRevoked);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _tokenService.CleanupExpiredTokensAsync();
+
+        var remaining = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        remaining.Should().HaveCount(2);
     }
 }

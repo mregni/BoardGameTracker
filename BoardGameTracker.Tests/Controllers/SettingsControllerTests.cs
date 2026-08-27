@@ -114,65 +114,30 @@ public class SettingsControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public void GetEnvironment_ShouldReturnEnvironmentInfo_WhenCalled()
+    [Theory]
+    [InlineData(true, LogEventLevel.Information, "Production", 5000, "1.2.3")]
+    [InlineData(false, LogEventLevel.Debug, "Development", 3000, "2.0.0-beta")]
+    public void GetEnvironment_ShouldReturnEnvironmentInfo(bool statisticsEnabled, LogEventLevel logLevel, string environmentName, int port, string version)
     {
-        // Arrange
-        _environmentProviderMock.SetupGet(x => x.StatisticsEnabled).Returns(true);
-        _environmentProviderMock.SetupGet(x => x.LogLevel).Returns(LogEventLevel.Information);
-        _environmentProviderMock.SetupGet(x => x.EnvironmentName).Returns("Production");
-        _environmentProviderMock.SetupGet(x => x.Port).Returns(5000);
+        _environmentProviderMock.SetupGet(x => x.StatisticsEnabled).Returns(statisticsEnabled);
+        _environmentProviderMock.SetupGet(x => x.LogLevel).Returns(logLevel);
+        _environmentProviderMock.SetupGet(x => x.EnvironmentName).Returns(environmentName);
+        _environmentProviderMock.SetupGet(x => x.Port).Returns(port);
 
         _updateServiceMock
             .Setup(x => x.GetCurrentVersion())
-            .Returns("1.2.3");
+            .Returns(version);
 
-        // Act
         var result = _controller.GetEnvironment();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var environment = okResult.Value.Should().BeAssignableTo<UIEnvironmentDto>().Subject;
 
-        environment.EnableStatistics.Should().BeTrue();
-        environment.LogLevel.Should().Be(LogEventLevel.Information);
-        environment.EnvironmentName.Should().Be("Production");
-        environment.Port.Should().Be(5000);
-        environment.Version.Should().Be("1.2.3");
-
-        _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
-        _environmentProviderMock.VerifyGet(x => x.LogLevel, Times.Once);
-        _environmentProviderMock.VerifyGet(x => x.EnvironmentName, Times.Once);
-        _environmentProviderMock.VerifyGet(x => x.Port, Times.Once);
-        _updateServiceMock.Verify(x => x.GetCurrentVersion(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public void GetEnvironment_ShouldReturnEnvironmentInfo_WithDifferentLogLevel()
-    {
-        // Arrange
-        _environmentProviderMock.SetupGet(x => x.StatisticsEnabled).Returns(false);
-        _environmentProviderMock.SetupGet(x => x.LogLevel).Returns(LogEventLevel.Debug);
-        _environmentProviderMock.SetupGet(x => x.EnvironmentName).Returns("Development");
-        _environmentProviderMock.SetupGet(x => x.Port).Returns(3000);
-
-        _updateServiceMock
-            .Setup(x => x.GetCurrentVersion())
-            .Returns("2.0.0-beta");
-
-        // Act
-        var result = _controller.GetEnvironment();
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var environment = okResult.Value.Should().BeAssignableTo<UIEnvironmentDto>().Subject;
-
-        environment.EnableStatistics.Should().BeFalse();
-        environment.LogLevel.Should().Be(LogEventLevel.Debug);
-        environment.EnvironmentName.Should().Be("Development");
-        environment.Port.Should().Be(3000);
-        environment.Version.Should().Be("2.0.0-beta");
+        environment.EnableStatistics.Should().Be(statisticsEnabled);
+        environment.LogLevel.Should().Be(logLevel);
+        environment.EnvironmentName.Should().Be(environmentName);
+        environment.Port.Should().Be(port);
+        environment.Version.Should().Be(version);
 
         _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
         _environmentProviderMock.VerifyGet(x => x.LogLevel, Times.Once);
@@ -213,137 +178,32 @@ public class SettingsControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task GetUpdateStatus_ShouldReturnStatus_WhenUpdateIsAvailable()
+    public static TheoryData<UpdateStatus> UpdateStatuses => new()
     {
-        // Arrange
-        var updateStatus = new UpdateStatus
-        {
-            CurrentVersion = "1.0.0",
-            LatestVersion = "1.1.0",
-            UpdateAvailable = true,
-            LastChecked = DateTime.UtcNow.AddHours(-1),
-            ErrorMessage = null
-        };
+        new UpdateStatus { CurrentVersion = "1.0.0", LatestVersion = "1.1.0", UpdateAvailable = true, LastChecked = DateTime.UtcNow.AddHours(-1), ErrorMessage = null },
+        new UpdateStatus { CurrentVersion = "2.5.0", LatestVersion = "2.5.0", UpdateAvailable = false, LastChecked = DateTime.UtcNow.AddMinutes(-30), ErrorMessage = null },
+        new UpdateStatus { CurrentVersion = "1.0.0", LatestVersion = null, UpdateAvailable = false, LastChecked = null, ErrorMessage = null },
+        new UpdateStatus { CurrentVersion = "1.5.0", LatestVersion = null, UpdateAvailable = false, LastChecked = DateTime.UtcNow.AddDays(-1), ErrorMessage = "Failed to connect to update server" }
+    };
 
+    [Theory]
+    [MemberData(nameof(UpdateStatuses))]
+    public async Task GetVersionInfo_ShouldReturnMappedStatus(UpdateStatus updateStatus)
+    {
         _updateServiceMock
             .Setup(x => x.GetVersionInfoAsync())
             .ReturnsAsync(updateStatus);
 
-        // Act
         var result = await _controller.GetVersionInfo();
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
 
-        statusDto.CurrentVersion.Should().Be("1.0.0");
-        statusDto.LatestVersion.Should().Be("1.1.0");
-        statusDto.UpdateAvailable.Should().BeTrue();
+        statusDto.CurrentVersion.Should().Be(updateStatus.CurrentVersion);
+        statusDto.LatestVersion.Should().Be(updateStatus.LatestVersion);
+        statusDto.UpdateAvailable.Should().Be(updateStatus.UpdateAvailable);
         statusDto.LastChecked.Should().Be(updateStatus.LastChecked);
-        statusDto.ErrorMessage.Should().BeNull();
-
-        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task GetUpdateStatus_ShouldReturnStatus_WhenNoUpdateIsAvailable()
-    {
-        // Arrange
-        var updateStatus = new UpdateStatus
-        {
-            CurrentVersion = "2.5.0",
-            LatestVersion = "2.5.0",
-            UpdateAvailable = false,
-            LastChecked = DateTime.UtcNow.AddMinutes(-30),
-            ErrorMessage = null
-        };
-
-        _updateServiceMock
-            .Setup(x => x.GetVersionInfoAsync())
-            .ReturnsAsync(updateStatus);
-
-        // Act
-        var result = await _controller.GetVersionInfo();
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
-
-        statusDto.CurrentVersion.Should().Be("2.5.0");
-        statusDto.LatestVersion.Should().Be("2.5.0");
-        statusDto.UpdateAvailable.Should().BeFalse();
-        statusDto.LastChecked.Should().Be(updateStatus.LastChecked);
-        statusDto.ErrorMessage.Should().BeNull();
-
-        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task GetUpdateStatus_ShouldReturnStatus_WhenNeverChecked()
-    {
-        // Arrange
-        var updateStatus = new UpdateStatus
-        {
-            CurrentVersion = "1.0.0",
-            LatestVersion = null,
-            UpdateAvailable = false,
-            LastChecked = null,
-            ErrorMessage = null
-        };
-
-        _updateServiceMock
-            .Setup(x => x.GetVersionInfoAsync())
-            .ReturnsAsync(updateStatus);
-
-        // Act
-        var result = await _controller.GetVersionInfo();
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
-
-        statusDto.CurrentVersion.Should().Be("1.0.0");
-        statusDto.LatestVersion.Should().BeNull();
-        statusDto.UpdateAvailable.Should().BeFalse();
-        statusDto.LastChecked.Should().BeNull();
-        statusDto.ErrorMessage.Should().BeNull();
-
-        _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task GetUpdateStatus_ShouldReturnStatus_WhenErrorOccurred()
-    {
-        // Arrange
-        var updateStatus = new UpdateStatus
-        {
-            CurrentVersion = "1.5.0",
-            LatestVersion = null,
-            UpdateAvailable = false,
-            LastChecked = DateTime.UtcNow.AddDays(-1),
-            ErrorMessage = "Failed to connect to update server"
-        };
-
-        _updateServiceMock
-            .Setup(x => x.GetVersionInfoAsync())
-            .ReturnsAsync(updateStatus);
-
-        // Act
-        var result = await _controller.GetVersionInfo();
-
-        // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var statusDto = okResult.Value.Should().BeAssignableTo<UpdateStatusDto>().Subject;
-
-        statusDto.CurrentVersion.Should().Be("1.5.0");
-        statusDto.LatestVersion.Should().BeNull();
-        statusDto.UpdateAvailable.Should().BeFalse();
-        statusDto.LastChecked.Should().Be(updateStatus.LastChecked);
-        statusDto.ErrorMessage.Should().Be("Failed to connect to update server");
+        statusDto.ErrorMessage.Should().Be(updateStatus.ErrorMessage);
 
         _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();

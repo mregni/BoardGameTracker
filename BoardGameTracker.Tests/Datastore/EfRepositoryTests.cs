@@ -46,6 +46,108 @@ public class EfRepositoryTests
         var result = await repository.DeleteAsync(999);
 
         result.Should().BeFalse();
+        context.ChangeTracker.Entries<Loan>().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ShouldMarkDeletedWithoutPersisting_WhenEntityExists()
+    {
+        await using var context = CreateContext();
+        var loan = new Loan(1, 1, DateTime.UtcNow);
+        await context.Loans.AddAsync(loan);
+        await context.SaveChangesAsync();
+
+        var repository = new EfRepository<Loan>(context);
+
+        var result = await repository.DeleteAsync(loan.Id);
+
+        result.Should().BeTrue();
+        context.ChangeTracker.Entries<Loan>().Single().State.Should().Be(EntityState.Deleted);
+        (await context.Loans.CountAsync()).Should().Be(1);
+
+        await context.SaveChangesAsync();
+        (await context.Loans.CountAsync()).Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnEntity_WhenItExists()
+    {
+        await using var context = CreateContext();
+        var loan = new Loan(7, 3, DateTime.UtcNow);
+        await context.Loans.AddAsync(loan);
+        await context.SaveChangesAsync();
+
+        var repository = new EfRepository<Loan>(context);
+
+        var result = await repository.GetByIdAsync(loan.Id);
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(loan.Id);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnNull_WhenItDoesNotExist()
+    {
+        await using var context = CreateContext();
+        var repository = new EfRepository<Loan>(context);
+
+        var result = await repository.GetByIdAsync(999);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetAllAsync_ShouldReturnAllEntities()
+    {
+        await using var context = CreateContext();
+        await context.Loans.AddRangeAsync(
+            new Loan(1, 1, DateTime.UtcNow),
+            new Loan(2, 1, DateTime.UtcNow),
+            new Loan(3, 1, DateTime.UtcNow));
+        await context.SaveChangesAsync();
+
+        var repository = new EfRepository<Loan>(context);
+
+        var result = await repository.GetAllAsync();
+
+        result.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task Update_ShouldMarkModifiedWithoutPersisting()
+    {
+        await using var context = CreateContext();
+        var loan = new Loan(1, 1, DateTime.UtcNow);
+        await context.Loans.AddAsync(loan);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var repository = new EfRepository<Loan>(context);
+        loan.MarkAsReturned(DateTime.UtcNow);
+
+        await repository.Update(loan);
+
+        context.ChangeTracker.Entries<Loan>().Single().State.Should().Be(EntityState.Modified);
+    }
+
+    [Fact]
+    public async Task CreateRangeAsync_ShouldTrackAllAsAdded_WithoutPersisting()
+    {
+        await using var context = CreateContext();
+        var repository = new EfRepository<Loan>(context);
+        var loans = new System.Collections.Generic.List<Loan>
+        {
+            new(1, 1, DateTime.UtcNow),
+            new(2, 1, DateTime.UtcNow)
+        };
+
+        await repository.CreateRangeAsync(loans);
+
+        context.ChangeTracker.Entries<Loan>().Count(e => e.State == EntityState.Added).Should().Be(2);
+        (await context.Loans.CountAsync()).Should().Be(0);
+
+        await context.SaveChangesAsync();
+        (await context.Loans.CountAsync()).Should().Be(2);
     }
 
     [Fact]

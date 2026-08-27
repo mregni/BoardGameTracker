@@ -84,12 +84,14 @@ public class DbConnectionProviderTests : IDisposable
     [Theory]
     [InlineData("5433", 5433)]
     [InlineData("1", 1)]
+    [InlineData("0", 0)]
+    [InlineData("-1", -1)]
     [InlineData("", 5432)]
     [InlineData("   ", 5432)]
     [InlineData("not-a-port", 5432)]
     [InlineData("5432.5", 5432)]
     [InlineData(null, 5432)]
-    public void PostgresPort_ShouldFallBackTo5432_WhenValueIsNotAnInteger(string? value, int expected)
+    public void PostgresPort_ShouldParseIntegerVerbatimOrFallBackTo5432(string? value, int expected)
     {
         Environment.SetEnvironmentVariable("DB_PORT", value);
 

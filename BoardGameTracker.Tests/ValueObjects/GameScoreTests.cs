@@ -9,51 +9,18 @@ public class GameScoreTests
 {
     #region Constructor Tests
 
-    [Fact]
-    public void Constructor_WithPositiveValue_ShouldSetValue()
-    {
-        // Arrange
-        var value = 100.5;
-
-        // Act
-        var score = new GameScore(value);
-
-        // Assert
-        score.Value.Should().Be(value);
-    }
-
-    [Fact]
-    public void Constructor_WithZero_ShouldSucceed()
-    {
-        // Act
-        var score = new GameScore(0);
-
-        // Assert
-        score.Value.Should().Be(0);
-    }
-
-    [Fact]
-    public void Constructor_WithNegativeValue_ShouldThrowException()
-    {
-        // Act
-        Action act = () => new GameScore(-1);
-
-        // Assert
-        act.Should().Throw<ArgumentException>();
-    }
-
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(50.5)]
     [InlineData(100)]
     [InlineData(999.99)]
+    [InlineData(1_000_000_000.0)]
+    [InlineData(0.001)]
     public void Constructor_WithVariousValidValues_ShouldSucceed(double value)
     {
-        // Act
         var score = new GameScore(value);
 
-        // Assert
         score.Value.Should().Be(value);
     }
 
@@ -63,11 +30,25 @@ public class GameScoreTests
     [InlineData(-100)]
     public void Constructor_WithVariousNegativeValues_ShouldThrowException(double value)
     {
-        // Act
         Action act = () => new GameScore(value);
 
-        // Assert
-        act.Should().Throw<ArgumentException>();
+        act.Should().Throw<ArgumentException>().WithParameterName("value");
+    }
+
+    #endregion
+
+    #region Equality Tests
+
+    [Fact]
+    public void Equality_WithSameValue_ShouldBeEqual()
+    {
+        new GameScore(5).Should().Be(new GameScore(5));
+    }
+
+    [Fact]
+    public void Equality_WithDifferentValue_ShouldNotBeEqual()
+    {
+        new GameScore(5).Should().NotBe(new GameScore(6));
     }
 
     #endregion
@@ -77,13 +58,10 @@ public class GameScoreTests
     [Fact]
     public void ImplicitOperator_ShouldConvertToDouble()
     {
-        // Arrange
         var score = new GameScore(50.5);
 
-        // Act
         double result = score;
 
-        // Assert
         result.Should().Be(50.5);
     }
 
@@ -91,166 +69,41 @@ public class GameScoreTests
 
     #region Addition Operator Tests
 
-    [Fact]
-    public void AdditionOperator_ShouldAddTwoScores()
+    [Theory]
+    [InlineData(10, 20, 30)]
+    [InlineData(50, 0, 50)]
+    [InlineData(10.5, 20.75, 31.25)]
+    public void AdditionOperator_ShouldAddTwoScores(double left, double right, double expected)
     {
-        // Arrange
-        var score1 = new GameScore(10);
-        var score2 = new GameScore(20);
+        var result = new GameScore(left) + new GameScore(right);
 
-        // Act
-        var result = score1 + score2;
-
-        // Assert
-        result.Value.Should().Be(30);
-    }
-
-    [Fact]
-    public void AdditionOperator_WithZero_ShouldReturnSameValue()
-    {
-        // Arrange
-        var score1 = new GameScore(50);
-        var score2 = new GameScore(0);
-
-        // Act
-        var result = score1 + score2;
-
-        // Assert
-        result.Value.Should().Be(50);
-    }
-
-    [Fact]
-    public void AdditionOperator_ShouldReturnNewInstance()
-    {
-        // Arrange
-        var score1 = new GameScore(10);
-        var score2 = new GameScore(20);
-
-        // Act
-        var result = score1 + score2;
-
-        // Assert
-        result.Should().NotBeSameAs(score1);
-        result.Should().NotBeSameAs(score2);
-    }
-
-    [Fact]
-    public void AdditionOperator_WithDecimalValues_ShouldAddCorrectly()
-    {
-        // Arrange
-        var score1 = new GameScore(10.5);
-        var score2 = new GameScore(20.75);
-
-        // Act
-        var result = score1 + score2;
-
-        // Assert
-        result.Value.Should().Be(31.25);
+        result.Value.Should().Be(expected);
     }
 
     #endregion
 
     #region Subtraction Operator Tests
 
-    [Fact]
-    public void SubtractionOperator_ShouldSubtractTwoScores()
+    [Theory]
+    [InlineData(30, 10, 20)]
+    [InlineData(50, 0, 50)]
+    [InlineData(50, 50, 0)]
+    public void SubtractionOperator_ShouldSubtractTwoScores(double left, double right, double expected)
     {
-        // Arrange
-        var score1 = new GameScore(30);
-        var score2 = new GameScore(10);
+        var result = new GameScore(left) - new GameScore(right);
 
-        // Act
-        var result = score1 - score2;
-
-        // Assert
-        result.Value.Should().Be(20);
-    }
-
-    [Fact]
-    public void SubtractionOperator_WithZero_ShouldReturnSameValue()
-    {
-        // Arrange
-        var score1 = new GameScore(50);
-        var score2 = new GameScore(0);
-
-        // Act
-        var result = score1 - score2;
-
-        // Assert
-        result.Value.Should().Be(50);
-    }
-
-    [Fact]
-    public void SubtractionOperator_ShouldReturnNewInstance()
-    {
-        // Arrange
-        var score1 = new GameScore(30);
-        var score2 = new GameScore(10);
-
-        // Act
-        var result = score1 - score2;
-
-        // Assert
-        result.Should().NotBeSameAs(score1);
-        result.Should().NotBeSameAs(score2);
-    }
-
-    [Fact]
-    public void SubtractionOperator_ResultingInZero_ShouldSucceed()
-    {
-        // Arrange
-        var score1 = new GameScore(50);
-        var score2 = new GameScore(50);
-
-        // Act
-        var result = score1 - score2;
-
-        // Assert
-        result.Value.Should().Be(0);
+        result.Value.Should().Be(expected);
     }
 
     [Fact]
     public void SubtractionOperator_ResultingInNegative_ShouldThrowException()
     {
-        // Arrange
         var score1 = new GameScore(10);
         var score2 = new GameScore(20);
 
-        // Act
         Action act = () => { var _ = score1 - score2; };
 
-        // Assert
-        act.Should().Throw<ArgumentException>();
-    }
-
-    #endregion
-
-    #region Edge Cases
-
-    [Fact]
-    public void Constructor_WithVeryLargeValue_ShouldSucceed()
-    {
-        // Arrange
-        var value = 1_000_000_000.0;
-
-        // Act
-        var score = new GameScore(value);
-
-        // Assert
-        score.Value.Should().Be(value);
-    }
-
-    [Fact]
-    public void Constructor_WithSmallDecimalValue_ShouldSucceed()
-    {
-        // Arrange
-        var value = 0.001;
-
-        // Act
-        var score = new GameScore(value);
-
-        // Assert
-        score.Value.Should().Be(value);
+        act.Should().Throw<ArgumentException>().WithParameterName("value");
     }
 
     #endregion

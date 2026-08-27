@@ -448,6 +448,10 @@ public class GameControllerTests
         var response = okResult.Value.Should().BeOfType<GameStatisticsResponse>().Subject;
         response.GameStats.Should().Be(stats);
         response.TopPlayers.Should().BeSameAs(topPlayers);
+        response.PlayByDayChart.Should().BeSameAs(playByDayChart);
+        response.PlayerCountChart.Should().BeSameAs(playerCountChart);
+        response.PlayerScoringChart.Should().BeSameAs(playerScoringChart);
+        response.ScoreRankChart.Should().BeSameAs(scoringRankChart);
 
         _gameStatisticsDomainServiceMock.Verify(x => x.CalculateStatisticsAsync(gameId), Times.Once);
         _gameChartServiceMock.Verify(x => x.GetTopPlayers(gameId), Times.Once);
@@ -465,7 +469,6 @@ public class GameControllerTests
     [Fact]
     public async Task ImportBgg_ShouldReturnOkWithResult_WhenUsernameIsValid()
     {
-        // Arrange
         var username = "testuser";
         var importResult = new List<BggImportGame>();
 
@@ -473,14 +476,43 @@ public class GameControllerTests
             .Setup(x => x.ImportBggCollection(username))
             .ReturnsAsync(importResult);
 
-        // Act
         var result = await _controller.ImportBgg(username);
 
-        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().BeAssignableTo<IList<BggImportGame>>();
+        okResult.Value.Should().BeSameAs(importResult);
 
         _bggImportServiceMock.Verify(x => x.ImportBggCollection(username), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportBgg_ShouldTrimUsername_BeforeImport()
+    {
+        var importResult = new List<BggImportGame>();
+
+        _bggImportServiceMock
+            .Setup(x => x.ImportBggCollection("testuser"))
+            .ReturnsAsync(importResult);
+
+        var result = await _controller.ImportBgg(" testuser ");
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.Value.Should().BeSameAs(importResult);
+
+        _bggImportServiceMock.Verify(x => x.ImportBggCollection("testuser"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task ImportBgg_ShouldReturnBadRequest_WhenUsernameIsNullOrWhitespace(string? username)
+    {
+        var result = await _controller.ImportBgg(username!);
+
+        result.Should().BeOfType<BadRequestResult>();
+
         VerifyNoOtherCalls();
     }
 
@@ -556,6 +588,66 @@ public class GameControllerTests
         result.Should().BeOfType<BadRequestResult>();
 
         _bggImportServiceMock.Verify(x => x.ImportGameFromBgg(search), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region Shame Tests
+
+    [Fact]
+    public async Task GetShameGames_ShouldReturnOkWithShameGames()
+    {
+        var shameGames = new List<ShameGame>
+        {
+            new ShameGame { Id = 1, Title = "Dusty Game", Price = 40m },
+            new ShameGame { Id = 2, Title = "Forgotten Game" }
+        };
+
+        _shameServiceMock
+            .Setup(x => x.GetShameGames())
+            .ReturnsAsync(shameGames);
+
+        var result = await _controller.GetShameGames();
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var returnedGames = okResult.Value.Should().BeAssignableTo<List<ShameDto>>().Subject;
+
+        returnedGames.Should().HaveCount(2);
+        returnedGames[0].Id.Should().Be(1);
+        returnedGames[0].Title.Should().Be("Dusty Game");
+        returnedGames[0].Price.Should().Be(40m);
+        returnedGames[1].Id.Should().Be(2);
+        returnedGames[1].Title.Should().Be("Forgotten Game");
+
+        _shameServiceMock.Verify(x => x.GetShameGames(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetShameStatistics_ShouldReturnOkWithStatistics()
+    {
+        var statistics = new ShameStatistics
+        {
+            Count = 3,
+            TotalValue = 120m,
+            AverageValue = 40m
+        };
+
+        _shameServiceMock
+            .Setup(x => x.GetShameStatistics())
+            .ReturnsAsync(statistics);
+
+        var result = await _controller.GetShameStatistics();
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var statisticsDto = okResult.Value.Should().BeOfType<ShameStatisticsDto>().Subject;
+
+        statisticsDto.Count.Should().Be(3);
+        statisticsDto.TotalValue.Should().Be(120m);
+        statisticsDto.AverageValue.Should().Be(40m);
+
+        _shameServiceMock.Verify(x => x.GetShameStatistics(), Times.Once);
         VerifyNoOtherCalls();
     }
 

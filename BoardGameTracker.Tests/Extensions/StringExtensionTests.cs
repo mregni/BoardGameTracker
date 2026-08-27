@@ -29,44 +29,17 @@ public class StringExtensionTests
             result.Should().Be(PersonType.Designer);
         }
 
-        [Fact]
-        public void ToPersonTypeEnum_ShouldReturnPublisher_WhenTypeIsUnknownValue()
-        {
-            const string type = "unknown";
-
-            var result = type.ToPersonTypeEnum();
-
-            result.Should().Be(PersonType.Publisher);
-        }
-
-        [Fact]
-        public void ToPersonTypeEnum_ShouldReturnPublisher_WhenTypeIsEmptyString()
-        {
-            const string type = "";
-
-            var result = type.ToPersonTypeEnum();
-
-            result.Should().Be(PersonType.Publisher);
-        }
-
-        [Fact]
-        public void ToPersonTypeEnum_ShouldReturnPublisher_WhenTypeIsNull()
-        {
-            string? type = null;
-
-            var result = type.ToPersonTypeEnum();
-
-            result.Should().Be(PersonType.Publisher);
-        }
-
         [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("unknown")]
         [InlineData("publisher")]
         [InlineData("ARTIST")]
         [InlineData("designer")]
         [InlineData("random")]
         [InlineData("123")]
         [InlineData("special!@#")]
-        public void ToPersonTypeEnum_ShouldReturnPublisher_WhenTypeDoesNotMatchExactConstants(string type)
+        public void ToPersonTypeEnum_ShouldReturnPublisher_WhenTypeDoesNotMatchExactConstants(string? type)
         {
             var result = type.ToPersonTypeEnum();
 
@@ -96,6 +69,18 @@ public class StringExtensionTests
             result.Should().StartWith("test.backup_");
             result.Should().EndWith(".txt");
             result.Should().NotBe(fileName);
+        }
+
+        [Fact]
+        public void GenerateUniqueFileName_ShouldStripDirectory_WhenFileNameContainsPath()
+        {
+            const string fileName = "dir/test.txt";
+
+            var result = fileName.GenerateUniqueFileName();
+
+            result.Should().StartWith("test_");
+            result.Should().EndWith(".txt");
+            result.Should().NotContain("dir");
         }
 
         [Fact]

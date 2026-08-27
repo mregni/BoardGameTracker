@@ -9,223 +9,30 @@ namespace BoardGameTracker.Tests.Extensions;
 
 public class StatusExtensionsTests
 {
-    [Fact]
-    public void ToGameState_ShouldReturnPreviouslyOwned_WhenPreviouslyOwnedIsTrue()
-    {
-        // Arrange
-        var status = new CollectionResponse.Status
-        {
-            PreviouslyOwned = true,
-            ForTrade = false,
-            Want = false,
-            Owned = false,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        // Act
-        var result = status.ToGameState();
-
-        // Assert
-        result.Should().Be(GameState.PreviouslyOwned);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldReturnForTrade_WhenForTradeIsTrue()
-    {
-        // Arrange
-        var status = new CollectionResponse.Status
-        {
-            PreviouslyOwned = false,
-            ForTrade = true,
-            Want = false,
-            Owned = false,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        // Act
-        var result = status.ToGameState();
-
-        // Assert
-        result.Should().Be(GameState.ForTrade);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldReturnWanted_WhenWantIsTrue()
-    {
-        // Arrange
-        var status = new CollectionResponse.Status
-        {
-            PreviouslyOwned = false,
-            ForTrade = false,
-            Want = true,
-            Owned = false,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        // Act
-        var result = status.ToGameState();
-
-        // Assert
-        result.Should().Be(GameState.Wanted);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldReturnWanted_WhenWantToBuyIsTrue()
+    [Theory]
+    [InlineData(true, false, false, false, false, false, GameState.PreviouslyOwned)]
+    [InlineData(false, true, false, false, false, false, GameState.ForTrade)]
+    [InlineData(false, false, true, false, false, false, GameState.Wanted)]
+    [InlineData(false, false, false, true, false, false, GameState.Wanted)]
+    [InlineData(false, false, false, false, true, false, GameState.Wanted)]
+    [InlineData(false, false, false, false, false, true, GameState.Wanted)]
+    [InlineData(false, false, false, false, false, false, GameState.Owned)]
+    [InlineData(true, true, true, false, false, false, GameState.PreviouslyOwned)]
+    [InlineData(false, true, true, false, false, false, GameState.ForTrade)]
+    public void ToGameState_ShouldMapStatusFlagsWithPriority(
+        bool previouslyOwned, bool forTrade, bool want, bool wantToBuy, bool wishlist, bool preordered, GameState expected)
     {
         var status = new CollectionResponse.Status
         {
-            WantToBuy = true,
-            Owned = false,
+            PreviouslyOwned = previouslyOwned,
+            ForTrade = forTrade,
+            Want = want,
+            WantToBuy = wantToBuy,
+            Wishlist = wishlist,
+            Preordered = preordered,
             LastModified = new DateTime(2023, 1, 1)
         };
 
-        var result = status.ToGameState();
-
-        result.Should().Be(GameState.Wanted);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldReturnWanted_WhenWishlistIsTrue()
-    {
-        var status = new CollectionResponse.Status
-        {
-            Wishlist = true,
-            Owned = false,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        var result = status.ToGameState();
-
-        result.Should().Be(GameState.Wanted);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldReturnWanted_WhenPreorderedIsTrue()
-    {
-        var status = new CollectionResponse.Status
-        {
-            Preordered = true,
-            Owned = false,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        var result = status.ToGameState();
-
-        result.Should().Be(GameState.Wanted);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldReturnOwned_WhenOwnedGameIsAlsoWantToPlay()
-    {
-        var status = new CollectionResponse.Status
-        {
-            Owned = true,
-            WantToPlay = true,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        var result = status.ToGameState();
-
-        result.Should().Be(GameState.Owned);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldReturnOwned_WhenNoOtherStatusSet()
-    {
-        // Arrange
-        var status = new CollectionResponse.Status
-        {
-            PreviouslyOwned = false,
-            ForTrade = false,
-            Want = false,
-            Owned = true,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        // Act
-        var result = status.ToGameState();
-
-        // Assert
-        result.Should().Be(GameState.Owned);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldReturnOwned_WhenAllStatusAreFalse()
-    {
-        // Arrange
-        var status = new CollectionResponse.Status
-        {
-            PreviouslyOwned = false,
-            ForTrade = false,
-            Want = false,
-            Owned = false,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        // Act
-        var result = status.ToGameState();
-
-        // Assert
-        result.Should().Be(GameState.Owned);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldPrioritizePreviouslyOwned_WhenMultipleStatusSet()
-    {
-        // Arrange - All flags set, should prioritize PreviouslyOwned
-        var status = new CollectionResponse.Status
-        {
-            PreviouslyOwned = true,
-            ForTrade = true,
-            Want = true,
-            Owned = true,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        // Act
-        var result = status.ToGameState();
-
-        // Assert
-        result.Should().Be(GameState.PreviouslyOwned);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldPrioritizeForTrade_OverWantedAndOwned()
-    {
-        // Arrange
-        var status = new CollectionResponse.Status
-        {
-            PreviouslyOwned = false,
-            ForTrade = true,
-            Want = true,
-            Owned = true,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        // Act
-        var result = status.ToGameState();
-
-        // Assert
-        result.Should().Be(GameState.ForTrade);
-    }
-
-    [Fact]
-    public void ToGameState_ShouldPrioritizeWanted_OverOwned()
-    {
-        // Arrange
-        var status = new CollectionResponse.Status
-        {
-            PreviouslyOwned = false,
-            ForTrade = false,
-            Want = true,
-            Owned = true,
-            LastModified = new DateTime(2023, 1, 1)
-        };
-
-        // Act
-        var result = status.ToGameState();
-
-        // Assert
-        result.Should().Be(GameState.Wanted);
+        status.ToGameState().Should().Be(expected);
     }
 }

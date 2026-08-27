@@ -180,16 +180,17 @@ public class GameNightControllerTests
         VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task UpdateRsvp_ShouldReturnOkWithRsvpDto_WhenCommandHasId()
+    public static TheoryData<UpdateRsvpCommand> UpdateRsvpCommands => new()
     {
-        var command = new UpdateRsvpCommand
-        {
-            Id = 5,
-            State = GameNightRsvpState.Accepted
-        };
+        new UpdateRsvpCommand { Id = 5, State = GameNightRsvpState.Accepted },
+        new UpdateRsvpCommand { GameNightId = 10, PlayerId = 3, State = GameNightRsvpState.Declined }
+    };
 
-        var rsvp = GameNightRsvp.Create(1, GameNightRsvpState.Accepted);
+    [Theory]
+    [MemberData(nameof(UpdateRsvpCommands))]
+    public async Task UpdateRsvp_ShouldReturnOkWithRsvpDto_WhenCommandIsValid(UpdateRsvpCommand command)
+    {
+        var rsvp = GameNightRsvp.Create(3, command.State);
 
         _gameNightServiceMock
             .Setup(x => x.UpdateRsvp(command))
@@ -198,34 +199,47 @@ public class GameNightControllerTests
         var result = await _controller.UpdateRsvp(command);
 
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().BeAssignableTo<GameNightRsvpDto>();
+        var rsvpDto = okResult.Value.Should().BeAssignableTo<GameNightRsvpDto>().Subject;
+
+        rsvpDto.PlayerId.Should().Be(3);
+        rsvpDto.State.Should().Be(command.State);
 
         _gameNightServiceMock.Verify(x => x.UpdateRsvp(command), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task UpdateRsvp_ShouldReturnOkWithRsvpDto_WhenCommandHasGameNightIdAndPlayerId()
+    public async Task UpdateRsvp_ShouldThrowArgumentNullException_WhenIdAndGameNightIdAreNull()
     {
         var command = new UpdateRsvpCommand
         {
-            GameNightId = 10,
-            PlayerId = 3,
-            State = GameNightRsvpState.Declined
+            State = GameNightRsvpState.Accepted
         };
 
-        var rsvp = GameNightRsvp.Create(3, GameNightRsvpState.Declined);
+        var act = () => _controller.UpdateRsvp(command);
+
+        await act.Should().ThrowAsync<ArgumentNullException>();
+
+        _gameNightServiceMock.Verify(x => x.UpdateRsvp(It.IsAny<UpdateRsvpCommand>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task SendInvites_ShouldReturnOkWithResult()
+    {
+        var gameNightId = 4;
+        var sendResult = new SendInvitesResultDto { Sent = 3 };
 
         _gameNightServiceMock
-            .Setup(x => x.UpdateRsvp(command))
-            .ReturnsAsync(rsvp);
+            .Setup(x => x.SendInvitesAsync(gameNightId))
+            .ReturnsAsync(sendResult);
 
-        var result = await _controller.UpdateRsvp(command);
+        var result = await _controller.SendInvites(gameNightId);
 
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        okResult.Value.Should().BeAssignableTo<GameNightRsvpDto>();
+        result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeSameAs(sendResult);
 
-        _gameNightServiceMock.Verify(x => x.UpdateRsvp(command), Times.Once);
+        _gameNightServiceMock.Verify(x => x.SendInvitesAsync(gameNightId), Times.Once);
         VerifyNoOtherCalls();
     }
 

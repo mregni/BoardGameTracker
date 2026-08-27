@@ -16,62 +16,57 @@ public class ModelProvisioningBackgroundServiceTests
     private static readonly TimeSpan SignalTimeout = TimeSpan.FromSeconds(5);
 
     private readonly Mock<IServiceScopeFactory> _scopeFactoryMock = new();
+    private readonly Mock<IServiceScope> _scopeMock = new();
+    private readonly Mock<IServiceProvider> _scopedProviderMock = new();
     private readonly Mock<IAiClientFactory> _aiClientFactoryMock = new();
 
     public ModelProvisioningBackgroundServiceTests()
     {
-        var scopeMock = new Mock<IServiceScope>();
-        var scopedProviderMock = new Mock<IServiceProvider>();
-
-        _scopeFactoryMock.Setup(x => x.CreateScope()).Returns(scopeMock.Object);
-        scopeMock.Setup(x => x.ServiceProvider).Returns(scopedProviderMock.Object);
-        scopedProviderMock
+        _scopeFactoryMock.Setup(x => x.CreateScope()).Returns(_scopeMock.Object);
+        _scopeMock.Setup(x => x.ServiceProvider).Returns(_scopedProviderMock.Object);
+        _scopedProviderMock
             .Setup(x => x.GetService(typeof(IAiClientFactory)))
             .Returns(_aiClientFactoryMock.Object);
     }
 
-    private async Task RunUntilAsync(Task signal)
+    private TestableModelProvisioningBackgroundService CreateService(int retryDelayMs = 10, int maxAttempts = 40) =>
+        new(_scopeFactoryMock.Object,
+            Mock.Of<ILogger<ModelProvisioningBackgroundService>>(),
+            TimeSpan.FromMilliseconds(retryDelayMs),
+            maxAttempts);
+
+    private void VerifyProvisioningAttempts(Times times)
     {
-        var service = new TestableModelProvisioningBackgroundService(
-            _scopeFactoryMock.Object,
-            Mock.Of<ILogger<ModelProvisioningBackgroundService>>());
+        _scopeFactoryMock.Verify(x => x.CreateScope(), times);
+        _scopeMock.VerifyGet(x => x.ServiceProvider, times);
+        _scopeMock.Verify(x => x.Dispose(), times);
+        _scopedProviderMock.Verify(x => x.GetService(typeof(IAiClientFactory)), times);
+        _aiClientFactoryMock.Verify(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()), times);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _scopeFactoryMock.VerifyNoOtherCalls();
+        _scopeMock.VerifyNoOtherCalls();
+        _scopedProviderMock.VerifyNoOtherCalls();
+        _aiClientFactoryMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldEnsureModelsExactlyOnceAndStop_WhenFirstAttemptSucceeds()
+    {
+        _aiClientFactoryMock
+            .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var service = CreateService(retryDelayMs: 300000);
         await service.StartAsync(CancellationToken.None);
-        try
-        {
-            await signal.WaitAsync(SignalTimeout);
-        }
-        finally
-        {
-            await service.StopAsync(CancellationToken.None);
-        }
-    }
+        await service.ExecuteTask!.WaitAsync(SignalTimeout);
+        await service.StopAsync(CancellationToken.None);
 
-    [Fact]
-    public async Task ExecuteAsync_ShouldEnsureModelsAvailable_OnStartup()
-    {
-        var ensured = new TaskCompletionSource();
-        _aiClientFactoryMock
-            .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
-            .Callback(() => ensured.TrySetResult())
-            .Returns(Task.CompletedTask);
-
-        await RunUntilAsync(ensured.Task);
-
-        _aiClientFactoryMock.Verify(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldStopRetrying_OnceModelsAreEnsured()
-    {
-        var attempts = 0;
-        _aiClientFactoryMock
-            .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
-            .Callback(() => Interlocked.Increment(ref attempts))
-            .Returns(Task.CompletedTask);
-
-        await RunUntilAsync(Task.Delay(200, TestContext.Current.CancellationToken));
-
-        attempts.Should().Be(1);
+        service.ExecuteTask.IsCompletedSuccessfully.Should().BeTrue();
+        VerifyProvisioningAttempts(Times.Once());
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -90,19 +85,84 @@ public class ModelProvisioningBackgroundServiceTests
             })
             .ThrowsAsync(new InvalidOperationException("ollama not reachable"));
 
-        await RunUntilAsync(secondAttempt.Task);
+        var service = CreateService();
+        await service.StartAsync(CancellationToken.None);
+        await secondAttempt.Task.WaitAsync(SignalTimeout);
+        await service.StopAsync(CancellationToken.None);
 
-        _aiClientFactoryMock.Verify(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()), Times.AtLeast(2));
+        VerifyProvisioningAttempts(Times.AtLeast(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldGiveUpAndStop_AfterMaxAttemptsAllFail()
+    {
+        _aiClientFactoryMock
+            .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("ollama not reachable"));
+
+        var service = CreateService(maxAttempts: 3);
+        await service.StartAsync(CancellationToken.None);
+        await service.ExecuteTask!.WaitAsync(SignalTimeout);
+        await service.StopAsync(CancellationToken.None);
+
+        service.ExecuteTask.IsCompletedSuccessfully.Should().BeTrue();
+        VerifyProvisioningAttempts(Times.Exactly(3));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldStopWithoutRetrying_WhenEnsuringModelsIsCancelled()
+    {
+        _aiClientFactoryMock
+            .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        var service = CreateService(retryDelayMs: 300000);
+        await service.StartAsync(CancellationToken.None);
+        await service.ExecuteTask!.WaitAsync(SignalTimeout);
+        await service.StopAsync(CancellationToken.None);
+
+        service.ExecuteTask.IsCompletedSuccessfully.Should().BeTrue();
+        VerifyProvisioningAttempts(Times.Once());
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldStopCleanly_WhenServiceIsStoppedDuringRetryDelay()
+    {
+        var firstAttempt = new TaskCompletionSource();
+        _aiClientFactoryMock
+            .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => firstAttempt.TrySetResult())
+            .ThrowsAsync(new InvalidOperationException("ollama not reachable"));
+
+        var service = CreateService(retryDelayMs: 300000);
+        await service.StartAsync(CancellationToken.None);
+        await firstAttempt.Task.WaitAsync(SignalTimeout);
+        await service.StopAsync(CancellationToken.None);
+
+        service.ExecuteTask!.IsCompletedSuccessfully.Should().BeTrue();
+        VerifyProvisioningAttempts(Times.Once());
+        VerifyNoOtherCalls();
     }
 
     private sealed class TestableModelProvisioningBackgroundService : ModelProvisioningBackgroundService
     {
+        private readonly TimeSpan _retryDelay;
+        private readonly int _maxAttempts;
+
         public TestableModelProvisioningBackgroundService(
             IServiceScopeFactory scopeFactory,
-            ILogger<ModelProvisioningBackgroundService> logger) : base(scopeFactory, logger)
+            ILogger<ModelProvisioningBackgroundService> logger,
+            TimeSpan retryDelay,
+            int maxAttempts) : base(scopeFactory, logger)
         {
+            _retryDelay = retryDelay;
+            _maxAttempts = maxAttempts;
         }
 
-        protected override TimeSpan RetryDelay => TimeSpan.FromMilliseconds(10);
+        protected override TimeSpan RetryDelay => _retryDelay;
+        protected override int MaxAttempts => _maxAttempts;
     }
 }
