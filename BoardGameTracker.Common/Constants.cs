@@ -60,6 +60,7 @@ public static class Constants
         public const string ImageTooLarge = "error.image.too-large";
         public const string ImageUnsupportedFormat = "error.image.unsupported-format";
         public const string InvalidResetToken = "error.auth.invalid-reset-token";
+        public const string GameAlreadyOnLoan = "error.loan.game-already-on-loan";
     }
 
     public static class BggConfig

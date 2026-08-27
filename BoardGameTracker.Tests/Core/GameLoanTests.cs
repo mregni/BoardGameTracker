@@ -1,5 +1,7 @@
 using System;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using FluentAssertions;
 using Xunit;
 
@@ -28,20 +30,67 @@ public class GameLoanTests
     }
 
     [Fact]
-    public void LoanToPlayer_WhileAlreadyLoaned_PinsCurrentBehavior()
+    public void LoanToPlayer_WhileAlreadyLoaned_ShouldThrow()
     {
-        // Arrange
         var game = new Game("Test Game");
         var firstLoan = game.LoanToPlayer(1, DateTime.UtcNow.AddDays(-5));
 
-        // Act
+        var act = () => game.LoanToPlayer(2, DateTime.UtcNow);
+
+        act.Should().Throw<DomainException>().WithMessage(Constants.Errors.GameAlreadyOnLoan);
+        game.Loans.Should().ContainSingle().Which.Should().BeSameAs(firstLoan);
+        game.IsCurrentlyLoaned().Should().BeTrue();
+    }
+
+    [Fact]
+    public void LoanToPlayer_AfterPreviousLoanReturned_ShouldSucceed()
+    {
+        var game = new Game("Test Game");
+        var firstLoan = game.LoanToPlayer(1, DateTime.UtcNow.AddDays(-5));
+        firstLoan.MarkAsReturned(DateTime.UtcNow.AddDays(-1));
+
         var secondLoan = game.LoanToPlayer(2, DateTime.UtcNow);
 
-        // Assert
         game.Loans.Should().HaveCount(2);
-        firstLoan.IsCurrentlyOnLoan().Should().BeTrue();
         secondLoan.IsCurrentlyOnLoan().Should().BeTrue();
-        game.IsCurrentlyLoaned().Should().BeTrue();
+    }
+
+    [Fact]
+    public void LoanToPlayer_ForFutureDateAfterDueDate_ShouldSucceed()
+    {
+        var game = new Game("Test Game");
+        var firstLoan = game.LoanToPlayer(1, DateTime.UtcNow);
+        firstLoan.SetDueDate(DateTime.UtcNow.AddDays(7));
+
+        var secondLoan = game.LoanToPlayer(2, DateTime.UtcNow.AddDays(10));
+
+        game.Loans.Should().HaveCount(2);
+        secondLoan.PlayerId.Should().Be(2);
+    }
+
+    [Fact]
+    public void LoanToPlayer_ForFutureDateBeforeDueDate_ShouldThrow()
+    {
+        var game = new Game("Test Game");
+        var firstLoan = game.LoanToPlayer(1, DateTime.UtcNow);
+        firstLoan.SetDueDate(DateTime.UtcNow.AddDays(7));
+
+        var act = () => game.LoanToPlayer(2, DateTime.UtcNow.AddDays(3));
+
+        act.Should().Throw<DomainException>().WithMessage(Constants.Errors.GameAlreadyOnLoan);
+        game.Loans.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void LoanToPlayer_ForFutureDate_WhileOpenLoanHasNoDueDate_ShouldThrow()
+    {
+        var game = new Game("Test Game");
+        game.LoanToPlayer(1, DateTime.UtcNow);
+
+        var act = () => game.LoanToPlayer(2, DateTime.UtcNow.AddDays(30));
+
+        act.Should().Throw<DomainException>().WithMessage(Constants.Errors.GameAlreadyOnLoan);
+        game.Loans.Should().ContainSingle();
     }
 
     [Fact]

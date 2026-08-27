@@ -36,7 +36,7 @@ public abstract class BaseGame : HasId
         private set => _state = Guard.Against.EnumOutOfRange(value);
     }
 
-    [NotMapped] public bool IsLoaned => IsCurrentlyLoaned();
+    [NotMapped] public bool IsLoaned => Loans.Any(l => l.IsCurrentlyOnLoan());
 
     public Price? BuyingPrice { get; private set; }
     public Price? SoldPrice { get; private set; }
@@ -174,5 +174,5 @@ public abstract class BaseGame : HasId
         AdditionDate = date;
     }
 
-    public bool IsCurrentlyLoaned() => Loans.Any(l => l.IsCurrentlyOnLoan());
+    protected bool IsLoanedOn(DateTime date) => Loans.Any(l => l.IsActiveOn(date));
 }

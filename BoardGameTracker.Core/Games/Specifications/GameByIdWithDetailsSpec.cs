@@ -13,6 +13,7 @@ public sealed class GameByIdWithDetailsSpec : SingleResultSpecification<Game>
             .Include(x => x.Categories)
             .Include(x => x.Expansions)
             .Include(x => x.Mechanics)
-            .Include(x => x.People);
+            .Include(x => x.People)
+            .Include(x => x.Loans);
     }
 }
