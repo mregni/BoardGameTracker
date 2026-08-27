@@ -84,4 +84,43 @@ public class GameTests
     }
 
     #endregion
+
+    #region UpdateYearPublished
+
+    [Theory]
+    [InlineData(1630)]
+    [InlineData(1876)]
+    [InlineData(1899)]
+    [InlineData(1900)]
+    [InlineData(2020)]
+    public void UpdateYearPublished_ShouldStoreValue_WhenYearIsValid(int year)
+    {
+        var game = new Game("Test Game");
+
+        game.UpdateYearPublished(year);
+
+        game.YearPublished.Should().Be(year);
+    }
+
+    [Fact]
+    public void UpdateYearPublished_ShouldStoreNull_WhenNull()
+    {
+        var game = new Game("Test Game");
+
+        game.UpdateYearPublished(null);
+
+        game.YearPublished.Should().BeNull();
+    }
+
+    [Fact]
+    public void UpdateYearPublished_ShouldThrow_WhenYearIsTooFarInTheFuture()
+    {
+        var game = new Game("Test Game");
+
+        var action = () => game.UpdateYearPublished(DateTime.UtcNow.Year + 11);
+
+        action.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    #endregion
 }
