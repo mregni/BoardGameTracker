@@ -43,23 +43,19 @@ public class BadgeLevelProgressionPolicyTests
     }
 
     [Fact]
-    public void CanProgressTo_PinsCurrentBehavior_WhenCurrentLevelIsUndefined()
+    public void CanProgressTo_ShouldThrow_WhenCurrentLevelIsUndefined()
     {
-        // Act
-        var result = _policy.CanProgressTo(UndefinedLevel, BadgeLevel.Green);
+        var act = () => _policy.CanProgressTo(UndefinedLevel, BadgeLevel.Green);
 
-        // Assert
-        result.Should().BeTrue();
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("current");
     }
 
     [Fact]
-    public void CanProgressTo_ShouldReturnFalse_WhenNextLevelIsUndefined()
+    public void CanProgressTo_ShouldThrow_WhenNextLevelIsUndefined()
     {
-        // Act
-        var result = _policy.CanProgressTo(BadgeLevel.Gold, UndefinedLevel);
+        var act = () => _policy.CanProgressTo(BadgeLevel.Gold, UndefinedLevel);
 
-        // Assert
-        result.Should().BeFalse();
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("next");
     }
 
     #endregion
@@ -81,13 +77,11 @@ public class BadgeLevelProgressionPolicyTests
     }
 
     [Fact]
-    public void GetNextLevel_PinsCurrentBehavior_WhenLevelIsUndefined()
+    public void GetNextLevel_ShouldThrow_WhenLevelIsUndefined()
     {
-        // Act
-        var result = _policy.GetNextLevel(UndefinedLevel);
+        var act = () => _policy.GetNextLevel(UndefinedLevel);
 
-        // Assert
-        result.Should().Be(BadgeLevel.Green);
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("current");
     }
 
     #endregion
@@ -109,13 +103,11 @@ public class BadgeLevelProgressionPolicyTests
     }
 
     [Fact]
-    public void GetPreviousLevel_ShouldReturnNull_WhenLevelIsUndefined()
+    public void GetPreviousLevel_ShouldThrow_WhenLevelIsUndefined()
     {
-        // Act
-        var result = _policy.GetPreviousLevel(UndefinedLevel);
+        var act = () => _policy.GetPreviousLevel(UndefinedLevel);
 
-        // Assert
-        result.Should().BeNull();
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("current");
     }
 
     #endregion
@@ -127,7 +119,6 @@ public class BadgeLevelProgressionPolicyTests
     [InlineData(BadgeLevel.Green, false)]
     [InlineData(BadgeLevel.Blue, false)]
     [InlineData(BadgeLevel.Red, false)]
-    [InlineData(UndefinedLevel, false)]
     public void IsMaxLevel_ShouldOnlyReturnTrueForGold(BadgeLevel level, bool expected)
     {
         // Act
@@ -135,6 +126,14 @@ public class BadgeLevelProgressionPolicyTests
 
         // Assert
         result.Should().Be(expected);
+    }
+
+    [Fact]
+    public void IsMaxLevel_ShouldThrow_WhenLevelIsUndefined()
+    {
+        var act = () => _policy.IsMaxLevel(UndefinedLevel);
+
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("level");
     }
 
     #endregion
@@ -146,7 +145,6 @@ public class BadgeLevelProgressionPolicyTests
     [InlineData(BadgeLevel.Blue, false)]
     [InlineData(BadgeLevel.Red, false)]
     [InlineData(BadgeLevel.Gold, false)]
-    [InlineData(UndefinedLevel, false)]
     public void IsStartingLevel_ShouldOnlyReturnTrueForGreen(BadgeLevel level, bool expected)
     {
         // Act
@@ -154,6 +152,14 @@ public class BadgeLevelProgressionPolicyTests
 
         // Assert
         result.Should().Be(expected);
+    }
+
+    [Fact]
+    public void IsStartingLevel_ShouldThrow_WhenLevelIsUndefined()
+    {
+        var act = () => _policy.IsStartingLevel(UndefinedLevel);
+
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("level");
     }
 
     #endregion
@@ -165,7 +171,6 @@ public class BadgeLevelProgressionPolicyTests
     [InlineData(BadgeLevel.Blue, 2)]
     [InlineData(BadgeLevel.Red, 3)]
     [InlineData(BadgeLevel.Gold, 4)]
-    [InlineData(UndefinedLevel, 0)]
     public void GetLevelOrder_ShouldReturnCorrectOrder(BadgeLevel level, int expectedOrder)
     {
         // Act
@@ -173,6 +178,14 @@ public class BadgeLevelProgressionPolicyTests
 
         // Assert
         result.Should().Be(expectedOrder);
+    }
+
+    [Fact]
+    public void GetLevelOrder_ShouldThrow_WhenLevelIsUndefined()
+    {
+        var act = () => _policy.GetLevelOrder(UndefinedLevel);
+
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("level");
     }
 
     #endregion
@@ -192,8 +205,6 @@ public class BadgeLevelProgressionPolicyTests
     [InlineData(BadgeLevel.Blue, BadgeLevel.Blue, 0)]
     [InlineData(BadgeLevel.Red, BadgeLevel.Red, 0)]
     [InlineData(BadgeLevel.Gold, BadgeLevel.Gold, 0)]
-    [InlineData(UndefinedLevel, BadgeLevel.Green, -1)]
-    [InlineData(BadgeLevel.Green, UndefinedLevel, 1)]
     public void CompareLevels_ShouldReturnExpectedSign(BadgeLevel level1, BadgeLevel level2, int expectedSign)
     {
         // Act
@@ -201,6 +212,19 @@ public class BadgeLevelProgressionPolicyTests
 
         // Assert
         Math.Sign(result).Should().Be(expectedSign);
+    }
+
+    [Theory]
+    [InlineData("level1")]
+    [InlineData("level2")]
+    public void CompareLevels_ShouldThrow_WhenEitherLevelIsUndefined(string undefinedParam)
+    {
+        var level1 = undefinedParam == "level1" ? UndefinedLevel : BadgeLevel.Green;
+        var level2 = undefinedParam == "level2" ? UndefinedLevel : BadgeLevel.Green;
+
+        var act = () => _policy.CompareLevels(level1, level2);
+
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName(undefinedParam);
     }
 
     #endregion

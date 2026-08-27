@@ -15,21 +15,21 @@ public class BadgeLevelProgressionPolicy : IBadgeLevelProgressionPolicy
 
     public bool CanProgressTo(BadgeLevel current, BadgeLevel next)
     {
-        var currentOrder = LevelHierarchy.GetValueOrDefault(current, 0);
-        var nextOrder = LevelHierarchy.GetValueOrDefault(next, 0);
+        var currentOrder = GetOrder(current, nameof(current));
+        var nextOrder = GetOrder(next, nameof(next));
 
         return nextOrder == currentOrder + 1;
     }
 
     public BadgeLevel? GetNextLevel(BadgeLevel current)
     {
-        var currentOrder = LevelHierarchy.GetValueOrDefault(current, 0);
+        var currentOrder = GetOrder(current, nameof(current));
         return FindLevelByOrder(currentOrder + 1);
     }
 
     public BadgeLevel? GetPreviousLevel(BadgeLevel current)
     {
-        var currentOrder = LevelHierarchy.GetValueOrDefault(current, 0);
+        var currentOrder = GetOrder(current, nameof(current));
         var previousOrder = currentOrder - 1;
 
         if (previousOrder < 1)
@@ -54,26 +54,34 @@ public class BadgeLevelProgressionPolicy : IBadgeLevelProgressionPolicy
     public bool IsMaxLevel(BadgeLevel level)
     {
         var maxOrder = LevelHierarchy.Values.Max();
-        var currentOrder = LevelHierarchy.GetValueOrDefault(level, 0);
-        return currentOrder == maxOrder;
+        return GetOrder(level, nameof(level)) == maxOrder;
     }
 
     public bool IsStartingLevel(BadgeLevel level)
     {
         var minOrder = LevelHierarchy.Values.Min();
-        var currentOrder = LevelHierarchy.GetValueOrDefault(level, 0);
-        return currentOrder == minOrder;
+        return GetOrder(level, nameof(level)) == minOrder;
     }
 
     public int GetLevelOrder(BadgeLevel level)
     {
-        return LevelHierarchy.GetValueOrDefault(level, 0);
+        return GetOrder(level, nameof(level));
     }
 
     public int CompareLevels(BadgeLevel level1, BadgeLevel level2)
     {
-        var order1 = LevelHierarchy.GetValueOrDefault(level1, 0);
-        var order2 = LevelHierarchy.GetValueOrDefault(level2, 0);
+        var order1 = GetOrder(level1, nameof(level1));
+        var order2 = GetOrder(level2, nameof(level2));
         return order1.CompareTo(order2);
+    }
+
+    private static int GetOrder(BadgeLevel level, string paramName)
+    {
+        if (!LevelHierarchy.TryGetValue(level, out var order))
+        {
+            throw new ArgumentOutOfRangeException(paramName, level, $"Undefined badge level: {level}.");
+        }
+
+        return order;
     }
 }
