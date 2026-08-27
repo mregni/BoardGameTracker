@@ -176,16 +176,38 @@ public class RulebookChunkerTests
     }
 
     [Fact]
-    public void Chunk_CurrentlySplitsSurrogatePairs_WhenHardSplitFallsMidCharacter()
+    public void Chunk_ShouldNotSplitSurrogatePair_WhenHardSplitFallsMidCharacter()
     {
         var text = new string('a', 999) + "\U0001D11E" + new string('b', 300);
 
         var result = _chunker.Chunk(new List<PdfPageText> { new(1, text) });
 
         result.Should().HaveCount(2);
-        result[0].Content.Should().HaveLength(1000);
-        char.IsHighSurrogate(result[0].Content[^1]).Should().BeTrue();
-        result[1].Content.Should().Be(new string('a', 199) + "\U0001D11E" + new string('b', 300));
+        result.Should().OnlyContain(c => !HasLoneSurrogate(c.Content));
+        result[0].Content.Should().Be(new string('a', 999));
+        result[1].Content.Should().Be(new string('a', 200) + "\U0001D11E" + new string('b', 300));
+    }
+
+    private static bool HasLoneSurrogate(string value)
+    {
+        for (var i = 0; i < value.Length; i++)
+        {
+            if (char.IsHighSurrogate(value[i]))
+            {
+                if (i + 1 >= value.Length || !char.IsLowSurrogate(value[i + 1]))
+                {
+                    return true;
+                }
+
+                i++;
+            }
+            else if (char.IsLowSurrogate(value[i]))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     [Theory]

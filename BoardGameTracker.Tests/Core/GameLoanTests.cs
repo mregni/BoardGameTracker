@@ -39,7 +39,7 @@ public class GameLoanTests
 
         act.Should().Throw<DomainException>().WithMessage(Constants.Errors.GameAlreadyOnLoan);
         game.Loans.Should().ContainSingle().Which.Should().BeSameAs(firstLoan);
-        game.IsCurrentlyLoaned().Should().BeTrue();
+        game.IsLoaned.Should().BeTrue();
     }
 
     [Fact]
@@ -94,30 +94,20 @@ public class GameLoanTests
     }
 
     [Fact]
-    public void IsCurrentlyLoaned_WithActiveLoan_ShouldReturnTrue()
+    public void IsLoaned_WithActiveLoan_ShouldReturnTrue()
     {
-        // Arrange
         var game = new Game("Test Game");
         game.LoanToPlayer(1, DateTime.UtcNow.AddDays(-5));
 
-        // Act
-        var result = game.IsCurrentlyLoaned();
-
-        // Assert
-        result.Should().BeTrue();
+        game.IsLoaned.Should().BeTrue();
     }
 
     [Fact]
-    public void IsCurrentlyLoaned_WithNoLoans_ShouldReturnFalse()
+    public void IsLoaned_WithNoLoans_ShouldReturnFalse()
     {
-        // Arrange
         var game = new Game("Test Game");
 
-        // Act
-        var result = game.IsCurrentlyLoaned();
-
-        // Assert
-        result.Should().BeFalse();
+        game.IsLoaned.Should().BeFalse();
     }
 
     [Fact]
