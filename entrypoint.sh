@@ -6,9 +6,6 @@ PGID=${PGID:-1654}
 
 echo "Starting with UID: $PUID, GID: $PGID"
 
-if ! getent group appgroup > /dev/null 2>&1; then
-    addgroup -g "$PGID" appgroup
-fi
 if [ "$(id -u)" != "0" ]; then
     echo "Not running as root (UID $(id -u)); skipping user/group setup and privilege drop."
     exec dotnet BoardGameTracker.Host.dll
