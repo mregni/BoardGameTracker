@@ -87,7 +87,7 @@ public class GameSpecsTests
 
         matching.IsSatisfiedBy(game).Should().BeTrue();
         nonMatching.IsSatisfiedBy(game).Should().BeFalse();
-        matching.IncludeExpressions.Should().HaveCount(5);
+        matching.IncludeExpressions.Should().HaveCount(6);
         matching.AsNoTracking.Should().Be(asNoTracking);
     }
 

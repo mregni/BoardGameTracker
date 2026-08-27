@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
@@ -168,6 +169,35 @@ public class LoanServiceTests
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
         _loanRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Loan>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LoanGameToPlayer_ShouldThrowDomainException_WhenGameAlreadyOnLoan()
+    {
+        var gameId = 1;
+        var game = new Game("Test Game") { Id = gameId };
+        game.LoanToPlayer(99, DateTime.UtcNow.AddDays(-3));
+
+        var command = new CreateLoanCommand
+        {
+            GameId = gameId,
+            PlayerId = 2,
+            LoanDate = DateTime.UtcNow
+        };
+
+        _gameRepositoryMock
+            .Setup(x => x.GetByIdAsync(gameId))
+            .ReturnsAsync(game);
+
+        var act = async () => await _loanService.LoanGameToPlayer(command);
+
+        await act.Should().ThrowAsync<DomainException>()
+            .WithMessage(Constants.Errors.GameAlreadyOnLoan);
+
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(gameId), Times.Once);
+        _loanRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Loan>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
         VerifyNoOtherCalls();
     }
 

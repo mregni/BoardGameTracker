@@ -157,6 +157,10 @@ public class BggImportService : IBggImportService
             {
                 throw;
             }
+            catch (BggRateLimitException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to import BGG game {BggId}, skipping", importGame.BggId);
@@ -201,6 +205,11 @@ public class BggImportService : IBggImportService
         {
             _logger.LogWarning(ex, "BGG API key is invalid or expired");
             throw new ValidationException("Invalid BGG API key. Please check your API key in settings.");
+        }
+        catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            _logger.LogWarning(ex, "BGG rate-limited the request for game {BggId}", bggId);
+            throw new BggRateLimitException();
         }
         catch (BoardGameGeekHttpException ex)
         {

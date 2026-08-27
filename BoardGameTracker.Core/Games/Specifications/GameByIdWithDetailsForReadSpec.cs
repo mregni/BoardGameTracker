@@ -14,6 +14,7 @@ public sealed class GameByIdWithDetailsForReadSpec : SingleResultSpecification<G
             .Include(x => x.Expansions)
             .Include(x => x.Mechanics)
             .Include(x => x.People)
+            .Include(x => x.Loans)
             .AsNoTracking();
     }
 }
