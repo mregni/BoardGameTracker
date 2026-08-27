@@ -339,7 +339,7 @@ public class BggImportServiceTests
     }
 
     [Fact]
-    public async Task ImportGameFromBgg_ShouldReturnNull_WhenBggReturnsTooManyRequests()
+    public async Task ImportGameFromBgg_ShouldThrowBggRateLimitException_WhenBggReturnsTooManyRequests()
     {
         var search = new BggSearch { BggId = 12345, State = GameState.Owned, HasScoring = false };
 
@@ -350,9 +350,9 @@ public class BggImportServiceTests
             .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
             .ThrowsAsync(new BoardGameGeekHttpException("Too many requests", HttpStatusCode.TooManyRequests));
 
-        var result = await _bggImportService.ImportGameFromBgg(search);
+        var act = async () => await _bggImportService.ImportGameFromBgg(search);
 
-        result.Should().BeNull();
+        await act.Should().ThrowAsync<BggRateLimitException>();
 
         _gameRepositoryMock.Verify(x => x.GetGameByBggId(12345), Times.Once);
         _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
@@ -1054,6 +1054,37 @@ public class BggImportServiceTests
 
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage("Invalid BGG API key. Please check your API key in settings.");
+
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(5555), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ImportList_ShouldRethrowBggRateLimitExceptionWithoutSaving_WhenBggReturnsTooManyRequests()
+    {
+        var importGames = new List<ImportGame>
+        {
+            new()
+            {
+                Title = "Any Game",
+                BggId = 5555,
+                ImageUrl = "img.jpg",
+                State = GameState.Owned,
+                HasScoring = false,
+                Price = 0,
+                AddedDate = DateTime.UtcNow
+            }
+        };
+
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ThrowsAsync(new BoardGameGeekHttpException("Too many requests", HttpStatusCode.TooManyRequests));
+
+        var act = async () => await _bggImportService.ImportList(importGames);
+
+        await act.Should().ThrowAsync<BggRateLimitException>();
 
         _gameRepositoryMock.Verify(x => x.GetGameByBggId(5555), Times.Once);
         _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
