@@ -60,6 +60,49 @@ public class GameTests
 
     #endregion
 
+    #region UpdateChangeDetectionWatchId
+
+    [Fact]
+    public void UpdateChangeDetectionWatchId_ShouldStoreValue_WhenValidGuid()
+    {
+        var game = new Game("Test Game");
+        var watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+
+        game.UpdateChangeDetectionWatchId(watchId);
+
+        game.ChangeDetectionWatchId.Should().Be(watchId);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void UpdateChangeDetectionWatchId_ShouldStoreNull_WhenNullOrWhitespace(string? value)
+    {
+        var game = new Game("Test Game");
+
+        game.UpdateChangeDetectionWatchId(value);
+
+        game.ChangeDetectionWatchId.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("not-a-guid")]
+    [InlineData("12345")]
+    [InlineData("e0808154-28da-4b85-9a71")]
+    public void UpdateChangeDetectionWatchId_ShouldThrow_WhenNotAGuid(string value)
+    {
+        var game = new Game("Test Game");
+        game.UpdateChangeDetectionWatchId("e0808154-28da-4b85-9a71-24a409e694f1");
+
+        var action = () => game.UpdateChangeDetectionWatchId(value);
+
+        action.Should().Throw<ArgumentException>();
+        game.ChangeDetectionWatchId.Should().Be("e0808154-28da-4b85-9a71-24a409e694f1");
+    }
+
+    #endregion
+
     #region UpdateLanguage
 
     [Fact]

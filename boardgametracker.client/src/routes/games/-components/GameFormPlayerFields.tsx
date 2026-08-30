@@ -57,6 +57,17 @@ export const GameFormPlayerFields = withForm({
 						/>
 					)}
 				</form.Field>
+				<form.Field name="changeDetectionWatchId" validators={zodValidator(CreateGameSchema, "changeDetectionWatchId")}>
+					{(field: AnyFieldApi) => (
+						<BgtInputField
+							field={field}
+							label={t("watch-id.label")}
+							type="text"
+							placeholder={t("watch-id.placeholder")}
+							disabled={disabled}
+						/>
+					)}
+				</form.Field>
 				<form.Field name="additionDate" validators={zodValidator(CreateGameSchema, "additionDate")}>
 					{(field: AnyFieldApi) => (
 						<BgtDatePicker

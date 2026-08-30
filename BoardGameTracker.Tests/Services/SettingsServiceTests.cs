@@ -173,6 +173,26 @@ public class SettingsServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task GetSettingsAsync_ShouldReturnDbChangeDetectionBaseUrl_AndNeverReadOnly()
+    {
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>
+            {
+                [Constants.ChangeDetectionConfig.BaseUrl] = "https://db.example.com",
+                [Constants.ChangeDetectionConfig.ApiKey] = "db-key"
+            });
+
+        var result = await _settingsService.GetSettingsAsync();
+
+        result.ChangeDetectionBaseUrl.Should().Be("https://db.example.com");
+        result.ChangeDetectionApiKey.Should().BeEmpty();
+        result.ChangeDetectionStatus.IsConfigured.Should().BeTrue();
+        result.ChangeDetectionStatus.Source.Should().Be("db");
+        result.ChangeDetectionStatus.IsReadOnly.Should().BeFalse();
+    }
+
     #endregion
 
     #region UpdateSettingsAsync Tests
@@ -230,6 +250,7 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.UpdateConfig.CheckEnabled, updateCheckEnabled), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.UpdateConfig.Track, track), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, expectedStoredApiKey), Times.Once);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl, string.Empty), Times.Once);
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
         VerifyEnvironmentReads();
         VerifyNoOtherCalls();

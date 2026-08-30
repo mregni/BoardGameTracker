@@ -11,7 +11,9 @@ using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.Settings.Interfaces;
+using BoardGameTracker.Core.ChangeDetection.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -34,6 +36,7 @@ public class GameServiceTests
     private readonly Mock<ISettingsService> _settingsServiceMock;
     private readonly Mock<IImageService> _imageServiceMock;
     private readonly Mock<IManualService> _manualServiceMock;
+    private readonly Mock<IChangeDetectionClient> _changeDetectionClientMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<GameService>> _loggerMock;
     private readonly GameService _gameService;
@@ -47,6 +50,7 @@ public class GameServiceTests
         _settingsServiceMock.Setup(x => x.GetBggApiKeyAsync()).ReturnsAsync("test-api-key");
         _imageServiceMock = new Mock<IImageService>();
         _manualServiceMock = new Mock<IManualService>();
+        _changeDetectionClientMock = new Mock<IChangeDetectionClient>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _loggerMock = new Mock<ILogger<GameService>>();
 
@@ -57,6 +61,7 @@ public class GameServiceTests
             _manualServiceMock.Object,
             _bggClientMock.Object,
             _settingsServiceMock.Object,
+            _changeDetectionClientMock.Object,
             _unitOfWorkMock.Object,
             _loggerMock.Object);
     }
@@ -68,6 +73,7 @@ public class GameServiceTests
         _bggClientMock.VerifyNoOtherCalls();
         _imageServiceMock.VerifyNoOtherCalls();
         _manualServiceMock.VerifyNoOtherCalls();
+        _changeDetectionClientMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
@@ -181,6 +187,95 @@ public class GameServiceTests
 
         _gameRepositoryMock.Verify(
             x => x.SingleOrDefaultAsync(It.IsAny<GameByIdWithDetailsForReadSpec>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region Price Tests
+
+    [Fact]
+    public async Task GetGamePriceAsync_ShouldReturnNull_WhenGameDoesNotExist()
+    {
+        _gameRepositoryMock.Setup(x => x.GetWatchInfo(999)).ReturnsAsync((GameWatchInfo?)null);
+
+        var result = await _gameService.GetGamePriceAsync(999);
+
+        result.Should().BeNull();
+        _gameRepositoryMock.Verify(x => x.GetWatchInfo(999), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGamePriceAsync_ShouldReturnUnavailable_WhenGameHasNoWatchId()
+    {
+        _gameRepositoryMock.Setup(x => x.GetWatchInfo(1)).ReturnsAsync(new GameWatchInfo(1, null));
+
+        var result = await _gameService.GetGamePriceAsync(1);
+
+        result.Should().NotBeNull();
+        result!.GameId.Should().Be(1);
+        result.Available.Should().BeFalse();
+        _gameRepositoryMock.Verify(x => x.GetWatchInfo(1), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGamePriceAsync_ShouldReturnMappedResult_WhenWatchIdSet()
+    {
+        var watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        _gameRepositoryMock.Setup(x => x.GetWatchInfo(1)).ReturnsAsync(new GameWatchInfo(1, watchId));
+        _changeDetectionClientMock
+            .Setup(x => x.GetLatestAsync(watchId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ChangeDetectionResult { Available = true, InStock = true, Price = 22.5m });
+
+        var result = await _gameService.GetGamePriceAsync(1);
+
+        result.Should().NotBeNull();
+        result!.GameId.Should().Be(1);
+        result.WatchId.Should().Be(watchId);
+        result.Available.Should().BeTrue();
+        result.InStock.Should().BeTrue();
+        result.Price.Should().Be(22.5m);
+        _gameRepositoryMock.Verify(x => x.GetWatchInfo(1), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.GetLatestAsync(watchId, false, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetWantedPricesAsync_ShouldReturnPriceForEachWantedGame()
+    {
+        var watchOne = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var watchTwo = "f1919265-39eb-5c96-a082-35b510f705a2";
+        var gameOne = new Game("Game One") { Id = 1 };
+        gameOne.UpdateChangeDetectionWatchId(watchOne);
+        var gameTwo = new Game("Game Two") { Id = 2 };
+        gameTwo.UpdateChangeDetectionWatchId(watchTwo);
+
+        _gameRepositoryMock.Setup(x => x.GetWantedGamesWithWatchId())
+            .ReturnsAsync(new List<Game> { gameOne, gameTwo });
+        _changeDetectionClientMock
+            .Setup(x => x.GetLatestAsync(
+                It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, ChangeDetectionResult>
+            {
+                [watchOne] = new() { Available = true, InStock = true, Price = 22.5m },
+                [watchTwo] = new() { Available = true, InStock = false, Price = 10m }
+            });
+
+        var result = await _gameService.GetWantedPricesAsync();
+
+        result.Should().HaveCount(2);
+        result.Should().ContainSingle(x => x.GameId == 1 && x.InStock == true && x.Price == 22.5m);
+        result.Should().ContainSingle(x => x.GameId == 2 && x.InStock == false && x.Price == 10m);
+        _gameRepositoryMock.Verify(x => x.GetWantedGamesWithWatchId(), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.GetLatestAsync(
+                It.Is<IReadOnlyCollection<string>>(ids => ids.Contains(watchOne) && ids.Contains(watchTwo)),
+                false,
+                It.IsAny<CancellationToken>()),
             Times.Once);
         VerifyNoOtherCalls();
     }

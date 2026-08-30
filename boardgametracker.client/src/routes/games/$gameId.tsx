@@ -42,7 +42,18 @@ function RouteComponent() {
 	const { t } = useTranslation(["games", "common"]);
 	const { canWrite } = usePermissions();
 
-	const { game, deleteGame, settings, statistics, sessions, deleteExpansion, isLoading } = useGameData({
+	const {
+		game,
+		deleteGame,
+		settings,
+		statistics,
+		sessions,
+		price,
+		refreshPrice,
+		isRefreshingPrice,
+		deleteExpansion,
+		isLoading,
+	} = useGameData({
 		gameId,
 	});
 
@@ -84,6 +95,9 @@ function RouteComponent() {
 								uiLanguage={settings.uiLanguage}
 								manualCount={manuals.length}
 								ragEnabled={settings.ragEnabled}
+								price={price}
+								onRefreshPrice={refreshPrice}
+								isRefreshingPrice={isRefreshingPrice}
 								onOpenManuals={manualsDialog.show}
 								onOpenExpansions={expansionsDialog.show}
 							/>

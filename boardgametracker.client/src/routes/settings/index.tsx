@@ -75,12 +75,15 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 			gameNightsEnabled: settings.gameNightsEnabled,
 			rsvpAuthenticationEnabled: settings.rsvpAuthenticationEnabled,
 			bggApiKey: settings.bggApiKey,
+			changeDetectionBaseUrl: settings.changeDetectionBaseUrl,
+			changeDetectionApiKey: settings.changeDetectionApiKey,
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = SettingsSchema.parse(value);
 			await saveSettings({
 				...validatedData,
 				bggStatus: settings.bggStatus,
+				changeDetectionStatus: settings.changeDetectionStatus,
 				emailEnabled: settings.emailEnabled,
 				ragEnabled: settings.ragEnabled,
 			});
@@ -96,7 +99,14 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 			case "game-nights":
 				return <GameNightsSettings form={form} disabled={isSaving} />;
 			case "bgg":
-				return <BggSettings form={form} disabled={isSaving} bggStatus={settings.bggStatus} />;
+				return (
+					<BggSettings
+						form={form}
+						disabled={isSaving}
+						bggStatus={settings.bggStatus}
+						changeDetectionStatus={settings.changeDetectionStatus}
+					/>
+				);
 			case "advanced":
 				return <AdvancedSettings form={form} disabled={isSaving} />;
 			case "account":

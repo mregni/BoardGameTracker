@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { useAppForm } from "@/hooks/form";
-import type { BggConfigStatus } from "@/models";
+import type { BggConfigStatus, ChangeDetectionConfigStatus } from "@/models";
 import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { BggSettings } from "./BggSettings";
@@ -11,6 +11,12 @@ const createBggStatus = (overrides: Partial<BggConfigStatus> = {}): BggConfigSta
 	source: "db",
 	...overrides,
 });
+
+const readOnlyChangeDetectionStatus: ChangeDetectionConfigStatus = {
+	isConfigured: true,
+	isReadOnly: true,
+	source: "env",
+};
 
 interface HarnessProps {
 	bggStatus: BggConfigStatus;
@@ -26,7 +32,12 @@ const Harness = ({ bggStatus, disabled = false, initialApiKey = null }: HarnessP
 
 	return (
 		<>
-			<BggSettings form={form} bggStatus={bggStatus} disabled={disabled} />
+			<BggSettings
+				form={form}
+				bggStatus={bggStatus}
+				changeDetectionStatus={readOnlyChangeDetectionStatus}
+				disabled={disabled}
+			/>
 			<form.Subscribe selector={(state) => state.values.bggApiKey}>
 				{(value) => <span data-testid="bggApiKey-value">{value === null ? "null" : String(value)}</span>}
 			</form.Subscribe>

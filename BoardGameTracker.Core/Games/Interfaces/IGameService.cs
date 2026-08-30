@@ -1,3 +1,4 @@
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models;
@@ -17,4 +18,6 @@ public interface IGameService
     Task<List<Expansion>> UpdateGameExpansions(int gameId, int[] expansionIds);
     Task<List<Expansion>> GetGameExpansions(List<int> expansionIds);
     Task DeleteExpansion(int gameId, int expansionId);
+    Task<GamePriceDto?> GetGamePriceAsync(int gameId, bool forceRefresh = false, CancellationToken cancellationToken = default);
+    Task<List<GamePriceDto>> GetWantedPricesAsync(bool forceRefresh = false, CancellationToken cancellationToken = default);
 }

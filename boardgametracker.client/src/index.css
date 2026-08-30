@@ -39,6 +39,11 @@
 	::file-selector-button {
 		border-color: var(--color-gray-200, currentcolor);
 	}
+
+	button:not(:disabled),
+	[role="button"]:not(:disabled) {
+		cursor: pointer;
+	}
 }
 
 .radix-themes {
@@ -75,4 +80,13 @@ body {
 
 .rt-TextFieldInput {
 	display: block !important;
+}
+
+.bgt-image-card img {
+	scale: 1;
+	transition: scale 200ms ease;
+}
+
+.bgt-image-card:hover img {
+	scale: 1.05;
 }

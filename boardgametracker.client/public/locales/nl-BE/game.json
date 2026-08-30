@@ -112,7 +112,10 @@
   "price": {
     "label": "Price",
     "placeholder": "Game price",
-    "required": "Price is required"
+    "required": "Price is required",
+    "updated": "Bijgewerkt {{time}}",
+    "refresh": "changedetection verversen",
+    "refresh-failed": "Vernieuwen van de prijs mislukt"
   },
   "state": {
     "for-trade": "For trade",
@@ -151,5 +154,18 @@
     "recent-sessions": "Recent sessions",
     "session-count-per-day": "Session count per day",
     "analytics": "Analytics"
+  },
+  "watch-id": {
+    "label": "changedetection.io watch-id",
+    "placeholder": "bv. e0808154-28da-4b85-9a71-24a409e694f1",
+    "invalid": "Geef een geldig watch-id (GUID) op"
+  },
+  "current-price": {
+    "title": "Huidige prijs"
+  },
+  "in-stock": {
+    "title": "Op voorraad",
+    "yes": "Op voorraad",
+    "no": "Uitverkocht"
   }
 }

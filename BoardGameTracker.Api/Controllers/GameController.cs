@@ -116,6 +116,27 @@ public class GameController : ControllerBase
     }
 
     [HttpGet]
+    [Route("{id:int}/price")]
+    public async Task<IActionResult> GetGamePrice(int id, [FromQuery] bool refresh, CancellationToken cancellationToken)
+    {
+        var price = await _gameService.GetGamePriceAsync(id, refresh, cancellationToken);
+        if (price == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(price);
+    }
+
+    [HttpGet]
+    [Route("prices/wanted")]
+    public async Task<IActionResult> GetWantedPrices([FromQuery] bool refresh, CancellationToken cancellationToken)
+    {
+        var prices = await _gameService.GetWantedPricesAsync(refresh, cancellationToken);
+        return Ok(prices);
+    }
+
+    [HttpGet]
     [Route("{id:int}/sessions")]
     public async Task<IActionResult> GetGameSessionsById(int id, [FromQuery] int? count)
     {

@@ -152,14 +152,38 @@ function RouteComponent() {
 				</div>
 			</div>
 
-			<div className="min-h-0 flex-1 overflow-y-auto">{renderBody()}</div>
+			<div className="flex min-h-0 flex-1 gap-4">
+				<div className="flex min-w-0 flex-1 flex-col">
+					<div className="min-h-0 flex-1 overflow-y-auto">{renderBody()}</div>
 
-			<footer className="sticky bottom-20 z-10 shrink-0 bg-background md:static">
-				<ChatComposer
-					disabled={!canAsk}
-					pending={isPending}
-					placeholder={canAsk ? t("composer.placeholder") : t("composer.disabled-placeholder")}
-					onSend={handleSend}
+					<footer className="sticky bottom-20 z-10 shrink-0 bg-background md:static">
+						<ChatComposer
+							disabled={!canAsk}
+							pending={isPending}
+							placeholder={canAsk ? t("composer.placeholder") : t("composer.disabled-placeholder")}
+							onSend={handleSend}
+						/>
+					</footer>
+				</div>
+
+				{showPanel && (
+					<aside className="hidden min-w-0 overflow-hidden rounded-xl border border-white/10 bg-card/40 p-4 motion-safe:animate-slide-in-right lg:flex lg:w-auto lg:min-w-[320px] lg:max-w-[60%]">
+						<SourcesPanel
+							citations={focusedCitations}
+							focusedIndex={focused?.index ?? 0}
+							onFocus={focusIndex}
+							onExpand={() => setOverlayOpen(true)}
+						/>
+					</aside>
+				)}
+			</div>
+
+			{overlayOpen && focusedCitations.length > 0 && (
+				<SourcesOverlay
+					citations={focusedCitations}
+					index={focused?.index ?? 0}
+					onIndexChange={focusIndex}
+					onClose={() => setOverlayOpen(false)}
 				/>
 			</footer>
 		</div>

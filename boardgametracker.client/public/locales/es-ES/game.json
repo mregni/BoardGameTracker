@@ -112,7 +112,10 @@
   "price": {
     "label": "Price",
     "placeholder": "Game price",
-    "required": "Price is required"
+    "required": "Price is required",
+    "updated": "Actualizado {{time}}",
+    "refresh": "Actualizar changedetection",
+    "refresh-failed": "No se pudo actualizar el precio"
   },
   "state": {
     "for-trade": "For trade",
@@ -151,5 +154,18 @@
     "recent-sessions": "Recent sessions",
     "session-count-per-day": "Session count per day",
     "analytics": "Analytics"
+  },
+  "watch-id": {
+    "label": "id de watch de changedetection.io",
+    "placeholder": "p. ej. e0808154-28da-4b85-9a71-24a409e694f1",
+    "invalid": "Introduce un id de watch válido (GUID)"
+  },
+  "current-price": {
+    "title": "Precio actual"
+  },
+  "in-stock": {
+    "title": "En stock",
+    "yes": "En stock",
+    "no": "Agotado"
   }
 }

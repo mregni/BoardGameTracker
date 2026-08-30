@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { BggConfigStatus } from "./BggConfigStatus";
+import type { ChangeDetectionConfigStatus } from "./ChangeDetectionConfigStatus";
 
 export interface Settings {
 	dateFormat: string;
@@ -19,6 +20,9 @@ export interface Settings {
 	ragEnabled: boolean;
 	bggStatus: BggConfigStatus;
 	bggApiKey: string | null;
+	changeDetectionStatus: ChangeDetectionConfigStatus;
+	changeDetectionBaseUrl: string;
+	changeDetectionApiKey: string | null;
 }
 
 export const SettingsSchema = z.object({
@@ -55,4 +59,8 @@ export const SettingsSchema = z.object({
 	gameNightsEnabled: z.boolean(),
 	rsvpAuthenticationEnabled: z.boolean(),
 	bggApiKey: z.string().nullable(),
+	changeDetectionBaseUrl: z.string().refine((value) => value === "" || /^https?:\/\/.+/.test(value), {
+		message: "settings:changedetection.base-url.invalid",
+	}),
+	changeDetectionApiKey: z.string().nullable(),
 });

@@ -69,6 +69,12 @@ public static class Constants
         public const string EnvApiKeyName = "BGG_API_KEY";
     }
 
+    public static class ChangeDetectionConfig
+    {
+        public const string BaseUrl = "changedetection_base_url";
+        public const string ApiKey = "changedetection_api_key";
+    }
+
     public static class UpdateConfig
     {
         public const string Prefix = "update_";

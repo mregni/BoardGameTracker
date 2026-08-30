@@ -1,18 +1,23 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import Refresh from "@/assets/icons/refresh.svg?react";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
+import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtSimpleSelect } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
-import { type Game, GameState } from "@/models";
+import { type Game, GameState, QUERY_KEYS } from "@/models";
+import { getWantedPricesCall } from "@/services/gameService";
+import { getWantedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
@@ -37,9 +42,22 @@ function RouteComponent() {
 	const settingsQuery = useQuery(getSettings());
 	const currency = settingsQuery.data?.currency;
 	const dateFormat = settingsQuery.data?.dateFormat;
+	const changeDetectionConfigured = settingsQuery.data?.changeDetectionStatus?.isConfigured ?? false;
 
 	const [stateFilter, setStateFilter] = useState<string>(GameState.Wanted);
 	const [languageFilter, setLanguageFilter] = useState<string>(ANY);
+
+	const queryClient = useQueryClient();
+	const showLivePrices = changeDetectionConfigured && stateFilter === GameState.Wanted;
+	const wantedPricesQuery = useQuery({ ...getWantedPrices(), enabled: showLivePrices });
+	const priceMap = useMemo(
+		() => new Map((wantedPricesQuery.data ?? []).map((price) => [price.gameId, price])),
+		[wantedPricesQuery.data],
+	);
+	const refreshPricesMutation = useMutation({
+		mutationFn: () => getWantedPricesCall(true),
+		onSuccess: (data) => queryClient.setQueryData([QUERY_KEYS.wantedPrices], data),
+	});
 
 	const formatRange = useCallback((min: number | null, max: number | null, suffix = ""): string => {
 		if (min == null && max == null) return "-";
@@ -226,8 +244,38 @@ function RouteComponent() {
 						"-"
 					),
 			},
+			...(showLivePrices
+				? [
+						{
+							id: "current-price",
+							header: t("games:columns.current-price"),
+							enableSorting: false,
+							cell: ({ row }: { row: { original: Game } }) => {
+								const livePrice = priceMap.get(row.original.id);
+								if (!livePrice?.available || livePrice.price == null) return "-";
+								return `${currency ?? ""}${RoundDecimal(livePrice.price, 0.01)}`;
+							},
+							meta: { hideOnMobile: true },
+						},
+						{
+							id: "in-stock",
+							header: t("games:columns.in-stock"),
+							enableSorting: false,
+							cell: ({ row }: { row: { original: Game } }) => {
+								const livePrice = priceMap.get(row.original.id);
+								if (!livePrice?.available || livePrice.inStock == null) return "-";
+								return (
+									<BgtBadge color={livePrice.inStock ? "green" : "red"} variant="soft">
+										{livePrice.inStock ? t("games:in-stock.yes") : t("games:in-stock.no")}
+									</BgtBadge>
+								);
+							},
+							meta: { hideOnMobile: true },
+						},
+					]
+				: []),
 		],
-		[t, currency, dateFormat, formatRange, updateGame, stateEditItems, languageEditItems],
+		[t, currency, dateFormat, formatRange, updateGame, stateEditItems, languageEditItems, showLivePrices, priceMap],
 	);
 
 	const columnWidths: (string | null)[] = [null, null, null, null, null, "w-52", "w-52"];
@@ -249,6 +297,17 @@ function RouteComponent() {
 						items={languageItems}
 						onValueChange={(value) => setLanguageFilter(String(value))}
 					/>
+					{showLivePrices && (
+						<BgtButton
+							variant="cancel"
+							className="w-full md:w-auto md:ml-auto"
+							disabled={refreshPricesMutation.isPending}
+							onClick={() => refreshPricesMutation.mutate()}
+						>
+							<Refresh className={refreshPricesMutation.isPending ? "size-4 animate-spin" : "size-4"} />
+							{t("games:refresh-prices")}
+						</BgtButton>
+					)}
 				</div>
 				<div className="grid grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6">
 					<BgtTextStatistic title={t("games:table.total-games")} content={filtered.length} />

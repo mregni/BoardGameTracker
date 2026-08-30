@@ -20,4 +20,7 @@ public class UIResourceDto
     public bool RagEnabled { get; set; }
     public BggConfigStatusDto BggStatus { get; set; } = new();
     public string? BggApiKey { get; set; } = string.Empty;
+    public ChangeDetectionConfigStatusDto ChangeDetectionStatus { get; set; } = new();
+    public string ChangeDetectionBaseUrl { get; set; } = string.Empty;
+    public string? ChangeDetectionApiKey { get; set; } = string.Empty;
 }

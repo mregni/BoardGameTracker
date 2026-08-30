@@ -56,6 +56,7 @@ export const GameForm = (props: Props) => {
 			additionDate: toInputDate(game?.additionDate ?? undefined, true),
 			image: game?.image ?? null,
 			shopUrl: game?.shopUrl ?? "",
+			changeDetectionWatchId: game?.changeDetectionWatchId ?? "",
 			language: game?.language ?? LANGUAGE_NONE,
 		},
 		onSubmit: async ({ value }) => {

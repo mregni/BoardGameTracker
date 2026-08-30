@@ -37,6 +37,14 @@ export const CreateGameSchema = z.object({
 			message: "game:shop-url.invalid",
 		})
 		.optional(),
+	changeDetectionWatchId: z
+		.string()
+		.trim()
+		.refine((value) => value === "" || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value), {
+			message: "game:watch-id.invalid",
+		})
+		.optional()
+		.transform((value) => (value ? value : null)),
 	language: z
 		.string()
 		.optional()

@@ -58,7 +58,9 @@
     "weight": "Weight",
     "rating": "Rating",
     "added": "Added",
-    "bgg": "BGG"
+    "bgg": "BGG",
+    "current-price": "Precio actual",
+    "in-stock": "Stock"
   },
   "table": {
     "title": "Game list",
@@ -66,5 +68,10 @@
     "total-price": "Total price",
     "mean-price": "Mean price",
     "empty": "No games match the selected filters."
-  }
+  },
+  "in-stock": {
+    "yes": "En stock",
+    "no": "Agotado"
+  },
+  "refresh-prices": "Actualizar precios"
 }

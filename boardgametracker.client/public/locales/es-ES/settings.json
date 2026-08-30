@@ -160,8 +160,8 @@
 			"description": "Configure Game Nights settings"
 		},
 		"bgg": {
-			"title": "BGG Integration",
-			"description": "BoardGameGeek API settings"
+			"title": "Integraciones",
+			"description": "BoardGameGeek y seguimiento de precios"
 		},
 		"account": {
 			"title": "Account",
@@ -305,5 +305,28 @@
 			"user-update-failed": "Failed to update user",
 			"password-reset-failed": "Failed to reset password"
 		}
+	},
+	"changedetection": {
+		"title": "changedetection.io",
+		"description": "Configura una instancia de changedetection.io para obtener el precio y el stock en vivo de los juegos que tengan un id de watch.",
+		"status": {
+			"configured": "Configurado",
+			"not-configured": "No configurado",
+			"source-db": "Configurado y almacenado en la base de datos.",
+			"not-configured-description": "Proporciona la URL base y la clave API de tu instancia de changedetection.io para habilitar la consulta de precio y stock en vivo."
+		},
+		"base-url": {
+			"label": "URL base",
+			"placeholder": "https://changes.example.com",
+			"invalid": "Introduce una URL http(s) válida"
+		},
+		"api-key": {
+			"label": "Clave API",
+			"placeholder": "Introduce tu clave API de changedetection.io",
+			"clear": "Eliminar clave API",
+			"clear-hint": "Guarda los ajustes para aplicar la eliminación."
+		},
+		"help-title": "Cómo funciona",
+		"help-description": "Añade un id de watch de changedetection.io a un juego para ver su precio y stock actuales. La clave API se encuentra en Ajustes de tu instancia de changedetection.io."
 	}
 }

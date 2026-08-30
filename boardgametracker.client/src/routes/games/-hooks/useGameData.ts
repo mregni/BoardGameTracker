@@ -1,8 +1,8 @@
-import { useQueries, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
-import { deleteExpansionCall, deleteGameCall } from "@/services/gameService";
-import { getGame, getGameSessionsShortList, getGameStatistics } from "@/services/queries/games";
+import { deleteExpansionCall, deleteGameCall, getGamePriceCall } from "@/services/gameService";
+import { getGame, getGamePrice, getGameSessionsShortList, getGameStatistics } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 
 interface UseGameDataProps {
@@ -26,6 +26,18 @@ export const useGameData = (props: UseGameDataProps) => {
 	const sessions = sessionsQuery.data;
 	const isLoading =
 		gameQuery.isLoading || settingsQuery.isLoading || sessionsQuery.isLoading || statisticsQuery.isLoading;
+
+	const priceQuery = useQuery({
+		...getGamePrice(gameId),
+		enabled: !!game?.changeDetectionWatchId && !!settings?.changeDetectionStatus?.isConfigured,
+	});
+	const price = priceQuery.data;
+
+	const refreshPriceMutation = useMutation({
+		mutationFn: () => getGamePriceCall(gameId, true),
+		onSuccess: (data) => queryClient.setQueryData([QUERY_KEYS.game, gameId, QUERY_KEYS.price], data),
+		onError: () => errorToast("game:price.refresh-failed"),
+	});
 
 	const deleteGame = async () => {
 		if (gameId !== undefined) {
@@ -61,6 +73,9 @@ export const useGameData = (props: UseGameDataProps) => {
 		settings,
 		statistics,
 		sessions,
+		price,
+		refreshPrice: () => refreshPriceMutation.mutate(),
+		isRefreshingPrice: refreshPriceMutation.isPending,
 		deleteExpansion,
 	};
 };

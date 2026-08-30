@@ -1,5 +1,6 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.Datastore.Interfaces;
 
 namespace BoardGameTracker.Core.Games.Interfaces;
@@ -14,6 +15,8 @@ public interface IGameRepository: IRepository<Game>
     Task AddPeopleIfNotExists(IEnumerable<Person> people);
     Task<Game?> GetGameByBggId(int bggId);
     Task<List<Game>> GetGamesOverviewList();
+    Task<List<Game>> GetWantedGamesWithWatchId();
+    Task<GameWatchInfo?> GetWatchInfo(int gameId);
     Task<int> CountAsync();
     Task<List<Expansion>> GetExpansions(List<int> expansionIds);
     Task<int> GetTotalExpansionCount();

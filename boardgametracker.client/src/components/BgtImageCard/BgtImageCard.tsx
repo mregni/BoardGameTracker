@@ -19,16 +19,10 @@ export const BgtImageCard = (props: Props) => {
 
 	return (
 		<Link to={link} from="/" className="[content-visibility:auto] [contain-intrinsic-size:auto_280px]">
-			<div className="flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1 group">
+			<div className="bgt-image-card flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1">
 				<div className="aspect-square rounded-lg overflow-hidden transition-all duration-200 relative">
 					{image ? (
-						<img
-							src={image}
-							alt={title}
-							loading="lazy"
-							decoding="async"
-							className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-						/>
+						<img src={image} alt={title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
 					) : (
 						<div
 							style={{ "--fallback-color": StringToRgb(title) } as React.CSSProperties}

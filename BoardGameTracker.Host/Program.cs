@@ -165,6 +165,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient(BoardGameTracker.Core.Rag.AiClientFactory.HttpClientName)
     .ConfigureHttpClient(client => client.Timeout = System.Threading.Timeout.InfiniteTimeSpan);
+builder.Services.AddHttpClient(BoardGameTracker.Core.ChangeDetection.ChangeDetectionClient.HttpClientName);
 builder.Services.AddMemoryCache();
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);

@@ -9,6 +9,8 @@ export const QUERY_KEYS = {
 	settings: "settings",
 	games: "games",
 	game: "game",
+	price: "price",
+	wantedPrices: "wantedPrices",
 	bgg: "bgg",
 	expansions: "expansions",
 	manuals: "manuals",

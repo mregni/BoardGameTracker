@@ -160,8 +160,8 @@
 			"description": "Configure Game Nights settings"
 		},
 		"bgg": {
-			"title": "BGG Integration",
-			"description": "BoardGameGeek API settings"
+			"title": "Integraties",
+			"description": "BoardGameGeek & prijswatch"
 		},
 		"account": {
 			"title": "Account",
@@ -305,5 +305,28 @@
 			"user-update-failed": "Failed to update user",
 			"password-reset-failed": "Failed to reset password"
 		}
+	},
+	"changedetection": {
+		"title": "changedetection.io",
+		"description": "Configureer een changedetection.io-instantie om live prijs en voorraad op te halen voor spellen met een watch-id.",
+		"status": {
+			"configured": "Geconfigureerd",
+			"not-configured": "Niet geconfigureerd",
+			"source-db": "Geconfigureerd en opgeslagen in de database.",
+			"not-configured-description": "Geef de basis-URL en API-sleutel van je changedetection.io-instantie op om live prijs en voorraad in te schakelen."
+		},
+		"base-url": {
+			"label": "Basis-URL",
+			"placeholder": "https://changes.example.com",
+			"invalid": "Geef een geldige http(s)-URL op"
+		},
+		"api-key": {
+			"label": "API-sleutel",
+			"placeholder": "Voer je changedetection.io API-sleutel in",
+			"clear": "API-sleutel verwijderen",
+			"clear-hint": "Sla instellingen op om de verwijdering toe te passen."
+		},
+		"help-title": "Hoe het werkt",
+		"help-description": "Voeg een changedetection.io watch-id toe aan een spel om de huidige prijs en voorraad te zien. De API-sleutel vind je onder Instellingen in je changedetection.io-instantie."
 	}
 }

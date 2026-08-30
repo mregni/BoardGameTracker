@@ -46,7 +46,11 @@ public class SettingsService : ISettingsService
             EmailEnabled = _environmentProvider.EmailEnabled,
             RagEnabled = _environmentProvider.RagEnabled,
             BggStatus = GetBggConfigStatusAsync(configs),
-            BggApiKey = string.Empty //Never return key to UI
+            BggApiKey = string.Empty, //Never return key to UI
+            ChangeDetectionBaseUrl = configs.GetValueOrDefault(
+                Constants.ChangeDetectionConfig.BaseUrl.ToLowerInvariant(), string.Empty), //DB value only, never the env override
+            ChangeDetectionStatus = GetChangeDetectionConfigStatus(configs),
+            ChangeDetectionApiKey = string.Empty //Never return key to UI
         };
     }
 
@@ -70,6 +74,19 @@ public class SettingsService : ISettingsService
         var bggApiKey = model.BggApiKey ?? string.Empty;
         await _configRepository.SetConfigValueAsync(Constants.BggConfig.ApiKey, bggApiKey);
 
+        await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl,
+            model.ChangeDetectionBaseUrl ?? string.Empty);
+
+        if (model.ChangeDetectionApiKey == null)
+        {
+            await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, string.Empty);
+        }
+        else if (!string.IsNullOrEmpty(model.ChangeDetectionApiKey))
+        {
+            await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey,
+                model.ChangeDetectionApiKey);
+        }
+
         return await GetSettingsAsync();
     }
 
@@ -88,6 +105,13 @@ public class SettingsService : ISettingsService
     {
         var key = await GetBggApiKeyAsync();
         return !string.IsNullOrEmpty(key);
+    }
+
+    public async Task<(string? BaseUrl, string? ApiKey)> GetChangeDetectionSettingsAsync()
+    {
+        var baseUrl = await _configRepository.GetConfigValueAsync<string>(Constants.ChangeDetectionConfig.BaseUrl);
+        var apiKey = await _configRepository.GetConfigValueAsync<string>(Constants.ChangeDetectionConfig.ApiKey);
+        return (baseUrl, apiKey);
     }
 
     private static BggConfigStatusDto GetBggConfigStatusAsync(Dictionary<string, string> configs)
@@ -118,6 +142,21 @@ public class SettingsService : ISettingsService
         {
             IsConfigured = false,
             Source = "none",
+            IsReadOnly = false
+        };
+    }
+
+    private static ChangeDetectionConfigStatusDto GetChangeDetectionConfigStatus(Dictionary<string, string> configs)
+    {
+        var baseUrl = configs.GetValueOrDefault(Constants.ChangeDetectionConfig.BaseUrl.ToLowerInvariant(), string.Empty);
+        var apiKey = configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey.ToLowerInvariant(), string.Empty);
+
+        var isConfigured = !string.IsNullOrWhiteSpace(baseUrl) && !string.IsNullOrWhiteSpace(apiKey);
+
+        return new ChangeDetectionConfigStatusDto
+        {
+            IsConfigured = isConfigured,
+            Source = isConfigured ? "db" : "none",
             IsReadOnly = false
         };
     }

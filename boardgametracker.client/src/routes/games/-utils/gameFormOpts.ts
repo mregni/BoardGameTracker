@@ -20,6 +20,7 @@ export const gameFormOpts = formOptions({
 		additionDate: "",
 		image: null as string | null,
 		shopUrl: "",
+		changeDetectionWatchId: "",
 		language: LANGUAGE_NONE,
 	},
 });

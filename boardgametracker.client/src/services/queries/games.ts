@@ -4,11 +4,13 @@ import {
 	getBggCollectionCall,
 	getGameCall,
 	getGameExpansionsCall,
+	getGamePriceCall,
 	getGameSessionsCall,
 	getGameStatisticsCall,
 	getGamesCall,
 	getShameStatisticsCall,
 	getShamesCall,
+	getWantedPricesCall,
 } from "../gameService";
 import {
 	createEntityQuery,
@@ -25,6 +27,10 @@ export const getGame = createEntityQuery(QUERY_KEYS.game, getGameCall);
 export const getGameExpansions = createNestedQuery(QUERY_KEYS.game, QUERY_KEYS.expansions, getGameExpansionsCall);
 
 export const getGameStatistics = createNestedQuery(QUERY_KEYS.game, QUERY_KEYS.statistics, getGameStatisticsCall);
+
+export const getGamePrice = createNestedQuery(QUERY_KEYS.game, QUERY_KEYS.price, getGamePriceCall);
+
+export const getWantedPrices = createListQuery(QUERY_KEYS.wantedPrices, getWantedPricesCall);
 
 export const getGameSessions = createNestedQuery(QUERY_KEYS.game, QUERY_KEYS.sessions, getGameSessionsCall);
 

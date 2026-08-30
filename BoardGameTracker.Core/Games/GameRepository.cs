@@ -2,6 +2,7 @@ using Ardalis.Specification.EntityFrameworkCore;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
@@ -41,6 +42,19 @@ public class GameRepository : EfRepository<Game>, IGameRepository
     public Task<List<Game>> GetGamesOverviewList()
     {
         return ListAsync(new GamesOverviewSpec());
+    }
+
+    public Task<List<Game>> GetWantedGamesWithWatchId()
+    {
+        return ListAsync(new WantedGamesWithWatchIdSpec());
+    }
+
+    public Task<GameWatchInfo?> GetWatchInfo(int gameId)
+    {
+        return _context.Games
+            .Where(game => game.Id == gameId)
+            .Select(game => new GameWatchInfo(game.Id, game.ChangeDetectionWatchId))
+            .FirstOrDefaultAsync();
     }
 
     public override Task<Game?> GetByIdAsync(int id)
