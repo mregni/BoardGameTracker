@@ -283,8 +283,8 @@ app.Use(async (context, next) =>
 
         var isSwagger = swaggerEnabled && context.Request.Path.StartsWithSegments("/swagger");
         headers["Content-Security-Policy"] = isSwagger
-            ? "default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';"
-            : "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
+            ? "default-src 'self'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';"
+            : "default-src 'self'; img-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
 
         if (hstsEnabled && context.Request.IsHttps)
         {

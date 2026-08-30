@@ -10,5 +10,6 @@ export interface RagCitation {
 export interface RagAnswer {
 	answer: string;
 	hasContext: boolean;
+	durationMs: number;
 	citations: RagCitation[];
 }

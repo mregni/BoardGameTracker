@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import ChatIcon from "@/assets/icons/chat.svg?react";
@@ -8,12 +8,20 @@ import List from "@/assets/icons/list.svg?react";
 import { BgtSimpleSelect } from "@/components/BgtForm";
 import { BgtEmptyState } from "@/components/BgtLayout/BgtEmptyState";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { getGames } from "@/services/queries/games";
 import { getGameManuals } from "@/services/queries/manuals";
 import { getSettings } from "@/services/queries/settings";
 import { ChatComposer } from "./-components/ChatComposer";
 import { ChatTranscript } from "./-components/ChatTranscript";
+import { SourcesOverlay } from "./-components/SourcesOverlay";
+import { SourcesPanel } from "./-components/SourcesPanel";
 import { useRagChat } from "./-hooks/useRagChat";
+
+interface FocusedSource {
+	id: string;
+	index: number;
+}
 
 const ALL_MANUALS = "all";
 
@@ -86,6 +94,44 @@ function RouteComponent() {
 	const canAsk = selectedGameId !== undefined && indexedCount > 0;
 	const exchanges = getExchanges(selectedGameId);
 
+	const [focused, setFocused] = useState<FocusedSource | null>(null);
+	const [overlayOpen, setOverlayOpen] = useState(false);
+	const lastAnsweredId = useRef<string | null>(null);
+	const isDesktop = useMediaQuery("(min-width: 1024px)");
+
+	// The sources panel follows the newest answer: it opens when that answer has
+	// citations and collapses (chat goes full width) when the latest answer has none.
+	useEffect(() => {
+		const latest = [...exchanges].reverse().find((exchange) => exchange.status === "done");
+		if (latest && latest.id !== lastAnsweredId.current) {
+			lastAnsweredId.current = latest.id;
+			setFocused((latest.answer?.citations.length ?? 0) > 0 ? { id: latest.id, index: 0 } : null);
+		}
+	}, [exchanges]);
+
+	// Clear the panel/overlay when switching games.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset only when the selected game changes
+	useEffect(() => {
+		setFocused(null);
+		setOverlayOpen(false);
+		lastAnsweredId.current = null;
+	}, [selectedGameId]);
+
+	const focusedCitations = focused
+		? (exchanges.find((exchange) => exchange.id === focused.id)?.answer?.citations ?? [])
+		: [];
+	const showPanel = focused !== null && focusedCitations.length > 0;
+
+	const handleSelectSource = (exchangeId: string, index: number) => {
+		setFocused({ id: exchangeId, index });
+		// On desktop a chip just moves the docked panel; on mobile it opens the full-screen viewer.
+		if (!isDesktop) {
+			setOverlayOpen(true);
+		}
+	};
+
+	const focusIndex = (index: number) => setFocused((current) => (current ? { ...current, index } : current));
+
 	const handleSend = (question: string) => {
 		if (selectedGameId === undefined) {
 			return;
@@ -123,6 +169,8 @@ function RouteComponent() {
 				isPending={isPending}
 				emptyHint={t("empty.ask-something")}
 				onRetry={(exchange) => retry(selectedGameId, exchange)}
+				onSelectSource={handleSelectSource}
+				focused={focused}
 			/>
 		);
 	};
@@ -153,7 +201,7 @@ function RouteComponent() {
 			</div>
 
 			<div className="flex min-h-0 flex-1 gap-4">
-				<div className="flex min-w-0 flex-1 flex-col">
+				<div className={`flex min-w-0 flex-1 flex-col ${showPanel ? "lg:max-w-3xl" : ""}`}>
 					<div className="min-h-0 flex-1 overflow-y-auto">{renderBody()}</div>
 
 					<footer className="sticky bottom-20 z-10 shrink-0 bg-background md:static">
@@ -167,7 +215,7 @@ function RouteComponent() {
 				</div>
 
 				{showPanel && (
-					<aside className="hidden min-w-0 overflow-hidden rounded-xl border border-white/10 bg-card/40 p-4 motion-safe:animate-slide-in-right lg:flex lg:w-auto lg:min-w-[320px] lg:max-w-[60%]">
+					<aside className="hidden min-w-0 overflow-hidden rounded-xl border border-white/10 bg-card/40 p-4 motion-safe:animate-slide-in-right lg:flex lg:min-w-[420px] lg:flex-1">
 						<SourcesPanel
 							citations={focusedCitations}
 							focusedIndex={focused?.index ?? 0}
@@ -185,7 +233,7 @@ function RouteComponent() {
 					onIndexChange={focusIndex}
 					onClose={() => setOverlayOpen(false)}
 				/>
-			</footer>
+			)}
 		</div>
 	);
 }

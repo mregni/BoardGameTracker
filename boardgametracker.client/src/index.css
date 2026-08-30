@@ -29,6 +29,20 @@
 
   /* Transition Properties */
   --transition-max-height: max-height;
+
+  /* Animations */
+  --animate-slide-in-right: slide-in-right 0.3s ease-out;
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @layer base {
