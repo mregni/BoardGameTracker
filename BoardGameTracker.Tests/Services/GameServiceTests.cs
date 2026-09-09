@@ -228,7 +228,7 @@ public class GameServiceTests
         _gameRepositoryMock.Setup(x => x.GetWatchInfo(1)).ReturnsAsync(new GameWatchInfo(1, watchId));
         _changeDetectionClientMock
             .Setup(x => x.GetLatestAsync(watchId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ChangeDetectionResult { Available = true, InStock = true, Price = 22.5m });
+            .ReturnsAsync(new ChangeDetectionResult { Status = ChangeDetectionStatus.Ok, InStock = true, Price = 22.5m });
 
         var result = await _gameService.GetGamePriceAsync(1);
 
@@ -261,8 +261,8 @@ public class GameServiceTests
                 It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<string, ChangeDetectionResult>
             {
-                [watchOne] = new() { Available = true, InStock = true, Price = 22.5m },
-                [watchTwo] = new() { Available = true, InStock = false, Price = 10m }
+                [watchOne] = new() { Status = ChangeDetectionStatus.Ok, InStock = true, Price = 22.5m },
+                [watchTwo] = new() { Status = ChangeDetectionStatus.Ok, InStock = false, Price = 10m }
             });
 
         var result = await _gameService.GetWantedPricesAsync();

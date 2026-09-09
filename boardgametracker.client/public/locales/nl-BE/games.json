@@ -59,8 +59,7 @@
     "rating": "Rating",
     "added": "Added",
     "bgg": "BGG",
-    "current-price": "Huidige prijs",
-    "in-stock": "Voorraad"
+    "current-price": "Huidige prijs"
   },
   "table": {
     "title": "Game list",
@@ -73,5 +72,9 @@
     "yes": "Op voorraad",
     "no": "Uitverkocht"
   },
-  "refresh-prices": "Prijzen verversen"
+  "refresh-prices": "Prijzen verversen",
+  "live-price": {
+    "unavailable": "Prijs niet beschikbaar"
+  },
+  "tracked": "Prijs wordt gevolgd"
 }

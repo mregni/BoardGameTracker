@@ -13,7 +13,7 @@ export const CreateGameSchema = z.object({
 	buyingPrice: z.coerce
 		.number()
 		.optional()
-		.transform((value) => value || null),
+		.transform((value) => (value === undefined || Number.isNaN(value) ? null : value)),
 	additionDate: z.coerce.date({
 		error: "game:added-date.required",
 	}),

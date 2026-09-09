@@ -1,5 +1,6 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/models";
+import { isPriceError, priceErrorKey } from "@/models/Games/GamePrice";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { deleteExpansionCall, deleteGameCall, getGamePriceCall } from "@/services/gameService";
 import { getGame, getGamePrice, getGameSessionsShortList, getGameStatistics } from "@/services/queries/games";
@@ -35,7 +36,12 @@ export const useGameData = (props: UseGameDataProps) => {
 
 	const refreshPriceMutation = useMutation({
 		mutationFn: () => getGamePriceCall(gameId, true),
-		onSuccess: (data) => queryClient.setQueryData([QUERY_KEYS.game, gameId, QUERY_KEYS.price], data),
+		onSuccess: (data) => {
+			queryClient.setQueryData([QUERY_KEYS.game, gameId, QUERY_KEYS.price], data);
+			if (data && !data.available && isPriceError(data.status)) {
+				errorToast(priceErrorKey(data.status));
+			}
+		},
 		onError: () => errorToast("game:price.refresh-failed"),
 	});
 

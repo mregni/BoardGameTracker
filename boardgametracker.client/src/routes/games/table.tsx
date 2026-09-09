@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import Refresh from "@/assets/icons/refresh.svg?react";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
-import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtSimpleSelect } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -16,6 +15,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import { type Game, GameState, QUERY_KEYS } from "@/models";
+import { isPriceError } from "@/models/Games/GamePrice";
 import { getWantedPricesCall } from "@/services/gameService";
 import { getWantedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
@@ -25,6 +25,7 @@ import { RoundDecimal } from "@/utils/numberUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
 import { EditableSelectCell } from "./-components/EditableSelectCell";
+import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
 import { useGamesData } from "./-hooks/useGamesData";
 import { useInlineGameUpdate } from "./-hooks/useInlineGameUpdate";
 
@@ -119,16 +120,20 @@ function RouteComponent() {
 				accessorKey: "title",
 				header: t("games:columns.title"),
 				enableSorting: false,
-				cell: ({ row }) => (
-					<Link
-						to="/games/$gameId"
-						params={{ gameId: row.original.id }}
-						className="flex items-center gap-2 hover:text-primary"
-					>
-						<BgtAvatar image={row.original.image} title={row.original.title} size="small" />
-						<span>{row.original.title}</span>
-					</Link>
-				),
+				cell: ({ row }) => {
+					const livePrice = priceMap.get(row.original.id);
+					return (
+						<Link
+							to="/games/$gameId"
+							params={{ gameId: row.original.id }}
+							className="flex items-center gap-2 hover:text-primary"
+						>
+							<BgtAvatar image={row.original.image} title={row.original.title} size="small" />
+							<span>{row.original.title}</span>
+							{row.original.changeDetectionWatchId && <TrackedPriceIcon livePrice={livePrice} />}
+						</Link>
+					);
+				},
 			},
 			{
 				id: "players",
@@ -252,23 +257,15 @@ function RouteComponent() {
 							enableSorting: false,
 							cell: ({ row }: { row: { original: Game } }) => {
 								const livePrice = priceMap.get(row.original.id);
+								if (livePrice && isPriceError(livePrice.status)) {
+									return (
+										<span title={t("games:live-price.unavailable")} className="text-red-400">
+											!
+										</span>
+									);
+								}
 								if (!livePrice?.available || livePrice.price == null) return "-";
 								return `${currency ?? ""}${RoundDecimal(livePrice.price, 0.01)}`;
-							},
-							meta: { hideOnMobile: true },
-						},
-						{
-							id: "in-stock",
-							header: t("games:columns.in-stock"),
-							enableSorting: false,
-							cell: ({ row }: { row: { original: Game } }) => {
-								const livePrice = priceMap.get(row.original.id);
-								if (!livePrice?.available || livePrice.inStock == null) return "-";
-								return (
-									<BgtBadge color={livePrice.inStock ? "green" : "red"} variant="soft">
-										{livePrice.inStock ? t("games:in-stock.yes") : t("games:in-stock.no")}
-									</BgtBadge>
-								);
 							},
 							meta: { hideOnMobile: true },
 						},

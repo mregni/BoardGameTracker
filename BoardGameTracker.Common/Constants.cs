@@ -61,6 +61,7 @@ public static class Constants
         public const string ImageUnsupportedFormat = "error.image.unsupported-format";
         public const string InvalidResetToken = "error.auth.invalid-reset-token";
         public const string GameAlreadyOnLoan = "error.loan.game-already-on-loan";
+        public const string ChangeDetectionInvalidBaseUrl = "error.changedetection.invalid-base-url";
     }
 
     public static class BggConfig

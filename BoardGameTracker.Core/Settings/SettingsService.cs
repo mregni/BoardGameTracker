@@ -1,6 +1,7 @@
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
@@ -74,17 +75,24 @@ public class SettingsService : ISettingsService
         var bggApiKey = model.BggApiKey ?? string.Empty;
         await _configRepository.SetConfigValueAsync(Constants.BggConfig.ApiKey, bggApiKey);
 
-        await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl,
-            model.ChangeDetectionBaseUrl ?? string.Empty);
+        var changeDetectionBaseUrl = (model.ChangeDetectionBaseUrl ?? string.Empty).Trim();
+        if (!string.IsNullOrEmpty(changeDetectionBaseUrl) &&
+            (!Uri.TryCreate(changeDetectionBaseUrl, UriKind.Absolute, out var changeDetectionUri) ||
+             (changeDetectionUri.Scheme != Uri.UriSchemeHttp && changeDetectionUri.Scheme != Uri.UriSchemeHttps)))
+        {
+            throw new ValidationException(Constants.Errors.ChangeDetectionInvalidBaseUrl);
+        }
+
+        await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl, changeDetectionBaseUrl);
 
         if (model.ChangeDetectionApiKey == null)
         {
             await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, string.Empty);
         }
-        else if (!string.IsNullOrEmpty(model.ChangeDetectionApiKey))
+        else if (!string.IsNullOrWhiteSpace(model.ChangeDetectionApiKey))
         {
             await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey,
-                model.ChangeDetectionApiKey);
+                model.ChangeDetectionApiKey.Trim());
         }
 
         return await GetSettingsAsync();

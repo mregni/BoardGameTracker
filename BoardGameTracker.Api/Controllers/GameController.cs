@@ -6,6 +6,7 @@ using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -117,6 +118,7 @@ public class GameController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}/price")]
+    [EnableRateLimiting("changedetection")]
     public async Task<IActionResult> GetGamePrice(int id, [FromQuery] bool refresh, CancellationToken cancellationToken)
     {
         var price = await _gameService.GetGamePriceAsync(id, refresh, cancellationToken);
@@ -130,6 +132,7 @@ public class GameController : ControllerBase
 
     [HttpGet]
     [Route("prices/wanted")]
+    [EnableRateLimiting("changedetection")]
     public async Task<IActionResult> GetWantedPrices([FromQuery] bool refresh, CancellationToken cancellationToken)
     {
         var prices = await _gameService.GetWantedPricesAsync(refresh, cancellationToken);

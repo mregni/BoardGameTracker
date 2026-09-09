@@ -1,22 +1,21 @@
 import { useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
-import { formatDistanceToNow, formatDuration, intervalToDuration } from "date-fns";
+import { formatDuration, intervalToDuration } from "date-fns";
 import { useTranslation } from "react-i18next";
 import Clock from "@/assets/icons/clock.svg?react";
 import Coins from "@/assets/icons/coins.svg?react";
 import List from "@/assets/icons/list.svg?react";
 import Package from "@/assets/icons/package.svg?react";
-import Refresh from "@/assets/icons/refresh.svg?react";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import Users from "@/assets/icons/users.svg?react";
 import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtFancyTextStatistic } from "@/components/BgtStatistic/BgtFancyTextStatistic";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { Game, GamePrice } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { BgtPoster } from "../../-components/BgtPoster";
+import { PriceRefreshButton } from "./PriceRefreshButton";
 import { RulebookChatButton } from "./RulebookChatButton";
 
 const formatMinMax = (min: number | null, max: number | null): string | null => {
@@ -115,19 +114,17 @@ export const GameStaticSection = (props: Props) => {
 						prefix={currency}
 						icon={<Coins />}
 					/>
-					{price?.available && (
+					{game.changeDetectionWatchId && (
 						<BgtTextStatistic
-							content={price.price ?? "-"}
+							content={price?.available && price.price != null ? price.price : "-"}
 							title={t("game:current-price.title")}
-							prefix={price.price != null ? currency : undefined}
+							prefix={price?.available && price.price != null ? currency : undefined}
 							icon={<Coins />}
-						/>
-					)}
-					{price?.available && price.inStock != null && (
-						<BgtTextStatistic
-							content={price.inStock ? t("game:in-stock.yes") : t("game:in-stock.no")}
-							title={t("game:in-stock.title")}
-							icon={<Package />}
+							action={
+								onRefreshPrice && (
+									<PriceRefreshButton onRefresh={onRefreshPrice} isRefreshing={!!isRefreshingPrice} />
+								)
+							}
 						/>
 					)}
 					<BgtTextStatistic
@@ -160,21 +157,6 @@ export const GameStaticSection = (props: Props) => {
 						/>
 					)}
 				</div>
-				{game.changeDetectionWatchId && onRefreshPrice && (
-					<div className="flex items-center gap-3">
-						<BgtButton variant="cancel" size="1" disabled={isRefreshingPrice} onClick={onRefreshPrice}>
-							<Refresh className={cx("size-4", isRefreshingPrice && "animate-spin")} />
-							{t("game:price.refresh")}
-						</BgtButton>
-						{price?.available && price.fetchedAt && (
-							<BgtText size="1" className="text-white/50">
-								{t("game:price.updated", {
-									time: formatDistanceToNow(new Date(price.fetchedAt), { addSuffix: true }),
-								})}
-							</BgtText>
-						)}
-					</div>
-				)}
 			</div>
 		</div>
 	);

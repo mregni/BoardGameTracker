@@ -253,7 +253,12 @@ public class GameService : IGameService
 
         if (string.IsNullOrWhiteSpace(watchInfo.WatchId))
         {
-            return new GamePriceDto { GameId = watchInfo.Id, Available = false };
+            return new GamePriceDto
+            {
+                GameId = watchInfo.Id,
+                Available = false,
+                Status = ChangeDetectionStatus.NotConfigured
+            };
         }
 
         var result = await _changeDetectionClient.GetLatestAsync(watchInfo.WatchId, forceRefresh, cancellationToken);
@@ -274,7 +279,8 @@ public class GameService : IGameService
             .Select(game =>
             {
                 results.TryGetValue(game.ChangeDetectionWatchId!, out var result);
-                return MapPrice(game.Id, game.ChangeDetectionWatchId, result ?? ChangeDetectionResult.Unavailable());
+                return MapPrice(game.Id, game.ChangeDetectionWatchId,
+                    result ?? ChangeDetectionResult.Unavailable(ChangeDetectionStatus.Unreachable));
             })
             .ToList();
     }
@@ -286,6 +292,7 @@ public class GameService : IGameService
             GameId = gameId,
             WatchId = watchId,
             Available = result.Available,
+            Status = result.Status,
             InStock = result.InStock,
             Price = result.Price,
             FetchedAt = result.FetchedAt

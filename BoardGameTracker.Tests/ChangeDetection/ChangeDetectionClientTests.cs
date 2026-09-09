@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.ChangeDetection;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Settings.Interfaces;
@@ -81,18 +82,34 @@ public class ChangeDetectionClientTests
     }
 
     [Fact]
-    public async Task GetLatestAsync_ShouldNotCacheUnavailableResults()
+    public async Task GetLatestAsync_ShouldCacheFailuresBriefly_ToAvoidHammeringADownInstance()
     {
         _handler.StatusCode = HttpStatusCode.NotFound;
 
         await _client.GetLatestAsync(WatchId);
-        await _client.GetLatestAsync(WatchId);
+        var second = await _client.GetLatestAsync(WatchId);
 
-        _handler.CallCount.Should().Be(2);
+        second.Status.Should().Be(ChangeDetectionStatus.WatchNotFound);
+        _handler.CallCount.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound, ChangeDetectionStatus.WatchNotFound)]
+    [InlineData(HttpStatusCode.Unauthorized, ChangeDetectionStatus.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden, ChangeDetectionStatus.Unauthorized)]
+    [InlineData(HttpStatusCode.BadGateway, ChangeDetectionStatus.Unreachable)]
+    public async Task GetLatestAsync_ShouldMapHttpStatusToReason(HttpStatusCode statusCode, ChangeDetectionStatus expected)
+    {
+        _handler.StatusCode = statusCode;
+
+        var result = await _client.GetLatestAsync(WatchId);
+
+        result.Available.Should().BeFalse();
+        result.Status.Should().Be(expected);
     }
 
     [Fact]
-    public async Task GetLatestAsync_ShouldReturnUnavailable_WhenNotConfigured()
+    public async Task GetLatestAsync_ShouldReturnNotConfigured_WhenSettingsMissing()
     {
         _settingsServiceMock
             .Setup(x => x.GetChangeDetectionSettingsAsync())
@@ -100,8 +117,32 @@ public class ChangeDetectionClientTests
 
         var result = await _client.GetLatestAsync(WatchId);
 
-        result.Available.Should().BeFalse();
+        result.Status.Should().Be(ChangeDetectionStatus.NotConfigured);
         _handler.CallCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_ShouldReturnMisconfigured_WhenBaseUrlInvalid()
+    {
+        _settingsServiceMock
+            .Setup(x => x.GetChangeDetectionSettingsAsync())
+            .ReturnsAsync(("not-a-valid-url", "api-key"));
+
+        var result = await _client.GetLatestAsync(WatchId);
+
+        result.Status.Should().Be(ChangeDetectionStatus.Misconfigured);
+        _handler.CallCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_ShouldPropagateCancellation()
+    {
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        var act = async () => await _client.GetLatestAsync(WatchId, cancellationToken: cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
     [Fact]

@@ -113,9 +113,15 @@
     "label": "Price",
     "placeholder": "Game price",
     "required": "Price is required",
-    "updated": "Bijgewerkt {{time}}",
-    "refresh": "changedetection verversen",
-    "refresh-failed": "Vernieuwen van de prijs mislukt"
+    "refresh": "Prijs verversen",
+    "refresh-failed": "Vernieuwen van de prijs mislukt",
+    "unavailable": {
+      "misconfigured": "changedetection.io-instellingen zijn ongeldig",
+      "unauthorized": "changedetection.io heeft de API-sleutel geweigerd",
+      "watchNotFound": "Deze watch bestaat niet meer op changedetection.io",
+      "unreachable": "changedetection.io is niet bereikbaar",
+      "parseError": "Kon de prijs van changedetection.io niet lezen"
+    }
   },
   "state": {
     "for-trade": "For trade",
@@ -162,10 +168,5 @@
   },
   "current-price": {
     "title": "Huidige prijs"
-  },
-  "in-stock": {
-    "title": "Op voorraad",
-    "yes": "Op voorraad",
-    "no": "Uitverkocht"
   }
 }

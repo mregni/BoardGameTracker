@@ -6,7 +6,8 @@ import { BgtInputField } from "@/components/BgtForm";
 import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { withForm } from "@/hooks/form";
-import type { BggConfigStatus, ChangeDetectionConfigStatus } from "@/models";
+import { type BggConfigStatus, type ChangeDetectionConfigStatus, SettingsSchema } from "@/models";
+import { zodValidator } from "@/utils/zodValidator";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { SettingsSection } from "./SettingsSection";
 
@@ -136,7 +137,10 @@ export const BggSettings = withForm({
 					/>
 
 					<div className="flex-1">
-						<form.Field name="changeDetectionBaseUrl">
+						<form.Field
+							name="changeDetectionBaseUrl"
+							validators={zodValidator(SettingsSchema, "changeDetectionBaseUrl")}
+						>
 							{(field: AnyFieldApi) => (
 								<BgtInputField
 									field={field}
@@ -149,15 +153,9 @@ export const BggSettings = withForm({
 						</form.Field>
 					</div>
 
-					{changeDetectionStatus.isConfigured ? (
+					{changeDetectionStatus.isConfigured && (
 						<div className="flex flex-row gap-4 items-center">
-							<BgtButton
-								variant="error"
-								onClick={() => {
-									form.setFieldValue("changeDetectionApiKey", null);
-									changeDetectionStatus.isConfigured = false;
-								}}
-							>
+							<BgtButton variant="error" onClick={() => form.setFieldValue("changeDetectionApiKey", null)}>
 								{t("changedetection.api-key.clear")}
 							</BgtButton>
 							<form.Subscribe
@@ -172,21 +170,21 @@ export const BggSettings = withForm({
 								}
 							</form.Subscribe>
 						</div>
-					) : (
-						<div className="flex-1">
-							<form.Field name="changeDetectionApiKey">
-								{(field: AnyFieldApi) => (
-									<BgtInputField
-										field={field}
-										disabled={disabled}
-										type="password"
-										label={t("changedetection.api-key.label")}
-										placeholder={t("changedetection.api-key.placeholder")}
-									/>
-								)}
-							</form.Field>
-						</div>
 					)}
+
+					<div className="flex-1">
+						<form.Field name="changeDetectionApiKey">
+							{(field: AnyFieldApi) => (
+								<BgtInputField
+									field={field}
+									disabled={disabled}
+									type="password"
+									label={t("changedetection.api-key.label")}
+									placeholder={t("changedetection.api-key.placeholder")}
+								/>
+							)}
+						</form.Field>
+					</div>
 
 					<BgtStatus
 						variant="info"

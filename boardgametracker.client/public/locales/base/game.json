@@ -113,9 +113,15 @@
     "label": "Price",
     "placeholder": "Game price",
     "required": "Price is required",
-    "updated": "Updated {{time}}",
-    "refresh": "Refresh changedetection",
-    "refresh-failed": "Failed to refresh the price"
+    "refresh": "Refresh price",
+    "refresh-failed": "Failed to refresh the price",
+    "unavailable": {
+      "misconfigured": "changedetection.io settings are invalid",
+      "unauthorized": "changedetection.io rejected the API key",
+      "watchNotFound": "This watch no longer exists on changedetection.io",
+      "unreachable": "Couldn't reach changedetection.io",
+      "parseError": "Couldn't read the price from changedetection.io"
+    }
   },
   "state": {
     "for-trade": "For trade",
@@ -162,10 +168,5 @@
   },
   "current-price": {
     "title": "Current price"
-  },
-  "in-stock": {
-    "title": "In stock",
-    "yes": "In stock",
-    "no": "Out of stock"
   }
 }

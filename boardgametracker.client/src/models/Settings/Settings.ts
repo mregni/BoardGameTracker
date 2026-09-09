@@ -59,8 +59,11 @@ export const SettingsSchema = z.object({
 	gameNightsEnabled: z.boolean(),
 	rsvpAuthenticationEnabled: z.boolean(),
 	bggApiKey: z.string().nullable(),
-	changeDetectionBaseUrl: z.string().refine((value) => value === "" || /^https?:\/\/.+/.test(value), {
-		message: "settings:changedetection.base-url.invalid",
-	}),
+	changeDetectionBaseUrl: z
+		.string()
+		.trim()
+		.refine((value) => value === "" || /^https?:\/\/.+/.test(value), {
+			message: "settings:changedetection.base-url.invalid",
+		}),
 	changeDetectionApiKey: z.string().nullable(),
 });

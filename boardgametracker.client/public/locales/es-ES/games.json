@@ -59,8 +59,7 @@
     "rating": "Rating",
     "added": "Added",
     "bgg": "BGG",
-    "current-price": "Precio actual",
-    "in-stock": "Stock"
+    "current-price": "Precio actual"
   },
   "table": {
     "title": "Game list",
@@ -73,5 +72,9 @@
     "yes": "En stock",
     "no": "Agotado"
   },
-  "refresh-prices": "Actualizar precios"
+  "refresh-prices": "Actualizar precios",
+  "live-price": {
+    "unavailable": "Precio no disponible"
+  },
+  "tracked": "Seguimiento de precio activo"
 }

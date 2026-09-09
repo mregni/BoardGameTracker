@@ -82,6 +82,8 @@ function RouteComponent() {
 								gameTitle={game.title}
 								gameState={game.state}
 								isLoaned={game.isLoaned}
+								hasPriceWatch={!!game.changeDetectionWatchId}
+								livePrice={price}
 								canWrite={canWrite}
 								onAddSession={actions.handleAddSession}
 								onEdit={actions.handleEdit}

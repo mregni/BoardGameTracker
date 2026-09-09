@@ -1,3 +1,4 @@
+using System.Net;
 using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.ChangeDetection.Interfaces;
 using BoardGameTracker.Core.Common;
@@ -12,7 +13,11 @@ public class ChangeDetectionClient : IChangeDetectionClient
     public const string HttpClientName = "changedetection";
 
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan FailureCacheDuration = TimeSpan.FromMinutes(1);
     private const string CacheKeyPrefix = "changedetection:watch:";
+
+    private const int MaxConcurrentFetches = 4;
+    private static readonly SemaphoreSlim FetchGate = new(MaxConcurrentFetches, MaxConcurrentFetches);
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ISettingsService _settingsService;
@@ -41,7 +46,7 @@ public class ChangeDetectionClient : IChangeDetectionClient
     {
         if (string.IsNullOrWhiteSpace(watchId))
         {
-            return ChangeDetectionResult.Unavailable();
+            return ChangeDetectionResult.Unavailable(ChangeDetectionStatus.NotConfigured);
         }
 
         if (!forceRefresh && TryGetCached(watchId, out var cached))
@@ -52,10 +57,15 @@ public class ChangeDetectionClient : IChangeDetectionClient
         var (baseUrl, apiKey) = await _settingsService.GetChangeDetectionSettingsAsync();
         if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(apiKey))
         {
-            return ChangeDetectionResult.Unavailable();
+            return ChangeDetectionResult.Unavailable(ChangeDetectionStatus.NotConfigured);
         }
 
-        var client = CreateClient(baseUrl, apiKey);
+        var client = TryCreateClient(baseUrl, apiKey);
+        if (client == null)
+        {
+            return ChangeDetectionResult.Unavailable(ChangeDetectionStatus.Misconfigured);
+        }
+
         return await FetchAndCacheAsync(client, watchId, cancellationToken);
     }
 
@@ -98,13 +108,23 @@ public class ChangeDetectionClient : IChangeDetectionClient
         {
             foreach (var watchId in toFetch)
             {
-                resolved[watchId] = ChangeDetectionResult.Unavailable();
+                resolved[watchId] = ChangeDetectionResult.Unavailable(ChangeDetectionStatus.NotConfigured);
             }
 
             return resolved;
         }
 
-        var client = CreateClient(baseUrl, apiKey);
+        var client = TryCreateClient(baseUrl, apiKey);
+        if (client == null)
+        {
+            foreach (var watchId in toFetch)
+            {
+                resolved[watchId] = ChangeDetectionResult.Unavailable(ChangeDetectionStatus.Misconfigured);
+            }
+
+            return resolved;
+        }
+
         var fetched = await Task.WhenAll(toFetch.Select(async watchId =>
             new KeyValuePair<string, ChangeDetectionResult>(
                 watchId,
@@ -126,17 +146,32 @@ public class ChangeDetectionClient : IChangeDetectionClient
             return true;
         }
 
-        result = ChangeDetectionResult.Unavailable();
+        result = ChangeDetectionResult.Unavailable(ChangeDetectionStatus.NotConfigured);
         return false;
     }
 
-    private HttpClient CreateClient(string baseUrl, string apiKey)
+    private HttpClient? TryCreateClient(string baseUrl, string apiKey)
     {
-        var client = _httpClientFactory.CreateClient(HttpClientName);
-        client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
-        client.DefaultRequestHeaders.Remove("x-api-key");
-        client.DefaultRequestHeaders.Add("x-api-key", apiKey);
-        return client;
+        if (!Uri.TryCreate(baseUrl.Trim().TrimEnd('/') + "/", UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            _logger.LogWarning("changedetection.io base URL is invalid: {BaseUrl}", baseUrl);
+            return null;
+        }
+
+        try
+        {
+            var client = _httpClientFactory.CreateClient(HttpClientName);
+            client.BaseAddress = uri;
+            client.DefaultRequestHeaders.Remove("x-api-key");
+            client.DefaultRequestHeaders.Add("x-api-key", apiKey.Trim());
+            return client;
+        }
+        catch (FormatException ex)
+        {
+            _logger.LogWarning(ex, "changedetection.io API key is invalid");
+            return null;
+        }
     }
 
     private async Task<ChangeDetectionResult> FetchAndCacheAsync(
@@ -145,11 +180,10 @@ public class ChangeDetectionClient : IChangeDetectionClient
         CancellationToken cancellationToken)
     {
         var result = await FetchAsync(client, watchId, cancellationToken);
-        if (result.Available)
-        {
-            result.FetchedAt = _dateTimeProvider.UtcNow;
-            _cache.Set(CacheKeyPrefix + watchId, result, CacheDuration);
-        }
+        result.FetchedAt = _dateTimeProvider.UtcNow;
+
+        var ttl = result.Available ? CacheDuration : FailureCacheDuration;
+        _cache.Set(CacheKeyPrefix + watchId, result, ttl);
 
         return result;
     }
@@ -159,23 +193,48 @@ public class ChangeDetectionClient : IChangeDetectionClient
         string watchId,
         CancellationToken cancellationToken)
     {
+        await FetchGate.WaitAsync(cancellationToken);
         try
         {
             var response = await client.GetAsync($"api/v1/watch/{watchId}/history/latest", cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogDebug("changedetection.io returned {StatusCode} for watch {WatchId}",
-                    response.StatusCode, watchId);
-                return ChangeDetectionResult.Unavailable();
+                var status = response.StatusCode switch
+                {
+                    HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => ChangeDetectionStatus.Unauthorized,
+                    HttpStatusCode.NotFound => ChangeDetectionStatus.WatchNotFound,
+                    _ => ChangeDetectionStatus.Unreachable
+                };
+
+                if (status == ChangeDetectionStatus.Unreachable)
+                {
+                    _logger.LogDebug("changedetection.io returned {StatusCode} for watch {WatchId}",
+                        response.StatusCode, watchId);
+                }
+                else
+                {
+                    _logger.LogWarning("changedetection.io returned {StatusCode} for watch {WatchId}",
+                        response.StatusCode, watchId);
+                }
+
+                return ChangeDetectionResult.Unavailable(status);
             }
 
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
             return ChangeDetectionSnapshotParser.Parse(content);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to fetch changedetection.io data for watch {WatchId}", watchId);
-            return ChangeDetectionResult.Unavailable();
+            return ChangeDetectionResult.Unavailable(ChangeDetectionStatus.Unreachable);
+        }
+        finally
+        {
+            FetchGate.Release();
         }
     }
 }
