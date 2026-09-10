@@ -11,6 +11,7 @@ import {
 } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { type BgtSelectItem, isApiError, type Player, type RegisterRequest, type UserDto } from "@/models";
+import { translateApiError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { buildLinkablePlayerItems } from "../-utils/playerLinkOptions";
 
@@ -69,7 +70,11 @@ export const CreateUserModal = ({ open, close, players, users, onSubmit, isLoadi
 				});
 				close();
 			} catch (e) {
-				setError(isApiError(e) ? t(e.message) : t("account.notifications.user-create-failed"));
+				setError(
+					isApiError(e)
+						? translateApiError(e.message, "settings:account.notifications.user-create-failed")
+						: t("account.notifications.user-create-failed"),
+				);
 			}
 		},
 	});

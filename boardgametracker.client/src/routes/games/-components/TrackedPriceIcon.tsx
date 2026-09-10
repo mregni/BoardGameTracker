@@ -11,6 +11,7 @@ const iconClass = (livePrice: GamePrice | undefined): string => {
 
 const tooltipKey = (livePrice: GamePrice | undefined): string => {
 	if (!livePrice) return "games:tracked";
+	if (livePrice.status === "pending") return "games:tracked-pending";
 	if (isPriceError(livePrice.status)) return priceErrorKey(livePrice.status);
 	if (!livePrice.available || livePrice.inStock == null) return "games:tracked";
 	return livePrice.inStock ? "games:in-stock.yes" : "games:in-stock.no";
@@ -25,14 +26,21 @@ const sizeClass = {
 interface Props {
 	livePrice: GamePrice | undefined;
 	size?: keyof typeof sizeClass;
+	variant?: "inline" | "overlay";
 }
 
-export const TrackedPriceIcon = ({ livePrice, size = "4" }: Props) => {
+export const TrackedPriceIcon = ({ livePrice, size = "4", variant = "inline" }: Props) => {
 	const { t } = useTranslation(["games", "game"]);
 
+	const label = t(tooltipKey(livePrice));
+	const wrapperClass =
+		variant === "overlay"
+			? "flex size-7 shrink-0 items-center justify-center rounded-full bg-black/60"
+			: "inline-flex shrink-0";
+
 	return (
-		<span title={t(tooltipKey(livePrice))} className="inline-flex shrink-0">
-			<Target className={`${sizeClass[size]} ${iconClass(livePrice)}`} />
+		<span role="img" aria-label={label} title={label} className={wrapperClass}>
+			<Target aria-hidden="true" className={`${sizeClass[size]} ${iconClass(livePrice)}`} />
 		</span>
 	);
 };

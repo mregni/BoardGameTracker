@@ -33,6 +33,7 @@
     "play-time": "Play time",
     "weight": "Weight",
     "any": "Any",
+    "in-stock-only": "In stock only",
     "player-count-value_one": "{{count}} player",
     "player-count-value_other": "{{count}} players",
     "play-time-value": "≤ {{count}} min",
@@ -76,5 +77,6 @@
   "live-price": {
     "unavailable": "Price unavailable"
   },
-  "tracked": "Price tracking active"
+  "tracked": "Price tracking active",
+  "tracked-pending": "Waiting for the first price check"
 }

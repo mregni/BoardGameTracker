@@ -178,7 +178,8 @@ builder.Services.AddHttpClient(BoardGameTracker.Core.ChangeDetection.ChangeDetec
     {
         client.Timeout = TimeSpan.FromSeconds(10);
         client.MaxResponseContentBufferSize = 64 * 1024;
-    });
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
 builder.Services.AddMemoryCache();
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);

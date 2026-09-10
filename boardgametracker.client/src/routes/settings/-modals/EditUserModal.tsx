@@ -11,6 +11,7 @@ import {
 } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { type BgtSelectItem, isApiError, type Player, type UserDto } from "@/models";
+import { translateApiError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { buildLinkablePlayerItems } from "../-utils/playerLinkOptions";
 
@@ -67,7 +68,11 @@ export const EditUserModal = ({ open, close, user, players, users, onSubmit, isL
 				});
 				close();
 			} catch (e) {
-				setError(isApiError(e) ? t(e.message) : t("account.notifications.user-update-failed"));
+				setError(
+					isApiError(e)
+						? translateApiError(e.message, "settings:account.notifications.user-update-failed")
+						: t("account.notifications.user-update-failed"),
+				);
 			}
 		},
 	});

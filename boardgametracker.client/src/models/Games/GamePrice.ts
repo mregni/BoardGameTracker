@@ -1,6 +1,7 @@
 export type ChangeDetectionStatus =
 	| "ok"
 	| "notConfigured"
+	| "pending"
 	| "misconfigured"
 	| "unauthorized"
 	| "watchNotFound"
@@ -14,6 +15,10 @@ export interface GamePrice {
 	status: ChangeDetectionStatus;
 	inStock: boolean | null;
 	price: number | null;
+	currency: string | null;
+	checkedAt: string | null;
+	shopUrl: string | null;
+	recheckQueued: boolean;
 	fetchedAt: string | null;
 }
 

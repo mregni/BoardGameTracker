@@ -37,7 +37,8 @@
 	"general": {
 		"public-url": {
 			"label": "Public URL",
-			"placeholder": "https://myboardgametracker.app"
+			"placeholder": "https://myboardgametracker.app",
+			"invalid": "Enter a valid http(s) URL"
 		},
 		"ui-language": {
 			"label": "Language",
@@ -327,6 +328,11 @@
 			"clear-hint": "Save settings to apply the removal."
 		},
 		"help-title": "How it works",
-		"help-description": "Add a changedetection.io watch id to a game to see its current price and stock. The API key is found under Settings in your changedetection.io instance."
+		"help-description": "Add a changedetection.io watch id to a game to see its current price and stock. The API key is found under Settings in your changedetection.io instance.",
+		"test": {
+			"button": "Test connection",
+			"success": "Connected to changedetection.io {{version}}",
+			"failed": "Couldn't connect to changedetection.io, check the URL and API key"
+		}
 	}
 }

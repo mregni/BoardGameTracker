@@ -44,9 +44,9 @@ public class GameRepository : EfRepository<Game>, IGameRepository
         return ListAsync(new GamesOverviewSpec());
     }
 
-    public Task<List<Game>> GetWantedGamesWithWatchId()
+    public Task<List<Game>> GetTrackedGames()
     {
-        return ListAsync(new WantedGamesWithWatchIdSpec());
+        return ListAsync(new TrackedGamesSpec());
     }
 
     public Task<GameWatchInfo?> GetWatchInfo(int gameId)

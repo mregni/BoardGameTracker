@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Configuration.Interfaces;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Settings;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -17,6 +21,8 @@ public class SettingsServiceTests
 {
     private readonly Mock<IConfigRepository> _configRepositoryMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IDbContextTransaction> _transactionMock;
     private readonly Mock<ILogger<SettingsService>> _loggerMock;
     private readonly SettingsService _settingsService;
 
@@ -27,11 +33,17 @@ public class SettingsServiceTests
             .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
             .ReturnsAsync(string.Empty);
         _environmentProviderMock = new Mock<IEnvironmentProvider>();
+        _transactionMock = new Mock<IDbContextTransaction>();
+        _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _unitOfWorkMock
+            .Setup(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_transactionMock.Object);
         _loggerMock = new Mock<ILogger<SettingsService>>();
 
         _settingsService = new SettingsService(
             _configRepositoryMock.Object,
             _environmentProviderMock.Object,
+            _unitOfWorkMock.Object,
             _loggerMock.Object);
     }
 
@@ -39,6 +51,21 @@ public class SettingsServiceTests
     {
         _configRepositoryMock.VerifyNoOtherCalls();
         _environmentProviderMock.VerifyNoOtherCalls();
+        _unitOfWorkMock.VerifyNoOtherCalls();
+    }
+
+    private void VerifyTransactionCommitted()
+    {
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    private void VerifyNothingWritten()
+    {
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
     }
 
     private void VerifyEnvironmentReads()
@@ -252,8 +279,149 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, expectedStoredApiKey), Times.Once);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl, string.Empty), Times.Once);
         _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        VerifyTransactionCommitted();
         VerifyEnvironmentReads();
         VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task UpdateSettingsAsync_ShouldKeepStoredBggApiKey_WhenSubmittedKeyIsBlank(string bggApiKey)
+    {
+        var model = new UIResourceDto { BggApiKey = bggApiKey };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        await _settingsService.UpdateSettingsAsync(model);
+
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateSettingsAsync_ShouldStoreTrimmedBggApiKey_WhenSubmittedKeyHasWhitespace()
+    {
+        var model = new UIResourceDto { BggApiKey = "  new-key  " };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        await _settingsService.UpdateSettingsAsync(model);
+
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, "new-key"), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("not-a-url")]
+    [InlineData("ftp://changes.example.com")]
+    [InlineData("changes.example.com")]
+    public async Task UpdateSettingsAsync_ShouldRejectInvalidChangeDetectionBaseUrl_BeforeWritingAnything(string baseUrl)
+    {
+        var model = new UIResourceDto { ChangeDetectionBaseUrl = baseUrl };
+
+        var act = () => _settingsService.UpdateSettingsAsync(model);
+
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage(Constants.Errors.ChangeDetectionInvalidBaseUrl);
+        VerifyNothingWritten();
+    }
+
+    [Theory]
+    [InlineData("not-a-url")]
+    [InlineData("ftp://tracker.example.com")]
+    [InlineData("tracker.example.com:5444")]
+    public async Task UpdateSettingsAsync_ShouldRejectInvalidPublicUrl_BeforeWritingAnything(string publicUrl)
+    {
+        var model = new UIResourceDto { PublicUrl = publicUrl };
+
+        var act = () => _settingsService.UpdateSettingsAsync(model);
+
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage(Constants.Errors.SettingsInvalidPublicUrl);
+        VerifyNothingWritten();
+    }
+
+    [Theory]
+    [InlineData("", "")]
+    [InlineData("   ", "")]
+    [InlineData("  https://tracker.example.com/  ", "https://tracker.example.com/")]
+    public async Task UpdateSettingsAsync_ShouldStoreTrimmedPublicUrl_AndAllowEmpty(string publicUrl, string expected)
+    {
+        var model = new UIResourceDto { PublicUrl = publicUrl };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        await _settingsService.UpdateSettingsAsync(model);
+
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, expected), Times.Once);
+        VerifyTransactionCommitted();
+    }
+
+    [Fact]
+    public async Task UpdateSettingsAsync_ShouldClearChangeDetectionApiKey_WhenSubmittedKeyIsNull()
+    {
+        var model = new UIResourceDto { ChangeDetectionApiKey = null };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        await _settingsService.UpdateSettingsAsync(model);
+
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, string.Empty), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task UpdateSettingsAsync_ShouldKeepStoredChangeDetectionApiKey_WhenSubmittedKeyIsBlank(string apiKey)
+    {
+        var model = new UIResourceDto { ChangeDetectionApiKey = apiKey };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        await _settingsService.UpdateSettingsAsync(model);
+
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, It.IsAny<string>()), Times.Never);
+    }
+
+    #endregion
+
+    #region GetChangeDetectionSettingsAsync Tests
+
+    [Fact]
+    public async Task GetChangeDetectionSettingsAsync_ShouldReadDatabaseOnly_EvenWhenEnvVariablesAreSet()
+    {
+        _configRepositoryMock
+            .Setup(x => x.GetConfigsByPrefixAsync(Constants.ChangeDetectionConfig.Prefix))
+            .ReturnsAsync(new Dictionary<string, string>
+            {
+                [Constants.ChangeDetectionConfig.BaseUrl] = "https://db.example.com",
+                [Constants.ChangeDetectionConfig.ApiKey] = "db-key"
+            });
+
+        var result = await WithEnvVar(Constants.ChangeDetectionConfig.BaseUrl.ToUpperInvariant(), "https://env.example.com",
+            () => _settingsService.GetChangeDetectionSettingsAsync());
+
+        result.BaseUrl.Should().Be("https://db.example.com");
+        result.ApiKey.Should().Be("db-key");
+        _configRepositoryMock.Verify(x => x.GetConfigsByPrefixAsync(Constants.ChangeDetectionConfig.Prefix), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetChangeDetectionSettingsAsync_ShouldReturnNulls_WhenNothingIsStored()
+    {
+        _configRepositoryMock
+            .Setup(x => x.GetConfigsByPrefixAsync(Constants.ChangeDetectionConfig.Prefix))
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        var result = await _settingsService.GetChangeDetectionSettingsAsync();
+
+        result.BaseUrl.Should().BeNull();
+        result.ApiKey.Should().BeNull();
     }
 
     #endregion

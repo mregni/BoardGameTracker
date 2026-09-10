@@ -37,7 +37,8 @@
 	"general": {
 		"public-url": {
 			"label": "Public URL",
-			"placeholder": "https://myboardgametracker.app"
+			"placeholder": "https://myboardgametracker.app",
+			"invalid": "Geef een geldige http(s)-URL op"
 		},
 		"ui-language": {
 			"label": "Language",
@@ -327,6 +328,11 @@
 			"clear-hint": "Sla instellingen op om de verwijdering toe te passen."
 		},
 		"help-title": "Hoe het werkt",
-		"help-description": "Voeg een changedetection.io watch-id toe aan een spel om de huidige prijs en voorraad te zien. De API-sleutel vind je onder Instellingen in je changedetection.io-instantie."
+		"help-description": "Voeg een changedetection.io watch-id toe aan een spel om de huidige prijs en voorraad te zien. De API-sleutel vind je onder Instellingen in je changedetection.io-instantie.",
+		"test": {
+			"button": "Verbinding testen",
+			"success": "Verbonden met changedetection.io {{version}}",
+			"failed": "Kon geen verbinding maken met changedetection.io, controleer de URL en API-sleutel"
+		}
 	}
 }

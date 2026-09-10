@@ -15,7 +15,7 @@ public interface IGameRepository: IRepository<Game>
     Task AddPeopleIfNotExists(IEnumerable<Person> people);
     Task<Game?> GetGameByBggId(int bggId);
     Task<List<Game>> GetGamesOverviewList();
-    Task<List<Game>> GetWantedGamesWithWatchId();
+    Task<List<Game>> GetTrackedGames();
     Task<GameWatchInfo?> GetWatchInfo(int gameId);
     Task<int> CountAsync();
     Task<List<Expansion>> GetExpansions(List<int> expansionIds);

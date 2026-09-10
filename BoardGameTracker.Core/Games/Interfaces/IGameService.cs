@@ -19,5 +19,6 @@ public interface IGameService
     Task<List<Expansion>> GetGameExpansions(List<int> expansionIds);
     Task DeleteExpansion(int gameId, int expansionId);
     Task<GamePriceDto?> GetGamePriceAsync(int gameId, bool forceRefresh = false, CancellationToken cancellationToken = default);
-    Task<List<GamePriceDto>> GetWantedPricesAsync(bool forceRefresh = false, CancellationToken cancellationToken = default);
+    Task<List<GamePriceDto>> GetTrackedPricesAsync(bool forceRefresh = false, CancellationToken cancellationToken = default);
+    Task<Game> CreateWatchForGame(int gameId, string url, CancellationToken cancellationToken = default);
 }

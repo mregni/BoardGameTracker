@@ -1,6 +1,8 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { CreateGame, Game } from "@/models";
+import { getGamePrice } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 
 import { gameIdParamSchema } from "@/utils/routeSchemas";
@@ -26,6 +28,11 @@ function RouteComponent() {
 	};
 
 	const { game, updateGame, isLoading } = useUpdateGame({ gameId, onSuccess });
+	const settingsQuery = useQuery(getSettings());
+	const priceQuery = useQuery({
+		...getGamePrice(gameId),
+		enabled: !!game?.changeDetectionWatchId && !!settingsQuery.data?.changeDetectionStatus?.isConfigured,
+	});
 
 	if (game === undefined) return null;
 
@@ -42,6 +49,13 @@ function RouteComponent() {
 	};
 
 	return (
-		<GameForm game={game} buttonText={t("update.save")} title={t("update.title")} onClick={save} disabled={isLoading} />
+		<GameForm
+			game={game}
+			livePrice={priceQuery.data}
+			buttonText={t("update.save")}
+			title={t("update.title")}
+			onClick={save}
+			disabled={isLoading}
+		/>
 	);
 }

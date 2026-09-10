@@ -10,7 +10,7 @@ import {
 	getGamesCall,
 	getShameStatisticsCall,
 	getShamesCall,
-	getWantedPricesCall,
+	getTrackedPricesCall,
 } from "../gameService";
 import {
 	createEntityQuery,
@@ -30,7 +30,7 @@ export const getGameStatistics = createNestedQuery(QUERY_KEYS.game, QUERY_KEYS.s
 
 export const getGamePrice = createNestedQuery(QUERY_KEYS.game, QUERY_KEYS.price, getGamePriceCall);
 
-export const getWantedPrices = createListQuery(QUERY_KEYS.wantedPrices, getWantedPricesCall);
+export const getTrackedPrices = createListQuery(QUERY_KEYS.trackedPrices, getTrackedPricesCall);
 
 export const getGameSessions = createNestedQuery(QUERY_KEYS.game, QUERY_KEYS.sessions, getGameSessionsCall);
 

@@ -53,7 +53,8 @@ public static partial class ChangeDetectionSnapshotParser
         }
         else if (hasComma)
         {
-            if (raw.IndexOf(',') != raw.LastIndexOf(','))
+            var commaIndex = raw.IndexOf(',');
+            if (commaIndex != raw.LastIndexOf(',') || raw.Length - commaIndex - 1 == 3)
             {
                 return null;
             }

@@ -131,12 +131,22 @@ public class GameController : ControllerBase
     }
 
     [HttpGet]
-    [Route("prices/wanted")]
+    [Route("prices/tracked")]
     [EnableRateLimiting("changedetection")]
-    public async Task<IActionResult> GetWantedPrices([FromQuery] bool refresh, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetTrackedPrices([FromQuery] bool refresh, CancellationToken cancellationToken)
     {
-        var prices = await _gameService.GetWantedPricesAsync(refresh, cancellationToken);
+        var prices = await _gameService.GetTrackedPricesAsync(refresh, cancellationToken);
         return Ok(prices);
+    }
+
+    [HttpPost]
+    [Route("{id:int}/watch")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [EnableRateLimiting("changedetection")]
+    public async Task<IActionResult> CreateWatch(int id, [FromBody] CreateWatchCommand command, CancellationToken cancellationToken)
+    {
+        var game = await _gameService.CreateWatchForGame(id, command.Url, cancellationToken);
+        return Ok(game.ToDto());
     }
 
     [HttpGet]

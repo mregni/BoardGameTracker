@@ -8,7 +8,6 @@ export interface BggSearch {
 	date: Date;
 	state: GameState;
 	hasScoring: boolean;
-	shopUrl?: string;
 }
 
 export const BggSearchSchema = z.object({
@@ -25,13 +24,6 @@ export const BggSearchSchema = z.object({
 	}),
 	state: z.nativeEnum(GameState),
 	hasScoring: z.boolean(),
-	shopUrl: z
-		.string()
-		.trim()
-		.refine((value) => value === "" || /^https?:\/\//i.test(value), {
-			message: "game:shop-url.invalid",
-		})
-		.optional(),
 });
 
 export const BggUserNameSchema = z.object({

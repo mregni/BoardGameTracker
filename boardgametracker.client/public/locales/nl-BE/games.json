@@ -33,6 +33,7 @@
     "play-time": "Play time",
     "weight": "Weight",
     "any": "Any",
+    "in-stock-only": "Alleen op voorraad",
     "player-count-value_one": "{{count}} player",
     "player-count-value_other": "{{count}} players",
     "play-time-value": "≤ {{count}} min",
@@ -76,5 +77,6 @@
   "live-price": {
     "unavailable": "Prijs niet beschikbaar"
   },
-  "tracked": "Prijs wordt gevolgd"
+  "tracked": "Prijs wordt gevolgd",
+  "tracked-pending": "Wacht op de eerste prijscontrole"
 }

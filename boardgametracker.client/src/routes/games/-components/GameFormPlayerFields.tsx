@@ -3,19 +3,21 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtDatePicker, BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
-import { CreateGameSchema, GameState } from "@/models";
+import { CreateGameSchema, type GamePrice, GameState } from "@/models";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { gameFormOpts } from "../-utils/gameFormOpts";
+import { WatchIdPreview } from "./WatchIdPreview";
 
 export const GameFormPlayerFields = withForm({
 	...gameFormOpts,
 	props: {
 		disabled: false,
 		currency: undefined as string | undefined,
+		livePrice: undefined as GamePrice | undefined,
 	},
-	render: function Render({ form, disabled, currency }) {
+	render: function Render({ form, disabled, currency, livePrice }) {
 		const { t, i18n } = useTranslation("game");
 
 		const languageItems = useMemo(
@@ -46,28 +48,24 @@ export const GameFormPlayerFields = withForm({
 						/>
 					)}
 				</form.Field>
-				<form.Field name="shopUrl" validators={zodValidator(CreateGameSchema, "shopUrl")}>
-					{(field: AnyFieldApi) => (
-						<BgtInputField
-							field={field}
-							label={t("shop-url.label")}
-							type="text"
-							placeholder={t("shop-url.placeholder")}
-							disabled={disabled}
-						/>
-					)}
-				</form.Field>
-				<form.Field name="changeDetectionWatchId" validators={zodValidator(CreateGameSchema, "changeDetectionWatchId")}>
-					{(field: AnyFieldApi) => (
-						<BgtInputField
-							field={field}
-							label={t("watch-id.label")}
-							type="text"
-							placeholder={t("watch-id.placeholder")}
-							disabled={disabled}
-						/>
-					)}
-				</form.Field>
+				<div>
+					<form.Field name="changeDetectionWatchId" validators={zodValidator(CreateGameSchema, "changeDetectionWatchId")}>
+						{(field: AnyFieldApi) => (
+							<BgtInputField
+								field={field}
+								label={t("watch-id.label")}
+								type="text"
+								placeholder={t("watch-id.placeholder")}
+								disabled={disabled}
+							/>
+						)}
+					</form.Field>
+					<form.Subscribe
+						selector={(state: { values: { changeDetectionWatchId?: string } }) => state.values.changeDetectionWatchId}
+					>
+						{(watchId?: string) => <WatchIdPreview watchId={watchId} />}
+					</form.Subscribe>
+				</div>
 				<form.Field name="additionDate" validators={zodValidator(CreateGameSchema, "additionDate")}>
 					{(field: AnyFieldApi) => (
 						<BgtDatePicker
@@ -78,7 +76,17 @@ export const GameFormPlayerFields = withForm({
 						/>
 					)}
 				</form.Field>
-				<form.Field name="state" validators={zodValidator(CreateGameSchema, "state")}>
+				<form.Field
+					name="state"
+					validators={zodValidator(CreateGameSchema, "state")}
+					listeners={{
+						onChange: ({ value }: { value: GameState }) => {
+							if (value === GameState.Owned && !form.getFieldValue("buyingPrice") && livePrice?.price != null) {
+								form.setFieldValue("buyingPrice", livePrice.price);
+							}
+						},
+					}}
+				>
 					{(field: AnyFieldApi) => (
 						<BgtSelect
 							field={field}

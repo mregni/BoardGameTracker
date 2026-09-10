@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { GameState } from "@/models";
 import { StringToRgb } from "@/utils/stringUtils";
@@ -11,10 +12,11 @@ interface Props {
 	image: string | null;
 	link: string;
 	isLoaned?: boolean;
+	badge?: ReactNode;
 }
 
 export const BgtImageCard = (props: Props) => {
-	const { title, image, state, link, isLoaned = false } = props;
+	const { title, image, state, link, isLoaned = false, badge } = props;
 	const { t } = useTranslation();
 
 	return (
@@ -31,6 +33,7 @@ export const BgtImageCard = (props: Props) => {
 							<span className="flex justify-center align-middle h-max font-bold text-3xl capitalize">{title[0]}</span>
 						</div>
 					)}
+					{badge && <div className="absolute top-2 right-2">{badge}</div>}
 				</div>
 				<div className="flex flex-row justify-between items-end">
 					<div className="flex flex-col items-start justify-start">

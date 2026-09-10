@@ -16,12 +16,13 @@ import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import { type Game, GameState, QUERY_KEYS } from "@/models";
 import { isPriceError } from "@/models/Games/GamePrice";
-import { getWantedPricesCall } from "@/services/gameService";
-import { getWantedPrices } from "@/services/queries/games";
+import { getTrackedPricesCall } from "@/services/gameService";
+import { getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 import { RoundDecimal } from "@/utils/numberUtils";
+import { formatPrice } from "@/utils/priceUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
 import { EditableSelectCell } from "./-components/EditableSelectCell";
@@ -42,22 +43,33 @@ function RouteComponent() {
 	const { updateGame } = useInlineGameUpdate();
 	const settingsQuery = useQuery(getSettings());
 	const currency = settingsQuery.data?.currency;
+	const uiLanguage = settingsQuery.data?.uiLanguage;
 	const dateFormat = settingsQuery.data?.dateFormat;
 	const changeDetectionConfigured = settingsQuery.data?.changeDetectionStatus?.isConfigured ?? false;
 
 	const [stateFilter, setStateFilter] = useState<string>(GameState.Wanted);
 	const [languageFilter, setLanguageFilter] = useState<string>(ANY);
+	const [inStockOnly, setInStockOnly] = useState(false);
 
 	const queryClient = useQueryClient();
-	const showLivePrices = changeDetectionConfigured && stateFilter === GameState.Wanted;
-	const wantedPricesQuery = useQuery({ ...getWantedPrices(), enabled: showLivePrices });
+	const showLivePrices = changeDetectionConfigured;
+	const trackedPricesQuery = useQuery({ ...getTrackedPrices(), enabled: showLivePrices });
 	const priceMap = useMemo(
-		() => new Map((wantedPricesQuery.data ?? []).map((price) => [price.gameId, price])),
-		[wantedPricesQuery.data],
+		() => new Map((trackedPricesQuery.data ?? []).map((price) => [price.gameId, price])),
+		[trackedPricesQuery.data],
 	);
 	const refreshPricesMutation = useMutation({
-		mutationFn: () => getWantedPricesCall(true),
-		onSuccess: (data) => queryClient.setQueryData([QUERY_KEYS.wantedPrices], data),
+		mutationFn: () => getTrackedPricesCall(true),
+		onSuccess: (data) => {
+			queryClient.setQueryData([QUERY_KEYS.trackedPrices], data);
+			if (data.some((price) => price.recheckQueued)) {
+				setTimeout(() => {
+					getTrackedPricesCall(true)
+						.then((fresh) => queryClient.setQueryData([QUERY_KEYS.trackedPrices], fresh))
+						.catch(() => {});
+				}, 20000);
+			}
+		},
 	});
 
 	const formatRange = useCallback((min: number | null, max: number | null, suffix = ""): string => {
@@ -76,9 +88,10 @@ function RouteComponent() {
 				(game) =>
 					(stateFilter === ANY || game.state === stateFilter) &&
 					(languageFilter === ANY ||
-						(languageFilter === LANGUAGE_NONE ? !game.language : game.language === languageFilter)),
+						(languageFilter === LANGUAGE_NONE ? !game.language : game.language === languageFilter)) &&
+					(!inStockOnly || !showLivePrices || priceMap.get(game.id)?.inStock === true),
 			),
-		[games, stateFilter, languageFilter],
+		[games, stateFilter, languageFilter, inStockOnly, showLivePrices, priceMap],
 	);
 
 	const totalPrice = useMemo(() => filtered.reduce((sum, game) => sum + (game.buyingPrice ?? 0), 0), [filtered]);
@@ -183,7 +196,14 @@ function RouteComponent() {
 					<EditableSelectCell
 						value={row.original.state}
 						items={stateEditItems}
-						onChange={(state) => updateGame({ ...row.original, state: state as GameState })}
+						onChange={(state) => {
+							const livePrice = priceMap.get(row.original.id);
+							const prefill =
+								state === GameState.Owned && !row.original.buyingPrice && livePrice?.price != null
+									? { buyingPrice: livePrice.price }
+									: {};
+							updateGame({ ...row.original, state: state as GameState, ...prefill });
+						}}
 					/>
 				),
 				meta: { hideOnMobile: true },
@@ -214,7 +234,7 @@ function RouteComponent() {
 				header: t("games:columns.shop"),
 				enableSorting: false,
 				cell: ({ row }) => {
-					const url = SafeHttpUrl(row.original.shopUrl);
+					const url = SafeHttpUrl(priceMap.get(row.original.id)?.shopUrl ?? row.original.shopUrl);
 					return url ? (
 						<a
 							href={url}
@@ -254,7 +274,8 @@ function RouteComponent() {
 						{
 							id: "current-price",
 							header: t("games:columns.current-price"),
-							enableSorting: false,
+							accessorFn: (game: Game) => priceMap.get(game.id)?.price ?? undefined,
+							sortUndefined: "last" as const,
 							cell: ({ row }: { row: { original: Game } }) => {
 								const livePrice = priceMap.get(row.original.id);
 								if (livePrice && isPriceError(livePrice.status)) {
@@ -265,14 +286,25 @@ function RouteComponent() {
 									);
 								}
 								if (!livePrice?.available || livePrice.price == null) return "-";
-								return `${currency ?? ""}${RoundDecimal(livePrice.price, 0.01)}`;
+								return formatPrice(livePrice.price, livePrice.currency ?? currency, uiLanguage);
 							},
 							meta: { hideOnMobile: true },
 						},
 					]
 				: []),
 		],
-		[t, currency, dateFormat, formatRange, updateGame, stateEditItems, languageEditItems, showLivePrices, priceMap],
+		[
+			t,
+			currency,
+			uiLanguage,
+			dateFormat,
+			formatRange,
+			updateGame,
+			stateEditItems,
+			languageEditItems,
+			showLivePrices,
+			priceMap,
+		],
 	);
 
 	const columnWidths: (string | null)[] = [null, null, null, null, null, "w-52", "w-52"];
@@ -296,8 +328,17 @@ function RouteComponent() {
 					/>
 					{showLivePrices && (
 						<BgtButton
-							variant="cancel"
+							variant={inStockOnly ? "primary" : "cancel"}
 							className="w-full md:w-auto md:ml-auto"
+							onClick={() => setInStockOnly((value) => !value)}
+						>
+							{t("games:filters.in-stock-only")}
+						</BgtButton>
+					)}
+					{showLivePrices && (
+						<BgtButton
+							variant="cancel"
+							className="w-full md:w-auto"
 							disabled={refreshPricesMutation.isPending}
 							onClick={() => refreshPricesMutation.mutate()}
 						>

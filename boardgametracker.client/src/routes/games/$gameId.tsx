@@ -20,6 +20,7 @@ import { RecentSessionsCard } from "./-components/RecentSessionsCard";
 import { ScoringResultsCard } from "./-components/ScoringResultsCard";
 import { SessionCountChartCard } from "./-components/SessionCountChartCard";
 import { TopPlayersCard } from "./-components/TopPlayersCard";
+import { TrackPriceDialog } from "./-components/TrackPriceDialog";
 import { useGameActions } from "./-hooks/useGameActions";
 import { useGameData } from "./-hooks/useGameData";
 import { useGameManuals } from "./-hooks/useGameManuals";
@@ -51,6 +52,8 @@ function RouteComponent() {
 		price,
 		refreshPrice,
 		isRefreshingPrice,
+		createWatch,
+		isCreatingWatch,
 		deleteExpansion,
 		isLoading,
 	} = useGameData({
@@ -60,6 +63,7 @@ function RouteComponent() {
 	const modals = useGameModals();
 	const manualsDialog = useModalState();
 	const expansionsDialog = useModalState();
+	const trackPriceDialog = useModalState();
 	const { manuals = [] } = useGameManuals(gameId);
 
 	const actions = useGameActions({
@@ -100,8 +104,22 @@ function RouteComponent() {
 								price={price}
 								onRefreshPrice={refreshPrice}
 								isRefreshingPrice={isRefreshingPrice}
+								canTrackPrice={
+									canWrite && !!settings.changeDetectionStatus?.isConfigured && !game.changeDetectionWatchId
+								}
+								onTrackPrice={trackPriceDialog.show}
 								onOpenManuals={manualsDialog.show}
 								onOpenExpansions={expansionsDialog.show}
+							/>
+							<TrackPriceDialog
+								open={trackPriceDialog.isOpen}
+								close={trackPriceDialog.hide}
+								initialUrl={game.shopUrl}
+								isPending={isCreatingWatch}
+								onSubmit={async (url) => {
+									await createWatch(url);
+									trackPriceDialog.hide();
+								}}
 							/>
 							<ManualsDialog
 								gameId={gameId}

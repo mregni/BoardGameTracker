@@ -1,6 +1,8 @@
 export * from "./Auth/Auth";
 export * from "./Badge/Badge";
 
+export * from "./ChangeDetection/ChangeDetection";
+
 export * from "./Common/Actions";
 export * from "./Common/ApiError";
 export * from "./Common/BgtSelectItem";

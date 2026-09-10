@@ -4,6 +4,7 @@ using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -13,15 +14,18 @@ public class SettingsService : ISettingsService
 {
     private readonly IConfigRepository _configRepository;
     private readonly IEnvironmentProvider _environmentProvider;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<SettingsService> _logger;
 
     public SettingsService(
         IConfigRepository configRepository,
         IEnvironmentProvider environmentProvider,
+        IUnitOfWork unitOfWork,
         ILogger<SettingsService> logger)
     {
         _configRepository = configRepository;
         _environmentProvider = environmentProvider;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -58,6 +62,11 @@ public class SettingsService : ISettingsService
     public async Task<UIResourceDto> UpdateSettingsAsync(UIResourceDto model)
     {
         _logger.LogDebug("Updating settings");
+        var publicUrl = ValidateOptionalHttpUrl(model.PublicUrl, Constants.Errors.SettingsInvalidPublicUrl);
+        var changeDetectionBaseUrl = ValidateOptionalHttpUrl(model.ChangeDetectionBaseUrl,
+            Constants.Errors.ChangeDetectionInvalidBaseUrl);
+
+        await using var transaction = await _unitOfWork.BeginTransactionAsync();
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.Currency, model.Currency);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.TimeFormat, model.TimeFormat);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.DateFormat, model.DateFormat);
@@ -66,36 +75,46 @@ public class SettingsService : ISettingsService
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.ShelfOfShameMonths,
             model.ShelfOfShameMonthsLimit);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled);
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl);
+        await _configRepository.SetConfigValueAsync(Constants.AppConfig.PublicUrl, publicUrl);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled,
             model.RsvpAuthenticationEnabled);
         await _configRepository.SetConfigValueAsync(Constants.UpdateConfig.CheckEnabled, model.UpdateCheckEnabled);
         await _configRepository.SetConfigValueAsync(Constants.UpdateConfig.Track, model.VersionTrack);
-
-        var bggApiKey = model.BggApiKey ?? string.Empty;
-        await _configRepository.SetConfigValueAsync(Constants.BggConfig.ApiKey, bggApiKey);
-
-        var changeDetectionBaseUrl = (model.ChangeDetectionBaseUrl ?? string.Empty).Trim();
-        if (!string.IsNullOrEmpty(changeDetectionBaseUrl) &&
-            (!Uri.TryCreate(changeDetectionBaseUrl, UriKind.Absolute, out var changeDetectionUri) ||
-             (changeDetectionUri.Scheme != Uri.UriSchemeHttp && changeDetectionUri.Scheme != Uri.UriSchemeHttps)))
-        {
-            throw new ValidationException(Constants.Errors.ChangeDetectionInvalidBaseUrl);
-        }
-
         await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl, changeDetectionBaseUrl);
-
-        if (model.ChangeDetectionApiKey == null)
-        {
-            await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, string.Empty);
-        }
-        else if (!string.IsNullOrWhiteSpace(model.ChangeDetectionApiKey))
-        {
-            await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey,
-                model.ChangeDetectionApiKey.Trim());
-        }
+        await StoreSecretAsync(Constants.BggConfig.ApiKey, model.BggApiKey);
+        await StoreSecretAsync(Constants.ChangeDetectionConfig.ApiKey, model.ChangeDetectionApiKey);
+        await transaction.CommitAsync();
 
         return await GetSettingsAsync();
+    }
+
+    private static string ValidateOptionalHttpUrl(string? value, string errorKey)
+    {
+        var trimmed = (value ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            return trimmed;
+        }
+
+        if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new ValidationException(errorKey);
+        }
+
+        return trimmed;
+    }
+
+    private async Task StoreSecretAsync(string key, string? submitted)
+    {
+        if (submitted == null)
+        {
+            await _configRepository.SetConfigValueAsync(key, string.Empty);
+        }
+        else if (!string.IsNullOrWhiteSpace(submitted))
+        {
+            await _configRepository.SetConfigValueAsync(key, submitted.Trim());
+        }
     }
 
     public async Task<string?> GetBggApiKeyAsync()
@@ -117,9 +136,9 @@ public class SettingsService : ISettingsService
 
     public async Task<(string? BaseUrl, string? ApiKey)> GetChangeDetectionSettingsAsync()
     {
-        var baseUrl = await _configRepository.GetConfigValueAsync<string>(Constants.ChangeDetectionConfig.BaseUrl);
-        var apiKey = await _configRepository.GetConfigValueAsync<string>(Constants.ChangeDetectionConfig.ApiKey);
-        return (baseUrl, apiKey);
+        var configs = await _configRepository.GetConfigsByPrefixAsync(Constants.ChangeDetectionConfig.Prefix);
+        return (configs.GetValueOrDefault(Constants.ChangeDetectionConfig.BaseUrl),
+            configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey));
     }
 
     private static BggConfigStatusDto GetBggConfigStatusAsync(Dictionary<string, string> configs)

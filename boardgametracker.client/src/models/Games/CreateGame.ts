@@ -30,13 +30,6 @@ export const CreateGameSchema = z.object({
 	maxPlayTime: z.coerce.number().int().optional(),
 	minAge: z.coerce.number().int().optional(),
 	image: z.string().nullable().optional(),
-	shopUrl: z
-		.string()
-		.trim()
-		.refine((value) => value === "" || /^https?:\/\//i.test(value), {
-			message: "game:shop-url.invalid",
-		})
-		.optional(),
 	changeDetectionWatchId: z
 		.string()
 		.trim()

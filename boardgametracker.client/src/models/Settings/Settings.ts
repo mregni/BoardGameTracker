@@ -41,7 +41,7 @@ export const SettingsSchema = z.object({
 			message: "settings:time-format.required",
 		}),
 	uiLanguage: z.string({
-		error: "settings:ui-language.required",
+		error: "settings:general.ui-language.required",
 	}),
 	currency: z
 		.string({
@@ -50,7 +50,12 @@ export const SettingsSchema = z.object({
 		.min(1, {
 			message: "settings:currency.required",
 		}),
-	publicUrl: z.string(),
+	publicUrl: z
+		.string()
+		.trim()
+		.refine((value) => value === "" || /^https?:\/\/.+/.test(value), {
+			message: "settings:general.public-url.invalid",
+		}),
 	statistics: z.boolean(),
 	updateCheckEnabled: z.boolean(),
 	versionTrack: z.string(),

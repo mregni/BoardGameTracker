@@ -53,8 +53,14 @@ export const getGamePriceCall = (id: number, refresh = false): Promise<GamePrice
 	});
 };
 
-export const getWantedPricesCall = (refresh = false): Promise<GamePrice[]> => {
-	return axiosInstance.get<GamePrice[]>(`${domain}/prices/wanted`, { params: { refresh } }).then((response) => {
+export const getTrackedPricesCall = (refresh = false): Promise<GamePrice[]> => {
+	return axiosInstance.get<GamePrice[]>(`${domain}/prices/tracked`, { params: { refresh } }).then((response) => {
+		return response.data;
+	});
+};
+
+export const createWatchCall = (id: number, url: string): Promise<Game> => {
+	return axiosInstance.post<Game>(`${domain}/${id}/watch`, { url }).then((response) => {
 		return response.data;
 	});
 };

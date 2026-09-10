@@ -58,8 +58,21 @@ public class ChangeDetectionSnapshotParserTests
     }
 
     [Theory]
+    [InlineData("In Stock: True - Price: 12,50", 12.5)]
+    [InlineData("In Stock: True - Price: 1234,56", 1234.56)]
+    [InlineData("In Stock: True - Price: 1234.567", 1234.567)]
+    [InlineData("In Stock: True - Price: 1299", 1299)]
+    public void Parse_ShouldParseUnambiguousSeparators(string content, double expected)
+    {
+        var result = ChangeDetectionSnapshotParser.Parse(content);
+
+        result.Price.Should().Be((decimal)expected);
+    }
+
+    [Theory]
     [InlineData("In Stock: True - Price: 1,299.99")]
     [InlineData("In Stock: True - Price: 1.299,99")]
+    [InlineData("In Stock: True - Price: 1,234")]
     public void Parse_ShouldRejectAmbiguousPrice_RatherThanMangleIt(string content)
     {
         var result = ChangeDetectionSnapshotParser.Parse(content);

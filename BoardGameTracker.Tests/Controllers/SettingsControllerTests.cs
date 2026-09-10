@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models.Updates;
@@ -10,6 +12,7 @@ using BoardGameTracker.Core.Languages.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Updates.Interfaces;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Serilog.Events;
@@ -207,5 +210,48 @@ public class SettingsControllerTests
 
         _updateServiceMock.Verify(x => x.GetVersionInfoAsync(), Times.Once);
         VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(Constants.AuthRoles.User)]
+    [InlineData(Constants.AuthRoles.Reader)]
+    public async Task Get_ShouldHideChangeDetectionBaseUrl_WhenCallerIsNotAdmin(string role)
+    {
+        _settingsServiceMock
+            .Setup(x => x.GetSettingsAsync())
+            .ReturnsAsync(new UIResourceDto { ChangeDetectionBaseUrl = "http://changes.internal:5000" });
+        SetUser(role);
+
+        var result = await _controller.Get();
+
+        var settings = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<UIResourceDto>().Subject;
+        settings.ChangeDetectionBaseUrl.Should().BeEmpty();
+        _settingsServiceMock.Verify(x => x.GetSettingsAsync(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Get_ShouldReturnChangeDetectionBaseUrl_WhenCallerIsAdmin()
+    {
+        _settingsServiceMock
+            .Setup(x => x.GetSettingsAsync())
+            .ReturnsAsync(new UIResourceDto { ChangeDetectionBaseUrl = "http://changes.internal:5000" });
+        SetUser(Constants.AuthRoles.Admin);
+
+        var result = await _controller.Get();
+
+        var settings = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<UIResourceDto>().Subject;
+        settings.ChangeDetectionBaseUrl.Should().Be("http://changes.internal:5000");
+        _settingsServiceMock.Verify(x => x.GetSettingsAsync(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    private void SetUser(string role)
+    {
+        var identity = new ClaimsIdentity([new Claim(ClaimTypes.Role, role)], "test");
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }
+        };
     }
 }

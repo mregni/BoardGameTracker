@@ -27,6 +27,11 @@ if (!string.Equals(builder.Configuration["Ollama:UseGpu"], "false", StringCompar
 
 var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
     .WithHttpEndpoint(port: 6554, isProxied: false)
+    .WithUrlForEndpoint("http", url =>
+    {
+        url.DisplayText = "Swagger";
+        url.Url = url.Url.TrimEnd('/') + "/swagger";
+    })
     .WithEnvironment(context =>
     {
         var env = context.EnvironmentVariables;
@@ -85,6 +90,7 @@ builder.AddViteApp("bgt-client", "../boardgametracker.client")
         endpoint.IsProxied = false;
     })
     .WithExternalHttpEndpoints()
+    .WithUrlForEndpoint("http", url => url.DisplayText = "website")
     .WaitFor(backend);
 
 await builder.Build().RunAsync();

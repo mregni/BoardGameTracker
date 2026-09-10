@@ -8,5 +8,6 @@ public enum ChangeDetectionStatus
     Unauthorized,
     WatchNotFound,
     Unreachable,
-    ParseError
+    ParseError,
+    Pending
 }
