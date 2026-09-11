@@ -45,12 +45,14 @@ public class GlobalExceptionHandler : IExceptionHandler
         BggCollectionPreparingException => (StatusCodes.Status504GatewayTimeout, exception.Message),
         BoardGameGeekHttpException => (StatusCodes.Status502BadGateway, "The BoardGameGeek service is currently unavailable. Please try again later."),
         ValidationException or DomainException => (StatusCodes.Status400BadRequest, exception.Message),
+        AuthenticationFailedException => (StatusCodes.Status401Unauthorized, exception.Message),
         UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
         EntityNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),
         KeyNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),
         ArgumentException => (StatusCodes.Status400BadRequest, "Invalid request."),
         DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "The resource was modified by another request. Please retry."),
-        DbUpdateException => (StatusCodes.Status400BadRequest, "The request references data that does not exist or conflicts with existing data."),
+        DbUpdateException { InnerException: DbException innerException } when IsClientDataError(innerException) =>
+            (StatusCodes.Status400BadRequest, "The request references data that does not exist or conflicts with existing data."),
         DbException dbException when IsClientDataError(dbException) =>
             (StatusCodes.Status400BadRequest, "The request contains invalid data."),
         _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.")

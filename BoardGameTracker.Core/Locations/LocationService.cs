@@ -1,7 +1,10 @@
-﻿using BoardGameTracker.Common.DTOs.Commands;
+﻿using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Locations.Specifications;
 using Microsoft.Extensions.Logging;
@@ -11,20 +14,26 @@ namespace BoardGameTracker.Core.Locations;
 public class LocationService : ILocationService
 {
     private readonly IRepository<Location> _locationRepository;
+    private readonly IReadRepository<GameNight> _gameNightRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<LocationService> _logger;
 
-    public LocationService(IRepository<Location> locationRepository, IUnitOfWork unitOfWork, ILogger<LocationService> logger)
+    public LocationService(
+        IRepository<Location> locationRepository,
+        IReadRepository<GameNight> gameNightRepository,
+        IUnitOfWork unitOfWork,
+        ILogger<LocationService> logger)
     {
         _locationRepository = locationRepository;
+        _gameNightRepository = gameNightRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
-    public Task<List<Location>> GetLocations()
+    public Task<List<LocationDto>> GetLocations()
     {
         _logger.LogDebug("Fetching all locations");
-        return _locationRepository.ListAsync(new LocationsOrderedByNameSpec());
+        return _locationRepository.ListAsync(new LocationsOverviewSpec());
     }
 
     public Task<Location?> GetByIdAsync(int id)
@@ -47,6 +56,11 @@ public class LocationService : ILocationService
     public async Task Delete(int id)
     {
         _logger.LogDebug("Deleting location {LocationId}", id);
+        if (await _gameNightRepository.AnyAsync(new GameNightsAtLocationSpec(id)))
+        {
+            throw new DomainException(Constants.Errors.LocationUsedByGameNights);
+        }
+
         await _locationRepository.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Location {LocationId} deleted", id);

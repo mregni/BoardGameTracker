@@ -9,13 +9,15 @@ Configure your application using the following environment variables. Some of th
 
 | Configuration | Variable | Default | Info |
 | --- | --- | --- | --- |
-| Timezone | `TZ` | `UTC` | |
-| JWT secret | `JWT_SECRET` | | Used for signing JWT tokens. Change this to a strong, random value of at least 32 characters (64 or more recommended). |
-| Database host | `DB_HOST` | `db` | |
+| Timezone | `TZ` | `UTC` | IANA name such as `Europe/Brussels`. |
+| JWT secret | `JWT_SECRET` | | **Required** unless `AUTH_ENABLED=false`. Used for signing login tokens; a strong, random value of at least 32 characters (64 or more recommended), for example `openssl rand -base64 48`. |
+| Database host | `DB_HOST` | | **Required.** Hostname of the PostgreSQL server; `db` when you use the provided compose file. The server must provide the `vector` extension (`pgvector/pgvector:pg16`). |
 | Database port | `DB_PORT` | `5432` | |
 | Database name | `DB_NAME` | `boardgametracker` | |
-| Database user | `DB_USER` | `dbuser` | |
-| Database password | `DB_PASSWORD` | | Password used to connect to the database. |
+| Database user | `DB_USER` | | **Required.** |
+| Database password | `DB_PASSWORD` | | **Required.** Password used to connect to the database. |
+| File owner | `PUID` / `PGID` | `1654` | User and group id that own the mounted `images`, `logs` and `manuals` folders. When the container itself runs as a non-root user these are ignored and the folders must already be writable by that user. |
+| BGG API key | `BGG_API_KEY` | | Personal BoardGameGeek API key. Can also be entered under *Settings → BoardGameGeek*; the environment variable wins and makes the setting read-only. |
 | Log level | `LOGLEVEL` | `warn` | Sets the logging level for the application. Possible values are `debug`, `info`, `warn`, `error`. |
 | Enable Sentry logging | `STATISTICS_ENABLED` | `false` | Enables or disables the collection of usage statistics. Set to `true` to enable, `false` to disable. |
 | Enable authentication | `AUTH_ENABLED` | `true` | Set to `false` to disable authentication and allow anyone to access the application. |

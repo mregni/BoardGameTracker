@@ -12,13 +12,13 @@ Follow these steps to quickly get your BoardGameTracker up and running with Dock
 1. Download the latest `docker-compose.yml` file and make any adjustments you need to the configuration.
 
    ```sh
-   wget https://raw.githubusercontent.com/mregni/BoardGameTracker/refs/heads/dev/docker-compose.yml
+   wget https://raw.githubusercontent.com/mregni/BoardGameTracker/refs/heads/master/docker-compose.yml
    ```
 
-2. Update the `DB_PASSWORD`, `TZ` and `JWT_SECRET` values in the compose file, then start the stack. This launches the BoardGameTracker container together with the PostgreSQL database it needs.
+2. Update the `DB_PASSWORD`, `TZ` and `JWT_SECRET` values in the compose file (`JWT_SECRET` needs at least 32 random characters, for example from `openssl rand -base64 48`), then start the stack. This launches the BoardGameTracker container together with the PostgreSQL database it needs. The compose file uses `pgvector/pgvector:pg16` for the database; keep that image, plain `postgres` lacks the extension the application requires.
 
    ```sh
-   docker-compose up -d
+   docker compose up -d
    ```
 
 3. Open your browser at `http://localhost:5444` and log in.

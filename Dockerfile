@@ -1,4 +1,5 @@
-﻿# Build arguments for multi-arch support
+# syntax=docker/dockerfile:1
+# Build arguments for multi-arch support
 ARG BUILDPLATFORM
 ARG TARGETPLATFORM
 ARG TARGETOS
@@ -6,7 +7,6 @@ ARG VERSION=0.0.1
 
 # Stage 1: Build Frontend
 FROM --platform=linux/amd64 node:22-alpine AS frontend-build
-ARG SENTRY_AUTH_TOKEN
 ARG VITE_SENTRY_DSN
 WORKDIR /src
 
@@ -21,10 +21,9 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 # Copy frontend source
 COPY boardgametracker.client/ ./
 
-# Build frontend (SENTRY_AUTH_TOKEN enables sourcemap upload via @sentry/vite-plugin)
-ENV SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+# Build frontend (the sentry_auth_token secret enables sourcemap upload via @sentry/vite-plugin)
 ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
-RUN pnpm build
+RUN --mount=type=secret,id=sentry_auth_token,env=SENTRY_AUTH_TOKEN pnpm build
 
 # Stage 2: Build Backend
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS backend-build
@@ -71,7 +70,7 @@ ARG ASPNETCORE_URLS=http://*:5444
 
 WORKDIR /app
 
-RUN apk add --no-cache curl su-exec poppler-utils
+RUN apk upgrade --no-cache && apk add --no-cache curl su-exec poppler-utils tzdata
 
 RUN mkdir -p /app/images /app/logs /app/manuals
 
