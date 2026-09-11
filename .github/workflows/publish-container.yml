@@ -88,10 +88,10 @@ jobs:
           java-version: 17
           distribution: 'zulu'
 
-      - name: Setup dotnet v8
+      - name: Setup dotnet
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
-          dotnet-version: "8.x"
+          dotnet-version: "10.0.x"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -101,7 +101,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "20.x"
+          node-version: "22.x"
           cache: 'pnpm'
           cache-dependency-path: boardgametracker.client/pnpm-lock.yaml
 
@@ -216,7 +216,7 @@ jobs:
         run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
   build-linux-multiarch:
-    needs: [version, test-and-analyze]
+    needs: [version, test-and-analyze, security-scan]
     name: Build Multi-Arch Linux Containers
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -299,8 +299,9 @@ jobs:
             VERSION=${{ needs.version.outputs.version }}
             ASPNETCORE_ENVIRONMENT=production
             BUILDKIT_INLINE_CACHE=1
-            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
             VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
+          secrets: |
+            sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
 
   security-scan:
     needs: [version, test-and-analyze]

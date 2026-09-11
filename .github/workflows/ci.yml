@@ -48,10 +48,10 @@ jobs:
           java-version: 17
           distribution: 'zulu'
 
-      - name: Setup dotnet v8
+      - name: Setup dotnet
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
-          dotnet-version: "8.x"
+          dotnet-version: "10.0.x"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
@@ -61,7 +61,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "20.x"
+          node-version: "22.x"
           cache: 'pnpm'
           cache-dependency-path: boardgametracker.client/pnpm-lock.yaml
 
@@ -102,7 +102,7 @@ jobs:
             /v:"$VERSION" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
-            /d:sonar.javascript.lcov.reportPaths="coverage/lcov.info" \
+            /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
             /d:sonar.testExecutionReportPaths="boardgametracker.client/coverage/sonar-report.xml" \
             /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**,**/Migrations/**,**/routeTree.gen.ts,**/*.png,**/*.jpg,**/*.jpeg,**/*.gif,**/*.ico,**/*.webp,**/*.pdf" \
             /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
