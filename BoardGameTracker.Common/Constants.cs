@@ -61,6 +61,9 @@ public static class Constants
         public const string ImageUnsupportedFormat = "error.image.unsupported-format";
         public const string InvalidResetToken = "error.auth.invalid-reset-token";
         public const string GameAlreadyOnLoan = "error.loan.game-already-on-loan";
+        public const string LocationUsedByGameNights = "error.location.used-by-game-nights";
+        public const string PlayerHostsGameNights = "error.player.hosts-game-nights";
+        public const string InvalidExpansion = "error.session.invalid-expansion";
     }
 
     public static class BggConfig

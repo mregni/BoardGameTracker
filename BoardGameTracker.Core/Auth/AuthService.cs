@@ -57,20 +57,20 @@ public class AuthService : IAuthService
         if (user == null)
         {
             _logger.LogWarning("Failed login attempt for unknown username {Username}", request.Username);
-            throw new UnauthorizedAccessException(Constants.Errors.InvalidCredentials);
+            throw new AuthenticationFailedException(Constants.Errors.InvalidCredentials);
         }
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
         if (result.IsLockedOut)
         {
             _logger.LogWarning("Login attempt for locked out user {Username}", request.Username);
-            throw new UnauthorizedAccessException(Constants.Errors.AccountLockedOut);
+            throw new AuthenticationFailedException(Constants.Errors.AccountLockedOut);
         }
 
         if (!result.Succeeded)
         {
             _logger.LogWarning("Failed login attempt for user {Username}: invalid password", request.Username);
-            throw new UnauthorizedAccessException(Constants.Errors.InvalidCredentials);
+            throw new AuthenticationFailedException(Constants.Errors.InvalidCredentials);
         }
 
         user.UpdateLastLogin();
@@ -94,7 +94,7 @@ public class AuthService : IAuthService
         var existingToken = await _tokenService.GetRefreshTokenAsync(refreshToken);
         if (existingToken == null || !existingToken.IsActive)
         {
-            throw new UnauthorizedAccessException(Constants.Errors.InvalidRefreshToken);
+            throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
         }
 
         var user = existingToken.User!;
