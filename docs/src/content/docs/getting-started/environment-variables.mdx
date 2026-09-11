@@ -48,8 +48,10 @@ The optional [rules assistant](/BoardGameTracker/getting-started/rag/) answers q
 
 | Configuration | Variable | Default | Info |
 | --- | --- | --- | --- |
-| Enable rules assistant | `RAG_ENABLED` | `false` | Master switch. Set to `true` to enable rulebook Q&A. Requires the Ollama service and enough hardware to run a language model. |
-| AI base URL | `AI_BASE_URL` | `http://ollama:11434` | Endpoint of the Ollama (or OpenAI-compatible) server. |
-| Chat model | `AI_CHAT_MODEL` | `qwen3:4b` | The language model used to write answers. Pick one that fits your hardware. |
-| AI provider | `AI_PROVIDER` | `ollama` | `ollama` for local inference, or `openai` for an OpenAI-compatible endpoint. |
-| AI API key | `AI_API_KEY` | | Only needed when `AI_PROVIDER=openai`. |
+| Enable rules assistant | `RAG_ENABLED` | `false` | Master switch. Set to `true` to enable rulebook Q&A. Requires an embedding server (local Ollama) and a chat model. |
+| Chat provider | `AI_PROVIDER` | `ollama` | `ollama` for a local chat model, or `openai` for any OpenAI-compatible endpoint (OpenAI, or Anthropic/Claude). |
+| Chat base URL | `AI_BASE_URL` | `http://ollama:11434` | Endpoint of the **chat** provider. For Claude: `https://api.anthropic.com/v1`. |
+| Chat model | `AI_CHAT_MODEL` | `qwen3:4b` | The model used to write answers — a local model name, or a hosted one like `gpt-4o-mini` / `claude-sonnet-4`. |
+| Chat API key | `AI_API_KEY` | | Only needed when `AI_PROVIDER=openai`. |
+| Embedding base URL | `AI_EMBEDDING_BASE_URL` | `http://ollama:11434` | Endpoint of the local Ollama server used for embeddings. Embeddings always run locally on `bge-m3`. |
+| Embedding GPU layers | `AI_EMBEDDING_NUM_GPU` | `-1` | `-1` lets Ollama place the embedder (uses the GPU when free); `0` pins it to CPU so a local chat model keeps the GPU to itself. |

@@ -22,7 +22,7 @@ const buildError = (overrides: Partial<ApiError> = {}): ApiError => ({
 describe("ChatMessage", () => {
 	describe("Question", () => {
 		it("should render the question with a screen reader label", () => {
-			renderWithTheme(<ChatMessage exchange={buildExchange()} onRetry={vi.fn()} />);
+			renderWithTheme(<ChatMessage exchange={buildExchange()} onRetry={vi.fn()} onSelectSource={vi.fn()} />);
 
 			expect(screen.getByText("How many cards do I draw?")).toBeInTheDocument();
 			expect(screen.getByText(/you:/)).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe("ChatMessage", () => {
 
 	describe("Pending", () => {
 		it("should show the thinking indicator", () => {
-			renderWithTheme(<ChatMessage exchange={buildExchange({ status: "pending" })} onRetry={vi.fn()} />);
+			renderWithTheme(<ChatMessage exchange={buildExchange({ status: "pending" })} onRetry={vi.fn()} onSelectSource={vi.fn()} />);
 
 			expect(screen.getByText("thinking")).toBeInTheDocument();
 			expect(screen.queryByRole("button", { name: "retry" })).not.toBeInTheDocument();
@@ -41,7 +41,7 @@ describe("ChatMessage", () => {
 
 	describe("Error", () => {
 		it("should show the generic error when no error is set", () => {
-			renderWithTheme(<ChatMessage exchange={buildExchange({ status: "error" })} onRetry={vi.fn()} />);
+			renderWithTheme(<ChatMessage exchange={buildExchange({ status: "error" })} onRetry={vi.fn()} onSelectSource={vi.fn()} />);
 
 			expect(screen.getByText("error:something-went-wrong")).toBeInTheDocument();
 		});
@@ -50,7 +50,7 @@ describe("ChatMessage", () => {
 			renderWithTheme(
 				<ChatMessage
 					exchange={buildExchange({ status: "error", error: buildError({ kind: "network" }) })}
-					onRetry={vi.fn()}
+					onRetry={vi.fn()} onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -61,7 +61,7 @@ describe("ChatMessage", () => {
 			renderWithTheme(
 				<ChatMessage
 					exchange={buildExchange({ status: "error", error: buildError({ kind: "timeout" }) })}
-					onRetry={vi.fn()}
+					onRetry={vi.fn()} onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -72,7 +72,7 @@ describe("ChatMessage", () => {
 			renderWithTheme(
 				<ChatMessage
 					exchange={buildExchange({ status: "error", error: buildError({ kind: "server" }) })}
-					onRetry={vi.fn()}
+					onRetry={vi.fn()} onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -86,7 +86,7 @@ describe("ChatMessage", () => {
 						status: "error",
 						error: buildError({ kind: "client", message: "Manual not indexed yet" }),
 					})}
-					onRetry={vi.fn()}
+					onRetry={vi.fn()} onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -97,7 +97,7 @@ describe("ChatMessage", () => {
 			renderWithTheme(
 				<ChatMessage
 					exchange={buildExchange({ status: "error", error: buildError({ kind: "unknown" }) })}
-					onRetry={vi.fn()}
+					onRetry={vi.fn()} onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -107,7 +107,9 @@ describe("ChatMessage", () => {
 		it("should call onRetry when the retry button is clicked", async () => {
 			const user = userEvent.setup();
 			const onRetry = vi.fn();
-			renderWithTheme(<ChatMessage exchange={buildExchange({ status: "error" })} onRetry={onRetry} />);
+			renderWithTheme(
+				<ChatMessage exchange={buildExchange({ status: "error" })} onRetry={onRetry} onSelectSource={vi.fn()} />,
+			);
 
 			await user.click(screen.getByRole("button", { name: "retry" }));
 
@@ -121,9 +123,9 @@ describe("ChatMessage", () => {
 				<ChatMessage
 					exchange={buildExchange({
 						status: "done",
-						answer: { answer: "You draw two cards.", hasContext: true, citations: [] },
+						answer: { answer: "You draw two cards.", hasContext: true, durationMs: 1234, citations: [] },
 					})}
-					onRetry={vi.fn()}
+					onRetry={vi.fn()} onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -135,9 +137,9 @@ describe("ChatMessage", () => {
 				<ChatMessage
 					exchange={buildExchange({
 						status: "done",
-						answer: { answer: "You draw two cards.", hasContext: true, citations: [] },
+						answer: { answer: "You draw two cards.", hasContext: true, durationMs: 1234, citations: [] },
 					})}
-					onRetry={vi.fn()}
+					onRetry={vi.fn()} onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -152,21 +154,22 @@ describe("ChatMessage", () => {
 						answer: {
 							answer: "You draw two cards.",
 							hasContext: true,
+							durationMs: 1234,
 							citations: [
 								{ manualId: 1, title: "Base rules", page: 4, snippet: "Draw two", score: 0.8, imageUrl: null },
 							],
 						},
 					})}
-					onRetry={vi.fn()}
+					onRetry={vi.fn()} onSelectSource={vi.fn()}
 				/>,
 			);
 
 			expect(screen.getByText("sources")).toBeInTheDocument();
-			expect(screen.getByText(/Base rules/)).toBeInTheDocument();
+			expect(screen.getByText("page")).toBeInTheDocument();
 		});
 
 		it("should render an empty assistant bubble when done without an answer", () => {
-			renderWithTheme(<ChatMessage exchange={buildExchange({ status: "done" })} onRetry={vi.fn()} />);
+			renderWithTheme(<ChatMessage exchange={buildExchange({ status: "done" })} onRetry={vi.fn()} onSelectSource={vi.fn()} />);
 
 			expect(screen.queryByText("thinking")).not.toBeInTheDocument();
 			expect(screen.queryByRole("button", { name: "retry" })).not.toBeInTheDocument();
