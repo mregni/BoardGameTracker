@@ -288,7 +288,8 @@
 				"title": "Delete User",
 				"description": "Are you sure you want to delete \"{{username}}\"? This cannot be undone."
 			},
-			"never-logged-in": "Never"
+			"never-logged-in": "Never",
+			"no-users": "Todavía no hay usuarios"
 		},
 		"notifications": {
 			"profile-updated": "Profile updated successfully",
