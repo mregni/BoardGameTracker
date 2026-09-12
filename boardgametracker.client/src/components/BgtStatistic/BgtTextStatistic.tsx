@@ -18,6 +18,7 @@ interface Props {
 	addLink?: string;
 	addLabel?: string;
 	onClick?: () => void;
+	action?: React.ReactNode;
 }
 
 export const BgtTextStatistic = (props: Props) => {
@@ -33,6 +34,7 @@ export const BgtTextStatistic = (props: Props) => {
 		addLink,
 		addLabel,
 		onClick,
+		action,
 	} = props;
 
 	if (content === null || content === undefined) return null;
@@ -56,7 +58,11 @@ export const BgtTextStatistic = (props: Props) => {
 			<div className="flex items-center gap-2 text-primary/70 mb-2">
 				{iconWithClasses}
 				<span>{title}</span>
-				{isInteractive && <CaretRight className="size-4 ml-auto shrink-0 text-primary" />}
+				{action ? (
+					<span className="ml-auto shrink-0">{action}</span>
+				) : (
+					isInteractive && <CaretRight className="size-4 ml-auto shrink-0 text-primary" />
+				)}
 			</div>
 			<BgtText size={textSize} color="cyan" weight="bold">
 				{prefix && <span>{prefix}&nbsp;</span>}

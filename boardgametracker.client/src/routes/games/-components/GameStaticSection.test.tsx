@@ -17,6 +17,7 @@ const createGame = (overrides: Partial<Game> = {}): Game => ({
 	yearPublished: 1995,
 	image: "catan.jpg",
 	shopUrl: null,
+	changeDetectionWatchId: null,
 	language: null,
 	minPlayers: 2,
 	maxPlayers: 4,

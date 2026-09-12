@@ -8,7 +8,7 @@ import { BgtImageSelector, BgtSwitch, BgtTextArea } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
-import type { Game } from "@/models";
+import type { Game, GamePrice } from "@/models";
 import { type CreateGame, CreateGameSchema } from "@/models/Games/CreateGame";
 import { GameState } from "@/models/Games/GameState";
 import { toInputDate } from "@/utils/dateUtils";
@@ -27,11 +27,12 @@ interface Props {
 	buttonText: string;
 	disabled: boolean;
 	game?: Game;
+	livePrice?: GamePrice;
 	title: string;
 }
 
 export const GameForm = (props: Props) => {
-	const { onClick, buttonText, disabled, game, title } = props;
+	const { onClick, buttonText, disabled, game, livePrice, title } = props;
 	const { settings } = useGameForm();
 	const { t } = useTranslation(["game", "common"]);
 	const router = useRouter();
@@ -55,7 +56,7 @@ export const GameForm = (props: Props) => {
 			buyingPrice: game?.buyingPrice ?? undefined,
 			additionDate: toInputDate(game?.additionDate ?? undefined, true),
 			image: game?.image ?? null,
-			shopUrl: game?.shopUrl ?? "",
+			changeDetectionWatchId: game?.changeDetectionWatchId ?? "",
 			language: game?.language ?? LANGUAGE_NONE,
 		},
 		onSubmit: async ({ value }) => {
@@ -85,7 +86,12 @@ export const GameForm = (props: Props) => {
 							</div>
 
 							<div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-3">
-								<GameFormPlayerFields form={form} disabled={disabled} currency={settings?.currency} />
+								<GameFormPlayerFields
+									form={form}
+									disabled={disabled}
+									currency={settings?.currency}
+									livePrice={livePrice}
+								/>
 								<GameFormTimeFields form={form} disabled={disabled} />
 								<div className="lg:col-span-2">
 									<form.Field name="description" validators={zodValidator(CreateGameSchema, "description")}>

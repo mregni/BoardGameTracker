@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "BoardGameTracker.AppHost.csproj"
+  }
+}

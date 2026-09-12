@@ -20,6 +20,12 @@ public class GlobalExceptionHandler : IExceptionHandler
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
+        if (exception is OperationCanceledException && httpContext.RequestAborted.IsCancellationRequested)
+        {
+            httpContext.Response.StatusCode = StatusCodes.Status499ClientClosedRequest;
+            return true;
+        }
+
         var (statusCode, message) = MapException(exception);
 
         if (statusCode >= 500)

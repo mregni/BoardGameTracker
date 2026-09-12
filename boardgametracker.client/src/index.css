@@ -29,6 +29,20 @@
 
   /* Transition Properties */
   --transition-max-height: max-height;
+
+  /* Animations */
+  --animate-slide-in-right: slide-in-right 0.3s ease-out;
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @layer base {
@@ -38,6 +52,11 @@
 	::backdrop,
 	::file-selector-button {
 		border-color: var(--color-gray-200, currentcolor);
+	}
+
+	button:not(:disabled),
+	[role="button"]:not(:disabled) {
+		cursor: pointer;
 	}
 }
 
@@ -75,4 +94,13 @@ body {
 
 .rt-TextFieldInput {
 	display: block !important;
+}
+
+.bgt-image-card img {
+	scale: 1;
+	transition: scale 200ms ease;
+}
+
+.bgt-image-card:hover img {
+	scale: 1.05;
 }

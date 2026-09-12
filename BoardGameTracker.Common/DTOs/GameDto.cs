@@ -10,6 +10,7 @@ public class GameDto
     public string Description { get; set; } = string.Empty;
     public string? Image { get; set; }
     public string? ShopUrl { get; set; }
+    public string? ChangeDetectionWatchId { get; set; }
     public string? Language { get; set; }
     public int? MinPlayers { get; set; }
     public int? MaxPlayers { get; set; }

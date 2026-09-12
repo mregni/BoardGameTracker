@@ -159,12 +159,27 @@ builder.Services.AddRateLimiter(options =>
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
+    options.AddPolicy("changedetection", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient(BoardGameTracker.Core.Rag.AiClientFactory.HttpClientName)
     .ConfigureHttpClient(client => client.Timeout = System.Threading.Timeout.InfiniteTimeSpan);
+builder.Services.AddHttpClient(BoardGameTracker.Core.ChangeDetection.ChangeDetectionClient.HttpClientName)
+    .ConfigureHttpClient(client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(10);
+        client.MaxResponseContentBufferSize = 64 * 1024;
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
 builder.Services.AddMemoryCache();
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -282,8 +297,8 @@ app.Use(async (context, next) =>
 
         var isSwagger = swaggerEnabled && context.Request.Path.StartsWithSegments("/swagger");
         headers["Content-Security-Policy"] = isSwagger
-            ? "default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';"
-            : "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
+            ? "default-src 'self'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';"
+            : "default-src 'self'; img-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
 
         if (hstsEnabled && context.Request.IsHttps)
         {

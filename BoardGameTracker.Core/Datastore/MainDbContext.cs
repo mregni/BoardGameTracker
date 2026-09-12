@@ -57,8 +57,16 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
         BuildLoans(builder);
         BuildGameNights(builder);
         BuildAuthEntities(builder);
+        BuildConfig(builder);
 
         SeedDatabase(builder);
+    }
+
+    private static void BuildConfig(ModelBuilder builder)
+    {
+        builder.Entity<Config>()
+            .HasIndex(x => x.Key)
+            .IsUnique();
     }
 
     private static void ConfigureValueObjects(ModelBuilder builder)

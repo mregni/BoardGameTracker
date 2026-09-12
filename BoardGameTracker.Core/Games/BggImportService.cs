@@ -124,20 +124,29 @@ public class BggImportService : IBggImportService
         await EnsureBggConfiguredAsync();
         _logger.LogInformation("Importing {Count} games from BGG", games.Count);
 
-        var imported = 0;
+        var toImport = new List<ImportGame>();
         foreach (var importGame in games)
+        {
+            var existingGame = await _gameRepository.GetGameByBggId(importGame.BggId);
+            if (existingGame != null)
+            {
+                _logger.LogDebug("BGG game with id {BggId} already imported, skipping", importGame.BggId);
+                continue;
+            }
+
+            toImport.Add(importGame);
+        }
+
+        var items = toImport.Count > 0
+            ? await FetchThingsFromBgg(toImport.Select(x => x.BggId).ToList())
+            : new Dictionary<int, ThingResponse.Item>();
+
+        var imported = 0;
+        foreach (var importGame in toImport)
         {
             try
             {
-                var existingGame = await _gameRepository.GetGameByBggId(importGame.BggId);
-                if (existingGame != null)
-                {
-                    _logger.LogDebug("BGG game with id {BggId} already imported, skipping", importGame.BggId);
-                    continue;
-                }
-
-                var item = await FetchThingFromBgg(importGame.BggId);
-                if (item == null)
+                if (!items.TryGetValue(importGame.BggId, out var item))
                 {
                     _logger.LogWarning("BGG game with id {BggId} not found, skipping", importGame.BggId);
                     continue;
@@ -154,10 +163,6 @@ public class BggImportService : IBggImportService
                 imported++;
             }
             catch (ValidationException)
-            {
-                throw;
-            }
-            catch (BggRateLimitException)
             {
                 throw;
             }
@@ -186,6 +191,47 @@ public class BggImportService : IBggImportService
         {
             return null;
         }
+    }
+
+    private async Task<Dictionary<int, ThingResponse.Item>> FetchThingsFromBgg(IReadOnlyList<int> bggIds)
+    {
+        const int chunkSize = 20;
+        var items = new Dictionary<int, ThingResponse.Item>();
+
+        for (var offset = 0; offset < bggIds.Count; offset += chunkSize)
+        {
+            var chunk = bggIds.Skip(offset).Take(chunkSize).ToArray();
+            try
+            {
+                var request = new ThingRequest(chunk, stats: true);
+                var response = await _bggClient.GetThingAsync(request);
+                if (!response.Succeeded || response.Result == null)
+                {
+                    continue;
+                }
+
+                foreach (var item in response.Result)
+                {
+                    items[item.Id] = item;
+                }
+            }
+            catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                _logger.LogWarning(ex, "BGG API key is invalid or expired");
+                throw new ValidationException("Invalid BGG API key. Please check your API key in settings.");
+            }
+            catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                _logger.LogWarning(ex, "BGG rate-limited the request while importing games");
+                throw new BggRateLimitException();
+            }
+            catch (BoardGameGeekHttpException ex)
+            {
+                _logger.LogWarning(ex, "BGG API request failed while importing a batch of games");
+            }
+        }
+
+        return items;
     }
 
     private async Task<ThingResponse.Item?> FetchThingFromBgg(int bggId)

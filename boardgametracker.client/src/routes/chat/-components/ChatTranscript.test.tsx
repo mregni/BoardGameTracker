@@ -7,7 +7,7 @@ const buildExchange = (overrides: Partial<ChatExchange> = {}): ChatExchange => (
 	id: "exchange-1",
 	question: "How many cards do I draw?",
 	status: "done",
-	answer: { answer: "You draw two cards.", hasContext: true, citations: [] },
+	answer: { answer: "You draw two cards.", hasContext: true, durationMs: 1234, citations: [] },
 	...overrides,
 });
 
@@ -17,7 +17,7 @@ describe("ChatTranscript", () => {
 	});
 
 	it("should render the empty hint when there are no exchanges", () => {
-		renderWithTheme(<ChatTranscript exchanges={[]} isPending={false} emptyHint="Ask anything" onRetry={vi.fn()} />);
+		renderWithTheme(<ChatTranscript exchanges={[]} isPending={false} emptyHint="Ask anything" onRetry={vi.fn()} onSelectSource={vi.fn()} focused={null} />);
 
 		expect(screen.getByText("Ask anything")).toBeInTheDocument();
 		expect(screen.queryByRole("log")).not.toBeInTheDocument();
@@ -29,7 +29,7 @@ describe("ChatTranscript", () => {
 				exchanges={[buildExchange(), buildExchange({ id: "exchange-2", question: "Who starts?" })]}
 				isPending={false}
 				emptyHint="Ask anything"
-				onRetry={vi.fn()}
+				onRetry={vi.fn()} onSelectSource={vi.fn()} focused={null}
 			/>,
 		);
 
@@ -46,7 +46,7 @@ describe("ChatTranscript", () => {
 				exchanges={[buildExchange({ status: "pending", answer: undefined })]}
 				isPending={true}
 				emptyHint="Ask anything"
-				onRetry={vi.fn()}
+				onRetry={vi.fn()} onSelectSource={vi.fn()} focused={null}
 			/>,
 		);
 
@@ -62,7 +62,7 @@ describe("ChatTranscript", () => {
 				exchanges={[buildExchange(), failed]}
 				isPending={false}
 				emptyHint="Ask anything"
-				onRetry={onRetry}
+				onRetry={onRetry} onSelectSource={vi.fn()} focused={null}
 			/>,
 		);
 

@@ -24,7 +24,7 @@ export default defineConfig({
   base: "/",
 
   server: {
-    port: 5443,
+    port: Number(process.env.PORT) || 5443,
     strictPort: true,
     proxy: {
       "/api": {

@@ -21,7 +21,18 @@
     "invalid-refresh-token": "Invalid or expired session",
     "account-locked-out": "Too many failed attempts. Try again later.",
     "invalid-auth-session": "Invalid or expired authentication session",
-    "invalid-redirect-uri": "Invalid redirect URI"
+    "invalid-redirect-uri": "Invalid redirect URI",
+    "player-already-linked": "This player is already linked to another account",
+    "invalid-reset-token": "This password reset link is invalid or has expired"
+  },
+  "changedetection": {
+    "invalid-base-url": "The changedetection.io URL is not valid",
+    "not-configured": "changedetection.io is not configured",
+    "watch-not-found": "This watch id was not found on changedetection.io",
+    "create-watch-failed": "changedetection.io could not create the watch"
+  },
+  "game": {
+    "invalid-shop-url": "Enter a valid http(s) shop URL"
   },
   "something-went-wrong": "Something went wrong, please try again later.",
   "unexpected-error": "An unexpected error occurred.",
@@ -36,5 +47,14 @@
   },
   "session": {
     "invalid-expansion": "One of the selected expansions does not belong to this game"
+  },
+  "email": {
+    "not-configured": "Email is not configured on this server"
+  },
+  "loan": {
+    "game-already-on-loan": "This game is already on loan"
+  },
+  "settings": {
+    "invalid-public-url": "The public URL is not valid"
   }
 }

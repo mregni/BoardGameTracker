@@ -7,9 +7,11 @@ interface Props {
 	isPending: boolean;
 	emptyHint: string;
 	onRetry: (exchange: ChatExchange) => void;
+	onSelectSource: (exchangeId: string, index: number) => void;
+	focused: { id: string; index: number } | null;
 }
 
-export const ChatTranscript = ({ exchanges, isPending, emptyHint, onRetry }: Props) => {
+export const ChatTranscript = ({ exchanges, isPending, emptyHint, onRetry, onSelectSource, focused }: Props) => {
 	const bottomRef = useRef<HTMLDivElement>(null);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll to the newest message whenever the exchange list changes
@@ -24,7 +26,13 @@ export const ChatTranscript = ({ exchanges, isPending, emptyHint, onRetry }: Pro
 	return (
 		<div role="log" aria-live="polite" aria-busy={isPending} className="mx-auto flex max-w-3xl flex-col gap-4 pb-4">
 			{exchanges.map((exchange) => (
-				<ChatMessage key={exchange.id} exchange={exchange} onRetry={() => onRetry(exchange)} />
+				<ChatMessage
+					key={exchange.id}
+					exchange={exchange}
+					onRetry={() => onRetry(exchange)}
+					onSelectSource={(index) => onSelectSource(exchange.id, index)}
+					activeSourceIndex={focused?.id === exchange.id ? focused.index : undefined}
+				/>
 			))}
 			<div ref={bottomRef} />
 		</div>

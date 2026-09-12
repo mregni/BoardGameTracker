@@ -13,6 +13,14 @@
   "assistant": "Assistent",
   "thinking": "Aan het nadenken…",
   "retry": "Opnieuw proberen",
+  "response-time": "Beantwoord in {{seconds}}s",
+  "top-match": "Beste match",
+  "image-unavailable": "Paginavoorbeeld niet beschikbaar",
+  "close": "Sluiten",
+  "previous": "Vorige pagina",
+  "next": "Volgende pagina",
+  "download-manual": "Handleiding downloaden",
+  "click-to-enlarge": "Klik om te vergroten",
   "empty": {
     "no-game": {
       "title": "Kies een spel om te beginnen",

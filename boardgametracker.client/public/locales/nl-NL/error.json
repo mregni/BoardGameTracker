@@ -21,7 +21,18 @@
     "invalid-refresh-token": "Invalid or expired session",
     "account-locked-out": "Te veel mislukte pogingen. Probeer het later opnieuw.",
     "invalid-auth-session": "Ongeldige of verlopen aanmeldsessie",
-    "invalid-redirect-uri": "Ongeldige redirect-URI"
+    "invalid-redirect-uri": "Ongeldige redirect-URI",
+    "player-already-linked": "Deze speler is al gekoppeld aan een ander account",
+    "invalid-reset-token": "Deze link om je wachtwoord opnieuw in te stellen is ongeldig of verlopen"
+  },
+  "changedetection": {
+    "invalid-base-url": "De changedetection.io-URL is ongeldig",
+    "not-configured": "changedetection.io is niet geconfigureerd",
+    "watch-not-found": "Dit watch-id is niet gevonden op changedetection.io",
+    "create-watch-failed": "changedetection.io kon de watch niet aanmaken"
+  },
+  "game": {
+    "invalid-shop-url": "Geef een geldige http(s) winkel-URL op"
   },
   "something-went-wrong": "Something went wrong, please try again later.",
   "unexpected-error": "An unexpected error occurred.",
@@ -36,5 +47,14 @@
   },
   "session": {
     "invalid-expansion": "Een van de gekozen uitbreidingen hoort niet bij dit spel"
+  },
+  "email": {
+    "not-configured": "E-mail is niet geconfigureerd op deze server"
+  },
+  "loan": {
+    "game-already-on-loan": "Dit spel is al uitgeleend"
+  },
+  "settings": {
+    "invalid-public-url": "De publieke URL is ongeldig"
   }
 }

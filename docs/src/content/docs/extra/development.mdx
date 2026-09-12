@@ -3,18 +3,21 @@ title: Development
 description: Set up a local development environment to contribute to BoardGameTracker.
 ---
 
-import { Steps } from '@astrojs/starlight/components';
+import { Steps, Aside } from '@astrojs/starlight/components';
 
-Want to contribute to BoardGameTracker? Here's how to set up a local development environment.
+Want to contribute to BoardGameTracker? The local dev environment is orchestrated with
+[.NET Aspire](https://aspire.dev). A single AppHost project starts everything you need —
+the PostgreSQL (pgvector) database, the backend API, and the frontend dev server — so you
+don't have to run or maintain the database container or the UI yourself.
 
 ## Prerequisites
 
-- .NET 8 SDK
-- Node.js 18+
-- PostgreSQL database
+- .NET 10 SDK
+- Node.js 22 — enable `pnpm` with `corepack enable`
+- Docker Desktop (Aspire starts the pgvector database as a container; it must be running)
 - Git
 
-## Setup
+## Running locally with Aspire
 
 <Steps>
 
@@ -24,19 +27,57 @@ Want to contribute to BoardGameTracker? Here's how to set up a local development
    git clone https://github.com/mregni/BoardGameTracker.git
    cd BoardGameTracker
    dotnet restore
+   corepack enable
    cd boardgametracker.client
    pnpm install
    ```
 
-2. Set up the database and run the application:
+2. **(Optional)** Configure SMTP only if you want to test outgoing email. Adjust the SMTP
+   settings in `BoardGameTracker.AppHost/AppHost.cs` to your provider, and supply the password
+   through the AppHost's [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets)
+   store so it stays out of source control:
 
-   ```sh title="Run"
-   set JWT_SECRET=CHANGEME
-   dotnet run --project BoardGameTracker.Host
+   ```sh title="SMTP secret (optional)"
+   dotnet user-secrets set "Parameters:smtp-password" "<your-smtp-password>" --project BoardGameTracker.AppHost
    ```
 
-   When it starts, the application first launches the API process; once that succeeds it opens a new command window to run the UI. Browse to `http://localhost:5443` to access the application. Swagger UI is available at `http://localhost:6554`.
+   Skip this entirely if you don't need email — the app runs fine without it.
 
-3. For the database you only need an empty database — on startup the application runs the migrations to set up the schema.
+3. Start the whole stack with a single command:
+
+   ```sh title="Run"
+   dotnet run --project BoardGameTracker.AppHost --launch-profile http
+   ```
+
+   This launches the Aspire dashboard and, as separate resources, the database, the API,
+   and the UI. All backend configuration (database, auth, SMTP, AI/RAG, …) is defined in
+   `BoardGameTracker.AppHost/AppHost.cs` — there is no `launchSettings.json` to maintain.
+
+4. Once the resources are healthy, open:
+
+   - **UI** — `http://localhost:5443`
+   - **API & Swagger** — `http://localhost:6554/swagger`
+   - **Aspire dashboard** — the URL printed in the console at startup
+
+   The database is created and migrated automatically on first run, and its data persists in
+   a Docker volume across restarts, so you only pay the setup cost once.
 
 </Steps>
+
+<Aside type="note" title="AI rules assistant (RAG)">
+The optional [rules assistant](/BoardGameTracker/getting-started/rag/) runs entirely locally — Aspire
+starts an Ollama resource automatically, and the required models are downloaded on first use (a few GB,
+then cached in a Docker volume). GPU acceleration is on by default; set `Ollama__UseGpu=false` to run
+Ollama on CPU if your host has no GPU with container passthrough.
+</Aside>
+
+<Aside type="tip" title="HTTPS dashboard">
+The `http` launch profile serves the Aspire dashboard over plain HTTP for convenience. To use
+the default `https` profile instead, trust the local dev certificate once with
+`dotnet dev-certs https --trust`.
+</Aside>
+
+<Aside type="note" title="Production uses Docker">
+Aspire is a development-only tool and is never deployed. Production runs from the published
+container via Docker Compose — see the [Quick Start](/BoardGameTracker/getting-started/quick-start/).
+</Aside>
