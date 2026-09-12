@@ -54,7 +54,7 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           package_json_file: boardgametracker.client/package.json
 
@@ -86,7 +86,7 @@ jobs:
           dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner --version "$SONAR_SCANNER_VERSION"
 
       - name: Install .NET dependencies
-        run: dotnet restore ./BoardGameTracker.sln
+        run: dotnet restore ./BoardGameTracker.sln --locked-mode
 
       - name: Begin SonarCloud analysis
         env:
@@ -105,7 +105,7 @@ jobs:
             /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
             /d:sonar.testExecutionReportPaths="boardgametracker.client/coverage/sonar-report.xml" \
             /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**,**/Migrations/**,**/routeTree.gen.ts,**/*.png,**/*.jpg,**/*.jpeg,**/*.gif,**/*.ico,**/*.webp,**/*.pdf" \
-            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
+            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
             /d:sonar.cpd.exclusions="**/Migrations/**/*.cs" \
             /d:sonar.typescript.tsconfigPaths="boardgametracker.client/tsconfig.json" \
             /d:sonar.issue.ignore.multicriteria=e1 \
@@ -116,7 +116,18 @@ jobs:
       - name: Build .NET
         run: dotnet build --no-restore
 
-      - name: Run .NET tests
+      - name: Export the OpenAPI document
+        env:
+          ASPNETCORE_ENVIRONMENT: Production
+          JWT_SECRET: ci-openapi-export-placeholder-secret-with-32-chars
+          DB_HOST: localhost
+          DB_USER: openapi
+          DB_PASSWORD: openapi
+          DB_NAME: openapi
+          LOGLEVEL: warn
+        run: dotnet ./BoardGameTracker.Host/bin/Debug/net10.0/BoardGameTracker.Host.dll --openapi boardgametracker.client/openapi/swagger.json
+
+      - name: Run .NET unit tests
         run: |
           dotnet test ./BoardGameTracker.Tests/BoardGameTracker.Tests.csproj \
             --no-build \
@@ -124,12 +135,28 @@ jobs:
             --logger trx \
             --results-directory "TestResults" \
             --collect "XPlat Code Coverage;Format=opencover" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/Datastore/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/obj/**/*.cs"
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/obj/**/*.cs"
+
+      - name: Run .NET integration tests (Testcontainers Postgres)
+        run: |
+          dotnet test ./BoardGameTracker.IntegrationTests/BoardGameTracker.IntegrationTests.csproj \
+            --no-build \
+            --no-restore \
+            --logger trx \
+            --results-directory "TestResults" \
+            --collect "XPlat Code Coverage;Format=opencover" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/obj/**/*.cs"
 
       - name: Install frontend dependencies
         run: |
           cd boardgametracker.client
           pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Check the generated API types
+        run: |
+          cd boardgametracker.client
+          pnpm generate:api
+          git diff --exit-code --stat -- openapi src/models/api.generated.ts
 
       - name: Run Biome format check
         run: |
@@ -156,7 +183,7 @@ jobs:
 
       - name: Publish .NET test results
         uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2
-        if: always()
+        if: always() && github.event.pull_request.head.repo.full_name == github.repository
         with:
           files: TestResults/**/*.trx
           check_name: ".NET Test Results"
@@ -187,13 +214,49 @@ jobs:
           reporttypes: "MarkdownSummaryGithub;Cobertura"
           sourcedirs: "boardgametracker.client"
           assemblyfilters: "-BoardGameTracker.Host;-BoardGameTracker.DataStore"
-          filefilters: "-**/ViewModels/**;-**/Entities/**"
+          filefilters: "-**/ViewModels/**;-**/Migrations/**"
 
       - name: Publish Coverage Summary
         run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
       - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        if: github.event.pull_request.head.repo.full_name == github.repository
         with:
           recreate: true
           path: coveragereport/SummaryGithub.md
+
+  docs:
+    name: Docs build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: docs
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          package_json_file: docs/package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: docs/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build

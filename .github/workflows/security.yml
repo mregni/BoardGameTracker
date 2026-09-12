@@ -29,25 +29,30 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore packages
-        run: dotnet restore ./BoardGameTracker.sln
+        run: dotnet restore ./BoardGameTracker.sln --locked-mode
 
       - name: Check for vulnerable packages
         run: |
           set -uo pipefail
 
-          dotnet list ./BoardGameTracker.sln package --vulnerable --include-transitive 2>&1 | tee vulnerable.txt || true
+          : > vulnerable.txt
+          for project in BoardGameTracker.*/*.csproj; do
+            dotnet list "$project" package --vulnerable --include-transitive 2>&1 | tee -a vulnerable.txt || true
+          done
 
           if grep -q "has the following vulnerable packages" vulnerable.txt; then
             echo "::error::Vulnerable NuGet packages detected"
             exit 1
           fi
 
-          if ! grep -q "has no vulnerable packages" vulnerable.txt; then
-            echo "::error::dotnet list package produced no vulnerability verdict"
+          expected=$(ls BoardGameTracker.*/*.csproj | wc -l)
+          verdicts=$(grep -c "has no vulnerable packages" vulnerable.txt || true)
+          if [ "$verdicts" -ne "$expected" ]; then
+            echo "::error::Expected a vulnerability verdict for $expected projects, got $verdicts"
             exit 1
           fi
 
-          echo "No vulnerable packages found."
+          echo "No vulnerable packages found in $expected projects."
 
   dependency-scan-frontend:
     name: Frontend Dependency Scan
