@@ -12,6 +12,7 @@
   "schedule": [
     "before 6am on Monday"
   ],
+  "updateNotScheduled": false,
   "labels": [
     "dependencies"
   ],
@@ -150,13 +151,47 @@
         "/^System.IdentityModel/",
         "/^Microsoft.IdentityModel/"
       ]
+    },
+    {
+      "description": "A PostgreSQL major is a data migration, not a dependency bump",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "pgvector/pgvector"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "xunit.v3 4 moves to Microsoft.Testing.Platform (new dotnet test, coverage and Sonar wiring); TanStack Table 9 is an API rewrite",
+      "matchPackageNames": [
+        "xunit.v3",
+        "xunit.runner.visualstudio",
+        "@tanstack/react-table"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true
     }
   ],
   "dockerfile": {
-    "pinDigests": false
+    "pinDigests": true
   },
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Dependency Dashboard",
   "prConcurrentLimit": 5,
-  "prHourlyLimit": 2
+  "prHourlyLimit": 2,
+  "docker-compose": {
+    "pinDigests": true
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 6am on monday"
+    ]
+  }
 }
