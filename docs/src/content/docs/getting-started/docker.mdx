@@ -3,9 +3,14 @@ title: Docker
 description: Run BoardGameTracker with Docker Compose or a plain docker run command.
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
 Here is a ready-to-use configuration. It sets up both the BoardGameTracker application and a PostgreSQL database.
+
+<Aside type="caution" title="Two things every install needs">
+- The database image must provide the `vector` extension. Use `pgvector/pgvector:pg16` (a drop-in PostgreSQL 16 image); plain `postgres:16` does not work and the application refuses to start against it.
+- `JWT_SECRET` must be a random value of at least 32 characters, for example the output of `openssl rand -base64 48`. It is only optional when you run with `AUTH_ENABLED=false`.
+</Aside>
 
 <Tabs>
 <TabItem label="Docker Compose">
@@ -21,6 +26,7 @@ services:
     volumes:
       - ./images:/app/images
       - ./logs:/app/logs
+      - ./manuals:/app/manuals
     ports:
       - "5444:5444"
     environment:
@@ -29,7 +35,7 @@ services:
       - DB_PASSWORD=CHANGEME        # Change me!!!!
       - DB_NAME=boardgametracker
       - DB_PORT=5432
-      - JWT_SECRET=CHANGEME         # Change me!!!!
+      - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS   # Change me!!!!
       - TZ=UTC
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
@@ -39,7 +45,7 @@ services:
       start_period: 10s
 
   db:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
@@ -58,7 +64,7 @@ services:
 </TabItem>
 <TabItem label="Docker run">
 
-You can use the following `docker run` command as well. It starts the BoardGameTracker container and presumes the PostgreSQL container is already running.
+You can use the following `docker run` command as well. It starts the BoardGameTracker container and presumes a PostgreSQL server with the `vector` extension is already running.
 
 ```sh title="Terminal"
 docker run -d \
@@ -67,15 +73,18 @@ docker run -d \
     -p 5444:5444 \
     -v ./images:/app/images \
     -v ./logs:/app/logs \
+    -v ./manuals:/app/manuals \
     -e DB_HOST=db \
     -e DB_USER=dbuser \
     -e DB_PASSWORD=CHANGEME \
     -e DB_NAME=boardgametracker \
     -e DB_PORT=5432 \
-    -e JWT_SECRET=CHANGEME \
+    -e JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS \
     -e TZ=UTC \
     uping/boardgametracker:latest
 ```
+
+The mounted folders are owned by user and group `1654` inside the container. Set `PUID` and `PGID` to match your host user if you need to access the files directly, and see [Upgrading](/BoardGameTracker/getting-started/upgrading/) before moving to a new release.
 
 </TabItem>
 </Tabs>

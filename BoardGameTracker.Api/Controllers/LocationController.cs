@@ -23,7 +23,7 @@ public class LocationController : ControllerBase
     public async Task<IActionResult> GetLocations()
     {
         var locations = await _locationService.GetLocations();
-        return Ok(locations.ToListDto());
+        return Ok(locations);
     }
 
     [HttpPost]

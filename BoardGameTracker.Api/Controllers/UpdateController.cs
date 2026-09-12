@@ -1,3 +1,4 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,6 +19,7 @@ public class UpdateController : ControllerBase
     }
 
     [HttpPost("check")]
+    [Authorize(Roles = Constants.AuthRoles.Admin)]
     public async Task<IActionResult> CheckNow()
     {
         await _updateService.CheckForUpdatesAsync();

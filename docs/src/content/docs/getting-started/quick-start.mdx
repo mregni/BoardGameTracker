@@ -18,59 +18,7 @@ Follow these steps to quickly get your BoardGameTracker up and running with Dock
    wget https://raw.githubusercontent.com/mregni/BoardGameTracker/refs/heads/master/docker-compose.yml
    ```
 
-   </TabItem>
-   <TabItem label="docker-compose.yml">
-
-   ```yaml title="docker-compose.yml"
-   services:
-     boardgametracker:
-       image: uping/boardgametracker:latest
-       restart: unless-stopped
-       depends_on:
-         db:
-           condition: service_healthy
-       volumes:
-         - ./images:/app/images
-         - ./logs:/app/logs
-         - ./manuals:/app/manuals
-       ports:
-         - "5444:5444"
-       environment:
-         - DB_HOST=db
-         - DB_USER=dbuser
-         - DB_PASSWORD=CHANGEME
-         - DB_NAME=boardgametracker
-         - DB_PORT=5432
-         - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
-         - TZ=UTC
-       healthcheck:
-         test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
-         interval: 30s
-         timeout: 5s
-         retries: 3
-         start_period: 10s
-
-     db:
-       image: pgvector/pgvector:pg16
-       restart: unless-stopped
-       volumes:
-         - ./postgres-data:/var/lib/postgresql/data
-       environment:
-         - POSTGRES_DB=boardgametracker
-         - POSTGRES_USER=dbuser
-         - POSTGRES_PASSWORD=CHANGEME
-       healthcheck:
-         test: ["CMD-SHELL", "pg_isready -U dbuser -d boardgametracker"]
-         interval: 10s
-         timeout: 5s
-         retries: 5
-         start_period: 10s
-   ```
-
-   </TabItem>
-   </Tabs>
-
-2. Update the `DB_PASSWORD`, `TZ` and `JWT_SECRET` values in the compose file, then start the stack. This launches the BoardGameTracker container together with the PostgreSQL database it needs.
+2. Update the `DB_PASSWORD`, `TZ` and `JWT_SECRET` values in the compose file (`JWT_SECRET` needs at least 32 random characters, for example from `openssl rand -base64 48`), then start the stack. This launches the BoardGameTracker container together with the PostgreSQL database it needs. The compose file uses `pgvector/pgvector:pg16` for the database; keep that image, plain `postgres` lacks the extension the application requires.
 
    ```sh
    docker compose up -d

@@ -15,8 +15,8 @@ public class Loan : HasId
 
     public Loan(int gameId, int playerId, DateTime loanDate)
     {
-        GameId = Guard.Against.Null(gameId);
-        PlayerId = Guard.Against.Null(playerId);
+        GameId = Guard.Against.Negative(gameId);
+        PlayerId = Guard.Against.NegativeOrZero(playerId);
 
         LoanDate = loanDate;
     }

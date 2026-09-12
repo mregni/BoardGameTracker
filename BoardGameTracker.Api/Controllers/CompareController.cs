@@ -17,10 +17,10 @@ public class CompareController : ControllerBase
     }
 
     [HttpGet]
-    [Route("{playerOne:int}/{playerTwo:int}")]
-    public async Task<IActionResult> GetPlayerComparison(int playerOne, int playerTwo)
+    [Route("{playerOneId:int}/{playerTwoId:int}")]
+    public async Task<IActionResult> GetPlayerComparison(int playerOneId, int playerTwoId)
     {
-        var result = await _compareService.GetPlayerComparison(playerOne, playerTwo);
+        var result = await _compareService.GetPlayerComparison(playerOneId, playerTwoId);
         return Ok(result);
     }
 }

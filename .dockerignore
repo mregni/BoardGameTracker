@@ -32,3 +32,11 @@ BoardGameTracker.Host/images/profile
 **/IMPLEMENTATION_PLAN*.md
 LICENSE
 README.md
+**/.env.*
+postgres-data
+images
+manuals
+ollama
+BoardGameTracker.Host/wwwroot
+BoardGameTracker.Host/Logs
+BoardGameTracker.Host/manuals

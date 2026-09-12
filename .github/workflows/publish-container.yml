@@ -88,20 +88,20 @@ jobs:
           java-version: 17
           distribution: 'zulu'
 
-      - name: Setup dotnet v8
+      - name: Setup dotnet
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
-          dotnet-version: "8.x"
+          dotnet-version: "10.0.x"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           package_json_file: boardgametracker.client/package.json
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "20.x"
+          node-version: "22.x"
           cache: 'pnpm'
           cache-dependency-path: boardgametracker.client/pnpm-lock.yaml
 
@@ -126,7 +126,7 @@ jobs:
           dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner --version "$SONAR_SCANNER_VERSION"
 
       - name: Install .NET dependencies
-        run: dotnet restore ./BoardGameTracker.sln
+        run: dotnet restore ./BoardGameTracker.sln --locked-mode
 
       - name: Begin SonarCloud analysis
         if: env.SONAR_TOKEN != ''
@@ -145,7 +145,7 @@ jobs:
             /d:sonar.cs.vstest.reportsPaths="TestResults/*.trx" \
             /d:sonar.javascript.lcov.reportPaths="boardgametracker.client/coverage/lcov.info" \
             /d:sonar.exclusions="**/node_modules/**,**/dist/**,**/build/**,**/coverage/**,**/TestResults/**,**/obj/**,**/bin/**,**/Migrations/**,**/routeTree.gen.ts,**/*.png,**/*.jpg,**/*.jpeg,**/*.gif,**/*.ico,**/*.webp,**/*.pdf" \
-            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/BoardGameTracker.Core/Datastore/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
+            /d:sonar.coverage.exclusions="**/BoardGameTracker.Host/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/routeTree.gen.ts,**/tailwind.config.js,**/node_modules/**" \
             /d:sonar.cpd.exclusions="**/Migrations/**/*.cs" \
             /d:sonar.typescript.tsconfigPaths="boardgametracker.client/tsconfig.json" \
             /d:sonar.issue.ignore.multicriteria=e1 \
@@ -155,7 +155,7 @@ jobs:
       - name: Build .NET
         run: dotnet build --no-restore
 
-      - name: Run .NET tests
+      - name: Run .NET unit tests
         run: |
           dotnet test ./BoardGameTracker.Tests/BoardGameTracker.Tests.csproj \
             --no-build \
@@ -163,7 +163,17 @@ jobs:
             --logger trx \
             --results-directory "TestResults" \
             --collect "XPlat Code Coverage;Format=opencover" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/Datastore/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/Entities/**/*.cs,**/obj/**/*.cs"
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/obj/**/*.cs"
+
+      - name: Run .NET integration tests (Testcontainers Postgres)
+        run: |
+          dotnet test ./BoardGameTracker.IntegrationTests/BoardGameTracker.IntegrationTests.csproj \
+            --no-build \
+            --no-restore \
+            --logger trx \
+            --results-directory "TestResults" \
+            --collect "XPlat Code Coverage;Format=opencover" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/BoardGameTracker.Host/**/*.cs,**/Migrations/**/*.cs,**/ViewModels/**/*.cs,**/obj/**/*.cs"
 
       - name: Install frontend dependencies
         run: |
@@ -210,13 +220,13 @@ jobs:
           reporttypes: "MarkdownSummaryGithub;Cobertura"
           sourcedirs: "boardgametracker.client"
           assemblyfilters: "-BoardGameTracker.Host;-BoardGameTracker.DataStore"
-          filefilters: "-**/ViewModels/**;-**/Entities/**"
+          filefilters: "-**/ViewModels/**;-**/Migrations/**"
 
       - name: Publish Coverage Summary
         run: cat coveragereport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
 
   build-linux-multiarch:
-    needs: [version, test-and-analyze]
+    needs: [version, test-and-analyze, security-scan]
     name: Build Multi-Arch Linux Containers
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -237,7 +247,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           package_json_file: boardgametracker.client/package.json
 
@@ -293,14 +303,18 @@ jobs:
           push: true
           tags: ${{ env.IS_STABLE == 'true' && steps.meta-stable.outputs.tags || steps.meta-beta.outputs.tags }}
           labels: ${{ env.IS_STABLE == 'true' && steps.meta-stable.outputs.labels || steps.meta-beta.outputs.labels }}
+          annotations: ${{ env.IS_STABLE == 'true' && steps.meta-stable.outputs.annotations || steps.meta-beta.outputs.annotations }}
+          provenance: mode=max
+          sbom: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=${{ needs.version.outputs.version }}
             ASPNETCORE_ENVIRONMENT=production
             BUILDKIT_INLINE_CACHE=1
-            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
             VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
+          secrets: |
+            sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
 
   security-scan:
     needs: [version, test-and-analyze]
@@ -375,7 +389,7 @@ jobs:
 
   create-github-release:
     name: Create GitHub Release
-    needs: [version, build-linux-multiarch]
+    needs: [version, build-linux-multiarch, security-scan]
     runs-on: ubuntu-latest
     if: needs.version.outputs.is_stable == 'true'
     permissions:
@@ -390,6 +404,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
+
+      - name: Download SBOM
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sbom-${{ needs.version.outputs.version }}
 
       - name: Generate Release Notes
         env:
@@ -431,6 +450,7 @@ jobs:
           tag_name: v${{ needs.version.outputs.version }}
           name: v${{ needs.version.outputs.version }}
           body_path: release_notes.md
+          files: sbom.json
           draft: false
           prerelease: false
           generate_release_notes: false

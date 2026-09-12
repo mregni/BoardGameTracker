@@ -11,17 +11,21 @@ services:
       - ./manuals:/app/manuals
     ports:
       - "5444:5444"
+    # Every variable from the environment-variables page can be placed in a .env file next to this compose file.
+    env_file:
+      - path: .env
+        required: false
     environment:
       - DB_HOST=db
-      - DB_USER=dbuser
-      - DB_PASSWORD=CHANGEME
-      - DB_NAME=boardgametracker
       - DB_PORT=5432
-      - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
-      - TZ=UTC
-      - RAG_ENABLED=true
-      - AI_BASE_URL=http://ollama:11434
-      - AI_CHAT_MODEL=llama3.2:3b
+      - DB_USER=${DB_USER:-dbuser}
+      - DB_PASSWORD=${DB_PASSWORD:-CHANGEME}
+      - DB_NAME=${DB_NAME:-boardgametracker}
+      - JWT_SECRET=${JWT_SECRET:-CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS}
+      - TZ=${TZ:-UTC}
+      - RAG_ENABLED=${RAG_ENABLED:-true}
+      - AI_BASE_URL=${AI_BASE_URL:-http://ollama:11434}
+      - AI_CHAT_MODEL=${AI_CHAT_MODEL:-qwen3:4b}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
       interval: 30s
@@ -35,11 +39,11 @@ services:
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=boardgametracker
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=CHANGEME
+      - POSTGRES_DB=${DB_NAME:-boardgametracker}
+      - POSTGRES_USER=${DB_USER:-dbuser}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-CHANGEME}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dbuser -d boardgametracker"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dbuser} -d ${DB_NAME:-boardgametracker}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -50,6 +54,12 @@ services:
     restart: unless-stopped
     volumes:
       - ./ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     deploy:
       resources:
         reservations:

@@ -4,7 +4,9 @@
   },
   "image": {
     "type-not-supported": "Image type not supported",
-    "error": "Error while uploading image, check logs"
+    "error": "Error while uploading image, check logs",
+    "too-large": "Image is too large",
+    "unsupported-format": "Unsupported image format"
   },
   "auth": {
     "username-already-exists": "Username already exists",
@@ -17,6 +19,9 @@
     "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
     "invalid-credentials": "Invalid username or password",
     "invalid-refresh-token": "Invalid or expired session",
+    "account-locked-out": "Too many failed attempts. Try again later.",
+    "invalid-auth-session": "Invalid or expired authentication session",
+    "invalid-redirect-uri": "Invalid redirect URI",
     "player-already-linked": "This player is already linked to another account",
     "invalid-reset-token": "This password reset link is invalid or has expired"
   },
@@ -34,6 +39,15 @@
   "network": "Unable to connect to the server. Please check your connection.",
   "timeout": "The request took too long. Please try again.",
   "server": "A server error occurred. Please try again later.",
+  "location": {
+    "used-by-game-nights": "This location is used by one or more game nights"
+  },
+  "player": {
+    "hosts-game-nights": "This player hosts one or more game nights"
+  },
+  "session": {
+    "invalid-expansion": "One of the selected expansions does not belong to this game"
+  },
   "email": {
     "not-configured": "Email is not configured on this server"
   },

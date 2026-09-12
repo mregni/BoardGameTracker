@@ -6,8 +6,6 @@ services:
       args:
         VERSION: ${VERSION:-0.0.1}
         ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-production}
-        ASPNETCORE_URLS: ${ASPNETCORE_URLS:-http://*:5444}
-        TZ: ${TZ:-UTC}
     restart: unless-stopped
     depends_on:
       db:
@@ -18,19 +16,22 @@ services:
       - ${MANUALS_PATH:-./manuals}:/app/manuals
     ports:
       - "${APP_PORT:-5444}:5444"
+    # Every variable from the environment-variables page can be placed in a .env file next to this compose file.
+    env_file:
+      - path: .env
+        required: false
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-production}
-      - ASPNETCORE_URLS=${ASPNETCORE_URLS:-http://*:5444}
       - DB_HOST=db
+      - DB_PORT=5432
       - DB_USER=${DB_USER:-dev}
       - DB_PASSWORD=${DB_PASSWORD:-CHANGEME}
       - DB_NAME=${DB_NAME:-boardgametracker}
-      - DB_PORT=5432
-      - JWT_SECRET=${JWT_SECRET:-CHANGEME}
+      - JWT_SECRET=${JWT_SECRET:-CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS}
       - TZ=${TZ:-UTC}
       - RAG_ENABLED=${RAG_ENABLED:-false}
       - AI_BASE_URL=${AI_BASE_URL:-http://ollama:11434}
-      - AI_CHAT_MODEL=${AI_CHAT_MODEL:-llama3.2:3b}
+      - AI_CHAT_MODEL=${AI_CHAT_MODEL:-qwen3:4b}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
       interval: 30s
@@ -60,3 +61,9 @@ services:
     restart: unless-stopped
     volumes:
       - ${OLLAMA_PATH:-./ollama}:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
