@@ -26,11 +26,6 @@
     "required": "BGG id is required",
     "external-page": "Open BoardGameGeek website"
   },
-  "shop-url": {
-    "label": "Shop URL",
-    "placeholder": "https://...",
-    "invalid": "Enter a valid http(s) URL"
-  },
   "language": {
     "label": "Language",
     "none": "Not set"
@@ -112,7 +107,17 @@
   "price": {
     "label": "Price",
     "placeholder": "Game price",
-    "required": "Price is required"
+    "required": "Price is required",
+    "refresh": "Actualizar precio",
+    "refresh-failed": "No se pudo actualizar el precio",
+    "recheck-queued": "Nueva comprobación solicitada, el precio se actualizará en breve",
+    "unavailable": {
+      "misconfigured": "La configuración de changedetection.io no es válida",
+      "unauthorized": "changedetection.io rechazó la clave API",
+      "watchNotFound": "Este seguimiento ya no existe en changedetection.io",
+      "unreachable": "No se pudo conectar con changedetection.io",
+      "parseError": "No se pudo leer el precio de changedetection.io"
+    }
   },
   "state": {
     "for-trade": "For trade",
@@ -151,5 +156,26 @@
     "recent-sessions": "Recent sessions",
     "session-count-per-day": "Session count per day",
     "analytics": "Analytics"
+  },
+  "watch-id": {
+    "label": "id de watch de changedetection.io",
+    "placeholder": "p. ej. e0808154-28da-4b85-9a71-24a409e694f1",
+    "invalid": "Introduce un id de watch válido (GUID)",
+    "tracking": "Siguiendo: {{title}}",
+    "not-found": "Este id de watch no se encontró en changedetection.io",
+    "unverified": "No se pudo verificar este id de watch ahora"
+  },
+  "track-price": {
+    "button": "Seguir precio",
+    "title": "Seguir precio",
+    "description": "Introduce la página de la tienda de este juego. Se creará y vinculará un watch de changedetection.io.",
+    "url-label": "URL de la tienda",
+    "url-placeholder": "https://...",
+    "submit": "Empezar a seguir",
+    "success": "Seguimiento de precio iniciado",
+    "failed": "No se pudo iniciar el seguimiento del precio"
+  },
+  "current-price": {
+    "title": "Precio actual"
   }
 }

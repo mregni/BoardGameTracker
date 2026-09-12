@@ -21,6 +21,8 @@ public class ConfigDefaultsTests
         yield return new object[] { AppConfig.PublicUrl, "http://localhost:5444" };
         yield return new object[] { AppConfig.RsvpAuthenticationEnabled, "false" };
         yield return new object[] { BggConfig.ApiKey, "" };
+        yield return new object[] { ChangeDetectionConfig.BaseUrl, "" };
+        yield return new object[] { ChangeDetectionConfig.ApiKey, "" };
         yield return new object[] { AiConfig.Provider, "ollama" };
         yield return new object[] { AiConfig.BaseUrl, "http://ollama:11434" };
         yield return new object[] { AiConfig.ChatModel, "qwen3:4b" };

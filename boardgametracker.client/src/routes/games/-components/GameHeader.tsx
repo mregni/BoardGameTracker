@@ -3,13 +3,16 @@ import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
-import type { GameState } from "@/models";
+import type { GamePrice, GameState } from "@/models";
 import { getColorFromGameState, getItemStateTranslationKey } from "@/utils/ItemStateUtils";
+import { TrackedPriceIcon } from "./TrackedPriceIcon";
 
 interface Props {
 	gameTitle: string;
 	gameState: GameState;
 	isLoaned: boolean;
+	hasPriceWatch?: boolean;
+	livePrice?: GamePrice;
 	canWrite: boolean;
 	onAddSession: () => void;
 	onEdit: () => void;
@@ -17,15 +20,17 @@ interface Props {
 }
 
 export const GameHeader = (props: Props) => {
-	const { gameTitle, gameState, isLoaned, canWrite, onAddSession, onEdit, onDelete } = props;
+	const { gameTitle, gameState, isLoaned, hasPriceWatch = false, livePrice, canWrite, onAddSession, onEdit, onDelete } =
+		props;
 	const { t } = useTranslation("game");
 
 	return (
 		<div className="flex md:flex-row flex-col justify-between">
 			<div className="flex flex-col-reverse xl:flex-row xl:gap-3 gap-1">
-				<BgtHeading size="8" className="shrink-0">
-					{gameTitle}
-				</BgtHeading>
+				<div className="flex items-center gap-2 shrink-0">
+					<BgtHeading size="8">{gameTitle}</BgtHeading>
+					{hasPriceWatch && <TrackedPriceIcon livePrice={livePrice} size="6" />}
+				</div>
 				<BgtText size="2" className="line-clamp-1" weight="medium" color={getColorFromGameState(gameState, isLoaned)}>
 					{t(getItemStateTranslationKey(gameState, isLoaned))}
 				</BgtText>

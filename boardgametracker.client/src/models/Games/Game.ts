@@ -10,6 +10,7 @@ export interface Game {
 	yearPublished: number | null;
 	image: string;
 	shopUrl: string | null;
+	changeDetectionWatchId: string | null;
 	language: string | null;
 	minPlayers: number | null;
 	maxPlayers: number | null;

@@ -33,6 +33,7 @@
     "play-time": "Play time",
     "weight": "Weight",
     "any": "Any",
+    "in-stock-only": "Alleen op voorraad",
     "player-count-value_one": "{{count}} player",
     "player-count-value_other": "{{count}} players",
     "play-time-value": "≤ {{count}} min",
@@ -58,7 +59,8 @@
     "weight": "Weight",
     "rating": "Rating",
     "added": "Added",
-    "bgg": "BGG"
+    "bgg": "BGG",
+    "current-price": "Huidige prijs"
   },
   "table": {
     "title": "Game list",
@@ -66,5 +68,15 @@
     "total-price": "Total price",
     "mean-price": "Mean price",
     "empty": "No games match the selected filters."
-  }
+  },
+  "in-stock": {
+    "yes": "Op voorraad",
+    "no": "Uitverkocht"
+  },
+  "refresh-prices": "Prijzen verversen",
+  "live-price": {
+    "unavailable": "Prijs niet beschikbaar"
+  },
+  "tracked": "Prijs wordt gevolgd",
+  "tracked-pending": "Wacht op de eerste prijscontrole"
 }

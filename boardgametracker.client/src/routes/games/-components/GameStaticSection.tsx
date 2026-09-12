@@ -6,15 +6,19 @@ import Clock from "@/assets/icons/clock.svg?react";
 import Coins from "@/assets/icons/coins.svg?react";
 import List from "@/assets/icons/list.svg?react";
 import Package from "@/assets/icons/package.svg?react";
+import Target from "@/assets/icons/target.svg?react";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import Users from "@/assets/icons/users.svg?react";
 import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtFancyTextStatistic } from "@/components/BgtStatistic/BgtFancyTextStatistic";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtText } from "@/components/BgtText/BgtText";
-import type { Game } from "@/models";
+import type { Game, GamePrice } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
+import { formatPrice } from "@/utils/priceUtils";
 import { BgtPoster } from "../../-components/BgtPoster";
+import { PriceRefreshButton } from "./PriceRefreshButton";
 import { RulebookChatButton } from "./RulebookChatButton";
 
 const formatMinMax = (min: number | null, max: number | null): string | null => {
@@ -35,6 +39,11 @@ interface Props {
 	dateFormat: string;
 	manualCount: number;
 	ragEnabled: boolean;
+	price?: GamePrice;
+	onRefreshPrice?: () => void;
+	isRefreshingPrice?: boolean;
+	canTrackPrice?: boolean;
+	onTrackPrice?: () => void;
 	onOpenManuals: () => void;
 	onOpenExpansions: () => void;
 }
@@ -48,6 +57,11 @@ export const GameStaticSection = (props: Props) => {
 		dateFormat,
 		manualCount,
 		ragEnabled,
+		price,
+		onRefreshPrice,
+		isRefreshingPrice,
+		canTrackPrice = false,
+		onTrackPrice,
 		onOpenManuals,
 		onOpenExpansions,
 	} = props;
@@ -83,9 +97,15 @@ export const GameStaticSection = (props: Props) => {
 				<div>
 					<BgtText className={cx("xl:line-clamp-2 line-clamp-3 text-white/70")}>{game.description}</BgtText>
 				</div>
-				{ragEnabled && (
-					<div className="flex">
-						<RulebookChatButton gameId={game.id} disabled={manualCount === 0} />
+				{(ragEnabled || canTrackPrice) && (
+					<div className="flex gap-2">
+						{ragEnabled && <RulebookChatButton gameId={game.id} disabled={manualCount === 0} />}
+						{canTrackPrice && (
+							<BgtButton variant="cancel" size="1" onClick={onTrackPrice}>
+								<Target className="size-4" />
+								{t("game:track-price.button")}
+							</BgtButton>
+						)}
 					</div>
 				)}
 				<div className="grid grid-cols-2 md:grid-cols-4 2xl:grid-cols-7 gap-3 xl:gap-6">
@@ -107,6 +127,22 @@ export const GameStaticSection = (props: Props) => {
 						prefix={currency}
 						icon={<Coins />}
 					/>
+					{game.changeDetectionWatchId && (
+						<BgtTextStatistic
+							content={
+								price?.available && price.price != null
+									? formatPrice(price.price, price.currency ?? currency, uiLanguage)
+									: "-"
+							}
+							title={t("game:current-price.title")}
+							icon={<Coins />}
+							action={
+								onRefreshPrice && (
+									<PriceRefreshButton onRefresh={onRefreshPrice} isRefreshing={!!isRefreshingPrice} />
+								)
+							}
+						/>
+					)}
 					<BgtTextStatistic
 						content={manualCount}
 						title={t("game:manuals.title")}

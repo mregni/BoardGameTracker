@@ -5,6 +5,7 @@ var dbPassword = builder.AddParameter("db-password", "dev", secret: true);
 var jwtSecret = builder.AddParameter("jwt-secret", "your-super-secret-jwt-key-that-is-used-in-dev", secret: true);
 
 var smtpPassword = builder.Configuration["Parameters:smtp-password"] ?? string.Empty;
+var groqApiKey = builder.Configuration["Parameters:groq-api-key"] ?? string.Empty;
 
 const string databaseName = "boardgametracker-dev";
 
@@ -26,6 +27,11 @@ if (!string.Equals(builder.Configuration["Ollama:UseGpu"], "false", StringCompar
 
 var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
     .WithHttpEndpoint(port: 6554, isProxied: false)
+    .WithUrlForEndpoint("http", url =>
+    {
+        url.DisplayText = "Swagger";
+        url.Url = url.Url.TrimEnd('/') + "/swagger";
+    })
     .WithEnvironment(context =>
     {
         var env = context.EnvironmentVariables;
@@ -50,10 +56,10 @@ var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
 
         // RAG / AI (see .env.example for the meaning of each value).
         env["RAG_ENABLED"] = "true";
-        env["AI_PROVIDER"] = "ollama";
-        env["AI_BASE_URL"] = "http://localhost:11434";
-        env["AI_CHAT_MODEL"] = "qwen3:4b";
-        env["AI_API_KEY"] = "";
+        env["AI_PROVIDER"] = "openai";
+        env["AI_BASE_URL"] = "https://api.groq.com/openai/v1";
+        env["AI_CHAT_MODEL"] = "openai/gpt-oss-120b";
+        env["AI_API_KEY"] = groqApiKey;
         env["AI_EMBEDDING_BASE_URL"] = "http://localhost:11434";
         env["AI_EMBEDDING_NUM_GPU"] = "-1";
         env["MANUALS_PATH"] = "./manuals";
@@ -84,6 +90,7 @@ builder.AddViteApp("bgt-client", "../boardgametracker.client")
         endpoint.IsProxied = false;
     })
     .WithExternalHttpEndpoints()
+    .WithUrlForEndpoint("http", url => url.DisplayText = "website")
     .WaitFor(backend);
 
 await builder.Build().RunAsync();

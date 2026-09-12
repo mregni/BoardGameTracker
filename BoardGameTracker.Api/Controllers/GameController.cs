@@ -6,6 +6,7 @@ using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -113,6 +114,39 @@ public class GameController : ControllerBase
     {
         await _bggImportService.ImportList(command.Games);
         return NoContent();
+    }
+
+    [HttpGet]
+    [Route("{id:int}/price")]
+    [EnableRateLimiting("changedetection")]
+    public async Task<IActionResult> GetGamePrice(int id, [FromQuery] bool refresh, CancellationToken cancellationToken)
+    {
+        var price = await _gameService.GetGamePriceAsync(id, refresh, cancellationToken);
+        if (price == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(price);
+    }
+
+    [HttpGet]
+    [Route("prices/tracked")]
+    [EnableRateLimiting("changedetection")]
+    public async Task<IActionResult> GetTrackedPrices([FromQuery] bool refresh, CancellationToken cancellationToken)
+    {
+        var prices = await _gameService.GetTrackedPricesAsync(refresh, cancellationToken);
+        return Ok(prices);
+    }
+
+    [HttpPost]
+    [Route("{id:int}/watch")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [EnableRateLimiting("changedetection")]
+    public async Task<IActionResult> CreateWatch(int id, [FromBody] CreateWatchCommand command, CancellationToken cancellationToken)
+    {
+        var game = await _gameService.CreateWatchForGame(id, command.Url, cancellationToken);
+        return Ok(game.ToDto());
     }
 
     [HttpGet]

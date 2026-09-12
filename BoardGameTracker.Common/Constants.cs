@@ -61,12 +61,25 @@ public static class Constants
         public const string ImageUnsupportedFormat = "error.image.unsupported-format";
         public const string InvalidResetToken = "error.auth.invalid-reset-token";
         public const string GameAlreadyOnLoan = "error.loan.game-already-on-loan";
+        public const string ChangeDetectionInvalidBaseUrl = "error.changedetection.invalid-base-url";
+        public const string ChangeDetectionNotConfigured = "error.changedetection.not-configured";
+        public const string ChangeDetectionWatchNotFound = "error.changedetection.watch-not-found";
+        public const string ChangeDetectionCreateWatchFailed = "error.changedetection.create-watch-failed";
+        public const string InvalidShopUrl = "error.game.invalid-shop-url";
+        public const string SettingsInvalidPublicUrl = "error.settings.invalid-public-url";
     }
 
     public static class BggConfig
     {
         public const string ApiKey = "bgg_api_key";
         public const string EnvApiKeyName = "BGG_API_KEY";
+    }
+
+    public static class ChangeDetectionConfig
+    {
+        public const string Prefix = "changedetection_";
+        public const string BaseUrl = "changedetection_base_url";
+        public const string ApiKey = "changedetection_api_key";
     }
 
     public static class UpdateConfig

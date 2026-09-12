@@ -746,6 +746,47 @@ public class BggImportServiceTests
     }
 
     [Fact]
+    public async Task ImportList_ShouldBatchBggLookups_WhenImportingManyGames()
+    {
+        var addedDate = new DateTime(2024, 8, 1, 0, 0, 0, DateTimeKind.Utc);
+        var importGames = Enumerable.Range(1, 25)
+            .Select(id => new ImportGame
+            {
+                Title = $"Game {id}",
+                BggId = id,
+                ImageUrl = "img.jpg",
+                State = GameState.Owned,
+                HasScoring = true,
+                Price = 0,
+                AddedDate = addedDate
+            })
+            .ToList<ImportGame>();
+
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync((ThingRequest request) => CreateSucceededThingResponse(
+                request.Ids.Select(id => new ThingResponse.Item { Id = id, Type = "boardgame" })));
+        _gameFactoryMock
+            .Setup(x => x.CreateFromBggAsync(
+                It.IsAny<ThingResponse.Item>(), It.IsAny<bool>(), It.IsAny<GameState>(),
+                It.IsAny<decimal?>(), It.IsAny<DateTime?>(), It.IsAny<string?>()))
+            .ReturnsAsync((ThingResponse.Item item, bool _, GameState _, decimal? _, DateTime? _, string? _) =>
+                new Game($"Game {item.Id}"));
+        _gameRepositoryMock
+            .Setup(x => x.CreateAsync(It.IsAny<Game>()))
+            .ReturnsAsync((Game game) => game);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        await _bggImportService.ImportList(importGames);
+
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Exactly(2));
+        _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Exactly(25));
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+    }
+
+    [Fact]
     public async Task ImportList_ShouldSkipGame_WhenAlreadyInDatabase()
     {
         var importGames = new List<ImportGame>
@@ -880,15 +921,11 @@ public class BggImportServiceTests
             Type = "boardgame"
         };
         var foundThingResponse = CreateSucceededThingResponse([rawItem]);
-        var missingThingResponse = CreateSucceededThingResponse([]);
         var createdGame = new Game("Found Game") { Id = 50 };
 
         _bggClientMock
-            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(100))))
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
             .ReturnsAsync(foundThingResponse);
-        _bggClientMock
-            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(200))))
-            .ReturnsAsync(missingThingResponse);
         _gameFactoryMock
             .Setup(x => x.CreateFromBggAsync(
                 rawItem,
@@ -909,8 +946,9 @@ public class BggImportServiceTests
 
         _gameRepositoryMock.Verify(x => x.GetGameByBggId(100), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetGameByBggId(200), Times.Once);
-        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(100))), Times.Once);
-        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(200))), Times.Once);
+        _bggClientMock.Verify(
+            x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(100) && r.Ids.Contains(200))),
+            Times.Once);
         _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
             rawItem,
             false,
@@ -998,11 +1036,8 @@ public class BggImportServiceTests
         var createdGame = new Game("Working Game") { Id = 60 };
 
         _bggClientMock
-            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(100))))
-            .ReturnsAsync(CreateSucceededThingResponse([brokenItem]));
-        _bggClientMock
-            .Setup(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(200))))
-            .ReturnsAsync(CreateSucceededThingResponse([workingItem]));
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(CreateSucceededThingResponse([brokenItem, workingItem]));
         _gameFactoryMock
             .Setup(x => x.CreateFromBggAsync(brokenItem, false, GameState.Owned, 10.00m, addedDate, null))
             .ThrowsAsync(new InvalidOperationException("factory failed"));
@@ -1020,8 +1055,9 @@ public class BggImportServiceTests
 
         _gameRepositoryMock.Verify(x => x.GetGameByBggId(100), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetGameByBggId(200), Times.Once);
-        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(100))), Times.Once);
-        _bggClientMock.Verify(x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(200))), Times.Once);
+        _bggClientMock.Verify(
+            x => x.GetThingAsync(It.Is<ThingRequest>(r => r.Ids.Contains(100) && r.Ids.Contains(200))),
+            Times.Once);
         _gameFactoryMock.Verify(x => x.CreateFromBggAsync(brokenItem, false, GameState.Owned, 10.00m, addedDate, null), Times.Once);
         _gameFactoryMock.Verify(x => x.CreateFromBggAsync(workingItem, false, GameState.Owned, 20.00m, addedDate, null), Times.Once);
         _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);

@@ -16,11 +16,31 @@
     "cannot-delete-last-admin": "Cannot delete the last admin account",
     "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
     "invalid-credentials": "Invalid username or password",
-    "invalid-refresh-token": "Invalid or expired session"
+    "invalid-refresh-token": "Invalid or expired session",
+    "player-already-linked": "This player is already linked to another account",
+    "invalid-reset-token": "This password reset link is invalid or has expired"
+  },
+  "changedetection": {
+    "invalid-base-url": "The changedetection.io URL is not valid",
+    "not-configured": "changedetection.io is not configured",
+    "watch-not-found": "This watch id was not found on changedetection.io",
+    "create-watch-failed": "changedetection.io could not create the watch"
+  },
+  "game": {
+    "invalid-shop-url": "Enter a valid http(s) shop URL"
   },
   "something-went-wrong": "Something went wrong, please try again later.",
   "unexpected-error": "An unexpected error occurred.",
   "network": "Unable to connect to the server. Please check your connection.",
   "timeout": "The request took too long. Please try again.",
-  "server": "A server error occurred. Please try again later."
+  "server": "A server error occurred. Please try again later.",
+  "email": {
+    "not-configured": "Email is not configured on this server"
+  },
+  "loan": {
+    "game-already-on-loan": "This game is already on loan"
+  },
+  "settings": {
+    "invalid-public-url": "The public URL is not valid"
+  }
 }

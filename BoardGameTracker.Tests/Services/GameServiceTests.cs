@@ -11,7 +11,9 @@ using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.Settings.Interfaces;
+using BoardGameTracker.Core.ChangeDetection.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -34,6 +36,7 @@ public class GameServiceTests
     private readonly Mock<ISettingsService> _settingsServiceMock;
     private readonly Mock<IImageService> _imageServiceMock;
     private readonly Mock<IManualService> _manualServiceMock;
+    private readonly Mock<IChangeDetectionClient> _changeDetectionClientMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<GameService>> _loggerMock;
     private readonly GameService _gameService;
@@ -47,6 +50,7 @@ public class GameServiceTests
         _settingsServiceMock.Setup(x => x.GetBggApiKeyAsync()).ReturnsAsync("test-api-key");
         _imageServiceMock = new Mock<IImageService>();
         _manualServiceMock = new Mock<IManualService>();
+        _changeDetectionClientMock = new Mock<IChangeDetectionClient>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _loggerMock = new Mock<ILogger<GameService>>();
 
@@ -57,6 +61,7 @@ public class GameServiceTests
             _manualServiceMock.Object,
             _bggClientMock.Object,
             _settingsServiceMock.Object,
+            _changeDetectionClientMock.Object,
             _unitOfWorkMock.Object,
             _loggerMock.Object);
     }
@@ -68,6 +73,7 @@ public class GameServiceTests
         _bggClientMock.VerifyNoOtherCalls();
         _imageServiceMock.VerifyNoOtherCalls();
         _manualServiceMock.VerifyNoOtherCalls();
+        _changeDetectionClientMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
@@ -183,6 +189,203 @@ public class GameServiceTests
             x => x.SingleOrDefaultAsync(It.IsAny<GameByIdWithDetailsForReadSpec>(), It.IsAny<CancellationToken>()),
             Times.Once);
         VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region Price Tests
+
+    [Fact]
+    public async Task GetGamePriceAsync_ShouldReturnNull_WhenGameDoesNotExist()
+    {
+        _gameRepositoryMock.Setup(x => x.GetWatchInfo(999)).ReturnsAsync((GameWatchInfo?)null);
+
+        var result = await _gameService.GetGamePriceAsync(999);
+
+        result.Should().BeNull();
+        _gameRepositoryMock.Verify(x => x.GetWatchInfo(999), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGamePriceAsync_ShouldReturnUnavailable_WhenGameHasNoWatchId()
+    {
+        _gameRepositoryMock.Setup(x => x.GetWatchInfo(1)).ReturnsAsync(new GameWatchInfo(1, null));
+
+        var result = await _gameService.GetGamePriceAsync(1);
+
+        result.Should().NotBeNull();
+        result!.GameId.Should().Be(1);
+        result.Available.Should().BeFalse();
+        _gameRepositoryMock.Verify(x => x.GetWatchInfo(1), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGamePriceAsync_ShouldReturnMappedResult_WhenWatchIdSet()
+    {
+        var watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        _gameRepositoryMock.Setup(x => x.GetWatchInfo(1)).ReturnsAsync(new GameWatchInfo(1, watchId));
+        _changeDetectionClientMock
+            .Setup(x => x.GetLatestAsync(watchId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ChangeDetectionResult { Status = ChangeDetectionStatus.Ok, InStock = true, Price = 22.5m });
+
+        var result = await _gameService.GetGamePriceAsync(1);
+
+        result.Should().NotBeNull();
+        result!.GameId.Should().Be(1);
+        result.WatchId.Should().Be(watchId);
+        result.Available.Should().BeTrue();
+        result.InStock.Should().BeTrue();
+        result.Price.Should().Be(22.5m);
+        _gameRepositoryMock.Verify(x => x.GetWatchInfo(1), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.GetLatestAsync(watchId, false, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetTrackedPricesAsync_ShouldReturnPriceForEachTrackedGame()
+    {
+        var watchOne = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var watchTwo = "f1919265-39eb-5c96-a082-35b510f705a2";
+        var gameOne = new Game("Game One") { Id = 1 };
+        gameOne.UpdateChangeDetectionWatchId(watchOne);
+        var gameTwo = new Game("Game Two") { Id = 2 };
+        gameTwo.UpdateChangeDetectionWatchId(watchTwo);
+
+        _gameRepositoryMock.Setup(x => x.GetTrackedGames())
+            .ReturnsAsync(new List<Game> { gameOne, gameTwo });
+        _changeDetectionClientMock
+            .Setup(x => x.GetLatestAsync(
+                It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, ChangeDetectionResult>
+            {
+                [watchOne] = new() { Status = ChangeDetectionStatus.Ok, InStock = true, Price = 22.5m },
+                [watchTwo] = new() { Status = ChangeDetectionStatus.Ok, InStock = false, Price = 10m }
+            });
+
+        var result = await _gameService.GetTrackedPricesAsync();
+
+        result.Should().HaveCount(2);
+        result.Should().ContainSingle(x => x.GameId == 1 && x.InStock == true && x.Price == 22.5m);
+        result.Should().ContainSingle(x => x.GameId == 2 && x.InStock == false && x.Price == 10m);
+        _gameRepositoryMock.Verify(x => x.GetTrackedGames(), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.GetLatestAsync(
+                It.Is<IReadOnlyCollection<string>>(ids => ids.Contains(watchOne) && ids.Contains(watchTwo)),
+                false,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateGame_ShouldSyncShopUrlFromWatch_WhenWatchIdChanges()
+    {
+        var watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var command = new UpdateGameCommand
+        {
+            Id = 1,
+            Title = "Brass",
+            HasScoring = true,
+            State = GameState.Wanted,
+            ChangeDetectionWatchId = watchId
+        };
+        var existingGame = new Game("Brass", true) { Id = 1 };
+
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(existingGame);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+        _changeDetectionClientMock
+            .Setup(x => x.GetWatchInfoAsync(watchId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ChangeDetectionStatus.Ok,
+                new ChangeDetectionWatchInfo("https://shop.example.com/brass", "Brass", null)));
+
+        var result = await _gameService.UpdateGame(command);
+
+        result.ChangeDetectionWatchId.Should().Be(watchId);
+        result.ShopUrl.Should().Be("https://shop.example.com/brass");
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.GetWatchInfoAsync(watchId, It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateGame_ShouldRejectWatchId_WhenWatchDoesNotExist()
+    {
+        var watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var command = new UpdateGameCommand
+        {
+            Id = 1,
+            Title = "Brass",
+            HasScoring = true,
+            State = GameState.Wanted,
+            ChangeDetectionWatchId = watchId
+        };
+        var existingGame = new Game("Brass", true) { Id = 1 };
+
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(existingGame);
+        _changeDetectionClientMock
+            .Setup(x => x.GetWatchInfoAsync(watchId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ChangeDetectionStatus.WatchNotFound, (ChangeDetectionWatchInfo?)null));
+
+        var act = async () => await _gameService.UpdateGame(command);
+
+        await act.Should().ThrowAsync<ValidationException>();
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateWatchForGame_ShouldCreateWatchAndLinkIt()
+    {
+        var watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var existingGame = new Game("Brass", true) { Id = 1 };
+
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(existingGame);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+        _changeDetectionClientMock
+            .Setup(x => x.CreateWatchAsync("https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ChangeDetectionStatus.Ok, (string?)watchId));
+
+        var result = await _gameService.CreateWatchForGame(1, " https://shop.example.com/brass ");
+
+        result.ChangeDetectionWatchId.Should().Be(watchId);
+        result.ShopUrl.Should().Be("https://shop.example.com/brass");
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.CreateWatchAsync("https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateWatchForGame_ShouldThrow_WhenChangeDetectionNotConfigured()
+    {
+        var existingGame = new Game("Brass", true) { Id = 1 };
+
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(existingGame);
+        _changeDetectionClientMock
+            .Setup(x => x.CreateWatchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ChangeDetectionStatus.NotConfigured, (string?)null));
+
+        var act = async () => await _gameService.CreateWatchForGame(1, "https://shop.example.com/brass");
+
+        await act.Should().ThrowAsync<DomainException>();
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateWatchForGame_ShouldRejectInvalidUrl_WithoutCallingChangeDetection()
+    {
+        var existingGame = new Game("Brass", true) { Id = 1 };
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(existingGame);
+
+        var act = async () => await _gameService.CreateWatchForGame(1, "not a url");
+
+        await act.Should().ThrowAsync<ValidationException>();
+        _changeDetectionClientMock.Verify(
+            x => x.CreateWatchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     #endregion
@@ -386,7 +589,7 @@ public class GameServiceTests
         result.HasScoring.Should().BeTrue();
         result.State.Should().Be(GameState.Owned);
         result.Description.Should().Be("Updated description");
-        result.ShopUrl.Should().Be("https://shop.example.com/updated");
+        result.ShopUrl.Should().BeNull();
         result.Language.Should().Be("nl");
         result.BuyingPrice.Should().NotBeNull();
         result.BuyingPrice!.Amount.Should().Be(39.99m);

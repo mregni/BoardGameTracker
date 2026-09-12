@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Download from "@/assets/icons/download.svg?react";
 import type { RagCitation } from "@/models";
@@ -14,6 +15,22 @@ interface Props {
 export const SourcesPanel = ({ citations, focusedIndex, onFocus, onExpand }: Props) => {
 	const { t } = useTranslation("chat");
 
+	const [aspect, setAspect] = useState<number | null>(null);
+	const [previewHeight, setPreviewHeight] = useState(0);
+	const previewRef = useRef<HTMLButtonElement>(null);
+
+	useEffect(() => {
+		const element = previewRef.current;
+		if (!element || typeof ResizeObserver === "undefined") {
+			return;
+		}
+		const observer = new ResizeObserver((entries) => {
+			setPreviewHeight(entries[0].contentRect.height);
+		});
+		observer.observe(element);
+		return () => observer.disconnect();
+	}, []);
+
 	const focused = citations[focusedIndex] ?? citations[0];
 	if (!focused) {
 		return null;
@@ -26,8 +43,10 @@ export const SourcesPanel = ({ citations, focusedIndex, onFocus, onExpand }: Pro
 		void downloadManualCall(focused.manualId, docName);
 	};
 
+	const previewWidth = aspect && previewHeight ? Math.round(previewHeight * aspect) : undefined;
+
 	return (
-		<div className="flex h-full w-full flex-col">
+		<div className="flex h-full flex-col" style={{ width: previewWidth, maxWidth: "100%" }}>
 			<div className="flex items-center justify-between gap-3 pb-3">
 				<h3 className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">{t("sources")}</h3>
 				<button
@@ -82,10 +101,11 @@ export const SourcesPanel = ({ citations, focusedIndex, onFocus, onExpand }: Pro
 			</div>
 
 			<button
+				ref={previewRef}
 				type="button"
 				onClick={onExpand}
 				aria-label={t("click-to-enlarge")}
-				className="flex min-h-0 flex-1 cursor-zoom-in items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-black/30 p-3 transition-colors hover:border-primary"
+				className="flex min-h-0 flex-1 cursor-zoom-in items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-black/30 transition-colors hover:border-primary"
 			>
 				<PageImage
 					key={`${focused.manualId}-${focused.page}`}
@@ -93,6 +113,12 @@ export const SourcesPanel = ({ citations, focusedIndex, onFocus, onExpand }: Pro
 					alt={`${docName} · ${pageLabel}`}
 					className="max-h-full max-w-full rounded object-contain"
 					fallback={<span className="text-sm text-white/40">{t("image-unavailable")}</span>}
+					onLoad={(event) => {
+						const image = event.currentTarget;
+						if (image.naturalWidth && image.naturalHeight) {
+							setAspect(image.naturalWidth / image.naturalHeight);
+						}
+					}}
 				/>
 			</button>
 		</div>

@@ -20,6 +20,7 @@ public abstract class BaseGame : HasId
     public string Description { get; private set; } = string.Empty;
     public string? Image { get; private set; }
     public string? ShopUrl { get; private set; }
+    public string? ChangeDetectionWatchId { get; private set; }
     public string? Language { get; private set; }
 
     public PlayerCountRange? PlayerCount { get; private set; }
@@ -86,6 +87,22 @@ public abstract class BaseGame : HasId
         }
 
         ShopUrl = shopUrl;
+    }
+
+    public void UpdateChangeDetectionWatchId(string? watchId)
+    {
+        if (string.IsNullOrWhiteSpace(watchId))
+        {
+            ChangeDetectionWatchId = null;
+            return;
+        }
+
+        if (!Guid.TryParse(watchId, out _))
+        {
+            throw new ArgumentException("ChangeDetectionWatchId must be a valid GUID.", nameof(watchId));
+        }
+
+        ChangeDetectionWatchId = watchId;
     }
 
     public void UpdateLanguage(string? language)

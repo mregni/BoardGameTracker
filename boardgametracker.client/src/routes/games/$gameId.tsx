@@ -20,6 +20,7 @@ import { RecentSessionsCard } from "./-components/RecentSessionsCard";
 import { ScoringResultsCard } from "./-components/ScoringResultsCard";
 import { SessionCountChartCard } from "./-components/SessionCountChartCard";
 import { TopPlayersCard } from "./-components/TopPlayersCard";
+import { TrackPriceDialog } from "./-components/TrackPriceDialog";
 import { useGameActions } from "./-hooks/useGameActions";
 import { useGameData } from "./-hooks/useGameData";
 import { useGameManuals } from "./-hooks/useGameManuals";
@@ -42,13 +43,27 @@ function RouteComponent() {
 	const { t } = useTranslation(["games", "common"]);
 	const { canWrite } = usePermissions();
 
-	const { game, deleteGame, settings, statistics, sessions, deleteExpansion, isLoading } = useGameData({
+	const {
+		game,
+		deleteGame,
+		settings,
+		statistics,
+		sessions,
+		price,
+		refreshPrice,
+		isRefreshingPrice,
+		createWatch,
+		isCreatingWatch,
+		deleteExpansion,
+		isLoading,
+	} = useGameData({
 		gameId,
 	});
 
 	const modals = useGameModals();
 	const manualsDialog = useModalState();
 	const expansionsDialog = useModalState();
+	const trackPriceDialog = useModalState();
 	const { manuals = [] } = useGameManuals(gameId);
 
 	const actions = useGameActions({
@@ -71,6 +86,8 @@ function RouteComponent() {
 								gameTitle={game.title}
 								gameState={game.state}
 								isLoaned={game.isLoaned}
+								hasPriceWatch={!!game.changeDetectionWatchId}
+								livePrice={price}
 								canWrite={canWrite}
 								onAddSession={actions.handleAddSession}
 								onEdit={actions.handleEdit}
@@ -84,8 +101,25 @@ function RouteComponent() {
 								uiLanguage={settings.uiLanguage}
 								manualCount={manuals.length}
 								ragEnabled={settings.ragEnabled}
+								price={price}
+								onRefreshPrice={refreshPrice}
+								isRefreshingPrice={isRefreshingPrice}
+								canTrackPrice={
+									canWrite && !!settings.changeDetectionStatus?.isConfigured && !game.changeDetectionWatchId
+								}
+								onTrackPrice={trackPriceDialog.show}
 								onOpenManuals={manualsDialog.show}
 								onOpenExpansions={expansionsDialog.show}
+							/>
+							<TrackPriceDialog
+								open={trackPriceDialog.isOpen}
+								close={trackPriceDialog.hide}
+								initialUrl={game.shopUrl}
+								isPending={isCreatingWatch}
+								onSubmit={async (url) => {
+									await createWatch(url);
+									trackPriceDialog.hide();
+								}}
 							/>
 							<ManualsDialog
 								gameId={gameId}

@@ -11,6 +11,7 @@ import {
 } from "@/components/BgtDialog";
 import { BgtInputField } from "@/components/BgtForm";
 import { type ChangePasswordRequest, isApiError } from "@/models";
+import { translateApiError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 
 interface Props {
@@ -42,7 +43,11 @@ export const ChangePasswordModal = ({ open, close, onSubmit, isLoading }: Props)
 				});
 				close();
 			} catch (e) {
-				setError(isApiError(e) ? t(e.message) : t("account.notifications.password-change-failed"));
+				setError(
+					isApiError(e)
+						? translateApiError(e.message, "settings:account.notifications.password-change-failed")
+						: t("account.notifications.password-change-failed"),
+				);
 			}
 		},
 	});

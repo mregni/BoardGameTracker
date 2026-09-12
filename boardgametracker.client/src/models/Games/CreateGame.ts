@@ -13,7 +13,7 @@ export const CreateGameSchema = z.object({
 	buyingPrice: z.coerce
 		.number()
 		.optional()
-		.transform((value) => value || null),
+		.transform((value) => (value === undefined || Number.isNaN(value) ? null : value)),
 	additionDate: z.coerce.date({
 		error: "game:added-date.required",
 	}),
@@ -30,13 +30,14 @@ export const CreateGameSchema = z.object({
 	maxPlayTime: z.coerce.number().int().optional(),
 	minAge: z.coerce.number().int().optional(),
 	image: z.string().nullable().optional(),
-	shopUrl: z
+	changeDetectionWatchId: z
 		.string()
 		.trim()
-		.refine((value) => value === "" || /^https?:\/\//i.test(value), {
-			message: "game:shop-url.invalid",
+		.refine((value) => value === "" || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value), {
+			message: "game:watch-id.invalid",
 		})
-		.optional(),
+		.optional()
+		.transform((value) => (value ? value : null)),
 	language: z
 		.string()
 		.optional()
