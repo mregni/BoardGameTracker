@@ -7,6 +7,9 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <SpaRoot>..\boardgametracker.client\</SpaRoot>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <SpaProxyLaunchCommand>pnpm dev</SpaProxyLaunchCommand>
         <SpaProxyServerUrl>http://localhost:5443</SpaProxyServerUrl>
     </PropertyGroup>
@@ -14,7 +17,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
-        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Condition="'$(Configuration)' == 'Debug'" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
           <PrivateAssets>all</PrivateAssets>
