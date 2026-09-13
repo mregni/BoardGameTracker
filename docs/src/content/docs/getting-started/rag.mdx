@@ -15,33 +15,46 @@ The rules assistant is **disabled by default** and needs enough hardware to run 
 
 ## Enabling it
 
-1. Set `RAG_ENABLED=true` for the `boardgametracker` container.
-2. Start the bundled Ollama service (it is opt-in through a compose profile):
+The [quick-start stack](/BoardGameTracker/getting-started/quick-start/) doesn't include the AI service. To turn the assistant on, add an `ollama` service to your `docker-compose.yml` and point the app at it:
 
-   ```bash
-   docker compose --profile rag up -d
-   ```
-3. Pull the models once, or let the app download them lazily on first use:
+```yaml title="docker-compose.yml (additions)"
+services:
+  boardgametracker:
+    environment:
+      # ...your existing values...
+      - RAG_ENABLED=true
+      - AI_BASE_URL=http://ollama:11434
+      - AI_CHAT_MODEL=qwen3:4b
 
-   ```bash
-   docker compose exec ollama ollama pull bge-m3
-   docker compose exec ollama ollama pull qwen3:4b
-   ```
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ./ollama:/root/.ollama
+```
+
+Then (re)start the stack:
+
+```bash
+docker compose up -d
+```
+
+The required models (`bge-m3` for search, plus your `AI_CHAT_MODEL`) are pulled **automatically when the container starts**, and re-checked on every restart — no manual `ollama pull` needed. Changing the chat model later just needs a redeploy.
 
 Once enabled, every uploaded manual is indexed automatically in the background. Manuals uploaded before enabling are indexed on the next start.
 
 ## Models
 
-| Role | Model | Configurable |
+| Role | Model | Where it runs |
 | --- | --- | --- |
-| Embeddings (search) | `bge-m3` | Fixed — chosen for multilingual rulebooks (English, Dutch, French, German, …). |
-| Chat (answers) | `qwen3:4b` | Yes — set `AI_CHAT_MODEL`. |
+| Embeddings (search) | `bge-m3` (fixed) | Always **local Ollama**. Chosen for multilingual rulebooks (English, Dutch, French, German, …). |
+| Chat (answers) | `qwen3:4b` by default | Local Ollama **or** a hosted provider — set `AI_CHAT_MODEL` / `AI_PROVIDER`. |
 
-The embedding model is fixed so the vector search stays consistent. The chat model is up to you — pick one that fits your hardware.
+The embedding model is fixed at `bge-m3` (1024 dimensions) so the vector search stays consistent with what's already stored in the database — it always runs locally. The **chat** model is independent: run it locally, or point it at a hosted provider (see [below](#using-a-hosted-chat-model)) while embeddings stay on your server.
 
 ## Which chat model should I use?
 
-Larger models give better answers but need more memory, and ideally a GPU. Set your choice with `AI_CHAT_MODEL` and `ollama pull` it.
+Larger models give better answers but need more memory, and ideally a GPU. Set your choice with `AI_CHAT_MODEL`.
 
 | Your hardware | Suggested `AI_CHAT_MODEL` |
 | --- | --- |
@@ -128,16 +141,53 @@ services:
               capabilities: [gpu]
 ```
 
-A 6 GB card such as a GTX 1060 comfortably runs `qwen3:8b`.
+A 6 GB card such as a GTX 1060 can run `qwen3:8b`, but not while the embedder is also on the GPU: the chat model needs roughly 5.5 GB and `bge-m3` another ~0.6 GB, so the two don't both fit in 6 GB. Pin the embedder to the CPU (see below) and the chat model gets the whole card.
+
+### Small GPUs: keep the embedder off the card
+
+On a tight GPU (around 4 GB) a local chat model and the `bge-m3` embedder compete for memory. When they don't both fit, Ollama offloads part of the chat model to the CPU and generation slows to a crawl. Because the embedder is small and only handles one short query per question, the fix is to **pin it to the CPU** so the chat model keeps the whole GPU:
+
+```yaml
+    environment:
+      - AI_EMBEDDING_NUM_GPU=0   # run bge-m3 on CPU
+```
+
+With this set, the chat model stays resident on the GPU across questions — only the first answer after startup pays the load time. The default (`-1`) lets Ollama decide, which is right when the GPU has room to spare (a bigger card, or a hosted chat model that leaves the GPU free).
 
 ## Rulebook page images
 
 Each answer's citations include a thumbnail of the actual rulebook page they were drawn from, so you can check the source at a glance. Pages are rendered on the server on demand and cached — no configuration is needed, as the container ships with the renderer (`poppler-utils`) built in. If the renderer is ever unavailable, answers simply fall back to text-only citations.
 
-## Using a hosted model instead
+## Using a hosted chat model
 
-If you would rather use a hosted, OpenAI-compatible endpoint instead of local Ollama, set `AI_PROVIDER=openai`, point `AI_BASE_URL` at the endpoint, and set `AI_API_KEY`. Note that this sends rulebook text and questions to that provider.
+You can keep embeddings local while sending the **chat** step to a hosted, OpenAI-compatible provider — a good option if you want stronger answers than your hardware can run locally. Only the chat model is hosted; `bge-m3` embeddings and the vector search always stay on your server.
+
+**OpenAI (ChatGPT):**
+
+```yaml
+    environment:
+      - AI_PROVIDER=openai
+      - AI_BASE_URL=https://api.openai.com/v1
+      - AI_CHAT_MODEL=gpt-4o-mini
+      - AI_API_KEY=sk-...
+```
+
+**Claude (Anthropic)** — through its OpenAI-compatible endpoint:
+
+```yaml
+    environment:
+      - AI_PROVIDER=openai
+      - AI_BASE_URL=https://api.anthropic.com/v1
+      - AI_CHAT_MODEL=claude-sonnet-4
+      - AI_API_KEY=sk-ant-...
+```
+
+You still need the local Ollama service for embeddings (it only has to run `bge-m3`, which is small). With a hosted chat model the GPU is used for embeddings alone, or you can skip a GPU entirely.
+
+<Aside type="caution">
+Only the current question and the rulebook excerpts retrieved for it are sent to the hosted provider. Your full rulebooks are not uploaded, but those excerpts do leave your server — keep that in mind for private material.
+</Aside>
 
 <Aside type="note">
-Changing `AI_CHAT_MODEL` takes effect on the next request, but pull the new model first (`ollama pull <model>`) — only indexing downloads models automatically, so the first question after a model change would otherwise fail. The database (`pgvector/pgvector:pg16`) image is required whether or not the assistant is enabled.
+Changing `AI_CHAT_MODEL` takes effect after a redeploy: the container pulls any missing local model on startup, so no manual `ollama pull` is needed. The database (`pgvector/pgvector:pg16`) image is required whether or not the assistant is enabled.
 </Aside>

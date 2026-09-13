@@ -1,12 +1,16 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { Trans, useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import Info from "@/assets/icons/info.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtInputField } from "@/components/BgtForm";
 import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { withForm } from "@/hooks/form";
-import type { BggConfigStatus } from "@/models";
+import { type BggConfigStatus, type ChangeDetectionConfigStatus, SettingsSchema } from "@/models";
+import { testChangeDetectionConnectionCall } from "@/services/changeDetectionService";
+import { zodValidator } from "@/utils/zodValidator";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { SettingsSection } from "./SettingsSection";
 
@@ -19,9 +23,26 @@ export const BggSettings = withForm({
 			isReadOnly: false,
 			source: "db",
 		} as BggConfigStatus,
+		changeDetectionStatus: {
+			isConfigured: false,
+			isReadOnly: false,
+			source: "db",
+		} as ChangeDetectionConfigStatus,
 	},
-	render: function Render({ form, disabled, bggStatus }: { form: any; disabled: boolean; bggStatus: BggConfigStatus }) {
+	render: function Render({ form, disabled, bggStatus, changeDetectionStatus }) {
 		const { t } = useTranslation("settings");
+
+		const testConnection = useMutation({
+			mutationFn: testChangeDetectionConnectionCall,
+			onSuccess: (result) => {
+				if (result.ok) {
+					toast.success(t("changedetection.test.success", { version: result.version ?? "" }));
+				} else {
+					toast.error(t("changedetection.test.failed"));
+				}
+			},
+			onError: () => toast.error(t("changedetection.test.failed")),
+		});
 
 		return (
 			<div className="space-y-6">
@@ -39,17 +60,11 @@ export const BggSettings = withForm({
 					/>
 					{!bggStatus.isReadOnly && bggStatus.isConfigured && (
 						<div className="flex flex-row gap-4 items-center">
-							<BgtButton
-								variant="error"
-								onClick={() => {
-									form.setFieldValue("bggApiKey", null);
-									bggStatus.isConfigured = false;
-								}}
-							>
+							<BgtButton variant="error" type="button" onClick={() => form.setFieldValue("bggApiKey", null)}>
 								{t("bgg.api-key.clear")}
 							</BgtButton>
-							<form.Subscribe selector={(state: { values: { bggApiKey?: string } }) => state.values.bggApiKey}>
-								{(bggApiKey?: string) =>
+							<form.Subscribe selector={(state) => state.values.bggApiKey}>
+								{(bggApiKey) =>
 									bggApiKey === null ? (
 										<BgtText size="1" color="white" opacity={50}>
 											{t("bgg.api-key.clear-hint")}
@@ -101,6 +116,94 @@ export const BggSettings = withForm({
 								}}
 							/>
 						}
+						icon={Info}
+					/>
+				</SettingsSection>
+
+				<SettingsSection title={t("changedetection.title")} description={t("changedetection.description")}>
+					<BgtStatus
+						variant={changeDetectionStatus.isConfigured ? "success" : "warning"}
+						title={
+							changeDetectionStatus.isConfigured
+								? t("changedetection.status.configured")
+								: t("changedetection.status.not-configured")
+						}
+						description={
+							changeDetectionStatus.isConfigured
+								? t("changedetection.status.source-db")
+								: t("changedetection.status.not-configured-description")
+						}
+					/>
+
+					{changeDetectionStatus.isConfigured && (
+						<div className="flex flex-row gap-4 items-center">
+							<BgtButton
+								variant="cancel"
+								type="button"
+								disabled={testConnection.isPending}
+								onClick={() => testConnection.mutate()}
+							>
+								{t("changedetection.test.button")}
+							</BgtButton>
+						</div>
+					)}
+
+					<div className="flex-1">
+						<form.Field
+							name="changeDetectionBaseUrl"
+							validators={zodValidator(SettingsSchema, "changeDetectionBaseUrl")}
+						>
+							{(field: AnyFieldApi) => (
+								<BgtInputField
+									field={field}
+									disabled={disabled}
+									type="text"
+									label={t("changedetection.base-url.label")}
+									placeholder={t("changedetection.base-url.placeholder")}
+								/>
+							)}
+						</form.Field>
+					</div>
+
+					{changeDetectionStatus.isConfigured && (
+						<div className="flex flex-row gap-4 items-center">
+							<BgtButton
+								variant="error"
+								type="button"
+								onClick={() => form.setFieldValue("changeDetectionApiKey", null)}
+							>
+								{t("changedetection.api-key.clear")}
+							</BgtButton>
+							<form.Subscribe selector={(state) => state.values.changeDetectionApiKey}>
+								{(changeDetectionApiKey) =>
+									changeDetectionApiKey === null ? (
+										<BgtText size="1" color="white" opacity={50}>
+											{t("changedetection.api-key.clear-hint")}
+										</BgtText>
+									) : null
+								}
+							</form.Subscribe>
+						</div>
+					)}
+
+					<div className="flex-1">
+						<form.Field name="changeDetectionApiKey">
+							{(field: AnyFieldApi) => (
+								<BgtInputField
+									field={field}
+									disabled={disabled}
+									type="password"
+									label={t("changedetection.api-key.label")}
+									placeholder={t("changedetection.api-key.placeholder")}
+								/>
+							)}
+						</form.Field>
+					</div>
+
+					<BgtStatus
+						variant="info"
+						title={t("changedetection.help-title")}
+						description={t("changedetection.help-description")}
 						icon={Info}
 					/>
 				</SettingsSection>

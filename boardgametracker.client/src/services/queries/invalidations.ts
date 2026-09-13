@@ -23,6 +23,7 @@ export class QueryInvalidator {
 			this.queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.manuals],
 			}),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] }),
 			this.invalidateDashboard(),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] }),
 		]);

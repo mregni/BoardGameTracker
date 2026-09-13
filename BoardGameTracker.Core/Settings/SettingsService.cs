@@ -1,8 +1,10 @@
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -12,15 +14,18 @@ public class SettingsService : ISettingsService
 {
     private readonly IConfigRepository _configRepository;
     private readonly IEnvironmentProvider _environmentProvider;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<SettingsService> _logger;
 
     public SettingsService(
         IConfigRepository configRepository,
         IEnvironmentProvider environmentProvider,
+        IUnitOfWork unitOfWork,
         ILogger<SettingsService> logger)
     {
         _configRepository = configRepository;
         _environmentProvider = environmentProvider;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -46,13 +51,22 @@ public class SettingsService : ISettingsService
             EmailEnabled = _environmentProvider.EmailEnabled,
             RagEnabled = _environmentProvider.RagEnabled,
             BggStatus = GetBggConfigStatusAsync(configs),
-            BggApiKey = string.Empty //Never return key to UI
+            BggApiKey = string.Empty, //Never return key to UI
+            ChangeDetectionBaseUrl = configs.GetValueOrDefault(
+                Constants.ChangeDetectionConfig.BaseUrl.ToLowerInvariant(), string.Empty), //DB value only, never the env override
+            ChangeDetectionStatus = GetChangeDetectionConfigStatus(configs),
+            ChangeDetectionApiKey = string.Empty //Never return key to UI
         };
     }
 
     public async Task<UIResourceDto> UpdateSettingsAsync(UIResourceDto model)
     {
         _logger.LogDebug("Updating settings");
+        var publicUrl = ValidateOptionalHttpUrl(model.PublicUrl, Constants.Errors.SettingsInvalidPublicUrl);
+        var changeDetectionBaseUrl = ValidateOptionalHttpUrl(model.ChangeDetectionBaseUrl,
+            Constants.Errors.ChangeDetectionInvalidBaseUrl);
+
+        await using var transaction = await _unitOfWork.BeginTransactionAsync();
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.Currency, model.Currency);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.TimeFormat, model.TimeFormat);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.DateFormat, model.DateFormat);
@@ -61,16 +75,46 @@ public class SettingsService : ISettingsService
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.ShelfOfShameMonths,
             model.ShelfOfShameMonthsLimit);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled);
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.PublicUrl, model.PublicUrl);
+        await _configRepository.SetConfigValueAsync(Constants.AppConfig.PublicUrl, publicUrl);
         await _configRepository.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled,
             model.RsvpAuthenticationEnabled);
         await _configRepository.SetConfigValueAsync(Constants.UpdateConfig.CheckEnabled, model.UpdateCheckEnabled);
         await _configRepository.SetConfigValueAsync(Constants.UpdateConfig.Track, model.VersionTrack);
-
-        var bggApiKey = model.BggApiKey ?? string.Empty;
-        await _configRepository.SetConfigValueAsync(Constants.BggConfig.ApiKey, bggApiKey);
+        await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl, changeDetectionBaseUrl);
+        await StoreSecretAsync(Constants.BggConfig.ApiKey, model.BggApiKey);
+        await StoreSecretAsync(Constants.ChangeDetectionConfig.ApiKey, model.ChangeDetectionApiKey);
+        await transaction.CommitAsync();
 
         return await GetSettingsAsync();
+    }
+
+    private static string ValidateOptionalHttpUrl(string? value, string errorKey)
+    {
+        var trimmed = (value ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+        {
+            return trimmed;
+        }
+
+        if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new ValidationException(errorKey);
+        }
+
+        return trimmed;
+    }
+
+    private async Task StoreSecretAsync(string key, string? submitted)
+    {
+        if (submitted == null)
+        {
+            await _configRepository.SetConfigValueAsync(key, string.Empty);
+        }
+        else if (!string.IsNullOrWhiteSpace(submitted))
+        {
+            await _configRepository.SetConfigValueAsync(key, submitted.Trim());
+        }
     }
 
     public async Task<string?> GetBggApiKeyAsync()
@@ -88,6 +132,13 @@ public class SettingsService : ISettingsService
     {
         var key = await GetBggApiKeyAsync();
         return !string.IsNullOrEmpty(key);
+    }
+
+    public async Task<(string? BaseUrl, string? ApiKey)> GetChangeDetectionSettingsAsync()
+    {
+        var configs = await _configRepository.GetConfigsByPrefixAsync(Constants.ChangeDetectionConfig.Prefix);
+        return (configs.GetValueOrDefault(Constants.ChangeDetectionConfig.BaseUrl),
+            configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey));
     }
 
     private static BggConfigStatusDto GetBggConfigStatusAsync(Dictionary<string, string> configs)
@@ -118,6 +169,21 @@ public class SettingsService : ISettingsService
         {
             IsConfigured = false,
             Source = "none",
+            IsReadOnly = false
+        };
+    }
+
+    private static ChangeDetectionConfigStatusDto GetChangeDetectionConfigStatus(Dictionary<string, string> configs)
+    {
+        var baseUrl = configs.GetValueOrDefault(Constants.ChangeDetectionConfig.BaseUrl.ToLowerInvariant(), string.Empty);
+        var apiKey = configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey.ToLowerInvariant(), string.Empty);
+
+        var isConfigured = !string.IsNullOrWhiteSpace(baseUrl) && !string.IsNullOrWhiteSpace(apiKey);
+
+        return new ChangeDetectionConfigStatusDto
+        {
+            IsConfigured = isConfigured,
+            Source = isConfigured ? "db" : "none",
             IsReadOnly = false
         };
     }

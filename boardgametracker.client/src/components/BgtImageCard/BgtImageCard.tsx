@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { GameState } from "@/models";
 import { StringToRgb } from "@/utils/stringUtils";
@@ -11,24 +12,19 @@ interface Props {
 	image: string | null;
 	link: string;
 	isLoaned?: boolean;
+	badge?: ReactNode;
 }
 
 export const BgtImageCard = (props: Props) => {
-	const { title, image, state, link, isLoaned = false } = props;
+	const { title, image, state, link, isLoaned = false, badge } = props;
 	const { t } = useTranslation();
 
 	return (
 		<Link to={link} from="/" className="[content-visibility:auto] [contain-intrinsic-size:auto_280px]">
-			<div className="flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1 group">
+			<div className="bgt-image-card flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1">
 				<div className="aspect-square rounded-lg overflow-hidden transition-all duration-200 relative">
 					{image ? (
-						<img
-							src={image}
-							alt={title}
-							loading="lazy"
-							decoding="async"
-							className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-						/>
+						<img src={image} alt={title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
 					) : (
 						<div
 							style={{ "--fallback-color": StringToRgb(title) } as React.CSSProperties}
@@ -37,6 +33,7 @@ export const BgtImageCard = (props: Props) => {
 							<span className="flex justify-center align-middle h-max font-bold text-3xl capitalize">{title[0]}</span>
 						</div>
 					)}
+					{badge && <div className="absolute top-2 right-2">{badge}</div>}
 				</div>
 				<div className="flex flex-row justify-between items-end">
 					<div className="flex flex-col items-start justify-start">

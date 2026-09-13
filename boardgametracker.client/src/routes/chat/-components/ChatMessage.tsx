@@ -8,9 +8,11 @@ import { CitationList } from "./CitationList";
 interface Props {
 	exchange: ChatExchange;
 	onRetry: () => void;
+	onSelectSource: (index: number) => void;
+	activeSourceIndex?: number;
 }
 
-export const ChatMessage = ({ exchange, onRetry }: Props) => {
+export const ChatMessage = ({ exchange, onRetry, onSelectSource, activeSourceIndex }: Props) => {
 	const { t } = useTranslation(["chat", "error"]);
 
 	const renderError = (error?: ApiError): string => {
@@ -59,7 +61,18 @@ export const ChatMessage = ({ exchange, onRetry }: Props) => {
 					{exchange.status === "done" && exchange.answer && (
 						<div className="flex flex-col gap-3">
 							<span className="whitespace-pre-wrap break-words">{exchange.answer.answer}</span>
-							{exchange.answer.citations.length > 0 && <CitationList citations={exchange.answer.citations} />}
+							{exchange.answer.durationMs > 0 && (
+								<span className="text-xs text-white/40">
+									{t("response-time", { seconds: (exchange.answer.durationMs / 1000).toFixed(1) })}
+								</span>
+							)}
+							{exchange.answer.citations.length > 0 && (
+								<CitationList
+									citations={exchange.answer.citations}
+									activeIndex={activeSourceIndex}
+									onSelect={onSelectSource}
+								/>
+							)}
 						</div>
 					)}
 				</div>

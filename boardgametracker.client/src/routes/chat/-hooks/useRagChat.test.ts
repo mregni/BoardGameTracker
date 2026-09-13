@@ -16,6 +16,7 @@ const askRagCallMock = vi.mocked(askRagCall);
 const answer: RagAnswer = {
 	answer: "Roll two dice and move.",
 	hasContext: true,
+	durationMs: 1234,
 	citations: [],
 };
 

@@ -7,6 +7,7 @@ import { BgtLoadingSpinner } from "./components/BgtLoadingSpinner/BgtLoadingSpin
 import { ErrorFallback } from "./components/ErrorBoundary/ErrorFallback";
 import { isApiError } from "./models";
 import { routeTree } from "./routeTree.gen";
+import { translateApiError } from "./utils/errorUtils";
 import i18n from "./utils/i18n";
 
 const TanStackQueryDevtools = import.meta.env.PROD
@@ -38,7 +39,7 @@ function getErrorToastMessage(error: unknown): string {
 		case "server":
 			return i18n.t("error:server");
 		case "client":
-			return error.message;
+			return translateApiError(error.message);
 		default:
 			return i18n.t("error:something-went-wrong");
 	}

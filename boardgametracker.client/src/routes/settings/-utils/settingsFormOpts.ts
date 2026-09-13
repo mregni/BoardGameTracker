@@ -15,5 +15,7 @@ export const settingsFormOpts = formOptions({
 		gameNightsEnabled: false,
 		rsvpAuthenticationEnabled: false,
 		bggApiKey: null as string | null,
+		changeDetectionBaseUrl: "",
+		changeDetectionApiKey: null as string | null,
 	},
 });

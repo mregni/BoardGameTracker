@@ -8,4 +8,5 @@ public interface ISettingsService
     Task<UIResourceDto> UpdateSettingsAsync(UIResourceDto model);
     Task<string?> GetBggApiKeyAsync();
     Task<bool> IsBggEnabled();
+    Task<(string? BaseUrl, string? ApiKey)> GetChangeDetectionSettingsAsync();
 }

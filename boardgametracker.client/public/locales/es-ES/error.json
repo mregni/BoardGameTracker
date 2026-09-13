@@ -21,7 +21,18 @@
     "invalid-refresh-token": "Invalid or expired session",
     "account-locked-out": "Demasiados intentos fallidos. Inténtalo de nuevo más tarde.",
     "invalid-auth-session": "Sesión de autenticación no válida o caducada",
-    "invalid-redirect-uri": "URI de redirección no válida"
+    "invalid-redirect-uri": "URI de redirección no válida",
+    "player-already-linked": "Este jugador ya está vinculado a otra cuenta",
+    "invalid-reset-token": "Este enlace para restablecer la contraseña no es válido o ha caducado"
+  },
+  "changedetection": {
+    "invalid-base-url": "La URL de changedetection.io no es válida",
+    "not-configured": "changedetection.io no está configurado",
+    "watch-not-found": "Este id de watch no se encontró en changedetection.io",
+    "create-watch-failed": "changedetection.io no pudo crear el watch"
+  },
+  "game": {
+    "invalid-shop-url": "Introduce una URL de tienda http(s) válida"
   },
   "something-went-wrong": "Something went wrong, please try again later.",
   "unexpected-error": "An unexpected error occurred.",
@@ -36,5 +47,14 @@
   },
   "session": {
     "invalid-expansion": "Una de las expansiones seleccionadas no pertenece a este juego"
+  },
+  "email": {
+    "not-configured": "El correo electrónico no está configurado en este servidor"
+  },
+  "loan": {
+    "game-already-on-loan": "Este juego ya está prestado"
+  },
+  "settings": {
+    "invalid-public-url": "La URL pública no es válida"
   }
 }

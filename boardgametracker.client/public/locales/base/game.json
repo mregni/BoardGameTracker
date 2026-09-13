@@ -26,11 +26,6 @@
     "required": "BGG id is required",
     "external-page": "Open BoardGameGeek website"
   },
-  "shop-url": {
-    "label": "Shop URL",
-    "placeholder": "https://...",
-    "invalid": "Enter a valid http(s) URL"
-  },
   "language": {
     "label": "Language",
     "none": "Not set"
@@ -112,7 +107,17 @@
   "price": {
     "label": "Price",
     "placeholder": "Game price",
-    "required": "Price is required"
+    "required": "Price is required",
+    "refresh": "Refresh price",
+    "refresh-failed": "Failed to refresh the price",
+    "recheck-queued": "Re-check requested, the price will update shortly",
+    "unavailable": {
+      "misconfigured": "changedetection.io settings are invalid",
+      "unauthorized": "changedetection.io rejected the API key",
+      "watchNotFound": "This watch no longer exists on changedetection.io",
+      "unreachable": "Couldn't reach changedetection.io",
+      "parseError": "Couldn't read the price from changedetection.io"
+    }
   },
   "state": {
     "for-trade": "For trade",
@@ -150,5 +155,26 @@
     "recent-sessions": "Recent sessions",
     "session-count-per-day": "Session count per day",
     "analytics": "Analytics"
+  },
+  "watch-id": {
+    "label": "changedetection.io watch id",
+    "placeholder": "e.g. e0808154-28da-4b85-9a71-24a409e694f1",
+    "invalid": "Enter a valid watch id (GUID)",
+    "tracking": "Tracking: {{title}}",
+    "not-found": "This watch id was not found on changedetection.io",
+    "unverified": "Couldn't verify this watch id right now"
+  },
+  "track-price": {
+    "button": "Track price",
+    "title": "Track price",
+    "description": "Enter the shop page for this game. A changedetection.io watch will be created and linked to it.",
+    "url-label": "Shop URL",
+    "url-placeholder": "https://...",
+    "submit": "Start tracking",
+    "success": "Price tracking started",
+    "failed": "Couldn't start price tracking"
+  },
+  "current-price": {
+    "title": "Current price"
   }
 }

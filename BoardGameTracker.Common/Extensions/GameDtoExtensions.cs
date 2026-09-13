@@ -15,6 +15,7 @@ public static class GameDtoExtensions
             Description = game.Description,
             Image = game.Image,
             ShopUrl = game.ShopUrl,
+            ChangeDetectionWatchId = game.ChangeDetectionWatchId,
             Language = game.Language,
             MinPlayers = game.PlayerCount?.Min,
             MaxPlayers = game.PlayerCount?.Max,

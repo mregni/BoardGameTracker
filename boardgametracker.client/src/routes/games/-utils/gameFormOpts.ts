@@ -19,7 +19,7 @@ export const gameFormOpts = formOptions({
 		buyingPrice: undefined as number | undefined,
 		additionDate: "",
 		image: null as string | null,
-		shopUrl: "",
+		changeDetectionWatchId: "",
 		language: LANGUAGE_NONE,
 	},
 });

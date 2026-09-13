@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
@@ -40,9 +41,11 @@ public class RagService : IRagService
     public async Task<RagAnswerDto> AskAsync(int gameId, string question, int? manualId = null,
         CancellationToken cancellationToken = default)
     {
+        var stopwatch = Stopwatch.StartNew();
+
         if (string.IsNullOrWhiteSpace(question))
         {
-            return new RagAnswerDto { Answer = NoContextAnswer, HasContext = false };
+            return new RagAnswerDto { Answer = NoContextAnswer, HasContext = false, DurationMs = stopwatch.ElapsedMilliseconds };
         }
 
         var settings = await _settingsProvider.GetAsync();
@@ -55,7 +58,7 @@ public class RagService : IRagService
             new NearestManualChunksSpec(gameId, queryVector, settings.TopK, manualId), cancellationToken);
         if (matches.Count == 0)
         {
-            return new RagAnswerDto { Answer = NoContextAnswer, HasContext = false };
+            return new RagAnswerDto { Answer = NoContextAnswer, HasContext = false, DurationMs = stopwatch.ElapsedMilliseconds };
         }
 
         var titles = await GetManualTitlesAsync(matches);
@@ -75,6 +78,7 @@ public class RagService : IRagService
         {
             Answer = response.Text ?? string.Empty,
             HasContext = true,
+            DurationMs = stopwatch.ElapsedMilliseconds,
             Citations = citations
         };
     }

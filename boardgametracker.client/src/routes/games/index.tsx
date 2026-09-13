@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useCallback, useMemo, useState } from "react";
@@ -15,7 +16,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useFilteredList } from "@/hooks/useFilteredList";
 import { usePermissions } from "@/hooks/usePermissions";
-import { getGames } from "@/services/queries/games";
+import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import {
 	type AgeBucket,
@@ -24,6 +25,7 @@ import {
 	GamesFilters,
 	type WeightBucket,
 } from "./-components/GamesFilters";
+import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
 import { useGamesData } from "./-hooks/useGamesData";
 
 const WEIGHT_BUCKETS: WeightBucket[] = ["light", "medium", "heavy"];
@@ -95,6 +97,15 @@ function RouteComponent() {
 	);
 
 	const { filterValue, setFilterValue, filtered: filteredGames } = useFilteredList(games, "title", categoryPreFilter);
+	const settingsQuery = useQuery(getSettings());
+	const trackedPricesQuery = useQuery({
+		...getTrackedPrices(),
+		enabled: !!settingsQuery.data?.changeDetectionStatus?.isConfigured,
+	});
+	const priceMap = useMemo(
+		() => new Map((trackedPricesQuery.data ?? []).map((price) => [price.gameId, price])),
+		[trackedPricesQuery.data],
+	);
 
 	if (isLoading) return null;
 
@@ -181,6 +192,7 @@ function RouteComponent() {
 							state={x.state}
 							isLoaned={x.isLoaned}
 							link={`/games/${x.id}`}
+							badge={x.changeDetectionWatchId ? <TrackedPriceIcon livePrice={priceMap.get(x.id)} variant="overlay" /> : undefined}
 						/>
 					))}
 				</BgtCardList>

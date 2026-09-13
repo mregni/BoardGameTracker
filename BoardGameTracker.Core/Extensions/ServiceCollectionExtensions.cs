@@ -1,4 +1,6 @@
 ﻿using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Core.ChangeDetection;
+using BoardGameTracker.Core.ChangeDetection.Interfaces;
 using BoardGameTracker.Core.Badges;
 using BoardGameTracker.Core.Badges.BadgeEvaluators;
 using BoardGameTracker.Core.Badges.Interfaces;
@@ -65,6 +67,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IEnvironmentProvider, EnvironmentProvider>();
         
         serviceCollection.AddScoped<IGameService, GameService>();
+        serviceCollection.AddScoped<IChangeDetectionClient, ChangeDetectionClient>();
         serviceCollection.AddScoped<IBggImportService, BggImportService>();
         serviceCollection.AddScoped<IGameChartService, GameChartService>();
         serviceCollection.AddScoped<IShameService, ShameService>();

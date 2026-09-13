@@ -27,6 +27,7 @@ export const useInlineGameUpdate = () => {
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] });
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] });
 		},
 	});
 

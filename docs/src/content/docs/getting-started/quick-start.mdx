@@ -3,13 +3,16 @@ title: Quick Start Guide
 description: Get BoardGameTracker up and running in a few minutes with Docker.
 ---
 
-import { Steps, Aside } from '@astrojs/starlight/components';
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
 Follow these steps to quickly get your BoardGameTracker up and running with Docker.
 
 <Steps>
 
-1. Download the latest `docker-compose.yml` file and make any adjustments you need to the configuration.
+1. Get the `docker-compose.yml` — download it directly, or copy the contents into a new file.
+
+   <Tabs>
+   <TabItem label="Download with wget">
 
    ```sh
    wget https://raw.githubusercontent.com/mregni/BoardGameTracker/refs/heads/master/docker-compose.yml
@@ -27,4 +30,8 @@ Follow these steps to quickly get your BoardGameTracker up and running with Dock
 
 <Aside type="caution" title="Default login">
 The default credentials are `admin` / `admin`. Change the password immediately after your first login.
+</Aside>
+
+<Aside type="note" title="Rules assistant (optional)">
+Want to ask natural-language questions about your rulebooks? The optional [rules assistant](/BoardGameTracker/getting-started/rag/) adds a local AI service on top of this stack — set it up separately once the basics are running.
 </Aside>

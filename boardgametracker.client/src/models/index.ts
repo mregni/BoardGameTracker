@@ -1,6 +1,8 @@
 export * from "./Auth/Auth";
 export * from "./Badge/Badge";
 
+export * from "./ChangeDetection/ChangeDetection";
+
 export * from "./Common/Actions";
 export * from "./Common/ApiError";
 export * from "./Common/BgtSelectItem";
@@ -20,6 +22,7 @@ export * from "./Games/Expansion";
 export * from "./Games/ExpansionLink";
 export * from "./Games/Game";
 export * from "./Games/GameManual";
+export * from "./Games/GamePrice";
 export * from "./Games/GameState";
 export * from "./Games/GameStatistics";
 export * from "./Games/GameType";
@@ -38,6 +41,7 @@ export * from "./Session/CreateSession";
 export * from "./Session/PlayerSession";
 export * from "./Session/Session";
 export * from "./Settings/BggConfigStatus";
+export * from "./Settings/ChangeDetectionConfigStatus";
 export * from "./Settings/Environment";
 export * from "./Settings/Language";
 export * from "./Settings/Settings";

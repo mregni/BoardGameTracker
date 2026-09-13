@@ -45,7 +45,17 @@ public class ConfigRepository : IConfigRepository
         {
             var config = new Config { Key = normalizedKey, Value = stringValue };
             await _context.Config.AddAsync(config);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                _context.Entry(config).State = EntityState.Detached;
+                await _context.Config
+                    .Where(c => c.Key == normalizedKey)
+                    .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.Value, stringValue));
+            }
         }
     }
 

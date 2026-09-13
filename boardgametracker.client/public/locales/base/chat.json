@@ -13,6 +13,14 @@
   "assistant": "Assistant",
   "thinking": "Thinking…",
   "retry": "Retry",
+  "response-time": "Answered in {{seconds}}s",
+  "top-match": "Top match",
+  "image-unavailable": "Page preview unavailable",
+  "close": "Close",
+  "previous": "Previous page",
+  "next": "Next page",
+  "download-manual": "Download manual",
+  "click-to-enlarge": "Click to enlarge",
   "empty": {
     "no-game": {
       "title": "Pick a game to start",

@@ -105,6 +105,7 @@ const buildManual = (overrides: Partial<GameManual> = {}): GameManual => ({
 const buildAnswer = (overrides: Partial<RagAnswer> = {}): RagAnswer => ({
 	answer: "Collect ten points",
 	hasContext: true,
+	durationMs: 1234,
 	citations: [],
 	...overrides,
 });
@@ -259,8 +260,8 @@ describe("asking questions", () => {
 		await sendQuestion("How many players?");
 
 		expect(await screen.findByText("Collect ten points")).toBeInTheDocument();
-		expect(screen.getByText("sources")).toBeInTheDocument();
-		expect(screen.getByText(/Rulebook ·/)).toBeInTheDocument();
+		expect(screen.getAllByText("sources").length).toBeGreaterThan(0);
+		expect(screen.getByText("top-match")).toBeInTheDocument();
 	});
 
 	it("should show an error with retry and recover after retrying", async () => {

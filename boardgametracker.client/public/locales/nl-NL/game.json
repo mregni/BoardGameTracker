@@ -26,11 +26,6 @@
     "required": "BGG id is required",
     "external-page": "Open BoardGameGeek website"
   },
-  "shop-url": {
-    "label": "Shop URL",
-    "placeholder": "https://...",
-    "invalid": "Enter a valid http(s) URL"
-  },
   "language": {
     "label": "Language",
     "none": "Not set"
@@ -112,7 +107,17 @@
   "price": {
     "label": "Price",
     "placeholder": "Game price",
-    "required": "Price is required"
+    "required": "Price is required",
+    "refresh": "Prijs verversen",
+    "refresh-failed": "Vernieuwen van de prijs mislukt",
+    "recheck-queued": "Controle aangevraagd, de prijs wordt zo bijgewerkt",
+    "unavailable": {
+      "misconfigured": "changedetection.io-instellingen zijn ongeldig",
+      "unauthorized": "changedetection.io heeft de API-sleutel geweigerd",
+      "watchNotFound": "Deze watch bestaat niet meer op changedetection.io",
+      "unreachable": "changedetection.io is niet bereikbaar",
+      "parseError": "Kon de prijs van changedetection.io niet lezen"
+    }
   },
   "state": {
     "for-trade": "For trade",
@@ -150,5 +155,26 @@
     "recent-sessions": "Recent sessions",
     "session-count-per-day": "Session count per day",
     "analytics": "Analytics"
+  },
+  "watch-id": {
+    "label": "changedetection.io watch-id",
+    "placeholder": "bv. e0808154-28da-4b85-9a71-24a409e694f1",
+    "invalid": "Geef een geldig watch-id (GUID) op",
+    "tracking": "Volgt: {{title}}",
+    "not-found": "Dit watch-id is niet gevonden op changedetection.io",
+    "unverified": "Kon dit watch-id nu niet controleren"
+  },
+  "track-price": {
+    "button": "Prijs volgen",
+    "title": "Prijs volgen",
+    "description": "Geef de winkelpagina van dit spel op. Er wordt een changedetection.io-watch aangemaakt en gekoppeld.",
+    "url-label": "Winkel-URL",
+    "url-placeholder": "https://...",
+    "submit": "Beginnen met volgen",
+    "success": "Prijs wordt nu gevolgd",
+    "failed": "Kon het volgen van de prijs niet starten"
+  },
+  "current-price": {
+    "title": "Huidige prijs"
   }
 }

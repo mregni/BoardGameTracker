@@ -1,6 +1,6 @@
 import type { CreateGame, Expansion, ExpansionLink, ExpansionUpdate } from "@/models/";
 import type { ShameStatistics } from "@/models/Games/ShameStatistics";
-import type { BggSearch, Game, GameStatistics, ImportGame, Session, Shame } from "../models";
+import type { BggSearch, Game, GamePrice, GameStatistics, ImportGame, Session, Shame } from "../models";
 import { axiosInstance } from "../utils/axiosInstance";
 
 const domain = "game";
@@ -43,6 +43,24 @@ export const getBggCollectionCall = (username: string): Promise<ImportGame[]> =>
 
 export const getGameStatisticsCall = (id: number): Promise<GameStatistics> => {
 	return axiosInstance.get<GameStatistics>(`${domain}/${id}/statistics`).then((response) => {
+		return response.data;
+	});
+};
+
+export const getGamePriceCall = (id: number, refresh = false): Promise<GamePrice> => {
+	return axiosInstance.get<GamePrice>(`${domain}/${id}/price`, { params: { refresh } }).then((response) => {
+		return response.data;
+	});
+};
+
+export const getTrackedPricesCall = (refresh = false): Promise<GamePrice[]> => {
+	return axiosInstance.get<GamePrice[]>(`${domain}/prices/tracked`, { params: { refresh } }).then((response) => {
+		return response.data;
+	});
+};
+
+export const createWatchCall = (id: number, url: string): Promise<Game> => {
+	return axiosInstance.post<Game>(`${domain}/${id}/watch`, { url }).then((response) => {
 		return response.data;
 	});
 };

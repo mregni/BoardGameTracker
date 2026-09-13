@@ -37,6 +37,11 @@ public class SettingsController : ControllerBase
     public async Task<IActionResult> Get()
     {
         var settings = await _settingsService.GetSettingsAsync();
+        if (User?.IsInRole(Constants.AuthRoles.Admin) != true)
+        {
+            settings.ChangeDetectionBaseUrl = string.Empty;
+        }
+
         return Ok(settings);
     }
 

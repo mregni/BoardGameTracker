@@ -1,9 +1,12 @@
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.Models.ChangeDetection;
+using BoardGameTracker.Core.ChangeDetection.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
@@ -23,6 +26,7 @@ public class GameService : IGameService
     private readonly ISettingsService _settingsService;
     private readonly IImageService _imageService;
     private readonly IManualService _manualService;
+    private readonly IChangeDetectionClient _changeDetectionClient;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<GameService> _logger;
 
@@ -33,6 +37,7 @@ public class GameService : IGameService
         IManualService manualService,
         IBoardGameGeekXmlApi2Client bggClient,
         ISettingsService settingsService,
+        IChangeDetectionClient changeDetectionClient,
         IUnitOfWork unitOfWork,
         ILogger<GameService> logger)
     {
@@ -42,6 +47,7 @@ public class GameService : IGameService
         _manualService = manualService;
         _bggClient = bggClient;
         _settingsService = settingsService;
+        _changeDetectionClient = changeDetectionClient;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -86,6 +92,12 @@ public class GameService : IGameService
         game.UpdateYearPublished(command.YearPublished);
         game.UpdateImage(command.Image);
         game.UpdateShopUrl(command.ShopUrl);
+        game.UpdateChangeDetectionWatchId(command.ChangeDetectionWatchId);
+        if (game.ChangeDetectionWatchId != null)
+        {
+            await SyncShopUrlFromWatchAsync(game);
+        }
+
         game.UpdateLanguage(command.Language);
         game.UpdateDescription(command.Description ?? string.Empty);
         game.UpdatePlayerCount(command.MinPlayers, command.MaxPlayers);
@@ -119,12 +131,18 @@ public class GameService : IGameService
             throw new EntityNotFoundException(nameof(Game), command.Id);
         }
 
+        var previousWatchId = game.ChangeDetectionWatchId;
         game.UpdateTitle(command.Title);
         game.UpdateHasScoring(command.HasScoring);
         game.UpdateState(command.State);
         game.UpdateYearPublished(command.YearPublished);
         game.UpdateImage(command.Image);
-        game.UpdateShopUrl(command.ShopUrl);
+        game.UpdateChangeDetectionWatchId(command.ChangeDetectionWatchId);
+        if (game.ChangeDetectionWatchId != null && game.ChangeDetectionWatchId != previousWatchId)
+        {
+            await SyncShopUrlFromWatchAsync(game);
+        }
+
         game.UpdateLanguage(command.Language);
         game.UpdateDescription(command.Description ?? string.Empty);
         game.UpdatePlayerCount(command.MinPlayers, command.MaxPlayers);
@@ -230,6 +248,115 @@ public class GameService : IGameService
         await _gameRepository.DeleteExpansion(gameId, expansionId);
         await  _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task<GamePriceDto?> GetGamePriceAsync(
+        int gameId,
+        bool forceRefresh = false,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Fetching price for game {GameId}", gameId);
+        var watchInfo = await _gameRepository.GetWatchInfo(gameId);
+        if (watchInfo == null)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(watchInfo.WatchId))
+        {
+            return new GamePriceDto
+            {
+                GameId = watchInfo.Id,
+                Available = false,
+                Status = ChangeDetectionStatus.NotConfigured
+            };
+        }
+
+        var result = await _changeDetectionClient.GetLatestAsync(watchInfo.WatchId, forceRefresh, cancellationToken);
+        return MapPrice(watchInfo.Id, watchInfo.WatchId, result);
+    }
+
+    public async Task<List<GamePriceDto>> GetTrackedPricesAsync(
+        bool forceRefresh = false,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Fetching prices for tracked games");
+        var games = await _gameRepository.GetTrackedGames();
+
+        var watchIds = games.Select(game => game.ChangeDetectionWatchId!).ToList();
+        var results = await _changeDetectionClient.GetLatestAsync(watchIds, forceRefresh, cancellationToken);
+
+        return games
+            .Select(game =>
+            {
+                results.TryGetValue(game.ChangeDetectionWatchId!, out var result);
+                return MapPrice(game.Id, game.ChangeDetectionWatchId,
+                    result ?? ChangeDetectionResult.Unavailable(ChangeDetectionStatus.Unreachable));
+            })
+            .ToList();
+    }
+
+    private static GamePriceDto MapPrice(int gameId, string? watchId, ChangeDetectionResult result)
+    {
+        return new GamePriceDto
+        {
+            GameId = gameId,
+            WatchId = watchId,
+            Available = result.Available,
+            Status = result.Status,
+            InStock = result.InStock,
+            Price = result.Price,
+            Currency = result.Currency,
+            CheckedAt = result.CheckedAt,
+            ShopUrl = result.SourceUrl,
+            RecheckQueued = result.RecheckQueued,
+            FetchedAt = result.FetchedAt
+        };
+    }
+
+    public async Task<Game> CreateWatchForGame(int gameId, string url, CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Creating changedetection.io watch for game {GameId}", gameId);
+        var game = await _gameRepository.GetByIdAsync(gameId)
+            ?? throw new EntityNotFoundException(nameof(Game), gameId);
+
+        var shopUrl = (url ?? string.Empty).Trim();
+        if (!IsHttpUrl(shopUrl))
+        {
+            throw new ValidationException(Constants.Errors.InvalidShopUrl);
+        }
+
+        var (status, watchId) = await _changeDetectionClient.CreateWatchAsync(shopUrl, game.Title, cancellationToken);
+        if (status != ChangeDetectionStatus.Ok || watchId == null)
+        {
+            throw new DomainException(status == ChangeDetectionStatus.NotConfigured
+                ? Constants.Errors.ChangeDetectionNotConfigured
+                : Constants.Errors.ChangeDetectionCreateWatchFailed);
+        }
+
+        game.UpdateChangeDetectionWatchId(watchId);
+        game.UpdateShopUrl(shopUrl);
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game {GameId} linked to changedetection.io watch {WatchId}", gameId, watchId);
+        return game;
+    }
+
+    private async Task SyncShopUrlFromWatchAsync(Game game)
+    {
+        var (status, info) = await _changeDetectionClient.GetWatchInfoAsync(game.ChangeDetectionWatchId!);
+        if (status == ChangeDetectionStatus.WatchNotFound)
+        {
+            throw new ValidationException(Constants.Errors.ChangeDetectionWatchNotFound);
+        }
+
+        if (status == ChangeDetectionStatus.Ok && info != null && IsHttpUrl(info.Url))
+        {
+            game.UpdateShopUrl(info.Url);
+        }
+    }
+
+    private static bool IsHttpUrl(string? value) =>
+        Uri.TryCreate(value, UriKind.Absolute, out var uri) &&
+        (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 
     private async Task EnsureBggConfiguredAsync()
     {

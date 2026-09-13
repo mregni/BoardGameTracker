@@ -489,4 +489,37 @@ public class GlobalExceptionHandlerTests
         VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task TryHandleAsync_WithCancellationOfAbortedRequest_ShouldReturn499WithoutLogging()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        httpContext.RequestAborted = new CancellationToken(canceled: true);
+        var exception = new OperationCanceledException();
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(StatusCodes.Status499ClientClosedRequest);
+        responseBody.Length.Should().Be(0);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithCancellationOfLiveRequest_ShouldReturn500AndLog()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new OperationCanceledException();
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(500);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(500);
+
+        VerifyErrorLogged(exception);
+        VerifyNoOtherCalls();
+    }
 }

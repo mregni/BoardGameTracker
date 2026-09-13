@@ -37,7 +37,8 @@
 	"general": {
 		"public-url": {
 			"label": "Public URL",
-			"placeholder": "https://myboardgametracker.app"
+			"placeholder": "https://myboardgametracker.app",
+			"invalid": "Enter a valid http(s) URL"
 		},
 		"ui-language": {
 			"label": "Language",
@@ -160,8 +161,8 @@
 			"description": "Configure Game Nights settings"
 		},
 		"bgg": {
-			"title": "BGG Integration",
-			"description": "BoardGameGeek API settings"
+			"title": "Integrations",
+			"description": "BoardGameGeek & price watch"
 		},
 		"account": {
 			"title": "Account",
@@ -305,6 +306,34 @@
 			"user-updated": "User updated successfully",
 			"user-update-failed": "Failed to update user",
 			"password-reset-failed": "Failed to reset password"
+		}
+	},
+	"changedetection": {
+		"title": "changedetection.io",
+		"description": "Configure a changedetection.io instance to fetch live price and stock for games that have a watch id.",
+		"status": {
+			"configured": "Configured",
+			"not-configured": "Not configured",
+			"source-db": "Configured and stored in the database.",
+			"not-configured-description": "Provide the base URL and API key of your changedetection.io instance to enable live price and stock lookups."
+		},
+		"base-url": {
+			"label": "Base URL",
+			"placeholder": "https://changes.example.com",
+			"invalid": "Enter a valid http(s) URL"
+		},
+		"api-key": {
+			"label": "API Key",
+			"placeholder": "Enter your changedetection.io API key",
+			"clear": "Remove API Key",
+			"clear-hint": "Save settings to apply the removal."
+		},
+		"help-title": "How it works",
+		"help-description": "Add a changedetection.io watch id to a game to see its current price and stock. The API key is found under Settings in your changedetection.io instance.",
+		"test": {
+			"button": "Test connection",
+			"success": "Connected to changedetection.io {{version}}",
+			"failed": "Couldn't connect to changedetection.io, check the URL and API key"
 		}
 	}
 }
