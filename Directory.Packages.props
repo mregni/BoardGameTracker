@@ -8,7 +8,10 @@
         <PackageVersion Include="Ardalis.GuardClauses" Version="5.0.0" />
         <PackageVersion Include="Ardalis.Specification" Version="9.3.1" />
         <PackageVersion Include="Ardalis.Specification.EntityFrameworkCore" Version="9.3.1" />
+        <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.4.6" />
+        <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.4.6" />
         <PackageVersion Include="BoardGamer.BoardGameGeek" Version="0.10.0" />
+        <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="13.4.0" />
         <PackageVersion Include="coverlet.collector" Version="8.0.1" />
         <PackageVersion Include="FluentAssertions" Version="8.10.0" />
         <PackageVersion Include="MailKit" Version="4.17.0" />
