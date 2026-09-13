@@ -5,5 +5,11 @@
         <AssemblyVersion>$(Version)</AssemblyVersion>
         <FileVersion>$(Version)</FileVersion>
         <InformationalVersion>$(Version)</InformationalVersion>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <NuGetAuditMode>all</NuGetAuditMode>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <AnalysisLevel>latest-recommended</AnalysisLevel>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <NoWarn>$(NoWarn);CS9057</NoWarn>
     </PropertyGroup>
 </Project>

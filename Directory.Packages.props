@@ -1,0 +1,49 @@
+<Project>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="Ardalis.GuardClauses" Version="5.0.0" />
+        <PackageVersion Include="Ardalis.Specification" Version="9.3.1" />
+        <PackageVersion Include="Ardalis.Specification.EntityFrameworkCore" Version="9.3.1" />
+        <PackageVersion Include="BoardGamer.BoardGameGeek" Version="0.10.0" />
+        <PackageVersion Include="coverlet.collector" Version="8.0.1" />
+        <PackageVersion Include="FluentAssertions" Version="8.10.0" />
+        <PackageVersion Include="MailKit" Version="4.17.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+        <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.12" />
+        <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.12" />
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.12" />
+        <PackageVersion Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.12" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.12" />
+        <PackageVersion Include="Microsoft.Extensions.AI" Version="10.10.0" />
+        <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.0" />
+        <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.12" />
+        <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
+        <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="10.0.12" />
+        <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.22.0" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+        <PackageVersion Include="Moq" Version="4.20.72" />
+        <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+        <PackageVersion Include="OllamaSharp" Version="5.4.30" />
+        <PackageVersion Include="PdfPig" Version="0.1.16" />
+        <PackageVersion Include="Pgvector" Version="0.3.2" />
+        <PackageVersion Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
+        <PackageVersion Include="Refit" Version="15.2.0" />
+        <PackageVersion Include="Refit.HttpClientFactory" Version="15.2.0" />
+        <PackageVersion Include="Refit.Reflection" Version="15.2.0" />
+        <PackageVersion Include="Sentry.AspNetCore" Version="6.11.0" />
+        <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+        <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+        <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+        <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+        <PackageVersion Include="Testcontainers.PostgreSql" Version="4.15.0" />
+        <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+        <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    </ItemGroup>
+</Project>
