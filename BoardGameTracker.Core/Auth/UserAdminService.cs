@@ -89,9 +89,7 @@ public class UserAdminService : IUserAdminService
             }
         }
 
-        var currentRoles = await _userManager.GetRolesAsync(user);
-        await _userManager.RemoveFromRolesAsync(user, currentRoles);
-        await _userManager.AddToRoleAsync(user, role);
+        await ReplaceRoleAsync(user, role);
 
         _logger.LogInformation("Admin {AdminId} updated role for user {UserId} ({Username}) to {Role}",
             currentUserId, userId, user.UserName, role);
@@ -152,14 +150,27 @@ public class UserAdminService : IUserAdminService
 
         await _userManager.UpdateAsync(user);
 
-        var currentRoles = await _userManager.GetRolesAsync(user);
-        await _userManager.RemoveFromRolesAsync(user, currentRoles);
-        await _userManager.AddToRoleAsync(user, role);
+        await ReplaceRoleAsync(user, role);
 
         _logger.LogInformation("Admin {AdminId} updated user {UserId} (username: {Username}, role: {Role})",
             currentUserId, userId, username, role);
 
         var updatedRoles = await _userManager.GetRolesAsync(user);
         return user.ToDto(updatedRoles);
+    }
+
+    private async Task ReplaceRoleAsync(ApplicationUser user, string role)
+    {
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        if (!currentRoles.Contains(role))
+        {
+            await _userManager.AddToRoleAsync(user, role);
+        }
+
+        var obsoleteRoles = currentRoles.Where(r => r != role).ToList();
+        if (obsoleteRoles.Count > 0)
+        {
+            await _userManager.RemoveFromRolesAsync(user, obsoleteRoles);
+        }
     }
 }

@@ -26,6 +26,8 @@ namespace BoardGameTracker.Tests.Auth;
 
 public class AuthServiceTests : IDisposable
 {
+    private const string ClientAddress = "203.0.113.7";
+
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly Mock<SignInManager<ApplicationUser>> _signInManagerMock;
     private readonly Mock<ITokenService> _tokenServiceMock;
@@ -33,6 +35,8 @@ public class AuthServiceTests : IDisposable
     private readonly Mock<IPlayerService> _playerServiceMock;
     private readonly Mock<IEmailService> _emailServiceMock;
     private readonly Mock<IPublicUrlBuilder> _publicUrlBuilderMock;
+    private readonly Mock<IBackgroundEmailSender> _backgroundEmailSenderMock;
+    private readonly Mock<ILoginAttemptTracker> _loginAttemptsMock;
     private readonly MainDbContext _context;
     private readonly Mock<ILogger<AuthService>> _loggerMock;
     private readonly AuthService _authService;
@@ -56,6 +60,8 @@ public class AuthServiceTests : IDisposable
         _playerServiceMock = new Mock<IPlayerService>();
         _emailServiceMock = new Mock<IEmailService>();
         _publicUrlBuilderMock = new Mock<IPublicUrlBuilder>();
+        _backgroundEmailSenderMock = new Mock<IBackgroundEmailSender>();
+        _loginAttemptsMock = new Mock<ILoginAttemptTracker>();
 
         var options = new DbContextOptionsBuilder<MainDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -72,6 +78,8 @@ public class AuthServiceTests : IDisposable
             _playerServiceMock.Object,
             _emailServiceMock.Object,
             _publicUrlBuilderMock.Object,
+            _backgroundEmailSenderMock.Object,
+            _loginAttemptsMock.Object,
             _context,
             _loggerMock.Object);
 
@@ -94,6 +102,9 @@ public class AuthServiceTests : IDisposable
         _playerServiceMock.VerifyNoOtherCalls();
         _emailServiceMock.VerifyNoOtherCalls();
         _publicUrlBuilderMock.VerifyNoOtherCalls();
+        _backgroundEmailSenderMock.VerifyNoOtherCalls();
+        _loginAttemptsMock.Verify(x => x.IsLockedOut(It.IsAny<string>(), It.IsAny<string>()), Times.AtMostOnce());
+        _loginAttemptsMock.VerifyNoOtherCalls();
     }
 
     #region LoginAsync
@@ -109,7 +120,7 @@ public class AuthServiceTests : IDisposable
         var expiry = DateTime.UtcNow.AddHours(1);
 
         _userManagerMock.Setup(x => x.FindByNameAsync("testuser")).ReturnsAsync(user);
-        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "password123", true))
+        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "password123", false))
             .ReturnsAsync(SignInResult.Success);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
@@ -117,16 +128,17 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Setup(x => x.GenerateRefreshTokenAsync(user.Id)).ReturnsAsync(refreshToken);
         _tokenServiceMock.Setup(x => x.GetAccessTokenExpiry()).Returns(expiry);
 
-        var result = await _authService.LoginAsync(request);
+        var result = await _authService.LoginAsync(request, ClientAddress);
 
         result.AccessToken.Should().Be(accessToken);
-        result.RefreshToken.Should().Be(refreshToken.Token);
+        result.RefreshToken.Should().Be(refreshToken.PlainTextToken);
         result.ExpiresAt.Should().Be(expiry);
         result.User.Username.Should().Be("testuser");
         result.User.Roles.Should().Contain("User");
 
         _userManagerMock.Verify(x => x.FindByNameAsync("testuser"), Times.Once);
-        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "password123", true), Times.Once);
+        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "password123", false), Times.Once);
+        _loginAttemptsMock.Verify(x => x.Reset("testuser", ClientAddress), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
         _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles), Times.Once);
@@ -145,13 +157,14 @@ public class AuthServiceTests : IDisposable
             .ReturnsAsync((ApplicationUser?)null);
 
         // Act
-        var act = () => _authService.LoginAsync(request);
+        var act = () => _authService.LoginAsync(request, ClientAddress);
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
             .WithMessage(Constants.Errors.InvalidCredentials);
 
         _userManagerMock.Verify(x => x.FindByNameAsync("unknownuser"), Times.Once);
+        _loginAttemptsMock.Verify(x => x.RecordFailure("unknownuser", ClientAddress), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -163,18 +176,19 @@ public class AuthServiceTests : IDisposable
         var user = new ApplicationUser("testuser", "test@test.com");
 
         _userManagerMock.Setup(x => x.FindByNameAsync("testuser")).ReturnsAsync(user);
-        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "wrongpassword", true))
+        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "wrongpassword", false))
             .ReturnsAsync(SignInResult.Failed);
 
         // Act
-        var act = () => _authService.LoginAsync(request);
+        var act = () => _authService.LoginAsync(request, ClientAddress);
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
             .WithMessage(Constants.Errors.InvalidCredentials);
 
         _userManagerMock.Verify(x => x.FindByNameAsync("testuser"), Times.Once);
-        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "wrongpassword", true), Times.Once);
+        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "wrongpassword", false), Times.Once);
+        _loginAttemptsMock.Verify(x => x.RecordFailure("testuser", ClientAddress), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -185,16 +199,31 @@ public class AuthServiceTests : IDisposable
         var user = new ApplicationUser("testuser", "test@test.com");
 
         _userManagerMock.Setup(x => x.FindByNameAsync("testuser")).ReturnsAsync(user);
-        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "password123", true))
+        _signInManagerMock.Setup(x => x.CheckPasswordSignInAsync(user, "password123", false))
             .ReturnsAsync(SignInResult.LockedOut);
 
-        var act = () => _authService.LoginAsync(request);
+        var act = () => _authService.LoginAsync(request, ClientAddress);
 
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
             .WithMessage(Constants.Errors.AccountLockedOut);
 
         _userManagerMock.Verify(x => x.FindByNameAsync("testuser"), Times.Once);
-        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "password123", true), Times.Once);
+        _signInManagerMock.Verify(x => x.CheckPasswordSignInAsync(user, "password123", false), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task LoginAsync_ShouldRejectWithoutCheckingThePassword_WhenClientIsLockedOutForThatAccount()
+    {
+        var request = new LoginRequest("testuser", "password123");
+        _loginAttemptsMock.Setup(x => x.IsLockedOut("testuser", ClientAddress)).Returns(true);
+
+        var act = () => _authService.LoginAsync(request, ClientAddress);
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>()
+            .WithMessage(Constants.Errors.AccountLockedOut);
+
+        _userManagerMock.Verify(x => x.FindByNameAsync(It.IsAny<string>()), Times.Never);
         VerifyNoOtherCalls();
     }
 
@@ -215,22 +244,19 @@ public class AuthServiceTests : IDisposable
         _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("valid-refresh-token"))
             .ReturnsAsync(activeToken);
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
-        _tokenServiceMock.Setup(x => x.GenerateRefreshTokenAsync(user.Id)).ReturnsAsync(newRefreshToken);
-        _tokenServiceMock.Setup(x => x.RevokeRefreshTokenAsync(activeToken, "Replaced by new token", newRefreshToken.Token))
-            .Returns(Task.CompletedTask);
+        _tokenServiceMock.Setup(x => x.RotateRefreshTokenAsync(activeToken)).ReturnsAsync(newRefreshToken);
         _tokenServiceMock.Setup(x => x.GenerateAccessToken(user, roles)).Returns(accessToken);
         _tokenServiceMock.Setup(x => x.GetAccessTokenExpiry()).Returns(expiry);
 
         var result = await _authService.RefreshAsync("valid-refresh-token");
 
         result.AccessToken.Should().Be(accessToken);
-        result.RefreshToken.Should().Be(newRefreshToken.Token);
+        result.RefreshToken.Should().Be(newRefreshToken.PlainTextToken);
         result.ExpiresAt.Should().Be(expiry);
 
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("valid-refresh-token"), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
-        _tokenServiceMock.Verify(x => x.GenerateRefreshTokenAsync(user.Id), Times.Once);
-        _tokenServiceMock.Verify(x => x.RevokeRefreshTokenAsync(activeToken, "Replaced by new token", newRefreshToken.Token), Times.Once);
+        _tokenServiceMock.Verify(x => x.RotateRefreshTokenAsync(activeToken), Times.Once);
         _tokenServiceMock.Verify(x => x.GenerateAccessToken(user, roles), Times.Once);
         _tokenServiceMock.Verify(x => x.GetAccessTokenExpiry(), Times.Once);
         VerifyNoOtherCalls();
@@ -271,6 +297,24 @@ public class AuthServiceTests : IDisposable
             .WithMessage(Constants.Errors.InvalidRefreshToken);
 
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("revoked-token"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldRevokeEverySession_WhenARotatedTokenIsPresentedAgain()
+    {
+        var rotatedToken = RefreshToken.Create("user-id-123", 7);
+        rotatedToken.Revoke("Replaced by new token", "next-token-hash");
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(rotatedToken);
+        _tokenServiceMock.Setup(x => x.RevokeAllUserTokensAsync("user-id-123", "Refresh token reuse detected")).Returns(Task.CompletedTask);
+
+        var act = () => _authService.RefreshAsync("old-token");
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>()
+            .WithMessage(Constants.Errors.InvalidRefreshToken);
+
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeAllUserTokensAsync("user-id-123", "Refresh token reuse detected"), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -863,31 +907,27 @@ public class AuthServiceTests : IDisposable
         _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
         _userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("reset-token");
         _publicUrlBuilderMock.Setup(x => x.BuildResetUrlAsync(user.Id, "reset-token")).ReturnsAsync("http://x/reset");
-        _emailServiceMock
-            .Setup(x => x.SendAsync("u@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
         await _authService.ForgotPasswordAsync("user");
 
         _userManagerMock.Verify(x => x.FindByNameAsync("user"), Times.Once);
         _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
         _userManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(user), Times.Once);
         _publicUrlBuilderMock.Verify(x => x.BuildResetUrlAsync(user.Id, "reset-token"), Times.Once);
-        _emailServiceMock.Verify(x => x.SendAsync("u@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+        _backgroundEmailSenderMock.Verify(x => x.Queue("u@test.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task ForgotPasswordAsync_ShouldNotThrow_WhenEmailSendFails()
+    public async Task ForgotPasswordAsync_ShouldNotThrow_WhenQueueingFails()
     {
         var user = new ApplicationUser("user", "u@test.com");
         _userManagerMock.Setup(x => x.FindByNameAsync("user")).ReturnsAsync(user);
         _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
         _userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("reset-token");
         _publicUrlBuilderMock.Setup(x => x.BuildResetUrlAsync(user.Id, "reset-token")).ReturnsAsync("http://x/reset");
-        _emailServiceMock
-            .Setup(x => x.SendAsync("u@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("smtp down"));
+        _backgroundEmailSenderMock
+            .Setup(x => x.Queue("u@test.com", It.IsAny<string>(), It.IsAny<string>()))
+            .Throws(new InvalidOperationException("queue down"));
 
         var act = () => _authService.ForgotPasswordAsync("user");
 
@@ -897,7 +937,7 @@ public class AuthServiceTests : IDisposable
         _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
         _userManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(user), Times.Once);
         _publicUrlBuilderMock.Verify(x => x.BuildResetUrlAsync(user.Id, "reset-token"), Times.Once);
-        _emailServiceMock.Verify(x => x.SendAsync("u@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+        _backgroundEmailSenderMock.Verify(x => x.Queue("u@test.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

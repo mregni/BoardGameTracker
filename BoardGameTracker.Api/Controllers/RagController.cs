@@ -1,14 +1,19 @@
 using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Rag.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BoardGameTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/rag")]
-[Authorize]
+[Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+[EnableRateLimiting("rag")]
 public class RagController : ControllerBase
 {
     private readonly IRagService _ragService;
@@ -22,6 +27,7 @@ public class RagController : ControllerBase
 
     [HttpPost]
     [Route("game/{gameId:int}/ask")]
+    [ProducesResponseType<RagAnswerDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Ask(int gameId, [FromBody] AskRagCommand command, CancellationToken cancellationToken)
     {
         if (!_environmentProvider.RagEnabled)
