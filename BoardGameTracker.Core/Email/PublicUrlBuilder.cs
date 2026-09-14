@@ -1,4 +1,5 @@
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.Configuration;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Email.Interfaces;
 
@@ -23,6 +24,12 @@ public class PublicUrlBuilder : IPublicUrlBuilder
     {
         var baseUrl = await GetBaseUrlAsync();
         return $"{baseUrl}/reset-password?userId={Uri.EscapeDataString(userId)}&token={Uri.EscapeDataString(token)}";
+    }
+
+    public async Task<string?> GetConfiguredBaseUrlAsync()
+    {
+        var url = await GetBaseUrlAsync();
+        return string.IsNullOrWhiteSpace(url) || string.Equals(url, ConfigDefaults.DefaultPublicUrl, StringComparison.OrdinalIgnoreCase) ? null : url;
     }
 
     private async Task<string> GetBaseUrlAsync()

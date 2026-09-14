@@ -1,6 +1,9 @@
+import { z } from "zod";
+
 export interface User {
 	id: string;
 	username: string;
+	displayName: string | null;
 	roles: string[];
 }
 
@@ -18,6 +21,7 @@ export interface LoginResponse {
 
 export interface OidcProvider {
 	name: string;
+	displayName: string;
 	iconUrl: string | null;
 	buttonColor: string | null;
 }
@@ -31,7 +35,7 @@ export interface ProfileResponse {
 	username: string;
 	email: string | null;
 	displayName: string | null;
-	roles: string;
+	roles: string[];
 	createdAt: Date;
 	lastLoginAt: Date | null;
 	playerId: number | null;
@@ -92,3 +96,23 @@ export interface AdminUpdateUserRequest {
 	role: string;
 	playerId: number | null;
 }
+
+const requiredString = z.string().min(1, { message: "common:required" });
+const passwordString = requiredString.min(4, { message: "settings:account.password.min-length" });
+
+export const ChangePasswordSchema = z.object({
+	currentPassword: requiredString,
+	newPassword: passwordString,
+	confirmPassword: z.string(),
+});
+
+export const CreateUserSchema = z.object({
+	username: requiredString,
+	email: requiredString,
+	password: passwordString,
+});
+
+export const ResetPasswordSchema = z.object({
+	newPassword: passwordString,
+	confirmPassword: z.string(),
+});

@@ -16,6 +16,7 @@ public static class Constants
     {
         public const int ChartHistoryDays = 200;
         public const int TopPlayersCount = 5;
+        public const int TrendWindowSize = 5;
     }
 
     public static class AppConfig
@@ -26,6 +27,7 @@ public static class Constants
         public const string UiLanguage = "ui_language";
         public const string ShelfOfShameEnabled = "shelf_of_shame_enabled";
         public const string ShelfOfShameMonths = "shelf_of_shame_months";
+        public const int DefaultShelfOfShameMonths = 6;
         public const string GameNightsEnabled = "game_nights_enabled";
         public const string PublicUrl = "public_url";
         public const string RsvpAuthenticationEnabled = "rsvp_authentication_enabled";
@@ -55,6 +57,25 @@ public static class Constants
         public const string InvalidRefreshToken = "error.auth.invalid-refresh-token";
         public const string InvalidRedirectUri = "error.auth.invalid-redirect-uri";
         public const string InvalidAuthSession = "error.auth.invalid-auth-session";
+        public const string NotAuthenticated = "error.auth.not-authenticated";
+        public const string InsecureAuthority = "error.auth.insecure-authority";
+        public const string OidcEmailAlreadyRegistered = "error.auth.oidc-email-exists";
+        public const string OidcProvisioningDisabled = "error.auth.oidc-provisioning-disabled";
+        public const string OidcProvisioningFailed = "error.auth.oidc-provisioning-failed";
+        public const string OidcAlreadyLinked = "error.auth.oidc-already-linked";
+        public const string OidcDiscoveryFailed = "error.auth.oidc-discovery-failed";
+        public const string OidcIssuerMismatch = "error.auth.oidc-issuer-mismatch";
+        public const string OidcExchangeFailed = "error.auth.oidc-exchange-failed";
+        public const string OidcUserInfoFailed = "error.auth.oidc-userinfo-failed";
+        public const string OidcProviderRejected = "error.auth.oidc-provider-rejected";
+        public const string OidcHandoffExpired = "error.auth.oidc-handoff-expired";
+        public const string OidcFailed = "error.auth.oidc-failed";
+        public const string GameAlreadyExists = "error.game.already-exists";
+        public const string ExpansionAlreadyExists = "error.game.expansion-already-exists";
+        public const string PlayerRangeIncomplete = "error.game.player-range-incomplete";
+        public const string PlayTimeRangeIncomplete = "error.game.play-time-range-incomplete";
+        public const string RangeMinAboveMax = "error.game.range-min-above-max";
+        public const string InvitesCooldown = "error.game-night.invites-cooldown";
         public const string PlayerAlreadyLinked = "error.auth.player-already-linked";
         public const string EmailNotConfigured = "error.email.not-configured";
         public const string ImageTooLarge = "error.image.too-large";

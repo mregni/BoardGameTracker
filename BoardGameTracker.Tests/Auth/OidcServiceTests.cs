@@ -48,6 +48,7 @@ public class OidcServiceTests : IDisposable
             _tokenServiceMock.Object,
             _httpClientFactoryMock.Object,
             _cache,
+            Mock.Of<ISecretProtector>(),
             _loggerMock.Object);
 
         _userManagerMock.Invocations.Clear();

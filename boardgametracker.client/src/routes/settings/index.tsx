@@ -19,6 +19,7 @@ import { GameNightsSettings } from "./-components/GameNightsSettings";
 import { GeneralSettings } from "./-components/GeneralSettings";
 import { type SettingsCategory, SettingsSidebar } from "./-components/SettingsSidebar";
 import { ShelfOfShameSettings } from "./-components/ShelfOfShameSettings";
+import { SsoSettings } from "./-components/SsoSettings";
 import { useSettingsData } from "./-hooks/useSettingsData";
 import { settingsFormOpts } from "./-utils/settingsFormOpts";
 
@@ -86,18 +87,21 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 				changeDetectionStatus: settings.changeDetectionStatus,
 				emailEnabled: settings.emailEnabled,
 				ragEnabled: settings.ragEnabled,
+				environmentOverrides: settings.environmentOverrides,
 			});
 		},
 	});
 
+	const overrides = settings.environmentOverrides ?? {};
+
 	const renderContent = () => {
 		switch (activeCategory) {
 			case "general":
-				return <GeneralSettings form={form} languages={languages} disabled={isSaving} />;
+				return <GeneralSettings form={form} languages={languages} disabled={isSaving} overrides={overrides} />;
 			case "shelf-of-shame":
-				return <ShelfOfShameSettings form={form} disabled={isSaving} />;
+				return <ShelfOfShameSettings form={form} disabled={isSaving} overrides={overrides} />;
 			case "game-nights":
-				return <GameNightsSettings form={form} disabled={isSaving} />;
+				return <GameNightsSettings form={form} disabled={isSaving} overrides={overrides} />;
 			case "bgg":
 				return (
 					<BggSettings
@@ -108,11 +112,13 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 					/>
 				);
 			case "advanced":
-				return <AdvancedSettings form={form} disabled={isSaving} />;
+				return <AdvancedSettings form={form} disabled={isSaving} overrides={overrides} />;
 			case "account":
 				return <AccountSettings />;
+			case "sso":
+				return <SsoSettings />;
 			default:
-				return <GeneralSettings form={form} languages={languages} disabled={isSaving} />;
+				return <GeneralSettings form={form} languages={languages} disabled={isSaving} overrides={overrides} />;
 		}
 	};
 
@@ -120,7 +126,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 
 	return (
 		<BgtPage>
-			<BgtPageHeader header={"Settings"} icon={CogIcon} />
+			<BgtPageHeader header={t("common:settings")} icon={CogIcon} />
 			<BgtPageContent>
 				<div className="flex flex-col lg:flex-row">
 					<SettingsSidebar
@@ -130,7 +136,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 					/>
 
 					<div className="flex-1">
-						{activeCategory === "account" ? (
+						{activeCategory === "account" || activeCategory === "sso" ? (
 							content
 						) : (
 							<form onSubmit={handleFormSubmit(form)}>
