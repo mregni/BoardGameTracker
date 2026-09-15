@@ -6,6 +6,7 @@ import { useToasts } from "@/routes/-hooks/useToasts";
 import { importGamesCall } from "@/services/gameService";
 import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
+import { classifyImportError } from "../-utils/importErrors";
 
 interface Props {
 	username: string;
@@ -21,6 +22,8 @@ export const useList = ({ username }: Props) => {
 
 	const settings = settingsQuery.data;
 	const bggError = bggCollectionQuery.error;
+	const bggErrorKind = bggError ? classifyImportError(bggError) : null;
+	const retryCollection = useCallback(() => bggCollectionQuery.refetch(), [bggCollectionQuery]);
 
 	const [filterCollected, setFilterCollected] = useState<boolean>(true);
 
@@ -98,8 +101,8 @@ export const useList = ({ username }: Props) => {
 
 			successToast("games:import.success");
 		},
-		onError() {
-			errorToast("games:import.failed");
+		onError(error) {
+			errorToast(`games:import.failed-${classifyImportError(error)}`);
 		},
 	});
 
@@ -107,6 +110,8 @@ export const useList = ({ username }: Props) => {
 		games,
 		settings,
 		bggError,
+		bggErrorKind,
+		retryCollection,
 		updateGame,
 		setSelection,
 		filterCollected,

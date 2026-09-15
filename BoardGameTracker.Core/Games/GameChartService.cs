@@ -34,28 +34,24 @@ public class GameChartService : IGameChartService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<PlayByDay>> GetPlayByDayChart(int id)
+    public async Task<IEnumerable<PlayByDay>> GetPlayByDayChart(int id, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Getting play-by-day chart for game {GameId}", id);
-        var list = await _gameStatisticsRepository.GetPlayByDayChart(id);
-        return Enum.GetValues(typeof(DayOfWeek))
-            .Cast<DayOfWeek>()
-            .OrderBy(day => ((int)day + 6) % 7)
-            .ToDictionary(day => day, day => list.SingleOrDefault(y => y.Key == day)?.Count() ?? 0)
-            .Select(x => new PlayByDay {DayOfWeek = x.Key, PlayCount = x.Value});
+        var startTimes = await _gameStatisticsRepository.GetSessionStartTimes(id, cancellationToken);
+        return PlayByDayBuckets.WeekStartingMonday(PlayByDayBuckets.Count(startTimes, _dateTimeProvider));
     }
 
-    public async Task<IEnumerable<PlayerCount>> GetPlayerCountChart(int id)
+    public async Task<IEnumerable<PlayerCount>> GetPlayerCountChart(int id, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Getting player count chart for game {GameId}", id);
-        var list = await _gameStatisticsRepository.GetPlayerCountChart(id);
+        var list = await _gameStatisticsRepository.GetPlayerCountChart(id, cancellationToken);
         return list.Select(x => new PlayerCount {PlayCount = x.Count(), Players = x.Key});
     }
 
-    public async Task<List<TopPlayerDto>> GetTopPlayers(int id)
+    public async Task<List<TopPlayerDto>> GetTopPlayers(int id, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Getting top players for game {GameId}", id);
-        var sessions = await _sessionRepository.ListAsync(new SessionsByGameSpec(id));
+        var sessions = await _sessionRepository.ListAsync(new SessionsByGameSpec(id), cancellationToken);
         var playerSessions = sessions
             .SelectMany(x => x.PlayerSessions)
             .GroupBy(x => x.PlayerId)
@@ -63,23 +59,24 @@ public class GameChartService : IGameChartService
 
         return playerSessions
             .Select(TopPlayerDto.CreateTopPlayer)
-            .Where(x => x.Wins > 0)
             .OrderByDescending(x => x.Wins)
+            .ThenByDescending(x => x.WinPercentage)
+            .ThenByDescending(x => x.PlayCount)
             .Take(Constants.Game.TopPlayersCount)
             .ToList();
     }
 
-    public async Task<Dictionary<DateTime, XValue[]>?> GetPlayerScoringChart(int id)
+    public async Task<List<PlayerScoringPoint>?> GetPlayerScoringChart(int id, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Getting player scoring chart for game {GameId}", id);
-        var hasScoring = await _gameRepository.FirstOrDefaultAsync(new GameHasScoringSpec(id));
+        var hasScoring = await _gameRepository.FirstOrDefaultAsync(new GameHasScoringSpec(id), cancellationToken);
         if (hasScoring is not true)
         {
             return null;
         }
 
         var cutoff = _dateTimeProvider.UtcNow.AddDays(-Constants.Game.ChartHistoryDays);
-        var sessions = await _sessionRepository.ListAsync(new SessionsByGameSinceSpec(id, cutoff));
+        var sessions = await _sessionRepository.ListAsync(new SessionsByGameSinceSpec(id, cutoff), cancellationToken);
 
         var uniquePlayerIds = sessions
             .SelectMany(session => session.PlayerSessions)
@@ -87,7 +84,7 @@ public class GameChartService : IGameChartService
             .Distinct()
             .ToList();
 
-        var chartData = new Dictionary<DateTime, XValue[]>();
+        var chartData = new List<PlayerScoringPoint>(sessions.Count);
 
         foreach (var session in sessions)
         {
@@ -108,29 +105,38 @@ public class GameChartService : IGameChartService
                     Value = null
                 });
 
-            var allPlayerValues = participatingPlayers.Concat(nonParticipatingPlayers).ToArray();
-            chartData.TryAdd(session.Start, allPlayerValues);
+            chartData.Add(new PlayerScoringPoint
+            {
+                DateTime = session.Start,
+                Series = participatingPlayers.Concat(nonParticipatingPlayers).ToArray()
+            });
         }
 
         return chartData;
     }
 
-    public async Task<List<ScoreRank>> GetScoringRankedChart(int id, double? averageScore)
+    public async Task<List<ScoreRank>> GetScoringRankedChart(int id, double? averageScore, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Getting scoring ranked chart for game {GameId}", id);
         var list = new List<ScoreRank>();
-        var highestScoring = await _gameStatisticsRepository.GetHighestScoringPlayer(id);
+        var hasScoring = await _gameRepository.FirstOrDefaultAsync(new GameHasScoringSpec(id), cancellationToken);
+        if (hasScoring is not true)
+        {
+            return list;
+        }
+
+        var highestScoring = await _gameStatisticsRepository.GetHighestScoringPlayer(id, cancellationToken);
         list.AddIfNotNull(ScoreRank.MakeHighestScoreRank(highestScoring));
 
-        var highestLosing = await _gameStatisticsRepository.GetHighestLosingPlayer(id);
+        var highestLosing = await _gameStatisticsRepository.GetHighestLosingPlayer(id, cancellationToken);
         list.AddIfNotNull(ScoreRank.MakeHighestLosingRank(highestLosing));
 
         list.AddIfNotNull(ScoreRank.MakeAverageRank(averageScore));
 
-        var lowestWinning = await _gameStatisticsRepository.GetLowestWinning(id);
+        var lowestWinning = await _gameStatisticsRepository.GetLowestWinning(id, cancellationToken);
         list.AddIfNotNull(ScoreRank.MakeLowestWinningRank(lowestWinning));
 
-        var lowest = await _gameStatisticsRepository.GetLowestScoringPlayer(id);
+        var lowest = await _gameStatisticsRepository.GetLowestScoringPlayer(id, cancellationToken);
         list.AddIfNotNull(ScoreRank.MakeLowestScoreRank(lowest));
 
         return list;

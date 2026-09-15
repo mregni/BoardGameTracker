@@ -684,7 +684,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BggId")
+                    b.Property<int?>("BggId")
                         .HasColumnType("integer");
 
                     b.Property<int>("GameId")
@@ -795,6 +795,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("GameCategories");
                 });
 
@@ -811,6 +814,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("GameMechanics");
                 });
@@ -872,9 +878,10 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GameNightId");
-
                     b.HasIndex("PlayerId");
+
+                    b.HasIndex("GameNightId", "PlayerId")
+                        .IsUnique();
 
                     b.ToTable("GameNightRsvp");
                 });
@@ -965,6 +972,18 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                             Id = 2,
                             Key = "nl-be",
                             TranslationKey = "dutch"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Key = "nl-nl",
+                            TranslationKey = "dutch"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Key = "es-es",
+                            TranslationKey = "spanish"
                         });
                 });
 
@@ -1125,6 +1144,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name", "Type")
+                        .IsUnique();
+
                     b.ToTable("People");
                 });
 
@@ -1177,9 +1199,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GameId");
-
                     b.HasIndex("LocationId");
+
+                    b.HasIndex("GameId", "Start");
 
                     b.ToTable("Sessions");
                 });
@@ -1257,6 +1279,25 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.HasIndex("PeopleId");
 
                     b.ToTable("GamePerson");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -1594,13 +1635,13 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.HasOne("BoardGameTracker.Common.Entities.Player", "Host")
                         .WithMany()
                         .HasForeignKey("HostId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("BoardGameTracker.Common.Entities.Location", "Location")
                         .WithMany()
                         .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Host");

@@ -19,11 +19,12 @@ public class ModelProvisioningBackgroundService : BackgroundService
     }
 
     protected virtual TimeSpan RetryDelay => TimeSpan.FromSeconds(15);
-    protected virtual int MaxAttempts => 40;
+    protected virtual TimeSpan MaxRetryDelay => TimeSpan.FromMinutes(5);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        for (var attempt = 1; attempt <= MaxAttempts && !stoppingToken.IsCancellationRequested; attempt++)
+        var delay = RetryDelay;
+        for (var attempt = 1; !stoppingToken.IsCancellationRequested; attempt++)
         {
             try
             {
@@ -40,20 +41,20 @@ public class ModelProvisioningBackgroundService : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogWarning(ex,
-                    "Could not ensure AI models are available (attempt {Attempt}/{MaxAttempts})",
-                    attempt, MaxAttempts);
+                    "Could not ensure AI models are available (attempt {Attempt}), retrying in {Delay}",
+                    attempt, delay);
             }
 
             try
             {
-                await Task.Delay(RetryDelay, stoppingToken);
+                await Task.Delay(delay, stoppingToken);
             }
             catch (OperationCanceledException)
             {
                 return;
             }
-        }
 
-        _logger.LogError("Gave up ensuring AI models are available after {MaxAttempts} attempts", MaxAttempts);
+            delay = delay * 2 > MaxRetryDelay ? MaxRetryDelay : delay * 2;
+        }
     }
 }

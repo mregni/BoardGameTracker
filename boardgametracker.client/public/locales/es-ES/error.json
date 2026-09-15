@@ -4,7 +4,9 @@
   },
   "image": {
     "type-not-supported": "Image type not supported",
-    "error": "Error while uploading image, check logs"
+    "error": "Error while uploading image, check logs",
+    "too-large": "La imagen es demasiado grande",
+    "unsupported-format": "Formato de imagen no compatible"
   },
   "auth": {
     "username-already-exists": "Username already exists",
@@ -17,6 +19,9 @@
     "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
     "invalid-credentials": "Invalid username or password",
     "invalid-refresh-token": "Invalid or expired session",
+    "account-locked-out": "Demasiados intentos fallidos. Inténtalo de nuevo más tarde.",
+    "invalid-auth-session": "Sesión de autenticación no válida o caducada",
+    "invalid-redirect-uri": "URI de redirección no válida",
     "player-already-linked": "Este jugador ya está vinculado a otra cuenta",
     "invalid-reset-token": "Este enlace para restablecer la contraseña no es válido o ha caducado"
   },
@@ -34,6 +39,15 @@
   "network": "Unable to connect to the server. Please check your connection.",
   "timeout": "The request took too long. Please try again.",
   "server": "A server error occurred. Please try again later.",
+  "location": {
+    "used-by-game-nights": "Esta ubicación se usa en una o más noches de juego"
+  },
+  "player": {
+    "hosts-game-nights": "Este jugador organiza una o más noches de juego"
+  },
+  "session": {
+    "invalid-expansion": "Una de las expansiones seleccionadas no pertenece a este juego"
+  },
   "email": {
     "not-configured": "El correo electrónico no está configurado en este servidor"
   },

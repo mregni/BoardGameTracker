@@ -7,6 +7,7 @@ namespace BoardGameTracker.Core.Rag;
 public class RagSettingsProvider : IRagSettingsProvider
 {
     private readonly IConfigRepository _configRepository;
+    private RagSettings? _settings;
 
     public RagSettingsProvider(IConfigRepository configRepository)
     {
@@ -14,6 +15,11 @@ public class RagSettingsProvider : IRagSettingsProvider
     }
 
     public async Task<RagSettings> GetAsync()
+    {
+        return _settings ??= await LoadAsync();
+    }
+
+    private async Task<RagSettings> LoadAsync()
     {
         var chatProvider = await _configRepository.GetConfigValueAsync<string>(Constants.AiConfig.Provider);
         var chatBaseUrl = await _configRepository.GetConfigValueAsync<string>(Constants.AiConfig.BaseUrl);

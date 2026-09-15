@@ -10,7 +10,7 @@ public class DurationBadgeEvaluator : IBadgeEvaluator
     public Task<bool> CanAwardBadge(int playerId, Badge badge, Session session, List<Session> playerSessions)
     {
         var duration = playerSessions
-            .Where(x => x.PlayerSessions.Single(y => y.PlayerId == playerId).Won)
+            .Where(x => x.PlayerSessions.Any(y => y.PlayerId == playerId))
             .Select(x => x.End - x.Start)
             .Sum(x => x.TotalMinutes);
         

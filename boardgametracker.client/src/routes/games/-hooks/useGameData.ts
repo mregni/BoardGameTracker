@@ -1,9 +1,15 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { QUERY_KEYS } from "@/models";
 import { isPriceError, priceErrorKey } from "@/models/Games/GamePrice";
 import { useToasts } from "@/routes/-hooks/useToasts";
-import { createWatchCall, deleteExpansionCall, deleteGameCall, getGamePriceCall } from "@/services/gameService";
+import {
+	addManualExpansionCall,
+	createWatchCall,
+	deleteExpansionCall,
+	deleteGameCall,
+	getGamePriceCall,
+} from "@/services/gameService";
 import { getGame, getGamePrice, getGameSessionsShortList, getGameStatistics } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { apiErrorMessage } from "@/utils/errorUtils";
@@ -17,6 +23,7 @@ interface UseGameDataProps {
 export const useGameData = (props: UseGameDataProps) => {
 	const { gameId, onDeleteSuccess, onDeleteExpansionSuccess } = props;
 	const queryClient = useQueryClient();
+	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
 
 	const [gameQuery, settingsQuery, statisticsQuery, sessionsQuery] = useQueries({
@@ -74,16 +81,14 @@ export const useGameData = (props: UseGameDataProps) => {
 			successToast("game:track-price.success");
 			pollPrice([5000, 15000, 30000]);
 		},
-		onError: (error) => toast.error(apiErrorMessage(error, "game:track-price.failed")),
+		onError: (error) => errorToast(apiErrorMessage(error, "game:track-price.failed")),
 	});
 
 	const deleteGame = async () => {
 		if (gameId !== undefined) {
 			try {
 				await deleteGameCall(gameId);
-				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
-				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] });
+				await invalidator.invalidateGameDeleted();
 				successToast("game:delete.successfull");
 				onDeleteSuccess?.();
 			} catch {
@@ -95,13 +100,23 @@ export const useGameData = (props: UseGameDataProps) => {
 	const deleteExpansion = async (id: number, gameIdParam: number) => {
 		try {
 			await deleteExpansionCall(id, gameIdParam);
-			queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.game, gameIdParam],
-			});
+			await invalidator.invalidateGame(gameIdParam);
 			successToast("expansions:delete.successfull");
 			onDeleteExpansionSuccess?.();
 		} catch {
 			errorToast("expansions:delete.failed");
+		}
+	};
+
+	const addManualExpansion = async (title: string) => {
+		try {
+			await addManualExpansionCall(gameId, title);
+			await invalidator.invalidateGame(gameId);
+			successToast("expansions:manual.successfull");
+			return true;
+		} catch (error) {
+			errorToast(apiErrorMessage(error, "expansions:manual.failed"));
+			return false;
 		}
 	};
 
@@ -118,5 +133,6 @@ export const useGameData = (props: UseGameDataProps) => {
 		createWatch: (url: string) => createWatchMutation.mutateAsync(url),
 		isCreatingWatch: createWatchMutation.isPending,
 		deleteExpansion,
+		addManualExpansion,
 	};
 };

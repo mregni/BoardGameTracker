@@ -3,8 +3,10 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Loans.Specifications;
+using BoardGameTracker.Core.Players.Specifications;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Loans;
@@ -13,13 +15,20 @@ public class LoanService : ILoanService
 {
     private readonly IRepository<Loan> _loanRepository;
     private readonly IGameRepository _gameRepository;
+    private readonly IReadRepository<Player> _playerRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<LoanService> _logger;
 
-    public LoanService(IRepository<Loan> loanRepository, IGameRepository gameRepository, IUnitOfWork unitOfWork, ILogger<LoanService> logger)
+    public LoanService(
+        IRepository<Loan> loanRepository,
+        IGameRepository gameRepository,
+        IReadRepository<Player> playerRepository,
+        IUnitOfWork unitOfWork,
+        ILogger<LoanService> logger)
     {
         _loanRepository = loanRepository;
         _gameRepository = gameRepository;
+        _playerRepository = playerRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -39,10 +48,15 @@ public class LoanService : ILoanService
     public async Task<Loan> LoanGameToPlayer(CreateLoanCommand command)
     {
         _logger.LogDebug("Loaning game {GameId} to player {PlayerId}", command.GameId, command.PlayerId);
-        var game = await _gameRepository.GetByIdAsync(command.GameId);
+        var game = await _gameRepository.SingleOrDefaultAsync(new GameWithLoansSpec(command.GameId));
         if (game == null)
         {
             throw new EntityNotFoundException(nameof(Game), command.GameId);
+        }
+
+        if (!await _playerRepository.AnyAsync(new PlayerByIdSpec(command.PlayerId)))
+        {
+            throw new EntityNotFoundException(nameof(Player), command.PlayerId);
         }
 
         var loan = game.LoanToPlayer(command.PlayerId, command.LoanDate);
@@ -93,8 +107,8 @@ public class LoanService : ILoanService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public Task<int> CountActiveLoans()
+    public Task<int> CountActiveLoans(CancellationToken cancellationToken = default)
     {
-        return _loanRepository.CountAsync(new ActiveLoansSpec());
+        return _loanRepository.CountAsync(new ActiveLoansSpec(), cancellationToken);
     }
 }

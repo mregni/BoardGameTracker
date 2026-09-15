@@ -42,35 +42,6 @@ vi.mock("@/hooks/usePermissions", () => ({
 	})),
 }));
 
-// Mock SVG icons
-vi.mock("@/assets/icons/users.svg?react", () => ({
-	default: () => <svg data-testid="users-icon" />,
-}));
-
-vi.mock("@/assets/icons/trend-up.svg?react", () => ({
-	default: () => <svg data-testid="trend-up-icon" />,
-}));
-
-vi.mock("@/assets/icons/puzzle-piece.svg?react", () => ({
-	default: () => <svg data-testid="puzzle-piece-icon" />,
-}));
-
-vi.mock("@/assets/icons/plus.svg?react", () => ({
-	default: () => <svg data-testid="plus-icon" />,
-}));
-
-vi.mock("@/assets/icons/map-pin.svg?react", () => ({
-	default: () => <svg data-testid="map-pin-icon" />,
-}));
-
-vi.mock("@/assets/icons/left-right-arrow.svg?react", () => ({
-	default: () => <svg data-testid="left-right-arrow-icon" />,
-}));
-
-vi.mock("@/assets/icons/home.svg?react", () => ({
-	default: () => <svg data-testid="home-icon" />,
-}));
-
 vi.mock("@/assets/icons/cog.svg?react", () => ({
 	default: () => <svg data-testid="cog-icon" />,
 }));
@@ -94,8 +65,17 @@ const createWrapper = () => {
 
 describe("useBgtMenuBar", () => {
 	describe("menuItems", () => {
-		it("should have 11 menu items", () => {
-			expect(menuItems).toHaveLength(11);
+		it("should have 12 menu items", () => {
+			expect(menuItems).toHaveLength(12);
+		});
+
+		it("should link the leaderboard after compare", () => {
+			const index = menuItems.findIndex((item) => item.path === "/compare");
+			expect(menuItems[index + 1]).toMatchObject({
+				path: "/leaderboard",
+				menuLabel: "common:leaderboard",
+				mobileVisible: false,
+			});
 		});
 
 		it("should have dashboard as first item", () => {

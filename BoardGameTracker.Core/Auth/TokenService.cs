@@ -1,36 +1,36 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace BoardGameTracker.Core.Auth;
 
 public class TokenService : ITokenService
 {
-    private readonly IConfiguration _configuration;
+    private static readonly JsonWebTokenHandler TokenHandler = new();
+
+    private readonly JwtOptions _options;
     private readonly MainDbContext _context;
 
-    public TokenService(IConfiguration configuration, MainDbContext context)
+    public TokenService(IOptions<JwtOptions> options, MainDbContext context)
     {
-        _configuration = configuration;
+        _options = options.Value;
         _context = context;
     }
 
     public string GenerateAccessToken(ApplicationUser user, IList<string> roles)
     {
-        var secret = Environment.GetEnvironmentVariable("JWT_SECRET")
-                     ?? _configuration["Jwt:Secret"]
-                     ?? throw new InvalidOperationException("JWT Secret is not configured");
-        var issuer = _configuration["Jwt:Issuer"] ?? "boardgametracker-api";
-        var audience = _configuration["Jwt:Audience"] ?? "boardgametracker-client";
-        var expiryMinutes = int.Parse(_configuration["Jwt:AccessTokenExpiryMinutes"] ?? "15");
+        if (string.IsNullOrWhiteSpace(_options.Secret))
+        {
+            throw new InvalidOperationException("JWT Secret is not configured");
+        }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)); // NOSONAR - secret loaded from configuration, not hardcoded
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Secret)); // NOSONAR - secret loaded from configuration, not hardcoded
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
@@ -50,20 +50,21 @@ public class TokenService : ITokenService
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
-        var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
-            signingCredentials: credentials);
+        var descriptor = new SecurityTokenDescriptor
+        {
+            Issuer = _options.Issuer,
+            Audience = _options.Audience,
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddMinutes(_options.AccessTokenExpiryMinutes),
+            SigningCredentials = credentials,
+        };
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return TokenHandler.CreateToken(descriptor);
     }
 
     public async Task<RefreshToken> GenerateRefreshTokenAsync(string userId)
     {
-        var expiryDays = int.Parse(_configuration["Jwt:RefreshTokenExpiryDays"] ?? "7");
-        var refreshToken = RefreshToken.Create(userId, expiryDays);
+        var refreshToken = RefreshToken.Create(userId, _options.RefreshTokenExpiryDays);
 
         _context.RefreshTokens.Add(refreshToken);
         await _context.SaveChangesAsync();
@@ -71,11 +72,24 @@ public class TokenService : ITokenService
         return refreshToken;
     }
 
+    public async Task<RefreshToken> RotateRefreshTokenAsync(RefreshToken current)
+    {
+        var replacement = RefreshToken.Create(current.UserId, _options.RefreshTokenExpiryDays);
+        current.Revoke("Replaced by new token", replacement.Token);
+
+        _context.RefreshTokens.Add(replacement);
+        _context.RefreshTokens.Update(current);
+        await _context.SaveChangesAsync();
+
+        return replacement;
+    }
+
     public async Task<RefreshToken?> GetRefreshTokenAsync(string token)
     {
+        var hash = RefreshToken.Hash(token);
         return await _context.RefreshTokens
             .Include(x => x.User)
-            .FirstOrDefaultAsync(x => x.Token == token);
+            .FirstOrDefaultAsync(x => x.Token == hash);
     }
 
     public async Task RevokeRefreshTokenAsync(RefreshToken token, string? reason = null, string? replacedByToken = null)
@@ -101,8 +115,7 @@ public class TokenService : ITokenService
 
     public DateTime GetAccessTokenExpiry()
     {
-        var expiryMinutes = int.Parse(_configuration["Jwt:AccessTokenExpiryMinutes"] ?? "15");
-        return DateTime.UtcNow.AddMinutes(expiryMinutes);
+        return DateTime.UtcNow.AddMinutes(_options.AccessTokenExpiryMinutes);
     }
 
     public async Task CleanupExpiredTokensAsync()

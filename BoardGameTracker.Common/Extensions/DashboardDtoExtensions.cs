@@ -79,20 +79,6 @@ public static class DashboardDtoExtensions
         return games.Select(g => g.ToRecentAddedGameDto()).ToList();
     }
 
-    private static PlayByDay ToPlayByDay(this IGrouping<DayOfWeek, Session> grouping)
-    {
-        return new PlayByDay
-        {
-            DayOfWeek = grouping.Key,
-            PlayCount = grouping.Count()
-        };
-    }
-
-    public static List<PlayByDay> ToListDto(this IEnumerable<IGrouping<DayOfWeek, Session>> groupings)
-    {
-        return groupings.Select(g => g.ToPlayByDay()).ToList();
-    }
-    
     public static List<DashboardTopPlayerDto> ToListDto(
         this IEnumerable<(int Id, string Name, string? Image, int PlayCount, int WinCount)> tuples)
     {

@@ -15,6 +15,6 @@ public interface IManualService
     Task<ManualDownload?> GetManualPageImage(int id, int page, CancellationToken cancellationToken = default);
     Task<ManualDownload> GetManualForGameNightDownload(Guid linkId, int manualId);
     Task<List<GameNightManualsDto>> GetManualsForGameNight(Guid linkId);
-    Task DeleteManualFilesForGame(int gameId);
+    void DeleteManualFiles(IEnumerable<Manual> manuals);
     void ClearAllManuals();
 }

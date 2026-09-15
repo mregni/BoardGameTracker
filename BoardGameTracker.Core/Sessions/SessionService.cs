@@ -36,6 +36,7 @@ public class SessionService : ISessionService
     {
         _logger.LogDebug("Creating session for game {GameId}", session.GameId);
         session = await _sessionRepository.CreateAsync(session);
+        await _unitOfWork.SaveChangesAsync();
         await _badgeService.AwardBadgesAsync(session);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Session {SessionId} created for game {GameId}", session.Id, session.GameId);
@@ -54,7 +55,7 @@ public class SessionService : ISessionService
     public async Task<Session> Update(Session session)
     {
         _logger.LogDebug("Updating session {SessionId}", session.Id);
-        session = await _sessionRepository.Update(session);
+        await _unitOfWork.SaveChangesAsync();
         await _badgeService.AwardBadgesAsync(session);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Session {SessionId} updated", session.Id);
@@ -66,8 +67,7 @@ public class SessionService : ISessionService
     {
         _logger.LogDebug("Creating session from command for game {GameId}", command.GameId);
 
-        var game = await _gameService.GetGameById(command.GameId);
-        if (game == null)
+        if (!await _gameService.ExistsAsync(command.GameId))
         {
             throw new EntityNotFoundException(nameof(Game), command.GameId);
         }
@@ -79,7 +79,7 @@ public class SessionService : ISessionService
 
         if (command.ExpansionIds.Count > 0)
         {
-            var expansions = await _gameService.GetGameExpansions(command.ExpansionIds);
+            var expansions = await _gameService.GetGameExpansions(command.GameId, command.ExpansionIds);
             foreach (var expansion in expansions)
             {
                 session.AddExpansion(expansion);
@@ -142,7 +142,7 @@ public class SessionService : ISessionService
         var expansionIdsToAdd = newExpansionIds.Except(currentExpansionIds).ToList();
         if (expansionIdsToAdd.Count > 0)
         {
-            var expansionsToAdd = await _gameService.GetGameExpansions(expansionIdsToAdd);
+            var expansionsToAdd = await _gameService.GetGameExpansions(existingSession.GameId, expansionIdsToAdd);
             foreach (var expansion in expansionsToAdd)
             {
                 existingSession.AddExpansion(expansion);
@@ -206,13 +206,17 @@ public class SessionService : ISessionService
 
     private async Task EnsurePlayersExistAsync(IEnumerable<int> playerIds)
     {
-        foreach (var playerId in playerIds.Distinct())
+        var ids = playerIds.Distinct().ToList();
+        if (ids.Count == 0)
         {
-            var player = await _playerService.Get(playerId);
-            if (player == null)
-            {
-                throw new EntityNotFoundException(nameof(Player), playerId);
-            }
+            return;
+        }
+
+        var existing = await _playerService.GetExistingIdsAsync(ids);
+        var missing = ids.Except(existing).ToList();
+        if (missing.Count > 0)
+        {
+            throw new EntityNotFoundException(nameof(Player), missing[0]);
         }
     }
 

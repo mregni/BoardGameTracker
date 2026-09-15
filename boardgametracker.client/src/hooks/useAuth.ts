@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { AuthStatus, LoginRequest, OidcProvider, User } from "@/models/Auth/Auth";
-import { getAuthStatusCall, getOidcProviderCall, loginCall, logoutCall } from "@/services/authService";
+import { getAuthStatusCall, loginCall, logoutCall } from "@/services/authService";
 
 let authStatusRequest: Promise<AuthStatus> | null = null;
 
@@ -19,7 +19,6 @@ interface AuthState {
 	setTokens: (accessToken: string, refreshToken: string, user: User) => void;
 	hasRole: (role: string) => boolean;
 	fetchAuthStatus: () => Promise<AuthStatus>;
-	fetchOidcProvider: () => Promise<void>;
 	clearAuth: () => void;
 }
 
@@ -91,11 +90,6 @@ export const useAuth = create<AuthState>()(
 						authStatusRequest = null;
 					});
 				return authStatusRequest;
-			},
-
-			fetchOidcProvider: async () => {
-				const provider = await getOidcProviderCall();
-				set({ oidcProvider: provider });
 			},
 
 			clearAuth: () => {

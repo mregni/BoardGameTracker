@@ -12,11 +12,13 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAppForm } from "@/hooks/form";
 import { useAuth } from "@/hooks/useAuth";
+import { isApiError } from "@/models";
 import type { OidcProvider } from "@/models/Auth/Auth";
 import { getOidcProviderCall } from "@/services/authService";
 import { getSettings } from "@/services/queries/settings";
 import { apiUrl } from "@/utils/apiUrl";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { safeRedirectPath } from "@/utils/redirectUtils";
 
 const loginSearchSchema = z.object({
 	redirect: z.string().optional(),
@@ -30,7 +32,8 @@ export const Route = createFileRoute("/_bare/login")({
 function LoginPage() {
 	const { t } = useTranslation("auth");
 	const navigate = useNavigate();
-	const { login, isLoading } = useAuth();
+	const login = useAuth((s) => s.login);
+	const isLoading = useAuth((s) => s.isLoading);
 	const [error, setError] = useState<string | null>(null);
 	const { redirect } = Route.useSearch();
 
@@ -50,19 +53,18 @@ function LoginPage() {
 			setError(null);
 			try {
 				await login({ username: value.username, password: value.password });
-				await navigate({ to: redirect ?? "/" });
-			} catch {
-				setError(t("invalid-credentials"));
+				await navigate({ to: safeRedirectPath(redirect) });
+			} catch (e) {
+				const fallback = t("invalid-credentials");
+				const reason = isApiError(e) && e.message.startsWith("error.") ? e.message.slice("error.".length) : null;
+				setError(reason ? t(`error:${reason}`, { defaultValue: fallback }) : fallback);
 			}
 		},
 	});
 
 	const handleOidcLogin = (provider: OidcProvider) => {
-		const callbackUrl = new URL("/auth-callback", globalThis.location.origin);
-		if (redirect) {
-			callbackUrl.searchParams.set("redirect", redirect);
-		}
-		globalThis.location.href = `${apiUrl}auth/oidc/${provider.name}/login?redirectUri=${encodeURIComponent(callbackUrl.toString())}`;
+		const target = safeRedirectPath(redirect);
+		globalThis.location.href = `${apiUrl}auth/oidc/${encodeURIComponent(provider.name)}/login?redirect=${encodeURIComponent(target)}`;
 	};
 
 	return (
@@ -148,7 +150,7 @@ function LoginPage() {
 									style={oidcProvider.buttonColor ? { borderColor: oidcProvider.buttonColor } : undefined}
 								>
 									{oidcProvider.iconUrl && <img src={oidcProvider.iconUrl} alt="" className="w-5 h-5" />}
-									{oidcProvider.name}
+									{oidcProvider.displayName}
 								</BgtButton>
 							</div>
 						</>

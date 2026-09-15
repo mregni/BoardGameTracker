@@ -55,6 +55,7 @@ function RouteComponent() {
 		createWatch,
 		isCreatingWatch,
 		deleteExpansion,
+		addManualExpansion,
 		isLoading,
 	} = useGameData({
 		gameId,
@@ -134,8 +135,10 @@ function RouteComponent() {
 								expansions={game.expansions}
 								open={expansionsDialog.isOpen}
 								close={expansionsDialog.hide}
-								canWrite={canWrite && bggEnabled}
+								canWrite={canWrite}
+								bggEnabled={bggEnabled}
 								onAddExpansion={actions.handleAddExpansion}
+								onAddManualExpansion={addManualExpansion}
 								onDeleteExpansion={actions.handleDeleteExpansion}
 							/>
 							{statistics.gameStats.playCount === 0 && (
@@ -179,7 +182,7 @@ function RouteComponent() {
 									open={modals.expansionModal.isOpen}
 									close={modals.expansionModal.hide}
 									gameId={gameId}
-									selectedExpansions={game.expansions.map((x) => x.bggId)}
+									selectedExpansions={game.expansions.flatMap((x) => (x.bggId === null ? [] : [x.bggId]))}
 								/>
 							)}
 						</>

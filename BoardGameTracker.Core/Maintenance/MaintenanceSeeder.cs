@@ -35,7 +35,7 @@ public class MaintenanceSeeder : IMaintenanceSeeder
         await _configRepository.SeedConfigAsync(ConfigDefaults.All);
         if (_environmentProvider.AuthEnabled)
         {
-            await DbSeeder.SeedAuthData(_roleManager, _userManager, _logger);
+            await DbSeeder.SeedAuthData(_roleManager, _userManager, _logger, _environmentProvider.AdminPassword);
         }
     }
 }

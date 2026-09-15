@@ -4,7 +4,7 @@ namespace BoardGameTracker.Core.Games.Interfaces;
 
 public interface IShameService
 {
-    Task<int> CountShelfOfShameGames();
+    Task<int> CountShelfOfShameGames(CancellationToken cancellationToken = default);
     Task<List<ShameGame>> GetShameGames();
     Task<ShameStatistics> GetShameStatistics();
 }

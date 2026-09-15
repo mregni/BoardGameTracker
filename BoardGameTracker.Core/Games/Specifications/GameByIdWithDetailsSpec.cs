@@ -9,7 +9,6 @@ public sealed class GameByIdWithDetailsSpec : SingleResultSpecification<Game>
     {
         Query
             .Where(x => x.Id == id)
-            .Include(x => x.Accessories)
             .Include(x => x.Categories)
             .Include(x => x.Expansions)
             .Include(x => x.Mechanics)

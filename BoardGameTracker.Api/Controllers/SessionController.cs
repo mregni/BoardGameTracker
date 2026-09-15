@@ -1,8 +1,10 @@
-using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
@@ -21,6 +23,7 @@ public class SessionController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
+    [ProducesResponseType<SessionDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSession(int id)
     {
         var session = await _sessionService.Get(id);
@@ -34,14 +37,16 @@ public class SessionController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<SessionDto>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateSession([FromBody] CreateSessionCommand command)
     {
         var session = await _sessionService.CreateFromCommand(command);
-        return Ok(session.ToDto());
+        return CreatedAtAction(nameof(GetSession), new { id = session.Id }, session.ToDto());
     }
 
     [HttpPut]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<SessionDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateSession([FromBody] UpdateSessionCommand command)
     {
         var result = await _sessionService.UpdateFromCommand(command);
@@ -51,6 +56,7 @@ public class SessionController : ControllerBase
     [HttpDelete]
     [Route("{id:int}")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteSession(int id)
     {
         var session = await _sessionService.Get(id);

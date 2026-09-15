@@ -1,0 +1,79 @@
+---
+title: Upgrading
+description: How to move an existing BoardGameTracker install to a new release, and what to back up first.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+BoardGameTracker applies its database migrations automatically when the container starts, so an upgrade is normally just pulling the new image. Two releases changed requirements, so read the notes below before you pull.
+
+## Back up first
+
+Everything you need lives in the folders you mounted plus the database.
+
+<Steps>
+
+1. Stop the application container (leave the database running):
+
+   ```sh title="Terminal"
+   docker compose stop boardgametracker
+   ```
+
+2. Dump the database:
+
+   ```sh title="Terminal"
+   docker compose exec db pg_dump -U dbuser boardgametracker > backup-$(date +%F).sql
+   ```
+
+3. Copy the mounted folders: `images` (covers and player photos), `manuals` (uploaded rulebooks) and, if you want to keep them, `logs`.
+
+</Steps>
+
+To restore, recreate an empty database, load the dump with `psql`, put the folders back and start the container.
+
+## Release channels
+
+| Tag | What you get |
+| --- | --- |
+| `uping/boardgametracker:latest` | The last stable release. |
+| `uping/boardgametracker:beta` | Every change merged to `master`, published automatically. May contain unfinished features. |
+| `uping/boardgametracker:x.y.z` | A fixed version, for installs that should not move on their own. |
+
+## Breaking changes
+
+### The database needs the `vector` extension
+
+Releases after `v0.2.181` store rulebook embeddings for the rules assistant and require the PostgreSQL `vector` extension. The application checks for it before migrating and refuses to start with a clear error when it is missing.
+
+If your compose file still uses `postgres:16`, switch the `db` service to `pgvector/pgvector:pg16`. It is the same PostgreSQL 16 with the extension pre-installed, so your existing `postgres-data` folder keeps working:
+
+```yaml title="docker-compose.yml" ins="pgvector/pgvector:pg16" del="postgres:16"
+  db:
+    image: postgres:16
+    image: pgvector/pgvector:pg16
+```
+
+Then:
+
+```sh title="Terminal"
+docker compose pull
+docker compose up -d
+```
+
+If you run your own PostgreSQL server instead, install the [pgvector](https://github.com/pgvector/pgvector) package for your distribution; the application creates the extension itself.
+
+<Aside type="note">
+Moving to a newer PostgreSQL major version (for example `pg17`) is a separate step that requires a dump and restore. Staying on `pg16` is fine.
+</Aside>
+
+### `JWT_SECRET` is required
+
+Authentication is on by default. The container exits at startup with `JWT_SECRET not set` unless you either set `JWT_SECRET` to a random value of at least 32 characters, or set `AUTH_ENABLED=false` to run without login.
+
+### The `manuals` folder
+
+Uploaded rulebooks are stored under `/app/manuals`. Mount it (`./manuals:/app/manuals`) or they are lost when the container is recreated.
+
+## Rolling back
+
+Pin the previous image tag in your compose file and start again. Migrations are forward-only, so restore the database dump you took before upgrading if the previous version fails to start on the newer schema.

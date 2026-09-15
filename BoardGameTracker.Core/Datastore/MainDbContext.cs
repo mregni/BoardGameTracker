@@ -1,7 +1,8 @@
-using BoardGameTracker.Common.Entities;
+﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -9,8 +10,9 @@ using Microsoft.EntityFrameworkCore;
 namespace BoardGameTracker.Core.Datastore;
 
 // dotnet ef migrations add <NAME> --startup-project ../BoardGameTracker.Host --output-dir DataStore/Migrations/Postgres
-public class MainDbContext : IdentityDbContext<ApplicationUser>
+public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtectionKeyContext
 {
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     public DbSet<Game> Games { get; set; }
     public DbSet<Expansion> Expansions { get; set; }
     public DbSet<GameAccessory> GameAccessories { get; set; }
@@ -149,9 +151,25 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Entity<GameNight>()
+            .HasOne(x => x.Host)
+            .WithMany()
+            .HasForeignKey(x => x.HostId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<GameNight>()
+            .HasOne(x => x.Location)
+            .WithMany()
+            .HasForeignKey(x => x.LocationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Entity<GameNightRsvp>()
             .Property(x => x.State)
             .HasConversion<string>();
+
+        builder.Entity<GameNightRsvp>()
+            .HasIndex(x => new { x.GameNightId, x.PlayerId })
+            .IsUnique();
     }
 
     private static void BuildGame(ModelBuilder builder)
@@ -181,6 +199,18 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Game>()
             .HasMany(x => x.People)
             .WithMany(x => x.Games);
+
+        builder.Entity<GameCategory>()
+            .HasIndex(x => x.Name)
+            .IsUnique();
+
+        builder.Entity<GameMechanic>()
+            .HasIndex(x => x.Name)
+            .IsUnique();
+
+        builder.Entity<Person>()
+            .HasIndex(x => new { x.Name, x.Type })
+            .IsUnique();
 
         builder.Entity<Game>()
             .HasMany(x => x.Accessories)
@@ -246,6 +276,9 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
             .WithOne(x => x.Session)
             .HasForeignKey(x => x.SessionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Session>()
+            .HasIndex(x => new { x.GameId, x.Start });
 
         builder.Entity<PlayerSession>()
             .HasKey(x => new {x.PlayerId, PlayId = x.SessionId});
@@ -349,7 +382,9 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>
             .Entity<Language>()
             .HasData(
                 new Language {Id = 1, Key = "en-us", TranslationKey = "english"},
-                new Language {Id = 2, Key = "nl-be", TranslationKey = "dutch"}
+                new Language {Id = 2, Key = "nl-be", TranslationKey = "dutch"},
+                new Language {Id = 3, Key = "nl-nl", TranslationKey = "dutch"},
+                new Language {Id = 4, Key = "es-es", TranslationKey = "spanish"}
             );
     }
 

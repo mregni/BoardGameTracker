@@ -1,36 +1,47 @@
 ﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.Interfaces;
+using BoardGameTracker.Core.Common;
 
 namespace BoardGameTracker.Core.Badges.BadgeEvaluators;
 
 public class ConsistentScheduleBadgeEvaluator : IBadgeEvaluator
 {
+    private readonly IDateTimeProvider _dateTimeProvider;
+
+    public ConsistentScheduleBadgeEvaluator(IDateTimeProvider dateTimeProvider)
+    {
+        _dateTimeProvider = dateTimeProvider;
+    }
+
     public BadgeType BadgeType => BadgeType.ConsistentSchedule;
+
     public Task<bool> CanAwardBadge(int playerId, Badge badge, Session session, List<Session> playerSessions)
     {
-        if (session.Start.DayOfWeek != DayOfWeek.Saturday)
+        var sessionDate = LocalDate(session);
+        if (sessionDate.DayOfWeek != DayOfWeek.Saturday)
         {
             return Task.FromResult(false);
         }
 
-        var saturdayGames = playerSessions.Where(x => x.Start.DayOfWeek == DayOfWeek.Saturday).ToList();
-        
-        var requiredSaturdays = new List<DateTime>();
-        for (var i = 0; i < 10; i++)
+        var saturdays = playerSessions
+            .Select(LocalDate)
+            .Where(x => x.DayOfWeek == DayOfWeek.Saturday)
+            .ToHashSet();
+
+        for (var i = 0; i < BadgeEvaluatorConstants.ConsistentWeeksRequired; i++)
         {
-            requiredSaturdays.Add(session.Start.AddDays(-BadgeEvaluatorConstants.DaysInWeek * i));
-        }
-        
-        foreach (var requiredSaturday in requiredSaturdays)
-        {
-            var hasSessionOnSaturday = saturdayGames.Any(s => s.Start.Date == requiredSaturday.Date);
-            if (!hasSessionOnSaturday)
+            if (!saturdays.Contains(sessionDate.AddDays(-BadgeEvaluatorConstants.DaysInWeek * i)))
             {
                 return Task.FromResult(false);
             }
         }
 
         return Task.FromResult(true);
+    }
+
+    private DateTime LocalDate(Session session)
+    {
+        return _dateTimeProvider.ConvertToLocalTime(DateTime.SpecifyKind(session.Start, DateTimeKind.Utc)).Date;
     }
 }

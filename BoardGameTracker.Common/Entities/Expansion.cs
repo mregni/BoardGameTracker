@@ -14,18 +14,27 @@ public class Expansion : HasId
         private set => _title = Guard.Against.NullOrWhiteSpace(value);
     }
 
-    public int BggId { get; private set; }
+    public int? BggId { get; private set; }
 
     [JsonIgnore]
     public Game Game { get; private set; } = null!;
     public int GameId { get; private set; }
     public ICollection<Session> Sessions { get; private set; }
 
-    public Expansion(string title, int bggId, int gameId)
+    public Expansion(string title, int? bggId, int gameId)
     {
         Title = title;
-        BggId = Guard.Against.NegativeOrZero(bggId);
+        BggId = bggId == null ? null : Guard.Against.NegativeOrZero(bggId.Value);
         GameId = Guard.Against.NegativeOrZero(gameId);
         Sessions = new List<Session>();
+    }
+
+    public bool IsManual => BggId == null;
+
+    public bool Matches(Expansion other)
+    {
+        return BggId != null
+            ? BggId == other.BggId
+            : other.BggId == null && string.Equals(Title, other.Title, StringComparison.OrdinalIgnoreCase);
     }
 }

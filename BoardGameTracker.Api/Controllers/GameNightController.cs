@@ -77,8 +77,14 @@ public class GameNightController : ControllerBase
             Guard.Against.Null(command.GameNightId);
             Guard.Against.Null(command.PlayerId);
         }
-        
-        var rsvp = await _gameNightService.UpdateRsvp(command);
+
+        var isAuthenticated = User?.Identity?.IsAuthenticated == true;
+        if (!isAuthenticated && command.LinkId == null)
+        {
+            return Unauthorized();
+        }
+
+        var rsvp = await _gameNightService.UpdateRsvp(command, isAuthenticated);
         return Ok(rsvp.ToDto());
     }
 

@@ -23,7 +23,7 @@ public static class GameDtoExtensions
             MaxPlayTime = game.PlayTime?.MaxMinutes,
             MinAge = game.MinAge,
             Rating = game.Rating?.Value,
-            isLoaned = game.IsLoaned,
+            IsLoaned = game.IsLoaned,
             Weight = game.Weight?.Value,
             BggId = game.BggId,
             State = game.State,

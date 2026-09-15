@@ -4,7 +4,6 @@
     "loading": "Loading BGG data...",
     "importing": "Importing games from BoardGameGeek...",
     "success": "Games are successfully imported from BoardGameGeek",
-    "failed": "Failed importing games from BoardGameGeek, check logs for more details.",
     "start": {
       "bgg-username": {
         "label": "BGG username",
@@ -17,8 +16,17 @@
     "start-import": "Start import ({{count}}/{{totalCount}})",
     "intro": "We found {{count}} games in your BGG collection, {{collectionCount}} are already included in your local collection. Select what games you want to import. Select max {{maxImport}} games at any time, this is to prevent stress on the bgg website.",
     "error-title": "Failed to load BGG collection",
-    "error-description": "Something went wrong while fetching your collection from BoardGameGeek. Please check your API key in settings and try again.",
-    "hide-collected": "Hide games that are in your collection already"
+    "hide-collected": "Hide games that are in your collection already",
+    "error-rate-limited": "BoardGameGeek está limitando tu clave de API. Espera un minuto y vuelve a intentarlo.",
+    "error-preparing": "BoardGameGeek todavía está preparando esta colección. Espera un momento y vuelve a intentarlo.",
+    "error-timeout": "BoardGameGeek tardó demasiado en responder. Inténtalo de nuevo en un momento.",
+    "error-unauthorized": "BoardGameGeek rechazó la petición. Comprueba la clave de API en los ajustes.",
+    "error-unknown": "Algo salió mal al obtener tu colección de BoardGameGeek. Inténtalo de nuevo.",
+    "failed-rate-limited": "BoardGameGeek está limitando tu clave de API. Espera un minuto y vuelve a importar.",
+    "failed-preparing": "BoardGameGeek todavía está preparando los datos. Vuelve a intentar la importación en un momento.",
+    "failed-timeout": "La importación tardó demasiado. Selecciona menos juegos o inténtalo de nuevo en un momento.",
+    "failed-unauthorized": "BoardGameGeek rechazó la petición. Comprueba la clave de API en los ajustes.",
+    "failed-unknown": "Error al importar juegos de BoardGameGeek, revisa los registros para más detalles."
   },
   "title": "Games",
   "new": "Add new game",

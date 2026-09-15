@@ -29,11 +29,11 @@ public class ModelProvisioningBackgroundServiceTests
             .Returns(_aiClientFactoryMock.Object);
     }
 
-    private TestableModelProvisioningBackgroundService CreateService(int retryDelayMs = 10, int maxAttempts = 40) =>
+    private TestableModelProvisioningBackgroundService CreateService(int retryDelayMs = 10, int maxRetryDelayMs = 20) =>
         new(_scopeFactoryMock.Object,
             Mock.Of<ILogger<ModelProvisioningBackgroundService>>(),
             TimeSpan.FromMilliseconds(retryDelayMs),
-            maxAttempts);
+            TimeSpan.FromMilliseconds(maxRetryDelayMs));
 
     private void VerifyProvisioningAttempts(Times times)
     {
@@ -95,20 +95,58 @@ public class ModelProvisioningBackgroundServiceTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldGiveUpAndStop_AfterMaxAttemptsAllFail()
+    public async Task ExecuteAsync_ShouldKeepRetrying_UntilStopped_WhenEveryAttemptFails()
     {
+        var attempts = 0;
+        var fifthAttempt = new TaskCompletionSource();
         _aiClientFactoryMock
             .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("ollama not reachable"));
+            .Returns(() =>
+            {
+                if (++attempts == 5)
+                {
+                    fifthAttempt.TrySetResult();
+                }
 
-        var service = CreateService(maxAttempts: 3);
+                return Task.FromException(new InvalidOperationException("ollama not reachable"));
+            });
+
+        var service = CreateService();
         await service.StartAsync(CancellationToken.None);
-        await service.ExecuteTask!.WaitAsync(SignalTimeout);
+        await fifthAttempt.Task.WaitAsync(SignalTimeout);
         await service.StopAsync(CancellationToken.None);
 
-        service.ExecuteTask.IsCompletedSuccessfully.Should().BeTrue();
-        VerifyProvisioningAttempts(Times.Exactly(3));
+        service.ExecuteTask!.IsCompletedSuccessfully.Should().BeTrue();
+        VerifyProvisioningAttempts(Times.AtLeast(5));
         VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldBackOff_BetweenFailedAttempts()
+    {
+        var timestamps = new System.Collections.Generic.List<DateTime>();
+        var fourthAttempt = new TaskCompletionSource();
+        _aiClientFactoryMock
+            .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                timestamps.Add(DateTime.UtcNow);
+                if (timestamps.Count == 4)
+                {
+                    fourthAttempt.TrySetResult();
+                }
+
+                return Task.FromException(new InvalidOperationException("ollama not reachable"));
+            });
+
+        var service = CreateService(retryDelayMs: 50, maxRetryDelayMs: 1000);
+        await service.StartAsync(CancellationToken.None);
+        await fourthAttempt.Task.WaitAsync(SignalTimeout);
+        await service.StopAsync(CancellationToken.None);
+
+        var gaps = new[] { timestamps[1] - timestamps[0], timestamps[2] - timestamps[1], timestamps[3] - timestamps[2] };
+        gaps[1].Should().BeGreaterThan(gaps[0]);
+        gaps[2].Should().BeGreaterThan(gaps[1]);
     }
 
     [Fact]
@@ -150,19 +188,19 @@ public class ModelProvisioningBackgroundServiceTests
     private sealed class TestableModelProvisioningBackgroundService : ModelProvisioningBackgroundService
     {
         private readonly TimeSpan _retryDelay;
-        private readonly int _maxAttempts;
+        private readonly TimeSpan _maxRetryDelay;
 
         public TestableModelProvisioningBackgroundService(
             IServiceScopeFactory scopeFactory,
             ILogger<ModelProvisioningBackgroundService> logger,
             TimeSpan retryDelay,
-            int maxAttempts) : base(scopeFactory, logger)
+            TimeSpan maxRetryDelay) : base(scopeFactory, logger)
         {
             _retryDelay = retryDelay;
-            _maxAttempts = maxAttempts;
+            _maxRetryDelay = maxRetryDelay;
         }
 
         protected override TimeSpan RetryDelay => _retryDelay;
-        protected override int MaxAttempts => _maxAttempts;
+        protected override TimeSpan MaxRetryDelay => _maxRetryDelay;
     }
 }

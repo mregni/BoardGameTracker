@@ -10,7 +10,10 @@
   },
   "empty": {
     "title": "No game nights planned yet",
-    "description": "Invite players to plan a game night."
+    "description": "Invite players to plan a game night.",
+    "upcoming": "No upcoming game nights",
+    "past": "No past game nights",
+    "all": "No game nights yet"
   },
   "delete": {
     "title": "Delete game night",
@@ -80,5 +83,11 @@
     "delete-failed": "Failed to delete game night",
     "rsvp-updated": "RSVP updated successfully",
     "rsvp-update-failed": "Failed to update RSVP"
-  }
+  },
+  "validation": {
+    "title-required": "Title is required",
+    "location-required": "Location is required",
+    "host-required": "Host is required"
+  },
+  "create-first": "Plan your first game night"
 }

@@ -17,17 +17,30 @@ namespace BoardGameTracker.Tests.Infrastructure;
 
 public class GlobalExceptionHandlerTests
 {
+    private readonly Mock<IProblemDetailsService> _problemDetailsServiceMock;
     private readonly Mock<ILogger<GlobalExceptionHandler>> _loggerMock;
     private readonly GlobalExceptionHandler _handler;
 
     public GlobalExceptionHandlerTests()
     {
+        _problemDetailsServiceMock = new Mock<IProblemDetailsService>();
+        _problemDetailsServiceMock
+            .Setup(x => x.TryWriteAsync(It.IsAny<ProblemDetailsContext>()))
+            .Returns(ValueTask.FromResult(false));
         _loggerMock = new Mock<ILogger<GlobalExceptionHandler>>();
-        _handler = new GlobalExceptionHandler(_loggerMock.Object);
+        _handler = new GlobalExceptionHandler(_problemDetailsServiceMock.Object, _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Debug,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception?>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtMostOnce());
         _loggerMock.VerifyNoOtherCalls();
     }
 
@@ -312,10 +325,10 @@ public class GlobalExceptionHandlerTests
     #region UnauthorizedAccessException Tests
 
     [Fact]
-    public async Task TryHandleAsync_WithUnauthorizedAccessException_ShouldReturn401WithGenericMessage()
+    public async Task TryHandleAsync_WithAuthenticationFailedException_ShouldReturn401WithReasonKey()
     {
         var (httpContext, responseBody) = CreateHttpContext();
-        var exception = new UnauthorizedAccessException("User token expired for user admin@test.com");
+        var exception = new AuthenticationFailedException("error.auth.account-locked-out");
 
         var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
 
@@ -323,9 +336,95 @@ public class GlobalExceptionHandlerTests
         httpContext.Response.StatusCode.Should().Be(401);
 
         var problemDetails = await GetProblemDetailsFromResponse(responseBody);
-        problemDetails.Status.Should().Be(401);
-        problemDetails.Title.Should().Be("Unauthorized");
+        problemDetails.Title.Should().Be("error.auth.account-locked-out");
 
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithUnauthorizedAccessException_ShouldReturn500AndLog()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new UnauthorizedAccessException("Access to the path '/app/images' is denied.");
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(500);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(500);
+        problemDetails.Title.Should().Be("An unexpected error occurred. Please try again later.");
+
+        VerifyErrorLogged(exception);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithCancelledRequest_ShouldReturn499WithoutBodyOrLog()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        using var cts = new CancellationTokenSource();
+        httpContext.RequestAborted = cts.Token;
+        cts.Cancel();
+
+        var result = await _handler.TryHandleAsync(httpContext, new OperationCanceledException(), CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(499);
+        responseBody.Length.Should().Be(0);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithOperationCanceledButLiveRequest_ShouldReturn500AndLog()
+    {
+        var (httpContext, _) = CreateHttpContext();
+        var exception = new OperationCanceledException();
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(500);
+        VerifyErrorLogged(exception);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithBadHttpRequestException_ShouldUseItsStatusCode()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new BadHttpRequestException("Request body too large.", StatusCodes.Status413PayloadTooLarge);
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(413);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(413);
+        problemDetails.Title.Should().Be("Request body too large.");
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_ShouldWriteThroughProblemDetailsService_WhenItAcceptsTheContext()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        ProblemDetailsContext? captured = null;
+        _problemDetailsServiceMock
+            .Setup(x => x.TryWriteAsync(It.IsAny<ProblemDetailsContext>()))
+            .Callback<ProblemDetailsContext>(context => captured = context)
+            .Returns(ValueTask.FromResult(true));
+
+        var result = await _handler.TryHandleAsync(httpContext, new EntityNotFoundException("Game", 1), CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(404);
+        responseBody.Length.Should().Be(0);
+        captured.Should().NotBeNull();
+        captured!.ProblemDetails.Status.Should().Be(404);
+        captured.ProblemDetails.Title.Should().Be("The requested resource was not found.");
         VerifyNoOtherCalls();
     }
 
@@ -432,10 +531,10 @@ public class GlobalExceptionHandlerTests
     }
 
     [Fact]
-    public async Task TryHandleAsync_WithDbUpdateException_ShouldReturn400WithGenericMessage()
+    public async Task TryHandleAsync_WithDbUpdateExceptionWrappingConstraintViolation_ShouldReturn400WithoutLogging()
     {
         var (httpContext, responseBody) = CreateHttpContext();
-        var exception = new Microsoft.EntityFrameworkCore.DbUpdateException("FK violation");
+        var exception = new Microsoft.EntityFrameworkCore.DbUpdateException("FK violation", new FakeDbException("23503"));
 
         var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
 
@@ -446,6 +545,24 @@ public class GlobalExceptionHandlerTests
         problemDetails.Status.Should().Be(400);
         problemDetails.Title.Should().Be("The request references data that does not exist or conflicts with existing data.");
 
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task TryHandleAsync_WithDbUpdateExceptionWithoutConstraintViolation_ShouldReturn500AndLog()
+    {
+        var (httpContext, responseBody) = CreateHttpContext();
+        var exception = new Microsoft.EntityFrameworkCore.DbUpdateException("connection dropped", new FakeDbException("08006"));
+
+        var result = await _handler.TryHandleAsync(httpContext, exception, CancellationToken.None);
+
+        result.Should().BeTrue();
+        httpContext.Response.StatusCode.Should().Be(500);
+
+        var problemDetails = await GetProblemDetailsFromResponse(responseBody);
+        problemDetails.Status.Should().Be(500);
+
+        VerifyErrorLogged(exception);
         VerifyNoOtherCalls();
     }
 

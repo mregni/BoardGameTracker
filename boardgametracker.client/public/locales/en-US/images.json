@@ -1,4 +1,6 @@
 {
   "types": "png or jpg",
-  "upload": "Click or drop to add image"
+  "upload": "Click or drop to add image",
+  "selected-image": "Selected image",
+  "remove": "Remove image"
 }

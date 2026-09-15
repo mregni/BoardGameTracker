@@ -2,7 +2,8 @@ name: Stale Issues & PRs
 
 on:
   schedule:
-    - cron: '0 4 * * *'
+    # Monday at 04:00 UTC
+    - cron: '0 4 * * 1'
   workflow_dispatch:
 
 env:
@@ -21,6 +22,23 @@ jobs:
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2
         with:
           egress-policy: audit
+
+      - name: Ensure labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh label create "stale" \
+            --repo "$REPO" \
+            --description "No recent activity" \
+            --color "ededed" \
+            --force
+
+          gh label create "owner-responded" \
+            --repo "$REPO" \
+            --description "Repo owner has commented on this issue" \
+            --color "0075ca" \
+            --force
 
       - name: Label owner-responded issues
         env:
@@ -65,23 +83,6 @@ jobs:
 
           echo ""
           echo "Done. Newly labeled: $LABELED | Already labeled: $SKIPPED"
-
-      - name: Ensure labels exist
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          gh label create "stale" \
-            --repo "$REPO" \
-            --description "No recent activity" \
-            --color "ededed" \
-            --force
-
-          gh label create "owner-responded" \
-            --repo "$REPO" \
-            --description "Repo owner has commented on this issue" \
-            --color "0075ca" \
-            --force
 
       - name: Process stale issues and PRs
         uses: actions/stale@1e223db275d687790206a7acac4d1a11bd6fe629 # v10

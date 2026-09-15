@@ -19,8 +19,7 @@ namespace BoardGameTracker.Tests.Rag;
 
 public class RagServiceTests
 {
-    private readonly Mock<IReadRepository<ManualChunk>> _chunkRepoMock = new();
-    private readonly Mock<IRepository<Manual>> _manualRepoMock = new();
+    private readonly Mock<IManualChunkRepository> _chunkRepoMock = new();
     private readonly Mock<IAiClientFactory> _factoryMock = new();
     private readonly Mock<IRagSettingsProvider> _settingsMock = new();
     private readonly Mock<IEmbeddingGenerator<string, Embedding<float>>> _embedderMock = new();
@@ -38,13 +37,12 @@ public class RagServiceTests
         _embedderMock.Setup(x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GeneratedEmbeddings<Embedding<float>>(new[] { new Embedding<float>(new float[1024]) }));
 
-        _service = new RagService(_chunkRepoMock.Object, _manualRepoMock.Object, _factoryMock.Object, _settingsMock.Object);
+        _service = new RagService(_chunkRepoMock.Object, _factoryMock.Object, _settingsMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
         _chunkRepoMock.VerifyNoOtherCalls();
-        _manualRepoMock.VerifyNoOtherCalls();
         _factoryMock.VerifyNoOtherCalls();
         _settingsMock.VerifyNoOtherCalls();
         _embedderMock.VerifyNoOtherCalls();
@@ -62,7 +60,7 @@ public class RagServiceTests
                 It.IsAny<CancellationToken>()),
             Times.Once);
         _chunkRepoMock.Verify(
-            x => x.ListAsync(It.Is<ISpecification<ManualChunk, ManualChunkMatch>>(s => s is NearestManualChunksSpec && s.Take == 5), It.IsAny<CancellationToken>()),
+            x => x.SearchAsync(It.Is<NearestManualChunksSpec>(s => s.Take == 5), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -81,7 +79,7 @@ public class RagServiceTests
     public async Task AskAsync_NoMatches_ReturnsNoContextWithoutCallingChat()
     {
         _chunkRepoMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<ManualChunk, ManualChunkMatch>>(s => s is NearestManualChunksSpec), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SearchAsync(It.IsAny<NearestManualChunksSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ManualChunkMatch>());
 
         var result = await _service.AskAsync(1, "how many cards?");
@@ -103,16 +101,14 @@ public class RagServiceTests
 
         NearestManualChunksSpec? capturedSpec = null;
         _chunkRepoMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<ManualChunk, ManualChunkMatch>>(s => s is NearestManualChunksSpec && s.Take == 5), It.IsAny<CancellationToken>()))
-            .Callback<ISpecification<ManualChunk, ManualChunkMatch>, CancellationToken>((spec, _) => capturedSpec = (NearestManualChunksSpec) spec)
+            .Setup(x => x.SearchAsync(It.Is<NearestManualChunksSpec>(s => s.Take == 5), It.IsAny<CancellationToken>()))
+            .Callback<NearestManualChunksSpec, CancellationToken>((spec, _) => capturedSpec = spec)
             .ReturnsAsync(new List<ManualChunkMatch>
             {
-                new(chunk1, 0.10),
-                new(chunk2, 0.20),
-                new(chunk3, 0.30)
+                new(chunk1, "Base Rules", 0.10),
+                new(chunk2, "Base Rules", 0.20),
+                new(chunk3, "Expansion Rules", 0.30)
             });
-        _manualRepoMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(CreateManual(1, "Base Rules"));
-        _manualRepoMock.Setup(x => x.GetByIdAsync(2)).ReturnsAsync(CreateManual(2, "Expansion Rules"));
 
         List<ChatMessage>? capturedMessages = null;
         ChatOptions? capturedOptions = null;
@@ -161,8 +157,6 @@ public class RagServiceTests
 
         VerifyRetrievalPipeline("how many cards?");
         _factoryMock.Verify(x => x.CreateChatClientAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _manualRepoMock.Verify(x => x.GetByIdAsync(1), Times.Once);
-        _manualRepoMock.Verify(x => x.GetByIdAsync(2), Times.Once);
         _chatMock.Verify(
             x => x.GetResponseAsync(It.IsAny<IEnumerable<ChatMessage>>(), It.IsAny<ChatOptions?>(), It.IsAny<CancellationToken>()),
             Times.Once);
@@ -175,8 +169,8 @@ public class RagServiceTests
         const int gameId = 42;
         NearestManualChunksSpec? capturedSpec = null;
         _chunkRepoMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<ManualChunk, ManualChunkMatch>>(s => s is NearestManualChunksSpec), It.IsAny<CancellationToken>()))
-            .Callback<ISpecification<ManualChunk, ManualChunkMatch>, CancellationToken>((spec, _) => capturedSpec = (NearestManualChunksSpec) spec)
+            .Setup(x => x.SearchAsync(It.IsAny<NearestManualChunksSpec>(), It.IsAny<CancellationToken>()))
+            .Callback<NearestManualChunksSpec, CancellationToken>((spec, _) => capturedSpec = spec)
             .ReturnsAsync(new List<ManualChunkMatch>());
 
         var result = await _service.AskAsync(gameId, "how many cards?", manualId: 7);
@@ -190,14 +184,13 @@ public class RagServiceTests
     }
 
     [Fact]
-    public async Task AskAsync_ShouldBuildFallbackCitationFields_WhenManualIsMissingAndPageIsUnknown()
+    public async Task AskAsync_ShouldBuildFallbackCitationFields_WhenPageIsUnknown()
     {
         const int gameId = 42;
         var chunk = new ManualChunk(9, gameId, 0, new string('x', 300), null, new Vector(new float[1024]));
         _chunkRepoMock
-            .Setup(x => x.ListAsync(It.Is<ISpecification<ManualChunk, ManualChunkMatch>>(s => s is NearestManualChunksSpec), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ManualChunkMatch> { new(chunk, 0.25) });
-        _manualRepoMock.Setup(x => x.GetByIdAsync(9)).ReturnsAsync((Manual?)null);
+            .Setup(x => x.SearchAsync(It.IsAny<NearestManualChunksSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ManualChunkMatch> { new(chunk, string.Empty, 0.25) });
 
         List<ChatMessage>? capturedMessages = null;
         _chatMock
@@ -220,7 +213,6 @@ public class RagServiceTests
 
         VerifyRetrievalPipeline("how many cards?");
         _factoryMock.Verify(x => x.CreateChatClientAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _manualRepoMock.Verify(x => x.GetByIdAsync(9), Times.Once);
         _chatMock.Verify(
             x => x.GetResponseAsync(It.IsAny<IEnumerable<ChatMessage>>(), It.IsAny<ChatOptions?>(), It.IsAny<CancellationToken>()),
             Times.Once);

@@ -7,34 +7,33 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <SpaRoot>..\boardgametracker.client\</SpaRoot>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <SpaProxyLaunchCommand>pnpm dev</SpaProxyLaunchCommand>
         <SpaProxyServerUrl>http://localhost:5443</SpaProxyServerUrl>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.1*" />
-        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="10.0.1*" />
-        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="10.0.1*" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1*" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1*" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1*">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+        <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaProxy" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Refit" Version="10.2.0" />
-        <PackageReference Include="Refit.HttpClientFactory" Version="10.2.0" />
-        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-        <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
-        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+        <PackageReference Include="Refit.HttpClientFactory" />
+        <PackageReference Include="Refit.Reflection" />
+        <PackageReference Include="Serilog.AspNetCore" />
+        <PackageReference Include="Serilog.Sinks.Console" />
+        <PackageReference Include="Serilog.Sinks.File" />
+        <PackageReference Include="Swashbuckle.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\BoardGameTracker.Api\BoardGameTracker.Api.csproj" />
         <ProjectReference Include="..\BoardGameTracker.Common\BoardGameTracker.Common.csproj" />
-        <ProjectReference Include="..\BoardGameTracker.Core\BoardGameTracker.Core.csproj" />
         <ProjectReference Include="..\BoardGameTracker.Core\BoardGameTracker.Core.csproj" />
         <!-- Include frontend project for local development, exclude for Docker builds -->
         <ProjectReference Include="..\boardgametracker.client\boardgametracker.client.esproj" Condition="'$(BuildWithoutEsproj)' != 'true'">
@@ -50,8 +49,8 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
-        <Content Include="..\DockerFile">
-            <Link>DockerFile</Link>
+        <Content Include="..\Dockerfile">
+            <Link>Dockerfile</Link>
         </Content>
     </ItemGroup>
 

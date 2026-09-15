@@ -1,10 +1,12 @@
 using System;
 using System.Threading.Tasks;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -18,6 +20,7 @@ public class OidcProviderServiceTests : IDisposable
     private readonly MainDbContext _context;
     private readonly MemoryCache _cache;
     private readonly Mock<ILogger<OidcProviderService>> _loggerMock;
+    private readonly SecretProtector _secretProtector;
     private readonly OidcProviderService _service;
 
     public OidcProviderServiceTests()
@@ -29,7 +32,8 @@ public class OidcProviderServiceTests : IDisposable
 
         _cache = new MemoryCache(new MemoryCacheOptions());
         _loggerMock = new Mock<ILogger<OidcProviderService>>();
-        _service = new OidcProviderService(_context, _cache, _loggerMock.Object);
+        _secretProtector = new SecretProtector(new EphemeralDataProtectionProvider(), Mock.Of<ILogger<SecretProtector>>());
+        _service = new OidcProviderService(_context, _cache, _secretProtector, _loggerMock.Object);
     }
 
     public void Dispose()
@@ -94,6 +98,34 @@ public class OidcProviderServiceTests : IDisposable
 
     #region CreateAsync
 
+    [Theory]
+    [InlineData("http://auth.example.com")]
+    [InlineData("ftp://accounts.google.com")]
+    public async Task CreateAsync_ShouldRejectAnInsecurePublicAuthority(string authority)
+    {
+        var act = () => _service.CreateAsync(
+            name: "sso",
+            displayName: "SSO",
+            authority: authority,
+            clientId: "client-id",
+            clientSecret: null,
+            scopes: "openid",
+            autoProvisionUsers: true,
+            authorizationEndpoint: null,
+            tokenEndpoint: null,
+            userInfoEndpoint: null,
+            usernameClaimType: null,
+            emailClaimType: null,
+            displayNameClaimType: null,
+            rolesClaimType: null,
+            adminGroupValue: null,
+            iconUrl: null,
+            buttonColor: null);
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InsecureAuthority);
+        (await _context.OidcProviders.CountAsync()).Should().Be(0);
+    }
+
     [Fact]
     public async Task CreateAsync_ShouldCreateAndReturnProvider_WhenNameIsUnique()
     {
@@ -121,7 +153,8 @@ public class OidcProviderServiceTests : IDisposable
         result.DisplayName.Should().Be("Google");
         result.Authority.Should().Be("https://accounts.google.com");
         result.ClientId.Should().Be("client-id");
-        result.ClientSecret.Should().Be("secret");
+        result.ClientSecret.Should().NotBe("secret");
+        _secretProtector.Unprotect(result.ClientSecret!).Should().Be("secret");
         result.Scopes.Should().Be("openid profile email");
         result.AutoProvisionUsers.Should().BeTrue();
 
@@ -259,7 +292,8 @@ public class OidcProviderServiceTests : IDisposable
         result.DisplayName.Should().Be("Google Updated");
         result.Authority.Should().Be("https://accounts.google.com/v2");
         result.ClientId.Should().Be("new-client-id");
-        result.ClientSecret.Should().Be("new-secret");
+        result.ClientSecret.Should().NotBe("new-secret");
+        _secretProtector.Unprotect(result.ClientSecret!).Should().Be("new-secret");
         result.Enabled.Should().BeFalse();
         result.Scopes.Should().Be("openid email");
         result.AutoProvisionUsers.Should().BeFalse();

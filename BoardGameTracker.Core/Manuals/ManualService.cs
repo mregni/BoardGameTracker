@@ -4,6 +4,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Common.Models;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Disk.Interfaces;
@@ -21,6 +22,8 @@ public class ManualService : IManualService
     private const long MaxManualBytes = 200L * 1024 * 1024;
     private const string PdfContentType = "application/pdf";
     private const string PdfExtension = ".pdf";
+    private const int PdfSignatureWindow = 1024;
+    private static readonly byte[] PdfSignature = "%PDF-"u8.ToArray();
 
     private readonly IRepository<Manual> _manualRepository;
     private readonly IDiskProvider _diskProvider;
@@ -29,6 +32,7 @@ public class ManualService : IManualService
     private readonly IManualIndexingQueue _indexingQueue;
     private readonly IPdfPageRenderer _pageRenderer;
     private readonly IEnvironmentProvider _environmentProvider;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<ManualService> _logger;
 
     public ManualService(
@@ -39,8 +43,10 @@ public class ManualService : IManualService
         IManualIndexingQueue indexingQueue,
         IPdfPageRenderer pageRenderer,
         IEnvironmentProvider environmentProvider,
+        IDateTimeProvider dateTimeProvider,
         ILogger<ManualService> logger)
     {
+        _dateTimeProvider = dateTimeProvider;
         _manualRepository = manualRepository;
         _diskProvider = diskProvider;
         _gameNightRepository = gameNightRepository;
@@ -81,7 +87,7 @@ public class ManualService : IManualService
                 var storedFileName = await _diskProvider.WriteFile(stream, file.FileName, PathHelper.FullManualsPath);
                 writtenFiles.Add(Path.Combine(PathHelper.FullManualsPath, storedFileName));
 
-                manuals.Add(new Manual(file.FileName, storedFileName, PdfContentType, file.Length, gameId, DateTime.UtcNow));
+                manuals.Add(new Manual(file.FileName, storedFileName, PdfContentType, file.Length, gameId, _dateTimeProvider.UtcNow));
             }
 
             await _manualRepository.CreateRangeAsync(manuals);
@@ -136,10 +142,12 @@ public class ManualService : IManualService
             throw new EntityNotFoundException(nameof(Manual), id);
         }
 
-        _diskProvider.DeleteFile(GetPhysicalPath(manual.StoredFileName));
-        _pageRenderer.DeleteFigures(id);
+        var path = GetPhysicalPath(manual.StoredFileName);
         await _manualRepository.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
+
+        _diskProvider.DeleteFile(path);
+        _pageRenderer.DeleteFigures(id);
         _logger.LogInformation("Manual {ManualId} deleted", id);
     }
 
@@ -217,9 +225,8 @@ public class ManualService : IManualService
             .ToList();
     }
 
-    public async Task DeleteManualFilesForGame(int gameId)
+    public void DeleteManualFiles(IEnumerable<Manual> manuals)
     {
-        var manuals = await _manualRepository.ListAsync(new ManualsByGameIdSpec(gameId));
         foreach (var manual in manuals)
         {
             _diskProvider.DeleteFile(GetPhysicalPath(manual.StoredFileName));
@@ -251,6 +258,19 @@ public class ManualService : IManualService
         {
             throw new ValidationException("Files", $"'{file.FileName}' exceeds the maximum size of {MaxManualBytes / (1024 * 1024)} MB.");
         }
+
+        if (!HasPdfSignature(file))
+        {
+            throw new ValidationException("Files", $"'{file.FileName}' is not a PDF file.");
+        }
+    }
+
+    private static bool HasPdfSignature(IFormFile file)
+    {
+        using var stream = file.OpenReadStream();
+        var header = new byte[PdfSignatureWindow];
+        var read = stream.ReadAtLeast(header, header.Length, throwOnEndOfStream: false);
+        return header.AsSpan(0, read).IndexOf(PdfSignature) >= 0;
     }
 
     private ManualDownload OpenDownload(Manual manual)

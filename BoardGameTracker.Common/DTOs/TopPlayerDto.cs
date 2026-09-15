@@ -1,4 +1,5 @@
-﻿using BoardGameTracker.Common.Entities.Helpers;
+﻿using BoardGameTracker.Common;
+using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 
 namespace BoardGameTracker.Common.DTOs;
@@ -23,26 +24,29 @@ public class TopPlayerDto
             AverageScore =  play.Average(x => x.Score),
         };
 
-        var playList = play
+        topPlayer.Trend = CalculateTrend(play);
+        return topPlayer;
+    }
+
+    private static Trend CalculateTrend(IEnumerable<PlayerSession> play)
+    {
+        var ordered = play
             .OrderByDescending(x => x.Session.Start)
             .ToList();
-        playList.RemoveAt(0);
-        var previousWinRate = playList.Count > 0
-            ? playList.Count(x => x.Won) / (double)playList.Count
-            : topPlayer.WinPercentage;
-
-        if (topPlayer.WinPercentage > previousWinRate)
+        var recent = ordered.Take(Constants.Game.TrendWindowSize).ToList();
+        var previous = ordered.Skip(Constants.Game.TrendWindowSize).ToList();
+        if (previous.Count == 0)
         {
-            topPlayer.Trend = Trend.Up;
-        } else if (topPlayer.WinPercentage < previousWinRate)
-        {
-            topPlayer.Trend = Trend.Down;
-        }
-        else
-        {
-            topPlayer.Trend = Trend.Equal;
+            return Trend.Equal;
         }
 
-        return topPlayer;
+        var recentWinRate = recent.Count(x => x.Won) / (double)recent.Count;
+        var previousWinRate = previous.Count(x => x.Won) / (double)previous.Count;
+        if (recentWinRate > previousWinRate)
+        {
+            return Trend.Up;
+        }
+
+        return recentWinRate < previousWinRate ? Trend.Down : Trend.Equal;
     }
 }

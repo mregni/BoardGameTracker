@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Diagnostics;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Rag.Interfaces;
@@ -8,6 +9,9 @@ namespace BoardGameTracker.Core.Rag;
 public class PdfPageRenderer : IPdfPageRenderer
 {
     private const int RenderDpi = 150;
+    private const int MaxConcurrentRenders = 2;
+    private static readonly TimeSpan RenderTimeout = TimeSpan.FromSeconds(30);
+    private static readonly SemaphoreSlim RenderSlots = new(MaxConcurrentRenders, MaxConcurrentRenders);
 
     private readonly ILogger<PdfPageRenderer> _logger;
 
@@ -59,7 +63,7 @@ public class PdfPageRenderer : IPdfPageRenderer
     }
 
     private static string GetFiguresDirectory(int manualId) =>
-        Path.Combine(PathHelper.FullManualFiguresPath, manualId.ToString());
+        Path.Combine(PathHelper.FullManualFiguresPath, manualId.ToString(CultureInfo.InvariantCulture));
 
     private async Task<bool> RunPdfToPpmAsync(string pdfPath, string targetPng, int page,
         CancellationToken cancellationToken)
@@ -75,15 +79,16 @@ public class PdfPageRenderer : IPdfPageRenderer
         };
         startInfo.ArgumentList.Add("-png");
         startInfo.ArgumentList.Add("-f");
-        startInfo.ArgumentList.Add(page.ToString());
+        startInfo.ArgumentList.Add(page.ToString(CultureInfo.InvariantCulture));
         startInfo.ArgumentList.Add("-l");
-        startInfo.ArgumentList.Add(page.ToString());
+        startInfo.ArgumentList.Add(page.ToString(CultureInfo.InvariantCulture));
         startInfo.ArgumentList.Add("-r");
-        startInfo.ArgumentList.Add(RenderDpi.ToString());
+        startInfo.ArgumentList.Add(RenderDpi.ToString(CultureInfo.InvariantCulture));
         startInfo.ArgumentList.Add("-singlefile");
         startInfo.ArgumentList.Add(pdfPath);
         startInfo.ArgumentList.Add(prefix);
 
+        await RenderSlots.WaitAsync(cancellationToken);
         try
         {
             using var process = Process.Start(startInfo);
@@ -92,17 +97,34 @@ public class PdfPageRenderer : IPdfPageRenderer
                 return false;
             }
 
-            var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
-            await process.WaitForExitAsync(cancellationToken);
-            var error = await errorTask;
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(RenderTimeout);
 
-            if (process.ExitCode != 0)
+            try
             {
-                _logger.LogWarning("pdftoppm failed for {Pdf} page {Page}: {Error}", pdfPath, page, error);
+                var errorTask = process.StandardError.ReadToEndAsync(timeout.Token);
+                await process.WaitForExitAsync(timeout.Token);
+                var error = await errorTask;
+
+                if (process.ExitCode != 0)
+                {
+                    _logger.LogWarning("pdftoppm failed for {Pdf} page {Page}: {Error}", pdfPath, page, error);
+                    return false;
+                }
+
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                KillQuietly(process);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+
+                _logger.LogWarning("pdftoppm exceeded {Timeout} for {Pdf} page {Page} and was killed", RenderTimeout, pdfPath, page);
                 return false;
             }
-
-            return true;
         }
         catch (OperationCanceledException)
         {
@@ -112,6 +134,24 @@ public class PdfPageRenderer : IPdfPageRenderer
         {
             _logger.LogWarning(ex, "pdftoppm is unavailable; rulebook page images are disabled");
             return false;
+        }
+        finally
+        {
+            RenderSlots.Release();
+        }
+    }
+
+    private static void KillQuietly(Process process)
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch (InvalidOperationException)
+        {
         }
     }
 }

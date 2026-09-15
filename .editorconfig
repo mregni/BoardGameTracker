@@ -1,0 +1,61 @@
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cs,csproj,props,sln}]
+indent_style = space
+indent_size = 4
+
+[*.cs]
+dotnet_sort_system_directives_first = true
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_prefer_braces = true:warning
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
+dotnet_diagnostic.CA1716.severity = none
+dotnet_diagnostic.CA1711.severity = none
+
+[**/Migrations/**.cs]
+generated_code = true
+
+[boardgametracker.client/**]
+indent_style = tab
+end_of_line = lf
+max_line_length = 120
+
+[docs/**]
+indent_style = tab
+end_of_line = lf
+
+[*.{yml,yaml,json,md,mdx}]
+indent_style = space
+indent_size = 2
+
+[*.sh]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+
+[*.md]
+trim_trailing_whitespace = false
+
+[Dockerfile]
+end_of_line = lf
+
+[BoardGameTracker.*Tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1816.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.CA1859.severity = none
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.CA1862.severity = none
+dotnet_diagnostic.CA1515.severity = none
+dotnet_diagnostic.CA2201.severity = none
+dotnet_diagnostic.CA2012.severity = none
+dotnet_diagnostic.CA1825.severity = none
+dotnet_diagnostic.CA1001.severity = none
+dotnet_diagnostic.CA1806.severity = none
+dotnet_diagnostic.CA1507.severity = none

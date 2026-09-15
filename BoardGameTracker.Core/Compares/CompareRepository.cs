@@ -174,7 +174,7 @@ public class CompareRepository : ICompareRepository
             {
                 x.GameId,
                 ScoreDifference = Math.Abs(x.PlayerOneScore!.Value - x.PlayerTwoScore!.Value),
-                WinnerId = x.PlayerOneWon ? playerOne : playerTwo
+                WinnerId = x.PlayerOneWon ? playerOne : x.PlayerTwoWon ? playerTwo : (int?)null
             })
             .OrderBy(x => x.ScoreDifference)
             .FirstOrDefault();

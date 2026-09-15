@@ -1,21 +1,23 @@
+import { useTranslation } from "react-i18next";
 import LogOut from "@/assets/icons/log-out.svg?react";
 import User from "@/assets/icons/user.svg?react";
 import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
 import { BgtMenuLogo } from "@/components/BgtMenu/BgtMenuLogo";
 import { useAuth } from "@/hooks/useAuth";
+import { useLogout } from "@/hooks/useLogout";
 import { useMenuInfo } from "../-hooks/useMenuInfo";
 import { VersionCard } from "./VersionCard";
 
 export const Sidebar = () => {
 	const { counts, versionInfo, menuItems } = useMenuInfo();
-	const { user, isAuthenticated, authStatus, logout } = useAuth();
+	const user = useAuth((s) => s.user);
+	const isAuthenticated = useAuth((s) => s.isAuthenticated);
+	const authStatus = useAuth((s) => s.authStatus);
+	const { t } = useTranslation("common");
+	const handleLogout = useLogout();
 
 	const showAuth = authStatus?.authEnabled;
-
-	const handleLogout = async () => {
-		await logout();
-	};
 
 	return (
 		<div className="hidden md:block">
@@ -32,7 +34,12 @@ export const Sidebar = () => {
 						<div className="flex-1 min-w-0">
 							<div className="text-xs text-white/60 truncate">{user.username}</div>
 						</div>
-						<BgtIconButton icon={<LogOut className="size-4" />} onClick={handleLogout} intent="subtile" />
+						<BgtIconButton
+							icon={<LogOut className="size-4" />}
+							onClick={handleLogout}
+							intent="subtile"
+							aria-label={t("common:logout")}
+						/>
 					</div>
 				)}
 

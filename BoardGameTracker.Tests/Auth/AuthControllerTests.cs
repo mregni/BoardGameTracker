@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
@@ -19,6 +20,7 @@ public class AuthControllerTests
 {
     private readonly Mock<IAuthService> _authServiceMock;
     private readonly Mock<IOidcService> _oidcServiceMock;
+    private readonly Mock<IProfileImageTicketService> _imageTicketsMock;
     private readonly Mock<ILogger<AuthController>> _loggerMock;
     private readonly AuthController _controller;
 
@@ -26,8 +28,11 @@ public class AuthControllerTests
     {
         _authServiceMock = new Mock<IAuthService>();
         _oidcServiceMock = new Mock<IOidcService>();
+        _imageTicketsMock = new Mock<IProfileImageTicketService>();
+        _imageTicketsMock.Setup(x => x.Issue()).Returns("image-ticket");
+        _imageTicketsMock.Setup(x => x.Lifetime).Returns(TimeSpan.FromDays(7));
         _loggerMock = new Mock<ILogger<AuthController>>();
-        _controller = new AuthController(_authServiceMock.Object, _oidcServiceMock.Object, _loggerMock.Object);
+        _controller = new AuthController(_authServiceMock.Object, _oidcServiceMock.Object, _imageTicketsMock.Object, _loggerMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -36,33 +41,48 @@ public class AuthControllerTests
         _oidcServiceMock.VerifyNoOtherCalls();
     }
 
+    private void VerifyImageCookie(bool issued)
+    {
+        var cookie = _controller.HttpContext.Response.Headers.SetCookie.ToString();
+        cookie.Should().Contain(ProfileImageCookie.Name + "=" + (issued ? "image-ticket" : ""));
+        cookie.Should().Contain("path=/images/profile");
+        cookie.Should().Contain("httponly");
+        if (!issued)
+        {
+            cookie.Should().Contain("expires=Thu, 01 Jan 1970");
+        }
+    }
+
     #region Login
 
     [Fact]
     public async Task Login_ShouldReturnOk_WhenCredentialsAreValid()
     {
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
         var request = new LoginRequest("admin", "admin");
         var expectedResponse = new LoginResponse(
             "jwt-token", "refresh-token", DateTime.UtcNow.AddHours(1),
             new UserInfo("user-id", "admin", "Admin", new List<string> { "Admin" }));
 
-        _authServiceMock.Setup(x => x.LoginAsync(request)).ReturnsAsync(expectedResponse);
+        _authServiceMock.Setup(x => x.LoginAsync(request, It.IsAny<string>())).ReturnsAsync(expectedResponse);
 
         var result = await _controller.Login(request);
 
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.Value.Should().BeSameAs(expectedResponse);
+        VerifyImageCookie(issued: true);
 
-        _authServiceMock.Verify(x => x.LoginAsync(request), Times.Once);
+        _authServiceMock.Verify(x => x.LoginAsync(request, It.IsAny<string>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Login_ShouldPropagateException_WhenCredentialsAreInvalid()
     {
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
         // Arrange
         var request = new LoginRequest("unknown", "password");
-        _authServiceMock.Setup(x => x.LoginAsync(request))
+        _authServiceMock.Setup(x => x.LoginAsync(request, It.IsAny<string>()))
             .ThrowsAsync(new UnauthorizedAccessException(Constants.Errors.InvalidCredentials));
 
         // Act
@@ -72,7 +92,7 @@ public class AuthControllerTests
         await act.Should().ThrowAsync<UnauthorizedAccessException>()
             .WithMessage(Constants.Errors.InvalidCredentials);
 
-        _authServiceMock.Verify(x => x.LoginAsync(request), Times.Once);
+        _authServiceMock.Verify(x => x.LoginAsync(request, It.IsAny<string>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -88,12 +108,14 @@ public class AuthControllerTests
             "new-jwt", "new-refresh", DateTime.UtcNow.AddHours(1),
             new UserInfo("user-id", "admin", "Admin", new List<string> { "Admin" }));
 
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
         _authServiceMock.Setup(x => x.RefreshAsync("valid-token")).ReturnsAsync(expectedResponse);
 
         var result = await _controller.Refresh(request);
 
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.Value.Should().BeSameAs(expectedResponse);
+        VerifyImageCookie(issued: true);
 
         _authServiceMock.Verify(x => x.RefreshAsync("valid-token"), Times.Once);
         VerifyNoOtherCalls();
@@ -122,7 +144,7 @@ public class AuthControllerTests
     #region Logout
 
     [Fact]
-    public async Task Logout_ShouldReturnOk_WhenAuthenticated()
+    public async Task Logout_ShouldReturnNoContent_WhenAuthenticated()
     {
         // Arrange
         var request = new LogoutRequest("refresh-token");
@@ -135,7 +157,8 @@ public class AuthControllerTests
         var result = await _controller.Logout(request);
 
         // Assert
-        result.Should().BeOfType<OkResult>();
+        result.Should().BeOfType<NoContentResult>();
+        VerifyImageCookie(issued: false);
 
         _authServiceMock.Verify(x => x.LogoutAsync("user-id", "refresh-token"), Times.Once);
         VerifyNoOtherCalls();
@@ -146,7 +169,7 @@ public class AuthControllerTests
     #region Register
 
     [Fact]
-    public async Task Register_ShouldReturnOk_WhenRequestIsValid()
+    public async Task Register_ShouldReturnCreated_WhenRequestIsValid()
     {
         SetupAuthenticatedUser("admin-id");
         var request = new RegisterRequest("newuser", "new@test.com", "password", null);
@@ -157,7 +180,7 @@ public class AuthControllerTests
 
         var result = await _controller.Register(request);
 
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var okResult = result.Should().BeOfType<CreatedResult>().Subject;
         okResult.Value.Should().BeSameAs(expectedDto);
 
         _authServiceMock.Verify(x => x.RegisterAsync(request), Times.Once);
@@ -216,7 +239,7 @@ public class AuthControllerTests
     #region ChangePassword
 
     [Fact]
-    public async Task ChangePassword_ShouldReturnOk_WhenPasswordChanged()
+    public async Task ChangePassword_ShouldReturnNoContent_WhenPasswordChanged()
     {
         // Arrange
         SetupAuthenticatedUser("user-id");
@@ -229,7 +252,7 @@ public class AuthControllerTests
         var result = await _controller.ChangePassword(request);
 
         // Assert
-        result.Should().BeOfType<OkResult>();
+        result.Should().BeOfType<NoContentResult>();
 
         _authServiceMock.Verify(x => x.ChangePasswordAsync("user-id", request), Times.Once);
         VerifyNoOtherCalls();
@@ -300,14 +323,14 @@ public class AuthControllerTests
     #region ForgotPassword
 
     [Fact]
-    public async Task ForgotPassword_ShouldReturnOk()
+    public async Task ForgotPassword_ShouldReturnNoContent()
     {
         var request = new ForgotPasswordRequest("someuser");
         _authServiceMock.Setup(x => x.ForgotPasswordAsync("someuser")).Returns(Task.CompletedTask);
 
         var result = await _controller.ForgotPassword(request);
 
-        result.Should().BeOfType<OkResult>();
+        result.Should().BeOfType<NoContentResult>();
 
         _authServiceMock.Verify(x => x.ForgotPasswordAsync("someuser"), Times.Once);
         VerifyNoOtherCalls();
@@ -318,14 +341,14 @@ public class AuthControllerTests
     #region ResetPasswordWithToken
 
     [Fact]
-    public async Task ResetPasswordWithToken_ShouldReturnOk_WhenTokenIsValid()
+    public async Task ResetPasswordWithToken_ShouldReturnNoContent_WhenTokenIsValid()
     {
         var request = new ResetPasswordConfirmRequest("user-id", "token", "new-password");
         _authServiceMock.Setup(x => x.ResetPasswordWithTokenAsync(request)).Returns(Task.CompletedTask);
 
         var result = await _controller.ResetPasswordWithToken(request);
 
-        result.Should().BeOfType<OkResult>();
+        result.Should().BeOfType<NoContentResult>();
 
         _authServiceMock.Verify(x => x.ResetPasswordWithTokenAsync(request), Times.Once);
         VerifyNoOtherCalls();

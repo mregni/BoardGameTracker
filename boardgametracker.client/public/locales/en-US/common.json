@@ -124,5 +124,7 @@
     "thursday": "Thursday",
     "friday": "Friday",
     "saturday": "Saturday"
-  }
+  },
+  "search": "Search...",
+  "required": "Required"
 }

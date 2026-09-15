@@ -114,23 +114,6 @@ public class EfRepositoryTests
     }
 
     [Fact]
-    public async Task Update_ShouldMarkModifiedWithoutPersisting()
-    {
-        await using var context = CreateContext();
-        var loan = new Loan(1, 1, DateTime.UtcNow);
-        await context.Loans.AddAsync(loan);
-        await context.SaveChangesAsync();
-        context.ChangeTracker.Clear();
-
-        var repository = new EfRepository<Loan>(context);
-        loan.MarkAsReturned(DateTime.UtcNow);
-
-        await repository.Update(loan);
-
-        context.ChangeTracker.Entries<Loan>().Single().State.Should().Be(EntityState.Modified);
-    }
-
-    [Fact]
     public async Task CreateRangeAsync_ShouldTrackAllAsAdded_WithoutPersisting()
     {
         await using var context = CreateContext();

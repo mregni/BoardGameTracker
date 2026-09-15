@@ -23,5 +23,6 @@ public class UpdateRsvpCommand
     public int? Id { get; set; }
     public int? GameNightId { get; set; }
     public int? PlayerId { get; set; }
+    public Guid? LinkId { get; set; }
     public GameNightRsvpState State { get; set; }
 }

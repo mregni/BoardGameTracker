@@ -4,7 +4,9 @@
   },
   "image": {
     "type-not-supported": "Image type not supported",
-    "error": "Error while uploading image, check logs"
+    "error": "Error while uploading image, check logs",
+    "too-large": "Afbeelding is te groot",
+    "unsupported-format": "Niet-ondersteund afbeeldingsformaat"
   },
   "auth": {
     "username-already-exists": "Username already exists",
@@ -17,6 +19,9 @@
     "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
     "invalid-credentials": "Invalid username or password",
     "invalid-refresh-token": "Invalid or expired session",
+    "account-locked-out": "Te veel mislukte pogingen. Probeer het later opnieuw.",
+    "invalid-auth-session": "Ongeldige of verlopen aanmeldsessie",
+    "invalid-redirect-uri": "Ongeldige redirect-URI",
     "player-already-linked": "Deze speler is al gekoppeld aan een ander account",
     "invalid-reset-token": "Deze link om je wachtwoord opnieuw in te stellen is ongeldig of verlopen"
   },
@@ -34,6 +39,15 @@
   "network": "Unable to connect to the server. Please check your connection.",
   "timeout": "The request took too long. Please try again.",
   "server": "A server error occurred. Please try again later.",
+  "location": {
+    "used-by-game-nights": "Deze locatie wordt gebruikt door een of meer spelavonden"
+  },
+  "player": {
+    "hosts-game-nights": "Deze speler is gastheer van een of meer spelavonden"
+  },
+  "session": {
+    "invalid-expansion": "Een van de gekozen uitbreidingen hoort niet bij dit spel"
+  },
   "email": {
     "not-configured": "E-mail is niet geconfigureerd op deze server"
   },

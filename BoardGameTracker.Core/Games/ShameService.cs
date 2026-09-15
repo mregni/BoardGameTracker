@@ -26,26 +26,40 @@ public class ShameService : IShameService
         _logger = logger;
     }
 
-    public async Task<int> CountShelfOfShameGames()
+    public async Task<int> CountShelfOfShameGames(CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Counting shelf of shame games");
-        var enabled = await _configRepository.GetConfigValueAsync<bool>(Constants.AppConfig.ShelfOfShameEnabled);
-        if (!enabled)
+        var cutoffDate = await GetCutoffDateAsync();
+        if (cutoffDate == null)
         {
             return 0;
         }
 
-        var months = await _configRepository.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths);
-        var cutoffDate = _dateTimeProvider.UtcNow.AddMonths(-months);
-        return await _gameRepository.CountGamesWithNoRecentSessions(cutoffDate);
+        return await _gameRepository.CountGamesWithNoRecentSessions(cutoffDate.Value, cancellationToken);
     }
 
     public async Task<List<ShameGame>> GetShameGames()
     {
         _logger.LogDebug("Getting shame games");
-        var months = await _configRepository.GetConfigValueAsync<int>(Constants.AppConfig.ShelfOfShameMonths);
-        var cutoffDate = _dateTimeProvider.UtcNow.AddMonths(-months);
-        return await _gameRepository.GetShameGames(cutoffDate);
+        var cutoffDate = await GetCutoffDateAsync();
+        if (cutoffDate == null)
+        {
+            return [];
+        }
+
+        return await _gameRepository.GetShameGames(cutoffDate.Value);
+    }
+
+    private async Task<DateTime?> GetCutoffDateAsync()
+    {
+        var enabled = await _configRepository.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false);
+        if (!enabled)
+        {
+            return null;
+        }
+
+        var months = await _configRepository.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameMonths, Constants.AppConfig.DefaultShelfOfShameMonths);
+        return _dateTimeProvider.UtcNow.AddMonths(-months);
     }
 
     public async Task<ShameStatistics> GetShameStatistics()

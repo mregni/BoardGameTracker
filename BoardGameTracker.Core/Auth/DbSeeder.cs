@@ -48,19 +48,33 @@ public static class DbSeeder
         var password = useDefault ? defaultPassword : adminPassword!;
 
         var admin = new ApplicationUser(adminUsername, null, "Administrator");
-        admin.PasswordHash = userManager.PasswordHasher.HashPassword(admin, password);
-        var result = await userManager.CreateAsync(admin);
+        IdentityResult result;
+        if (useDefault)
+        {
+            admin.PasswordHash = userManager.PasswordHasher.HashPassword(admin, password);
+            result = await userManager.CreateAsync(admin);
+        }
+        else
+        {
+            result = await userManager.CreateAsync(admin, password);
+        }
 
         if (!result.Succeeded)
         {
-            logger.LogWarning("Failed to create default admin user: {Errors}",
+            logger.LogError("Failed to create default admin user: {Errors}",
                 string.Join(", ", result.Errors.Select(e => e.Description)));
             return;
         }
 
         await userManager.AddToRoleAsync(admin, Constants.AuthRoles.Admin);
 
-        if (!useDefault)
+        if (useDefault)
+        {
+            logger.LogWarning(
+                "Created default admin user '{Username}' with the default password. Change it after the first login or set ADMIN_PASSWORD",
+                adminUsername);
+        }
+        else
         {
             logger.LogInformation("Created default admin user '{Username}' using ADMIN_PASSWORD", adminUsername);
         }
