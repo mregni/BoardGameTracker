@@ -48,7 +48,7 @@ export const ExpansionSelectorModal = (props: Props) => {
 					<BgtButton variant="cancel" onClick={() => close()} disabled={isLoading || isPending}>
 						{t("common:cancel")}
 					</BgtButton>
-					<BgtButton type="button" variant="primary" disabled={isLoading} onClick={saveModal || isPending}>
+					<BgtButton type="button" variant="primary" disabled={isLoading || isPending} onClick={saveModal}>
 						{t("expansions.update")}
 					</BgtButton>
 				</BgtDialogClose>

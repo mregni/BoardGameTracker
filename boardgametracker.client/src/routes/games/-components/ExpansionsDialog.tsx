@@ -1,14 +1,17 @@
+import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Package from "@/assets/icons/package.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtDialog, BgtDialogContent, BgtDialogDescription, BgtDialogTitle } from "@/components/BgtDialog/BgtDialog";
+import { BgtSimpleInputField } from "@/components/BgtForm";
 import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtText } from "@/components/BgtText/BgtText";
 
 interface Expansion {
 	id: number;
 	title: string;
+	bggId: number | null;
 }
 
 interface Props {
@@ -16,13 +19,32 @@ interface Props {
 	open: boolean;
 	close: () => void;
 	canWrite: boolean;
+	bggEnabled: boolean;
 	onAddExpansion: () => void;
+	onAddManualExpansion: (title: string) => Promise<boolean>;
 	onDeleteExpansion: (expansionId: number) => void;
 }
 
 export const ExpansionsDialog = (props: Props) => {
-	const { expansions, open, close, canWrite, onAddExpansion, onDeleteExpansion } = props;
+	const { expansions, open, close, canWrite, bggEnabled, onAddExpansion, onAddManualExpansion, onDeleteExpansion } =
+		props;
 	const { t } = useTranslation("game");
+	const [title, setTitle] = useState("");
+	const [saving, setSaving] = useState(false);
+
+	const submitManual = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		const trimmed = title.trim();
+		if (!trimmed) return;
+		setSaving(true);
+		try {
+			if (await onAddManualExpansion(trimmed)) {
+				setTitle("");
+			}
+		} finally {
+			setSaving(false);
+		}
+	};
 
 	return (
 		<BgtDialog open={open} onClose={close}>
@@ -46,12 +68,22 @@ export const ExpansionsDialog = (props: Props) => {
 								<div className="shrink-0 w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
 									<Package className="text-primary" />
 								</div>
-								<div className="flex-1">
+								<div className="flex-1 min-w-0">
 									<BgtText color="white">{expansion.title}</BgtText>
+									{expansion.bggId === null && (
+										<BgtText size="1" color="gray">
+											{t("expansions.manual.badge")}
+										</BgtText>
+									)}
 								</div>
 								{canWrite && (
 									<div className="flex">
-										<BgtIconButton icon={<Trash />} intent="danger" onClick={() => onDeleteExpansion(expansion.id)} />
+										<BgtIconButton
+											icon={<Trash />}
+											intent="danger"
+											onClick={() => onDeleteExpansion(expansion.id)}
+											aria-label={t("common:delete.button")}
+										/>
 									</div>
 								)}
 							</div>
@@ -59,6 +91,25 @@ export const ExpansionsDialog = (props: Props) => {
 					</div>
 				)}
 				{canWrite && (
+					<form onSubmit={submitManual} className="flex flex-col gap-2 pt-2 border-t border-primary/10">
+						<BgtText size="2" color="gray">
+							{t("expansions.manual.description")}
+						</BgtText>
+						<div className="flex gap-2 items-end">
+							<BgtSimpleInputField
+								type="text"
+								value={title}
+								placeholder={t("expansions.manual.placeholder")}
+								onChange={(event) => setTitle(event.target.value)}
+								disabled={saving}
+							/>
+							<BgtButton type="submit" variant="primary" disabled={saving || !title.trim()}>
+								{t("expansions.manual.add")}
+							</BgtButton>
+						</div>
+					</form>
+				)}
+				{canWrite && bggEnabled && (
 					<div className="flex justify-end pt-2">
 						<BgtButton onClick={onAddExpansion}>{t("expansions.add")}</BgtButton>
 					</div>

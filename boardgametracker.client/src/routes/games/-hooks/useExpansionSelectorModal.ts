@@ -1,5 +1,6 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/models";
+import { useMemo } from "react";
+import { type ExpansionLink, QUERY_KEYS } from "@/models";
 import { saveGameExpansionCall } from "@/services/gameService";
 import { getGameExpansions } from "@/services/queries/games";
 
@@ -16,7 +17,10 @@ export const useExpansionSelectorModal = ({ gameId, onSaveError, onSaveSuccess }
 		queries: [getGameExpansions(gameId)],
 	});
 
-	const expansions = expansionQuery.data ?? [];
+	const expansions = useMemo<ExpansionLink[]>(
+		() => (expansionQuery.data ?? []).map((expansion) => ({ id: expansion.bggId, value: expansion.title })),
+		[expansionQuery.data],
+	);
 
 	const mutateExpasions = useMutation({
 		mutationFn: saveGameExpansionCall,

@@ -3,18 +3,21 @@ using System;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
 
 #nullable disable
 
-namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
+namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 {
     [DbContext(typeof(MainDbContext))]
-    partial class MainDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260912063051_MakeExpansionBggIdOptional")]
+    partial class MakeExpansionBggIdOptional
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -670,9 +673,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Key")
-                        .IsUnique();
-
                     b.ToTable("Config");
                 });
 
@@ -714,9 +714,6 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.Property<int?>("BggId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("ChangeDetectionWatchId")
-                        .HasColumnType("text");
 
                     b.Property<string>("Description")
                         .IsRequired()
