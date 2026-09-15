@@ -4,7 +4,6 @@
     "loading": "Loading BGG data...",
     "importing": "Importing games from BoardGameGeek...",
     "success": "Games are successfully imported from BoardGameGeek",
-    "failed": "Failed importing games from BoardGameGeek, check logs for more details.",
     "start": {
       "bgg-username": {
         "label": "BGG username",
@@ -17,8 +16,17 @@
     "start-import": "Start import ({{count}}/{{totalCount}})",
     "intro": "We found {{count}} games in your BGG collection, {{collectionCount}} are already included in your local collection. Select what games you want to import. Select max {{maxImport}} games at any time, this is to prevent stress on the bgg website.",
     "error-title": "Failed to load BGG collection",
-    "error-description": "Something went wrong while fetching your collection from BoardGameGeek. Please check your API key in settings and try again.",
-    "hide-collected": "Hide games that are in your collection already"
+    "hide-collected": "Hide games that are in your collection already",
+    "error-rate-limited": "BoardGameGeek is rate-limiting your API key. Wait a minute and try again.",
+    "error-preparing": "BoardGameGeek is still preparing this collection. Give it a moment and try again.",
+    "error-timeout": "BoardGameGeek took too long to answer. Try again in a moment.",
+    "error-unauthorized": "BoardGameGeek rejected the request. Check the API key in the settings.",
+    "error-unknown": "Something went wrong while fetching your collection from BoardGameGeek. Please try again.",
+    "failed-rate-limited": "BoardGameGeek is rate-limiting your API key. Wait a minute and import again.",
+    "failed-preparing": "BoardGameGeek is still preparing the data. Try the import again in a moment.",
+    "failed-timeout": "The import took too long. Select fewer games or try again in a moment.",
+    "failed-unauthorized": "BoardGameGeek rejected the request. Check the API key in the settings.",
+    "failed-unknown": "Failed importing games from BoardGameGeek, check logs for more details."
   },
   "title": "Games",
   "new": "Add new game",

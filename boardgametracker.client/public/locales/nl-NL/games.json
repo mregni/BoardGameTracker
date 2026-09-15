@@ -4,7 +4,6 @@
     "loading": "Loading BGG data...",
     "importing": "Importing games from BoardGameGeek...",
     "success": "Games are successfully imported from BoardGameGeek",
-    "failed": "Failed importing games from BoardGameGeek, check logs for more details.",
     "start": {
       "bgg-username": {
         "label": "BGG username",
@@ -17,8 +16,17 @@
     "start-import": "Start import ({{count}}/{{totalCount}})",
     "intro": "We found {{count}} games in your BGG collection, {{collectionCount}} are already included in your local collection. Select what games you want to import. Select max {{maxImport}} games at any time, this is to prevent stress on the bgg website.",
     "error-title": "Failed to load BGG collection",
-    "error-description": "Something went wrong while fetching your collection from BoardGameGeek. Please check your API key in settings and try again.",
-    "hide-collected": "Hide games that are in your collection already"
+    "hide-collected": "Hide games that are in your collection already",
+    "error-rate-limited": "BoardGameGeek beperkt het aantal aanvragen voor je API-sleutel. Wacht een minuut en probeer het opnieuw.",
+    "error-preparing": "BoardGameGeek is deze collectie nog aan het voorbereiden. Probeer het zo opnieuw.",
+    "error-timeout": "BoardGameGeek deed er te lang over om te antwoorden. Probeer het zo opnieuw.",
+    "error-unauthorized": "BoardGameGeek weigerde de aanvraag. Controleer de API-sleutel in de instellingen.",
+    "error-unknown": "Er ging iets mis bij het ophalen van je collectie van BoardGameGeek. Probeer het opnieuw.",
+    "failed-rate-limited": "BoardGameGeek beperkt het aantal aanvragen voor je API-sleutel. Wacht een minuut en importeer opnieuw.",
+    "failed-preparing": "BoardGameGeek is de gegevens nog aan het voorbereiden. Probeer de import zo opnieuw.",
+    "failed-timeout": "De import duurde te lang. Selecteer minder spellen of probeer het zo opnieuw.",
+    "failed-unauthorized": "BoardGameGeek weigerde de aanvraag. Controleer de API-sleutel in de instellingen.",
+    "failed-unknown": "Importeren van spellen van BoardGameGeek mislukt, bekijk de logs voor meer details."
   },
   "title": "Games",
   "new": "Add new game",

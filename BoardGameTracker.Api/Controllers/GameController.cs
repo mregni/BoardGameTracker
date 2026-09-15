@@ -1,10 +1,13 @@
-using BoardGameTracker.Common;
-using BoardGameTracker.Common.DTOs;
+using System.ComponentModel.DataAnnotations;
 using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Models.Bgg;
+using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common;
 using BoardGameTracker.Core.Games.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -36,6 +39,7 @@ public class GameController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType<List<GameDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGames()
     {
         var games = await _gameService.GetGames();
@@ -45,15 +49,17 @@ public class GameController : ControllerBase
     [HttpPost]
     [Route("")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<GameDto>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameCommand command)
     {
         var game = await _gameService.CreateGameFromCommand(command);
-        return Ok(game.ToDto());
+        return CreatedAtAction(nameof(GetGameById), new { id = game.Id }, game.ToDto());
     }
 
     [HttpPut]
     [Route("")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<GameDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateGame([FromBody] UpdateGameCommand command)
     {
         var game = await _gameService.UpdateGame(command);
@@ -63,6 +69,7 @@ public class GameController : ControllerBase
     [HttpDelete]
     [Route("{id:int}")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteGameById(int id)
     {
         await _gameService.Delete(id);
@@ -71,6 +78,7 @@ public class GameController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
+    [ProducesResponseType<GameDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGameById(int id)
     {
         var game = await _gameService.GetGameById(id);
@@ -84,12 +92,13 @@ public class GameController : ControllerBase
 
     [HttpPost("bgg/search")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<GameDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> SearchOnBgg([FromBody] BggSearch search)
     {
         var game = await _bggImportService.ImportGameFromBgg(search);
         if (game == null)
         {
-            return BadRequest();
+            return NotFound();
         }
 
         return Ok(game.ToDto());
@@ -97,19 +106,21 @@ public class GameController : ControllerBase
 
     [HttpGet("bgg/import")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
-    public async Task<IActionResult> ImportBgg([FromQuery] string username)
+    [ProducesResponseType<IList<BggImportGame>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ImportBgg([FromQuery] string username, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(username))
         {
             return BadRequest();
         }
 
-        var games = await _bggImportService.ImportBggCollection(username.Trim());
+        var games = await _bggImportService.ImportBggCollection(username.Trim(), cancellationToken);
         return Ok(games);
     }
 
     [HttpPost("bgg/import")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> ImportBggGames([FromBody] ImportBggGamesCommand command)
     {
         await _bggImportService.ImportList(command.Games);
@@ -119,6 +130,7 @@ public class GameController : ControllerBase
     [HttpGet]
     [Route("{id:int}/price")]
     [EnableRateLimiting("changedetection")]
+    [ProducesResponseType<GamePriceDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGamePrice(int id, [FromQuery] bool refresh, CancellationToken cancellationToken)
     {
         var price = await _gameService.GetGamePriceAsync(id, refresh, cancellationToken);
@@ -133,6 +145,7 @@ public class GameController : ControllerBase
     [HttpGet]
     [Route("prices/tracked")]
     [EnableRateLimiting("changedetection")]
+    [ProducesResponseType<List<GamePriceDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTrackedPrices([FromQuery] bool refresh, CancellationToken cancellationToken)
     {
         var prices = await _gameService.GetTrackedPricesAsync(refresh, cancellationToken);
@@ -143,6 +156,7 @@ public class GameController : ControllerBase
     [Route("{id:int}/watch")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     [EnableRateLimiting("changedetection")]
+    [ProducesResponseType<GameDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateWatch(int id, [FromBody] CreateWatchCommand command, CancellationToken cancellationToken)
     {
         var game = await _gameService.CreateWatchForGame(id, command.Url, cancellationToken);
@@ -151,7 +165,8 @@ public class GameController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}/sessions")]
-    public async Task<IActionResult> GetGameSessionsById(int id, [FromQuery] int? count)
+    [ProducesResponseType<List<SessionDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetGameSessionsById(int id, [FromQuery, Range(1, int.MaxValue)] int? count)
     {
         var sessions = await _gameService.GetSessionsForGame(id, count);
         return Ok(sessions.ToListDto());
@@ -159,6 +174,7 @@ public class GameController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}/expansions")]
+    [ProducesResponseType<ExpansionData[]>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGameExpansions(int id)
     {
         var expansions = await _gameService.SearchExpansionsForGame(id);
@@ -168,15 +184,27 @@ public class GameController : ControllerBase
     [HttpPost]
     [Route("{id:int}/expansions")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<List<ExpansionDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateGameExpansions(int id, [FromBody] UpdateGameExpansionsCommand command)
     {
         var expansions = await _gameService.UpdateGameExpansions(id, command.ExpansionBggIds);
         return Ok(expansions.ToListDto());
     }
 
+    [HttpPost]
+    [Route("{id:int}/expansions/manual")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<ExpansionDto>(StatusCodes.Status201Created)]
+    public async Task<IActionResult> AddManualExpansion(int id, [FromBody] CreateExpansionCommand command)
+    {
+        var expansion = await _gameService.AddManualExpansion(id, command.Title);
+        return Created((string?)null, expansion.ToDto());
+    }
+
     [HttpDelete]
     [Route("{id:int}/expansion/{expansionId:int}")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteGameExpansions(int id, int expansionId)
     {
         await _gameService.DeleteExpansion(id, expansionId);
@@ -185,14 +213,15 @@ public class GameController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}/statistics")]
-    public async Task<IActionResult> GetGameStatistics(int id)
+    [ProducesResponseType<GameStatisticsResponse>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetGameStatistics(int id, CancellationToken cancellationToken)
     {
-        var stats = await _gameStatisticsService.CalculateStatisticsAsync(id);
-        var topPlayers = await _gameChartService.GetTopPlayers(id);
-        var playByDayChart = await _gameChartService.GetPlayByDayChart(id);
-        var playerCountChart = await _gameChartService.GetPlayerCountChart(id);
-        var playerScoringChart = await _gameChartService.GetPlayerScoringChart(id);
-        var scoringRankChart = await _gameChartService.GetScoringRankedChart(id, stats.AverageScore);
+        var stats = await _gameStatisticsService.CalculateStatisticsAsync(id, cancellationToken);
+        var topPlayers = await _gameChartService.GetTopPlayers(id, cancellationToken);
+        var playByDayChart = await _gameChartService.GetPlayByDayChart(id, cancellationToken);
+        var playerCountChart = await _gameChartService.GetPlayerCountChart(id, cancellationToken);
+        var playerScoringChart = await _gameChartService.GetPlayerScoringChart(id, cancellationToken);
+        var scoringRankChart = await _gameChartService.GetScoringRankedChart(id, stats.AverageScore, cancellationToken);
 
         return Ok(new GameStatisticsResponse
         {
@@ -207,6 +236,7 @@ public class GameController : ControllerBase
 
     [HttpGet]
     [Route("shames")]
+    [ProducesResponseType<List<ShameDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetShameGames()
     {
         var games = await _shameService.GetShameGames();
@@ -215,6 +245,7 @@ public class GameController : ControllerBase
 
     [HttpGet]
     [Route("shames/statistics")]
+    [ProducesResponseType<ShameStatisticsDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetShameStatistics()
     {
         var statistics = await _shameService.GetShameStatistics();

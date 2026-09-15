@@ -19,6 +19,7 @@ import { GameState, type ImportGame } from "@/models";
 import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
+import { parseLocalDate } from "@/utils/localDate";
 import { useList } from "./-hooks/useList";
 
 export const Route = createFileRoute("/games/import/list_/$username")({
@@ -45,6 +46,8 @@ function RouteComponent() {
 
 	const {
 		bggError,
+		bggErrorKind,
+		retryCollection,
 		settings,
 		games,
 		updateGame,
@@ -84,9 +87,10 @@ function RouteComponent() {
 				enableSorting: false,
 				cell: ({ row }) => (
 					<BgtSimpleCheckbox
-						id={""}
+						id={`import-${row.original.bggId}`}
 						disabled={row.original.inCollection}
 						label={""}
+						aria-label={row.original.title}
 						checked={row.original.checked}
 						onCheckedChange={(state) => {
 							updateGame(row.original.bggId, { checked: state });
@@ -134,7 +138,7 @@ function RouteComponent() {
 						</a>
 					</div>
 				),
-				header: t("name"),
+				header: t("common:bgg-id"),
 			},
 			{
 				accessorKey: "4",
@@ -189,7 +193,7 @@ function RouteComponent() {
 						value={row.original.addedDate}
 						onChange={(event) =>
 							updateGame(row.original.bggId, {
-								addedDate: new Date(event.target.value),
+								addedDate: parseLocalDate(event.target.value) ?? row.original.addedDate,
 							})
 						}
 						type="date"
@@ -213,11 +217,18 @@ function RouteComponent() {
 			<BgtPageHeader header={t("bgg-import:title")} actions={[]} icon={Database} />
 			<BgtPageContent>
 				{bggError ? (
-					<BgtStatus
-						variant="warning"
-						title={t("games:import.error-title")}
-						description={t("games:import.error-description")}
-					/>
+					<div className="flex flex-col gap-4">
+						<BgtStatus
+							variant="warning"
+							title={t("games:import.error-title")}
+							description={t(`games:import.error-${bggErrorKind}`)}
+						/>
+						<div>
+							<BgtButton type="button" variant="primary" onClick={() => void retryCollection()}>
+								{t("common:retry")}
+							</BgtButton>
+						</div>
+					</div>
 				) : isLoading ? (
 					<BgtLoadingSpinner />
 				) : (

@@ -31,22 +31,46 @@ public class Game : BaseGame
         HasScoring = hasScoring;
     }
 
+    public void AddCategory(GameCategory category)
+    {
+        Guard.Against.Null(category);
+        if (Categories.All(c => c.Name != category.Name))
+        {
+            Categories.Add(category);
+        }
+    }
+
+    public void AddMechanic(GameMechanic mechanic)
+    {
+        Guard.Against.Null(mechanic);
+        if (Mechanics.All(m => m.Name != mechanic.Name))
+        {
+            Mechanics.Add(mechanic);
+        }
+    }
+
+    public void AddPerson(Person person)
+    {
+        Guard.Against.Null(person);
+        if (People.All(p => p.Name != person.Name || p.Type != person.Type))
+        {
+            People.Add(person);
+        }
+    }
+
     public void AddExpansion(Expansion expansion)
     {
         Guard.Against.Null(expansion);
-        if (!Expansions.Any(e => e.BggId == expansion.BggId))
+        if (!Expansions.Any(e => e.Matches(expansion)))
         {
             Expansions.Add(expansion);
         }
     }
 
-    public void RemoveExpansion(int expansionBggId)
+    public void RemoveExpansion(Expansion expansion)
     {
-        var expansion = Expansions.FirstOrDefault(e => e.BggId == expansionBggId);
-        if (expansion != null)
-        {
-            Expansions.Remove(expansion);
-        }
+        Guard.Against.Null(expansion);
+        Expansions.Remove(expansion);
     }
 
     public Loan LoanToPlayer(int playerId, DateTime loanDate)

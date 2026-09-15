@@ -16,17 +16,17 @@ public class GameStatisticsRepository : IGameStatisticsRepository
         _context = context;
     }
 
-    public async Task<double?> GetPricePerPlay(int gameId)
+    public async Task<decimal?> GetPricePerPlay(int gameId, CancellationToken cancellationToken = default)
     {
         var gameData = await _context.Games
             .AsNoTracking()
             .Where(x => x.Id == gameId)
             .Select(x => new
             {
-                BuyingPrice = x.BuyingPrice != null ? (double?)x.BuyingPrice.Amount : null,
+                BuyingPrice = x.BuyingPrice != null ? (decimal?)x.BuyingPrice.Amount : null,
                 SessionCount = x.Sessions.Count
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (gameData == null || gameData.BuyingPrice == null || gameData.SessionCount == 0)
         {
@@ -36,14 +36,14 @@ public class GameStatisticsRepository : IGameStatisticsRepository
         return Math.Round(gameData.BuyingPrice.Value / gameData.SessionCount, 2);
     }
 
-    public Task<double?> GetHighestScore(int gameId)
+    public Task<double?> GetHighestScore(int gameId, CancellationToken cancellationToken = default)
     {
         return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
-            .MaxAsync(x => x.Score);
+            .MaxAsync(x => x.Score, cancellationToken);
     }
 
-    public async Task<(Player? Player, int WinCount)> GetMostWins(int gameId)
+    public async Task<(Player? Player, int WinCount)> GetMostWins(int gameId, CancellationToken cancellationToken = default)
     {
         var playerSession = await GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
@@ -51,7 +51,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .GroupBy(x => x.PlayerId)
             .Select(x => new { PlayerId = x.Key, Count = x.Count() })
             .OrderByDescending(x => x.Count)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (playerSession == null)
         {
@@ -60,153 +60,125 @@ public class GameStatisticsRepository : IGameStatisticsRepository
 
         var player = await _context.Players
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == playerSession.PlayerId);
+            .FirstOrDefaultAsync(x => x.Id == playerSession.PlayerId, cancellationToken);
 
         return (player, playerSession.Count);
     }
 
-    public Task<double?> GetAverageScore(int gameId)
+    public Task<double?> GetAverageScore(int gameId, CancellationToken cancellationToken = default)
     {
         return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
-            .AverageAsync(x => x.Score);
+            .AverageAsync(x => x.Score, cancellationToken);
     }
 
-    public async Task<int?> GetExpansionCount(int gameId)
+    public async Task<int?> GetExpansionCount(int gameId, CancellationToken cancellationToken = default)
     {
         var count = await _context.Expansions
             .AsNoTracking()
-            .CountAsync(x => x.GameId == gameId);
+            .CountAsync(x => x.GameId == gameId, cancellationToken);
 
         return count > 0 ? count : null;
     }
 
-    public async Task<double> GetAveragePlayTime(int gameId)
+    public async Task<double> GetAveragePlayTime(int gameId, CancellationToken cancellationToken = default)
     {
         var average = await _context.Sessions
             .AsNoTracking()
             .Where(x => x.GameId == gameId)
-            .AverageAsync(x => (double?)(x.End - x.Start).TotalMinutes);
+            .AverageAsync(x => (double?)(x.End - x.Start).TotalMinutes, cancellationToken);
 
         return average ?? 0;
     }
 
-    public Task<double> GetTotalPlayedTime(int gameId)
+    public Task<double> GetTotalPlayedTime(int gameId, CancellationToken cancellationToken = default)
     {
         return _context.Sessions
             .AsNoTracking()
             .Where(x => x.GameId == gameId)
-            .SumAsync(x => (x.End - x.Start).TotalMinutes);
+            .SumAsync(x => (x.End - x.Start).TotalMinutes, cancellationToken);
     }
 
-    public async Task<double?> GetMeanPayedAsync()
-    {
-        var count = await _context.Games
-            .AsNoTracking()
-            .CountAsync(x => x.BuyingPrice != null);
-        if (count == 0)
-            return null;
-
-        return await _context.Games
-            .AsNoTracking()
-            .Where(x => x.BuyingPrice != null)
-            .AverageAsync(x => (double?)x.BuyingPrice!.Amount);
-    }
-
-    public async Task<double?> GetTotalPayedAsync()
+    public async Task<decimal?> GetMeanPayedAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Games
             .AsNoTracking()
-            .Where(x => x.BuyingPrice != null)
-            .SumAsync(x => (double?)x.BuyingPrice!.Amount);
+            .Where(x => x.State == GameState.Owned && x.BuyingPrice != null)
+            .AverageAsync(x => (decimal?)x.BuyingPrice!.Amount, cancellationToken);
     }
 
-    public Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState()
+    public async Task<decimal?> GetTotalPayedAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Games
+            .AsNoTracking()
+            .Where(x => x.State == GameState.Owned && x.BuyingPrice != null)
+            .SumAsync(x => (decimal?)x.BuyingPrice!.Amount, cancellationToken);
+    }
+
+    public Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState(CancellationToken cancellationToken = default)
     {
         return _context.Games
             .AsNoTracking()
             .GroupBy(x => x.State)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<int?> GetHighScorePlay(int gameId)
-    {
-        var result = await GameSessionsWithPlayerSessions(gameId)
-            .Include(x => x.Game)
-            .Where(x => x.Game.HasScoring)
-            .SelectMany(x => x.PlayerSessions)
-            .OrderByDescending(x => x.Score)
-            .FirstOrDefaultAsync();
-
-        return result?.SessionId;
-    }
-
-    public async Task<int?> GetLowestScorePlay(int gameId)
-    {
-        var result = await GameSessionsWithPlayerSessions(gameId)
-            .Include(x => x.Game)
-            .Where(x => x.Game.HasScoring)
-            .SelectMany(x => x.PlayerSessions)
-            .OrderBy(x => x.Score)
-            .FirstOrDefaultAsync();
-
-        return result?.SessionId;
-    }
-
-    public Task<List<IGrouping<DayOfWeek, Session>>> GetPlayByDayChart(int gameId)
+    public Task<List<DateTime>> GetSessionStartTimes(int gameId, CancellationToken cancellationToken = default)
     {
         return _context.Sessions
             .AsNoTracking()
             .Where(x => x.GameId == gameId)
-            .GroupBy(x => x.Start.DayOfWeek)
-            .ToListAsync();
+            .Select(x => x.Start)
+            .ToListAsync(cancellationToken);
     }
 
-    public Task<List<IGrouping<int, int>>> GetPlayerCountChart(int gameId)
+    public Task<List<IGrouping<int, int>>> GetPlayerCountChart(int gameId, CancellationToken cancellationToken = default)
     {
         return _context.Sessions
             .AsNoTracking()
             .Where(x => x.GameId == gameId)
             .Select(x => x.PlayerSessions.Count)
             .GroupBy(x => x)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public Task<PlayerSession?> GetHighestScoringPlayer(int gameId)
+    public Task<PlayerSession?> GetHighestScoringPlayer(int gameId, CancellationToken cancellationToken = default)
     {
         return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
+            .Where(x => x.Score != null)
             .OrderByDescending(x => x.Score)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public Task<PlayerSession?> GetHighestLosingPlayer(int gameId)
+    public Task<PlayerSession?> GetHighestLosingPlayer(int gameId, CancellationToken cancellationToken = default)
     {
         return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
-            .Where(x => !x.Won)
+            .Where(x => !x.Won && x.Score != null)
             .OrderByDescending(x => x.Score)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public Task<PlayerSession?> GetLowestWinning(int gameId)
+    public Task<PlayerSession?> GetLowestWinning(int gameId, CancellationToken cancellationToken = default)
     {
         return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
-            .Where(x => x.Won)
+            .Where(x => x.Won && x.Score != null)
             .OrderBy(x => x.Score)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public Task<PlayerSession?> GetLowestScoringPlayer(int gameId)
+    public Task<PlayerSession?> GetLowestScoringPlayer(int gameId, CancellationToken cancellationToken = default)
     {
         return GameSessionsWithPlayerSessions(gameId)
             .SelectMany(x => x.PlayerSessions)
+            .Where(x => x.Score != null)
             .OrderBy(x => x.Score)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGames(int count)
+    public async Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGames(int count, CancellationToken cancellationToken = default)
     {
         var result = await _context.Sessions
             .AsNoTracking()
@@ -221,7 +193,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             })
             .OrderByDescending(x => x.PlayCount)
             .Take(count)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return result.Select(x => (x.GameId, x.Title, x.Image, x.PlayCount)).ToList();
     }

@@ -6,23 +6,21 @@ namespace BoardGameTracker.Core.Games.Interfaces;
 
 public interface IGameStatisticsRepository
 {
-    Task<double?> GetPricePerPlay(int gameId);
-    Task<double?> GetHighestScore(int gameId);
-    Task<(Player? Player, int WinCount)> GetMostWins(int gameId);
-    Task<double?> GetAverageScore(int gameId);
-    Task<int?> GetExpansionCount(int gameId);
-    Task<double> GetAveragePlayTime(int gameId);
-    Task<double> GetTotalPlayedTime(int gameId);
-    Task<double?> GetMeanPayedAsync();
-    Task<double?> GetTotalPayedAsync();
-    Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState();
-    Task<int?> GetHighScorePlay(int gameId);
-    Task<int?> GetLowestScorePlay(int gameId);
-    Task<List<IGrouping<DayOfWeek, Session>>> GetPlayByDayChart(int gameId);
-    Task<List<IGrouping<int, int>>> GetPlayerCountChart(int gameId);
-    Task<PlayerSession?> GetHighestScoringPlayer(int gameId);
-    Task<PlayerSession?> GetHighestLosingPlayer(int gameId);
-    Task<PlayerSession?> GetLowestWinning(int gameId);
-    Task<PlayerSession?> GetLowestScoringPlayer(int gameId);
-    Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGames(int count);
+    Task<decimal?> GetPricePerPlay(int gameId, CancellationToken cancellationToken = default);
+    Task<double?> GetHighestScore(int gameId, CancellationToken cancellationToken = default);
+    Task<(Player? Player, int WinCount)> GetMostWins(int gameId, CancellationToken cancellationToken = default);
+    Task<double?> GetAverageScore(int gameId, CancellationToken cancellationToken = default);
+    Task<int?> GetExpansionCount(int gameId, CancellationToken cancellationToken = default);
+    Task<double> GetAveragePlayTime(int gameId, CancellationToken cancellationToken = default);
+    Task<double> GetTotalPlayedTime(int gameId, CancellationToken cancellationToken = default);
+    Task<decimal?> GetMeanPayedAsync(CancellationToken cancellationToken = default);
+    Task<decimal?> GetTotalPayedAsync(CancellationToken cancellationToken = default);
+    Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState(CancellationToken cancellationToken = default);
+    Task<List<DateTime>> GetSessionStartTimes(int gameId, CancellationToken cancellationToken = default);
+    Task<List<IGrouping<int, int>>> GetPlayerCountChart(int gameId, CancellationToken cancellationToken = default);
+    Task<PlayerSession?> GetHighestScoringPlayer(int gameId, CancellationToken cancellationToken = default);
+    Task<PlayerSession?> GetHighestLosingPlayer(int gameId, CancellationToken cancellationToken = default);
+    Task<PlayerSession?> GetLowestWinning(int gameId, CancellationToken cancellationToken = default);
+    Task<PlayerSession?> GetLowestScoringPlayer(int gameId, CancellationToken cancellationToken = default);
+    Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGames(int count, CancellationToken cancellationToken = default);
 }

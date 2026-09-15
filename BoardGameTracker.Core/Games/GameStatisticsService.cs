@@ -23,22 +23,22 @@ public class GameStatisticsService : IGameStatisticsService
         _logger = logger;
     }
 
-    public async Task<GameStatistics> CalculateStatisticsAsync(int gameId)
+    public async Task<GameStatistics> CalculateStatisticsAsync(int gameId, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Calculating statistics for game {GameId}", gameId);
         var stats = new GameStatistics
         {
-            PlayCount = await _sessionRepository.CountAsync(new SessionsByGameSpec(gameId)),
-            TotalPlayedTime = await _gameStatisticsRepository.GetTotalPlayedTime(gameId),
-            PricePerPlay = await _gameStatisticsRepository.GetPricePerPlay(gameId),
-            HighScore = await _gameStatisticsRepository.GetHighestScore(gameId),
-            AveragePlayTime = await _gameStatisticsRepository.GetAveragePlayTime(gameId),
-            AverageScore = await _gameStatisticsRepository.GetAverageScore(gameId),
-            LastPlayed = await _sessionRepository.FirstOrDefaultAsync(new LastPlayedDateSpec(gameId)),
-            ExpansionCount = await _gameStatisticsRepository.GetExpansionCount(gameId),
+            PlayCount = await _sessionRepository.CountAsync(new SessionsByGameSpec(gameId), cancellationToken),
+            TotalPlayedTime = await _gameStatisticsRepository.GetTotalPlayedTime(gameId, cancellationToken),
+            PricePerPlay = await _gameStatisticsRepository.GetPricePerPlay(gameId, cancellationToken),
+            HighScore = await _gameStatisticsRepository.GetHighestScore(gameId, cancellationToken),
+            AveragePlayTime = await _gameStatisticsRepository.GetAveragePlayTime(gameId, cancellationToken),
+            AverageScore = await _gameStatisticsRepository.GetAverageScore(gameId, cancellationToken),
+            LastPlayed = await _sessionRepository.FirstOrDefaultAsync(new LastPlayedDateSpec(gameId), cancellationToken),
+            ExpansionCount = await _gameStatisticsRepository.GetExpansionCount(gameId, cancellationToken),
         };
 
-        var (mostWinPlayer, wins) = await _gameStatisticsRepository.GetMostWins(gameId);
+        var (mostWinPlayer, wins) = await _gameStatisticsRepository.GetMostWins(gameId, cancellationToken);
         if (mostWinPlayer != null)
         {
             stats.MostWinsPlayer = new MostWinningPlayer

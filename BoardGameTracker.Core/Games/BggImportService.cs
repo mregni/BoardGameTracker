@@ -1,5 +1,6 @@
 using System.Net;
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
@@ -15,6 +16,7 @@ namespace BoardGameTracker.Core.Games;
 
 public class BggImportService : IBggImportService
 {
+    private const int ThingRequestBatchSize = 20;
     private readonly IBoardGameGeekXmlApi2Client _bggClient;
     private readonly ISettingsService _settingsService;
     private readonly IGameFactory _gameFactory;
@@ -45,7 +47,7 @@ public class BggImportService : IBggImportService
         var existingGame = await _gameRepository.GetGameByBggId(search.BggId);
         if (existingGame != null)
         {
-            return existingGame;
+            throw new DomainException(Constants.Errors.GameAlreadyExists);
         }
 
         _logger.LogDebug("Searching BGG for game with id {BggId}", search.BggId);
@@ -68,16 +70,17 @@ public class BggImportService : IBggImportService
         return game;
     }
 
-    public async Task<IList<BggImportGame>> ImportBggCollection(string userName)
+    public async Task<IList<BggImportGame>> ImportBggCollection(string userName, CancellationToken cancellationToken = default)
     {
         await EnsureBggConfiguredAsync();
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogInformation("Starting BGG collection import for user {UserName}", userName);
 
         CollectionResponse response;
         try
         {
             var request = new CollectionRequest(userName, subType: "boardgame");
-            response = await _bggClient.GetCollectionAsync(request);
+            response = await _bggClient.GetCollectionAsync(request).WaitAsync(cancellationToken);
         }
         catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
         {
@@ -122,10 +125,11 @@ public class BggImportService : IBggImportService
     {
         ArgumentNullException.ThrowIfNull(games);
         await EnsureBggConfiguredAsync();
-        _logger.LogInformation("Importing {Count} games from BGG", games.Count);
+        var distinctGames = games.DistinctBy(x => x.BggId).ToList();
+        _logger.LogInformation("Importing {Count} games from BGG", distinctGames.Count);
 
         var toImport = new List<ImportGame>();
-        foreach (var importGame in games)
+        foreach (var importGame in distinctGames)
         {
             var existingGame = await _gameRepository.GetGameByBggId(importGame.BggId);
             if (existingGame != null)
@@ -156,7 +160,7 @@ public class BggImportService : IBggImportService
                     item,
                     importGame.HasScoring,
                     importGame.State,
-                    ToSafeDecimalPrice(importGame.Price),
+                    importGame.Price is > 0 ? importGame.Price : null,
                     importGame.AddedDate);
 
                 await _gameRepository.CreateAsync(game);
@@ -173,34 +177,14 @@ public class BggImportService : IBggImportService
         }
 
         await _unitOfWork.SaveChangesAsync();
-        _logger.LogInformation("BGG import completed, {Imported}/{Count} games imported", imported, games.Count);
-    }
-
-    private static decimal? ToSafeDecimalPrice(double value)
-    {
-        if (double.IsNaN(value) || double.IsInfinity(value))
-        {
-            return null;
-        }
-
-        try
-        {
-            return (decimal)value;
-        }
-        catch (OverflowException)
-        {
-            return null;
-        }
+        _logger.LogInformation("BGG import completed, {Imported}/{Count} games imported", imported, distinctGames.Count);
     }
 
     private async Task<Dictionary<int, ThingResponse.Item>> FetchThingsFromBgg(IReadOnlyList<int> bggIds)
     {
-        const int chunkSize = 20;
         var items = new Dictionary<int, ThingResponse.Item>();
-
-        for (var offset = 0; offset < bggIds.Count; offset += chunkSize)
+        foreach (var chunk in bggIds.Chunk(ThingRequestBatchSize))
         {
-            var chunk = bggIds.Skip(offset).Take(chunkSize).ToArray();
             try
             {
                 var request = new ThingRequest(chunk, stats: true);
@@ -227,7 +211,7 @@ public class BggImportService : IBggImportService
             }
             catch (BoardGameGeekHttpException ex)
             {
-                _logger.LogWarning(ex, "BGG API request failed while importing a batch of games");
+                _logger.LogWarning(ex, "BGG API request failed for games {BggIds}", chunk);
             }
         }
 
