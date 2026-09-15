@@ -1,4 +1,5 @@
 import { useQueries } from "@tanstack/react-query";
+import { useMemo } from "react";
 import ChatIcon from "@/assets/icons/chat.svg?react";
 import CogIcon from "@/assets/icons/cog.svg?react";
 import Game from "@/assets/icons/gamepad.svg?react";
@@ -7,15 +8,12 @@ import LeftRightArrowIcon from "@/assets/icons/left-right-arrow.svg?react";
 import MapPinIcon from "@/assets/icons/map-pin.svg?react";
 import PlusIcon from "@/assets/icons/plus.svg?react";
 import TrendUp from "@/assets/icons/trend-up.svg?react";
+import TrophyIcon from "@/assets/icons/trophy.svg?react";
 import UsersIcon from "@/assets/icons/users.svg?react";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { MenuItem } from "@/models";
 import { getCounts } from "@/services/queries/count";
 import { getSettings, getVersionInfo } from "@/services/queries/settings";
-
-export interface MenuItems {
-	menuItems: MenuItem[];
-}
 
 export const menuItems: MenuItem[] = [
 	{
@@ -52,6 +50,12 @@ export const menuItems: MenuItem[] = [
 		menuLabel: "common:compare",
 		path: "/compare",
 		icon: TrendUp,
+		mobileVisible: false,
+	},
+	{
+		menuLabel: "common:leaderboard",
+		path: "/leaderboard",
+		icon: TrophyIcon,
 		mobileVisible: false,
 	},
 	{
@@ -92,13 +96,18 @@ export const useMenuInfo = () => {
 		queries: [getVersionInfo(), getCounts(), getSettings()],
 	});
 
-	const filteredMenuItems = menuItems.filter((item) => {
-		if (item.path === "/sessions/new" && !canWrite) return false;
-		if (item.path === "/shames" && !settingsQuery.data?.shelfOfShameEnabled) return false;
-		if (item.path === "/game-nights" && !settingsQuery.data?.gameNightsEnabled) return false;
-		if (item.path === "/chat" && !settingsQuery.data?.ragEnabled) return false;
-		return true;
-	});
+	const settings = settingsQuery.data;
+	const filteredMenuItems = useMemo(
+		() =>
+			menuItems.filter((item) => {
+				if (item.path === "/sessions/new" && !canWrite) return false;
+				if (item.path === "/shames" && !settings?.shelfOfShameEnabled) return false;
+				if (item.path === "/game-nights" && !settings?.gameNightsEnabled) return false;
+				if (item.path === "/chat" && !settings?.ragEnabled) return false;
+				return true;
+			}),
+		[canWrite, settings],
+	);
 
 	return {
 		versionInfo: versionInfoQuery.data,
