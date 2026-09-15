@@ -43,6 +43,10 @@ public class ManualIndexingBackgroundService : BackgroundService
                 var indexingService = scope.ServiceProvider.GetRequiredService<IManualIndexingService>();
                 await indexingService.IndexAsync(manualId, stoppingToken);
             }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled error while indexing manual {ManualId}", manualId);

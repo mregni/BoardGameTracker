@@ -6,12 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Rag;
 using BoardGameTracker.Core.Rag.Interfaces;
 using BoardGameTracker.Core.Rag.Specifications;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -30,6 +32,8 @@ public class ManualIndexingServiceTests
     private readonly Mock<IManualIndexingQueue> _queueMock = new();
     private readonly Mock<IDiskProvider> _diskProviderMock = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
+    private readonly Mock<IDbContextTransaction> _transactionMock = new();
+    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock = new();
     private readonly Mock<IEmbeddingGenerator<string, Embedding<float>>> _embedderMock = new();
     private readonly ManualIndexingService _service;
 
@@ -39,6 +43,8 @@ public class ManualIndexingServiceTests
         _extractorMock.Setup(x => x.Extract(It.IsAny<Stream>())).Returns(new List<PdfPageText> { new(1, "content") });
         _factoryMock.Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         _factoryMock.Setup(x => x.CreateEmbeddingGeneratorAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_embedderMock.Object);
+        _unitOfWorkMock.Setup(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_transactionMock.Object);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(new DateTime(2026, 9, 11, 10, 0, 0, DateTimeKind.Utc));
 
         _service = new ManualIndexingService(
             _manualRepoMock.Object,
@@ -50,6 +56,7 @@ public class ManualIndexingServiceTests
             _queueMock.Object,
             _diskProviderMock.Object,
             _unitOfWorkMock.Object,
+            _dateTimeProviderMock.Object,
             Mock.Of<ILogger<ManualIndexingService>>());
     }
 
@@ -114,7 +121,7 @@ public class ManualIndexingServiceTests
         _embedderMock.Verify(
             x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()),
             Times.Once);
-        _chunkRepoMock.Verify(x => x.DeleteByManualAsync(manual.Id), Times.Once);
+        _chunkRepoMock.Verify(x => x.DeleteByManualAsync(It.IsAny<int>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
         VerifyExtractionPipeline(manual);
         VerifyNoOtherCalls();
@@ -133,8 +140,11 @@ public class ManualIndexingServiceTests
 
         manual.IndexStatus.Should().Be(ManualIndexStatus.Indexed);
         manual.IndexedChunkCount.Should().Be(2);
+        manual.IndexedDate.Should().Be(new DateTime(2026, 9, 11, 10, 0, 0, DateTimeKind.Utc));
         manual.IndexError.Should().BeNull();
         _chunkRepoMock.Verify(x => x.DeleteByManualAsync(manual.Id), Times.Once);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
         _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.Is<List<ManualChunk>>(l =>
             l.Count == 2 &&
             l[0].ManualId == manual.Id && l[0].GameId == manual.GameId &&
@@ -257,6 +267,78 @@ public class ManualIndexingServiceTests
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         _manualRepoMock.Verify(x => x.GetByIdAsync(999), Times.Once);
         VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task IndexAsync_ShouldEmbedInBatches_WhenManualHasManyChunks()
+    {
+        var manual = CreateManual();
+        _manualRepoMock.Setup(x => x.GetByIdAsync(manual.Id)).ReturnsAsync(manual);
+        var chunks = Enumerable.Range(0, 70).Select(i => new TextChunk(i, $"chunk {i}", i + 1)).ToList();
+        _chunkerMock.Setup(x => x.Chunk(It.IsAny<IReadOnlyList<PdfPageText>>())).Returns(chunks);
+        _embedderMock
+            .Setup(x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IEnumerable<string> values, EmbeddingGenerationOptions? _, CancellationToken _) =>
+                new GeneratedEmbeddings<Embedding<float>>(values.Select(_ => new Embedding<float>(new float[1024]))));
+
+        await _service.IndexAsync(manual.Id);
+
+        manual.IndexStatus.Should().Be(ManualIndexStatus.Indexed);
+        manual.IndexedChunkCount.Should().Be(70);
+        _embedderMock.Verify(
+            x => x.GenerateAsync(It.Is<IEnumerable<string>>(v => v.Count() == 32), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()),
+            Times.Exactly(2));
+        _embedderMock.Verify(
+            x => x.GenerateAsync(It.Is<IEnumerable<string>>(v => v.Count() == 6), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.Is<List<ManualChunk>>(l =>
+            l.Count == 70 && l[69].ChunkIndex == 69 && l[69].Content == "chunk 69")), Times.Once);
+    }
+
+    [Fact]
+    public async Task IndexAsync_ShouldRethrowAndLeaveManualIndexing_WhenCancelledDuringShutdown()
+    {
+        var manual = CreateManual();
+        _manualRepoMock.Setup(x => x.GetByIdAsync(manual.Id)).ReturnsAsync(manual);
+        _chunkerMock.Setup(x => x.Chunk(It.IsAny<IReadOnlyList<PdfPageText>>()))
+            .Returns(new List<TextChunk> { new(0, "chunk", 1) });
+        using var cts = new CancellationTokenSource();
+        _embedderMock
+            .Setup(x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                cts.Cancel();
+                throw new OperationCanceledException(cts.Token);
+            });
+
+        var act = async () => await _service.IndexAsync(manual.Id, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        manual.IndexStatus.Should().Be(ManualIndexStatus.Indexing);
+        manual.IndexError.Should().BeNull();
+        _chunkRepoMock.Verify(x => x.DeleteByManualAsync(It.IsAny<int>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task IndexAsync_ShouldNotCommit_WhenSavingChunksFails()
+    {
+        var manual = CreateManual();
+        _manualRepoMock.Setup(x => x.GetByIdAsync(manual.Id)).ReturnsAsync(manual);
+        _chunkerMock.Setup(x => x.Chunk(It.IsAny<IReadOnlyList<PdfPageText>>()))
+            .Returns(new List<TextChunk> { new(0, "chunk", 1) });
+        SetupEmbeddings(count: 1, dimensions: 1024);
+        _unitOfWorkMock
+            .SetupSequence(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1)
+            .ThrowsAsync(new InvalidOperationException("db boom"))
+            .ReturnsAsync(1);
+
+        await _service.IndexAsync(manual.Id);
+
+        manual.IndexStatus.Should().Be(ManualIndexStatus.Failed);
+        manual.IndexError.Should().Be("db boom");
+        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     private void SetupEmbeddings(int count, int dimensions)

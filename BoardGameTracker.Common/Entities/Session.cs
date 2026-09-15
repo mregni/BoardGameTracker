@@ -23,7 +23,10 @@ public class Session : HasId
         private set
         {
             if (value < _start)
+            {
                 throw new ArgumentException("End time cannot be before start time.");
+            }
+
             _end = value;
         }
     }
@@ -57,7 +60,9 @@ public class Session : HasId
     public void UpdateTimes(DateTime start, DateTime end)
     {
         if (end < start)
+        {
             throw new ArgumentException("End time cannot be before start time.");
+        }
 
         _start = start;
         _end = end;
@@ -113,51 +118,4 @@ public class Session : HasId
     public TimeSpan GetDuration() => End - Start;
 
     public int GetPlayerCount() => PlayerSessions.Count;
-
-    public Player? GetWinner()
-    {
-        return PlayerSessions
-            .FirstOrDefault(ps => ps.Won)
-            ?.Player;
-    }
-
-    public IEnumerable<Player> GetPlayers()
-    {
-        return PlayerSessions.Select(ps => ps.Player);
-    }
-
-    public bool HasFirstTimePlayers() => PlayerSessions.Any(ps => ps.FirstPlay);
-
-    public double? GetHighestScore()
-    {
-        if (!Game.HasScoring)
-            return null;
-
-        return PlayerSessions
-            .Where(ps => ps.Score.HasValue)
-            .Max(ps => ps.Score);
-    }
-
-    public double? GetLowestScore()
-    {
-        if (!Game.HasScoring)
-            return null;
-
-        return PlayerSessions
-            .Where(ps => ps.Score.HasValue)
-            .Min(ps => ps.Score);
-    }
-
-    public double? GetAverageScore()
-    {
-        if (!Game.HasScoring)
-            return null;
-
-        var scores = PlayerSessions
-            .Where(ps => ps.Score.HasValue)
-            .Select(ps => ps.Score!.Value)
-            .ToList();
-
-        return scores.Any() ? scores.Average() : null;
-    }
 }

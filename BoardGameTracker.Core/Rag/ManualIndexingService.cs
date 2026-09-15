@@ -2,6 +2,7 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Helpers;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Rag.Interfaces;
@@ -14,6 +15,8 @@ namespace BoardGameTracker.Core.Rag;
 
 public class ManualIndexingService : IManualIndexingService
 {
+    private const int EmbeddingBatchSize = 32;
+
     private readonly IRepository<Manual> _manualRepository;
     private readonly IRepository<ManualChunk> _chunkWriteRepository;
     private readonly IManualChunkRepository _chunkRepository;
@@ -23,6 +26,7 @@ public class ManualIndexingService : IManualIndexingService
     private readonly IManualIndexingQueue _queue;
     private readonly IDiskProvider _diskProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<ManualIndexingService> _logger;
 
     public ManualIndexingService(
@@ -35,6 +39,7 @@ public class ManualIndexingService : IManualIndexingService
         IManualIndexingQueue queue,
         IDiskProvider diskProvider,
         IUnitOfWork unitOfWork,
+        IDateTimeProvider dateTimeProvider,
         ILogger<ManualIndexingService> logger)
     {
         _manualRepository = manualRepository;
@@ -46,6 +51,7 @@ public class ManualIndexingService : IManualIndexingService
         _queue = queue;
         _diskProvider = diskProvider;
         _unitOfWork = unitOfWork;
+        _dateTimeProvider = dateTimeProvider;
         _logger = logger;
     }
 
@@ -94,39 +100,28 @@ public class ManualIndexingService : IManualIndexingService
                 return;
             }
 
-            var embedder = await _aiClientFactory.CreateEmbeddingGeneratorAsync(cancellationToken);
-            var embeddings = await embedder.GenerateAsync(
-                chunks.Select(c => c.Content).ToList(),
-                cancellationToken: cancellationToken);
-
-            await _chunkRepository.DeleteByManualAsync(manualId);
-
-            var entities = new List<ManualChunk>(chunks.Count);
-            for (var i = 0; i < chunks.Count; i++)
+            var entities = await EmbedAsync(manual, chunks, cancellationToken);
+            if (entities == null)
             {
-                var embeddingVector = embeddings[i].Vector;
-                if (embeddingVector.Length != Constants.AiConfig.EmbeddingDimensions)
-                {
-                    manual.MarkFailed(
-                        $"Embedding dimension mismatch: expected {Constants.AiConfig.EmbeddingDimensions}, got {embeddingVector.Length}. Check the configured embedding model.");
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
-                    return;
-                }
-
-                entities.Add(new ManualChunk(
-                    manual.Id,
-                    manual.GameId,
-                    chunks[i].Index,
-                    chunks[i].Content,
-                    chunks[i].PageNumber,
-                    new Vector(embeddingVector)));
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                return;
             }
 
-            await _chunkWriteRepository.CreateRangeAsync(entities);
-            manual.MarkIndexed(entities.Count, DateTime.UtcNow);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await using (var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken))
+            {
+                await _chunkRepository.DeleteByManualAsync(manualId);
+                await _chunkWriteRepository.CreateRangeAsync(entities);
+                manual.MarkIndexed(entities.Count, _dateTimeProvider.UtcNow);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+            }
 
             _logger.LogInformation("Indexed manual {ManualId} into {Count} chunk(s)", manualId, entities.Count);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogInformation("Indexing of manual {ManualId} was interrupted and will resume on the next start", manualId);
+            throw;
         }
         catch (Exception ex)
         {
@@ -141,6 +136,40 @@ public class ManualIndexingService : IManualIndexingService
                 _logger.LogError(saveEx, "Failed to record indexing failure for manual {ManualId}", manualId);
             }
         }
+    }
+
+    private async Task<List<ManualChunk>?> EmbedAsync(Manual manual, IReadOnlyList<TextChunk> chunks, CancellationToken cancellationToken)
+    {
+        var embedder = await _aiClientFactory.CreateEmbeddingGeneratorAsync(cancellationToken);
+        var entities = new List<ManualChunk>(chunks.Count);
+
+        foreach (var batch in chunks.Chunk(EmbeddingBatchSize))
+        {
+            var embeddings = await embedder.GenerateAsync(
+                batch.Select(c => c.Content).ToList(),
+                cancellationToken: cancellationToken);
+
+            for (var i = 0; i < batch.Length; i++)
+            {
+                var embeddingVector = embeddings[i].Vector;
+                if (embeddingVector.Length != Constants.AiConfig.EmbeddingDimensions)
+                {
+                    manual.MarkFailed(
+                        $"Embedding dimension mismatch: expected {Constants.AiConfig.EmbeddingDimensions}, got {embeddingVector.Length}. Check the configured embedding model.");
+                    return null;
+                }
+
+                entities.Add(new ManualChunk(
+                    manual.Id,
+                    manual.GameId,
+                    batch[i].Index,
+                    batch[i].Content,
+                    batch[i].PageNumber,
+                    new Vector(embeddingVector)));
+            }
+        }
+
+        return entities;
     }
 
     private static string GetPhysicalPath(string storedFileName)
