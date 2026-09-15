@@ -19,7 +19,7 @@ public class MailKitSmtpSender : ISmtpSender
 
         if (!string.IsNullOrWhiteSpace(username))
         {
-            await client.AuthenticateAsync(username, password, cancellationToken);
+            await client.AuthenticateAsync(username, password ?? string.Empty, cancellationToken);
         }
 
         await client.SendAsync(message, cancellationToken);

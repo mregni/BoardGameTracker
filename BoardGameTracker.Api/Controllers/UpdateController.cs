@@ -1,7 +1,9 @@
-using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
@@ -20,6 +22,7 @@ public class UpdateController : ControllerBase
 
     [HttpPost("check")]
     [Authorize(Roles = Constants.AuthRoles.Admin)]
+    [ProducesResponseType<UpdateStatusDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> CheckNow()
     {
         await _updateService.CheckForUpdatesAsync();

@@ -2,6 +2,7 @@ using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Core.Maintenance.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
@@ -20,6 +21,7 @@ public class MaintenanceController : ControllerBase
     }
 
     [HttpPost("reset")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Reset()
     {
         await _resetService.ResetDataAsync();
@@ -27,6 +29,7 @@ public class MaintenanceController : ControllerBase
     }
 
     [HttpPost("factory-reset")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> FactoryReset()
     {
         await _resetService.FactoryResetAsync();

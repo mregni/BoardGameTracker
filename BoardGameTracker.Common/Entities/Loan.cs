@@ -28,7 +28,9 @@ public class Loan : HasId
         ValidateReturnDate(returnedDate, LoanDate);
 
         if (ReturnedDate != null)
+        {
             throw new InvalidOperationException("Loan has already been returned.");
+        }
 
         ReturnedDate = returnedDate;
     }

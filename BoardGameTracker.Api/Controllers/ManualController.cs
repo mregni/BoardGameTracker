@@ -1,9 +1,11 @@
-using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Manuals.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
@@ -26,6 +28,7 @@ public class ManualController : ControllerBase
 
     [HttpGet]
     [Route("game/{gameId:int}")]
+    [ProducesResponseType<List<ManualDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetManualsForGame(int gameId)
     {
         var manuals = await _manualService.GetManualsForGame(gameId);
@@ -37,15 +40,17 @@ public class ManualController : ControllerBase
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     [RequestSizeLimit(MaxUploadBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
+    [ProducesResponseType<List<ManualDto>>(StatusCodes.Status201Created)]
     public async Task<IActionResult> UploadManuals(int gameId, [FromForm] UploadManualsCommand command)
     {
         var manuals = await _manualService.UploadManuals(gameId, command.Files);
-        return Ok(manuals.ToListDto());
+        return Created((string?)null, manuals.ToListDto());
     }
 
     [HttpPost]
     [Route("{id:int}/reindex")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> ReindexManual(int id)
     {
         if (!_environmentProvider.RagEnabled)
@@ -60,6 +65,7 @@ public class ManualController : ControllerBase
     [HttpDelete]
     [Route("{id:int}")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteManual(int id)
     {
         await _manualService.DeleteManual(id);
@@ -71,7 +77,7 @@ public class ManualController : ControllerBase
     public async Task<IActionResult> DownloadManual(int id)
     {
         var download = await _manualService.GetManualForDownload(id);
-        return File(download.Stream, download.ContentType, download.FileName);
+        return File(download.Stream, download.ContentType, download.FileName, enableRangeProcessing: true);
     }
 
     [HttpGet]
@@ -95,6 +101,7 @@ public class ManualController : ControllerBase
     [HttpGet]
     [Route("gamenight/{linkId:guid}")]
     [AllowAnonymous]
+    [ProducesResponseType<List<GameNightManualsDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetManualsForGameNight(Guid linkId)
     {
         var manuals = await _manualService.GetManualsForGameNight(linkId);

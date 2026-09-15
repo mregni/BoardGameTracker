@@ -33,6 +33,4 @@ public class Person : HasId
     {
         Type = type;
     }
-
-    public int GetGameCount() => Games.Count;
 }

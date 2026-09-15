@@ -81,8 +81,8 @@ public class LocationService : ILocationService
         return location;
     }
 
-    public Task<int> CountAsync()
+    public Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
-        return _locationRepository.CountAsync();
+        return _locationRepository.CountAsync(cancellationToken);
     }
 }

@@ -1,5 +1,7 @@
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Compares.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
@@ -18,6 +20,7 @@ public class CompareController : ControllerBase
 
     [HttpGet]
     [Route("{playerOneId:int}/{playerTwoId:int}")]
+    [ProducesResponseType<CompareResultDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPlayerComparison(int playerOneId, int playerTwoId)
     {
         var result = await _compareService.GetPlayerComparison(playerOneId, playerTwoId);

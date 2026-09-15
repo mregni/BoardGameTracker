@@ -1,3 +1,4 @@
+using System.Globalization;
 using System;
 using BoardGameTracker.Common.ValueObjects;
 using FluentAssertions;
@@ -84,7 +85,7 @@ public class WeightTests
     {
         var weight = new Weight(value);
 
-        weight.ToString().Should().Be(value.ToString("F2"));
+        weight.ToString().Should().Be(value.ToString("F2", CultureInfo.InvariantCulture));
     }
 
     #endregion

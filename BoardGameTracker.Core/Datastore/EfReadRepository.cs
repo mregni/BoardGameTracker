@@ -12,7 +12,7 @@ namespace BoardGameTracker.Core.Datastore;
 /// </summary>
 public class EfReadRepository<T> : IReadRepository<T> where T : class
 {
-    protected readonly MainDbContext Context;
+    protected MainDbContext Context { get; }
     private readonly ISpecificationEvaluator _evaluator;
 
     public EfReadRepository(MainDbContext context)

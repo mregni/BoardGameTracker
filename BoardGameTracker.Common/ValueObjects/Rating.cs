@@ -1,3 +1,4 @@
+using System.Globalization;
 using Ardalis.GuardClauses;
 
 namespace BoardGameTracker.Common.ValueObjects;
@@ -19,5 +20,5 @@ public record Rating
 
     public static implicit operator double(Rating rating) => rating.Value;
 
-    public override string ToString() => Value.ToString("F2");
+    public override string ToString() => Value.ToString("F2", CultureInfo.InvariantCulture);
 }

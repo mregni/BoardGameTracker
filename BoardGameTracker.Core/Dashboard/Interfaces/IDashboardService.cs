@@ -4,5 +4,5 @@ namespace BoardGameTracker.Core.Dashboard.Interfaces;
 
 public interface IDashboardService
 {
-    Task<DashboardStatisticsDto> GetStatistics();
+    Task<DashboardStatisticsDto> GetStatistics(CancellationToken cancellationToken = default);
 }

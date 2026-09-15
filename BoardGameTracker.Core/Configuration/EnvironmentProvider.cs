@@ -44,7 +44,7 @@ public class EnvironmentProvider : IEnvironmentProvider
             ? swaggerEnabled
             : IsDevelopment;
 
-    private static IReadOnlyList<string> SplitList(string? value) =>
+    private static string[] SplitList(string? value) =>
         string.IsNullOrWhiteSpace(value)
             ? []
             : value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

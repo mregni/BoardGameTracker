@@ -8,6 +8,7 @@ using BoardGameTracker.Core.Images.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
 
@@ -17,10 +18,13 @@ namespace BoardGameTracker.Core.Images;
 public class ImageService : IImageService
 {
     private const int ImageSize = 512;
+    public const string HttpClientName = "images";
+
     private const long MaxDownloadBytes = 15 * 1024 * 1024;
     private const long MaxUploadBytes = 15 * 1024 * 1024;
     private const long MaxUploadPixels = 50_000_000;
     private static readonly WebpEncoder WebpImageEncoder = new() { Quality = 80 };
+    private static readonly DecoderOptions SingleFrameDecoder = new() { MaxFrames = 1 };
 
     private readonly IDiskProvider _diskProvider;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -38,7 +42,7 @@ public class ImageService : IImageService
         _logger.LogDebug("Downloading image from {ImageUrl} for {FileName}", imageUrl, imageFileName);
         try
         {
-            using var client = _httpClientFactory.CreateClient();
+            using var client = _httpClientFactory.CreateClient(HttpClientName);
             var response = await client.GetAsync(imageUrl);
 
             if (response.IsSuccessStatusCode)
@@ -57,7 +61,14 @@ public class ImageService : IImageService
                     return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
                 }
 
-                using var image = Image.Load(imageContent);
+                var downloadedInfo = Image.Identify(imageContent);
+                if ((long)downloadedInfo.Width * downloadedInfo.Height > MaxUploadPixels)
+                {
+                    _logger.LogWarning("Image at {ImageUrl} exceeds the {Max} pixel limit, using placeholder", imageUrl, MaxUploadPixels);
+                    return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
+                }
+
+                using var image = Image.Load(SingleFrameDecoder, imageContent);
                 image.Mutate(x => x.Resize(ImageSize, ImageSize));
                 var newFileName = await _diskProvider.WriteFile(image, fileName, PathHelper.FullCoverImagePath, WebpImageEncoder);
                 var path = Path.Combine(PathHelper.CoverImagePath, newFileName);
@@ -127,7 +138,7 @@ public class ImageService : IImageService
         }
 
         buffered.Position = 0;
-        using var image = await Image.LoadAsync(buffered);
+        using var image = await Image.LoadAsync(SingleFrameDecoder, buffered);
         image.Mutate(x => x.Resize(ImageSize, ImageSize));
 
         var outputFileName = Path.ChangeExtension(file.FileName, ".webp");
