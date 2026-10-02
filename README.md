@@ -86,12 +86,6 @@ services:
       - DB_PORT=5432
       - JWT_SECRET=CHANGEME_GENERATE_AT_LEAST_32_CHARACTERS
       - TZ=UTC
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
   db:
     image: pgvector/pgvector:pg16

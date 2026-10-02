@@ -32,12 +32,6 @@ services:
       - RAG_ENABLED=${RAG_ENABLED:-false}
       - AI_BASE_URL=${AI_BASE_URL:-http://ollama:11434}
       - AI_CHAT_MODEL=${AI_CHAT_MODEL:-qwen3:4b}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
   db:
     image: pgvector/pgvector:pg16
