@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.Configuration;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Email;
 using FluentAssertions;
@@ -59,15 +61,19 @@ public class PublicUrlBuilderTests
         VerifyBaseUrlReadOnce();
     }
 
-    [Fact]
-    public async Task BuildRsvpUrlAsync_ShouldReturnRelativeUrl_WhenBaseUrlIsNull()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(ConfigDefaults.DefaultPublicUrl)]
+    [InlineData(ConfigDefaults.DefaultPublicUrl + "/")]
+    public async Task BuildRsvpUrlAsync_ShouldRefuse_WhenThePublicUrlIsUnsetOrStillTheDefault(string? configured)
     {
-        var linkId = Guid.NewGuid();
-        SetupPublicUrl(null);
+        SetupPublicUrl(configured);
 
-        var result = await _builder.BuildRsvpUrlAsync(linkId);
+        var act = () => _builder.BuildRsvpUrlAsync(Guid.NewGuid());
 
-        result.Should().Be($"/rsvp?linkId={linkId}");
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.PublicUrlNotConfigured);
         VerifyBaseUrlReadOnce();
     }
 
@@ -93,14 +99,16 @@ public class PublicUrlBuilderTests
         VerifyBaseUrlReadOnce();
     }
 
-    [Fact]
-    public async Task BuildResetUrlAsync_ShouldReturnRelativeUrl_WhenBaseUrlIsEmpty()
+    [Theory]
+    [InlineData("")]
+    [InlineData(ConfigDefaults.DefaultPublicUrl)]
+    public async Task BuildResetUrlAsync_ShouldRefuse_WhenThePublicUrlIsUnsetOrStillTheDefault(string configured)
     {
-        SetupPublicUrl(string.Empty);
+        SetupPublicUrl(configured);
 
-        var result = await _builder.BuildResetUrlAsync("user-1", "token-1");
+        var act = () => _builder.BuildResetUrlAsync("user-1", "token-1");
 
-        result.Should().Be("/reset-password?userId=user-1&token=token-1");
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.PublicUrlNotConfigured);
         VerifyBaseUrlReadOnce();
     }
 }

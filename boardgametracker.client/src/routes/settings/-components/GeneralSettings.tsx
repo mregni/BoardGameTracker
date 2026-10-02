@@ -80,6 +80,21 @@ export const GeneralSettings = withForm({
 					</form.Field>
 					<EnvOverrideHint variable={overrides.currency} />
 				</SettingsSection>
+
+				<SettingsSection title={t("general.public-url.title")} description={t("general.public-url.description")}>
+					<form.Field name="publicUrl" validators={zodValidator(SettingsSchema, "publicUrl")}>
+						{(field: AnyFieldApi) => (
+							<BgtInputField
+								field={field}
+								disabled={disabled || !!overrides.publicUrl}
+								type="text"
+								label={t("general.public-url.label")}
+								placeholder={t("general.public-url.placeholder")}
+							/>
+						)}
+					</form.Field>
+					<EnvOverrideHint variable={overrides.publicUrl} />
+				</SettingsSection>
 			</>
 		);
 	},

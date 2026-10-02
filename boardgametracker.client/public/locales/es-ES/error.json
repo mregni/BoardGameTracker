@@ -68,7 +68,8 @@
     "invalid-expansion": "Una de las expansiones seleccionadas no pertenece a este juego"
   },
   "email": {
-    "not-configured": "El correo electrónico no está configurado en este servidor"
+    "not-configured": "El correo electrónico no está configurado en este servidor",
+    "public-url-not-configured": "Configura primero la URL pública en Ajustes > General, para que los enlaces del correo apunten a este servidor."
   },
   "loan": {
     "game-already-on-loan": "Este juego ya está prestado"

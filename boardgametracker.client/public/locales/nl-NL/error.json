@@ -68,7 +68,8 @@
     "invalid-expansion": "Een van de gekozen uitbreidingen hoort niet bij dit spel"
   },
   "email": {
-    "not-configured": "E-mail is niet geconfigureerd op deze server"
+    "not-configured": "E-mail is niet geconfigureerd op deze server",
+    "public-url-not-configured": "Stel eerst de publieke URL in onder Instellingen > Algemeen, zodat de links in de e-mail naar deze server wijzen."
   },
   "loan": {
     "game-already-on-loan": "Dit spel is al uitgeleend"

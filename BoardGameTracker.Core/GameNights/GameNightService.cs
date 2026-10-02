@@ -249,6 +249,8 @@ public class GameNightService : IGameNightService
             throw new DomainException(Constants.Errors.EmailNotConfigured);
         }
 
+        var rsvpUrl = await _publicUrlBuilder.BuildRsvpUrlAsync(gameNight.LinkId);
+
         var cooldownKey = $"gamenight-invites:{id}";
         if (_cache.TryGetValue(cooldownKey, out _))
         {
@@ -257,7 +259,6 @@ public class GameNightService : IGameNightService
 
         _cache.Set(cooldownKey, true, InviteCooldown);
 
-        var rsvpUrl = await _publicUrlBuilder.BuildRsvpUrlAsync(gameNight.LinkId);
         var htmlUrl = WebUtility.HtmlEncode(rsvpUrl);
         var title = WebUtility.HtmlEncode(gameNight.Title);
         var subject = $"You're invited: {gameNight.Title}";

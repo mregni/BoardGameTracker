@@ -1,6 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
-import { BgtInputField } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
 import { SettingsSchema } from "@/models";
 
@@ -39,18 +38,6 @@ export const GameNightsSettings = withForm({
 					>
 						{(gameNightsEnabled: boolean) => (
 							<>
-								<form.Field name="publicUrl" validators={zodValidator(SettingsSchema, "publicUrl")}>
-									{(field: AnyFieldApi) => (
-										<BgtInputField
-											field={field}
-											disabled={disabled || !gameNightsEnabled || !!overrides.publicUrl}
-											type="text"
-											label={t("game-nights.public-url.label")}
-											placeholder={t("game-nights.public-url.placeholder")}
-										/>
-									)}
-								</form.Field>
-								<EnvOverrideHint variable={overrides.publicUrl} />
 								<form.Field
 									name="rsvpAuthenticationEnabled"
 									validators={zodValidator(SettingsSchema, "rsvpAuthenticationEnabled")}

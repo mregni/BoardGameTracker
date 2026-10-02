@@ -940,6 +940,27 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ForgotPasswordAsync_ShouldSendNothing_WhenThePublicUrlIsNotConfigured()
+    {
+        var user = new ApplicationUser("user", "u@test.com");
+        _userManagerMock.Setup(x => x.FindByNameAsync("user")).ReturnsAsync(user);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        _userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("reset-token");
+        _publicUrlBuilderMock
+            .Setup(x => x.BuildResetUrlAsync(user.Id, "reset-token"))
+            .ThrowsAsync(new DomainException(Constants.Errors.PublicUrlNotConfigured));
+
+        var act = () => _authService.ForgotPasswordAsync("user");
+
+        await act.Should().NotThrowAsync();
+        _userManagerMock.Verify(x => x.FindByNameAsync("user"), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        _userManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(user), Times.Once);
+        _publicUrlBuilderMock.Verify(x => x.BuildResetUrlAsync(user.Id, "reset-token"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task ForgotPasswordAsync_ShouldNotThrow_WhenQueueingFails()
     {
         var user = new ApplicationUser("user", "u@test.com");

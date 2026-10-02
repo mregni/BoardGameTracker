@@ -345,6 +345,10 @@ public class AuthService : IAuthService
             _backgroundEmailSender.Queue(user.Email, subject, body);
             _logger.LogInformation("Queued password reset email for user {UserId}", user.Id);
         }
+        catch (DomainException ex) when (ex.Message == Constants.Errors.PublicUrlNotConfigured)
+        {
+            _logger.LogWarning("Password reset email not sent because no public URL is configured");
+        }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to queue password reset email");

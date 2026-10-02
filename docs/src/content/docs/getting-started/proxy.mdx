@@ -20,7 +20,7 @@ Several entries are separated by commas, semicolons or spaces (`TRUSTED_PROXIES=
 
 ## Public URL
 
-Set the **Public URL** under *Settings → Game nights* (or the `PUBLIC_URL` environment variable) to the address your users type in the browser, for example `https://games.example.com`. It is used to build the links in RSVP invitations and password-reset emails; until it is set those links point at `http://localhost:5444`.
+Set the **Public URL** under *Settings → General* (or the `PUBLIC_URL` environment variable) to the address your users type in the browser, for example `https://games.example.com`. It is used to build the links in RSVP invitations and password-reset emails; until it is set those emails are not sent. It is never taken from the incoming request for these emails, because anyone can choose the `Host` header of a password-reset request.
 
 ## HTTPS
 

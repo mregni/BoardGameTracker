@@ -574,6 +574,34 @@ public class GameNightServiceTests
     }
 
     [Fact]
+    public async Task SendInvitesAsync_ShouldRefuseWithoutStartingTheCooldown_WhenThePublicUrlIsNotConfigured()
+    {
+        var withEmail = RsvpWithPlayer(1, GameNightRsvpState.Pending, new Player("Alice", null, "alice@test.com"));
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
+        gameNight.SetInvitedPlayers([withEmail]);
+        _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>())).ReturnsAsync(gameNight);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        _publicUrlBuilderMock
+            .SetupSequence(x => x.BuildRsvpUrlAsync(gameNight.LinkId))
+            .ThrowsAsync(new DomainException(Constants.Errors.PublicUrlNotConfigured))
+            .ReturnsAsync("https://games.example.com/rsvp");
+        _emailServiceMock
+            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var first = () => _gameNightService.SendInvitesAsync(1);
+        await first.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.PublicUrlNotConfigured);
+        var result = await _gameNightService.SendInvitesAsync(1);
+
+        result.Sent.Should().Be(1);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Exactly(2));
+        _publicUrlBuilderMock.Verify(x => x.BuildRsvpUrlAsync(gameNight.LinkId), Times.Exactly(2));
+        _emailServiceMock.Verify(x => x.SendAsync("alice@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task SendInvitesAsync_ShouldSendToPlayersWithEmailAndSkipOthers()
     {
         var withEmail = RsvpWithPlayer(1, GameNightRsvpState.Pending, new Player("Alice", null, "alice@test.com"));

@@ -20,6 +20,8 @@
 	},
 	"general": {
 		"public-url": {
+			"title": "Dirección pública",
+			"description": "La dirección con la que la gente accede a BoardGameTracker, por ejemplo https://games.example.com. Las invitaciones y los correos para restablecer la contraseña enlazan a ella, y el SSO la usa para sus URI de redirección. Los correos con enlaces solo se envían cuando está configurada.",
 			"label": "Public URL",
 			"placeholder": "https://myboardgametracker.app",
 			"invalid": "Introduce una URL http(s) válida"
@@ -64,10 +66,6 @@
 		"enabled": {
 			"label": "Enable Game Nights",
 			"description": "Enable the game nights feature to plan and manage game night events with your friends."
-		},
-		"public-url": {
-			"label": "Public URL",
-			"placeholder": "https://myboardgametracker.app"
 		},
 		"rsvp-authentication": {
 			"label": "Require authentication for RSVPs",

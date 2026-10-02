@@ -14,6 +14,8 @@ BoardGameTracker can send emails for two optional features:
 
 Email stays disabled until SMTP is configured. It is enabled only when both `SMTP_HOST` and `SMTP_FROM_ADDRESS` are set; until then the related buttons and links stay hidden.
 
+Both emails contain a link back to the app, built from the **Public URL** under *Settings → General* (or `PUBLIC_URL`). Set it as well: while it is empty or still the default `http://localhost:5444`, invitations are refused with a message and reset emails are skipped.
+
 ## Configuration
 
 | Configuration | Variable | Default | Info |
