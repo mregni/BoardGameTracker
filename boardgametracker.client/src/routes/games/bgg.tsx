@@ -49,8 +49,8 @@ function RouteComponent() {
 	const form = useAppForm({
 		defaultValues: {
 			bggId: "",
-			price: 0,
-			date: toInputDate(undefined, true),
+			price: undefined as number | undefined,
+			additionDate: toInputDate(undefined, true),
 			state: GameState.Owned,
 			hasScoring: true,
 		},
@@ -94,7 +94,7 @@ function RouteComponent() {
 									/>
 								)}
 							</form.Field>
-							<form.Field name="date" validators={zodValidator(BggSearchSchema, "date")}>
+							<form.Field name="additionDate" validators={zodValidator(BggSearchSchema, "additionDate")}>
 								{(field: AnyFieldApi) => (
 									<BgtDatePicker field={field} disabled={isPending} label={t("added-date.label")} />
 								)}

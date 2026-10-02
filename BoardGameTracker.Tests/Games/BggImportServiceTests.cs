@@ -225,6 +225,33 @@ public class BggImportServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData(0d)]
+    [InlineData(-5d)]
+    public async Task ImportGameFromBgg_ShouldStoreNoPrice_WhenThePriceIsNotPositive(double price)
+    {
+        var addedOn = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+        var search = new BggSearch { BggId = 88, State = GameState.Owned, HasScoring = true, Price = price, AdditionDate = addedOn };
+        var rawItem = new ThingResponse.Item { Id = 88, Image = "image.jpg", Type = "boardgame" };
+        var createdGame = new Game("Free Game") { Id = 4 };
+        _gameRepositoryMock.Setup(x => x.GetGameByBggId(88)).ReturnsAsync((Game?)null);
+        _bggClientMock.Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>())).ReturnsAsync(CreateSucceededThingResponse([rawItem]));
+        _gameFactoryMock.Setup(x => x.CreateFromBggAsync(rawItem, true, GameState.Owned, null, addedOn, null)).ReturnsAsync(createdGame);
+        _gameRepositoryMock.Setup(x => x.CreateAsync(createdGame)).ReturnsAsync(createdGame);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        var result = await _bggImportService.ImportGameFromBgg(search);
+
+        result.Should().Be(createdGame);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(88), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(rawItem, true, GameState.Owned, null, addedOn, null), Times.Once);
+        _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task ImportGameFromBgg_ShouldForwardShopUrl_WhenSearchHasShopUrl()
     {

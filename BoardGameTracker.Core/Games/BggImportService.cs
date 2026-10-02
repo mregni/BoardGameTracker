@@ -65,7 +65,7 @@ public class BggImportService : IBggImportService
             item,
             search.HasScoring,
             search.State,
-            search.Price.HasValue ? (decimal?)search.Price.Value : null,
+            search.Price is > 0 ? (decimal?)search.Price.Value : null,
             search.AdditionDate,
             search.ShopUrl);
 

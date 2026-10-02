@@ -5,8 +5,8 @@ import { GameState } from "./GameState";
 
 export interface BggSearch {
 	bggId: string;
-	price: number;
-	date: Date;
+	price: number | null;
+	additionDate: Date;
 	state: GameState;
 	hasScoring: boolean;
 }
@@ -17,10 +17,13 @@ export const BggSearchSchema = z.object({
 			error: "game:bgg.required",
 		})
 		.min(1, { message: "game:bgg.required" }),
-	price: z.coerce.number({
-		error: "game:price.required",
-	}),
-	date: localDateSchema("game:added-date.required"),
+	price: z
+		.number({ error: "game:validation.positive-number" })
+		.nonnegative({ message: "game:validation.positive-number" })
+		.nullable()
+		.optional()
+		.transform((value) => value || null),
+	additionDate: localDateSchema("game:added-date.required"),
 	state: z.nativeEnum(GameState),
 	hasScoring: z.boolean(),
 });
