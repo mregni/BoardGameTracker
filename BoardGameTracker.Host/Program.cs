@@ -1,5 +1,4 @@
 using System.Net;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -186,7 +185,7 @@ builder.Services.AddRateLimiter(options =>
             QueueLimit = 0
         }));
     options.AddPolicy("rag", context => RateLimitPartition.GetFixedWindowLimiter(
-        context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? ClientAddressKey.From(context.Connection.RemoteIpAddress),
+        UserRateLimitKey.From(context),
         _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 10,
@@ -384,10 +383,10 @@ app.UseRouting();
 
 app.UseCors("Allow");
 
-app.UseRateLimiter();
 app.UseAuthDisabledMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapHealthChecks("/api/health");
 
