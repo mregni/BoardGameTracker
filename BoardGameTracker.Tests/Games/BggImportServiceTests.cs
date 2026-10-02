@@ -567,6 +567,45 @@ public class BggImportServiceTests
     }
 
     [Fact]
+    public async Task ImportBggCollection_ShouldSkipItemsThatAreOnlyRatedOrPlayed()
+    {
+        var lastModified = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var items = new List<CollectionResponse.Item>
+        {
+            new()
+            {
+                ObjectId = 501,
+                Name = "Owned Game",
+                Status = new CollectionResponse.Status { Owned = true, LastModified = lastModified },
+                Image = "owned.jpg",
+                SubType = "boardgame"
+            },
+            new()
+            {
+                ObjectId = 502,
+                Name = "Played Once",
+                Status = new CollectionResponse.Status { LastModified = lastModified },
+                Image = "played.jpg",
+                SubType = "boardgame"
+            }
+        };
+
+        _bggClientMock
+            .Setup(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()))
+            .ReturnsAsync(CreateSucceededCollectionResponse(items));
+
+        var result = await _bggImportService.ImportBggCollection("testuser");
+
+        result.Should().ContainSingle();
+        result[0].BggId.Should().Be(501);
+        result[0].State.Should().Be(GameState.Owned);
+
+        _bggClientMock.Verify(x => x.GetCollectionAsync(It.IsAny<CollectionRequest>()), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task ImportBggCollection_ShouldReturnGamesSortedByName()
     {
         var userName = "testuser";

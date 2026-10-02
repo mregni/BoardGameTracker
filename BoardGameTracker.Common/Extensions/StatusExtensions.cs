@@ -5,7 +5,7 @@ namespace BoardGameTracker.Common.Extensions;
 
 public static class StatusExtensions
 {
-    public static GameState ToGameState(this CollectionResponse.Status status)
+    public static GameState? ToGameState(this CollectionResponse.Status status)
     {
         if (status.PreviouslyOwned)
         {
@@ -17,11 +17,16 @@ public static class StatusExtensions
             return GameState.ForTrade;
         }
 
+        if (status.Owned)
+        {
+            return GameState.Owned;
+        }
+
         if (status.Want || status.WantToBuy || status.Wishlist || status.Preordered)
         {
             return GameState.Wanted;
         }
 
-        return GameState.Owned;
+        return null;
     }
 }
