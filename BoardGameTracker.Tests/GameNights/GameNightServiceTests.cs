@@ -495,6 +495,38 @@ public class GameNightServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task Update_ShouldAcceptForANewHost_WhoWasNotInvitedYet()
+    {
+        var existingGameNight = GameNight.Create("Title", "Notes", DateTime.UtcNow, 1, 1);
+        existingGameNight.SetInvitedPlayers([GameNightRsvp.Create(1, GameNightRsvpState.Accepted), GameNightRsvp.Create(2, GameNightRsvpState.Pending)]);
+        var command = new UpdateGameNightCommand
+        {
+            Id = 1,
+            Title = "Title",
+            Notes = "Notes",
+            StartDate = DateTime.UtcNow,
+            HostId = 5,
+            LocationId = 1,
+            SuggestedGameIds = [],
+            InvitedPlayerIds = [1, 2]
+        };
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingGameNight);
+        _gameRepositoryMock.Setup(x => x.GetByIdsAsync(command.SuggestedGameIds)).ReturnsAsync([]);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        var result = await _gameNightService.Update(command);
+
+        result.InvitedPlayers.Should().ContainSingle(p => p.PlayerId == 5).Which.State.Should().Be(GameNightRsvpState.Accepted);
+        result.InvitedPlayers.Should().ContainSingle(p => p.PlayerId == 2).Which.State.Should().Be(GameNightRsvpState.Pending);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdsAsync(command.SuggestedGameIds), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region Delete Tests

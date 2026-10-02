@@ -52,6 +52,12 @@ public class Loan : HasId
         return effectiveEnd == null || date < effectiveEnd.Value;
     }
 
+    public bool Overlaps(DateTime start, DateTime? end)
+    {
+        var effectiveEnd = ReturnedDate ?? DueDate;
+        return (end == null || LoanDate < end.Value) && (effectiveEnd == null || start < effectiveEnd.Value);
+    }
+
     public void SetDueDate(DateTime? dueDate)
     {
         if (dueDate.HasValue)

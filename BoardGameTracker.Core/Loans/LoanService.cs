@@ -94,6 +94,10 @@ public class LoanService : ILoanService
             throw new EntityNotFoundException(nameof(Loan), command.Id);
         }
 
+        var game = await _gameRepository.SingleOrDefaultAsync(new GameWithLoansSpec(loan.GameId))
+            ?? throw new EntityNotFoundException(nameof(Game), loan.GameId);
+        game.EnsureLoanDatesAreFree(loan, command.LoanDate, loan.ReturnedDate ?? command.DueDate);
+
         loan.UpdateDates(command.LoanDate, command.DueDate, loan.ReturnedDate);
         await _unitOfWork.SaveChangesAsync();
         

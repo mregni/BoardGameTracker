@@ -123,6 +123,10 @@ public class GameNightService : IGameNightService
 
         var toAdd = desiredPlayerIds.Except(existingPlayerIds);
         gameNight.AddInvitedPlayers(toAdd);
+        if (!existingPlayerIds.Contains(command.HostId))
+        {
+            gameNight.InvitedPlayers.First(p => p.PlayerId == command.HostId).UpdateState(GameNightRsvpState.Accepted);
+        }
 
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Game night {GameNightId} updated", command.Id);

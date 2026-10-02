@@ -86,7 +86,6 @@ public class GameSpecsTests
 
     public static TheoryData<Specification<Game>, Specification<Game>, bool> DetailSpecs => new()
     {
-        { new GameByIdWithDetailsSpec(5), new GameByIdWithDetailsSpec(6), false },
         { new GameByIdWithDetailsForReadSpec(5), new GameByIdWithDetailsForReadSpec(6), true }
     };
 

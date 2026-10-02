@@ -73,6 +73,14 @@ public class Game : BaseGame
         Expansions.Remove(expansion);
     }
 
+    public void EnsureLoanDatesAreFree(Loan loan, DateTime loanDate, DateTime? end)
+    {
+        if (Loans.Any(other => !ReferenceEquals(other, loan) && other.Id != loan.Id && other.Overlaps(loanDate, end)))
+        {
+            throw new DomainException(Constants.Errors.GameAlreadyOnLoan);
+        }
+    }
+
     public Loan LoanToPlayer(int playerId, DateTime loanDate)
     {
         if (IsLoanedOn(loanDate))

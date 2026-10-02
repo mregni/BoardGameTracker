@@ -1412,7 +1412,7 @@ public class GameServiceTests
 
         result.Title.Should().Be("Kickstarter promo pack");
         result.BggId.Should().BeNull();
-        result.IsManual.Should().BeTrue();
+        result.BggId.Should().BeNull();
         game.Expansions.Should().ContainSingle().Which.Should().BeSameAs(result);
 
         _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithExpansionsSpec>(), It.IsAny<CancellationToken>()), Times.Once);

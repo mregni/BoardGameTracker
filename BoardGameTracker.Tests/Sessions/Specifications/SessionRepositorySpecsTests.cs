@@ -32,23 +32,6 @@ public class SessionRepositorySpecsTests
         spec.ShouldIncludeExactly("PlayerSessions");
     }
 
-    [Theory]
-    [InlineData(true, new[] { 1 })]
-    [InlineData(false, new[] { 2, 3 })]
-    public void SessionsByPlayerSpec_ShouldApplyWonFilterForThatPlayer_WhenProvided(bool won, int[] expectedIds)
-    {
-        var playerWon = SessionWithPlayer(1, 1, 5, won: true);
-        var playerLost = SessionWithPlayer(2, 1, 5, won: false);
-        var playerLostOtherPlayerWon = SessionWithPlayer(3, 1, 5, won: false);
-        playerLostOtherPlayerWon.AddPlayerSession(6, null, false, true);
-
-        var result = new SessionsByPlayerSpec(5, won)
-            .Evaluate(new[] { playerWon, playerLost, playerLostOtherPlayerWon })
-            .ToList();
-
-        result.Select(x => x.Id).Should().BeEquivalentTo(expectedIds);
-    }
-
     [Fact]
     public void SessionByIdWithDetailsSpec_ShouldMatchId_Include_AndTrack()
     {

@@ -29,7 +29,6 @@ public class Expansion : HasId
         Sessions = new List<Session>();
     }
 
-    public bool IsManual => BggId == null;
 
     public bool Matches(Expansion other)
     {
