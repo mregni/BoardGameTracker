@@ -341,8 +341,13 @@ public class GameServiceTests
     {
         var watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
         var existingGame = new Game("Brass", true) { Id = 1 };
+        var detailedGame = new Game("Brass", true) { Id = 1 };
+        detailedGame.AddExpansion(new Expansion("Brass: Expansion", 999, 1));
 
         _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(existingGame);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameByIdWithDetailsForReadSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(detailedGame);
         _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
         _changeDetectionClientMock
             .Setup(x => x.CreateWatchAsync("https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()))
@@ -350,9 +355,14 @@ public class GameServiceTests
 
         var result = await _gameService.CreateWatchForGame(1, " https://shop.example.com/brass ");
 
-        result.ChangeDetectionWatchId.Should().Be(watchId);
-        result.ShopUrl.Should().Be("https://shop.example.com/brass");
+        result.Should().BeSameAs(detailedGame);
+        result.Expansions.Should().ContainSingle();
+        existingGame.ChangeDetectionWatchId.Should().Be(watchId);
+        existingGame.ShopUrl.Should().Be("https://shop.example.com/brass");
         _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _gameRepositoryMock.Verify(
+            x => x.SingleOrDefaultAsync(It.Is<GameByIdWithDetailsForReadSpec>(s => s.IsSatisfiedBy(detailedGame)), It.IsAny<CancellationToken>()),
+            Times.Once);
         _changeDetectionClientMock.Verify(
             x => x.CreateWatchAsync("https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);

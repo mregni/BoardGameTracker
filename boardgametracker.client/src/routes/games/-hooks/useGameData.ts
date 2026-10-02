@@ -75,6 +75,7 @@ export const useGameData = (props: UseGameDataProps) => {
 		mutationFn: (url: string) => createWatchCall(gameId, url),
 		onSuccess: (data) => {
 			queryClient.setQueryData([QUERY_KEYS.game, gameId], data);
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameId], exact: true });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.game, gameId, QUERY_KEYS.price] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] });

@@ -396,7 +396,7 @@ public class GameService : IGameService
         game.UpdateShopUrl(shopUrl);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("Game {GameId} linked to changedetection.io watch {WatchId}", gameId, watchId);
-        return game;
+        return await _gameRepository.SingleOrDefaultAsync(new GameByIdWithDetailsForReadSpec(gameId), cancellationToken) ?? game;
     }
 
     private async Task SyncShopUrlFromWatchAsync(Game game)
