@@ -30,7 +30,7 @@ vi.mock("@/hooks/useAuth", () => ({
 }));
 
 vi.mock("@/routes/-hooks/useToasts", () => ({
-	useToasts: () => ({ successToast: mocks.successToast, errorToast: vi.fn() }),
+	useToasts: () => ({ successToast: (key: string) => mocks.successToast(key), errorToast: vi.fn() }),
 }));
 
 const translations: Record<string, string> = {
@@ -68,6 +68,25 @@ describe("AuthCallbackPage", () => {
 
 		await waitFor(() => expect(mocks.setTokens).toHaveBeenCalledWith("access", "refresh", login.user));
 		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/3", replace: true });
+	});
+
+	it("spends the single-use handoff once when the page re-renders before it resolves", async () => {
+		mocks.search = { redirect: "/games/3" };
+		let resolveAdopt: (value: typeof login) => void = () => {};
+		mocks.adoptOidcLoginCall.mockReturnValue(
+			new Promise<typeof login>((resolve) => {
+				resolveAdopt = resolve;
+			}),
+		);
+
+		const { rerender } = renderWithTheme(<mocks.captured.Page />);
+		rerender(<mocks.captured.Page />);
+		resolveAdopt(login);
+
+		await waitFor(() => expect(mocks.setTokens).toHaveBeenCalledTimes(1));
+		expect(mocks.adoptOidcLoginCall).toHaveBeenCalledTimes(1);
+		expect(mocks.navigate).toHaveBeenCalledTimes(1);
+		expect(screen.queryByText("The sign-in took too long to complete. Please try again.")).not.toBeInTheDocument();
 	});
 
 	it("never follows an external redirect", async () => {

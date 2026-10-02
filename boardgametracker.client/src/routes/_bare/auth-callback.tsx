@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
@@ -7,6 +7,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
+import type { LoginResponse } from "@/models/Auth/Auth";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { adoptOidcLoginCall } from "@/services/authService";
 import { translateApiError } from "@/utils/errorUtils";
@@ -30,6 +31,8 @@ function AuthCallbackPage() {
 	const setTokens = useAuth((s) => s.setTokens);
 	const { error, redirect, linked } = Route.useSearch();
 	const [failure, setFailure] = useState<string | null>(null);
+	const adoption = useRef<Promise<LoginResponse> | null>(null);
+	const handled = useRef(false);
 
 	useEffect(() => {
 		if (error) {
@@ -38,15 +41,20 @@ function AuthCallbackPage() {
 		}
 
 		if (linked) {
-			successToast("auth:oidc.linked");
-			navigate({ to: "/settings", replace: true });
+			if (!handled.current) {
+				handled.current = true;
+				successToast("auth:oidc.linked");
+				navigate({ to: "/settings", replace: true });
+			}
 			return;
 		}
 
+		adoption.current ??= adoptOidcLoginCall();
 		let cancelled = false;
-		adoptOidcLoginCall()
+		adoption.current
 			.then((login) => {
-				if (cancelled) return;
+				if (cancelled || handled.current) return;
+				handled.current = true;
 				setTokens(login.accessToken, login.refreshToken, login.user);
 				navigate({ to: safeRedirectPath(redirect), replace: true });
 			})
