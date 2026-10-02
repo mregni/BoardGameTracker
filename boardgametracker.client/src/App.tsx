@@ -5,6 +5,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { BgtLoadingSpinner } from "./components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { ErrorFallback } from "./components/ErrorBoundary/ErrorFallback";
+import { useResetQueriesOnIdentityChange } from "./hooks/useResetQueriesOnIdentityChange";
 import { isApiError } from "./models";
 import { routeTree } from "./routeTree.gen";
 import { getSettings } from "./services/queries/settings";
@@ -88,6 +89,11 @@ declare module "@tanstack/react-router" {
 	}
 }
 
+function AuthCacheSync() {
+	useResetQueriesOnIdentityChange();
+	return null;
+}
+
 function LanguageSync() {
 	const { data } = useQuery(getSettings());
 	const uiLanguage = data?.uiLanguage;
@@ -116,6 +122,7 @@ function AppContainer() {
 			}}
 		>
 			<QueryClientProvider client={queryClient}>
+				<AuthCacheSync />
 				<LanguageSync />
 				<RouterProvider router={router} context={{ queryClient }} />
 				<TanStackQueryDevtools initialIsOpen />
