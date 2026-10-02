@@ -42,19 +42,22 @@ public class ProfileImageAccessTests : IDisposable
     }
 
     [Fact]
-    public async Task ProfileImage_ShouldBeServed_WithABearerToken()
+    public async Task ProfileImage_ShouldBeServed_WithABearerToken_AndNeverStoredByASharedCache()
     {
         using var user = await _fixture.CreateClientAsAsync("reader");
 
         var response = await user.GetAsync($"/images/profile/{FileName}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Headers.CacheControl!.Private.Should().BeTrue();
+        response.Headers.CacheControl.NoCache.Should().BeTrue();
     }
 
     [Fact]
-    public async Task ProfileImage_ShouldBeServed_WithTheCookieFromLogin_AndRefusedAfterLogout()
+    public async Task ProfileImage_ShouldBeServed_WithTheCookieFromLogin_AndTheBrowserDropsItAtLogout()
     {
         using var browser = _fixture.CreateBrowserClient();
+        using var replay = _fixture.CreateClient();
 
         var login = await browser.PostAsJsonAsync("/api/auth/login", new LoginRequest(IntegrationFixture.AdminUsername, IntegrationFixture.AdminPassword));
         login.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -63,6 +66,7 @@ public class ProfileImageAccessTests : IDisposable
 
         var served = await browser.GetAsync($"/images/profile/{FileName}");
         served.StatusCode.Should().Be(HttpStatusCode.OK);
+        var ticket = login.Headers.GetValues("Set-Cookie").First(c => c.StartsWith($"{ProfileImageCookie.Name}=", StringComparison.Ordinal)).Split(';')[0];
 
         var cover = await browser.GetAsync("/images/cover/does-not-exist.webp");
         cover.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -74,6 +78,10 @@ public class ProfileImageAccessTests : IDisposable
 
         var refused = await browser.GetAsync($"/images/profile/{FileName}");
         refused.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        using var captured = new HttpRequestMessage(HttpMethod.Get, $"/images/profile/{FileName}");
+        captured.Headers.Add("Cookie", ticket);
+        (await replay.SendAsync(captured)).StatusCode.Should().Be(HttpStatusCode.OK, "a copied ticket only opens profile pictures and expires with the session lifetime; it is not tied to one session");
     }
 
     [Fact]

@@ -427,7 +427,8 @@ app.UseWhen(
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(PathHelper.FullProfileImagePath),
-    RequestPath = ProfileImageCookie.Path
+    RequestPath = ProfileImageCookie.Path,
+    OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "private, no-cache"
 });
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
