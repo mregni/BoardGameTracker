@@ -22,7 +22,7 @@ Everything you need lives in the folders you mounted plus the database.
 2. Dump the database:
 
    ```sh title="Terminal"
-   docker compose exec db pg_dump -U dbuser boardgametracker > backup-$(date +%F).sql
+   docker compose exec db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > backup-$(date +%F).sql
    ```
 
 3. Copy the mounted folders: `images` (covers and player photos), `manuals` (uploaded rulebooks) and, if you want to keep them, `logs`.

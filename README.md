@@ -197,7 +197,7 @@ Date format, time format, currency and language are set in the application under
 - Serilog for logging
 
 ### Frontend
-- React 18
+- React 19
 - TypeScript
 - TanStack Router & Query
 - Tailwind CSS
@@ -232,6 +232,8 @@ docker compose -f docker-compose.build.yml up --build
 ```bash
 dotnet test
 ```
+
+The integration tests start a PostgreSQL container, so Docker must be running.
 
 **Frontend:**
 ```bash
