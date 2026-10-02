@@ -198,6 +198,7 @@
     "range-both": "Rellena ambos valores o deja los dos vacíos",
     "min-max": "El mínimo no puede ser mayor que el máximo",
     "rating": "Introduce una valoración entre 0 y 10",
-    "weight": "Introduce una complejidad entre 0 y 5"
+    "weight": "Introduce una complejidad entre 0 y 5",
+    "year": "Introduce un año entre -5000 y 9999 (negativo para a. C.)"
   }
 }

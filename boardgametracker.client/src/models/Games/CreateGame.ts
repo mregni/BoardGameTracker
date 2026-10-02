@@ -29,9 +29,10 @@ export const CreateGameSchema = z.object({
 	additionDate: localDateSchema("game:added-date.required"),
 	state: z.nativeEnum(GameState),
 	yearPublished: z
-		.number({ error: "game:validation.positive-number" })
-		.int({ message: "game:validation.positive-number" })
-		.nonnegative({ message: "game:validation.positive-number" })
+		.number({ error: "game:validation.year" })
+		.int({ message: "game:validation.year" })
+		.min(-5000, { message: "game:validation.year" })
+		.max(9999, { message: "game:validation.year" })
 		.nullable()
 		.optional()
 		.transform((value) => value || null),
@@ -44,9 +45,10 @@ export const CreateGameSchema = z.object({
 		.number({ error: "game:validation.positive-number" })
 		.int({ message: "game:validation.positive-number" })
 		.nonnegative({ message: "game:validation.positive-number" })
+		.max(120, { message: "game:validation.positive-number" })
 		.nullable()
 		.optional()
-		.transform((value) => value ?? null),
+		.transform((value) => value || null),
 	image: z.string().nullable().optional(),
 	changeDetectionWatchId: z
 		.string()

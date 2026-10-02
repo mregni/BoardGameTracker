@@ -9,6 +9,20 @@ const baseGame = {
 	hasScoring: false,
 };
 
+describe("CreateGameSchema yearPublished and minAge", () => {
+	it("should accept a BCE year such as Go's", () => {
+		expect(CreateGameSchema.parse({ ...baseGame, yearPublished: -2200 }).yearPublished).toBe(-2200);
+	});
+
+	it("should reject a year outside -5000..9999", () => {
+		expect(CreateGameSchema.safeParse({ ...baseGame, yearPublished: -6000 }).success).toBe(false);
+	});
+
+	it("should treat a minimum age of 0 as unknown", () => {
+		expect(CreateGameSchema.parse({ ...baseGame, minAge: 0 }).minAge).toBeNull();
+	});
+});
+
 describe("CreateGameSchema buyingPrice", () => {
 	it("should preserve a buying price of 0 instead of nulling it", () => {
 		const result = CreateGameSchema.parse({ ...baseGame, buyingPrice: 0 });

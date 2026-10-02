@@ -10,7 +10,7 @@ public class CreateGameCommand : IValidatableObject
     [StringLength(500)]
     public required string Title { get; set; }
 
-    [Range(0, 9999)]
+    [Range(-5000, 9999)]
     public int? YearPublished { get; set; }
 
     public string? Image { get; set; }
@@ -38,7 +38,7 @@ public class CreateGameCommand : IValidatableObject
     [Range(1, int.MaxValue)]
     public int? MaxPlayTime { get; set; }
 
-    [Range(0, 120)]
+    [Range(1, 120)]
     public int? MinAge { get; set; }
 
     [Range(1, int.MaxValue)]

@@ -18,6 +18,35 @@ public class CreateGameCommandValidationTests
         Validate(command).Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(-2200)]
+    [InlineData(1)]
+    [InlineData(2026)]
+    public void Validate_ShouldAcceptAncientAndModernYears(int year)
+    {
+        var command = new CreateGameCommand { Title = "Go", YearPublished = year };
+
+        Validate(command).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(-6000)]
+    [InlineData(10000)]
+    public void Validate_ShouldRejectYearsOutsideTheSupportedRange(int year)
+    {
+        var command = new CreateGameCommand { Title = "Game", YearPublished = year };
+
+        Validate(command).Should().ContainSingle().Which.MemberNames.Should().Contain(nameof(CreateGameCommand.YearPublished));
+    }
+
+    [Fact]
+    public void Validate_ShouldRejectAMinimumAgeOfZero_WhichTheGameRejectsToo()
+    {
+        var command = new CreateGameCommand { Title = "Game", MinAge = 0 };
+
+        Validate(command).Should().ContainSingle().Which.MemberNames.Should().Contain(nameof(CreateGameCommand.MinAge));
+    }
+
     [Fact]
     public void Validate_ShouldPass_WhenNoRangeIsGiven()
     {

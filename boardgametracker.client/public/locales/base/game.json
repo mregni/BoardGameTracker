@@ -198,6 +198,7 @@
     "range-both": "Fill in both values or leave both empty",
     "min-max": "The minimum cannot be higher than the maximum",
     "rating": "Enter a rating between 0 and 10",
-    "weight": "Enter a weight between 0 and 5"
+    "weight": "Enter a weight between 0 and 5",
+    "year": "Enter a year between -5000 and 9999 (negative for BCE)"
   }
 }

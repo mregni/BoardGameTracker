@@ -198,6 +198,7 @@
     "range-both": "Vul beide waarden in of laat ze allebei leeg",
     "min-max": "Het minimum kan niet hoger zijn dan het maximum",
     "rating": "Geef een score tussen 0 en 10",
-    "weight": "Geef een complexiteit tussen 0 en 5"
+    "weight": "Geef een complexiteit tussen 0 en 5",
+    "year": "Geef een jaar tussen -5000 en 9999 (negatief voor v.Chr.)"
   }
 }
