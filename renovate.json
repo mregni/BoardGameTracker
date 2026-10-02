@@ -103,6 +103,13 @@
       ]
     },
     {
+      "groupName": "IdentityModel",
+      "matchPackageNames": [
+        "/^Microsoft.IdentityModel/",
+        "/^System.IdentityModel/"
+      ]
+    },
+    {
       "groupName": "Backend test packages",
       "matchPackageNames": [
         "/^xunit/",
