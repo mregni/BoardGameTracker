@@ -1,15 +1,15 @@
 {
-  "welcome-back-title": "Welcome back, {{name}}!",
-  "welcome-back_one": "You've played {{count}} session.",
-  "welcome-back_other": "You've played {{count}} sessions.",
+  "welcome-back-title": "¡Hola de nuevo, {{name}}!",
+  "welcome-back_one": "Has jugado {{count}} partida.",
+  "welcome-back_other": "Has jugado {{count}} partidas.",
   "empty": {
-    "title": "No games in your collection",
-    "description": "You haven't added any games to your collection yet. Start by adding your first game to track your gameplay sessions and statistics.",
-    "button": "Add Your First Game"
+    "title": "No hay juegos en tu colección",
+    "description": "Aún no has añadido ningún juego a tu colección. Empieza añadiendo tu primer juego para registrar tus partidas y estadísticas.",
+    "button": "Añade tu primer juego"
   },
   "charts": {
-    "collection": "Collection"
+    "collection": "Colección"
   },
-  "recent-activity": "Recent activity",
-  "recent-added-games": "Recently added games"
+  "recent-activity": "Actividad reciente",
+  "recent-added-games": "Juegos añadidos recientemente"
 }

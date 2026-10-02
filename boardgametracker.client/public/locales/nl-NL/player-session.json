@@ -1,74 +1,74 @@
 {
-  "save-new": "Create game play",
-  "save-update": "Update game play",
-  "title-new": "Add new game session",
-  "title-update": "Update game session",
+  "save-new": "Spelsessie aanmaken",
+  "save-update": "Spelsessie bijwerken",
+  "title-new": "Nieuwe spelsessie toevoegen",
+  "title-update": "Spelsessie bijwerken",
   "new": {
     "notifications": {
-      "created": "Game play is succesfully created",
-      "create-failed": "Failed creating game play"
+      "created": "Spelsessie is aangemaakt",
+      "create-failed": "Spelsessie aanmaken mislukt"
     },
-    "save": "Add player",
-    "title": "Add player",
-    "description": "Fill in the form to add a new player to this game play.",
+    "save": "Speler toevoegen",
+    "title": "Speler toevoegen",
+    "description": "Vul het formulier in om een nieuwe speler aan deze spelsessie toe te voegen.",
     "player": {
-      "label": "Player",
-      "required": "Player is required"
+      "label": "Speler",
+      "required": "Speler is verplicht"
     },
-    "create-player": "Create new player",
+    "create-player": "Nieuwe speler aanmaken",
     "players": {
-      "label": "Players",
-      "add": "+ add player",
-      "minimum": "Add at least one player to this session"
+      "label": "Spelers",
+      "add": "+ speler toevoegen",
+      "minimum": "Voeg minstens één speler toe aan deze sessie"
     },
     "duration": {
-      "label": "Duration",
-      "placeholder": "in minutes",
-      "required": "Duration is required"
+      "label": "Duur",
+      "placeholder": "in minuten",
+      "required": "Duur is verplicht"
     },
     "game": {
-      "label": "Game",
-      "placeholder": "Choose game",
-      "required": "Game is required"
+      "label": "Spel",
+      "placeholder": "Kies een spel",
+      "required": "Spel is verplicht"
     },
     "start": {
       "label": "Start",
-      "required": "Start date is required",
-      "placeholder": "Pick a date"
+      "required": "Startdatum is verplicht",
+      "placeholder": "Kies een datum"
     },
     "location": {
-      "label": "Location",
-      "placeholder": "Choose location",
-      "required": "Location is required",
+      "label": "Locatie",
+      "placeholder": "Kies een locatie",
+      "required": "Locatie is verplicht",
       "none": "Geen locatie"
     },
     "comment": {
-      "label": "Comment",
-      "sub-label": "Extra comment on the game."
+      "label": "Opmerking",
+      "sub-label": "Extra opmerking over het spel."
     }
   },
   "update": {
-    "save": "Update player",
-    "title": "Update player",
-    "description": "Update the form to change the details of {{name}}.",
+    "save": "Speler bijwerken",
+    "title": "Speler bijwerken",
+    "description": "Pas het formulier aan om de gegevens van {{name}} te wijzigen.",
     "notifications": {
-      "updated": "Game play is succesfully created",
-      "update-failed": "Failed creating game play"
+      "updated": "Spelsessie is bijgewerkt",
+      "update-failed": "Spelsessie bijwerken mislukt"
     }
   },
   "won": {
-    "label": "Player has won the game"
+    "label": "Speler heeft het spel gewonnen"
   },
   "score": {
-    "label": "End scoring",
-    "required": "Score is required",
+    "label": "Eindscore",
+    "required": "Score is verplicht",
     "optional": "Laat leeg als de score onbekend is"
   },
   "first-play": {
-    "label": "Played game for the first time"
+    "label": "Spel voor het eerst gespeeld"
   },
   "delete": {
-    "successfull": "Game play is successfully deleted.",
-    "failed": "Game play deletion failed, check logs for more details."
+    "successfull": "Spelsessie is verwijderd.",
+    "failed": "Spelsessie verwijderen mislukt, bekijk de logs voor meer details."
   }
 }

@@ -1,11 +1,11 @@
 {
-  "label": "Expansions",
+  "label": "Uitbreidingen",
   "delete": {
-    "successfull": "Expansion is successfully deleted.",
-    "failed": "Expansion deletion failed, check logs for more details."
+    "successfull": "Uitbreiding is verwijderd.",
+    "failed": "Uitbreiding verwijderen mislukt, bekijk de logs voor meer details."
   },
   "manual": {
-    "successfull": "Expansion added.",
-    "failed": "The expansion could not be added."
+    "successfull": "Uitbreiding toegevoegd.",
+    "failed": "De uitbreiding kon niet worden toegevoegd."
   }
 }

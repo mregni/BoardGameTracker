@@ -1,174 +1,174 @@
 {
   "different-games": {
     "green": {
-      "title": "Explorer",
-      "description": "Play 3 different games."
+      "title": "Explorador",
+      "description": "Juega a 3 juegos distintos."
     },
     "blue": {
-      "title": "Adventurer",
-      "description": "Play 10 different games."
+      "title": "Aventurero",
+      "description": "Juega a 10 juegos distintos."
     },
     "red": {
-      "title": "Collector",
-      "description": "Play 20 different games."
+      "title": "Coleccionista",
+      "description": "Juega a 20 juegos distintos."
     },
     "gold": {
-      "title": "Game Connoisseur",
-      "description": "Play 50 different games."
+      "title": "Experto en juegos",
+      "description": "Juega a 50 juegos distintos."
     }
   },
   "sessions": {
     "green": {
-      "title": "Getting Started",
-      "description": "Play 5 sessions."
+      "title": "Primeros pasos",
+      "description": "Juega 5 partidas."
     },
     "blue": {
-      "title": "Regular Player",
-      "description": "Play 10 sessions."
+      "title": "Jugador habitual",
+      "description": "Juega 10 partidas."
     },
     "red": {
-      "title": "Dedicated Gamer",
-      "description": "Play 50 sessions."
+      "title": "Jugador entregado",
+      "description": "Juega 50 partidas."
     },
     "gold": {
-      "title": "Session Master",
-      "description": "Play 100 sessions."
+      "title": "Maestro de partidas",
+      "description": "Juega 100 partidas."
     }
   },
   "wins": {
     "green": {
-      "title": "First Blood",
-      "description": "Win 3 sessions."
+      "title": "Primera sangre",
+      "description": "Gana 3 partidas."
     },
     "blue": {
-      "title": "Victory Seeker",
-      "description": "Win 10 sessions."
+      "title": "Cazador de victorias",
+      "description": "Gana 10 partidas."
     },
     "red": {
-      "title": "Champion",
-      "description": "Win 25 sessions."
+      "title": "Campeón",
+      "description": "Gana 25 partidas."
     },
     "gold": {
-      "title": "Legend",
-      "description": "Win 50 sessions."
+      "title": "Leyenda",
+      "description": "Gana 50 partidas."
     }
   },
   "duration": {
     "green": {
-      "title": "Rookie Hours",
-      "description": "Play for 5 hours."
+      "title": "Horas de novato",
+      "description": "Juega durante 5 horas."
     },
     "blue": {
-      "title": "Time Invester",
-      "description": "Play for 10 hours."
+      "title": "Inversor de tiempo",
+      "description": "Juega durante 10 horas."
     },
     "red": {
-      "title": "Veteran Player",
-      "description": "Play for 50 hours."
+      "title": "Jugador veterano",
+      "description": "Juega durante 50 horas."
     },
     "gold": {
-      "title": "Time Lord",
-      "description": "Play for 100 hours."
+      "title": "Señor del tiempo",
+      "description": "Juega durante 100 horas."
     }
   },
   "win-percentage": {
     "green": {
-      "title": "Lucky Streak",
-      "description": "Win 30% of your sessions."
+      "title": "Racha de suerte",
+      "description": "Gana el 30 % de tus partidas."
     },
     "blue": {
-      "title": "Skilled Player",
-      "description": "Win 50% of your sessions."
+      "title": "Jugador hábil",
+      "description": "Gana el 50 % de tus partidas."
     },
     "red": {
-      "title": "Dominator",
-      "description": "Win 65% of your sessions."
+      "title": "Dominador",
+      "description": "Gana el 65 % de tus partidas."
     },
     "gold": {
-      "title": "Unstoppable",
-      "description": "Win 80% of your sessions."
+      "title": "Imparable",
+      "description": "Gana el 80 % de tus partidas."
     }
   },
   "solo-specialist": {
     "green": {
-      "title": "Lone Wolf",
-      "description": "Play 5 solo sessions."
+      "title": "Lobo solitario",
+      "description": "Juega 5 partidas en solitario."
     },
     "blue": {
-      "title": "Solo Artist",
-      "description": "Play 10 solo  sessions."
+      "title": "Artista en solitario",
+      "description": "Juega 10 partidas en solitario."
     },
     "red": {
-      "title": "Master of One",
-      "description": "Play 25 solo  sessions."
+      "title": "Maestro del solitario",
+      "description": "Juega 25 partidas en solitario."
     },
     "gold": {
-      "title": "Solo Legend",
-      "description": "Play 50 solo  sessions."
+      "title": "Leyenda en solitario",
+      "description": "Juega 50 partidas en solitario."
     }
   },
   "winning-streak": {
     "green": {
-      "title": "Hot Streak",
-      "description": "Win 5 sessions in a row."
+      "title": "En racha",
+      "description": "Gana 5 partidas seguidas."
     },
     "blue": {
-      "title": "On Fire",
-      "description": "Win 10 sessions in a row."
+      "title": "En llamas",
+      "description": "Gana 10 partidas seguidas."
     },
     "red": {
-      "title": "Untouchable",
-      "description": "Win 15 sessions in a row."
+      "title": "Intocable",
+      "description": "Gana 15 partidas seguidas."
     },
     "gold": {
-      "title": "Perfection",
-      "description": "Win 25 sessions in a row."
+      "title": "Perfección",
+      "description": "Gana 25 partidas seguidas."
     }
   },
   "social-player": {
     "green": {
-      "title": "Friendly",
-      "description": "Play with 5 different players."
+      "title": "Amistoso",
+      "description": "Juega con 5 jugadores distintos."
     },
     "blue": {
-      "title": "Social Butterfly",
-      "description": "Play with 10 different players."
+      "title": "Alma de la fiesta",
+      "description": "Juega con 10 jugadores distintos."
     },
     "red": {
-      "title": "Community Builder",
-      "description": "Play with 25 different players."
+      "title": "Creador de comunidad",
+      "description": "Juega con 25 jugadores distintos."
     },
     "gold": {
-      "title": "People Person",
-      "description": "Play with 50 different players."
+      "title": "Don de gentes",
+      "description": "Juega con 50 jugadores distintos."
     }
   },
   "close-win": {
-    "title": "Photo Finish",
-    "description": "Win with a difference of 2 or less points."
+    "title": "Por los pelos",
+    "description": "Gana por una diferencia de 2 puntos o menos."
   },
   "close-loss": {
-    "title": "Almost There!",
-    "description": "Lose with a difference of 2 or less points."
+    "title": "¡Casi!",
+    "description": "Pierde por una diferencia de 2 puntos o menos."
   },
   "marathon-runner": {
-    "title": "Marathon Runner",
-    "description": "Play a session of at least 4 hours."
+    "title": "Maratoniano",
+    "description": "Juega una partida de al menos 4 horas."
   },
   "first-try": {
-    "title": "First Try",
-    "description": "Win a game on first try."
+    "title": "A la primera",
+    "description": "Gana un juego en tu primera partida."
   },
   "learning-curve": {
-    "title": "Learning Curve",
-    "description": "Show improvement by scoring better for 3 consecutive sessions for the same game."
+    "title": "Curva de aprendizaje",
+    "description": "Demuestra tu progreso mejorando tu puntuación en 3 partidas consecutivas del mismo juego."
   },
   "monthly-goal": {
-    "title": "Monthly Goal",
-    "description": "Play more than 20 game sessions within one month."
+    "title": "Objetivo mensual",
+    "description": "Juega más de 20 partidas en un mismo mes."
   },
   "consistent-schedule": {
-    "title": "Consistent Schedule",
-    "description": "Play at least one game session every Saturday for 10 consecutive weeks."
+    "title": "Rutina constante",
+    "description": "Juega al menos una partida cada sábado durante 10 semanas consecutivas."
   }
 }

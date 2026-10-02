@@ -1,31 +1,31 @@
 {
-  "title": "Leaderboard",
+  "title": "Clasificación",
   "columns": {
     "rank": "#",
-    "player": "Player",
-    "wins": "Wins",
-    "plays": "Plays",
-    "win-rate": "Win rate",
-    "podiums": "Podiums",
-    "time-played": "Time played"
+    "player": "Jugador",
+    "wins": "Victorias",
+    "plays": "Partidas",
+    "win-rate": "% de victorias",
+    "podiums": "Podios",
+    "time-played": "Tiempo jugado"
   },
   "highlights": {
-    "most-wins": "Most wins",
-    "most-plays": "Most plays",
-    "best-win-rate": "Best win rate",
-    "most-time": "Most time at the table",
-    "nobody-yet": "Nobody yet",
-    "min-plays_one": "Needs at least {{count}} play",
-    "min-plays_other": "Needs at least {{count}} plays"
+    "most-wins": "Más victorias",
+    "most-plays": "Más partidas",
+    "best-win-rate": "Mejor % de victorias",
+    "most-time": "Más tiempo en la mesa",
+    "nobody-yet": "Nadie todavía",
+    "min-plays_one": "Necesita al menos {{count}} partida",
+    "min-plays_other": "Necesita al menos {{count}} partidas"
   },
   "values": {
-    "wins_one": "{{count}} win",
-    "wins_other": "{{count}} wins",
-    "plays_one": "{{count}} play",
-    "plays_other": "{{count}} plays"
+    "wins_one": "{{count}} victoria",
+    "wins_other": "{{count}} victorias",
+    "plays_one": "{{count}} partida",
+    "plays_other": "{{count}} partidas"
   },
   "empty": {
-    "title": "No plays recorded yet",
-    "description": "Log a few sessions and the leaderboard fills itself."
+    "title": "Aún no hay partidas registradas",
+    "description": "Registra algunas partidas y la clasificación se llenará sola."
   }
 }

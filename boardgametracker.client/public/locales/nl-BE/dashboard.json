@@ -1,15 +1,15 @@
 {
-  "welcome-back-title": "Welcome back, {{name}}!",
-  "welcome-back_one": "You've played {{count}} session.",
-  "welcome-back_other": "You've played {{count}} sessions.",
+  "welcome-back-title": "Welkom terug, {{name}}!",
+  "welcome-back_one": "Je hebt {{count}} sessie gespeeld.",
+  "welcome-back_other": "Je hebt {{count}} sessies gespeeld.",
   "empty": {
-    "title": "No games in your collection",
-    "description": "You haven't added any games to your collection yet. Start by adding your first game to track your gameplay sessions and statistics.",
-    "button": "Add Your First Game"
+    "title": "Geen spellen in je collectie",
+    "description": "Je hebt nog geen spellen aan je collectie toegevoegd. Voeg je eerste spel toe om je spelsessies en statistieken bij te houden.",
+    "button": "Voeg je eerste spel toe"
   },
   "charts": {
-    "collection": "Collection"
+    "collection": "Collectie"
   },
-  "recent-activity": "Recent activity",
-  "recent-added-games": "Recently added games"
+  "recent-activity": "Recente activiteit",
+  "recent-added-games": "Recent toegevoegde spellen"
 }

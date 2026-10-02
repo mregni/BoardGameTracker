@@ -1,11 +1,11 @@
 {
-  "total-shames": "Total games",
-  "total-value": "Total value of games",
-  "average-value": "Average value of games",
+  "total-shames": "Total de juegos",
+  "total-value": "Valor total de los juegos",
+  "average-value": "Valor medio de los juegos",
   "none": {
-    "title": "No Games on the Shelf of Shame!",
-    "description": "Congratulations! You have no games on your Shelf of Shame. Keep up the great work of playing and enjoying your collection."
+    "title": "¡No hay juegos en la estantería de la vergüenza!",
+    "description": "¡Enhorabuena! No tienes juegos en la estantería de la vergüenza. Sigue así, jugando y disfrutando de tu colección."
   },
-  "days-not-played": "Days not played",
-  "last-session": "Last session"
+  "days-not-played": "Días sin jugar",
+  "last-session": "Última partida"
 }

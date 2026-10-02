@@ -1,53 +1,53 @@
 {
-  "title": "Compare players",
-  "select-player": "Select player to compare",
-  "total-games-played": "Total games together",
-  "minutes-played": "Minutes played",
-  "most-played-game": "Most played game",
+  "title": "Spelers vergelijken",
+  "select-player": "Kies een speler om te vergelijken",
+  "total-games-played": "Totaal samen gespeeld",
+  "minutes-played": "Minuten gespeeld",
+  "most-played-game": "Meest gespeelde spel",
   "wins": {
-    "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
-    "loser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+    "winner": "{{player}} won {{winCount}} keer van {{otherPlayer}}",
+    "loser": "{{player}} won maar {{winCount}} keer van {{otherPlayer}}"
   },
   "best-game": {
-    "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
+    "label": "Het beste spel van {{player}} tegen {{otherPlayer}} is {{game}} met {{count}} overwinningen"
   },
   "total-wins": {
-    "label": "{{player}} won in total {{count}} game sessions."
+    "label": "{{player}} won in totaal {{count}} spelsessies."
   },
   "win-percentage": {
-    "label": "{{player}} has a win percentage of {{percentage}}%"
+    "label": "{{player}} heeft een winstpercentage van {{percentage}}%"
   },
   "total-duration": {
-    "label": "{{player}} played a total of {{duration}} minutes."
+    "label": "{{player}} speelde in totaal {{duration}} minuten."
   },
   "total-sessions": {
-    "label": "{{player}} played a total of {{count}} game sessions."
+    "label": "{{player}} speelde in totaal {{count}} spelsessies."
   },
   "head-to-head": {
-    "title": "Head to Head",
-    "direct-wins": "{{player}} won {{count}} times against {{opponent}}",
-    "most-won-game": "{{player}} won most from {{opponent}} in {{game}} ({{count}} times)",
-    "last-session": "Last session was won by {{player}} in {{game}}",
-    "most-played-together": "Most played together: {{game}} ({{count}} sessions)",
-    "closest-game": "{{player}} won by just {{points}} points in {{game}}",
-    "first-game-together": "First game together: {{game}} on {{date}}"
+    "title": "Onderlinge duels",
+    "direct-wins": "{{player}} won {{count}} keer tegen {{opponent}}",
+    "most-won-game": "{{player}} won het vaakst van {{opponent}} in {{game}} ({{count}} keer)",
+    "last-session": "De laatste sessie werd gewonnen door {{player}} in {{game}}",
+    "most-played-together": "Meest samen gespeeld: {{game}} ({{count}} sessies)",
+    "closest-game": "{{player}} won met slechts {{points}} punten verschil in {{game}}",
+    "first-game-together": "Eerste spel samen: {{game}} op {{date}}"
   },
   "stats": {
-    "total-wins": "Total wins",
-    "win-percentage": "Win Percentage",
-    "sessions": "Sessions",
-    "total-duration": "Total gameplay time",
-    "player-stats": "{{player}}'s Stats"
+    "total-wins": "Totaal aantal overwinningen",
+    "win-percentage": "Winstpercentage",
+    "sessions": "Sessies",
+    "total-duration": "Totale speeltijd",
+    "player-stats": "Statistieken van {{player}}"
   },
   "empty": {
     "insufficient-players": {
-      "title": "Not enough players to compare",
-      "description": "Not enough players in your database to start comparing statistics and head-to-head performance."
+      "title": "Niet genoeg spelers om te vergelijken",
+      "description": "Er zijn niet genoeg spelers in je database om statistieken en onderlinge prestaties te vergelijken."
     },
     "no-players": {
-      "title": "No players available to compare",
-      "description": "You currently have no players in the database. Please add players to use the compare feature."
+      "title": "Geen spelers om te vergelijken",
+      "description": "Er zijn nog geen spelers in de database. Voeg spelers toe om ze te kunnen vergelijken."
     },
-    "button": "Go to players page"
+    "button": "Naar spelers"
   }
 }

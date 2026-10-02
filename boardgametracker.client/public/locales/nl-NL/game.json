@@ -1,39 +1,39 @@
 {
-  "add": "Add session",
-  "sessions": "View sessions",
+  "add": "Sessie toevoegen",
+  "sessions": "Sessies bekijken",
   "no-sessions": {
-    "title": "No Sessions Logged Yet",
-    "description": "  Start tracking your game sessions to see detailed statistics, player performance, and session history. Log your first session to unlock all the analytics!",
-    "button": "Log Your First Session",
-    "extra": "Session data includes players, scores, duration, and more"
+    "title": "Nog geen sessies geregistreerd",
+    "description": "Houd je spelsessies bij om gedetailleerde statistieken, spelersprestaties en sessiegeschiedenis te zien. Registreer je eerste sessie om alle statistieken te ontgrendelen!",
+    "button": "Registreer je eerste sessie",
+    "extra": "Sessiegegevens bevatten spelers, scores, duur en meer"
   },
   "notifications": {
-    "created": "Game is succesfully created",
-    "create-failed": "Game creation failed",
-    "not-found": "Could not find game",
-    "duplicate": "Game already exists",
-    "deleted": "Game is succesfully deleted",
-    "updated": "Game is succesfully updated",
-    "update-failed": "Failed updating game"
+    "created": "Spel is aangemaakt",
+    "create-failed": "Spel aanmaken mislukt",
+    "not-found": "Spel niet gevonden",
+    "duplicate": "Spel bestaat al",
+    "deleted": "Spel is verwijderd",
+    "updated": "Spel is bijgewerkt",
+    "update-failed": "Spel bijwerken mislukt"
   },
   "added-date": {
-    "label": "Date added",
-    "required": "Date is required"
+    "label": "Toegevoegd op",
+    "required": "Datum is verplicht"
   },
   "bgg": {
-    "label": "BGG id",
-    "placeholder": "BoardGameGeek game id",
-    "required": "BGG id is required",
-    "external-page": "Open BoardGameGeek website"
+    "label": "BGG-id",
+    "placeholder": "Spel-id op BoardGameGeek",
+    "required": "BGG-id is verplicht",
+    "external-page": "BoardGameGeek-website openen"
   },
   "language": {
-    "label": "Language",
-    "none": "Not set"
+    "label": "Taal",
+    "none": "Niet ingesteld"
   },
-  "language-independent": "Language-independent",
+  "language-independent": "Taalonafhankelijk",
   "update": {
-    "save": "Update game",
-    "title": "Update game",
+    "save": "Spel bijwerken",
+    "title": "Spel bijwerken",
     "rating": {
       "label": "Beoordeling (0-10)"
     },
@@ -45,29 +45,29 @@
     }
   },
   "expansions": {
-    "title": "Expansions",
-    "description": "Add/delete expansions to this game.",
-    "update": "Update expansions",
-    "none": "No expansions added to this game.",
-    "no-game": "Select a game to view expansions.",
-    "add": "Pick from BoardGameGeek",
+    "title": "Uitbreidingen",
+    "description": "Voeg uitbreidingen toe aan dit spel of verwijder ze.",
+    "update": "Uitbreidingen bijwerken",
+    "none": "Nog geen uitbreidingen toegevoegd aan dit spel.",
+    "no-game": "Kies een spel om de uitbreidingen te bekijken.",
+    "add": "Kiezen uit BoardGameGeek",
     "manual": {
-      "badge": "Added manually",
-      "description": "Not on BoardGameGeek? Add the expansion by name.",
-      "placeholder": "Expansion name",
-      "add": "Add"
+      "badge": "Handmatig toegevoegd",
+      "description": "Niet op BoardGameGeek? Voeg de uitbreiding toe op naam.",
+      "placeholder": "Naam van de uitbreiding",
+      "add": "Toevoegen"
     }
   },
   "manuals": {
-    "title": "Manuals",
-    "description": "Upload, download or delete manuals for this game.",
-    "none": "No manuals uploaded for this game.",
-    "add": "Upload",
-    "upload-success": "Manual(s) uploaded successfully.",
-    "upload-failed": "Manual upload failed, check logs for more details.",
-    "delete-success": "Manual deleted successfully.",
-    "delete-failed": "Manual deletion failed, check logs for more details.",
-    "download-failed": "Manual download failed, check logs for more details.",
+    "title": "Handleidingen",
+    "description": "Upload, download of verwijder handleidingen voor dit spel.",
+    "none": "Nog geen handleidingen geüpload voor dit spel.",
+    "add": "Uploaden",
+    "upload-success": "Handleiding(en) geüpload.",
+    "upload-failed": "Handleiding uploaden mislukt, bekijk de logs voor meer details.",
+    "delete-success": "Handleiding verwijderd.",
+    "delete-failed": "Handleiding verwijderen mislukt, bekijk de logs voor meer details.",
+    "download-failed": "Handleiding downloaden mislukt, bekijk de logs voor meer details.",
     "status": {
       "pending": "In wachtrij",
       "indexing": "Indexeren…",
@@ -80,50 +80,50 @@
     "download": "Downloaden"
   },
   "new": {
-    "description": "Choose a method to create a new game.",
-    "save": "Create game",
-    "title": "Create new game",
-    "bgg-title": "Import game",
-    "bgg-subtext": "Import game data from BoardGameGeek",
-    "bgg-description": "Enter required fields to import a game from BoardGameGeek",
-    "manual-title": "Manual input",
-    "manual-subtext": "Manual input data to create a game",
-    "bgg-import-title": "Import from BoardGameGeek",
-    "bgg-import-subtext": "Import your game collection from BoardGameGeek",
+    "description": "Kies hoe je een nieuw spel wilt aanmaken.",
+    "save": "Spel aanmaken",
+    "title": "Nieuw spel aanmaken",
+    "bgg-title": "Spel importeren",
+    "bgg-subtext": "Spelgegevens importeren van BoardGameGeek",
+    "bgg-description": "Vul de verplichte velden in om een spel te importeren van BoardGameGeek",
+    "manual-title": "Handmatige invoer",
+    "manual-subtext": "Voer de gegevens zelf in om een spel aan te maken",
+    "bgg-import-title": "Importeren van BoardGameGeek",
+    "bgg-import-subtext": "Importeer je spelcollectie van BoardGameGeek",
     "manual": {
-      "title": "Create game",
+      "title": "Spel aanmaken",
       "game-title": {
-        "required": "Game title is required",
-        "label": "Game title"
+        "required": "Speltitel is verplicht",
+        "label": "Speltitel"
       },
       "year": {
-        "label": "Year published",
-        "required": "Year published is required"
+        "label": "Jaar van uitgave",
+        "required": "Jaar van uitgave is verplicht"
       },
       "min-players": {
-        "label": "Minimum players"
+        "label": "Minimum aantal spelers"
       },
       "max-players": {
-        "label": "Maximum players"
+        "label": "Maximum aantal spelers"
       },
       "min-time": {
-        "label": "Minimum play time"
+        "label": "Minimale speelduur"
       },
       "max-time": {
-        "label": "Maximum play time"
+        "label": "Maximale speelduur"
       },
       "min-age": {
-        "label": "Minimum player age"
+        "label": "Minimumleeftijd"
       },
       "description": {
-        "label": "Game description"
+        "label": "Spelbeschrijving"
       }
     }
   },
   "price": {
-    "label": "Price",
-    "placeholder": "Game price",
-    "required": "Price is required",
+    "label": "Prijs",
+    "placeholder": "Prijs van het spel",
+    "required": "Prijs is verplicht",
     "refresh": "Prijs verversen",
     "refresh-failed": "Vernieuwen van de prijs mislukt",
     "recheck-queued": "Controle aangevraagd, de prijs wordt zo bijgewerkt",
@@ -136,41 +136,41 @@
     }
   },
   "state": {
-    "for-trade": "For trade",
-    "label": "Game state",
-    "owned": "Owned",
-    "previously-owned": "Previously owned",
-    "wanted": "Wanted",
-    "on-loan": "On loan"
+    "for-trade": "Te ruil",
+    "label": "Status van het spel",
+    "owned": "In bezit",
+    "previously-owned": "Vroeger in bezit",
+    "wanted": "Gewenst",
+    "on-loan": "Uitgeleend"
   },
   "details": {
-    "title": "{{title}} details"
+    "title": "Details van {{title}}"
   },
   "delete": {
-    "successfull": "Game is successfully deleted.",
-    "failed": "Game deletion failed, check logs for more details."
+    "successfull": "Spel is verwijderd.",
+    "failed": "Spel verwijderen mislukt, bekijk de logs voor meer details."
   },
   "scoring": {
-    "label": "Game has scoring"
+    "label": "Spel heeft puntentelling"
   },
   "charts": {
-    "player-count": "Games by player count",
-    "games-week-day": "Games by day of the week",
-    "scoring": "Scoring per game/player",
+    "player-count": "Partijen per aantal spelers",
+    "games-week-day": "Partijen per dag van de week",
+    "scoring": "Scores per partij/speler",
     "top-scoring": {
-      "top-score": "Top score",
-      "highest-losing": "Highest losing",
-      "average": "Average",
-      "lowest-winning": "Lowest winning",
-      "lowest": "Lowest"
+      "top-score": "Topscore",
+      "highest-losing": "Hoogste verliezende score",
+      "average": "Gemiddelde",
+      "lowest-winning": "Laagste winnende score",
+      "lowest": "Laagste"
     }
   },
   "titles": {
-    "top-players": "Top players",
-    "scoring-results": "Scoring results",
-    "recent-sessions": "Recent sessions",
-    "session-count-per-day": "Session count per day",
-    "analytics": "Analytics"
+    "top-players": "Topspelers",
+    "scoring-results": "Scoreresultaten",
+    "recent-sessions": "Recente sessies",
+    "session-count-per-day": "Aantal sessies per dag",
+    "analytics": "Statistieken"
   },
   "watch-id": {
     "label": "changedetection.io watch-id",

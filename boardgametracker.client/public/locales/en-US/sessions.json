@@ -2,11 +2,11 @@
   "new": "Add new session",
   "title": "sessions",
   "notifications": {
-    "deleted": "Location is succesfully deleted",
-    "delete-failed": "Failed deleting location"
+    "deleted": "Session is successfully deleted",
+    "delete-failed": "Failed deleting session"
   },
   "delete": {
     "title": "Delete session",
-    "description": "Are you sure you want to the sessions?"
+    "description": "Are you sure you want to delete this session?"
   }
 }

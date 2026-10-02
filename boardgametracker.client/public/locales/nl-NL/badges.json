@@ -1,174 +1,174 @@
 {
   "different-games": {
     "green": {
-      "title": "Explorer",
-      "description": "Play 3 different games."
+      "title": "Ontdekkingsreiziger",
+      "description": "Speel 3 verschillende spellen."
     },
     "blue": {
-      "title": "Adventurer",
-      "description": "Play 10 different games."
+      "title": "Avonturier",
+      "description": "Speel 10 verschillende spellen."
     },
     "red": {
-      "title": "Collector",
-      "description": "Play 20 different games."
+      "title": "Verzamelaar",
+      "description": "Speel 20 verschillende spellen."
     },
     "gold": {
-      "title": "Game Connoisseur",
-      "description": "Play 50 different games."
+      "title": "Spelkenner",
+      "description": "Speel 50 verschillende spellen."
     }
   },
   "sessions": {
     "green": {
-      "title": "Getting Started",
-      "description": "Play 5 sessions."
+      "title": "Op weg",
+      "description": "Speel 5 sessies."
     },
     "blue": {
-      "title": "Regular Player",
-      "description": "Play 10 sessions."
+      "title": "Vaste speler",
+      "description": "Speel 10 sessies."
     },
     "red": {
-      "title": "Dedicated Gamer",
-      "description": "Play 50 sessions."
+      "title": "Toegewijde speler",
+      "description": "Speel 50 sessies."
     },
     "gold": {
-      "title": "Session Master",
-      "description": "Play 100 sessions."
+      "title": "Sessiemeester",
+      "description": "Speel 100 sessies."
     }
   },
   "wins": {
     "green": {
-      "title": "First Blood",
-      "description": "Win 3 sessions."
+      "title": "Eerste bloed",
+      "description": "Win 3 sessies."
     },
     "blue": {
-      "title": "Victory Seeker",
-      "description": "Win 10 sessions."
+      "title": "Overwinningsjager",
+      "description": "Win 10 sessies."
     },
     "red": {
-      "title": "Champion",
-      "description": "Win 25 sessions."
+      "title": "Kampioen",
+      "description": "Win 25 sessies."
     },
     "gold": {
-      "title": "Legend",
-      "description": "Win 50 sessions."
+      "title": "Legende",
+      "description": "Win 50 sessies."
     }
   },
   "duration": {
     "green": {
-      "title": "Rookie Hours",
-      "description": "Play for 5 hours."
+      "title": "Eerste uurtjes",
+      "description": "Speel 5 uur."
     },
     "blue": {
-      "title": "Time Invester",
-      "description": "Play for 10 hours."
+      "title": "Tijdsinvesteerder",
+      "description": "Speel 10 uur."
     },
     "red": {
-      "title": "Veteran Player",
-      "description": "Play for 50 hours."
+      "title": "Doorgewinterde speler",
+      "description": "Speel 50 uur."
     },
     "gold": {
-      "title": "Time Lord",
-      "description": "Play for 100 hours."
+      "title": "Heer van de tijd",
+      "description": "Speel 100 uur."
     }
   },
   "win-percentage": {
     "green": {
-      "title": "Lucky Streak",
-      "description": "Win 30% of your sessions."
+      "title": "Geluksreeks",
+      "description": "Win 30% van je sessies."
     },
     "blue": {
-      "title": "Skilled Player",
-      "description": "Win 50% of your sessions."
+      "title": "Bedreven speler",
+      "description": "Win 50% van je sessies."
     },
     "red": {
-      "title": "Dominator",
-      "description": "Win 65% of your sessions."
+      "title": "Heerser",
+      "description": "Win 65% van je sessies."
     },
     "gold": {
-      "title": "Unstoppable",
-      "description": "Win 80% of your sessions."
+      "title": "Onstuitbaar",
+      "description": "Win 80% van je sessies."
     }
   },
   "solo-specialist": {
     "green": {
-      "title": "Lone Wolf",
-      "description": "Play 5 solo sessions."
+      "title": "Eenzame wolf",
+      "description": "Speel 5 solosessies."
     },
     "blue": {
-      "title": "Solo Artist",
-      "description": "Play 10 solo  sessions."
+      "title": "Soloartiest",
+      "description": "Speel 10 solosessies."
     },
     "red": {
-      "title": "Master of One",
-      "description": "Play 25 solo  sessions."
+      "title": "Solomeester",
+      "description": "Speel 25 solosessies."
     },
     "gold": {
-      "title": "Solo Legend",
-      "description": "Play 50 solo  sessions."
+      "title": "Sololegende",
+      "description": "Speel 50 solosessies."
     }
   },
   "winning-streak": {
     "green": {
-      "title": "Hot Streak",
-      "description": "Win 5 sessions in a row."
+      "title": "Op dreef",
+      "description": "Win 5 sessies op rij."
     },
     "blue": {
-      "title": "On Fire",
-      "description": "Win 10 sessions in a row."
+      "title": "In vuur en vlam",
+      "description": "Win 10 sessies op rij."
     },
     "red": {
-      "title": "Untouchable",
-      "description": "Win 15 sessions in a row."
+      "title": "Onaantastbaar",
+      "description": "Win 15 sessies op rij."
     },
     "gold": {
-      "title": "Perfection",
-      "description": "Win 25 sessions in a row."
+      "title": "Perfectie",
+      "description": "Win 25 sessies op rij."
     }
   },
   "social-player": {
     "green": {
-      "title": "Friendly",
-      "description": "Play with 5 different players."
+      "title": "Vriendelijk",
+      "description": "Speel met 5 verschillende spelers."
     },
     "blue": {
-      "title": "Social Butterfly",
-      "description": "Play with 10 different players."
+      "title": "Sociale vlinder",
+      "description": "Speel met 10 verschillende spelers."
     },
     "red": {
-      "title": "Community Builder",
-      "description": "Play with 25 different players."
+      "title": "Gemeenschapsbouwer",
+      "description": "Speel met 25 verschillende spelers."
     },
     "gold": {
-      "title": "People Person",
-      "description": "Play with 50 different players."
+      "title": "Mensenmens",
+      "description": "Speel met 50 verschillende spelers."
     }
   },
   "close-win": {
-    "title": "Photo Finish",
-    "description": "Win with a difference of 2 or less points."
+    "title": "Fotofinish",
+    "description": "Win met een verschil van 2 punten of minder."
   },
   "close-loss": {
-    "title": "Almost There!",
-    "description": "Lose with a difference of 2 or less points."
+    "title": "Bijna!",
+    "description": "Verlies met een verschil van 2 punten of minder."
   },
   "marathon-runner": {
-    "title": "Marathon Runner",
-    "description": "Play a session of at least 4 hours."
+    "title": "Marathonloper",
+    "description": "Speel een sessie van minstens 4 uur."
   },
   "first-try": {
-    "title": "First Try",
-    "description": "Win a game on first try."
+    "title": "In één keer raak",
+    "description": "Win een spel bij je eerste poging."
   },
   "learning-curve": {
-    "title": "Learning Curve",
-    "description": "Show improvement by scoring better for 3 consecutive sessions for the same game."
+    "title": "Leercurve",
+    "description": "Toon vooruitgang door 3 sessies op rij van hetzelfde spel beter te scoren."
   },
   "monthly-goal": {
-    "title": "Monthly Goal",
-    "description": "Play more than 20 game sessions within one month."
+    "title": "Maanddoel",
+    "description": "Speel meer dan 20 spelsessies binnen één maand."
   },
   "consistent-schedule": {
-    "title": "Consistent Schedule",
-    "description": "Play at least one game session every Saturday for 10 consecutive weeks."
+    "title": "Vaste routine",
+    "description": "Speel 10 weken op rij elke zaterdag minstens één spelsessie."
   }
 }

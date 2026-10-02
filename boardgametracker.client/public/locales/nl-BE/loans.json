@@ -1,52 +1,52 @@
 {
-  "title": "Loans",
+  "title": "Uitleningen",
   "empty": {
-    "title": "No loans yet",
-    "description": "You haven't created any loans yet. Start by lending a game to track who has your games."
+    "title": "Nog geen uitleningen",
+    "description": "Je hebt nog geen uitleningen aangemaakt. Leen een spel uit om bij te houden wie je spellen heeft."
   },
-  "mark-as-returned": "Return",
-  "no-returned-loans": "No returned loans yet.",
+  "mark-as-returned": "Teruggebracht",
+  "no-returned-loans": "Nog geen teruggebrachte uitleningen.",
   "statistics": {
-    "active": "Active loans",
-    "returned": "Returned loans",
-    "total-loans": "Total loans"
+    "active": "Lopende uitleningen",
+    "returned": "Teruggebrachte uitleningen",
+    "total-loans": "Totaal aantal uitleningen"
   },
   "notifications": {
-    "created": "Loan is succesfully created",
-    "create-failed": "Failed creating loan",
+    "created": "Uitlening is aangemaakt",
+    "create-failed": "Uitlening aanmaken mislukt",
     "updated": "Uitlening is bijgewerkt",
     "update-failed": "Uitlening bijwerken mislukt"
   },
   "delete": {
-    "button": "Delete",
-    "description": "Are you sure you want to delete this loan? This cannot be reversed!",
-    "successfull": "Loan is successfully deleted.",
-    "failed": "Loan deletion failed, check logs for more details."
+    "button": "Verwijderen",
+    "description": "Weet je zeker dat je deze uitlening wilt verwijderen? Dit kan niet ongedaan worden gemaakt!",
+    "successfull": "Uitlening is verwijderd.",
+    "failed": "Uitlening verwijderen mislukt, bekijk de logs voor meer details."
   },
   "return": {
-    "successfull": "Game is successfully marked as returned.",
-    "failed": "Marking game as returned failed, check logs for more details.",
-    "date-failed": "You cannot return a loan before the loan date."
+    "successfull": "Spel is gemarkeerd als teruggebracht.",
+    "failed": "Spel markeren als teruggebracht mislukt, bekijk de logs voor meer details.",
+    "date-failed": "Je kan een spel niet terugbrengen vóór de uitleendatum."
   },
-  "no-active-loans": "There are no active loans at the moment.",
+  "no-active-loans": "Er zijn momenteel geen lopende uitleningen.",
   "new": {
-    "title": "Add new loan",
-    "save": "Create loan",
-    "description": "Fill out the form to create a new loan.",
+    "title": "Nieuwe uitlening toevoegen",
+    "save": "Uitlening aanmaken",
+    "description": "Vul het formulier in om een nieuwe uitlening aan te maken.",
     "start": {
-      "label": "Loan start",
-      "required": "Start loan date is required",
-      "placeholder": "Pick a date"
+      "label": "Uitleendatum",
+      "required": "Uitleendatum is verplicht",
+      "placeholder": "Kies een datum"
     },
     "end": {
-      "label": "Return date",
-      "placeholder": "Pick a date",
+      "label": "Terugbrengdatum",
+      "placeholder": "Kies een datum",
       "before-start": "De terugbrengdatum kan niet voor de startdatum liggen"
     },
     "player": {
-      "label": "Player",
-      "required": "Player is required",
-      "placeholder": "Choose player"
+      "label": "Speler",
+      "required": "Speler is verplicht",
+      "placeholder": "Kies een speler"
     }
   },
   "active": "Nog niet terug",

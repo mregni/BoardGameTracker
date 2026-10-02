@@ -1,6 +1,6 @@
 {
   "debug": "Debug",
   "info": "Info",
-  "warn": "Warning",
-  "error": "Error"
+  "warn": "Waarschuwing",
+  "error": "Fout"
 }

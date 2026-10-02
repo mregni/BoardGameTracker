@@ -52,8 +52,8 @@
     "title": "Update player",
     "description": "Update the form to change the details of {{name}}.",
     "notifications": {
-      "updated": "Game play is succesfully created",
-      "update-failed": "Failed creating game play"
+      "updated": "Game play is successfully updated",
+      "update-failed": "Failed updating game play"
     }
   },
   "won": {
