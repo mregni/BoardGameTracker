@@ -5,6 +5,7 @@ import { getGame, getGameSessions } from "@/services/queries/games";
 import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
 import { deleteSessionCall } from "@/services/sessionService";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface UseGameSessionsDataProps {
 	gameId: number;
@@ -26,13 +27,17 @@ export const useGameSessionsData = ({ gameId, onDeleteSuccess }: UseGameSessions
 	const isLoading = gameQuery.isLoading || settingsQuery.isLoading;
 
 	const deleteSession = async (id: number) => {
+		const deleted = sessions.find((session) => session.id === id);
 		try {
 			await deleteSessionCall(id);
-			await invalidator.invalidateSessionDeleted(gameId);
+			await invalidator.invalidateSessionDeleted(
+				gameId,
+				deleted?.playerSessions.map((x) => x.playerId),
+			);
 			infoToast("sessions:notifications.deleted");
 			onDeleteSuccess?.();
-		} catch {
-			errorToast("sessions:notifications.delete-failed");
+		} catch (error) {
+			errorToast(apiErrorMessage(error, "sessions:notifications.delete-failed"));
 		}
 	};
 

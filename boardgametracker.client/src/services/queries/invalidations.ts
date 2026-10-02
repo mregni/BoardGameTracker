@@ -63,20 +63,27 @@ export class QueryInvalidator {
 			...playerIds.map((playerId) => this.invalidatePlayer(playerId)),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] }),
 			this.invalidateCompare(),
+			this.invalidateLeaderboard(),
 		]);
 	}
 
-	async invalidateSessionDeleted(gameId?: number, playerId?: number) {
+	async invalidateSessionDeleted(gameId?: number, playerIds: number[] = []) {
 		await Promise.all([
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.sessions] }),
 			gameId !== undefined ? this.invalidateGame(gameId) : this.invalidateGames(),
-			playerId !== undefined ? this.invalidatePlayer(playerId) : this.invalidatePlayers(),
+			this.invalidatePlayers(),
+			...playerIds.map((playerId) => this.invalidatePlayer(playerId)),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] }),
 			this.invalidateCompare(),
 			this.invalidateCounts(),
 			this.invalidateShames(),
 			this.invalidateDashboard(),
+			this.invalidateLeaderboard(),
 		]);
+	}
+
+	async invalidateLeaderboard() {
+		await this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.leaderboard] });
 	}
 
 	async invalidatePlayer(playerId: number) {

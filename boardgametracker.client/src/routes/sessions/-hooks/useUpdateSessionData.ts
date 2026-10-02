@@ -25,11 +25,11 @@ export const useUpdateSessionData = ({ sessionId, onSuccess }: Props) => {
 		async onSuccess(sessionResult) {
 			successToast("player-session:update.notifications.updated");
 			onSuccess?.();
-			await invalidator.invalidateSession(
-				sessionId,
-				sessionResult.gameId,
-				sessionResult.playerSessions.map((x) => x.playerId),
-			);
+			const playerIds = new Set([
+				...(session?.playerSessions ?? []).map((x) => x.playerId),
+				...sessionResult.playerSessions.map((x) => x.playerId),
+			]);
+			await invalidator.invalidateSession(sessionId, sessionResult.gameId, [...playerIds]);
 		},
 		onError: (error) => {
 			errorToast(apiErrorMessage(error, "player-session:update.notifications.update-failed"));

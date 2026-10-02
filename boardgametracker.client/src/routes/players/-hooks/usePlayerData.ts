@@ -1,5 +1,4 @@
 import { useQueries, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { deletePlayerCall } from "@/services/playerService";
 import { getBadges } from "@/services/queries/basdges";
@@ -41,8 +40,7 @@ export const usePlayerData = ({ playerId, onDeleteSuccess }: UsePLayerDataProps)
 	const deletePlayer = async (id: number) => {
 		try {
 			await deletePlayerCall(id);
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
+			await queryClient.invalidateQueries();
 			infoToast("player:delete.successfull");
 			onDeleteSuccess?.();
 		} catch (error) {

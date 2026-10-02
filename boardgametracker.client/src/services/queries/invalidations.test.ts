@@ -51,6 +51,22 @@ describe("QueryInvalidator", () => {
 				[QUERY_KEYS.player, 2],
 				[QUERY_KEYS.locations],
 				[QUERY_KEYS.compare],
+				[QUERY_KEYS.leaderboard],
+			]),
+		);
+	});
+
+	it("invalidateSessionDeleted refreshes the game, every participant and the leaderboard", async () => {
+		await invalidator.invalidateSessionDeleted(7, [1, 2]);
+
+		const keys = invalidatedKeys(spy);
+		expect(keys).toEqual(
+			expect.arrayContaining([
+				[QUERY_KEYS.game, 7, QUERY_KEYS.statistics],
+				[QUERY_KEYS.player, 1, QUERY_KEYS.statistics],
+				[QUERY_KEYS.player, 2, QUERY_KEYS.sessions],
+				[QUERY_KEYS.leaderboard],
+				[QUERY_KEYS.dashboard, QUERY_KEYS.statistics],
 			]),
 		);
 	});
