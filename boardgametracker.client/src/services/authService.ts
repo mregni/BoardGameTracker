@@ -15,6 +15,7 @@ import type {
 	UserDto,
 } from "@/models/Auth/Auth";
 import type { ExternalLogin } from "@/models/Auth/Oidc";
+import { isApiError } from "@/models/Common/ApiError";
 import { axiosInstance } from "../utils/axiosInstance";
 
 const domain = "auth";
@@ -39,8 +40,8 @@ export const getOidcProviderCall = (): Promise<OidcProvider | null> => {
 	return axiosInstance
 		.get<OidcProvider>(`${domain}/oidc/provider`)
 		.then((response) => response.data)
-		.catch((error) => {
-			if (error.response?.status === 404) return null;
+		.catch((error: unknown) => {
+			if (isApiError(error) && error.status === 404) return null;
 			throw error;
 		});
 };
