@@ -113,6 +113,13 @@ public sealed class IntegrationFixture : IAsyncLifetime
 
     public AsyncServiceScope CreateScope() => _factory.Services.CreateAsyncScope();
 
+    public async Task RestoreTestUsersAsync()
+    {
+        _tokens.Clear();
+        await RegisterAsync("reader", Constants.AuthRoles.Reader);
+        await RegisterAsync("user", Constants.AuthRoles.User);
+    }
+
     public async Task ResetDataAsync()
     {
         await using var scope = CreateScope();
