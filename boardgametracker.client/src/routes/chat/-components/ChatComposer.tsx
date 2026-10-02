@@ -40,6 +40,7 @@ export const ChatComposer = ({ disabled, pending, placeholder, onSend }: Props) 
 				value={value}
 				disabled={disabled}
 				placeholder={placeholder}
+				aria-label={placeholder}
 				onChange={(event) => setValue(event.target.value)}
 				onKeyDown={onKeyDown}
 			/>

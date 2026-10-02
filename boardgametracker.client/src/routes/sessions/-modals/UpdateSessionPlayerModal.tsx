@@ -49,7 +49,7 @@ const UpdateSessionPlayerForm = (props: Props) => {
 	});
 
 	return (
-		<BgtDialog open={open}>
+		<BgtDialog open={open} onClose={onCancel}>
 			<BgtDialogContent>
 				<BgtDialogTitle>{t("update.title")}</BgtDialogTitle>
 				<BgtDialogDescription>

@@ -100,6 +100,7 @@ export const ExpansionsDialog = (props: Props) => {
 								type="text"
 								value={title}
 								placeholder={t("expansions.manual.placeholder")}
+								ariaLabel={t("expansions.manual.placeholder")}
 								onChange={(event) => setTitle(event.target.value)}
 								disabled={saving}
 							/>

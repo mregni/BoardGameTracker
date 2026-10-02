@@ -10,7 +10,7 @@ const DialogCloseContext = createContext<(() => void) | undefined>(undefined);
 interface BgtDialogProps {
 	open: boolean;
 	children: ReactNode;
-	onClose?: () => void;
+	onClose: () => void;
 }
 
 export const BgtDialog = (props: BgtDialogProps) => {
@@ -21,7 +21,7 @@ export const BgtDialog = (props: BgtDialogProps) => {
 			open={open}
 			onOpenChange={(nextOpen) => {
 				if (!nextOpen) {
-					onClose?.();
+					onClose();
 				}
 			}}
 		>

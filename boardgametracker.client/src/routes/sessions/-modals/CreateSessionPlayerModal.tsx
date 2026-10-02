@@ -68,7 +68,7 @@ const CreateSessionPlayerForm = (props: Props) => {
 	}, [players, form]);
 
 	return (
-		<BgtDialog open={open}>
+		<BgtDialog open={open} onClose={onCancel}>
 			<BgtDialogContent>
 				<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
 				<BgtDialogDescription>{t("new.description")}</BgtDialogDescription>

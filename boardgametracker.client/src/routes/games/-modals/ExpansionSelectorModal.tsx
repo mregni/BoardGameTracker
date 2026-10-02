@@ -31,7 +31,7 @@ export const ExpansionSelectorModal = (props: Props) => {
 	};
 
 	return (
-		<BgtDialog open={open}>
+		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
 				<BgtDialogTitle>{t("expansions.title")}</BgtDialogTitle>
 				<BgtDialogDescription>{t("expansions.description")}</BgtDialogDescription>

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { RagCitation } from "@/models";
 import { PageImage } from "./PageImage";
@@ -14,6 +14,12 @@ export const SourcesOverlay = ({ citations, index, onIndexChange, onClose }: Pro
 	const { t } = useTranslation("chat");
 	const current = citations[index];
 	const lastIndex = citations.length - 1;
+
+	const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+	useEffect(() => {
+		closeButtonRef.current?.focus();
+	}, []);
 
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => {
@@ -49,6 +55,7 @@ export const SourcesOverlay = ({ citations, index, onIndexChange, onClose }: Pro
 					{docName} · {pageLabel}
 				</span>
 				<button
+					ref={closeButtonRef}
 					type="button"
 					onClick={onClose}
 					aria-label={t("close")}
