@@ -33,10 +33,11 @@ describe("useAuth", () => {
 		expect(state.isLoading).toBe(false);
 	});
 
-	it("login resets the loading flag and rethrows when the call fails", async () => {
-		authService.loginCall.mockRejectedValue(new Error("401"));
+	it("login resets the loading flag and rethrows the original error when the call fails", async () => {
+		const lockedOut = { kind: "client", status: 401, message: "error.auth.account-locked-out", url: "auth/login" };
+		authService.loginCall.mockRejectedValue(lockedOut);
 
-		await expect(useAuth.getState().login({ username: "alice", password: "bad" })).rejects.toThrow("Login failed");
+		await expect(useAuth.getState().login({ username: "alice", password: "bad" })).rejects.toBe(lockedOut);
 
 		expect(useAuth.getState().isAuthenticated).toBe(false);
 		expect(useAuth.getState().isLoading).toBe(false);

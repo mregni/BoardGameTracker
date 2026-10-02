@@ -12,13 +12,13 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAppForm } from "@/hooks/form";
 import { useAuth } from "@/hooks/useAuth";
-import { isApiError } from "@/models";
 import type { OidcProvider } from "@/models/Auth/Auth";
 import { getOidcProviderCall } from "@/services/authService";
 import { getSettings } from "@/services/queries/settings";
 import { apiUrl } from "@/utils/apiUrl";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { safeRedirectPath } from "@/utils/redirectUtils";
+import { loginErrorKey } from "./-utils/loginError";
 
 const loginSearchSchema = z.object({
 	redirect: z.string().optional(),
@@ -56,8 +56,8 @@ function LoginPage() {
 				await navigate({ to: safeRedirectPath(redirect) });
 			} catch (e) {
 				const fallback = t("invalid-credentials");
-				const reason = isApiError(e) && e.message.startsWith("error.") ? e.message.slice("error.".length) : null;
-				setError(reason ? t(`error:${reason}`, { defaultValue: fallback }) : fallback);
+				const key = loginErrorKey(e);
+				setError(key ? t(key, { defaultValue: fallback }) : fallback);
 			}
 		},
 	});

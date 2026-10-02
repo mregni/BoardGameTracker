@@ -19,6 +19,7 @@
     "invalid-credentials": "Invalid username or password",
     "invalid-refresh-token": "Invalid or expired session",
     "account-locked-out": "Too many failed attempts. Try again later.",
+    "too-many-requests": "Too many sign-in attempts. Wait a minute and try again.",
     "invalid-auth-session": "Invalid or expired authentication session",
     "invalid-redirect-uri": "Invalid redirect URI",
     "player-already-linked": "This player is already linked to another account",

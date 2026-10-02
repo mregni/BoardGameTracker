@@ -19,6 +19,7 @@
     "invalid-credentials": "Invalid username or password",
     "invalid-refresh-token": "Invalid or expired session",
     "account-locked-out": "Te veel mislukte pogingen. Probeer het later opnieuw.",
+    "too-many-requests": "Te veel aanmeldpogingen. Wacht een minuut en probeer het opnieuw.",
     "invalid-auth-session": "Ongeldige of verlopen aanmeldsessie",
     "invalid-redirect-uri": "Ongeldige redirect-URI",
     "player-already-linked": "Deze speler is al gekoppeld aan een ander account",

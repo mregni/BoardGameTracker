@@ -46,9 +46,9 @@ export const useAuth = create<AuthState>()(
 						isAuthenticated: true,
 						isLoading: false,
 					});
-				} catch {
+				} catch (error) {
 					set({ isLoading: false });
-					throw new Error("Login failed");
+					throw error;
 				}
 			},
 

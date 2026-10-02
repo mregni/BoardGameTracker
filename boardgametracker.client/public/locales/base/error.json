@@ -18,6 +18,7 @@
     "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
     "invalid-credentials": "Invalid username or password",
     "account-locked-out": "Too many failed attempts. Try again later.",
+    "too-many-requests": "Too many sign-in attempts. Wait a minute and try again.",
     "invalid-refresh-token": "Invalid or expired session",
     "invalid-redirect-uri": "Invalid redirect URI",
     "invalid-auth-session": "Invalid or expired authentication session",
