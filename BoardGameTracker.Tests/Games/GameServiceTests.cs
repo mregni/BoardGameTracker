@@ -385,8 +385,10 @@ public class GameServiceTests
 
         var act = async () => await _gameService.UpdateGame(command);
 
-        await act.Should().ThrowAsync<ValidationException>();
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.ChangeDetectionWatchNotFound);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _changeDetectionClientMock.Verify(x => x.GetWatchInfoAsync(watchId, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -434,8 +436,53 @@ public class GameServiceTests
 
         var act = async () => await _gameService.CreateWatchForGame(1, "https://shop.example.com/brass");
 
-        await act.Should().ThrowAsync<DomainException>();
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.ChangeDetectionNotConfigured);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.CreateWatchAsync("https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(ChangeDetectionStatus.Unreachable, "e0808154-28da-4b85-9a71-24a409e694f1")]
+    [InlineData(ChangeDetectionStatus.Unauthorized, null)]
+    [InlineData(ChangeDetectionStatus.Ok, null)]
+    public async Task CreateWatchForGame_ShouldThrowCreateWatchFailed_WhenChangeDetectionDoesNotReturnAWatch(
+        ChangeDetectionStatus status, string? watchId)
+    {
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(new Game("Brass", true) { Id = 1 });
+        _changeDetectionClientMock
+            .Setup(x => x.CreateWatchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((status, watchId));
+
+        var act = async () => await _gameService.CreateWatchForGame(1, "https://shop.example.com/brass");
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.ChangeDetectionCreateWatchFailed);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.CreateWatchAsync("https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateWatchForGame_ShouldNotCreateASecondWatch_WhenRepointingTheLinkedOneFails()
+    {
+        const string watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var existingGame = new Game("Brass", true) { Id = 1 };
+        existingGame.UpdateChangeDetectionWatchId(watchId);
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(existingGame);
+        _changeDetectionClientMock
+            .Setup(x => x.UpdateWatchAsync(watchId, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ChangeDetectionStatus.Unreachable);
+
+        var act = async () => await _gameService.CreateWatchForGame(1, "https://shop.example.com/brass");
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.ChangeDetectionCreateWatchFailed);
+        existingGame.ShopUrl.Should().BeNull();
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.UpdateWatchAsync(watchId, "https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -458,7 +505,11 @@ public class GameServiceTests
         existingGame.ChangeDetectionWatchId.Should().Be(watchId);
         existingGame.ShopUrl.Should().Be("https://other-shop.example.com/brass");
         _changeDetectionClientMock.Verify(x => x.UpdateWatchAsync(watchId, "https://other-shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()), Times.Once);
-        _changeDetectionClientMock.Verify(x => x.CreateWatchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _gameRepositoryMock.Verify(
+            x => x.SingleOrDefaultAsync(It.IsAny<GameByIdWithDetailsForReadSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -483,6 +534,15 @@ public class GameServiceTests
         await _gameService.CreateWatchForGame(1, "https://shop.example.com/brass");
 
         existingGame.ChangeDetectionWatchId.Should().Be(newWatchId);
+        _changeDetectionClientMock.Verify(
+            x => x.UpdateWatchAsync(oldWatchId, "https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.CreateWatchAsync("https://shop.example.com/brass", "Brass", It.IsAny<CancellationToken>()), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _gameRepositoryMock.Verify(
+            x => x.SingleOrDefaultAsync(It.IsAny<GameByIdWithDetailsForReadSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -497,7 +557,8 @@ public class GameServiceTests
         var act = async () => await _gameService.CreateWatchForGame(1, url);
 
         await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.ShopUrlNotPublic);
-        _changeDetectionClientMock.VerifyNoOtherCalls();
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -508,9 +569,9 @@ public class GameServiceTests
 
         var act = async () => await _gameService.CreateWatchForGame(1, "not a url");
 
-        await act.Should().ThrowAsync<ValidationException>();
-        _changeDetectionClientMock.Verify(
-            x => x.CreateWatchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InvalidShopUrl);
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     #endregion

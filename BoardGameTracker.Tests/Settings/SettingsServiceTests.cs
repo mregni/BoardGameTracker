@@ -244,6 +244,10 @@ public class SettingsServiceTests
         result.ChangeDetectionStatus.IsConfigured.Should().BeTrue();
         result.ChangeDetectionStatus.Source.Should().Be("db");
         result.ChangeDetectionStatus.IsReadOnly.Should().BeFalse();
+
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        VerifyEnvironmentReads();
+        VerifyNoOtherCalls();
     }
 
     #endregion
@@ -332,8 +336,9 @@ public class SettingsServiceTests
         result.EnvironmentOverrides.Should().ContainKey("currency").WhoseValue.Should().Be("CURRENCY");
         result.Currency.Should().Be("USD");
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.Currency, It.IsAny<string>()), Times.Never);
-        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.DateFormat, "yyyy-MM-dd"), Times.Once);
-        VerifyTransactionCommitted();
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, "key"), Times.Once);
+        VerifySettingsSaved(model, Constants.AppConfig.Currency);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -388,6 +393,10 @@ public class SettingsServiceTests
         var result = await WithEnvVar("DATE_FORMAT", null, () => _settingsService.GetSettingsAsync());
 
         result.EnvironmentOverrides.Should().NotContainKey("dateFormat");
+
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        VerifyEnvironmentReads();
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -401,6 +410,10 @@ public class SettingsServiceTests
 
         result.ShelfOfShameMonthsLimit.Should().Be(9);
         result.EnvironmentOverrides.Should().Contain("shelfOfShameMonthsLimit", "SHELF_OF_SHAME_MONTHS");
+
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        VerifyEnvironmentReads();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -416,6 +429,8 @@ public class SettingsServiceTests
         await _settingsService.UpdateSettingsAsync(model);
 
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, It.IsAny<string>()), Times.Never);
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -429,6 +444,8 @@ public class SettingsServiceTests
         await _settingsService.UpdateSettingsAsync(model);
 
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, "new-key"), Times.Once);
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -444,6 +461,7 @@ public class SettingsServiceTests
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage(Constants.Errors.ChangeDetectionInvalidBaseUrl);
         VerifyNothingWritten();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -458,6 +476,7 @@ public class SettingsServiceTests
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage(Constants.Errors.ChangeDetectionInsecureBaseUrl);
         VerifyNothingWritten();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -473,6 +492,7 @@ public class SettingsServiceTests
         await act.Should().ThrowAsync<ValidationException>()
             .WithMessage(Constants.Errors.SettingsInvalidPublicUrl);
         VerifyNothingWritten();
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -489,7 +509,8 @@ public class SettingsServiceTests
         await _settingsService.UpdateSettingsAsync(model);
 
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.PublicUrl, expected), Times.Once);
-        VerifyTransactionCommitted();
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -503,6 +524,8 @@ public class SettingsServiceTests
         await _settingsService.UpdateSettingsAsync(model);
 
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, string.Empty), Times.Once);
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
     }
 
     [Theory]
@@ -518,6 +541,8 @@ public class SettingsServiceTests
         await _settingsService.UpdateSettingsAsync(model);
 
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.ChangeDetectionConfig.ApiKey, It.IsAny<string>()), Times.Never);
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
     }
 
     #endregion
@@ -555,6 +580,8 @@ public class SettingsServiceTests
 
         result.BaseUrl.Should().BeNull();
         result.ApiKey.Should().BeNull();
+        _configRepositoryMock.Verify(x => x.GetConfigsByPrefixAsync(Constants.ChangeDetectionConfig.Prefix), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     #endregion

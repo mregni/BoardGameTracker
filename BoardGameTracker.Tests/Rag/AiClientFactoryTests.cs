@@ -172,7 +172,7 @@ public class AiClientFactoryTests
         _handler.FailPulls = true;
 
         await FluentActions.Awaiting(() => _factory.EnsureModelsAvailableAsync())
-            .Should().ThrowAsync<Exception>();
+            .Should().ThrowAsync<HttpRequestException>();
 
         _settingsProviderMock.Verify(x => x.GetAsync(), Times.Once);
         _httpClientFactoryMock.Verify(x => x.CreateClient(AiClientFactory.HttpClientName), Times.Once);

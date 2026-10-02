@@ -63,6 +63,23 @@ public class LeaderboardServiceTests
     }
 
     [Fact]
+    public async Task GetLeaderboardAsync_ShouldBreakTiesOnWinsAndWinRate_ByPlaysThenName()
+    {
+        _playerRepositoryMock.Setup(x => x.GetLeaderboardRows(TestContext.Current.CancellationToken)).ReturnsAsync(
+        [
+            new LeaderboardRow(1, "finn", null, 2, 0, 0, 60),
+            new LeaderboardRow(2, "Eve", null, 5, 0, 0, 150),
+            new LeaderboardRow(3, "Aaron", null, 2, 0, 0, 60),
+        ]);
+
+        var result = await _service.GetLeaderboardAsync(TestContext.Current.CancellationToken);
+
+        result.Players.Select(x => (x.Rank, x.Name)).Should().Equal((1, "Eve"), (2, "Aaron"), (2, "finn"));
+        _playerRepositoryMock.Verify(x => x.GetLeaderboardRows(TestContext.Current.CancellationToken), Times.Once);
+        _playerRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task GetLeaderboardAsync_ShouldLeaveTheCardsEmpty_WhenNobodyPlayed()
     {
         _playerRepositoryMock.Setup(x => x.GetLeaderboardRows(TestContext.Current.CancellationToken)).ReturnsAsync([]);
@@ -74,6 +91,8 @@ public class LeaderboardServiceTests
         result.MostPlays.Should().BeNull();
         result.BestWinRate.Should().BeNull();
         result.MostTimePlayed.Should().BeNull();
+        _playerRepositoryMock.Verify(x => x.GetLeaderboardRows(TestContext.Current.CancellationToken), Times.Once);
+        _playerRepositoryMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -90,5 +109,7 @@ public class LeaderboardServiceTests
         result.MostWins.Should().BeNull();
         result.BestWinRate.Should().BeNull();
         result.MostPlays!.Name.Should().Be("Alice");
+        _playerRepositoryMock.Verify(x => x.GetLeaderboardRows(TestContext.Current.CancellationToken), Times.Once);
+        _playerRepositoryMock.VerifyNoOtherCalls();
     }
 }

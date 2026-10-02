@@ -103,19 +103,16 @@ public class PipelineTests
     public async Task LoginRateLimiter_ShouldAnswer429_WithRetryAfter_AfterTenAttempts()
     {
         using var client = _fixture.CreateClient();
-        HttpResponseMessage? limited = null;
+        var responses = new List<HttpResponseMessage>();
 
-        for (var attempt = 0; attempt < 12 && limited == null; attempt++)
+        for (var attempt = 0; attempt < 11; attempt++)
         {
-            var response = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("nobody-" + attempt, "wrong-password"));
-            if (response.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                limited = response;
-            }
+            responses.Add(await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("nobody-" + attempt, "wrong-password")));
         }
 
-        limited.Should().NotBeNull();
-        limited!.Headers.RetryAfter.Should().NotBeNull();
+        responses.Take(10).Select(x => x.StatusCode).Should().AllBeEquivalentTo(HttpStatusCode.Unauthorized);
+        responses[10].StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+        responses[10].Headers.RetryAfter.Should().NotBeNull();
     }
 
     [Fact]

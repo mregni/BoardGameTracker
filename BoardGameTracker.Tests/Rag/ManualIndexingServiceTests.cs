@@ -296,6 +296,13 @@ public class ManualIndexingServiceTests
             Times.Once);
         _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.Is<List<ManualChunk>>(l =>
             l.Count == 70 && l[69].ChunkIndex == 69 && l[69].Content == "chunk 69")), Times.Once);
+        _chunkRepoMock.Verify(x => x.DeleteByManualAsync(manual.Id), Times.Once);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _factoryMock.Verify(x => x.CreateEmbeddingGeneratorAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        VerifyExtractionPipeline(manual);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -321,6 +328,12 @@ public class ManualIndexingServiceTests
         manual.IndexError.Should().BeNull();
         _chunkRepoMock.Verify(x => x.DeleteByManualAsync(It.IsAny<int>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _factoryMock.Verify(x => x.CreateEmbeddingGeneratorAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _embedderMock.Verify(
+            x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        VerifyExtractionPipeline(manual);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -344,6 +357,15 @@ public class ManualIndexingServiceTests
         _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.DiscardPendingInserts(), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(3));
+        _chunkRepoMock.Verify(x => x.DeleteByManualAsync(manual.Id), Times.Once);
+        _chunkWriteRepoMock.Verify(x => x.CreateRangeAsync(It.Is<List<ManualChunk>>(l => l.Count == 1)), Times.Once);
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _factoryMock.Verify(x => x.CreateEmbeddingGeneratorAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _embedderMock.Verify(
+            x => x.GenerateAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<EmbeddingGenerationOptions?>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        VerifyExtractionPipeline(manual);
+        VerifyNoOtherCalls();
     }
 
     private void SetupEmbeddings(int count, int dimensions)

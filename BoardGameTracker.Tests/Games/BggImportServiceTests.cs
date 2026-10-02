@@ -896,9 +896,11 @@ public class BggImportServiceTests
                 AddedDate = addedDate
             })
             .ToList<ImportGame>();
+        var batches = new List<List<int>>();
 
         _bggClientMock
             .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .Callback((ThingRequest request) => batches.Add(request.Ids.ToList()))
             .ReturnsAsync((ThingRequest request) => CreateSucceededThingResponse(
                 request.Ids.Select(id => new ThingResponse.Item { Id = id, Type = "boardgame" })));
         _gameFactoryMock
@@ -916,9 +918,17 @@ public class BggImportServiceTests
 
         await _bggImportService.ImportList(importGames);
 
+        batches.Should().HaveCount(2);
+        batches[0].Should().Equal(Enumerable.Range(1, 20));
+        batches[1].Should().Equal(Enumerable.Range(21, 5));
         _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Exactly(2));
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(It.IsAny<int>()), Times.Exactly(25));
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
+            It.IsAny<ThingResponse.Item>(), true, GameState.Owned, null, addedDate, null), Times.Exactly(25));
         _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Exactly(25));
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
