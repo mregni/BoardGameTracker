@@ -48,7 +48,7 @@ public class DashboardService : IDashboardService
         var avgSessionTime = await _sessionRepository.GetMeanPlayTime(cancellationToken);
 
         var recentSessions = await _sessionRepository.GetRecentSessions(4, cancellationToken);
-        var gameStates = await _gameStatisticsRepository.GetGamesGroupedByState(cancellationToken);
+        var gameStates = await _gameStatisticsRepository.GetGameStateCounts(cancellationToken);
         var mostPlayedGames = await _gameStatisticsRepository.GetMostPlayedGames(4, cancellationToken);
         var topPlayers = await _playerRepository.GetTopPlayers(4, cancellationToken);
         var recentlyAddedGames = await _gameRepository.GetRecentlyAddedGames(4, cancellationToken);
@@ -65,7 +65,7 @@ public class DashboardService : IDashboardService
             ExpansionsOwned = expansionsOwned,
             AvgSessionTime = avgSessionTime,
             RecentActivities = recentSessions.ToRecentActivityListDto(),
-            Collection = gameStates.ToListDto(),
+            Collection = gameStates,
             MostPlayedGames = mostPlayedGames.ToListDto(),
             TopPlayers = topPlayers.ToListDto(),
             RecentAddedGames = recentlyAddedGames.ToRecentAddedGameListDto(),

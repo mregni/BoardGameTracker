@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Dashboard;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -68,7 +69,7 @@ public class DashboardServiceTests
         _gameStatisticsRepositoryMock.Verify(x => x.GetMeanPayedAsync(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetTotalExpansionCount(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.GetRecentSessions(4), Times.Once);
-        _gameStatisticsRepositoryMock.Verify(x => x.GetGamesGroupedByState(), Times.Once);
+        _gameStatisticsRepositoryMock.Verify(x => x.GetGameStateCounts(), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGames(4), Times.Once);
         _playerRepositoryMock.Verify(x => x.GetTopPlayers(4), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetRecentlyAddedGames(4), Times.Once);
@@ -162,13 +163,13 @@ public class DashboardServiceTests
     [Fact]
     public async Task GetStatistics_ShouldReturnCollection()
     {
-        var groupedGames = new List<IGrouping<GameState, Game>>
+        var groupedGames = new List<GameStateChart>
         {
-            CreateGameStateGrouping(GameState.Owned, 3),
-            CreateGameStateGrouping(GameState.Wanted, 2)
+            new() { Type = GameState.Owned, GameCount = 3 },
+            new() { Type = GameState.Wanted, GameCount = 2 }
         };
 
-        _gameStatisticsRepositoryMock.Setup(x => x.GetGamesGroupedByState())
+        _gameStatisticsRepositoryMock.Setup(x => x.GetGameStateCounts())
             .ReturnsAsync(groupedGames);
 
         var result = await _sut.GetStatistics();
@@ -299,7 +300,7 @@ public class DashboardServiceTests
         _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount()).ReturnsAsync(0);
 
         _sessionRepositoryMock.Setup(x => x.GetRecentSessions(4)).ReturnsAsync([]);
-        _gameStatisticsRepositoryMock.Setup(x => x.GetGamesGroupedByState()).ReturnsAsync([]);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetGameStateCounts()).ReturnsAsync([]);
         _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGames(4)).ReturnsAsync(new List<(int, string, string?, int)>());
         _playerRepositoryMock.Setup(x => x.GetTopPlayers(4)).ReturnsAsync(new List<(int, string, string?, int, int)>());
         _gameRepositoryMock.Setup(x => x.GetRecentlyAddedGames(4)).ReturnsAsync([]);
@@ -333,15 +334,6 @@ public class DashboardServiceTests
             .Lasting(TimeSpan.FromHours(1))
             .WithPlayer(1)
             .Build();
-    }
-
-    private static IGrouping<GameState, Game> CreateGameStateGrouping(GameState state, int count)
-    {
-        var games = Enumerable.Range(1, count)
-            .Select(i => new Game($"Game {i}", state: state) { Id = i })
-            .ToList();
-
-        return games.GroupBy(_ => state).First();
     }
 
     #endregion

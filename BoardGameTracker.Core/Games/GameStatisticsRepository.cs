@@ -1,4 +1,5 @@
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Datastore;
@@ -115,11 +116,12 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .SumAsync(x => (decimal?)x.BuyingPrice!.Amount, cancellationToken);
     }
 
-    public Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState(CancellationToken cancellationToken = default)
+    public Task<List<GameStateChart>> GetGameStateCounts(CancellationToken cancellationToken = default)
     {
         return _context.Games
             .AsNoTracking()
             .GroupBy(x => x.State)
+            .Select(g => new GameStateChart { Type = g.Key, GameCount = g.Count() })
             .ToListAsync(cancellationToken);
     }
 

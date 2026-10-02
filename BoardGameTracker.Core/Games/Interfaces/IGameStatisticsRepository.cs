@@ -1,3 +1,4 @@
+using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
@@ -15,7 +16,7 @@ public interface IGameStatisticsRepository
     Task<double> GetTotalPlayedTime(int gameId, CancellationToken cancellationToken = default);
     Task<decimal?> GetMeanPayedAsync(CancellationToken cancellationToken = default);
     Task<decimal?> GetTotalPayedAsync(CancellationToken cancellationToken = default);
-    Task<List<IGrouping<GameState, Game>>> GetGamesGroupedByState(CancellationToken cancellationToken = default);
+    Task<List<GameStateChart>> GetGameStateCounts(CancellationToken cancellationToken = default);
     Task<List<DateTime>> GetSessionStartTimes(int gameId, CancellationToken cancellationToken = default);
     Task<List<IGrouping<int, int>>> GetPlayerCountChart(int gameId, CancellationToken cancellationToken = default);
     Task<PlayerSession?> GetHighestScoringPlayer(int gameId, CancellationToken cancellationToken = default);
