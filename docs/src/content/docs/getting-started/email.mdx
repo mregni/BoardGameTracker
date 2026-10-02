@@ -43,5 +43,5 @@ SMTP_FROM_NAME=BoardGameTracker
 ```
 
 <Aside type="tip">
-After changing any `SMTP_*` variable, restart the container so the new configuration is picked up.
+With the provided compose files a `.env` next to `docker-compose.yml` is forwarded to the container; with your own compose file put the variables under `environment:`. After changing any `SMTP_*` variable, restart the container so the new configuration is picked up.
 </Aside>

@@ -41,6 +41,7 @@ export default defineConfig({
 						"getting-started/docker",
 						"getting-started/upgrading",
 						"getting-started/environment-variables",
+						"getting-started/authentication",
 						"getting-started/rag",
 						"getting-started/email",
 						"getting-started/proxy",

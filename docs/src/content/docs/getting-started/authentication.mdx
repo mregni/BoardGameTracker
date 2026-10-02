@@ -1,0 +1,93 @@
+---
+title: Authentication & Users
+description: Local accounts, roles, the admin password, running without authentication, and signing in through an OpenID Connect provider.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+BoardGameTracker ships with local accounts. Authentication is on by default and every request to the API needs a signed-in user, except the public RSVP page for game nights.
+
+## First login
+
+A user named `admin` is created on the first start. Its password comes from the `ADMIN_PASSWORD` environment variable; when that is empty the password is `admin`. Sign in, open **Settings → Account** and change it straight away.
+
+The `admin` account is recreated with the same rule after a *factory reset* (**Settings → Advanced → Danger zone**), so set `ADMIN_PASSWORD` if you rely on that.
+
+## Roles
+
+| Role | Can |
+| --- | --- |
+| **Admin** | Everything: manage users, change settings, reset data. |
+| **User** | Add and edit games, sessions, players, locations, loans and game nights; upload rulebooks; use the rules assistant. |
+| **Reader** | Look around. Every page is read-only; the add/edit/delete buttons are hidden. |
+
+Users are managed under **Settings → Account → User Management** (admins only). Each user can be linked to a player, which the dashboard uses for the "welcome back" card and personal statistics.
+
+## Forgotten passwords
+
+- An admin can reset any password from the user list; a temporary password is shown once.
+- When [email](/BoardGameTracker/getting-started/email/) is configured, the login page shows a *Forgot password* link that mails a reset link. The link uses the **Public URL** setting, so set that to the address your users reach the app on.
+
+## Running without authentication
+
+Set `AUTH_ENABLED=false` to turn authentication off. Every visitor is then treated as an administrator, and the application prints a warning at startup to remind you of that.
+
+<Aside type="caution">
+Only do this on a network you trust or behind a proxy that authenticates for you. Anyone who can reach the port can change settings, store API keys, upload files and use the AI assistant.
+</Aside>
+
+## Tokens and sessions
+
+Logins use short-lived access tokens (60 minutes) and refresh tokens (7 days) signed with `JWT_SECRET`. Refresh tokens are stored hashed; reusing an already rotated token revokes every session of that user. Changing `JWT_SECRET` signs everyone out.
+
+Player photos under `/images/profile` are only served to signed-in browsers: logging in sets an `HttpOnly` cookie scoped to that path (it lives as long as the refresh token and is cleared on logout), and API clients can pass their bearer token instead. Game covers stay public. The public RSVP page therefore shows initials instead of photos.
+
+Five failed logins for the same username from the same address block further attempts from that address for 15 minutes. Behind a reverse proxy this only works when [`TRUSTED_PROXIES`](/BoardGameTracker/getting-started/proxy/) is set.
+
+## OpenID Connect
+
+One generic OpenID Connect provider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …) can sit next to local accounts. The flow is the authorization-code flow with PKCE, exchanged by the backend: the browser is sent to the provider, the provider sends it back to the backend, and the backend hands the session to the app without ever putting a token or code in a URL the app sees.
+
+### Register the client at your provider
+
+1. Create a **public** client (no client secret is required; a secret is accepted but not needed with PKCE).
+2. Allow the two redirect URIs shown under **Settings → Single sign-on → Register at the provider**: `<PUBLIC_URL>/api/auth/oidc/<name>/callback` for sign-in and `<PUBLIC_URL>/api/auth/oidc/<name>/link-callback` for linking an existing local account. They update while you type the short name, and each has a copy button.
+3. Grant the scopes `openid profile email`.
+
+`PUBLIC_URL` (or the *Public URL* setting) must be the address users type in the browser, e.g. `https://games.example.com`. When it is not set, the backend derives it from the incoming request, which only works when the reverse proxy forwards the host and scheme (see [`TRUSTED_PROXIES`](/BoardGameTracker/getting-started/proxy/)); the settings page warns when this fallback is in use. Changing the public URL after setup changes the redirect URI, so update the provider registration as well.
+
+### Configure the provider in BoardGameTracker
+
+An administrator fills in the provider under **Settings → Single sign-on**. Enter the authority (issuer URL) and press **Test discovery** before saving: it fetches the provider's discovery document and tells you whether the reported issuer matches what you typed. Most providers only need the short name, button label, authority and client ID; the claim and endpoint fields are for providers that do not follow the defaults.
+
+The same configuration is available through the API (`POST /api/admin/oidc-providers`, also in Swagger when `SWAGGER_ENABLED=true`):
+
+```json
+{
+  "name": "keycloak",
+  "displayName": "Company login",
+  "authority": "https://sso.example.com/realms/games",
+  "clientId": "boardgametracker",
+  "scopes": "openid profile email",
+  "autoProvisionUsers": true,
+  "rolesClaimType": "groups",
+  "adminGroupValue": "bgt-admins"
+}
+```
+
+- **authority** must use `https` (plain `http` is accepted only for local addresses) and must match the `issuer` in the provider's discovery document.
+- **autoProvisionUsers** creates a `User` account on first sign-in. When the e-mail already belongs to a local account, the sign-in is refused: log in with the password first and link the provider under **Settings → Account → External logins**.
+- **rolesClaimType** / **adminGroupValue** grant the `Admin` role when the named group is present in that claim on first sign-in.
+- Only one provider can be enabled at a time; the login page shows one *Continue with …* button. Switch **Enabled** off to hide the button without losing the configuration.
+- Removing the provider also removes every linked external account; people keep their local password if they have one.
+
+### Linking an existing account
+
+Anyone with a local account can link it to the provider under **Settings → Account → External logins**. Afterwards both the password and the provider sign in to the same account, and the same screen shows when the link was made and lets the user unlink it again. A sign-in through the provider is refused when the e-mail already belongs to an unlinked local account, so link first.
+
+### What to expect
+
+- Sign-in errors come back to the app as a short message (provider refused, e-mail already registered, provisioning disabled, …); the details are in the server log.
+- Local accounts keep working. Keep the local `admin` password somewhere safe: it is the way in when the provider is down.
+- Removing a user at the provider does not end an existing BoardGameTracker session. Disable or delete the user here as well.
+- For development with the Vite dev server set `PUBLIC_URL=http://localhost:5443` so both the provider round trip and the app hand-off go through the dev proxy.

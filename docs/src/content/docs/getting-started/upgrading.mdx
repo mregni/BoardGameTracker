@@ -74,6 +74,14 @@ Authentication is on by default. The container exits at startup with `JWT_SECRET
 
 Uploaded rulebooks are stored under `/app/manuals`. Mount it (`./manuals:/app/manuals`) or they are lost when the container is recreated.
 
+### Everyone signs in once more
+
+Refresh tokens are now stored hashed and OIDC client secrets encrypted. Sessions that were open before the upgrade stop refreshing, so every user is asked to sign in again once. Existing OIDC client secrets keep working and are encrypted the next time the provider is saved.
+
+### Reverse proxies must be trusted explicitly
+
+Forwarded headers are only honoured when `TRUSTED_PROXIES` names your proxy (an IP address or a network such as `172.16.0.0/12`). Without it, HTTPS detection and the login limiter use the proxy's address, and the log shows a warning the first time a forwarded request arrives.
+
 ## Rolling back
 
 Pin the previous image tag in your compose file and start again. Migrations are forward-only, so restore the database dump you took before upgrading if the previous version fails to start on the newer schema.

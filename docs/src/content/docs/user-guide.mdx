@@ -1,10 +1,70 @@
 ---
 title: User Guide
-description: How to use BoardGameTracker day to day.
+description: A tour of BoardGameTracker, page by page.
 ---
 
-import { Badge } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
 
-<Badge text="Coming soon" variant="caution" size="medium" />
+This page follows the sidebar of the application. Everything that changes data needs the *User* or *Admin* role; see [Authentication & Users](/BoardGameTracker/getting-started/authentication/).
 
-The user guide is still being written. In the meantime, the [Getting Started](/BoardGameTracker/getting-started/quick-start/) section walks you through installing and configuring BoardGameTracker.
+## Dashboard
+
+The dashboard shows your collection at a glance: number of games, players and sessions, collection value and average cost (owned games only), total and average play time, expansions owned, the most played games, recent activity, recently added games and a chart of your games by state. When your account is linked to a player you also get a personal welcome card with your own statistics.
+
+## Games
+
+Your collection. Games can be added in three ways:
+
+- **BoardGameGeek import** — search by BGG id, pick the state (owned, wanted, ...) and the price; title, image, players, play time, categories and mechanics are filled in. Needs a [BGG API key](/BoardGameTracker/getting-started/environment-variables/), entered under *Settings → BoardGameGeek*.
+- **BGG collection import** — enter a BGG username and tick the games you want; games that are already in the collection are skipped.
+- **Manual** — fill in the form yourself. Player count and play time are ranges, so enter both ends or leave both empty.
+
+Each game has a state (*owned*, *wanted*, *for trade*, *previously owned*) and a **scoring** switch. Turn scoring off for co-operative or non-scoring games: sessions then only record who won, and the score charts stay hidden.
+
+The game page shows statistics (plays, total play time, price per play, best score, top players), the last sessions, expansions, uploaded rulebooks and, once the rules assistant is enabled, a chat button. From the *Games table* view you can edit language, state and price inline.
+
+<Aside type="tip">
+Ratings (0-10), weight (0-5) and the price a game was sold for can be edited on the game's update page.
+</Aside>
+
+## Sessions
+
+*Add session* logs a play: the game, when it started, how long it took, who played, who won, first plays and — for scoring games — the score per player. Leave the score empty when you do not know it; negative scores are allowed. The location is optional. Expansions used in the session can be ticked when the game has any.
+
+Sessions can be edited and deleted from a game's or a player's session list.
+
+## Players
+
+Players are the people you play with; they exist independently of user accounts. A player page shows win rate, favourite games, play time, recent sessions and the **achievements** the player earned: badges such as *First Try* (win a game on the first play), *Photo Finish* (win by two points or less), *Almost There!* (lose by two points or less), *Marathon Runner* (a session of four hours or more), *Learning Curve* (three improving scores in a row), *Monthly Goal* (20 sessions in a calendar month) and *Consistent Schedule* (a Saturday game ten weeks in a row). Badges are awarded when a session is saved.
+
+## Compare
+
+Pick two players to compare head to head: sessions, wins and play time per player, how often each one beat the other and in which game, the game they play together most, their first game together, the last session and the closest finish.
+
+## Shelf of Shame
+
+Enable it under *Settings → Shelf of Shame*. It lists owned games that have not been played in the configured number of months (games bought more recently than that are not shamed), with the money sitting on the shelf.
+
+## Game nights
+
+Enable it under *Settings → Game nights*. A game night has a host, a date, an optional location, suggested games and invited players. Every game night has a public RSVP link that invited players can open without an account to accept or decline; when email is configured the invitations can be sent from the game night card and the host is notified of every response. Turn on *Require authentication for RSVPs* if the link should only work for signed-in users.
+
+The RSVP page uses the **Public URL** setting to build the link, so set that to the address your players use.
+
+## Loans
+
+Track which game is lent to whom, with a start date and an optional due date. Overdue loans are highlighted; mark a loan as returned or change its dates from the card. A game that is out on loan shows it on its game page.
+
+## Rules assistant
+
+When the [rules assistant](/BoardGameTracker/getting-started/rag/) is enabled, upload PDF rulebooks on a game page (*Manuals*) and ask questions about them in the chat. Answers cite the pages they come from; rulebooks are indexed in the background after upload.
+
+## Settings
+
+- **General** — language, date and time format, currency.
+- **Shelf of Shame**, **Game nights** — the feature toggles described above, plus the Public URL.
+- **BoardGameGeek** — the API key used for imports.
+- **Advanced** — update checks and the stable/beta track, links to report bugs and translate, and the danger zone: *reset data* removes games, players and sessions; *factory reset* also removes users and settings.
+- **Account** — your profile, password and linked player; admins also manage users here.
+
+Settings that are forced through an environment variable are shown greyed out with a note naming the variable.
