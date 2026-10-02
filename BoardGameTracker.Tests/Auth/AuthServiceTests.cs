@@ -301,10 +301,27 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RefreshAsync_ShouldRejectWithoutRevokingOtherSessions_WhenTheTokenWasRotatedMomentsAgo()
+    {
+        var rotatedToken = RefreshToken.Create("user-id-123", 7);
+        rotatedToken.Revoke("Replaced by new token", "next-token-hash");
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(rotatedToken);
+
+        var act = () => _authService.RefreshAsync("old-token");
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>()
+            .WithMessage(Constants.Errors.InvalidRefreshToken);
+
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("old-token"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task RefreshAsync_ShouldRevokeEverySession_WhenARotatedTokenIsPresentedAgain()
     {
         var rotatedToken = RefreshToken.Create("user-id-123", 7);
         rotatedToken.Revoke("Replaced by new token", "next-token-hash");
+        typeof(RefreshToken).GetProperty(nameof(RefreshToken.RevokedAt))!.SetValue(rotatedToken, DateTime.UtcNow.AddMinutes(-5));
         _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("old-token")).ReturnsAsync(rotatedToken);
         _tokenServiceMock.Setup(x => x.RevokeAllUserTokensAsync("user-id-123", "Refresh token reuse detected")).Returns(Task.CompletedTask);
 

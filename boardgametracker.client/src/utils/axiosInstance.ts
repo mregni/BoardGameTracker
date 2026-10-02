@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { ApiError, ApiErrorKind } from "@/models";
 
 import { apiUrl } from "./apiUrl";
+import { refreshAccessToken, tokensRefreshedElsewhere } from "./tokenRefresh";
 
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,7})?(Z|[+-]\d{2}:\d{2})?$/;
 
@@ -125,10 +126,6 @@ axiosInstance.interceptors.request.use(
 	(error) => Promise.reject(error),
 );
 
-function getStoredRefreshToken(): string | null {
-	return useAuth.getState().refreshToken;
-}
-
 async function handleTokenRefresh(
 	originalRequest: InternalAxiosRequestConfig,
 	error: AxiosError,
@@ -136,8 +133,8 @@ async function handleTokenRefresh(
 	(originalRequest as { _retry?: boolean })._retry = true;
 	isRefreshing = true;
 
-	const refreshToken = getStoredRefreshToken();
-	if (!refreshToken) {
+	const staleRefreshToken = useAuth.getState().refreshToken;
+	if (!staleRefreshToken) {
 		isRefreshing = false;
 		processQueue(error, null);
 		clearAuthState();
@@ -145,9 +142,13 @@ async function handleTokenRefresh(
 	}
 
 	try {
-		const response = await axios.post(`${apiUrl}auth/refresh`, { refreshToken });
-		const { accessToken: newAccessToken, refreshToken: newRefreshToken, user } = response.data;
-		useAuth.getState().setTokens(newAccessToken, newRefreshToken, user);
+		const newAccessToken = await refreshAccessToken(staleRefreshToken).catch(async (refreshError: unknown) => {
+			const refreshedElsewhere = await tokensRefreshedElsewhere(staleRefreshToken);
+			if (refreshedElsewhere) {
+				return refreshedElsewhere;
+			}
+			throw refreshError;
+		});
 
 		if (originalRequest.headers) {
 			originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

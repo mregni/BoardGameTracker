@@ -19,6 +19,8 @@ namespace BoardGameTracker.Core.Auth;
 
 public class AuthService : IAuthService
 {
+    private static readonly TimeSpan RotationGracePeriod = TimeSpan.FromSeconds(30);
+
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
@@ -119,6 +121,12 @@ public class AuthService : IAuthService
 
         if (existingToken.IsRevoked && existingToken.ReplacedByToken != null)
         {
+            if (existingToken.WasRotatedWithin(RotationGracePeriod))
+            {
+                _logger.LogInformation("A refresh token rotated moments ago was presented again for user {UserId}; treating it as a concurrent refresh", existingToken.UserId);
+                throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+            }
+
             _logger.LogWarning("A rotated refresh token was presented again for user {UserId}; revoking every session", existingToken.UserId);
             await _tokenService.RevokeAllUserTokensAsync(existingToken.UserId, "Refresh token reuse detected");
             throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);

@@ -23,6 +23,9 @@ public class RefreshToken
     public bool IsRevoked => RevokedAt != null;
     public bool IsActive => !IsRevoked && !IsExpired;
 
+    public bool WasRotatedWithin(TimeSpan window) =>
+        ReplacedByToken != null && RevokedAt != null && DateTime.UtcNow - RevokedAt.Value < window;
+
     private RefreshToken() { }
 
     public static RefreshToken Create(string userId, int expiryDays)

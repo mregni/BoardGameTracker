@@ -3,6 +3,8 @@ import { persist } from "zustand/middleware";
 import type { AuthStatus, LoginRequest, OidcProvider, User } from "@/models/Auth/Auth";
 import { getAuthStatusCall, loginCall, logoutCall } from "@/services/authService";
 
+export const AUTH_STORAGE_KEY = "bgt-auth";
+
 let authStatusRequest: Promise<AuthStatus> | null = null;
 
 interface AuthState {
@@ -102,7 +104,7 @@ export const useAuth = create<AuthState>()(
 			},
 		}),
 		{
-			name: "bgt-auth",
+			name: AUTH_STORAGE_KEY,
 			partialize: (state) => ({
 				accessToken: state.accessToken,
 				refreshToken: state.refreshToken,
@@ -112,3 +114,9 @@ export const useAuth = create<AuthState>()(
 		},
 	),
 );
+
+globalThis.addEventListener?.("storage", (event: StorageEvent) => {
+	if (event.key === AUTH_STORAGE_KEY) {
+		void useAuth.persist.rehydrate();
+	}
+});
