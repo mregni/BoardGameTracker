@@ -135,7 +135,7 @@ describe("SsoSettings", () => {
 		expect(screen.getByText("sso.fields.authority.relink-warning")).toBeInTheDocument();
 	});
 
-	it("does not submit an insecure authority", async () => {
+	it("does not submit an authority that is not a URL", async () => {
 		const user = userEvent.setup();
 		renderWithProviders(<SsoSettings />);
 
@@ -147,6 +147,20 @@ describe("SsoSettings", () => {
 
 		expect(await screen.findByText("settings:sso.validation.authority")).toBeInTheDocument();
 		expect(mocks.state.save).not.toHaveBeenCalled();
+	});
+
+	it("leaves the decision on a plain http authority to the server", async () => {
+		const user = userEvent.setup();
+		renderWithProviders(<SsoSettings />);
+
+		await user.type(screen.getByLabelText("sso.fields.name.label"), "idp");
+		await user.type(screen.getByLabelText("sso.fields.display-name.label"), "IdP");
+		await user.type(screen.getByLabelText("sso.fields.authority.label"), "http://idp.example.com");
+		await user.type(screen.getByLabelText("sso.fields.client-id.label"), "bgt");
+		await user.click(screen.getByRole("button", { name: "sso.create" }));
+
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ authority: "http://idp.example.com" });
 	});
 
 	it("tests discovery for the authority in the field and shows the result", async () => {
