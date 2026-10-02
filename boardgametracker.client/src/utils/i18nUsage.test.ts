@@ -5,6 +5,8 @@ import { describe, expect, it } from "vitest";
 const clientRoot = join(__dirname, "..", "..");
 const baseDir = join(clientRoot, "public", "locales", "base");
 const srcDir = join(clientRoot, "src");
+const backendConstants = join(clientRoot, "..", "BoardGameTracker.Common", "Constants.cs");
+const defaultNamespace = "common";
 
 const flattenKeys = (value: unknown, prefix = ""): string[] => {
 	if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -37,27 +39,44 @@ const keyExists = (namespace: string, key: string) => {
 	return keys !== undefined && (keys.has(key) || keys.has(`${key}_one`) || keys.has(`${key}_other`));
 };
 
-const resolves = (literal: string) => {
+const hookNamespaces = (source: string): string[] => {
+	const calls = [...source.matchAll(/useTranslation\(\s*(?:"([^"]+)"|\[\s*"([^"]+)")?/g)];
+	return calls.length === 0 ? [defaultNamespace] : calls.map((call) => call[1] ?? call[2] ?? defaultNamespace);
+};
+
+const resolves = (literal: string, namespaces: string[]) => {
 	if (literal.includes(":")) {
 		const [namespace, key] = literal.split(/:(.*)/s);
 		return keyExists(namespace, key);
 	}
 
-	return [...baseKeys.keys()].some((namespace) => keyExists(namespace, literal));
+	return namespaces.some((namespace) => keyExists(namespace, literal));
 };
 
 describe("translation keys used in code", () => {
-	it("should all exist in the base locale", () => {
+	it("should all exist in the namespace the hook resolves them in", () => {
 		const unresolved: string[] = [];
 		for (const file of sourceFiles(srcDir)) {
 			const source = readFileSync(file, "utf-8");
+			const namespaces = hookNamespaces(source);
 			for (const match of source.matchAll(/\bt\(\s*"([^"${}]+)"/g)) {
-				if (!resolves(match[1])) {
+				if (!resolves(match[1], namespaces)) {
 					unresolved.push(`${file.slice(clientRoot.length + 1)}: ${match[1]}`);
 				}
 			}
 		}
 
 		expect(unresolved).toEqual([]);
+	});
+});
+
+describe("error codes returned by the backend", () => {
+	it("should all be translated in the error namespace", () => {
+		const codes = [...readFileSync(backendConstants, "utf-8").matchAll(/"error\.([a-z0-9.-]+)"/g)].map(
+			(match) => match[1],
+		);
+
+		expect(codes.length).toBeGreaterThan(0);
+		expect(codes.filter((code) => !keyExists("error", code))).toEqual([]);
 	});
 });
