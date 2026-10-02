@@ -37,8 +37,7 @@ public class SessionService : ISessionService
         _logger.LogDebug("Creating session for game {GameId}", session.GameId);
         session = await _sessionRepository.CreateAsync(session);
         await _unitOfWork.SaveChangesAsync();
-        await _badgeService.AwardBadgesAsync(session);
-        await _unitOfWork.SaveChangesAsync();
+        await AwardBadgesAfterSaveAsync(session);
         _logger.LogInformation("Session {SessionId} created for game {GameId}", session.Id, session.GameId);
 
         return session;
@@ -56,11 +55,24 @@ public class SessionService : ISessionService
     {
         _logger.LogDebug("Updating session {SessionId}", session.Id);
         await _unitOfWork.SaveChangesAsync();
-        await _badgeService.AwardBadgesAsync(session);
-        await _unitOfWork.SaveChangesAsync();
+        await AwardBadgesAfterSaveAsync(session);
         _logger.LogInformation("Session {SessionId} updated", session.Id);
 
         return session;
+    }
+
+    private async Task AwardBadgesAfterSaveAsync(Session session)
+    {
+        try
+        {
+            await _badgeService.AwardBadgesAsync(session);
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _unitOfWork.DiscardPendingInserts();
+            _logger.LogWarning(ex, "Session {SessionId} was saved, but awarding badges failed; they are evaluated again on the next save", session.Id);
+        }
     }
 
     public async Task<Session> CreateFromCommand(CreateSessionCommand command)

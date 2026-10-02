@@ -94,6 +94,27 @@ public class SessionServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task Create_ShouldStillReturnTheSavedSession_WhenAwardingBadgesFails()
+    {
+        var session = new Session(1, DateTime.UtcNow.AddHours(-2), DateTime.UtcNow, "Test session");
+        _sessionRepositoryMock.Setup(x => x.CreateAsync(session)).ReturnsAsync(session);
+        _unitOfWorkMock
+            .SetupSequence(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1)
+            .ThrowsAsync(new Microsoft.EntityFrameworkCore.DbUpdateException("duplicate badge"));
+        _badgeServiceMock.Setup(x => x.AwardBadgesAsync(session)).Returns(Task.CompletedTask);
+
+        var result = await _sessionService.Create(session);
+
+        result.Should().BeSameAs(session);
+        _sessionRepositoryMock.Verify(x => x.CreateAsync(session), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        _unitOfWorkMock.Verify(x => x.DiscardPendingInserts(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region Get Tests
