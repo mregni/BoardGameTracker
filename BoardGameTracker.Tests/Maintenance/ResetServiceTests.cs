@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using BoardGameTracker.Common;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Maintenance;
@@ -99,6 +101,7 @@ public class ResetServiceTests
     {
         await _resetService.FactoryResetAsync();
 
+        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
         _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(It.IsAny<CancellationToken>()), Times.Once);
         _maintenanceRepositoryMock.Verify(x => x.ClearSettingsAndAuthAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -121,6 +124,7 @@ public class ResetServiceTests
 
         await act.Should().ThrowAsync<InvalidOperationException>();
 
+        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(It.IsAny<CancellationToken>()), Times.Once);
         _maintenanceRepositoryMock.Verify(x => x.ClearUserDataAsync(It.IsAny<CancellationToken>()), Times.Once);
         _maintenanceRepositoryMock.Verify(x => x.ClearSettingsAndAuthAsync(It.IsAny<CancellationToken>()), Times.Once);
         _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -129,6 +133,20 @@ public class ResetServiceTests
         _manualServiceMock.Verify(x => x.ClearAllManuals(), Times.Never);
         _maintenanceSeederMock.Verify(x => x.ReseedDefaultsAsync(It.IsAny<CancellationToken>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task FactoryResetAsync_ShouldNotTouchAnyData_WhenTheAdminPasswordIsRejected()
+    {
+        _maintenanceSeederMock
+            .Setup(x => x.EnsureAdminPasswordAcceptedAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new ValidationException(Constants.Errors.AdminPasswordRejected));
+
+        var act = async () => await _resetService.FactoryResetAsync();
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.AdminPasswordRejected);
+        _maintenanceSeederMock.Verify(x => x.EnsureAdminPasswordAcceptedAsync(It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 }

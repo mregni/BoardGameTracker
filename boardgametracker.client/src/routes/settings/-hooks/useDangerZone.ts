@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { factoryResetCall, resetDatabaseCall } from "@/services/maintenanceService";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 export const useDangerZone = () => {
 	const invalidator = useQueryInvalidator();
@@ -26,8 +27,8 @@ export const useDangerZone = () => {
 			clearAuth();
 			window.location.href = "/login";
 		},
-		onError: () => {
-			errorToast("settings:advanced.danger.notifications.factory-reset-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "settings:advanced.danger.notifications.factory-reset-failed"));
 		},
 	});
 

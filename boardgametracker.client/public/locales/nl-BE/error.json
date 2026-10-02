@@ -77,5 +77,8 @@
   },
   "game-night": {
     "invites-cooldown": "De uitnodigingen voor deze spelavond zijn net verstuurd, probeer het over enkele minuten opnieuw"
+  },
+  "maintenance": {
+    "admin-password-rejected": "ADMIN_PASSWORD voldoet niet aan de wachtwoordregels (minstens 8 tekens). Pas het aan of verwijder het vóór een fabrieksreset."
   }
 }

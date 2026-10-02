@@ -77,5 +77,8 @@
   },
   "game-night": {
     "invites-cooldown": "Invitations for this game night were sent recently, try again in a few minutes"
+  },
+  "maintenance": {
+    "admin-password-rejected": "ADMIN_PASSWORD does not meet the password rules (at least 8 characters). Change it or remove it before a factory reset."
   }
 }

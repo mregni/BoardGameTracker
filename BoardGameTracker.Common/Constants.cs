@@ -91,6 +91,7 @@ public static class Constants
         public const string ChangeDetectionCreateWatchFailed = "error.changedetection.create-watch-failed";
         public const string InvalidShopUrl = "error.game.invalid-shop-url";
         public const string SettingsInvalidPublicUrl = "error.settings.invalid-public-url";
+        public const string AdminPasswordRejected = "error.maintenance.admin-password-rejected";
     }
 
     public static class BggConfig
