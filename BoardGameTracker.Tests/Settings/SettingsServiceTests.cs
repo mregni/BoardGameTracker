@@ -69,6 +69,31 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
     }
 
+    private void VerifySettingsSaved(UIResourceDto model, params string[] forcedKeys)
+    {
+        VerifySaved(Constants.AppConfig.Currency, model.Currency, forcedKeys);
+        VerifySaved(Constants.AppConfig.TimeFormat, model.TimeFormat, forcedKeys);
+        VerifySaved(Constants.AppConfig.DateFormat, model.DateFormat, forcedKeys);
+        VerifySaved(Constants.AppConfig.UiLanguage, model.UiLanguage, forcedKeys);
+        VerifySaved(Constants.AppConfig.ShelfOfShameEnabled, model.ShelfOfShameEnabled, forcedKeys);
+        VerifySaved(Constants.AppConfig.ShelfOfShameMonths, model.ShelfOfShameMonthsLimit, forcedKeys);
+        VerifySaved(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled, forcedKeys);
+        VerifySaved(Constants.AppConfig.PublicUrl, model.PublicUrl.Trim(), forcedKeys);
+        VerifySaved(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled, forcedKeys);
+        VerifySaved(Constants.UpdateConfig.CheckEnabled, model.UpdateCheckEnabled, forcedKeys);
+        VerifySaved(Constants.UpdateConfig.Track, model.VersionTrack, forcedKeys);
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl, model.ChangeDetectionBaseUrl.Trim()), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetAllConfigsAsync(), Times.Once);
+        VerifyTransactionCommitted();
+        VerifyEnvironmentReads();
+    }
+
+    private void VerifySaved<T>(string key, T value, string[] forcedKeys)
+    {
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(key, value),
+            forcedKeys.Contains(key) ? Times.Never() : Times.Once());
+    }
+
     private void VerifyEnvironmentReads()
     {
         _environmentProviderMock.VerifyGet(x => x.StatisticsEnabled, Times.Once);
@@ -309,6 +334,48 @@ public class SettingsServiceTests
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.Currency, It.IsAny<string>()), Times.Never);
         _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.AppConfig.DateFormat, "yyyy-MM-dd"), Times.Once);
         VerifyTransactionCommitted();
+    }
+
+    [Theory]
+    [InlineData("SHELF_OF_SHAME_MONTHS", "abc", "shelfOfShameMonthsLimit")]
+    [InlineData("GAME_NIGHTS_ENABLED", "yes", "gameNightsEnabled")]
+    [InlineData("UPDATE_TRACK", "nightly", "versionTrack")]
+    public async Task UpdateSettingsAsync_ShouldSaveTheSetting_WhenItsEnvironmentValueCannotBeParsed(
+        string variable, string value, string field)
+    {
+        var model = new UIResourceDto
+        {
+            ShelfOfShameMonthsLimit = 6,
+            GameNightsEnabled = true,
+            VersionTrack = VersionTrack.Beta,
+            BggApiKey = "",
+            ChangeDetectionApiKey = ""
+        };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        var result = await WithEnvVar(variable, value, () => _settingsService.UpdateSettingsAsync(model));
+
+        result.EnvironmentOverrides.Should().NotContainKey(field);
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateSettingsAsync_ShouldNotStoreTheBggApiKey_WhenBggApiKeyIsForcedByEnvironment()
+    {
+        var model = new UIResourceDto { BggApiKey = "submitted-key", ChangeDetectionApiKey = "" };
+        _configRepositoryMock
+            .Setup(x => x.GetAllConfigsAsync())
+            .ReturnsAsync(new Dictionary<string, string>());
+
+        var result = await WithEnvVar(Constants.BggConfig.EnvApiKeyName, "env-key", () => _settingsService.UpdateSettingsAsync(model));
+
+        result.BggStatus.IsReadOnly.Should().BeTrue();
+        _configRepositoryMock.Verify(x => x.SetConfigValueAsync(Constants.BggConfig.ApiKey, It.IsAny<string>()), Times.Never);
+        VerifySettingsSaved(model);
+        VerifyNoOtherCalls();
     }
 
     [Fact]
