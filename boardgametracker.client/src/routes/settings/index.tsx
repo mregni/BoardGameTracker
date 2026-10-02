@@ -10,7 +10,7 @@ import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpin
 import { useAppForm } from "@/hooks/form";
 import { usePermissions } from "@/hooks/usePermissions";
 import { type Settings, SettingsSchema } from "@/models";
-import { getEnvironment, getLanguages, getSettings } from "@/services/queries/settings";
+import { getLanguages, getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { AccountSettings } from "./-components/AccountSettings";
 import { AdvancedSettings } from "./-components/AdvancedSettings";
@@ -28,7 +28,6 @@ export const Route = createFileRoute("/settings/")({
 	loader: ({ context: { queryClient } }) => {
 		queryClient.prefetchQuery(getSettings());
 		queryClient.prefetchQuery(getLanguages());
-		queryClient.prefetchQuery(getEnvironment());
 	},
 });
 

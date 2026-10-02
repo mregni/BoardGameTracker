@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
 	navigate: vi.fn(),
 	useMatch: vi.fn(),
 	useLocation: vi.fn(),
+	getSettingsCall: vi.fn(),
 	getEnvironmentCall: vi.fn(),
 	initSentry: vi.fn(),
 	authState: {} as {
@@ -35,7 +36,7 @@ vi.mock("@/hooks/useAuth", () => ({
 }));
 
 vi.mock("@/services/settingsService", () => ({
-	getSettingsCall: vi.fn(),
+	getSettingsCall: () => mocks.getSettingsCall(),
 	getEnvironmentCall: () => mocks.getEnvironmentCall(),
 	getLanguagesCall: vi.fn(),
 	getVersionInfoCall: vi.fn(),
@@ -78,7 +79,7 @@ describe("RootComponent", () => {
 		mocks.routeContext.queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 		mocks.useMatch.mockReturnValue(null);
 		mocks.useLocation.mockReturnValue({ pathname: "/", searchStr: "" });
-		mocks.getEnvironmentCall.mockResolvedValue({ enableStatistics: false });
+		mocks.getSettingsCall.mockResolvedValue({ statistics: false });
 	});
 
 	describe("Loading state", () => {
@@ -204,7 +205,7 @@ describe("RootComponent", () => {
 
 	describe("Sentry initialization", () => {
 		it("should initialize sentry when statistics enabled and auth disabled", async () => {
-			mocks.getEnvironmentCall.mockResolvedValue({ enableStatistics: true });
+			mocks.getSettingsCall.mockResolvedValue({ statistics: true });
 			render(<mocks.captured.Root />);
 
 			await waitFor(() => {
@@ -215,7 +216,7 @@ describe("RootComponent", () => {
 		it("should initialize sentry when statistics enabled and authenticated", async () => {
 			mocks.authState.authStatus = { authEnabled: true };
 			mocks.authState.isAuthenticated = true;
-			mocks.getEnvironmentCall.mockResolvedValue({ enableStatistics: true });
+			mocks.getSettingsCall.mockResolvedValue({ statistics: true });
 			render(<mocks.captured.Root />);
 
 			await waitFor(() => {
@@ -224,7 +225,7 @@ describe("RootComponent", () => {
 		});
 
 		it("should not initialize sentry when statistics disabled", async () => {
-			mocks.getEnvironmentCall.mockResolvedValue({ enableStatistics: false });
+			mocks.getSettingsCall.mockResolvedValue({ statistics: false });
 			render(<mocks.captured.Root />);
 
 			await waitFor(() => {
@@ -233,13 +234,25 @@ describe("RootComponent", () => {
 			expect(mocks.initSentry).not.toHaveBeenCalled();
 		});
 
-		it("should not call environment API when not authenticated and auth enabled", async () => {
+		it("should not load settings for sentry when not authenticated and auth enabled", async () => {
 			mocks.authState.authStatus = { authEnabled: true };
 			mocks.authState.isAuthenticated = false;
 			render(<mocks.captured.Root />);
 
 			await waitFor(() => {
 				expect(mocks.navigate).toHaveBeenCalled();
+			});
+			expect(mocks.getSettingsCall).not.toHaveBeenCalled();
+		});
+
+		it("should never call the admin-only environment endpoint", async () => {
+			mocks.authState.authStatus = { authEnabled: true };
+			mocks.authState.isAuthenticated = true;
+			mocks.getSettingsCall.mockResolvedValue({ statistics: true });
+			render(<mocks.captured.Root />);
+
+			await waitFor(() => {
+				expect(mocks.initSentry).toHaveBeenCalled();
 			});
 			expect(mocks.getEnvironmentCall).not.toHaveBeenCalled();
 		});

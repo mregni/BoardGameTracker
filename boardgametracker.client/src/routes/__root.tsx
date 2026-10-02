@@ -13,7 +13,7 @@ import { ErrorFallback } from "@/components/ErrorBoundary/ErrorFallback";
 import { NotFound } from "@/components/NotFound/NotFound";
 import { useAuth } from "@/hooks/useAuth";
 import type { MenuItem } from "@/models";
-import { getEnvironment } from "@/services/queries/settings";
+import { getSettings } from "@/services/queries/settings";
 import { initSentry } from "@/utils/sentry";
 import { BottomNav } from "./-components/BottomNav";
 import { Sidebar } from "./-components/Sidebar";
@@ -64,9 +64,9 @@ function RootComponent() {
 		if (!isAuthenticated && authStatus?.authEnabled) return;
 
 		queryClient
-			.fetchQuery(getEnvironment())
-			.then((env) => {
-				if (env.enableStatistics) {
+			.fetchQuery(getSettings())
+			.then((settings) => {
+				if (settings.statistics) {
 					initSentry();
 				}
 			})
