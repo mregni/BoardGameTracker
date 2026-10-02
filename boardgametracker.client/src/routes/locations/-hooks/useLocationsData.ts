@@ -3,6 +3,7 @@ import { QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { deleteLocationCall } from "@/services/locationService";
 import { getLocations } from "@/services/queries/locations";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
 	onDeleteSuccess?: () => void;
@@ -25,8 +26,8 @@ export const useLocationsData = ({ onDeleteSuccess }: Props) => {
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
 			infoToast("location:notifications.deleted");
 			onDeleteSuccess?.();
-		} catch {
-			errorToast("location:notifications.delete-failed");
+		} catch (error) {
+			errorToast(apiErrorMessage(error, "location:notifications.delete-failed"));
 		}
 	};
 

@@ -77,7 +77,10 @@
     "public-url-not-configured": "Stel eerst de publieke URL in onder Instellingen > Algemeen, zodat de links in de e-mail naar deze server wijzen."
   },
   "loan": {
-    "game-already-on-loan": "Dit spel is al uitgeleend"
+    "game-already-on-loan": "Dit spel is al uitgeleend",
+    "due-before-start": "De terugbrengdatum kan niet voor het begin van de uitleen liggen.",
+    "returned-before-start": "Een uitleen kan niet teruggebracht worden voordat die begonnen is.",
+    "already-returned": "Deze uitleen is al teruggebracht."
   },
   "settings": {
     "invalid-public-url": "De publieke URL is ongeldig"

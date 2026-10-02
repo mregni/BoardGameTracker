@@ -25,8 +25,7 @@
   },
   "return": {
     "successfull": "Spel is gemarkeerd als teruggebracht.",
-    "failed": "Spel markeren als teruggebracht mislukt, bekijk de logs voor meer details.",
-    "date-failed": "Je kunt een spel niet terugbrengen vóór de uitleendatum."
+    "failed": "Spel markeren als teruggebracht mislukt, bekijk de logs voor meer details."
   },
   "no-active-loans": "Er is momenteel niets uitgeleend.",
   "new": {

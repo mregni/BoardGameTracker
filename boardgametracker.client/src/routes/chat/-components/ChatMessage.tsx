@@ -27,7 +27,12 @@ export const ChatMessage = ({ exchange, onRetry, onSelectSource, activeSourceInd
 			case "server":
 				return t("error:server");
 			case "client":
-				return error.message;
+				if (error.status === 429) {
+					return t("rate-limited");
+				}
+				return error.message.startsWith("error.")
+					? t(`error:${error.message.slice("error.".length)}`, { defaultValue: t("error:something-went-wrong") })
+					: error.message;
 			default:
 				return t("error:something-went-wrong");
 		}

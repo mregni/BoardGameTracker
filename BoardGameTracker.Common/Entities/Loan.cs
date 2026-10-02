@@ -1,5 +1,6 @@
 ﻿using Ardalis.GuardClauses;
 using BoardGameTracker.Common.Entities.Helpers;
+using BoardGameTracker.Common.Exceptions;
 
 namespace BoardGameTracker.Common.Entities;
 
@@ -29,7 +30,7 @@ public class Loan : HasId
 
         if (ReturnedDate != null)
         {
-            throw new InvalidOperationException("Loan has already been returned.");
+            throw new DomainException(Constants.Errors.LoanAlreadyReturned);
         }
 
         ReturnedDate = returnedDate;
@@ -89,7 +90,7 @@ public class Loan : HasId
     {
         if (dueDate < loanDate)
         {
-            throw new ArgumentException("Due date cannot be before loan date.", nameof(dueDate));
+            throw new DomainException(Constants.Errors.LoanDueBeforeStart);
         }
     }
 
@@ -97,7 +98,7 @@ public class Loan : HasId
     {
         if (returnedDate < loanDate)
         {
-            throw new ArgumentException("Return date cannot be before loan date.", nameof(returnedDate));
+            throw new DomainException(Constants.Errors.LoanReturnedBeforeStart);
         }
     }
 }

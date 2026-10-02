@@ -25,8 +25,7 @@
   },
   "return": {
     "successfull": "Juego marcado como devuelto correctamente.",
-    "failed": "Error al marcar el juego como devuelto, revisa los registros para más detalles.",
-    "date-failed": "No puedes devolver un préstamo antes de la fecha del préstamo."
+    "failed": "Error al marcar el juego como devuelto, revisa los registros para más detalles."
   },
   "no-active-loans": "No hay préstamos activos en este momento.",
   "new": {

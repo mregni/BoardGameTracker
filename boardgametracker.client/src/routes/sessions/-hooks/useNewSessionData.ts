@@ -3,6 +3,7 @@ import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { getGames } from "@/services/queries/games";
 import { addSessionCall } from "@/services/sessionService";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
 	onSuccess?: () => void;
@@ -31,8 +32,8 @@ export const useNewSessionData = ({ onSuccess }: Props = {}) => {
 				sessionResult.playerSessions.map((x) => x.playerId),
 			);
 		},
-		onError: () => {
-			errorToast("player-session:new.notifications.create-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "player-session:new.notifications.create-failed"));
 		},
 	});
 

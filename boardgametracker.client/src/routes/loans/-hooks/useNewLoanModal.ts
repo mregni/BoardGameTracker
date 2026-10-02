@@ -4,6 +4,7 @@ import { useToasts } from "@/routes/-hooks/useToasts";
 import { saveLoanCall } from "@/services/loanService";
 import { getGames } from "@/services/queries/games";
 import { getPlayers } from "@/services/queries/players";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
 	onSuccess?: () => void;
@@ -27,8 +28,8 @@ export const useNewLoanModal = ({ onSuccess }: Props) => {
 			successToast("loans:notifications.created");
 			onSuccess?.();
 		},
-		onError: () => {
-			errorToast("loans:notifications.create-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "loans:notifications.create-failed"));
 		},
 	});
 

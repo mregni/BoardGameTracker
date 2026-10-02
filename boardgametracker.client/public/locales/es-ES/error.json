@@ -77,7 +77,10 @@
     "public-url-not-configured": "Configura primero la URL pública en Ajustes > General, para que los enlaces del correo apunten a este servidor."
   },
   "loan": {
-    "game-already-on-loan": "Este juego ya está prestado"
+    "game-already-on-loan": "Este juego ya está prestado",
+    "due-before-start": "La fecha de devolución no puede ser anterior al inicio del préstamo.",
+    "returned-before-start": "Un préstamo no se puede devolver antes de que empiece.",
+    "already-returned": "Este préstamo ya se devolvió."
   },
   "settings": {
     "invalid-public-url": "La URL pública no es válida"

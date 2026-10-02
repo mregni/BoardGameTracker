@@ -5,6 +5,7 @@ import { deletePlayerCall } from "@/services/playerService";
 import { getBadges } from "@/services/queries/basdges";
 import { getPlayer, getPlayerSessionsShortList, getPlayerStatistics } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface UsePLayerDataProps {
 	playerId: number;
@@ -44,8 +45,8 @@ export const usePlayerData = ({ playerId, onDeleteSuccess }: UsePLayerDataProps)
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 			infoToast("player:delete.successfull");
 			onDeleteSuccess?.();
-		} catch {
-			errorToast("player:delete.failed");
+		} catch (error) {
+			errorToast(apiErrorMessage(error, "player:delete.failed"));
 		}
 	};
 

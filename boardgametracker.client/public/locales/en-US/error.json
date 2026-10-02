@@ -77,7 +77,10 @@
     "public-url-not-configured": "Set the public URL under Settings > General first, so the links in the email point to this server."
   },
   "loan": {
-    "game-already-on-loan": "This game is already on loan"
+    "game-already-on-loan": "This game is already on loan",
+    "due-before-start": "The return date cannot be before the start of the loan.",
+    "returned-before-start": "A loan cannot be returned before it started.",
+    "already-returned": "This loan was already returned."
   },
   "settings": {
     "invalid-public-url": "The public URL is not valid"

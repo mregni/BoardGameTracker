@@ -1,5 +1,7 @@
 using System;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using FluentAssertions;
 using Xunit;
 
@@ -65,8 +67,8 @@ public class LoanValidationTests
         var act = () => loan.MarkAsReturned(returnDate);
 
         // Assert
-        act.Should().Throw<ArgumentException>()
-            .WithMessage("*Return date cannot be before loan date*");
+        act.Should().Throw<DomainException>()
+            .WithMessage(Constants.Errors.LoanReturnedBeforeStart);
         loan.ReturnedDate.Should().BeNull();
     }
 
@@ -83,8 +85,8 @@ public class LoanValidationTests
         var act = () => loan.MarkAsReturned(DateTime.UtcNow);
 
         // Assert
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*already been returned*");
+        act.Should().Throw<DomainException>()
+            .WithMessage(Constants.Errors.LoanAlreadyReturned);
         loan.ReturnedDate.Should().Be(returnDate);
     }
 
@@ -137,8 +139,8 @@ public class LoanValidationTests
         var act = () => loan.UpdateDates(loanDate, null, returnDate);
 
         // Assert
-        act.Should().Throw<ArgumentException>()
-            .WithMessage("*Return date cannot be before loan date*");
+        act.Should().Throw<DomainException>()
+            .WithMessage(Constants.Errors.LoanReturnedBeforeStart);
         loan.LoanDate.Should().Be(originalLoanDate);
         loan.DueDate.Should().BeNull();
         loan.ReturnedDate.Should().BeNull();
@@ -157,8 +159,8 @@ public class LoanValidationTests
         var act = () => loan.UpdateDates(loanDate, dueDate, null);
 
         // Assert
-        act.Should().Throw<ArgumentException>()
-            .WithMessage("*Due date cannot be before loan date*");
+        act.Should().Throw<DomainException>()
+            .WithMessage(Constants.Errors.LoanDueBeforeStart);
         loan.LoanDate.Should().Be(originalLoanDate);
         loan.DueDate.Should().BeNull();
         loan.ReturnedDate.Should().BeNull();
@@ -205,8 +207,8 @@ public class LoanValidationTests
         var act = () => loan.SetDueDate(dueDate);
 
         // Assert
-        act.Should().Throw<ArgumentException>()
-            .WithMessage("*Due date cannot be before loan date*");
+        act.Should().Throw<DomainException>()
+            .WithMessage(Constants.Errors.LoanDueBeforeStart);
         loan.DueDate.Should().BeNull();
     }
 

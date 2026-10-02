@@ -1,11 +1,11 @@
 import { useQueries } from "@tanstack/react-query";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
-import { isApiError } from "@/models";
 import type { Loan } from "@/models/Loan/Loan";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { deleteLoanCall, returnLoanCall, updateLoanCall } from "@/services/loanService";
 import { getLoans } from "@/services/queries/loans";
 import { getSettings } from "@/services/queries/settings";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 export const useLoans = () => {
 	const invalidator = useQueryInvalidator();
@@ -25,8 +25,8 @@ export const useLoans = () => {
 			await deleteLoanCall(loanId);
 			await invalidator.invalidateLoan(loanId, gameId);
 			successToast("loans:delete.successfull");
-		} catch {
-			errorToast("loans:delete.failed");
+		} catch (error) {
+			errorToast(apiErrorMessage(error, "loans:delete.failed"));
 		}
 	};
 
@@ -36,12 +36,8 @@ export const useLoans = () => {
 			await returnLoanCall(loanId, date);
 			await invalidator.invalidateLoan(loanId, gameId);
 			successToast("loans:return.successfull");
-		} catch (e: unknown) {
-			if (isApiError(e) && e.message.includes("Return date cannot be before loan date.")) {
-				errorToast("loans:return.date-failed");
-			} else {
-				errorToast("loans:return.failed");
-			}
+		} catch (error) {
+			errorToast(apiErrorMessage(error, "loans:return.failed"));
 		}
 	};
 
@@ -50,8 +46,8 @@ export const useLoans = () => {
 			await updateLoanCall(loan);
 			await invalidator.invalidateLoan(loan.id, loan.gameId);
 			successToast("loans:notifications.updated");
-		} catch {
-			errorToast("loans:notifications.update-failed");
+		} catch (error) {
+			errorToast(apiErrorMessage(error, "loans:notifications.update-failed"));
 		}
 	};
 

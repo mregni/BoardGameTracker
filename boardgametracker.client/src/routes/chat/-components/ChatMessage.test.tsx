@@ -101,6 +101,36 @@ describe("ChatMessage", () => {
 			expect(screen.getByText("Manual not indexed yet")).toBeInTheDocument();
 		});
 
+		it("should translate a reason code from the server", () => {
+			renderWithTheme(
+				<ChatMessage
+					exchange={buildExchange({
+						status: "error",
+						error: buildError({ kind: "client", message: "error.auth.not-authenticated" }),
+					})}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
+				/>,
+			);
+
+			expect(screen.getByText("error:auth.not-authenticated")).toBeInTheDocument();
+		});
+
+		it("should explain the rate limit instead of the empty 429 body", () => {
+			renderWithTheme(
+				<ChatMessage
+					exchange={buildExchange({
+						status: "error",
+						error: buildError({ kind: "client", status: 429, message: "An unexpected error occurred" }),
+					})}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
+				/>,
+			);
+
+			expect(screen.getByText("rate-limited")).toBeInTheDocument();
+		});
+
 		it("should show the generic error for unknown error kinds", () => {
 			renderWithTheme(
 				<ChatMessage

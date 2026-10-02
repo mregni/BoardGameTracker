@@ -4,6 +4,7 @@ import type { Game } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { saveGameCall } from "@/services/gameService";
 import { getSettings } from "@/services/queries/settings";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
 	gameId?: string;
@@ -26,8 +27,8 @@ export const useNewGame = ({ onSuccess }: Props) => {
 			successToast("game:notifications.created");
 			onSuccess?.(data);
 		},
-		onError: () => {
-			errorToast("game:notifications.create-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "game:notifications.create-failed"));
 		},
 	});
 

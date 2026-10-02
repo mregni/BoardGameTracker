@@ -3,6 +3,7 @@ import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { updateGameCall } from "@/services/gameService";
 import { getGame } from "@/services/queries/games";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
 	gameId: number;
@@ -25,8 +26,8 @@ export const useUpdateGame = ({ gameId, onSuccess }: Props) => {
 			successToast("game:notifications.updated");
 			onSuccess?.();
 		},
-		onError: () => {
-			errorToast("game:notifications.update-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "game:notifications.update-failed"));
 		},
 	});
 

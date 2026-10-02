@@ -4,6 +4,7 @@ import { useToasts } from "@/routes/-hooks/useToasts";
 import { getGame } from "@/services/queries/games";
 import { getSession } from "@/services/queries/sessions";
 import { updateSessionCall } from "@/services/sessionService";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
 	sessionId: number;
@@ -30,8 +31,8 @@ export const useUpdateSessionData = ({ sessionId, onSuccess }: Props) => {
 				sessionResult.playerSessions.map((x) => x.playerId),
 			);
 		},
-		onError: () => {
-			errorToast("player-session:update.notifications.update-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "player-session:update.notifications.update-failed"));
 		},
 	});
 
