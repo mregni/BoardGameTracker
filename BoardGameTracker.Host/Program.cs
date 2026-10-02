@@ -228,7 +228,7 @@ builder.Services.AddHttpClient(BoardGameTracker.Core.ChangeDetection.ChangeDetec
     .ConfigureHttpClient(client =>
     {
         client.Timeout = TimeSpan.FromSeconds(10);
-        client.MaxResponseContentBufferSize = 64 * 1024;
+        client.MaxResponseContentBufferSize = 1024 * 1024;
     })
     .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
 builder.Services.AddHttpClient(OidcService.HttpClientName)

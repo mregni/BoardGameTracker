@@ -43,7 +43,7 @@ public class ImageService : IImageService
         try
         {
             using var client = _httpClientFactory.CreateClient(HttpClientName);
-            var response = await client.GetAsync(imageUrl);
+            using var response = await client.GetAsync(imageUrl, HttpCompletionOption.ResponseHeadersRead);
 
             if (response.IsSuccessStatusCode)
             {
