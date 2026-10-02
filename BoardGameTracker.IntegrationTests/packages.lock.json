@@ -496,6 +496,16 @@
           "Microsoft.Extensions.Options": "10.0.12"
         }
       },
+      "Microsoft.Extensions.Identity.Stores": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "HhUHz5hKvkBlhr/TKvUw/mSpZiR+kv/GSrnJHb0v7wMCKXweMwO5HvdF6agqNBIGr2FxqaGDJRBEvFrw6ZMbdQ==",
+        "dependencies": {
+          "Microsoft.Extensions.Caching.Abstractions": "10.0.12",
+          "Microsoft.Extensions.Identity.Core": "10.0.12",
+          "Microsoft.Extensions.Logging": "10.0.12"
+        }
+      },
       "Microsoft.Extensions.Logging": {
         "type": "Transitive",
         "resolved": "10.0.12",
@@ -819,11 +829,6 @@
           "Sentry": "6.11.0"
         }
       },
-      "Serilog": {
-        "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
-      },
       "Serilog.Extensions.Hosting": {
         "type": "Transitive",
         "resolved": "10.0.0",
@@ -1050,11 +1055,9 @@
           "Ardalis.GuardClauses": "[5.0.0, )",
           "BoardGamer.BoardGameGeek": "[0.10.0, )",
           "Microsoft.EntityFrameworkCore": "[10.0.12, )",
-          "Microsoft.Extensions.Identity.Stores": "[10.0.12, )",
           "Pgvector": "[0.3.2, )",
           "Sentry.AspNetCore": "[6.11.0, )",
-          "Serilog.AspNetCore": "[10.0.0, )",
-          "Serilog.Sinks.Console": "[6.1.1, )"
+          "Serilog": "[4.3.0, )"
         }
       },
       "boardgametracker.core": {
@@ -1228,17 +1231,6 @@
           "Microsoft.Extensions.Resilience": "10.10.0"
         }
       },
-      "Microsoft.Extensions.Identity.Stores": {
-        "type": "CentralTransitive",
-        "requested": "[10.0.12, )",
-        "resolved": "10.0.12",
-        "contentHash": "HhUHz5hKvkBlhr/TKvUw/mSpZiR+kv/GSrnJHb0v7wMCKXweMwO5HvdF6agqNBIGr2FxqaGDJRBEvFrw6ZMbdQ==",
-        "dependencies": {
-          "Microsoft.Extensions.Caching.Abstractions": "10.0.12",
-          "Microsoft.Extensions.Identity.Core": "10.0.12",
-          "Microsoft.Extensions.Logging": "10.0.12"
-        }
-      },
       "Microsoft.IdentityModel.JsonWebTokens": {
         "type": "CentralTransitive",
         "requested": "[8.22.0, )",
@@ -1342,6 +1334,12 @@
         "dependencies": {
           "Sentry.Extensions.Logging": "6.11.0"
         }
+      },
+      "Serilog": {
+        "type": "CentralTransitive",
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
       },
       "Serilog.AspNetCore": {
         "type": "CentralTransitive",

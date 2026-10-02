@@ -27,7 +27,6 @@
         <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.0" />
         <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.12" />
         <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
-        <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="10.0.12" />
         <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.22.0" />
         <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.22.0" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
@@ -41,6 +40,7 @@
         <PackageVersion Include="Refit.HttpClientFactory" Version="15.2.0" />
         <PackageVersion Include="Refit.Reflection" Version="15.2.0" />
         <PackageVersion Include="Sentry.AspNetCore" Version="6.11.0" />
+        <PackageVersion Include="Serilog" Version="4.3.0" />
         <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
         <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
         <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />

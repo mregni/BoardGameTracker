@@ -429,11 +429,6 @@
           "Sentry": "6.11.0"
         }
       },
-      "Serilog": {
-        "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
-      },
       "Serilog.Extensions.Hosting": {
         "type": "Transitive",
         "resolved": "10.0.0",
@@ -596,8 +591,7 @@
           "Microsoft.EntityFrameworkCore": "[10.0.12, )",
           "Pgvector": "[0.3.2, )",
           "Sentry.AspNetCore": "[6.11.0, )",
-          "Serilog.AspNetCore": "[10.0.0, )",
-          "Serilog.Sinks.Console": "[6.1.1, )"
+          "Serilog": "[4.3.0, )"
         }
       },
       "boardgametracker.core": {
@@ -780,6 +774,12 @@
         "dependencies": {
           "Sentry.Extensions.Logging": "6.11.0"
         }
+      },
+      "Serilog": {
+        "type": "CentralTransitive",
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
       },
       "SixLabors.ImageSharp": {
         "type": "CentralTransitive",

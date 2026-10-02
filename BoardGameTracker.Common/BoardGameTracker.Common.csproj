@@ -14,11 +14,13 @@
         <PackageReference Include="Ardalis.GuardClauses" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="BoardGamer.BoardGameGeek" />
-        <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
         <PackageReference Include="Pgvector" />
         <PackageReference Include="Sentry.AspNetCore" />
-        <PackageReference Include="Serilog.AspNetCore" />
-        <PackageReference Include="Serilog.Sinks.Console" />
+        <PackageReference Include="Serilog" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
 </Project>
