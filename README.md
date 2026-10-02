@@ -62,7 +62,7 @@ BoardGameTracker is a self-hosted application designed for board game enthusiast
 
 ### Quick Start with Docker Compose (Recommended)
 
-1. Download the [docker-compose.yml](docker-compose.yml) file (it also contains the optional rules assistant) or create a minimal one with the following content:
+1. Download the [docker-compose.yml](docker-compose.yml) file (it also contains the optional rules assistant, off until you enable it) or create a minimal one with the following content:
 
 ```yaml
 services:
@@ -122,6 +122,8 @@ services:
 ```bash
 docker compose up -d
 ```
+
+To also run the rules assistant with the downloaded file, set `RAG_ENABLED=true` in a `.env` file next to it and start the stack with the `rag` profile: `docker compose --profile rag up -d`.
 
 4. Access the application at `http://localhost:5444` and log in with `admin` / `admin` (or the `ADMIN_PASSWORD` you set). Change the password after the first login.
 

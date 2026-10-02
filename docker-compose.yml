@@ -25,7 +25,7 @@ services:
       # Behind a reverse proxy (Traefik, nginx, Caddy): the proxy IP or Docker network, e.g. 172.16.0.0/12
       # - TRUSTED_PROXIES=
       - TZ=${TZ:-UTC}
-      - RAG_ENABLED=${RAG_ENABLED:-true}
+      - RAG_ENABLED=${RAG_ENABLED:-false}
       - AI_BASE_URL=${AI_BASE_URL:-http://ollama:11434}
       - AI_CHAT_MODEL=${AI_CHAT_MODEL:-qwen3:4b}
     healthcheck:
