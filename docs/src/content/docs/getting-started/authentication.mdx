@@ -89,5 +89,5 @@ Anyone with a local account can link it to the provider under **Settings → Acc
 
 - Sign-in errors come back to the app as a short message (provider refused, e-mail already registered, provisioning disabled, …); the details are in the server log.
 - Local accounts keep working, and admins can still create local users (for example Reader accounts for the kids) while a provider is enabled. Keep the local `admin` password somewhere safe: it is the way in when the provider is down.
-- Removing a user at the provider does not end an existing BoardGameTracker session. Disable or delete the user here as well.
+- Removing a user at the provider does not end an existing BoardGameTracker session. Delete the user under **Settings → Account** as well.
 - For development with the Vite dev server set `PUBLIC_URL=http://localhost:5443` so both the provider round trip and the app hand-off go through the dev proxy.

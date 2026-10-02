@@ -27,6 +27,12 @@ The game page shows statistics (plays, total play time, price per play, best sco
 Ratings (0-10), weight (0-5) and the price a game was sold for can be edited on the game's update page.
 </Aside>
 
+### Price tracking
+
+With a [changedetection.io](https://changedetection.io) instance connected under *Settings → Integrations*, BoardGameTracker shows the current shop price and stock of a game. On a game page, *Track price* asks for the shop page of the game, creates a watch on changedetection.io and links it; a game that already has a watch can be linked by entering its watch id on the game's update page. The game page then shows the current price with a refresh button.
+
+The *Games table* view adds a *Current price* column, an *In stock only* filter and a *Refresh prices* button that asks changedetection.io to check every tracked shop again. Switching a game to *owned* in the table fills in its price from the current shop price when no price was entered yet. Only public web shops can be tracked; addresses on your local network are refused.
+
 ## Sessions
 
 *Add session* logs a play: the game, when it started, how long it took, who played, who won, first plays and — for scoring games — the score per player. Leave the score empty when you do not know it; negative scores are allowed. The location is optional. Expansions used in the session can be ticked when the game has any.
@@ -41,19 +47,27 @@ Players are the people you play with; they exist independently of user accounts.
 
 Pick two players to compare head to head: sessions, wins and play time per player, how often each one beat the other and in which game, the game they play together most, their first game together, the last session and the closest finish.
 
+## Leaderboard
+
+Ranks every player with at least one session by wins, then win rate, then number of plays; players with the same record share a rank. The table also shows podiums (top three finishes in scoring sessions of four or more players) and time played. The highlight cards above it name the player with the most wins, the most plays, the most time at the table and the best win rate; the win rate only counts players with at least five plays.
+
 ## Shelf of Shame
 
 Enable it under *Settings → Shelf of Shame*. It lists owned games that have not been played in the configured number of months (games bought more recently than that are not shamed), with the money sitting on the shelf.
 
 ## Game nights
 
-Enable it under *Settings → Game nights*. A game night has a host, a date, an optional location, suggested games and invited players. Every game night has a public RSVP link that invited players can open without an account to accept or decline; when email is configured the invitations can be sent from the game night card and the host is notified of every response. Turn on *Require authentication for RSVPs* if the link should only work for signed-in users.
+Enable it under *Settings → Game nights*. A game night has a host, a date, a location, suggested games and invited players; the location is picked from the ones under *Locations*. Every game night has a public RSVP link that invited players can open without an account to accept or decline; when email is configured the invitations can be sent from the game night card and the host is notified of every response. Turn on *Require authentication for RSVPs* if the link should only work for signed-in users.
 
 The RSVP link and the invitation emails use the **Public URL** setting under *Settings → General*, so set that to the address your players use. Invitations are not sent while it is empty.
 
 ## Loans
 
 Track which game is lent to whom, with a start date and an optional due date. Overdue loans are highlighted; mark a loan as returned or change its dates from the card. A game that is out on loan shows it on its game page.
+
+## Locations
+
+The places you play, such as your living room, a friend's house or the local game café. A session can be linked to a location, and a game night needs one. The list shows how many sessions were played at each location. Deleting a location unlinks its sessions; a location that a game night still uses cannot be deleted.
 
 ## Rules assistant
 
@@ -63,7 +77,8 @@ When the [rules assistant](/BoardGameTracker/getting-started/rag/) is enabled, u
 
 - **General** — language, date and time format, currency and the Public URL.
 - **Shelf of Shame**, **Game nights** — the feature toggles described above.
-- **BoardGameGeek** — the API key used for imports.
+- **Integrations** — the BoardGameGeek API key used for imports, and the base URL and API key of the changedetection.io instance used for [price tracking](#price-tracking).
+- **Single sign-on** — the OpenID Connect provider; see [Authentication & Users](/BoardGameTracker/getting-started/authentication/). Only shown to admins when authentication is enabled.
 - **Advanced** — update checks and the stable/beta track, links to report bugs and translate, and the danger zone: *reset data* removes games, players and sessions; *factory reset* also removes users and settings.
 - **Account** — your profile, password and linked player; admins also manage users here.
 
