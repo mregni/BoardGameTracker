@@ -1,0 +1,108 @@
+using System.Threading.Tasks;
+using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Core.GameNights.Interfaces;
+using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Loans.Interfaces;
+using BoardGameTracker.Core.Locations.Interfaces;
+using BoardGameTracker.Core.Players.Interfaces;
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using Xunit;
+
+namespace BoardGameTracker.Tests.Dashboard;
+
+public class CountControllerTests
+    {
+        private readonly Mock<IGameService> _gameServiceMock;
+        private readonly Mock<IPlayerService> _playerServiceMock;
+        private readonly Mock<ILocationService> _locationServiceMock;
+        private readonly Mock<ILoanService> _loanServiceMock;
+        private readonly Mock<IGameNightService> _gameNightServiceMock;
+        private readonly Mock<IShameService> _shameServiceMock;
+        private readonly CountController _controller;
+
+        public CountControllerTests()
+        {
+            _gameServiceMock = new Mock<IGameService>();
+            _playerServiceMock = new Mock<IPlayerService>();
+            _locationServiceMock = new Mock<ILocationService>();
+            _loanServiceMock = new Mock<ILoanService>();
+            _gameNightServiceMock = new Mock<IGameNightService>();
+            _shameServiceMock = new Mock<IShameService>();
+
+            _controller = new CountController(
+                _locationServiceMock.Object,
+                _playerServiceMock.Object,
+                _gameServiceMock.Object,
+                _loanServiceMock.Object,
+                _gameNightServiceMock.Object,
+                _shameServiceMock.Object);
+        }
+
+        private void VerifyNoOtherCalls()
+        {
+            _gameServiceMock.VerifyNoOtherCalls();
+            _playerServiceMock.VerifyNoOtherCalls();
+            _locationServiceMock.VerifyNoOtherCalls();
+            _loanServiceMock.VerifyNoOtherCalls();
+            _gameNightServiceMock.VerifyNoOtherCalls();
+            _shameServiceMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task GetMenuCounts_ShouldReturnCounts_WhenSuccessful()
+        {
+            _gameServiceMock
+                .Setup(x => x.CountAsync(TestContext.Current.CancellationToken))
+                .ReturnsAsync(42);
+
+            _playerServiceMock
+                .Setup(x => x.CountAsync(TestContext.Current.CancellationToken))
+                .ReturnsAsync(15);
+
+            _locationServiceMock
+                .Setup(x => x.CountAsync(TestContext.Current.CancellationToken))
+                .ReturnsAsync(7);
+
+            _shameServiceMock
+                .Setup(x => x.CountShelfOfShameGames(TestContext.Current.CancellationToken))
+                .ReturnsAsync(3);
+
+            _loanServiceMock
+                .Setup(x => x.CountActiveLoans(TestContext.Current.CancellationToken))
+                .ReturnsAsync(2);
+
+            _gameNightServiceMock
+                .Setup(x => x.CountFutureGameNights(TestContext.Current.CancellationToken))
+                .ReturnsAsync(4);
+
+            var result = await _controller.GetMenuCounts(TestContext.Current.CancellationToken);
+
+            var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+            var counts = okResult.Value.Should().BeAssignableTo<KeyValuePairDto<int>[]>().Subject;
+
+            counts.Should().HaveCount(6);
+            counts[0].Key.Should().Be("games");
+            counts[0].Value.Should().Be(42);
+            counts[1].Key.Should().Be("players");
+            counts[1].Value.Should().Be(15);
+            counts[2].Key.Should().Be("locations");
+            counts[2].Value.Should().Be(7);
+            counts[3].Key.Should().Be("shames");
+            counts[3].Value.Should().Be(3);
+            counts[4].Key.Should().Be("loans");
+            counts[4].Value.Should().Be(2);
+            counts[5].Key.Should().Be("game-nights");
+            counts[5].Value.Should().Be(4);
+
+            _gameServiceMock.Verify(x => x.CountAsync(TestContext.Current.CancellationToken), Times.Once);
+            _playerServiceMock.Verify(x => x.CountAsync(TestContext.Current.CancellationToken), Times.Once);
+            _locationServiceMock.Verify(x => x.CountAsync(TestContext.Current.CancellationToken), Times.Once);
+            _shameServiceMock.Verify(x => x.CountShelfOfShameGames(TestContext.Current.CancellationToken), Times.Once);
+            _loanServiceMock.Verify(x => x.CountActiveLoans(TestContext.Current.CancellationToken), Times.Once);
+            _gameNightServiceMock.Verify(x => x.CountFutureGameNights(TestContext.Current.CancellationToken), Times.Once);
+            VerifyNoOtherCalls();
+        }
+    }
