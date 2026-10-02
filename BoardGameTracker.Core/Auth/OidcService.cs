@@ -126,14 +126,14 @@ public class OidcService : IOidcService
         {
             user = externalLogin.User!;
             externalLogin.UpdateLastUsed();
-            _logger.LogInformation("Existing OIDC user {Username} logged in via {Provider}", user.UserName, providerName);
+            _logger.LogInformation("Existing OIDC user {UserId} logged in via {Provider}", user.Id, providerName);
         }
         else if (provider.AutoProvisionUsers)
         {
             var existingUser = email != null ? await FindLocalUserByEmailAsync(email) : null;
             if (existingUser != null)
             {
-                _logger.LogWarning("OIDC user with email {Email} matches existing local user {Username}; manual linking required", email, existingUser.UserName);
+                _logger.LogWarning("A new user from {Provider} shares the email of existing user {UserId}; manual linking required", providerName, existingUser.Id);
                 throw new DomainException(Constants.Errors.OidcEmailAlreadyRegistered);
             }
 
@@ -145,13 +145,13 @@ public class OidcService : IOidcService
             var result = await _userManager.CreateAsync(user);
             if (!result.Succeeded)
             {
-                _logger.LogError("Failed to auto-provision OIDC user {Username}: {Errors}", username, string.Join(", ", result.Errors.Select(e => e.Description)));
+                _logger.LogError("Failed to auto-provision a user from {Provider}: {Errors}", providerName, string.Join(", ", result.Errors.Select(e => e.Code)));
                 throw new DomainException(Constants.Errors.OidcProvisioningFailed);
             }
 
             await AssignRolesFromClaims(user, provider, userInfo);
             _context.ExternalLogins.Add(new ExternalLogin(user.Id, providerName, providerKey, displayName));
-            _logger.LogInformation("Auto-provisioned user {Username} from {Provider}", user.UserName, providerName);
+            _logger.LogInformation("Auto-provisioned user {UserId} from {Provider}", user.Id, providerName);
         }
         else
         {
@@ -187,7 +187,7 @@ public class OidcService : IOidcService
         _context.ExternalLogins.Add(new ExternalLogin(user.Id, providerName, providerKey, displayName));
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Linked OIDC provider {Provider} to user {Username}", providerName, user.UserName);
+        _logger.LogInformation("Linked OIDC provider {Provider} to user {UserId}", providerName, user.Id);
         return new OidcLinkResult(user.Id, providerName);
     }
 
@@ -365,7 +365,7 @@ public class OidcService : IOidcService
             if (groups.Any(g => string.Equals(g, provider.AdminGroupValue, StringComparison.OrdinalIgnoreCase)))
             {
                 role = Constants.AuthRoles.Admin;
-                _logger.LogInformation("Assigning Admin role to OIDC user {Username} based on group claim", user.UserName);
+                _logger.LogInformation("Assigning Admin role to OIDC user {UserId} based on group claim", user.Id);
             }
         }
 
