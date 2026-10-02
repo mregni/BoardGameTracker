@@ -380,6 +380,20 @@ public class SettingsServiceTests
     }
 
     [Theory]
+    [InlineData("http://changes.example.com")]
+    [InlineData("http://203.0.113.7:5000")]
+    public async Task UpdateSettingsAsync_ShouldRejectAPlainHttpChangeDetectionUrl_ToAPublicHost(string baseUrl)
+    {
+        var model = new UIResourceDto { ChangeDetectionBaseUrl = baseUrl };
+
+        var act = () => _settingsService.UpdateSettingsAsync(model);
+
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage(Constants.Errors.ChangeDetectionInsecureBaseUrl);
+        VerifyNothingWritten();
+    }
+
+    [Theory]
     [InlineData("not-a-url")]
     [InlineData("ftp://tracker.example.com")]
     [InlineData("tracker.example.com:5444")]

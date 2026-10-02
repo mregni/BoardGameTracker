@@ -78,6 +78,10 @@ public class SettingsService : ISettingsService
         var publicUrl = ValidateOptionalHttpUrl(model.PublicUrl, Constants.Errors.SettingsInvalidPublicUrl);
         var changeDetectionBaseUrl = ValidateOptionalHttpUrl(model.ChangeDetectionBaseUrl,
             Constants.Errors.ChangeDetectionInvalidBaseUrl);
+        if (changeDetectionBaseUrl.Length > 0 && !SecureUrlPolicy.IsAcceptable(changeDetectionBaseUrl))
+        {
+            throw new ValidationException(Constants.Errors.ChangeDetectionInsecureBaseUrl);
+        }
 
         await using var transaction = await _unitOfWork.BeginTransactionAsync();
         await SetUnlessOverriddenAsync(Constants.AppConfig.Currency, model.Currency);

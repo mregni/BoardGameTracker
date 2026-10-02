@@ -21,12 +21,17 @@ public static class SecureUrlPolicy
 
     private static bool IsLocalHost(Uri uri)
     {
-        if (uri.IsLoopback || !uri.Host.Contains('.') || uri.Host.EndsWith(".local", StringComparison.OrdinalIgnoreCase))
+        if (uri.IsLoopback)
         {
             return true;
         }
 
-        return IPAddress.TryParse(uri.Host, out var address) && IsPrivate(address);
+        if (uri.HostNameType == UriHostNameType.Dns)
+        {
+            return !uri.Host.Contains('.') || uri.Host.EndsWith(".local", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return IPAddress.TryParse(uri.DnsSafeHost, out var address) && IsPrivate(address);
     }
 
     private static bool IsPrivate(IPAddress address)

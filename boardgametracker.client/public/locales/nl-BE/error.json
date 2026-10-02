@@ -43,7 +43,8 @@
     "invalid-base-url": "De changedetection.io-URL is ongeldig",
     "not-configured": "changedetection.io is niet geconfigureerd",
     "watch-not-found": "Dit watch-id is niet gevonden op changedetection.io",
-    "create-watch-failed": "changedetection.io kon de watch niet aanmaken"
+    "create-watch-failed": "changedetection.io kon de watch niet aanmaken",
+    "insecure-base-url": "Gebruik een https-adres voor changedetection.io; gewoon http werkt alleen voor een lokaal adres zoals http://changedetection:5000"
   },
   "game": {
     "invalid-shop-url": "Geef een geldige http(s) winkel-URL op",

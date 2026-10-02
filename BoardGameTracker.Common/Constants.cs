@@ -87,6 +87,7 @@ public static class Constants
         public const string PlayerHostsGameNights = "error.player.hosts-game-nights";
         public const string InvalidExpansion = "error.session.invalid-expansion";
         public const string ChangeDetectionInvalidBaseUrl = "error.changedetection.invalid-base-url";
+        public const string ChangeDetectionInsecureBaseUrl = "error.changedetection.insecure-base-url";
         public const string ChangeDetectionNotConfigured = "error.changedetection.not-configured";
         public const string ChangeDetectionWatchNotFound = "error.changedetection.watch-not-found";
         public const string ChangeDetectionCreateWatchFailed = "error.changedetection.create-watch-failed";
