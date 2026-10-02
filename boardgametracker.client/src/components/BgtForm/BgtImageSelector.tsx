@@ -1,5 +1,13 @@
 import { cx } from "class-variance-authority";
-import { type ChangeEvent, type Dispatch, type DragEvent, type SetStateAction, useState } from "react";
+import {
+	type ChangeEvent,
+	type Dispatch,
+	type DragEvent,
+	type SetStateAction,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import TrashIcon from "@/assets/icons/trash.svg?react";
 import { BgtIconButton } from "../BgtIconButton/BgtIconButton";
@@ -17,10 +25,11 @@ interface ImagePreviewProps {
 
 const ImagePreview = (props: ImagePreviewProps) => {
 	const { src, onRemove } = props;
+	const { t } = useTranslation("images");
 
 	return (
 		<div className="group relative">
-			<img alt="Selected preview" src={src} className="w-28 h-28 rounded-lg" />
+			<img alt={t("selected-image")} src={src} className="w-28 h-28 rounded-lg" />
 			<div className="absolute top-0 left-0 w-full h-full collapse group-hover:visible">
 				<div className="flex justify-center items-center w-full h-full">
 					<BgtIconButton
@@ -28,6 +37,7 @@ const ImagePreview = (props: ImagePreviewProps) => {
 						className="rounded-full! border-solid border bg-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.6)]"
 						icon={<TrashIcon className="size-5" color="white" />}
 						onClick={onRemove}
+						aria-label={t("remove")}
 					/>
 				</div>
 			</div>
@@ -84,13 +94,22 @@ export const BgtImageSelector = (props: Props) => {
 		setHasDefaultImage(false);
 	};
 
+	const imagePreviewUrl = useMemo(() => (image ? URL.createObjectURL(image) : undefined), [image]);
+	useEffect(() => {
+		return () => {
+			if (imagePreviewUrl) {
+				URL.revokeObjectURL(imagePreviewUrl);
+			}
+		};
+	}, [imagePreviewUrl]);
+
 	return (
 		<div className="flex justify-start w-full flex-col">
 			<div className="flex flex-row justify-start gap-3">
 				{hasDefaultImage && !image && defaultImage && (
 					<ImagePreview src={defaultImage} onRemove={handleRemoveDefaultImage} />
 				)}
-				{image && <ImagePreview src={URL.createObjectURL(image)} onRemove={handleRemoveNewImage} />}
+				{imagePreviewUrl && <ImagePreview src={imagePreviewUrl} onRemove={handleRemoveNewImage} />}
 				{!image && !hasDefaultImage && (
 					<div
 						className={cx(
@@ -115,7 +134,13 @@ export const BgtImageSelector = (props: Props) => {
 								</p>
 								<p className="text-xs text-gray-500">{t("types")}</p>
 							</div>
-							<input id="dropzone-file" onChange={onImageChangeViaInput} type="file" className="hidden" />
+							<input
+								id="dropzone-file"
+								onChange={onImageChangeViaInput}
+								type="file"
+								accept="image/*"
+								className="hidden"
+							/>
 						</label>
 					</div>
 				)}

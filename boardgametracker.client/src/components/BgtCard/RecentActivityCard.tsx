@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { memo, type ReactNode, useCallback } from "react";
+import { type JSX, memo, type ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "./BgtCard";

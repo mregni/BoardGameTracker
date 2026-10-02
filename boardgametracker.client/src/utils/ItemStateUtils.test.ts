@@ -11,7 +11,6 @@ describe("ItemStateUtils", () => {
 				expect(getItemStateTranslationKey(GameState.Wanted, true)).toBe("game:state.on-loan");
 				expect(getItemStateTranslationKey(GameState.Owned, true)).toBe("game:state.on-loan");
 				expect(getItemStateTranslationKey(GameState.PreviouslyOwned, true)).toBe("game:state.on-loan");
-				expect(getItemStateTranslationKey(GameState.NotOwned, true)).toBe("game:state.on-loan");
 				expect(getItemStateTranslationKey(GameState.ForTrade, true)).toBe("game:state.on-loan");
 			});
 		});
@@ -27,10 +26,6 @@ describe("ItemStateUtils", () => {
 
 			it("should return previously-owned key for PreviouslyOwned state", () => {
 				expect(getItemStateTranslationKey(GameState.PreviouslyOwned, false)).toBe("game:state.previously-owned");
-			});
-
-			it("should return not-owned key for NotOwned state", () => {
-				expect(getItemStateTranslationKey(GameState.NotOwned, false)).toBe("game:state.not-owned");
 			});
 
 			it("should return for-trade key for ForTrade state", () => {
@@ -49,7 +44,6 @@ describe("ItemStateUtils", () => {
 				expect(getColorFromGameState(GameState.Wanted, true)).toBe("orange");
 				expect(getColorFromGameState(GameState.Owned, true)).toBe("orange");
 				expect(getColorFromGameState(GameState.PreviouslyOwned, true)).toBe("orange");
-				expect(getColorFromGameState(GameState.NotOwned, true)).toBe("orange");
 				expect(getColorFromGameState(GameState.ForTrade, true)).toBe("orange");
 			});
 		});
@@ -67,10 +61,6 @@ describe("ItemStateUtils", () => {
 				expect(getColorFromGameState(GameState.PreviouslyOwned, false)).toBe("red");
 			});
 
-			it("should return purple for NotOwned state", () => {
-				expect(getColorFromGameState(GameState.NotOwned, false)).toBe("purple");
-			});
-
 			it("should return blue for ForTrade state", () => {
 				expect(getColorFromGameState(GameState.ForTrade, false)).toBe("blue");
 			});
@@ -82,13 +72,7 @@ describe("ItemStateUtils", () => {
 
 		it("should return valid color types", () => {
 			const validColors = ["amber", "orange", "red", "purple", "blue", "green"];
-			const allStates = [
-				GameState.Wanted,
-				GameState.Owned,
-				GameState.PreviouslyOwned,
-				GameState.NotOwned,
-				GameState.ForTrade,
-			];
+			const allStates = [GameState.Wanted, GameState.Owned, GameState.PreviouslyOwned, GameState.ForTrade];
 
 			allStates.forEach((state) => {
 				expect(validColors).toContain(getColorFromGameState(state, false));

@@ -1,6 +1,5 @@
 import type { Expansion } from "./Expansion";
 import type { GameState } from "./GameState";
-import type { GameType } from "./GameType";
 import type { PersonType } from "./PersonType";
 
 export interface Game {
@@ -20,22 +19,20 @@ export interface Game {
 	rating: number | null;
 	weight: number | null;
 	bggId: number | null;
-	type: GameType;
 	state: GameState;
 	isLoaned: boolean;
-	baseGameId: number | null;
-	baseGame: Game | null;
 	expansions: Expansion[];
 	categories: GameLink[];
 	mechanics: GameLink[];
 	people: GamePerson[];
 	hasScoring: boolean;
 	buyingPrice: number | null;
+	soldPrice: number | null;
 	additionDate: Date | null;
 }
 
 export interface GameLink {
-	id: string;
+	id: number;
 	name: string;
 }
 

@@ -1,4 +1,4 @@
-import type { Player } from "..";
+import type { Player } from "../Player/Player";
 
 export interface MostWinner extends Player {
 	totalWins: number;
@@ -56,8 +56,8 @@ export interface ScoreRankChartData {
 }
 
 export interface XValue {
-	id: string;
-	value: number;
+	id: number;
+	value: number | null;
 }
 
 export enum Trend {

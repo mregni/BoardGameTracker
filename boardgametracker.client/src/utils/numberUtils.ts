@@ -10,11 +10,6 @@ export const GetPercentage = (value: number, total: number): number => {
 	return Math.round((value / total) * 100);
 };
 
-export const ToLogLevel = (level: number): string => {
-	const levels = ["log-levels:warn", "log-levels:debug", "log-levels:info", "log-levels:warn", "log-levels:error"];
-	return levels[level] || "log-levels:warn";
-};
-
 export const formatFileSize = (bytes: number): string => {
 	if (bytes < 1024) {
 		return `${bytes} B`;

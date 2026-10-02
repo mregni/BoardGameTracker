@@ -18,7 +18,7 @@ export const BgtAchievement = (props: Props) => {
 	return (
 		<BgtCard className={cx("col-span-1 p-3", !earned ? "opacity-40 grayscale" : "")}>
 			<div className="flex flex-row gap-3">
-				<img src={`/images/badges/${badge.image}`} alt="Badge" className="h-10 aspect-square" />
+				<img src={`/images/badges/${badge.image}`} alt={t(badge.titleKey)} className="h-10 aspect-square" />
 				<div className="flex flex-row justify-between w-full items-center">
 					<div className="flex flex-col">
 						<div className="font-bold">{t(`${badge.titleKey}`)}</div>
@@ -43,7 +43,7 @@ export const BgtAchievementIcon = (props: Omit<Props, "earned">) => {
 		<Tooltip.Provider>
 			<Tooltip.Root>
 				<Tooltip.Trigger asChild>
-					<img src={`/images/badges/${badge.image}`} alt="Badge" className="h-10 aspect-square" />
+					<img src={`/images/badges/${badge.image}`} alt={t(badge.titleKey)} className="h-10 aspect-square" />
 				</Tooltip.Trigger>
 				<Tooltip.Portal>
 					<Tooltip.Content

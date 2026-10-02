@@ -1,17 +1,18 @@
-import { Heading } from "@radix-ui/themes";
 import { cx } from "class-variance-authority";
 import type { ComponentPropsWithoutRef } from "react";
 
-interface Props extends Omit<ComponentPropsWithoutRef<"div">, "color"> {
-	size?: "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+import { type TextSize, textSizeClasses } from "../BgtText/textStyles";
+
+interface Props extends Omit<ComponentPropsWithoutRef<"h3">, "color"> {
+	size?: TextSize;
 }
 
 export const BgtHeading = (props: Props) => {
 	const { children, className, size = "8", ...rest } = props;
 
 	return (
-		<Heading as="h3" size={size} className={cx("line-clamp-1", className)} {...rest}>
+		<h3 className={cx(textSizeClasses[size], "font-bold line-clamp-1", className)} {...rest}>
 			{children}
-		</Heading>
+		</h3>
 	);
 };

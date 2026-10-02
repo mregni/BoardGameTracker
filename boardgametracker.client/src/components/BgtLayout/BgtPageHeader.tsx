@@ -29,7 +29,13 @@ export const BgtPageHeader = (props: Props) => {
 						</BgtButton>
 					)}
 					{backAction && !backText && (
-						<BgtIconButton size="2" intent="header" icon={<ArrowLeft />} onClick={backAction} />
+						<BgtIconButton
+							size="2"
+							intent="header"
+							icon={<ArrowLeft />}
+							onClick={backAction}
+							aria-label={t("common:back")}
+						/>
 					)}
 					{Icon && <Icon className="text-primary size-7" />}
 					{header && <BgtHeading>{header}</BgtHeading>}

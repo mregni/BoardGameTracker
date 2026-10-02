@@ -77,8 +77,8 @@ describe("BgtDialog", () => {
 		it("should render children", () => {
 			render(
 				<BgtDialogClose>
-					<button>Cancel</button>
-					<button>Confirm</button>
+					<button type="button">Cancel</button>
+					<button type="button">Confirm</button>
 				</BgtDialogClose>,
 			);
 			expect(screen.getByText("Cancel")).toBeInTheDocument();
@@ -88,7 +88,7 @@ describe("BgtDialog", () => {
 		it("should apply custom className", () => {
 			const { container } = render(
 				<BgtDialogClose className="custom-close">
-					<button>Cancel</button>
+					<button type="button">Cancel</button>
 				</BgtDialogClose>,
 			);
 			const wrapper = container.firstChild as HTMLElement;
@@ -129,8 +129,8 @@ describe("BgtDialog", () => {
 						<BgtDialogTitle>Confirm Action</BgtDialogTitle>
 						<BgtDialogDescription>Are you sure you want to proceed?</BgtDialogDescription>
 						<BgtDialogClose>
-							<button>Cancel</button>
-							<button>Confirm</button>
+							<button type="button">Cancel</button>
+							<button type="button">Confirm</button>
 						</BgtDialogClose>
 					</BgtDialogContent>
 				</BgtDialog>,

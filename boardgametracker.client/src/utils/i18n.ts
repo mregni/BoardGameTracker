@@ -14,6 +14,7 @@ const namespaces = [
 	"bgg-import",
 	"chat",
 	"compare",
+	"leaderboard",
 	"game",
 	"games",
 	"images",
@@ -43,7 +44,7 @@ void i18n
 	.use(initReactI18next)
 	.init({
 		debug: false,
-		supportedLngs: ["en-US", "nl-NL", "nl-BE"],
+		supportedLngs: ["en-US", "nl-NL", "nl-BE", "es-ES"],
 		fallbackLng: "en-US",
 		ns: [...namespaces],
 		defaultNS: "common",

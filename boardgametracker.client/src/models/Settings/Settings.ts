@@ -23,6 +23,7 @@ export interface Settings {
 	changeDetectionStatus: ChangeDetectionConfigStatus;
 	changeDetectionBaseUrl: string;
 	changeDetectionApiKey: string | null;
+	environmentOverrides: Record<string, string>;
 }
 
 export const SettingsSchema = z.object({

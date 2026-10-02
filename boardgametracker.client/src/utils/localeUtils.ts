@@ -1,5 +1,6 @@
-import type { Locale } from "date-fns/locale";
-import * as locales from "date-fns/locale";
+import { de, enUS, es, fr, it, type Locale, nl } from "date-fns/locale";
+
+const locales = { enUS, nl, fr, de, es, it } satisfies Record<string, Locale>;
 
 export const getDateFnsLocaleKey = (languageCode: string): keyof typeof locales => {
 	const mapping: Record<string, keyof typeof locales> = {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { Badge } from "..";
+import type { Badge } from "../Badge/Badge";
 
 export interface Player {
 	id: number;

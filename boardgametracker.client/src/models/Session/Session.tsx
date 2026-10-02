@@ -5,11 +5,11 @@ import type { PlayerSession } from "./PlayerSession";
 export interface Session {
 	id: number;
 	comment: string;
-	ended: boolean;
 	gameId: number;
 	start: Date;
+	end: Date;
 	minutes: number;
 	playerSessions: PlayerSession[];
 	expansions: Expansion[];
-	locationId: number;
+	locationId: number | null;
 }

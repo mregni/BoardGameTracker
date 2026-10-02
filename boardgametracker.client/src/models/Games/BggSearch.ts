@@ -1,5 +1,6 @@
 import * as z from "zod";
 
+import { localDateSchema } from "@/utils/localDate";
 import { GameState } from "./GameState";
 
 export interface BggSearch {
@@ -19,9 +20,7 @@ export const BggSearchSchema = z.object({
 	price: z.coerce.number({
 		error: "game:price.required",
 	}),
-	date: z.coerce.date({
-		error: "game:added-date.required",
-	}),
+	date: localDateSchema("game:added-date.required"),
 	state: z.nativeEnum(GameState),
 	hasScoring: z.boolean(),
 });
@@ -31,5 +30,3 @@ export const BggUserNameSchema = z.object({
 		.string({ error: "games:import.start.bgg-username.required" })
 		.min(1, { message: "games:import.start.bgg-username.required" }),
 });
-
-export type BggUserName = z.infer<typeof BggUserNameSchema>;

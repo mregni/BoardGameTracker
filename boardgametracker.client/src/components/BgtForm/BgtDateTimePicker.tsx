@@ -2,6 +2,7 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { cx } from "class-variance-authority";
 import { format } from "date-fns";
 import { useMemo } from "react";
+import { parseLocalDate } from "@/utils/localDate";
 import { BgtDatePicker } from "./BgtDatePicker";
 import { BgtFieldLabel } from "./BgtFieldLabel";
 import { BgtFormErrors } from "./BgtFormErrors";
@@ -29,7 +30,7 @@ export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
 				meta: field.state.meta,
 			},
 			handleChange: (dateString: string) => {
-				const newDate = new Date(dateString);
+				const newDate = parseLocalDate(dateString) ?? new Date(dateString);
 
 				if (selectedDate) {
 					newDate.setHours(selectedDate.getHours());

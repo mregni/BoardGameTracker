@@ -7,37 +7,37 @@ describe("BgtIconButton", () => {
 
 	describe("Rendering", () => {
 		it("should render the icon", () => {
-			render(<BgtIconButton icon={<TestIcon />} />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} />);
 			expect(screen.getByTestId("test-icon")).toBeInTheDocument();
 		});
 
 		it("should render as button element", () => {
-			render(<BgtIconButton icon={<TestIcon />} />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} />);
 			const button = screen.getByRole("button");
 			expect(button.tagName).toBe("BUTTON");
 		});
 
 		it("should have type button", () => {
-			render(<BgtIconButton icon={<TestIcon />} />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} />);
 			const button = screen.getByRole("button");
 			expect(button).toHaveAttribute("type", "button");
 		});
 
 		it("should render text icon", () => {
-			render(<BgtIconButton icon={<span>X</span>} />);
+			render(<BgtIconButton aria-label="Action" icon={<span>X</span>} />);
 			expect(screen.getByText("X")).toBeInTheDocument();
 		});
 	});
 
 	describe("Disabled State", () => {
 		it("should not be disabled by default", () => {
-			render(<BgtIconButton icon={<TestIcon />} />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} />);
 			const button = screen.getByRole("button");
 			expect(button).not.toBeDisabled();
 		});
 
 		it("should be disabled when disabled prop is true", () => {
-			render(<BgtIconButton icon={<TestIcon />} disabled />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} disabled />);
 			const button = screen.getByRole("button");
 			expect(button).toBeDisabled();
 		});
@@ -47,7 +47,7 @@ describe("BgtIconButton", () => {
 		it("should call onClick when clicked", async () => {
 			const user = userEvent.setup();
 			const handleClick = vi.fn();
-			render(<BgtIconButton icon={<TestIcon />} onClick={handleClick} />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} onClick={handleClick} />);
 
 			await user.click(screen.getByRole("button"));
 
@@ -57,7 +57,7 @@ describe("BgtIconButton", () => {
 		it("should not call onClick when disabled", async () => {
 			const user = userEvent.setup();
 			const handleClick = vi.fn();
-			render(<BgtIconButton icon={<TestIcon />} onClick={handleClick} disabled />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} onClick={handleClick} disabled />);
 
 			await user.click(screen.getByRole("button"));
 
@@ -67,7 +67,7 @@ describe("BgtIconButton", () => {
 		it("should pass event to onClick handler", async () => {
 			const user = userEvent.setup();
 			const handleClick = vi.fn();
-			render(<BgtIconButton icon={<TestIcon />} onClick={handleClick} />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} onClick={handleClick} />);
 
 			await user.click(screen.getByRole("button"));
 
@@ -77,13 +77,13 @@ describe("BgtIconButton", () => {
 
 	describe("ClassName Prop", () => {
 		it("should apply custom className", () => {
-			render(<BgtIconButton icon={<TestIcon />} className="custom-class" />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} className="custom-class" />);
 			const button = screen.getByRole("button");
 			expect(button).toHaveClass("custom-class");
 		});
 
 		it("should accept multiple custom classes", () => {
-			render(<BgtIconButton icon={<TestIcon />} className="class-one class-two" />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} className="class-one class-two" />);
 			const button = screen.getByRole("button");
 			expect(button).toHaveClass("class-one");
 			expect(button).toHaveClass("class-two");
@@ -92,12 +92,12 @@ describe("BgtIconButton", () => {
 
 	describe("Additional Props", () => {
 		it("should pass through data attributes", () => {
-			render(<BgtIconButton icon={<TestIcon />} data-testid="custom-button" />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} data-testid="custom-button" />);
 			expect(screen.getByTestId("custom-button")).toBeInTheDocument();
 		});
 
 		it("should pass through id attribute", () => {
-			render(<BgtIconButton icon={<TestIcon />} id="button-id" />);
+			render(<BgtIconButton aria-label="Action" icon={<TestIcon />} id="button-id" />);
 			const button = screen.getByRole("button");
 			expect(button).toHaveAttribute("id", "button-id");
 		});

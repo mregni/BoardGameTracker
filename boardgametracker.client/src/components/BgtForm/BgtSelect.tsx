@@ -77,16 +77,6 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 		}
 	}, [open]);
 
-	useEffect(() => {
-		const onResize = (event: Event) => {
-			event.stopImmediatePropagation();
-		};
-		window.addEventListener("resize", onResize);
-		return () => {
-			window.removeEventListener("resize", onResize);
-		};
-	}, []);
-
 	return (
 		<FormFieldWrapper label={label} errors={field.state.meta.errors}>
 			<Select.Root
@@ -127,7 +117,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 										type="text"
 										value={searchTerm}
 										onChange={handleSearchChange}
-										placeholder="Search..."
+										placeholder={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										onClick={(e) => e.stopPropagation()}
 										onKeyDown={(e) => {

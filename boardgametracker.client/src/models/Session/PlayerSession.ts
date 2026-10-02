@@ -3,6 +3,5 @@ export interface PlayerSession {
 	playerId: number;
 	won: boolean;
 	firstPlay: boolean;
-	isBot: boolean;
-	score?: number;
+	score?: number | null;
 }
