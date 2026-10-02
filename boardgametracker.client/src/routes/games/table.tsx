@@ -16,18 +16,17 @@ import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import { usePermissions } from "@/hooks/usePermissions";
 import { type Game, GameState, QUERY_KEYS } from "@/models";
-import { isPriceError } from "@/models/Games/GamePrice";
 import { getTrackedPricesCall } from "@/services/gameService";
 import { getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 import { RoundDecimal } from "@/utils/numberUtils";
-import { formatPrice } from "@/utils/priceUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
 import { EditableSelectCell } from "./-components/EditableSelectCell";
 import { GameTableCards, type GameTableColumn } from "./-components/GameTableCards";
+import { LivePrice, withStateChange } from "./-components/LivePrice";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
 import { useGamesData } from "./-hooks/useGamesData";
 import { useInlineGameUpdate } from "./-hooks/useInlineGameUpdate";
@@ -219,14 +218,9 @@ function RouteComponent() {
 						editing={isEditing(row.original.id, "state")}
 						onStartEdit={() => startEdit(row.original.id, "state")}
 						onStopEdit={stopEdit}
-						onChange={(state) => {
-							const livePrice = priceMap.get(row.original.id);
-							const prefill =
-								state === GameState.Owned && !row.original.buyingPrice && livePrice?.price != null
-									? { buyingPrice: livePrice.price }
-									: {};
-							updateGame({ ...row.original, state: state as GameState, ...prefill });
-						}}
+						onChange={(state) =>
+							updateGame(withStateChange(row.original, state as GameState, priceMap.get(row.original.id)))
+						}
 					/>
 				),
 				meta: { hideOnMobile: true },
@@ -303,18 +297,9 @@ function RouteComponent() {
 							header: t("games:columns.current-price"),
 							accessorFn: (game: Game) => priceMap.get(game.id)?.price ?? undefined,
 							sortUndefined: "last" as const,
-							cell: ({ row }: { row: { original: Game } }) => {
-								const livePrice = priceMap.get(row.original.id);
-								if (livePrice && isPriceError(livePrice.status)) {
-									return (
-										<span title={t("games:live-price.unavailable")} className="text-red-400">
-											!
-										</span>
-									);
-								}
-								if (!livePrice?.available || livePrice.price == null) return "-";
-								return formatPrice(livePrice.price, livePrice.currency ?? currency, uiLanguage);
-							},
+							cell: ({ row }: { row: { original: Game } }) => (
+								<LivePrice livePrice={priceMap.get(row.original.id)} currency={currency} uiLanguage={uiLanguage} />
+							),
 							meta: { hideOnMobile: true },
 						},
 					]
@@ -399,6 +384,8 @@ function RouteComponent() {
 				<div className="md:hidden">
 					<GameTableCards
 						readOnly={!canWrite}
+						priceMap={showLivePrices ? priceMap : undefined}
+						uiLanguage={uiLanguage}
 						games={filtered}
 						isLoading={isLoading}
 						currency={currency}

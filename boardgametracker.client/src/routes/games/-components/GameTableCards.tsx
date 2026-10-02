@@ -7,11 +7,14 @@ import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { BgtSelectItem, Game, GameState } from "@/models";
+import type { GamePrice } from "@/models/Games/GamePrice";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { RoundDecimal } from "@/utils/numberUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./EditableNumberCell";
 import { EditableSelectCell } from "./EditableSelectCell";
+import { LivePrice, withStateChange } from "./LivePrice";
+import { TrackedPriceIcon } from "./TrackedPriceIcon";
 
 export type GameTableColumn = "language" | "state" | "buyingPrice";
 
@@ -28,6 +31,8 @@ interface Props {
 	stopEdit: () => void;
 	updateGame: (game: Game) => void;
 	readOnly?: boolean;
+	priceMap?: Map<number, GamePrice>;
+	uiLanguage?: string;
 }
 
 const Row = ({ label, children }: { label: string; children: ReactNode }) => (
@@ -53,6 +58,8 @@ export const GameTableCards = (props: Props) => {
 		stopEdit,
 		updateGame,
 		readOnly = false,
+		priceMap,
+		uiLanguage,
 	} = props;
 	const { t } = useTranslation(["games", "game", "common"]);
 
@@ -71,7 +78,8 @@ export const GameTableCards = (props: Props) => {
 	return (
 		<ul className="flex flex-col gap-3">
 			{games.map((game) => {
-				const shopUrl = SafeHttpUrl(game.shopUrl);
+				const livePrice = priceMap?.get(game.id);
+				const shopUrl = SafeHttpUrl(livePrice?.shopUrl ?? game.shopUrl);
 				return (
 					<li key={game.id} className="rounded-lg border border-card-border bg-card-black p-3 flex flex-col gap-1">
 						<Link
@@ -81,6 +89,7 @@ export const GameTableCards = (props: Props) => {
 						>
 							<BgtAvatar image={game.image} title={game.title} size="small" />
 							<span className="font-semibold truncate">{game.title}</span>
+							{priceMap && game.changeDetectionWatchId && <TrackedPriceIcon livePrice={livePrice} />}
 						</Link>
 						<Row label={t("games:columns.players")}>{formatRange(game.minPlayers, game.maxPlayers)}</Row>
 						<Row label={t("games:columns.play-time")}>{formatRange(game.minPlayTime, game.maxPlayTime, "min")}</Row>
@@ -111,10 +120,15 @@ export const GameTableCards = (props: Props) => {
 								editing={isEditing(game.id, "state")}
 								onStartEdit={() => startEdit(game.id, "state")}
 								onStopEdit={stopEdit}
-								onChange={(state) => updateGame({ ...game, state: state as GameState })}
+								onChange={(state) => updateGame(withStateChange(game, state as GameState, livePrice))}
 								align="right"
 							/>
 						</Row>
+						{priceMap && (
+							<Row label={t("games:columns.current-price")}>
+								<LivePrice livePrice={livePrice} currency={currency} uiLanguage={uiLanguage} />
+							</Row>
+						)}
 						<Row label={t("games:columns.added")}>
 							{game.additionDate && dateFormat ? format(new Date(game.additionDate), dateFormat) : "-"}
 						</Row>
