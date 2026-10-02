@@ -301,6 +301,11 @@ public class GameNightService : IGameNightService
             }
         }
 
+        if (result.Sent == 0)
+        {
+            _cache.Remove(cooldownKey);
+        }
+
         _logger.LogInformation("Game night {GameNightId} invites: {Sent} sent", id, result.Sent);
         return result;
     }

@@ -689,6 +689,34 @@ public class GameNightServiceTests
     }
 
     [Fact]
+    public async Task SendInvitesAsync_ShouldAllowARetry_WhenNoInviteCouldBeSent()
+    {
+        var withEmail = RsvpWithPlayer(1, GameNightRsvpState.Pending, new Player("Alice", null, "alice@test.com"));
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow, 1, 1);
+        gameNight.SetInvitedPlayers([withEmail]);
+        _gameNightRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>())).ReturnsAsync(gameNight);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        _publicUrlBuilderMock.Setup(x => x.BuildRsvpUrlAsync(gameNight.LinkId)).ReturnsAsync("http://x/rsvp");
+        _emailServiceMock
+            .SetupSequence(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("smtp password wrong"))
+            .Returns(Task.CompletedTask);
+
+        var failed = await _gameNightService.SendInvitesAsync(1);
+        var retried = await _gameNightService.SendInvitesAsync(1);
+        var again = () => _gameNightService.SendInvitesAsync(1);
+
+        failed.Sent.Should().Be(0);
+        retried.Sent.Should().Be(1);
+        await again.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.InvitesCooldown);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()), Times.Exactly(3));
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Exactly(3));
+        _publicUrlBuilderMock.Verify(x => x.BuildRsvpUrlAsync(gameNight.LinkId), Times.Exactly(3));
+        _emailServiceMock.Verify(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task SendInvitesAsync_ShouldNotCountAsSent_WhenSendThrows()
     {
         var withEmail = RsvpWithPlayer(1, GameNightRsvpState.Pending, new Player("Alice", null, "alice@test.com"));
