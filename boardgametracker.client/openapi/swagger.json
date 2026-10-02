@@ -4497,7 +4497,7 @@
           },
           "yearPublished": {
             "maximum": 9999,
-            "minimum": 0,
+            "minimum": -5000,
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -4558,7 +4558,7 @@
           },
           "minAge": {
             "maximum": 120,
-            "minimum": 0,
+            "minimum": 1,
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -6801,7 +6801,7 @@
           },
           "yearPublished": {
             "maximum": 9999,
-            "minimum": 0,
+            "minimum": -5000,
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -6862,7 +6862,7 @@
           },
           "minAge": {
             "maximum": 120,
-            "minimum": 0,
+            "minimum": 1,
             "type": "integer",
             "format": "int32",
             "nullable": true
