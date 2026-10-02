@@ -96,12 +96,7 @@ function RouteComponent() {
 							</form.Field>
 							<form.Field name="date" validators={zodValidator(BggSearchSchema, "date")}>
 								{(field: AnyFieldApi) => (
-									<BgtDatePicker
-										field={field}
-										disabled={isPending}
-										label={t("added-date.label")}
-										placeholder={t("added-date.placeholder")}
-									/>
+									<BgtDatePicker field={field} disabled={isPending} label={t("added-date.label")} />
 								)}
 							</form.Field>
 							<form.Field name="state" validators={zodValidator(BggSearchSchema, "state")}>

@@ -31,7 +31,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 vi.mock("@/hooks/useAuth", () => ({
-	useAuth: () => mocks.authState,
+	useAuth: (selector: (state: typeof mocks.authState) => unknown) => selector(mocks.authState),
 }));
 
 vi.mock("@/services/settingsService", () => ({

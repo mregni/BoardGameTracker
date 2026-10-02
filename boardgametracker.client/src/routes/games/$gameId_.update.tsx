@@ -40,7 +40,7 @@ function RouteComponent() {
 		const updatedGame: Game = {
 			...game,
 			...data,
-			image: data.image ?? game.image,
+			image: data.image === undefined ? game.image : (data.image ?? ""),
 			additionDate: data.additionDate ?? null,
 		};
 		const result = await updateGame(updatedGame);

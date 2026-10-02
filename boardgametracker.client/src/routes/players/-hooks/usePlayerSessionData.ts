@@ -1,5 +1,5 @@
-import { useQueries, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/models";
+import { useQueries } from "@tanstack/react-query";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { getGames } from "@/services/queries/games";
 import { getPlayer, getPlayerSessions, getPlayers } from "@/services/queries/players";
@@ -12,7 +12,7 @@ interface UsePlayerSessionDataProps {
 }
 
 export const usePlayerSessionData = ({ playerId, onDeleteSuccess }: UsePlayerSessionDataProps) => {
-	const queryClient = useQueryClient();
+	const invalidator = useQueryInvalidator();
 	const { infoToast, errorToast } = useToasts();
 
 	const [settingsQuery, playerQuery, gamesQuery, sessionsQuery, playersQuery] = useQueries({
@@ -30,12 +30,7 @@ export const usePlayerSessionData = ({ playerId, onDeleteSuccess }: UsePlayerSes
 	const deleteSession = async (id: number) => {
 		try {
 			await deleteSessionCall(id);
-			await queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.player, playerId, QUERY_KEYS.sessions],
-			});
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] });
+			await invalidator.invalidateSessionDeleted(undefined, playerId);
 			infoToast("sessions:notifications.deleted");
 			onDeleteSuccess?.();
 		} catch {

@@ -98,7 +98,7 @@ export const useSessionFormState = ({
 }: UseSessionFormStateProps) => {
 	const [state, dispatch] = useReducer(sessionFormReducer, {
 		selectedGameId: initialGameId ?? 0,
-		expansionList: [],
+		expansionList: games.find((g) => g.id === initialGameId)?.expansions ?? [],
 		selectedExpansionIds: initialExpansions.map((x) => x.id),
 		players: initialPlayerSessions,
 		playerModal: { type: null, playerIdToEdit: null },

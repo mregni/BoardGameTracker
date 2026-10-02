@@ -1,15 +1,17 @@
-import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { type Game, QUERY_KEYS } from "@/models";
+import { useMutation, useQueries } from "@tanstack/react-query";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
+import type { Game } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { addGameWithBggCall } from "@/services/gameService";
 import { getSettings } from "@/services/queries/settings";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
 	onSuccess?: (game: Game) => void;
 }
 
 export const useBggGameModal = ({ onSuccess }: Props) => {
-	const queryClient = useQueryClient();
+	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
 
 	const [settingsQuery] = useQueries({
@@ -21,14 +23,12 @@ export const useBggGameModal = ({ onSuccess }: Props) => {
 	const addGameMutation = useMutation({
 		mutationFn: addGameWithBggCall,
 		async onSuccess(data) {
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-
+			await invalidator.invalidateGameCreated();
 			successToast("game:notifications.created");
 			onSuccess?.(data);
 		},
-		onError: () => {
-			errorToast("game:notifications.create-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "game:notifications.create-failed"));
 		},
 	});
 

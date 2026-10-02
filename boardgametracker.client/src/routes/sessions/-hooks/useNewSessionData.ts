@@ -17,6 +17,7 @@ export const useNewSessionData = ({ onSuccess }: Props = {}) => {
 	});
 
 	const games = gamesQuery.data ?? [];
+	const isLoading = gamesQuery.isLoading;
 
 	const saveSessionMutation = useMutation({
 		mutationFn: addSessionCall,
@@ -24,7 +25,11 @@ export const useNewSessionData = ({ onSuccess }: Props = {}) => {
 			successToast("player-session:new.notifications.created");
 			onSuccess?.();
 
-			await invalidator.invalidateSession(sessionResult.id, sessionResult.gameId);
+			await invalidator.invalidateSession(
+				sessionResult.id,
+				sessionResult.gameId,
+				sessionResult.playerSessions.map((x) => x.playerId),
+			);
 		},
 		onError: () => {
 			errorToast("player-session:new.notifications.create-failed");
@@ -32,6 +37,7 @@ export const useNewSessionData = ({ onSuccess }: Props = {}) => {
 	});
 
 	return {
+		isLoading,
 		isPending: saveSessionMutation.isPending,
 		saveSession: saveSessionMutation.mutateAsync,
 		games,

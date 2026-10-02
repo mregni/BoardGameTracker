@@ -16,6 +16,7 @@ import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { Game, GamePrice } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
+import { getDateFnsLocale } from "@/utils/localeUtils";
 import { formatPrice } from "@/utils/priceUtils";
 import { BgtPoster } from "../../-components/BgtPoster";
 import { PriceRefreshButton } from "./PriceRefreshButton";
@@ -137,9 +138,7 @@ export const GameStaticSection = (props: Props) => {
 							title={t("game:current-price.title")}
 							icon={<Coins />}
 							action={
-								onRefreshPrice && (
-									<PriceRefreshButton onRefresh={onRefreshPrice} isRefreshing={!!isRefreshingPrice} />
-								)
+								onRefreshPrice && <PriceRefreshButton onRefresh={onRefreshPrice} isRefreshing={!!isRefreshingPrice} />
 							}
 						/>
 					)}
@@ -157,15 +156,18 @@ export const GameStaticSection = (props: Props) => {
 					/>
 					{game.additionDate && (
 						<BgtFancyTextStatistic
-							content={formatDuration(
-								intervalToDuration({
-									start: game.additionDate,
-									end: new Date(),
-								}),
-								{
-									format: ["months", "days"],
-								},
-							)}
+							content={
+								formatDuration(
+									intervalToDuration({
+										start: game.additionDate,
+										end: new Date(),
+									}),
+									{
+										format: ["years", "months", "days"],
+										locale: getDateFnsLocale(uiLanguage),
+									},
+								) || t("common:today")
+							}
 							title={t("statistics:in-collection")}
 							suffix={t("since", {
 								date: toDisplay(game.additionDate, dateFormat, uiLanguage),

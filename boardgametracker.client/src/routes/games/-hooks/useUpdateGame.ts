@@ -21,7 +21,7 @@ export const useUpdateGame = ({ gameId, onSuccess }: Props) => {
 	const saveGameMutation = useMutation({
 		mutationFn: updateGameCall,
 		onSuccess: async () => {
-			await Promise.all([invalidator.invalidateGame(gameId), invalidator.invalidateShames()]);
+			await invalidator.invalidateGame(gameId);
 			successToast("game:notifications.updated");
 			onSuccess?.();
 		},

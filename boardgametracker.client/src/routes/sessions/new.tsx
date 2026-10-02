@@ -24,7 +24,7 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const { t } = useTranslation(["player-session", "dashboard"]);
 	const { canWrite } = usePermissions();
-	const { isPending, saveSession, games } = useNewSessionData();
+	const { isPending, isLoading, saveSession, games } = useNewSessionData();
 
 	if (!canWrite) return <Navigate to="/" />;
 
@@ -33,7 +33,7 @@ function RouteComponent() {
 		navigate({ to: `/games/${result.gameId}` });
 	};
 
-	if (games?.length === 0) {
+	if (!isLoading && games.length === 0) {
 		return (
 			<BgtEmptyPage
 				header={t("title-new")}

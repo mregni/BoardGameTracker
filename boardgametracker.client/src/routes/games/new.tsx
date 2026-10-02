@@ -25,8 +25,7 @@ function RouteComponent() {
 
 	const { saveGame, isLoading } = useNewGame({ onSuccess });
 	const save = async (game: CreateGame) => {
-		const result = await saveGame(game);
-		navigate({ to: `/games/${result.id}` });
+		await saveGame(game);
 	};
 
 	return <GameForm buttonText={t("new.save")} title={t("new.manual.title")} onClick={save} disabled={isLoading} />;

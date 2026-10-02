@@ -5,6 +5,7 @@ import { withForm } from "@/hooks/form";
 import { SettingsSchema } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
+import { EnvOverrideHint } from "./EnvOverrideHint";
 import { SettingsSection } from "./SettingsSection";
 
 export const GeneralSettings = withForm({
@@ -12,8 +13,9 @@ export const GeneralSettings = withForm({
 	props: {
 		languages: [] as { key: string; translationKey: string }[],
 		disabled: false,
+		overrides: {} as Record<string, string>,
 	},
-	render: function Render({ form, languages, disabled }) {
+	render: function Render({ form, languages, disabled, overrides }) {
 		const { t } = useTranslation(["settings", "language"]);
 
 		return (
@@ -23,7 +25,7 @@ export const GeneralSettings = withForm({
 						{(field: AnyFieldApi) => (
 							<BgtSelect
 								field={field}
-								disabled={disabled}
+								disabled={disabled || !!overrides.uiLanguage}
 								label={t("general.language.label")}
 								items={languages.map((value: { key: string; translationKey: string }) => ({
 									label: t(`language:${value.translationKey}`),
@@ -32,6 +34,7 @@ export const GeneralSettings = withForm({
 							/>
 						)}
 					</form.Field>
+					<EnvOverrideHint variable={overrides.uiLanguage} />
 				</SettingsSection>
 
 				<SettingsSection title={t("general.date-time.title")} description={t("general.date-time.description")}>
@@ -40,7 +43,7 @@ export const GeneralSettings = withForm({
 							{(field: AnyFieldApi) => (
 								<BgtInputField
 									field={field}
-									disabled={disabled}
+									disabled={disabled || !!overrides.dateFormat}
 									type="text"
 									label={t("general.date-time.date-format")}
 									placeholder="MM/DD/YYYY"
@@ -51,7 +54,7 @@ export const GeneralSettings = withForm({
 							{(field: AnyFieldApi) => (
 								<BgtInputField
 									field={field}
-									disabled={disabled}
+									disabled={disabled || !!overrides.timeFormat}
 									type="text"
 									label={t("general.date-time.time-format")}
 									placeholder="HH:mm"
@@ -59,6 +62,8 @@ export const GeneralSettings = withForm({
 							)}
 						</form.Field>
 					</div>
+					<EnvOverrideHint variable={overrides.dateFormat} />
+					<EnvOverrideHint variable={overrides.timeFormat} />
 				</SettingsSection>
 
 				<SettingsSection title={t("general.currency.title")} description={t("general.currency.description")}>
@@ -66,13 +71,14 @@ export const GeneralSettings = withForm({
 						{(field: AnyFieldApi) => (
 							<BgtInputField
 								field={field}
-								disabled={disabled}
+								disabled={disabled || !!overrides.currency}
 								type="text"
 								label={t("general.currency.label")}
 								placeholder="USD"
 							/>
 						)}
 					</form.Field>
+					<EnvOverrideHint variable={overrides.currency} />
 				</SettingsSection>
 			</>
 		);

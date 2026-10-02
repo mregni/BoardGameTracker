@@ -6,6 +6,7 @@ import TrendUpIcon from "@/assets/icons/trend-up.svg?react";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { type TopPlayer, Trend } from "@/models";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
@@ -21,11 +22,15 @@ export const TopPlayersCard = (props: Props) => {
 
 	return (
 		<BgtCard title={t("game:titles.top-players")} icon={Trophy}>
-			<div className="flex flex-col gap-3">
-				{topPlayers.map((player) => (
-					<TopPlayerCardItem key={player.playerId} player={player} />
-				))}
-			</div>
+			{topPlayers.length === 0 ? (
+				<BgtNoData />
+			) : (
+				<div className="flex flex-col gap-3">
+					{topPlayers.map((player) => (
+						<TopPlayerCardItem key={player.playerId} player={player} />
+					))}
+				</div>
+			)}
 		</BgtCard>
 	);
 };
@@ -67,7 +72,7 @@ const TopPlayerCardItem = (props: ItemProps) => {
 					{player.trend === Trend.Down && <TrendDownIcon className="size-5 mt-0.5" />}
 					{RoundDecimal(player.winPercentage * 100, 0.1)}%
 				</div>
-				{player.averageScore && (
+				{player.averageScore != null && (
 					<div className="text-white/50 text-sm">
 						{RoundDecimal(player.averageScore, 0.1)} {t("statistics:average-abreviation")}
 					</div>

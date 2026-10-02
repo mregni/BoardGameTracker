@@ -28,7 +28,7 @@ import { SessionPlayerManager } from "./SessionPlayerManager";
 
 interface Props {
 	game?: Game | undefined;
-	locationId?: number | undefined;
+	locationId?: number | null;
 	minutes?: number | undefined;
 	comment?: string | null;
 	start?: Date | undefined;

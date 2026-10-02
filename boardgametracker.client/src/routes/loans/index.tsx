@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import History from "@/assets/icons/history.svg?react";
 import LeftRightArrowIcon from "@/assets/icons/left-right-arrow.svg?react";
@@ -11,6 +12,8 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { usePermissions } from "@/hooks/usePermissions";
+import type { Loan } from "@/models/Loan/Loan";
+import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { getLoans } from "@/services/queries/loans";
 import { useGameById } from "../-hooks/useGameById";
 import { usePlayerById } from "../-hooks/usePlayerById";
@@ -18,6 +21,7 @@ import { LoanCard } from "./-components/LoanCard";
 import { useLoanActions } from "./-hooks/useLoanActions";
 import { useLoanModals } from "./-hooks/useLoanModels";
 import { useLoans } from "./-hooks/useLoans";
+import { EditLoanModal } from "./-modals/EditLoanModal";
 import NewLoanModal from "./-modals/NewLoanModal";
 
 export const Route = createFileRoute("/loans/")({
@@ -30,9 +34,10 @@ export const Route = createFileRoute("/loans/")({
 function RouteComponent() {
 	const { t } = useTranslation(["loans", "common"]);
 	const { canWrite } = usePermissions();
-	const { loans, settings, deleteLoan, returnLoan, isLoading } = useLoans();
+	const { loans, settings, deleteLoan, returnLoan, updateLoan, isLoading } = useLoans();
 	const { gameById } = useGameById();
 	const { playerById } = usePlayerById();
+	const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
 
 	const modals = useLoanModals();
 
@@ -42,7 +47,17 @@ function RouteComponent() {
 		onDeleteModalClose: modals.deleteModal.hide,
 	});
 
-	if (loans.length === 0) {
+	const requestDelete = (loan: Loan) => {
+		setSelectedLoan(loan);
+		modals.deleteModal.show();
+	};
+
+	const requestEdit = (loan: Loan) => {
+		setSelectedLoan(loan);
+		modals.editModal.show();
+	};
+
+	if (!isLoading && loans.length === 0) {
 		return (
 			<BgtEmptyPage
 				header={t("common:loans")}
@@ -105,7 +120,8 @@ function RouteComponent() {
 											player={playerById(loan.playerId) ?? undefined}
 											dateFormat={settings.dateFormat}
 											onReturn={canWrite ? actions.handleReturnLoan : undefined}
-											onDelete={canWrite ? actions.handleDelete : undefined}
+											onEdit={canWrite ? requestEdit : undefined}
+											onDelete={canWrite ? requestDelete : undefined}
 										/>
 									))}
 							</div>
@@ -127,12 +143,25 @@ function RouteComponent() {
 											game={gameById(loan.gameId) ?? undefined}
 											player={playerById(loan.playerId) ?? undefined}
 											dateFormat={settings.dateFormat}
-											onDelete={canWrite ? actions.handleDelete : undefined}
+											onDelete={canWrite ? requestDelete : undefined}
 										/>
 									))}
 							</div>
 						)}
 						<NewLoanModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
+						<EditLoanModal
+							loan={selectedLoan}
+							open={modals.editModal.isOpen}
+							close={modals.editModal.hide}
+							onSave={updateLoan}
+						/>
+						<BgtDeleteModal
+							title={selectedLoan ? (gameById(selectedLoan.gameId)?.title ?? "") : ""}
+							open={modals.deleteModal.isOpen}
+							close={modals.deleteModal.hide}
+							onDelete={() => selectedLoan && actions.handleDelete(selectedLoan.id)}
+							description={t("delete.description")}
+						/>
 					</>
 				)}
 			</BgtPageContent>

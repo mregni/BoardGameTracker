@@ -39,7 +39,9 @@ function RootComponent() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { queryClient } = Route.useRouteContext();
-	const { isAuthenticated, authStatus, fetchAuthStatus } = useAuth();
+	const isAuthenticated = useAuth((s) => s.isAuthenticated);
+	const authStatus = useAuth((s) => s.authStatus);
+	const fetchAuthStatus = useAuth((s) => s.fetchAuthStatus);
 	const [authChecked, setAuthChecked] = useState(false);
 
 	useEffect(() => {

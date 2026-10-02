@@ -112,7 +112,7 @@ export const ManualsDialog = ({ gameId, open, close, canWrite, ragEnabled, dateF
 											icon={<Refresh />}
 											intent="primary"
 											disabled={isReindexing}
-											title={t("manuals.reindex")}
+											aria-label={t("manuals.reindex")}
 											onClick={() => reindexManual(manual.id)}
 										/>
 									)}
@@ -120,9 +120,15 @@ export const ManualsDialog = ({ gameId, open, close, canWrite, ragEnabled, dateF
 										icon={<Download />}
 										intent="primary"
 										onClick={() => downloadManual(manual.id, manual.title)}
+										aria-label={t("manuals.download")}
 									/>
 									{canWrite && (
-										<BgtIconButton icon={<Trash />} intent="danger" onClick={() => deleteManual(manual.id)} />
+										<BgtIconButton
+											icon={<Trash />}
+											intent="danger"
+											onClick={() => deleteManual(manual.id)}
+											aria-label={t("common:delete.button")}
+										/>
 									)}
 								</div>
 							</div>

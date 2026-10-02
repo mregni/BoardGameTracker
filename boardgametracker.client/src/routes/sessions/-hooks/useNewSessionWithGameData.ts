@@ -1,5 +1,5 @@
-import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/models";
+import { useMutation, useQueries } from "@tanstack/react-query";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { getGame } from "@/services/queries/games";
 import { addSessionCall } from "@/services/sessionService";
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const useNewSessionWithGameData = ({ gameId, onSuccess }: Props) => {
-	const queryClient = useQueryClient();
+	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
 
 	const [gameQuery] = useQueries({
@@ -25,18 +25,11 @@ export const useNewSessionWithGameData = ({ gameId, onSuccess }: Props) => {
 			successToast("player-session:new.notifications.created");
 			onSuccess?.();
 
-			await Promise.all([
-				...sessionResult.playerSessions.map((x) =>
-					queryClient.invalidateQueries({
-						queryKey: [QUERY_KEYS.player, x.playerId, QUERY_KEYS.sessions],
-					}),
-				),
-				queryClient.invalidateQueries({
-					queryKey: [QUERY_KEYS.game, sessionResult.gameId],
-				}),
-				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] }),
-				queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] }),
-			]);
+			await invalidator.invalidateSession(
+				sessionResult.id,
+				sessionResult.gameId,
+				sessionResult.playerSessions.map((x) => x.playerId),
+			);
 		},
 		onError: () => {
 			errorToast("player-session:new.notifications.create-failed");

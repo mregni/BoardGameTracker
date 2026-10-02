@@ -1,14 +1,13 @@
-import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { QUERY_KEYS } from "@/models";
+import { useMutation, useQueries } from "@tanstack/react-query";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { getEnvironment, getLanguages, getSettings } from "@/services/queries/settings";
 import { updateSettingsCall } from "@/services/settingsService";
 import { apiErrorMessage } from "@/utils/errorUtils";
 
 export const useSettingsData = () => {
-	const queryClient = useQueryClient();
-	const { successToast } = useToasts();
+	const invalidator = useQueryInvalidator();
+	const { successToast, errorToast } = useToasts();
 
 	const [settingsQuery, languageQuery, environmentQuery] = useQueries({
 		queries: [getSettings(), getLanguages(), getEnvironment()],
@@ -22,14 +21,10 @@ export const useSettingsData = () => {
 		mutationFn: updateSettingsCall,
 		onSuccess() {
 			successToast("settings:save.successfull");
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.settings] });
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] });
-			queryClient.invalidateQueries({
-				predicate: (query) => query.queryKey[0] === QUERY_KEYS.game && query.queryKey[2] === QUERY_KEYS.price,
-			});
+			invalidator.invalidateSettings();
 		},
 		onError: (error) => {
-			toast.error(apiErrorMessage(error, "settings:save.failed"));
+			errorToast(apiErrorMessage(error, "settings:save.failed"));
 		},
 	});
 
