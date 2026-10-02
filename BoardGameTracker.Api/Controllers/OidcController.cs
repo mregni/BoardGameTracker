@@ -54,9 +54,17 @@ public class OidcController : ControllerBase
     public async Task<IActionResult> Login(string provider, [FromQuery] string? redirect)
     {
         _logger.LogInformation("OIDC login initiated for provider {Provider}", provider);
-        var request = await _oidcService.StartLoginAsync(provider, await PublicBaseUrlAsync(), redirect);
-        SetCookie(StateCookieName, request.State, OidcService.PendingAuthorizationLifetime);
-        return Redirect(request.Url);
+        try
+        {
+            var request = await _oidcService.StartLoginAsync(provider, await PublicBaseUrlAsync(), redirect);
+            SetCookie(StateCookieName, request.State, OidcService.PendingAuthorizationLifetime);
+            return Redirect(request.Url);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            _logger.LogWarning(ex, "OIDC login via {Provider} could not start", provider);
+            return await FailAsync(ex is EntityNotFoundException ? Constants.Errors.OidcProviderUnavailable : ErrorKey(ex));
+        }
     }
 
     [HttpGet("{provider}/callback")]
@@ -80,7 +88,7 @@ public class OidcController : ControllerBase
             SetCookie(HandoffCookieName, _oidcService.CreateHandoff(result.Login), OidcService.HandoffLifetime);
             return Redirect(await SpaUrlAsync($"{CallbackPage}?redirect={Uri.EscapeDataString(result.RedirectPath)}"));
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "OIDC login via {Provider} failed", provider);
             return await FailAsync(ErrorKey(ex));
@@ -136,7 +144,7 @@ public class OidcController : ControllerBase
             var result = await _oidcService.CompleteLinkAsync(provider, code, state, browserState);
             return Redirect(await SpaUrlAsync($"{CallbackPage}?linked={Uri.EscapeDataString(result.ProviderName)}"));
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "OIDC link via {Provider} failed", provider);
             return await FailAsync(ErrorKey(ex));

@@ -116,6 +116,32 @@ public class OidcRoundTripTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Login_ShouldSendTheBrowserToTheErrorPage_WhenTheProviderDoesNotExist()
+    {
+        using var browser = _fixture.CreateBrowserClient();
+
+        var start = await browser.GetAsync("/api/auth/oidc/no-such-provider/login");
+
+        start.StatusCode.Should().Be(HttpStatusCode.Found);
+        start.Headers.Location!.ToString().Should().Be($"http://localhost/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcProviderUnavailable)}");
+    }
+
+    [Fact]
+    public async Task Login_ShouldSendARateLimitedBrowserToTheErrorPage()
+    {
+        using var browser = _fixture.CreateBrowserClient();
+        for (var i = 0; i < 10; i++)
+        {
+            await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login");
+        }
+
+        var limited = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login");
+
+        limited.StatusCode.Should().Be(HttpStatusCode.Found);
+        limited.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.TooManyRequests)}");
+    }
+
+    [Fact]
     public async Task Callback_ShouldRejectAForgedState_WithoutTouchingTheProvider()
     {
         using var browser = _fixture.CreateBrowserClient();

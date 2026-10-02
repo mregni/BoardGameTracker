@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Ardalis.GuardClauses;
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
+using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common.Configuration;
 using BoardGameTracker.Common.Entities.Auth;
@@ -206,6 +207,14 @@ builder.Services.AddRateLimiter(options =>
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
         {
             context.HttpContext.Response.Headers.RetryAfter = Math.Ceiling(retryAfter.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        var request = context.HttpContext.Request;
+        if (HttpMethods.IsGet(request.Method) && request.Path.StartsWithSegments("/api/auth/oidc"))
+        {
+            context.HttpContext.Response.StatusCode = StatusCodes.Status302Found;
+            context.HttpContext.Response.Headers.Location =
+                $"{OidcController.CallbackPage}?error={Uri.EscapeDataString(BoardGameTracker.Common.Constants.Errors.TooManyRequests)}";
         }
 
         return ValueTask.CompletedTask;

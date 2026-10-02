@@ -39,7 +39,8 @@
     "oidc-failed": "Inloggen via de identiteitsprovider is mislukt.",
     "last-sign-in-method": "Dit is je enige manier om in te loggen. Stel eerst een wachtwoord in (Wachtwoord vergeten, of laat een beheerder het resetten) en ontkoppel dan.",
     "current-password-required": "Vul je huidige wachtwoord in om je e-mailadres te wijzigen.",
-    "email-change-needs-password": "Dit account logt alleen in via single sign-on. Stel eerst een wachtwoord in met \"Wachtwoord vergeten\" op de inlogpagina en wijzig daarna het e-mailadres."
+    "email-change-needs-password": "Dit account logt alleen in via single sign-on. Stel eerst een wachtwoord in met \"Wachtwoord vergeten\" op de inlogpagina en wijzig daarna het e-mailadres.",
+    "oidc-provider-unavailable": "Deze inlogprovider is niet beschikbaar. Kies een andere manier om in te loggen of vraag het aan je beheerder."
   },
   "changedetection": {
     "invalid-base-url": "De changedetection.io-URL is ongeldig",

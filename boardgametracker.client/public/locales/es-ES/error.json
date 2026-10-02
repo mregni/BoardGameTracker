@@ -39,7 +39,8 @@
     "oidc-failed": "Error al iniciar sesión con el proveedor de identidad.",
     "last-sign-in-method": "Es tu única forma de iniciar sesión. Primero establece una contraseña (Olvidé mi contraseña, o pide a un administrador que la restablezca) y luego desvincula.",
     "current-password-required": "Introduce tu contraseña actual para cambiar tu dirección de correo.",
-    "email-change-needs-password": "Esta cuenta solo inicia sesión con inicio de sesión único. Establece primero una contraseña con \"¿Olvidaste tu contraseña?\" en la página de inicio de sesión y después cambia la dirección de correo."
+    "email-change-needs-password": "Esta cuenta solo inicia sesión con inicio de sesión único. Establece primero una contraseña con \"¿Olvidaste tu contraseña?\" en la página de inicio de sesión y después cambia la dirección de correo.",
+    "oidc-provider-unavailable": "Este proveedor de inicio de sesión no está disponible. Elige otra forma de iniciar sesión o pregunta a tu administrador."
   },
   "changedetection": {
     "invalid-base-url": "La URL de changedetection.io no es válida",

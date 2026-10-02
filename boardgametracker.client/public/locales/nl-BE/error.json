@@ -39,7 +39,8 @@
     "oidc-failed": "Aanmelden via de identiteitsprovider is mislukt.",
     "last-sign-in-method": "Dit is je enige manier om aan te melden. Stel eerst een wachtwoord in (Wachtwoord vergeten, of laat een beheerder het resetten) en ontkoppel dan.",
     "current-password-required": "Geef je huidige wachtwoord in om je e-mailadres te wijzigen.",
-    "email-change-needs-password": "Dit account meldt zich alleen aan via single sign-on. Stel eerst een wachtwoord in met \"Wachtwoord vergeten\" op de aanmeldpagina en wijzig daarna het e-mailadres."
+    "email-change-needs-password": "Dit account meldt zich alleen aan via single sign-on. Stel eerst een wachtwoord in met \"Wachtwoord vergeten\" op de aanmeldpagina en wijzig daarna het e-mailadres.",
+    "oidc-provider-unavailable": "Deze aanmeldprovider is niet beschikbaar. Kies een andere manier om je aan te melden of vraag het aan je beheerder."
   },
   "changedetection": {
     "invalid-base-url": "De changedetection.io-URL is ongeldig",

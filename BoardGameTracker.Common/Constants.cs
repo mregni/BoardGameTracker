@@ -70,6 +70,8 @@ public static class Constants
         public const string OidcProviderRejected = "error.auth.oidc-provider-rejected";
         public const string OidcHandoffExpired = "error.auth.oidc-handoff-expired";
         public const string OidcFailed = "error.auth.oidc-failed";
+        public const string OidcProviderUnavailable = "error.auth.oidc-provider-unavailable";
+        public const string TooManyRequests = "error.auth.too-many-requests";
         public const string GameAlreadyExists = "error.game.already-exists";
         public const string ExpansionAlreadyExists = "error.game.expansion-already-exists";
         public const string PlayerRangeIncomplete = "error.game.player-range-incomplete";
