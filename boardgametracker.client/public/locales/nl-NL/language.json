@@ -1,5 +1,6 @@
 {
   "english": "English",
-  "dutch": "Nederlands",
-  "spanish": "Spaans"
+  "dutch-belgium": "Nederlands (België)",
+  "dutch-netherlands": "Nederlands (Nederland)",
+  "spanish": "Español"
 }

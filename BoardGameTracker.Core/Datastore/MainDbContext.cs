@@ -382,8 +382,8 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
             .Entity<Language>()
             .HasData(
                 new Language {Id = 1, Key = "en-us", TranslationKey = "english"},
-                new Language {Id = 2, Key = "nl-be", TranslationKey = "dutch"},
-                new Language {Id = 3, Key = "nl-nl", TranslationKey = "dutch"},
+                new Language {Id = 2, Key = "nl-be", TranslationKey = "dutch-belgium"},
+                new Language {Id = 3, Key = "nl-nl", TranslationKey = "dutch-netherlands"},
                 new Language {Id = 4, Key = "es-es", TranslationKey = "spanish"}
             );
     }

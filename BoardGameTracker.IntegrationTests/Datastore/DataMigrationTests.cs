@@ -99,6 +99,8 @@ public class DataMigrationTests : IAsyncLifetime
             (await context.People.CountAsync(p => p.Name == "Martin Wallace", TestContext.Current.CancellationToken)).Should().Be(1);
             (await context.Config.Where(c => c.Key == "currency").Select(c => c.Value).ToListAsync(TestContext.Current.CancellationToken))
                 .Should().Equal("USD");
+            (await context.Languages.Select(l => l.TranslationKey).ToListAsync(TestContext.Current.CancellationToken))
+                .Should().OnlyHaveUniqueItems();
         }
     }
 
