@@ -14,7 +14,7 @@ interface SessionFormApi {
 interface UseSessionFormStateProps {
 	form: SessionFormApi;
 	games: Game[];
-	initialGameId?: number;
+	initialGame?: Game;
 	initialExpansions?: Expansion[];
 	initialPlayerSessions?: (CreateSessionPlayer | CreatePlayerSessionNoScoring)[];
 }
@@ -23,7 +23,6 @@ type PlayerType = CreateSessionPlayer | CreatePlayerSessionNoScoring;
 
 interface SessionFormState {
 	selectedGameId: number;
-	expansionList: Expansion[];
 	selectedExpansionIds: number[];
 	players: PlayerType[];
 	playerModal: {
@@ -33,7 +32,7 @@ interface SessionFormState {
 }
 
 type SessionFormAction =
-	| { type: "SET_GAME"; gameId: number; expansionList: Expansion[] }
+	| { type: "SET_GAME"; gameId: number }
 	| { type: "SET_SELECTED_EXPANSIONS"; expansionIds: number[] }
 	| { type: "ADD_PLAYER"; player: PlayerType }
 	| { type: "UPDATE_PLAYER"; player: PlayerType }
@@ -48,7 +47,7 @@ function sessionFormReducer(state: SessionFormState, action: SessionFormAction):
 			return {
 				...state,
 				selectedGameId: action.gameId,
-				expansionList: action.expansionList,
+				selectedExpansionIds: [],
 			};
 		case "SET_SELECTED_EXPANSIONS":
 			return { ...state, selectedExpansionIds: action.expansionIds };
@@ -92,13 +91,12 @@ function sessionFormReducer(state: SessionFormState, action: SessionFormAction):
 export const useSessionFormState = ({
 	form,
 	games,
-	initialGameId,
+	initialGame,
 	initialExpansions = [],
 	initialPlayerSessions = [],
 }: UseSessionFormStateProps) => {
 	const [state, dispatch] = useReducer(sessionFormReducer, {
-		selectedGameId: initialGameId ?? 0,
-		expansionList: games.find((g) => g.id === initialGameId)?.expansions ?? [],
+		selectedGameId: initialGame?.id ?? 0,
 		selectedExpansionIds: initialExpansions.map((x) => x.id),
 		players: initialPlayerSessions,
 		playerModal: { type: null, playerIdToEdit: null },
@@ -121,13 +119,9 @@ export const useSessionFormState = ({
 				const selectedBoardGame = games.find((g) => g.id === newGameId);
 				if (selectedBoardGame) {
 					form.setFieldValue("minutes", selectedBoardGame.maxPlayTime ?? 30);
-					form.setFieldValue("start", addMinutes(new Date(), -(selectedBoardGame?.maxPlayTime ?? 30)));
-					dispatch({
-						type: "SET_GAME",
-						gameId: newGameId,
-						expansionList: selectedBoardGame.expansions,
-					});
+					form.setFieldValue("start", addMinutes(new Date(), -(selectedBoardGame.maxPlayTime ?? 30)));
 				}
+				dispatch({ type: "SET_GAME", gameId: newGameId });
 			}
 		});
 		return () => subscription.unsubscribe();
@@ -161,9 +155,15 @@ export const useSessionFormState = ({
 		dispatch({ type: "SET_SELECTED_EXPANSIONS", expansionIds });
 	}, []);
 
+	const selectedGame =
+		games.find((g) => g.id === state.selectedGameId) ??
+		(initialGame?.id === state.selectedGameId ? initialGame : undefined);
+	const expansionList: Expansion[] = selectedGame?.expansions ?? [];
+
 	return {
 		selectedGameId: state.selectedGameId,
-		expansionList: state.expansionList,
+		hasScoring: selectedGame?.hasScoring ?? true,
+		expansionList,
 		selectedExpansionIds: state.selectedExpansionIds,
 		setSelectedExpansionIds,
 

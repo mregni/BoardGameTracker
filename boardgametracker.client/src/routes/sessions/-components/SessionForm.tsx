@@ -82,6 +82,7 @@ export const SessionForm = (props: Props) => {
 
 	const {
 		selectedGameId,
+		hasScoring,
 		expansionList,
 		selectedExpansionIds,
 		setSelectedExpansionIds,
@@ -98,7 +99,7 @@ export const SessionForm = (props: Props) => {
 	} = useSessionFormState({
 		form,
 		games,
-		initialGameId: game?.id,
+		initialGame: game,
 		initialExpansions: expansions,
 		initialPlayerSessions: playerSessions,
 	});
@@ -136,7 +137,7 @@ export const SessionForm = (props: Props) => {
 								form={form}
 								players={players}
 								playerList={playerList}
-								hasScoring={game?.hasScoring ?? true}
+								hasScoring={hasScoring}
 								disabled={disabled}
 								isCreateModalOpen={isCreateModalOpen}
 								isUpdateModalOpen={isUpdateModalOpen}
