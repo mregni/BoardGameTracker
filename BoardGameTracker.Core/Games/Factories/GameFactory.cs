@@ -51,53 +51,61 @@ public class GameFactory : IGameFactory
             item.Image ?? string.Empty,
             item.Id.ToString(CultureInfo.InvariantCulture));
 
-        var namedLinks = links.Where(l => !string.IsNullOrWhiteSpace(l.Value)).ToList();
-
-        var categories = await _gameRepository.GetOrCreateCategoriesAsync(namedLinks
-            .Where(l => l.Type == Constants.Bgg.Category)
-            .Select(l => l.Value));
-
-        var mechanics = await _gameRepository.GetOrCreateMechanicsAsync(namedLinks
-            .Where(l => l.Type == Constants.Bgg.Mechanic)
-            .Select(l => l.Value));
-
-        var people = await _gameRepository.GetOrCreatePeopleAsync(namedLinks
-            .Where(l => l.Type is Constants.Bgg.Artist or Constants.Bgg.Designer or Constants.Bgg.Publisher)
-            .Select(l => new PersonKey(l.Value, l.Type.ToPersonTypeEnum())));
-
-        var game = new Game(name, hasScoring, state);
-        game.UpdateImage(imageUrl);
-        game.UpdateDescription(item.Description ?? string.Empty);
-        game.UpdateYearPublished(item.YearPublished);
-        game.UpdatePlayerCount(minPlayers, maxPlayers);
-        game.UpdatePlayTime(minPlayTime, maxPlayTime);
-        game.UpdateMinAge(item.MinAge > 0 ? item.MinAge : null);
-        game.UpdateRating(item.Statistics?.Ratings?.Average);
-        game.UpdateWeight(item.Statistics?.Ratings?.AverageWeight);
-        game.UpdateBggId(item.Id);
-        game.UpdateBuyingPrice(price);
-        game.UpdateShopUrl(shopUrl);
-
-        foreach (var category in categories)
+        try
         {
-            game.AddCategory(category);
-        }
+            var namedLinks = links.Where(l => !string.IsNullOrWhiteSpace(l.Value)).ToList();
 
-        foreach (var mechanic in mechanics)
+            var categories = await _gameRepository.GetOrCreateCategoriesAsync(namedLinks
+                .Where(l => l.Type == Constants.Bgg.Category)
+                .Select(l => l.Value));
+
+            var mechanics = await _gameRepository.GetOrCreateMechanicsAsync(namedLinks
+                .Where(l => l.Type == Constants.Bgg.Mechanic)
+                .Select(l => l.Value));
+
+            var people = await _gameRepository.GetOrCreatePeopleAsync(namedLinks
+                .Where(l => l.Type is Constants.Bgg.Artist or Constants.Bgg.Designer or Constants.Bgg.Publisher)
+                .Select(l => new PersonKey(l.Value, l.Type.ToPersonTypeEnum())));
+
+            var game = new Game(name, hasScoring, state);
+            game.UpdateImage(imageUrl);
+            game.UpdateDescription(item.Description ?? string.Empty);
+            game.UpdateYearPublished(item.YearPublished);
+            game.UpdatePlayerCount(minPlayers, maxPlayers);
+            game.UpdatePlayTime(minPlayTime, maxPlayTime);
+            game.UpdateMinAge(item.MinAge > 0 ? item.MinAge : null);
+            game.UpdateRating(item.Statistics?.Ratings?.Average);
+            game.UpdateWeight(item.Statistics?.Ratings?.AverageWeight);
+            game.UpdateBggId(item.Id);
+            game.UpdateBuyingPrice(price);
+            game.UpdateShopUrl(shopUrl);
+
+            foreach (var category in categories)
+            {
+                game.AddCategory(category);
+            }
+
+            foreach (var mechanic in mechanics)
+            {
+                game.AddMechanic(mechanic);
+            }
+
+            foreach (var person in people)
+            {
+                game.AddPerson(person);
+            }
+
+            if (additionDate.HasValue)
+            {
+                game.UpdateAdditionDate(additionDate.Value);
+            }
+
+            return game;
+        }
+        catch
         {
-            game.AddMechanic(mechanic);
+            _imageService.DeleteImage(imageUrl);
+            throw;
         }
-
-        foreach (var person in people)
-        {
-            game.AddPerson(person);
-        }
-
-        if (additionDate.HasValue)
-        {
-            game.UpdateAdditionDate(additionDate.Value);
-        }
-
-        return game;
     }
 }

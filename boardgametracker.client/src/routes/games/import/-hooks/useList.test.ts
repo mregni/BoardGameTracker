@@ -1,7 +1,17 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { GameState, type ImportGame } from "@/models";
+
+const mocks = vi.hoisted(() => ({
+	invalidateGames: vi.fn(),
+	invalidateCounts: vi.fn(),
+	invalidateDashboard: vi.fn(),
+	successToast: vi.fn(),
+	errorToast: vi.fn(),
+	importGamesCall: vi.fn((_games: unknown[]) => Promise.resolve(true)),
+}));
 
 vi.mock("@/services/queries/games", () => ({
 	getBggCollection: (username: string) => ({
@@ -47,21 +57,34 @@ vi.mock("@/services/queries/settings", () => ({
 
 vi.mock("@/hooks/useQueryInvalidator", () => ({
 	useQueryInvalidator: () => ({
-		invalidateGames: vi.fn(),
-		invalidateCounts: vi.fn(),
-		invalidateDashboard: vi.fn(),
+		invalidateGames: mocks.invalidateGames,
+		invalidateCounts: mocks.invalidateCounts,
+		invalidateDashboard: mocks.invalidateDashboard,
 	}),
 }));
 
 vi.mock("@/routes/-hooks/useToasts", () => ({
-	useToasts: () => ({ successToast: vi.fn(), errorToast: vi.fn() }),
+	useToasts: () => ({ successToast: mocks.successToast, errorToast: mocks.errorToast }),
 }));
 
 vi.mock("@/services/gameService", () => ({
-	importGamesCall: vi.fn(() => Promise.resolve()),
+	importGamesCall: mocks.importGamesCall,
 }));
 
-import { useList } from "./useList";
+import { IMPORT_BATCH_SIZE, useList } from "./useList";
+
+const importGame = (bggId: number): ImportGame => ({
+	title: `Game ${bggId}`,
+	bggId,
+	state: GameState.Owned,
+	imageUrl: "",
+	checked: true,
+	inCollection: false,
+	hasScoring: true,
+	price: 0,
+	addedDate: new Date("2024-01-01"),
+	lastModified: new Date("2024-01-01"),
+});
 
 const createWrapper = () => {
 	const queryClient = new QueryClient({
@@ -80,6 +103,11 @@ const renderUseList = async () => {
 };
 
 describe("useList", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mocks.importGamesCall.mockImplementation(() => Promise.resolve(true));
+	});
+
 	it("hides games already in the collection by default", async () => {
 		const { result } = await renderUseList();
 
@@ -122,5 +150,40 @@ describe("useList", () => {
 
 		expect(result.current.games.find((g) => g.bggId === 1)?.checked).toBe(false);
 		expect(result.current.games.find((g) => g.bggId === 2)?.checked).toBe(true);
+	});
+
+	it("imports the selection in small sequential batches and reports progress", async () => {
+		const { result } = await renderUseList();
+		const selected = Array.from({ length: 12 }, (_, index) => importGame(100 + index));
+
+		act(() => result.current.startImport(selected));
+
+		await waitFor(() => expect(mocks.successToast).toHaveBeenCalledWith("games:import.success"));
+		expect(mocks.importGamesCall.mock.calls.map(([batch]) => batch.length)).toEqual([
+			IMPORT_BATCH_SIZE,
+			IMPORT_BATCH_SIZE,
+			12 - 2 * IMPORT_BATCH_SIZE,
+		]);
+		expect(mocks.importGamesCall.mock.calls.flatMap(([batch]) => batch)).toEqual(selected);
+		expect(result.current.importProgress).toEqual({ done: 12, total: 12 });
+		expect(mocks.invalidateGames).toHaveBeenCalled();
+	});
+
+	it("stops at a failed batch but still refreshes the games the earlier batches imported", async () => {
+		mocks.importGamesCall
+			.mockImplementationOnce(() => Promise.resolve(true))
+			.mockImplementationOnce(() => Promise.reject(new Error("boom")));
+		const { result } = await renderUseList();
+		const selected = Array.from({ length: 12 }, (_, index) => importGame(100 + index));
+
+		act(() => result.current.startImport(selected));
+
+		await waitFor(() => expect(mocks.errorToast).toHaveBeenCalled());
+		expect(mocks.importGamesCall).toHaveBeenCalledTimes(2);
+		expect(result.current.importProgress).toEqual({ done: IMPORT_BATCH_SIZE, total: 12 });
+		await waitFor(() => expect(mocks.invalidateGames).toHaveBeenCalled());
+		expect(mocks.invalidateCounts).toHaveBeenCalled();
+		expect(mocks.invalidateDashboard).toHaveBeenCalled();
+		expect(mocks.successToast).not.toHaveBeenCalled();
 	});
 });

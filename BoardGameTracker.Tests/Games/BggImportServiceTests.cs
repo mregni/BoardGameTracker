@@ -15,8 +15,10 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -30,6 +32,7 @@ public class BggImportServiceTests
     private readonly Mock<IGameFactory> _gameFactoryMock;
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IImageService> _imageServiceMock;
     private readonly Mock<ILogger<BggImportService>> _loggerMock;
     private readonly BggImportService _bggImportService;
 
@@ -42,6 +45,7 @@ public class BggImportServiceTests
         _gameRepositoryMock = new Mock<IGameRepository>();
         _gameRepositoryMock.Setup(x => x.GetGameByBggId(It.IsAny<int>())).ReturnsAsync((Game?)null);
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _imageServiceMock = new Mock<IImageService>();
         _loggerMock = new Mock<ILogger<BggImportService>>();
 
         _bggImportService = new BggImportService(
@@ -50,6 +54,7 @@ public class BggImportServiceTests
             _gameFactoryMock.Object,
             _gameRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            _imageServiceMock.Object,
             _loggerMock.Object);
     }
 
@@ -60,6 +65,7 @@ public class BggImportServiceTests
         _gameFactoryMock.VerifyNoOtherCalls();
         _gameRepositoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
+        _imageServiceMock.VerifyNoOtherCalls();
     }
 
     private static ThingResponse CreateFailedThingResponse()
@@ -701,6 +707,48 @@ public class BggImportServiceTests
     #endregion
 
     #region ImportList Tests
+
+    [Fact]
+    public async Task ImportList_ShouldDeleteDownloadedImages_WhenSavingFails()
+    {
+        var importGames = new List<ImportGame>
+        {
+            new() { Title = "Game One", BggId = 1001, ImageUrl = "img1.jpg", State = GameState.Owned, HasScoring = true },
+            new() { Title = "Game Two", BggId = 1002, ImageUrl = "img2.jpg", State = GameState.Owned, HasScoring = true }
+        };
+        var first = new ThingResponse.Item { Id = 1001, Image = "img1.jpg", Type = "boardgame" };
+        var second = new ThingResponse.Item { Id = 1002, Image = "img2.jpg", Type = "boardgame" };
+        var firstGame = new Game("Game One");
+        firstGame.UpdateImage("/images/cover/1001.webp");
+        var secondGame = new Game("Game Two");
+        secondGame.UpdateImage("/images/cover/1002.webp");
+
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ReturnsAsync(CreateSucceededThingResponse([first, second]));
+        _gameFactoryMock
+            .Setup(x => x.CreateFromBggAsync(first, true, GameState.Owned, null, It.IsAny<DateTime?>(), null))
+            .ReturnsAsync(firstGame);
+        _gameFactoryMock
+            .Setup(x => x.CreateFromBggAsync(second, true, GameState.Owned, null, It.IsAny<DateTime?>(), null))
+            .ReturnsAsync(secondGame);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ThrowsAsync(new DbUpdateException("duplicate key value violates unique constraint"));
+
+        var act = () => _bggImportService.ImportList(importGames);
+
+        await act.Should().ThrowAsync<DbUpdateException>();
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/cover/1001.webp"), Times.Once);
+        _imageServiceMock.Verify(x => x.DeleteImage("/images/cover/1002.webp"), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(It.IsAny<int>()), Times.Exactly(2));
+        _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Exactly(2));
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(It.IsAny<ThingResponse.Item>(), true, GameState.Owned, null, It.IsAny<DateTime?>(), null), Times.Exactly(2));
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        VerifyNoOtherCalls();
+    }
 
     [Fact]
     public async Task ImportList_ShouldProcessAllGames_AndSaveChangesOnce_WhenAllGamesFound()

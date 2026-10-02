@@ -59,6 +59,7 @@ function RouteComponent() {
 		totalCount,
 		startImport,
 		importing,
+		importProgress,
 	} = useList({
 		username,
 	});
@@ -212,6 +213,8 @@ function RouteComponent() {
 		startImport(games.filter((game) => game.checked));
 	};
 
+	const loadingLabel = importing ? t("games:import.importing", importProgress) : undefined;
+
 	return (
 		<BgtPage>
 			<BgtPageHeader header={t("bgg-import:title")} actions={[]} icon={Database} />
@@ -230,7 +233,7 @@ function RouteComponent() {
 						</div>
 					</div>
 				) : isLoading ? (
-					<BgtLoadingSpinner />
+					<BgtLoadingSpinner label={loadingLabel} />
 				) : (
 					<>
 						<div className="flex flex-row justify-between gap-4 mb-16">

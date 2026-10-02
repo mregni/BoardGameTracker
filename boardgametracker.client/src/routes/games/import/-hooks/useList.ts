@@ -8,6 +8,8 @@ import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { classifyImportError } from "../-utils/importErrors";
 
+export const IMPORT_BATCH_SIZE = 5;
+
 interface Props {
 	username: string;
 }
@@ -90,15 +92,25 @@ export const useList = ({ username }: Props) => {
 		});
 	}, []);
 
+	const [importProgress, setImportProgress] = useState({ done: 0, total: 0 });
+
 	const startImportMutation = useMutation({
-		mutationFn: importGamesCall,
-		async onSuccess() {
+		mutationFn: async (selected: ImportGame[]) => {
+			setImportProgress({ done: 0, total: selected.length });
+			for (let start = 0; start < selected.length; start += IMPORT_BATCH_SIZE) {
+				const batch = selected.slice(start, start + IMPORT_BATCH_SIZE);
+				await importGamesCall(batch);
+				setImportProgress({ done: start + batch.length, total: selected.length });
+			}
+		},
+		async onSettled() {
 			await Promise.all([
 				invalidator.invalidateGames(),
 				invalidator.invalidateCounts(),
 				invalidator.invalidateDashboard(),
 			]);
-
+		},
+		onSuccess() {
 			successToast("games:import.success");
 		},
 		onError(error) {
@@ -119,7 +131,8 @@ export const useList = ({ username }: Props) => {
 		inCollectionCount,
 		processingGames,
 		totalCount,
-		startImport: startImportMutation.mutateAsync,
+		startImport: startImportMutation.mutate,
 		importing: startImportMutation.isPending,
+		importProgress,
 	};
 };

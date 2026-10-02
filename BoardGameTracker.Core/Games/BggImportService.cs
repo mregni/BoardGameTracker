@@ -9,6 +9,7 @@ using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -22,6 +23,7 @@ public class BggImportService : IBggImportService
     private readonly IGameFactory _gameFactory;
     private readonly IGameRepository _gameRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IImageService _imageService;
     private readonly ILogger<BggImportService> _logger;
 
     public BggImportService(
@@ -30,6 +32,7 @@ public class BggImportService : IBggImportService
         IGameFactory gameFactory,
         IGameRepository gameRepository,
         IUnitOfWork unitOfWork,
+        IImageService imageService,
         ILogger<BggImportService> logger)
     {
         _bggClient = bggClient;
@@ -37,6 +40,7 @@ public class BggImportService : IBggImportService
         _gameFactory = gameFactory;
         _gameRepository = gameRepository;
         _unitOfWork = unitOfWork;
+        _imageService = imageService;
         _logger = logger;
     }
 
@@ -145,39 +149,52 @@ public class BggImportService : IBggImportService
             ? await FetchThingsFromBgg(toImport.Select(x => x.BggId).ToList())
             : new Dictionary<int, ThingResponse.Item>();
 
-        var imported = 0;
-        foreach (var importGame in toImport)
+        var created = new List<Game>();
+        try
         {
-            try
+            foreach (var importGame in toImport)
             {
-                if (!items.TryGetValue(importGame.BggId, out var item))
+                try
                 {
-                    _logger.LogWarning("BGG game with id {BggId} not found, skipping", importGame.BggId);
-                    continue;
+                    if (!items.TryGetValue(importGame.BggId, out var item))
+                    {
+                        _logger.LogWarning("BGG game with id {BggId} not found, skipping", importGame.BggId);
+                        continue;
+                    }
+
+                    var game = await _gameFactory.CreateFromBggAsync(
+                        item,
+                        importGame.HasScoring,
+                        importGame.State,
+                        importGame.Price is > 0 ? importGame.Price : null,
+                        importGame.AddedDate);
+
+                    await _gameRepository.CreateAsync(game);
+                    created.Add(game);
                 }
+                catch (ValidationException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to import BGG game {BggId}, skipping", importGame.BggId);
+                }
+            }
 
-                var game = await _gameFactory.CreateFromBggAsync(
-                    item,
-                    importGame.HasScoring,
-                    importGame.State,
-                    importGame.Price is > 0 ? importGame.Price : null,
-                    importGame.AddedDate);
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch
+        {
+            foreach (var game in created)
+            {
+                _imageService.DeleteImage(game.Image);
+            }
 
-                await _gameRepository.CreateAsync(game);
-                imported++;
-            }
-            catch (ValidationException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to import BGG game {BggId}, skipping", importGame.BggId);
-            }
+            throw;
         }
 
-        await _unitOfWork.SaveChangesAsync();
-        _logger.LogInformation("BGG import completed, {Imported}/{Count} games imported", imported, distinctGames.Count);
+        _logger.LogInformation("BGG import completed, {Imported}/{Count} games imported", created.Count, distinctGames.Count);
     }
 
     private async Task<Dictionary<int, ThingResponse.Item>> FetchThingsFromBgg(IReadOnlyList<int> bggIds)

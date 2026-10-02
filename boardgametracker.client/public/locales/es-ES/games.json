@@ -2,7 +2,7 @@
   "back": "Back to games",
   "import": {
     "loading": "Loading BGG data...",
-    "importing": "Importing games from BoardGameGeek...",
+    "importing": "Importando juegos de BoardGameGeek ({{done}}/{{total}})...",
     "success": "Games are successfully imported from BoardGameGeek",
     "start": {
       "bgg-username": {

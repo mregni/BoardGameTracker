@@ -343,6 +343,43 @@ public class GameFactoryTests
     }
 
     [Fact]
+    public async Task CreateFromBggAsync_ShouldDeleteTheDownloadedImage_WhenTheGameCannotBeBuilt()
+    {
+        var item = CreateBasicItem();
+        item.YearPublished = DateTime.UtcNow.Year + 50;
+
+        var act = () => _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        _imageServiceMock.Verify(x => x.DeleteImage("downloaded-image.jpg"), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldDeleteTheDownloadedImage_WhenTaxonomyLookupFails()
+    {
+        var item = CreateBasicItem();
+        item.Links = [new ThingResponse.Link { Type = Constants.Bgg.Category, Id = 1, Value = "Strategy" }];
+        _gameRepositoryMock
+            .Setup(x => x.GetOrCreateCategoriesAsync(It.IsAny<IEnumerable<string>>()))
+            .ThrowsAsync(new InvalidOperationException("connection lost"));
+
+        var act = () => _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        _imageServiceMock.Verify(x => x.DeleteImage("downloaded-image.jpg"), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateFromBggAsync_ShouldKeepTheImage_WhenTheGameIsBuilt()
+    {
+        var item = CreateBasicItem();
+
+        await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        _imageServiceMock.Verify(x => x.DeleteImage(It.IsAny<string?>()), Times.Never);
+    }
+
+    [Fact]
     public async Task CreateFromBggAsync_ShouldAddCategoriesFromLinks()
     {
         var item = CreateBasicItem();

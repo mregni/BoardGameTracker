@@ -12,5 +12,10 @@ describe("BgtLoadingSpinner", () => {
 			render(<BgtLoadingSpinner />);
 			expect(screen.getByTestId("loading-bars")).toBeInTheDocument();
 		});
+
+		it("should show the given label instead of the default text", () => {
+			render(<BgtLoadingSpinner label="Importing 5/12" />);
+			expect(screen.getByText("Importing 5/12")).toBeInTheDocument();
+		});
 	});
 });

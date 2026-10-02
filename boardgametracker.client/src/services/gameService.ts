@@ -92,9 +92,11 @@ export const saveGameExpansionCall = (expansionUpdate: ExpansionUpdate): Promise
 };
 
 export const importGamesCall = (games: ImportGame[]): Promise<boolean> => {
-	return axiosInstance.post<boolean>(`${domain}/bgg/import`, { games: [...games] }).then((response) => {
-		return response.data;
-	});
+	return axiosInstance
+		.post<boolean>(`${domain}/bgg/import`, { games: [...games] }, { timeout: 120000 })
+		.then((response) => {
+			return response.data;
+		});
 };
 
 export const addManualExpansionCall = (gameId: number, title: string): Promise<Expansion> => {
