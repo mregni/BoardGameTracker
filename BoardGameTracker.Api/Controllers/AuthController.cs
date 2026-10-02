@@ -4,6 +4,7 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Core.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -38,7 +39,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         _logger.LogDebug("Login attempt received");
-        var response = await _authService.LoginAsync(request, HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
+        var response = await _authService.LoginAsync(request, ClientAddressKey.From(HttpContext.Connection.RemoteIpAddress));
         ProfileImageCookie.Issue(HttpContext, _imageTickets.Issue(), _imageTickets.Lifetime);
         return Ok(response);
     }

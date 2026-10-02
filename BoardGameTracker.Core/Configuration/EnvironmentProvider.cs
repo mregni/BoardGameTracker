@@ -47,7 +47,7 @@ public class EnvironmentProvider : IEnvironmentProvider
     private static string[] SplitList(string? value) =>
         string.IsNullOrWhiteSpace(value)
             ? []
-            : value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            : value.Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     public string? SmtpHost => Environment.GetEnvironmentVariable("SMTP_HOST");
 

@@ -42,7 +42,7 @@ Logins use short-lived access tokens (60 minutes) and refresh tokens (7 days) si
 
 Player photos under `/images/profile` are only served to signed-in browsers: logging in sets an `HttpOnly` cookie scoped to that path (it lives as long as the refresh token and is cleared on logout), and API clients can pass their bearer token instead. Game covers stay public. The public RSVP page therefore shows initials instead of photos.
 
-Five failed logins for the same username from the same address block further attempts from that address for 15 minutes. Behind a reverse proxy this only works when [`TRUSTED_PROXIES`](/BoardGameTracker/getting-started/proxy/) is set.
+Five failed logins for the same username from the same address block further attempts from that address for 15 minutes (IPv6 clients are grouped per /64 network). After 20 failures for one username across all addresses, that username gets one attempt every 30 seconds until the failures age out; the account is slowed down, never locked. Behind a reverse proxy this only works when [`TRUSTED_PROXIES`](/BoardGameTracker/getting-started/proxy/) is set.
 
 ## OpenID Connect
 

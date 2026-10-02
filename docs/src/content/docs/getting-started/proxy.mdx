@@ -16,7 +16,7 @@ environment:
   - TRUSTED_PROXIES=172.16.0.0/12
 ```
 
-Several entries are separated by commas (`TRUSTED_PROXIES=10.0.0.5,172.16.0.0/12`). The application logs a warning the first time forwarded headers arrive while `TRUSTED_PROXIES` is empty.
+Several entries are separated by commas, semicolons or spaces (`TRUSTED_PROXIES=10.0.0.5,172.16.0.0/12`). Only IP addresses and networks are accepted: a container or host name such as `traefik` is ignored and logged as an error at startup, and when no entry is usable the forwarded headers stay off. The application logs a warning the first time forwarded headers arrive while no proxy is trusted.
 
 ## Public URL
 

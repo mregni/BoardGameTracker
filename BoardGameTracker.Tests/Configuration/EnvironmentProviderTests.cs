@@ -379,4 +379,16 @@ public class EnvironmentProviderTests : IDisposable
 
         _environmentProvider.EmailEnabled.Should().BeFalse();
     }
+
+    [Theory]
+    [InlineData("172.16.0.0/12,10.0.0.0/8")]
+    [InlineData("172.16.0.0/12;10.0.0.0/8")]
+    [InlineData("172.16.0.0/12 10.0.0.0/8")]
+    [InlineData(" 172.16.0.0/12 ; 10.0.0.0/8 ")]
+    public void TrustedProxies_ShouldAcceptCommaSemicolonAndSpaceSeparators(string value)
+    {
+        Environment.SetEnvironmentVariable("TRUSTED_PROXIES", value);
+
+        _environmentProvider.TrustedProxies.Should().Equal("172.16.0.0/12", "10.0.0.0/8");
+    }
 }

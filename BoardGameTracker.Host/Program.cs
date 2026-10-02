@@ -12,6 +12,7 @@ using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Auth;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
@@ -75,7 +76,7 @@ builder.Services.AddDataProtection()
     .SetApplicationName("boardgametracker");
 
 var environmentProvider = new EnvironmentProvider();
-var trustedProxies = environmentProvider.TrustedProxies;
+var trustedProxies = TrustedProxyList.Parse(environmentProvider.TrustedProxies);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -83,16 +84,14 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 
-    foreach (var proxy in trustedProxies)
+    foreach (var proxy in trustedProxies.Proxies)
     {
-        if (IPAddress.TryParse(proxy, out var address))
-        {
-            options.KnownProxies.Add(address);
-        }
-        else if (System.Net.IPNetwork.TryParse(proxy, out var network))
-        {
-            options.KnownIPNetworks.Add(network);
-        }
+        options.KnownProxies.Add(proxy);
+    }
+
+    foreach (var network in trustedProxies.Networks)
+    {
+        options.KnownIPNetworks.Add(network);
     }
 });
 
@@ -164,7 +163,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddRateLimiter(options =>
 {
     options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
-        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        ClientAddressKey.From(context.Connection.RemoteIpAddress),
         _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 10,
@@ -172,7 +171,7 @@ builder.Services.AddRateLimiter(options =>
             QueueLimit = 0
         }));
     options.AddPolicy("changedetection", context => RateLimitPartition.GetFixedWindowLimiter(
-        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        ClientAddressKey.From(context.Connection.RemoteIpAddress),
         _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 30,
@@ -180,7 +179,7 @@ builder.Services.AddRateLimiter(options =>
             QueueLimit = 0
         }));
     options.AddPolicy("rag", context => RateLimitPartition.GetFixedWindowLimiter(
-        context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? ClientAddressKey.From(context.Connection.RemoteIpAddress),
         _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 10,
@@ -326,7 +325,12 @@ app.UseSerilogRequestLogging(options =>
                 : Serilog.Events.LogEventLevel.Information;
 });
 
-if (trustedProxies.Count > 0)
+foreach (var entry in trustedProxies.Invalid)
+{
+    Log.Error("TRUSTED_PROXIES entry {Entry} is not an IP address or CIDR network and is ignored", entry);
+}
+
+if (trustedProxies.HasEntries)
 {
     app.UseForwardedHeaders();
 }

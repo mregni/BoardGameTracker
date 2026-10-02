@@ -119,6 +119,29 @@ public class PipelineTests
     }
 
     [Fact]
+    public async Task LoginRateLimiter_ShouldIgnoreAForgedXForwardedFor_WhenNoProxyIsTrusted()
+    {
+        using var client = _fixture.CreateClient();
+        HttpResponseMessage? limited = null;
+
+        for (var attempt = 0; attempt < 12 && limited == null; attempt++)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/login")
+            {
+                Content = JsonContent.Create(new LoginRequest("spoofer-" + attempt, "wrong-password")),
+            };
+            request.Headers.Add("X-Forwarded-For", $"198.51.100.{attempt + 1}");
+            var response = await client.SendAsync(request);
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                limited = response;
+            }
+        }
+
+        limited.Should().NotBeNull("a changing X-Forwarded-For must not open a new limiter partition");
+    }
+
+    [Fact]
     public async Task CreateGame_ShouldRoundTrip_ThroughTheRealPipeline()
     {
         using var admin = await _fixture.CreateAdminClientAsync();
