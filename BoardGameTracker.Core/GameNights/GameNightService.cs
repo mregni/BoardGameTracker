@@ -34,6 +34,7 @@ public class GameNightService : IGameNightService
 
     private const int MaxInviteRecipients = 50;
     private static readonly TimeSpan InviteCooldown = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan RsvpNotificationCooldown = TimeSpan.FromMinutes(5);
 
     public GameNightService(
         IRepository<GameNight> gameNightRepository,
@@ -178,6 +179,11 @@ public class GameNightService : IGameNightService
 
     private async Task<GameNightRsvp> ApplyRsvpStateAsync(GameNightRsvp rsvp, GameNightRsvpState state)
     {
+        if (rsvp.State == state)
+        {
+            return rsvp;
+        }
+
         rsvp.UpdateState(state);
         await _unitOfWork.SaveChangesAsync();
         await NotifyHostOfRsvpAsync(rsvp);
@@ -204,6 +210,16 @@ public class GameNightService : IGameNightService
                 "Skipping RSVP notification for game night {GameNightId}: host has no email address", gameNight.Id);
             return;
         }
+
+        var cooldownKey = $"rsvp-notification:{rsvp.Id}";
+        if (_cache.TryGetValue(cooldownKey, out _))
+        {
+            _logger.LogInformation(
+                "Skipping RSVP notification for game night {GameNightId}: the host heard about this invitee moments ago", gameNight.Id);
+            return;
+        }
+
+        _cache.Set(cooldownKey, true, RsvpNotificationCooldown);
 
         var playerName = WebUtility.HtmlEncode(rsvp.Player?.Name ?? rsvp.PlayerId.ToString(CultureInfo.InvariantCulture));
         var title = WebUtility.HtmlEncode(gameNight.Title);

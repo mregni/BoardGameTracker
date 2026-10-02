@@ -7,6 +7,7 @@ using BoardGameTracker.Core.GameNights.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -89,6 +90,7 @@ public class GameNightController : ControllerBase
     [HttpPut]
     [Route("link/{linkId:guid}/rsvp")]
     [AllowAnonymous]
+    [EnableRateLimiting("gamenight-link")]
     [ProducesResponseType<GameNightRsvpDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateRsvpByLink(Guid linkId, [FromBody] UpdateRsvpCommand command)
     {
@@ -110,6 +112,7 @@ public class GameNightController : ControllerBase
     [HttpGet]
     [Route("link/{linkId:guid}")]
     [AllowAnonymous]
+    [EnableRateLimiting("gamenight-link")]
     [ProducesResponseType<GameNightDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByLink(Guid linkId)
     {

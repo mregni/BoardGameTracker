@@ -7,6 +7,7 @@ using BoardGameTracker.Core.Manuals.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BoardGameTracker.Api.Controllers;
 
@@ -101,6 +102,7 @@ public class ManualController : ControllerBase
     [HttpGet]
     [Route("gamenight/{linkId:guid}")]
     [AllowAnonymous]
+    [EnableRateLimiting("gamenight-link")]
     [ProducesResponseType<List<GameNightManualsDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetManualsForGameNight(Guid linkId)
     {
@@ -111,6 +113,7 @@ public class ManualController : ControllerBase
     [HttpGet]
     [Route("gamenight/{linkId:guid}/manual/{manualId:int}/download")]
     [AllowAnonymous]
+    [EnableRateLimiting("gamenight-link")]
     public async Task<IActionResult> DownloadGameNightManual(Guid linkId, int manualId)
     {
         var download = await _manualService.GetManualForGameNightDownload(linkId, manualId, User?.Identity?.IsAuthenticated == true);

@@ -13,6 +13,7 @@ using BoardGameTracker.Core.Email.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Auth;
@@ -31,7 +32,9 @@ public class AuthService : IAuthService
     private readonly IBackgroundEmailSender _backgroundEmailSender;
     private readonly ILoginAttemptTracker _loginAttempts;
     private readonly MainDbContext _context;
+    private readonly IMemoryCache _cache;
     private readonly ILogger<AuthService> _logger;
+    private static readonly TimeSpan PasswordResetCooldown = TimeSpan.FromMinutes(5);
 
     private static readonly PasswordHasher<ApplicationUser> DummyPasswordHasher = new();
     private static readonly ApplicationUser DummyUser = new("timing-dummy", "timing-dummy@localhost");
@@ -48,8 +51,10 @@ public class AuthService : IAuthService
         IBackgroundEmailSender backgroundEmailSender,
         ILoginAttemptTracker loginAttempts,
         MainDbContext context,
+        IMemoryCache cache,
         ILogger<AuthService> logger)
     {
+        _cache = cache;
         _userManager = userManager;
         _signInManager = signInManager;
         _tokenService = tokenService;
@@ -335,6 +340,13 @@ public class AuthService : IAuthService
             return;
         }
 
+        var cooldownKey = $"password-reset:{user.Id}";
+        if (_cache.TryGetValue(cooldownKey, out _))
+        {
+            _logger.LogInformation("Forgot-password requested again for user {UserId} within the cooldown; no email sent", user.Id);
+            return;
+        }
+
         try
         {
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -343,6 +355,7 @@ public class AuthService : IAuthService
             var htmlUrl = WebUtility.HtmlEncode(resetUrl);
             var body = $"<p>A password reset was requested for your account.</p><p><a href=\"{htmlUrl}\">Reset your password</a></p><p>If you didn't request this, you can safely ignore this email.</p>";
             _backgroundEmailSender.Queue(user.Email, subject, body);
+            _cache.Set(cooldownKey, true, PasswordResetCooldown);
             _logger.LogInformation("Queued password reset email for user {UserId}", user.Id);
         }
         catch (DomainException ex) when (ex.Message == Constants.Errors.PublicUrlNotConfigured)

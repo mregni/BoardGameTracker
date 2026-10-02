@@ -184,6 +184,14 @@ builder.Services.AddRateLimiter(options =>
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
+    options.AddPolicy("gamenight-link", context => RateLimitPartition.GetFixedWindowLimiter(
+        ClientAddressKey.From(context.Connection.RemoteIpAddress),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
     options.AddPolicy("rag", context => RateLimitPartition.GetFixedWindowLimiter(
         UserRateLimitKey.From(context),
         _ => new FixedWindowRateLimiterOptions

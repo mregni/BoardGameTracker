@@ -18,6 +18,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -81,6 +82,7 @@ public class AuthServiceTests : IDisposable
             _backgroundEmailSenderMock.Object,
             _loginAttemptsMock.Object,
             _context,
+            new MemoryCache(new MemoryCacheOptions()),
             _loggerMock.Object);
 
         _userManagerMock.Invocations.Clear();
@@ -957,6 +959,27 @@ public class AuthServiceTests : IDisposable
         _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
         _userManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(user), Times.Once);
         _publicUrlBuilderMock.Verify(x => x.BuildResetUrlAsync(user.Id, "reset-token"), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ForgotPasswordAsync_ShouldSendOneEmailPerCooldown_WhenRequestedRepeatedly()
+    {
+        var user = new ApplicationUser("user", "u@test.com");
+        _userManagerMock.Setup(x => x.FindByNameAsync("user")).ReturnsAsync(user);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        _userManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("reset-token");
+        _publicUrlBuilderMock.Setup(x => x.BuildResetUrlAsync(user.Id, "reset-token")).ReturnsAsync("http://x/reset");
+
+        await _authService.ForgotPasswordAsync("user");
+        await _authService.ForgotPasswordAsync("user");
+        await _authService.ForgotPasswordAsync("user");
+
+        _userManagerMock.Verify(x => x.FindByNameAsync("user"), Times.Exactly(3));
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Exactly(3));
+        _userManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(user), Times.Once);
+        _publicUrlBuilderMock.Verify(x => x.BuildResetUrlAsync(user.Id, "reset-token"), Times.Once);
+        _backgroundEmailSenderMock.Verify(x => x.Queue("u@test.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

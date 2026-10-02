@@ -939,12 +939,12 @@ public class GameNightServiceTests
     }
 
     [Theory]
-    [InlineData(GameNightRsvpState.Accepted, "will come to")]
-    [InlineData(GameNightRsvpState.Declined, "will not come to")]
-    [InlineData(GameNightRsvpState.Pending, "is not sure about")]
-    public async Task UpdateRsvp_ShouldWordEmailByState(GameNightRsvpState state, string expected)
+    [InlineData(GameNightRsvpState.Pending, GameNightRsvpState.Accepted, "will come to")]
+    [InlineData(GameNightRsvpState.Pending, GameNightRsvpState.Declined, "will not come to")]
+    [InlineData(GameNightRsvpState.Accepted, GameNightRsvpState.Pending, "is not sure about")]
+    public async Task UpdateRsvp_ShouldWordEmailByState(GameNightRsvpState from, GameNightRsvpState state, string expected)
     {
-        var rsvp = RsvpWithGameNight(2, GameNightRsvpState.Pending, new Player("Kathleen"),
+        var rsvp = RsvpWithGameNight(2, from, new Player("Kathleen"),
             hostId: 1, host: new Player("Mikhael", null, "host@test.com"));
         var command = new UpdateRsvpCommand { Id = 7, State = state };
 
@@ -969,6 +969,44 @@ public class GameNightServiceTests
         _rsvpRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRsvp_ShouldNeitherSaveNorEmail_WhenTheStateDoesNotChange()
+    {
+        var rsvp = RsvpWithGameNight(2, GameNightRsvpState.Accepted, new Player("Kathleen"),
+            hostId: 1, host: new Player("Mikhael", null, "host@test.com"));
+        _rsvpRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>())).ReturnsAsync(rsvp);
+
+        var result = await _gameNightService.UpdateRsvp(new UpdateRsvpCommand { Id = 7, State = GameNightRsvpState.Accepted });
+
+        result.State.Should().Be(GameNightRsvpState.Accepted);
+        _rsvpRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRsvp_ShouldEmailTheHostOncePerCooldown_WhenAnInviteeKeepsChangingTheirAnswer()
+    {
+        var rsvp = RsvpWithGameNight(2, GameNightRsvpState.Pending, new Player("Kathleen"),
+            hostId: 1, host: new Player("Mikhael", null, "host@test.com"));
+        _rsvpRepositoryMock.Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>())).ReturnsAsync(rsvp);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        _emailServiceMock
+            .Setup(x => x.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await _gameNightService.UpdateRsvp(new UpdateRsvpCommand { Id = 7, State = GameNightRsvpState.Accepted });
+        await _gameNightService.UpdateRsvp(new UpdateRsvpCommand { Id = 7, State = GameNightRsvpState.Declined });
+        await _gameNightService.UpdateRsvp(new UpdateRsvpCommand { Id = 7, State = GameNightRsvpState.Accepted });
+
+        rsvp.State.Should().Be(GameNightRsvpState.Accepted);
+        _emailServiceMock.Verify(x => x.SendAsync("host@test.com", It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+        _rsvpRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>()), Times.Exactly(3));
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(3));
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Exactly(3));
         VerifyNoOtherCalls();
     }
 
