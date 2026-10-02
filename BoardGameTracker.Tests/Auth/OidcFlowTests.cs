@@ -17,6 +17,7 @@ using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -36,6 +37,7 @@ public class OidcFlowTests : IDisposable
     private readonly Mock<ITokenService> _tokenServiceMock;
     private readonly MemoryCache _cache;
     private readonly FakeIdentityProviderHandler _idp;
+    private readonly SecretProtector _secretProtector;
     private readonly OidcService _service;
 
     public OidcFlowTests()
@@ -61,13 +63,14 @@ public class OidcFlowTests : IDisposable
         httpClientFactoryMock.Setup(x => x.CreateClient(OidcService.HttpClientName)).Returns(() => new HttpClient(_idp, disposeHandler: false));
 
         _cache = new MemoryCache(new MemoryCacheOptions());
+        _secretProtector = new SecretProtector(new EphemeralDataProtectionProvider(), Mock.Of<ILogger<SecretProtector>>());
         _service = new OidcService(
             _context,
             _userManagerMock.Object,
             _tokenServiceMock.Object,
             httpClientFactoryMock.Object,
             _cache,
-            Mock.Of<ISecretProtector>(),
+            _secretProtector,
             Mock.Of<ILogger<OidcService>>());
 
         _context.OidcProviders.Add(new OidcProvider("idp", "Example IdP", Authority, "bgt-client"));
@@ -164,8 +167,43 @@ public class OidcFlowTests : IDisposable
         _idp.TokenRequest!["redirect_uri"].Should().Be($"{PublicBase}/api/auth/oidc/idp/callback");
         _idp.TokenRequest["code_verifier"].Should().NotBeNullOrEmpty();
         _idp.TokenRequest["grant_type"].Should().Be("authorization_code");
+        _idp.TokenRequest["client_id"].Should().Be("bgt-client");
+        _idp.TokenRequest.Should().NotContainKey("client_secret");
         _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>()), Times.Never);
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).LastUsedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldSendTheDecryptedClientSecret_ForAConfidentialClient()
+    {
+        var provider = await _context.OidcProviders.SingleAsync(TestContext.Current.CancellationToken);
+        provider.Update(
+            provider.DisplayName,
+            provider.Authority,
+            provider.ClientId,
+            clientSecret: _secretProtector.Protect("client-s3cret"),
+            provider.Enabled,
+            provider.Scopes,
+            provider.AutoProvisionUsers,
+            authorizationEndpoint: null,
+            tokenEndpoint: null,
+            userInfoEndpoint: null,
+            usernameClaimType: null,
+            emailClaimType: null,
+            displayNameClaimType: null,
+            rolesClaimType: null,
+            adminGroupValue: null,
+            iconUrl: null,
+            buttonColor: null);
+        _idp.User = KnownUser("sub-1");
+        _context.ExternalLogins.Add(new ExternalLogin(LinkedUser().Id, "idp", "sub-1"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var request = await _service.StartLoginAsync("idp", PublicBase, null);
+        await _service.CompleteLoginAsync("idp", await _idp.AuthorizeAsync(request.Url), request.State, request.State);
+
+        _idp.TokenRequest!["client_id"].Should().Be("bgt-client");
+        _idp.TokenRequest["client_secret"].Should().Be("client-s3cret");
     }
 
     [Fact]
@@ -475,6 +513,11 @@ public class OidcFlowTests : IDisposable
                 TokenRequest = form.AllKeys.ToDictionary(k => k!, k => form[k]!);
                 var expectedChallenge = _codes.GetValueOrDefault(TokenRequest["code"]);
                 var actualChallenge = Convert.ToBase64String(SHA256.HashData(Encoding.ASCII.GetBytes(TokenRequest["code_verifier"]))).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+                if (TokenRequest.GetValueOrDefault("client_id") != "bgt-client")
+                {
+                    return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("{\"error\":\"invalid_client\"}") };
+                }
+
                 if (TokenStatus != HttpStatusCode.OK || expectedChallenge != actualChallenge)
                 {
                     return new HttpResponseMessage(TokenStatus == HttpStatusCode.OK ? HttpStatusCode.BadRequest : TokenStatus) { Content = new StringContent("{\"error\":\"invalid_grant\"}") };

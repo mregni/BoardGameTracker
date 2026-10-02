@@ -109,6 +109,17 @@ describe("SsoSettings", () => {
 		});
 	});
 
+	it("saves a provider whose name was created through the API with other characters", async () => {
+		const user = userEvent.setup();
+		mocks.state.provider = { ...provider, name: "My_IdP" };
+		renderWithProviders(<SsoSettings />);
+
+		await user.click(screen.getByRole("button", { name: "sso.save" }));
+
+		await waitFor(() => expect(mocks.state.save).toHaveBeenCalledTimes(1));
+		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ name: "My_IdP" });
+	});
+
 	it("does not submit an insecure authority", async () => {
 		const user = userEvent.setup();
 		renderWithProviders(<SsoSettings />);

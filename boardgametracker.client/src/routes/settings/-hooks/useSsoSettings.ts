@@ -29,7 +29,9 @@ export const useSsoSettings = () => {
 
 	const saveMutation = useMutation({
 		mutationFn: (request: OidcProviderRequest) =>
-			providerId === undefined ? createOidcProviderCall(request) : updateOidcProviderCall(providerId, request),
+			providerId === undefined
+				? createOidcProviderCall(request)
+				: updateOidcProviderCall(providerId, request, providerQuery.data),
 		onSuccess: async () => {
 			successToast("settings:sso.notifications.saved");
 			await invalidate();

@@ -305,6 +305,52 @@ public class OidcProviderServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateAsync_ShouldKeepTheStoredSecret_WhenNoSecretIsSent()
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        await UpdateSecretAsync(provider.Id, "stored-secret");
+
+        var result = await UpdateSecretAsync(provider.Id, null);
+
+        _secretProtector.Unprotect(result.ClientSecret!).Should().Be("stored-secret");
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldClearTheSecret_WhenAnEmptySecretIsSent()
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        await UpdateSecretAsync(provider.Id, "stored-secret");
+
+        var result = await UpdateSecretAsync(provider.Id, string.Empty);
+
+        result.ClientSecret.Should().BeEmpty();
+    }
+
+    private Task<OidcProvider> UpdateSecretAsync(int id, string? clientSecret) => _service.UpdateAsync(
+        id: id,
+        displayName: "Google",
+        authority: "https://accounts.google.com",
+        clientId: "client-id",
+        clientSecret: clientSecret,
+        enabled: true,
+        scopes: "openid profile email",
+        autoProvisionUsers: true,
+        authorizationEndpoint: null,
+        tokenEndpoint: null,
+        userInfoEndpoint: null,
+        usernameClaimType: null,
+        emailClaimType: null,
+        displayNameClaimType: null,
+        rolesClaimType: null,
+        adminGroupValue: null,
+        iconUrl: null,
+        buttonColor: null);
+
+    [Fact]
     public async Task UpdateAsync_ShouldThrowEntityNotFoundException_WhenProviderDoesNotExist()
     {
         var act = async () => await _service.UpdateAsync(

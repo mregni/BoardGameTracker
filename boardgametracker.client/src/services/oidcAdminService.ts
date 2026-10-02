@@ -21,22 +21,31 @@ export const getOidcSetupCall = (): Promise<OidcSetup> =>
 export const testOidcDiscoveryCall = (authority: string): Promise<OidcDiscoveryResult> =>
 	axiosInstance.post<OidcDiscoveryResult>(`${domain}/test-discovery`, { authority }).then((response) => response.data);
 
-const toPayload = (request: OidcProviderRequest) => ({
+type ApiOnlyFields = Pick<
+	OidcProviderConfig,
+	"authorizationEndpoint" | "tokenEndpoint" | "userInfoEndpoint" | "iconUrl" | "buttonColor"
+>;
+
+const toPayload = (request: OidcProviderRequest, current?: ApiOnlyFields) => ({
 	...request,
 	clientSecret: request.clientSecret === "" ? null : request.clientSecret,
-	authorizationEndpoint: null,
-	tokenEndpoint: null,
-	userInfoEndpoint: null,
-	iconUrl: null,
-	buttonColor: null,
+	authorizationEndpoint: current?.authorizationEndpoint ?? null,
+	tokenEndpoint: current?.tokenEndpoint ?? null,
+	userInfoEndpoint: current?.userInfoEndpoint ?? null,
+	iconUrl: current?.iconUrl ?? null,
+	buttonColor: current?.buttonColor ?? null,
 });
 
 export const createOidcProviderCall = (request: OidcProviderRequest): Promise<OidcProviderConfig> =>
 	axiosInstance.post<OidcProviderConfig>(domain, toPayload(request)).then((response) => response.data);
 
-export const updateOidcProviderCall = (id: number, request: OidcProviderRequest): Promise<OidcProviderConfig> =>
+export const updateOidcProviderCall = (
+	id: number,
+	request: OidcProviderRequest,
+	current?: ApiOnlyFields,
+): Promise<OidcProviderConfig> =>
 	axiosInstance
-		.put<OidcProviderConfig>(`${domain}/${id}`, { id, ...toPayload(request) })
+		.put<OidcProviderConfig>(`${domain}/${id}`, { id, ...toPayload(request, current) })
 		.then((response) => response.data);
 
 export const deleteOidcProviderCall = (id: number): Promise<void> => axiosInstance.delete(`${domain}/${id}`);

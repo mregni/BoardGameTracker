@@ -6,7 +6,13 @@ import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpin
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAppForm } from "@/hooks/form";
 import { useModalState } from "@/hooks/useModalState";
-import { type OidcProviderConfig, type OidcProviderForm, OidcProviderSchema, type OidcSetup } from "@/models";
+import {
+	type OidcProviderConfig,
+	type OidcProviderForm,
+	OidcProviderSchema,
+	OidcProviderUpdateSchema,
+	type OidcSetup,
+} from "@/models";
 import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
@@ -88,10 +94,12 @@ export const SsoSettings = () => {
 	} = useSsoSettings();
 	const deleteModal = useModalState();
 
+	const schema = provider === null ? OidcProviderSchema : OidcProviderUpdateSchema;
+
 	const form = useAppForm({
 		defaultValues: toForm(provider),
 		onSubmit: async ({ value }) => {
-			await save(OidcProviderSchema.parse(value));
+			await save(schema.parse(value));
 		},
 	});
 
@@ -111,7 +119,7 @@ export const SsoSettings = () => {
 			>
 				<form onSubmit={handleFormSubmit(form)} className="flex flex-col gap-3">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-						<form.Field name="name" validators={zodValidator(OidcProviderSchema, "name")}>
+						<form.Field name="name" validators={zodValidator(schema, "name")}>
 							{(field: AnyFieldApi) => (
 								<BgtInputField
 									field={field}

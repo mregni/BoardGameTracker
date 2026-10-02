@@ -24,6 +24,10 @@ public sealed class FakeIdentityProvider : IAsyncDisposable
 
     public string Authority { get; private set; } = string.Empty;
 
+    public string ClientId { get; set; } = "bgt-client";
+
+    public string? ClientSecret { get; set; }
+
     public Dictionary<string, object> User { get; } = new()
     {
         ["sub"] = "fake-sub-1",
@@ -59,6 +63,11 @@ public sealed class FakeIdentityProvider : IAsyncDisposable
         app.MapPost("/token", async (HttpRequest request) =>
         {
             var form = await request.ReadFormAsync();
+            if (form["client_id"] != provider.ClientId || (provider.ClientSecret != null && form["client_secret"] != provider.ClientSecret))
+            {
+                return Results.Json(new { error = "invalid_client" }, statusCode: StatusCodes.Status401Unauthorized);
+            }
+
             if (form["grant_type"] != "authorization_code" || !provider._codes.TryRemove(form["code"].ToString(), out var issued))
             {
                 return Results.BadRequest(new { error = "invalid_grant" });

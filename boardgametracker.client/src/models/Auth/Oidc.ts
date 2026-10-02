@@ -81,5 +81,13 @@ export const OidcProviderSchema = z.object({
 	adminGroupValue: optionalText,
 });
 
+export const OidcProviderUpdateSchema = OidcProviderSchema.extend({
+	name: z
+		.string()
+		.trim()
+		.min(1, { message: "settings:sso.validation.name" })
+		.max(100, { message: "settings:sso.validation.name" }),
+});
+
 export type OidcProviderForm = z.input<typeof OidcProviderSchema>;
 export type OidcProviderRequest = z.output<typeof OidcProviderSchema>;

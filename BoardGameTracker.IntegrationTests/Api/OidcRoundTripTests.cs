@@ -27,9 +27,10 @@ public class OidcRoundTripTests : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         _idp = await FakeIdentityProvider.StartAsync();
+        _idp.ClientSecret = "fake-idp-secret";
         using var admin = await _fixture.CreateAdminClientAsync();
         var response = await admin.PostAsJsonAsync("/api/admin/oidc-providers", new CreateOidcProviderRequest(
-            ProviderName, "Fake IdP", _idp.Authority, "bgt-client", null, "openid profile email", true,
+            ProviderName, "Fake IdP", _idp.Authority, _idp.ClientId, _idp.ClientSecret, "openid profile email", true,
             null, null, null, null, null, null, null, null, null, null));
         response.StatusCode.Should().Be(HttpStatusCode.Created, await response.Content.ReadAsStringAsync());
         _providerId = (await response.Content.ReadFromJsonAsync<OidcProviderDto>(IntegrationFixture.Json))!.Id;
@@ -85,6 +86,33 @@ public class OidcRoundTripTests : IAsyncLifetime
 
         var replay = await browser.PostAsync("/api/auth/oidc/adopt", null);
         replay.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Login_ShouldKeepWorking_AfterTheProviderIsSavedWithoutRetypingTheSecret()
+    {
+        using (var admin = await _fixture.CreateAdminClientAsync())
+        {
+            var update = await admin.PutAsJsonAsync($"/api/admin/oidc-providers/{_providerId}", new UpdateOidcProviderRequest(
+                _providerId, "Fake IdP renamed", _idp.Authority, _idp.ClientId, null, true, "openid profile email", true,
+                null, null, null, null, null, null, null, null, null, null));
+            update.IsSuccessStatusCode.Should().BeTrue(await update.Content.ReadAsStringAsync());
+        }
+
+        _idp.User["sub"] = "fake-sub-secret";
+        _idp.User["email"] = "sam@example.com";
+        _idp.User["preferred_username"] = "sam";
+        _idp.User["name"] = "Sam Doe";
+        using var browser = _fixture.CreateBrowserClient();
+        using var idpBrowser = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
+        var start = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/login");
+        var idpResponse = await idpBrowser.GetAsync(start.Headers.Location!);
+
+        var callback = await browser.GetAsync(idpResponse.Headers.Location!.PathAndQuery);
+
+        callback.StatusCode.Should().Be(HttpStatusCode.Found);
+        callback.Headers.Location!.ToString().Should().Be("http://localhost/auth-callback?redirect=%2F");
+        callback.Headers.GetValues("Set-Cookie").Should().Contain(c => c.StartsWith($"{OidcController.HandoffCookieName}=", StringComparison.Ordinal));
     }
 
     [Fact]
