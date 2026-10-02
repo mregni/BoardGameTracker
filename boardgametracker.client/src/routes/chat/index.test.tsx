@@ -34,6 +34,10 @@ vi.mock("@tanstack/react-router", () => ({
 	useNavigate: () => mocks.navigate,
 }));
 
+vi.mock("@/hooks/usePermissions", () => ({
+	usePermissions: () => ({ isAdmin: false, canWrite: true, canManageSettings: false }),
+}));
+
 vi.mock("@/services/queries/games", () => ({
 	getGames: () => ({ queryKey: ["games"], queryFn: () => mocks.getGamesCall() }),
 }));

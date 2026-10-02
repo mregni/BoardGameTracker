@@ -10,6 +10,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
 import { BggSearchSchema, type Game, GameState } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getSettings } from "@/services/queries/settings";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -18,7 +19,7 @@ import { zodValidator } from "@/utils/zodValidator";
 import { useBggGameModal } from "./-hooks/useBggGameModal";
 
 export const Route = createFileRoute("/games/bgg")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 	loader: async ({ context: { queryClient } }) => {
 		queryClient.prefetchQuery(getSettings());
 	},
@@ -128,5 +129,13 @@ function RouteComponent() {
 				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

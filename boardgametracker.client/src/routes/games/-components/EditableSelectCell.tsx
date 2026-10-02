@@ -13,14 +13,26 @@ interface Props {
 	hasSearch?: boolean;
 	className?: string;
 	align?: "left" | "right";
+	readOnly?: boolean;
 }
 
 export const EditableSelectCell = (props: Props) => {
-	const { value, items, editing, onStartEdit, onStopEdit, onChange, hasSearch = false, className, align } = props;
+	const {
+		value,
+		items,
+		editing,
+		onStartEdit,
+		onStopEdit,
+		onChange,
+		hasSearch = false,
+		className,
+		align,
+		readOnly,
+	} = props;
 
-	if (!editing) {
+	if (!editing || readOnly) {
 		return (
-			<EditableCellButton onClick={onStartEdit} className={className} align={align}>
+			<EditableCellButton onClick={onStartEdit} className={className} align={align} readOnly={readOnly}>
 				{items.find((item) => String(item.value) === value)?.label ?? "-"}
 			</EditableCellButton>
 		);

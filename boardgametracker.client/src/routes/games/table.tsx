@@ -14,6 +14,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
+import { usePermissions } from "@/hooks/usePermissions";
 import { type Game, GameState, QUERY_KEYS } from "@/models";
 import { isPriceError } from "@/models/Games/GamePrice";
 import { getTrackedPricesCall } from "@/services/gameService";
@@ -46,6 +47,7 @@ function RouteComponent() {
 	const { t, i18n } = useTranslation(["games", "game", "common"]);
 	const router = useRouter();
 	const { games, isLoading } = useGamesData();
+	const { canWrite } = usePermissions();
 	const { updateGame } = useInlineGameUpdate();
 	const settingsQuery = useQuery(getSettings());
 	const currency = settingsQuery.data?.currency;
@@ -192,6 +194,7 @@ function RouteComponent() {
 				header: t("games:columns.language"),
 				cell: ({ row }) => (
 					<EditableSelectCell
+						readOnly={!canWrite}
 						value={row.original.language ?? LANGUAGE_NONE}
 						items={languageEditItems}
 						hasSearch
@@ -210,6 +213,7 @@ function RouteComponent() {
 				header: t("games:columns.state"),
 				cell: ({ row }) => (
 					<EditableSelectCell
+						readOnly={!canWrite}
 						value={row.original.state}
 						items={stateEditItems}
 						editing={isEditing(row.original.id, "state")}
@@ -239,6 +243,7 @@ function RouteComponent() {
 				header: t("games:columns.price"),
 				cell: ({ row }) => (
 					<EditableNumberCell
+						readOnly={!canWrite}
 						value={row.original.buyingPrice}
 						step={0.01}
 						min={0}
@@ -329,6 +334,7 @@ function RouteComponent() {
 			isEditing,
 			startEdit,
 			stopEdit,
+			canWrite,
 		],
 	);
 
@@ -392,6 +398,7 @@ function RouteComponent() {
 				</div>
 				<div className="md:hidden">
 					<GameTableCards
+						readOnly={!canWrite}
 						games={filtered}
 						isLoading={isLoading}
 						currency={currency}

@@ -16,6 +16,7 @@ import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtData
 import { BgtPaging } from "@/components/BgtTable/BgtPaging";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { GameState, type ImportGame } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
@@ -23,7 +24,7 @@ import { parseLocalDate } from "@/utils/localDate";
 import { useList } from "./-hooks/useList";
 
 export const Route = createFileRoute("/games/import/list_/$username")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 	beforeLoad: async ({ context: { queryClient } }) => {
 		const settings = await queryClient.ensureQueryData(getSettings());
 		if (!settings.bggStatus?.isConfigured) {
@@ -275,5 +276,13 @@ function RouteComponent() {
 				)}
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

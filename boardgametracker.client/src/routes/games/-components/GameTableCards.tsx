@@ -27,6 +27,7 @@ interface Props {
 	startEdit: (gameId: number, column: GameTableColumn) => void;
 	stopEdit: () => void;
 	updateGame: (game: Game) => void;
+	readOnly?: boolean;
 }
 
 const Row = ({ label, children }: { label: string; children: ReactNode }) => (
@@ -51,6 +52,7 @@ export const GameTableCards = (props: Props) => {
 		startEdit,
 		stopEdit,
 		updateGame,
+		readOnly = false,
 	} = props;
 	const { t } = useTranslation(["games", "game", "common"]);
 
@@ -90,6 +92,7 @@ export const GameTableCards = (props: Props) => {
 						</Row>
 						<Row label={t("games:columns.language")}>
 							<EditableSelectCell
+								readOnly={readOnly}
 								value={game.language ?? LANGUAGE_NONE}
 								items={languageItems}
 								hasSearch
@@ -102,6 +105,7 @@ export const GameTableCards = (props: Props) => {
 						</Row>
 						<Row label={t("games:columns.state")}>
 							<EditableSelectCell
+								readOnly={readOnly}
 								value={game.state}
 								items={stateItems}
 								editing={isEditing(game.id, "state")}
@@ -116,6 +120,7 @@ export const GameTableCards = (props: Props) => {
 						</Row>
 						<Row label={t("games:columns.price")}>
 							<EditableNumberCell
+								readOnly={readOnly}
 								value={game.buyingPrice}
 								step={0.01}
 								min={0}

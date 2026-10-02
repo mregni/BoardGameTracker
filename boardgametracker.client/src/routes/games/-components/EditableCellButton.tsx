@@ -7,10 +7,25 @@ interface Props {
 	children: ReactNode;
 	className?: string;
 	align?: "left" | "right";
+	readOnly?: boolean;
 }
 
-export const EditableCellButton = ({ onClick, children, className, align = "left" }: Props) => {
+export const EditableCellButton = ({ onClick, children, className, align = "left", readOnly = false }: Props) => {
 	const { t } = useTranslation();
+
+	if (readOnly) {
+		return (
+			<span
+				className={cx(
+					"block h-9 w-full px-2 text-[12px] leading-9 truncate",
+					align === "right" ? "text-right" : "text-left",
+					className,
+				)}
+			>
+				{children}
+			</span>
+		);
+	}
 
 	return (
 		<button

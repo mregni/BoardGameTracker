@@ -101,7 +101,7 @@ function RouteComponent() {
 								dateFormat={settings.dateFormat}
 								uiLanguage={settings.uiLanguage}
 								manualCount={manuals.length}
-								ragEnabled={settings.ragEnabled}
+								ragEnabled={settings.ragEnabled && canWrite}
 								price={price}
 								onRefreshPrice={refreshPrice}
 								isRefreshingPrice={isRefreshingPrice}

@@ -9,6 +9,7 @@ import { BgtSimpleSelect } from "@/components/BgtForm";
 import { BgtEmptyState } from "@/components/BgtLayout/BgtEmptyState";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getGames } from "@/services/queries/games";
 import { getGameManuals } from "@/services/queries/manuals";
 import { getSettings } from "@/services/queries/settings";
@@ -31,7 +32,7 @@ const chatSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/chat/")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 	validateSearch: chatSearchSchema,
 	beforeLoad: async ({ context: { queryClient } }) => {
 		const settings = await queryClient.ensureQueryData(getSettings());
@@ -235,5 +236,13 @@ function RouteComponent() {
 				/>
 			)}
 		</div>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

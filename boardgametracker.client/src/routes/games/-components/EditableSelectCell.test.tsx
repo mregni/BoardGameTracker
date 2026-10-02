@@ -33,6 +33,14 @@ const renderCell = (overrides: Partial<Parameters<typeof EditableSelectCell>[0]>
 };
 
 describe("EditableSelectCell", () => {
+	it("shows plain text without an editor for read-only users", () => {
+		renderCell({ readOnly: true, editing: true });
+
+		expect(screen.getByText("Owned")).toBeInTheDocument();
+		expect(screen.queryByRole("button")).not.toBeInTheDocument();
+		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+	});
+
 	it("shows the selected label as a button when not editing", async () => {
 		const user = userEvent.setup();
 		const props = renderCell();

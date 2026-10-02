@@ -9,12 +9,13 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
 import { CreatePlayerSchema, type Player } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { usePlayerModal } from "./-hooks/usePlayerModal";
 
 export const Route = createFileRoute("/players/new")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 });
 
 function RouteComponent() {
@@ -103,5 +104,13 @@ function RouteComponent() {
 				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

@@ -15,9 +15,10 @@ interface Props {
 	suffix?: string;
 	className?: string;
 	align?: "left" | "right";
+	readOnly?: boolean;
 }
 
-type EditorProps = Omit<Props, "editing" | "onStartEdit" | "align">;
+type EditorProps = Omit<Props, "editing" | "onStartEdit" | "align" | "readOnly">;
 
 const NumberEditor = ({ value, onStopEdit, onChange, step = 1, min, max, prefix, suffix, className }: EditorProps) => {
 	const [draft, setDraft] = useState(value?.toString() ?? "");
@@ -64,11 +65,11 @@ const NumberEditor = ({ value, onStopEdit, onChange, step = 1, min, max, prefix,
 };
 
 export const EditableNumberCell = (props: Props) => {
-	const { value, editing, onStartEdit, prefix, suffix, className, align } = props;
+	const { value, editing, onStartEdit, prefix, suffix, className, align, readOnly } = props;
 
-	if (!editing) {
+	if (!editing || readOnly) {
 		return (
-			<EditableCellButton onClick={onStartEdit} className={className} align={align}>
+			<EditableCellButton onClick={onStartEdit} className={className} align={align} readOnly={readOnly}>
 				{value == null ? "-" : [prefix, value, suffix].filter((part) => part != null && part !== "").join(" ")}
 			</EditableCellButton>
 		);

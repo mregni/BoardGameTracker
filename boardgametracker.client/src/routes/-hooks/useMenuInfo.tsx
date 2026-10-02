@@ -103,7 +103,7 @@ export const useMenuInfo = () => {
 				if (item.path === "/sessions/new" && !canWrite) return false;
 				if (item.path === "/shames" && !settings?.shelfOfShameEnabled) return false;
 				if (item.path === "/game-nights" && !settings?.gameNightsEnabled) return false;
-				if (item.path === "/chat" && !settings?.ragEnabled) return false;
+				if (item.path === "/chat" && (!settings?.ragEnabled || !canWrite)) return false;
 				return true;
 			}),
 		[canWrite, settings],

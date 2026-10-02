@@ -154,8 +154,10 @@ describe("useBgtMenuBar", () => {
 			});
 
 			await waitFor(() => {
-				expect(result.current.menuItems).toHaveLength(menuItems.length - 1);
+				expect(result.current.menuItems).toHaveLength(menuItems.length - 2);
 			});
+			expect(result.current.menuItems.map((item) => item.path)).not.toContain("/chat");
+			expect(result.current.menuItems.map((item) => item.path)).not.toContain("/sessions/new");
 		});
 
 		it("should return versionInfo data when loaded", async () => {
