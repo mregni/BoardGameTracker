@@ -29,7 +29,7 @@ ARG VERSION
 WORKDIR /src
 
 # Copy the repository-wide build settings (central package versions, analyzer configuration, NuGet sources, SDK pin)
-COPY Directory.Build.props Directory.Packages.props .editorconfig nuget.config global.json ./
+COPY Directory.Build.props Directory.Build.targets Directory.Packages.props .editorconfig nuget.config global.json ./
 
 # Copy project files and lock files for restore
 COPY BoardGameTracker.Common/BoardGameTracker.Common.csproj BoardGameTracker.Common/packages.lock.json BoardGameTracker.Common/
