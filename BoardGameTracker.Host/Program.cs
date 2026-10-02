@@ -126,15 +126,16 @@ if (string.IsNullOrWhiteSpace(jwtSecret))
 {
     if (authEnabled)
     {
-        throw new ArgumentException("JWT_SECRET not set");
+        throw new InvalidOperationException(
+            "JWT_SECRET is not set. Set it to at least 32 random characters (for example the output of `openssl rand -base64 48`), or set AUTH_ENABLED=false to run without accounts. See https://mregni.github.io/BoardGameTracker/getting-started/environment-variables/");
     }
 
     jwtSecret = "auth-disabled-placeholder-key-not-used";
 }
 else if (authEnabled && jwtSecret.Length < 32)
 {
-    throw new ArgumentException(
-        $"JWT_SECRET must be at least 32 characters long, but was {jwtSecret.Length}.");
+    throw new InvalidOperationException(
+        $"JWT_SECRET must be at least 32 characters long, but was {jwtSecret.Length}. Generate one with `openssl rand -base64 48`.");
 }
 
 builder.Services.AddOptions<JwtOptions>()
