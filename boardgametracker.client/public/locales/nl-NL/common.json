@@ -89,13 +89,6 @@
   "day_one": "{{count}} day",
   "day_other": "{{count}} days",
   "id": "Id",
-  "flags": {
-    "header": "Tags",
-    "shortest-game": "Shortest",
-    "longest-game": "Longest",
-    "highest-score": "High score",
-    "lowest-score": "Lowest score"
-  },
   "count": "Count",
   "game_one": "{{count}} game",
   "game_other": "{{count}} games",
@@ -126,5 +119,18 @@
     "saturday": "Saturday"
   },
   "search": "Zoeken...",
-  "required": "Verplicht"
+  "required": "Verplicht",
+  "sessions-count_one": "{{count}} sessie",
+  "sessions-count_other": "{{count}} sessies",
+  "open-calendar": "Kalender openen",
+  "previous-month": "Vorige maand",
+  "next-month": "Volgende maand",
+  "back": "Terug",
+  "logout": "Afmelden",
+  "today": "Vandaag",
+  "retry": "Opnieuw proberen",
+  "click-to-edit": "Click to edit",
+  "leaderboard": "Leaderboard",
+  "hour-short": "h",
+  "minute-short": "m"
 }

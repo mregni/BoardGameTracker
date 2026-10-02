@@ -39,8 +39,8 @@
     "location": {
       "label": "Location",
       "placeholder": "Choose location",
-      "create-new": "Create location '{{name}}'",
-      "required": "Location is required"
+      "required": "Location is required",
+      "none": "No location"
     },
     "comment": {
       "label": "Comment",
@@ -59,12 +59,10 @@
   "won": {
     "label": "Player has won the game"
   },
-  "bot": {
-    "label": "Player is a bot"
-  },
   "score": {
     "label": "End scoring",
-    "required": "Score is required"
+    "required": "Score is required",
+    "optional": "Leave empty when the score is unknown"
   },
   "first-play": {
     "label": "Played game for the first time"

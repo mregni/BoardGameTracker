@@ -23,7 +23,20 @@
     "invalid-auth-session": "Ongeldige of verlopen aanmeldsessie",
     "invalid-redirect-uri": "Ongeldige redirect-URI",
     "player-already-linked": "Deze speler is al gekoppeld aan een ander account",
-    "invalid-reset-token": "Deze link om je wachtwoord opnieuw in te stellen is ongeldig of verlopen"
+    "invalid-reset-token": "Deze link om je wachtwoord opnieuw in te stellen is ongeldig of verlopen",
+    "not-authenticated": "Je moet ingelogd zijn",
+    "insecure-authority": "De URL van de provider moet https gebruiken (http is alleen toegestaan voor lokale adressen)",
+    "oidc-email-exists": "An account with this email already exists. Sign in with your password and link the provider from your profile.",
+    "oidc-provisioning-disabled": "Your account is not known here and automatic sign-up is disabled.",
+    "oidc-provisioning-failed": "Your account could not be created.",
+    "oidc-already-linked": "This external account is already linked to another user.",
+    "oidc-discovery-failed": "The identity provider could not be reached.",
+    "oidc-issuer-mismatch": "The identity provider reports a different issuer than the configured authority.",
+    "oidc-exchange-failed": "The identity provider rejected the sign-in code.",
+    "oidc-userinfo-failed": "The identity provider did not return your profile.",
+    "oidc-provider-rejected": "The identity provider refused the sign-in.",
+    "oidc-handoff-expired": "The sign-in took too long to complete. Please try again.",
+    "oidc-failed": "Signing in with the identity provider failed."
   },
   "changedetection": {
     "invalid-base-url": "De changedetection.io-URL is ongeldig",
@@ -32,7 +45,12 @@
     "create-watch-failed": "changedetection.io kon de watch niet aanmaken"
   },
   "game": {
-    "invalid-shop-url": "Geef een geldige http(s) winkel-URL op"
+    "invalid-shop-url": "Geef een geldige http(s) winkel-URL op",
+    "already-exists": "Dit spel staat al in je collectie",
+    "player-range-incomplete": "Vul zowel het minimum als het maximum aantal spelers in",
+    "play-time-range-incomplete": "Vul zowel de minimale als de maximale speelduur in",
+    "range-min-above-max": "Het minimum kan niet hoger zijn dan het maximum",
+    "expansion-already-exists": "This expansion is already linked to the game."
   },
   "something-went-wrong": "Something went wrong, please try again later.",
   "unexpected-error": "An unexpected error occurred.",
@@ -56,5 +74,8 @@
   },
   "settings": {
     "invalid-public-url": "De publieke URL is ongeldig"
+  },
+  "game-night": {
+    "invites-cooldown": "De uitnodigingen voor deze spelavond zijn net verstuurd, probeer het over een paar minuten opnieuw"
   }
 }

@@ -33,7 +33,16 @@
   "language-independent": "Language-independent",
   "update": {
     "save": "Update game",
-    "title": "Update game"
+    "title": "Update game",
+    "rating": {
+      "label": "Rating (0-10)"
+    },
+    "weight": {
+      "label": "Weight (0-5)"
+    },
+    "sold-price": {
+      "label": "Sold price"
+    }
   },
   "expansions": {
     "title": "Expansions",
@@ -41,7 +50,13 @@
     "update": "Update expansions",
     "none": "No expansions added to this game.",
     "no-game": "Select a game to view expansions.",
-    "add": "Add"
+    "add": "Pick from BoardGameGeek",
+    "manual": {
+      "badge": "Added manually",
+      "description": "Not on BoardGameGeek? Add the expansion by name.",
+      "placeholder": "Expansion name",
+      "add": "Add"
+    }
   },
   "manuals": {
     "title": "Manuals",
@@ -61,7 +76,8 @@
     },
     "reindex": "Re-index",
     "reindex-success": "Re-indexing started.",
-    "reindex-failed": "Re-index failed, check logs for more details."
+    "reindex-failed": "Re-index failed, check logs for more details.",
+    "download": "Download"
   },
   "new": {
     "description": "Choose a method to create a new game.",
@@ -176,5 +192,12 @@
   },
   "current-price": {
     "title": "Current price"
+  },
+  "validation": {
+    "positive-number": "Enter a positive number or leave the field empty",
+    "range-both": "Fill in both values or leave both empty",
+    "min-max": "The minimum cannot be higher than the maximum",
+    "rating": "Enter a rating between 0 and 10",
+    "weight": "Enter a weight between 0 and 5"
   }
 }

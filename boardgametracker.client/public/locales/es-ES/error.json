@@ -23,7 +23,20 @@
     "invalid-auth-session": "Sesión de autenticación no válida o caducada",
     "invalid-redirect-uri": "URI de redirección no válida",
     "player-already-linked": "Este jugador ya está vinculado a otra cuenta",
-    "invalid-reset-token": "Este enlace para restablecer la contraseña no es válido o ha caducado"
+    "invalid-reset-token": "Este enlace para restablecer la contraseña no es válido o ha caducado",
+    "not-authenticated": "Debes iniciar sesión",
+    "insecure-authority": "La URL del proveedor debe usar https (http solo se permite para direcciones locales)",
+    "oidc-email-exists": "An account with this email already exists. Sign in with your password and link the provider from your profile.",
+    "oidc-provisioning-disabled": "Your account is not known here and automatic sign-up is disabled.",
+    "oidc-provisioning-failed": "Your account could not be created.",
+    "oidc-already-linked": "This external account is already linked to another user.",
+    "oidc-discovery-failed": "The identity provider could not be reached.",
+    "oidc-issuer-mismatch": "The identity provider reports a different issuer than the configured authority.",
+    "oidc-exchange-failed": "The identity provider rejected the sign-in code.",
+    "oidc-userinfo-failed": "The identity provider did not return your profile.",
+    "oidc-provider-rejected": "The identity provider refused the sign-in.",
+    "oidc-handoff-expired": "The sign-in took too long to complete. Please try again.",
+    "oidc-failed": "Signing in with the identity provider failed."
   },
   "changedetection": {
     "invalid-base-url": "La URL de changedetection.io no es válida",
@@ -32,7 +45,12 @@
     "create-watch-failed": "changedetection.io no pudo crear el watch"
   },
   "game": {
-    "invalid-shop-url": "Introduce una URL de tienda http(s) válida"
+    "invalid-shop-url": "Introduce una URL de tienda http(s) válida",
+    "already-exists": "Este juego ya está en tu colección",
+    "player-range-incomplete": "Introduce tanto el mínimo como el máximo de jugadores",
+    "play-time-range-incomplete": "Introduce tanto el tiempo de juego mínimo como el máximo",
+    "range-min-above-max": "El mínimo no puede ser mayor que el máximo",
+    "expansion-already-exists": "This expansion is already linked to the game."
   },
   "something-went-wrong": "Something went wrong, please try again later.",
   "unexpected-error": "An unexpected error occurred.",
@@ -56,5 +74,8 @@
   },
   "settings": {
     "invalid-public-url": "La URL pública no es válida"
+  },
+  "game-night": {
+    "invites-cooldown": "Las invitaciones de esta noche de juegos se enviaron hace poco, inténtalo de nuevo en unos minutos"
   }
 }

@@ -13,7 +13,9 @@
   },
   "notifications": {
     "created": "Loan is succesfully created",
-    "create-failed": "Failed creating loan"
+    "create-failed": "Failed creating loan",
+    "updated": "Uitleen is bijgewerkt",
+    "update-failed": "Uitleen bijwerken mislukt"
   },
   "delete": {
     "button": "Delete",
@@ -46,5 +48,11 @@
       "placeholder": "Choose player"
     }
   },
-  "active": "Nog niet terug"
+  "active": "Nog niet terug",
+  "edit": {
+    "title": "Uitleen bewerken",
+    "description": "Wijzig de datums van deze uitleen.",
+    "save": "Uitleen opslaan",
+    "button": "Bewerken"
+  }
 }

@@ -33,7 +33,16 @@
   "language-independent": "Language-independent",
   "update": {
     "save": "Update game",
-    "title": "Update game"
+    "title": "Update game",
+    "rating": {
+      "label": "Score (0-10)"
+    },
+    "weight": {
+      "label": "Complexiteit (0-5)"
+    },
+    "sold-price": {
+      "label": "Verkoopprijs"
+    }
   },
   "expansions": {
     "title": "Expansions",
@@ -41,7 +50,13 @@
     "update": "Update expansions",
     "none": "No expansions added to this game.",
     "no-game": "Select a game to view expansions.",
-    "add": "Add"
+    "add": "Pick from BoardGameGeek",
+    "manual": {
+      "badge": "Added manually",
+      "description": "Not on BoardGameGeek? Add the expansion by name.",
+      "placeholder": "Expansion name",
+      "add": "Add"
+    }
   },
   "manuals": {
     "title": "Manuals",
@@ -61,7 +76,8 @@
     },
     "reindex": "Opnieuw indexeren",
     "reindex-success": "Opnieuw indexeren gestart.",
-    "reindex-failed": "Opnieuw indexeren mislukt, controleer de logs voor meer details."
+    "reindex-failed": "Opnieuw indexeren mislukt, controleer de logs voor meer details.",
+    "download": "Downloaden"
   },
   "new": {
     "description": "Choose a method to create a new game.",
@@ -176,5 +192,12 @@
   },
   "current-price": {
     "title": "Huidige prijs"
+  },
+  "validation": {
+    "positive-number": "Geef een positief getal in of laat het veld leeg",
+    "range-both": "Vul beide waarden in of laat ze allebei leeg",
+    "min-max": "Het minimum kan niet hoger zijn dan het maximum",
+    "rating": "Geef een score tussen 0 en 10",
+    "weight": "Geef een complexiteit tussen 0 en 5"
   }
 }

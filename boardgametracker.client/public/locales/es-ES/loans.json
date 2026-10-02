@@ -13,7 +13,9 @@
   },
   "notifications": {
     "created": "Loan is succesfully created",
-    "create-failed": "Failed creating loan"
+    "create-failed": "Failed creating loan",
+    "updated": "Préstamo actualizado correctamente",
+    "update-failed": "Error al actualizar el préstamo"
   },
   "delete": {
     "button": "Delete",
@@ -46,5 +48,11 @@
       "placeholder": "Choose player"
     }
   },
-  "active": "Aún no devuelto"
+  "active": "Aún no devuelto",
+  "edit": {
+    "title": "Editar préstamo",
+    "description": "Cambia las fechas de este préstamo.",
+    "save": "Guardar préstamo",
+    "button": "Editar"
+  }
 }

@@ -1,13 +1,4 @@
 {
-	"titles": {
-		"localisation": "Localisation settings",
-		"currency": "Currency settings",
-		"environment": "Environment"
-	},
-	"time-zone": {
-		"label": "Time zone",
-		"required": "Time zone is required"
-	},
 	"date-format": {
 		"label": "Date format",
 		"required": "Date format is required"
@@ -20,15 +11,6 @@
 		"label": "Currency",
 		"required": "Currency is required"
 	},
-	"environment": {
-		"name": "Environment",
-		"port": "Port",
-		"statistics": "Statistics",
-		"log-level": "Log level",
-		"version": "Version"
-	},
-	"feature-request": "Feature request",
-	"translations": "Translate the app",
 	"save": {
 		"button": "Save settings",
 		"failed": "Failed saving settings",
@@ -167,6 +149,10 @@
 		"account": {
 			"title": "Account",
 			"description": "Profile & user management"
+		},
+		"sso": {
+			"title": "Single sign-on",
+			"description": "OpenID Connect provider"
 		}
 	},
 	"bgg": {
@@ -306,6 +292,111 @@
 			"user-updated": "User updated successfully",
 			"user-update-failed": "Failed to update user",
 			"password-reset-failed": "Failed to reset password"
+		},
+		"external-logins": {
+			"title": "External logins",
+			"description": "Sign in with your identity provider instead of a password.",
+			"none": "No external login linked yet.",
+			"linked-on": "linked on {{date}}",
+			"link": "Link {{provider}}",
+			"unlink": "Unlink",
+			"notifications": {
+				"unlinked": "External login removed.",
+				"unlink-failed": "The external login could not be removed.",
+				"link-failed": "The link could not be started."
+			}
+		}
+	},
+	"env-override": "Definido por la variable de entorno {{variable}}. Cámbiala allí para actualizar este ajuste.",
+	"sso": {
+		"title": "OpenID Connect provider",
+		"description": {
+			"empty": "Let people sign in through your identity provider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Register a public client there first, then fill in the details below.",
+			"configured": "Sign-in through {{name}} is configured. Changes apply to the next sign-in."
+		},
+		"fields": {
+			"name": {
+				"label": "Short name",
+				"placeholder": "keycloak"
+			},
+			"display-name": {
+				"label": "Button label",
+				"placeholder": "Company login"
+			},
+			"authority": {
+				"label": "Authority (issuer URL)",
+				"placeholder": "https://sso.example.com/realms/games"
+			},
+			"client-id": {
+				"label": "Client ID"
+			},
+			"client-secret": {
+				"label": "Client secret (optional)",
+				"placeholder": "Leave empty for a public client",
+				"unchanged": "Stored — leave empty to keep it"
+			},
+			"scopes": {
+				"label": "Scopes"
+			},
+			"username-claim": {
+				"label": "Username claim"
+			},
+			"email-claim": {
+				"label": "E-mail claim"
+			},
+			"display-name-claim": {
+				"label": "Display name claim"
+			},
+			"roles-claim": {
+				"label": "Groups/roles claim"
+			},
+			"admin-group": {
+				"label": "Admin group value",
+				"placeholder": "bgt-admins"
+			},
+			"auto-provision": {
+				"label": "Create accounts on first sign-in",
+				"description": "New people get a User account automatically. When off, only linked accounts can sign in."
+			},
+			"enabled": {
+				"label": "Enabled",
+				"description": "Show the sign-in button on the login page."
+			}
+		},
+		"discovery": {
+			"button": "Test discovery",
+			"testing": "Testing…",
+			"ok": "The provider answered and its issuer matches the authority.",
+			"issuer-mismatch": "The provider answered, but reports issuer {{issuer}}. Use that value as the authority.",
+			"failed": "The provider could not be reached or did not return a discovery document.",
+			"authorization": "Authorization",
+			"token": "Token",
+			"userinfo": "User info"
+		},
+		"setup": {
+			"title": "Register at the provider",
+			"description": "Allow these redirect URIs on the client you created at your identity provider.",
+			"public-url-warning": "No public URL is configured, so the redirect URIs are derived from the current request ({{url}}). Set the public URL under General if that is not the address people use.",
+			"redirect-uri": "Sign-in redirect URI",
+			"link-redirect-uri": "Account-linking redirect URI",
+			"copy": "Copy"
+		},
+		"validation": {
+			"name": "Use lowercase letters, digits and dashes (1–100 characters)",
+			"display-name": "A button label is required",
+			"authority": "Enter the provider's https URL",
+			"client-id": "The client ID is required",
+			"scopes": "At least the openid scope is required"
+		},
+		"create": "Create provider",
+		"save": "Save provider",
+		"delete": "Remove provider",
+		"delete-description": "Removing the provider also removes every linked external account. People keep their local password if they have one.",
+		"notifications": {
+			"saved": "Provider saved.",
+			"save-failed": "The provider could not be saved.",
+			"deleted": "Provider removed.",
+			"delete-failed": "The provider could not be removed."
 		}
 	},
 	"changedetection": {
