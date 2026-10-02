@@ -103,6 +103,13 @@
       ]
     },
     {
+      "groupName": "Aspire",
+      "matchPackageNames": [
+        "/^Aspire\\./",
+        "/^CommunityToolkit\\.Aspire\\./"
+      ]
+    },
+    {
       "groupName": "IdentityModel",
       "matchPackageNames": [
         "/^Microsoft.IdentityModel/",
@@ -188,6 +195,18 @@
         "xunit.v3",
         "xunit.runner.visualstudio",
         "@tanstack/react-table"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "ImageSharp 4 changes the licence terms; Test SDK 18 and coverlet 10 were tried and reverted",
+      "matchPackageNames": [
+        "SixLabors.ImageSharp",
+        "Microsoft.NET.Test.Sdk",
+        "coverlet.collector"
       ],
       "matchUpdateTypes": [
         "major"
