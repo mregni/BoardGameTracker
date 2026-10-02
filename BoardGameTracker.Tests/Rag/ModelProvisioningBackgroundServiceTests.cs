@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Core.Rag;
@@ -122,31 +123,37 @@ public class ModelProvisioningBackgroundServiceTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldBackOff_BetweenFailedAttempts()
+    public async Task ExecuteAsync_ShouldDoubleTheDelay_BetweenFailedAttempts_UpToTheMaximum()
     {
-        var timestamps = new System.Collections.Generic.List<DateTime>();
-        var fourthAttempt = new TaskCompletionSource();
+        var attempts = 0;
+        var fifthAttempt = new TaskCompletionSource();
         _aiClientFactoryMock
             .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
-            .Returns(() =>
+            .Returns(async (CancellationToken token) =>
             {
-                timestamps.Add(DateTime.UtcNow);
-                if (timestamps.Count == 4)
+                if (++attempts < 5)
                 {
-                    fourthAttempt.TrySetResult();
+                    throw new InvalidOperationException("ollama not reachable");
                 }
 
-                return Task.FromException(new InvalidOperationException("ollama not reachable"));
+                fifthAttempt.TrySetResult();
+                await Task.Delay(Timeout.Infinite, token);
             });
 
-        var service = CreateService(retryDelayMs: 50, maxRetryDelayMs: 1000);
+        var service = new TestableModelProvisioningBackgroundService(
+            _scopeFactoryMock.Object,
+            Mock.Of<ILogger<ModelProvisioningBackgroundService>>(),
+            TimeSpan.FromSeconds(15),
+            TimeSpan.FromSeconds(60),
+            skipDelays: true);
         await service.StartAsync(CancellationToken.None);
-        await fourthAttempt.Task.WaitAsync(SignalTimeout);
+        await fifthAttempt.Task.WaitAsync(SignalTimeout);
         await service.StopAsync(CancellationToken.None);
 
-        var gaps = new[] { timestamps[1] - timestamps[0], timestamps[2] - timestamps[1], timestamps[3] - timestamps[2] };
-        gaps[1].Should().BeGreaterThan(gaps[0]);
-        gaps[2].Should().BeGreaterThan(gaps[1]);
+        service.RequestedDelays.Should().Equal(
+            TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
+        VerifyProvisioningAttempts(Times.Exactly(5));
+        VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -220,18 +227,29 @@ public class ModelProvisioningBackgroundServiceTests
     {
         private readonly TimeSpan _retryDelay;
         private readonly TimeSpan _maxRetryDelay;
+        private readonly bool _skipDelays;
 
         public TestableModelProvisioningBackgroundService(
             IServiceScopeFactory scopeFactory,
             ILogger<ModelProvisioningBackgroundService> logger,
             TimeSpan retryDelay,
-            TimeSpan maxRetryDelay) : base(scopeFactory, logger)
+            TimeSpan maxRetryDelay,
+            bool skipDelays = false) : base(scopeFactory, logger)
         {
             _retryDelay = retryDelay;
             _maxRetryDelay = maxRetryDelay;
+            _skipDelays = skipDelays;
         }
+
+        public List<TimeSpan> RequestedDelays { get; } = [];
 
         protected override TimeSpan RetryDelay => _retryDelay;
         protected override TimeSpan MaxRetryDelay => _maxRetryDelay;
+
+        protected override Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken)
+        {
+            RequestedDelays.Add(delay);
+            return _skipDelays ? Task.CompletedTask : base.DelayAsync(delay, cancellationToken);
+        }
     }
 }

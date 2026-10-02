@@ -21,6 +21,9 @@ public class ModelProvisioningBackgroundService : BackgroundService
     protected virtual TimeSpan RetryDelay => TimeSpan.FromSeconds(15);
     protected virtual TimeSpan MaxRetryDelay => TimeSpan.FromMinutes(5);
 
+    protected virtual Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken) =>
+        Task.Delay(delay, cancellationToken);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var delay = RetryDelay;
@@ -47,7 +50,7 @@ public class ModelProvisioningBackgroundService : BackgroundService
 
             try
             {
-                await Task.Delay(delay, stoppingToken);
+                await DelayAsync(delay, stoppingToken);
             }
             catch (OperationCanceledException)
             {
