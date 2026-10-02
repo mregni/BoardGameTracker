@@ -34,7 +34,7 @@ public class ModelProvisioningBackgroundService : BackgroundService
                 _logger.LogInformation("AI models are available");
                 return;
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
                 return;
             }

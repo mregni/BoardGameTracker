@@ -150,19 +150,50 @@ public class ModelProvisioningBackgroundServiceTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldStopWithoutRetrying_WhenEnsuringModelsIsCancelled()
+    public async Task ExecuteAsync_ShouldStopWithoutRetrying_WhenTheServiceStopsDuringAnAttempt()
     {
+        var started = new TaskCompletionSource();
         _aiClientFactoryMock
             .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new OperationCanceledException());
+            .Returns(async (CancellationToken token) =>
+            {
+                started.TrySetResult();
+                await Task.Delay(Timeout.Infinite, token);
+            });
 
-        var service = CreateService(retryDelayMs: 300000);
+        var service = CreateService(retryDelayMs: 10);
         await service.StartAsync(CancellationToken.None);
-        await service.ExecuteTask!.WaitAsync(SignalTimeout);
+        await started.Task.WaitAsync(SignalTimeout);
         await service.StopAsync(CancellationToken.None);
 
-        service.ExecuteTask.IsCompletedSuccessfully.Should().BeTrue();
+        service.ExecuteTask!.IsCompletedSuccessfully.Should().BeTrue();
         VerifyProvisioningAttempts(Times.Once());
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldRetry_WhenAnAttemptTimesOut()
+    {
+        var secondAttempt = new TaskCompletionSource();
+        var attempts = 0;
+        _aiClientFactoryMock
+            .Setup(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                if (Interlocked.Increment(ref attempts) >= 2)
+                {
+                    secondAttempt.TrySetResult();
+                }
+
+                return Task.FromException(new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout", new TimeoutException()));
+            });
+
+        var service = CreateService();
+        await service.StartAsync(CancellationToken.None);
+        await secondAttempt.Task.WaitAsync(SignalTimeout);
+        await service.StopAsync(CancellationToken.None);
+
+        VerifyProvisioningAttempts(Times.AtLeast(2));
         VerifyNoOtherCalls();
     }
 
