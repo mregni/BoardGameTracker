@@ -37,9 +37,4 @@
       <ProjectReference Include="..\BoardGameTracker.Common\BoardGameTracker.Common.csproj" />
       <ProjectReference Include="..\BoardGameTracker.Core\BoardGameTracker.Core.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Evaluators\" />
-      <Folder Include="Models\" />
-    </ItemGroup>
 </Project>

@@ -6,7 +6,7 @@ namespace BoardGameTracker.Api.Infrastructure;
 public class UntrustedProxyWarningMiddleware
 {
     private const string ForwardedForHeader = "X-Forwarded-For";
-    private static int _warned;
+    private int _warned;
 
     private readonly RequestDelegate _next;
     private readonly ILogger<UntrustedProxyWarningMiddleware> _logger;
