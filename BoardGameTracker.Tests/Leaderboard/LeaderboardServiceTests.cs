@@ -46,6 +46,23 @@ public class LeaderboardServiceTests
     }
 
     [Fact]
+    public async Task GetLeaderboardAsync_ShouldGiveTiedPlayersTheSameRank()
+    {
+        _playerRepositoryMock.Setup(x => x.GetLeaderboardRows(TestContext.Current.CancellationToken)).ReturnsAsync(
+        [
+            new LeaderboardRow(1, "Zoe", null, 6, 3, 0, 300),
+            new LeaderboardRow(2, "Adam", null, 6, 3, 0, 200),
+            new LeaderboardRow(3, "Mia", null, 5, 1, 0, 100),
+        ]);
+
+        var result = await _service.GetLeaderboardAsync(TestContext.Current.CancellationToken);
+
+        result.Players.Select(x => (x.Rank, x.Name)).Should().Equal((1, "Adam"), (1, "Zoe"), (3, "Mia"));
+        _playerRepositoryMock.Verify(x => x.GetLeaderboardRows(TestContext.Current.CancellationToken), Times.Once);
+        _playerRepositoryMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task GetLeaderboardAsync_ShouldLeaveTheCardsEmpty_WhenNobodyPlayed()
     {
         _playerRepositoryMock.Setup(x => x.GetLeaderboardRows(TestContext.Current.CancellationToken)).ReturnsAsync([]);

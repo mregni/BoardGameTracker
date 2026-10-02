@@ -29,7 +29,7 @@ public class LeaderboardService : ILeaderboardService
 
         for (var i = 0; i < entries.Count; i++)
         {
-            entries[i].Rank = i + 1;
+            entries[i].Rank = i > 0 && SameStanding(entries[i], entries[i - 1]) ? entries[i - 1].Rank : i + 1;
         }
 
         return new LeaderboardDto
@@ -42,6 +42,9 @@ public class LeaderboardService : ILeaderboardService
             MostTimePlayed = entries.OrderByDescending(x => x.MinutesPlayed).ThenBy(x => x.Rank).FirstOrDefault(x => x.MinutesPlayed > 0),
         };
     }
+
+    private static bool SameStanding(LeaderboardEntryDto a, LeaderboardEntryDto b) =>
+        a.WinCount == b.WinCount && a.WinPercentage.Equals(b.WinPercentage) && a.PlayCount == b.PlayCount;
 
     private static LeaderboardEntryDto ToEntry(LeaderboardRow row) => new()
     {

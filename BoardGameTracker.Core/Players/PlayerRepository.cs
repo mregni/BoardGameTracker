@@ -124,20 +124,44 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
         var scored = await _dbContext.PlayerSessions
             .AsNoTracking()
             .Where(x => x.Score != null && x.Session.Game.HasScoring)
-            .Select(x => new { x.SessionId, x.PlayerId, Score = x.Score!.Value })
+            .Select(x => new ScoredPlay(x.SessionId, x.PlayerId, x.Won, x.Score!.Value))
             .ToListAsync(cancellationToken);
 
         var podiums = scored
             .GroupBy(x => x.SessionId)
-            .SelectMany(session => session
-                .OrderByDescending(x => x.Score)
-                .Select((x, index) => new { x.PlayerId, Place = index + 1 })
-                .Where(x => x.Place <= 3))
-            .GroupBy(x => x.PlayerId)
+            .Select(session => session.ToList())
+            .Where(session => session.Count >= MinimumPlayersForPodium)
+            .SelectMany(PodiumPlayers)
+            .GroupBy(playerId => playerId)
             .ToDictionary(g => g.Key, g => g.Count());
 
         return totals
             .Select(x => new LeaderboardRow(x.Id, x.Name, x.Image, x.PlayCount, x.WinCount, podiums.GetValueOrDefault(x.Id), x.MinutesPlayed))
             .ToList();
     }
+
+    private const int MinimumPlayersForPodium = 4;
+
+    private static IEnumerable<int> PodiumPlayers(List<ScoredPlay> session)
+    {
+        var winners = session.Where(x => x.Won).ToList();
+        var losers = session.Where(x => !x.Won).ToList();
+        var lowestWins = winners.Count > 0 && losers.Count > 0 && winners.Max(x => x.Score) < losers.Min(x => x.Score);
+
+        return session
+            .Where(play => 1 + session.Count(other => IsBetter(other, play, lowestWins)) <= 3)
+            .Select(play => play.PlayerId);
+    }
+
+    private static bool IsBetter(ScoredPlay candidate, ScoredPlay play, bool lowestWins)
+    {
+        if (candidate.Won != play.Won)
+        {
+            return candidate.Won;
+        }
+
+        return lowestWins ? candidate.Score < play.Score : candidate.Score > play.Score;
+    }
+
+    private sealed record ScoredPlay(int SessionId, int PlayerId, bool Won, double Score);
 }

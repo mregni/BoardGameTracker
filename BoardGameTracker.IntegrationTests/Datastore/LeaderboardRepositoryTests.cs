@@ -17,6 +17,8 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
     private int _aliceId;
     private int _bobId;
     private int _caraId;
+    private int _daveId;
+    private int _scoringId;
 
     public LeaderboardRepositoryTests(IntegrationFixture fixture)
     {
@@ -55,6 +57,8 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
         _aliceId = alice.Id;
         _bobId = bob.Id;
         _caraId = cara.Id;
+        _daveId = dave.Id;
+        _scoringId = scoring.Id;
     }
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
@@ -69,11 +73,40 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
 
         rows.Should().HaveCount(4);
         var alice = rows.Single(x => x.PlayerId == _aliceId);
-        alice.Should().BeEquivalentTo(new { PlayCount = 3, WinCount = 2, MinutesPlayed = 180.0, PodiumCount = 2 });
+        alice.Should().BeEquivalentTo(new { PlayCount = 3, WinCount = 2, MinutesPlayed = 180.0, PodiumCount = 1 });
         var bob = rows.Single(x => x.PlayerId == _bobId);
-        bob.Should().BeEquivalentTo(new { PlayCount = 2, WinCount = 1, MinutesPlayed = 150.0, PodiumCount = 2 });
+        bob.Should().BeEquivalentTo(new { PlayCount = 2, WinCount = 1, MinutesPlayed = 150.0, PodiumCount = 1 });
         var cara = rows.Single(x => x.PlayerId == _caraId);
         cara.Should().BeEquivalentTo(new { PlayCount = 2, WinCount = 1, MinutesPlayed = 90.0, PodiumCount = 1 });
         rows.Single(x => x.Name == "Dave").PodiumCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetLeaderboardRows_ShouldRankLowestScoreWinsGames_AndLetTiesShareAPlace()
+    {
+        await using (var scope = _fixture.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+            var golf = new Session(_scoringId, Monday.AddDays(3), Monday.AddDays(3).AddMinutes(45), string.Empty);
+            golf.AddPlayerSession(_aliceId, 3, false, true);
+            golf.AddPlayerSession(_bobId, 8, false, false);
+            golf.AddPlayerSession(_caraId, 12, false, false);
+            golf.AddPlayerSession(_daveId, 15, false, false);
+            var tie = new Session(_scoringId, Monday.AddDays(4), Monday.AddDays(4).AddMinutes(45), string.Empty);
+            tie.AddPlayerSession(_aliceId, 10, false, true);
+            tie.AddPlayerSession(_bobId, 10, false, true);
+            tie.AddPlayerSession(_caraId, 10, false, true);
+            tie.AddPlayerSession(_daveId, 10, false, true);
+            db.AddRange(golf, tie);
+            await db.SaveChangesAsync();
+        }
+
+        await using var readScope = _fixture.CreateScope();
+        var rows = await readScope.ServiceProvider.GetRequiredService<IPlayerRepository>().GetLeaderboardRows();
+
+        rows.Single(x => x.PlayerId == _aliceId).PodiumCount.Should().Be(3);
+        rows.Single(x => x.PlayerId == _bobId).PodiumCount.Should().Be(3);
+        rows.Single(x => x.PlayerId == _caraId).PodiumCount.Should().Be(3);
+        rows.Single(x => x.PlayerId == _daveId).PodiumCount.Should().Be(1);
     }
 }
