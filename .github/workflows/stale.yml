@@ -121,6 +121,7 @@ jobs:
           exempt-pr-labels: >
             pinned,
             security,
+            dependencies,
             in progress,
             do not merge
 
