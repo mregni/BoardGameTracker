@@ -504,6 +504,57 @@ public class OidcProviderServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateAsync_ShouldUnlinkEveryAccount_WhenTheAuthorityPointsElsewhere()
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "key-1"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-3", "other", "key-3"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await UpdateAuthorityAsync(provider.Id, "https://sso.example.com/realms/games");
+
+        var remainingLogins = await _context.ExternalLogins.ToListAsync(TestContext.Current.CancellationToken);
+        remainingLogins.Should().ContainSingle(x => x.Provider == "other");
+    }
+
+    [Theory]
+    [InlineData("https://accounts.google.com")]
+    [InlineData("https://accounts.google.com/")]
+    [InlineData("HTTPS://Accounts.Google.com")]
+    public async Task UpdateAsync_ShouldKeepTheLinks_WhenTheAuthorityIsUnchanged(string authority)
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "key-1"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await UpdateAuthorityAsync(provider.Id, authority);
+
+        (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
+    }
+
+    private Task<OidcProvider> UpdateAuthorityAsync(int id, string authority) => _service.UpdateAsync(
+        id: id,
+        displayName: "Google",
+        authority: authority,
+        clientId: "client-id",
+        clientSecret: null,
+        enabled: true,
+        scopes: "openid profile email",
+        autoProvisionUsers: true,
+        authorizationEndpoint: null,
+        tokenEndpoint: null,
+        userInfoEndpoint: null,
+        usernameClaimType: null,
+        emailClaimType: null,
+        displayNameClaimType: null,
+        rolesClaimType: null,
+        adminGroupValue: null,
+        iconUrl: null,
+        buttonColor: null);
+
+    [Fact]
     public async Task DeleteAsync_ShouldInvalidateCachedDiscoveryDocument()
     {
         var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");

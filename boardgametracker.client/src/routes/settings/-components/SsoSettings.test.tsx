@@ -120,6 +120,21 @@ describe("SsoSettings", () => {
 		expect(mocks.state.save.mock.calls[0][0]).toMatchObject({ name: "My_IdP" });
 	});
 
+	it("warns that linked accounts must link again when the authority of a provider changes", async () => {
+		const user = userEvent.setup();
+		mocks.state.provider = provider;
+		renderWithProviders(<SsoSettings />);
+
+		expect(screen.queryByText("sso.fields.authority.relink-warning")).not.toBeInTheDocument();
+		await user.type(screen.getByLabelText("sso.fields.authority.label"), "/");
+		expect(screen.queryByText("sso.fields.authority.relink-warning")).not.toBeInTheDocument();
+
+		await user.clear(screen.getByLabelText("sso.fields.authority.label"));
+		await user.type(screen.getByLabelText("sso.fields.authority.label"), "https://login.example.org");
+
+		expect(screen.getByText("sso.fields.authority.relink-warning")).toBeInTheDocument();
+	});
+
 	it("does not submit an insecure authority", async () => {
 		const user = userEvent.setup();
 		renderWithProviders(<SsoSettings />);

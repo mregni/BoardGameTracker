@@ -326,7 +326,8 @@
 			},
 			"authority": {
 				"label": "Authority (issuer URL)",
-				"placeholder": "https://sso.example.com/realms/games"
+				"placeholder": "https://sso.example.com/realms/games",
+				"relink-warning": "Si cambias la dirección, se desvinculan todas las cuentas vinculadas a este proveedor. Los usuarios inician sesión con su contraseña y lo vuelven a vincular desde su perfil; quienes no tengan contraseña necesitan una primero."
 			},
 			"client-id": {
 				"label": "Client ID"

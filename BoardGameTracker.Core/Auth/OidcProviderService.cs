@@ -76,11 +76,22 @@ public class OidcProviderService : IOidcProviderService
             ?? throw new EntityNotFoundException(nameof(OidcProvider), id);
 
         EnsureSecureAuthority(authority);
+        var authorityChanged = !string.Equals(NormalizeAuthority(provider.Authority), NormalizeAuthority(authority), StringComparison.OrdinalIgnoreCase);
         provider.Update(displayName, authority, clientId, ProtectSecret(clientSecret), enabled, scopes, autoProvisionUsers,
             authorizationEndpoint, tokenEndpoint, userInfoEndpoint,
             usernameClaimType, emailClaimType, displayNameClaimType,
             rolesClaimType, adminGroupValue,
             iconUrl, buttonColor);
+
+        if (authorityChanged)
+        {
+            var externalLogins = await _context.ExternalLogins
+                .Where(x => x.Provider == provider.Name)
+                .ToListAsync();
+            _context.ExternalLogins.RemoveRange(externalLogins);
+            _logger.LogWarning("OIDC provider {ProviderName} now points at a different authority; {Count} linked accounts must link it again",
+                provider.Name, externalLogins.Count);
+        }
 
         await _context.SaveChangesAsync();
 
@@ -110,6 +121,8 @@ public class OidcProviderService : IOidcProviderService
         _logger.LogInformation("OIDC provider {ProviderName} deleted with {Count} associated external logins removed",
             provider.Name, externalLogins.Count);
     }
+
+    private static string NormalizeAuthority(string authority) => authority.Trim().TrimEnd('/');
 
     private string? ProtectSecret(string? clientSecret)
     {

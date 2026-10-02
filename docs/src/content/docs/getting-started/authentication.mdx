@@ -75,7 +75,7 @@ The same configuration is available through the API (`POST /api/admin/oidc-provi
 }
 ```
 
-- **authority** must use `https` (plain `http` is accepted only for local addresses) and must match the `issuer` in the provider's discovery document.
+- **authority** must use `https` (plain `http` is accepted only for local addresses) and must match the `issuer` in the provider's discovery document. Pointing an existing provider at a different authority unlinks every account linked to it, because a user id from one issuer says nothing about the same id at another; users sign in with their password and link the provider again.
 - **autoProvisionUsers** creates a `User` account on first sign-in. When the e-mail already belongs to a local account, the sign-in is refused: log in with the password first and link the provider under **Settings → Account → External logins**.
 - **rolesClaimType** / **adminGroupValue** grant the `Admin` role when the named group is present in that claim on first sign-in.
 - Only one provider can be enabled at a time; the login page shows one *Continue with …* button. Switch **Enabled** off to hide the button without losing the configuration.

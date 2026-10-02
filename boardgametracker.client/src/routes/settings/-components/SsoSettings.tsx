@@ -77,6 +77,8 @@ const SetupPanel = ({ setup, name }: { setup: OidcSetup; name: string }) => {
 	);
 };
 
+const normalizeAuthority = (authority: string) => authority.trim().replace(/\/+$/, "").toLowerCase();
+
 export const SsoSettings = () => {
 	const { t } = useTranslation(["settings", "common"]);
 	const {
@@ -164,6 +166,17 @@ export const SsoSettings = () => {
 							</div>
 						)}
 					</form.Field>
+					{provider && (
+						<form.Subscribe selector={(state) => state.values.authority}>
+							{(authority) =>
+								normalizeAuthority(authority) !== normalizeAuthority(provider.authority) && (
+									<BgtText size="2" color="amber">
+										{t("sso.fields.authority.relink-warning")}
+									</BgtText>
+								)
+							}
+						</form.Subscribe>
+					)}
 					{discoveryError && (
 						<BgtText size="2" color="red">
 							{discoveryError}
