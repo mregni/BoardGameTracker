@@ -1,5 +1,6 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
+import { useTimeouts } from "@/hooks/useTimeouts";
 import { QUERY_KEYS } from "@/models";
 import { isPriceError, priceErrorKey } from "@/models/Games/GamePrice";
 import { useToasts } from "@/routes/-hooks/useToasts";
@@ -37,6 +38,7 @@ export const useGameData = (props: UseGameDataProps) => {
 	const isLoading =
 		gameQuery.isLoading || settingsQuery.isLoading || sessionsQuery.isLoading || statisticsQuery.isLoading;
 
+	const schedule = useTimeouts();
 	const priceQuery = useQuery({
 		...getGamePrice(gameId),
 		enabled: !!game?.changeDetectionWatchId && !!settings?.changeDetectionStatus?.isConfigured,
@@ -46,7 +48,7 @@ export const useGameData = (props: UseGameDataProps) => {
 	const pollPrice = (delays: number[]) => {
 		const [next, ...rest] = delays;
 		if (next === undefined) return;
-		setTimeout(() => {
+		schedule(() => {
 			getGamePriceCall(gameId, true)
 				.then((fresh) => {
 					queryClient.setQueryData([QUERY_KEYS.game, gameId, QUERY_KEYS.price], fresh);

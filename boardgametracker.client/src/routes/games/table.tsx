@@ -15,6 +15,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTimeouts } from "@/hooks/useTimeouts";
 import { type Game, GameState, QUERY_KEYS } from "@/models";
 import { getTrackedPricesCall } from "@/services/gameService";
 import { getTrackedPrices } from "@/services/queries/games";
@@ -72,12 +73,13 @@ function RouteComponent() {
 		() => new Map((trackedPricesQuery.data ?? []).map((price) => [price.gameId, price])),
 		[trackedPricesQuery.data],
 	);
+	const schedule = useTimeouts();
 	const refreshPricesMutation = useMutation({
 		mutationFn: () => getTrackedPricesCall(true),
 		onSuccess: (data) => {
 			queryClient.setQueryData([QUERY_KEYS.trackedPrices], data);
 			if (data.some((price) => price.recheckQueued)) {
-				setTimeout(() => {
+				schedule(() => {
 					getTrackedPricesCall(true)
 						.then((fresh) => queryClient.setQueryData([QUERY_KEYS.trackedPrices], fresh))
 						.catch(() => {});
