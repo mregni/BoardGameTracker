@@ -4733,6 +4733,7 @@ export interface components {
             email: string | null;
             /** Format: int32 */
             playerId: number | null;
+            currentPassword: string | null;
         };
         UpdateRsvpCommand: {
             /** Format: int32 */

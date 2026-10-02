@@ -201,7 +201,11 @@
 				"label": "Gekoppelde speler",
 				"none": "Niet gekoppeld"
 			},
-			"save": "Profiel opslaan"
+			"save": "Profiel opslaan",
+			"current-password": {
+				"label": "Huidig wachtwoord",
+				"placeholder": "Nodig om je e-mailadres te wijzigen"
+			}
 		},
 		"password": {
 			"change-button": "Wachtwoord wijzigen",

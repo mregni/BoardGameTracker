@@ -12,6 +12,7 @@ import {
 } from "@/services/authService";
 import { getLinkablePlayers, getProfile, getUsers } from "@/services/queries/auth";
 import { getPlayers } from "@/services/queries/players";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 export const useAccountData = () => {
 	const queryClient = useQueryClient();
@@ -30,8 +31,8 @@ export const useAccountData = () => {
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.profile] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 		},
-		onError: () => {
-			errorToast("settings:account.notifications.profile-update-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "settings:account.notifications.profile-update-failed"));
 		},
 	});
 
@@ -40,8 +41,8 @@ export const useAccountData = () => {
 		onSuccess: () => {
 			successToast("settings:account.notifications.password-changed");
 		},
-		onError: () => {
-			errorToast("settings:account.notifications.password-change-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "settings:account.notifications.password-change-failed"));
 		},
 	});
 
@@ -52,8 +53,8 @@ export const useAccountData = () => {
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 		},
-		onError: () => {
-			errorToast("settings:account.notifications.user-create-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "settings:account.notifications.user-create-failed"));
 		},
 	});
 
@@ -63,8 +64,8 @@ export const useAccountData = () => {
 			successToast("settings:account.notifications.user-deleted");
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 		},
-		onError: () => {
-			errorToast("settings:account.notifications.user-delete-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "settings:account.notifications.user-delete-failed"));
 		},
 	});
 
@@ -84,8 +85,8 @@ export const useAccountData = () => {
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.users] });
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 		},
-		onError: () => {
-			errorToast("settings:account.notifications.user-update-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "settings:account.notifications.user-update-failed"));
 		},
 	});
 

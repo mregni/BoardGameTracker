@@ -201,7 +201,11 @@
 				"label": "Linked player",
 				"none": "Not linked"
 			},
-			"save": "Save profile"
+			"save": "Save profile",
+			"current-password": {
+				"label": "Current password",
+				"placeholder": "Needed to change your email address"
+			}
 		},
 		"password": {
 			"change-button": "Change password",

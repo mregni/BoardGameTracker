@@ -239,8 +239,11 @@ public class AuthService : IAuthService
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
 
         user.UpdateDisplayName(request.DisplayName);
-        if (request.Email != null)
+        string? previousEmail = null;
+        if (request.Email != null && !string.Equals(request.Email, user.Email, StringComparison.OrdinalIgnoreCase))
         {
+            await EnsureEmailChangeAllowedAsync(user, request.CurrentPassword);
+            previousEmail = user.Email;
             user.UpdateEmail(request.Email);
         }
 
@@ -260,9 +263,45 @@ public class AuthService : IAuthService
         await _userManager.UpdateAsync(user);
 
         _logger.LogInformation("User {UserId} updated their profile", userId);
+        NotifyPreviousEmail(user, previousEmail);
 
         var roles = await _userManager.GetRolesAsync(user);
         return user.ToProfileDto(roles);
+    }
+
+    private async Task EnsureEmailChangeAllowedAsync(ApplicationUser user, string? currentPassword)
+    {
+        if (!await _userManager.HasPasswordAsync(user))
+        {
+            throw new DomainException(Constants.Errors.EmailChangeNeedsPassword);
+        }
+
+        if (string.IsNullOrEmpty(currentPassword) || !await _userManager.CheckPasswordAsync(user, currentPassword))
+        {
+            _logger.LogWarning("Email change for user {UserId} refused: current password missing or wrong", user.Id);
+            throw new ValidationException(Constants.Errors.CurrentPasswordRequired);
+        }
+    }
+
+    private void NotifyPreviousEmail(ApplicationUser user, string? previousEmail)
+    {
+        if (string.IsNullOrWhiteSpace(previousEmail) || !_emailService.IsConfigured)
+        {
+            return;
+        }
+
+        var username = WebUtility.HtmlEncode(user.UserName);
+        var newEmail = WebUtility.HtmlEncode(user.Email);
+        const string subject = "Your BoardGameTracker email address was changed";
+        var body = $"<p>The email address of your account <strong>{username}</strong> was changed to {newEmail}.</p><p>If you did not do this, change your password and contact your administrator.</p>";
+        try
+        {
+            _backgroundEmailSender.Queue(previousEmail, subject, body);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to queue the email-change notice for user {UserId}", user.Id);
+        }
     }
 
     public async Task<List<PlayerLinkDto>> GetLinkablePlayersAsync(string currentUserId)

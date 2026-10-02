@@ -78,6 +78,8 @@ public static class Constants
         public const string InvitesCooldown = "error.game-night.invites-cooldown";
         public const string PlayerAlreadyLinked = "error.auth.player-already-linked";
         public const string EmailNotConfigured = "error.email.not-configured";
+        public const string CurrentPasswordRequired = "error.auth.current-password-required";
+        public const string EmailChangeNeedsPassword = "error.auth.email-change-needs-password";
         public const string PublicUrlNotConfigured = "error.email.public-url-not-configured";
         public const string ImageTooLarge = "error.image.too-large";
         public const string ImageUnsupportedFormat = "error.image.unsupported-format";

@@ -7157,6 +7157,10 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "currentPassword": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

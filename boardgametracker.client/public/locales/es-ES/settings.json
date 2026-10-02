@@ -201,7 +201,11 @@
 				"label": "Jugador vinculado",
 				"none": "Sin vincular"
 			},
-			"save": "Guardar perfil"
+			"save": "Guardar perfil",
+			"current-password": {
+				"label": "Contraseña actual",
+				"placeholder": "Necesaria para cambiar tu dirección de correo"
+			}
 		},
 		"password": {
 			"change-button": "Cambiar contraseña",

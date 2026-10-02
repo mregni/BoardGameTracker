@@ -155,6 +155,9 @@ export const AccountSettings = () => {
 	);
 };
 
+const emailChanged = (email: string, current: string | null) =>
+	email.trim() !== "" && email.trim().toLowerCase() !== (current ?? "").trim().toLowerCase();
+
 interface ProfileSectionProps {
 	profile: ProfileResponse;
 	linkablePlayers: PlayerLink[];
@@ -185,12 +188,14 @@ const ProfileSection = ({
 			displayName: profile.displayName ?? "",
 			email: profile.email ?? "",
 			playerId: profile.playerId ?? 0,
+			currentPassword: "",
 		},
 		onSubmit: async ({ value }) => {
 			await updateProfile({
 				displayName: value.displayName || null,
 				email: value.email || null,
 				playerId: value.playerId ? value.playerId : null,
+				currentPassword: emailChanged(value.email, profile.email) ? value.currentPassword : null,
 			});
 		},
 	});
@@ -222,6 +227,23 @@ const ProfileSection = ({
 						/>
 					)}
 				</form.Field>
+				<form.Subscribe selector={(state) => state.values.email}>
+					{(email) =>
+						emailChanged(email, profile.email) && (
+							<form.Field name="currentPassword">
+								{(field) => (
+									<BgtInputField
+										field={field}
+										type="password"
+										label={t("account.profile.current-password.label")}
+										placeholder={t("account.profile.current-password.placeholder")}
+										disabled={isUpdatingProfile}
+									/>
+								)}
+							</form.Field>
+						)
+					}
+				</form.Subscribe>
 				<form.Field name="playerId">
 					{(field) => (
 						<BgtSelect

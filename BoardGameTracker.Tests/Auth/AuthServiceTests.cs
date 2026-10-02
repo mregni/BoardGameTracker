@@ -625,18 +625,80 @@ public class AuthServiceTests : IDisposable
     {
         var userId = "user-id-123";
         var user = new ApplicationUser("testuser", "old@test.com", "Old Name");
-        var request = new UpdateProfileRequest("New Name", "new@test.com", null);
+        var request = new UpdateProfileRequest("New Name", "new@test.com", null, "current-password");
         var roles = new List<string> { "User" };
 
         _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(true);
+        _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "current-password")).ReturnsAsync(true);
         _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
 
         var result = await _authService.UpdateProfileAsync(userId, request);
 
         result.DisplayName.Should().Be("New Name");
         result.Email.Should().Be("new@test.com");
 
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.CheckPasswordAsync(user, "current-password"), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        _backgroundEmailSenderMock.Verify(x => x.Queue("old@test.com", It.IsAny<string>(), It.Is<string>(b => b.Contains("new@test.com"))), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("wrong-password")]
+    public async Task UpdateProfileAsync_ShouldRefuseAnEmailChange_WithoutTheRightCurrentPassword(string? currentPassword)
+    {
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "old@test.com", "Old Name");
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(true);
+        _userManagerMock.Setup(x => x.CheckPasswordAsync(user, It.IsAny<string>())).ReturnsAsync(false);
+
+        var act = () => _authService.UpdateProfileAsync(userId, new UpdateProfileRequest("Old Name", "attacker@test.com", null, currentPassword));
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.CurrentPasswordRequired);
+        user.Email.Should().Be("old@test.com");
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.CheckPasswordAsync(user, It.IsAny<string>()), Times.Exactly(currentPassword == null ? 0 : 1));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_ShouldRefuseAnEmailChange_ForAnAccountWithoutAPassword()
+    {
+        var userId = "user-id-123";
+        var user = new ApplicationUser("ssouser", "old@test.com", "Old Name");
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(false);
+
+        var act = () => _authService.UpdateProfileAsync(userId, new UpdateProfileRequest("Old Name", "attacker@test.com", null));
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(Constants.Errors.EmailChangeNeedsPassword);
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_ShouldNotAskForThePassword_WhenTheEmailOnlyChangesCase()
+    {
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "old@test.com", "Old Name");
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+
+        var result = await _authService.UpdateProfileAsync(userId, new UpdateProfileRequest("New Name", "OLD@test.com", null));
+
+        result.DisplayName.Should().Be("New Name");
         _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);

@@ -45,6 +45,7 @@ export interface UpdateProfileRequest {
 	displayName: string | null;
 	email: string | null;
 	playerId: number | null;
+	currentPassword: string | null;
 }
 
 export interface PlayerLink {
