@@ -673,6 +673,9 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Key")
+                        .IsUnique();
+
                     b.ToTable("Config");
                 });
 
@@ -714,6 +717,9 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 
                     b.Property<int?>("BggId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ChangeDetectionWatchId")
+                        .HasColumnType("text");
 
                     b.Property<string>("Description")
                         .IsRequired()
