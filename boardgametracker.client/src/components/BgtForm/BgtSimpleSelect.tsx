@@ -18,6 +18,8 @@ interface Props {
 	hasSearch?: boolean;
 	value?: string | number | null;
 	onValueChange?: (value: string | number) => void;
+	defaultOpen?: boolean;
+	onOpenChange?: (open: boolean) => void;
 	className?: string;
 }
 
@@ -30,12 +32,14 @@ export const BgtSimpleSelect = (props: Props) => {
 		hasSearch = false,
 		value,
 		onValueChange,
+		defaultOpen = false,
+		onOpenChange,
 		className = "",
 	} = props;
 
 	const { t } = useTranslation();
 	const [searchTerm, setSearchTerm] = useState("");
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useState(defaultOpen);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 
 	const currentValue = value?.toString();
@@ -58,16 +62,6 @@ export const BgtSimpleSelect = (props: Props) => {
 		}
 	}, [open]);
 
-	useEffect(() => {
-		const onResize = (event: Event) => {
-			event.stopImmediatePropagation();
-		};
-		window.addEventListener("resize", onResize);
-		return () => {
-			window.removeEventListener("resize", onResize);
-		};
-	}, []);
-
 	return (
 		<div className={cx("flex flex-col justify-start", className)}>
 			{label && <BgtFieldLabel>{label}</BgtFieldLabel>}
@@ -81,6 +75,7 @@ export const BgtSimpleSelect = (props: Props) => {
 				open={open}
 				onOpenChange={(isOpen) => {
 					setOpen(isOpen);
+					onOpenChange?.(isOpen);
 					if (!isOpen) {
 						setSearchTerm("");
 					}
@@ -116,7 +111,7 @@ export const BgtSimpleSelect = (props: Props) => {
 										type="text"
 										value={searchTerm}
 										onChange={(e) => setSearchTerm(e.target.value)}
-										placeholder="Search..."
+										placeholder={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										onClick={(e) => e.stopPropagation()}
 										onKeyDown={(e) => {

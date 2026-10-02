@@ -26,6 +26,7 @@ import { formatPrice } from "@/utils/priceUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
 import { EditableSelectCell } from "./-components/EditableSelectCell";
+import { GameTableCards, type GameTableColumn } from "./-components/GameTableCards";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
 import { useGamesData } from "./-hooks/useGamesData";
 import { useInlineGameUpdate } from "./-hooks/useInlineGameUpdate";
@@ -35,6 +36,11 @@ export const Route = createFileRoute("/games/table")({
 });
 
 const ANY = "any";
+
+interface EditingCell {
+	gameId: number;
+	column: GameTableColumn;
+}
 
 function RouteComponent() {
 	const { t, i18n } = useTranslation(["games", "game", "common"]);
@@ -50,6 +56,13 @@ function RouteComponent() {
 	const [stateFilter, setStateFilter] = useState<string>(GameState.Wanted);
 	const [languageFilter, setLanguageFilter] = useState<string>(ANY);
 	const [inStockOnly, setInStockOnly] = useState(false);
+	const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
+	const stopEdit = useCallback(() => setEditingCell(null), []);
+	const startEdit = useCallback((gameId: number, column: GameTableColumn) => setEditingCell({ gameId, column }), []);
+	const isEditing = useCallback(
+		(gameId: number, column: EditingCell["column"]) => editingCell?.gameId === gameId && editingCell.column === column,
+		[editingCell],
+	);
 
 	const queryClient = useQueryClient();
 	const showLivePrices = changeDetectionConfigured;
@@ -182,6 +195,9 @@ function RouteComponent() {
 						value={row.original.language ?? LANGUAGE_NONE}
 						items={languageEditItems}
 						hasSearch
+						editing={isEditing(row.original.id, "language")}
+						onStartEdit={() => startEdit(row.original.id, "language")}
+						onStopEdit={stopEdit}
 						onChange={(language) =>
 							updateGame({ ...row.original, language: language === LANGUAGE_NONE ? null : language })
 						}
@@ -196,6 +212,9 @@ function RouteComponent() {
 					<EditableSelectCell
 						value={row.original.state}
 						items={stateEditItems}
+						editing={isEditing(row.original.id, "state")}
+						onStartEdit={() => startEdit(row.original.id, "state")}
+						onStopEdit={stopEdit}
 						onChange={(state) => {
 							const livePrice = priceMap.get(row.original.id);
 							const prefill =
@@ -224,6 +243,9 @@ function RouteComponent() {
 						step={0.01}
 						min={0}
 						prefix={currency}
+						editing={isEditing(row.original.id, "buyingPrice")}
+						onStartEdit={() => startEdit(row.original.id, "buyingPrice")}
+						onStopEdit={stopEdit}
 						onChange={(buyingPrice) => updateGame({ ...row.original, buyingPrice })}
 					/>
 				),
@@ -304,6 +326,9 @@ function RouteComponent() {
 			languageEditItems,
 			showLivePrices,
 			priceMap,
+			isEditing,
+			startEdit,
+			stopEdit,
 		],
 	);
 
@@ -356,13 +381,30 @@ function RouteComponent() {
 					/>
 					<BgtTextStatistic title={t("games:table.mean-price")} content={meanPrice} prefix={currency} />
 				</div>
-				<BgtDataTable
-					columns={columns}
-					data={filtered}
-					isLoading={isLoading}
-					noDataMessage={t("games:table.empty")}
-					widths={columnWidths}
-				/>
+				<div className="hidden md:block">
+					<BgtDataTable
+						columns={columns}
+						data={filtered}
+						isLoading={isLoading}
+						noDataMessage={t("games:table.empty")}
+						widths={columnWidths}
+					/>
+				</div>
+				<div className="md:hidden">
+					<GameTableCards
+						games={filtered}
+						isLoading={isLoading}
+						currency={currency}
+						dateFormat={dateFormat}
+						stateItems={stateEditItems}
+						languageItems={languageEditItems}
+						formatRange={formatRange}
+						isEditing={isEditing}
+						startEdit={startEdit}
+						stopEdit={stopEdit}
+						updateGame={updateGame}
+					/>
+				</div>
 			</BgtPageContent>
 		</BgtPage>
 	);
