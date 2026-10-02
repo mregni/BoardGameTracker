@@ -155,6 +155,24 @@ describe("BgtDatePicker", () => {
 		});
 	});
 
+	describe("Clearable", () => {
+		it("should clear the value with the clear button", async () => {
+			const field = createMockField("2024-06-15");
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} clearable />);
+
+			await userEvent.click(screen.getByRole("button", { name: "common:clear-date" }));
+
+			expect(field.handleChange).toHaveBeenCalledWith("");
+		});
+
+		it("should not offer a clear button without a value or when not clearable", () => {
+			renderWithProviders(<BgtDatePicker {...defaultProps} clearable />);
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={createMockField("2024-06-15")} />);
+
+			expect(screen.queryByRole("button", { name: "common:clear-date" })).not.toBeInTheDocument();
+		});
+	});
+
 	describe("Accessibility", () => {
 		it("should expose the input group with the label as an accessible name", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);

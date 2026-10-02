@@ -40,7 +40,8 @@
     },
     "end": {
       "label": "Return date",
-      "placeholder": "Pick a date"
+      "placeholder": "Pick a date",
+      "before-start": "De terugbrengdatum kan niet voor de startdatum liggen"
     },
     "player": {
       "label": "Player",

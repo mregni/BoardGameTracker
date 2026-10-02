@@ -35,6 +35,7 @@ export interface BgtDatePickerProps {
 	className?: string;
 	/** Legacy placeholder prop. The segmented input shows locale-appropriate placeholders automatically. */
 	placeholder?: string;
+	clearable?: boolean;
 }
 
 const safeParseDateValue = (iso: string | undefined | null): CalendarDate | null => {
@@ -47,7 +48,7 @@ const safeParseDateValue = (iso: string | undefined | null): CalendarDate | null
 };
 
 export const BgtDatePicker = (props: BgtDatePickerProps) => {
-	const { field, label, disabled = false, className = "" } = props;
+	const { field, label, disabled = false, className = "", clearable = false } = props;
 	const { t } = useTranslation();
 	const { data: settings } = useQuery(getSettings());
 
@@ -99,6 +100,19 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 								/>
 							)}
 						</DateInput>
+						{clearable && value !== null && !disabled && (
+							<button
+								type="button"
+								onClick={() => field.handleChange("")}
+								className={cx(
+									"flex-none text-gray-400 hover:text-white transition-colors",
+									"cursor-pointer bg-transparent border-none p-0 outline-none text-lg leading-none",
+								)}
+								aria-label={t("common:clear-date")}
+							>
+								×
+							</button>
+						)}
 						<Button
 							className={cx(
 								"flex-none text-gray-400 hover:text-white transition-colors",

@@ -123,6 +123,7 @@
   "sessions-count_one": "{{count}} session",
   "sessions-count_other": "{{count}} sessions",
   "open-calendar": "Open calendar",
+  "clear-date": "Clear date",
   "previous-month": "Previous month",
   "next-month": "Next month",
   "back": "Back",

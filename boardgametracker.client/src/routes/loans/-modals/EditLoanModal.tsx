@@ -15,7 +15,7 @@ import { CreateLoanSchema } from "@/models/Loan/CreateLoan";
 import type { Loan } from "@/models/Loan/Loan";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
-import { zodValidator } from "@/utils/zodValidator";
+import { notBeforeValidator, zodValidator } from "@/utils/zodValidator";
 
 const LoanDatesSchema = CreateLoanSchema.pick({ loanDate: true, dueDate: true });
 
@@ -34,7 +34,7 @@ export const EditLoanModal = (props: Props) => {
 	const form = useAppForm({
 		defaultValues: {
 			loanDate: toInputDate(loan?.loanDate ?? undefined, true),
-			dueDate: toInputDate(loan?.dueDate ?? undefined, true),
+			dueDate: toInputDate(loan?.dueDate ?? undefined, false),
 		},
 		onSubmit: async ({ value }) => {
 			if (loan === null) {
@@ -50,7 +50,7 @@ export const EditLoanModal = (props: Props) => {
 	useEffect(() => {
 		form.reset({
 			loanDate: toInputDate(loan?.loanDate ?? undefined, true),
-			dueDate: toInputDate(loan?.dueDate ?? undefined, true),
+			dueDate: toInputDate(loan?.dueDate ?? undefined, false),
 		});
 	}, [loan, form]);
 
@@ -71,13 +71,17 @@ export const EditLoanModal = (props: Props) => {
 								/>
 							)}
 						</form.Field>
-						<form.Field name="dueDate" validators={zodValidator(LoanDatesSchema, "dueDate")}>
+						<form.Field
+							name="dueDate"
+							validators={notBeforeValidator(LoanDatesSchema, "dueDate", "loanDate", "loans:new.end.before-start")}
+						>
 							{(field: AnyFieldApi) => (
 								<BgtDatePicker
 									field={field}
 									label={t("new.end.label")}
 									disabled={disabled}
 									placeholder={t("new.end.placeholder")}
+									clearable
 								/>
 							)}
 						</form.Field>

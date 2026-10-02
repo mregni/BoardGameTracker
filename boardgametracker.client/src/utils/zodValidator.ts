@@ -14,6 +14,31 @@ export function zodValidator<TSchema extends z.ZodObject>(schema: TSchema, name:
 
 const hasValue = (value: unknown) => value !== undefined && value !== null && value !== "";
 
+export function notBeforeValidator<TSchema extends z.ZodObject>(
+	schema: TSchema,
+	name: keyof z.infer<TSchema> & string,
+	otherName: keyof z.infer<TSchema> & string,
+	message: string,
+) {
+	const fieldSchema = schema.shape[name] as z.ZodSchema;
+	return {
+		onChangeListenTo: [otherName],
+		onChange: ({ value, fieldApi }: { value: unknown; fieldApi: AnyFieldApi }) => {
+			const result = fieldSchema.safeParse(value);
+			if (!result.success) {
+				return i18next.t(result.error.issues[0].message);
+			}
+
+			const other: unknown = fieldApi.form.getFieldValue(otherName);
+			if (hasValue(value) && hasValue(other) && String(value) < String(other)) {
+				return i18next.t(message);
+			}
+
+			return undefined;
+		},
+	};
+}
+
 export function rangeValidator<TSchema extends z.ZodObject>(
 	schema: TSchema,
 	name: keyof z.infer<TSchema> & string,

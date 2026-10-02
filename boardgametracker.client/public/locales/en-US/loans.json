@@ -40,7 +40,8 @@
     },
     "end": {
       "label": "Return date",
-      "placeholder": "Pick a date"
+      "placeholder": "Pick a date",
+      "before-start": "The return date can't be before the start date"
     },
     "player": {
       "label": "Player",

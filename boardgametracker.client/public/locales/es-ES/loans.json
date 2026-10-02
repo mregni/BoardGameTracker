@@ -40,7 +40,8 @@
     },
     "end": {
       "label": "Return date",
-      "placeholder": "Pick a date"
+      "placeholder": "Pick a date",
+      "before-start": "La fecha de devolución no puede ser anterior a la fecha de inicio"
     },
     "player": {
       "label": "Player",
