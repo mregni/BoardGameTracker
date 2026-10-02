@@ -145,7 +145,16 @@ public class AuthService : IAuthService
         var user = existingToken.User!;
         var roles = await _userManager.GetRolesAsync(user);
 
-        var newRefreshToken = await _tokenService.RotateRefreshTokenAsync(existingToken);
+        RefreshToken newRefreshToken;
+        try
+        {
+            newRefreshToken = await _tokenService.RotateRefreshTokenAsync(existingToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            _logger.LogWarning("Two refreshes raced on one refresh token for user {UserId}; only the first got a new token", existingToken.UserId);
+            throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+        }
 
         var accessToken = _tokenService.GenerateAccessToken(user, roles);
 

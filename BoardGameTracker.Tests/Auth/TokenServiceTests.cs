@@ -111,19 +111,62 @@ public class TokenServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RevokeRefreshTokenAsync_ShouldRevokeTokenWithReasonAndReplacement()
+    public async Task RevokeRefreshTokenAsync_ShouldRevokeTheTokenWithItsReason()
     {
         var userId = "test-user-id";
         var refreshToken = await _tokenService.GenerateRefreshTokenAsync(userId);
 
-        await _tokenService.RevokeRefreshTokenAsync(refreshToken, "Test revocation", "new-token");
+        await _tokenService.RevokeRefreshTokenAsync(refreshToken, "Test revocation");
 
         var stored = await _context.RefreshTokens.FirstAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
         stored.IsRevoked.Should().BeTrue();
         stored.IsActive.Should().BeFalse();
         stored.RevokedReason.Should().Be("Test revocation");
-        stored.ReplacedByToken.Should().Be("new-token");
     }
+
+    [Fact]
+    public async Task RevokeRefreshTokenAsync_ShouldAlsoRevokeTheTokensItWasRotatedInto_AndKeepTheChain()
+    {
+        var first = await _tokenService.GenerateRefreshTokenAsync("test-user-id");
+        var second = await _tokenService.RotateRefreshTokenAsync(first);
+        var third = await _tokenService.RotateRefreshTokenAsync(second);
+
+        await _tokenService.RevokeRefreshTokenAsync(first, "Logged out");
+
+        var stored = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        stored.Should().AllSatisfy(t => t.IsActive.Should().BeFalse());
+        stored.Single(t => t.Token == first.Token).ReplacedByToken.Should().Be(second.Token);
+        stored.Single(t => t.Token == first.Token).RevokedReason.Should().Be("Replaced by new token");
+        stored.Single(t => t.Token == third.Token).RevokedReason.Should().Be("Logged out");
+    }
+
+    [Fact]
+    public async Task RotateRefreshTokenAsync_ShouldRefuseTheSecondOfTwoConcurrentRotations()
+    {
+        var databaseName = Guid.NewGuid().ToString();
+        var jwtOptions = Options.Create(new JwtOptions
+        {
+            Secret = "this-is-a-very-long-secret-key-for-testing-purposes-at-least-32-chars",
+            Issuer = "BoardGameTracker",
+            Audience = "BoardGameTracker",
+            AccessTokenExpiryMinutes = 60,
+            RefreshTokenExpiryDays = 7,
+        });
+        await using var setup = NewContext(databaseName);
+        var original = await new TokenService(jwtOptions, setup).GenerateRefreshTokenAsync("test-user-id");
+        await using var first = NewContext(databaseName);
+        await using var second = NewContext(databaseName);
+        var firstCopy = await first.RefreshTokens.SingleAsync(t => t.Token == original.Token, TestContext.Current.CancellationToken);
+        var secondCopy = await second.RefreshTokens.SingleAsync(t => t.Token == original.Token, TestContext.Current.CancellationToken);
+
+        await new TokenService(jwtOptions, first).RotateRefreshTokenAsync(firstCopy);
+        var act = () => new TokenService(jwtOptions, second).RotateRefreshTokenAsync(secondCopy);
+
+        await act.Should().ThrowAsync<DbUpdateConcurrencyException>();
+    }
+
+    private static MainDbContext NewContext(string databaseName) =>
+        new(new DbContextOptionsBuilder<MainDbContext>().UseInMemoryDatabase(databaseName).Options);
 
     [Fact]
     public async Task RevokeAllUserTokensAsync_ShouldRevokeOnlyActiveTokensOfThatUser()

@@ -9,7 +9,7 @@ export const useLogout = () => {
 	const navigate = useNavigate();
 
 	return useCallback(async () => {
-		await logout();
+		await logout().catch(() => undefined);
 		queryClient.clear();
 		await navigate({ to: "/login", replace: true });
 	}, [logout, queryClient, navigate]);

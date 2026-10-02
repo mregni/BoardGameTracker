@@ -345,6 +345,9 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
             .HasIndex(x => x.Token)
             .IsUnique();
         builder.Entity<RefreshToken>()
+            .Property(x => x.RevokedAt)
+            .IsConcurrencyToken();
+        builder.Entity<RefreshToken>()
             .HasOne(x => x.User)
             .WithMany()
             .HasForeignKey(x => x.UserId)

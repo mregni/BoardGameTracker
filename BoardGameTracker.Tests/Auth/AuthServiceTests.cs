@@ -368,7 +368,7 @@ public class AuthServiceTests : IDisposable
 
         _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("my-refresh-token"))
             .ReturnsAsync(token);
-        _tokenServiceMock.Setup(x => x.RevokeRefreshTokenAsync(token, "Logged out", null))
+        _tokenServiceMock.Setup(x => x.RevokeRefreshTokenAsync(token, "Logged out"))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -376,7 +376,7 @@ public class AuthServiceTests : IDisposable
 
         // Assert
         _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("my-refresh-token"), Times.Once);
-        _tokenServiceMock.Verify(x => x.RevokeRefreshTokenAsync(token, "Logged out", null), Times.Once);
+        _tokenServiceMock.Verify(x => x.RevokeRefreshTokenAsync(token, "Logged out"), Times.Once);
         VerifyNoOtherCalls();
     }
 

@@ -92,10 +92,19 @@ public class TokenService : ITokenService
             .FirstOrDefaultAsync(x => x.Token == hash);
     }
 
-    public async Task RevokeRefreshTokenAsync(RefreshToken token, string? reason = null, string? replacedByToken = null)
+    public async Task RevokeRefreshTokenAsync(RefreshToken token, string? reason = null)
     {
-        token.Revoke(reason, replacedByToken);
-        _context.RefreshTokens.Update(token);
+        var current = token;
+        var visited = new HashSet<int>();
+        while (current != null && visited.Add(current.Id))
+        {
+            current.Revoke(reason);
+            var successor = current.ReplacedByToken;
+            current = successor == null
+                ? null
+                : await _context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == successor);
+        }
+
         await _context.SaveChangesAsync();
     }
 

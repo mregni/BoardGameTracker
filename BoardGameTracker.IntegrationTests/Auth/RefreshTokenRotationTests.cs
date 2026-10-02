@@ -61,6 +61,37 @@ public class RefreshTokenRotationTests
         (await RefreshAsync(client, latest.RefreshToken)).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    [Fact]
+    public async Task Logout_ShouldEndTheTokenTheSessionWasRefreshedInto_EvenWhenSentTheOldToken()
+    {
+        using var client = _fixture.CreateClient();
+        var login = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("user", IntegrationFixture.UserPassword), TestContext.Current.CancellationToken);
+        var first = (await login.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json, TestContext.Current.CancellationToken))!;
+        var refreshed = await RefreshAsync(client, first.RefreshToken);
+        var second = (await refreshed.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json, TestContext.Current.CancellationToken))!;
+
+        using var logout = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout")
+        {
+            Content = JsonContent.Create(new LogoutRequest(first.RefreshToken)),
+        };
+        logout.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", second.AccessToken);
+        (await client.SendAsync(logout, TestContext.Current.CancellationToken)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        (await RefreshAsync(client, second.RefreshToken)).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Refresh_ShouldHandOutOneSuccessor_WhenTheSameTokenIsUsedTwiceAtOnce()
+    {
+        using var client = _fixture.CreateClient();
+        var login = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("user", IntegrationFixture.UserPassword), TestContext.Current.CancellationToken);
+        var session = (await login.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json, TestContext.Current.CancellationToken))!;
+
+        var results = await Task.WhenAll(RefreshAsync(client, session.RefreshToken), RefreshAsync(client, session.RefreshToken));
+
+        results.Select(r => r.StatusCode).Should().BeEquivalentTo([HttpStatusCode.OK, HttpStatusCode.Unauthorized]);
+    }
+
     private static Task<HttpResponseMessage> RefreshAsync(HttpClient client, string refreshToken) =>
         client.PostAsJsonAsync("/api/auth/refresh", new RefreshTokenRequest(refreshToken), TestContext.Current.CancellationToken);
 }
