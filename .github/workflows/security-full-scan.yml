@@ -92,6 +92,7 @@ jobs:
           IMAGE_REF: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
           SEC_DB_PASSWORD: ${{ steps.secrets.outputs.db_password }}
           SEC_JWT_SECRET: ${{ steps.secrets.outputs.jwt_secret }}
+          SEC_ADMIN_PASSWORD: ${{ secrets.ZAP_TEST_PASSWORD }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           RESULT=$(az deployment group create \
@@ -100,7 +101,7 @@ jobs:
             --parameters \
               imageName="$IMAGE_REF" \
               dbPassword="$SEC_DB_PASSWORD" \
-              jwtSecret="$SEC_JWT_SECRET" \
+              jwtSecret="$SEC_JWT_SECRET"               adminPassword="$SEC_ADMIN_PASSWORD" \
               registryUsername="$GITHUB_ACTOR" \
               registryPassword="$GHCR_TOKEN" \
             --query "properties.outputs" \
