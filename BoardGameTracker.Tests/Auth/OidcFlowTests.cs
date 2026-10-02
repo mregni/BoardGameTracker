@@ -186,6 +186,47 @@ public class OidcFlowTests : IDisposable
         (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).ProviderKey.Should().Be("sub-new");
     }
 
+    [Theory]
+    [InlineData("Domain Admins", false)]
+    [InlineData("Admins", true)]
+    [InlineData("Users, Admins", true)]
+    [InlineData("bgt-Admins", false)]
+    public async Task CompleteLoginAsync_ShouldGrantAdmin_OnlyForAnExactGroupInAScalarClaim(string groups, bool expectAdmin)
+    {
+        await ProvisionWithGroups(groups);
+
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), expectAdmin ? "Admin" : "User"), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), expectAdmin ? "User" : "Admin"), Times.Never);
+    }
+
+    [Fact]
+    public async Task CompleteLoginAsync_ShouldGrantAdmin_OnlyForAnExactGroupInAnArrayClaim()
+    {
+        await ProvisionWithGroups(new[] { "Domain Admins", "Staff" });
+
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "User"), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "Admin"), Times.Never);
+    }
+
+    private async Task ProvisionWithGroups(object groups)
+    {
+        var provider = _context.OidcProviders.Single();
+        provider.Update(provider.DisplayName, provider.Authority, provider.ClientId, null, true, provider.Scopes, true,
+            null, null, null, null, null, null, "groups", "Admins", null, null);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var user = KnownUser("sub-" + Guid.NewGuid().ToString("N"));
+        user["groups"] = groups;
+        _idp.User = user;
+        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>())).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.NormalizeEmail(It.IsAny<string>())).Returns((string e) => e.ToUpperInvariant());
+        _userManagerMock.Setup(x => x.Users).Returns(_context.Users);
+
+        var request = await _service.StartLoginAsync("idp", PublicBase, null);
+        await _service.CompleteLoginAsync("idp", await _idp.AuthorizeAsync(request.Url), request.State, request.State);
+    }
+
     [Fact]
     public async Task CompleteLoginAsync_ShouldRefuseToProvision_WhenALocalUserHasTheSameEmail()
     {
