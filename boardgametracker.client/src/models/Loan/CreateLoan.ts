@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { localDateSchema, parseLocalDate } from "@/utils/localDate";
+
 export const CreateLoanSchema = z.object({
 	gameId: z.coerce
 		.number({ error: "player-session:new.game.required" })
@@ -13,13 +15,11 @@ export const CreateLoanSchema = z.object({
 		.refine((val) => val > 0, {
 			message: "player-session:new.player.required",
 		}),
-	loanDate: z.coerce.date({
-		error: "loans:new.start.required",
-	}),
+	loanDate: localDateSchema("loans:new.start.required"),
 	dueDate: z
 		.string()
 		.optional()
-		.transform((val) => (val === "" || val === undefined ? null : new Date(val)))
+		.transform((val) => parseLocalDate(val) ?? null)
 		.nullable(),
 });
 

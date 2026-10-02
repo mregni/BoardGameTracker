@@ -1,4 +1,4 @@
-import { useForm } from "@tanstack/react-form";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,7 @@ import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtFieldLabel, BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
+import { useAppForm } from "@/hooks/form";
 import { useAuth } from "@/hooks/useAuth";
 import { useModalState } from "@/hooks/useModalState";
 import type {
@@ -18,12 +19,15 @@ import type {
 } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
+import { getSettings } from "@/services/queries/settings";
+import { toDisplayDateTime } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { useAccountData } from "../-hooks/useAccountData";
 import { ChangePasswordModal } from "../-modals/ChangePasswordModal";
 import { CreateUserModal } from "../-modals/CreateUserModal";
 import { EditUserModal } from "../-modals/EditUserModal";
 import { TempPasswordModal } from "../-modals/TempPasswordModal";
+import { ExternalLoginsSection } from "./ExternalLoginsSection";
 import { SettingsSection } from "./SettingsSection";
 
 export const AccountSettings = () => {
@@ -73,6 +77,8 @@ export const AccountSettings = () => {
 				isUpdatingProfile={isUpdatingProfile}
 				onChangePassword={changePasswordModal.show}
 			/>
+
+			<ExternalLoginsSection />
 
 			{isAdmin && (
 				<UserManagementSection
@@ -174,7 +180,7 @@ const ProfileSection = ({
 		[linkablePlayers, t],
 	);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			displayName: profile.displayName ?? "",
 			email: profile.email ?? "",
@@ -258,6 +264,10 @@ const UserManagementSection = ({
 	onDeleteUser,
 }: UserManagementSectionProps) => {
 	const { t } = useTranslation(["settings", "auth", "common"]);
+	const { data: settings } = useQuery(getSettings());
+	const dateFormat = settings?.dateFormat ?? "yyyy-MM-dd";
+	const timeFormat = settings?.timeFormat ?? "HH:mm";
+	const uiLanguage = settings?.uiLanguage ?? "en-US";
 
 	const columns: ColumnDef<UserDto>[] = useMemo(
 		() => [
@@ -277,7 +287,7 @@ const UserManagementSection = ({
 				cell: ({ row }) => (
 					<div className="text-white/70 hidden md:block">
 						{row.original.lastLoginAt
-							? new Date(row.original.lastLoginAt).toLocaleDateString()
+							? toDisplayDateTime(row.original.lastLoginAt, dateFormat, timeFormat, uiLanguage)
 							: t("account.users.never-logged-in")}
 					</div>
 				),
@@ -302,7 +312,7 @@ const UserManagementSection = ({
 				),
 			},
 		],
-		[t, currentUserId, onEditUser, onResetPassword, onDeleteUser],
+		[t, currentUserId, onEditUser, onResetPassword, onDeleteUser, dateFormat, timeFormat, uiLanguage],
 	);
 
 	return (

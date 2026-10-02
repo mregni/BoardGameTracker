@@ -1,9 +1,12 @@
 import { z } from "zod";
 
 export const CreatePlayerSessionNoScoringSchema = z.object({
-	playerId: z.coerce.number({
-		error: "player-session:new.player.required",
-	}),
+	playerId: z.coerce
+		.number({
+			error: "player-session:new.player.required",
+		})
+		.int()
+		.positive({ message: "player-session:new.player.required" }),
 	won: z.boolean(),
 	firstPlay: z.boolean(),
 });
@@ -13,9 +16,9 @@ export const CreatePlayerSessionSchema = CreatePlayerSessionNoScoringSchema.exte
 		.number({
 			error: "player-session:score.required",
 		})
-		.nonnegative({
-			message: "player-session:score.required",
-		}),
+		.nullable()
+		.optional()
+		.transform((value) => value ?? null),
 });
 
 export const CreateSessionSchema = z.object({
@@ -27,9 +30,11 @@ export const CreateSessionSchema = z.object({
 		.number({
 			error: "player-session:new.location.required",
 		})
-		.positive({
+		.int()
+		.nonnegative({
 			message: "player-session:new.location.required",
-		}),
+		})
+		.transform((value) => (value > 0 ? value : null)),
 	start: z.coerce.date({
 		error: "player-session:new.start.required",
 	}),

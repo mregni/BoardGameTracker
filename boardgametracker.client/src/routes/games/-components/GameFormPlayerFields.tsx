@@ -6,7 +6,7 @@ import { withForm } from "@/hooks/form";
 import { CreateGameSchema, type GamePrice, GameState } from "@/models";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
-import { zodValidator } from "@/utils/zodValidator";
+import { rangeValidator, zodValidator } from "@/utils/zodValidator";
 import { gameFormOpts } from "../-utils/gameFormOpts";
 import { WatchIdPreview } from "./WatchIdPreview";
 
@@ -49,7 +49,10 @@ export const GameFormPlayerFields = withForm({
 					)}
 				</form.Field>
 				<div>
-					<form.Field name="changeDetectionWatchId" validators={zodValidator(CreateGameSchema, "changeDetectionWatchId")}>
+					<form.Field
+						name="changeDetectionWatchId"
+						validators={zodValidator(CreateGameSchema, "changeDetectionWatchId")}
+					>
 						{(field: AnyFieldApi) => (
 							<BgtInputField
 								field={field}
@@ -67,14 +70,7 @@ export const GameFormPlayerFields = withForm({
 					</form.Subscribe>
 				</div>
 				<form.Field name="additionDate" validators={zodValidator(CreateGameSchema, "additionDate")}>
-					{(field: AnyFieldApi) => (
-						<BgtDatePicker
-							field={field}
-							label={t("added-date.label")}
-							disabled={disabled}
-							placeholder={t("added-date.placeholder")}
-						/>
-					)}
+					{(field: AnyFieldApi) => <BgtDatePicker field={field} label={t("added-date.label")} disabled={disabled} />}
 				</form.Field>
 				<form.Field
 					name="state"
@@ -114,12 +110,12 @@ export const GameFormPlayerFields = withForm({
 						<BgtInputField field={field} label={t("new.manual.min-age.label")} type="number" disabled={disabled} />
 					)}
 				</form.Field>
-				<form.Field name="minPlayers" validators={zodValidator(CreateGameSchema, "minPlayers")}>
+				<form.Field name="minPlayers" validators={rangeValidator(CreateGameSchema, "minPlayers", "maxPlayers", "min")}>
 					{(field: AnyFieldApi) => (
 						<BgtInputField field={field} label={t("new.manual.min-players.label")} type="number" disabled={disabled} />
 					)}
 				</form.Field>
-				<form.Field name="maxPlayers" validators={zodValidator(CreateGameSchema, "maxPlayers")}>
+				<form.Field name="maxPlayers" validators={rangeValidator(CreateGameSchema, "maxPlayers", "minPlayers", "max")}>
 					{(field: AnyFieldApi) => (
 						<BgtInputField field={field} label={t("new.manual.max-players.label")} type="number" disabled={disabled} />
 					)}

@@ -1,4 +1,3 @@
-import { useForm } from "@tanstack/react-form";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
@@ -10,6 +9,7 @@ import {
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
+import { useAppForm } from "@/hooks/form";
 import { type BgtSelectItem, isApiError, type Player, type UserDto } from "@/models";
 import { translateApiError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -49,7 +49,7 @@ export const EditUserModal = ({ open, close, user, players, users, onSubmit, isL
 		[players, users, user.id, t],
 	);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			username: user.username,
 			email: user.email ?? "",

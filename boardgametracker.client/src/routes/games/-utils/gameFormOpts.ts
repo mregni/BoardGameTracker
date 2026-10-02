@@ -21,5 +21,8 @@ export const gameFormOpts = formOptions({
 		image: null as string | null,
 		changeDetectionWatchId: "",
 		language: LANGUAGE_NONE,
+		rating: undefined as number | undefined,
+		weight: undefined as number | undefined,
+		soldPrice: undefined as number | undefined,
 	},
 });

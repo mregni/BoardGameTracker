@@ -1,4 +1,3 @@
-import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
@@ -10,9 +9,11 @@ import {
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtInputField } from "@/components/BgtForm";
-import { type ChangePasswordRequest, isApiError } from "@/models";
+import { useAppForm } from "@/hooks/form";
+import { type ChangePasswordRequest, ChangePasswordSchema, isApiError } from "@/models";
 import { translateApiError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 
 interface Props {
 	open: boolean;
@@ -25,7 +26,7 @@ export const ChangePasswordModal = ({ open, close, onSubmit, isLoading }: Props)
 	const { t } = useTranslation(["settings", "common"]);
 	const [error, setError] = useState<string | null>(null);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			currentPassword: "",
 			newPassword: "",
@@ -59,15 +60,7 @@ export const ChangePasswordModal = ({ open, close, onSubmit, isLoading }: Props)
 					<BgtDialogTitle>{t("account.password.title")}</BgtDialogTitle>
 					<BgtDialogDescription>{t("account.password.description")}</BgtDialogDescription>
 					<div className="flex flex-col gap-2 mb-3 mt-3">
-						<form.Field
-							name="currentPassword"
-							validators={{
-								onChange: ({ value }) => {
-									if (!value) return t("common:required", "Required");
-									return undefined;
-								},
-							}}
-						>
+						<form.Field name="currentPassword" validators={zodValidator(ChangePasswordSchema, "currentPassword")}>
 							{(field) => (
 								<BgtInputField
 									field={field}
@@ -77,16 +70,7 @@ export const ChangePasswordModal = ({ open, close, onSubmit, isLoading }: Props)
 								/>
 							)}
 						</form.Field>
-						<form.Field
-							name="newPassword"
-							validators={{
-								onChange: ({ value }) => {
-									if (!value) return t("common:required", "Required");
-									if (value.length < 4) return t("account.password.min-length");
-									return undefined;
-								},
-							}}
-						>
+						<form.Field name="newPassword" validators={zodValidator(ChangePasswordSchema, "newPassword")}>
 							{(field) => (
 								<BgtInputField
 									field={field}
