@@ -9,6 +9,7 @@ import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import type { BgtSelectImageItem, BgtSelectItem } from "@/models";
 import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
 import { BgtFieldLabel } from "./BgtFieldLabel";
+import { useKeyboardResizeGuard } from "./useKeyboardResizeGuard";
 
 interface Props {
 	label?: string;
@@ -41,6 +42,7 @@ export const BgtSimpleSelect = (props: Props) => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [open, setOpen] = useState(defaultOpen);
 	const searchInputRef = useRef<HTMLInputElement>(null);
+	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
 
 	const currentValue = value?.toString();
 	const filteredItems = items.filter((item) => {
@@ -74,6 +76,9 @@ export const BgtSimpleSelect = (props: Props) => {
 				value={currentValue}
 				open={open}
 				onOpenChange={(isOpen) => {
+					if (!isOpen && isKeyboardResize()) {
+						return;
+					}
 					setOpen(isOpen);
 					onOpenChange?.(isOpen);
 					if (!isOpen) {

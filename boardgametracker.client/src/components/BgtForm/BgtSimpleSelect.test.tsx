@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { renderWithTheme, screen } from "@/test/test-utils";
+import { act, fireEvent, renderWithTheme, screen, waitFor } from "@/test/test-utils";
 import { BgtSimpleSelect } from "./BgtSimpleSelect";
 
 // i18next is mocked globally in setup.ts
@@ -25,6 +25,7 @@ beforeAll(() => {
 	HTMLElement.prototype.hasPointerCapture = vi.fn(() => false);
 	HTMLElement.prototype.setPointerCapture = vi.fn();
 	HTMLElement.prototype.releasePointerCapture = vi.fn();
+	HTMLElement.prototype.scrollIntoView = vi.fn();
 });
 
 afterAll(() => {
@@ -42,6 +43,28 @@ describe("BgtSimpleSelect", () => {
 		items: defaultItems,
 		onValueChange: vi.fn(),
 	};
+
+	describe("On-screen keyboard", () => {
+		it("should stay open when the keyboard resizes the window while searching", async () => {
+			renderWithTheme(<BgtSimpleSelect {...defaultProps} hasSearch defaultOpen />);
+			const search = await screen.findByPlaceholderText("search");
+			act(() => search.focus());
+
+			fireEvent(window, new Event("resize"));
+
+			expect(screen.getByRole("listbox")).toBeInTheDocument();
+		});
+
+		it("should still close on a resize when the search box is not focused", async () => {
+			renderWithTheme(<BgtSimpleSelect {...defaultProps} hasSearch defaultOpen />);
+			const search = await screen.findByPlaceholderText("search");
+			act(() => search.blur());
+
+			fireEvent(window, new Event("resize"));
+
+			await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+		});
+	});
 
 	describe("Rendering", () => {
 		it("should render select trigger", () => {
