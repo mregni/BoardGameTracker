@@ -180,6 +180,38 @@ public class ChangeDetectionClientTests
     }
 
     [Fact]
+    public async Task GetLatestAsync_ShouldPropagateACancellationDuringTheRequest_WithoutCachingAFailure()
+    {
+        _handler.HangUntilCancelled = true;
+        using var cts = new CancellationTokenSource();
+
+        var pending = _client.GetLatestAsync(WatchId, cancellationToken: cts.Token);
+        await _handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        await cts.CancelAsync();
+
+        var act = async () => await pending;
+        await act.Should().ThrowAsync<OperationCanceledException>();
+
+        _handler.HangUntilCancelled = false;
+        var next = await _client.GetLatestAsync(WatchId);
+        next.Status.Should().Be(ChangeDetectionStatus.Ok);
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_ShouldReportUnreachable_AndCacheIt_WhenTheInstanceIsDown()
+    {
+        _handler.WatchException = new HttpRequestException("Connection refused");
+
+        var first = await _client.GetLatestAsync(WatchId);
+        var second = await _client.GetLatestAsync(WatchId);
+
+        first.Available.Should().BeFalse();
+        first.Status.Should().Be(ChangeDetectionStatus.Unreachable);
+        second.Status.Should().Be(ChangeDetectionStatus.Unreachable);
+        _handler.Requests.Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task GetLatestBatchAsync_ShouldOnlyFetchUncachedWatches()
     {
         await _client.GetLatestAsync(WatchId);
@@ -278,6 +310,9 @@ public class ChangeDetectionClientTests
         public HttpStatusCode HistoryStatus { get; set; } = HttpStatusCode.OK;
         public HttpStatusCode CreateStatus { get; set; } = HttpStatusCode.Created;
         public HttpStatusCode SystemInfoStatus { get; set; } = HttpStatusCode.OK;
+        public Exception? WatchException { get; set; }
+        public bool HangUntilCancelled { get; set; }
+        public TaskCompletionSource RequestStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public string? LastPostBody { get; private set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -308,6 +343,17 @@ public class ChangeDetectionClientTests
             if (path.EndsWith("/history/latest", StringComparison.Ordinal))
             {
                 return Response(HistoryStatus, HistoryBody);
+            }
+
+            if (WatchException != null)
+            {
+                throw WatchException;
+            }
+
+            if (HangUntilCancelled)
+            {
+                RequestStarted.TrySetResult();
+                await Task.Delay(Timeout.Infinite, cancellationToken);
             }
 
             return Response(WatchStatus, WatchBody);
