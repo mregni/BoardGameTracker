@@ -104,7 +104,7 @@ public class ManualController : ControllerBase
     [ProducesResponseType<List<GameNightManualsDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetManualsForGameNight(Guid linkId)
     {
-        var manuals = await _manualService.GetManualsForGameNight(linkId);
+        var manuals = await _manualService.GetManualsForGameNight(linkId, User?.Identity?.IsAuthenticated == true);
         return Ok(manuals);
     }
 
@@ -113,7 +113,7 @@ public class ManualController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> DownloadGameNightManual(Guid linkId, int manualId)
     {
-        var download = await _manualService.GetManualForGameNightDownload(linkId, manualId);
+        var download = await _manualService.GetManualForGameNightDownload(linkId, manualId, User?.Identity?.IsAuthenticated == true);
         return File(download.Stream, download.ContentType, download.FileName);
     }
 }

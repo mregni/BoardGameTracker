@@ -8,6 +8,7 @@ using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Disk.Interfaces;
+using BoardGameTracker.Core.GameNights;
 using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Manuals.Interfaces;
 using BoardGameTracker.Core.Manuals.Specifications;
@@ -32,6 +33,7 @@ public class ManualService : IManualService
     private readonly IManualIndexingQueue _indexingQueue;
     private readonly IPdfPageRenderer _pageRenderer;
     private readonly IEnvironmentProvider _environmentProvider;
+    private readonly IConfigRepository _configRepository;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<ManualService> _logger;
 
@@ -44,8 +46,10 @@ public class ManualService : IManualService
         IPdfPageRenderer pageRenderer,
         IEnvironmentProvider environmentProvider,
         IDateTimeProvider dateTimeProvider,
+        IConfigRepository configRepository,
         ILogger<ManualService> logger)
     {
+        _configRepository = configRepository;
         _dateTimeProvider = dateTimeProvider;
         _manualRepository = manualRepository;
         _diskProvider = diskProvider;
@@ -190,8 +194,9 @@ public class ManualService : IManualService
         };
     }
 
-    public async Task<ManualDownload> GetManualForGameNightDownload(Guid linkId, int manualId)
+    public async Task<ManualDownload> GetManualForGameNightDownload(Guid linkId, int manualId, bool isAuthenticated)
     {
+        await GameNightLinkAccess.EnsureAllowedAsync(_configRepository, isAuthenticated);
         var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));
         var manual = await _manualRepository.GetByIdAsync(manualId);
         if (gameNight == null || manual == null || gameNight.SuggestedGames.All(g => g.Id != manual.GameId))
@@ -202,8 +207,9 @@ public class ManualService : IManualService
         return OpenDownload(manual);
     }
 
-    public async Task<List<GameNightManualsDto>> GetManualsForGameNight(Guid linkId)
+    public async Task<List<GameNightManualsDto>> GetManualsForGameNight(Guid linkId, bool isAuthenticated)
     {
+        await GameNightLinkAccess.EnsureAllowedAsync(_configRepository, isAuthenticated);
         var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));
         if (gameNight == null || gameNight.SuggestedGames.Count == 0)
         {

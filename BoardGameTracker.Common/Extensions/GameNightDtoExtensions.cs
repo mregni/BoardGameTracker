@@ -23,6 +23,13 @@ public static class GameNightDtoExtensions
         };
     }
 
+    public static GameNightDto ToPublicDto(this GameNight gameNight)
+    {
+        var dto = gameNight.ToDto();
+        dto.SuggestedGames = gameNight.SuggestedGames.Select(g => g.ToPublicDto()).ToList();
+        return dto;
+    }
+
     public static GameNightRsvpDto ToDto(this GameNightRsvp rsvp)
     {
         return new GameNightRsvpDto

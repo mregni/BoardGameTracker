@@ -1,10 +1,14 @@
 using System.Net;
 using System.Net.Http.Json;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.IntegrationTests.Infrastructure;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace BoardGameTracker.IntegrationTests.Api;
@@ -51,7 +55,48 @@ public class GameNightRsvpTests
         (await response.Content.ReadFromJsonAsync<GameNightRsvpDto>(IntegrationFixture.Json))!.State.Should().Be(GameNightRsvpState.Declined);
     }
 
-    private static async Task<GameNightDto> CreateGameNightAsync(HttpClient user)
+    [Fact]
+    public async Task Link_ShouldHideThePricesOfSuggestedGames_AndGateManualsLikeTheRsvp()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        using var anonymous = _fixture.CreateClient();
+        var game = await user.PostAsJsonAsync("/api/game", new CreateGameCommand { Title = "Brass", State = GameState.Owned, HasScoring = true, BuyingPrice = 64.95m, ShopUrl = "https://shop.example.com/brass" });
+        game.StatusCode.Should().Be(HttpStatusCode.Created, await game.Content.ReadAsStringAsync());
+        var gameId = (await game.Content.ReadFromJsonAsync<GameDto>(IntegrationFixture.Json))!.Id;
+        var gameNight = await CreateGameNightAsync(user, gameId);
+
+        var link = await anonymous.GetAsync($"/api/gamenight/link/{gameNight.LinkId}");
+
+        link.StatusCode.Should().Be(HttpStatusCode.OK);
+        var suggested = (await link.Content.ReadFromJsonAsync<GameNightDto>(IntegrationFixture.Json))!.SuggestedGames.Should().ContainSingle().Subject;
+        suggested.Title.Should().Be("Brass");
+        suggested.BuyingPrice.Should().BeNull();
+        suggested.ShopUrl.Should().BeNull();
+        (await anonymous.GetAsync($"/api/manual/gamenight/{gameNight.LinkId}")).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await SetRsvpAuthenticationAsync(true);
+        try
+        {
+            (await anonymous.GetAsync($"/api/manual/gamenight/{gameNight.LinkId}")).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            (await anonymous.GetAsync($"/api/manual/gamenight/{gameNight.LinkId}/manual/1/download")).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            (await user.GetAsync($"/api/manual/gamenight/{gameNight.LinkId}")).StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        finally
+        {
+            await SetRsvpAuthenticationAsync(false);
+        }
+    }
+
+    private async Task SetRsvpAuthenticationAsync(bool enabled)
+    {
+        await using var scope = _fixture.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+        await context.Config
+            .Where(c => c.Key == Constants.AppConfig.RsvpAuthenticationEnabled)
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.Value, enabled ? "true" : "false"));
+    }
+
+    private static async Task<GameNightDto> CreateGameNightAsync(HttpClient user, int? suggestedGameId = null)
     {
         var host = await user.PostAsJsonAsync("/api/player", new CreatePlayerCommand { Name = "Host " + Guid.NewGuid().ToString("N")[..6] });
         host.StatusCode.Should().Be(HttpStatusCode.Created, await host.Content.ReadAsStringAsync());
@@ -71,6 +116,7 @@ public class GameNightRsvpTests
             HostId = hostId,
             LocationId = locationId,
             InvitedPlayerIds = [guestId],
+            SuggestedGameIds = suggestedGameId is { } id ? [id] : [],
         });
         created.StatusCode.Should().Be(HttpStatusCode.Created, await created.Content.ReadAsStringAsync());
         return (await created.Content.ReadFromJsonAsync<GameNightDto>(IntegrationFixture.Json))!;

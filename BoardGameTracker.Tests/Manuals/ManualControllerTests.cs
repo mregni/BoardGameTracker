@@ -190,7 +190,7 @@ public class ManualControllerTests
         var linkId = Guid.NewGuid();
         var manuals = new List<GameNightManualsDto>();
         _manualServiceMock
-            .Setup(x => x.GetManualsForGameNight(linkId))
+            .Setup(x => x.GetManualsForGameNight(linkId, false))
             .ReturnsAsync(manuals);
 
         var result = await _controller.GetManualsForGameNight(linkId);
@@ -198,7 +198,7 @@ public class ManualControllerTests
         result.Should().BeOfType<OkObjectResult>()
             .Which.Value.Should().BeSameAs(manuals);
 
-        _manualServiceMock.Verify(x => x.GetManualsForGameNight(linkId), Times.Once);
+        _manualServiceMock.Verify(x => x.GetManualsForGameNight(linkId, false), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -208,7 +208,7 @@ public class ManualControllerTests
         var linkId = Guid.NewGuid();
         var stream = new MemoryStream();
         _manualServiceMock
-            .Setup(x => x.GetManualForGameNightDownload(linkId, 11))
+            .Setup(x => x.GetManualForGameNightDownload(linkId, 11, false))
             .ReturnsAsync(new ManualDownload { Stream = stream, ContentType = "application/pdf", FileName = "Catan.pdf" });
 
         var result = await _controller.DownloadGameNightManual(linkId, 11);
@@ -218,7 +218,7 @@ public class ManualControllerTests
         fileResult.ContentType.Should().Be("application/pdf");
         fileResult.FileDownloadName.Should().Be("Catan.pdf");
 
-        _manualServiceMock.Verify(x => x.GetManualForGameNightDownload(linkId, 11), Times.Once);
+        _manualServiceMock.Verify(x => x.GetManualForGameNightDownload(linkId, 11, false), Times.Once);
         VerifyNoOtherCalls();
     }
 }

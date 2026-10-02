@@ -145,10 +145,7 @@ public class GameNightService : IGameNightService
 
     public async Task<GameNightRsvp> UpdateRsvpByLink(Guid linkId, UpdateRsvpCommand command, bool isAuthenticated)
     {
-        if (!isAuthenticated)
-        {
-            await EnsureAnonymousRsvpAllowedAsync();
-        }
+        await GameNightLinkAccess.EnsureAllowedAsync(_configRepository, isAuthenticated);
 
         var rsvp = await FindRsvpAsync(command);
         if (rsvp.GameNight?.LinkId != linkId)
@@ -295,20 +292,8 @@ public class GameNightService : IGameNightService
 
     public async Task<GameNight?> GetByLinkId(Guid linkId, bool isAuthenticated)
     {
-        if (!isAuthenticated)
-        {
-            await EnsureAnonymousRsvpAllowedAsync();
-        }
+        await GameNightLinkAccess.EnsureAllowedAsync(_configRepository, isAuthenticated);
 
         return await _gameNightRepository.SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));
-    }
-
-    private async Task EnsureAnonymousRsvpAllowedAsync()
-    {
-        var authenticationRequired = await _configRepository.GetConfigValueOrDefaultAsync(Constants.AppConfig.RsvpAuthenticationEnabled, false);
-        if (authenticationRequired)
-        {
-            throw new AuthenticationFailedException(Constants.Errors.NotAuthenticated);
-        }
     }
 }

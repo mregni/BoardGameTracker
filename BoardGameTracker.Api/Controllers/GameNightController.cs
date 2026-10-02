@@ -119,6 +119,6 @@ public class GameNightController : ControllerBase
             return NotFound();
         }
 
-        return Ok(rsvp.ToDto());
+        return Ok(rsvp.ToPublicDto());
     }
 }
