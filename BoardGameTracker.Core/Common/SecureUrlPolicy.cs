@@ -4,6 +4,8 @@ namespace BoardGameTracker.Core.Common;
 
 public static class SecureUrlPolicy
 {
+    private static readonly string[] LocalSuffixes = [".local", ".localhost", ".internal", ".lan", ".home.arpa"];
+
     public static bool IsAcceptable(string url)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
@@ -19,6 +21,13 @@ public static class SecureUrlPolicy
         return uri.Scheme == Uri.UriSchemeHttp && IsLocalHost(uri);
     }
 
+    public static bool IsPublicWebAddress(string url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri)
+               && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+               && !IsLocalHost(uri);
+    }
+
     private static bool IsLocalHost(Uri uri)
     {
         if (uri.IsLoopback)
@@ -28,7 +37,7 @@ public static class SecureUrlPolicy
 
         if (uri.HostNameType == UriHostNameType.Dns)
         {
-            return !uri.Host.Contains('.') || uri.Host.EndsWith(".local", StringComparison.OrdinalIgnoreCase);
+            return !uri.Host.Contains('.') || LocalSuffixes.Any(suffix => uri.Host.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
         }
 
         return IPAddress.TryParse(uri.DnsSafeHost, out var address) && IsPrivate(address);

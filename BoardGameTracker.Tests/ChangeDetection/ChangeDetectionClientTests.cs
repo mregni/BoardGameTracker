@@ -263,6 +263,30 @@ public class ChangeDetectionClientTests
     }
 
     [Fact]
+    public async Task UpdateWatchAsync_ShouldPutTheNewUrl_AndDropTheCachedResult()
+    {
+        await _client.GetLatestAsync(WatchId);
+
+        var status = await _client.UpdateWatchAsync(WatchId, "https://other.example.com/brass", "Brass");
+        await _client.GetLatestAsync(WatchId);
+
+        status.Should().Be(ChangeDetectionStatus.Ok);
+        _handler.Requests.Should().Contain($"PUT /api/v1/watch/{WatchId}");
+        _handler.LastPutBody.Should().Contain("https://other.example.com/brass");
+        _handler.Requests.Count(r => r == $"GET /api/v1/watch/{WatchId}").Should().Be(2);
+    }
+
+    [Fact]
+    public async Task UpdateWatchAsync_ShouldReportAMissingWatch()
+    {
+        _handler.PutStatus = HttpStatusCode.NotFound;
+
+        var status = await _client.UpdateWatchAsync(WatchId, "https://other.example.com/brass", "Brass");
+
+        status.Should().Be(ChangeDetectionStatus.WatchNotFound);
+    }
+
+    [Fact]
     public async Task GetLatestBatchAsync_ShouldOnlyFetchUncachedWatches()
     {
         await _client.GetLatestAsync(WatchId);
@@ -365,6 +389,8 @@ public class ChangeDetectionClientTests
         public bool HangUntilCancelled { get; set; }
         public TaskCompletionSource RequestStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public string? LastPostBody { get; private set; }
+        public string? LastPutBody { get; private set; }
+        public HttpStatusCode PutStatus { get; set; } = HttpStatusCode.OK;
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -379,6 +405,14 @@ public class ChangeDetectionClientTests
                     ? null
                     : await request.Content.ReadAsStringAsync(cancellationToken);
                 return Response(CreateStatus, $$$"""{"uuid":"{{{CreatedWatchId}}}"}""");
+            }
+
+            if (request.Method == HttpMethod.Put)
+            {
+                LastPutBody = request.Content == null
+                    ? null
+                    : await request.Content.ReadAsStringAsync(cancellationToken);
+                return Response(PutStatus, "OK");
             }
 
             if (path.Contains("recheck=1", StringComparison.Ordinal))

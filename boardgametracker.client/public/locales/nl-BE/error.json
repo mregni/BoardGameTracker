@@ -54,7 +54,8 @@
     "player-range-incomplete": "Vul zowel het minimum als het maximum aantal spelers in",
     "play-time-range-incomplete": "Vul zowel de minimum als de maximum speelduur in",
     "range-min-above-max": "Het minimum kan niet hoger zijn dan het maximum",
-    "expansion-already-exists": "Deze uitbreiding is al aan het spel gekoppeld."
+    "expansion-already-exists": "Deze uitbreiding is al aan het spel gekoppeld.",
+    "shop-url-not-public": "Gebruik het adres van een openbare webwinkel; adressen in het lokale netwerk zijn niet toegestaan"
   },
   "something-went-wrong": "Er ging iets mis, probeer het later opnieuw.",
   "unexpected-error": "Er is een onverwachte fout opgetreden.",

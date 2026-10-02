@@ -54,7 +54,8 @@
     "player-range-incomplete": "Enter both the minimum and the maximum number of players",
     "play-time-range-incomplete": "Enter both the minimum and the maximum play time",
     "range-min-above-max": "The minimum cannot be higher than the maximum",
-    "expansion-already-exists": "This expansion is already linked to the game."
+    "expansion-already-exists": "This expansion is already linked to the game.",
+    "shop-url-not-public": "Use the address of a public web shop; local network addresses are not allowed"
   },
   "something-went-wrong": "Something went wrong, please try again later.",
   "unexpected-error": "An unexpected error occurred.",

@@ -94,6 +94,7 @@ public static class Constants
         public const string ChangeDetectionWatchNotFound = "error.changedetection.watch-not-found";
         public const string ChangeDetectionCreateWatchFailed = "error.changedetection.create-watch-failed";
         public const string InvalidShopUrl = "error.game.invalid-shop-url";
+        public const string ShopUrlNotPublic = "error.game.shop-url-not-public";
         public const string SettingsInvalidPublicUrl = "error.settings.invalid-public-url";
         public const string AdminPasswordRejected = "error.maintenance.admin-password-rejected";
     }

@@ -37,4 +37,24 @@ public class SecureUrlPolicyTests
     {
         SecureUrlPolicy.IsAcceptable(url).Should().Be(expected);
     }
+
+    [Theory]
+    [InlineData("https://shop.example.com/brass", true)]
+    [InlineData("http://shop.example.com/brass", true)]
+    [InlineData("https://[2001:4860:4860::8888]/", true)]
+    [InlineData("http://localhost:8080/admin", false)]
+    [InlineData("https://127.0.0.1/", false)]
+    [InlineData("http://192.168.1.1/", false)]
+    [InlineData("http://169.254.169.254/latest/meta-data", false)]
+    [InlineData("http://[::1]/", false)]
+    [InlineData("http://[fd00::1]/", false)]
+    [InlineData("http://router/", false)]
+    [InlineData("https://nas.local/", false)]
+    [InlineData("https://grafana.internal/", false)]
+    [InlineData("ftp://shop.example.com/", false)]
+    [InlineData("not a url", false)]
+    public void IsPublicWebAddress_ShouldRefuseLocalNetworkAddresses(string url, bool expected)
+    {
+        SecureUrlPolicy.IsPublicWebAddress(url).Should().Be(expected);
+    }
 }

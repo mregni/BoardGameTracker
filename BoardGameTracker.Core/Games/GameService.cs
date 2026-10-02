@@ -8,6 +8,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.ChangeDetection.Interfaces;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
@@ -384,20 +385,47 @@ public class GameService : IGameService
             throw new ValidationException(Constants.Errors.InvalidShopUrl);
         }
 
-        var (status, watchId) = await _changeDetectionClient.CreateWatchAsync(shopUrl, game.Title, cancellationToken);
-        if (status != ChangeDetectionStatus.Ok || watchId == null)
+        if (!SecureUrlPolicy.IsPublicWebAddress(shopUrl))
         {
-            throw new DomainException(status == ChangeDetectionStatus.NotConfigured
-                ? Constants.Errors.ChangeDetectionNotConfigured
-                : Constants.Errors.ChangeDetectionCreateWatchFailed);
+            throw new ValidationException(Constants.Errors.ShopUrlNotPublic);
         }
 
+        var watchId = await ReuseOrCreateWatchAsync(game, shopUrl, cancellationToken);
         game.UpdateChangeDetectionWatchId(watchId);
         game.UpdateShopUrl(shopUrl);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("Game {GameId} linked to changedetection.io watch {WatchId}", gameId, watchId);
         return await _gameRepository.SingleOrDefaultAsync(new GameByIdWithDetailsForReadSpec(gameId), cancellationToken) ?? game;
     }
+
+    private async Task<string> ReuseOrCreateWatchAsync(Game game, string shopUrl, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(game.ChangeDetectionWatchId))
+        {
+            var updated = await _changeDetectionClient.UpdateWatchAsync(game.ChangeDetectionWatchId, shopUrl, game.Title, cancellationToken);
+            if (updated == ChangeDetectionStatus.Ok)
+            {
+                return game.ChangeDetectionWatchId;
+            }
+
+            if (updated != ChangeDetectionStatus.WatchNotFound)
+            {
+                throw new DomainException(WatchErrorFor(updated));
+            }
+        }
+
+        var (status, watchId) = await _changeDetectionClient.CreateWatchAsync(shopUrl, game.Title, cancellationToken);
+        if (status != ChangeDetectionStatus.Ok || watchId == null)
+        {
+            throw new DomainException(WatchErrorFor(status));
+        }
+
+        return watchId;
+    }
+
+    private static string WatchErrorFor(ChangeDetectionStatus status) => status == ChangeDetectionStatus.NotConfigured
+        ? Constants.Errors.ChangeDetectionNotConfigured
+        : Constants.Errors.ChangeDetectionCreateWatchFailed;
 
     private async Task SyncShopUrlFromWatchAsync(Game game)
     {

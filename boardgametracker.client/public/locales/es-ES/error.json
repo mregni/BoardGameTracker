@@ -54,7 +54,8 @@
     "player-range-incomplete": "Introduce tanto el mínimo como el máximo de jugadores",
     "play-time-range-incomplete": "Introduce tanto el tiempo de juego mínimo como el máximo",
     "range-min-above-max": "El mínimo no puede ser mayor que el máximo",
-    "expansion-already-exists": "Esta expansión ya está vinculada al juego."
+    "expansion-already-exists": "Esta expansión ya está vinculada al juego.",
+    "shop-url-not-public": "Usa la dirección de una tienda web pública; no se permiten direcciones de la red local"
   },
   "something-went-wrong": "Algo salió mal, inténtalo de nuevo más tarde.",
   "unexpected-error": "Se ha producido un error inesperado.",

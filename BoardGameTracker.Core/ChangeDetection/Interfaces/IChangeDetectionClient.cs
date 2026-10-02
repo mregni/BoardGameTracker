@@ -18,6 +18,12 @@ public interface IChangeDetectionClient
         string watchId,
         CancellationToken cancellationToken = default);
 
+    Task<ChangeDetectionStatus> UpdateWatchAsync(
+        string watchId,
+        string url,
+        string title,
+        CancellationToken cancellationToken = default);
+
     Task<(ChangeDetectionStatus Status, string? WatchId)> CreateWatchAsync(
         string url,
         string title,
