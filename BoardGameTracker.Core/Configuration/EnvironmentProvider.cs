@@ -35,6 +35,15 @@ public class EnvironmentProvider : IEnvironmentProvider
 
     public string? AdminPassword => Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
 
+    public string? DataProtectionKey
+    {
+        get
+        {
+            var value = Environment.GetEnvironmentVariable("DATA_PROTECTION_KEY");
+            return string.IsNullOrWhiteSpace(value) ? null : value;
+        }
+    }
+
     public IReadOnlyList<string> TrustedProxies => SplitList(Environment.GetEnvironmentVariable("TRUSTED_PROXIES"));
 
     public IReadOnlyList<string> CorsOrigins => SplitList(Environment.GetEnvironmentVariable("CORS_ORIGINS"));

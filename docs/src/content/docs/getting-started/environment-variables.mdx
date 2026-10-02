@@ -12,6 +12,7 @@ With the provided compose files you can put any of these variables in a `.env` f
 | Configuration | Variable | Default | Info |
 | --- | --- | --- | --- |
 | Timezone | `TZ` | `UTC` | IANA name such as `Europe/Brussels`. |
+| Data protection key | `DATA_PROTECTION_KEY` | | Optional, at least 32 characters. Encrypts the data protection keys the app stores in its database, which protect password-reset links and the OpenID Connect client secret; without it a copy of the database is enough to forge a reset link. Keys created before you set it stay readable. Keep the value stable: changing or removing it makes the stored client secret unreadable (enter it again under Single sign-on) and invalidates open reset links. |
 | JWT secret | `JWT_SECRET` | | **Required** unless `AUTH_ENABLED=false`. Used for signing login tokens; a strong, random value of at least 32 characters (64 or more recommended), for example `openssl rand -base64 48`. |
 | Database host | `DB_HOST` | | **Required.** Hostname of the PostgreSQL server; `db` when you use the provided compose file. The server must provide the `vector` extension (`pgvector/pgvector:pg16`). |
 | Database port | `DB_PORT` | `5432` | |

@@ -25,6 +25,7 @@ using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Updates;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -76,6 +77,12 @@ builder.Services.AddDataProtection()
     .SetApplicationName("boardgametracker");
 
 var environmentProvider = new EnvironmentProvider();
+if (environmentProvider.DataProtectionKey is { } dataProtectionKey)
+{
+    var keyMaterial = new DataProtectionKeyMaterial(dataProtectionKey);
+    builder.Services.AddSingleton(keyMaterial);
+    builder.Services.Configure<KeyManagementOptions>(options => options.XmlEncryptor = new SecretXmlEncryptor(keyMaterial));
+}
 var trustedProxies = TrustedProxyList.Parse(environmentProvider.TrustedProxies);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
