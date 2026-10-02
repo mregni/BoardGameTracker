@@ -1,32 +1,11 @@
-using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common.Exceptions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Serilog.Events;
 
 namespace BoardGameTracker.Common.Extensions;
 
 public static class WebHostBuilderExtensions
 {
-    private static readonly Type[] IgnoredExceptionTypes =
-    [
-        typeof(ValidationException),
-        typeof(DomainException),
-        typeof(EntityNotFoundException),
-        typeof(AuthenticationFailedException),
-        typeof(KeyNotFoundException),
-        typeof(ArgumentException),
-        typeof(BadHttpRequestException),
-        typeof(OperationCanceledException),
-        typeof(BggRateLimitException),
-        typeof(BggCollectionPreparingException),
-        typeof(BggFeatureDisabledException),
-        typeof(BoardGameGeekHttpException),
-        typeof(ConfigMissingException),
-        typeof(DbUpdateConcurrencyException)
-    ];
-
     public static IWebHostBuilder UseConfiguredSentry(this IWebHostBuilder builder)
     {
         if (bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out var statisticsEnabled) &&  statisticsEnabled)
@@ -43,7 +22,7 @@ public static class WebHostBuilderExtensions
 
                 o.SetBeforeSend((@event, _) =>
                 {
-                    if (@event.Exception != null && IsIgnored(@event.Exception))
+                    if (@event.Exception != null && !ExceptionStatusMapper.ShouldReport(@event.Exception))
                     {
                         return null;
                     }
@@ -55,10 +34,5 @@ public static class WebHostBuilderExtensions
         }
 
         return builder;
-    }
-
-    private static bool IsIgnored(Exception exception)
-    {
-        return IgnoredExceptionTypes.Any(type => type.IsInstanceOfType(exception));
     }
 }
