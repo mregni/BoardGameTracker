@@ -30,6 +30,8 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -501,25 +503,30 @@ static void RunDbMigrations(IServiceProvider serviceProvider)
 
 static void WaitForDatabase(MainDbContext context)
 {
+    var creator = context.Database.GetService<IRelationalDatabaseCreator>();
     const int attempts = 10;
     for (var attempt = 1; ; attempt++)
     {
         try
         {
-            if (context.Database.CanConnect())
+            if (!creator.Exists())
             {
-                return;
+                Log.Information("Database {Database} does not exist yet; creating it", context.Database.GetDbConnection().Database);
+                creator.Create();
             }
-        }
-        catch (Exception ex) when (attempt < attempts && ex is NpgsqlException or System.Net.Sockets.SocketException or TimeoutException)
-        {
-            Log.Warning("Database not reachable yet (attempt {Attempt}/{Attempts}): {Message}", attempt, attempts, ex.Message);
-        }
 
-        if (attempt >= attempts)
+            return;
+        }
+        catch (Exception ex) when (ex is NpgsqlException or System.Net.Sockets.SocketException or TimeoutException)
         {
-            throw new InvalidOperationException(
-                $"Could not connect to the PostgreSQL database after {attempts} attempts. Check DB_HOST, DB_PORT, DB_USER and DB_PASSWORD and make sure the database container is running.");
+            if (attempt >= attempts)
+            {
+                throw new InvalidOperationException(
+                    $"Could not open the PostgreSQL database after {attempts} attempts ({ex.Message}). Check DB_HOST, DB_PORT, DB_USER and DB_PASSWORD and make sure the database container is running.",
+                    ex);
+            }
+
+            Log.Warning("Database not reachable yet (attempt {Attempt}/{Attempts}): {Message}", attempt, attempts, ex.Message);
         }
 
         Thread.Sleep(TimeSpan.FromSeconds(3));
