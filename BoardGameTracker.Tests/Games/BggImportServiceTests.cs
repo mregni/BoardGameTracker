@@ -932,6 +932,54 @@ public class BggImportServiceTests
     }
 
     [Fact]
+    public async Task ImportList_ShouldImportADuplicatedBggIdOnce()
+    {
+        var addedDate = new DateTime(2024, 8, 1, 0, 0, 0, DateTimeKind.Utc);
+        var importGames = Enumerable.Range(0, 2)
+            .Select(_ => new ImportGame
+            {
+                Title = "Brass",
+                BggId = 4242,
+                ImageUrl = "img.jpg",
+                State = GameState.Owned,
+                HasScoring = true,
+                Price = 0,
+                AddedDate = addedDate
+            })
+            .ToList<ImportGame>();
+        var requestedIds = new List<int>();
+        var createdGame = new Game("Brass");
+
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .Callback((ThingRequest request) => requestedIds.AddRange(request.Ids))
+            .ReturnsAsync(CreateSucceededThingResponse([new ThingResponse.Item { Id = 4242, Type = "boardgame" }]));
+        _gameFactoryMock
+            .Setup(x => x.CreateFromBggAsync(
+                It.IsAny<ThingResponse.Item>(), It.IsAny<bool>(), It.IsAny<GameState>(),
+                It.IsAny<decimal?>(), It.IsAny<DateTime?>(), It.IsAny<string?>()))
+            .ReturnsAsync(createdGame);
+        _gameRepositoryMock
+            .Setup(x => x.CreateAsync(createdGame))
+            .ReturnsAsync(createdGame);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        await _bggImportService.ImportList(importGames);
+
+        requestedIds.Should().Equal(4242);
+        _gameRepositoryMock.Verify(x => x.GetGameByBggId(4242), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        _gameFactoryMock.Verify(x => x.CreateFromBggAsync(
+            It.Is<ThingResponse.Item>(item => item.Id == 4242), true, GameState.Owned, null, addedDate, null), Times.Once);
+        _gameRepositoryMock.Verify(x => x.CreateAsync(createdGame), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _settingsServiceMock.Verify(x => x.IsBggEnabled(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task ImportList_ShouldSkipGame_WhenAlreadyInDatabase()
     {
         var importGames = new List<ImportGame>
