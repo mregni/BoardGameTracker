@@ -42,3 +42,13 @@ describe("CreateGameSchema buyingPrice", () => {
 		expect(result.buyingPrice).toBe(22.5);
 	});
 });
+
+describe("CreateGameSchema soldPrice", () => {
+	it("should keep a sold price of 0 for a game given away", () => {
+		expect(CreateGameSchema.parse({ ...baseGame, soldPrice: 0 }).soldPrice).toBe(0);
+	});
+
+	it("should map an absent sold price to null", () => {
+		expect(CreateGameSchema.parse({ ...baseGame, soldPrice: undefined }).soldPrice).toBeNull();
+	});
+});
