@@ -1,7 +1,5 @@
-import "@radix-ui/themes/styles.css";
 import "./index.css";
 import "./utils/i18n";
-import { Theme } from "@radix-ui/themes";
 import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import { Toaster } from "sonner";
@@ -11,9 +9,7 @@ import { classConfig } from "./config/sonner.ts";
 ReactDOM.createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>
 		<Suspense>
-			<Theme appearance="dark" accentColor="indigo" grayColor="slate" panelBackground="solid">
-				<AppContainer />
-			</Theme>
+			<AppContainer />
 			<Toaster toastOptions={{ unstyled: true, classNames: classConfig }} />
 		</Suspense>
 	</React.StrictMode>,

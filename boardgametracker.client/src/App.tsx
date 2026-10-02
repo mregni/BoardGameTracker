@@ -1,12 +1,13 @@
-import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
-import { lazy } from "react";
+import { lazy, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { BgtLoadingSpinner } from "./components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { ErrorFallback } from "./components/ErrorBoundary/ErrorFallback";
 import { isApiError } from "./models";
 import { routeTree } from "./routeTree.gen";
+import { getSettings } from "./services/queries/settings";
 import { translateApiError } from "./utils/errorUtils";
 import i18n from "./utils/i18n";
 
@@ -87,6 +88,19 @@ declare module "@tanstack/react-router" {
 	}
 }
 
+function LanguageSync() {
+	const { data } = useQuery(getSettings());
+	const uiLanguage = data?.uiLanguage;
+
+	useEffect(() => {
+		if (uiLanguage) {
+			void i18n.changeLanguage(uiLanguage);
+		}
+	}, [uiLanguage]);
+
+	return null;
+}
+
 function AppContainer() {
 	return (
 		<ErrorBoundary
@@ -102,6 +116,7 @@ function AppContainer() {
 			}}
 		>
 			<QueryClientProvider client={queryClient}>
+				<LanguageSync />
 				<RouterProvider router={router} context={{ queryClient }} />
 				<TanStackQueryDevtools initialIsOpen />
 				<TanStackRouterDevtools router={router} />

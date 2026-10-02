@@ -1,4 +1,4 @@
-import type { MouseEventHandler, ReactEventHandler, ReactNode } from "react";
+import type { ReactEventHandler, ReactNode } from "react";
 import { usePageImage } from "../-hooks/usePageImage";
 
 interface Props {
@@ -6,15 +6,14 @@ interface Props {
 	alt: string;
 	className?: string;
 	fallback?: ReactNode;
-	onClick?: MouseEventHandler<HTMLImageElement>;
 	onLoad?: ReactEventHandler<HTMLImageElement>;
 }
 
-export const PageImage = ({ url, alt, className, fallback = null, onClick, onLoad }: Props) => {
+export const PageImage = ({ url, alt, className, fallback = null, onLoad }: Props) => {
 	const { objectUrl, status } = usePageImage(url);
 
 	if (status === "ready" && objectUrl) {
-		return <img src={objectUrl} alt={alt} className={className} onClick={onClick} onLoad={onLoad} />;
+		return <img src={objectUrl} alt={alt} className={className} onLoad={onLoad} />;
 	}
 
 	return <>{fallback}</>;

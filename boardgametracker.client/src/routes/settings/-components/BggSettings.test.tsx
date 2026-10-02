@@ -44,7 +44,12 @@ const Harness = ({
 
 	return (
 		<>
-			<BggSettings form={form} bggStatus={bggStatus} changeDetectionStatus={changeDetectionStatus} disabled={disabled} />
+			<BggSettings
+				form={form}
+				bggStatus={bggStatus}
+				changeDetectionStatus={changeDetectionStatus}
+				disabled={disabled}
+			/>
 			<form.Subscribe selector={(state) => state.values.bggApiKey}>
 				{(value) => <span data-testid="bggApiKey-value">{value === null ? "null" : String(value)}</span>}
 			</form.Subscribe>

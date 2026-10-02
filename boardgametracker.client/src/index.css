@@ -60,11 +60,9 @@
 	}
 }
 
-.radix-themes {
+:root {
 	--default-font-family: "Chakra Petch", sans-serif;
-	--heading-font-family: "Chakra Petch", sans-serif;
-	--color-background: #0a0f1a;
-	background-color: var(--color-background);
+	color-scheme: dark;
 }
 
 .hide-arrow[type="number"]::-webkit-inner-spin-button,
@@ -75,12 +73,8 @@
 
 body {
 	font-family: var(--default-font-family);
-}
-
-/* Apply to Radix components */
-[class^="radix-"],
-[class*=" radix-"] {
-	font-family: var(--default-font-family);
+	background-color: var(--color-background);
+	color: white;
 }
 
 .mobile-menu {
@@ -90,10 +84,6 @@ body {
 
 .mobile-menu.hidden-menu {
 	transform: translateY(-130%);
-}
-
-.rt-TextFieldInput {
-	display: block !important;
 }
 
 .bgt-image-card img {
