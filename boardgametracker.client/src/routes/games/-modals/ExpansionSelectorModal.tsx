@@ -39,7 +39,7 @@ export const ExpansionSelectorModal = (props: Props) => {
 					{isLoading && <div>{t("common:loading-data")}</div>}
 					<BgtCheckboxList
 						items={expansions}
-						selectedIds={selectedExpansions}
+						selectedIds={selectedIds}
 						onSelectionChange={(ids) => setSelectedIds(ids)}
 						disabled={isLoading || isPending}
 					/>
