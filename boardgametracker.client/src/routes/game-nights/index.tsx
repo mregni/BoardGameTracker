@@ -46,6 +46,7 @@ function RouteComponent() {
 		games,
 		locations,
 		isLoading,
+		isUpdatingRsvp,
 		createGameNight,
 		deleteGameNight,
 		updateGameNight,
@@ -102,7 +103,7 @@ function RouteComponent() {
 		}
 	}, [upcomingGameNights, pastGameNights, filter]);
 
-	if (gameNights.length === 0) {
+	if (!isLoading && gameNights.length === 0) {
 		return (
 			<BgtEmptyPage
 				header={t("title")}
@@ -243,7 +244,7 @@ function RouteComponent() {
 							}}
 							gameNight={selectedGameNight}
 							onUpdateRsvp={updateRsvp}
-							isLoading={isLoading}
+							isLoading={isUpdatingRsvp}
 						/>
 
 						<BgtDeleteModal

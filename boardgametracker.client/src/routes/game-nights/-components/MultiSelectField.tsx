@@ -1,6 +1,7 @@
 import { cx } from "class-variance-authority";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
 import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
@@ -25,6 +26,7 @@ interface Props {
 
 export const MultiSelectField = (props: Props) => {
 	const { label, options, selected, onChange, placeholder, disabled } = props;
+	const { t } = useTranslation("common");
 	const [searchTerm, setSearchTerm] = useState("");
 	const [isOpen, setIsOpen] = useState(false);
 	const searchInputRef = useRef<HTMLInputElement>(null);
@@ -133,7 +135,7 @@ export const MultiSelectField = (props: Props) => {
 											type="text"
 											value={searchTerm}
 											onChange={(e) => setSearchTerm(e.target.value)}
-											placeholder="Search..."
+											placeholder={t("search")}
 											className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										/>
 									</div>
@@ -154,7 +156,7 @@ export const MultiSelectField = (props: Props) => {
 											</button>
 										))
 									) : (
-										<div className="text-[13px] py-2 px-4 text-gray-400">No results</div>
+										<div className="text-[13px] py-2 px-4 text-gray-400">{t("no-results")}</div>
 									)}
 								</div>
 							</div>,

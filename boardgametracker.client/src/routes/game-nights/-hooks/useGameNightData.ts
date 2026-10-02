@@ -29,9 +29,6 @@ export const useGameNightData = () => {
 
 	const invalidateQueries = () => {
 		queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights] });
-		queryClient.invalidateQueries({
-			queryKey: [QUERY_KEYS.gameNightStatistics],
-		});
 	};
 
 	const createMutation = useMutation({
@@ -97,5 +94,6 @@ export const useGameNightData = () => {
 		isCreating: createMutation.isPending,
 		isUpdating: updateMutation.isPending,
 		isDeleting: deleteMutation.isPending,
+		isUpdatingRsvp: rsvpMutation.isPending,
 	};
 };

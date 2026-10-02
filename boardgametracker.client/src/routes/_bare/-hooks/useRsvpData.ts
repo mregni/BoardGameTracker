@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import type { GameNightRsvpState } from "@/models";
+import type { GameNightRsvpState, UpdateGameNightRsvp } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
-import { updateGameNightRsvpCall } from "@/services/gameNightService";
+import { updateGameNightRsvpByLinkCall } from "@/services/gameNightService";
 import { getGameNightByLink } from "@/services/queries/gameNights";
 import { getGameNightManuals } from "@/services/queries/manuals";
 
@@ -16,7 +16,7 @@ export const useRsvpData = (linkId: string) => {
 	const { data: manuals } = useQuery(getGameNightManuals(linkId));
 
 	const rsvpMutation = useMutation({
-		mutationFn: updateGameNightRsvpCall,
+		mutationFn: (rsvp: UpdateGameNightRsvp) => updateGameNightRsvpByLinkCall(linkId, rsvp),
 		onSuccess: () => {
 			setIsSubmitted(true);
 		},

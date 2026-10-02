@@ -12,7 +12,7 @@ export interface GameNightRsvps {
 	id: number;
 	playerId: number;
 	player: Player;
-	gameNightId: string;
+	gameNightId: number;
 	state: GameNightRsvpState;
 }
 
@@ -49,12 +49,6 @@ export interface UpdateGameNightRsvp {
 	gameNightId: number;
 	playerId: number;
 	state: GameNightRsvpState;
-}
-
-export interface GameNightStatistics {
-	upcomingCount: number;
-	pendingResponses: number;
-	gamesPlanned: number;
 }
 
 export interface SendInvitesResult {

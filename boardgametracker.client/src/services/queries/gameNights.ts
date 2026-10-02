@@ -1,11 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/models";
-import { getGameNightByLinkCall, getGameNightStatisticsCall, getGameNightsCall } from "../gameNightService";
-import { createListQuery, createSingletonQuery } from "./queryFactory";
+import { getGameNightByLinkCall, getGameNightsCall } from "../gameNightService";
+import { createListQuery } from "./queryFactory";
 
 export const getGameNights = createListQuery(QUERY_KEYS.gameNights, getGameNightsCall);
-
-export const getGameNightStatistics = createSingletonQuery(QUERY_KEYS.gameNightStatistics, getGameNightStatisticsCall);
 
 export const getGameNightByLink = (linkId: string) =>
 	queryOptions({

@@ -25,6 +25,7 @@ export const FilterTabs = (props: Props) => {
 		<div className="flex gap-2">
 			{tabs.map((tab) => (
 				<button
+					type="button"
 					key={tab.key}
 					onClick={() => onFilterChange(tab.key)}
 					className={cx(

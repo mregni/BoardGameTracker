@@ -8,11 +8,13 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Common;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Email.Interfaces;
 using BoardGameTracker.Core.GameNights.Interfaces;
 using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Games.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.GameNights;
@@ -26,7 +28,12 @@ public class GameNightService : IGameNightService
     private readonly IEmailService _emailService;
     private readonly IPublicUrlBuilder _publicUrlBuilder;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IMemoryCache _cache;
+    private readonly IConfigRepository _configRepository;
     private readonly ILogger<GameNightService> _logger;
+
+    private const int MaxInviteRecipients = 50;
+    private static readonly TimeSpan InviteCooldown = TimeSpan.FromMinutes(10);
 
     public GameNightService(
         IRepository<GameNight> gameNightRepository,
@@ -36,8 +43,12 @@ public class GameNightService : IGameNightService
         IEmailService emailService,
         IPublicUrlBuilder publicUrlBuilder,
         IDateTimeProvider dateTimeProvider,
+        IMemoryCache cache,
+        IConfigRepository configRepository,
         ILogger<GameNightService> logger)
     {
+        _cache = cache;
+        _configRepository = configRepository;
         _gameNightRepository = gameNightRepository;
         _rsvpRepository = rsvpRepository;
         _unitOfWork = unitOfWork;
@@ -74,9 +85,9 @@ public class GameNightService : IGameNightService
         {
             players.First(x => x.PlayerId == command.HostId).UpdateState(GameNightRsvpState.Accepted);
         }
-        
+
         var gameNight = GameNight.Create(command.Title, command.Notes, command.StartDate, command.HostId, command.LocationId);
-        
+
         gameNight.SetSuggestedGames(games);
         gameNight.SetInvitedPlayers(players);
 
@@ -128,6 +139,28 @@ public class GameNightService : IGameNightService
 
     public async Task<GameNightRsvp> UpdateRsvp(UpdateRsvpCommand command)
     {
+        var rsvp = await FindRsvpAsync(command);
+        return await ApplyRsvpStateAsync(rsvp, command.State);
+    }
+
+    public async Task<GameNightRsvp> UpdateRsvpByLink(Guid linkId, UpdateRsvpCommand command, bool isAuthenticated)
+    {
+        if (!isAuthenticated)
+        {
+            await EnsureAnonymousRsvpAllowedAsync();
+        }
+
+        var rsvp = await FindRsvpAsync(command);
+        if (rsvp.GameNight?.LinkId != linkId)
+        {
+            throw new EntityNotFoundException(nameof(GameNightRsvp), rsvp.Id);
+        }
+
+        return await ApplyRsvpStateAsync(rsvp, command.State);
+    }
+
+    private async Task<GameNightRsvp> FindRsvpAsync(UpdateRsvpCommand command)
+    {
         GameNightRsvp? rsvp;
         if (command.Id.HasValue)
         {
@@ -141,10 +174,14 @@ public class GameNightService : IGameNightService
             _logger.LogDebug("Updating RSVP via rsvp page with gameNightId {GameNightId}, playerId: {PlayerId}", command.GameNightId, command.PlayerId);
             rsvp = await _rsvpRepository.SingleOrDefaultAsync(new RsvpByPlayerAndGameNightSpec(command.PlayerId.Value, command.GameNightId.Value));
         }
-        
+
         Guard.Against.Null(rsvp);
-        
-        rsvp.UpdateState(command.State);
+        return rsvp;
+    }
+
+    private async Task<GameNightRsvp> ApplyRsvpStateAsync(GameNightRsvp rsvp, GameNightRsvpState state)
+    {
+        rsvp.UpdateState(state);
         await _unitOfWork.SaveChangesAsync();
         await NotifyHostOfRsvpAsync(rsvp);
         return rsvp;
@@ -171,9 +208,10 @@ public class GameNightService : IGameNightService
             return;
         }
 
-        var playerName = WebUtility.HtmlEncode(rsvp.Player?.Name ?? rsvp.PlayerId.ToString());
+        var playerName = WebUtility.HtmlEncode(rsvp.Player?.Name ?? rsvp.PlayerId.ToString(CultureInfo.InvariantCulture));
         var title = WebUtility.HtmlEncode(gameNight.Title);
-        var date = gameNight.StartDate.ToString("dd MMMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture);
+        var date = _dateTimeProvider.ConvertToLocalTime(gameNight.StartDate)
+            .ToString("dd MMMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture);
         var response = rsvp.State switch
         {
             GameNightRsvpState.Accepted => "will come to",
@@ -197,10 +235,10 @@ public class GameNightService : IGameNightService
         }
     }
 
-    public async Task<SendInvitesResultDto> SendInvitesAsync(int id)
+    public async Task<SendInvitesResultDto> SendInvitesAsync(int id, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Sending invites for game night {GameNightId}", id);
-        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(id));
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(id), cancellationToken);
         if (gameNight == null)
         {
             throw new EntityNotFoundException(nameof(GameNight), id);
@@ -211,6 +249,14 @@ public class GameNightService : IGameNightService
             throw new DomainException(Constants.Errors.EmailNotConfigured);
         }
 
+        var cooldownKey = $"gamenight-invites:{id}";
+        if (_cache.TryGetValue(cooldownKey, out _))
+        {
+            throw new DomainException(Constants.Errors.InvitesCooldown);
+        }
+
+        _cache.Set(cooldownKey, true, InviteCooldown);
+
         var rsvpUrl = await _publicUrlBuilder.BuildRsvpUrlAsync(gameNight.LinkId);
         var htmlUrl = WebUtility.HtmlEncode(rsvpUrl);
         var title = WebUtility.HtmlEncode(gameNight.Title);
@@ -218,7 +264,7 @@ public class GameNightService : IGameNightService
         var body = $"<p>You're invited to <strong>{title}</strong>.</p><p><a href=\"{htmlUrl}\">Respond to the invitation</a></p>";
 
         var result = new SendInvitesResultDto();
-        foreach (var rsvp in gameNight.InvitedPlayers.Where(p => p.State == GameNightRsvpState.Pending))
+        foreach (var rsvp in gameNight.InvitedPlayers.Where(p => p.State == GameNightRsvpState.Pending).Take(MaxInviteRecipients))
         {
             var email = rsvp.Player?.Email;
             if (string.IsNullOrWhiteSpace(email))
@@ -228,7 +274,7 @@ public class GameNightService : IGameNightService
 
             try
             {
-                await _emailService.SendAsync(email, subject, body);
+                await _emailService.SendAsync(email, subject, body, cancellationToken: cancellationToken);
                 result.Sent++;
             }
             catch (Exception ex)
@@ -241,13 +287,27 @@ public class GameNightService : IGameNightService
         return result;
     }
 
-    public Task<int> CountFutureGameNights()
+    public Task<int> CountFutureGameNights(CancellationToken cancellationToken = default)
     {
-        return _gameNightRepository.CountAsync(new FutureGameNightsSpec(_dateTimeProvider.UtcNow));
+        return _gameNightRepository.CountAsync(new FutureGameNightsSpec(_dateTimeProvider.UtcNow), cancellationToken);
     }
 
-    public Task<GameNight?> GetByLinkId(Guid linkId)
+    public async Task<GameNight?> GetByLinkId(Guid linkId, bool isAuthenticated)
     {
-        return _gameNightRepository.SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));
+        if (!isAuthenticated)
+        {
+            await EnsureAnonymousRsvpAllowedAsync();
+        }
+
+        return await _gameNightRepository.SingleOrDefaultAsync(new GameNightByLinkIdSpec(linkId));
+    }
+
+    private async Task EnsureAnonymousRsvpAllowedAsync()
+    {
+        var authenticationRequired = await _configRepository.GetConfigValueOrDefaultAsync(Constants.AppConfig.RsvpAuthenticationEnabled, false);
+        if (authenticationRequired)
+        {
+            throw new AuthenticationFailedException(Constants.Errors.NotAuthenticated);
+        }
     }
 }
