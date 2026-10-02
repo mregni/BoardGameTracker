@@ -306,7 +306,8 @@
 				"unlinked": "External login removed.",
 				"unlink-failed": "The external login could not be removed.",
 				"link-failed": "The link could not be started."
-			}
+			},
+			"unlink-confirm": "Je kunt dan niet meer inloggen met deze provider tot je hem opnieuw koppelt."
 		}
 	},
 	"env-override": "Ingesteld via de omgevingsvariabele {{variable}}. Pas die daar aan om deze instelling te wijzigen.",

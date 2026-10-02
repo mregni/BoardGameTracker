@@ -306,7 +306,8 @@
 				"unlinked": "External login removed.",
 				"unlink-failed": "The external login could not be removed.",
 				"link-failed": "The link could not be started."
-			}
+			},
+			"unlink-confirm": "Ya no podrás iniciar sesión con este proveedor hasta que lo vuelvas a vincular."
 		}
 	},
 	"env-override": "Definido por la variable de entorno {{variable}}. Cámbiala allí para actualizar este ajuste.",

@@ -241,6 +241,16 @@ public class OidcService : IOidcService
             .FirstOrDefaultAsync(x => x.Id == externalLoginId && x.UserId == userId)
             ?? throw new EntityNotFoundException(nameof(ExternalLogin), externalLoginId);
 
+        var hasPassword = await _context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.PasswordHash != null)
+            .FirstOrDefaultAsync();
+        var hasOtherLogin = await _context.ExternalLogins.AnyAsync(x => x.UserId == userId && x.Id != externalLoginId);
+        if (!hasPassword && !hasOtherLogin)
+        {
+            throw new ValidationException(Constants.Errors.LastSignInMethod);
+        }
+
         _context.ExternalLogins.Remove(externalLogin);
         await _context.SaveChangesAsync();
 

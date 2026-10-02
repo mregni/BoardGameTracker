@@ -83,11 +83,11 @@ The same configuration is available through the API (`POST /api/admin/oidc-provi
 
 ### Linking an existing account
 
-Anyone with a local account can link it to the provider under **Settings → Account → External logins**. Afterwards both the password and the provider sign in to the same account, and the same screen shows when the link was made and lets the user unlink it again. A sign-in through the provider is refused when the e-mail already belongs to an unlinked local account, so link first.
+Anyone with a local account can link it to the provider under **Settings → Account → External logins**. Afterwards both the password and the provider sign in to the same account, and the same screen shows when the link was made and lets the user unlink it again. An account created through the provider has no password, so its last external login cannot be unlinked until a password is set (Forgot password, or an admin reset). A sign-in through the provider is refused when the e-mail already belongs to an unlinked local account, so link first.
 
 ### What to expect
 
 - Sign-in errors come back to the app as a short message (provider refused, e-mail already registered, provisioning disabled, …); the details are in the server log.
-- Local accounts keep working. Keep the local `admin` password somewhere safe: it is the way in when the provider is down.
+- Local accounts keep working, and admins can still create local users (for example Reader accounts for the kids) while a provider is enabled. Keep the local `admin` password somewhere safe: it is the way in when the provider is down.
 - Removing a user at the provider does not end an existing BoardGameTracker session. Disable or delete the user here as well.
 - For development with the Vite dev server set `PUBLIC_URL=http://localhost:5443` so both the provider round trip and the app hand-off go through the dev proxy.

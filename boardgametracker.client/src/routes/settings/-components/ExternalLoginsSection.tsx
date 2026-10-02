@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { BgtText } from "@/components/BgtText/BgtText";
+import type { ExternalLogin } from "@/models/Auth/Oidc";
+import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { getSettings } from "@/services/queries/settings";
 import { toDisplayDateTime } from "@/utils/dateUtils";
 import { useExternalLogins } from "../-hooks/useExternalLogins";
@@ -12,6 +15,7 @@ export const ExternalLoginsSection = () => {
 	const { t } = useTranslation(["settings", "common"]);
 	const { logins, provider, isLoading, unlink, isUnlinking, link, isLinking } = useExternalLogins();
 	const { data: settings } = useQuery(getSettings());
+	const [pendingUnlink, setPendingUnlink] = useState<ExternalLogin | null>(null);
 	const dateFormat = settings?.dateFormat ?? "yyyy-MM-dd";
 	const timeFormat = settings?.timeFormat ?? "HH:mm";
 	const uiLanguage = settings?.uiLanguage ?? "en-US";
@@ -25,6 +29,8 @@ export const ExternalLoginsSection = () => {
 	}
 
 	const canLink = provider !== null && !logins.some((login) => login.provider === provider.name);
+	const providerLabel = (login: ExternalLogin) =>
+		provider?.name === login.provider ? provider.displayName : login.provider;
 
 	return (
 		<SettingsSection title={t("account.external-logins.title")} description={t("account.external-logins.description")}>
@@ -41,7 +47,7 @@ export const ExternalLoginsSection = () => {
 						>
 							<div className="flex flex-col min-w-0">
 								<BgtText color="white" className="font-semibold truncate">
-									{provider?.name === login.provider ? provider.displayName : login.provider}
+									{providerLabel(login)}
 								</BgtText>
 								<BgtText size="1" color="gray">
 									{login.providerDisplayName ? `${login.providerDisplayName} · ` : ""}
@@ -50,7 +56,7 @@ export const ExternalLoginsSection = () => {
 									})}
 								</BgtText>
 							</div>
-							<BgtButton variant="cancel" size="1" disabled={isUnlinking} onClick={() => unlink(login.id)}>
+							<BgtButton variant="cancel" size="1" disabled={isUnlinking} onClick={() => setPendingUnlink(login)}>
 								{t("account.external-logins.unlink")}
 							</BgtButton>
 						</li>
@@ -63,6 +69,18 @@ export const ExternalLoginsSection = () => {
 						{t("account.external-logins.link", { provider: provider.displayName })}
 					</BgtButton>
 				</div>
+			)}
+			{pendingUnlink && (
+				<BgtDeleteModal
+					open
+					close={() => setPendingUnlink(null)}
+					title={providerLabel(pendingUnlink)}
+					description={t("account.external-logins.unlink-confirm")}
+					onDelete={() => {
+						unlink(pendingUnlink.id);
+						setPendingUnlink(null);
+					}}
+				/>
 			)}
 		</SettingsSection>
 	);

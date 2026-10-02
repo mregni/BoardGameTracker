@@ -10,7 +10,6 @@
   },
   "auth": {
     "username-already-exists": "Username already exists",
-    "oidc-no-local-users": "Cannot create local users when OIDC is enabled",
     "invalid-role": "Invalid role",
     "username-required": "Username is required",
     "cannot-change-oidc-password": "Cannot change password for externally authenticated accounts",
@@ -36,7 +35,8 @@
     "oidc-userinfo-failed": "The identity provider did not return your profile.",
     "oidc-provider-rejected": "The identity provider refused the sign-in.",
     "oidc-handoff-expired": "The sign-in took too long to complete. Please try again.",
-    "oidc-failed": "Signing in with the identity provider failed."
+    "oidc-failed": "Signing in with the identity provider failed.",
+    "last-sign-in-method": "This is your only way to sign in. Set a password first (Forgot password, or ask an admin to reset it), then unlink."
   },
   "changedetection": {
     "invalid-base-url": "The changedetection.io URL is not valid",

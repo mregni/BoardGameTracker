@@ -76,6 +76,10 @@ describe("ExternalLoginsSection", () => {
 		expect(screen.getByText(/Jane Doe/)).toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "account.external-logins.link" })).not.toBeInTheDocument();
 		await user.click(screen.getByRole("button", { name: "account.external-logins.unlink" }));
+		expect(mocks.state.unlink).not.toHaveBeenCalled();
+		expect(screen.getByText("account.external-logins.unlink-confirm")).toBeInTheDocument();
+
+		await user.click(screen.getByRole("button", { name: "delete.button" }));
 
 		expect(mocks.state.unlink).toHaveBeenCalledWith(9);
 	});

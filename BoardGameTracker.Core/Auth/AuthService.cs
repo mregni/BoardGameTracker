@@ -171,12 +171,6 @@ public class AuthService : IAuthService
 
     public async Task<UserDto> RegisterAsync(RegisterRequest request)
     {
-        var hasOidcProvider = await _context.OidcProviders.AnyAsync(p => p.Enabled);
-        if (hasOidcProvider)
-        {
-            throw new DomainException(Constants.Errors.OidcNoLocalUsers);
-        }
-
         var existingUser = await _userManager.FindByNameAsync(request.Username);
         if (existingUser != null)
         {

@@ -46,7 +46,7 @@ public static class Constants
     {
         public const string UsernameAlreadyExists = "error.auth.username-already-exists";
         public const string UsernameRequired = "error.auth.username-required";
-        public const string OidcNoLocalUsers = "error.auth.oidc-no-local-users";
+        public const string LastSignInMethod = "error.auth.last-sign-in-method";
         public const string InvalidRole = "error.auth.invalid-role";
         public const string CannotChangeOidcPassword = "error.auth.cannot-change-oidc-password";
         public const string CannotDeleteSelf = "error.auth.cannot-delete-self";

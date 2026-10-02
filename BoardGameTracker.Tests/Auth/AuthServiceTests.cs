@@ -467,18 +467,23 @@ public class AuthServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RegisterAsync_ShouldThrowDomainException_WhenOidcProviderIsEnabled()
+    public async Task RegisterAsync_ShouldCreateALocalUser_WhileAnOidcProviderIsEnabled()
     {
         _context.OidcProviders.Add(new OidcProvider("google", "Google", "https://accounts.google.com", "client-id"));
         await _context.SaveChangesAsync();
+        var request = new RegisterRequest("kid", "kid@test.com", "password123", Constants.AuthRoles.Reader);
+        _userManagerMock.Setup(x => x.FindByNameAsync("kid")).ReturnsAsync((ApplicationUser?)null);
+        _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), "password123")).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), Constants.AuthRoles.Reader)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(It.IsAny<ApplicationUser>())).ReturnsAsync([Constants.AuthRoles.Reader]);
 
-        var request = new RegisterRequest("newuser", "new@test.com", "password123", null);
+        var result = await _authService.RegisterAsync(request);
 
-        var act = () => _authService.RegisterAsync(request);
-
-        await act.Should().ThrowAsync<DomainException>()
-            .WithMessage(Constants.Errors.OidcNoLocalUsers);
-
+        result.Username.Should().Be("kid");
+        _userManagerMock.Verify(x => x.FindByNameAsync("kid"), Times.Once);
+        _userManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>(), "password123"), Times.Once);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), Constants.AuthRoles.Reader), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
