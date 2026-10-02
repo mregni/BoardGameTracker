@@ -156,7 +156,7 @@ public class OidcController : ControllerBase
         return Redirect(await SpaUrlAsync($"{CallbackPage}?error={Uri.EscapeDataString(errorKey)}"));
     }
 
-    private static string ErrorKey(Exception exception)
+    internal static string ErrorKey(Exception exception)
     {
         return exception switch
         {

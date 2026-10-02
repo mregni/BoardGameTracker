@@ -83,7 +83,7 @@ public class OidcService : IOidcService
         var codeVerifier = GenerateToken();
         var state = GenerateToken();
         var nonce = GenerateToken();
-        _cache.Set(
+        SetSingleUse(
             PendingKey(state),
             new PendingAuthorization(codeVerifier, nonce, flow, userId, providerName, redirectUri, redirectPath),
             PendingAuthorizationLifetime);
@@ -210,7 +210,7 @@ public class OidcService : IOidcService
     public string CreateHandoff(LoginResponse login)
     {
         var key = GenerateToken();
-        _cache.Set(HandoffKey(key), login, HandoffLifetime);
+        SetSingleUse(HandoffKey(key), login, HandoffLifetime);
         return key;
     }
 
@@ -221,10 +221,7 @@ public class OidcService : IOidcService
             return null;
         }
 
-        var cacheKey = HandoffKey(handoffKey);
-        var login = _cache.Get<LoginResponse>(cacheKey);
-        _cache.Remove(cacheKey);
-        return login;
+        return TakeSingleUse<LoginResponse>(HandoffKey(handoffKey));
     }
 
     public async Task<List<ExternalLoginDto>> GetExternalLoginsAsync(string userId)
@@ -278,9 +275,7 @@ public class OidcService : IOidcService
             throw new ValidationException(Constants.Errors.InvalidAuthSession);
         }
 
-        var cacheKey = PendingKey(state);
-        var pending = _cache.Get<PendingAuthorization>(cacheKey);
-        _cache.Remove(cacheKey);
+        var pending = TakeSingleUse<PendingAuthorization>(PendingKey(state));
 
         if (pending == null
             || pending.Flow != flow
@@ -515,6 +510,18 @@ public class OidcService : IOidcService
             .ToList();
     }
 
+    private void SetSingleUse<T>(string key, T value, TimeSpan lifetime) where T : class
+    {
+        _cache.Set(key, new SingleUse<T>(value), lifetime);
+    }
+
+    private T? TakeSingleUse<T>(string key) where T : class
+    {
+        var entry = _cache.Get<SingleUse<T>>(key);
+        _cache.Remove(key);
+        return entry?.Take();
+    }
+
     private static string PendingKey(string state) => $"oidc_pending_{state}";
 
     private static string HandoffKey(string key) => $"oidc_handoff_{key}";
@@ -543,6 +550,13 @@ public class OidcService : IOidcService
     {
         Login,
         Link
+    }
+
+    private sealed class SingleUse<T>(T value) where T : class
+    {
+        private int _taken;
+
+        public T? Take() => Interlocked.Exchange(ref _taken, 1) == 0 ? value : null;
     }
 
     private sealed record PendingAuthorization(

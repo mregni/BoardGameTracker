@@ -446,6 +446,29 @@ public class OidcFlowTests : IDisposable
         _service.TakeHandoff("unknown").Should().BeNull();
     }
 
+    [Fact]
+    public async Task Handoff_ShouldBeSingleUse_WhenTwoRequestsTakeItAtTheSameTime()
+    {
+        using var lockstep = new LockstepCache(_cache);
+        var service = new OidcService(
+            _context,
+            _userManagerMock.Object,
+            _tokenServiceMock.Object,
+            Mock.Of<IHttpClientFactory>(),
+            lockstep,
+            _secretProtector,
+            Mock.Of<ILogger<OidcService>>());
+        var login = new LoginResponse("a", "r", DateTime.UtcNow, new UserInfo("1", "jane", null, ["User"]));
+        var key = service.CreateHandoff(login);
+        lockstep.Arm(readers: 2);
+
+        var results = await Task.WhenAll(
+            Task.Run(() => service.TakeHandoff(key), TestContext.Current.CancellationToken),
+            Task.Run(() => service.TakeHandoff(key), TestContext.Current.CancellationToken));
+
+        results.Should().ContainSingle(x => x != null).Which.Should().Be(login);
+    }
+
     private ApplicationUser LinkedUser()
     {
         var user = new ApplicationUser("jane-linked", "linked@example.com", "Jane");
@@ -540,5 +563,25 @@ public class OidcFlowTests : IDisposable
         {
             Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"),
         };
+    }
+
+    private sealed class LockstepCache(IMemoryCache inner) : IMemoryCache
+    {
+        private Barrier? _barrier;
+
+        public void Arm(int readers) => _barrier = new Barrier(readers);
+
+        public bool TryGetValue(object key, out object? value)
+        {
+            var found = inner.TryGetValue(key, out value);
+            _barrier?.SignalAndWait(TimeSpan.FromSeconds(5));
+            return found;
+        }
+
+        public ICacheEntry CreateEntry(object key) => inner.CreateEntry(key);
+
+        public void Remove(object key) => inner.Remove(key);
+
+        public void Dispose() => _barrier?.Dispose();
     }
 }
