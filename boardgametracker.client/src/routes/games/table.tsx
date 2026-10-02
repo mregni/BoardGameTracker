@@ -111,7 +111,8 @@ function RouteComponent() {
 	);
 
 	const totalPrice = useMemo(() => filtered.reduce((sum, game) => sum + (game.buyingPrice ?? 0), 0), [filtered]);
-	const meanPrice = filtered.length > 0 ? RoundDecimal(totalPrice / filtered.length, 0.1) : 0;
+	const pricedCount = useMemo(() => filtered.filter((game) => game.buyingPrice != null).length, [filtered]);
+	const meanPrice = pricedCount > 0 ? RoundDecimal(totalPrice / pricedCount, 0.1) : 0;
 
 	const stateItems = useMemo(
 		() => [

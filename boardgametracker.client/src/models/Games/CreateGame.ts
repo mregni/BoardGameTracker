@@ -82,7 +82,7 @@ export const CreateGameSchema = z.object({
 		.nonnegative({ message: "game:validation.positive-number" })
 		.nullable()
 		.optional()
-		.transform((value) => value || null),
+		.transform((value) => value ?? null),
 });
 
 export type CreateGame = z.infer<typeof CreateGameSchema>;
