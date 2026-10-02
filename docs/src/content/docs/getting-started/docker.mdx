@@ -7,7 +7,7 @@ import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
 Here is a ready-to-use configuration. It sets up both the BoardGameTracker application and a PostgreSQL database. Images are published for `linux/amd64` and `linux/arm64` (a 64-bit Raspberry Pi works; 32-bit boards do not).
 
-The `docker-compose.yml` in the repository forwards a `.env` file placed next to it, so every variable from the [environment variables](/BoardGameTracker/getting-started/environment-variables/) page can live there instead of in the compose file. `PUID`/`PGID` (default `1654`) control which user owns the mounted folders.
+The `docker-compose.yml` in the repository forwards a `.env` file placed next to it, so every variable from the [environment variables](/BoardGameTracker/getting-started/environment-variables/) page can live there instead of in the compose file. That optional `env_file` entry needs Docker Compose 2.24 or newer; older versions, including the Compose bundled with some NAS container managers, stop with `env_file.0 must be a string`. Check with `docker compose version`, and on an older version delete the three `env_file` lines and set the variables under `environment:` instead. `PUID`/`PGID` (default `1654`) control which user owns the mounted folders.
 
 <Aside type="caution" title="Two things every install needs">
 - The database image must provide the `vector` extension. Use `pgvector/pgvector:pg16` (a drop-in PostgreSQL 16 image); plain `postgres:16` does not work and the application refuses to start against it.

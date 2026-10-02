@@ -57,7 +57,7 @@ BoardGameTracker is a self-hosted application designed for board game enthusiast
 ## Installation
 
 ### Prerequisites
-- Docker installed on your system
+- Docker installed on your system, with Docker Compose 2.24 or newer for the downloadable `docker-compose.yml` (older versions, such as some NAS container managers, reject its optional `.env` block; delete the `env_file` lines or use the minimal file below)
 - PostgreSQL database (can be run via Docker Compose)
 
 ### Quick Start with Docker Compose (Recommended)
