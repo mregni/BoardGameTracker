@@ -209,6 +209,7 @@ public class ManualIndexingServiceTests
         _manualRepoMock.Verify(x => x.GetByIdAsync(manual.Id), Times.Once);
         _factoryMock.Verify(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()), Times.Once);
         _diskProviderMock.Verify(x => x.OpenRead(It.IsAny<string>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.DiscardPendingInserts(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -233,6 +234,7 @@ public class ManualIndexingServiceTests
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
         _manualRepoMock.Verify(x => x.GetByIdAsync(manual.Id), Times.Once);
         _factoryMock.Verify(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.DiscardPendingInserts(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -254,6 +256,7 @@ public class ManualIndexingServiceTests
         _manualRepoMock.Verify(x => x.GetByIdAsync(manual.Id), Times.Once);
         _factoryMock.Verify(x => x.EnsureModelsAvailableAsync(It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
+        _unitOfWorkMock.Verify(x => x.DiscardPendingInserts(), Times.Once);
         VerifyNoOtherCalls();
     }
 
@@ -339,6 +342,8 @@ public class ManualIndexingServiceTests
         manual.IndexStatus.Should().Be(ManualIndexStatus.Failed);
         manual.IndexError.Should().Be("db boom");
         _transactionMock.Verify(x => x.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.DiscardPendingInserts(), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(3));
     }
 
     private void SetupEmbeddings(int count, int dimensions)

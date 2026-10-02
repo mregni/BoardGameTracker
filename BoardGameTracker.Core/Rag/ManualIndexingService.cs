@@ -128,6 +128,7 @@ public class ManualIndexingService : IManualIndexingService
             _logger.LogError(ex, "Failed to index manual {ManualId}", manualId);
             try
             {
+                _unitOfWork.DiscardPendingInserts();
                 manual.MarkFailed(ex.Message);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
