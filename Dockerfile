@@ -28,8 +28,8 @@ FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS backe
 ARG VERSION
 WORKDIR /src
 
-# Copy Directory.Build.props (affects MSBuild behavior)
-COPY Directory.Build.props ./
+# Copy the repository-wide build settings (central package versions, analyzer configuration, NuGet sources, SDK pin)
+COPY Directory.Build.props Directory.Packages.props .editorconfig nuget.config global.json ./
 
 # Copy project files and lock files for restore
 COPY BoardGameTracker.Common/BoardGameTracker.Common.csproj BoardGameTracker.Common/packages.lock.json BoardGameTracker.Common/

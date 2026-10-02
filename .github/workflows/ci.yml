@@ -260,3 +260,57 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  build-strict:
+    name: Build (warnings as errors)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: |
+          dotnet restore BoardGameTracker.Tests/BoardGameTracker.Tests.csproj --locked-mode -p:BuildWithoutEsproj=true
+          dotnet restore BoardGameTracker.IntegrationTests/BoardGameTracker.IntegrationTests.csproj --locked-mode -p:BuildWithoutEsproj=true
+
+      - name: Build Release
+        run: |
+          dotnet build BoardGameTracker.Tests/BoardGameTracker.Tests.csproj -c Release --no-restore -p:BuildWithoutEsproj=true
+          dotnet build BoardGameTracker.IntegrationTests/BoardGameTracker.IntegrationTests.csproj -c Release --no-restore -p:BuildWithoutEsproj=true
+
+  docker-image:
+    name: Docker image build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+
+      - name: Build image (linux/amd64, not pushed)
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha
