@@ -1,11 +1,13 @@
 {
 	"date-format": {
 		"label": "Date format",
-		"required": "Date format is required"
+		"required": "Date format is required",
+		"invalid": "Gebruik een datumpatroon zoals dd/MM/yyyy of yyyy-MM-dd"
 	},
 	"time-format": {
 		"label": "Time format",
-		"required": "Time format is required"
+		"required": "Time format is required",
+		"invalid": "Gebruik een tijdpatroon zoals HH:mm of h:mm a"
 	},
 	"currency": {
 		"label": "Currency",

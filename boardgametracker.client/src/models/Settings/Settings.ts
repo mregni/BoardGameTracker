@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { normalizeDateFnsFormat } from "@/utils/dateUtils";
+
 import type { BggConfigStatus } from "./BggConfigStatus";
 import type { ChangeDetectionConfigStatus } from "./ChangeDetectionConfigStatus";
 
@@ -33,6 +35,9 @@ export const SettingsSchema = z.object({
 		})
 		.min(1, {
 			message: "settings:date-format.required",
+		})
+		.refine((value) => normalizeDateFnsFormat(value, "") !== "", {
+			message: "settings:date-format.invalid",
 		}),
 	timeFormat: z
 		.string({
@@ -40,6 +45,9 @@ export const SettingsSchema = z.object({
 		})
 		.min(1, {
 			message: "settings:time-format.required",
+		})
+		.refine((value) => normalizeDateFnsFormat(value, "") !== "", {
+			message: "settings:time-format.invalid",
 		}),
 	uiLanguage: z.string({
 		error: "settings:general.ui-language.required",
