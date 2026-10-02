@@ -211,6 +211,57 @@ public class ChangeDetectionClientTests
         _handler.Requests.Should().ContainSingle();
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GetLatestAsync_ShouldReportNotConfigured_WithoutCallingTheInstance_WhenTheWatchIdIsBlank(string watchId)
+    {
+        var result = await _client.GetLatestAsync(watchId);
+
+        result.Status.Should().Be(ChangeDetectionStatus.NotConfigured);
+        _handler.Requests.Should().BeEmpty();
+        _settingsServiceMock.Verify(x => x.GetChangeDetectionSettingsAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_ShouldReportMisconfigured_WhenTheApiKeyCannotBeSentAsAHeader()
+    {
+        _settingsServiceMock
+            .Setup(x => x.GetChangeDetectionSettingsAsync())
+            .ReturnsAsync(("https://changes.example.com", "bad\nkey"));
+
+        var result = await _client.GetLatestAsync(WatchId);
+
+        result.Status.Should().Be(ChangeDetectionStatus.Misconfigured);
+        _handler.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetLatestBatchAsync_ShouldReturnNothing_WithoutReadingSettings_WhenNoWatchIdIsGiven()
+    {
+        var results = await _client.GetLatestAsync(new[] { "", "  " });
+
+        results.Should().BeEmpty();
+        _handler.Requests.Should().BeEmpty();
+        _settingsServiceMock.Verify(x => x.GetChangeDetectionSettingsAsync(), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(null, null, ChangeDetectionStatus.NotConfigured)]
+    [InlineData("not-a-valid-url", "api-key", ChangeDetectionStatus.Misconfigured)]
+    public async Task GetLatestBatchAsync_ShouldReportTheSettingsProblem_ForEveryWatch(string? baseUrl, string? apiKey, ChangeDetectionStatus expected)
+    {
+        _settingsServiceMock
+            .Setup(x => x.GetChangeDetectionSettingsAsync())
+            .ReturnsAsync((baseUrl, apiKey));
+
+        var results = await _client.GetLatestAsync(new[] { WatchId, CreatedWatchId });
+
+        results.Should().HaveCount(2);
+        results.Values.Should().AllSatisfy(result => result.Status.Should().Be(expected));
+        _handler.Requests.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task GetLatestBatchAsync_ShouldOnlyFetchUncachedWatches()
     {

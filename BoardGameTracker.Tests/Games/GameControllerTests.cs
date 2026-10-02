@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
@@ -8,6 +9,7 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Bgg;
+using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Core.Games.Interfaces;
 using FluentAssertions;
@@ -588,6 +590,77 @@ public class GameControllerTests
         result.Should().BeOfType<NotFoundResult>();
 
         _bggImportServiceMock.Verify(x => x.ImportGameFromBgg(search), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region Price Tests
+
+    [Fact]
+    public async Task GetGamePrice_ShouldReturnNotFound_WhenTheGameDoesNotExist()
+    {
+        _gameServiceMock
+            .Setup(x => x.GetGamePriceAsync(9, false, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GamePriceDto?)null);
+
+        var result = await _controller.GetGamePrice(9, false, CancellationToken.None);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _gameServiceMock.Verify(x => x.GetGamePriceAsync(9, false, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGamePrice_ShouldForwardRefresh_AndReturnThePrice()
+    {
+        var price = new GamePriceDto { GameId = 3, Available = true, Status = ChangeDetectionStatus.Ok, Price = 19.99m };
+        _gameServiceMock
+            .Setup(x => x.GetGamePriceAsync(3, true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(price);
+
+        var result = await _controller.GetGamePrice(3, true, CancellationToken.None);
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(price);
+        _gameServiceMock.Verify(x => x.GetGamePriceAsync(3, true, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetTrackedPrices_ShouldForwardRefresh_AndReturnEveryPrice()
+    {
+        var prices = new List<GamePriceDto>
+        {
+            new() { GameId = 1, Available = true, Status = ChangeDetectionStatus.Ok },
+            new() { GameId = 2, Available = false, Status = ChangeDetectionStatus.Unreachable }
+        };
+        _gameServiceMock
+            .Setup(x => x.GetTrackedPricesAsync(true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(prices);
+
+        var result = await _controller.GetTrackedPrices(true, CancellationToken.None);
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(prices);
+        _gameServiceMock.Verify(x => x.GetTrackedPricesAsync(true, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateWatch_ShouldReturnTheGameWithItsNewWatch()
+    {
+        const string watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var game = new Game("Brass") { Id = 4 };
+        game.UpdateChangeDetectionWatchId(watchId);
+        _gameServiceMock
+            .Setup(x => x.CreateWatchForGame(4, "https://shop.example.com/brass", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(game);
+
+        var result = await _controller.CreateWatch(4, new CreateWatchCommand { Url = "https://shop.example.com/brass" }, CancellationToken.None);
+
+        var dto = result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeOfType<GameDto>().Subject;
+        dto.Id.Should().Be(4);
+        dto.ChangeDetectionWatchId.Should().Be(watchId);
+        _gameServiceMock.Verify(x => x.CreateWatchForGame(4, "https://shop.example.com/brass", It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

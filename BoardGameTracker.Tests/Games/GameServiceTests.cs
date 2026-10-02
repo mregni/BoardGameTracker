@@ -1,6 +1,7 @@
 using Ardalis.Specification;
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
@@ -226,21 +227,73 @@ public class GameServiceTests
     {
         var watchId = "e0808154-28da-4b85-9a71-24a409e694f1";
         _gameRepositoryMock.Setup(x => x.GetWatchInfo(1)).ReturnsAsync(new GameWatchInfo(1, watchId));
+        var checkedAt = new DateTime(2026, 8, 28, 11, 0, 0, DateTimeKind.Utc);
+        var fetchedAt = new DateTime(2026, 8, 28, 12, 0, 0, DateTimeKind.Utc);
         _changeDetectionClientMock
             .Setup(x => x.GetLatestAsync(watchId, It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ChangeDetectionResult { Status = ChangeDetectionStatus.Ok, InStock = true, Price = 22.5m });
+            .ReturnsAsync(new ChangeDetectionResult
+            {
+                Status = ChangeDetectionStatus.Ok,
+                InStock = true,
+                Price = 22.5m,
+                Currency = "EUR",
+                CheckedAt = checkedAt,
+                SourceUrl = "https://shop.example.com/brass",
+                Title = "Brass: Birmingham | Example Shop",
+                RecheckQueued = true,
+                FetchedAt = fetchedAt
+            });
 
         var result = await _gameService.GetGamePriceAsync(1);
 
-        result.Should().NotBeNull();
-        result!.GameId.Should().Be(1);
-        result.WatchId.Should().Be(watchId);
-        result.Available.Should().BeTrue();
-        result.InStock.Should().BeTrue();
-        result.Price.Should().Be(22.5m);
+        result.Should().BeEquivalentTo(new GamePriceDto
+        {
+            GameId = 1,
+            WatchId = watchId,
+            Available = true,
+            Status = ChangeDetectionStatus.Ok,
+            InStock = true,
+            Price = 22.5m,
+            Currency = "EUR",
+            CheckedAt = checkedAt,
+            ShopUrl = "https://shop.example.com/brass",
+            RecheckQueued = true,
+            FetchedAt = fetchedAt
+        });
         _gameRepositoryMock.Verify(x => x.GetWatchInfo(1), Times.Once);
         _changeDetectionClientMock.Verify(
             x => x.GetLatestAsync(watchId, false, It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetTrackedPricesAsync_ShouldReportUnreachable_ForAWatchMissingFromTheBatchResult()
+    {
+        var watchOne = "e0808154-28da-4b85-9a71-24a409e694f1";
+        var watchTwo = "f1919265-39eb-5c96-a082-35b510f705a2";
+        var gameOne = new Game("Game One") { Id = 1 };
+        gameOne.UpdateChangeDetectionWatchId(watchOne);
+        var gameTwo = new Game("Game Two") { Id = 2 };
+        gameTwo.UpdateChangeDetectionWatchId(watchTwo);
+        _gameRepositoryMock.Setup(x => x.GetTrackedGames()).ReturnsAsync(new List<Game> { gameOne, gameTwo });
+        _changeDetectionClientMock
+            .Setup(x => x.GetLatestAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<string, ChangeDetectionResult>
+            {
+                [watchOne] = new() { Status = ChangeDetectionStatus.Ok, Price = 22.5m }
+            });
+
+        var result = await _gameService.GetTrackedPricesAsync(forceRefresh: true);
+
+        result.Should().HaveCount(2);
+        var missing = result.Single(x => x.GameId == 2);
+        missing.WatchId.Should().Be(watchTwo);
+        missing.Available.Should().BeFalse();
+        missing.Status.Should().Be(ChangeDetectionStatus.Unreachable);
+        _gameRepositoryMock.Verify(x => x.GetTrackedGames(), Times.Once);
+        _changeDetectionClientMock.Verify(
+            x => x.GetLatestAsync(It.IsAny<IReadOnlyCollection<string>>(), true, It.IsAny<CancellationToken>()),
+            Times.Once);
         VerifyNoOtherCalls();
     }
 
