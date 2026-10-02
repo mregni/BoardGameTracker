@@ -153,6 +153,16 @@
       ]
     },
     {
+      "description": "Users download the compose files, which must keep following the app's own latest image",
+      "matchManagers": [
+        "docker-compose"
+      ],
+      "matchPackageNames": [
+        "uping/boardgametracker"
+      ],
+      "enabled": false
+    },
+    {
       "description": "A PostgreSQL major is a data migration, not a dependency bump",
       "matchDatasources": [
         "docker"
@@ -186,7 +196,7 @@
   "prConcurrentLimit": 5,
   "prHourlyLimit": 2,
   "docker-compose": {
-    "pinDigests": true
+    "pinDigests": false
   },
   "lockFileMaintenance": {
     "enabled": true,
