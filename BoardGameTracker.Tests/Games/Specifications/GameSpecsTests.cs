@@ -133,4 +133,14 @@ public class GameSpecsTests
         result.Select(x => x.Id).Should().Equal(1, 4);
         spec.AsNoTracking.Should().BeTrue();
     }
+
+    [Fact]
+    public void GameByIdSpec_ShouldMatchOnlyTheRequestedGame_AndNotTrack()
+    {
+        var game = new Game("Brass") { Id = 5 };
+
+        new GameByIdSpec(5).IsSatisfiedBy(game).Should().BeTrue();
+        new GameByIdSpec(6).IsSatisfiedBy(game).Should().BeFalse();
+        new GameByIdSpec(5).AsNoTracking.Should().BeTrue();
+    }
 }

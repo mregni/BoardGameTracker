@@ -64,4 +64,14 @@ public class PlayerSpecsTests
         result.Single().PlayerId.Should().Be(5);
         result.Single().Won.Should().BeTrue();
     }
+
+    [Fact]
+    public void PlayerIdsSpec_ShouldReturnTheIdsOfTheRequestedPlayersThatExist_AndNotTrack()
+    {
+        var players = new List<Player> { new("Alice") { Id = 1 }, new("Bob") { Id = 2 }, new("Cara") { Id = 3 } };
+        var spec = new PlayerIdsSpec(new[] { 3, 1, 9 });
+
+        spec.Evaluate(players).Should().BeEquivalentTo(new[] { 1, 3 });
+        spec.AsNoTracking.Should().BeTrue();
+    }
 }

@@ -1327,4 +1327,55 @@ public class AuthServiceTests : IDisposable
         token.Revoke("Test revocation");
         return token;
     }
+
+    [Fact]
+    public async Task RefreshAsync_ShouldRejectTheLoser_WhenTwoRefreshesRaceOnOneToken()
+    {
+        var user = new ApplicationUser("testuser", "test@test.com", "Test User");
+        var activeToken = CreateActiveRefreshTokenWithUser(user.Id, user);
+        var roles = new List<string> { "User" };
+
+        _tokenServiceMock.Setup(x => x.GetRefreshTokenAsync("valid-refresh-token")).ReturnsAsync(activeToken);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
+        _tokenServiceMock.Setup(x => x.RotateRefreshTokenAsync(activeToken)).ThrowsAsync(new DbUpdateConcurrencyException());
+
+        var act = () => _authService.RefreshAsync("valid-refresh-token");
+
+        await act.Should().ThrowAsync<AuthenticationFailedException>().WithMessage(Constants.Errors.InvalidRefreshToken);
+        _tokenServiceMock.Verify(x => x.GetRefreshTokenAsync("valid-refresh-token"), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _tokenServiceMock.Verify(x => x.RotateRefreshTokenAsync(activeToken), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_ShouldStillSave_WhenTheEmailChangeNoticeCannotBeQueued()
+    {
+        var userId = "user-id-123";
+        var user = new ApplicationUser("testuser", "old@test.com", "Old Name");
+        var request = new UpdateProfileRequest("New Name", "new@test.com", null, "current-password");
+        var roles = new List<string> { "User" };
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.HasPasswordAsync(user)).ReturnsAsync(true);
+        _userManagerMock.Setup(x => x.CheckPasswordAsync(user, "current-password")).ReturnsAsync(true);
+        _userManagerMock.Setup(x => x.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
+        _emailServiceMock.SetupGet(x => x.IsConfigured).Returns(true);
+        _backgroundEmailSenderMock
+            .Setup(x => x.Queue(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Throws(new InvalidOperationException("queue unavailable"));
+
+        var result = await _authService.UpdateProfileAsync(userId, request);
+
+        result.Email.Should().Be("new@test.com");
+        _userManagerMock.Verify(x => x.FindByIdAsync(userId), Times.Once);
+        _userManagerMock.Verify(x => x.HasPasswordAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.CheckPasswordAsync(user, "current-password"), Times.Once);
+        _userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+        _userManagerMock.Verify(x => x.GetRolesAsync(user), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        _backgroundEmailSenderMock.Verify(x => x.Queue("old@test.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
 }

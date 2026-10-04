@@ -22,6 +22,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1515,4 +1516,44 @@ public class GameServiceTests
     }
 
     #endregion
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ExistsAsync_ShouldAskTheRepositoryForThatGame(bool exists)
+    {
+        var game = new Game("Brass") { Id = 5 };
+        _gameRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<GameByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(exists);
+
+        var result = await _gameService.ExistsAsync(5);
+
+        result.Should().Be(exists);
+        _gameRepositoryMock.Verify(
+            x => x.AnyAsync(It.Is<GameByIdSpec>(spec => spec.IsSatisfiedBy(game)), It.IsAny<CancellationToken>()),
+            Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, typeof(ValidationException))]
+    [InlineData(HttpStatusCode.TooManyRequests, typeof(BggRateLimitException))]
+    public async Task UpdateGameExpansions_ShouldTranslateBggErrors_WithoutSaving(HttpStatusCode status, Type expected)
+    {
+        var game = new Game("Test Game") { Id = 1 };
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithExpansionsSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(game);
+        _bggClientMock
+            .Setup(x => x.GetThingAsync(It.IsAny<ThingRequest>()))
+            .ThrowsAsync(new BoardGameGeekHttpException("BGG refused", status));
+
+        var act = () => _gameService.UpdateGameExpansions(1, [101]);
+
+        (await act.Should().ThrowAsync<Exception>()).Which.Should().BeOfType(expected);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithExpansionsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _bggClientMock.Verify(x => x.GetThingAsync(It.IsAny<ThingRequest>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
 }

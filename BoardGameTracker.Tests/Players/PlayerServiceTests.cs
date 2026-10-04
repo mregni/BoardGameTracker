@@ -495,4 +495,18 @@ public class PlayerServiceTests
     }
 
     #endregion
+
+    [Fact]
+    public async Task GetExistingIdsAsync_ShouldReturnTheIdsTheRepositoryFinds()
+    {
+        _playerRepositoryMock
+            .Setup(x => x.ListAsync(It.IsAny<PlayerIdsSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<int> { 1, 3 });
+
+        var result = await _playerService.GetExistingIdsAsync(new[] { 1, 3, 9 });
+
+        result.Should().Equal(1, 3);
+        _playerRepositoryMock.Verify(x => x.ListAsync(It.IsAny<PlayerIdsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
 }

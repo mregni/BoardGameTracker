@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApiError, OidcProviderRequest } from "@/models";
 
 const { successToast, errorToast } = vi.hoisted(() => ({
@@ -37,7 +37,14 @@ vi.mock("@/services/oidcAdminService", () => ({
 	deleteOidcProviderCall: vi.fn(),
 }));
 
-import { createOidcProviderCall } from "@/services/oidcAdminService";
+import {
+	createOidcProviderCall,
+	deleteOidcProviderCall,
+	getOidcProviderConfigCall,
+	getOidcProvidersCall,
+	testOidcDiscoveryCall,
+	updateOidcProviderCall,
+} from "@/services/oidcAdminService";
 import { useSsoSettings } from "./useSsoSettings";
 
 const createWrapper = () => {
@@ -60,6 +67,10 @@ const request = {
 } as OidcProviderRequest;
 
 describe("useSsoSettings", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
 	it("shows the reason the server gives for refusing a plain http authority", async () => {
 		const refused: ApiError = {
 			kind: "client",
@@ -78,5 +89,63 @@ describe("useSsoSettings", () => {
 		expect(createOidcProviderCall).toHaveBeenCalledWith(request);
 		expect(errorToast).toHaveBeenCalledWith("Use https for the authority");
 		expect(successToast).not.toHaveBeenCalled();
+	});
+
+	it("creates the provider and confirms it when none exists yet", async () => {
+		vi.mocked(createOidcProviderCall).mockResolvedValue({} as never);
+		const { result } = renderHook(() => useSsoSettings(), { wrapper: createWrapper() });
+		await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+		await act(() => result.current.save(request));
+
+		expect(createOidcProviderCall).toHaveBeenCalledWith(request);
+		expect(updateOidcProviderCall).not.toHaveBeenCalled();
+		expect(successToast).toHaveBeenCalledWith("settings:sso.notifications.saved");
+	});
+
+	it("updates the existing provider with its stored configuration", async () => {
+		const stored = { id: 3, name: "idp" };
+		vi.mocked(getOidcProvidersCall).mockResolvedValueOnce([{ id: 3 }] as never);
+		vi.mocked(getOidcProviderConfigCall).mockResolvedValueOnce(stored as never);
+		vi.mocked(updateOidcProviderCall).mockResolvedValue({} as never);
+		const { result } = renderHook(() => useSsoSettings(), { wrapper: createWrapper() });
+		await waitFor(() => expect(result.current.provider).toEqual(stored));
+
+		await act(() => result.current.save(request));
+
+		expect(updateOidcProviderCall).toHaveBeenCalledWith(3, request, stored);
+		expect(createOidcProviderCall).not.toHaveBeenCalled();
+	});
+
+	it("removes the provider, and reports a failed removal", async () => {
+		vi.mocked(deleteOidcProviderCall).mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error("boom"));
+		const { result } = renderHook(() => useSsoSettings(), { wrapper: createWrapper() });
+		await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+		await act(() => result.current.remove(3));
+		await act(() => result.current.remove(3).catch(() => undefined));
+
+		expect(successToast).toHaveBeenCalledWith("settings:sso.notifications.deleted");
+		expect(errorToast).toHaveBeenCalledWith("settings:sso.notifications.delete-failed");
+	});
+
+	it("shows the discovery result, and the reason when discovery fails", async () => {
+		const discovered = {
+			issuer: "https://sso.example.com",
+			authorizationEndpoint: "https://sso.example.com/auth",
+			tokenEndpoint: "https://sso.example.com/token",
+			userInfoEndpoint: "https://sso.example.com/userinfo",
+			issuerMatchesAuthority: true,
+		};
+		vi.mocked(testOidcDiscoveryCall).mockResolvedValueOnce(discovered).mockRejectedValueOnce(new Error("unreachable"));
+		const { result } = renderHook(() => useSsoSettings(), { wrapper: createWrapper() });
+		await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+		act(() => result.current.testDiscovery("https://sso.example.com"));
+		await waitFor(() => expect(result.current.discovery).toEqual(discovered));
+
+		act(() => result.current.testDiscovery("https://down.example.com"));
+		await waitFor(() => expect(result.current.discoveryError).toBe("settings:sso.discovery.failed"));
+		expect(result.current.discovery).toBeNull();
 	});
 });
