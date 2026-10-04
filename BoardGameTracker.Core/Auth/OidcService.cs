@@ -100,10 +100,10 @@ public class OidcService : IOidcService
             ["nonce"] = nonce,
         };
 
-        var queryString = string.Join("&", query.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
+        var queryString = "?" + string.Join("&", query.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
         _logger.LogInformation("Started OIDC {Flow} flow for provider {Provider}", flow, providerName);
 
-        return new OidcAuthorizationRequest($"{authorizationEndpoint}?{queryString}", state);
+        return new OidcAuthorizationRequest(authorizationEndpoint + queryString, state);
     }
 
     public async Task<OidcLoginResult> CompleteLoginAsync(string providerName, string code, string? state, string? browserState)

@@ -42,7 +42,7 @@ public class MaintenanceSeeder : IMaintenanceSeeder
         var errors = await DbSeeder.GetAdminPasswordErrorsAsync(_userManager, _environmentProvider.AdminPassword);
         if (errors.Count > 0)
         {
-            _logger.LogWarning("Factory reset refused: ADMIN_PASSWORD does not meet the password rules: {Errors}", string.Join(" ", errors));
+            _logger.LogWarning("Factory reset refused: ADMIN_PASSWORD does not meet the password rules");
             throw new ValidationException(Constants.Errors.AdminPasswordRejected);
         }
     }

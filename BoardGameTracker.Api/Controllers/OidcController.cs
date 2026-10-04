@@ -63,7 +63,7 @@ public class OidcController : ControllerBase
         catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "OIDC login via {Provider} could not start", provider);
-            return await FailAsync(ex is EntityNotFoundException ? Constants.Errors.OidcProviderUnavailable : ErrorKey(ex));
+            return Fail(ex is EntityNotFoundException ? Constants.Errors.OidcProviderUnavailable : ErrorKey(ex));
         }
     }
 
@@ -79,19 +79,19 @@ public class OidcController : ControllerBase
         if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
         {
             _logger.LogWarning("OIDC provider {Provider} returned to the callback with error {Error}", provider, error ?? "missing code");
-            return await FailAsync(Constants.Errors.OidcProviderRejected);
+            return Fail(Constants.Errors.OidcProviderRejected);
         }
 
         try
         {
             var result = await _oidcService.CompleteLoginAsync(provider, code, state, browserState);
             SetCookie(HandoffCookieName, _oidcService.CreateHandoff(result.Login), OidcService.HandoffLifetime);
-            return Redirect(await SpaUrlAsync($"{CallbackPage}?redirect={Uri.EscapeDataString(result.RedirectPath)}"));
+            return LocalRedirect($"{CallbackPage}?redirect={Uri.EscapeDataString(result.RedirectPath)}");
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "OIDC login via {Provider} failed", provider);
-            return await FailAsync(ErrorKey(ex));
+            return Fail(ErrorKey(ex));
         }
     }
 
@@ -136,24 +136,24 @@ public class OidcController : ControllerBase
         if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
         {
             _logger.LogWarning("OIDC provider {Provider} returned to the link callback with error {Error}", provider, error ?? "missing code");
-            return await FailAsync(Constants.Errors.OidcProviderRejected);
+            return Fail(Constants.Errors.OidcProviderRejected);
         }
 
         try
         {
             var result = await _oidcService.CompleteLinkAsync(provider, code, state, browserState);
-            return Redirect(await SpaUrlAsync($"{CallbackPage}?linked={Uri.EscapeDataString(result.ProviderName)}"));
+            return LocalRedirect($"{CallbackPage}?linked={Uri.EscapeDataString(result.ProviderName)}");
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !HttpContext.RequestAborted.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "OIDC link via {Provider} failed", provider);
-            return await FailAsync(ErrorKey(ex));
+            return Fail(ErrorKey(ex));
         }
     }
 
-    private async Task<IActionResult> FailAsync(string errorKey)
+    private LocalRedirectResult Fail(string errorKey)
     {
-        return Redirect(await SpaUrlAsync($"{CallbackPage}?error={Uri.EscapeDataString(errorKey)}"));
+        return LocalRedirect($"{CallbackPage}?error={Uri.EscapeDataString(errorKey)}");
     }
 
     internal static string ErrorKey(Exception exception)
@@ -170,11 +170,6 @@ public class OidcController : ControllerBase
     private async Task<string> PublicBaseUrlAsync()
     {
         return (await PublicBaseUrl.ResolveAsync(_publicUrlBuilder, Request)).BaseUrl;
-    }
-
-    private async Task<string> SpaUrlAsync(string pathAndQuery)
-    {
-        return $"{await PublicBaseUrlAsync()}{pathAndQuery}";
     }
 
     private void SetCookie(string name, string value, TimeSpan lifetime)

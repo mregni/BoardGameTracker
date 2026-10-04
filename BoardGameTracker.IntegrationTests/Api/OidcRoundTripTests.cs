@@ -68,7 +68,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         var callback = await browser.GetAsync(callbackUrl.PathAndQuery);
 
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
-        callback.Headers.Location!.ToString().Should().Be("http://localhost/auth-callback?redirect=%2Fgames%2F3");
+        callback.Headers.Location!.ToString().Should().Be("/auth-callback?redirect=%2Fgames%2F3");
         callback.Headers.GetValues("Set-Cookie").Should().Contain(c => c.StartsWith($"{OidcController.HandoffCookieName}=", StringComparison.Ordinal) && c.Contains("httponly", StringComparison.OrdinalIgnoreCase));
 
         var adopt = await browser.PostAsync("/api/auth/oidc/adopt", null);
@@ -111,7 +111,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         var callback = await browser.GetAsync(idpResponse.Headers.Location!.PathAndQuery);
 
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
-        callback.Headers.Location!.ToString().Should().Be("http://localhost/auth-callback?redirect=%2F");
+        callback.Headers.Location!.ToString().Should().Be("/auth-callback?redirect=%2F");
         callback.Headers.GetValues("Set-Cookie").Should().Contain(c => c.StartsWith($"{OidcController.HandoffCookieName}=", StringComparison.Ordinal));
     }
 
@@ -123,7 +123,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         var start = await browser.GetAsync("/api/auth/oidc/no-such-provider/login");
 
         start.StatusCode.Should().Be(HttpStatusCode.Found);
-        start.Headers.Location!.ToString().Should().Be($"http://localhost/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcProviderUnavailable)}");
+        start.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcProviderUnavailable)}");
     }
 
     [Fact]
@@ -149,7 +149,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         var callback = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/callback?code=forged&state=forged");
 
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
-        callback.Headers.Location!.ToString().Should().Be($"http://localhost/auth-callback?error={Uri.EscapeDataString(Constants.Errors.InvalidAuthSession)}");
+        callback.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.InvalidAuthSession)}");
     }
 
     [Fact]
@@ -161,7 +161,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         var callback = await browser.GetAsync($"/api/auth/oidc/{ProviderName}/callback?error=access_denied&state=whatever");
 
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
-        callback.Headers.Location!.ToString().Should().Be($"http://localhost/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcProviderRejected)}");
+        callback.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.OidcProviderRejected)}");
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         var callback = await attacker.GetAsync(idpResponse.Headers.Location!.PathAndQuery);
 
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
-        callback.Headers.Location!.ToString().Should().Be($"http://localhost/auth-callback?error={Uri.EscapeDataString(Constants.Errors.InvalidAuthSession)}");
+        callback.Headers.Location!.ToString().Should().Be($"/auth-callback?error={Uri.EscapeDataString(Constants.Errors.InvalidAuthSession)}");
         var adopt = await attacker.PostAsync("/api/auth/oidc/adopt", null);
         adopt.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -241,7 +241,7 @@ public class OidcRoundTripTests : IAsyncLifetime
         browser.DefaultRequestHeaders.Authorization = null;
         var callback = await browser.GetAsync(idpResponse.Headers.Location!.PathAndQuery);
         callback.StatusCode.Should().Be(HttpStatusCode.Found);
-        callback.Headers.Location!.ToString().Should().Be($"http://localhost/auth-callback?linked={ProviderName}");
+        callback.Headers.Location!.ToString().Should().Be($"/auth-callback?linked={ProviderName}");
 
         browser.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
         var logins = await browser.GetFromJsonAsync<List<ExternalLoginDto>>("/api/auth/external-logins", IntegrationFixture.Json);
