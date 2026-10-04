@@ -41,6 +41,7 @@
     "past": "Voorbij",
     "copy-link": "RSVP-link kopiëren",
     "copied": "Gekopieerd naar klembord",
+    "copy-failed": "Kopiëren van de link is mislukt",
     "manage-rsvps": "RSVP's beheren",
     "email-invites": "Uitnodigingen mailen",
     "invites-sent": "Uitnodigingen verstuurd: {{sent}}",

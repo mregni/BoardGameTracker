@@ -26,10 +26,13 @@ export const GameNightActions = (props: Props) => {
 	const [copied, setCopied] = useState(false);
 
 	const onCopyLink = useCallback(() => {
-		navigator.clipboard.writeText(rsvpLink);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
-	}, [rsvpLink]);
+		const copy = async () => {
+			await navigator.clipboard.writeText(rsvpLink);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		};
+		copy().catch(() => toast.error(t("card.copy-failed")));
+	}, [rsvpLink, t]);
 
 	const sendInvitesMutation = useMutation({
 		mutationFn: () => sendInvitesCall(gameNight.id),

@@ -128,7 +128,7 @@ jobs:
           JWT_SECRET: ci-openapi-export-placeholder-secret-with-32-chars
           DB_HOST: localhost
           DB_USER: openapi
-          DB_PASSWORD: openapi
+          DB_PASSWORD: ${{ github.run_id }}
           DB_NAME: openapi
           LOGLEVEL: warn
         run: dotnet ./BoardGameTracker.Host/bin/Debug/net10.0/BoardGameTracker.Host.dll --openapi boardgametracker.client/openapi/swagger.json

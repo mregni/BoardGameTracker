@@ -20,7 +20,7 @@ export const useSettingsData = () => {
 		mutationFn: updateSettingsCall,
 		onSuccess() {
 			successToast("settings:save.successfull");
-			invalidator.invalidateSettings();
+			void invalidator.invalidateSettings();
 		},
 		onError: (error) => {
 			errorToast(apiErrorMessage(error, "settings:save.failed"));

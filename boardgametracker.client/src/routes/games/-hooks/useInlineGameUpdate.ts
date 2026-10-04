@@ -26,7 +26,7 @@ export const useInlineGameUpdate = () => {
 			errorToast("game:notifications.update-failed");
 		},
 		onSettled: (_data, _error, updated) => {
-			invalidator.invalidateGame(updated.id);
+			void invalidator.invalidateGame(updated.id);
 		},
 	});
 

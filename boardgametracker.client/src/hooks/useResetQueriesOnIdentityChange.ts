@@ -3,7 +3,8 @@ import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import type { User } from "@/models/Auth/Auth";
 
-const identityOf = (user: User | null) => (user ? `${user.id}|${[...user.roles].sort().join(",")}` : "");
+const identityOf = (user: User | null) =>
+	user ? `${user.id}|${[...user.roles].sort((a, b) => a.localeCompare(b)).join(",")}` : "";
 
 export const useResetQueriesOnIdentityChange = () => {
 	const queryClient = useQueryClient();

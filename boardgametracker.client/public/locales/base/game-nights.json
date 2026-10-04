@@ -41,6 +41,7 @@
     "past": "Past",
     "copy-link": "Copy RSVP link",
     "copied": "Copied to clipboard",
+    "copy-failed": "Couldn't copy the link",
     "manage-rsvps": "Manage RSVPs",
     "email-invites": "Email invites",
     "invites-sent": "Invites sent: {{sent}} sent",

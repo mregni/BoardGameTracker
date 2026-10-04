@@ -44,7 +44,7 @@ public class LeaderboardService : ILeaderboardService
     }
 
     private static bool SameStanding(LeaderboardEntryDto a, LeaderboardEntryDto b) =>
-        a.WinCount == b.WinCount && a.WinPercentage.Equals(b.WinPercentage) && a.PlayCount == b.PlayCount;
+        a.WinCount == b.WinCount && a.PlayCount == b.PlayCount;
 
     private static LeaderboardEntryDto ToEntry(LeaderboardRow row) => new()
     {
