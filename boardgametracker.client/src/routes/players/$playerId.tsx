@@ -12,7 +12,7 @@ import { BgtPoster } from "../-components/BgtPoster";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { MostPlayedGamesCard } from "./-components/MostPlayedGamesCard";
 import { PlayerAchievementsCard } from "./-components/PlayerAchievementsCard";
-import { PlayerBadgeContainer } from "./-components/PlayerBadgeContainer";
+import { PlayerAchievementsSummary } from "./-components/PlayerAchievementsSummary";
 import { PlayerHeader } from "./-components/PlayerHeader";
 import { PlayerStatisticsGrid } from "./-components/PlayerStatisticsGrid";
 import { PlayerWinRecordCard } from "./-components/PlayerWinRecordCard";
@@ -61,19 +61,12 @@ function RouteComponent() {
 									<div className="hidden lg:block">
 										<BgtPoster title={player.name} image={player.image} />
 									</div>
-									{player.badges.length > 0 && (
-										<div className="max-lg:order-2">
-											<PlayerBadgeContainer badges={player.badges} />
-										</div>
-									)}
+									<div className="max-lg:order-2">
+										<PlayerAchievementsSummary playerBadges={player.badges} badges={badges} />
+									</div>
 									{statistics.playCount !== 0 && (
 										<div className="max-lg:order-6">
 											<PlayerWinRecordCard total={statistics.playCount} wins={statistics.winCount} />
-										</div>
-									)}
-									{statistics.playCount !== 0 && (
-										<div className="max-lg:order-7">
-											<PlayerAchievementsCard playerBadges={player.badges} badges={badges} />
 										</div>
 									)}
 								</>
@@ -110,6 +103,11 @@ function RouteComponent() {
 							{statistics.playCount !== 0 && (
 								<div className="max-lg:order-5">
 									<MostPlayedGamesCard games={statistics.mostPlayedGames} />
+								</div>
+							)}
+							{statistics.playCount !== 0 && (
+								<div className="max-lg:order-7">
+									<PlayerAchievementsCard playerBadges={player.badges} badges={badges} />
 								</div>
 							)}
 						</BgtDetailLayout>

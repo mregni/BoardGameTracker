@@ -51,5 +51,11 @@
   },
   "titles": {
     "achievements": "Logros"
+  },
+  "achievements": {
+    "milestones": "Hitos",
+    "feats": "Hazañas",
+    "next": "Siguiente: {{goal}}",
+    "complete": "Todos los niveles conseguidos"
   }
 }

@@ -51,5 +51,11 @@
   },
   "titles": {
     "achievements": "Achievements"
+  },
+  "achievements": {
+    "milestones": "Milestones",
+    "feats": "Feats",
+    "next": "Next: {{goal}}",
+    "complete": "All levels earned"
   }
 }
