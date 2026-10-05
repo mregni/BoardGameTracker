@@ -19,10 +19,11 @@ export interface BgtSelectProps {
 	disabled?: boolean;
 	placeholder?: string;
 	hasSearch?: boolean;
+	showAvatars?: boolean;
 }
 
 const BgtSelectComponent = (props: BgtSelectProps) => {
-	const { items, label, field, disabled = false, placeholder = null, hasSearch = false } = props;
+	const { items, label, field, disabled = false, placeholder = null, hasSearch = false, showAvatars = false } = props;
 
 	const { t } = useTranslation();
 	const [searchTerm, setSearchTerm] = useState("");
@@ -41,9 +42,11 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 		});
 	}, [items, currentValue, searchTerm]);
 
-	const isSelectImageItem = useCallback((item: BgtSelectImageItem | BgtSelectItem): item is BgtSelectImageItem => {
-		return item && typeof item === "object" && "image" in item && item.image !== null;
-	}, []);
+	const isSelectImageItem = useCallback(
+		(item: BgtSelectImageItem | BgtSelectItem): item is BgtSelectImageItem =>
+			item && typeof item === "object" && "image" in item && (showAvatars || item.image !== null),
+		[showAvatars],
+	);
 
 	const selectedHasImage = useMemo(() => {
 		const selected = items.find((item) => item.value.toString() === currentValue);

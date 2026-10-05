@@ -22,6 +22,7 @@ interface Props {
 	defaultOpen?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	className?: string;
+	showAvatars?: boolean;
 }
 
 export const BgtSimpleSelect = (props: Props) => {
@@ -36,6 +37,7 @@ export const BgtSimpleSelect = (props: Props) => {
 		defaultOpen = false,
 		onOpenChange,
 		className = "",
+		showAvatars = false,
 	} = props;
 
 	const { t } = useTranslation();
@@ -53,7 +55,7 @@ export const BgtSimpleSelect = (props: Props) => {
 	});
 
 	const isSelectImageItem = (item: BgtSelectImageItem | BgtSelectItem): item is BgtSelectImageItem => {
-		return item && typeof item === "object" && "image" in item && item.image !== null;
+		return item && typeof item === "object" && "image" in item && (showAvatars || item.image !== null);
 	};
 
 	useEffect(() => {

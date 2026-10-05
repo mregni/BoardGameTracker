@@ -113,6 +113,7 @@ const NewLoanModal = (props: ModalProps) => {
 									<BgtSelect
 										field={field}
 										hasSearch
+										showAvatars
 										items={playersSelectItems}
 										label={t("new.player.label")}
 										disabled={isLoading}

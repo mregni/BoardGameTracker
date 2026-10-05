@@ -29,6 +29,7 @@ const PlayerSelectorComponent = ({ player, players, isWinner, onPlayerChange }: 
 			<PlayerAvatarWithCrown player={player} isWinner={isWinner} />
 			<BgtSimpleSelect
 				items={playerItems}
+				showAvatars
 				placeholder={t("select-player")}
 				hasSearch={true}
 				value={player.id}
