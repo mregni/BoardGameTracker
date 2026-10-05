@@ -26,6 +26,10 @@
       "title": "Kies een spel om te beginnen",
       "description": "Kies hierboven een spel om vragen te stellen over de spelregels."
     },
+    "no-rulebooks": {
+      "title": "Nog geen handleidingen",
+      "description": "Upload een PDF-handleiding op de pagina van een spel om er hier vragen over te stellen."
+    },
     "no-manuals": {
       "title": "Nog geen handleiding",
       "description": "Dit spel heeft geen handleidingen. Upload eerst een handleiding op de spelpagina."

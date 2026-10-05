@@ -221,4 +221,18 @@ public class ManualControllerTests
         _manualServiceMock.Verify(x => x.GetManualForGameNightDownload(linkId, 11, false), Times.Once);
         VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task GetGamesWithManuals_ShouldReturnTheGameIds()
+    {
+        _manualServiceMock
+            .Setup(x => x.GetGameIdsWithManuals(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<int> { 1, 3 });
+
+        var result = await _controller.GetGamesWithManuals(TestContext.Current.CancellationToken);
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeEquivalentTo(new List<int> { 1, 3 });
+        _manualServiceMock.Verify(x => x.GetGameIdsWithManuals(TestContext.Current.CancellationToken), Times.Once);
+        VerifyNoOtherCalls();
+    }
 }

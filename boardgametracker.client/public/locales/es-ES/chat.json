@@ -26,6 +26,10 @@
       "title": "Elige un juego para empezar",
       "description": "Elige un juego arriba para hacer preguntas sobre su manual."
     },
+    "no-rulebooks": {
+      "title": "Aún no hay manuales",
+      "description": "Sube un manual en PDF en la página de un juego para hacer preguntas sobre él aquí."
+    },
     "no-manuals": {
       "title": "Aún no hay manual",
       "description": "Este juego no tiene manuales. Sube un manual en la página del juego primero."

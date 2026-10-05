@@ -52,4 +52,13 @@ public class ManualSpecsTests
     {
         new ManualsByGameIdsSpec(Array.Empty<int>()).Evaluate(Fixture()).Should().BeEmpty();
     }
+
+    [Fact]
+    public void GameIdsWithManualsSpec_ShouldReturnTheGameOfEveryManual_AndNotTrack()
+    {
+        var spec = new GameIdsWithManualsSpec();
+
+        spec.Evaluate(Fixture()).Should().Equal(1, 1, 2, 3);
+        spec.AsNoTracking.Should().BeTrue();
+    }
 }

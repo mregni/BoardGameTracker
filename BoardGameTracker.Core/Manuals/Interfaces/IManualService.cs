@@ -8,6 +8,7 @@ namespace BoardGameTracker.Core.Manuals.Interfaces;
 public interface IManualService
 {
     Task<List<Manual>> GetManualsForGame(int gameId);
+    Task<List<int>> GetGameIdsWithManuals(CancellationToken cancellationToken = default);
     Task<List<Manual>> UploadManuals(int gameId, IReadOnlyList<IFormFile> files);
     Task RequeueManualForIndexing(int id);
     Task DeleteManual(int id);

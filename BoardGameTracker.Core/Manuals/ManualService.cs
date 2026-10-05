@@ -67,6 +67,12 @@ public class ManualService : IManualService
         return _manualRepository.ListAsync(new ManualsByGameIdSpec(gameId));
     }
 
+    public async Task<List<int>> GetGameIdsWithManuals(CancellationToken cancellationToken = default)
+    {
+        var gameIds = await _manualRepository.ListAsync(new GameIdsWithManualsSpec(), cancellationToken);
+        return gameIds.Distinct().ToList();
+    }
+
     public async Task<List<Manual>> UploadManuals(int gameId, IReadOnlyList<IFormFile> files)
     {
         _logger.LogDebug("Uploading {Count} manual(s) for game {GameId}", files.Count, gameId);

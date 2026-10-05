@@ -704,4 +704,18 @@ public class ManualServiceTests
         _pageRendererMock.Verify(x => x.ClearAllFigures(), Times.Once);
         VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task GetGameIdsWithManuals_ShouldReturnEachGameOnce()
+    {
+        _manualRepositoryMock
+            .Setup(x => x.ListAsync(It.IsAny<GameIdsWithManualsSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<int> { 1, 1, 2, 3 });
+
+        var result = await _manualService.GetGameIdsWithManuals(TestContext.Current.CancellationToken);
+
+        result.Should().Equal(1, 2, 3);
+        _manualRepositoryMock.Verify(x => x.ListAsync(It.IsAny<GameIdsWithManualsSpec>(), TestContext.Current.CancellationToken), Times.Once);
+        VerifyNoOtherCalls();
+    }
 }
