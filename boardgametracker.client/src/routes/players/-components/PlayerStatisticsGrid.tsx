@@ -27,16 +27,17 @@ export const PlayerStatisticsGrid = (props: Props) => {
 	);
 
 	return (
-		<div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 xl:gap-6">
-			<BgtTextStatistic content={statistics.playCount} title={t("play-count")} />
-			<BgtTextStatistic content={totalPlayedTime} title={t("total-play-time")} />
-			<BgtTextStatistic content={statistics.winCount} title={t("win-count")} />
+		<div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-5 gap-3 xl:gap-6">
+			<BgtTextStatistic content={statistics.playCount} title={t("play-count")} textSize="4" />
+			<BgtTextStatistic content={totalPlayedTime} title={t("total-play-time")} textSize="4" />
+			<BgtTextStatistic content={statistics.winCount} title={t("win-count")} textSize="4" />
 			<BgtTextStatistic
 				content={GetPercentage(statistics.winCount, statistics.playCount)}
 				title={t("win-percentage")}
 				suffix={"%"}
+				textSize="4"
 			/>
-			<BgtTextStatistic content={statistics.distinctGameCount} title={t("distinct-game-count")} />
+			<BgtTextStatistic content={statistics.distinctGameCount} title={t("distinct-game-count")} textSize="4" />
 		</div>
 	);
 };

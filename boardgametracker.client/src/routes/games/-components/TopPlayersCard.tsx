@@ -46,15 +46,17 @@ const TopPlayerCardItem = (props: ItemProps) => {
 	const navigate = useNavigate();
 
 	return (
-		<div className="flex items-center gap-4 bg-primary/5 rounded-lg p-4 border border-primary/10">
+		<div className="flex items-center gap-3 bg-primary/5 rounded-lg p-3 border border-primary/10">
 			<BgtAvatar
 				onClick={() => navigate({ to: `/players/${player.playerId}` })}
 				image={playerById(player.playerId)?.image}
 				title={playerById(player.playerId)?.name}
 				size="large"
 			/>
-			<div className="flex-1">
-				<BgtText color="white">{playerById(player.playerId)?.name}</BgtText>
+			<div className="flex-1 min-w-0">
+				<BgtText color="white" className="truncate">
+					{playerById(player.playerId)?.name}
+				</BgtText>
 				<BgtText color="primary" opacity={70}>
 					{t("win", { count: player.wins })} • {t("game", { count: player.playCount })}
 				</BgtText>

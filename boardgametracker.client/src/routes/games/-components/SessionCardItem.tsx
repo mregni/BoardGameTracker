@@ -31,7 +31,7 @@ const SessionCardItemComponent = (props: Props) => {
 	}, [session]);
 
 	return (
-		<div className="flex items-center gap-4 bg-primary/5 rounded-lg p-4 border border-primary/10">
+		<div className="flex items-center gap-3 bg-primary/5 rounded-lg p-3 border border-primary/10">
 			<div className="w-10 h-10 rounded-full overflow-hidden bg-primary/20 border border-primary/30 shrink-0">
 				{winner && (
 					<BgtAvatar
@@ -42,11 +42,13 @@ const SessionCardItemComponent = (props: Props) => {
 					/>
 				)}
 			</div>
-			<div className="flex-1">
-				<BgtText color="white">{winner?.name}</BgtText>
+			<div className="flex-1 min-w-0">
+				<BgtText color="white" className="truncate">
+					{winner?.name}
+				</BgtText>
 				<div className="text-white/50 text-sm">{format(session.start, dateFormat)}</div>
 			</div>
-			<div className="text-right">
+			<div className="text-right shrink-0">
 				{winnerSession?.score != null && (
 					<BgtText color="cyan" weight="bold">
 						{t("points", { count: winnerSession.score })}
