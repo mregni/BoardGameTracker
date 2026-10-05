@@ -1,5 +1,4 @@
 import { cx } from "class-variance-authority";
-import { formatDuration, intervalToDuration } from "date-fns";
 import type { ComponentType, ReactNode, SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
@@ -12,7 +11,6 @@ import Target from "@/assets/icons/target.svg?react";
 import Users from "@/assets/icons/users.svg?react";
 import type { Game, GamePrice } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
-import { getDateFnsLocale } from "@/utils/localeUtils";
 import { formatPrice } from "@/utils/priceUtils";
 import { PriceRefreshButton } from "./PriceRefreshButton";
 
@@ -29,13 +27,12 @@ const formatMinMax = (min: number | null, max: number | null): string | null => 
 interface FactRowProps {
 	icon: ComponentType<SVGProps<SVGSVGElement>>;
 	label: string;
-	note?: string;
 	onClick?: () => void;
 	children: ReactNode;
 }
 
 const FactRow = (props: FactRowProps) => {
-	const { icon: Icon, label, note, onClick, children } = props;
+	const { icon: Icon, label, onClick, children } = props;
 	const className = cx(
 		"flex w-full items-center justify-between gap-3 py-2 text-left border-b border-primary/10 last:border-b-0",
 		onClick && "cursor-pointer hover:text-primary",
@@ -44,10 +41,7 @@ const FactRow = (props: FactRowProps) => {
 		<>
 			<span className="flex min-w-0 items-center gap-2 text-primary/70">
 				<Icon className="size-4 shrink-0" />
-				<span className="flex min-w-0 flex-col">
-					<span className="truncate">{label}</span>
-					{note && <span className="truncate text-xs text-white/50">{note}</span>}
-				</span>
+				<span className="truncate">{label}</span>
 			</span>
 			<span className="flex shrink-0 items-center gap-1 font-semibold text-card-value">
 				{children}
@@ -124,15 +118,8 @@ export const GameFactsCard = (props: Props) => {
 				</FactRow>
 			)}
 			{game.additionDate && (
-				<FactRow
-					icon={Calendar}
-					label={t("statistics:in-collection")}
-					note={t("since", { date: toDisplay(game.additionDate, dateFormat, uiLanguage) })}
-				>
-					{formatDuration(intervalToDuration({ start: game.additionDate, end: new Date() }), {
-						format: ["years", "months", "days"],
-						locale: getDateFnsLocale(uiLanguage),
-					}) || t("today")}
+				<FactRow icon={Calendar} label={t("statistics:in-collection")}>
+					{toDisplay(game.additionDate, dateFormat, uiLanguage)}
 				</FactRow>
 			)}
 			<FactRow icon={List} label={t("game:manuals.title")} onClick={onOpenManuals}>

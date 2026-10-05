@@ -128,7 +128,7 @@ describe("GameFactsCard", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} game={createGame({ additionDate: new Date(2026, 0, 15) })} />);
 
 			expect(screen.getByText("statistics:in-collection")).toBeInTheDocument();
-			expect(screen.getByText("since")).toBeInTheDocument();
+			expect(screen.getByText("2026-01-15")).toBeInTheDocument();
 		});
 
 		it("should not render when the addition date is null", () => {
