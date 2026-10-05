@@ -114,11 +114,7 @@ function RouteComponent() {
 										)}
 										{hasPlays && (
 											<div className="max-lg:order-6">
-												<RecentSessionsCard
-													sessions={sessions}
-													dateFormat={settings.dateFormat}
-													gameId={gameId.toString()}
-												/>
+												<RecentSessionsCard sessions={sessions} dateFormat={settings.dateFormat} gameId={gameId} />
 											</div>
 										)}
 									</>
