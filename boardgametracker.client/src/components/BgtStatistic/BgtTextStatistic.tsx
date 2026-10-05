@@ -55,11 +55,11 @@ export const BgtTextStatistic = (props: Props) => {
 				isInteractive && "border-primary/25 transition-colors hover:border-primary/60 cursor-pointer",
 			)}
 		>
-			<div className="flex items-center gap-2 text-primary/70 mb-2">
+			<div className="flex h-6 items-center gap-2 text-primary/70 mb-2">
 				{iconWithClasses}
-				<span>{title}</span>
+				<span className="truncate">{title}</span>
 				{action ? (
-					<span className="ml-auto shrink-0">{action}</span>
+					<span className="ml-auto flex shrink-0 items-center">{action}</span>
 				) : (
 					isInteractive && <CaretRight className="size-4 ml-auto shrink-0 text-primary" />
 				)}

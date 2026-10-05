@@ -4,6 +4,7 @@ import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { getSettings } from "@/services/queries/settings";
 import { formatMinutesToDuration, toRelative } from "@/utils/dateUtils";
 import { RoundDecimal } from "@/utils/numberUtils";
+import { formatPrice } from "@/utils/priceUtils";
 
 interface GameStats {
 	totalPlayedTime: number | null;
@@ -16,12 +17,11 @@ interface GameStats {
 
 interface Props {
 	gameStats: GameStats;
-	expansionCount: number;
 	currency: string;
 }
 
 export const GameStatisticsGrid = (props: Props) => {
-	const { gameStats, expansionCount, currency } = props;
+	const { gameStats, currency } = props;
 	const { t } = useTranslation("statistics");
 	const { data: settings } = useQuery(getSettings());
 
@@ -44,16 +44,18 @@ export const GameStatisticsGrid = (props: Props) => {
 	);
 
 	return (
-		<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:gap-6">
+		<div className="grid grid-cols-2 lg:grid-cols-3 gap-3 xl:gap-6">
 			<BgtTextStatistic content={totalPlayedTime} title={t("total-play-time")} />
-			<BgtTextStatistic content={gameStats.pricePerPlay} title={t("price-per-play")} prefix={currency} />
+			<BgtTextStatistic
+				content={
+					gameStats.pricePerPlay != null ? formatPrice(gameStats.pricePerPlay, currency, settings?.uiLanguage) : null
+				}
+				title={t("price-per-play")}
+			/>
 			<BgtTextStatistic content={RoundDecimal(gameStats.highScore)} title={t("high-score")} />
 			<BgtTextStatistic content={RoundDecimal(gameStats.averageScore)} title={t("average-score")} />
 			<BgtTextStatistic content={averagePlayTime} title={t("average-playtime")} />
 			<BgtTextStatistic content={lastPlayedRelative} title={t("last-played")} />
-			<BgtTextStatistic content={expansionCount} title={t("expansion-count")} />
 		</div>
 	);
 };
-
-//locale: getDateFnsLocale(settings?.uiLanguage ?? ''),

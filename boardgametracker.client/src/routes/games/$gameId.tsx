@@ -146,11 +146,7 @@ function RouteComponent() {
 							)}
 							{statistics.gameStats.playCount !== 0 && (
 								<>
-									<GameStatisticsGrid
-										gameStats={statistics.gameStats}
-										expansionCount={game.expansions.length}
-										currency={settings.currency}
-									/>
+									<GameStatisticsGrid gameStats={statistics.gameStats} currency={settings.currency} />
 									<div className="grid grid-cols-1 lg:grid-cols-2 gap-3 xl:gap-6">
 										<div className="flex flex-col gap-3 xl:gap-6">
 											<TopPlayersCard topPlayers={statistics.topPlayers} />

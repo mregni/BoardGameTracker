@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { formatDuration, intervalToDuration } from "date-fns";
 import { useTranslation } from "react-i18next";
+import Calendar from "@/assets/icons/calendar.svg?react";
 import Clock from "@/assets/icons/clock.svg?react";
 import Coins from "@/assets/icons/coins.svg?react";
 import List from "@/assets/icons/list.svg?react";
@@ -11,7 +12,6 @@ import Trophy from "@/assets/icons/trophy.svg?react";
 import Users from "@/assets/icons/users.svg?react";
 import { BgtBadge } from "@/components/BgtBadge/BgtBadge";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtFancyTextStatistic } from "@/components/BgtStatistic/BgtFancyTextStatistic";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { Game, GamePrice } from "@/models";
@@ -109,7 +109,7 @@ export const GameStaticSection = (props: Props) => {
 						)}
 					</div>
 				)}
-				<div className="grid grid-cols-2 md:grid-cols-4 2xl:grid-cols-7 gap-3 xl:gap-6">
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-3 xl:gap-6">
 					{playersContent !== null && (
 						<BgtTextStatistic content={playersContent} title={t("players")} icon={<Users />} />
 					)}
@@ -123,9 +123,8 @@ export const GameStaticSection = (props: Props) => {
 					)}
 					<BgtTextStatistic content={playCount} title={t("statistics:play-count")} icon={<Trophy />} />
 					<BgtTextStatistic
-						content={game.buyingPrice}
+						content={game.buyingPrice != null ? formatPrice(game.buyingPrice, currency, uiLanguage) : null}
 						title={t("statistics:buy-price")}
-						prefix={currency}
 						icon={<Coins />}
 					/>
 					{game.changeDetectionWatchId && (
@@ -155,7 +154,8 @@ export const GameStaticSection = (props: Props) => {
 						onClick={onOpenExpansions}
 					/>
 					{game.additionDate && (
-						<BgtFancyTextStatistic
+						<BgtTextStatistic
+							icon={<Calendar />}
 							content={
 								formatDuration(
 									intervalToDuration({
@@ -169,9 +169,11 @@ export const GameStaticSection = (props: Props) => {
 								) || t("common:today")
 							}
 							title={t("statistics:in-collection")}
-							suffix={t("since", {
-								date: toDisplay(game.additionDate, dateFormat, uiLanguage),
-							})}
+							action={
+								<span className="text-xs text-white/50">
+									{t("since", { date: toDisplay(game.additionDate, dateFormat, uiLanguage) })}
+								</span>
+							}
 						/>
 					)}
 				</div>
