@@ -57,7 +57,7 @@ RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
     dotnet publish \
     -c Release \
     -o /app/publish \
-    --no-restore \
+    /p:RestoreLockedMode=true \
     /p:Version=${ASSEMBLY_VERSION} \
     /p:InformationalVersion=${VERSION} \
     /p:UseAppHost=false \
