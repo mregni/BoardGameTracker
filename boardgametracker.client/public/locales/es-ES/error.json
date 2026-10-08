@@ -1,46 +1,94 @@
 {
   "bgg": {
-    "id-not-found": "Could not find game on BoardGameGeek"
+    "id-not-found": "No se encontró el juego en BoardGameGeek"
   },
   "image": {
-    "type-not-supported": "Image type not supported",
-    "error": "Error while uploading image, check logs"
+    "type-not-supported": "Tipo de imagen no compatible",
+    "error": "Error al subir la imagen, revisa los registros",
+    "too-large": "La imagen es demasiado grande",
+    "unsupported-format": "Formato de imagen no compatible"
   },
   "auth": {
-    "username-already-exists": "Username already exists",
-    "oidc-no-local-users": "Cannot create local users when OIDC is enabled",
-    "invalid-role": "Invalid role",
-    "username-required": "Username is required",
-    "cannot-change-oidc-password": "Cannot change password for externally authenticated accounts",
-    "cannot-delete-self": "Cannot delete your own account",
-    "cannot-delete-last-admin": "Cannot delete the last admin account",
-    "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
-    "invalid-credentials": "Invalid username or password",
-    "invalid-refresh-token": "Invalid or expired session",
+    "username-already-exists": "El nombre de usuario ya existe",
+    "invalid-role": "Rol no válido",
+    "username-required": "El nombre de usuario es obligatorio",
+    "cannot-change-oidc-password": "No se puede cambiar la contraseña de las cuentas con autenticación externa",
+    "cannot-delete-self": "No puedes eliminar tu propia cuenta",
+    "cannot-delete-last-admin": "No se puede eliminar la última cuenta de administrador",
+    "cannot-remove-last-admin": "No se puede quitar el rol de administrador a la última cuenta de administrador",
+    "invalid-credentials": "Nombre de usuario o contraseña no válidos",
+    "invalid-refresh-token": "Sesión no válida o caducada",
+    "account-locked-out": "Demasiados intentos fallidos. Inténtalo de nuevo más tarde.",
+    "too-many-requests": "Demasiados intentos de inicio de sesión. Espera un minuto e inténtalo de nuevo.",
+    "invalid-auth-session": "Sesión de autenticación no válida o caducada",
+    "invalid-redirect-uri": "URI de redirección no válida",
     "player-already-linked": "Este jugador ya está vinculado a otra cuenta",
-    "invalid-reset-token": "Este enlace para restablecer la contraseña no es válido o ha caducado"
+    "invalid-reset-token": "Este enlace para restablecer la contraseña no es válido o ha caducado",
+    "not-authenticated": "Debes iniciar sesión",
+    "insecure-authority": "La URL del proveedor debe usar https (http solo se permite para direcciones locales)",
+    "oidc-email-exists": "Ya existe una cuenta con este correo electrónico. Inicia sesión con tu contraseña y vincula el proveedor desde tu perfil.",
+    "oidc-provisioning-disabled": "Tu cuenta no existe aquí y el registro automático está desactivado.",
+    "oidc-provisioning-failed": "No se pudo crear tu cuenta.",
+    "oidc-already-linked": "Esta cuenta externa ya está vinculada a otro usuario.",
+    "oidc-discovery-failed": "No se pudo conectar con el proveedor de identidad.",
+    "oidc-issuer-mismatch": "El proveedor de identidad indica un emisor distinto de la autoridad configurada.",
+    "oidc-exchange-failed": "El proveedor de identidad rechazó el código de inicio de sesión.",
+    "oidc-userinfo-failed": "El proveedor de identidad no devolvió tu perfil.",
+    "oidc-provider-rejected": "El proveedor de identidad rechazó el inicio de sesión.",
+    "oidc-handoff-expired": "El inicio de sesión tardó demasiado en completarse. Inténtalo de nuevo.",
+    "oidc-failed": "Error al iniciar sesión con el proveedor de identidad.",
+    "last-sign-in-method": "Es tu única forma de iniciar sesión. Primero establece una contraseña (Olvidé mi contraseña, o pide a un administrador que la restablezca) y luego desvincula.",
+    "current-password-required": "Introduce tu contraseña actual para cambiar tu dirección de correo.",
+    "email-change-needs-password": "Esta cuenta solo inicia sesión con inicio de sesión único. Establece primero una contraseña con \"¿Olvidaste tu contraseña?\" en la página de inicio de sesión y después cambia la dirección de correo.",
+    "oidc-provider-unavailable": "Este proveedor de inicio de sesión no está disponible. Elige otra forma de iniciar sesión o pregunta a tu administrador."
   },
   "changedetection": {
     "invalid-base-url": "La URL de changedetection.io no es válida",
     "not-configured": "changedetection.io no está configurado",
     "watch-not-found": "Este id de watch no se encontró en changedetection.io",
-    "create-watch-failed": "changedetection.io no pudo crear el watch"
+    "create-watch-failed": "changedetection.io no pudo crear el watch",
+    "insecure-base-url": "Usa una dirección https para changedetection.io; http sin cifrar solo funciona con una dirección local como http://changedetection:5000"
   },
   "game": {
-    "invalid-shop-url": "Introduce una URL de tienda http(s) válida"
+    "invalid-shop-url": "Introduce una URL de tienda http(s) válida",
+    "already-exists": "Este juego ya está en tu colección",
+    "player-range-incomplete": "Introduce tanto el mínimo como el máximo de jugadores",
+    "play-time-range-incomplete": "Introduce tanto el tiempo de juego mínimo como el máximo",
+    "range-min-above-max": "El mínimo no puede ser mayor que el máximo",
+    "expansion-already-exists": "Esta expansión ya está vinculada al juego.",
+    "shop-url-not-public": "Usa la dirección de una tienda web pública; no se permiten direcciones de la red local"
   },
-  "something-went-wrong": "Something went wrong, please try again later.",
-  "unexpected-error": "An unexpected error occurred.",
-  "network": "Unable to connect to the server. Please check your connection.",
-  "timeout": "The request took too long. Please try again.",
-  "server": "A server error occurred. Please try again later.",
+  "something-went-wrong": "Algo salió mal, inténtalo de nuevo más tarde.",
+  "unexpected-error": "Se ha producido un error inesperado.",
+  "network": "No se puede conectar con el servidor. Comprueba tu conexión.",
+  "timeout": "La petición tardó demasiado. Inténtalo de nuevo.",
+  "server": "Se ha producido un error en el servidor. Inténtalo de nuevo más tarde.",
+  "location": {
+    "used-by-game-nights": "Esta ubicación se usa en una o más noches de juego"
+  },
+  "player": {
+    "hosts-game-nights": "Este jugador organiza una o más noches de juego"
+  },
+  "session": {
+    "invalid-expansion": "Una de las expansiones seleccionadas no pertenece a este juego"
+  },
   "email": {
-    "not-configured": "El correo electrónico no está configurado en este servidor"
+    "not-configured": "El correo electrónico no está configurado en este servidor",
+    "public-url-not-configured": "Configura primero la URL pública en Ajustes > General, para que los enlaces del correo apunten a este servidor."
   },
   "loan": {
-    "game-already-on-loan": "Este juego ya está prestado"
+    "game-already-on-loan": "Este juego ya está prestado",
+    "due-before-start": "La fecha de devolución no puede ser anterior al inicio del préstamo.",
+    "returned-before-start": "Un préstamo no se puede devolver antes de que empiece.",
+    "already-returned": "Este préstamo ya se devolvió."
   },
   "settings": {
     "invalid-public-url": "La URL pública no es válida"
+  },
+  "game-night": {
+    "invites-cooldown": "Las invitaciones de esta noche de juegos se enviaron hace poco, inténtalo de nuevo en unos minutos"
+  },
+  "maintenance": {
+    "admin-password-rejected": "ADMIN_PASSWORD no cumple las reglas de contraseña (al menos 8 caracteres). Cámbiala o elimínala antes de restablecer de fábrica."
   }
 }

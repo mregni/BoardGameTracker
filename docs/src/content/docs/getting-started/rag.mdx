@@ -15,7 +15,15 @@ The rules assistant is **disabled by default** and needs enough hardware to run 
 
 ## Enabling it
 
-The [quick-start stack](/BoardGameTracker/getting-started/quick-start/) doesn't include the AI service. To turn the assistant on, add an `ollama` service to your `docker-compose.yml` and point the app at it:
+If you downloaded the `docker-compose.yml` from the repository, it already has an `ollama` service behind the `rag` profile. Put `RAG_ENABLED=true` in a `.env` file next to the compose file and start the stack with that profile:
+
+```bash
+docker compose --profile rag up -d
+```
+
+A plain `docker compose up -d` does not start Ollama, so keep `RAG_ENABLED` off in that case.
+
+The compose file shown in the [quick start](/BoardGameTracker/getting-started/quick-start/) doesn't include the AI service. To turn the assistant on there, add an `ollama` service to your `docker-compose.yml` and point the app at it:
 
 ```yaml title="docker-compose.yml (additions)"
 services:
@@ -104,12 +112,6 @@ services:
       - RAG_ENABLED=true
       - AI_BASE_URL=http://ollama:11434
       - AI_CHAT_MODEL=qwen3:8b
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5444/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
   db:
     image: pgvector/pgvector:pg16

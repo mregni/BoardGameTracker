@@ -1,8 +1,13 @@
-import { Dialog } from "@radix-ui/themes";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from "@/components/BgtDialog";
+import {
+	BgtDialog,
+	BgtDialogClose,
+	BgtDialogContent,
+	BgtDialogDescription,
+	BgtDialogTitle,
+} from "@/components/BgtDialog";
 import { BgtInputField, BgtSwitch } from "@/components/BgtForm";
 import { useAppForm } from "@/hooks/form";
 import {
@@ -34,7 +39,7 @@ const UpdateSessionPlayerForm = (props: Props) => {
 		defaultValues: {
 			firstPlay: playerToEdit?.firstPlay ?? false,
 			won: playerToEdit?.won ?? false,
-			score: playerToEdit !== undefined && "score" in playerToEdit ? playerToEdit?.score : 0,
+			score: playerToEdit !== undefined && "score" in playerToEdit ? (playerToEdit.score ?? undefined) : undefined,
 			playerId: playerToEdit?.playerId ?? "",
 		},
 		onSubmit: async ({ value }) => {
@@ -44,19 +49,26 @@ const UpdateSessionPlayerForm = (props: Props) => {
 	});
 
 	return (
-		<BgtDialog open={open}>
+		<BgtDialog open={open} onClose={onCancel}>
 			<BgtDialogContent>
 				<BgtDialogTitle>{t("update.title")}</BgtDialogTitle>
-				<Dialog.Description>
+				<BgtDialogDescription>
 					{t("update.description", {
 						name: playerById(playerToEdit?.playerId)?.name,
 					})}
-				</Dialog.Description>
+				</BgtDialogDescription>
 				<form onSubmit={handleFormSubmit(form)}>
 					<div className="flex flex-col gap-4 mt-3 mb-6">
 						{hasScoring && (
 							<form.Field name="score" validators={zodValidator(CreatePlayerSessionSchema, "score")}>
-								{(field: AnyFieldApi) => <BgtInputField field={field} type="number" label={t("score.label")} />}
+								{(field: AnyFieldApi) => (
+									<BgtInputField
+										field={field}
+										type="number"
+										label={t("score.label")}
+										placeholder={t("score.optional")}
+									/>
+								)}
 							</form.Field>
 						)}
 						<form.Field name="won" validators={zodValidator(schema, "won")}>

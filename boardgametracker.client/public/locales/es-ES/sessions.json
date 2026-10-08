@@ -1,12 +1,12 @@
 {
-  "new": "Add new session",
-  "title": "sessions",
+  "new": "Añadir nueva partida",
+  "title": "partidas",
   "notifications": {
-    "deleted": "Location is succesfully deleted",
-    "delete-failed": "Failed deleting location"
+    "deleted": "Partida eliminada correctamente",
+    "delete-failed": "Error al eliminar la partida"
   },
   "delete": {
-    "title": "Delete session",
-    "description": "Are you sure you want to the sessions?"
+    "title": "Eliminar partida",
+    "description": "¿Seguro que quieres eliminar la partida?"
   }
 }

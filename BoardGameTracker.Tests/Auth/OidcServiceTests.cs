@@ -2,6 +2,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities.Auth;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Auth.Interfaces;
@@ -48,6 +49,7 @@ public class OidcServiceTests : IDisposable
             _tokenServiceMock.Object,
             _httpClientFactoryMock.Object,
             _cache,
+            Mock.Of<ISecretProtector>(),
             _loggerMock.Object);
 
         _userManagerMock.Invocations.Clear();
@@ -176,6 +178,7 @@ public class OidcServiceTests : IDisposable
     [Fact]
     public async Task UnlinkExternalLoginAsync_ShouldRemoveLogin_WhenLoginBelongsToUser()
     {
+        _context.Users.Add(new ApplicationUser("alice", "alice@example.com", "Alice") { Id = "user-1", PasswordHash = "hash" });
         var login = new ExternalLogin("user-1", "google", "key-1");
         _context.ExternalLogins.Add(login);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -184,6 +187,36 @@ public class OidcServiceTests : IDisposable
 
         var remaining = await _context.ExternalLogins.ToListAsync(TestContext.Current.CancellationToken);
         remaining.Should().BeEmpty();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UnlinkExternalLoginAsync_ShouldRefuse_WhenItIsThePasswordlessUsersOnlySignInMethod()
+    {
+        _context.Users.Add(new ApplicationUser("sso-only", "sso@example.com", "Sso") { Id = "user-1" });
+        var login = new ExternalLogin("user-1", "google", "key-1");
+        _context.ExternalLogins.Add(login);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var act = () => _service.UnlinkExternalLoginAsync("user-1", login.Id);
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.LastSignInMethod);
+        (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UnlinkExternalLoginAsync_ShouldAllowAPasswordlessUser_ToRemoveOneOfSeveralLogins()
+    {
+        _context.Users.Add(new ApplicationUser("sso-only", "sso@example.com", "Sso") { Id = "user-1" });
+        var first = new ExternalLogin("user-1", "google", "key-1");
+        var second = new ExternalLogin("user-1", "keycloak", "key-2");
+        _context.ExternalLogins.AddRange(first, second);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _service.UnlinkExternalLoginAsync("user-1", first.Id);
+
+        (await _context.ExternalLogins.SingleAsync(TestContext.Current.CancellationToken)).Id.Should().Be(second.Id);
         VerifyNoOtherCalls();
     }
 

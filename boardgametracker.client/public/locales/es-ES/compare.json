@@ -1,53 +1,53 @@
 {
-  "title": "Compare players",
-  "select-player": "Select player to compare",
-  "total-games-played": "Total games together",
-  "minutes-played": "Minutes played",
-  "most-played-game": "Most played game",
+  "title": "Comparar jugadores",
+  "select-player": "Selecciona un jugador para comparar",
+  "total-games-played": "Partidas jugadas juntos",
+  "minutes-played": "Minutos jugados",
+  "most-played-game": "Juego más jugado",
   "wins": {
-    "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
-    "loser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+    "winner": "{{player}} ganó {{winCount}} veces a {{otherPlayer}}",
+    "loser": "{{player}} solo ganó {{winCount}} veces a {{otherPlayer}}"
   },
   "best-game": {
-    "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
+    "label": "El mejor juego de {{player}} contra {{otherPlayer}} es {{game}}, con {{count}} victorias"
   },
   "total-wins": {
-    "label": "{{player}} won in total {{count}} game sessions."
+    "label": "{{player}} ganó un total de {{count}} partidas."
   },
   "win-percentage": {
-    "label": "{{player}} has a win percentage of {{percentage}}%"
+    "label": "{{player}} tiene un porcentaje de victorias del {{percentage}} %"
   },
   "total-duration": {
-    "label": "{{player}} played a total of {{duration}} minutes."
+    "label": "{{player}} jugó un total de {{duration}} minutos."
   },
   "total-sessions": {
-    "label": "{{player}} played a total of {{count}} game sessions."
+    "label": "{{player}} jugó un total de {{count}} partidas."
   },
   "head-to-head": {
-    "title": "Head to Head",
-    "direct-wins": "{{player}} won {{count}} times against {{opponent}}",
-    "most-won-game": "{{player}} won most from {{opponent}} in {{game}} ({{count}} times)",
-    "last-session": "Last session was won by {{player}} in {{game}}",
-    "most-played-together": "Most played together: {{game}} ({{count}} sessions)",
-    "closest-game": "{{player}} won by just {{points}} points in {{game}}",
-    "first-game-together": "First game together: {{game}} on {{date}}"
+    "title": "Cara a cara",
+    "direct-wins": "{{player}} ganó {{count}} veces contra {{opponent}}",
+    "most-won-game": "{{player}} ganó más veces a {{opponent}} en {{game}} ({{count}} veces)",
+    "last-session": "{{player}} ganó la última partida en {{game}}",
+    "most-played-together": "Más jugado juntos: {{game}} ({{count}} partidas)",
+    "closest-game": "{{player}} ganó por solo {{points}} puntos en {{game}}",
+    "first-game-together": "Primera partida juntos: {{game}} el {{date}}"
   },
   "stats": {
-    "total-wins": "Total wins",
-    "win-percentage": "Win Percentage",
-    "sessions": "Sessions",
-    "total-duration": "Total gameplay time",
-    "player-stats": "{{player}}'s Stats"
+    "total-wins": "Victorias totales",
+    "win-percentage": "Porcentaje de victorias",
+    "sessions": "Partidas",
+    "total-duration": "Tiempo total de juego",
+    "player-stats": "Estadísticas de {{player}}"
   },
   "empty": {
     "insufficient-players": {
-      "title": "Not enough players to compare",
-      "description": "Not enough players in your database to start comparing statistics and head-to-head performance."
+      "title": "No hay suficientes jugadores para comparar",
+      "description": "No hay suficientes jugadores en tu base de datos para empezar a comparar estadísticas y enfrentamientos directos."
     },
     "no-players": {
-      "title": "No players available to compare",
-      "description": "You currently have no players in the database. Please add players to use the compare feature."
+      "title": "No hay jugadores disponibles para comparar",
+      "description": "Ahora mismo no tienes jugadores en la base de datos. Añade jugadores para usar la función de comparación."
     },
-    "button": "Go to players page"
+    "button": "Ir a la página de jugadores"
   }
 }

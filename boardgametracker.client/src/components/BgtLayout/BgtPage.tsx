@@ -1,4 +1,4 @@
-import { Children, type ReactElement } from "react";
+import { Children, type JSX, type ReactElement } from "react";
 import { BgtPageContent } from "./BgtPageContent";
 import { BgtPageHeader } from "./BgtPageHeader";
 

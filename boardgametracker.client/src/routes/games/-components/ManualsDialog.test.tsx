@@ -131,17 +131,15 @@ describe("ManualsDialog", () => {
 	});
 
 	describe("Status badge", () => {
-		it.each([
-			"pending",
-			"indexing",
-			"indexed",
-			"failed",
-		] as const)("should show the %s status when rag is enabled", (status) => {
-			mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual({ indexStatus: status })] }));
-			renderWithTheme(<ManualsDialog {...defaultProps} />);
+		it.each(["pending", "indexing", "indexed", "failed"] as const)(
+			"should show the %s status when rag is enabled",
+			(status) => {
+				mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual({ indexStatus: status })] }));
+				renderWithTheme(<ManualsDialog {...defaultProps} />);
 
-			expect(screen.getByText(`manuals.status.${status}`)).toBeInTheDocument();
-		});
+				expect(screen.getByText(`manuals.status.${status}`)).toBeInTheDocument();
+			},
+		);
 
 		it("should not show a status badge when rag is disabled", () => {
 			mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual()] }));

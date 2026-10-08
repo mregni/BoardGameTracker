@@ -21,7 +21,7 @@ export const BgtDeleteModal = (props: Props) => {
 	const { t } = useTranslation();
 
 	return (
-		<BgtDialog open={open}>
+		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
 				<BgtDialogTitle>{t("delete.title", { title: title })}</BgtDialogTitle>
 				<BgtDialogDescription>{description}</BgtDialogDescription>

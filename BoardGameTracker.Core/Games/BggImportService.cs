@@ -1,5 +1,6 @@
 using System.Net;
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Extensions;
@@ -8,6 +9,7 @@ using BoardGameTracker.Common.Models.Bgg;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Factories;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -15,11 +17,13 @@ namespace BoardGameTracker.Core.Games;
 
 public class BggImportService : IBggImportService
 {
+    private const int ThingRequestBatchSize = 20;
     private readonly IBoardGameGeekXmlApi2Client _bggClient;
     private readonly ISettingsService _settingsService;
     private readonly IGameFactory _gameFactory;
     private readonly IGameRepository _gameRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IImageService _imageService;
     private readonly ILogger<BggImportService> _logger;
 
     public BggImportService(
@@ -28,6 +32,7 @@ public class BggImportService : IBggImportService
         IGameFactory gameFactory,
         IGameRepository gameRepository,
         IUnitOfWork unitOfWork,
+        IImageService imageService,
         ILogger<BggImportService> logger)
     {
         _bggClient = bggClient;
@@ -35,6 +40,7 @@ public class BggImportService : IBggImportService
         _gameFactory = gameFactory;
         _gameRepository = gameRepository;
         _unitOfWork = unitOfWork;
+        _imageService = imageService;
         _logger = logger;
     }
 
@@ -45,7 +51,7 @@ public class BggImportService : IBggImportService
         var existingGame = await _gameRepository.GetGameByBggId(search.BggId);
         if (existingGame != null)
         {
-            return existingGame;
+            throw new DomainException(Constants.Errors.GameAlreadyExists);
         }
 
         _logger.LogDebug("Searching BGG for game with id {BggId}", search.BggId);
@@ -59,7 +65,7 @@ public class BggImportService : IBggImportService
             item,
             search.HasScoring,
             search.State,
-            search.Price.HasValue ? (decimal?)search.Price.Value : null,
+            search.Price is > 0 ? (decimal?)search.Price.Value : null,
             search.AdditionDate,
             search.ShopUrl);
 
@@ -68,16 +74,17 @@ public class BggImportService : IBggImportService
         return game;
     }
 
-    public async Task<IList<BggImportGame>> ImportBggCollection(string userName)
+    public async Task<IList<BggImportGame>> ImportBggCollection(string userName, CancellationToken cancellationToken = default)
     {
         await EnsureBggConfiguredAsync();
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogInformation("Starting BGG collection import for user {UserName}", userName);
 
         CollectionResponse response;
         try
         {
             var request = new CollectionRequest(userName, subType: "boardgame");
-            response = await _bggClient.GetCollectionAsync(request);
+            response = await _bggClient.GetCollectionAsync(request).WaitAsync(cancellationToken);
         }
         catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
         {
@@ -106,14 +113,16 @@ public class BggImportService : IBggImportService
         }
 
         return response.Result
-            .OrderBy(x => x.Name)
-            .Select(collectionItem => new BggImportGame
+            .Select(collectionItem => (Item: collectionItem, State: collectionItem.Status.ToGameState()))
+            .Where(x => x.State.HasValue)
+            .OrderBy(x => x.Item.Name)
+            .Select(x => new BggImportGame
             {
-                BggId = collectionItem.ObjectId,
-                Title = collectionItem.Name,
-                State = collectionItem.Status.ToGameState(),
-                ImageUrl = collectionItem.Image ?? string.Empty,
-                LastModified = collectionItem.Status.LastModified
+                BggId = x.Item.ObjectId,
+                Title = x.Item.Name,
+                State = x.State!.Value,
+                ImageUrl = x.Item.Image ?? string.Empty,
+                LastModified = x.Item.Status.LastModified
             })
             .ToList();
     }
@@ -122,10 +131,11 @@ public class BggImportService : IBggImportService
     {
         ArgumentNullException.ThrowIfNull(games);
         await EnsureBggConfiguredAsync();
-        _logger.LogInformation("Importing {Count} games from BGG", games.Count);
+        var distinctGames = games.DistinctBy(x => x.BggId).ToList();
+        _logger.LogInformation("Importing {Count} games from BGG", distinctGames.Count);
 
         var toImport = new List<ImportGame>();
-        foreach (var importGame in games)
+        foreach (var importGame in distinctGames)
         {
             var existingGame = await _gameRepository.GetGameByBggId(importGame.BggId);
             if (existingGame != null)
@@ -141,66 +151,59 @@ public class BggImportService : IBggImportService
             ? await FetchThingsFromBgg(toImport.Select(x => x.BggId).ToList())
             : new Dictionary<int, ThingResponse.Item>();
 
-        var imported = 0;
-        foreach (var importGame in toImport)
-        {
-            try
-            {
-                if (!items.TryGetValue(importGame.BggId, out var item))
-                {
-                    _logger.LogWarning("BGG game with id {BggId} not found, skipping", importGame.BggId);
-                    continue;
-                }
-
-                var game = await _gameFactory.CreateFromBggAsync(
-                    item,
-                    importGame.HasScoring,
-                    importGame.State,
-                    ToSafeDecimalPrice(importGame.Price),
-                    importGame.AddedDate);
-
-                await _gameRepository.CreateAsync(game);
-                imported++;
-            }
-            catch (ValidationException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to import BGG game {BggId}, skipping", importGame.BggId);
-            }
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-        _logger.LogInformation("BGG import completed, {Imported}/{Count} games imported", imported, games.Count);
-    }
-
-    private static decimal? ToSafeDecimalPrice(double value)
-    {
-        if (double.IsNaN(value) || double.IsInfinity(value))
-        {
-            return null;
-        }
-
+        var created = new List<Game>();
         try
         {
-            return (decimal)value;
+            foreach (var importGame in toImport)
+            {
+                try
+                {
+                    if (!items.TryGetValue(importGame.BggId, out var item))
+                    {
+                        _logger.LogWarning("BGG game with id {BggId} not found, skipping", importGame.BggId);
+                        continue;
+                    }
+
+                    var game = await _gameFactory.CreateFromBggAsync(
+                        item,
+                        importGame.HasScoring,
+                        importGame.State,
+                        importGame.Price is > 0 ? importGame.Price : null,
+                        importGame.AddedDate);
+
+                    await _gameRepository.CreateAsync(game);
+                    created.Add(game);
+                }
+                catch (ValidationException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to import BGG game {BggId}, skipping", importGame.BggId);
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
         }
-        catch (OverflowException)
+        catch
         {
-            return null;
+            foreach (var game in created)
+            {
+                _imageService.DeleteImage(game.Image);
+            }
+
+            throw;
         }
+
+        _logger.LogInformation("BGG import completed, {Imported}/{Count} games imported", created.Count, distinctGames.Count);
     }
 
     private async Task<Dictionary<int, ThingResponse.Item>> FetchThingsFromBgg(IReadOnlyList<int> bggIds)
     {
-        const int chunkSize = 20;
         var items = new Dictionary<int, ThingResponse.Item>();
-
-        for (var offset = 0; offset < bggIds.Count; offset += chunkSize)
+        foreach (var chunk in bggIds.Chunk(ThingRequestBatchSize))
         {
-            var chunk = bggIds.Skip(offset).Take(chunkSize).ToArray();
             try
             {
                 var request = new ThingRequest(chunk, stats: true);
@@ -227,7 +230,7 @@ public class BggImportService : IBggImportService
             }
             catch (BoardGameGeekHttpException ex)
             {
-                _logger.LogWarning(ex, "BGG API request failed while importing a batch of games");
+                _logger.LogWarning(ex, "BGG API request failed for games {BggIds}", chunk);
             }
         }
 

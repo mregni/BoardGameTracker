@@ -34,7 +34,7 @@ function RouteComponent() {
 		setSelectedLocation(null);
 	};
 
-	const { locations, deleteLocation } = useLocationsData({ onDeleteSuccess });
+	const { locations, deleteLocation, isLoading } = useLocationsData({ onDeleteSuccess });
 
 	const columns: DataTableProps<Location>["columns"] = useMemo(
 		() => [
@@ -61,6 +61,7 @@ function RouteComponent() {
 								<div className="flex flex-row justify-end gap-2">
 									<BgtIconButton
 										icon={<PencilIcon className="size-5" />}
+										aria-label={t("edit")}
 										onClick={() => {
 											setSelectedLocation(row.original);
 											modals.editModal.show();
@@ -69,6 +70,7 @@ function RouteComponent() {
 									<BgtIconButton
 										icon={<TrashIcon className="size-5" />}
 										intent="danger"
+										aria-label={t("common:delete.button")}
 										onClick={() => {
 											setSelectedLocation(row.original);
 											modals.deleteModal.show();
@@ -84,7 +86,7 @@ function RouteComponent() {
 		[t, canWrite, modals.editModal, modals.deleteModal],
 	);
 
-	if (locations.length === 0) {
+	if (!isLoading && locations.length === 0) {
 		return (
 			<BgtEmptyPage
 				header={t("locations")}

@@ -9,12 +9,13 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
 import { BggUserNameSchema } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 
 export const Route = createFileRoute("/games/import/start")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 	beforeLoad: async ({ context: { queryClient } }) => {
 		const settings = await queryClient.ensureQueryData(getSettings());
 		if (!settings.bggStatus?.isConfigured) {
@@ -77,5 +78,13 @@ function RouteComponent() {
 				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

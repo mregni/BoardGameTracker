@@ -1,3 +1,4 @@
+using System.Net;
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
@@ -7,12 +8,13 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.ChangeDetection.Interfaces;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Games.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
-using BoardGameTracker.Core.Sessions.Specifications;
 using BoardGameTracker.Core.Manuals.Interfaces;
+using BoardGameTracker.Core.Sessions.Specifications;
 using BoardGameTracker.Core.Settings.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +22,7 @@ namespace BoardGameTracker.Core.Games;
 
 public class GameService : IGameService
 {
+    private const int BggThingBatchSize = 20;
     private readonly IGameRepository _gameRepository;
     private readonly IReadRepository<Session> _sessionRepository;
     private readonly IBoardGameGeekXmlApi2Client _bggClient;
@@ -64,6 +67,11 @@ public class GameService : IGameService
         return _gameRepository.SingleOrDefaultAsync(new GameByIdWithDetailsForReadSpec(id));
     }
 
+    public Task<bool> ExistsAsync(int id)
+    {
+        return _gameRepository.AnyAsync(new GameByIdSpec(id));
+    }
+
     public async Task Delete(int id)
     {
         _logger.LogDebug("Deleting game {GameId}", id);
@@ -73,16 +81,18 @@ public class GameService : IGameService
             throw new EntityNotFoundException(nameof(Game), id);
         }
 
-        _imageService.DeleteImage(game.Image);
-        await _manualService.DeleteManualFilesForGame(game.Id);
+        var manuals = await _manualService.GetManualsForGame(game.Id);
         await _gameRepository.DeleteAsync(game.Id);
         await _unitOfWork.SaveChangesAsync();
+
+        _imageService.DeleteImage(game.Image);
+        _manualService.DeleteManualFiles(manuals);
         _logger.LogInformation("Game {GameId} deleted", id);
     }
 
-    public Task<int> CountAsync()
+    public Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
-        return _gameRepository.CountAsync();
+        return _gameRepository.CountAsync(cancellationToken);
     }
 
     public async Task<Game> CreateGameFromCommand(CreateGameCommand command)
@@ -132,6 +142,7 @@ public class GameService : IGameService
         }
 
         var previousWatchId = game.ChangeDetectionWatchId;
+        var previousImage = game.Image;
         game.UpdateTitle(command.Title);
         game.UpdateHasScoring(command.HasScoring);
         game.UpdateState(command.State);
@@ -159,6 +170,11 @@ public class GameService : IGameService
         }
 
         await _unitOfWork.SaveChangesAsync();
+        if (!string.IsNullOrEmpty(previousImage) && previousImage != game.Image)
+        {
+            _imageService.DeleteImage(previousImage);
+        }
+
         return game;
     }
 
@@ -191,62 +207,106 @@ public class GameService : IGameService
         ArgumentNullException.ThrowIfNull(expansionIds);
         await EnsureBggConfiguredAsync();
         _logger.LogDebug("Updating expansions for game {GameId}", gameId);
-        var game = await _gameRepository.GetByIdAsync(gameId);
+        var game = await _gameRepository.SingleOrDefaultAsync(new GameWithExpansionsSpec(gameId));
         if (game == null)
         {
-            return [];
+            throw new EntityNotFoundException(nameof(Game), gameId);
         }
 
-        var expansionsToRemove = game.Expansions.Where(x => !expansionIds.Contains(x.BggId)).ToList();
+        var expansionsToRemove = game.Expansions.Where(x => x.BggId != null && !expansionIds.Contains(x.BggId.Value)).ToList();
         foreach (var expansion in expansionsToRemove)
         {
-            game.RemoveExpansion(expansion.BggId);
+            game.RemoveExpansion(expansion);
         }
 
         var newExpansionsIds = expansionIds
             .Where(x => !game.Expansions.Select(y => y.BggId).Contains(x))
+            .Distinct()
             .ToList();
 
-        var expansionRequests = newExpansionsIds.Select(async expansionId =>
+        foreach (var item in await FetchExpansionsFromBgg(game.Id, newExpansionsIds))
         {
-            var request = new ThingRequest([expansionId], types: ["boardgameexpansion"]);
-            var response = await _bggClient.GetThingAsync(request);
-            return response.Result?.FirstOrDefault();
-        });
-
-        var expansionResults = await Task.WhenAll(expansionRequests);
-
-        foreach (var firstResult in expansionResults)
-        {
-            if (firstResult == null)
+            if (string.IsNullOrWhiteSpace(item.Name) || item.Id <= 0)
             {
+                _logger.LogWarning("Skipping malformed BGG expansion (id {BggId}) for game {GameId}", item.Id, game.Id);
                 continue;
             }
 
-            if (string.IsNullOrWhiteSpace(firstResult.Name) || firstResult.Id <= 0)
-            {
-                _logger.LogWarning("Skipping malformed BGG expansion (id {BggId}) for game {GameId}", firstResult.Id, game.Id);
-                continue;
-            }
-
-            var expansion = new Expansion(firstResult.Name, firstResult.Id, game.Id);
-            game.AddExpansion(expansion);
+            game.AddExpansion(new Expansion(item.Name, item.Id, game.Id));
         }
 
         await _unitOfWork.SaveChangesAsync();
         return game.Expansions.ToList();
     }
 
-    public Task<List<Expansion>> GetGameExpansions(List<int> expansionIds)
+    public async Task<Expansion> AddManualExpansion(int gameId, string title)
     {
-        return _gameRepository.GetExpansions(expansionIds);
+        _logger.LogDebug("Adding manual expansion {Title} to game {GameId}", title, gameId);
+        var game = await _gameRepository.SingleOrDefaultAsync(new GameWithExpansionsSpec(gameId));
+        if (game == null)
+        {
+            throw new EntityNotFoundException(nameof(Game), gameId);
+        }
+
+        var expansion = new Expansion(title.Trim(), null, game.Id);
+        if (game.Expansions.Any(x => x.Matches(expansion)))
+        {
+            throw new DomainException(BoardGameTracker.Common.Constants.Errors.ExpansionAlreadyExists);
+        }
+
+        game.AddExpansion(expansion);
+        await _unitOfWork.SaveChangesAsync();
+        return expansion;
+    }
+
+    private async Task<List<ThingResponse.Item>> FetchExpansionsFromBgg(int gameId, List<int> bggIds)
+    {
+        var items = new List<ThingResponse.Item>();
+        foreach (var chunk in bggIds.Chunk(BggThingBatchSize))
+        {
+            try
+            {
+                var response = await _bggClient.GetThingAsync(new ThingRequest(chunk, types: ["boardgameexpansion"]));
+                if (response.Result != null)
+                {
+                    items.AddRange(response.Result);
+                }
+            }
+            catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                _logger.LogWarning(ex, "BGG API key is invalid or expired");
+                throw new ValidationException("Invalid BGG API key. Please check your API key in settings.");
+            }
+            catch (BoardGameGeekHttpException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                _logger.LogWarning(ex, "BGG rate-limited the expansion request for game {GameId}", gameId);
+                throw new BggRateLimitException();
+            }
+        }
+
+        return items;
+    }
+
+    public async Task<List<Expansion>> GetGameExpansions(int gameId, List<int> expansionIds)
+    {
+        var expansions = await _gameRepository.GetExpansions(gameId, expansionIds);
+        if (expansionIds.Except(expansions.Select(x => x.Id)).Any())
+        {
+            throw new ValidationException(BoardGameTracker.Common.Constants.Errors.InvalidExpansion);
+        }
+
+        return expansions;
     }
 
     public async Task DeleteExpansion(int gameId, int expansionId)
     {
         _logger.LogDebug("Deleting expansion {ExpansionId} from game {GameId}", expansionId, gameId);
-        await _gameRepository.DeleteExpansion(gameId, expansionId);
-        await  _unitOfWork.SaveChangesAsync();
+        if (!await _gameRepository.DeleteExpansion(gameId, expansionId))
+        {
+            throw new EntityNotFoundException(nameof(Expansion), expansionId);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<GamePriceDto?> GetGamePriceAsync(
@@ -325,20 +385,47 @@ public class GameService : IGameService
             throw new ValidationException(Constants.Errors.InvalidShopUrl);
         }
 
+        if (!SecureUrlPolicy.IsPublicWebAddress(shopUrl))
+        {
+            throw new ValidationException(Constants.Errors.ShopUrlNotPublic);
+        }
+
+        var watchId = await ReuseOrCreateWatchAsync(game, shopUrl, cancellationToken);
+        game.UpdateChangeDetectionWatchId(watchId);
+        game.UpdateShopUrl(shopUrl);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation("Game {GameId} linked to changedetection.io watch {WatchId}", gameId, watchId);
+        return await _gameRepository.SingleOrDefaultAsync(new GameByIdWithDetailsForReadSpec(gameId), cancellationToken) ?? game;
+    }
+
+    private async Task<string> ReuseOrCreateWatchAsync(Game game, string shopUrl, CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(game.ChangeDetectionWatchId))
+        {
+            var updated = await _changeDetectionClient.UpdateWatchAsync(game.ChangeDetectionWatchId, shopUrl, game.Title, cancellationToken);
+            if (updated == ChangeDetectionStatus.Ok)
+            {
+                return game.ChangeDetectionWatchId;
+            }
+
+            if (updated != ChangeDetectionStatus.WatchNotFound)
+            {
+                throw new DomainException(WatchErrorFor(updated));
+            }
+        }
+
         var (status, watchId) = await _changeDetectionClient.CreateWatchAsync(shopUrl, game.Title, cancellationToken);
         if (status != ChangeDetectionStatus.Ok || watchId == null)
         {
-            throw new DomainException(status == ChangeDetectionStatus.NotConfigured
-                ? Constants.Errors.ChangeDetectionNotConfigured
-                : Constants.Errors.ChangeDetectionCreateWatchFailed);
+            throw new DomainException(WatchErrorFor(status));
         }
 
-        game.UpdateChangeDetectionWatchId(watchId);
-        game.UpdateShopUrl(shopUrl);
-        await _unitOfWork.SaveChangesAsync();
-        _logger.LogInformation("Game {GameId} linked to changedetection.io watch {WatchId}", gameId, watchId);
-        return game;
+        return watchId;
     }
+
+    private static string WatchErrorFor(ChangeDetectionStatus status) => status == ChangeDetectionStatus.NotConfigured
+        ? Constants.Errors.ChangeDetectionNotConfigured
+        : Constants.Errors.ChangeDetectionCreateWatchFailed;
 
     private async Task SyncShopUrlFromWatchAsync(Game game)
     {
@@ -362,6 +449,8 @@ public class GameService : IGameService
     {
         var apiKey = await _settingsService.GetBggApiKeyAsync();
         if (string.IsNullOrWhiteSpace(apiKey))
+        {
             throw new BggFeatureDisabledException();
+        }
     }
 }

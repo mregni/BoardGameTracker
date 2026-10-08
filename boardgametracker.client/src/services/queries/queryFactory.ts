@@ -5,7 +5,7 @@ export const createSingletonQuery =
 	() =>
 		queryOptions({
 			queryKey: [key],
-			queryFn: fetchFn,
+			queryFn: () => fetchFn(),
 		});
 
 export const createListQuery =
@@ -13,7 +13,7 @@ export const createListQuery =
 	() =>
 		queryOptions({
 			queryKey: [key],
-			queryFn: fetchFn,
+			queryFn: () => fetchFn(),
 		});
 
 export const createEntityQuery =
@@ -36,7 +36,7 @@ export const createNestedQuery =
 	<T, TParams = unknown>(parentKey: string, childKey: string, fetchFn: (id: number, params?: TParams) => Promise<T>) =>
 	(id: number, params?: TParams) =>
 		queryOptions({
-			queryKey: [parentKey, id, childKey],
+			queryKey: params === undefined ? [parentKey, id, childKey] : [parentKey, id, childKey, params],
 			queryFn: () => fetchFn(id, params),
 		});
 

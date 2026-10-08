@@ -21,6 +21,7 @@ import {
 	I18nProvider,
 	Popover,
 } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 import CalendarIcon from "@/assets/icons/calendar.svg?react";
 import { getSettings } from "@/services/queries/settings";
 import { getDatePickerLocale } from "@/utils/localeUtils";
@@ -34,6 +35,7 @@ export interface BgtDatePickerProps {
 	className?: string;
 	/** Legacy placeholder prop. The segmented input shows locale-appropriate placeholders automatically. */
 	placeholder?: string;
+	clearable?: boolean;
 }
 
 const safeParseDateValue = (iso: string | undefined | null): CalendarDate | null => {
@@ -46,7 +48,8 @@ const safeParseDateValue = (iso: string | undefined | null): CalendarDate | null
 };
 
 export const BgtDatePicker = (props: BgtDatePickerProps) => {
-	const { field, label, disabled = false, className = "" } = props;
+	const { field, label, disabled = false, className = "", clearable = false } = props;
+	const { t } = useTranslation();
 	const { data: settings } = useQuery(getSettings());
 
 	const locale = useMemo(() => getDatePickerLocale(settings?.dateFormat), [settings?.dateFormat]);
@@ -73,7 +76,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 					isDisabled={disabled}
 					isInvalid={hasErrors}
 					shouldCloseOnSelect
-					aria-label={label || "Date"}
+					aria-label={label || t("common:date")}
 				>
 					<Group
 						className={cx(
@@ -97,13 +100,26 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 								/>
 							)}
 						</DateInput>
+						{clearable && value !== null && !disabled && (
+							<button
+								type="button"
+								onClick={() => field.handleChange("")}
+								className={cx(
+									"flex-none text-gray-400 hover:text-white transition-colors",
+									"cursor-pointer bg-transparent border-none p-0 outline-none text-lg leading-none",
+								)}
+								aria-label={t("common:clear-date")}
+							>
+								×
+							</button>
+						)}
 						<Button
 							className={cx(
 								"flex-none text-gray-400 hover:text-white transition-colors",
 								"cursor-pointer bg-transparent border-none p-0 outline-none",
 								"disabled:cursor-not-allowed disabled:hover:text-gray-400",
 							)}
-							aria-label="Open calendar"
+							aria-label={t("common:open-calendar")}
 						>
 							<CalendarIcon className="size-5" />
 						</Button>
@@ -123,7 +139,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 											"inline-flex items-center justify-center transition-colors",
 											"border-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed",
 										)}
-										aria-label="Previous month"
+										aria-label={t("common:previous-month")}
 									>
 										‹
 									</Button>
@@ -135,7 +151,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 											"inline-flex items-center justify-center transition-colors",
 											"border-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed",
 										)}
-										aria-label="Next month"
+										aria-label={t("common:next-month")}
 									>
 										›
 									</Button>

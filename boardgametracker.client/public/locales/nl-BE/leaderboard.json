@@ -1,0 +1,31 @@
+{
+  "title": "Ranglijst",
+  "columns": {
+    "rank": "#",
+    "player": "Speler",
+    "wins": "Overwinningen",
+    "plays": "Partijen",
+    "win-rate": "Winstpercentage",
+    "podiums": "Podiumplaatsen",
+    "time-played": "Speeltijd"
+  },
+  "highlights": {
+    "most-wins": "Meeste overwinningen",
+    "most-plays": "Meeste partijen",
+    "best-win-rate": "Beste winstpercentage",
+    "most-time": "Meeste tijd aan tafel",
+    "nobody-yet": "Nog niemand",
+    "min-plays_one": "Minstens {{count}} partij nodig",
+    "min-plays_other": "Minstens {{count}} partijen nodig"
+  },
+  "values": {
+    "wins_one": "{{count}} overwinning",
+    "wins_other": "{{count}} overwinningen",
+    "plays_one": "{{count}} partij",
+    "plays_other": "{{count}} partijen"
+  },
+  "empty": {
+    "title": "Nog geen partijen geregistreerd",
+    "description": "Registreer een paar sessies en de ranglijst vult zichzelf."
+  }
+}

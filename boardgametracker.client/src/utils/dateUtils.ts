@@ -11,8 +11,39 @@ import { getDateFnsLocale } from "./localeUtils";
 
 type DateInput = Date | string | undefined;
 
+export const DEFAULT_DATE_FORMAT = "yy-MM-dd";
+export const DEFAULT_TIME_FORMAT = "HH:mm";
+
+const FORMAT_PROBE = new Date(2000, 0, 15, 13, 45, 30);
+
 const convertDateFormat = (userFormat: string): string => {
-	return userFormat.replace(/YYYY/g, "yyyy").replace(/DD/g, "dd");
+	return userFormat.replace(/Y/g, "y").replace(/D/g, "d");
+};
+
+const canFormat = (pattern: string): boolean => {
+	if (!pattern.trim()) {
+		return false;
+	}
+
+	try {
+		format(FORMAT_PROBE, pattern);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+export const normalizeDateFnsFormat = (pattern: string | null | undefined, fallback: string): string => {
+	if (!pattern) {
+		return fallback;
+	}
+
+	if (canFormat(pattern)) {
+		return pattern;
+	}
+
+	const converted = convertDateFormat(pattern);
+	return canFormat(converted) ? converted : fallback;
 };
 
 export const toInputDate = (date: DateInput, fallbackToToday = true): string => {

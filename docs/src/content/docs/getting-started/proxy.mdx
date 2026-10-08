@@ -1,16 +1,74 @@
 ---
-title: Proxy Setup
-description: Sample reverse-proxy configuration for running BoardGameTracker behind Traefik.
+title: Behind a reverse proxy
+description: What to configure when BoardGameTracker runs behind Traefik, nginx or Caddy.
 ---
 
-Here are sample Traefik labels you can add to the Docker Compose file to put BoardGameTracker behind Traefik. Adjust the labels to match your Traefik setup and domain configuration.
+import { Aside } from '@astrojs/starlight/components';
+
+BoardGameTracker serves plain HTTP on port `5444`. Put a reverse proxy in front of it for HTTPS and a friendly hostname, then tell the application two things: which proxy to trust, and which address the outside world uses.
+
+## Trust the proxy
+
+Set `TRUSTED_PROXIES` to the IP address or network of the proxy. Without it the forwarded headers are ignored: every visitor then shares the proxy's IP address, so the login rate limit (10 attempts per minute) applies to your whole household at once, HTTPS is not detected and the logs show the proxy instead of the client. With Docker, the proxy usually lives in the default bridge range:
+
+```yaml title="docker-compose.yml"
+environment:
+  - TRUSTED_PROXIES=172.16.0.0/12
+```
+
+Several entries are separated by commas, semicolons or spaces (`TRUSTED_PROXIES=10.0.0.5,172.16.0.0/12`). Only IP addresses and networks are accepted: a container or host name such as `traefik` is ignored and logged as an error at startup, and when no entry is usable the forwarded headers stay off. The application logs a warning the first time forwarded headers arrive while no proxy is trusted.
+
+## Public URL
+
+Set the **Public URL** under *Settings → General* (or the `PUBLIC_URL` environment variable) to the address your users type in the browser, for example `https://games.example.com`. It is used to build the links in RSVP invitations and password-reset emails; until it is set those emails are not sent. It is never taken from the incoming request for these emails, because anyone can choose the `Host` header of a password-reset request.
+
+## HTTPS
+
+Terminate TLS on the proxy. When `TRUSTED_PROXIES` is set the application sees the original scheme and sends the `Strict-Transport-Security` header on HTTPS requests. Raise the proxy's request body limit for rulebook uploads: PDFs are sent in one request and the application itself accepts up to 1 GB.
+
+## Traefik
 
 ```yaml title="docker-compose.yml"
 labels:
   traefik.enable: true
   traefik.http.routers.boardgametracker-rtr.entrypoints: websecure
   traefik.http.routers.boardgametracker-rtr.rule: Host(`games.example.com`)
-  traefik.http.routers.boardgametracker-rtr.middlewares: local-only@file
   traefik.http.routers.boardgametracker-rtr.service: boardgametracker-svc
   traefik.http.services.boardgametracker-svc.loadbalancer.server.port: 5444
 ```
+
+## nginx
+
+```nginx title="nginx.conf"
+server {
+    listen 443 ssl;
+    server_name games.example.com;
+    client_max_body_size 100m;
+
+    location / {
+        proxy_pass http://boardgametracker:5444;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+## Caddy
+
+```text title="Caddyfile"
+games.example.com {
+    request_body {
+        max_size 100MB
+    }
+    reverse_proxy boardgametracker:5444
+}
+```
+
+Caddy sets the `X-Forwarded-*` headers by itself.
+
+<Aside type="note">
+`TRUSTED_PROXIES` must contain the address the proxy connects *from* as seen by the container. When the proxy runs on the host instead of in Docker, that is the Docker bridge gateway (for example `172.17.0.1`).
+</Aside>

@@ -48,16 +48,18 @@ export const BgtBadge = (props: Props) => {
 		<div
 			className={badgeClasses}
 			onClick={onClick}
-			{...(onClick && {
-				role: "button",
-				tabIndex: 0,
-				onKeyDown: (e: React.KeyboardEvent) => {
-					if (e.key === "Enter" || e.key === " ") {
-						e.preventDefault();
-						onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
-					}
-				},
-			})}
+			onKeyDown={
+				onClick
+					? (e: React.KeyboardEvent) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+							}
+						}
+					: undefined
+			}
+			role={onClick ? "button" : undefined}
+			tabIndex={onClick ? 0 : undefined}
 			{...rest}
 		>
 			{children}

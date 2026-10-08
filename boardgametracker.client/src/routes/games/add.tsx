@@ -9,10 +9,11 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 
 export const Route = createFileRoute("/games/add")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 });
 
 function RouteComponent() {
@@ -64,5 +65,13 @@ function RouteComponent() {
 				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

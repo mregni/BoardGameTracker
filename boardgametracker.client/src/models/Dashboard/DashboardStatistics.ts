@@ -32,8 +32,8 @@ export interface RecentActivity {
 	gameImage: string | null;
 	start: Date;
 	playerCount: number;
-	winnerName: string;
-	winnerId: number;
+	winnerName: string | null;
+	winnerId: number | null;
 	durationInMinutes: number;
 }
 

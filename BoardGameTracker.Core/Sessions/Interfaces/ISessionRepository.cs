@@ -5,15 +5,10 @@ namespace BoardGameTracker.Core.Sessions.Interfaces;
 
 public interface ISessionRepository: IRepository<Session>
 {
-    Task<int> CountAsync();
-    Task<double> GetTotalPlayTime();
-    Task<double> GetMeanPlayTime();
-    Task<int> CountByPlayer(int playerId);
-    Task<int> CountByPlayerAndGame(int playerId, int gameId);
-    Task<List<Session>> GetByPlayer(int playerId, bool? won = null);
-    Task<List<Session>> GetByPlayerAndGame(int playerId, int gameId);
+    Task<double> GetTotalPlayTime(CancellationToken cancellationToken = default);
+    Task<double> GetMeanPlayTime(CancellationToken cancellationToken = default);
     Task<Dictionary<int, List<Session>>> GetByPlayerBatchAsync(IEnumerable<int> playerIds);
-    Task<List<Session>> GetRecentSessions(int count);
-    Task<List<IGrouping<DayOfWeek, Session>>> GetSessionsByDayOfWeek();
+    Task<List<Session>> GetRecentSessions(int count, CancellationToken cancellationToken = default);
+    Task<List<DateTime>> GetSessionStartTimes(CancellationToken cancellationToken = default);
     Task DeleteByPlayerIdAsync(int playerId);
 }

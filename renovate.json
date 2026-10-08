@@ -12,6 +12,7 @@
   "schedule": [
     "before 6am on Monday"
   ],
+  "updateNotScheduled": false,
   "labels": [
     "dependencies"
   ],
@@ -102,6 +103,20 @@
       ]
     },
     {
+      "groupName": "Aspire",
+      "matchPackageNames": [
+        "/^Aspire\\./",
+        "/^CommunityToolkit\\.Aspire\\./"
+      ]
+    },
+    {
+      "groupName": "IdentityModel",
+      "matchPackageNames": [
+        "/^Microsoft.IdentityModel/",
+        "/^System.IdentityModel/"
+      ]
+    },
+    {
       "groupName": "Backend test packages",
       "matchPackageNames": [
         "/^xunit/",
@@ -150,13 +165,69 @@
         "/^System.IdentityModel/",
         "/^Microsoft.IdentityModel/"
       ]
+    },
+    {
+      "description": "Users download the compose files, which must keep following the app's own latest image",
+      "matchManagers": [
+        "docker-compose"
+      ],
+      "matchPackageNames": [
+        "uping/boardgametracker"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "A PostgreSQL major is a data migration, not a dependency bump",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "pgvector/pgvector"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "xunit.v3 4 moves to Microsoft.Testing.Platform (new dotnet test, coverage and Sonar wiring); TanStack Table 9 is an API rewrite",
+      "matchPackageNames": [
+        "xunit.v3",
+        "xunit.runner.visualstudio",
+        "@tanstack/react-table"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "ImageSharp 4 changes the licence terms; Test SDK 18 and coverlet 10 were tried and reverted",
+      "matchPackageNames": [
+        "SixLabors.ImageSharp",
+        "Microsoft.NET.Test.Sdk",
+        "coverlet.collector"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true
     }
   ],
   "dockerfile": {
-    "pinDigests": false
+    "pinDigests": true
   },
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Dependency Dashboard",
   "prConcurrentLimit": 5,
-  "prHourlyLimit": 2
+  "prHourlyLimit": 2,
+  "docker-compose": {
+    "pinDigests": false
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 6am on monday"
+    ]
+  }
 }

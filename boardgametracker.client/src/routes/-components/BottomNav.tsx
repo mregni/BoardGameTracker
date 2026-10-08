@@ -9,15 +9,19 @@ import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtMenuItem } from "@/components/BgtMenu/BgtMenuItem";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
+import { useLogout } from "@/hooks/useLogout";
 import { useMenuInfo } from "../-hooks/useMenuInfo";
 
 export const BottomNav = () => {
-	const { t } = useTranslation("version");
+	const { t } = useTranslation(["version", "common"]);
 	const { versionInfo, menuItems, counts } = useMenuInfo();
 	const [showMoreMenu, setShowMoreMenu] = useState(false);
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname;
-	const { user, isAuthenticated, authStatus, logout } = useAuth();
+	const user = useAuth((s) => s.user);
+	const isAuthenticated = useAuth((s) => s.isAuthenticated);
+	const authStatus = useAuth((s) => s.authStatus);
+	const handleLogout = useLogout();
 
 	const handleMoreClick = () => {
 		setShowMoreMenu(!showMoreMenu);
@@ -34,10 +38,6 @@ export const BottomNav = () => {
 	});
 
 	const showAuth = authStatus?.authEnabled;
-	const handleLogout = async () => {
-		await logout();
-	};
-
 	return (
 		<>
 			{showMoreMenu && (
@@ -67,7 +67,12 @@ export const BottomNav = () => {
 							<div className="flex-1 min-w-0">
 								<div className="text-xs text-white/60 truncate">{user.username}</div>
 							</div>
-							<BgtIconButton icon={<LogOut className="size-4" />} onClick={handleLogout} intent="subtile" />
+							<BgtIconButton
+								icon={<LogOut className="size-4" />}
+								onClick={handleLogout}
+								intent="subtile"
+								aria-label={t("common:logout")}
+							/>
 						</div>
 					)}
 
@@ -117,7 +122,14 @@ export const BottomNav = () => {
 
 						if (item.path === "more") {
 							return (
-								<button key={item.path} onClick={handleMoreClick} className={itemClassName}>
+								<button
+									key={item.path}
+									type="button"
+									onClick={handleMoreClick}
+									className={itemClassName}
+									aria-expanded={showMoreMenu}
+									aria-haspopup="menu"
+								>
 									{content}
 								</button>
 							);

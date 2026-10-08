@@ -32,7 +32,8 @@ function RsvpPage() {
 	const { t } = useTranslation(["rsvp", "auth", "common"]);
 	const navigate = useNavigate();
 	const { linkId } = Route.useSearch();
-	const { isAuthenticated, authStatus } = useAuth();
+	const isAuthenticated = useAuth((s) => s.isAuthenticated);
+	const authStatus = useAuth((s) => s.authStatus);
 	const { gameNight, manuals, isLoading, submitRsvp, isSubmitting, isSubmitted, submittedPlayerName, submittedState } =
 		useRsvpData(linkId);
 

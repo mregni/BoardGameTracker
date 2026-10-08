@@ -13,7 +13,9 @@
   },
   "notifications": {
     "created": "Loan is succesfully created",
-    "create-failed": "Failed creating loan"
+    "create-failed": "Failed creating loan",
+    "updated": "Loan is successfully updated",
+    "update-failed": "Failed updating loan"
   },
   "delete": {
     "button": "Delete",
@@ -23,8 +25,7 @@
   },
   "return": {
     "successfull": "Game is successfully marked as returned.",
-    "failed": "Marking game as returned failed, check logs for more details.",
-    "date-failed": "You cannot return a loan before the loan date."
+    "failed": "Marking game as returned failed, check logs for more details."
   },
   "no-active-loans": "There are no active loans at the moment.",
   "new": {
@@ -38,12 +39,20 @@
     },
     "end": {
       "label": "Return date",
-      "placeholder": "Pick a date"
+      "placeholder": "Pick a date",
+      "before-start": "The return date can't be before the start date"
     },
     "player": {
       "label": "Player",
       "required": "Player is required",
       "placeholder": "Choose player"
     }
+  },
+  "active": "Not returned yet",
+  "edit": {
+    "title": "Edit loan",
+    "description": "Change the dates of this loan.",
+    "save": "Save loan",
+    "button": "Edit"
   }
 }

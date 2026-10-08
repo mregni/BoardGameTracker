@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Common.Entities.Auth;
@@ -8,7 +8,7 @@ using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Auth;
@@ -25,18 +25,16 @@ public class TokenServiceTests : IDisposable
             .Options;
         _context = new MainDbContext(options);
 
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Jwt:Secret"] = "test-secret-key-that-is-at-least-32-characters-long",
-                ["Jwt:Issuer"] = "test-issuer",
-                ["Jwt:Audience"] = "test-audience",
-                ["Jwt:AccessTokenExpiryMinutes"] = "60",
-                ["Jwt:RefreshTokenExpiryDays"] = "7"
-            })
-            .Build();
+        var jwtOptions = Options.Create(new JwtOptions
+        {
+            Secret = "test-secret-key-that-is-at-least-32-characters-long",
+            Issuer = "test-issuer",
+            Audience = "test-audience",
+            AccessTokenExpiryMinutes = 60,
+            RefreshTokenExpiryDays = 7
+        });
 
-        _tokenService = new TokenService(config, _context);
+        _tokenService = new TokenService(jwtOptions, _context);
     }
 
     public void Dispose()
@@ -57,8 +55,7 @@ public class TokenServiceTests : IDisposable
 
         // Assert
         token.Should().NotBeNullOrEmpty();
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
+        var jwtToken = new JsonWebTokenHandler().ReadJsonWebToken(token);
         jwtToken.Issuer.Should().Be("test-issuer");
         jwtToken.Audiences.Should().Contain("test-audience");
         jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.UniqueName && c.Value == "testuser");
@@ -76,8 +73,7 @@ public class TokenServiceTests : IDisposable
         var token = _tokenService.GenerateAccessToken(user, roles);
 
         // Assert
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
+        var jwtToken = new JsonWebTokenHandler().ReadJsonWebToken(token);
         var roleClaims = jwtToken.Claims.Where(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").ToList();
         roleClaims.Should().HaveCount(2);
         roleClaims.Select(c => c.Value).Should().Contain("Admin").And.Contain("User");
@@ -115,19 +111,62 @@ public class TokenServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task RevokeRefreshTokenAsync_ShouldRevokeTokenWithReasonAndReplacement()
+    public async Task RevokeRefreshTokenAsync_ShouldRevokeTheTokenWithItsReason()
     {
         var userId = "test-user-id";
         var refreshToken = await _tokenService.GenerateRefreshTokenAsync(userId);
 
-        await _tokenService.RevokeRefreshTokenAsync(refreshToken, "Test revocation", "new-token");
+        await _tokenService.RevokeRefreshTokenAsync(refreshToken, "Test revocation");
 
         var stored = await _context.RefreshTokens.FirstAsync(t => t.Token == refreshToken.Token, TestContext.Current.CancellationToken);
         stored.IsRevoked.Should().BeTrue();
         stored.IsActive.Should().BeFalse();
         stored.RevokedReason.Should().Be("Test revocation");
-        stored.ReplacedByToken.Should().Be("new-token");
     }
+
+    [Fact]
+    public async Task RevokeRefreshTokenAsync_ShouldAlsoRevokeTheTokensItWasRotatedInto_AndKeepTheChain()
+    {
+        var first = await _tokenService.GenerateRefreshTokenAsync("test-user-id");
+        var second = await _tokenService.RotateRefreshTokenAsync(first);
+        var third = await _tokenService.RotateRefreshTokenAsync(second);
+
+        await _tokenService.RevokeRefreshTokenAsync(first, "Logged out");
+
+        var stored = await _context.RefreshTokens.ToListAsync(TestContext.Current.CancellationToken);
+        stored.Should().AllSatisfy(t => t.IsActive.Should().BeFalse());
+        stored.Single(t => t.Token == first.Token).ReplacedByToken.Should().Be(second.Token);
+        stored.Single(t => t.Token == first.Token).RevokedReason.Should().Be("Replaced by new token");
+        stored.Single(t => t.Token == third.Token).RevokedReason.Should().Be("Logged out");
+    }
+
+    [Fact]
+    public async Task RotateRefreshTokenAsync_ShouldRefuseTheSecondOfTwoConcurrentRotations()
+    {
+        var databaseName = Guid.NewGuid().ToString();
+        var jwtOptions = Options.Create(new JwtOptions
+        {
+            Secret = "this-is-a-very-long-secret-key-for-testing-purposes-at-least-32-chars",
+            Issuer = "BoardGameTracker",
+            Audience = "BoardGameTracker",
+            AccessTokenExpiryMinutes = 60,
+            RefreshTokenExpiryDays = 7,
+        });
+        await using var setup = NewContext(databaseName);
+        var original = await new TokenService(jwtOptions, setup).GenerateRefreshTokenAsync("test-user-id");
+        await using var first = NewContext(databaseName);
+        await using var second = NewContext(databaseName);
+        var firstCopy = await first.RefreshTokens.SingleAsync(t => t.Token == original.Token, TestContext.Current.CancellationToken);
+        var secondCopy = await second.RefreshTokens.SingleAsync(t => t.Token == original.Token, TestContext.Current.CancellationToken);
+
+        await new TokenService(jwtOptions, first).RotateRefreshTokenAsync(firstCopy);
+        var act = () => new TokenService(jwtOptions, second).RotateRefreshTokenAsync(secondCopy);
+
+        await act.Should().ThrowAsync<DbUpdateConcurrencyException>();
+    }
+
+    private static MainDbContext NewContext(string databaseName) =>
+        new(new DbContextOptionsBuilder<MainDbContext>().UseInMemoryDatabase(databaseName).Options);
 
     [Fact]
     public async Task RevokeAllUserTokensAsync_ShouldRevokeOnlyActiveTokensOfThatUser()
@@ -162,7 +201,7 @@ public class TokenServiceTests : IDisposable
         await _context.SaveChangesAsync();
         var created = await _tokenService.GenerateRefreshTokenAsync(user.Id);
 
-        var result = await _tokenService.GetRefreshTokenAsync(created.Token);
+        var result = await _tokenService.GetRefreshTokenAsync(created.PlainTextToken!);
 
         result.Should().NotBeNull();
         result!.Token.Should().Be(created.Token);
@@ -178,30 +217,38 @@ public class TokenServiceTests : IDisposable
 
         var token = _tokenService.GenerateAccessToken(user, roles);
 
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
+        var jwtToken = new JsonWebTokenHandler().ReadJsonWebToken(token);
         jwtToken.Claims.Should().NotContain(c => c.Type == "display_name");
     }
 
     [Fact]
     public void GenerateAccessToken_ShouldThrowInvalidOperationException_WhenSecretIsMissing()
     {
-        var originalSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
-        Environment.SetEnvironmentVariable("JWT_SECRET", null);
-        try
-        {
-            var config = new ConfigurationBuilder().Build();
-            var service = new TokenService(config, _context);
-            var user = new ApplicationUser("testuser", "test@test.com");
+        var service = new TokenService(Options.Create(new JwtOptions()), _context);
+        var user = new ApplicationUser("testuser", "test@test.com");
 
-            var act = () => service.GenerateAccessToken(user, new List<string>());
+        var act = () => service.GenerateAccessToken(user, new List<string>());
 
-            act.Should().Throw<InvalidOperationException>();
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("JWT_SECRET", originalSecret);
-        }
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task RotateRefreshTokenAsync_ShouldRevokeTheOldTokenAndStoreTheReplacementInOneSave()
+    {
+        var user = new ApplicationUser("rotate", "rotate@test.com");
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var current = await _tokenService.GenerateRefreshTokenAsync(user.Id);
+
+        var replacement = await _tokenService.RotateRefreshTokenAsync(current);
+
+        replacement.Token.Should().NotBe(current.Token);
+        replacement.UserId.Should().Be(user.Id);
+        replacement.IsActive.Should().BeTrue();
+        var storedOld = await _context.RefreshTokens.FirstAsync(t => t.Token == current.Token, TestContext.Current.CancellationToken);
+        storedOld.IsRevoked.Should().BeTrue();
+        storedOld.ReplacedByToken.Should().Be(replacement.Token);
+        (await _context.RefreshTokens.CountAsync(t => t.UserId == user.Id, TestContext.Current.CancellationToken)).Should().Be(2);
     }
 
     [Fact]

@@ -1,46 +1,94 @@
 {
   "bgg": {
-    "id-not-found": "Could not find game on BoardGameGeek"
+    "id-not-found": "Spel niet gevonden op BoardGameGeek"
   },
   "image": {
-    "type-not-supported": "Image type not supported",
-    "error": "Error while uploading image, check logs"
+    "type-not-supported": "Afbeeldingstype wordt niet ondersteund",
+    "error": "Fout bij het uploaden van de afbeelding, bekijk de logs",
+    "too-large": "Afbeelding is te groot",
+    "unsupported-format": "Niet-ondersteund afbeeldingsformaat"
   },
   "auth": {
-    "username-already-exists": "Username already exists",
-    "oidc-no-local-users": "Cannot create local users when OIDC is enabled",
-    "invalid-role": "Invalid role",
-    "username-required": "Username is required",
-    "cannot-change-oidc-password": "Cannot change password for externally authenticated accounts",
-    "cannot-delete-self": "Cannot delete your own account",
-    "cannot-delete-last-admin": "Cannot delete the last admin account",
-    "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
-    "invalid-credentials": "Invalid username or password",
-    "invalid-refresh-token": "Invalid or expired session",
+    "username-already-exists": "Gebruikersnaam bestaat al",
+    "invalid-role": "Ongeldige rol",
+    "username-required": "Gebruikersnaam is verplicht",
+    "cannot-change-oidc-password": "Het wachtwoord van een account met externe aanmelding kan niet gewijzigd worden",
+    "cannot-delete-self": "Je kan je eigen account niet verwijderen",
+    "cannot-delete-last-admin": "Het laatste beheerdersaccount kan niet worden verwijderd",
+    "cannot-remove-last-admin": "De beheerdersrol kan niet worden afgenomen van het laatste beheerdersaccount",
+    "invalid-credentials": "Ongeldige gebruikersnaam of wachtwoord",
+    "invalid-refresh-token": "Ongeldige of verlopen sessie",
+    "account-locked-out": "Te veel mislukte pogingen. Probeer het later opnieuw.",
+    "too-many-requests": "Te veel aanmeldpogingen. Wacht een minuut en probeer het opnieuw.",
+    "invalid-auth-session": "Ongeldige of verlopen aanmeldsessie",
+    "invalid-redirect-uri": "Ongeldige redirect-URI",
     "player-already-linked": "Deze speler is al gekoppeld aan een ander account",
-    "invalid-reset-token": "Deze link om je wachtwoord opnieuw in te stellen is ongeldig of verlopen"
+    "invalid-reset-token": "Deze link om je wachtwoord opnieuw in te stellen is ongeldig of verlopen",
+    "not-authenticated": "Je moet aangemeld zijn",
+    "insecure-authority": "De URL van de provider moet https gebruiken (http mag enkel voor lokale adressen)",
+    "oidc-email-exists": "Er bestaat al een account met dit e-mailadres. Meld je aan met je wachtwoord en koppel de provider vanuit je profiel.",
+    "oidc-provisioning-disabled": "Je account is hier niet bekend en automatisch registreren is uitgeschakeld.",
+    "oidc-provisioning-failed": "Je account kon niet worden aangemaakt.",
+    "oidc-already-linked": "Dit externe account is al gekoppeld aan een andere gebruiker.",
+    "oidc-discovery-failed": "De identiteitsprovider is niet bereikbaar.",
+    "oidc-issuer-mismatch": "De identiteitsprovider meldt een andere issuer dan de ingestelde authority.",
+    "oidc-exchange-failed": "De identiteitsprovider heeft de aanmeldcode geweigerd.",
+    "oidc-userinfo-failed": "De identiteitsprovider heeft je profiel niet teruggegeven.",
+    "oidc-provider-rejected": "De identiteitsprovider heeft de aanmelding geweigerd.",
+    "oidc-handoff-expired": "Het aanmelden duurde te lang. Probeer het opnieuw.",
+    "oidc-failed": "Aanmelden via de identiteitsprovider is mislukt.",
+    "last-sign-in-method": "Dit is je enige manier om aan te melden. Stel eerst een wachtwoord in (Wachtwoord vergeten, of laat een beheerder het resetten) en ontkoppel dan.",
+    "current-password-required": "Geef je huidige wachtwoord in om je e-mailadres te wijzigen.",
+    "email-change-needs-password": "Dit account meldt zich alleen aan via single sign-on. Stel eerst een wachtwoord in met \"Wachtwoord vergeten\" op de aanmeldpagina en wijzig daarna het e-mailadres.",
+    "oidc-provider-unavailable": "Deze aanmeldprovider is niet beschikbaar. Kies een andere manier om je aan te melden of vraag het aan je beheerder."
   },
   "changedetection": {
     "invalid-base-url": "De changedetection.io-URL is ongeldig",
     "not-configured": "changedetection.io is niet geconfigureerd",
     "watch-not-found": "Dit watch-id is niet gevonden op changedetection.io",
-    "create-watch-failed": "changedetection.io kon de watch niet aanmaken"
+    "create-watch-failed": "changedetection.io kon de watch niet aanmaken",
+    "insecure-base-url": "Gebruik een https-adres voor changedetection.io; gewoon http werkt alleen voor een lokaal adres zoals http://changedetection:5000"
   },
   "game": {
-    "invalid-shop-url": "Geef een geldige http(s) winkel-URL op"
+    "invalid-shop-url": "Geef een geldige http(s) winkel-URL op",
+    "already-exists": "Dit spel zit al in je collectie",
+    "player-range-incomplete": "Vul zowel het minimum als het maximum aantal spelers in",
+    "play-time-range-incomplete": "Vul zowel de minimum als de maximum speelduur in",
+    "range-min-above-max": "Het minimum kan niet hoger zijn dan het maximum",
+    "expansion-already-exists": "Deze uitbreiding is al aan het spel gekoppeld.",
+    "shop-url-not-public": "Gebruik het adres van een openbare webwinkel; adressen in het lokale netwerk zijn niet toegestaan"
   },
-  "something-went-wrong": "Something went wrong, please try again later.",
-  "unexpected-error": "An unexpected error occurred.",
-  "network": "Unable to connect to the server. Please check your connection.",
-  "timeout": "The request took too long. Please try again.",
-  "server": "A server error occurred. Please try again later.",
+  "something-went-wrong": "Er ging iets mis, probeer het later opnieuw.",
+  "unexpected-error": "Er is een onverwachte fout opgetreden.",
+  "network": "Kan geen verbinding maken met de server. Controleer je verbinding.",
+  "timeout": "De aanvraag duurde te lang. Probeer het opnieuw.",
+  "server": "Er is een serverfout opgetreden. Probeer het later opnieuw.",
+  "location": {
+    "used-by-game-nights": "Deze locatie wordt gebruikt door een of meer spelavonden"
+  },
+  "player": {
+    "hosts-game-nights": "Deze speler is gastheer van een of meer spelavonden"
+  },
+  "session": {
+    "invalid-expansion": "Een van de gekozen uitbreidingen hoort niet bij dit spel"
+  },
   "email": {
-    "not-configured": "E-mail is niet geconfigureerd op deze server"
+    "not-configured": "E-mail is niet geconfigureerd op deze server",
+    "public-url-not-configured": "Stel eerst de publieke URL in onder Instellingen > Algemeen, zodat de links in de e-mail naar deze server wijzen."
   },
   "loan": {
-    "game-already-on-loan": "Dit spel is al uitgeleend"
+    "game-already-on-loan": "Dit spel is al uitgeleend",
+    "due-before-start": "De terugbrengdatum kan niet voor het begin van de uitlening liggen.",
+    "returned-before-start": "Een uitlening kan niet teruggebracht worden voor ze begonnen is.",
+    "already-returned": "Deze uitlening is al teruggebracht."
   },
   "settings": {
     "invalid-public-url": "De publieke URL is ongeldig"
+  },
+  "game-night": {
+    "invites-cooldown": "De uitnodigingen voor deze spelavond zijn net verstuurd, probeer het over enkele minuten opnieuw"
+  },
+  "maintenance": {
+    "admin-password-rejected": "ADMIN_PASSWORD voldoet niet aan de wachtwoordregels (minstens 8 tekens). Pas het aan of verwijder het vóór een fabrieksreset."
   }
 }

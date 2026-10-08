@@ -25,11 +25,34 @@ export class QueryInvalidator {
 			}),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] }),
 			this.invalidateDashboard(),
-			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] }),
+			this.invalidateCounts(),
+			this.invalidateShames(),
 		]);
 	}
 
-	async invalidateSession(sessionId: number, gameId: number) {
+	async invalidateGameCreated() {
+		await Promise.all([
+			this.invalidateGames(),
+			this.invalidateDashboard(),
+			this.invalidateCounts(),
+			this.invalidateShames(),
+		]);
+	}
+
+	async invalidateGameDeleted() {
+		await Promise.all([
+			this.invalidateGames(),
+			this.invalidateDashboard(),
+			this.invalidateCounts(),
+			this.invalidateShames(),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.loans] }),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] }),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] }),
+			this.invalidatePlayers(),
+		]);
+	}
+
+	async invalidateSession(sessionId: number, gameId: number, playerIds: number[] = []) {
 		await Promise.all([
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.sessions] }),
 			this.queryClient.invalidateQueries({
@@ -37,8 +60,30 @@ export class QueryInvalidator {
 			}),
 			this.invalidateGame(gameId),
 			this.invalidatePlayers(),
-			this.invalidateDashboard(),
+			...playerIds.map((playerId) => this.invalidatePlayer(playerId)),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] }),
+			this.invalidateCompare(),
+			this.invalidateLeaderboard(),
 		]);
+	}
+
+	async invalidateSessionDeleted(gameId?: number, playerIds: number[] = []) {
+		await Promise.all([
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.sessions] }),
+			gameId !== undefined ? this.invalidateGame(gameId) : this.invalidateGames(),
+			this.invalidatePlayers(),
+			...playerIds.map((playerId) => this.invalidatePlayer(playerId)),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] }),
+			this.invalidateCompare(),
+			this.invalidateCounts(),
+			this.invalidateShames(),
+			this.invalidateDashboard(),
+			this.invalidateLeaderboard(),
+		]);
+	}
+
+	async invalidateLeaderboard() {
+		await this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.leaderboard] });
 	}
 
 	async invalidatePlayer(playerId: number) {
@@ -61,7 +106,7 @@ export class QueryInvalidator {
 		]);
 	}
 
-	async invalidateLoan(loanId?: number) {
+	async invalidateLoan(loanId?: number, gameId?: number) {
 		await Promise.all([
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.loans] }),
 			...(loanId
@@ -72,6 +117,14 @@ export class QueryInvalidator {
 					]
 				: []),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] }),
+			...(gameId
+				? [
+						this.queryClient.invalidateQueries({
+							queryKey: [QUERY_KEYS.game, gameId],
+						}),
+					]
+				: []),
+			this.invalidateCounts(),
 		]);
 	}
 
@@ -124,9 +177,13 @@ export class QueryInvalidator {
 	}
 
 	async invalidateSettings() {
-		await this.queryClient.invalidateQueries({
-			queryKey: [QUERY_KEYS.settings],
-		});
+		await Promise.all([
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.settings] }),
+			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] }),
+			this.queryClient.invalidateQueries({
+				predicate: (query) => query.queryKey[0] === QUERY_KEYS.game && query.queryKey[2] === QUERY_KEYS.price,
+			}),
+		]);
 	}
 
 	async invalidateCompare() {

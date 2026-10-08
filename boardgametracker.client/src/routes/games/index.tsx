@@ -192,7 +192,11 @@ function RouteComponent() {
 							state={x.state}
 							isLoaned={x.isLoaned}
 							link={`/games/${x.id}`}
-							badge={x.changeDetectionWatchId ? <TrackedPriceIcon livePrice={priceMap.get(x.id)} variant="overlay" /> : undefined}
+							badge={
+								x.changeDetectionWatchId ? (
+									<TrackedPriceIcon livePrice={priceMap.get(x.id)} variant="overlay" />
+								) : undefined
+							}
 						/>
 					))}
 				</BgtCardList>

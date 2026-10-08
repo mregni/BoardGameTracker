@@ -9,145 +9,51 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as BareRouteImport } from './routes/_bare'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ShamesIndexRouteImport } from './routes/shames/index'
-import { Route as SettingsIndexRouteImport } from './routes/settings/index'
-import { Route as PlayersIndexRouteImport } from './routes/players/index'
-import { Route as LocationsIndexRouteImport } from './routes/locations/index'
-import { Route as LoansIndexRouteImport } from './routes/loans/index'
-import { Route as GamesIndexRouteImport } from './routes/games/index'
-import { Route as GameNightsIndexRouteImport } from './routes/game-nights/index'
-import { Route as CompareIndexRouteImport } from './routes/compare/index'
-import { Route as ChatIndexRouteImport } from './routes/chat/index'
-import { Route as SessionsNewRouteImport } from './routes/sessions/new'
-import { Route as PlayersNewRouteImport } from './routes/players/new'
-import { Route as PlayersPlayerIdRouteImport } from './routes/players/$playerId'
-import { Route as GamesTableRouteImport } from './routes/games/table'
-import { Route as GamesNewRouteImport } from './routes/games/new'
-import { Route as GamesBggRouteImport } from './routes/games/bgg'
-import { Route as GamesAddRouteImport } from './routes/games/add'
-import { Route as GamesGameIdRouteImport } from './routes/games/$gameId'
-import { Route as BareRsvpRouteImport } from './routes/_bare/rsvp'
-import { Route as BareResetPasswordRouteImport } from './routes/_bare/reset-password'
-import { Route as BareLoginRouteImport } from './routes/_bare/login'
-import { Route as BareForgotPasswordRouteImport } from './routes/_bare/forgot-password'
+import { Route as BareRouteImport } from './routes/_bare'
 import { Route as BareAuthCallbackRouteImport } from './routes/_bare/auth-callback'
-import { Route as SessionsUpdateSessionIdRouteImport } from './routes/sessions/update_.$sessionId'
-import { Route as SessionsNewGameIdRouteImport } from './routes/sessions/new_.$gameId'
-import { Route as PlayersPlayerIdSessionsRouteImport } from './routes/players/$playerId_.sessions'
-import { Route as GamesImportStartRouteImport } from './routes/games/import/start'
-import { Route as GamesGameIdUpdateRouteImport } from './routes/games/$gameId_.update'
+import { Route as BareForgotPasswordRouteImport } from './routes/_bare/forgot-password'
+import { Route as BareLoginRouteImport } from './routes/_bare/login'
+import { Route as BareResetPasswordRouteImport } from './routes/_bare/reset-password'
+import { Route as BareRsvpRouteImport } from './routes/_bare/rsvp'
+import { Route as ChatIndexRouteImport } from './routes/chat/index'
+import { Route as CompareIndexRouteImport } from './routes/compare/index'
+import { Route as GameNightsIndexRouteImport } from './routes/game-nights/index'
+import { Route as GamesIndexRouteImport } from './routes/games/index'
+import { Route as GamesGameIdRouteImport } from './routes/games/$gameId'
+import { Route as GamesAddRouteImport } from './routes/games/add'
+import { Route as GamesBggRouteImport } from './routes/games/bgg'
+import { Route as GamesNewRouteImport } from './routes/games/new'
+import { Route as GamesTableRouteImport } from './routes/games/table'
+import { Route as LeaderboardIndexRouteImport } from './routes/leaderboard/index'
+import { Route as LoansIndexRouteImport } from './routes/loans/index'
+import { Route as LocationsIndexRouteImport } from './routes/locations/index'
+import { Route as PlayersIndexRouteImport } from './routes/players/index'
+import { Route as PlayersPlayerIdRouteImport } from './routes/players/$playerId'
+import { Route as PlayersNewRouteImport } from './routes/players/new'
+import { Route as SessionsNewRouteImport } from './routes/sessions/new'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as ShamesIndexRouteImport } from './routes/shames/index'
 import { Route as GamesGameIdSessionsRouteImport } from './routes/games/$gameId_.sessions'
+import { Route as GamesGameIdUpdateRouteImport } from './routes/games/$gameId_.update'
+import { Route as GamesImportStartRouteImport } from './routes/games/import/start'
+import { Route as PlayersPlayerIdSessionsRouteImport } from './routes/players/$playerId_.sessions'
+import { Route as SessionsNewGameIdRouteImport } from './routes/sessions/new_.$gameId'
+import { Route as SessionsUpdateSessionIdRouteImport } from './routes/sessions/update_.$sessionId'
 import { Route as GamesImportListUsernameRouteImport } from './routes/games/import/list_.$username'
 
-const BareRoute = BareRouteImport.update({
-  id: '/_bare',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShamesIndexRoute = ShamesIndexRouteImport.update({
-  id: '/shames/',
-  path: '/shames/',
+const BareRoute = BareRouteImport.update({
+  id: '/_bare',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsIndexRoute = SettingsIndexRouteImport.update({
-  id: '/settings/',
-  path: '/settings/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlayersIndexRoute = PlayersIndexRouteImport.update({
-  id: '/players/',
-  path: '/players/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LocationsIndexRoute = LocationsIndexRouteImport.update({
-  id: '/locations/',
-  path: '/locations/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoansIndexRoute = LoansIndexRouteImport.update({
-  id: '/loans/',
-  path: '/loans/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GamesIndexRoute = GamesIndexRouteImport.update({
-  id: '/games/',
-  path: '/games/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GameNightsIndexRoute = GameNightsIndexRouteImport.update({
-  id: '/game-nights/',
-  path: '/game-nights/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompareIndexRoute = CompareIndexRouteImport.update({
-  id: '/compare/',
-  path: '/compare/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatIndexRoute = ChatIndexRouteImport.update({
-  id: '/chat/',
-  path: '/chat/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SessionsNewRoute = SessionsNewRouteImport.update({
-  id: '/sessions/new',
-  path: '/sessions/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlayersNewRoute = PlayersNewRouteImport.update({
-  id: '/players/new',
-  path: '/players/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlayersPlayerIdRoute = PlayersPlayerIdRouteImport.update({
-  id: '/players/$playerId',
-  path: '/players/$playerId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GamesTableRoute = GamesTableRouteImport.update({
-  id: '/games/table',
-  path: '/games/table',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GamesNewRoute = GamesNewRouteImport.update({
-  id: '/games/new',
-  path: '/games/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GamesBggRoute = GamesBggRouteImport.update({
-  id: '/games/bgg',
-  path: '/games/bgg',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GamesAddRoute = GamesAddRouteImport.update({
-  id: '/games/add',
-  path: '/games/add',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GamesGameIdRoute = GamesGameIdRouteImport.update({
-  id: '/games/$gameId',
-  path: '/games/$gameId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BareRsvpRoute = BareRsvpRouteImport.update({
-  id: '/rsvp',
-  path: '/rsvp',
-  getParentRoute: () => BareRoute,
-} as any)
-const BareResetPasswordRoute = BareResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => BareRoute,
-} as any)
-const BareLoginRoute = BareLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const BareAuthCallbackRoute = BareAuthCallbackRouteImport.update({
+  id: '/auth-callback',
+  path: '/auth-callback',
   getParentRoute: () => BareRoute,
 } as any)
 const BareForgotPasswordRoute = BareForgotPasswordRouteImport.update({
@@ -155,29 +61,114 @@ const BareForgotPasswordRoute = BareForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => BareRoute,
 } as any)
-const BareAuthCallbackRoute = BareAuthCallbackRouteImport.update({
-  id: '/auth-callback',
-  path: '/auth-callback',
+const BareLoginRoute = BareLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => BareRoute,
 } as any)
-const SessionsUpdateSessionIdRoute = SessionsUpdateSessionIdRouteImport.update({
-  id: '/sessions/update_/$sessionId',
-  path: '/sessions/update/$sessionId',
+const BareResetPasswordRoute = BareResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => BareRoute,
+} as any)
+const BareRsvpRoute = BareRsvpRouteImport.update({
+  id: '/rsvp',
+  path: '/rsvp',
+  getParentRoute: () => BareRoute,
+} as any)
+const ChatIndexRoute = ChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SessionsNewGameIdRoute = SessionsNewGameIdRouteImport.update({
-  id: '/sessions/new_/$gameId',
-  path: '/sessions/new/$gameId',
+const CompareIndexRoute = CompareIndexRouteImport.update({
+  id: '/compare/',
+  path: '/compare/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlayersPlayerIdSessionsRoute = PlayersPlayerIdSessionsRouteImport.update({
-  id: '/players/$playerId_/sessions',
-  path: '/players/$playerId/sessions',
+const GameNightsIndexRoute = GameNightsIndexRouteImport.update({
+  id: '/game-nights/',
+  path: '/game-nights/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GamesImportStartRoute = GamesImportStartRouteImport.update({
-  id: '/games/import/start',
-  path: '/games/import/start',
+const GamesIndexRoute = GamesIndexRouteImport.update({
+  id: '/games/',
+  path: '/games/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesGameIdRoute = GamesGameIdRouteImport.update({
+  id: '/games/$gameId',
+  path: '/games/$gameId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesAddRoute = GamesAddRouteImport.update({
+  id: '/games/add',
+  path: '/games/add',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesBggRoute = GamesBggRouteImport.update({
+  id: '/games/bgg',
+  path: '/games/bgg',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesNewRoute = GamesNewRouteImport.update({
+  id: '/games/new',
+  path: '/games/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesTableRoute = GamesTableRouteImport.update({
+  id: '/games/table',
+  path: '/games/table',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardIndexRoute = LeaderboardIndexRouteImport.update({
+  id: '/leaderboard/',
+  path: '/leaderboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoansIndexRoute = LoansIndexRouteImport.update({
+  id: '/loans/',
+  path: '/loans/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LocationsIndexRoute = LocationsIndexRouteImport.update({
+  id: '/locations/',
+  path: '/locations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayersIndexRoute = PlayersIndexRouteImport.update({
+  id: '/players/',
+  path: '/players/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayersPlayerIdRoute = PlayersPlayerIdRouteImport.update({
+  id: '/players/$playerId',
+  path: '/players/$playerId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayersNewRoute = PlayersNewRouteImport.update({
+  id: '/players/new',
+  path: '/players/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionsNewRoute = SessionsNewRouteImport.update({
+  id: '/sessions/new',
+  path: '/sessions/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShamesIndexRoute = ShamesIndexRouteImport.update({
+  id: '/shames/',
+  path: '/shames/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesGameIdSessionsRoute = GamesGameIdSessionsRouteImport.update({
+  id: '/games/$gameId_/sessions',
+  path: '/games/$gameId/sessions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesGameIdUpdateRoute = GamesGameIdUpdateRouteImport.update({
@@ -185,9 +176,24 @@ const GamesGameIdUpdateRoute = GamesGameIdUpdateRouteImport.update({
   path: '/games/$gameId/update',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GamesGameIdSessionsRoute = GamesGameIdSessionsRouteImport.update({
-  id: '/games/$gameId_/sessions',
-  path: '/games/$gameId/sessions',
+const GamesImportStartRoute = GamesImportStartRouteImport.update({
+  id: '/games/import/start',
+  path: '/games/import/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayersPlayerIdSessionsRoute = PlayersPlayerIdSessionsRouteImport.update({
+  id: '/players/$playerId_/sessions',
+  path: '/players/$playerId/sessions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionsNewGameIdRoute = SessionsNewGameIdRouteImport.update({
+  id: '/sessions/new_/$gameId',
+  path: '/sessions/new/$gameId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionsUpdateSessionIdRoute = SessionsUpdateSessionIdRouteImport.update({
+  id: '/sessions/update_/$sessionId',
+  path: '/sessions/update/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesImportListUsernameRoute = GamesImportListUsernameRouteImport.update({
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/compare/': typeof CompareIndexRoute
   '/game-nights/': typeof GameNightsIndexRoute
   '/games/': typeof GamesIndexRoute
+  '/leaderboard/': typeof LeaderboardIndexRoute
   '/loans/': typeof LoansIndexRoute
   '/locations/': typeof LocationsIndexRoute
   '/players/': typeof PlayersIndexRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareIndexRoute
   '/game-nights': typeof GameNightsIndexRoute
   '/games': typeof GamesIndexRoute
+  '/leaderboard': typeof LeaderboardIndexRoute
   '/loans': typeof LoansIndexRoute
   '/locations': typeof LocationsIndexRoute
   '/players': typeof PlayersIndexRoute
@@ -281,6 +289,7 @@ export interface FileRoutesById {
   '/compare/': typeof CompareIndexRoute
   '/game-nights/': typeof GameNightsIndexRoute
   '/games/': typeof GamesIndexRoute
+  '/leaderboard/': typeof LeaderboardIndexRoute
   '/loans/': typeof LoansIndexRoute
   '/locations/': typeof LocationsIndexRoute
   '/players/': typeof PlayersIndexRoute
@@ -315,6 +324,7 @@ export interface FileRouteTypes {
     | '/compare/'
     | '/game-nights/'
     | '/games/'
+    | '/leaderboard/'
     | '/loans/'
     | '/locations/'
     | '/players/'
@@ -347,6 +357,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/game-nights'
     | '/games'
+    | '/leaderboard'
     | '/loans'
     | '/locations'
     | '/players'
@@ -380,6 +391,7 @@ export interface FileRouteTypes {
     | '/compare/'
     | '/game-nights/'
     | '/games/'
+    | '/leaderboard/'
     | '/loans/'
     | '/locations/'
     | '/players/'
@@ -409,6 +421,7 @@ export interface RootRouteChildren {
   CompareIndexRoute: typeof CompareIndexRoute
   GameNightsIndexRoute: typeof GameNightsIndexRoute
   GamesIndexRoute: typeof GamesIndexRoute
+  LeaderboardIndexRoute: typeof LeaderboardIndexRoute
   LoansIndexRoute: typeof LoansIndexRoute
   LocationsIndexRoute: typeof LocationsIndexRoute
   PlayersIndexRoute: typeof PlayersIndexRoute
@@ -425,13 +438,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_bare': {
-      id: '/_bare'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof BareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -439,144 +445,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/shames/': {
-      id: '/shames/'
-      path: '/shames'
-      fullPath: '/shames/'
-      preLoaderRoute: typeof ShamesIndexRouteImport
+    '/_bare': {
+      id: '/_bare'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof BareRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings/': {
-      id: '/settings/'
-      path: '/settings'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof SettingsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/players/': {
-      id: '/players/'
-      path: '/players'
-      fullPath: '/players/'
-      preLoaderRoute: typeof PlayersIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/locations/': {
-      id: '/locations/'
-      path: '/locations'
-      fullPath: '/locations/'
-      preLoaderRoute: typeof LocationsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/loans/': {
-      id: '/loans/'
-      path: '/loans'
-      fullPath: '/loans/'
-      preLoaderRoute: typeof LoansIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/games/': {
-      id: '/games/'
-      path: '/games'
-      fullPath: '/games/'
-      preLoaderRoute: typeof GamesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/game-nights/': {
-      id: '/game-nights/'
-      path: '/game-nights'
-      fullPath: '/game-nights/'
-      preLoaderRoute: typeof GameNightsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/compare/': {
-      id: '/compare/'
-      path: '/compare'
-      fullPath: '/compare/'
-      preLoaderRoute: typeof CompareIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat/': {
-      id: '/chat/'
-      path: '/chat'
-      fullPath: '/chat/'
-      preLoaderRoute: typeof ChatIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sessions/new': {
-      id: '/sessions/new'
-      path: '/sessions/new'
-      fullPath: '/sessions/new'
-      preLoaderRoute: typeof SessionsNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/players/new': {
-      id: '/players/new'
-      path: '/players/new'
-      fullPath: '/players/new'
-      preLoaderRoute: typeof PlayersNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/players/$playerId': {
-      id: '/players/$playerId'
-      path: '/players/$playerId'
-      fullPath: '/players/$playerId'
-      preLoaderRoute: typeof PlayersPlayerIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/games/table': {
-      id: '/games/table'
-      path: '/games/table'
-      fullPath: '/games/table'
-      preLoaderRoute: typeof GamesTableRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/games/new': {
-      id: '/games/new'
-      path: '/games/new'
-      fullPath: '/games/new'
-      preLoaderRoute: typeof GamesNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/games/bgg': {
-      id: '/games/bgg'
-      path: '/games/bgg'
-      fullPath: '/games/bgg'
-      preLoaderRoute: typeof GamesBggRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/games/add': {
-      id: '/games/add'
-      path: '/games/add'
-      fullPath: '/games/add'
-      preLoaderRoute: typeof GamesAddRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/games/$gameId': {
-      id: '/games/$gameId'
-      path: '/games/$gameId'
-      fullPath: '/games/$gameId'
-      preLoaderRoute: typeof GamesGameIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_bare/rsvp': {
-      id: '/_bare/rsvp'
-      path: '/rsvp'
-      fullPath: '/rsvp'
-      preLoaderRoute: typeof BareRsvpRouteImport
-      parentRoute: typeof BareRoute
-    }
-    '/_bare/reset-password': {
-      id: '/_bare/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof BareResetPasswordRouteImport
-      parentRoute: typeof BareRoute
-    }
-    '/_bare/login': {
-      id: '/_bare/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof BareLoginRouteImport
+    '/_bare/auth-callback': {
+      id: '/_bare/auth-callback'
+      path: '/auth-callback'
+      fullPath: '/auth-callback'
+      preLoaderRoute: typeof BareAuthCallbackRouteImport
       parentRoute: typeof BareRoute
     }
     '/_bare/forgot-password': {
@@ -586,39 +466,158 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BareForgotPasswordRouteImport
       parentRoute: typeof BareRoute
     }
-    '/_bare/auth-callback': {
-      id: '/_bare/auth-callback'
-      path: '/auth-callback'
-      fullPath: '/auth-callback'
-      preLoaderRoute: typeof BareAuthCallbackRouteImport
+    '/_bare/login': {
+      id: '/_bare/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof BareLoginRouteImport
       parentRoute: typeof BareRoute
     }
-    '/sessions/update_/$sessionId': {
-      id: '/sessions/update_/$sessionId'
-      path: '/sessions/update/$sessionId'
-      fullPath: '/sessions/update/$sessionId'
-      preLoaderRoute: typeof SessionsUpdateSessionIdRouteImport
+    '/_bare/reset-password': {
+      id: '/_bare/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof BareResetPasswordRouteImport
+      parentRoute: typeof BareRoute
+    }
+    '/_bare/rsvp': {
+      id: '/_bare/rsvp'
+      path: '/rsvp'
+      fullPath: '/rsvp'
+      preLoaderRoute: typeof BareRsvpRouteImport
+      parentRoute: typeof BareRoute
+    }
+    '/chat/': {
+      id: '/chat/'
+      path: '/chat'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof ChatIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sessions/new_/$gameId': {
-      id: '/sessions/new_/$gameId'
-      path: '/sessions/new/$gameId'
-      fullPath: '/sessions/new/$gameId'
-      preLoaderRoute: typeof SessionsNewGameIdRouteImport
+    '/compare/': {
+      id: '/compare/'
+      path: '/compare'
+      fullPath: '/compare/'
+      preLoaderRoute: typeof CompareIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/players/$playerId_/sessions': {
-      id: '/players/$playerId_/sessions'
-      path: '/players/$playerId/sessions'
-      fullPath: '/players/$playerId/sessions'
-      preLoaderRoute: typeof PlayersPlayerIdSessionsRouteImport
+    '/game-nights/': {
+      id: '/game-nights/'
+      path: '/game-nights'
+      fullPath: '/game-nights/'
+      preLoaderRoute: typeof GameNightsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/games/import/start': {
-      id: '/games/import/start'
-      path: '/games/import/start'
-      fullPath: '/games/import/start'
-      preLoaderRoute: typeof GamesImportStartRouteImport
+    '/games/': {
+      id: '/games/'
+      path: '/games'
+      fullPath: '/games/'
+      preLoaderRoute: typeof GamesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/$gameId': {
+      id: '/games/$gameId'
+      path: '/games/$gameId'
+      fullPath: '/games/$gameId'
+      preLoaderRoute: typeof GamesGameIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/add': {
+      id: '/games/add'
+      path: '/games/add'
+      fullPath: '/games/add'
+      preLoaderRoute: typeof GamesAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/bgg': {
+      id: '/games/bgg'
+      path: '/games/bgg'
+      fullPath: '/games/bgg'
+      preLoaderRoute: typeof GamesBggRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/new': {
+      id: '/games/new'
+      path: '/games/new'
+      fullPath: '/games/new'
+      preLoaderRoute: typeof GamesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/table': {
+      id: '/games/table'
+      path: '/games/table'
+      fullPath: '/games/table'
+      preLoaderRoute: typeof GamesTableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard/': {
+      id: '/leaderboard/'
+      path: '/leaderboard'
+      fullPath: '/leaderboard/'
+      preLoaderRoute: typeof LeaderboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loans/': {
+      id: '/loans/'
+      path: '/loans'
+      fullPath: '/loans/'
+      preLoaderRoute: typeof LoansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/locations/': {
+      id: '/locations/'
+      path: '/locations'
+      fullPath: '/locations/'
+      preLoaderRoute: typeof LocationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/players/': {
+      id: '/players/'
+      path: '/players'
+      fullPath: '/players/'
+      preLoaderRoute: typeof PlayersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/players/$playerId': {
+      id: '/players/$playerId'
+      path: '/players/$playerId'
+      fullPath: '/players/$playerId'
+      preLoaderRoute: typeof PlayersPlayerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/players/new': {
+      id: '/players/new'
+      path: '/players/new'
+      fullPath: '/players/new'
+      preLoaderRoute: typeof PlayersNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sessions/new': {
+      id: '/sessions/new'
+      path: '/sessions/new'
+      fullPath: '/sessions/new'
+      preLoaderRoute: typeof SessionsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/': {
+      id: '/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shames/': {
+      id: '/shames/'
+      path: '/shames'
+      fullPath: '/shames/'
+      preLoaderRoute: typeof ShamesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games/$gameId_/sessions': {
+      id: '/games/$gameId_/sessions'
+      path: '/games/$gameId/sessions'
+      fullPath: '/games/$gameId/sessions'
+      preLoaderRoute: typeof GamesGameIdSessionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/$gameId_/update': {
@@ -628,11 +627,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesGameIdUpdateRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/games/$gameId_/sessions': {
-      id: '/games/$gameId_/sessions'
-      path: '/games/$gameId/sessions'
-      fullPath: '/games/$gameId/sessions'
-      preLoaderRoute: typeof GamesGameIdSessionsRouteImport
+    '/games/import/start': {
+      id: '/games/import/start'
+      path: '/games/import/start'
+      fullPath: '/games/import/start'
+      preLoaderRoute: typeof GamesImportStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/players/$playerId_/sessions': {
+      id: '/players/$playerId_/sessions'
+      path: '/players/$playerId/sessions'
+      fullPath: '/players/$playerId/sessions'
+      preLoaderRoute: typeof PlayersPlayerIdSessionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sessions/new_/$gameId': {
+      id: '/sessions/new_/$gameId'
+      path: '/sessions/new/$gameId'
+      fullPath: '/sessions/new/$gameId'
+      preLoaderRoute: typeof SessionsNewGameIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sessions/update_/$sessionId': {
+      id: '/sessions/update_/$sessionId'
+      path: '/sessions/update/$sessionId'
+      fullPath: '/sessions/update/$sessionId'
+      preLoaderRoute: typeof SessionsUpdateSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/import/list_/$username': {
@@ -678,6 +698,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareIndexRoute: CompareIndexRoute,
   GameNightsIndexRoute: GameNightsIndexRoute,
   GamesIndexRoute: GamesIndexRoute,
+  LeaderboardIndexRoute: LeaderboardIndexRoute,
   LoansIndexRoute: LoansIndexRoute,
   LocationsIndexRoute: LocationsIndexRoute,
   PlayersIndexRoute: PlayersIndexRoute,

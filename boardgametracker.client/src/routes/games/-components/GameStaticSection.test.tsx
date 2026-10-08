@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { type Game, GameState, GameType } from "@/models";
+import { type Game, GameState } from "@/models";
 import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { GameStaticSection } from "./GameStaticSection";
 
@@ -27,17 +27,15 @@ const createGame = (overrides: Partial<Game> = {}): Game => ({
 	rating: null,
 	weight: null,
 	bggId: null,
-	type: GameType.Base,
 	state: GameState.Owned,
 	isLoaned: false,
-	baseGameId: null,
-	baseGame: null,
 	expansions: [],
 	categories: [],
 	mechanics: [],
 	people: [],
 	hasScoring: true,
 	buyingPrice: 45,
+	soldPrice: null,
 	additionDate: null,
 	...overrides,
 });
@@ -131,8 +129,8 @@ describe("GameStaticSection", () => {
 		it("should render a badge per category", () => {
 			const game = createGame({
 				categories: [
-					{ id: "c1", name: "Strategy" },
-					{ id: "c2", name: "Family" },
+					{ id: 1, name: "Strategy" },
+					{ id: 2, name: "Family" },
 				],
 			});
 			renderWithTheme(<GameStaticSection {...defaultProps} game={game} />);
@@ -143,7 +141,7 @@ describe("GameStaticSection", () => {
 
 		it("should navigate to the games list filtered by category on badge click", async () => {
 			const user = userEvent.setup();
-			const game = createGame({ categories: [{ id: "c1", name: "Strategy" }] });
+			const game = createGame({ categories: [{ id: 1, name: "Strategy" }] });
 			renderWithTheme(<GameStaticSection {...defaultProps} game={game} />);
 
 			await user.click(screen.getByText("Strategy"));

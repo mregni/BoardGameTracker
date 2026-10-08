@@ -7,20 +7,26 @@ import { Aside } from '@astrojs/starlight/components';
 
 Configure your application using the following environment variables. Some of them have default values and are not mandatory to set, but you can override them if needed.
 
+With the provided compose files you can put any of these variables in a `.env` file next to `docker-compose.yml`; the file is forwarded to the application container. Variables set directly under `environment:` in the compose file win over the `.env` file.
+
 | Configuration | Variable | Default | Info |
 | --- | --- | --- | --- |
-| Timezone | `TZ` | `UTC` | |
-| JWT secret | `JWT_SECRET` | | Used for signing JWT tokens. Change this to a strong, random value of at least 32 characters (64 or more recommended). |
-| Database host | `DB_HOST` | `db` | |
+| Timezone | `TZ` | `UTC` | IANA name such as `Europe/Brussels`. |
+| Data protection key | `DATA_PROTECTION_KEY` | | Optional, at least 32 characters. Encrypts the data protection keys the app stores in its database, which protect password-reset links and the OpenID Connect client secret; without it a copy of the database is enough to forge a reset link. Keys created before you set it stay readable. Keep the value stable: changing or removing it makes the stored client secret unreadable (enter it again under Single sign-on) and invalidates open reset links. |
+| JWT secret | `JWT_SECRET` | | **Required** unless `AUTH_ENABLED=false`. Used for signing login tokens; a strong, random value of at least 32 characters (64 or more recommended), for example `openssl rand -base64 48`. |
+| Database host | `DB_HOST` | | **Required.** Hostname of the PostgreSQL server; `db` when you use the provided compose file. The server must provide the `vector` extension (`pgvector/pgvector:pg16`). |
 | Database port | `DB_PORT` | `5432` | |
 | Database name | `DB_NAME` | `boardgametracker` | |
-| Database user | `DB_USER` | `dbuser` | |
-| Database password | `DB_PASSWORD` | | Password used to connect to the database. |
+| Database user | `DB_USER` | | **Required.** |
+| Database password | `DB_PASSWORD` | | **Required.** Password used to connect to the database. |
+| File owner | `PUID` / `PGID` | `1654` | User and group id that own the mounted `images`, `logs` and `manuals` folders. When the container itself runs as a non-root user these are ignored and the folders must already be writable by that user. |
+| BGG API key | `BGG_API_KEY` | | Personal BoardGameGeek API key. Can also be entered under *Settings → BoardGameGeek*; the environment variable wins and makes the setting read-only. |
 | Log level | `LOGLEVEL` | `warn` | Sets the logging level for the application. Possible values are `debug`, `info`, `warn`, `error`. |
 | Enable Sentry logging | `STATISTICS_ENABLED` | `false` | Enables or disables the collection of usage statistics. Set to `true` to enable, `false` to disable. |
+| Sentry DSN | `SENTRY_DSN` | | Overrides the built-in Sentry project when `STATISTICS_ENABLED=true`, so error reports go to your own Sentry instead of the maintainer's. |
 | Enable authentication | `AUTH_ENABLED` | `true` | Set to `false` to disable authentication and allow anyone to access the application. |
 | Admin password | `ADMIN_PASSWORD` | | Initial password for the default `admin` account, applied when that account is first created. If left empty the default password `admin` is used — change it after your first login. |
-| Trusted proxies | `TRUSTED_PROXIES` | | Comma-separated list of reverse-proxy IP addresses to trust, so the real client IP is read from forwarded headers. |
+| Trusted proxies | `TRUSTED_PROXIES` | | Comma-separated list of reverse-proxy IP addresses or networks (CIDR) to trust, so the real client IP and HTTPS are read from the forwarded headers. Required behind Traefik, nginx or Caddy: without it the login rate limit is shared by everyone behind the proxy. For Docker use the bridge network, for example `172.16.0.0/12`. |
 | CORS origins | `CORS_ORIGINS` | | Comma-separated list of extra origins allowed to call the API. |
 | Swagger UI | `SWAGGER_ENABLED` | `false` | Set to `true` to expose the Swagger API UI. Enabled automatically in development. |
 
@@ -55,3 +61,23 @@ The optional [rules assistant](/BoardGameTracker/getting-started/rag/) answers q
 | Chat API key | `AI_API_KEY` | | Only needed when `AI_PROVIDER=openai`. |
 | Embedding base URL | `AI_EMBEDDING_BASE_URL` | `http://ollama:11434` | Endpoint of the local Ollama server used for embeddings. Embeddings always run locally on `bge-m3`. |
 | Embedding GPU layers | `AI_EMBEDDING_NUM_GPU` | `-1` | `-1` lets Ollama place the embedder (uses the GPU when free); `0` pins it to CPU so a local chat model keeps the GPU to itself. |
+| Chunks per question | `AI_TOP_K` | `5` | Number of rulebook passages handed to the model per question (1-20). |
+
+## Forcing a setting through the environment
+
+Everything under *Settings* in the application is stored in the database, and the keys in the table below can also be forced through an environment variable: take the setting key, upper-cased. The changedetection.io base URL and API key are the exception: they can only be set in the application. A forced setting is shown greyed out in the UI with a note naming the variable, and saving the settings page leaves it untouched.
+
+| Setting | Variable | Values |
+| --- | --- | --- |
+| Currency | `CURRENCY` | e.g. `EUR`, `USD` |
+| Date format | `DATE_FORMAT` | e.g. `yyyy-MM-dd` |
+| Time format | `TIME_FORMAT` | e.g. `HH:mm` |
+| UI language | `UI_LANGUAGE` | `en-US`, `nl-BE`, `nl-NL`, `es-ES` |
+| Public URL | `PUBLIC_URL` | The address users reach the app on; used in RSVP and password-reset links and as the base of the OpenID Connect redirect URI. |
+| Shelf of Shame | `SHELF_OF_SHAME_ENABLED`, `SHELF_OF_SHAME_MONTHS` | `true`/`false`, number of months |
+| Game nights | `GAME_NIGHTS_ENABLED`, `RSVP_AUTHENTICATION_ENABLED` | `true`/`false` |
+| Update check | `UPDATE_CHECK_ENABLED`, `UPDATE_TRACK`, `UPDATE_CHECK_INTERVAL_HOURS` | `true`/`false`, `stable`/`beta`, hours |
+| BoardGameGeek | `BGG_API_KEY` | see above |
+| Rules assistant | `AI_PROVIDER`, `AI_BASE_URL`, `AI_CHAT_MODEL`, `AI_API_KEY`, `AI_EMBEDDING_BASE_URL`, `AI_EMBEDDING_NUM_GPU`, `AI_TOP_K` | see above |
+
+A value that cannot be parsed (for example `SHELF_OF_SHAME_MONTHS=six`) is ignored and the stored setting is used instead.

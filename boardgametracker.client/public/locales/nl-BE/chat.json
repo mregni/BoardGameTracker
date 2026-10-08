@@ -40,5 +40,6 @@
     "placeholder": "Stel een vraag over de regels…",
     "disabled-placeholder": "Kies een spel met een geïndexeerde handleiding om een vraag te stellen.",
     "send": "Versturen"
-  }
+  },
+  "rate-limited": "Je hebt veel vragen gesteld in korte tijd. Wacht een minuut en probeer het opnieuw."
 }

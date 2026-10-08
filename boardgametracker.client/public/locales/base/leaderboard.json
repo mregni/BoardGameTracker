@@ -1,0 +1,31 @@
+{
+  "title": "Leaderboard",
+  "columns": {
+    "rank": "#",
+    "player": "Player",
+    "wins": "Wins",
+    "plays": "Plays",
+    "win-rate": "Win rate",
+    "podiums": "Podiums",
+    "time-played": "Time played"
+  },
+  "highlights": {
+    "most-wins": "Most wins",
+    "most-plays": "Most plays",
+    "best-win-rate": "Best win rate",
+    "most-time": "Most time at the table",
+    "nobody-yet": "Nobody yet",
+    "min-plays_one": "Needs at least {{count}} play",
+    "min-plays_other": "Needs at least {{count}} plays"
+  },
+  "values": {
+    "wins_one": "{{count}} win",
+    "wins_other": "{{count}} wins",
+    "plays_one": "{{count}} play",
+    "plays_other": "{{count}} plays"
+  },
+  "empty": {
+    "title": "No plays recorded yet",
+    "description": "Log a few sessions and the leaderboard fills itself."
+  }
+}

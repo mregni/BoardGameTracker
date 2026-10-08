@@ -47,7 +47,7 @@ describe("SettingsSidebar", () => {
 			render(<SettingsSidebar {...defaultProps} />);
 
 			const buttons = screen.getAllByRole("button");
-			expect(buttons).toHaveLength(6);
+			expect(buttons).toHaveLength(7);
 		});
 	});
 
@@ -59,6 +59,7 @@ describe("SettingsSidebar", () => {
 			expect(screen.queryByText("settings:sidebar.shelf-of-shame.title")).not.toBeInTheDocument();
 			expect(screen.queryByText("settings:sidebar.game-nights.title")).not.toBeInTheDocument();
 			expect(screen.queryByText("settings:sidebar.advanced.title")).not.toBeInTheDocument();
+			expect(screen.queryByText("settings:sidebar.sso.title")).not.toBeInTheDocument();
 		});
 
 		it("should still show account tab when canManageSettings is false and auth is enabled", () => {
@@ -117,7 +118,7 @@ describe("SettingsSidebar", () => {
 			render(<SettingsSidebar {...defaultProps} activeCategory="advanced" />);
 
 			const buttons = screen.getAllByRole("button");
-			expect(buttons[5]).toHaveClass("bg-primary/20");
+			expect(buttons[6]).toHaveClass("bg-primary/20");
 		});
 	});
 

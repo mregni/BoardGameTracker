@@ -10,6 +10,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
 import { BggSearchSchema, type Game, GameState } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getSettings } from "@/services/queries/settings";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -18,7 +19,7 @@ import { zodValidator } from "@/utils/zodValidator";
 import { useBggGameModal } from "./-hooks/useBggGameModal";
 
 export const Route = createFileRoute("/games/bgg")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 	loader: async ({ context: { queryClient } }) => {
 		queryClient.prefetchQuery(getSettings());
 	},
@@ -49,8 +50,8 @@ function RouteComponent() {
 	const form = useAppForm({
 		defaultValues: {
 			bggId: "",
-			price: 0,
-			date: toInputDate(undefined, true),
+			price: undefined as number | undefined,
+			additionDate: toInputDate(undefined, true),
 			state: GameState.Owned,
 			hasScoring: true,
 		},
@@ -94,14 +95,9 @@ function RouteComponent() {
 									/>
 								)}
 							</form.Field>
-							<form.Field name="date" validators={zodValidator(BggSearchSchema, "date")}>
+							<form.Field name="additionDate" validators={zodValidator(BggSearchSchema, "additionDate")}>
 								{(field: AnyFieldApi) => (
-									<BgtDatePicker
-										field={field}
-										disabled={isPending}
-										label={t("added-date.label")}
-										placeholder={t("added-date.placeholder")}
-									/>
+									<BgtDatePicker field={field} disabled={isPending} label={t("added-date.label")} />
 								)}
 							</form.Field>
 							<form.Field name="state" validators={zodValidator(BggSearchSchema, "state")}>
@@ -133,5 +129,13 @@ function RouteComponent() {
 				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

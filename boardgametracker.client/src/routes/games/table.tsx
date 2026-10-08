@@ -14,18 +14,20 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useTimeouts } from "@/hooks/useTimeouts";
 import { type Game, GameState, QUERY_KEYS } from "@/models";
-import { isPriceError } from "@/models/Games/GamePrice";
 import { getTrackedPricesCall } from "@/services/gameService";
 import { getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
 import { RoundDecimal } from "@/utils/numberUtils";
-import { formatPrice } from "@/utils/priceUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
 import { EditableSelectCell } from "./-components/EditableSelectCell";
+import { GameTableCards, type GameTableColumn } from "./-components/GameTableCards";
+import { LivePrice, withStateChange } from "./-components/LivePrice";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
 import { useGamesData } from "./-hooks/useGamesData";
 import { useInlineGameUpdate } from "./-hooks/useInlineGameUpdate";
@@ -36,10 +38,16 @@ export const Route = createFileRoute("/games/table")({
 
 const ANY = "any";
 
+interface EditingCell {
+	gameId: number;
+	column: GameTableColumn;
+}
+
 function RouteComponent() {
 	const { t, i18n } = useTranslation(["games", "game", "common"]);
 	const router = useRouter();
 	const { games, isLoading } = useGamesData();
+	const { canWrite } = usePermissions();
 	const { updateGame } = useInlineGameUpdate();
 	const settingsQuery = useQuery(getSettings());
 	const currency = settingsQuery.data?.currency;
@@ -50,6 +58,13 @@ function RouteComponent() {
 	const [stateFilter, setStateFilter] = useState<string>(GameState.Wanted);
 	const [languageFilter, setLanguageFilter] = useState<string>(ANY);
 	const [inStockOnly, setInStockOnly] = useState(false);
+	const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
+	const stopEdit = useCallback(() => setEditingCell(null), []);
+	const startEdit = useCallback((gameId: number, column: GameTableColumn) => setEditingCell({ gameId, column }), []);
+	const isEditing = useCallback(
+		(gameId: number, column: EditingCell["column"]) => editingCell?.gameId === gameId && editingCell.column === column,
+		[editingCell],
+	);
 
 	const queryClient = useQueryClient();
 	const showLivePrices = changeDetectionConfigured;
@@ -58,12 +73,13 @@ function RouteComponent() {
 		() => new Map((trackedPricesQuery.data ?? []).map((price) => [price.gameId, price])),
 		[trackedPricesQuery.data],
 	);
+	const schedule = useTimeouts();
 	const refreshPricesMutation = useMutation({
 		mutationFn: () => getTrackedPricesCall(true),
 		onSuccess: (data) => {
 			queryClient.setQueryData([QUERY_KEYS.trackedPrices], data);
 			if (data.some((price) => price.recheckQueued)) {
-				setTimeout(() => {
+				schedule(() => {
 					getTrackedPricesCall(true)
 						.then((fresh) => queryClient.setQueryData([QUERY_KEYS.trackedPrices], fresh))
 						.catch(() => {});
@@ -95,7 +111,8 @@ function RouteComponent() {
 	);
 
 	const totalPrice = useMemo(() => filtered.reduce((sum, game) => sum + (game.buyingPrice ?? 0), 0), [filtered]);
-	const meanPrice = filtered.length > 0 ? RoundDecimal(totalPrice / filtered.length, 0.1) : 0;
+	const pricedCount = useMemo(() => filtered.filter((game) => game.buyingPrice != null).length, [filtered]);
+	const meanPrice = pricedCount > 0 ? RoundDecimal(totalPrice / pricedCount, 0.1) : 0;
 
 	const stateItems = useMemo(
 		() => [
@@ -179,9 +196,13 @@ function RouteComponent() {
 				header: t("games:columns.language"),
 				cell: ({ row }) => (
 					<EditableSelectCell
+						readOnly={!canWrite}
 						value={row.original.language ?? LANGUAGE_NONE}
 						items={languageEditItems}
 						hasSearch
+						editing={isEditing(row.original.id, "language")}
+						onStartEdit={() => startEdit(row.original.id, "language")}
+						onStopEdit={stopEdit}
 						onChange={(language) =>
 							updateGame({ ...row.original, language: language === LANGUAGE_NONE ? null : language })
 						}
@@ -194,16 +215,15 @@ function RouteComponent() {
 				header: t("games:columns.state"),
 				cell: ({ row }) => (
 					<EditableSelectCell
+						readOnly={!canWrite}
 						value={row.original.state}
 						items={stateEditItems}
-						onChange={(state) => {
-							const livePrice = priceMap.get(row.original.id);
-							const prefill =
-								state === GameState.Owned && !row.original.buyingPrice && livePrice?.price != null
-									? { buyingPrice: livePrice.price }
-									: {};
-							updateGame({ ...row.original, state: state as GameState, ...prefill });
-						}}
+						editing={isEditing(row.original.id, "state")}
+						onStartEdit={() => startEdit(row.original.id, "state")}
+						onStopEdit={stopEdit}
+						onChange={(state) =>
+							updateGame(withStateChange(row.original, state as GameState, priceMap.get(row.original.id)))
+						}
 					/>
 				),
 				meta: { hideOnMobile: true },
@@ -220,10 +240,14 @@ function RouteComponent() {
 				header: t("games:columns.price"),
 				cell: ({ row }) => (
 					<EditableNumberCell
+						readOnly={!canWrite}
 						value={row.original.buyingPrice}
 						step={0.01}
 						min={0}
 						prefix={currency}
+						editing={isEditing(row.original.id, "buyingPrice")}
+						onStartEdit={() => startEdit(row.original.id, "buyingPrice")}
+						onStopEdit={stopEdit}
 						onChange={(buyingPrice) => updateGame({ ...row.original, buyingPrice })}
 					/>
 				),
@@ -276,18 +300,9 @@ function RouteComponent() {
 							header: t("games:columns.current-price"),
 							accessorFn: (game: Game) => priceMap.get(game.id)?.price ?? undefined,
 							sortUndefined: "last" as const,
-							cell: ({ row }: { row: { original: Game } }) => {
-								const livePrice = priceMap.get(row.original.id);
-								if (livePrice && isPriceError(livePrice.status)) {
-									return (
-										<span title={t("games:live-price.unavailable")} className="text-red-400">
-											!
-										</span>
-									);
-								}
-								if (!livePrice?.available || livePrice.price == null) return "-";
-								return formatPrice(livePrice.price, livePrice.currency ?? currency, uiLanguage);
-							},
+							cell: ({ row }: { row: { original: Game } }) => (
+								<LivePrice livePrice={priceMap.get(row.original.id)} currency={currency} uiLanguage={uiLanguage} />
+							),
 							meta: { hideOnMobile: true },
 						},
 					]
@@ -304,6 +319,10 @@ function RouteComponent() {
 			languageEditItems,
 			showLivePrices,
 			priceMap,
+			isEditing,
+			startEdit,
+			stopEdit,
+			canWrite,
 		],
 	);
 
@@ -356,13 +375,33 @@ function RouteComponent() {
 					/>
 					<BgtTextStatistic title={t("games:table.mean-price")} content={meanPrice} prefix={currency} />
 				</div>
-				<BgtDataTable
-					columns={columns}
-					data={filtered}
-					isLoading={isLoading}
-					noDataMessage={t("games:table.empty")}
-					widths={columnWidths}
-				/>
+				<div className="hidden md:block">
+					<BgtDataTable
+						columns={columns}
+						data={filtered}
+						isLoading={isLoading}
+						noDataMessage={t("games:table.empty")}
+						widths={columnWidths}
+					/>
+				</div>
+				<div className="md:hidden">
+					<GameTableCards
+						readOnly={!canWrite}
+						priceMap={showLivePrices ? priceMap : undefined}
+						uiLanguage={uiLanguage}
+						games={filtered}
+						isLoading={isLoading}
+						currency={currency}
+						dateFormat={dateFormat}
+						stateItems={stateEditItems}
+						languageItems={languageEditItems}
+						formatRange={formatRange}
+						isEditing={isEditing}
+						startEdit={startEdit}
+						stopEdit={stopEdit}
+						updateGame={updateGame}
+					/>
+				</div>
 			</BgtPageContent>
 		</BgtPage>
 	);

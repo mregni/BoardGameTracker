@@ -11,5 +11,5 @@ public interface ILoanService
     Task Delete(int id);
     Task<Loan> LoanGameToPlayer(CreateLoanCommand command);
     Task<Loan> ReturnLoan(ReturnLoanCommand command);
-    Task<int> CountActiveLoans();
+    Task<int> CountActiveLoans(CancellationToken cancellationToken = default);
 }

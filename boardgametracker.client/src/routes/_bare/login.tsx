@@ -17,6 +17,8 @@ import { getOidcProviderCall } from "@/services/authService";
 import { getSettings } from "@/services/queries/settings";
 import { apiUrl } from "@/utils/apiUrl";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { safeRedirectPath } from "@/utils/redirectUtils";
+import { loginErrorKey } from "./-utils/loginError";
 
 const loginSearchSchema = z.object({
 	redirect: z.string().optional(),
@@ -30,7 +32,8 @@ export const Route = createFileRoute("/_bare/login")({
 function LoginPage() {
 	const { t } = useTranslation("auth");
 	const navigate = useNavigate();
-	const { login, isLoading } = useAuth();
+	const login = useAuth((s) => s.login);
+	const isLoading = useAuth((s) => s.isLoading);
 	const [error, setError] = useState<string | null>(null);
 	const { redirect } = Route.useSearch();
 
@@ -50,19 +53,18 @@ function LoginPage() {
 			setError(null);
 			try {
 				await login({ username: value.username, password: value.password });
-				await navigate({ to: redirect ?? "/" });
-			} catch {
-				setError(t("invalid-credentials"));
+				await navigate({ to: safeRedirectPath(redirect) });
+			} catch (e) {
+				const fallback = t("invalid-credentials");
+				const key = loginErrorKey(e);
+				setError(key ? t(key, { defaultValue: fallback }) : fallback);
 			}
 		},
 	});
 
 	const handleOidcLogin = (provider: OidcProvider) => {
-		const callbackUrl = new URL("/auth-callback", globalThis.location.origin);
-		if (redirect) {
-			callbackUrl.searchParams.set("redirect", redirect);
-		}
-		globalThis.location.href = `${apiUrl}auth/oidc/${provider.name}/login?redirectUri=${encodeURIComponent(callbackUrl.toString())}`;
+		const target = safeRedirectPath(redirect);
+		globalThis.location.href = `${apiUrl}auth/oidc/${encodeURIComponent(provider.name)}/login?redirect=${encodeURIComponent(target)}`;
 	};
 
 	return (
@@ -148,7 +150,7 @@ function LoginPage() {
 									style={oidcProvider.buttonColor ? { borderColor: oidcProvider.buttonColor } : undefined}
 								>
 									{oidcProvider.iconUrl && <img src={oidcProvider.iconUrl} alt="" className="w-5 h-5" />}
-									{oidcProvider.name}
+									{oidcProvider.displayName}
 								</BgtButton>
 							</div>
 						</>

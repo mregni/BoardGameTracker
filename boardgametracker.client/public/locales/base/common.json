@@ -89,13 +89,6 @@
   "day_one": "{{count}} day",
   "day_other": "{{count}} days",
   "id": "Id",
-  "flags": {
-    "header": "Tags",
-    "shortest-game": "Shortest",
-    "longest-game": "Longest",
-    "highest-score": "High score",
-    "lowest-score": "Lowest score"
-  },
   "count": "Count",
   "game_one": "{{count}} game",
   "game_other": "{{count}} games",
@@ -124,5 +117,21 @@
     "thursday": "Thursday",
     "friday": "Friday",
     "saturday": "Saturday"
-  }
+  },
+  "search": "Search...",
+  "required": "Required",
+  "sessions-count_one": "{{count}} session",
+  "sessions-count_other": "{{count}} sessions",
+  "open-calendar": "Open calendar",
+  "clear-date": "Clear date",
+  "previous-month": "Previous month",
+  "next-month": "Next month",
+  "back": "Back",
+  "logout": "Log out",
+  "today": "Today",
+  "retry": "Try again",
+  "click-to-edit": "Click to edit",
+  "leaderboard": "Leaderboard",
+  "hour-short": "h",
+  "minute-short": "m"
 }

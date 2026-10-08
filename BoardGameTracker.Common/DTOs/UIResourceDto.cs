@@ -29,4 +29,5 @@ public class UIResourceDto
     public ChangeDetectionConfigStatusDto ChangeDetectionStatus { get; set; } = new();
     public string ChangeDetectionBaseUrl { get; set; } = string.Empty;
     public string? ChangeDetectionApiKey { get; set; } = string.Empty;
+    public Dictionary<string, string> EnvironmentOverrides { get; set; } = new();
 }

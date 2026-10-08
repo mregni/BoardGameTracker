@@ -10,6 +10,7 @@ import { SettingsSchema } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { DangerZoneSection } from "./DangerZoneSection";
+import { EnvOverrideHint } from "./EnvOverrideHint";
 import { SettingsSection } from "./SettingsSection";
 import { SettingsToggle } from "./SettingsToggle";
 
@@ -30,8 +31,9 @@ export const AdvancedSettings = withForm({
 	...settingsFormOpts,
 	props: {
 		disabled: false,
+		overrides: {} as Record<string, string>,
 	},
-	render: function Render({ form, disabled }) {
+	render: function Render({ form, disabled, overrides }) {
 		const { t } = useTranslation("settings");
 
 		return (
@@ -43,10 +45,11 @@ export const AdvancedSettings = withForm({
 								field={field}
 								label={t("advanced.updates.enabled.label")}
 								description={t("advanced.updates.enabled.description")}
-								disabled={disabled}
+								disabled={disabled || !!overrides.updateCheckEnabled}
 							/>
 						)}
 					</form.Field>
+					<EnvOverrideHint variable={overrides.updateCheckEnabled} />
 
 					<form.Field name="versionTrack" validators={zodValidator(SettingsSchema, "versionTrack")}>
 						{(field: AnyFieldApi) => (
@@ -60,7 +63,7 @@ export const AdvancedSettings = withForm({
 											key={track.id}
 											type="button"
 											onClick={() => field.handleChange(track.id)}
-											disabled={disabled}
+											disabled={disabled || !!overrides.versionTrack}
 											className={cx(
 												"p-3 rounded-lg border transition-all text-left",
 												field.state.value === track.id
@@ -84,6 +87,7 @@ export const AdvancedSettings = withForm({
 										</button>
 									))}
 								</div>
+								<EnvOverrideHint variable={overrides.versionTrack} />
 							</div>
 						)}
 					</form.Field>

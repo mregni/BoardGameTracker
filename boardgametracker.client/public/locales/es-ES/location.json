@@ -1,32 +1,32 @@
 {
   "empty": {
-    "title": "No locations added yet",
-    "description": "You haven't added any locations yet. Start by adding your first location to track where you play your games."
+    "title": "Aún no hay ubicaciones",
+    "description": "Aún no has añadido ninguna ubicación. Empieza añadiendo tu primera ubicación para registrar dónde juegas."
   },
   "new": {
-    "button": "Add new Location",
-    "title": "Create new location",
-    "description": "Enter the location name to create a new one.",
+    "button": "Añadir nueva ubicación",
+    "title": "Crear nueva ubicación",
+    "description": "Introduce el nombre de la ubicación para crear una nueva.",
     "name": {
-      "placeholder": "Location name",
-      "required": "Location name is required"
+      "placeholder": "Nombre de la ubicación",
+      "required": "El nombre de la ubicación es obligatorio"
     },
-    "save": "Create location"
+    "save": "Crear ubicación"
   },
   "edit": {
-    "title": "Edit location"
+    "title": "Editar ubicación"
   },
   "notifications": {
-    "created": "Location is succesfully created",
-    "create-failed": "Failed creating location",
-    "failed": "Failed creating location",
-    "update": "Location is succesfully updated",
-    "update-failed": "Failed updating location",
-    "deleted": "Location is succesfully deleted",
-    "delete-failed": "Failed deleting location"
+    "created": "Ubicación creada correctamente",
+    "create-failed": "Error al crear la ubicación",
+    "failed": "Error al crear la ubicación",
+    "update": "Ubicación actualizada correctamente",
+    "update-failed": "Error al actualizar la ubicación",
+    "deleted": "Ubicación eliminada correctamente",
+    "delete-failed": "Error al eliminar la ubicación"
   },
   "delete": {
-    "description": "Are you sure you want to delete location '{{name}}'?",
-    "extra-description": "The location is connected to {{count}} game sessions, they will be disconnected."
+    "description": "¿Seguro que quieres eliminar la ubicación '{{name}}'?",
+    "extra-description": "La ubicación está vinculada a {{count}} partidas, que se desvincularán."
   }
 }

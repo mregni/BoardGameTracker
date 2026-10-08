@@ -1,5 +1,6 @@
 ﻿using Ardalis.GuardClauses;
 using BoardGameTracker.Common.Entities.Helpers;
+using BoardGameTracker.Common.Exceptions;
 
 namespace BoardGameTracker.Common.Entities;
 
@@ -15,8 +16,8 @@ public class Loan : HasId
 
     public Loan(int gameId, int playerId, DateTime loanDate)
     {
-        GameId = Guard.Against.Null(gameId);
-        PlayerId = Guard.Against.Null(playerId);
+        GameId = Guard.Against.Negative(gameId);
+        PlayerId = Guard.Against.NegativeOrZero(playerId);
 
         LoanDate = loanDate;
     }
@@ -28,7 +29,9 @@ public class Loan : HasId
         ValidateReturnDate(returnedDate, LoanDate);
 
         if (ReturnedDate != null)
-            throw new InvalidOperationException("Loan has already been returned.");
+        {
+            throw new DomainException(Constants.Errors.LoanAlreadyReturned);
+        }
 
         ReturnedDate = returnedDate;
     }
@@ -48,6 +51,12 @@ public class Loan : HasId
 
         var effectiveEnd = ReturnedDate ?? DueDate;
         return effectiveEnd == null || date < effectiveEnd.Value;
+    }
+
+    public bool Overlaps(DateTime start, DateTime? end)
+    {
+        var effectiveEnd = ReturnedDate ?? DueDate;
+        return (end == null || LoanDate < end.Value) && (effectiveEnd == null || start < effectiveEnd.Value);
     }
 
     public void SetDueDate(DateTime? dueDate)
@@ -81,7 +90,7 @@ public class Loan : HasId
     {
         if (dueDate < loanDate)
         {
-            throw new ArgumentException("Due date cannot be before loan date.", nameof(dueDate));
+            throw new DomainException(Constants.Errors.LoanDueBeforeStart);
         }
     }
 
@@ -89,7 +98,7 @@ public class Loan : HasId
     {
         if (returnedDate < loanDate)
         {
-            throw new ArgumentException("Return date cannot be before loan date.", nameof(returnedDate));
+            throw new DomainException(Constants.Errors.LoanReturnedBeforeStart);
         }
     }
 }

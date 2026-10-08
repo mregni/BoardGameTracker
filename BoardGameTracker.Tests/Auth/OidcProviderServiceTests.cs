@@ -1,10 +1,12 @@
 using System;
 using System.Threading.Tasks;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -18,6 +20,7 @@ public class OidcProviderServiceTests : IDisposable
     private readonly MainDbContext _context;
     private readonly MemoryCache _cache;
     private readonly Mock<ILogger<OidcProviderService>> _loggerMock;
+    private readonly SecretProtector _secretProtector;
     private readonly OidcProviderService _service;
 
     public OidcProviderServiceTests()
@@ -29,7 +32,8 @@ public class OidcProviderServiceTests : IDisposable
 
         _cache = new MemoryCache(new MemoryCacheOptions());
         _loggerMock = new Mock<ILogger<OidcProviderService>>();
-        _service = new OidcProviderService(_context, _cache, _loggerMock.Object);
+        _secretProtector = new SecretProtector(new EphemeralDataProtectionProvider(), Mock.Of<ILogger<SecretProtector>>());
+        _service = new OidcProviderService(_context, _cache, _secretProtector, _loggerMock.Object);
     }
 
     public void Dispose()
@@ -94,6 +98,34 @@ public class OidcProviderServiceTests : IDisposable
 
     #region CreateAsync
 
+    [Theory]
+    [InlineData("http://auth.example.com")]
+    [InlineData("ftp://accounts.google.com")]
+    public async Task CreateAsync_ShouldRejectAnInsecurePublicAuthority(string authority)
+    {
+        var act = () => _service.CreateAsync(
+            name: "sso",
+            displayName: "SSO",
+            authority: authority,
+            clientId: "client-id",
+            clientSecret: null,
+            scopes: "openid",
+            autoProvisionUsers: true,
+            authorizationEndpoint: null,
+            tokenEndpoint: null,
+            userInfoEndpoint: null,
+            usernameClaimType: null,
+            emailClaimType: null,
+            displayNameClaimType: null,
+            rolesClaimType: null,
+            adminGroupValue: null,
+            iconUrl: null,
+            buttonColor: null);
+
+        await act.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.InsecureAuthority);
+        (await _context.OidcProviders.CountAsync()).Should().Be(0);
+    }
+
     [Fact]
     public async Task CreateAsync_ShouldCreateAndReturnProvider_WhenNameIsUnique()
     {
@@ -121,7 +153,8 @@ public class OidcProviderServiceTests : IDisposable
         result.DisplayName.Should().Be("Google");
         result.Authority.Should().Be("https://accounts.google.com");
         result.ClientId.Should().Be("client-id");
-        result.ClientSecret.Should().Be("secret");
+        result.ClientSecret.Should().NotBe("secret");
+        _secretProtector.Unprotect(result.ClientSecret!).Should().Be("secret");
         result.Scopes.Should().Be("openid profile email");
         result.AutoProvisionUsers.Should().BeTrue();
 
@@ -259,7 +292,8 @@ public class OidcProviderServiceTests : IDisposable
         result.DisplayName.Should().Be("Google Updated");
         result.Authority.Should().Be("https://accounts.google.com/v2");
         result.ClientId.Should().Be("new-client-id");
-        result.ClientSecret.Should().Be("new-secret");
+        result.ClientSecret.Should().NotBe("new-secret");
+        _secretProtector.Unprotect(result.ClientSecret!).Should().Be("new-secret");
         result.Enabled.Should().BeFalse();
         result.Scopes.Should().Be("openid email");
         result.AutoProvisionUsers.Should().BeFalse();
@@ -269,6 +303,52 @@ public class OidcProviderServiceTests : IDisposable
         stored!.DisplayName.Should().Be("Google Updated");
         stored.ClientId.Should().Be("new-client-id");
     }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldKeepTheStoredSecret_WhenNoSecretIsSent()
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        await UpdateSecretAsync(provider.Id, "stored-secret");
+
+        var result = await UpdateSecretAsync(provider.Id, null);
+
+        _secretProtector.Unprotect(result.ClientSecret!).Should().Be("stored-secret");
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldClearTheSecret_WhenAnEmptySecretIsSent()
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        await UpdateSecretAsync(provider.Id, "stored-secret");
+
+        var result = await UpdateSecretAsync(provider.Id, string.Empty);
+
+        result.ClientSecret.Should().BeEmpty();
+    }
+
+    private Task<OidcProvider> UpdateSecretAsync(int id, string? clientSecret) => _service.UpdateAsync(
+        id: id,
+        displayName: "Google",
+        authority: "https://accounts.google.com",
+        clientId: "client-id",
+        clientSecret: clientSecret,
+        enabled: true,
+        scopes: "openid profile email",
+        autoProvisionUsers: true,
+        authorizationEndpoint: null,
+        tokenEndpoint: null,
+        userInfoEndpoint: null,
+        usernameClaimType: null,
+        emailClaimType: null,
+        displayNameClaimType: null,
+        rolesClaimType: null,
+        adminGroupValue: null,
+        iconUrl: null,
+        buttonColor: null);
 
     [Fact]
     public async Task UpdateAsync_ShouldThrowEntityNotFoundException_WhenProviderDoesNotExist()
@@ -422,6 +502,57 @@ public class OidcProviderServiceTests : IDisposable
         var remainingLogins = await _context.ExternalLogins.ToListAsync(TestContext.Current.CancellationToken);
         remainingLogins.Should().ContainSingle(x => x.Provider == "other");
     }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldUnlinkEveryAccount_WhenTheAuthorityPointsElsewhere()
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "key-1"));
+        _context.ExternalLogins.Add(new ExternalLogin("user-3", "other", "key-3"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await UpdateAuthorityAsync(provider.Id, "https://sso.example.com/realms/games");
+
+        var remainingLogins = await _context.ExternalLogins.ToListAsync(TestContext.Current.CancellationToken);
+        remainingLogins.Should().ContainSingle(x => x.Provider == "other");
+    }
+
+    [Theory]
+    [InlineData("https://accounts.google.com")]
+    [InlineData("https://accounts.google.com/")]
+    [InlineData("HTTPS://Accounts.Google.com")]
+    public async Task UpdateAsync_ShouldKeepTheLinks_WhenTheAuthorityIsUnchanged(string authority)
+    {
+        var provider = new OidcProvider("google", "Google", "https://accounts.google.com", "client-id");
+        _context.OidcProviders.Add(provider);
+        _context.ExternalLogins.Add(new ExternalLogin("user-1", "google", "key-1"));
+        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await UpdateAuthorityAsync(provider.Id, authority);
+
+        (await _context.ExternalLogins.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
+    }
+
+    private Task<OidcProvider> UpdateAuthorityAsync(int id, string authority) => _service.UpdateAsync(
+        id: id,
+        displayName: "Google",
+        authority: authority,
+        clientId: "client-id",
+        clientSecret: null,
+        enabled: true,
+        scopes: "openid profile email",
+        autoProvisionUsers: true,
+        authorizationEndpoint: null,
+        tokenEndpoint: null,
+        userInfoEndpoint: null,
+        usernameClaimType: null,
+        emailClaimType: null,
+        displayNameClaimType: null,
+        rolesClaimType: null,
+        adminGroupValue: null,
+        iconUrl: null,
+        buttonColor: null);
 
     [Fact]
     public async Task DeleteAsync_ShouldInvalidateCachedDiscoveryDocument()

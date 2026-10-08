@@ -5,31 +5,48 @@ using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Configuration;
 
 public class ConfigRepository : IConfigRepository
 {
     private readonly MainDbContext _context;
+    private readonly ILogger<ConfigRepository> _logger;
 
-    public ConfigRepository(MainDbContext context)
+    public ConfigRepository(MainDbContext context, ILogger<ConfigRepository> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public Task<T> GetConfigValueAsync<T>(string key)
     {
-        var envValue = Environment.GetEnvironmentVariable(key.ToUpperInvariant());
+        var variable = key.ToUpperInvariant();
+        var envValue = Environment.GetEnvironmentVariable(variable);
         if (!string.IsNullOrWhiteSpace(envValue))
         {
             if (TypeConverter.TryConvertFromString<T>(envValue.Trim(), out var result))
             {
                 return Task.FromResult(result);
             }
-            throw new ConfigMissingException(key);
+
+            _logger.LogWarning("Environment variable {Variable} has a value that cannot be read as {Type}; using the stored setting instead", variable, typeof(T).Name);
         }
 
         return GetConfigValueFromDbAsync<T>(key);
+    }
+
+    public async Task<T> GetConfigValueOrDefaultAsync<T>(string key, T fallback)
+    {
+        try
+        {
+            return await GetConfigValueAsync<T>(key);
+        }
+        catch (ConfigMissingException)
+        {
+            return fallback;
+        }
     }
 
     public async Task SetConfigValueAsync<T>(string key, T value)
@@ -48,6 +65,7 @@ public class ConfigRepository : IConfigRepository
             try
             {
                 await _context.SaveChangesAsync();
+                _context.Entry(config).State = EntityState.Detached;
             }
             catch (DbUpdateException)
             {
@@ -62,12 +80,14 @@ public class ConfigRepository : IConfigRepository
     public async Task<Dictionary<string, string>> GetAllConfigsAsync()
     {
         return await _context.Config
+            .AsNoTracking()
             .ToDictionaryAsync(c => c.Key, c => c.Value);
     }
 
     public async Task<Dictionary<string, string>> GetConfigsByPrefixAsync(string prefix)
     {
         var configs = await _context.Config
+            .AsNoTracking()
             .Where(c => c.Key.StartsWith(prefix))
             .ToDictionaryAsync(c => c.Key, c => c.Value);
         return configs;
@@ -95,11 +115,15 @@ public class ConfigRepository : IConfigRepository
 
     private async Task<T> GetConfigValueFromDbAsync<T>(string key)
     {
+        var normalizedKey = key.ToLowerInvariant();
         var config = await _context.Config
-            .FirstOrDefaultAsync(c => c.Key == key.ToLowerInvariant());
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Key == normalizedKey);
 
         if (config?.Value is null)
+        {
             throw new ConfigMissingException(key);
+        }
 
         if (TypeConverter.TryConvertFromString<T>(config.Value, out var result))
         {

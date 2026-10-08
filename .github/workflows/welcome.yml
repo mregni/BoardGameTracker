@@ -41,8 +41,8 @@ jobs:
             Before I review, here's a quick checklist:
 
             - [ ] PR title follows conventional commits format (`feat:`, `fix:`, `docs:`, `chore:`, etc.)
-            - [ ] If you added or changed UI text, translation keys are updated in all three locale files
-                  (`en-US.json`, `nl-NL.json`, `nl-BE.json` under `boardgametracker.client/public/locales/`)
+            - [ ] If you added or changed UI text, the new keys are in every folder under
+                  `boardgametracker.client/public/locales/` (`base`, `en-US`, `es-ES`, `nl-BE`, `nl-NL`; the `localeSync` test fails otherwise)
             - [ ] If you changed backend logic, relevant xUnit tests are added or updated
             - [ ] If you changed an API response shape, the corresponding DTO and extension method are updated
 

@@ -10,6 +10,7 @@ import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import type { BgtSelectImageItem, BgtSelectItem } from "@/models";
 import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
 import { FormFieldWrapper } from "./FormFieldWrapper";
+import { useKeyboardResizeGuard } from "./useKeyboardResizeGuard";
 
 export interface BgtSelectProps {
 	field: AnyFieldApi;
@@ -27,6 +28,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [open, setOpen] = useState(false);
 	const searchInputRef = useRef<HTMLInputElement>(null);
+	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
 
 	const currentValue = field.state.value?.toString();
 
@@ -58,12 +60,18 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 		[field, items],
 	);
 
-	const handleOpenChange = useCallback((isOpen: boolean) => {
-		setOpen(isOpen);
-		if (!isOpen) {
-			setSearchTerm("");
-		}
-	}, []);
+	const handleOpenChange = useCallback(
+		(isOpen: boolean) => {
+			if (!isOpen && isKeyboardResize()) {
+				return;
+			}
+			setOpen(isOpen);
+			if (!isOpen) {
+				setSearchTerm("");
+			}
+		},
+		[isKeyboardResize],
+	);
 
 	const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchTerm(e.target.value);
@@ -76,16 +84,6 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 			}, 0);
 		}
 	}, [open]);
-
-	useEffect(() => {
-		const onResize = (event: Event) => {
-			event.stopImmediatePropagation();
-		};
-		window.addEventListener("resize", onResize);
-		return () => {
-			window.removeEventListener("resize", onResize);
-		};
-	}, []);
 
 	return (
 		<FormFieldWrapper label={label} errors={field.state.meta.errors}>
@@ -127,7 +125,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 										type="text"
 										value={searchTerm}
 										onChange={handleSearchChange}
-										placeholder="Search..."
+										placeholder={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										onClick={(e) => e.stopPropagation()}
 										onKeyDown={(e) => {

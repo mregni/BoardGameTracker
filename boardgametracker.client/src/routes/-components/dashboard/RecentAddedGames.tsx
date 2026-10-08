@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import Sparkles from "@/assets/icons/sparkles.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { RecentGame } from "@/models";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
@@ -18,11 +19,15 @@ export const RecentAddedGamesCard = ({ games, className }: Props) => {
 
 	return (
 		<BgtCard title={t("recent-added-games")} icon={Sparkles} className={className}>
-			<div className="flex flex-col gap-3">
-				{games.map((game) => (
-					<GameCardItem key={game.id} game={game} />
-				))}
-			</div>
+			{games.length === 0 ? (
+				<BgtNoData />
+			) : (
+				<div className="flex flex-col gap-3">
+					{games.map((game) => (
+						<GameCardItem key={game.id} game={game} />
+					))}
+				</div>
+			)}
 		</BgtCard>
 	);
 };

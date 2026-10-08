@@ -2,28 +2,27 @@
 
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
+namespace BoardGameTracker.Core.Datastore.Migrations.Postgres;
+
+/// <inheritdoc />
+public partial class RemovingBot : Migration
 {
     /// <inheritdoc />
-    public partial class RemovingBot : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "IsBot",
-                table: "PlayerSession");
-        }
+        migrationBuilder.DropColumn(
+            name: "IsBot",
+            table: "PlayerSession");
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsBot",
-                table: "PlayerSession",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AddColumn<bool>(
+            name: "IsBot",
+            table: "PlayerSession",
+            type: "boolean",
+            nullable: false,
+            defaultValue: false);
     }
 }

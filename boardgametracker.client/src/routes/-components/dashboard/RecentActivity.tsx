@@ -51,7 +51,7 @@ const ActivityItem = ({ activity }: ItemProps) => {
 				</Link>
 				<div className="flex-1">
 					<BgtText color="white">
-						{activity.winnerName && (
+						{activity.winnerName && activity.winnerId !== null && (
 							<>
 								<Link className="font-bold" to="/players/$playerId" params={{ playerId: activity.winnerId }}>
 									{activity.winnerName}

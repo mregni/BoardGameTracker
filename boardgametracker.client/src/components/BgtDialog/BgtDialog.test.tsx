@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
-import { render, renderWithTheme, screen } from "@/test/test-utils";
+import { describe, expect, it, vi } from "vitest";
+import { render, renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogDescription, BgtDialogTitle } from "./BgtDialog";
 
 describe("BgtDialog", () => {
 	describe("BgtDialog Root", () => {
 		it("should render children when open", () => {
 			renderWithTheme(
-				<BgtDialog open={true}>
+				<BgtDialog open={true} onClose={vi.fn()}>
 					<div data-testid="dialog-child">Dialog Content</div>
 				</BgtDialog>,
 			);
@@ -15,7 +15,7 @@ describe("BgtDialog", () => {
 
 		it("should render children when closed", () => {
 			renderWithTheme(
-				<BgtDialog open={false}>
+				<BgtDialog open={false} onClose={vi.fn()}>
 					<div data-testid="dialog-child">Dialog Content</div>
 				</BgtDialog>,
 			);
@@ -26,7 +26,7 @@ describe("BgtDialog", () => {
 	describe("BgtDialogTitle", () => {
 		it("should render title text", () => {
 			renderWithTheme(
-				<BgtDialog open={true}>
+				<BgtDialog open={true} onClose={vi.fn()}>
 					<BgtDialogContent>
 						<BgtDialogTitle>My Dialog Title</BgtDialogTitle>
 					</BgtDialogContent>
@@ -37,7 +37,7 @@ describe("BgtDialog", () => {
 
 		it("should apply custom className", () => {
 			renderWithTheme(
-				<BgtDialog open={true}>
+				<BgtDialog open={true} onClose={vi.fn()}>
 					<BgtDialogContent>
 						<BgtDialogTitle className="custom-title">Title</BgtDialogTitle>
 					</BgtDialogContent>
@@ -51,7 +51,7 @@ describe("BgtDialog", () => {
 	describe("BgtDialogDescription", () => {
 		it("should render description text", () => {
 			renderWithTheme(
-				<BgtDialog open={true}>
+				<BgtDialog open={true} onClose={vi.fn()}>
 					<BgtDialogContent>
 						<BgtDialogDescription>This is a description</BgtDialogDescription>
 					</BgtDialogContent>
@@ -62,7 +62,7 @@ describe("BgtDialog", () => {
 
 		it("should apply custom className", () => {
 			renderWithTheme(
-				<BgtDialog open={true}>
+				<BgtDialog open={true} onClose={vi.fn()}>
 					<BgtDialogContent>
 						<BgtDialogDescription className="custom-desc">Description</BgtDialogDescription>
 					</BgtDialogContent>
@@ -77,8 +77,8 @@ describe("BgtDialog", () => {
 		it("should render children", () => {
 			render(
 				<BgtDialogClose>
-					<button>Cancel</button>
-					<button>Confirm</button>
+					<button type="button">Cancel</button>
+					<button type="button">Confirm</button>
 				</BgtDialogClose>,
 			);
 			expect(screen.getByText("Cancel")).toBeInTheDocument();
@@ -88,7 +88,7 @@ describe("BgtDialog", () => {
 		it("should apply custom className", () => {
 			const { container } = render(
 				<BgtDialogClose className="custom-close">
-					<button>Cancel</button>
+					<button type="button">Cancel</button>
 				</BgtDialogClose>,
 			);
 			const wrapper = container.firstChild as HTMLElement;
@@ -97,9 +97,24 @@ describe("BgtDialog", () => {
 	});
 
 	describe("BgtDialogContent", () => {
+		it("should close on Escape", async () => {
+			const onClose = vi.fn();
+			renderWithTheme(
+				<BgtDialog open={true} onClose={onClose}>
+					<BgtDialogContent>
+						<BgtDialogTitle>Delete game</BgtDialogTitle>
+					</BgtDialogContent>
+				</BgtDialog>,
+			);
+
+			await userEvent.keyboard("{Escape}");
+
+			expect(onClose).toHaveBeenCalledTimes(1);
+		});
+
 		it("should render children", () => {
 			renderWithTheme(
-				<BgtDialog open={true}>
+				<BgtDialog open={true} onClose={vi.fn()}>
 					<BgtDialogContent>
 						<div data-testid="content-child">Content</div>
 					</BgtDialogContent>
@@ -110,7 +125,7 @@ describe("BgtDialog", () => {
 
 		it("should apply custom className", () => {
 			renderWithTheme(
-				<BgtDialog open={true}>
+				<BgtDialog open={true} onClose={vi.fn()}>
 					<BgtDialogContent className="custom-content" data-testid="dialog-content">
 						Content
 					</BgtDialogContent>
@@ -124,13 +139,13 @@ describe("BgtDialog", () => {
 	describe("Combined Usage", () => {
 		it("should render full dialog structure", () => {
 			renderWithTheme(
-				<BgtDialog open={true}>
+				<BgtDialog open={true} onClose={vi.fn()}>
 					<BgtDialogContent>
 						<BgtDialogTitle>Confirm Action</BgtDialogTitle>
 						<BgtDialogDescription>Are you sure you want to proceed?</BgtDialogDescription>
 						<BgtDialogClose>
-							<button>Cancel</button>
-							<button>Confirm</button>
+							<button type="button">Cancel</button>
+							<button type="button">Confirm</button>
 						</BgtDialogClose>
 					</BgtDialogContent>
 				</BgtDialog>,

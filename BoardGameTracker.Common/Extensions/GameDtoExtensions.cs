@@ -5,6 +5,23 @@ namespace BoardGameTracker.Common.Extensions;
 
 public static class GameDtoExtensions
 {
+    public static GameDto ToPublicDto(this Game game)
+    {
+        return new GameDto
+        {
+            Id = game.Id,
+            Title = game.Title,
+            YearPublished = game.YearPublished,
+            Image = game.Image,
+            MinPlayers = game.PlayerCount?.Min,
+            MaxPlayers = game.PlayerCount?.Max,
+            MinPlayTime = game.PlayTime?.MinMinutes,
+            MaxPlayTime = game.PlayTime?.MaxMinutes,
+            MinAge = game.MinAge,
+            HasScoring = game.HasScoring,
+        };
+    }
+
     public static GameDto ToDto(this Game game)
     {
         return new GameDto
@@ -23,7 +40,7 @@ public static class GameDtoExtensions
             MaxPlayTime = game.PlayTime?.MaxMinutes,
             MinAge = game.MinAge,
             Rating = game.Rating?.Value,
-            isLoaned = game.IsLoaned,
+            IsLoaned = game.IsLoaned,
             Weight = game.Weight?.Value,
             BggId = game.BggId,
             State = game.State,

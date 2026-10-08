@@ -17,7 +17,6 @@ describe("BgtPlayerAvatar", () => {
 		score: 100,
 		won: false,
 		firstPlay: false,
-		isBot: false,
 		...overrides,
 	});
 

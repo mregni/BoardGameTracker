@@ -40,5 +40,6 @@
     "placeholder": "Haz una pregunta sobre las reglas…",
     "disabled-placeholder": "Selecciona un juego con un manual indexado para hacer una pregunta.",
     "send": "Enviar"
-  }
+  },
+  "rate-limited": "Has hecho muchas preguntas en poco tiempo. Espera un minuto e inténtalo de nuevo."
 }

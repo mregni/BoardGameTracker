@@ -2,8 +2,10 @@ using System.Security.Claims;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers.Admin;
@@ -22,6 +24,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType<List<UserDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUsers()
     {
         var users = await _userAdminService.GetAllAsync();
@@ -29,6 +32,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [ProducesResponseType<UserDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUser(string id)
     {
         var user = await _userAdminService.GetByIdAsync(id);
@@ -36,6 +40,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}/role")]
+    [ProducesResponseType<UserDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateUserRole(string id, [FromBody] UpdateUserRoleRequest request)
     {
         var currentUserId = GetCurrentUserId();
@@ -44,6 +49,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [ProducesResponseType<UserDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateUser(string id, [FromBody] AdminUpdateUserRequest request)
     {
         var currentUserId = GetCurrentUserId();
@@ -52,6 +58,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteUser(string id)
     {
         var currentUserId = GetCurrentUserId();
@@ -61,5 +68,5 @@ public class UsersController : ControllerBase
 
     private string GetCurrentUserId() =>
         User.FindFirstValue(ClaimTypes.NameIdentifier)
-        ?? throw new UnauthorizedAccessException("User not authenticated");
+        ?? throw new AuthenticationFailedException(Constants.Errors.NotAuthenticated);
 }

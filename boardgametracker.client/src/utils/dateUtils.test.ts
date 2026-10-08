@@ -4,6 +4,7 @@ import {
 	formatMinutesToDuration,
 	isValidDate,
 	minutesToDuration,
+	normalizeDateFnsFormat,
 	safeParseDate,
 	toDisplay,
 	toDisplayDateTime,
@@ -88,6 +89,24 @@ describe("dateUtils", () => {
 
 		it("should return empty string for invalid date without fallback", () => {
 			expect(toInputDateTime("invalid-date", false)).toBe("");
+		});
+	});
+
+	describe("normalizeDateFnsFormat", () => {
+		it("should keep a valid date-fns pattern", () => {
+			expect(normalizeDateFnsFormat("dd/MM/yyyy", "yy-MM-dd")).toBe("dd/MM/yyyy");
+			expect(normalizeDateFnsFormat("h:mm a", "HH:mm")).toBe("h:mm a");
+		});
+
+		it("should convert moment-style year and day tokens that date-fns rejects", () => {
+			expect(normalizeDateFnsFormat("MM/DD/YYYY", "yy-MM-dd")).toBe("MM/dd/yyyy");
+			expect(normalizeDateFnsFormat("D-M-YY", "yy-MM-dd")).toBe("d-M-yy");
+		});
+
+		it("should fall back when the pattern cannot be formatted", () => {
+			expect(normalizeDateFnsFormat("not a format", "yy-MM-dd")).toBe("yy-MM-dd");
+			expect(normalizeDateFnsFormat("", "HH:mm")).toBe("HH:mm");
+			expect(normalizeDateFnsFormat(null, "HH:mm")).toBe("HH:mm");
 		});
 	});
 

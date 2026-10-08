@@ -49,7 +49,7 @@ describe("BgtDatePicker", () => {
 
 		it("should render the calendar trigger button", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
-			expect(screen.getByLabelText("Open calendar")).toBeInTheDocument();
+			expect(screen.getByLabelText("common:open-calendar")).toBeInTheDocument();
 		});
 
 		it("should render segmented date input", () => {
@@ -68,12 +68,12 @@ describe("BgtDatePicker", () => {
 	describe("Disabled State", () => {
 		it("should disable the calendar button when disabled is true", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} disabled />);
-			expect(screen.getByLabelText("Open calendar")).toBeDisabled();
+			expect(screen.getByLabelText("common:open-calendar")).toBeDisabled();
 		});
 
 		it("should not disable the calendar button by default", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
-			expect(screen.getByLabelText("Open calendar")).not.toBeDisabled();
+			expect(screen.getByLabelText("common:open-calendar")).not.toBeDisabled();
 		});
 	});
 
@@ -96,7 +96,7 @@ describe("BgtDatePicker", () => {
 			const user = userEvent.setup();
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
 
-			await user.click(screen.getByLabelText("Open calendar"));
+			await user.click(screen.getByLabelText("common:open-calendar"));
 
 			await waitFor(() => {
 				expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -108,7 +108,7 @@ describe("BgtDatePicker", () => {
 			const user = userEvent.setup();
 			renderWithProviders(<BgtDatePicker {...defaultProps} disabled />);
 
-			await user.click(screen.getByLabelText("Open calendar"));
+			await user.click(screen.getByLabelText("common:open-calendar"));
 
 			expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		});
@@ -125,7 +125,7 @@ describe("BgtDatePicker", () => {
 
 			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
 
-			await user.click(screen.getByLabelText("Open calendar"));
+			await user.click(screen.getByLabelText("common:open-calendar"));
 
 			await waitFor(() => {
 				expect(screen.getByRole("grid")).toBeInTheDocument();
@@ -152,6 +152,24 @@ describe("BgtDatePicker", () => {
 				expect(text).toContain("2024");
 				expect(text).toContain("15");
 			});
+		});
+	});
+
+	describe("Clearable", () => {
+		it("should clear the value with the clear button", async () => {
+			const field = createMockField("2024-06-15");
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} clearable />);
+
+			await userEvent.click(screen.getByRole("button", { name: "common:clear-date" }));
+
+			expect(field.handleChange).toHaveBeenCalledWith("");
+		});
+
+		it("should not offer a clear button without a value or when not clearable", () => {
+			renderWithProviders(<BgtDatePicker {...defaultProps} clearable />);
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={createMockField("2024-06-15")} />);
+
+			expect(screen.queryByRole("button", { name: "common:clear-date" })).not.toBeInTheDocument();
 		});
 	});
 

@@ -1,84 +1,94 @@
 {
   "rsvp": {
-    "title": "Manage RSVPs",
-    "manual-note-prefix": "Manually set RSVP status",
-    "manual-note": " for players who responded via phone, text, or in person.",
-    "accept": "Accept",
-    "decline": "Decline",
-    "maybe": "Maybe",
-    "host": "Host is always attending"
+    "title": "RSVP's beheren",
+    "manual-note-prefix": "Stel de RSVP-status handmatig in",
+    "manual-note": " voor spelers die telefonisch, per sms of persoonlijk hebben geantwoord.",
+    "accept": "Accepteren",
+    "decline": "Afwijzen",
+    "maybe": "Misschien",
+    "host": "De gastheer is altijd aanwezig"
   },
   "empty": {
-    "title": "No game nights planned yet",
-    "description": "Invite players to plan a game night."
+    "title": "Nog geen spelavonden gepland",
+    "description": "Nodig spelers uit om een spelavond te plannen.",
+    "upcoming": "Geen komende spelavonden",
+    "past": "Geen voorbije spelavonden",
+    "all": "Nog geen spelavonden"
   },
   "delete": {
-    "title": "Delete game night",
-    "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
+    "title": "Spelavond verwijderen",
+    "description": "Weet je zeker dat je de spelavond \"{{title}}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt en verwijdert ook alle bijbehorende RSVP's."
   },
-  "title": "Game Nights Planner",
+  "title": "Spelavondplanner",
   "create": {
-    "button": "Create Game Night",
-    "title": "Create new Game Night",
-    "description": "Fill out the form to create a new game night event.",
-    "save": "Create Game Night"
+    "button": "Spelavond aanmaken",
+    "title": "Nieuwe spelavond aanmaken",
+    "description": "Vul het formulier in om een nieuwe spelavond aan te maken.",
+    "save": "Spelavond aanmaken"
   },
   "edit": {
-    "title": "Edit Game Night",
-    "description": "Update the details of this game night event.",
-    "save": "Save Changes"
+    "title": "Spelavond bewerken",
+    "description": "Werk de details van deze spelavond bij.",
+    "save": "Wijzigingen opslaan"
   },
-  "upcoming": "Upcoming game nights",
-  "past": "Past game nights",
+  "upcoming": "Komende spelavonden",
+  "past": "Voorbije spelavonden",
   "card": {
-    "hosted-by": "Hosted by {{host}}",
-    "suggested-games": "Suggested games",
-    "rsvp-link": "RSVP Link",
-    "upcoming": "Upcoming",
-    "past": "Past",
-    "copy-link": "Copy RSVP link",
-    "copied": "Copied to clipboard",
-    "manage-rsvps": "Manage RSVPs",
-    "email-invites": "Email invites",
-    "invites-sent": "Invites sent: {{sent}} sent",
-    "invites-failed": "Failed to send invites"
+    "hosted-by": "Georganiseerd door {{host}}",
+    "suggested-games": "Voorgestelde spellen",
+    "rsvp-link": "RSVP-link",
+    "upcoming": "Komend",
+    "past": "Voorbij",
+    "copy-link": "RSVP-link kopiëren",
+    "copied": "Gekopieerd naar klembord",
+    "copy-failed": "Kopiëren van de link is mislukt",
+    "manage-rsvps": "RSVP's beheren",
+    "email-invites": "Uitnodigingen mailen",
+    "invites-sent": "Uitnodigingen verstuurd: {{sent}}",
+    "invites-failed": "Uitnodigingen versturen mislukt"
   },
   "form": {
     "title": {
-      "label": "Event title",
-      "placeholder": "Enter game night title"
+      "label": "Titel van het evenement",
+      "placeholder": "Voer de titel van de spelavond in"
     },
     "start": {
-      "label": "Date"
+      "label": "Datum"
     },
     "location": {
-      "label": "Location",
-      "placeholder": "Enter location"
+      "label": "Locatie",
+      "placeholder": "Voer een locatie in"
     },
     "host": {
-      "label": "Host",
-      "placeholder": "Enter host player"
+      "label": "Gastheer",
+      "placeholder": "Kies de gastheer"
     },
     "invited-players": {
-      "label": "Invited players",
-      "description": "Select players to invite to this game night"
+      "label": "Uitgenodigde spelers",
+      "description": "Kies de spelers die je wilt uitnodigen voor deze spelavond"
     },
     "suggested-games": {
-      "label": "Suggested games",
-      "description": "Select games that you suggest to play during this game night"
+      "label": "Voorgestelde spellen",
+      "description": "Kies spellen die je voorstelt om tijdens deze spelavond te spelen"
     },
     "notes": {
-      "label": "Notes"
+      "label": "Notities"
     }
   },
   "notifications": {
-    "created": "Game night created successfully",
-    "create-failed": "Failed to create game night",
-    "updated": "Game night updated successfully",
-    "update-failed": "Failed to update game night",
-    "deleted": "Game night deleted successfully",
-    "delete-failed": "Failed to delete game night",
-    "rsvp-updated": "RSVP updated successfully",
-    "rsvp-update-failed": "Failed to update RSVP"
-  }
+    "created": "Spelavond aangemaakt",
+    "create-failed": "Spelavond aanmaken mislukt",
+    "updated": "Spelavond bijgewerkt",
+    "update-failed": "Spelavond bijwerken mislukt",
+    "deleted": "Spelavond verwijderd",
+    "delete-failed": "Spelavond verwijderen mislukt",
+    "rsvp-updated": "RSVP bijgewerkt",
+    "rsvp-update-failed": "RSVP bijwerken mislukt"
+  },
+  "validation": {
+    "title-required": "Titel is verplicht",
+    "location-required": "Locatie is verplicht",
+    "host-required": "Gastheer is verplicht"
+  },
+  "create-first": "Plan je eerste spelavond"
 }

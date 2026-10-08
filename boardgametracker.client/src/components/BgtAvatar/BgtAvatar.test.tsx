@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { fireEvent, render, renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { StringToHsl } from "@/utils/stringUtils";
 import { BgtAvatar } from "./BgtAvatar";
 
@@ -36,6 +36,24 @@ describe("BgtAvatar", () => {
 		it("should render title initial when image is undefined but title exists", () => {
 			renderWithTheme(<BgtAvatar title="Alice" image={undefined} />);
 			expect(screen.getByText("A")).toBeInTheDocument();
+		});
+
+		it("should fall back to the initial when the image cannot be loaded", () => {
+			renderWithTheme(<BgtAvatar title="Alice" image="/images/profile/private.webp" />);
+
+			fireEvent.error(screen.getByRole("img"));
+
+			expect(screen.queryByRole("img")).not.toBeInTheDocument();
+			expect(screen.getByText("A")).toBeInTheDocument();
+		});
+
+		it("should try again when a new image is provided after a failure", () => {
+			const { rerender } = renderWithTheme(<BgtAvatar title="Alice" image="/one.webp" />);
+			fireEvent.error(screen.getByRole("img"));
+
+			rerender(<BgtAvatar title="Alice" image="/two.webp" />);
+
+			expect(screen.getByRole("img")).toHaveAttribute("src", "/two.webp");
 		});
 	});
 

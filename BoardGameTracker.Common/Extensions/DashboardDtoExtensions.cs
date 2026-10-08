@@ -1,7 +1,5 @@
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Enums;
-using BoardGameTracker.Common.Models.Charts;
 
 namespace BoardGameTracker.Common.Extensions;
 
@@ -27,15 +25,6 @@ public static class DashboardDtoExtensions
     public static List<RecentActivityDto> ToRecentActivityListDto(this IEnumerable<Session> sessions)
     {
         return sessions.Select(ToRecentActivityDto).ToList();
-    }
-
-    private static GameStateChart ToGameStateChart(this IGrouping<GameState, Game> grouping)
-    {
-        return new GameStateChart
-        {
-            Type = grouping.Key,
-            GameCount = grouping.Count()
-        };
     }
 
     private static MostPlayedGameDto ToMostPlayedGameDto(this (int GameId, string Title, string? Image, int PlayCount) tuple)
@@ -79,29 +68,10 @@ public static class DashboardDtoExtensions
         return games.Select(g => g.ToRecentAddedGameDto()).ToList();
     }
 
-    private static PlayByDay ToPlayByDay(this IGrouping<DayOfWeek, Session> grouping)
-    {
-        return new PlayByDay
-        {
-            DayOfWeek = grouping.Key,
-            PlayCount = grouping.Count()
-        };
-    }
-
-    public static List<PlayByDay> ToListDto(this IEnumerable<IGrouping<DayOfWeek, Session>> groupings)
-    {
-        return groupings.Select(g => g.ToPlayByDay()).ToList();
-    }
-    
     public static List<DashboardTopPlayerDto> ToListDto(
         this IEnumerable<(int Id, string Name, string? Image, int PlayCount, int WinCount)> tuples)
     {
         return tuples.Select(t => t.ToDashboardTopPlayerDto()).ToList();
-    }
-    
-    public static List<GameStateChart> ToListDto(this IEnumerable<IGrouping<GameState, Game>> groupings)
-    {
-        return groupings.Select(g => g.ToGameStateChart()).ToList();
     }
     
     public static List<MostPlayedGameDto> ToListDto(

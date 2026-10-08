@@ -1,4 +1,3 @@
-import { Theme } from "@radix-ui/themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type RenderOptions, render } from "@testing-library/react";
 import type { ReactElement } from "react";
@@ -19,15 +18,11 @@ const createTestQueryClient = () =>
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
 	const queryClient = createTestQueryClient();
 
-	return (
-		<QueryClientProvider client={queryClient}>
-			<Theme>{children}</Theme>
-		</QueryClientProvider>
-	);
+	return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 };
 
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-	return <Theme>{children}</Theme>;
+	return <>{children}</>;
 };
 
 export const renderWithProviders = (ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) => {

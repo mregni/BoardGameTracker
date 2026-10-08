@@ -1,76 +1,74 @@
 {
-  "save-new": "Create game play",
-  "save-update": "Update game play",
-  "title-new": "Add new game session",
-  "title-update": "Update game session",
+  "save-new": "Crear partida",
+  "save-update": "Actualizar partida",
+  "title-new": "Añadir nueva partida",
+  "title-update": "Actualizar partida",
   "new": {
     "notifications": {
-      "created": "Game play is succesfully created",
-      "create-failed": "Failed creating game play"
+      "created": "Partida creada correctamente",
+      "create-failed": "Error al crear la partida"
     },
-    "save": "Add player",
-    "title": "Add player",
-    "description": "Fill in the form to add a new player to this game play.",
+    "save": "Añadir jugador",
+    "title": "Añadir jugador",
+    "description": "Rellena el formulario para añadir un nuevo jugador a esta partida.",
     "player": {
-      "label": "Player",
-      "required": "Player is required"
+      "label": "Jugador",
+      "required": "El jugador es obligatorio"
     },
-    "create-player": "Create new player",
+    "create-player": "Crear nuevo jugador",
     "players": {
-      "label": "Players",
-      "add": "+ add player",
-      "minimum": "Add at least one player to this session"
+      "label": "Jugadores",
+      "add": "+ añadir jugador",
+      "minimum": "Añade al menos un jugador a esta partida"
     },
     "duration": {
-      "label": "Duration",
-      "placeholder": "in minutes",
-      "required": "Duration is required"
+      "label": "Duración",
+      "placeholder": "en minutos",
+      "required": "La duración es obligatoria"
     },
     "game": {
-      "label": "Game",
-      "placeholder": "Choose game",
-      "required": "Game is required"
+      "label": "Juego",
+      "placeholder": "Elige un juego",
+      "required": "El juego es obligatorio"
     },
     "start": {
-      "label": "Start",
-      "required": "Start date is required",
-      "placeholder": "Pick a date"
+      "label": "Inicio",
+      "required": "La fecha de inicio es obligatoria",
+      "placeholder": "Elige una fecha"
     },
     "location": {
-      "label": "Location",
-      "placeholder": "Choose location",
-      "create-new": "Create location '{{name}}'",
-      "required": "Location is required"
+      "label": "Ubicación",
+      "placeholder": "Elige una ubicación",
+      "required": "La ubicación es obligatoria",
+      "none": "Sin ubicación"
     },
     "comment": {
-      "label": "Comment",
-      "sub-label": "Extra comment on the game."
+      "label": "Comentario",
+      "sub-label": "Comentario adicional sobre la partida."
     }
   },
   "update": {
-    "save": "Update player",
-    "title": "Update player",
-    "description": "Update the form to change the details of {{name}}.",
+    "save": "Actualizar jugador",
+    "title": "Actualizar jugador",
+    "description": "Modifica el formulario para cambiar los datos de {{name}}.",
     "notifications": {
-      "updated": "Game play is succesfully created",
-      "update-failed": "Failed creating game play"
+      "updated": "Partida actualizada correctamente",
+      "update-failed": "Error al actualizar la partida"
     }
   },
   "won": {
-    "label": "Player has won the game"
-  },
-  "bot": {
-    "label": "Player is a bot"
+    "label": "El jugador ha ganado la partida"
   },
   "score": {
-    "label": "End scoring",
-    "required": "Score is required"
+    "label": "Puntuación final",
+    "required": "La puntuación es obligatoria",
+    "optional": "Déjalo vacío si no conoces la puntuación"
   },
   "first-play": {
-    "label": "Played game for the first time"
+    "label": "Primera vez que juega a este juego"
   },
   "delete": {
-    "successfull": "Game play is successfully deleted.",
-    "failed": "Game play deletion failed, check logs for more details."
+    "successfull": "Partida eliminada correctamente.",
+    "failed": "Error al eliminar la partida, revisa los registros para más detalles."
   }
 }

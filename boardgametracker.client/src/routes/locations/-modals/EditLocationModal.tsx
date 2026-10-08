@@ -1,10 +1,11 @@
-import { useForm } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtInputField } from "@/components/BgtForm";
+import { useAppForm } from "@/hooks/form";
 import { CreateLocationSchema, type Location } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 import { useLocationModal } from "../-hooks/useLocationModal";
 
 interface Props {
@@ -21,7 +22,7 @@ export const EditLocationModal = (props: Props) => {
 		onUpdateSuccess: close,
 	});
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			name: location.name,
 		},
@@ -43,18 +44,7 @@ export const EditLocationModal = (props: Props) => {
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
 					<BgtDialogTitle>{t("edit.title")}</BgtDialogTitle>
 					<div className="flex flex-col gap-2 mb-3">
-						<form.Field
-							name="name"
-							validators={{
-								onChange: ({ value }) => {
-									const result = CreateLocationSchema.shape.name.safeParse(value);
-									if (!result.success) {
-										return t(result.error.issues[0].message);
-									}
-									return undefined;
-								},
-							}}
-						>
+						<form.Field name="name" validators={zodValidator(CreateLocationSchema, "name")}>
 							{(field) => (
 								<BgtInputField field={field} type="text" label={t("new.name.placeholder")} disabled={isLoading} />
 							)}

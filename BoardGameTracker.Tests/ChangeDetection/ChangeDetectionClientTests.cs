@@ -180,6 +180,113 @@ public class ChangeDetectionClientTests
     }
 
     [Fact]
+    public async Task GetLatestAsync_ShouldPropagateACancellationDuringTheRequest_WithoutCachingAFailure()
+    {
+        _handler.HangUntilCancelled = true;
+        using var cts = new CancellationTokenSource();
+
+        var pending = _client.GetLatestAsync(WatchId, cancellationToken: cts.Token);
+        await _handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        await cts.CancelAsync();
+
+        var act = async () => await pending;
+        await act.Should().ThrowAsync<OperationCanceledException>();
+
+        _handler.HangUntilCancelled = false;
+        var next = await _client.GetLatestAsync(WatchId);
+        next.Status.Should().Be(ChangeDetectionStatus.Ok);
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_ShouldReportUnreachable_AndCacheIt_WhenTheInstanceIsDown()
+    {
+        _handler.WatchException = new HttpRequestException("Connection refused");
+
+        var first = await _client.GetLatestAsync(WatchId);
+        var second = await _client.GetLatestAsync(WatchId);
+
+        first.Available.Should().BeFalse();
+        first.Status.Should().Be(ChangeDetectionStatus.Unreachable);
+        second.Status.Should().Be(ChangeDetectionStatus.Unreachable);
+        _handler.Requests.Should().ContainSingle();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GetLatestAsync_ShouldReportNotConfigured_WithoutCallingTheInstance_WhenTheWatchIdIsBlank(string watchId)
+    {
+        var result = await _client.GetLatestAsync(watchId);
+
+        result.Status.Should().Be(ChangeDetectionStatus.NotConfigured);
+        _handler.Requests.Should().BeEmpty();
+        _settingsServiceMock.Verify(x => x.GetChangeDetectionSettingsAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_ShouldReportMisconfigured_WhenTheApiKeyCannotBeSentAsAHeader()
+    {
+        _settingsServiceMock
+            .Setup(x => x.GetChangeDetectionSettingsAsync())
+            .ReturnsAsync(("https://changes.example.com", "bad\nkey"));
+
+        var result = await _client.GetLatestAsync(WatchId);
+
+        result.Status.Should().Be(ChangeDetectionStatus.Misconfigured);
+        _handler.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetLatestBatchAsync_ShouldReturnNothing_WithoutReadingSettings_WhenNoWatchIdIsGiven()
+    {
+        var results = await _client.GetLatestAsync(new[] { "", "  " });
+
+        results.Should().BeEmpty();
+        _handler.Requests.Should().BeEmpty();
+        _settingsServiceMock.Verify(x => x.GetChangeDetectionSettingsAsync(), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(null, null, ChangeDetectionStatus.NotConfigured)]
+    [InlineData("not-a-valid-url", "api-key", ChangeDetectionStatus.Misconfigured)]
+    public async Task GetLatestBatchAsync_ShouldReportTheSettingsProblem_ForEveryWatch(string? baseUrl, string? apiKey, ChangeDetectionStatus expected)
+    {
+        _settingsServiceMock
+            .Setup(x => x.GetChangeDetectionSettingsAsync())
+            .ReturnsAsync((baseUrl, apiKey));
+
+        var results = await _client.GetLatestAsync(new[] { WatchId, CreatedWatchId });
+
+        results.Should().HaveCount(2);
+        results.Values.Should().AllSatisfy(result => result.Status.Should().Be(expected));
+        _handler.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task UpdateWatchAsync_ShouldPutTheNewUrl_AndDropTheCachedResult()
+    {
+        await _client.GetLatestAsync(WatchId);
+
+        var status = await _client.UpdateWatchAsync(WatchId, "https://other.example.com/brass", "Brass");
+        await _client.GetLatestAsync(WatchId);
+
+        status.Should().Be(ChangeDetectionStatus.Ok);
+        _handler.Requests.Should().Contain($"PUT /api/v1/watch/{WatchId}");
+        _handler.LastPutBody.Should().Contain("https://other.example.com/brass");
+        _handler.Requests.Count(r => r == $"GET /api/v1/watch/{WatchId}").Should().Be(2);
+    }
+
+    [Fact]
+    public async Task UpdateWatchAsync_ShouldReportAMissingWatch()
+    {
+        _handler.PutStatus = HttpStatusCode.NotFound;
+
+        var status = await _client.UpdateWatchAsync(WatchId, "https://other.example.com/brass", "Brass");
+
+        status.Should().Be(ChangeDetectionStatus.WatchNotFound);
+    }
+
+    [Fact]
     public async Task GetLatestBatchAsync_ShouldOnlyFetchUncachedWatches()
     {
         await _client.GetLatestAsync(WatchId);
@@ -278,7 +385,12 @@ public class ChangeDetectionClientTests
         public HttpStatusCode HistoryStatus { get; set; } = HttpStatusCode.OK;
         public HttpStatusCode CreateStatus { get; set; } = HttpStatusCode.Created;
         public HttpStatusCode SystemInfoStatus { get; set; } = HttpStatusCode.OK;
+        public Exception? WatchException { get; set; }
+        public bool HangUntilCancelled { get; set; }
+        public TaskCompletionSource RequestStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public string? LastPostBody { get; private set; }
+        public string? LastPutBody { get; private set; }
+        public HttpStatusCode PutStatus { get; set; } = HttpStatusCode.OK;
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -295,6 +407,14 @@ public class ChangeDetectionClientTests
                 return Response(CreateStatus, $$$"""{"uuid":"{{{CreatedWatchId}}}"}""");
             }
 
+            if (request.Method == HttpMethod.Put)
+            {
+                LastPutBody = request.Content == null
+                    ? null
+                    : await request.Content.ReadAsStringAsync(cancellationToken);
+                return Response(PutStatus, "OK");
+            }
+
             if (path.Contains("recheck=1", StringComparison.Ordinal))
             {
                 return Response(HttpStatusCode.OK, "OK");
@@ -308,6 +428,17 @@ public class ChangeDetectionClientTests
             if (path.EndsWith("/history/latest", StringComparison.Ordinal))
             {
                 return Response(HistoryStatus, HistoryBody);
+            }
+
+            if (WatchException != null)
+            {
+                throw WatchException;
+            }
+
+            if (HangUntilCancelled)
+            {
+                RequestStarted.TrySetResult();
+                await Task.Delay(Timeout.Infinite, cancellationToken);
             }
 
             return Response(WatchStatus, WatchBody);

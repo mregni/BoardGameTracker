@@ -7,6 +7,8 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import type { GameNight } from "@/models";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 import { sendInvitesCall } from "@/services/gameNightService";
+import { apiErrorMessage } from "@/utils/errorUtils";
+import { effectivePublicUrl } from "@/utils/publicUrl";
 
 interface Props {
 	gameNight: GameNight;
@@ -18,24 +20,27 @@ export const GameNightActions = (props: Props) => {
 	const { t } = useTranslation("game-nights");
 	const { settings } = useSettingsData();
 
-	const publicUrl = settings?.publicUrl || window.location.origin;
+	const publicUrl = effectivePublicUrl(settings?.publicUrl, window.location.origin);
 	const rsvpLink = `${publicUrl}/rsvp?linkId=${gameNight.linkId}`;
 
 	const [copied, setCopied] = useState(false);
 
 	const onCopyLink = useCallback(() => {
-		navigator.clipboard.writeText(rsvpLink);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
-	}, [rsvpLink]);
+		const copy = async () => {
+			await navigator.clipboard.writeText(rsvpLink);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		};
+		copy().catch(() => toast.error(t("card.copy-failed")));
+	}, [rsvpLink, t]);
 
 	const sendInvitesMutation = useMutation({
 		mutationFn: () => sendInvitesCall(gameNight.id),
 		onSuccess: (result) => {
 			toast.success(t("card.invites-sent", { sent: result.sent }));
 		},
-		onError: () => {
-			toast.error(t("card.invites-failed"));
+		onError: (error) => {
+			toast.error(apiErrorMessage(error, "game-nights:card.invites-failed"));
 		},
 	});
 

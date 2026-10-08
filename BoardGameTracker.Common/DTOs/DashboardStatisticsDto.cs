@@ -8,8 +8,8 @@ public class DashboardStatisticsDto
     public int ActivePlayers { get; set; }
     public int SessionsPlayed { get; set; }
     public double TotalPlayedTime { get; set; }
-    public double? TotalCollectionValue { get; set; }
-    public double? AvgGamePrice { get; set; }
+    public decimal? TotalCollectionValue { get; set; }
+    public decimal? AvgGamePrice { get; set; }
     public int ExpansionsOwned { get; set; }
     public double AvgSessionTime { get; set; }
 

@@ -31,7 +31,7 @@ export const ExpansionSelectorModal = (props: Props) => {
 	};
 
 	return (
-		<BgtDialog open={open}>
+		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
 				<BgtDialogTitle>{t("expansions.title")}</BgtDialogTitle>
 				<BgtDialogDescription>{t("expansions.description")}</BgtDialogDescription>
@@ -39,7 +39,7 @@ export const ExpansionSelectorModal = (props: Props) => {
 					{isLoading && <div>{t("common:loading-data")}</div>}
 					<BgtCheckboxList
 						items={expansions}
-						selectedIds={selectedExpansions}
+						selectedIds={selectedIds}
 						onSelectionChange={(ids) => setSelectedIds(ids)}
 						disabled={isLoading || isPending}
 					/>
@@ -48,7 +48,7 @@ export const ExpansionSelectorModal = (props: Props) => {
 					<BgtButton variant="cancel" onClick={() => close()} disabled={isLoading || isPending}>
 						{t("common:cancel")}
 					</BgtButton>
-					<BgtButton type="button" variant="primary" disabled={isLoading} onClick={saveModal || isPending}>
+					<BgtButton type="button" variant="primary" disabled={isLoading || isPending} onClick={saveModal}>
 						{t("expansions.update")}
 					</BgtButton>
 				</BgtDialogClose>

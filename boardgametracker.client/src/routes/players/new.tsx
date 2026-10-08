@@ -1,4 +1,3 @@
-import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,12 +7,15 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtImageSelector, BgtInputField } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import { useAppForm } from "@/hooks/form";
 import { CreatePlayerSchema, type Player } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 import { usePlayerModal } from "./-hooks/usePlayerModal";
 
 export const Route = createFileRoute("/players/new")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 });
 
 function RouteComponent() {
@@ -24,7 +26,7 @@ function RouteComponent() {
 
 	const { savePlayer, uploadImage, isLoading } = usePlayerModal({});
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			name: "",
 			email: "",
@@ -65,18 +67,7 @@ function RouteComponent() {
 								<BgtImageSelector image={image} setImage={setImage} />
 							</div>
 							<div className="grow">
-								<form.Field
-									name="name"
-									validators={{
-										onChange: ({ value }) => {
-											const result = CreatePlayerSchema.shape.name.safeParse(value);
-											if (!result.success) {
-												return t(result.error.issues[0].message);
-											}
-											return undefined;
-										},
-									}}
-								>
+								<form.Field name="name" validators={zodValidator(CreatePlayerSchema, "name")}>
 									{(field) => (
 										<BgtInputField
 											field={field}
@@ -87,18 +78,7 @@ function RouteComponent() {
 										/>
 									)}
 								</form.Field>
-								<form.Field
-									name="email"
-									validators={{
-										onChange: ({ value }) => {
-											const result = CreatePlayerSchema.shape.email.safeParse(value);
-											if (!result.success) {
-												return t(result.error.issues[0].message);
-											}
-											return undefined;
-										},
-									}}
-								>
+								<form.Field name="email" validators={zodValidator(CreatePlayerSchema, "email")}>
 									{(field) => (
 										<BgtInputField
 											field={field}
@@ -124,5 +104,13 @@ function RouteComponent() {
 				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

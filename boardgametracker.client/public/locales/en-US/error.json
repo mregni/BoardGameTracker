@@ -4,11 +4,12 @@
   },
   "image": {
     "type-not-supported": "Image type not supported",
-    "error": "Error while uploading image, check logs"
+    "error": "Error while uploading image, check logs",
+    "too-large": "Image is too large",
+    "unsupported-format": "Unsupported image format"
   },
   "auth": {
     "username-already-exists": "Username already exists",
-    "oidc-no-local-users": "Cannot create local users when OIDC is enabled",
     "invalid-role": "Invalid role",
     "username-required": "Username is required",
     "cannot-change-oidc-password": "Cannot change password for externally authenticated accounts",
@@ -17,30 +18,77 @@
     "cannot-remove-last-admin": "Cannot remove Admin role from the last admin account",
     "invalid-credentials": "Invalid username or password",
     "invalid-refresh-token": "Invalid or expired session",
+    "account-locked-out": "Too many failed attempts. Try again later.",
+    "too-many-requests": "Too many sign-in attempts. Wait a minute and try again.",
+    "invalid-auth-session": "Invalid or expired authentication session",
+    "invalid-redirect-uri": "Invalid redirect URI",
     "player-already-linked": "This player is already linked to another account",
-    "invalid-reset-token": "This password reset link is invalid or has expired"
+    "invalid-reset-token": "This password reset link is invalid or has expired",
+    "not-authenticated": "You need to be signed in",
+    "insecure-authority": "The provider URL must use https (http is only allowed for local addresses)",
+    "oidc-email-exists": "An account with this email already exists. Sign in with your password and link the provider from your profile.",
+    "oidc-provisioning-disabled": "Your account is not known here and automatic sign-up is disabled.",
+    "oidc-provisioning-failed": "Your account could not be created.",
+    "oidc-already-linked": "This external account is already linked to another user.",
+    "oidc-discovery-failed": "The identity provider could not be reached.",
+    "oidc-issuer-mismatch": "The identity provider reports a different issuer than the configured authority.",
+    "oidc-exchange-failed": "The identity provider rejected the sign-in code.",
+    "oidc-userinfo-failed": "The identity provider did not return your profile.",
+    "oidc-provider-rejected": "The identity provider refused the sign-in.",
+    "oidc-handoff-expired": "The sign-in took too long to complete. Please try again.",
+    "oidc-failed": "Signing in with the identity provider failed.",
+    "last-sign-in-method": "This is your only way to sign in. Set a password first (Forgot password, or ask an admin to reset it), then unlink.",
+    "current-password-required": "Enter your current password to change your email address.",
+    "email-change-needs-password": "This account only signs in with single sign-on. Set a password first with \"Forgot password\" on the login page, then change the email address.",
+    "oidc-provider-unavailable": "This sign-in provider is not available. Choose another way to sign in or ask your administrator."
   },
   "changedetection": {
     "invalid-base-url": "The changedetection.io URL is not valid",
     "not-configured": "changedetection.io is not configured",
     "watch-not-found": "This watch id was not found on changedetection.io",
-    "create-watch-failed": "changedetection.io could not create the watch"
+    "create-watch-failed": "changedetection.io could not create the watch",
+    "insecure-base-url": "Use an https address for changedetection.io; plain http only works for a local address such as http://changedetection:5000"
   },
   "game": {
-    "invalid-shop-url": "Enter a valid http(s) shop URL"
+    "invalid-shop-url": "Enter a valid http(s) shop URL",
+    "already-exists": "This game is already in your collection",
+    "player-range-incomplete": "Enter both the minimum and the maximum number of players",
+    "play-time-range-incomplete": "Enter both the minimum and the maximum play time",
+    "range-min-above-max": "The minimum cannot be higher than the maximum",
+    "expansion-already-exists": "This expansion is already linked to the game.",
+    "shop-url-not-public": "Use the address of a public web shop; local network addresses are not allowed"
   },
   "something-went-wrong": "Something went wrong, please try again later.",
   "unexpected-error": "An unexpected error occurred.",
   "network": "Unable to connect to the server. Please check your connection.",
   "timeout": "The request took too long. Please try again.",
   "server": "A server error occurred. Please try again later.",
+  "location": {
+    "used-by-game-nights": "This location is used by one or more game nights"
+  },
+  "player": {
+    "hosts-game-nights": "This player hosts one or more game nights"
+  },
+  "session": {
+    "invalid-expansion": "One of the selected expansions does not belong to this game"
+  },
   "email": {
-    "not-configured": "Email is not configured on this server"
+    "not-configured": "Email is not configured on this server",
+    "public-url-not-configured": "Set the public URL under Settings > General first, so the links in the email point to this server."
   },
   "loan": {
-    "game-already-on-loan": "This game is already on loan"
+    "game-already-on-loan": "This game is already on loan",
+    "due-before-start": "The return date cannot be before the start of the loan.",
+    "returned-before-start": "A loan cannot be returned before it started.",
+    "already-returned": "This loan was already returned."
   },
   "settings": {
     "invalid-public-url": "The public URL is not valid"
+  },
+  "game-night": {
+    "invites-cooldown": "Invitations for this game night were sent recently, try again in a few minutes"
+  },
+  "maintenance": {
+    "admin-password-rejected": "ADMIN_PASSWORD does not meet the password rules (at least 8 characters). Change it or remove it before a factory reset."
   }
 }

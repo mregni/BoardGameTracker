@@ -16,7 +16,7 @@ import type { ModalProps, Player } from "@/models";
 import { CreateLoanSchema } from "@/models/Loan/CreateLoan";
 import { CreatePlayerModal } from "@/routes/players/-modals/CreatePlayerModal";
 import { handleFormSubmit } from "@/utils/formUtils";
-import { zodValidator } from "@/utils/zodValidator";
+import { notBeforeValidator, zodValidator } from "@/utils/zodValidator";
 import { useNewLoanModal } from "../-hooks/useNewLoanModal";
 
 const NewLoanModal = (props: ModalProps) => {
@@ -135,13 +135,17 @@ const NewLoanModal = (props: ModalProps) => {
 									/>
 								)}
 							</form.Field>
-							<form.Field name="dueDate" validators={zodValidator(CreateLoanSchema, "dueDate")}>
+							<form.Field
+								name="dueDate"
+								validators={notBeforeValidator(CreateLoanSchema, "dueDate", "loanDate", "loans:new.end.before-start")}
+							>
 								{(field: AnyFieldApi) => (
 									<BgtDatePicker
 										field={field}
 										label={t("new.end.label")}
 										disabled={isLoading}
 										placeholder={t("new.end.placeholder")}
+										clearable
 									/>
 								)}
 							</form.Field>

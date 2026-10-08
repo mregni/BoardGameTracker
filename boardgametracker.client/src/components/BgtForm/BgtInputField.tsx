@@ -1,7 +1,8 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { cx } from "class-variance-authority";
 import { format } from "date-fns";
-import { memo } from "react";
+import { memo, useId } from "react";
+import { parseLocalDate } from "@/utils/localDate";
 
 import { BgtInputContainer } from "./BgtInputContainer";
 import { FormFieldWrapper } from "./FormFieldWrapper";
@@ -38,7 +39,7 @@ const formatInput = (
 	}
 	if (type === "date") {
 		try {
-			return format(new Date(input), "yyyy-MM-dd");
+			return format(parseLocalDate(input) ?? new Date(input), "yyyy-MM-dd");
 		} catch {
 			return "";
 		}
@@ -59,10 +60,11 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 		disabled = false,
 	} = props;
 
+	const id = useId();
 	const hasErrors = field.state.meta.errors.length > 0;
 
 	return (
-		<FormFieldWrapper label={label} errors={field.state.meta.errors} className="w-full">
+		<FormFieldWrapper label={label} htmlFor={id} errors={field.state.meta.errors} className="w-full">
 			<BgtInputContainer
 				prefix={prefixLabel}
 				suffix={suffixLabel}
@@ -71,12 +73,14 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 				className={cx("h-11 md:h-10 text-[15px]", className)}
 			>
 				<input
+					id={id}
 					className="h-full w-full bg-transparent text-white focus:outline-none disabled:cursor-not-allowed"
 					value={formatInput(field.state.value, type)}
 					disabled={disabled}
 					type={type}
 					onChange={(event) => {
-						const value = type === "number" ? +event.target.value : event.target.value;
+						const raw = event.target.value;
+						const value = type === "number" ? (raw === "" ? undefined : Number(raw)) : raw;
 						field.handleChange(value);
 					}}
 					onBlur={field.handleBlur}

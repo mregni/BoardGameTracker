@@ -143,6 +143,36 @@ public class ChangeDetectionClient : IChangeDetectionClient
         }, (ChangeDetectionStatus.Unreachable, (ChangeDetectionWatchInfo?)null), "watch lookup", cancellationToken);
     }
 
+    public async Task<ChangeDetectionStatus> UpdateWatchAsync(
+        string watchId,
+        string url,
+        string title,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(watchId, out _))
+        {
+            return ChangeDetectionStatus.WatchNotFound;
+        }
+
+        var (client, status) = await TryCreateClientAsync();
+        if (client == null)
+        {
+            return status;
+        }
+
+        return await GuardedAsync(async () =>
+        {
+            var response = await client.PutAsJsonAsync($"api/v1/watch/{watchId}", new { url, title }, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return MapStatus(response.StatusCode);
+            }
+
+            _cache.Remove(CacheKeyPrefix + watchId);
+            return ChangeDetectionStatus.Ok;
+        }, ChangeDetectionStatus.Unreachable, "update watch", cancellationToken);
+    }
+
     public async Task<(ChangeDetectionStatus Status, string? WatchId)> CreateWatchAsync(
         string url,
         string title,

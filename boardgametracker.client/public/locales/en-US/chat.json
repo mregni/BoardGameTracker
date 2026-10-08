@@ -40,5 +40,6 @@
     "placeholder": "Ask a question about the rules…",
     "disabled-placeholder": "Select a game with an indexed rulebook to ask a question.",
     "send": "Send"
-  }
+  },
+  "rate-limited": "You asked a lot of questions in a short time. Wait a minute and try again."
 }

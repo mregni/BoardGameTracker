@@ -45,7 +45,7 @@ const CreateSessionPlayerForm = (props: Props) => {
 			playerId: "",
 			firstPlay: false,
 			won: false,
-			score: 0,
+			score: undefined as number | undefined,
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = schema.parse(value);
@@ -68,7 +68,7 @@ const CreateSessionPlayerForm = (props: Props) => {
 	}, [players, form]);
 
 	return (
-		<BgtDialog open={open}>
+		<BgtDialog open={open} onClose={onCancel}>
 			<BgtDialogContent>
 				<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
 				<BgtDialogDescription>{t("new.description")}</BgtDialogDescription>
@@ -96,7 +96,14 @@ const CreateSessionPlayerForm = (props: Props) => {
 						</div>
 						{hasScoring && (
 							<form.Field name="score" validators={zodValidator(CreatePlayerSessionSchema, "score")}>
-								{(field: AnyFieldApi) => <BgtInputField field={field} type="number" label={t("score.label")} />}
+								{(field: AnyFieldApi) => (
+									<BgtInputField
+										field={field}
+										type="number"
+										label={t("score.label")}
+										placeholder={t("score.optional")}
+									/>
+								)}
 							</form.Field>
 						)}
 						<form.Field name="won" validators={zodValidator(schema, "won")}>

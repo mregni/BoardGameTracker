@@ -84,7 +84,7 @@ function RouteComponent() {
 
 	const playerTwo = useMemo(() => players?.find((p) => p.id === rightPlayerId), [players, rightPlayerId]);
 
-	if (players?.length < 2) {
+	if (!isLoading && (players?.length ?? 0) < 2) {
 		return (
 			<BgtEmptyPage
 				header={t("title")}
@@ -117,7 +117,7 @@ function RouteComponent() {
 									onPlayerChange={handleLeftPlayerChange}
 								/>
 
-								<img src="/images/common/vs.png" alt="divider" className="w-10 md:w-18" />
+								<img src="/images/common/vs.png" alt="" className="w-10 md:w-18" />
 
 								<PlayerSelector
 									player={playerTwo}

@@ -1,6 +1,7 @@
-import { Text } from "@radix-ui/themes";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva, cx, type VariantProps } from "class-variance-authority";
 import type { ComponentPropsWithoutRef } from "react";
+
+import { type TextSize, type TextWeight, textSizeClasses, textWeightClasses } from "./textStyles";
 
 const textVariants = cva("", {
 	variants: {
@@ -35,8 +36,8 @@ const textVariants = cva("", {
 });
 
 interface Props extends Omit<ComponentPropsWithoutRef<"div">, "color">, VariantProps<typeof textVariants> {
-	size?: "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
-	weight?: "bold" | "light" | "regular" | "medium";
+	size?: TextSize;
+	weight?: TextWeight;
 }
 
 export const BgtText = (props: Props) => {
@@ -49,8 +50,8 @@ export const BgtText = (props: Props) => {
 	});
 
 	return (
-		<Text as="div" size={size} className={textClasses} weight={weight} {...rest}>
+		<div className={cx(textSizeClasses[size], weight && textWeightClasses[weight], textClasses)} {...rest}>
 			{children}
-		</Text>
+		</div>
 	);
 };

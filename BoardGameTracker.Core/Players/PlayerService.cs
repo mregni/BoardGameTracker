@@ -1,8 +1,10 @@
-﻿using BoardGameTracker.Common.DTOs.Commands;
+﻿using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
@@ -19,6 +21,7 @@ public class PlayerService : IPlayerService
     private readonly IImageService _imageService;
     private readonly IPlayerStatisticsService _playerStatisticsService;
     private readonly ISessionRepository _sessionRepository;
+    private readonly IReadRepository<GameNight> _gameNightRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PlayerService> _logger;
 
@@ -27,6 +30,7 @@ public class PlayerService : IPlayerService
         IImageService imageService,
         IPlayerStatisticsService playerStatisticsService,
         ISessionRepository sessionRepository,
+        IReadRepository<GameNight> gameNightRepository,
         IUnitOfWork unitOfWork,
         ILogger<PlayerService> logger)
     {
@@ -34,6 +38,7 @@ public class PlayerService : IPlayerService
         _imageService = imageService;
         _playerStatisticsService = playerStatisticsService;
         _sessionRepository = sessionRepository;
+        _gameNightRepository = gameNightRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -60,6 +65,11 @@ public class PlayerService : IPlayerService
         return _playerRepository.GetByIdAsync(id);
     }
 
+    public Task<List<int>> GetExistingIdsAsync(IEnumerable<int> ids)
+    {
+        return _playerRepository.ListAsync(new PlayerIdsSpec(ids));
+    }
+
     public async Task<Player> Update(UpdatePlayerCommand command)
     {
         _logger.LogDebug("Updating player {PlayerId}", command.Id);
@@ -69,22 +79,23 @@ public class PlayerService : IPlayerService
             throw new EntityNotFoundException(nameof(Player), command.Id);
         }
         
-        if (command.Image != dbPlayer.Image)
-        {
-            _imageService.DeleteImage(dbPlayer.Image);
-            dbPlayer.UpdateImage(command.Image);
-        }
-        
+        var previousImage = dbPlayer.Image;
+        dbPlayer.UpdateImage(command.Image);
         dbPlayer.UpdateName(command.Name);
         dbPlayer.UpdateEmail(command.Email);
         await _unitOfWork.SaveChangesAsync();
 
+        if (previousImage != dbPlayer.Image)
+        {
+            _imageService.DeleteImage(previousImage);
+        }
+
         return dbPlayer;
     }
 
-    public Task<int> CountAsync()
+    public Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
-        return _playerRepository.CountAsync();
+        return _playerRepository.CountAsync(cancellationToken);
     }
 
     public Task<List<Session>> GetSessions(int id, int? count)
@@ -102,11 +113,16 @@ public class PlayerService : IPlayerService
             throw new EntityNotFoundException(nameof(Player), id);
         }
 
-        await _sessionRepository.DeleteByPlayerIdAsync(id);
+        if (await _gameNightRepository.AnyAsync(new GameNightsHostedByPlayerSpec(id)))
+        {
+            throw new DomainException(Constants.Errors.PlayerHostsGameNights);
+        }
 
-        _imageService.DeleteImage(player.Image);
+        await _sessionRepository.DeleteByPlayerIdAsync(id);
         await _playerRepository.DeleteAsync(player.Id);
         await _unitOfWork.SaveChangesAsync();
+
+        _imageService.DeleteImage(player.Image);
         _logger.LogInformation("Player {PlayerId} deleted", id);
     }
 

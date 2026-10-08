@@ -22,6 +22,6 @@ public sealed class NearestManualChunksSpec : Specification<ManualChunk, ManualC
             .OrderBy(c => c.Embedding.CosineDistance(query))
             .Take(k);
 
-        Query.Select(c => new ManualChunkMatch(c, c.Embedding.CosineDistance(query)));
+        Query.Select(c => new ManualChunkMatch(c, c.Manual.Title, c.Embedding.CosineDistance(query)));
     }
 }

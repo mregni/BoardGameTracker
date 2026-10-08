@@ -31,12 +31,6 @@ public class EfRepository<T> : EfReadRepository<T>, IRepository<T> where T : Has
         await Context.Set<T>().AddRangeAsync(entities);
     }
 
-    public virtual Task<T> Update(T entity)
-    {
-        Context.Set<T>().Update(entity);
-        return Task.FromResult(entity);
-    }
-
     public virtual async Task<bool> DeleteAsync(int id)
     {
         var entity = await Context.Set<T>().FindAsync(id);

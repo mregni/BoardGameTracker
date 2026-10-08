@@ -46,6 +46,7 @@ export const RsvpStatusButton = ({
 
 	return (
 		<button
+			type="button"
 			onClick={handleClick}
 			disabled={disabled}
 			className={cx(

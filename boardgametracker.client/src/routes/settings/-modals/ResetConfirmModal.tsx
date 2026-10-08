@@ -28,7 +28,7 @@ export const ResetConfirmModal = (props: Props) => {
 	const [value, setValue] = useState("");
 
 	return (
-		<BgtDialog open={open}>
+		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
 				<BgtDialogTitle>{title}</BgtDialogTitle>
 				<BgtDialogDescription>{description}</BgtDialogDescription>

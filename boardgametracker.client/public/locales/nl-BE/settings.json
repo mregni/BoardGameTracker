@@ -1,164 +1,146 @@
 {
-	"titles": {
-		"localisation": "Localisation settings",
-		"currency": "Currency settings",
-		"environment": "Environment"
-	},
-	"time-zone": {
-		"label": "Time zone",
-		"required": "Time zone is required"
-	},
 	"date-format": {
-		"label": "Date format",
-		"required": "Date format is required"
+		"label": "Datumnotatie",
+		"required": "Datumnotatie is verplicht",
+		"invalid": "Gebruik een datumpatroon zoals dd/MM/yyyy of yyyy-MM-dd"
 	},
 	"time-format": {
-		"label": "Time format",
-		"required": "Time format is required"
+		"label": "Tijdnotatie",
+		"required": "Tijdnotatie is verplicht",
+		"invalid": "Gebruik een tijdpatroon zoals HH:mm of h:mm a"
 	},
 	"currency": {
-		"label": "Currency",
-		"required": "Currency is required"
+		"label": "Valuta",
+		"required": "Valuta is verplicht"
 	},
-	"environment": {
-		"name": "Environment",
-		"port": "Port",
-		"statistics": "Statistics",
-		"log-level": "Log level",
-		"version": "Version"
-	},
-	"feature-request": "Feature request",
-	"translations": "Translate the app",
 	"save": {
-		"button": "Save settings",
-		"failed": "Failed saving settings",
-		"successfull": "Settings are successfully saved"
+		"button": "Instellingen opslaan",
+		"failed": "Instellingen opslaan mislukt",
+		"successfull": "Instellingen zijn opgeslagen"
 	},
 	"general": {
 		"public-url": {
-			"label": "Public URL",
+			"title": "Publiek adres",
+			"description": "Het adres waarop mensen BoardGameTracker bereiken, bijvoorbeeld https://games.example.com. Uitnodigingen en e-mails om je wachtwoord te herstellen linken ernaar, en SSO gebruikt het voor de redirect-URI's. E-mails met links worden pas verstuurd als het ingesteld is.",
+			"label": "Publieke URL",
 			"placeholder": "https://myboardgametracker.app",
 			"invalid": "Geef een geldige http(s)-URL op"
 		},
 		"ui-language": {
-			"label": "Language",
-			"required": "language is required"
+			"label": "Taal",
+			"required": "Taal is verplicht"
 		},
-		"title": "General settings",
-		"description": "Change the general settings of the application.",
+		"title": "Algemene instellingen",
+		"description": "Wijzig de algemene instellingen van de applicatie.",
 		"date-time": {
-			"title": "Date and Time settings",
-			"description": "Configure the date and time format used in the application.",
-			"date-format": "Date format",
-			"time-format": "Time format"
+			"title": "Datum- en tijdinstellingen",
+			"description": "Stel de datum- en tijdnotatie van de applicatie in.",
+			"date-format": "Datumnotatie",
+			"time-format": "Tijdnotatie"
 		},
 		"currency": {
-			"title": "Currency settings",
-			"description": "Configure the currency used in the application.",
-			"label": "Currency"
+			"title": "Valuta-instellingen",
+			"description": "Stel de valuta van de applicatie in.",
+			"label": "Valuta"
 		},
 		"language": {
-			"title": "Language settings",
-			"description": "Configure the language used in the application.",
-			"label": "Language"
+			"title": "Taalinstellingen",
+			"description": "Stel de taal van de applicatie in.",
+			"label": "Taal"
 		}
 	},
 	"shame": {
-		"title": "Shelf of Shame settings",
-		"description": "Configure how the Shelf of Shame is calculated and displayed.",
+		"title": "Shelf of Shame-instellingen",
+		"description": "Stel in hoe de Shelf of Shame berekend en getoond wordt.",
 		"enabled": {
-			"label": "Enable Shelf of Shame",
-			"description": "Track games that haven't been played in a while."
+			"label": "Shelf of Shame inschakelen",
+			"description": "Hou spellen bij die al een tijd niet meer gespeeld zijn."
 		},
 		"months": {
-			"label": "Months Threshold"
+			"label": "Drempel in maanden"
 		}
 	},
 	"game-nights": {
-		"title": "Game Nights settings",
-		"description": "Configure how game nights are managed and displayed.",
+		"title": "Spelavondinstellingen",
+		"description": "Stel in hoe spelavonden beheerd en getoond worden.",
 		"enabled": {
-			"label": "Enable Game Nights",
-			"description": "Enable the game nights feature to plan and manage game night events with your friends."
-		},
-		"public-url": {
-			"label": "Public URL",
-			"placeholder": "https://myboardgametracker.app"
+			"label": "Spelavonden inschakelen",
+			"description": "Schakel spelavonden in om spelavonden met je vrienden te plannen en te beheren."
 		},
 		"rsvp-authentication": {
-			"label": "Require authentication for RSVPs",
-			"description": "When enabled, players will need to log in to RSVP for game nights. This adds an extra layer of security and helps prevent spam RSVPs."
+			"label": "Aanmelden vereisen voor RSVP's",
+			"description": "Als dit is ingeschakeld, moeten spelers zich aanmelden om op een spelavond te reageren. Dat zorgt voor extra beveiliging en helpt spam te voorkomen."
 		}
 	},
 	"advanced": {
 		"version-track": {
-			"label": "Version track",
-			"description": "Choose to stay on stable releases or switch to beta releases to get early access to new features.",
+			"label": "Releasekanaal",
+			"description": "Kies of je bij stabiele releases blijft of overschakelt naar bètareleases voor vroege toegang tot nieuwe functies.",
 			"stable": {
-				"label": "Stable",
-				"description": "Get only stable releases."
+				"label": "Stabiel",
+				"description": "Ontvang alleen stabiele releases."
 			},
 			"beta": {
-				"label": "Beta",
-				"description": "Get beta releases with early access to new features."
+				"label": "Bèta",
+				"description": "Ontvang bètareleases met vroege toegang tot nieuwe functies."
 			}
 		},
 		"updates": {
-			"title": "Update check settings",
-			"description": "Configure how the application checks for updates.",
+			"title": "Instellingen voor updatecontrole",
+			"description": "Stel in hoe de applicatie op updates controleert.",
 			"enabled": {
-				"label": "Enable update check",
-				"description": "When enabled, the application will automatically check for and install updates."
+				"label": "Updatecontrole inschakelen",
+				"description": "Als dit is ingeschakeld, controleert de applicatie automatisch op updates en installeert ze."
 			}
 		},
-		"bug": "Report a bug",
-		"translate": "Help us translate the app",
+		"bug": "Een bug melden",
+		"translate": "Help de app te vertalen",
 		"danger": {
-			"title": "Danger Zone",
-			"description": "Irreversible actions. Proceed with caution.",
+			"title": "Gevarenzone",
+			"description": "Onomkeerbare acties. Ga voorzichtig te werk.",
 			"reset": {
-				"button": "Reset data",
+				"button": "Gegevens resetten",
 				"confirm": {
-					"title": "Reset data",
-					"description": "This permanently deletes all games, sessions, players, people, locations, loans, game nights, badge awards, and uploaded images. Your settings, user accounts, and login are kept. This cannot be undone.",
+					"title": "Gegevens resetten",
+					"description": "Dit verwijdert definitief alle spellen, sessies, spelers, personen, locaties, uitleningen, spelavonden, toegekende badges en geüploade afbeeldingen. Je instellingen, gebruikersaccounts en aanmeldgegevens blijven behouden. Dit kan niet ongedaan worden gemaakt.",
 					"keyword": "RESET",
-					"input-label": "Type RESET to confirm",
-					"button": "Reset data"
+					"input-label": "Typ RESET om te bevestigen",
+					"button": "Gegevens resetten"
 				}
 			},
 			"factory-reset": {
-				"button": "Factory reset",
+				"button": "Fabrieksreset",
 				"confirm": {
-					"title": "Factory reset",
-					"description": "This permanently deletes EVERYTHING — all data, all settings, and all user accounts — and resets the app to its initial state. The default admin login (admin / admin) is recreated and you will be logged out. Change that password immediately. This cannot be undone.",
-					"keyword": "FACTORY RESET",
-					"input-label": "Type FACTORY RESET to confirm",
-					"button": "Factory reset everything"
+					"title": "Fabrieksreset",
+					"description": "Dit verwijdert definitief ALLES — alle gegevens, alle instellingen en alle gebruikersaccounts — en zet de app terug naar de begintoestand. Het standaard beheerdersaccount (admin / admin) wordt opnieuw aangemaakt en je wordt afgemeld. Wijzig dat wachtwoord meteen. Dit kan niet ongedaan worden gemaakt.",
+					"keyword": "FABRIEKSRESET",
+					"input-label": "Typ FABRIEKSRESET om te bevestigen",
+					"button": "Alles terugzetten naar fabrieksinstellingen"
 				}
 			},
 			"notifications": {
-				"reset-success": "Data reset successfully",
-				"reset-failed": "Failed to reset data",
-				"factory-reset-failed": "Failed to factory reset"
+				"reset-success": "Gegevens zijn gereset",
+				"reset-failed": "Gegevens resetten mislukt",
+				"factory-reset-failed": "Fabrieksreset mislukt"
 			}
 		}
 	},
 	"sidebar": {
 		"general": {
-			"title": "General",
-			"description": "Basic app configuration"
+			"title": "Algemeen",
+			"description": "Basisconfiguratie van de app"
 		},
 		"shelf-of-shame": {
 			"title": "Shelf of Shame",
-			"description": "Configure Shelf of Shame settings"
+			"description": "Shelf of Shame-instellingen configureren"
 		},
 		"advanced": {
-			"title": "Advanced",
-			"description": "Advanced app configuration"
+			"title": "Geavanceerd",
+			"description": "Geavanceerde configuratie van de app"
 		},
 		"game-nights": {
-			"title": "Game Nights",
-			"description": "Configure Game Nights settings"
+			"title": "Spelavonden",
+			"description": "Spelavondinstellingen configureren"
 		},
 		"bgg": {
 			"title": "Integraties",
@@ -166,145 +148,261 @@
 		},
 		"account": {
 			"title": "Account",
-			"description": "Profile & user management"
+			"description": "Profiel en gebruikersbeheer"
+		},
+		"sso": {
+			"title": "Single sign-on",
+			"description": "OpenID Connect-provider"
 		}
 	},
 	"bgg": {
-		"title": "BoardGameGeek API",
-		"description": "Configure the BGG API key to enable searching and importing games from BoardGameGeek.",
+		"title": "BoardGameGeek-API",
+		"description": "Stel de BGG-API-sleutel in om spellen te zoeken en te importeren van BoardGameGeek.",
 		"status": {
 			"title": "Status",
-			"configured": "API key configured",
-			"not-configured": "API key not Configured",
-			"source-env": "BGG API key is set via environment variable (BGG_API_KEY)",
-			"source-db": "BGG API key is stored in the database.",
-			"not-configured-description": "To use BGG integration features, you need to provide a BGG API key. You can either set it via the BGG_API_KEY environment variable or enter it directly in the settings below."
+			"configured": "API-sleutel geconfigureerd",
+			"not-configured": "API-sleutel niet geconfigureerd",
+			"source-env": "De BGG-API-sleutel is ingesteld via een omgevingsvariabele (BGG_API_KEY)",
+			"source-db": "De BGG-API-sleutel is opgeslagen in de database.",
+			"not-configured-description": "Om de BGG-integratie te gebruiken, heb je een BGG-API-sleutel nodig. Je kan die instellen via de omgevingsvariabele BGG_API_KEY of hieronder rechtstreeks invoeren."
 		},
 		"api-key": {
-			"label": "BGG API Key",
-			"placeholder": "Enter your BGG API key",
-			"save": "Save API Key",
-			"clear": "Remove API Key",
-			"clear-hint": "Save settings to apply the removal.",
-			"read-only": "The API key is read only.",
-			"read-only-description": "The API key is managed via the BGG_API_KEY environment variable and cannot be changed here.",
-			"help-title": "BGG API usage",
-			"help-description": "The BGG API allows the app to search and import game data, import your collection, and more. You can get an API key by following the instructions on the BoardGameGeek <requestPage>request page</requestPage>."
+			"label": "BGG-API-sleutel",
+			"placeholder": "Voer je BGG-API-sleutel in",
+			"save": "API-sleutel opslaan",
+			"clear": "API-sleutel verwijderen",
+			"clear-hint": "Sla instellingen op om de verwijdering toe te passen.",
+			"read-only": "De API-sleutel is alleen-lezen.",
+			"read-only-description": "De API-sleutel wordt beheerd via de omgevingsvariabele BGG_API_KEY en kan hier niet worden gewijzigd.",
+			"help-title": "Gebruik van de BGG-API",
+			"help-description": "Met de BGG-API kan de app spelgegevens zoeken en importeren, je collectie importeren en meer. Een API-sleutel krijg je door de instructies te volgen op de <requestPage>aanvraagpagina</requestPage> van BoardGameGeek."
 		},
 		"notifications": {
-			"saved": "BGG API key saved successfully",
-			"save-failed": "Failed to save BGG API key",
-			"cleared": "BGG API key removed",
-			"clear-failed": "Failed to remove BGG API key"
+			"saved": "BGG-API-sleutel opgeslagen",
+			"save-failed": "BGG-API-sleutel opslaan mislukt",
+			"cleared": "BGG-API-sleutel verwijderd",
+			"clear-failed": "BGG-API-sleutel verwijderen mislukt"
 		}
 	},
 	"account": {
 		"profile": {
-			"title": "My Account",
-			"description": "Manage your profile and password.",
+			"title": "Mijn account",
+			"description": "Beheer je profiel en wachtwoord.",
 			"display-name": {
-				"label": "Display name"
+				"label": "Weergavenaam"
 			},
 			"email": {
-				"label": "Email"
+				"label": "E-mail"
 			},
 			"username": {
-				"label": "Username"
+				"label": "Gebruikersnaam"
 			},
 			"player": {
-				"label": "Linked player",
-				"none": "Not linked"
+				"label": "Gekoppelde speler",
+				"none": "Niet gekoppeld"
 			},
-			"save": "Save profile"
+			"save": "Profiel opslaan",
+			"current-password": {
+				"label": "Huidig wachtwoord",
+				"placeholder": "Nodig om je e-mailadres te wijzigen"
+			}
 		},
 		"password": {
-			"change-button": "Change password",
-			"title": "Change Password",
-			"description": "Enter your current password and choose a new one.",
+			"change-button": "Wachtwoord wijzigen",
+			"title": "Wachtwoord wijzigen",
+			"description": "Voer je huidige wachtwoord in en kies een nieuw wachtwoord.",
 			"current": {
-				"label": "Current password"
+				"label": "Huidig wachtwoord"
 			},
 			"new": {
-				"label": "New password"
+				"label": "Nieuw wachtwoord"
 			},
 			"confirm": {
-				"label": "Confirm new password"
+				"label": "Bevestig nieuw wachtwoord"
 			},
-			"min-length": "Password must be at least 4 characters",
-			"mismatch": "Passwords do not match",
-			"save": "Change password"
+			"min-length": "Het wachtwoord moet minstens 4 tekens lang zijn",
+			"mismatch": "De wachtwoorden komen niet overeen",
+			"save": "Wachtwoord wijzigen"
 		},
 		"users": {
-			"title": "User Management",
-			"description": "Create and manage user accounts.",
-			"last-login": "Last login",
-			"role": "Role",
+			"title": "Gebruikersbeheer",
+			"description": "Gebruikersaccounts aanmaken en beheren.",
+			"last-login": "Laatst aangemeld",
+			"role": "Rol",
 			"roles": {
-				"user": "User",
-				"reader": "Reader",
-				"admin": "Admin"
+				"user": "Gebruiker",
+				"reader": "Lezer",
+				"admin": "Beheerder"
 			},
 			"player": {
-				"label": "Linked player",
-				"none": "Not linked"
+				"label": "Gekoppelde speler",
+				"none": "Niet gekoppeld"
 			},
-			"create-button": "Create user",
+			"create-button": "Gebruiker aanmaken",
 			"create": {
-				"title": "Create New User",
-				"description": "Fill out the form to create a new user.",
+				"title": "Nieuwe gebruiker aanmaken",
+				"description": "Vul het formulier in om een nieuwe gebruiker aan te maken.",
 				"username": {
-					"label": "Username"
+					"label": "Gebruikersnaam"
 				},
 				"email": {
-					"label": "Email"
+					"label": "E-mail"
 				},
 				"password": {
-					"label": "Password"
+					"label": "Wachtwoord"
 				},
 				"display-name": {
-					"label": "Display name"
+					"label": "Weergavenaam"
 				},
 				"player": {
-					"label": "Player",
-					"create": "Create a new player",
-					"link": "Link an existing player",
-					"none": "No player"
+					"label": "Speler",
+					"create": "Een nieuwe speler aanmaken",
+					"link": "Een bestaande speler koppelen",
+					"none": "Geen speler"
 				},
-				"save": "Create user"
+				"save": "Gebruiker aanmaken"
 			},
 			"edit": {
-				"title": "Edit User",
-				"description": "Change the role for \"{{username}}\"."
+				"title": "Gebruiker bewerken",
+				"description": "Wijzig de rol van \"{{username}}\"."
 			},
 			"reset-password": {
-				"button": "Reset password"
+				"button": "Wachtwoord resetten"
 			},
 			"temp-password": {
-				"title": "Temporary Password",
-				"description": "Password reset for \"{{username}}\". Save this password — it won't be shown again.",
-				"copy": "Copy to clipboard",
-				"copied": "Copied!"
+				"title": "Tijdelijk wachtwoord",
+				"description": "Wachtwoord gereset voor \"{{username}}\". Bewaar dit wachtwoord — het wordt niet opnieuw getoond.",
+				"copy": "Naar klembord kopiëren",
+				"copied": "Gekopieerd!"
 			},
 			"delete": {
-				"title": "Delete User",
-				"description": "Are you sure you want to delete \"{{username}}\"? This cannot be undone."
+				"title": "Gebruiker verwijderen",
+				"description": "Weet je zeker dat je \"{{username}}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
 			},
-			"never-logged-in": "Never"
+			"never-logged-in": "Nooit",
+			"no-users": "Nog geen gebruikers"
 		},
 		"notifications": {
-			"profile-updated": "Profile updated successfully",
-			"profile-update-failed": "Failed to update profile",
-			"password-changed": "Password changed successfully",
-			"password-change-failed": "Failed to change password. Check your current password.",
-			"user-created": "User created successfully",
-			"user-create-failed": "Failed to create user",
-			"user-deleted": "User deleted successfully",
-			"user-delete-failed": "Failed to delete user",
-			"role-updated": "User role updated successfully",
-			"role-update-failed": "Failed to update user role",
-			"user-updated": "User updated successfully",
-			"user-update-failed": "Failed to update user",
-			"password-reset-failed": "Failed to reset password"
+			"profile-updated": "Profiel bijgewerkt",
+			"profile-update-failed": "Profiel bijwerken mislukt",
+			"password-changed": "Wachtwoord gewijzigd",
+			"password-change-failed": "Wachtwoord wijzigen mislukt. Controleer je huidige wachtwoord.",
+			"user-created": "Gebruiker aangemaakt",
+			"user-create-failed": "Gebruiker aanmaken mislukt",
+			"user-deleted": "Gebruiker verwijderd",
+			"user-delete-failed": "Gebruiker verwijderen mislukt",
+			"role-updated": "Gebruikersrol bijgewerkt",
+			"role-update-failed": "Gebruikersrol bijwerken mislukt",
+			"user-updated": "Gebruiker bijgewerkt",
+			"user-update-failed": "Gebruiker bijwerken mislukt",
+			"password-reset-failed": "Wachtwoord resetten mislukt"
+		},
+		"external-logins": {
+			"title": "Externe aanmeldingen",
+			"description": "Meld je aan via je identiteitsprovider in plaats van met een wachtwoord.",
+			"none": "Nog geen externe aanmelding gekoppeld.",
+			"linked-on": "gekoppeld op {{date}}",
+			"link": "{{provider}} koppelen",
+			"unlink": "Ontkoppelen",
+			"notifications": {
+				"unlinked": "Externe aanmelding verwijderd.",
+				"unlink-failed": "De externe aanmelding kon niet worden verwijderd.",
+				"link-failed": "Het koppelen kon niet worden gestart."
+			},
+			"unlink-confirm": "Je kan je dan niet meer aanmelden met deze provider tot je hem opnieuw koppelt."
+		}
+	},
+	"env-override": "Ingesteld via de omgevingsvariabele {{variable}}. Pas ze daar aan om deze instelling te wijzigen.",
+	"sso": {
+		"title": "OpenID Connect-provider",
+		"description": {
+			"empty": "Laat mensen zich aanmelden via je identiteitsprovider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Registreer daar eerst een publieke client en vul daarna de gegevens hieronder in.",
+			"configured": "Aanmelden via {{name}} is geconfigureerd. Wijzigingen gelden vanaf de volgende aanmelding."
+		},
+		"fields": {
+			"name": {
+				"label": "Korte naam",
+				"placeholder": "keycloak"
+			},
+			"display-name": {
+				"label": "Knoptekst",
+				"placeholder": "Bedrijfslogin"
+			},
+			"authority": {
+				"label": "Authority (issuer-URL)",
+				"placeholder": "https://sso.example.com/realms/games",
+				"relink-warning": "Als je het adres wijzigt, worden alle accounts die aan deze provider gekoppeld zijn ontkoppeld. Gebruikers melden zich dan aan met hun wachtwoord en koppelen de provider opnieuw via hun profiel; gebruikers zonder wachtwoord hebben er eerst een nodig."
+			},
+			"client-id": {
+				"label": "Client-ID"
+			},
+			"client-secret": {
+				"label": "Client secret (optioneel)",
+				"placeholder": "Laat leeg voor een publieke client",
+				"unchanged": "Opgeslagen — laat leeg om te behouden"
+			},
+			"scopes": {
+				"label": "Scopes"
+			},
+			"username-claim": {
+				"label": "Claim voor gebruikersnaam"
+			},
+			"email-claim": {
+				"label": "Claim voor e-mail"
+			},
+			"display-name-claim": {
+				"label": "Claim voor weergavenaam"
+			},
+			"roles-claim": {
+				"label": "Claim voor groepen/rollen"
+			},
+			"admin-group": {
+				"label": "Waarde voor beheerdersgroep",
+				"placeholder": "bgt-admins"
+			},
+			"auto-provision": {
+				"label": "Accounts aanmaken bij eerste aanmelding",
+				"description": "Nieuwe mensen krijgen automatisch een account met de rol Gebruiker. Als dit uit staat, kunnen alleen gekoppelde accounts zich aanmelden."
+			},
+			"enabled": {
+				"label": "Ingeschakeld",
+				"description": "Toon de aanmeldknop op de aanmeldpagina."
+			}
+		},
+		"discovery": {
+			"button": "Discovery testen",
+			"testing": "Testen…",
+			"ok": "De provider antwoordde en de issuer komt overeen met de authority.",
+			"issuer-mismatch": "De provider antwoordde, maar meldt issuer {{issuer}}. Gebruik die waarde als authority.",
+			"failed": "De provider is niet bereikbaar of gaf geen discovery-document terug.",
+			"authorization": "Autorisatie",
+			"token": "Token",
+			"userinfo": "Gebruikersinfo"
+		},
+		"setup": {
+			"title": "Registreren bij de provider",
+			"description": "Sta deze redirect-URI's toe op de client die je bij je identiteitsprovider hebt aangemaakt.",
+			"public-url-warning": "Er is geen publieke URL ingesteld, dus de redirect-URI's worden afgeleid van de huidige aanvraag ({{url}}). Stel de publieke URL in onder Algemeen als dat niet het adres is dat mensen gebruiken.",
+			"redirect-uri": "Redirect-URI voor aanmelden",
+			"link-redirect-uri": "Redirect-URI voor accountkoppeling",
+			"copy": "Kopiëren"
+		},
+		"validation": {
+			"name": "Gebruik kleine letters, cijfers en streepjes (1–100 tekens)",
+			"display-name": "Een knoptekst is verplicht",
+			"authority": "Geef de https-URL van de provider op",
+			"client-id": "De client-ID is verplicht",
+			"scopes": "Minstens de scope openid is verplicht"
+		},
+		"create": "Provider aanmaken",
+		"save": "Provider opslaan",
+		"delete": "Provider verwijderen",
+		"delete-description": "Als je de provider verwijdert, worden ook alle gekoppelde externe accounts verwijderd. Mensen behouden hun lokale wachtwoord als ze er een hebben.",
+		"notifications": {
+			"saved": "Provider opgeslagen.",
+			"save-failed": "De provider kon niet worden opgeslagen.",
+			"deleted": "Provider verwijderd.",
+			"delete-failed": "De provider kon niet worden verwijderd."
 		}
 	},
 	"changedetection": {

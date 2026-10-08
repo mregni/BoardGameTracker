@@ -4,43 +4,51 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Ardalis.GuardClauses;
+using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
+using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common.Configuration;
 using BoardGameTracker.Common.Entities.Auth;
-using BoardGameTracker.Core.Configuration;
-using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Auth;
-using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
-using BoardGameTracker.Core.Settings.Interfaces;
+using BoardGameTracker.Core.Common;
+using BoardGameTracker.Core.Configuration;
+using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
-using BoardGameTracker.Core.DockerHub;
-using BoardGameTracker.Core.Games;
-using BoardGameTracker.Core.Updates;
 using BoardGameTracker.Core.Disk.Interfaces;
+using BoardGameTracker.Core.DockerHub;
 using BoardGameTracker.Core.Extensions;
+using BoardGameTracker.Core.Games;
+using BoardGameTracker.Core.Images;
+using BoardGameTracker.Core.Settings.Interfaces;
+using BoardGameTracker.Core.Updates;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi;
+using Npgsql;
 using Refit;
 using Serilog;
+using Swashbuckle.AspNetCore.Swagger;
 
 var logLevel = LogLevelExtensions.GetEnvironmentLogLevel();
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Is(logLevel)
     .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
-    .MinimumLevel.Override("Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager", Serilog.Events.LogEventLevel.Error)
     .WriteTo.Console()
     .WriteTo.File(
         path: Path.Combine("logs", "app-.log"),
@@ -59,10 +67,23 @@ builder.Host.UseContentRoot(Directory.GetCurrentDirectory());
 
 builder.Host.UseSerilog();
 
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<BoardGameTracker.Core.Datastore.MainDbContext>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddScoped<AuthDisabledFilter>();
 builder.Services.AddProblemDetails();
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<MainDbContext>()
+    .SetApplicationName("boardgametracker");
+
+var environmentProvider = new EnvironmentProvider();
+if (environmentProvider.DataProtectionKey is { } dataProtectionKey)
+{
+    var keyMaterial = new DataProtectionKeyMaterial(dataProtectionKey);
+    builder.Services.AddSingleton(keyMaterial);
+    builder.Services.Configure<KeyManagementOptions>(options => options.XmlEncryptor = new SecretXmlEncryptor(keyMaterial));
+}
+var trustedProxies = TrustedProxyList.Parse(environmentProvider.TrustedProxies);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -70,29 +91,21 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 
-    var trustedProxies = new EnvironmentProvider().TrustedProxies;
-    foreach (var proxy in trustedProxies)
+    foreach (var proxy in trustedProxies.Proxies)
     {
-        if (IPAddress.TryParse(proxy, out var address))
-        {
-            options.KnownProxies.Add(address);
-        }
-        else if (System.Net.IPNetwork.TryParse(proxy, out var network))
-        {
-            options.KnownIPNetworks.Add(network);
-        }
+        options.KnownProxies.Add(proxy);
+    }
+
+    foreach (var network in trustedProxies.Networks)
+    {
+        options.KnownIPNetworks.Add(network);
     }
 });
 
-builder.Services.Configure<HttpClientFactoryOptions>(options =>
-{
-    options.HttpClientActions.Add(client =>
-    {
-        client.Timeout = TimeSpan.FromSeconds(30);
-    });
-});
+builder.Services.ConfigureHttpClientDefaults(httpClientBuilder =>
+    httpClientBuilder.ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(30)));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
         options.Password.RequireDigit = false;
         options.Password.RequireLowercase = false;
@@ -100,39 +113,45 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequiredLength = 8;
         options.User.RequireUniqueEmail = false;
-        options.Lockout.AllowedForNewUsers = true;
-        options.Lockout.MaxFailedAccessAttempts = 5;
-        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     })
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<MainDbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddSignInManager();
+builder.Services.AddHttpContextAccessor();
 
-var environmentProvider = new EnvironmentProvider();
 var authEnabled = environmentProvider.AuthEnabled;
 var jwtSecret = environmentProvider.JwtSecret ?? builder.Configuration["Jwt:Secret"];
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "boardgametracker-api";
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "boardgametracker-client";
 if (string.IsNullOrWhiteSpace(jwtSecret))
 {
     if (authEnabled)
     {
-        throw new ArgumentException("JWT_SECRET not set");
+        throw new InvalidOperationException(
+            "JWT_SECRET is not set. Set it to at least 32 random characters (for example the output of `openssl rand -base64 48`), or set AUTH_ENABLED=false to run without accounts. See https://mregni.github.io/BoardGameTracker/getting-started/environment-variables/");
     }
 
     jwtSecret = "auth-disabled-placeholder-key-not-used";
 }
 else if (authEnabled && jwtSecret.Length < 32)
 {
-    throw new ArgumentException(
-        $"JWT_SECRET must be at least 32 characters long, but was {jwtSecret.Length}.");
+    throw new InvalidOperationException(
+        $"JWT_SECRET must be at least 32 characters long, but was {jwtSecret.Length}. Generate one with `openssl rand -base64 48`.");
 }
+
+builder.Services.AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
+    .PostConfigure(options => options.Secret = jwtSecret)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    .AddJwtBearer(options =>
+    .AddJwtBearer();
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtOptions>>((options, jwt) =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -140,10 +159,10 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
+            ValidIssuer = jwt.Value.Issuer,
+            ValidAudience = jwt.Value.Audience,
             ClockSkew = TimeSpan.FromSeconds(30),
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Value.Secret))
         };
     });
 
@@ -152,7 +171,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddRateLimiter(options =>
 {
     options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
-        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        ClientAddressKey.From(context.Connection.RemoteIpAddress),
         _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 10,
@@ -160,26 +179,64 @@ builder.Services.AddRateLimiter(options =>
             QueueLimit = 0
         }));
     options.AddPolicy("changedetection", context => RateLimitPartition.GetFixedWindowLimiter(
-        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        ClientAddressKey.From(context.Connection.RemoteIpAddress),
         _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 30,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
+    options.AddPolicy("gamenight-link", context => RateLimitPartition.GetFixedWindowLimiter(
+        ClientAddressKey.From(context.Connection.RemoteIpAddress),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+    options.AddPolicy("rag", context => RateLimitPartition.GetFixedWindowLimiter(
+        UserRateLimitKey.From(context),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = (context, _) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = Math.Ceiling(retryAfter.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        var request = context.HttpContext.Request;
+        if (HttpMethods.IsGet(request.Method) && request.Path.StartsWithSegments("/api/auth/oidc"))
+        {
+            context.HttpContext.Response.StatusCode = StatusCodes.Status302Found;
+            context.HttpContext.Response.Headers.Location =
+                $"{OidcController.CallbackPage}?error={Uri.EscapeDataString(BoardGameTracker.Common.Constants.Errors.TooManyRequests)}";
+        }
+
+        return ValueTask.CompletedTask;
+    };
 });
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient(BoardGameTracker.Core.Rag.AiClientFactory.HttpClientName)
-    .ConfigureHttpClient(client => client.Timeout = System.Threading.Timeout.InfiniteTimeSpan);
+    .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromMinutes(5));
 builder.Services.AddHttpClient(BoardGameTracker.Core.ChangeDetection.ChangeDetectionClient.HttpClientName)
     .ConfigureHttpClient(client =>
     {
         client.Timeout = TimeSpan.FromSeconds(10);
-        client.MaxResponseContentBufferSize = 64 * 1024;
+        client.MaxResponseContentBufferSize = 1024 * 1024;
     })
     .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+builder.Services.AddHttpClient(OidcService.HttpClientName)
+    .ConfigureHttpClient(client => client.MaxResponseContentBufferSize = 1024 * 1024)
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+builder.Services.AddHttpClient(ImageService.HttpClientName)
+    .AddStandardResilienceHandler();
 builder.Services.AddMemoryCache();
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -237,6 +294,8 @@ builder.Services.AddSwaggerGen(options =>
         Description = "BoardGameTracker API for managing board game collections and play sessions"
     });
 
+    options.SupportNonNullableReferenceTypes();
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -267,18 +326,44 @@ builder.Services.AddRefitClient<IDockerHubApi>()
     .ConfigureHttpClient(options =>
     {
         options.BaseAddress = new Uri("https://hub.docker.com");
-    });
-
-builder.Services.AddSpaStaticFiles(configuration => {
-    configuration.RootPath = "wwwroot";
-});
+    })
+    .AddStandardResilienceHandler();
 
 var app = builder.Build();
+if (args is ["--openapi", var openApiPath])
+{
+    await WriteOpenApiDocument(app.Services, openApiPath);
+    await Log.CloseAndFlushAsync();
+    return;
+}
+
 CreateFolders(app.Services);
 
-app.UseSerilogRequestLogging();
+app.UseSerilogRequestLogging(options =>
+{
+    options.GetLevel = (context, _, exception) =>
+        exception != null || context.Response.StatusCode >= StatusCodes.Status500InternalServerError
+            ? Serilog.Events.LogEventLevel.Error
+            : context.Request.Path.StartsWithSegments("/api/health")
+                ? Serilog.Events.LogEventLevel.Verbose
+                : Serilog.Events.LogEventLevel.Information;
+});
 
-app.UseForwardedHeaders();
+foreach (var entry in trustedProxies.Invalid)
+{
+    Log.Error("TRUSTED_PROXIES entry {Entry} is not an IP address or CIDR network and is ignored", entry);
+}
+
+if (trustedProxies.HasEntries)
+{
+    app.UseForwardedHeaders();
+}
+else
+{
+    app.UseMiddleware<UntrustedProxyWarningMiddleware>();
+}
+
+app.UseResponseCompression();
 
 var hstsEnabled = !app.Environment.IsDevelopment();
 var swaggerEnabled = environmentProvider.SwaggerEnabled;
@@ -292,13 +377,12 @@ app.Use(async (context, next) =>
         headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
         headers["Cross-Origin-Resource-Policy"] = "same-origin";
         headers["Cross-Origin-Opener-Policy"] = "same-origin";
-        headers["Cross-Origin-Embedder-Policy"] = "require-corp";
         headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
 
         var isSwagger = swaggerEnabled && context.Request.Path.StartsWithSegments("/swagger");
         headers["Content-Security-Policy"] = isSwagger
             ? "default-src 'self'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';"
-            : "default-src 'self'; img-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
+            : "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.ingest.sentry.io https://*.ingest.us.sentry.io; frame-ancestors 'none'; form-action 'self';";
 
         if (hstsEnabled && context.Request.IsHttps)
         {
@@ -317,10 +401,10 @@ app.UseRouting();
 
 app.UseCors("Allow");
 
-app.UseRateLimiter();
 app.UseAuthDisabledMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapHealthChecks("/api/health");
 
@@ -347,10 +431,14 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/images/cover"
 });
 
+app.UseWhen(
+    context => context.Request.Path.StartsWithSegments(ProfileImageCookie.Path),
+    branch => branch.UseMiddleware<ProfileImageAccessMiddleware>());
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(PathHelper.FullProfileImagePath),
-    RequestPath = "/images/profile"
+    RequestPath = ProfileImageCookie.Path,
+    OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "private, no-cache"
 });
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
@@ -363,29 +451,18 @@ logger.LogInformation("  HTTP ports:   {HttpPorts}", Environment.GetEnvironmentV
 logger.LogInformation("  Timezone:     {Timezone}", Environment.GetEnvironmentVariable("TZ") ?? "system default");
 logger.LogInformation("  DB port:      {DbPort}", Environment.GetEnvironmentVariable("DB_PORT") ?? "5432");
 logger.LogInformation("  Auth:         {AuthState}", authEnabled ? "Enabled" : "Disabled");
+if (!authEnabled)
+{
+    logger.LogWarning(
+        "AUTH_ENABLED=false: every request is treated as an administrator. Anyone who can reach this port can change settings, store API keys, upload files, import games and use the AI assistant. Only use this on a trusted network or behind a proxy that authenticates for you");
+}
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseSpaStaticFiles(new StaticFileOptions { OnPrepareResponse = SetUnhashedAssetCacheHeaders });
-    app.UseStaticFiles(new StaticFileOptions { OnPrepareResponse = SetUnhashedAssetCacheHeaders });
-    app.UseWhen(
-        context => HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method),
-        spaBranch => spaBranch.UseSpa(config => {
-        config.Options.SourcePath = "wwwroot";
-        config.Options.DefaultPageStaticFileOptions = new StaticFileOptions
-        {
-            OnPrepareResponse = ctx =>
-            {
-                var headers = ctx.Context.Response.GetTypedHeaders();
-                headers.CacheControl = new CacheControlHeaderValue
-                {
-                    NoCache = true,
-                    NoStore = true,
-                    MustRevalidate = true
-                };
-            }
-        };
-    }));
+    app.UseStaticFiles(new StaticFileOptions { OnPrepareResponse = SetStaticAssetCacheHeaders });
+    app.MapFallback("/api/{**path}", () => Results.NotFound());
+    app.MapFallbackToFile("index.html", new StaticFileOptions { OnPrepareResponse = SetIndexCacheHeaders })
+        .WithMetadata(new HttpMethodMetadata([HttpMethods.Get, HttpMethods.Head]));
 }
 
 RunDbMigrations(app.Services);
@@ -399,25 +476,110 @@ await app.RunAsync();
 
 await Log.CloseAndFlushAsync();
 
-static void SetUnhashedAssetCacheHeaders(StaticFileResponseContext context)
+static async Task WriteOpenApiDocument(IServiceProvider services, string path)
 {
-    if (!context.Context.Request.Path.StartsWithSegments("/locales", StringComparison.OrdinalIgnoreCase))
-    {
-        return;
-    }
+    var document = services.GetRequiredService<ISwaggerProvider>().GetSwagger("v1");
+    var fullPath = Path.GetFullPath(path);
+    Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+    await using var writer = new StreamWriter(fullPath) { NewLine = "\n" };
+    document.SerializeAsV3(new OpenApiJsonWriter(writer));
+}
 
+static void SetIndexCacheHeaders(StaticFileResponseContext context)
+{
     context.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
     {
         NoCache = true,
+        NoStore = true,
         MustRevalidate = true
     };
+}
+
+static void SetStaticAssetCacheHeaders(StaticFileResponseContext context)
+{
+    var path = context.Context.Request.Path;
+    var headers = context.Context.Response.GetTypedHeaders();
+
+    if (path.StartsWithSegments("/assets", StringComparison.OrdinalIgnoreCase))
+    {
+        headers.CacheControl = new CacheControlHeaderValue
+        {
+            Public = true,
+            MaxAge = TimeSpan.FromDays(365),
+            Extensions = { new NameValueHeaderValue("immutable") }
+        };
+        return;
+    }
+
+    if (path.StartsWithSegments("/locales", StringComparison.OrdinalIgnoreCase))
+    {
+        headers.CacheControl = new CacheControlHeaderValue
+        {
+            NoCache = true,
+            MustRevalidate = true
+        };
+    }
 }
 
 static void RunDbMigrations(IServiceProvider serviceProvider)
 {
     using var scope = serviceProvider.CreateScope();
     var context = Guard.Against.Null(scope.ServiceProvider.GetRequiredService<MainDbContext>());
+    WaitForDatabase(context);
+    EnsureVectorExtensionAvailable(context);
     context.Database.Migrate();
+}
+
+static void WaitForDatabase(MainDbContext context)
+{
+    var creator = context.Database.GetService<IRelationalDatabaseCreator>();
+    const int attempts = 10;
+    for (var attempt = 1; ; attempt++)
+    {
+        try
+        {
+            if (!creator.Exists())
+            {
+                Log.Information("Database {Database} does not exist yet; creating it", context.Database.GetDbConnection().Database);
+                creator.Create();
+            }
+
+            return;
+        }
+        catch (Exception ex) when (ex is NpgsqlException or System.Net.Sockets.SocketException or TimeoutException)
+        {
+            if (attempt >= attempts)
+            {
+                throw new InvalidOperationException(
+                    $"Could not open the PostgreSQL database after {attempts} attempts ({ex.Message}). Check DB_HOST, DB_PORT, DB_USER and DB_PASSWORD and make sure the database container is running.",
+                    ex);
+            }
+
+            Log.Warning("Database not reachable yet (attempt {Attempt}/{Attempts}): {Message}", attempt, attempts, ex.Message);
+        }
+
+        Thread.Sleep(TimeSpan.FromSeconds(3));
+    }
+}
+
+static void EnsureVectorExtensionAvailable(MainDbContext context)
+{
+    var available = context.Database
+        .SqlQueryRaw<int>("SELECT 1 AS \"Value\" FROM pg_available_extensions WHERE name = 'vector'")
+        .AsEnumerable()
+        .Any();
+
+    if (available)
+    {
+        return;
+    }
+
+    const string message =
+        "The PostgreSQL server does not provide the 'vector' extension, which BoardGameTracker requires. " +
+        "Use the pgvector/pgvector:pg16 image instead of postgres:16 (your existing data folder keeps working), " +
+        "or install pgvector on your own server. See the Upgrading page in the documentation.";
+    Log.Fatal(message);
+    throw new InvalidOperationException(message);
 }
 
 static void CreateFolders(IServiceProvider serviceProvider)
@@ -453,10 +615,12 @@ static void ApplySerializerSettings(JsonSerializerOptions serializerSettings)
     serializerSettings.PropertyNameCaseInsensitive = true;
     serializerSettings.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     serializerSettings.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    serializerSettings.WriteIndented = true;
+    serializerSettings.WriteIndented = EnvironmentExtensions.IsDevelopment();
 
     // Ensure all DateTime values are handled as UTC
     serializerSettings.Converters.Add(new UtcDateTimeConverter());
     serializerSettings.Converters.Add(new UtcNullableDateTimeConverter());
     serializerSettings.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
 }
+
+public partial class Program;

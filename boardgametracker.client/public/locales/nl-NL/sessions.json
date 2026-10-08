@@ -1,12 +1,12 @@
 {
-  "new": "Add new session",
-  "title": "sessions",
+  "new": "Nieuwe sessie toevoegen",
+  "title": "sessies",
   "notifications": {
-    "deleted": "Location is succesfully deleted",
-    "delete-failed": "Failed deleting location"
+    "deleted": "Sessie is verwijderd",
+    "delete-failed": "Sessie verwijderen mislukt"
   },
   "delete": {
-    "title": "Delete session",
-    "description": "Are you sure you want to the sessions?"
+    "title": "Sessie verwijderen",
+    "description": "Weet je zeker dat je deze sessie wilt verwijderen?"
   }
 }

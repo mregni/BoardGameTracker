@@ -48,7 +48,7 @@ const PlayerSessionCardItemComponent = (props: Props) => {
 						{playerSession?.won ? t("won") : t("lost")}
 					</BgtText>
 
-					{playerSession?.score && (
+					{playerSession?.score != null && (
 						<BgtText color="cyan" weight="bold">
 							{t("points", { count: playerSession?.score })}
 						</BgtText>

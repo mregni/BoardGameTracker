@@ -1,5 +1,6 @@
 import { type BarDatum, ResponsiveBar } from "@nivo/bar";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { BgtText } from "../BgtText/BgtText";
 
@@ -37,6 +38,7 @@ interface Props {
 
 export const BgtBarChart = (props: Props) => {
 	const { data, index, keys } = props;
+	const { t } = useTranslation();
 	const [isSmall, setIsSmall] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -100,7 +102,7 @@ export const BgtBarChart = (props: Props) => {
 				tooltip={({ value, indexValue }) => (
 					<div className="bg-background border border-primary/30 rounded-lg p-3 shadow-lg min-w-32">
 						<BgtText color="white">{indexValue}</BgtText>
-						<BgtText color="cyan">{value} sessions</BgtText>
+						<BgtText color="cyan">{t("common:sessions-count", { count: Number(value) })}</BgtText>
 					</div>
 				)}
 			/>

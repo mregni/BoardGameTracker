@@ -1,7 +1,17 @@
 import { z } from "zod";
 
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
+import { localDateSchema } from "@/utils/localDate";
 import { GameState } from "./GameState";
+
+const positiveInteger = (message: string) =>
+	z
+		.number({ error: message })
+		.int({ message })
+		.positive({ message })
+		.nullable()
+		.optional()
+		.transform((value) => value ?? null);
 
 export const CreateGameSchema = z.object({
 	title: z
@@ -9,26 +19,36 @@ export const CreateGameSchema = z.object({
 			error: "game:new.manual.game-title.required",
 		})
 		.min(1, { message: "game:new.manual.game-title.required" }),
-	bggId: z.number().int().optional(),
-	buyingPrice: z.coerce
-		.number()
+	bggId: positiveInteger("game:validation.positive-number"),
+	buyingPrice: z
+		.number({ error: "game:validation.positive-number" })
+		.nonnegative({ message: "game:validation.positive-number" })
+		.nullable()
 		.optional()
 		.transform((value) => (value === undefined || Number.isNaN(value) ? null : value)),
-	additionDate: z.coerce.date({
-		error: "game:added-date.required",
-	}),
+	additionDate: localDateSchema("game:added-date.required"),
 	state: z.nativeEnum(GameState),
-	yearPublished: z.coerce
-		.number()
-		.int()
+	yearPublished: z
+		.number({ error: "game:validation.year" })
+		.int({ message: "game:validation.year" })
+		.min(-5000, { message: "game:validation.year" })
+		.max(9999, { message: "game:validation.year" })
+		.nullable()
 		.optional()
 		.transform((value) => value || null),
 	description: z.string().optional(),
-	minPlayers: z.coerce.number().int().optional(),
-	maxPlayers: z.coerce.number().int().optional(),
-	minPlayTime: z.coerce.number().int().optional(),
-	maxPlayTime: z.coerce.number().int().optional(),
-	minAge: z.coerce.number().int().optional(),
+	minPlayers: positiveInteger("game:validation.positive-number"),
+	maxPlayers: positiveInteger("game:validation.positive-number"),
+	minPlayTime: positiveInteger("game:validation.positive-number"),
+	maxPlayTime: positiveInteger("game:validation.positive-number"),
+	minAge: z
+		.number({ error: "game:validation.positive-number" })
+		.int({ message: "game:validation.positive-number" })
+		.nonnegative({ message: "game:validation.positive-number" })
+		.max(120, { message: "game:validation.positive-number" })
+		.nullable()
+		.optional()
+		.transform((value) => value || null),
 	image: z.string().nullable().optional(),
 	changeDetectionWatchId: z
 		.string()
@@ -43,6 +63,26 @@ export const CreateGameSchema = z.object({
 		.optional()
 		.transform((value) => (!value || value === LANGUAGE_NONE ? null : value)),
 	hasScoring: z.boolean(),
+	rating: z
+		.number({ error: "game:validation.rating" })
+		.min(0, { message: "game:validation.rating" })
+		.max(10, { message: "game:validation.rating" })
+		.nullable()
+		.optional()
+		.transform((value) => value ?? null),
+	weight: z
+		.number({ error: "game:validation.weight" })
+		.min(0, { message: "game:validation.weight" })
+		.max(5, { message: "game:validation.weight" })
+		.nullable()
+		.optional()
+		.transform((value) => value ?? null),
+	soldPrice: z
+		.number({ error: "game:validation.positive-number" })
+		.nonnegative({ message: "game:validation.positive-number" })
+		.nullable()
+		.optional()
+		.transform((value) => value ?? null),
 });
 
 export type CreateGame = z.infer<typeof CreateGameSchema>;

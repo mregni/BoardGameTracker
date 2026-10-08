@@ -1,0 +1,31 @@
+{
+  "title": "Clasificación",
+  "columns": {
+    "rank": "#",
+    "player": "Jugador",
+    "wins": "Victorias",
+    "plays": "Partidas",
+    "win-rate": "% de victorias",
+    "podiums": "Podios",
+    "time-played": "Tiempo jugado"
+  },
+  "highlights": {
+    "most-wins": "Más victorias",
+    "most-plays": "Más partidas",
+    "best-win-rate": "Mejor % de victorias",
+    "most-time": "Más tiempo en la mesa",
+    "nobody-yet": "Nadie todavía",
+    "min-plays_one": "Necesita al menos {{count}} partida",
+    "min-plays_other": "Necesita al menos {{count}} partidas"
+  },
+  "values": {
+    "wins_one": "{{count}} victoria",
+    "wins_other": "{{count}} victorias",
+    "plays_one": "{{count}} partida",
+    "plays_other": "{{count}} partidas"
+  },
+  "empty": {
+    "title": "Aún no hay partidas registradas",
+    "description": "Registra algunas partidas y la clasificación se llenará sola."
+  }
+}

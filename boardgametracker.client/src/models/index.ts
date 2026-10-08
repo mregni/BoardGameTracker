@@ -1,4 +1,5 @@
 export * from "./Auth/Auth";
+export * from "./Auth/Oidc";
 export * from "./Badge/Badge";
 
 export * from "./ChangeDetection/ChangeDetection";
@@ -25,13 +26,13 @@ export * from "./Games/GameManual";
 export * from "./Games/GamePrice";
 export * from "./Games/GameState";
 export * from "./Games/GameStatistics";
-export * from "./Games/GameType";
 export * from "./Games/ImportGame";
 export * from "./Games/PersonType";
 export * from "./Games/RagAnswer";
 export * from "./Games/Shame";
 export * from "./Games/ShameStatistics";
 export * from "./Images/ImageUpload";
+export * from "./Leaderboard/Leaderboard";
 export * from "./Location/CreateLocation";
 export * from "./Location/Location";
 export * from "./Menu/MenuItem";

@@ -91,7 +91,7 @@ function RouteComponent() {
 							accessorKey: "5",
 							cell: ({ row }) => {
 								const highScore = row.original.playerSessions
-									.filter((x) => x.score !== undefined)
+									.filter((x) => x.score != null)
 									.sort((a, b) => b.score! - a.score!);
 
 								if (highScore.length === 0) return "";

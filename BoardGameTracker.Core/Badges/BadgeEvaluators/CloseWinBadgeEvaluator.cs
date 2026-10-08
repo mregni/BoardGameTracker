@@ -3,6 +3,7 @@ using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Games.Specifications;
 
 namespace BoardGameTracker.Core.Badges.BadgeEvaluators;
 
@@ -38,8 +39,8 @@ public class CloseWinBadgeEvaluator : IBadgeEvaluator
             return false;
         }
 
-        var game = await _gameRepository.GetByIdAsync(session.GameId);
-        if (game is not {HasScoring: true})
+        var hasScoring = await _gameRepository.FirstOrDefaultAsync(new GameHasScoringSpec(session.GameId));
+        if (hasScoring != true)
         {
             return false;
         }

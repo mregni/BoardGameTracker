@@ -9,6 +9,8 @@ using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Datastore;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Configuration;
@@ -32,7 +34,7 @@ public class ConfigRepositoryTests : IDisposable
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         _context = new MainDbContext(options);
-        _repository = new ConfigRepository(_context);
+        _repository = new ConfigRepository(_context, Mock.Of<ILogger<ConfigRepository>>());
 
         foreach (var key in Keys)
         {
@@ -106,15 +108,14 @@ public class ConfigRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task GetConfigValueAsync_ShouldThrowConfigMissing_WhenEnvironmentValueCannotBeConverted()
+    public async Task GetConfigValueAsync_ShouldFallBackToDatabase_WhenEnvironmentValueCannotBeConverted()
     {
         await SeedAsync((IntKey, "42"));
         Environment.SetEnvironmentVariable(IntKey.ToUpperInvariant(), "not-a-number");
 
-        var act = () => _repository.GetConfigValueAsync<int>(IntKey);
+        var result = await _repository.GetConfigValueAsync<int>(IntKey);
 
-        var exception = await act.Should().ThrowAsync<ConfigMissingException>();
-        exception.Which.ConfigKey.Should().Be(IntKey);
+        result.Should().Be(42);
     }
 
     [Fact]

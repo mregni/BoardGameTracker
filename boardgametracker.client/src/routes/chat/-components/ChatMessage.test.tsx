@@ -32,7 +32,9 @@ describe("ChatMessage", () => {
 
 	describe("Pending", () => {
 		it("should show the thinking indicator", () => {
-			renderWithTheme(<ChatMessage exchange={buildExchange({ status: "pending" })} onRetry={vi.fn()} onSelectSource={vi.fn()} />);
+			renderWithTheme(
+				<ChatMessage exchange={buildExchange({ status: "pending" })} onRetry={vi.fn()} onSelectSource={vi.fn()} />,
+			);
 
 			expect(screen.getByText("thinking")).toBeInTheDocument();
 			expect(screen.queryByRole("button", { name: "retry" })).not.toBeInTheDocument();
@@ -41,7 +43,9 @@ describe("ChatMessage", () => {
 
 	describe("Error", () => {
 		it("should show the generic error when no error is set", () => {
-			renderWithTheme(<ChatMessage exchange={buildExchange({ status: "error" })} onRetry={vi.fn()} onSelectSource={vi.fn()} />);
+			renderWithTheme(
+				<ChatMessage exchange={buildExchange({ status: "error" })} onRetry={vi.fn()} onSelectSource={vi.fn()} />,
+			);
 
 			expect(screen.getByText("error:something-went-wrong")).toBeInTheDocument();
 		});
@@ -50,7 +54,8 @@ describe("ChatMessage", () => {
 			renderWithTheme(
 				<ChatMessage
 					exchange={buildExchange({ status: "error", error: buildError({ kind: "network" }) })}
-					onRetry={vi.fn()} onSelectSource={vi.fn()}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -61,7 +66,8 @@ describe("ChatMessage", () => {
 			renderWithTheme(
 				<ChatMessage
 					exchange={buildExchange({ status: "error", error: buildError({ kind: "timeout" }) })}
-					onRetry={vi.fn()} onSelectSource={vi.fn()}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -72,7 +78,8 @@ describe("ChatMessage", () => {
 			renderWithTheme(
 				<ChatMessage
 					exchange={buildExchange({ status: "error", error: buildError({ kind: "server" }) })}
-					onRetry={vi.fn()} onSelectSource={vi.fn()}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -86,18 +93,50 @@ describe("ChatMessage", () => {
 						status: "error",
 						error: buildError({ kind: "client", message: "Manual not indexed yet" }),
 					})}
-					onRetry={vi.fn()} onSelectSource={vi.fn()}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
 				/>,
 			);
 
 			expect(screen.getByText("Manual not indexed yet")).toBeInTheDocument();
 		});
 
+		it("should translate a reason code from the server", () => {
+			renderWithTheme(
+				<ChatMessage
+					exchange={buildExchange({
+						status: "error",
+						error: buildError({ kind: "client", message: "error.auth.not-authenticated" }),
+					})}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
+				/>,
+			);
+
+			expect(screen.getByText("error:auth.not-authenticated")).toBeInTheDocument();
+		});
+
+		it("should explain the rate limit instead of the empty 429 body", () => {
+			renderWithTheme(
+				<ChatMessage
+					exchange={buildExchange({
+						status: "error",
+						error: buildError({ kind: "client", status: 429, message: "An unexpected error occurred" }),
+					})}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
+				/>,
+			);
+
+			expect(screen.getByText("rate-limited")).toBeInTheDocument();
+		});
+
 		it("should show the generic error for unknown error kinds", () => {
 			renderWithTheme(
 				<ChatMessage
 					exchange={buildExchange({ status: "error", error: buildError({ kind: "unknown" }) })}
-					onRetry={vi.fn()} onSelectSource={vi.fn()}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -125,7 +164,8 @@ describe("ChatMessage", () => {
 						status: "done",
 						answer: { answer: "You draw two cards.", hasContext: true, durationMs: 1234, citations: [] },
 					})}
-					onRetry={vi.fn()} onSelectSource={vi.fn()}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -139,7 +179,8 @@ describe("ChatMessage", () => {
 						status: "done",
 						answer: { answer: "You draw two cards.", hasContext: true, durationMs: 1234, citations: [] },
 					})}
-					onRetry={vi.fn()} onSelectSource={vi.fn()}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -160,7 +201,8 @@ describe("ChatMessage", () => {
 							],
 						},
 					})}
-					onRetry={vi.fn()} onSelectSource={vi.fn()}
+					onRetry={vi.fn()}
+					onSelectSource={vi.fn()}
 				/>,
 			);
 
@@ -169,7 +211,9 @@ describe("ChatMessage", () => {
 		});
 
 		it("should render an empty assistant bubble when done without an answer", () => {
-			renderWithTheme(<ChatMessage exchange={buildExchange({ status: "done" })} onRetry={vi.fn()} onSelectSource={vi.fn()} />);
+			renderWithTheme(
+				<ChatMessage exchange={buildExchange({ status: "done" })} onRetry={vi.fn()} onSelectSource={vi.fn()} />,
+			);
 
 			expect(screen.queryByText("thinking")).not.toBeInTheDocument();
 			expect(screen.queryByRole("button", { name: "retry" })).not.toBeInTheDocument();

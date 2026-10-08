@@ -19,7 +19,9 @@ public class AuthDisabledFilter : IActionFilter
         {
             var path = context.HttpContext.Request.Path.Value ?? "";
             if (path.EndsWith("/status", StringComparison.OrdinalIgnoreCase))
+            {
                 return;
+            }
 
             context.Result = new ConflictObjectResult("Authentication is disabled. This endpoint is not available.");
         }

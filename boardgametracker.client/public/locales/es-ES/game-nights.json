@@ -1,84 +1,94 @@
 {
   "rsvp": {
-    "title": "Manage RSVPs",
-    "manual-note-prefix": "Manually set RSVP status",
-    "manual-note": " for players who responded via phone, text, or in person.",
-    "accept": "Accept",
-    "decline": "Decline",
-    "maybe": "Maybe",
-    "host": "Host is always attending"
+    "title": "Gestionar RSVP",
+    "manual-note-prefix": "Establece manualmente el estado de RSVP",
+    "manual-note": " de los jugadores que respondieron por teléfono, mensaje o en persona.",
+    "accept": "Aceptar",
+    "decline": "Rechazar",
+    "maybe": "Quizás",
+    "host": "El anfitrión siempre asiste"
   },
   "empty": {
-    "title": "No game nights planned yet",
-    "description": "Invite players to plan a game night."
+    "title": "Aún no hay noches de juego planificadas",
+    "description": "Invita a jugadores para planificar una noche de juego.",
+    "upcoming": "No hay próximas noches de juego",
+    "past": "No hay noches de juego pasadas",
+    "all": "Todavía no hay noches de juego"
   },
   "delete": {
-    "title": "Delete game night",
-    "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
+    "title": "Eliminar noche de juego",
+    "description": "¿Seguro que quieres eliminar la noche de juego \"{{title}}\"? Esta acción no se puede deshacer y eliminará todas las respuestas RSVP asociadas."
   },
-  "title": "Game Nights Planner",
+  "title": "Planificador de noches de juego",
   "create": {
-    "button": "Create Game Night",
-    "title": "Create new Game Night",
-    "description": "Fill out the form to create a new game night event.",
-    "save": "Create Game Night"
+    "button": "Crear noche de juego",
+    "title": "Crear nueva noche de juego",
+    "description": "Rellena el formulario para crear un nuevo evento de noche de juego.",
+    "save": "Crear noche de juego"
   },
   "edit": {
-    "title": "Edit Game Night",
-    "description": "Update the details of this game night event.",
-    "save": "Save Changes"
+    "title": "Editar noche de juego",
+    "description": "Actualiza los detalles de este evento de noche de juego.",
+    "save": "Guardar cambios"
   },
-  "upcoming": "Upcoming game nights",
-  "past": "Past game nights",
+  "upcoming": "Próximas noches de juego",
+  "past": "Noches de juego pasadas",
   "card": {
-    "hosted-by": "Hosted by {{host}}",
-    "suggested-games": "Suggested games",
-    "rsvp-link": "RSVP Link",
-    "upcoming": "Upcoming",
-    "past": "Past",
-    "copy-link": "Copy RSVP link",
-    "copied": "Copied to clipboard",
-    "manage-rsvps": "Manage RSVPs",
-    "email-invites": "Email invites",
-    "invites-sent": "Invites sent: {{sent}} sent",
-    "invites-failed": "Failed to send invites"
+    "hosted-by": "Organizada por {{host}}",
+    "suggested-games": "Juegos sugeridos",
+    "rsvp-link": "Enlace de RSVP",
+    "upcoming": "Próxima",
+    "past": "Pasada",
+    "copy-link": "Copiar enlace de RSVP",
+    "copied": "Copiado al portapapeles",
+    "copy-failed": "No se pudo copiar el enlace",
+    "manage-rsvps": "Gestionar RSVP",
+    "email-invites": "Invitar por correo",
+    "invites-sent": "Invitaciones enviadas: {{sent}}",
+    "invites-failed": "No se pudieron enviar las invitaciones"
   },
   "form": {
     "title": {
-      "label": "Event title",
-      "placeholder": "Enter game night title"
+      "label": "Título del evento",
+      "placeholder": "Introduce el título de la noche de juego"
     },
     "start": {
-      "label": "Date"
+      "label": "Fecha"
     },
     "location": {
-      "label": "Location",
-      "placeholder": "Enter location"
+      "label": "Ubicación",
+      "placeholder": "Introduce la ubicación"
     },
     "host": {
-      "label": "Host",
-      "placeholder": "Enter host player"
+      "label": "Anfitrión",
+      "placeholder": "Introduce el jugador anfitrión"
     },
     "invited-players": {
-      "label": "Invited players",
-      "description": "Select players to invite to this game night"
+      "label": "Jugadores invitados",
+      "description": "Selecciona los jugadores que quieres invitar a esta noche de juego"
     },
     "suggested-games": {
-      "label": "Suggested games",
-      "description": "Select games that you suggest to play during this game night"
+      "label": "Juegos sugeridos",
+      "description": "Selecciona los juegos que propones jugar durante esta noche de juego"
     },
     "notes": {
-      "label": "Notes"
+      "label": "Notas"
     }
   },
   "notifications": {
-    "created": "Game night created successfully",
-    "create-failed": "Failed to create game night",
-    "updated": "Game night updated successfully",
-    "update-failed": "Failed to update game night",
-    "deleted": "Game night deleted successfully",
-    "delete-failed": "Failed to delete game night",
-    "rsvp-updated": "RSVP updated successfully",
-    "rsvp-update-failed": "Failed to update RSVP"
-  }
+    "created": "Noche de juego creada correctamente",
+    "create-failed": "No se pudo crear la noche de juego",
+    "updated": "Noche de juego actualizada correctamente",
+    "update-failed": "No se pudo actualizar la noche de juego",
+    "deleted": "Noche de juego eliminada correctamente",
+    "delete-failed": "No se pudo eliminar la noche de juego",
+    "rsvp-updated": "RSVP actualizado correctamente",
+    "rsvp-update-failed": "No se pudo actualizar el RSVP"
+  },
+  "validation": {
+    "title-required": "El título es obligatorio",
+    "location-required": "La ubicación es obligatoria",
+    "host-required": "El anfitrión es obligatorio"
+  },
+  "create-first": "Planifica tu primera noche de juego"
 }

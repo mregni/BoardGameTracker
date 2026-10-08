@@ -1,8 +1,7 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using BoardGameTracker.Common.DTOs;
-using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Rag.Interfaces;
 using BoardGameTracker.Core.Rag.Specifications;
 using Microsoft.Extensions.AI;
@@ -21,19 +20,18 @@ public class RagService : IRagService
     private const string NoContextAnswer =
         "I couldn't find anything about that in the indexed rulebook(s) for this game.";
 
-    private readonly IReadRepository<ManualChunk> _chunkRepository;
-    private readonly IRepository<Manual> _manualRepository;
+    private const int MaxTopK = 20;
+
+    private readonly IManualChunkRepository _chunkRepository;
     private readonly IAiClientFactory _aiClientFactory;
     private readonly IRagSettingsProvider _settingsProvider;
 
     public RagService(
-        IReadRepository<ManualChunk> chunkRepository,
-        IRepository<Manual> manualRepository,
+        IManualChunkRepository chunkRepository,
         IAiClientFactory aiClientFactory,
         IRagSettingsProvider settingsProvider)
     {
         _chunkRepository = chunkRepository;
-        _manualRepository = manualRepository;
         _aiClientFactory = aiClientFactory;
         _settingsProvider = settingsProvider;
     }
@@ -54,15 +52,15 @@ public class RagService : IRagService
         var questionEmbeddings = await embedder.GenerateAsync(new[] { question }, cancellationToken: cancellationToken);
         var queryVector = new Vector(questionEmbeddings[0].Vector);
 
-        var matches = await _chunkRepository.ListAsync(
-            new NearestManualChunksSpec(gameId, queryVector, settings.TopK, manualId), cancellationToken);
+        var topK = Math.Clamp(settings.TopK, 1, MaxTopK);
+        var matches = await _chunkRepository.SearchAsync(
+            new NearestManualChunksSpec(gameId, queryVector, topK, manualId), cancellationToken);
         if (matches.Count == 0)
         {
             return new RagAnswerDto { Answer = NoContextAnswer, HasContext = false, DurationMs = stopwatch.ElapsedMilliseconds };
         }
 
-        var titles = await GetManualTitlesAsync(matches);
-        var citations = BuildCitations(matches, titles);
+        var citations = BuildCitations(matches);
         var prompt = BuildPrompt(question, matches);
 
         var chatClient = await _aiClientFactory.CreateChatClientAsync(cancellationToken);
@@ -83,20 +81,7 @@ public class RagService : IRagService
         };
     }
 
-    private async Task<Dictionary<int, string>> GetManualTitlesAsync(IReadOnlyList<ManualChunkMatch> matches)
-    {
-        var titles = new Dictionary<int, string>();
-        foreach (var id in matches.Select(m => m.Chunk.ManualId).Distinct())
-        {
-            var manual = await _manualRepository.GetByIdAsync(id);
-            titles[id] = manual?.Title ?? string.Empty;
-        }
-
-        return titles;
-    }
-
-    private static List<RagCitationDto> BuildCitations(IReadOnlyList<ManualChunkMatch> matches,
-        IReadOnlyDictionary<int, string> titles)
+    private static List<RagCitationDto> BuildCitations(IReadOnlyList<ManualChunkMatch> matches)
     {
         var citations = new List<RagCitationDto>();
         var seen = new HashSet<(int ManualId, int? Page)>();
@@ -112,7 +97,7 @@ public class RagService : IRagService
             citations.Add(new RagCitationDto
             {
                 ManualId = match.Chunk.ManualId,
-                Title = titles.TryGetValue(match.Chunk.ManualId, out var title) ? title : string.Empty,
+                Title = match.ManualTitle,
                 Page = match.Chunk.PageNumber,
                 Snippet = Snippet(match.Chunk.Content),
                 Score = Math.Round(1 - match.Distance, 4),
@@ -125,7 +110,7 @@ public class RagService : IRagService
         return citations;
     }
 
-    private static string BuildPrompt(string question, IReadOnlyList<ManualChunkMatch> matches)
+    private static string BuildPrompt(string question, List<ManualChunkMatch> matches)
     {
         var builder = new StringBuilder();
         builder.Append("Question: ").AppendLine(question).AppendLine();
@@ -135,7 +120,7 @@ public class RagService : IRagService
         {
             var chunk = matches[i].Chunk;
             var pageLabel = chunk.PageNumber.HasValue ? $"page {chunk.PageNumber}" : "unknown page";
-            builder.AppendLine($"[{i + 1}] ({pageLabel}) {chunk.Content}");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"[{i + 1}] ({pageLabel}) {chunk.Content}");
         }
 
         return builder.ToString();

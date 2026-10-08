@@ -105,7 +105,7 @@ describe("BgtBarChart", () => {
 	describe("Tooltip", () => {
 		it("should render tooltip with value", () => {
 			renderWithTheme(<BgtBarChart {...defaultProps} />);
-			expect(screen.getByText("10 sessions")).toBeInTheDocument();
+			expect(screen.getByText("common:sessions-count")).toBeInTheDocument();
 		});
 
 		it("should render tooltip with index value", () => {

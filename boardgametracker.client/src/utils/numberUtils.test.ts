@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatFileSize, GetPercentage, RoundDecimal, ToLogLevel } from "./numberUtils";
+import { formatFileSize, GetPercentage, RoundDecimal } from "./numberUtils";
 
 describe("numberUtils", () => {
 	describe("RoundDecimal", () => {
@@ -79,34 +79,6 @@ describe("numberUtils", () => {
 		it("should handle decimal values", () => {
 			expect(GetPercentage(0.5, 1)).toBe(50);
 			expect(GetPercentage(0.333, 1)).toBe(33);
-		});
-	});
-
-	describe("ToLogLevel", () => {
-		it("should return warn for level 0", () => {
-			expect(ToLogLevel(0)).toBe("log-levels:warn");
-		});
-
-		it("should return debug for level 1", () => {
-			expect(ToLogLevel(1)).toBe("log-levels:debug");
-		});
-
-		it("should return info for level 2", () => {
-			expect(ToLogLevel(2)).toBe("log-levels:info");
-		});
-
-		it("should return warn for level 3", () => {
-			expect(ToLogLevel(3)).toBe("log-levels:warn");
-		});
-
-		it("should return error for level 4", () => {
-			expect(ToLogLevel(4)).toBe("log-levels:error");
-		});
-
-		it("should return warn for out of range levels", () => {
-			expect(ToLogLevel(5)).toBe("log-levels:warn");
-			expect(ToLogLevel(100)).toBe("log-levels:warn");
-			expect(ToLogLevel(-1)).toBe("log-levels:warn");
 		});
 	});
 

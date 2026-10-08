@@ -28,12 +28,14 @@ export const SessionFormFields = withForm({
 		);
 
 		const locationsSelectItems = useMemo(
-			() =>
-				locations?.map((x: Location) => ({
+			() => [
+				{ value: 0, label: t("new.location.none") },
+				...(locations?.map((x: Location) => ({
 					value: x.id,
 					label: x.name,
-				})) ?? [],
-			[locations],
+				})) ?? []),
+			],
+			[locations, t],
 		);
 
 		return (

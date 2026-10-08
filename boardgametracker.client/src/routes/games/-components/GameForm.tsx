@@ -21,6 +21,7 @@ import { gameFormOpts } from "../-utils/gameFormOpts";
 import { GameFormBasicFields } from "./GameFormBasicFields";
 import { GameFormPlayerFields } from "./GameFormPlayerFields";
 import { GameFormTimeFields } from "./GameFormTimeFields";
+import { GameFormUpdateFields } from "./GameFormUpdateFields";
 
 interface Props {
 	onClick: (data: CreateGame) => Promise<void>;
@@ -58,6 +59,9 @@ export const GameForm = (props: Props) => {
 			image: game?.image ?? null,
 			changeDetectionWatchId: game?.changeDetectionWatchId ?? "",
 			language: game?.language ?? LANGUAGE_NONE,
+			rating: game?.rating ?? undefined,
+			weight: game?.weight ?? undefined,
+			soldPrice: game?.soldPrice ?? undefined,
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = CreateGameSchema.parse(value);
@@ -93,6 +97,9 @@ export const GameForm = (props: Props) => {
 									livePrice={livePrice}
 								/>
 								<GameFormTimeFields form={form} disabled={disabled} />
+								{game !== undefined && (
+									<GameFormUpdateFields form={form} disabled={disabled} currency={settings?.currency} />
+								)}
 								<div className="lg:col-span-2">
 									<form.Field name="description" validators={zodValidator(CreateGameSchema, "description")}>
 										{(field: AnyFieldApi) => (
@@ -102,13 +109,11 @@ export const GameForm = (props: Props) => {
 								</div>
 							</div>
 
-							{game === undefined && (
-								<form.Field name="hasScoring" validators={zodValidator(CreateGameSchema, "hasScoring")}>
-									{(field: AnyFieldApi) => (
-										<BgtSwitch field={field} label={t("scoring.label")} className="pt-3" disabled={disabled} />
-									)}
-								</form.Field>
-							)}
+							<form.Field name="hasScoring" validators={zodValidator(CreateGameSchema, "hasScoring")}>
+								{(field: AnyFieldApi) => (
+									<BgtSwitch field={field} label={t("scoring.label")} className="pt-3" disabled={disabled} />
+								)}
+							</form.Field>
 
 							<div className="flex flex-row gap-2 mt-2">
 								<BgtButton

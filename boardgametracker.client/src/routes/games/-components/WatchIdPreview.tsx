@@ -21,6 +21,7 @@ export const WatchIdPreview = ({ watchId }: Props) => {
 		enabled: valid,
 		retry: false,
 		staleTime: 5 * 60 * 1000,
+		meta: { silent: true },
 	});
 
 	if (!valid || query.isPending) {

@@ -4,8 +4,12 @@ var dbUser = builder.AddParameter("db-user", "dev");
 var dbPassword = builder.AddParameter("db-password", "dev", secret: true);
 var jwtSecret = builder.AddParameter("jwt-secret", "your-super-secret-jwt-key-that-is-used-in-dev", secret: true);
 
-var smtpPassword = builder.Configuration["Parameters:smtp-password"] ?? string.Empty;
-var groqApiKey = builder.Configuration["Parameters:groq-api-key"] ?? string.Empty;
+var smtpPassword = builder.AddParameter("smtp-password", string.Empty, secret: true);
+var aiApiKey = builder.AddParameter("ai-api-key", string.Empty, secret: true);
+
+var smtp = builder.Configuration.GetSection("Smtp");
+var ai = builder.Configuration.GetSection("Ai");
+var aiProvider = ai["Provider"] ?? "ollama";
 
 const string databaseName = "boardgametracker-dev";
 
@@ -27,6 +31,7 @@ if (!string.Equals(builder.Configuration["Ollama:UseGpu"], "false", StringCompar
 
 var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
     .WithHttpEndpoint(port: 6554, isProxied: false)
+    .WithHttpHealthCheck("/api/health")
     .WithUrlForEndpoint("http", url =>
     {
         url.DisplayText = "Swagger";
@@ -50,37 +55,38 @@ var backend = builder.AddProject<Projects.BoardGameTracker_Host>("bgt-host")
         env["JWT_SECRET"] = jwtSecret.Resource;
 
         // Runtime / logging
-        env["STATISTICS_ENABLED"] = "true";
+        env["STATISTICS_ENABLED"] = "false";
         env["LOGLEVEL"] = "info";
         env["TZ"] = "Europe/Brussels";
 
         // RAG / AI (see .env.example for the meaning of each value).
         env["RAG_ENABLED"] = "true";
-        env["AI_PROVIDER"] = "openai";
-        env["AI_BASE_URL"] = "https://api.groq.com/openai/v1";
-        env["AI_CHAT_MODEL"] = "openai/gpt-oss-120b";
-        env["AI_API_KEY"] = groqApiKey;
+        env["AI_PROVIDER"] = aiProvider;
+        env["AI_BASE_URL"] = ai["BaseUrl"] ?? "http://localhost:11434";
+        env["AI_CHAT_MODEL"] = ai["ChatModel"] ?? "qwen3:4b";
+        env["AI_API_KEY"] = aiApiKey.Resource;
         env["AI_EMBEDDING_BASE_URL"] = "http://localhost:11434";
         env["AI_EMBEDDING_NUM_GPU"] = "-1";
-        env["MANUALS_PATH"] = "./manuals";
-        env["OLLAMA_PATH"] = "./ollama";
 
-        // SMTP is optional (used only for outgoing email). Adjust these to your provider if you
-        // want to test email; the password is read from user-secrets above and defaults to empty.
-        env["SMTP_HOST"] = "mail.smtp2go.com";
-        env["SMTP_PORT"] = "2525";
-        env["SMTP_USERNAME"] = "nobelenoedelMailer";
-        env["SMTP_PASSWORD"] = smtpPassword;
-        env["SMTP_USE_SSL"] = "true";
-        env["SMTP_FROM_ADDRESS"] = "noreply@nobelenoedel.be";
-        env["SMTP_FROM_NAME"] = "BoardGameTracker";
+        // SMTP is optional (used only for outgoing email).
+        env["SMTP_HOST"] = smtp["Host"] ?? "smtp.example.com";
+        env["SMTP_PORT"] = smtp["Port"] ?? "587";
+        env["SMTP_USERNAME"] = smtp["Username"] ?? string.Empty;
+        env["SMTP_PASSWORD"] = smtpPassword.Resource;
+        env["SMTP_USE_SSL"] = smtp["UseSsl"] ?? "true";
+        env["SMTP_FROM_ADDRESS"] = smtp["FromAddress"] ?? "boardgametracker@example.com";
+        env["SMTP_FROM_NAME"] = smtp["FromName"] ?? "BoardGameTracker";
 
         // The frontend runs as its own Aspire resource (below), so disable the
         // SpaProxy hosting startup that would otherwise launch `pnpm dev` from the backend.
         env["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "";
     })
-    .WaitFor(database)
-    .WaitFor(ollama);
+    .WaitFor(database);
+
+if (string.Equals(aiProvider, "ollama", StringComparison.OrdinalIgnoreCase))
+{
+    backend.WaitFor(ollama);
+}
 
 builder.AddViteApp("bgt-client", "../boardgametracker.client")
     .WithPnpm()

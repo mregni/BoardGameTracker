@@ -10,6 +10,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { Session } from "@/models";
 import { getGames } from "@/services/queries/games";
 import { getPlayer, getPlayerSessions, getPlayers } from "@/services/queries/players";
@@ -35,6 +36,7 @@ function RouteComponent() {
 	const { t } = useTranslation(["common", "sessions"]);
 	const navigate = useNavigate();
 	const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
+	const { canWrite } = usePermissions();
 
 	const { sessions, deleteSession, settings, games, player, players, isLoading } = usePlayerSessionData({
 		playerId,
@@ -110,7 +112,7 @@ function RouteComponent() {
 							accessorKey: "6",
 							cell: ({ row }) => {
 								const highScore = row.original.playerSessions
-									.filter((x) => x.score !== undefined)
+									.filter((x) => x.score != null)
 									.sort((a, b) => b.score! - a.score!);
 
 								if (highScore.length === 0) return "";
@@ -119,16 +121,20 @@ function RouteComponent() {
 							},
 							header: t("high-score"),
 						},
-						{
-							accessorKey: "200",
-							cell: ({ row }) => (
-								<BgtEditDeleteButtons
-									onDelete={() => setSessionToDelete(row.original.id)}
-									onEdit={() => navigate({ to: `/sessions/update/${row.original.id}` })}
-								/>
-							),
-							header: () => <div className="flex justify-end">{t("actions")}</div>,
-						},
+						...(canWrite
+							? [
+									{
+										accessorKey: "200",
+										cell: ({ row }: { row: { original: Session } }) => (
+											<BgtEditDeleteButtons
+												onDelete={() => setSessionToDelete(row.original.id)}
+												onEdit={() => navigate({ to: `/sessions/update/${row.original.id}` })}
+											/>
+										),
+										header: () => <div className="flex justify-end">{t("actions")}</div>,
+									},
+								]
+							: []),
 					];
 
 					return (
@@ -136,13 +142,17 @@ function RouteComponent() {
 							<BgtPageHeader
 								backAction={() => navigate({ to: `/players/${playerId}` })}
 								header={`${player.name} - ${t("sessions:title")}`}
-								actions={[
-									{
-										onClick: () => navigate({ to: "/sessions/new" }),
-										variant: "primary",
-										content: "sessions:new",
-									},
-								]}
+								actions={
+									canWrite
+										? [
+												{
+													onClick: () => navigate({ to: "/sessions/new" }),
+													variant: "primary",
+													content: "sessions:new",
+												},
+											]
+										: []
+								}
 							/>
 							<BgtCard className="p-4">
 								<BgtDataTable

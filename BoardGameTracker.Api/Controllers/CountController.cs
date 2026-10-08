@@ -5,6 +5,7 @@ using BoardGameTracker.Core.Loans.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
@@ -38,16 +39,17 @@ public class CountController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetMenuCounts()
+    [ProducesResponseType<KeyValuePairDto<int>[]>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMenuCounts(CancellationToken cancellationToken)
     {
         var counts = new KeyValuePairDto<int>[]
         {
-            new("games", await _gameService.CountAsync()),
-            new("players", await _playerService.CountAsync()),
-            new("locations", await _locationService.CountAsync()),
-            new("shames", await _shameService.CountShelfOfShameGames()),
-            new("loans", await _loanService.CountActiveLoans()),
-            new("game-nights", await _gameNightService.CountFutureGameNights()),
+            new("games", await _gameService.CountAsync(cancellationToken)),
+            new("players", await _playerService.CountAsync(cancellationToken)),
+            new("locations", await _locationService.CountAsync(cancellationToken)),
+            new("shames", await _shameService.CountShelfOfShameGames(cancellationToken)),
+            new("loans", await _loanService.CountActiveLoans(cancellationToken)),
+            new("game-nights", await _gameNightService.CountFutureGameNights(cancellationToken)),
         };
 
         return Ok(counts);

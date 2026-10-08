@@ -14,7 +14,8 @@ public static class LoanDtoExtensions
             DueDate = loan.DueDate,
             ReturnedDate = loan.ReturnedDate,
             GameId = loan.GameId,
-            PlayerId = loan.PlayerId
+            PlayerId = loan.PlayerId,
+            IsActive = loan.IsCurrentlyOnLoan()
         };
     }
 

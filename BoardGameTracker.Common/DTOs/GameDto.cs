@@ -17,7 +17,7 @@ public class GameDto
     public int? MinPlayTime { get; set; }
     public int? MaxPlayTime { get; set; }
     public int? MinAge { get; set; }
-    public bool isLoaned { get; set; }
+    public bool IsLoaned { get; set; }
     public double? Rating { get; set; }
     public double? Weight { get; set; }
     public int? BggId { get; set; }

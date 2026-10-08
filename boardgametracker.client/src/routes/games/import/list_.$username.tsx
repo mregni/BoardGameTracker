@@ -16,13 +16,15 @@ import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtData
 import { BgtPaging } from "@/components/BgtTable/BgtPaging";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { GameState, type ImportGame } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
+import { parseLocalDate } from "@/utils/localDate";
 import { useList } from "./-hooks/useList";
 
 export const Route = createFileRoute("/games/import/list_/$username")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 	beforeLoad: async ({ context: { queryClient } }) => {
 		const settings = await queryClient.ensureQueryData(getSettings());
 		if (!settings.bggStatus?.isConfigured) {
@@ -45,6 +47,8 @@ function RouteComponent() {
 
 	const {
 		bggError,
+		bggErrorKind,
+		retryCollection,
 		settings,
 		games,
 		updateGame,
@@ -56,6 +60,7 @@ function RouteComponent() {
 		totalCount,
 		startImport,
 		importing,
+		importProgress,
 	} = useList({
 		username,
 	});
@@ -84,9 +89,10 @@ function RouteComponent() {
 				enableSorting: false,
 				cell: ({ row }) => (
 					<BgtSimpleCheckbox
-						id={""}
+						id={`import-${row.original.bggId}`}
 						disabled={row.original.inCollection}
 						label={""}
+						aria-label={row.original.title}
 						checked={row.original.checked}
 						onCheckedChange={(state) => {
 							updateGame(row.original.bggId, { checked: state });
@@ -134,7 +140,7 @@ function RouteComponent() {
 						</a>
 					</div>
 				),
-				header: t("name"),
+				header: t("common:bgg-id"),
 			},
 			{
 				accessorKey: "4",
@@ -189,7 +195,7 @@ function RouteComponent() {
 						value={row.original.addedDate}
 						onChange={(event) =>
 							updateGame(row.original.bggId, {
-								addedDate: new Date(event.target.value),
+								addedDate: parseLocalDate(event.target.value) ?? row.original.addedDate,
 							})
 						}
 						type="date"
@@ -208,18 +214,27 @@ function RouteComponent() {
 		startImport(games.filter((game) => game.checked));
 	};
 
+	const loadingLabel = importing ? t("games:import.importing", importProgress) : undefined;
+
 	return (
 		<BgtPage>
 			<BgtPageHeader header={t("bgg-import:title")} actions={[]} icon={Database} />
 			<BgtPageContent>
 				{bggError ? (
-					<BgtStatus
-						variant="warning"
-						title={t("games:import.error-title")}
-						description={t("games:import.error-description")}
-					/>
+					<div className="flex flex-col gap-4">
+						<BgtStatus
+							variant="warning"
+							title={t("games:import.error-title")}
+							description={t(`games:import.error-${bggErrorKind}`)}
+						/>
+						<div>
+							<BgtButton type="button" variant="primary" onClick={() => void retryCollection()}>
+								{t("common:retry")}
+							</BgtButton>
+						</div>
+					</div>
 				) : isLoading ? (
-					<BgtLoadingSpinner />
+					<BgtLoadingSpinner label={loadingLabel} />
 				) : (
 					<>
 						<div className="flex flex-row justify-between gap-4 mb-16">
@@ -261,5 +276,13 @@ function RouteComponent() {
 				)}
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

@@ -9,6 +9,7 @@ import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import type { BgtSelectImageItem, BgtSelectItem } from "@/models";
 import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
 import { BgtFieldLabel } from "./BgtFieldLabel";
+import { useKeyboardResizeGuard } from "./useKeyboardResizeGuard";
 
 interface Props {
 	label?: string;
@@ -18,6 +19,8 @@ interface Props {
 	hasSearch?: boolean;
 	value?: string | number | null;
 	onValueChange?: (value: string | number) => void;
+	defaultOpen?: boolean;
+	onOpenChange?: (open: boolean) => void;
 	className?: string;
 }
 
@@ -30,13 +33,16 @@ export const BgtSimpleSelect = (props: Props) => {
 		hasSearch = false,
 		value,
 		onValueChange,
+		defaultOpen = false,
+		onOpenChange,
 		className = "",
 	} = props;
 
 	const { t } = useTranslation();
 	const [searchTerm, setSearchTerm] = useState("");
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useState(defaultOpen);
 	const searchInputRef = useRef<HTMLInputElement>(null);
+	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
 
 	const currentValue = value?.toString();
 	const filteredItems = items.filter((item) => {
@@ -58,16 +64,6 @@ export const BgtSimpleSelect = (props: Props) => {
 		}
 	}, [open]);
 
-	useEffect(() => {
-		const onResize = (event: Event) => {
-			event.stopImmediatePropagation();
-		};
-		window.addEventListener("resize", onResize);
-		return () => {
-			window.removeEventListener("resize", onResize);
-		};
-	}, []);
-
 	return (
 		<div className={cx("flex flex-col justify-start", className)}>
 			{label && <BgtFieldLabel>{label}</BgtFieldLabel>}
@@ -80,7 +76,11 @@ export const BgtSimpleSelect = (props: Props) => {
 				value={currentValue}
 				open={open}
 				onOpenChange={(isOpen) => {
+					if (!isOpen && isKeyboardResize()) {
+						return;
+					}
 					setOpen(isOpen);
+					onOpenChange?.(isOpen);
 					if (!isOpen) {
 						setSearchTerm("");
 					}
@@ -116,7 +116,7 @@ export const BgtSimpleSelect = (props: Props) => {
 										type="text"
 										value={searchTerm}
 										onChange={(e) => setSearchTerm(e.target.value)}
-										placeholder="Search..."
+										placeholder={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										onClick={(e) => e.stopPropagation()}
 										onKeyDown={(e) => {

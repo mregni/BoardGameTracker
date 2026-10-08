@@ -1,58 +1,73 @@
 {
-  "add": "Add session",
-  "sessions": "View sessions",
+  "add": "Añadir partida",
+  "sessions": "Ver partidas",
   "no-sessions": {
-    "title": "No Sessions Logged Yet",
-    "description": "  Start tracking your game sessions to see detailed statistics, player performance, and session history. Log your first session to unlock all the analytics!",
-    "button": "Log Your First Session",
-    "extra": "Session data includes players, scores, duration, and more"
+    "title": "Aún no hay partidas registradas",
+    "description": "  Empieza a registrar tus partidas para ver estadísticas detalladas, el rendimiento de los jugadores y el historial de partidas. ¡Registra tu primera partida para desbloquear todas las estadísticas!",
+    "button": "Registra tu primera partida",
+    "extra": "Los datos de la partida incluyen jugadores, puntuaciones, duración y más"
   },
   "notifications": {
-    "created": "Game is succesfully created",
-    "create-failed": "Game creation failed",
-    "not-found": "Could not find game",
-    "duplicate": "Game already exists",
-    "deleted": "Game is succesfully deleted",
-    "updated": "Game is succesfully updated",
-    "update-failed": "Failed updating game"
+    "created": "Juego creado correctamente",
+    "create-failed": "Error al crear el juego",
+    "not-found": "No se encontró el juego",
+    "duplicate": "El juego ya existe",
+    "deleted": "Juego eliminado correctamente",
+    "updated": "Juego actualizado correctamente",
+    "update-failed": "Error al actualizar el juego"
   },
   "added-date": {
-    "label": "Date added",
-    "required": "Date is required"
+    "label": "Fecha de incorporación",
+    "required": "La fecha es obligatoria"
   },
   "bgg": {
-    "label": "BGG id",
-    "placeholder": "BoardGameGeek game id",
-    "required": "BGG id is required",
-    "external-page": "Open BoardGameGeek website"
+    "label": "ID de BGG",
+    "placeholder": "ID del juego en BoardGameGeek",
+    "required": "El ID de BGG es obligatorio",
+    "external-page": "Abrir el sitio web de BoardGameGeek"
   },
   "language": {
-    "label": "Language",
-    "none": "Not set"
+    "label": "Idioma",
+    "none": "Sin definir"
   },
-  "language-independent": "Language-independent",
+  "language-independent": "Independiente del idioma",
   "update": {
-    "save": "Update game",
-    "title": "Update game"
+    "save": "Actualizar juego",
+    "title": "Actualizar juego",
+    "rating": {
+      "label": "Valoración (0-10)"
+    },
+    "weight": {
+      "label": "Complejidad (0-5)"
+    },
+    "sold-price": {
+      "label": "Precio de venta"
+    }
   },
   "expansions": {
-    "title": "Expansions",
-    "description": "Add/delete expansions to this game.",
-    "update": "Update expansions",
-    "none": "No expansions added to this game.",
-    "no-game": "Select a game to view expansions.",
-    "add": "Add"
+    "title": "Expansiones",
+    "description": "Añade o elimina expansiones de este juego.",
+    "update": "Actualizar expansiones",
+    "none": "No se han añadido expansiones a este juego.",
+    "no-game": "Selecciona un juego para ver sus expansiones.",
+    "add": "Elegir de BoardGameGeek",
+    "manual": {
+      "badge": "Añadida manualmente",
+      "description": "¿No está en BoardGameGeek? Añade la expansión por su nombre.",
+      "placeholder": "Nombre de la expansión",
+      "add": "Añadir"
+    }
   },
   "manuals": {
-    "title": "Manuals",
-    "description": "Upload, download or delete manuals for this game.",
-    "none": "No manuals uploaded for this game.",
-    "add": "Upload",
-    "upload-success": "Manual(s) uploaded successfully.",
-    "upload-failed": "Manual upload failed, check logs for more details.",
-    "delete-success": "Manual deleted successfully.",
-    "delete-failed": "Manual deletion failed, check logs for more details.",
-    "download-failed": "Manual download failed, check logs for more details.",
+    "title": "Manuales",
+    "description": "Sube, descarga o elimina manuales de este juego.",
+    "none": "No se han subido manuales para este juego.",
+    "add": "Subir",
+    "upload-success": "Manuales subidos correctamente.",
+    "upload-failed": "Error al subir el manual, revisa los registros para más detalles.",
+    "delete-success": "Manual eliminado correctamente.",
+    "delete-failed": "Error al eliminar el manual, revisa los registros para más detalles.",
+    "download-failed": "Error al descargar el manual, revisa los registros para más detalles.",
     "status": {
       "pending": "Pendiente",
       "indexing": "Indexando…",
@@ -61,53 +76,54 @@
     },
     "reindex": "Reindexar",
     "reindex-success": "Reindexación iniciada.",
-    "reindex-failed": "La reindexación falló, revisa los registros para más detalles."
+    "reindex-failed": "La reindexación falló, revisa los registros para más detalles.",
+    "download": "Descargar"
   },
   "new": {
-    "description": "Choose a method to create a new game.",
-    "save": "Create game",
-    "title": "Create new game",
-    "bgg-title": "Import game",
-    "bgg-subtext": "Import game data from BoardGameGeek",
-    "bgg-description": "Enter required fields to import a game from BoardGameGeek",
-    "manual-title": "Manual input",
-    "manual-subtext": "Manual input data to create a game",
-    "bgg-import-title": "Import from BoardGameGeek",
-    "bgg-import-subtext": "Import your game collection from BoardGameGeek",
+    "description": "Elige un método para crear un nuevo juego.",
+    "save": "Crear juego",
+    "title": "Crear nuevo juego",
+    "bgg-title": "Importar juego",
+    "bgg-subtext": "Importa los datos del juego desde BoardGameGeek",
+    "bgg-description": "Rellena los campos obligatorios para importar un juego de BoardGameGeek",
+    "manual-title": "Entrada manual",
+    "manual-subtext": "Introduce los datos manualmente para crear un juego",
+    "bgg-import-title": "Importar de BoardGameGeek",
+    "bgg-import-subtext": "Importa tu colección de juegos desde BoardGameGeek",
     "manual": {
-      "title": "Create game",
+      "title": "Crear juego",
       "game-title": {
-        "required": "Game title is required",
-        "label": "Game title"
+        "required": "El título del juego es obligatorio",
+        "label": "Título del juego"
       },
       "year": {
-        "label": "Year published",
-        "required": "Year published is required"
+        "label": "Año de publicación",
+        "required": "El año de publicación es obligatorio"
       },
       "min-players": {
-        "label": "Minimum players"
+        "label": "Mínimo de jugadores"
       },
       "max-players": {
-        "label": "Maximum players"
+        "label": "Máximo de jugadores"
       },
       "min-time": {
-        "label": "Minimum play time"
+        "label": "Tiempo de juego mínimo"
       },
       "max-time": {
-        "label": "Maximum play time"
+        "label": "Tiempo de juego máximo"
       },
       "min-age": {
-        "label": "Minimum player age"
+        "label": "Edad mínima"
       },
       "description": {
-        "label": "Game description"
+        "label": "Descripción del juego"
       }
     }
   },
   "price": {
-    "label": "Price",
-    "placeholder": "Game price",
-    "required": "Price is required",
+    "label": "Precio",
+    "placeholder": "Precio del juego",
+    "required": "El precio es obligatorio",
     "refresh": "Actualizar precio",
     "refresh-failed": "No se pudo actualizar el precio",
     "recheck-queued": "Nueva comprobación solicitada, el precio se actualizará en breve",
@@ -120,42 +136,41 @@
     }
   },
   "state": {
-    "for-trade": "For trade",
-    "label": "Game state",
-    "not-owned": "Not self owned",
-    "owned": "Owned",
-    "previously-owned": "Previously owned",
-    "wanted": "Wanted",
-    "on-loan": "On loan"
+    "for-trade": "Para intercambio",
+    "label": "Estado del juego",
+    "owned": "En propiedad",
+    "previously-owned": "Tenido anteriormente",
+    "wanted": "Deseado",
+    "on-loan": "Prestado"
   },
   "details": {
-    "title": "{{title}} details"
+    "title": "Detalles de {{title}}"
   },
   "delete": {
-    "successfull": "Game is successfully deleted.",
-    "failed": "Game deletion failed, check logs for more details."
+    "successfull": "Juego eliminado correctamente.",
+    "failed": "Error al eliminar el juego, revisa los registros para más detalles."
   },
   "scoring": {
-    "label": "Game has scoring"
+    "label": "El juego tiene puntuación"
   },
   "charts": {
-    "player-count": "Games by player count",
-    "games-week-day": "Games by day of the week",
-    "scoring": "Scoring per game/player",
+    "player-count": "Partidas por número de jugadores",
+    "games-week-day": "Partidas por día de la semana",
+    "scoring": "Puntuación por partida/jugador",
     "top-scoring": {
-      "top-score": "Top score",
-      "highest-losing": "Highest losing",
-      "average": "Average",
-      "lowest-winning": "Lowest winning",
-      "lowest": "Lowest"
+      "top-score": "Puntuación máxima",
+      "highest-losing": "Mayor puntuación perdedora",
+      "average": "Media",
+      "lowest-winning": "Menor puntuación ganadora",
+      "lowest": "Mínima"
     }
   },
   "titles": {
-    "top-players": "Top players",
-    "scoring-results": "Scoring results",
-    "recent-sessions": "Recent sessions",
-    "session-count-per-day": "Session count per day",
-    "analytics": "Analytics"
+    "top-players": "Mejores jugadores",
+    "scoring-results": "Resultados de puntuación",
+    "recent-sessions": "Partidas recientes",
+    "session-count-per-day": "Partidas por día",
+    "analytics": "Estadísticas"
   },
   "watch-id": {
     "label": "id de watch de changedetection.io",
@@ -177,5 +192,13 @@
   },
   "current-price": {
     "title": "Precio actual"
+  },
+  "validation": {
+    "positive-number": "Introduce un número positivo o deja el campo vacío",
+    "range-both": "Rellena ambos valores o deja los dos vacíos",
+    "min-max": "El mínimo no puede ser mayor que el máximo",
+    "rating": "Introduce una valoración entre 0 y 10",
+    "weight": "Introduce una complejidad entre 0 y 5",
+    "year": "Introduce un año entre -5000 y 9999 (negativo para a. C.)"
   }
 }

@@ -1,0 +1,81 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "Ardalis.GuardClauses": {
+        "type": "Direct",
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "jVPRvLw0xIUFto2cMrKgRYADWIHbEEfzZHGiU/swwNgl1zo28Q1zfSa3VUC3C0s9DyhFDPSaF4dEDQRyTZUcyQ=="
+      },
+      "BoardGamer.BoardGameGeek": {
+        "type": "Direct",
+        "requested": "[0.10.0, )",
+        "resolved": "0.10.0",
+        "contentHash": "wtOlK0mPyllIBXcM0kmIkKybTT1FTSgmUIeWvKwYPAbLrQXa9DhKEFqISE3kXotczJbvKop7r8JkK/bq8+PNvQ=="
+      },
+      "Microsoft.EntityFrameworkCore": {
+        "type": "Direct",
+        "requested": "[10.0.12, )",
+        "resolved": "10.0.12",
+        "contentHash": "e7OrVN8U5yr4kuwdTHWBHGVQIVsGfMkAr0Ej1/BnrS989Q0XBVANpIzNZ2bc1GvMZ0/XwMt5InTnmKskxGy99Q==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Abstractions": "10.0.12",
+          "Microsoft.EntityFrameworkCore.Analyzers": "10.0.12"
+        }
+      },
+      "Pgvector": {
+        "type": "Direct",
+        "requested": "[0.3.2, )",
+        "resolved": "0.3.2",
+        "contentHash": "n7M5LuNejHUmtWky3zCbNO+tP1Gnjiuv9Qtu4LyvB1602dD8RiBxxCQp9jEjM0ZFDxAZF1oOWkNIkXw46KT00Q==",
+        "dependencies": {
+          "Npgsql": "8.0.5"
+        }
+      },
+      "Sentry.AspNetCore": {
+        "type": "Direct",
+        "requested": "[6.11.0, )",
+        "resolved": "6.11.0",
+        "contentHash": "4yYpmdroeis+bibI0YEj+DhA6Q00v6GhQ1Tl8S6KdxVrqAWlvwjsVt8hloeiJCUqe9vGQop/A2zbcNxE9aCQmw==",
+        "dependencies": {
+          "Sentry.Extensions.Logging": "6.11.0"
+        }
+      },
+      "Serilog": {
+        "type": "Direct",
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
+      },
+      "Microsoft.EntityFrameworkCore.Abstractions": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "kDrux7T6C3V/YYYe2LXr7x6AEsVyq5Y2YoTE9er1SwbDtap3z1g8RgxNh5eKQVyB4T+DKvBBJ4Ezd/VZzJQJZg=="
+      },
+      "Microsoft.EntityFrameworkCore.Analyzers": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "Kd4o2oO1A6dfKxjz5LS16QyLtpCFTUiFWwmBABETAXRsSImBdRdWeKjSgbbRhAMiV3a3/nWr95ZtzClT4uaADQ=="
+      },
+      "Npgsql": {
+        "type": "Transitive",
+        "resolved": "8.0.5",
+        "contentHash": "zRG5V8cyeZLpzJlKzFKjEwkRMYIYnHWJvEor2lWXeccS2E1G2nIWYYhnukB51iz5XsWSVEtqg3AxTWM0QJ6vfg=="
+      },
+      "Sentry": {
+        "type": "Transitive",
+        "resolved": "6.11.0",
+        "contentHash": "TsT5Gj77PTh3lHQGS+8dLxucTmiZEfLxkqRygIHwYQXRXmMC4fFDbf1AoQe8LXOOFDYhPM2SNf8TTfexvkP0nQ=="
+      },
+      "Sentry.Extensions.Logging": {
+        "type": "Transitive",
+        "resolved": "6.11.0",
+        "contentHash": "ztK8OQVUoyb5SX49jFfBu4A/67VneE6w4gKqiUycYDCNPrtJo4pz5Ho5eow5sfe+1Sm8sMQqpu+Lvykfh4HqMg==",
+        "dependencies": {
+          "Sentry": "6.11.0"
+        }
+      }
+    }
+  }
+}

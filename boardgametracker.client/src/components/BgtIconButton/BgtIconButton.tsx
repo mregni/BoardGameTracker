@@ -27,6 +27,7 @@ const iconButtonVariants = cva("rounded-lg inline-flex items-center justify-cent
 
 interface Props extends ComponentPropsWithoutRef<"button">, Omit<VariantProps<typeof iconButtonVariants>, "disabled"> {
 	icon: ReactNode;
+	"aria-label": string;
 }
 
 export const BgtIconButton = (props: Props) => {
@@ -40,7 +41,14 @@ export const BgtIconButton = (props: Props) => {
 	});
 
 	return (
-		<button onClick={onClick} type="button" className={buttonClasses} disabled={disabled} {...rest}>
+		<button
+			onClick={onClick}
+			type="button"
+			className={buttonClasses}
+			disabled={disabled}
+			title={rest.title ?? rest["aria-label"]}
+			{...rest}
+		>
 			{icon}
 		</button>
 	);

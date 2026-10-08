@@ -1,12 +1,14 @@
-import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
-import { lazy } from "react";
+import { lazy, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { BgtLoadingSpinner } from "./components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { ErrorFallback } from "./components/ErrorBoundary/ErrorFallback";
+import { useResetQueriesOnIdentityChange } from "./hooks/useResetQueriesOnIdentityChange";
 import { isApiError } from "./models";
 import { routeTree } from "./routeTree.gen";
+import { getSettings } from "./services/queries/settings";
 import { translateApiError } from "./utils/errorUtils";
 import i18n from "./utils/i18n";
 
@@ -57,7 +59,8 @@ const queryClient = new QueryClient({
 		},
 	},
 	queryCache: new QueryCache({
-		onError: (error) => {
+		onError: (error, query) => {
+			if (query.meta?.silent === true) return;
 			if (isApiError(error) && error.status === 401) return;
 			const now = Date.now();
 			if (now - lastErrorToastTime < ERROR_TOAST_DEBOUNCE_MS) return;
@@ -87,6 +90,24 @@ declare module "@tanstack/react-router" {
 	}
 }
 
+function AuthCacheSync() {
+	useResetQueriesOnIdentityChange();
+	return null;
+}
+
+function LanguageSync() {
+	const { data } = useQuery(getSettings());
+	const uiLanguage = data?.uiLanguage;
+
+	useEffect(() => {
+		if (uiLanguage) {
+			void i18n.changeLanguage(uiLanguage);
+		}
+	}, [uiLanguage]);
+
+	return null;
+}
+
 function AppContainer() {
 	return (
 		<ErrorBoundary
@@ -102,6 +123,8 @@ function AppContainer() {
 			}}
 		>
 			<QueryClientProvider client={queryClient}>
+				<AuthCacheSync />
+				<LanguageSync />
 				<RouterProvider router={router} context={{ queryClient }} />
 				<TanStackQueryDevtools initialIsOpen />
 				<TanStackRouterDevtools router={router} />

@@ -6,6 +6,7 @@ import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import Check from "@/assets/icons/check.svg?react";
 import Clock from "@/assets/icons/clock.svg?react";
+import Pencil from "@/assets/icons/pencil.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
@@ -46,10 +47,11 @@ interface LoanCardProps {
 	player: Player | undefined;
 	dateFormat: string;
 	onReturn?: (loanId: number, returnDate: Date) => void;
-	onDelete?: (loanId: number) => void;
+	onEdit?: (loan: Loan) => void;
+	onDelete?: (loan: Loan) => void;
 }
 
-export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }: LoanCardProps) => {
+export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onEdit, onDelete }: LoanCardProps) => {
 	const { t } = useTranslation(["common", "loans"]);
 	const navigate = useNavigate();
 	const isActive = loan.returnedDate === null;
@@ -140,6 +142,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 			<div className="mt-auto flex flex-row gap-2">
 				{isActive && onReturn && (
 					<button
+						type="button"
 						onClick={() => onReturn(loan.id, new Date())}
 						className="w-full bg-lime-green/20 hover:bg-lime-green/30 text-lime-green border border-lime-green/30 py-1 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
 					>
@@ -148,9 +151,21 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onDelete }:
 					</button>
 				)}
 
+				{isActive && onEdit && (
+					<button
+						type="button"
+						onClick={() => onEdit(loan)}
+						className="w-full bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 py-1 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+					>
+						<Pencil className="size-5" />
+						{t("loans:edit.button")}
+					</button>
+				)}
+
 				{onDelete && (
 					<button
-						onClick={() => onDelete(loan.id)}
+						type="button"
+						onClick={() => onDelete(loan)}
 						className="w-full bg-error/20 hover:bg-error/30 text-error border border-error/30 py-1 rounded-lg flex items-center justify-center gap-2 cursor-pointer"
 					>
 						<Trash className="size-5" />

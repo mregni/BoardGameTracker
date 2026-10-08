@@ -8,6 +8,7 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { cx } from "class-variance-authority";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
@@ -31,7 +32,7 @@ export interface DataTableProps<T> {
 	widths?: (string | null)[];
 }
 
-export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
+const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
 	const { columns, data, size = "md", noDataMessage, isLoading = false, widths, noHeaders } = props;
 	const { t } = useTranslation();
 	const table = useReactTable({
@@ -134,3 +135,5 @@ export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
 		</BgtTable>
 	);
 };
+
+export const BgtDataTable = memo(BgtDataTableComponent) as typeof BgtDataTableComponent;

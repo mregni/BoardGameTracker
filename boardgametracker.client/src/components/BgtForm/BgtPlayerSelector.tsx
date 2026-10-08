@@ -70,8 +70,19 @@ export const BgtPlayerSelector = (props: Props) => {
 							{x.firstPlay && <ClockIcon className="w-4 text-green-600" />}
 						</div>
 						<div className="flex items-center gap-1">
-							<BgtIconButton icon={<PencilIcon />} onClick={() => onEditPlayer(x.playerId)} disabled={disabled} />
-							<BgtIconButton icon={<TrashIcon />} onClick={() => remove(index)} intent="danger" disabled={disabled} />
+							<BgtIconButton
+								icon={<PencilIcon />}
+								onClick={() => onEditPlayer(x.playerId)}
+								disabled={disabled}
+								aria-label={t("common:edit")}
+							/>
+							<BgtIconButton
+								icon={<TrashIcon />}
+								onClick={() => remove(index)}
+								intent="danger"
+								disabled={disabled}
+								aria-label={t("common:delete.button")}
+							/>
 						</div>
 					</div>
 				);

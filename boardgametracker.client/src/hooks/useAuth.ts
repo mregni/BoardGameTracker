@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { AuthStatus, LoginRequest, OidcProvider, User } from "@/models/Auth/Auth";
-import { getAuthStatusCall, getOidcProviderCall, loginCall, logoutCall } from "@/services/authService";
+import { getAuthStatusCall, loginCall, logoutCall } from "@/services/authService";
+
+export const AUTH_STORAGE_KEY = "bgt-auth";
 
 let authStatusRequest: Promise<AuthStatus> | null = null;
 
@@ -19,7 +21,6 @@ interface AuthState {
 	setTokens: (accessToken: string, refreshToken: string, user: User) => void;
 	hasRole: (role: string) => boolean;
 	fetchAuthStatus: () => Promise<AuthStatus>;
-	fetchOidcProvider: () => Promise<void>;
 	clearAuth: () => void;
 }
 
@@ -45,9 +46,9 @@ export const useAuth = create<AuthState>()(
 						isAuthenticated: true,
 						isLoading: false,
 					});
-				} catch {
+				} catch (error) {
 					set({ isLoading: false });
-					throw new Error("Login failed");
+					throw error;
 				}
 			},
 
@@ -93,11 +94,6 @@ export const useAuth = create<AuthState>()(
 				return authStatusRequest;
 			},
 
-			fetchOidcProvider: async () => {
-				const provider = await getOidcProviderCall();
-				set({ oidcProvider: provider });
-			},
-
 			clearAuth: () => {
 				set({
 					accessToken: null,
@@ -108,7 +104,7 @@ export const useAuth = create<AuthState>()(
 			},
 		}),
 		{
-			name: "bgt-auth",
+			name: AUTH_STORAGE_KEY,
 			partialize: (state) => ({
 				accessToken: state.accessToken,
 				refreshToken: state.refreshToken,
@@ -118,3 +114,9 @@ export const useAuth = create<AuthState>()(
 		},
 	),
 );
+
+globalThis.addEventListener?.("storage", (event: StorageEvent) => {
+	if (event.key === AUTH_STORAGE_KEY) {
+		void useAuth.persist.rehydrate();
+	}
+});

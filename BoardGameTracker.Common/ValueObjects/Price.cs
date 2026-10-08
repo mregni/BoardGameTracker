@@ -1,3 +1,4 @@
+using System.Globalization;
 using Ardalis.GuardClauses;
 
 namespace BoardGameTracker.Common.ValueObjects;
@@ -16,5 +17,5 @@ public record Price
 
     public static implicit operator decimal(Price price) => price.Amount;
 
-    public override string ToString() => Amount.ToString("C");
+    public override string ToString() => Amount.ToString("C", CultureInfo.InvariantCulture);
 }

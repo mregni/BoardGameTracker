@@ -89,6 +89,7 @@ export const RsvpResponseForm = ({ invitedPlayers, onSubmit, isSubmitting }: Pro
 					const isActive = selectedResponse === option.state;
 					return (
 						<button
+							type="button"
 							key={option.state}
 							onClick={() => setSelectedResponse(option.state)}
 							className={cx(
