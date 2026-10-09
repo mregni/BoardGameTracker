@@ -11,7 +11,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getGames } from "@/services/queries/games";
-import { getGameManuals } from "@/services/queries/manuals";
+import { getGameIdsWithManuals, getGameManuals } from "@/services/queries/manuals";
 import { getSettings } from "@/services/queries/settings";
 import { ChatComposer } from "./-components/ChatComposer";
 import { ChatTranscript } from "./-components/ChatTranscript";
@@ -42,6 +42,7 @@ export const Route = createFileRoute("/chat/")({
 	},
 	loader: ({ context: { queryClient } }) => {
 		queryClient.prefetchQuery(getGames());
+		queryClient.prefetchQuery(getGameIdsWithManuals());
 	},
 });
 
@@ -52,8 +53,15 @@ function RouteComponent() {
 	const { ask, retry, getExchanges, isPending } = useRagChat();
 
 	const { data: games = [] } = useQuery(getGames());
+	const { data: gameIdsWithManuals } = useQuery(getGameIdsWithManuals());
+	const gamesWithManuals = useMemo(() => {
+		const ids = new Set(gameIdsWithManuals ?? []);
+		return games.filter((game) => ids.has(game.id));
+	}, [games, gameIdsWithManuals]);
 	const selectedGameId =
-		search.gameId !== undefined && games.some((game) => game.id === search.gameId) ? search.gameId : undefined;
+		search.gameId !== undefined && gamesWithManuals.some((game) => game.id === search.gameId)
+			? search.gameId
+			: undefined;
 
 	const { data: manuals = [] } = useQuery({
 		...getGameManuals(selectedGameId ?? 0),
@@ -68,8 +76,8 @@ function RouteComponent() {
 			: undefined;
 
 	const gameItems = useMemo(
-		() => games.map((game) => ({ value: game.id, label: game.title, image: game.image })),
-		[games],
+		() => gamesWithManuals.map((game) => ({ value: game.id, label: game.title, image: game.image })),
+		[gamesWithManuals],
 	);
 	const manualItems = useMemo(
 		() => [
@@ -142,6 +150,15 @@ function RouteComponent() {
 
 	const renderBody = () => {
 		if (selectedGameId === undefined) {
+			if (gameIdsWithManuals?.length === 0) {
+				return (
+					<BgtEmptyState
+						icon={List}
+						title={t("empty.no-rulebooks.title")}
+						description={t("empty.no-rulebooks.description")}
+					/>
+				);
+			}
 			return (
 				<BgtEmptyState icon={ChatIcon} title={t("empty.no-game.title")} description={t("empty.no-game.description")} />
 			);

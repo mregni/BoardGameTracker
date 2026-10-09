@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { BgtDetailLayout } from "@/components/BgtLayout/BgtDetailLayout";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -7,11 +8,12 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { getBadges } from "@/services/queries/basdges";
 import { getPlayer, getPlayerStatistics } from "@/services/queries/players";
 import { playerIdParamSchema } from "@/utils/routeSchemas";
+import { BgtPoster } from "../-components/BgtPoster";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { MostPlayedGamesCard } from "./-components/MostPlayedGamesCard";
 import { PlayerAchievementsCard } from "./-components/PlayerAchievementsCard";
+import { PlayerAchievementsSummary } from "./-components/PlayerAchievementsSummary";
 import { PlayerHeader } from "./-components/PlayerHeader";
-import { PlayerHeroSection } from "./-components/PlayerHeroSection";
 import { PlayerStatisticsGrid } from "./-components/PlayerStatisticsGrid";
 import { PlayerWinRecordCard } from "./-components/PlayerWinRecordCard";
 import { RecentPlayerSessionsCard } from "./-components/RecentPlayerSessionsCard";
@@ -53,33 +55,62 @@ function RouteComponent() {
 			<BgtPageContent isLoading={isLoading} data={{ player, statistics, badges, settings }}>
 				{({ player, statistics, badges, settings }) => (
 					<>
-						<PlayerHeader
-							playerName={player.name}
-							canWrite={canWrite}
-							onDelete={modals.deleteModal.show}
-							onEdit={modals.editModal.show}
-						/>
-						<PlayerHeroSection player={player} />
-						{statistics.playCount !== 0 && (
-							<>
-								<PlayerStatisticsGrid statistics={statistics} settings={settings} />
-								<div className="grid grid-cols-1 lg:grid-cols-2 gap-3 xl:gap-6">
-									<div className="flex flex-col gap-3 xl:gap-6">
-										<RecentPlayerSessionsCard
-											sessions={sessions}
-											playerId={playerId}
-											dateFormat={settings.dateFormat}
-											uiLanguage={settings.uiLanguage}
-										/>
-										<MostPlayedGamesCard games={statistics.mostPlayedGames} />
+						<BgtDetailLayout
+							sidebar={
+								<>
+									<div className="hidden lg:block">
+										<BgtPoster title={player.name} image={player.image} />
 									</div>
-									<div className="flex flex-col gap-3 xl:gap-6">
-										<PlayerWinRecordCard total={statistics.playCount} wins={statistics.winCount} />
-										<PlayerAchievementsCard playerBadges={player.badges} badges={badges} />
+									<div className="max-lg:order-2">
+										<PlayerAchievementsSummary playerBadges={player.badges} badges={badges} />
 									</div>
+									{statistics.playCount !== 0 && (
+										<div className="max-lg:order-6">
+											<PlayerWinRecordCard total={statistics.playCount} wins={statistics.winCount} />
+										</div>
+									)}
+								</>
+							}
+						>
+							<div className="max-lg:order-1 flex items-start gap-3">
+								<div className="size-16 shrink-0 lg:hidden">
+									<BgtPoster title={player.name} image={player.image} />
 								</div>
-							</>
-						)}
+								<div className="min-w-0 flex-1">
+									<PlayerHeader
+										playerName={player.name}
+										canWrite={canWrite}
+										onDelete={modals.deleteModal.show}
+										onEdit={modals.editModal.show}
+									/>
+								</div>
+							</div>
+							{statistics.playCount !== 0 && (
+								<div className="max-lg:order-3">
+									<PlayerStatisticsGrid statistics={statistics} settings={settings} />
+								</div>
+							)}
+							{statistics.playCount !== 0 && (
+								<div className="max-lg:order-4">
+									<RecentPlayerSessionsCard
+										sessions={sessions}
+										playerId={playerId}
+										dateFormat={settings.dateFormat}
+										uiLanguage={settings.uiLanguage}
+									/>
+								</div>
+							)}
+							{statistics.playCount !== 0 && (
+								<div className="max-lg:order-5">
+									<MostPlayedGamesCard games={statistics.mostPlayedGames} />
+								</div>
+							)}
+							{statistics.playCount !== 0 && (
+								<div className="max-lg:order-7">
+									<PlayerAchievementsCard playerBadges={player.badges} badges={badges} />
+								</div>
+							)}
+						</BgtDetailLayout>
 						<BgtDeleteModal
 							title={player.name}
 							open={modals.deleteModal.isOpen}

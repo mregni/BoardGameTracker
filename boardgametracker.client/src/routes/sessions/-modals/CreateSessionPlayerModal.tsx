@@ -78,6 +78,7 @@ const CreateSessionPlayerForm = (props: Props) => {
 							{(field: AnyFieldApi) => (
 								<BgtSelect
 									field={field}
+									showAvatars
 									label={t("new.player.label")}
 									items={players
 										.filter((player) => !selectedPlayerIds.includes(player.id))

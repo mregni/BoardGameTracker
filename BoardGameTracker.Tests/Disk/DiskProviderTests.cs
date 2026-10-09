@@ -8,9 +8,6 @@ using BoardGameTracker.Core.Disk;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Disk;
@@ -113,31 +110,6 @@ public class DiskProviderTests: IDisposable
             action.Should().NotThrow();
             VerifyLogInformation("Removing file {Path}", invalidPath);
             VerifyErrorLogged();
-        }
-
-        [Fact]
-        public async Task WriteFile_WithImage_ShouldWriteUniqueFileAndReturnItsName()
-        {
-            using var image = new Image<Rgba32>(10, 10);
-
-            var result = await _diskProvider.WriteFile(image, "picture.jpg", _testDirectory);
-
-            result.Should().NotBe("picture.jpg");
-            result.Should().StartWith("picture_");
-            result.Should().EndWith(".jpg");
-            File.Exists(Path.Combine(_testDirectory, result)).Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task WriteFile_WithImageAndEncoder_ShouldWriteFileUsingEncoder()
-        {
-            using var image = new Image<Rgba32>(10, 10);
-
-            var result = await _diskProvider.WriteFile(image, "picture.webp", _testDirectory, new WebpEncoder());
-
-            result.Should().EndWith(".webp");
-            File.Exists(Path.Combine(_testDirectory, result)).Should().BeTrue();
-            new FileInfo(Path.Combine(_testDirectory, result)).Length.Should().BeGreaterThan(0);
         }
 
         [Fact]

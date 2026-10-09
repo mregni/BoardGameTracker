@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { BgtDetailLayout } from "@/components/BgtLayout/BgtDetailLayout";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -8,9 +9,11 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { getGame, getGameSessionsShortList, getGameStatistics } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { gameIdParamSchema } from "@/utils/routeSchemas";
+import { BgtPoster } from "../-components/BgtPoster";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { ExpansionsDialog } from "./-components/ExpansionsDialog";
 import { GameDetailEmptyState } from "./-components/GameDetailEmptyState";
+import { GameFactsCard } from "./-components/GameFactsCard";
 import { GameHeader } from "./-components/GameHeader";
 import { GameStaticSection } from "./-components/GameStaticSection";
 import { GameStatisticsGrid } from "./-components/GameStatisticsGrid";
@@ -81,37 +84,89 @@ function RouteComponent() {
 			<BgtPageContent isLoading={isLoading} data={{ game, settings, statistics, sessions }}>
 				{({ game, settings, statistics, sessions }) => {
 					const bggEnabled = settings.bggStatus?.isConfigured ?? false;
+					const hasPlays = statistics.gameStats.playCount !== 0;
 					return (
 						<>
-							<GameHeader
-								gameTitle={game.title}
-								gameState={game.state}
-								isLoaned={game.isLoaned}
-								hasPriceWatch={!!game.changeDetectionWatchId}
-								livePrice={price}
-								canWrite={canWrite}
-								onAddSession={actions.handleAddSession}
-								onEdit={actions.handleEdit}
-								onDelete={modals.deleteModal.show}
-							/>
-							<GameStaticSection
-								game={game}
-								playCount={statistics.gameStats.playCount}
-								currency={settings.currency}
-								dateFormat={settings.dateFormat}
-								uiLanguage={settings.uiLanguage}
-								manualCount={manuals.length}
-								ragEnabled={settings.ragEnabled && canWrite}
-								price={price}
-								onRefreshPrice={refreshPrice}
-								isRefreshingPrice={isRefreshingPrice}
-								canTrackPrice={
-									canWrite && !!settings.changeDetectionStatus?.isConfigured && !game.changeDetectionWatchId
+							<BgtDetailLayout
+								sidebar={
+									<>
+										<div className="hidden lg:block">
+											<BgtPoster title={game.title} image={game.image} />
+										</div>
+										<div className="max-lg:order-3">
+											<GameFactsCard
+												game={game}
+												currency={settings.currency}
+												dateFormat={settings.dateFormat}
+												uiLanguage={settings.uiLanguage}
+												manualCount={manuals.length}
+												price={price}
+												onRefreshPrice={refreshPrice}
+												isRefreshingPrice={isRefreshingPrice}
+												onOpenManuals={manualsDialog.show}
+												onOpenExpansions={expansionsDialog.show}
+											/>
+										</div>
+										{hasPlays && (
+											<div className="max-lg:order-5">
+												<TopPlayersCard topPlayers={statistics.topPlayers} />
+											</div>
+										)}
+										{hasPlays && (
+											<div className="max-lg:order-6">
+												<RecentSessionsCard sessions={sessions} dateFormat={settings.dateFormat} gameId={gameId} />
+											</div>
+										)}
+									</>
 								}
-								onTrackPrice={trackPriceDialog.show}
-								onOpenManuals={manualsDialog.show}
-								onOpenExpansions={expansionsDialog.show}
-							/>
+							>
+								<div className="max-lg:order-1 flex items-start gap-3">
+									<div className="size-16 shrink-0 lg:hidden">
+										<BgtPoster title={game.title} image={game.image} />
+									</div>
+									<div className="min-w-0 flex-1">
+										<GameHeader
+											gameTitle={game.title}
+											gameState={game.state}
+											isLoaned={game.isLoaned}
+											hasPriceWatch={!!game.changeDetectionWatchId}
+											livePrice={price}
+											canWrite={canWrite}
+											onAddSession={actions.handleAddSession}
+											onEdit={actions.handleEdit}
+											onDelete={modals.deleteModal.show}
+										/>
+									</div>
+								</div>
+								<div className="max-lg:order-2">
+									<GameStaticSection
+										game={game}
+										manualCount={manuals.length}
+										ragEnabled={settings.ragEnabled && canWrite}
+										canTrackPrice={
+											canWrite && !!settings.changeDetectionStatus?.isConfigured && !game.changeDetectionWatchId
+										}
+										onTrackPrice={trackPriceDialog.show}
+									/>
+								</div>
+								{!hasPlays && (
+									<div className="max-lg:order-4">
+										<GameDetailEmptyState onLogSession={canWrite ? actions.handleAddSession : undefined} />
+									</div>
+								)}
+								{hasPlays && (
+									<div className="max-lg:order-4">
+										<GameStatisticsGrid gameStats={statistics.gameStats} currency={settings.currency} />
+									</div>
+								)}
+								{hasPlays && (
+									<div className="max-lg:order-7 grid grid-cols-1 2xl:grid-cols-2 gap-3 xl:gap-6">
+										<ScoringResultsCard scoreRankChart={statistics.scoreRankChart} />
+										<SessionCountChartCard playByDayChart={statistics.playByDayChart} />
+										<PlayerCountChartCard playerCountChart={statistics.playerCountChart} />
+									</div>
+								)}
+							</BgtDetailLayout>
 							<TrackPriceDialog
 								open={trackPriceDialog.isOpen}
 								close={trackPriceDialog.hide}
@@ -141,33 +196,6 @@ function RouteComponent() {
 								onAddManualExpansion={addManualExpansion}
 								onDeleteExpansion={actions.handleDeleteExpansion}
 							/>
-							{statistics.gameStats.playCount === 0 && (
-								<GameDetailEmptyState onLogSession={canWrite ? actions.handleAddSession : undefined} />
-							)}
-							{statistics.gameStats.playCount !== 0 && (
-								<>
-									<GameStatisticsGrid
-										gameStats={statistics.gameStats}
-										expansionCount={game.expansions.length}
-										currency={settings.currency}
-									/>
-									<div className="grid grid-cols-1 lg:grid-cols-2 gap-3 xl:gap-6">
-										<div className="flex flex-col gap-3 xl:gap-6">
-											<TopPlayersCard topPlayers={statistics.topPlayers} />
-											<RecentSessionsCard
-												sessions={sessions}
-												dateFormat={settings.dateFormat}
-												gameId={gameId.toString()}
-											/>
-											<SessionCountChartCard playByDayChart={statistics.playByDayChart} />
-										</div>
-										<div className="flex flex-col gap-3 xl:gap-6">
-											<ScoringResultsCard scoreRankChart={statistics.scoreRankChart} />
-											<PlayerCountChartCard playerCountChart={statistics.playerCountChart} />
-										</div>
-									</div>
-								</>
-							)}
 							<BgtDeleteModal
 								title={game.title}
 								open={modals.deleteModal.isOpen}

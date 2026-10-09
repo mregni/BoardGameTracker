@@ -8,6 +8,10 @@ export const getGameManualsCall = (gameId: number): Promise<GameManual[]> => {
 	return axiosInstance.get<GameManual[]>(`${domain}/game/${gameId}`).then((response) => response.data);
 };
 
+export const getGameIdsWithManualsCall = (): Promise<number[]> => {
+	return axiosInstance.get<number[]>(`${domain}/games`).then((response) => response.data);
+};
+
 export const uploadManualsCall = (gameId: number, files: File[]): Promise<GameManual[]> => {
 	const formData = new FormData();
 	for (const file of files) {

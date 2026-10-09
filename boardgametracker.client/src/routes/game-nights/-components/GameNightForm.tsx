@@ -139,6 +139,7 @@ export const GameNightForm = (props: Props) => {
 							<BgtSelect
 								field={field}
 								hasSearch
+								showAvatars
 								items={hostOptions}
 								label={t("form.host.label")}
 								disabled={isLoading}

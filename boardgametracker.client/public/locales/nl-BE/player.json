@@ -51,5 +51,11 @@
   },
   "titles": {
     "achievements": "Prestaties"
+  },
+  "achievements": {
+    "milestones": "Mijlpalen",
+    "feats": "Prestaties",
+    "next": "Volgende: {{goal}}",
+    "complete": "Alle niveaus behaald"
   }
 }

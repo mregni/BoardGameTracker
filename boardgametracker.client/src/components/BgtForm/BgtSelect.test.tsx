@@ -75,6 +75,27 @@ describe("BgtSelect", () => {
 			renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} />);
 			expect(screen.getByText("Option 2")).toBeInTheDocument();
 		});
+
+		it("should show the initial of a player without a picture when avatars are on", () => {
+			mockField = createMockField("1");
+			renderWithTheme(
+				<BgtSelect
+					field={mockField}
+					label="Player"
+					showAvatars
+					items={[{ value: "1", label: "Kathleen", image: null }]}
+				/>,
+			);
+			expect(screen.getByText("K")).toBeInTheDocument();
+		});
+
+		it("should leave items without an image bare when avatars are off", () => {
+			mockField = createMockField("1");
+			renderWithTheme(
+				<BgtSelect field={mockField} label="Game" items={[{ value: "1", label: "Kingdomino", image: null }]} />,
+			);
+			expect(screen.queryByText("K")).not.toBeInTheDocument();
+		});
 	});
 
 	describe("Disabled State", () => {

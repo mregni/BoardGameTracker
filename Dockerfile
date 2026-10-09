@@ -57,11 +57,18 @@ RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
     dotnet publish \
     -c Release \
     -o /app/publish \
-    --no-restore \
+    /p:RestoreLockedMode=true \
     /p:Version=${ASSEMBLY_VERSION} \
     /p:InformationalVersion=${VERSION} \
     /p:UseAppHost=false \
     /p:BuildWithoutEsproj=true
+
+# Keep only the SkiaSharp native library for the target platform
+ARG TARGETARCH
+RUN case "${TARGETARCH}" in arm64) rid=linux-musl-arm64 ;; *) rid=linux-musl-x64 ;; esac && \
+    find /app/publish/runtimes -name 'libSkiaSharp*' ! -path "*/${rid}/*" -delete && \
+    find /app/publish/runtimes -type d -empty -delete && \
+    test -f "/app/publish/runtimes/${rid}/native/libSkiaSharp.so"
 
 # Stage 3: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime

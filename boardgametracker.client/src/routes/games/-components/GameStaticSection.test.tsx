@@ -43,65 +43,19 @@ const createGame = (overrides: Partial<Game> = {}): Game => ({
 describe("GameStaticSection", () => {
 	const defaultProps = {
 		game: createGame(),
-		playCount: 12,
-		currency: "€",
-		uiLanguage: "en-US",
-		dateFormat: "yyyy-MM-dd",
 		manualCount: 2,
 		ragEnabled: true,
-		onOpenManuals: vi.fn(),
-		onOpenExpansions: vi.fn(),
 	};
 
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	describe("Player count statistic", () => {
-		it("should render a range when min and max players are set", () => {
+	describe("Description", () => {
+		it("should render the game description", () => {
 			renderWithTheme(<GameStaticSection {...defaultProps} />);
 
-			expect(screen.getByText("players")).toBeInTheDocument();
-			expect(screen.getByText("2 - 4")).toBeInTheDocument();
-		});
-
-		it("should render a single value when only min players is set", () => {
-			renderWithTheme(<GameStaticSection {...defaultProps} game={createGame({ minPlayers: 3, maxPlayers: null })} />);
-
-			expect(screen.getByText("3")).toBeInTheDocument();
-		});
-
-		it("should hide the statistic when min and max players are null", () => {
-			renderWithTheme(
-				<GameStaticSection {...defaultProps} game={createGame({ minPlayers: null, maxPlayers: null })} />,
-			);
-
-			expect(screen.queryByText("players")).not.toBeInTheDocument();
-		});
-	});
-
-	describe("Duration statistic", () => {
-		it("should render a range when min and max play time are set", () => {
-			renderWithTheme(<GameStaticSection {...defaultProps} />);
-
-			expect(screen.getByText("duration")).toBeInTheDocument();
-			expect(screen.getByText("30 - 60")).toBeInTheDocument();
-		});
-
-		it("should render a single value when only max play time is set", () => {
-			renderWithTheme(
-				<GameStaticSection {...defaultProps} game={createGame({ minPlayTime: null, maxPlayTime: 90 })} />,
-			);
-
-			expect(screen.getByText("90")).toBeInTheDocument();
-		});
-
-		it("should hide the statistic when min and max play time are null", () => {
-			renderWithTheme(
-				<GameStaticSection {...defaultProps} game={createGame({ minPlayTime: null, maxPlayTime: null })} />,
-			);
-
-			expect(screen.queryByText("duration")).not.toBeInTheDocument();
+			expect(screen.getByText("Trade and build settlements")).toBeInTheDocument();
 		});
 	});
 
@@ -122,6 +76,18 @@ describe("GameStaticSection", () => {
 			renderWithTheme(<GameStaticSection {...defaultProps} ragEnabled={false} />);
 
 			expect(screen.queryByRole("button", { name: "ask-button" })).not.toBeInTheDocument();
+		});
+	});
+
+	describe("Track price button", () => {
+		it("should offer price tracking when allowed", async () => {
+			const user = userEvent.setup();
+			const onTrackPrice = vi.fn();
+			renderWithTheme(<GameStaticSection {...defaultProps} canTrackPrice onTrackPrice={onTrackPrice} />);
+
+			await user.click(screen.getByRole("button", { name: /track-price\.button/ }));
+
+			expect(onTrackPrice).toHaveBeenCalledTimes(1);
 		});
 	});
 
@@ -150,44 +116,6 @@ describe("GameStaticSection", () => {
 			const call = mockNavigate.mock.calls[0][0];
 			expect(call.to).toBe("/games");
 			expect(call.search()).toEqual({ category: "Strategy" });
-		});
-	});
-
-	describe("In collection statistic", () => {
-		it("should render when the game has an addition date", () => {
-			renderWithTheme(
-				<GameStaticSection {...defaultProps} game={createGame({ additionDate: new Date(2026, 0, 15) })} />,
-			);
-
-			expect(screen.getByText("statistics:in-collection")).toBeInTheDocument();
-		});
-
-		it("should not render when the addition date is null", () => {
-			renderWithTheme(<GameStaticSection {...defaultProps} />);
-
-			expect(screen.queryByText("statistics:in-collection")).not.toBeInTheDocument();
-		});
-	});
-
-	describe("Statistic callbacks", () => {
-		it("should call onOpenManuals when the manuals statistic is clicked", async () => {
-			const user = userEvent.setup();
-			renderWithTheme(<GameStaticSection {...defaultProps} />);
-
-			await user.click(screen.getByText("game:manuals.title"));
-
-			expect(defaultProps.onOpenManuals).toHaveBeenCalledTimes(1);
-			expect(defaultProps.onOpenExpansions).not.toHaveBeenCalled();
-		});
-
-		it("should call onOpenExpansions when the expansions statistic is clicked", async () => {
-			const user = userEvent.setup();
-			renderWithTheme(<GameStaticSection {...defaultProps} />);
-
-			await user.click(screen.getByText("game:expansions.title"));
-
-			expect(defaultProps.onOpenExpansions).toHaveBeenCalledTimes(1);
-			expect(defaultProps.onOpenManuals).not.toHaveBeenCalled();
 		});
 	});
 });

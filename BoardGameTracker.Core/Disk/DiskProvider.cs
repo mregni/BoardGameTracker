@@ -1,8 +1,6 @@
 ﻿using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Core.Disk.Interfaces;
 using Microsoft.Extensions.Logging;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
 
 namespace BoardGameTracker.Core.Disk;
 
@@ -15,23 +13,6 @@ public class DiskProvider : IDiskProvider
         _logger = logger;
     }
     
-    public async Task<string> WriteFile(Image image, string fileName, string path, IImageEncoder? encoder = null)
-    {
-        var uniqueFileName = fileName.GenerateUniqueFileName();
-        var filePath = Path.Combine(path, uniqueFileName);
-
-        if (encoder != null)
-        {
-            await image.SaveAsync(filePath, encoder);
-        }
-        else
-        {
-            await image.SaveAsync(filePath);
-        }
-
-        return uniqueFileName;
-    }
-
     public async Task<string> WriteFile(Stream stream, string fileName, string path)
     {
         var uniqueFileName = fileName.GenerateUniqueFileName();

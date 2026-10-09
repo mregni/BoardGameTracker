@@ -36,6 +36,14 @@ public class ManualController : ControllerBase
         return Ok(manuals.ToListDto());
     }
 
+    [HttpGet]
+    [Route("games")]
+    [ProducesResponseType<List<int>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetGamesWithManuals(CancellationToken cancellationToken)
+    {
+        return Ok(await _manualService.GetGameIdsWithManuals(cancellationToken));
+    }
+
     [HttpPost]
     [Route("game/{gameId:int}")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]

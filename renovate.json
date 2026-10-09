@@ -117,6 +117,12 @@
       ]
     },
     {
+      "groupName": "SkiaSharp",
+      "matchPackageNames": [
+        "/^SkiaSharp/"
+      ]
+    },
+    {
       "groupName": "Backend test packages",
       "matchPackageNames": [
         "/^xunit/",
@@ -202,9 +208,8 @@
       "dependencyDashboardApproval": true
     },
     {
-      "description": "ImageSharp 4 changes the licence terms; Test SDK 18 and coverlet 10 were tried and reverted",
+      "description": "Test SDK 18 and coverlet 10 were tried and reverted",
       "matchPackageNames": [
-        "SixLabors.ImageSharp",
         "Microsoft.NET.Test.Sdk",
         "coverlet.collector"
       ],

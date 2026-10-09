@@ -26,6 +26,10 @@
       "title": "Pick a game to start",
       "description": "Choose a game above to ask questions about its rulebook."
     },
+    "no-rulebooks": {
+      "title": "No rulebooks yet",
+      "description": "Upload a PDF rulebook on a game's page to ask questions about it here."
+    },
     "no-manuals": {
       "title": "No rulebook yet",
       "description": "This game has no manuals. Upload a rulebook on the game page first."

@@ -44,6 +44,27 @@ describe("BgtSimpleSelect", () => {
 		onValueChange: vi.fn(),
 	};
 
+	describe("Avatars", () => {
+		const players = [
+			{ value: 1, label: "Kathleen", image: null },
+			{ value: 2, label: "Mikhael", image: "/images/profile/mikhael.png" },
+		];
+
+		it("should show every player's avatar, with the initial when there is no picture", async () => {
+			renderWithTheme(<BgtSimpleSelect items={players} onValueChange={vi.fn()} showAvatars defaultOpen />);
+
+			expect(await screen.findByText("K")).toBeInTheDocument();
+			expect(screen.getByAltText("Mikhael")).toHaveAttribute("src", "/images/profile/mikhael.png");
+		});
+
+		it("should only show pictures when avatars are off", async () => {
+			renderWithTheme(<BgtSimpleSelect items={players} onValueChange={vi.fn()} defaultOpen />);
+
+			expect(await screen.findByAltText("Mikhael")).toBeInTheDocument();
+			expect(screen.queryByText("K")).not.toBeInTheDocument();
+		});
+	});
+
 	describe("On-screen keyboard", () => {
 		it("should stay open when the keyboard resizes the window while searching", async () => {
 			renderWithTheme(<BgtSimpleSelect {...defaultProps} hasSearch defaultOpen />);
