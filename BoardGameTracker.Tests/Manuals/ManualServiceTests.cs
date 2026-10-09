@@ -710,7 +710,7 @@ public class ManualServiceTests
     {
         _manualRepositoryMock
             .Setup(x => x.ListAsync(It.IsAny<GameIdsWithManualsSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<int> { 1, 1, 2, 3 });
+            .ReturnsAsync([1, 1, 2, 3]);
 
         var result = await _manualService.GetGameIdsWithManuals(TestContext.Current.CancellationToken);
 

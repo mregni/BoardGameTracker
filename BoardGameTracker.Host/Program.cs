@@ -556,7 +556,7 @@ static void WaitForDatabase(MainDbContext context)
                     ex);
             }
 
-            Log.Warning("Database not reachable yet (attempt {Attempt}/{Attempts}): {Message}", attempt, attempts, reason);
+            Log.Warning(ex, "Database not reachable yet (attempt {Attempt}/{Attempts}): {Message}", attempt, attempts, reason);
         }
 
         Thread.Sleep(TimeSpan.FromSeconds(3));

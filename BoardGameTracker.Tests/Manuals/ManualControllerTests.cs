@@ -227,7 +227,7 @@ public class ManualControllerTests
     {
         _manualServiceMock
             .Setup(x => x.GetGameIdsWithManuals(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<int> { 1, 3 });
+            .ReturnsAsync([1, 3]);
 
         var result = await _controller.GetGamesWithManuals(TestContext.Current.CancellationToken);
 
