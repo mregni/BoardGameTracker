@@ -68,9 +68,11 @@ describe("BGG import list", () => {
 		renderWithProviders(<Component />);
 
 		const [price] = await screen.findAllByPlaceholderText("game:price.placeholder");
+		expect(price).toHaveDisplayValue("");
 		await user.type(price, "100");
 
 		expect(price).toHaveFocus();
+		expect(price).toHaveDisplayValue("100");
 		expect(price).toHaveValue(100);
 	});
 

@@ -165,7 +165,7 @@ function RouteComponent() {
 				cell: ({ row }) => (
 					<BgtSimpleInputField
 						type="number"
-						value={row.original.price}
+						value={row.original.price || ""}
 						onChange={(event) =>
 							updateGame(row.original.bggId, {
 								price: Number(event.target.value),
