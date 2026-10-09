@@ -7,11 +7,7 @@ using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Images.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.Processing;
-
+using SkiaSharp;
 
 namespace BoardGameTracker.Core.Images;
 
@@ -23,8 +19,8 @@ public class ImageService : IImageService
     private const long MaxDownloadBytes = 15 * 1024 * 1024;
     private const long MaxUploadBytes = 15 * 1024 * 1024;
     private const long MaxUploadPixels = 50_000_000;
-    private static readonly WebpEncoder WebpImageEncoder = new() { Quality = 80 };
-    private static readonly DecoderOptions SingleFrameDecoder = new() { MaxFrames = 1 };
+    private const int WebpQuality = 80;
+    private static readonly SKSamplingOptions Sampling = new(SKFilterMode.Linear, SKMipmapMode.Linear);
 
     private readonly IDiskProvider _diskProvider;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -61,16 +57,22 @@ public class ImageService : IImageService
                     return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
                 }
 
-                var downloadedInfo = Image.Identify(imageContent);
-                if ((long)downloadedInfo.Width * downloadedInfo.Height > MaxUploadPixels)
+                using var data = SKData.CreateCopy(imageContent);
+                using var codec = SKCodec.Create(data);
+                if (codec == null)
+                {
+                    _logger.LogWarning("Image at {ImageUrl} is not a supported image format, using placeholder", imageUrl);
+                    return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
+                }
+
+                if ((long)codec.Info.Width * codec.Info.Height > MaxUploadPixels)
                 {
                     _logger.LogWarning("Image at {ImageUrl} exceeds the {Max} pixel limit, using placeholder", imageUrl, MaxUploadPixels);
                     return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
                 }
 
-                using var image = Image.Load(SingleFrameDecoder, imageContent);
-                image.Mutate(x => x.Resize(ImageSize, ImageSize));
-                var newFileName = await _diskProvider.WriteFile(image, fileName, PathHelper.FullCoverImagePath, WebpImageEncoder);
+                await using var webp = ResizeToWebp(codec);
+                var newFileName = await _diskProvider.WriteFile(webp, fileName, PathHelper.FullCoverImagePath);
                 var path = Path.Combine(PathHelper.CoverImagePath, newFileName);
                 return $"/{path.Replace("\\", "/")}";
             }
@@ -120,29 +122,22 @@ public class ImageService : IImageService
             await uploadStream.CopyToAsync(buffered);
         }
 
-        buffered.Position = 0;
-        ImageInfo imageInfo;
-        try
+        using var data = SKData.CreateCopy(buffered.ToArray());
+        using var codec = SKCodec.Create(data);
+        if (codec == null)
         {
-            imageInfo = Image.Identify(buffered);
-        }
-        catch (Exception ex) when (ex is UnknownImageFormatException or InvalidImageContentException)
-        {
-            _logger.LogWarning(ex, "Rejected upload of type {UploadType}: unsupported image format", type);
+            _logger.LogWarning("Rejected upload of type {UploadType}: unsupported image format", type);
             throw new ValidationException(Constants.Errors.ImageUnsupportedFormat);
         }
 
-        if ((long)imageInfo.Width * imageInfo.Height > MaxUploadPixels)
+        if ((long)codec.Info.Width * codec.Info.Height > MaxUploadPixels)
         {
             throw new ValidationException(Constants.Errors.ImageTooLarge);
         }
 
-        buffered.Position = 0;
-        using var image = await Image.LoadAsync(SingleFrameDecoder, buffered);
-        image.Mutate(x => x.Resize(ImageSize, ImageSize));
-
+        await using var webp = ResizeToWebp(codec);
         var outputFileName = Path.ChangeExtension(file.FileName, ".webp");
-        var newFileName = await _diskProvider.WriteFile(image, outputFileName, fullPath, WebpImageEncoder);
+        var newFileName = await _diskProvider.WriteFile(webp, outputFileName, fullPath);
         var path = Path.Combine(folder, newFileName);
         return $"/{path.Replace("\\", "/")}";
     }
@@ -168,6 +163,18 @@ public class ImageService : IImageService
     {
         _diskProvider.ClearFolder(PathHelper.FullCoverImagePath);
         _diskProvider.ClearFolder(PathHelper.FullProfileImagePath);
+    }
+
+    private static MemoryStream ResizeToWebp(SKCodec codec)
+    {
+        using var source = SKBitmap.Decode(codec)
+            ?? throw new ValidationException(Constants.Errors.ImageUnsupportedFormat);
+        using var sourceImage = SKImage.FromBitmap(source);
+        using var surface = SKSurface.Create(new SKImageInfo(ImageSize, ImageSize, SKColorType.Rgba8888, SKAlphaType.Premul));
+        surface.Canvas.DrawImage(sourceImage, new SKRect(0, 0, ImageSize, ImageSize), Sampling);
+        using var resized = surface.Snapshot();
+        using var encoded = resized.Encode(SKEncodedImageFormat.Webp, WebpQuality);
+        return new MemoryStream(encoded.ToArray());
     }
 
     private static async Task<byte[]?> ReadWithLimitAsync(HttpContent content, long maxBytes)

@@ -17,9 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Webp;
+using SkiaSharp;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Images;
@@ -61,26 +59,18 @@ public class ImageServiceTests : IDisposable
         var formFile = CreateMockFormFile("upload.png", CreateTestImageBytes());
         var expectedFullPath = type == UploadFileType.Game ? PathHelper.FullCoverImagePath : PathHelper.FullProfileImagePath;
         var expectedFolder = type == UploadFileType.Game ? PathHelper.CoverImagePath : PathHelper.ProfileImagePath;
-        Image? capturedImage = null;
-        IImageEncoder? capturedEncoder = null;
+        byte[]? written = null;
 
         _diskProviderMock
-            .Setup(x => x.WriteFile(It.IsAny<Image>(), "upload.webp", expectedFullPath, It.IsAny<IImageEncoder?>()))
-            .Callback<Image, string, string, IImageEncoder?>((img, _, _, enc) =>
-            {
-                capturedImage = img;
-                capturedEncoder = enc;
-            })
+            .Setup(x => x.WriteFile(It.IsAny<Stream>(), "upload.webp", expectedFullPath))
+            .Callback<Stream, string, string>((stream, _, _) => written = ReadAll(stream))
             .ReturnsAsync("unique-upload.webp");
 
         var result = await _imageService.SaveImage(formFile, type);
 
         result.Should().Be($"/{expectedFolder}/unique-upload.webp".Replace("\\", "/"));
-        capturedImage.Should().NotBeNull();
-        capturedImage!.Width.Should().Be(512);
-        capturedImage.Height.Should().Be(512);
-        capturedEncoder.Should().BeOfType<WebpEncoder>();
-        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Image>(), "upload.webp", expectedFullPath, It.IsAny<IImageEncoder?>()), Times.Once);
+        AssertResizedWebp(written);
+        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Stream>(), "upload.webp", expectedFullPath), Times.Once);
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
@@ -126,6 +116,18 @@ public class ImageServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveImage_ShouldThrowValidationException_WhenImageExceedsPixelLimit()
+    {
+        var formFile = CreateMockFormFile("huge.bmp", CreateOversizedBitmapBytes());
+
+        var action = async () => await _imageService.SaveImage(formFile, UploadFileType.Game);
+
+        await action.Should().ThrowAsync<ValidationException>()
+            .WithMessage(Constants.Errors.ImageTooLarge);
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task SaveImage_ShouldThrowValidationException_WhenFileIsNotAnImage()
     {
         var formFile = CreateMockFormFile("not-image.jpg", [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]);
@@ -144,13 +146,13 @@ public class ImageServiceTests : IDisposable
         var expectedException = new IOException("Disk error");
 
         _diskProviderMock
-            .Setup(x => x.WriteFile(It.IsAny<Image>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IImageEncoder?>()))
+            .Setup(x => x.WriteFile(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()))
             .ThrowsAsync(expectedException);
 
         var action = async () => await _imageService.SaveImage(formFile, UploadFileType.Game);
 
         (await action.Should().ThrowAsync<IOException>()).Which.Should().Be(expectedException);
-        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Image>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IImageEncoder?>()), Times.Once);
+        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
@@ -162,25 +164,47 @@ public class ImageServiceTests : IDisposable
             Content = new ByteArrayContent(CreateTestImageBytes())
         });
 
-        Image? capturedImage = null;
-        IImageEncoder? capturedEncoder = null;
+        byte[]? written = null;
         _diskProviderMock
-            .Setup(x => x.WriteFile(It.IsAny<Image>(), "cover-file.webp", PathHelper.FullCoverImagePath, It.IsAny<IImageEncoder?>()))
-            .Callback<Image, string, string, IImageEncoder?>((img, _, _, enc) =>
-            {
-                capturedImage = img;
-                capturedEncoder = enc;
-            })
+            .Setup(x => x.WriteFile(It.IsAny<Stream>(), "cover-file.webp", PathHelper.FullCoverImagePath))
+            .Callback<Stream, string, string>((stream, _, _) => written = ReadAll(stream))
             .ReturnsAsync("unique-cover.webp");
 
         var result = await _imageService.DownloadImage("https://example.com/image.jpg", "cover-file");
 
         result.Should().Be($"/{PathHelper.CoverImagePath}/unique-cover.webp".Replace("\\", "/"));
-        capturedImage.Should().NotBeNull();
-        capturedImage!.Width.Should().Be(512);
-        capturedImage.Height.Should().Be(512);
-        capturedEncoder.Should().BeOfType<WebpEncoder>();
-        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Image>(), "cover-file.webp", PathHelper.FullCoverImagePath, It.IsAny<IImageEncoder?>()), Times.Once);
+        AssertResizedWebp(written);
+        _diskProviderMock.Verify(x => x.WriteFile(It.IsAny<Stream>(), "cover-file.webp", PathHelper.FullCoverImagePath), Times.Once);
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DownloadImage_ShouldReturnPlaceholder_WhenContentIsNotAnImage()
+    {
+        SetupNoImageFile();
+        SetupHttpResponse(() => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
+        });
+
+        var result = await _imageService.DownloadImage("https://example.com/page.html", "cover-file");
+
+        AssertPlaceholderCoverPath(result);
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DownloadImage_ShouldReturnPlaceholder_WhenImageExceedsPixelLimit()
+    {
+        SetupNoImageFile();
+        SetupHttpResponse(() => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(CreateOversizedBitmapBytes())
+        });
+
+        var result = await _imageService.DownloadImage("https://example.com/huge.bmp", "cover-file");
+
+        AssertPlaceholderCoverPath(result);
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
@@ -332,12 +356,58 @@ public class ImageServiceTests : IDisposable
         return formFileMock.Object;
     }
 
-    private static byte[] CreateTestImageBytes()
+    private static byte[] CreateTestImageBytes(int width = 100, int height = 100)
     {
-        using var image = new Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(100, 100);
-        using var ms = new MemoryStream();
-        image.SaveAsJpeg(ms);
-        return ms.ToArray();
+        using var bitmap = new SKBitmap(width, height);
+        bitmap.Erase(SKColors.SteelBlue);
+        using var data = bitmap.Encode(SKEncodedImageFormat.Jpeg, 90);
+        return data.ToArray();
+    }
+
+    private static byte[] CreateOversizedBitmapBytes()
+    {
+        const int width = 8000;
+        const int height = 8000;
+        const int rowBytes = (width + 31) / 32 * 4;
+        const int pixelOffset = 14 + 40 + 8;
+        var bytes = new byte[pixelOffset + rowBytes * height];
+        using var writer = new BinaryWriter(new MemoryStream(bytes));
+        writer.Write((byte)'B');
+        writer.Write((byte)'M');
+        writer.Write(bytes.Length);
+        writer.Write(0);
+        writer.Write(pixelOffset);
+        writer.Write(40);
+        writer.Write(width);
+        writer.Write(height);
+        writer.Write((short)1);
+        writer.Write((short)1);
+        writer.Write(0);
+        writer.Write(rowBytes * height);
+        writer.Write(2835);
+        writer.Write(2835);
+        writer.Write(2);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(0x00FFFFFF);
+        return bytes;
+    }
+
+    private static byte[] ReadAll(Stream stream)
+    {
+        using var copy = new MemoryStream();
+        stream.CopyTo(copy);
+        return copy.ToArray();
+    }
+
+    private static void AssertResizedWebp(byte[]? written)
+    {
+        written.Should().NotBeNull();
+        using var codec = SKCodec.Create(SKData.CreateCopy(written!));
+        codec.Should().NotBeNull();
+        codec.EncodedFormat.Should().Be(SKEncodedImageFormat.Webp);
+        codec.Info.Width.Should().Be(512);
+        codec.Info.Height.Should().Be(512);
     }
 
     private static void SetupNoImageFile()
@@ -348,7 +418,6 @@ public class ImageServiceTests : IDisposable
             return;
         }
 
-        using var noImage = new Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(50, 50);
-        noImage.SaveAsJpeg(noImagePath);
+        File.WriteAllBytes(noImagePath, CreateTestImageBytes(50, 50));
     }
 }
