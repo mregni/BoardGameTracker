@@ -546,16 +546,17 @@ static void WaitForDatabase(MainDbContext context)
 
             return;
         }
-        catch (Exception ex) when (ex is NpgsqlException or System.Net.Sockets.SocketException or TimeoutException)
+        catch (Exception ex) when (ex.GetBaseException() is NpgsqlException or System.Net.Sockets.SocketException or TimeoutException)
         {
+            var reason = ex.GetBaseException().Message;
             if (attempt >= attempts)
             {
                 throw new InvalidOperationException(
-                    $"Could not open the PostgreSQL database after {attempts} attempts ({ex.Message}). Check DB_HOST, DB_PORT, DB_USER and DB_PASSWORD and make sure the database container is running.",
+                    $"Could not open the PostgreSQL database after {attempts} attempts ({reason}). Check DB_HOST, DB_PORT, DB_USER and DB_PASSWORD and make sure the database container is running.",
                     ex);
             }
 
-            Log.Warning("Database not reachable yet (attempt {Attempt}/{Attempts}): {Message}", attempt, attempts, ex.Message);
+            Log.Warning("Database not reachable yet (attempt {Attempt}/{Attempts}): {Message}", attempt, attempts, reason);
         }
 
         Thread.Sleep(TimeSpan.FromSeconds(3));
