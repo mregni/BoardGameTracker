@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
-import { useCallback, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import LinkIcon from "@/assets/icons/arrow-square-out.svg?react";
 import Database from "@/assets/icons/database.svg?react";
@@ -40,6 +40,27 @@ export const Route = createFileRoute("/games/import/list_/$username")({
 
 const countPerPage = 50;
 const maxImport = 25;
+
+interface SelectAllState {
+	checked: boolean;
+	disabled: boolean;
+	onChange: (checked: boolean) => void;
+}
+
+const SelectAllContext = createContext<SelectAllState | undefined>(undefined);
+
+const SelectAllHeader = () => {
+	const selectAll = useContext(SelectAllContext);
+	return (
+		<BgtSimpleCheckbox
+			id="select-all-import"
+			label=""
+			disabled={selectAll?.disabled ?? true}
+			checked={selectAll?.checked ?? false}
+			onCheckedChange={(checked) => selectAll?.onChange(checked)}
+		/>
+	);
+};
 
 function RouteComponent() {
 	const { username } = Route.useParams();
@@ -82,6 +103,11 @@ function RouteComponent() {
 		[selectableGames, setSelection],
 	);
 
+	const selectAll = useMemo(
+		() => ({ checked: allSelected, disabled: selectionCap === 0, onChange: toggleSelectAll }),
+		[allSelected, selectionCap, toggleSelectAll],
+	);
+
 	const columns: DataTableProps<ImportGame>["columns"] = useMemo(
 		() => [
 			{
@@ -99,15 +125,7 @@ function RouteComponent() {
 						}}
 					/>
 				),
-				header: () => (
-					<BgtSimpleCheckbox
-						id="select-all-import"
-						label=""
-						disabled={selectionCap === 0}
-						checked={allSelected}
-						onCheckedChange={toggleSelectAll}
-					/>
-				),
+				header: SelectAllHeader,
 			},
 			{
 				accessorKey: "1",
@@ -205,7 +223,7 @@ function RouteComponent() {
 				header: t("game:added-date.label"),
 			},
 		],
-		[settings?.currency, t, updateGame, allSelected, selectionCap, toggleSelectAll],
+		[settings?.currency, t, updateGame],
 	);
 
 	const isLoading = processingGames || importing;
@@ -264,12 +282,14 @@ function RouteComponent() {
 
 						<BgtPaging page={page} setPage={setPage} totalCount={games.length} countPerPage={countPerPage} />
 
-						<BgtDataTable
-							columns={columns}
-							data={games.slice(page * countPerPage, (page + 1) * countPerPage)}
-							noDataMessage={t("no-data")}
-							widths={["w-[48px]", "w-[70px]", null, "w-[100px]"]}
-						/>
+						<SelectAllContext.Provider value={selectAll}>
+							<BgtDataTable
+								columns={columns}
+								data={games.slice(page * countPerPage, (page + 1) * countPerPage)}
+								noDataMessage={t("no-data")}
+								widths={["w-[48px]", "w-[70px]", null, "w-[100px]"]}
+							/>
+						</SelectAllContext.Provider>
 
 						<BgtPaging page={page} setPage={setPage} totalCount={games.length} countPerPage={countPerPage} />
 					</>
