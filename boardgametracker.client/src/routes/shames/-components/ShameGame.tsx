@@ -7,7 +7,7 @@ import Coins from "@/assets/icons/coins.svg?react";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { Shame } from "@/models";
 import { getDaysSincePurchase } from "@/utils/dateUtils";
-import { StringToRgb } from "@/utils/stringUtils";
+import { CssUrl, StringToRgb } from "@/utils/stringUtils";
 
 interface Props {
 	shame: Shame;
@@ -42,7 +42,7 @@ export const ShameGame = ({ shame, dateFormat, currency }: Props) => {
 					<div
 						style={
 							{
-								"--image-url": `url(${shame.image})`,
+								"--image-url": shame.image ? CssUrl(shame.image) : undefined,
 								"--fallback-color": StringToRgb(shame.title),
 							} as React.CSSProperties
 						}
