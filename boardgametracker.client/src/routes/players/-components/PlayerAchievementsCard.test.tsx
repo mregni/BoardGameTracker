@@ -37,7 +37,9 @@ describe("PlayerAchievementsSummary", () => {
 		renderWithTheme(<PlayerAchievementsSummary badges={allBadges} playerBadges={earnedBadges} />);
 
 		expect(screen.getByText("titles.achievements (3/10)")).toBeInTheDocument();
-		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "3");
+		const progress = screen.getByRole("progressbar", { name: "titles.achievements" });
+		expect(progress).toHaveAttribute("value", "3");
+		expect(progress).toHaveAttribute("max", "10");
 		const icons = screen.getAllByRole("img");
 		expect(icons.map((icon) => icon.getAttribute("src"))).toEqual([
 			"/images/badges/sessions-blue.png",
