@@ -89,17 +89,13 @@ public class ImageServiceTests : IDisposable
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task SaveImage_ShouldReturnNoImagePath_WhenFileIsNullOrEmpty(bool fileIsNull)
+    public async Task SaveImage_ShouldReturnNoImage_WhenFileIsNullOrEmpty(bool fileIsNull)
     {
-        SetupNoImageFile();
         var formFile = fileIsNull ? null : CreateMockFormFile("empty.png", []);
 
         var result = await _imageService.SaveImage(formFile, UploadFileType.Game);
 
-        var expectedPath = $"/{PathHelper.CoverImagePath}/".Replace("\\", "/");
-        result.Should().StartWith(expectedPath);
-        result.Should().EndWith(".jpg");
-        TrackWebPathForCleanup(result);
+        result.Should().BeEmpty();
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
@@ -178,10 +174,21 @@ public class ImageServiceTests : IDisposable
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
-    [Fact]
-    public async Task DownloadImage_ShouldReturnPlaceholder_WhenContentIsNotAnImage()
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task DownloadImage_ShouldReturnNoImageWithoutARequest_WhenUrlIsEmpty(string imageUrl)
     {
-        SetupNoImageFile();
+        var result = await _imageService.DownloadImage(imageUrl, "cover-file");
+
+        result.Should().BeEmpty();
+        _httpClientFactoryMock.Verify(x => x.CreateClient(It.IsAny<string>()), Times.Never);
+        _diskProviderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task DownloadImage_ShouldReturnNoImage_WhenContentIsNotAnImage()
+    {
         SetupHttpResponse(() => new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new ByteArrayContent([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
@@ -189,14 +196,13 @@ public class ImageServiceTests : IDisposable
 
         var result = await _imageService.DownloadImage("https://example.com/page.html", "cover-file");
 
-        AssertPlaceholderCoverPath(result);
+        result.Should().BeEmpty();
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task DownloadImage_ShouldReturnPlaceholder_WhenImageExceedsPixelLimit()
+    public async Task DownloadImage_ShouldReturnNoImage_WhenImageExceedsPixelLimit()
     {
-        SetupNoImageFile();
         SetupHttpResponse(() => new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new ByteArrayContent(CreateOversizedBitmapBytes())
@@ -204,26 +210,24 @@ public class ImageServiceTests : IDisposable
 
         var result = await _imageService.DownloadImage("https://example.com/huge.bmp", "cover-file");
 
-        AssertPlaceholderCoverPath(result);
+        result.Should().BeEmpty();
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task DownloadImage_ShouldReturnPlaceholder_WhenResponseIsNotSuccessful()
+    public async Task DownloadImage_ShouldReturnNoImage_WhenResponseIsNotSuccessful()
     {
-        SetupNoImageFile();
         SetupHttpResponse(() => new HttpResponseMessage(HttpStatusCode.NotFound));
 
         var result = await _imageService.DownloadImage("https://example.com/missing.jpg", "cover-file");
 
-        AssertPlaceholderCoverPath(result);
+        result.Should().BeEmpty();
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task DownloadImage_ShouldReturnPlaceholder_WhenContentLengthExceedsLimit()
+    public async Task DownloadImage_ShouldReturnNoImage_WhenContentLengthExceedsLimit()
     {
-        SetupNoImageFile();
         SetupHttpResponse(() =>
         {
             var content = new ByteArrayContent(CreateTestImageBytes());
@@ -233,14 +237,13 @@ public class ImageServiceTests : IDisposable
 
         var result = await _imageService.DownloadImage("https://example.com/huge.jpg", "cover-file");
 
-        AssertPlaceholderCoverPath(result);
+        result.Should().BeEmpty();
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task DownloadImage_ShouldReturnPlaceholder_WhenStreamedContentExceedsLimit()
+    public async Task DownloadImage_ShouldReturnNoImage_WhenStreamedContentExceedsLimit()
     {
-        SetupNoImageFile();
         SetupHttpResponse(() =>
         {
             var content = new StreamContent(new MemoryStream(new byte[16 * 1024 * 1024]));
@@ -250,14 +253,13 @@ public class ImageServiceTests : IDisposable
 
         var result = await _imageService.DownloadImage("https://example.com/huge-stream.jpg", "cover-file");
 
-        AssertPlaceholderCoverPath(result);
+        result.Should().BeEmpty();
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task DownloadImage_ShouldReturnPlaceholder_WhenRequestThrows()
+    public async Task DownloadImage_ShouldReturnNoImage_WhenRequestThrows()
     {
-        SetupNoImageFile();
         var handlerMock = new Mock<HttpMessageHandler>();
         handlerMock.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -268,7 +270,7 @@ public class ImageServiceTests : IDisposable
 
         var result = await _imageService.DownloadImage("https://example.com/error.jpg", "cover-file");
 
-        AssertPlaceholderCoverPath(result);
+        result.Should().BeEmpty();
         _diskProviderMock.VerifyNoOtherCalls();
     }
 
@@ -324,14 +326,6 @@ public class ImageServiceTests : IDisposable
         _httpClientFactoryMock
             .Setup(x => x.CreateClient(It.IsAny<string>()))
             .Returns(() => new HttpClient(handlerMock.Object));
-    }
-
-    private void AssertPlaceholderCoverPath(string result)
-    {
-        var expectedPath = $"/{PathHelper.CoverImagePath}/".Replace("\\", "/");
-        result.Should().StartWith(expectedPath);
-        result.Should().EndWith(".jpg");
-        TrackWebPathForCleanup(result);
     }
 
     private void TrackWebPathForCleanup(string webPath)
@@ -408,17 +402,5 @@ public class ImageServiceTests : IDisposable
         codec.EncodedFormat.Should().Be(SKEncodedImageFormat.Webp);
         codec.Info.Width.Should().Be(512);
         codec.Info.Height.Should().Be(512);
-    }
-
-    private static void SetupNoImageFile()
-    {
-        var noImagePath = PathHelper.NoImagePlaceholderPath;
-        if (File.Exists(noImagePath))
-        {
-            return;
-        }
-
-        Directory.CreateDirectory(Path.GetDirectoryName(noImagePath)!);
-        File.WriteAllBytes(noImagePath, CreateTestImageBytes(50, 50));
     }
 }

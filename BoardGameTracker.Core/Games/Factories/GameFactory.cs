@@ -68,7 +68,7 @@ public class GameFactory : IGameFactory
                 .Select(l => new PersonKey(l.Value, l.Type.ToPersonTypeEnum())));
 
             var game = new Game(name, hasScoring, state);
-            game.UpdateImage(imageUrl);
+            game.UpdateImage(string.IsNullOrEmpty(imageUrl) ? null : imageUrl);
             game.UpdateDescription(item.Description ?? string.Empty);
             game.UpdateYearPublished(item.YearPublished);
             game.UpdatePlayerCount(minPlayers, maxPlayers);

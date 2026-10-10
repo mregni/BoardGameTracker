@@ -36,6 +36,11 @@ public class ImageService : IImageService
     public async Task<string> DownloadImage(string imageUrl, string imageFileName)
     {
         _logger.LogDebug("Downloading image from {ImageUrl} for {FileName}", imageUrl, imageFileName);
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return string.Empty;
+        }
+
         try
         {
             using var client = _httpClientFactory.CreateClient(HttpClientName);
@@ -45,30 +50,30 @@ public class ImageService : IImageService
             {
                 if (response.Content.Headers.ContentLength is > MaxDownloadBytes)
                 {
-                    _logger.LogWarning("Image at {ImageUrl} exceeds the {Max} byte limit, using placeholder", imageUrl, MaxDownloadBytes);
-                    return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
+                    _logger.LogWarning("Image at {ImageUrl} exceeds the {Max} byte limit, storing no image", imageUrl, MaxDownloadBytes);
+                    return string.Empty;
                 }
 
                 var fileName = $"{imageFileName}.webp";
                 var imageContent = await ReadWithLimitAsync(response.Content, MaxDownloadBytes);
                 if (imageContent == null)
                 {
-                    _logger.LogWarning("Image at {ImageUrl} exceeds the {Max} byte limit, using placeholder", imageUrl, MaxDownloadBytes);
-                    return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
+                    _logger.LogWarning("Image at {ImageUrl} exceeds the {Max} byte limit, storing no image", imageUrl, MaxDownloadBytes);
+                    return string.Empty;
                 }
 
                 using var data = SKData.CreateCopy(imageContent);
                 using var codec = SKCodec.Create(data);
                 if (codec == null)
                 {
-                    _logger.LogWarning("Image at {ImageUrl} is not a supported image format, using placeholder", imageUrl);
-                    return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
+                    _logger.LogWarning("Image at {ImageUrl} is not a supported image format, storing no image", imageUrl);
+                    return string.Empty;
                 }
 
                 if ((long)codec.Info.Width * codec.Info.Height > MaxUploadPixels)
                 {
-                    _logger.LogWarning("Image at {ImageUrl} exceeds the {Max} pixel limit, using placeholder", imageUrl, MaxUploadPixels);
-                    return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
+                    _logger.LogWarning("Image at {ImageUrl} exceeds the {Max} pixel limit, storing no image", imageUrl, MaxUploadPixels);
+                    return string.Empty;
                 }
 
                 await using var webp = ResizeToWebp(codec);
@@ -77,13 +82,13 @@ public class ImageService : IImageService
                 return $"/{path.Replace("\\", "/")}";
             }
 
-            _logger.LogWarning("Image download returned {StatusCode} for {ImageUrl}, using placeholder", response.StatusCode, imageUrl);
-            return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
+            _logger.LogWarning("Image download returned {StatusCode} for {ImageUrl}, storing no image", response.StatusCode, imageUrl);
+            return string.Empty;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to download image from {ImageUrl}, using placeholder", imageUrl);
-            return CreateNoImageImages(imageFileName, PathHelper.FullCoverImagePath, PathHelper.CoverImagePath);
+            _logger.LogWarning(ex, "Failed to download image from {ImageUrl}, storing no image", imageUrl);
+            return string.Empty;
         }
     }
 
@@ -108,7 +113,7 @@ public class ImageService : IImageService
 
         if (file == null || file.Length == 0)
         {
-            return CreateNoImageImages(folder, fullPath, folder);
+            return string.Empty;
         }
 
         if (file.Length > MaxUploadBytes)
@@ -194,22 +199,5 @@ public class ImageService : IImageService
         }
 
         return buffer.ToArray();
-    }
-
-    private string CreateNoImageImages(string fileName, string absolutePath, string relativePath)
-    {
-        var sourcePath = PathHelper.NoImagePlaceholderPath;
-        fileName += Path.GetExtension(sourcePath);
-
-        if (!File.Exists(sourcePath))
-        {
-            _logger.LogWarning("Placeholder image {SourcePath} is missing, storing no image instead", sourcePath);
-            return string.Empty;
-        }
-
-        var destinationPath = Path.Combine(absolutePath, fileName.GenerateUniqueFileName());
-        File.Copy(sourcePath, destinationPath);
-        var path = Path.Combine(relativePath, Path.GetFileName(destinationPath));
-        return $"/{path.Replace("\\", "/")}";
     }
 }

@@ -257,6 +257,20 @@ public class GameFactoryTests
     }
 
     [Fact]
+    public async Task CreateFromBggAsync_ShouldLeaveImageEmpty_WhenNoImageCouldBeStored()
+    {
+        var item = CreateBasicItem();
+        item.Image = "https://example.com/broken.jpg";
+        _imageServiceMock
+            .Setup(x => x.DownloadImage(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(string.Empty);
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.Image.Should().BeNull();
+    }
+
+    [Fact]
     public async Task CreateFromBggAsync_ShouldSetBggId()
     {
         var item = CreateBasicItem();
