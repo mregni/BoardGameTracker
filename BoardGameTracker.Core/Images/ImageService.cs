@@ -198,10 +198,9 @@ public class ImageService : IImageService
 
     private string CreateNoImageImages(string fileName, string absolutePath, string relativePath)
     {
-        const string noImageFile = "no-image.jpg";
-        fileName += Path.GetExtension(noImageFile);
+        var sourcePath = PathHelper.NoImagePlaceholderPath;
+        fileName += Path.GetExtension(sourcePath);
 
-        var sourcePath = Path.Combine(PathHelper.FullRootImagePath, noImageFile);
         if (!File.Exists(sourcePath))
         {
             _logger.LogWarning("Placeholder image {SourcePath} is missing, storing no image instead", sourcePath);

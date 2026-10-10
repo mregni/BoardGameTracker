@@ -412,12 +412,13 @@ public class ImageServiceTests : IDisposable
 
     private static void SetupNoImageFile()
     {
-        var noImagePath = Path.Combine(PathHelper.FullRootImagePath, "no-image.jpg");
+        var noImagePath = PathHelper.NoImagePlaceholderPath;
         if (File.Exists(noImagePath))
         {
             return;
         }
 
+        Directory.CreateDirectory(Path.GetDirectoryName(noImagePath)!);
         File.WriteAllBytes(noImagePath, CreateTestImageBytes(50, 50));
     }
 }

@@ -5,6 +5,7 @@ public static class PathHelper
     private static readonly string CurrentDir = Directory.GetCurrentDirectory();
     private const string ImagesPath = "images";
     private const string ManualsPath = "manuals";
+    private const string AssetsPath = "assets";
 
     public static readonly string CoverImagePath = Path.Combine(ImagesPath, "cover");
     public static readonly string ProfileImagePath = Path.Combine(ImagesPath, "profile");
@@ -12,6 +13,8 @@ public static class PathHelper
     public static readonly string FullRootImagePath = Path.Combine(CurrentDir, ImagesPath);
     public static readonly string FullCoverImagePath = Path.Combine(CurrentDir, CoverImagePath);
     public static readonly string FullProfileImagePath = Path.Combine(CurrentDir, ProfileImagePath);
+
+    public static readonly string NoImagePlaceholderPath = Path.Combine(CurrentDir, AssetsPath, "no-image.jpg");
 
     public static readonly string FullManualsPath = Path.Combine(CurrentDir, ManualsPath);
     public static readonly string FullManualFiguresPath = Path.Combine(CurrentDir, ManualsPath, "figures");

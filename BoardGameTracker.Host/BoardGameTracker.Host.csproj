@@ -42,7 +42,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="images\no-image.jpg">
+      <Content Include="assets\no-image.jpg">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </Content>
