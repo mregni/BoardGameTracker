@@ -1,8 +1,24 @@
 import { describe, expect, it } from "vitest";
 
-import { StringToHsl, StringToRgb } from "./stringUtils";
+import { CssUrl, StringToHsl, StringToRgb } from "./stringUtils";
 
 describe("stringUtils", () => {
+	describe("CssUrl", () => {
+		it("quotes the url", () => {
+			expect(CssUrl("/images/profile/kathleen_ab12cd.webp")).toBe('url("/images/profile/kathleen_ab12cd.webp")');
+		});
+
+		it("keeps spaces, parentheses and apostrophes inside the quotes", () => {
+			expect(CssUrl("/images/profile/IMG 1234 (1) Mikhael's_ab12cd.webp")).toBe(
+				`url("/images/profile/IMG 1234 (1) Mikhael's_ab12cd.webp")`,
+			);
+		});
+
+		it("escapes double quotes and backslashes and drops line breaks", () => {
+			expect(CssUrl('/images/a"b\\c\nd.webp')).toBe('url("/images/a\\"b\\\\cd.webp")');
+		});
+	});
+
 	describe("StringToHsl", () => {
 		it("should return default red hue for undefined input", () => {
 			expect(StringToHsl(undefined)).toBe("hsl(0, 85%, 35%)");

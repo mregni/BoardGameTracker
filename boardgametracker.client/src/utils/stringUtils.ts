@@ -3,6 +3,14 @@ export const SafeHttpUrl = (value: string | null | undefined): string | null => 
 	return /^https?:\/\//i.test(value.trim()) ? value : null;
 };
 
+export const CssUrl = (value: string): string => {
+	const escaped = value
+		.replace(/[\r\n]/g, "")
+		.replaceAll("\\", String.raw`\\`)
+		.replaceAll('"', String.raw`\"`);
+	return `url("${escaped}")`;
+};
+
 export const StringToHsl = (value: string | undefined): string => {
 	if (value === undefined) {
 		return "hsl(0, 85%, 35%)";

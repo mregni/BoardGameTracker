@@ -1,7 +1,7 @@
 import { cx } from "class-variance-authority";
 import type { ComponentPropsWithoutRef, CSSProperties } from "react";
 
-import { StringToRgb } from "../../utils/stringUtils";
+import { CssUrl, StringToRgb } from "../../utils/stringUtils";
 
 interface Props extends ComponentPropsWithoutRef<"div"> {
 	title: string;
@@ -15,7 +15,7 @@ export const BgtPoster = (props: Props) => {
 		<div
 			style={
 				{
-					"--image-url": `url(${image})`,
+					"--image-url": image ? CssUrl(image) : undefined,
 					"--fallback-color": StringToRgb(title),
 				} as CSSProperties
 			}
