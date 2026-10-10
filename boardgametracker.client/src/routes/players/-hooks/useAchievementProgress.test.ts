@@ -5,11 +5,11 @@ import { allBadges, earnedBadges } from "./achievementFixtures";
 import { useAchievementProgress } from "./useAchievementProgress";
 
 describe("useAchievementProgress", () => {
-	it("counts earned badges against every badge", () => {
+	it("counts unlocked tiles against all tiles, not individual levels", () => {
 		const { result } = renderHook(() => useAchievementProgress(allBadges, earnedBadges));
 
-		expect(result.current.earnedCount).toBe(3);
-		expect(result.current.total).toBe(10);
+		expect(result.current.earnedCount).toBe(2);
+		expect(result.current.total).toBe(4);
 	});
 
 	it("orders each milestone's levels from green to gold and points at the next one", () => {

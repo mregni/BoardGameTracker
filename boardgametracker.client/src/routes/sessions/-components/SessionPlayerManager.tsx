@@ -1,5 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { BgtPlayerSelector } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
 import {
@@ -47,8 +47,12 @@ export const SessionPlayerManager = withForm({
 		onUpdatePlayer,
 		onRemovePlayer,
 	}) {
+		const isFirstSync = useRef(true);
+
 		useEffect(() => {
-			form.setFieldValue("playerSessions", players);
+			const silent = isFirstSync.current;
+			isFirstSync.current = false;
+			form.setFieldValue("playerSessions", players, { dontUpdateMeta: silent, dontValidate: silent });
 		}, [form, players]);
 
 		return (
@@ -61,7 +65,7 @@ export const SessionPlayerManager = withForm({
 							remove={onRemovePlayer}
 							players={players}
 							disabled={disabled}
-							errors={field.state.meta.errors}
+							errors={field.state.meta.isTouched || form.state.submissionAttempts > 0 ? field.state.meta.errors : []}
 						/>
 					)}
 				</form.Field>

@@ -1,5 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import {
@@ -36,7 +36,7 @@ const CreateSessionPlayerForm = (props: Props) => {
 	const { t } = useTranslation(["player-session", "common"]);
 
 	const [openCreatePlayerModal, setOpenCreatePlayerModal] = useState(false);
-	const newlyCreatedPlayerIdRef = useRef<number | null>(null);
+	const [createdPlayerId, setCreatedPlayerId] = useState<number | null>(null);
 
 	const schema = hasScoring ? CreatePlayerSessionSchema : CreatePlayerSessionNoScoringSchema;
 
@@ -54,18 +54,15 @@ const CreateSessionPlayerForm = (props: Props) => {
 	});
 
 	const handlePlayerCreated = (player: Player) => {
-		newlyCreatedPlayerIdRef.current = player.id;
+		setCreatedPlayerId(player.id);
 	};
 
 	useEffect(() => {
-		if (newlyCreatedPlayerIdRef.current !== null) {
-			const playerExists = players.some((p) => p.id === newlyCreatedPlayerIdRef.current);
-			if (playerExists) {
-				form.setFieldValue("playerId", String(newlyCreatedPlayerIdRef.current));
-				newlyCreatedPlayerIdRef.current = null;
-			}
+		if (createdPlayerId !== null && players.some((p) => p.id === createdPlayerId)) {
+			form.setFieldValue("playerId", String(createdPlayerId));
+			setCreatedPlayerId(null);
 		}
-	}, [players, form]);
+	}, [createdPlayerId, players, form]);
 
 	return (
 		<BgtDialog open={open} onClose={onCancel}>

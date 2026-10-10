@@ -27,11 +27,7 @@ export const GameStatisticsGrid = (props: Props) => {
 	const { data: settings } = useQuery(getSettings());
 
 	const lastPlayedRelative =
-		gameStats.lastPlayed && settings?.uiLanguage
-			? toRelative(gameStats.lastPlayed, settings.uiLanguage, {
-					addSuffix: false,
-				})
-			: null;
+		gameStats.lastPlayed && settings?.uiLanguage ? toRelative(gameStats.lastPlayed, settings.uiLanguage) : null;
 
 	const totalPlayedTime = formatMinutesToDuration(
 		gameStats.totalPlayedTime,

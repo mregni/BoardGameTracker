@@ -3,7 +3,7 @@ import { useCallback } from "react";
 
 interface UsePlayerActionsProps {
 	playerId: number;
-	deletePlayer: (playerId: number) => Promise<void>;
+	deletePlayer: (playerId: number, onDeleted?: () => Promise<unknown>) => Promise<void>;
 	onDeleteModalClose: () => void;
 }
 
@@ -12,8 +12,7 @@ export const usePlayerActions = (props: UsePlayerActionsProps) => {
 	const navigate = useNavigate();
 
 	const handleDelete = useCallback(async () => {
-		await deletePlayer(playerId);
-		navigate({ to: "/players" });
+		await deletePlayer(playerId, () => navigate({ to: "/players" }));
 		onDeleteModalClose();
 	}, [deletePlayer, playerId, navigate, onDeleteModalClose]);
 

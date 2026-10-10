@@ -21,6 +21,8 @@ export const CreatePlayerSessionSchema = CreatePlayerSessionNoScoringSchema.exte
 		.transform((value) => value ?? null),
 });
 
+const START_TOLERANCE_MS = 60_000;
+
 export const CreateSessionSchema = z.object({
 	gameId: z.coerce
 		.number({ error: "player-session:new.game.required" })
@@ -35,15 +37,19 @@ export const CreateSessionSchema = z.object({
 			message: "player-session:new.location.required",
 		})
 		.transform((value) => (value > 0 ? value : null)),
-	start: z.coerce.date({
-		error: "player-session:new.start.required",
-	}),
+	start: z.coerce
+		.date({
+			error: "player-session:new.start.required",
+		})
+		.refine((value) => value.getTime() <= Date.now() + START_TOLERANCE_MS, {
+			message: "player-session:new.start.future",
+		}),
 	minutes: z
 		.number({
 			error: "player-session:new.duration.required",
 		})
 		.positive({
-			message: "player-session:new.duration.required",
+			message: "player-session:new.duration.positive",
 		}),
 	comment: z.string().nullable(),
 	playerSessions: CreatePlayerSessionSchema.or(CreatePlayerSessionNoScoringSchema).array().min(1, {

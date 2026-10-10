@@ -97,9 +97,7 @@ export const GameForm = (props: Props) => {
 									livePrice={livePrice}
 								/>
 								<GameFormTimeFields form={form} disabled={disabled} />
-								{game !== undefined && (
-									<GameFormUpdateFields form={form} disabled={disabled} currency={settings?.currency} />
-								)}
+								<GameFormUpdateFields form={form} disabled={disabled} currency={settings?.currency} />
 								<div className="lg:col-span-2">
 									<form.Field name="description" validators={zodValidator(CreateGameSchema, "description")}>
 										{(field: AnyFieldApi) => (

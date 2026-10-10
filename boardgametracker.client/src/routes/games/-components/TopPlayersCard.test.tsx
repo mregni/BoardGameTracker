@@ -29,7 +29,7 @@ const topPlayer = (overrides: Partial<TopPlayer> = {}): TopPlayer => ({
 });
 
 describe("TopPlayersCard", () => {
-	it("shows one line per player with the win rate", () => {
+	it("shows one line per player who won, with the win rate", () => {
 		renderWithTheme(
 			<TopPlayersCard
 				topPlayers={[
@@ -40,9 +40,15 @@ describe("TopPlayersCard", () => {
 		);
 
 		expect(screen.getByText("Kathleen")).toBeInTheDocument();
-		expect(screen.getByText("Mikhaël")).toBeInTheDocument();
 		expect(screen.getByText("100%")).toBeInTheDocument();
-		expect(screen.getByText("0%")).toBeInTheDocument();
+		expect(screen.queryByText("Mikhaël")).not.toBeInTheDocument();
+		expect(screen.queryByText("0%")).not.toBeInTheDocument();
+	});
+
+	it("shows the empty state when nobody has won yet", () => {
+		renderWithTheme(<TopPlayersCard topPlayers={[topPlayer({ wins: 0, winPercentage: 0 })]} />);
+
+		expect(screen.queryByText("Kathleen")).not.toBeInTheDocument();
 	});
 
 	it("keeps wins, games and the average score out of the row and in its tooltip", () => {

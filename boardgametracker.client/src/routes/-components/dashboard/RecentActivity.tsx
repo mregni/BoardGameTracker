@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
@@ -51,17 +51,23 @@ const ActivityItem = ({ activity }: ItemProps) => {
 				</Link>
 				<div className="flex-1">
 					<BgtText color="white">
-						{activity.winnerName && activity.winnerId !== null && (
-							<>
-								<Link className="font-bold" to="/players/$playerId" params={{ playerId: activity.winnerId }}>
-									{activity.winnerName}
-								</Link>{" "}
-								<span className="lowercase">{t("won")}</span>{" "}
-							</>
+						{activity.winnerName && activity.winnerId !== null ? (
+							<Trans
+								i18nKey="activity.won"
+								ns="dashboard"
+								values={{ winner: activity.winnerName, game: activity.gameTitle }}
+								components={{
+									winner: (
+										<Link className="font-bold" to="/players/$playerId" params={{ playerId: activity.winnerId }} />
+									),
+									game: <Link className="text-primary" to="/games/$gameId" params={{ gameId: activity.gameId }} />,
+								}}
+							/>
+						) : (
+							<Link className="text-primary" to="/games/$gameId" params={{ gameId: activity.gameId }}>
+								{activity.gameTitle}
+							</Link>
 						)}
-						<Link className="text-primary" to="/games/$gameId" params={{ gameId: activity.gameId }}>
-							{activity.gameTitle}
-						</Link>
 					</BgtText>
 					<BgtText color="white" size="2" opacity={50}>
 						{t("player", { count: activity.playerCount })} • {activity.durationInMinutes}

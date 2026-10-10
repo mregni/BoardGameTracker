@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
 import Game from "@/assets/icons/gamepad.svg?react";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { SearchInputField } from "@/components/BgtForm";
 import { BgtImageCard } from "@/components/BgtImageCard/BgtImageCard";
 import { BgtCardList } from "@/components/BgtLayout/BgtCardList";
@@ -13,28 +14,16 @@ import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { useFilteredList } from "@/hooks/useFilteredList";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getGames, getTrackedPrices } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
-import {
-	type AgeBucket,
-	filterGames,
-	type GamesFilterSearch,
-	GamesFilters,
-	type WeightBucket,
-} from "./-components/GamesFilters";
+import { filterGames, type GamesFilterSearch, GamesFilters } from "./-components/GamesFilters";
 import { TrackedPriceIcon } from "./-components/TrackedPriceIcon";
+import { useDebouncedSearchQuery } from "./-hooks/useDebouncedSearchQuery";
 import { useGamesData } from "./-hooks/useGamesData";
-
-const WEIGHT_BUCKETS: WeightBucket[] = ["light", "medium", "heavy"];
-const AGE_BUCKETS: AgeBucket[] = ["0-6", "7-9", "10-12", "13plus"];
-
-const parsePositiveInt = (value: unknown): number | undefined => {
-	const parsed = Number(value);
-	return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
-};
+import { filterByTitle, hasGridFilters, parseGamesSearch, withoutUndefined } from "./-utils/gamesSearch";
 
 export const Route = createFileRoute("/games/")({
 	component: RouteComponent,
@@ -42,22 +31,12 @@ export const Route = createFileRoute("/games/")({
 		queryClient.prefetchQuery(getGames());
 		queryClient.prefetchQuery(getSettings());
 	},
-	validateSearch: (search: Record<string, unknown>): GamesFilterSearch => {
-		const weight = search.weight as WeightBucket;
-		const age = search.age as AgeBucket;
-		return {
-			category: search.category ? (search.category as string) : undefined,
-			players: parsePositiveInt(search.players),
-			playTime: parsePositiveInt(search.playTime),
-			weight: WEIGHT_BUCKETS.includes(weight) ? weight : undefined,
-			age: AGE_BUCKETS.includes(age) ? age : undefined,
-		};
-	},
+	validateSearch: (search: Record<string, unknown>): GamesFilterSearch => parseGamesSearch(search),
 });
 
 function RouteComponent() {
 	const search = Route.useSearch();
-	const { category, players, playTime, weight, age } = search;
+	const { q, category, players, playTime, weight, age } = search;
 	const { t } = useTranslation(["games", "dashboard", "common"]);
 	const navigate = useNavigate();
 	const { games, isLoading } = useGamesData();
@@ -73,30 +52,27 @@ function RouteComponent() {
 		(partial: Partial<GamesFilterSearch>) => {
 			navigate({
 				to: "/games",
-				search: (prev) => {
-					const next = { ...prev, ...partial };
-					for (const key of Object.keys(next) as (keyof GamesFilterSearch)[]) {
-						if (next[key] === undefined) delete next[key];
-					}
-					return next;
-				},
+				search: (prev) => withoutUndefined({ ...prev, ...partial }),
+				replace: true,
 			});
 		},
 		[navigate],
 	);
 
-	const categoryPreFilter = useCallback(
-		(items: typeof games) => {
-			let result = items;
-			if (category !== undefined) {
-				result = result.filter((game) => game.categories.some((cat) => cat.name === category));
-			}
-			return filterGames(result, { playerCount: players, maxPlayTime: playTime, weight, age });
-		},
-		[category, players, playTime, weight, age],
-	);
+	const [filterValue, setFilterValue] = useDebouncedSearchQuery(q, (value) => updateSearch({ q: value }));
 
-	const { filterValue, setFilterValue, filtered: filteredGames } = useFilteredList(games, "title", categoryPreFilter);
+	const filteredGames = useMemo(() => {
+		let result = filterByTitle(games, q);
+		if (category !== undefined) {
+			result = result.filter((game) => game.categories.some((cat) => cat.name === category));
+		}
+		return filterGames(result, { playerCount: players, maxPlayTime: playTime, weight, age });
+	}, [games, q, category, players, playTime, weight, age]);
+
+	const clearFilters = () => {
+		setFilterValue("");
+		navigate({ to: "/games", search: {}, replace: true });
+	};
 	const settingsQuery = useQuery(getSettings());
 	const trackedPricesQuery = useQuery({
 		...getTrackedPrices(),
@@ -128,9 +104,9 @@ function RouteComponent() {
 				icon={Game}
 				actions={[
 					{
-						onClick: () => navigate({ to: "/games/table" }),
+						onClick: () => navigate({ to: "/games/table", search: q ? { q } : {} }),
 						variant: "cancel",
-						content: "common:games-table",
+						content: "games:view.table",
 					},
 					...(canWrite
 						? [
@@ -183,6 +159,16 @@ function RouteComponent() {
 				<BgtText size="3" color="primary" className="pb-6" weight="medium">
 					{t("count", { count: filteredGames.length })}
 				</BgtText>
+				{filteredGames.length === 0 && (
+					<div className="flex flex-col items-center gap-3">
+						<BgtNoData message={t("filters.no-match")} className="min-h-0 py-4" />
+						{hasGridFilters(search) && (
+							<BgtButton variant="cancel" onClick={clearFilters}>
+								{t("filters.clear")}
+							</BgtButton>
+						)}
+					</div>
+				)}
 				<BgtCardList>
 					{filteredGames.map((x) => (
 						<BgtImageCard

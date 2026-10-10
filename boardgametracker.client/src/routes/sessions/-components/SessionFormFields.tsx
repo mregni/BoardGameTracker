@@ -72,6 +72,7 @@ export const SessionFormFields = withForm({
 							disabled={disabled}
 							label={t("new.duration.label")}
 							placeholder={t("new.duration.placeholder")}
+							suffixLabel={t("common:minutes-abbreviation")}
 						/>
 					)}
 				</form.Field>

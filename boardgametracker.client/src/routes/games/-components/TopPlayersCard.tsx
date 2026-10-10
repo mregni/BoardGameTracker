@@ -19,14 +19,15 @@ export const TopPlayersCard = (props: Props) => {
 	const { topPlayers } = props;
 	const { t } = useTranslation(["game", "common", "statistics"]);
 	const { playerById } = usePlayerById();
+	const winners = topPlayers.filter((player) => player.wins > 0);
 
 	return (
 		<BgtCard title={t("titles.top-players")} icon={Trophy}>
-			{topPlayers.length === 0 ? (
+			{winners.length === 0 ? (
 				<BgtNoData />
 			) : (
 				<ul className="flex flex-col divide-y divide-primary/10">
-					{topPlayers.map((player) => {
+					{winners.map((player) => {
 						const info = playerById(player.playerId);
 						const details = [
 							t("common:win", { count: player.wins }),

@@ -27,7 +27,7 @@ export const RulebookChatButton = ({ gameId, disabled }: Props) => {
 			<Tooltip.Root>
 				<Tooltip.Trigger asChild>
 					{/* biome-ignore lint/a11y/noNoninteractiveTabindex: focusable wrapper so keyboard users can reveal the disabled-reason tooltip */}
-					<span tabIndex={0} className="inline-flex">
+					<span tabIndex={0} className="inline-flex cursor-not-allowed">
 						<BgtButton size="1" disabled aria-disabled className="pointer-events-none">
 							<Chat className="size-4" />
 							{t("ask-button")}

@@ -14,6 +14,8 @@ interface Props {
 	className?: string;
 	align?: "left" | "right";
 	readOnly?: boolean;
+	emptyValue?: string;
+	size?: "xs" | "sm";
 }
 
 export const EditableSelectCell = (props: Props) => {
@@ -28,12 +30,14 @@ export const EditableSelectCell = (props: Props) => {
 		className,
 		align,
 		readOnly,
+		emptyValue,
+		size,
 	} = props;
 
 	if (!editing || readOnly) {
 		return (
-			<EditableCellButton onClick={onStartEdit} className={className} align={align} readOnly={readOnly}>
-				{items.find((item) => String(item.value) === value)?.label ?? "-"}
+			<EditableCellButton onClick={onStartEdit} className={className} align={align} readOnly={readOnly} size={size}>
+				{value === emptyValue ? "-" : (items.find((item) => String(item.value) === value)?.label ?? "-")}
 			</EditableCellButton>
 		);
 	}

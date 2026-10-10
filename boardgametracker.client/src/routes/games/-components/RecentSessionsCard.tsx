@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import Crown from "@/assets/icons/crown.svg?react";
@@ -7,6 +6,7 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import type { Session } from "@/models";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
+import { toDisplay } from "@/utils/dateUtils";
 
 interface Props {
 	sessions: Session[];
@@ -16,7 +16,7 @@ interface Props {
 
 export const RecentSessionsCard = (props: Props) => {
 	const { sessions, dateFormat, gameId } = props;
-	const { t } = useTranslation(["game", "common"]);
+	const { t, i18n } = useTranslation(["game", "common"]);
 	const { playerById } = usePlayerById();
 
 	return (
@@ -35,7 +35,9 @@ export const RecentSessionsCard = (props: Props) => {
 								className="flex items-center gap-2 py-2"
 								title={`${t("common:player", { count: session.playerSessions.length })} • ${session.minutes}${t("common:minutes-abbreviation")}`}
 							>
-								<span className="shrink-0 text-sm tabular-nums text-white/60">{format(session.start, dateFormat)}</span>
+								<span className="shrink-0 text-sm tabular-nums text-white/60">
+									{toDisplay(session.start, dateFormat, i18n.language)}
+								</span>
 								<span className="flex min-w-0 flex-1 items-center gap-1">
 									{winner && <Crown className="size-4 shrink-0 text-yellow-400" />}
 									<span className="truncate">{winner?.name ?? "-"}</span>

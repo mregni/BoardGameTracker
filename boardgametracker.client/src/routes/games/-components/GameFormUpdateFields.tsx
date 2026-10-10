@@ -2,7 +2,7 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
 import { BgtInputField } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
-import { CreateGameSchema } from "@/models";
+import { CreateGameSchema, GameState } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
 import { gameFormOpts } from "../-utils/gameFormOpts";
 
@@ -27,17 +27,23 @@ export const GameFormUpdateFields = withForm({
 						<BgtInputField field={field} label={t("update.weight.label")} type="number" disabled={disabled} />
 					)}
 				</form.Field>
-				<form.Field name="soldPrice" validators={zodValidator(CreateGameSchema, "soldPrice")}>
-					{(field: AnyFieldApi) => (
-						<BgtInputField
-							field={field}
-							label={t("update.sold-price.label")}
-							type="number"
-							disabled={disabled}
-							prefixLabel={currency}
-						/>
-					)}
-				</form.Field>
+				<form.Subscribe selector={(state) => state.values.state}>
+					{(state) =>
+						state === GameState.PreviouslyOwned && (
+							<form.Field name="soldPrice" validators={zodValidator(CreateGameSchema, "soldPrice")}>
+								{(field: AnyFieldApi) => (
+									<BgtInputField
+										field={field}
+										label={t("update.sold-price.label")}
+										type="number"
+										disabled={disabled}
+										prefixLabel={currency}
+									/>
+								)}
+							</form.Field>
+						)
+					}
+				</form.Subscribe>
 			</>
 		);
 	},

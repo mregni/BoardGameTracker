@@ -33,6 +33,21 @@ const renderCell = (overrides: Partial<Parameters<typeof EditableSelectCell>[0]>
 };
 
 describe("EditableSelectCell", () => {
+	it("uses the small text size by default and the card size when asked", () => {
+		renderCell();
+		expect(screen.getByRole("button", { name: "Owned" })).toHaveClass("text-[12px]");
+
+		renderCell({ value: "wanted", size: "sm" });
+		expect(screen.getByRole("button", { name: "Wanted" })).toHaveClass("text-sm");
+	});
+
+	it("shows a dash instead of the empty option label outside the editor", () => {
+		renderCell({ value: "none", emptyValue: "none", items: [{ value: "none", label: "Not set" }, ...items] });
+
+		expect(screen.getByText("-")).toBeInTheDocument();
+		expect(screen.queryByText("Not set")).not.toBeInTheDocument();
+	});
+
 	it("shows plain text without an editor for read-only users", () => {
 		renderCell({ readOnly: true, editing: true });
 

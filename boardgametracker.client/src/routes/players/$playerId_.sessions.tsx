@@ -15,8 +15,10 @@ import type { Session } from "@/models";
 import { getGames } from "@/services/queries/games";
 import { getPlayer, getPlayerSessions, getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
+import { toDisplay } from "@/utils/dateUtils";
 import { playerIdParamSchema } from "@/utils/routeSchemas";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
+import { SessionCommentCell } from "../sessions/-components/SessionCommentCell";
 import { usePlayerSessionData } from "./-hooks/usePlayerSessionData";
 
 export const Route = createFileRoute("/players/$playerId_/sessions")({
@@ -52,7 +54,7 @@ function RouteComponent() {
 					const columns: DataTableProps<Session>["columns"] = [
 						{
 							accessorKey: "0",
-							cell: ({ row }) => format(new Date(row.original.start), settings.dateFormat),
+							cell: ({ row }) => toDisplay(row.original.start, settings.dateFormat, settings.uiLanguage),
 							header: t("date"),
 						},
 						{
@@ -121,6 +123,11 @@ function RouteComponent() {
 							},
 							header: t("high-score"),
 						},
+						{
+							accessorKey: "7",
+							cell: ({ row }) => <SessionCommentCell comment={row.original.comment} />,
+							header: t("comment"),
+						},
 						...(canWrite
 							? [
 									{
@@ -148,7 +155,7 @@ function RouteComponent() {
 												{
 													onClick: () => navigate({ to: "/sessions/new" }),
 													variant: "primary",
-													content: "sessions:new",
+													content: "game:add",
 												},
 											]
 										: []

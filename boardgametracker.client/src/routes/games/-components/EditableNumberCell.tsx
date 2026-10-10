@@ -13,12 +13,14 @@ interface Props {
 	max?: number;
 	prefix?: string;
 	suffix?: string;
+	format?: (value: number) => string;
 	className?: string;
 	align?: "left" | "right";
 	readOnly?: boolean;
+	size?: "xs" | "sm";
 }
 
-type EditorProps = Omit<Props, "editing" | "onStartEdit" | "align" | "readOnly">;
+type EditorProps = Omit<Props, "editing" | "onStartEdit" | "align" | "readOnly" | "format">;
 
 const NumberEditor = ({ value, onStopEdit, onChange, step = 1, min, max, prefix, suffix, className }: EditorProps) => {
 	const [draft, setDraft] = useState(value?.toString() ?? "");
@@ -65,15 +67,20 @@ const NumberEditor = ({ value, onStopEdit, onChange, step = 1, min, max, prefix,
 };
 
 export const EditableNumberCell = (props: Props) => {
-	const { value, editing, onStartEdit, prefix, suffix, className, align, readOnly } = props;
+	const { value, editing, onStartEdit, prefix, suffix, format, className, align, readOnly, size } = props;
 
 	if (!editing || readOnly) {
 		return (
-			<EditableCellButton onClick={onStartEdit} className={className} align={align} readOnly={readOnly}>
-				{value == null ? "-" : [prefix, value, suffix].filter((part) => part != null && part !== "").join(" ")}
+			<EditableCellButton onClick={onStartEdit} className={className} align={align} readOnly={readOnly} size={size}>
+				{value == null
+					? "-"
+					: format
+						? format(value)
+						: [prefix, value, suffix].filter((part) => part != null && part !== "").join(" ")}
 			</EditableCellButton>
 		);
 	}
 
-	return <NumberEditor {...props} />;
+	const { format: _format, ...editorProps } = props;
+	return <NumberEditor {...editorProps} />;
 };

@@ -14,8 +14,10 @@ import type { Session } from "@/models";
 import { getGame, getGameSessions } from "@/services/queries/games";
 import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
+import { toDisplay } from "@/utils/dateUtils";
 import { gameIdParamSchema } from "@/utils/routeSchemas";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
+import { SessionCommentCell } from "../sessions/-components/SessionCommentCell";
 import { useGameSessionsData } from "./-hooks/useGameSessionsData";
 
 export const Route = createFileRoute("/games/$gameId_/sessions")({
@@ -50,7 +52,7 @@ function RouteComponent() {
 					const columns: DataTableProps<Session>["columns"] = [
 						{
 							accessorKey: "0",
-							cell: ({ row }) => format(new Date(row.original.start), settings.dateFormat),
+							cell: ({ row }) => toDisplay(row.original.start, settings.dateFormat, settings.uiLanguage),
 							header: t("date"),
 						},
 						{
@@ -99,6 +101,11 @@ function RouteComponent() {
 								return highScore[0].score;
 							},
 							header: t("high-score"),
+						},
+						{
+							accessorKey: "6",
+							cell: ({ row }) => <SessionCommentCell comment={row.original.comment} />,
+							header: t("comment"),
 						},
 						...(canWrite
 							? [
