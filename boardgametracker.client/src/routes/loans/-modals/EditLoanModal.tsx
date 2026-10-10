@@ -76,13 +76,18 @@ export const EditLoanModal = (props: Props) => {
 							validators={notBeforeValidator(LoanDatesSchema, "dueDate", "loanDate", "loans:new.end.before-start")}
 						>
 							{(field: AnyFieldApi) => (
-								<BgtDatePicker
-									field={field}
-									label={t("new.end.label")}
-									disabled={disabled}
-									placeholder={t("new.end.placeholder")}
-									clearable
-								/>
+								<form.Subscribe selector={(state) => state.values.loanDate}>
+									{(loanDate) => (
+										<BgtDatePicker
+											field={field}
+											label={t("new.end.label")}
+											disabled={disabled}
+											placeholder={t("new.end.placeholder")}
+											minValue={loanDate || null}
+											clearable
+										/>
+									)}
+								</form.Subscribe>
 							)}
 						</form.Field>
 					</div>

@@ -10,16 +10,22 @@ interface Props {
 	value: string;
 	entry: LeaderboardEntry | null;
 	emptyText: string;
+	hint?: string;
 	icon: ComponentType<SVGProps<SVGSVGElement>>;
 }
 
-export const LeaderboardHighlight = ({ title, value, entry, emptyText, icon: Icon }: Props) => (
+export const LeaderboardHighlight = ({ title, value, entry, emptyText, hint, icon: Icon }: Props) => (
 	<BgtCard className="flex flex-col gap-3">
 		<div className="flex items-center gap-2">
 			<Icon className="size-5 text-primary" />
 			<BgtText size="2" color="gray">
 				{title}
 			</BgtText>
+			{hint && entry && (
+				<BgtText size="1" color="gray" className="ml-auto">
+					{hint}
+				</BgtText>
+			)}
 		</div>
 		{entry ? (
 			<Link

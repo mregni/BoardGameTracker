@@ -16,5 +16,6 @@ export interface Leaderboard {
 	bestWinRate: LeaderboardEntry | null;
 	mostTimePlayed: LeaderboardEntry | null;
 	minimumPlaysForWinRate: number;
+	minimumPlayersForPodium: number;
 	players: LeaderboardEntry[];
 }

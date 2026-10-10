@@ -1,10 +1,10 @@
-import { formatDuration, intervalToDuration } from "date-fns";
 import type { ReactNode } from "react";
 import Clock from "@/assets/icons/clock.svg?react";
 import GamePad from "@/assets/icons/gamepad.svg?react";
 import TrendingUp from "@/assets/icons/trend-up.svg?react";
 import Trophy from "@/assets/icons/trophy.svg?react";
-import { getDateFnsLocale } from "@/utils/localeUtils";
+import type { Player } from "@/models";
+import { formatMinutesToDuration } from "@/utils/dateUtils";
 
 export interface CompareData {
 	winCount: { playerOne: number; playerTwo: number };
@@ -21,18 +21,23 @@ export interface StatConfig {
 	getValue: (data: CompareData, player: "playerOne" | "playerTwo") => string | number;
 }
 
-const formatMinutesToDuration = (minutes: number, uiLanguage: string): string => {
-	const duration = intervalToDuration({
-		start: 0,
-		end: minutes * 60 * 1000, // Convert minutes to milliseconds
-	});
+export const formatPlayTime = (minutes: number, uiLanguage: string): string =>
+	formatMinutesToDuration(minutes, ["weeks", "days", "hours", "minutes"], uiLanguage) ?? "0";
 
-	const locale = getDateFnsLocale(uiLanguage);
+export const formatWinRate = (fraction: number): string => `${Math.round(fraction * 1000) / 10}%`;
 
-	return formatDuration(duration, {
-		format: ["years", "months", "weeks", "days", "hours", "minutes"],
-		locale,
-	});
+export const resolveComparePlayers = (
+	players: Pick<Player, "id">[],
+	left: number | undefined,
+	right: number | undefined,
+): [number, number] => {
+	const exists = (id: number | undefined) => id !== undefined && players.some((p) => p.id === id);
+	const firstOther = (otherId: number) => players.find((p) => p.id !== otherId)?.id ?? 0;
+
+	const resolvedLeft = exists(left) ? (left as number) : firstOther(exists(right) ? (right as number) : 0);
+	const resolvedRight = exists(right) && right !== resolvedLeft ? (right as number) : firstOther(resolvedLeft);
+
+	return players.length < 2 ? [0, 0] : [resolvedLeft, resolvedRight];
 };
 
 export const getStatConfigs = (uiLanguage: string): StatConfig[] => [
@@ -48,7 +53,7 @@ export const getStatConfigs = (uiLanguage: string): StatConfig[] => [
 		translationKey: "stats.win-percentage",
 		icon: <TrendingUp className="size-6" />,
 		getRawValue: (data, player) => data.winPercentage[player],
-		getValue: (data, player) => `${(data.winPercentage[player] * 100).toFixed(0)}%`,
+		getValue: (data, player) => formatWinRate(data.winPercentage[player]),
 	},
 	{
 		key: "sessionCounts",
@@ -62,7 +67,7 @@ export const getStatConfigs = (uiLanguage: string): StatConfig[] => [
 		translationKey: "stats.total-duration",
 		icon: <Clock className="size-6" />,
 		getRawValue: (data, player) => data.totalDuration[player],
-		getValue: (data, player) => formatMinutesToDuration(data.totalDuration[player], uiLanguage),
+		getValue: (data, player) => formatPlayTime(data.totalDuration[player], uiLanguage),
 	},
 ];
 
@@ -82,8 +87,8 @@ export const calculateWinCount = (
 	const statConfigs = getStatConfigs(uiLanguage);
 
 	return statConfigs.reduce((winCount, stat) => {
-		const playerValue = stat.getValue(compare, playerKey);
-		const opponentValue = stat.getValue(compare, opponentKey);
+		const playerValue = stat.getRawValue(compare, playerKey);
+		const opponentValue = stat.getRawValue(compare, opponentKey);
 		const isWinner = isWinningValue(playerValue, opponentValue);
 
 		return isWinner ? winCount + 1 : winCount;

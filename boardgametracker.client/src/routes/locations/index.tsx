@@ -39,24 +39,21 @@ function RouteComponent() {
 	const columns: DataTableProps<Location>["columns"] = useMemo(
 		() => [
 			{
-				accessorKey: "0",
-				cell: ({ row }) => <div>{row.original.id}</div>,
-				header: t("id"),
-			},
-			{
-				accessorKey: "1",
+				accessorKey: "name",
 				cell: ({ row }) => <div>{row.original.name}</div>,
 				header: t("name"),
 			},
 			{
-				accessorKey: "2",
-				cell: ({ row }) => <div className="flex justify-end">{row.original.playCount}</div>,
-				header: () => <div className="flex justify-end">{t("count")}</div>,
+				accessorKey: "playCount",
+				cell: ({ row }) => <div>{row.original.playCount}</div>,
+				header: t("location:columns.sessions"),
+				meta: { alignRight: true },
 			},
 			...(canWrite
 				? [
 						{
-							accessorKey: "3",
+							id: "actions",
+							enableSorting: false,
 							cell: ({ row }: { row: { original: Location } }) => (
 								<div className="flex flex-row justify-end gap-2">
 									<BgtIconButton
@@ -123,7 +120,7 @@ function RouteComponent() {
 						columns={columns}
 						data={locations}
 						noDataMessage={t("no-data-yet")}
-						widths={["w-[70px]", "w-[100px]", "", "w-[50px]"]}
+						widths={["", "w-[120px]", "w-[100px]"]}
 					/>
 				</BgtCard>
 				<NewLocationModal open={modals.createModal.isOpen} close={modals.createModal.hide} />

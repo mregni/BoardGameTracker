@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { isPast } from "date-fns";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,6 +12,7 @@ import { getGameNights } from "@/services/queries/gameNights";
 import { getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
+import { getSettings } from "@/services/queries/settings";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { FilterTabs, type FilterType } from "./-components/FilterTabs";
 import { GameNightCard } from "./-components/GameNightCard";
@@ -25,6 +26,12 @@ import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
 
 export const Route = createFileRoute("/game-nights/")({
 	component: RouteComponent,
+	beforeLoad: async ({ context: { queryClient } }) => {
+		const settings = await queryClient.ensureQueryData(getSettings());
+		if (!settings.gameNightsEnabled) {
+			throw redirect({ to: "/" });
+		}
+	},
 	loader: ({ context: { queryClient } }) => {
 		queryClient.prefetchQuery(getGameNights());
 		queryClient.prefetchQuery(getPlayers());
@@ -254,7 +261,8 @@ function RouteComponent() {
 								setSelectedGameNightId(null);
 							}}
 							onDelete={actions.handleDelete}
-							title={t("delete.title")}
+							title={selectedGameNight?.title ?? ""}
+							heading={t("delete.title")}
 							description={t("delete.description", {
 								title: selectedGameNight?.title,
 							})}

@@ -1,5 +1,5 @@
-import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/models";
+import { useMutation, useQueries } from "@tanstack/react-query";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import {
 	createGameNightCall,
@@ -14,7 +14,7 @@ import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
 
 export const useGameNightData = () => {
-	const queryClient = useQueryClient();
+	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
 
 	const [gameNightsQuery, settingsQuery, playersQuery, gamesQuery, locationsQuery] = useQueries({
@@ -28,7 +28,7 @@ export const useGameNightData = () => {
 	const locations = locationsQuery.data ?? [];
 
 	const invalidateQueries = () => {
-		queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights] });
+		invalidator.invalidateGameNights();
 	};
 
 	const createMutation = useMutation({

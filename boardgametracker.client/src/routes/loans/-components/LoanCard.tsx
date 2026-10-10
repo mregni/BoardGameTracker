@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { cva } from "class-variance-authority";
-import { differenceInDays, format, isAfter } from "date-fns";
+import { differenceInDays, isAfter } from "date-fns";
 import { useTranslation } from "react-i18next";
 import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
 import Calendar from "@/assets/icons/calendar.svg?react";
@@ -15,6 +15,7 @@ import { BgtText } from "@/components/BgtText/BgtText";
 import type { Game } from "@/models/Games/Game";
 import type { Loan } from "@/models/Loan/Loan";
 import type { Player } from "@/models/Player/Player";
+import { toDisplay } from "@/utils/dateUtils";
 
 const loanCardVariants = cva("", {
 	variants: {
@@ -46,13 +47,13 @@ interface LoanCardProps {
 	game: Game | undefined;
 	player: Player | undefined;
 	dateFormat: string;
-	onReturn?: (loanId: number, returnDate: Date) => void;
+	onReturn?: (loan: Loan) => void;
 	onEdit?: (loan: Loan) => void;
 	onDelete?: (loan: Loan) => void;
 }
 
 export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onEdit, onDelete }: LoanCardProps) => {
-	const { t } = useTranslation(["common", "loans"]);
+	const { t, i18n } = useTranslation(["common", "loans"]);
 	const navigate = useNavigate();
 	const isActive = loan.returnedDate === null;
 	const isOverdue = loan.dueDate !== null && isAfter(new Date(), loan.dueDate);
@@ -111,8 +112,8 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onEdit, onD
 						{t("loaned")}:
 					</BgtText>
 					<BgtText color="white" opacity={80}>
-						{format(loan.loanDate, dateFormat)} &bull;{" "}
-						{loan.returnedDate ? format(loan.returnedDate, dateFormat) : t("loans:active")}
+						{toDisplay(loan.loanDate, dateFormat, i18n.language)} &bull;{" "}
+						{loan.returnedDate ? toDisplay(loan.returnedDate, dateFormat, i18n.language) : t("loans:active")}
 					</BgtText>
 				</div>
 				{loan.dueDate && (
@@ -122,7 +123,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onEdit, onD
 							{t("due-date")}:
 						</BgtText>
 						<BgtText color="white" opacity={80}>
-							{format(loan.dueDate, dateFormat)}
+							{toDisplay(loan.dueDate, dateFormat, i18n.language)}
 						</BgtText>
 					</div>
 				)}
@@ -143,7 +144,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onEdit, onD
 				{isActive && onReturn && (
 					<button
 						type="button"
-						onClick={() => onReturn(loan.id, new Date())}
+						onClick={() => onReturn(loan)}
 						className="w-full bg-lime-green/20 hover:bg-lime-green/30 text-lime-green border border-lime-green/30 py-1 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
 					>
 						<Check className="size-5" />
@@ -151,7 +152,7 @@ export const LoanCard = ({ loan, game, player, dateFormat, onReturn, onEdit, onD
 					</button>
 				)}
 
-				{isActive && onEdit && (
+				{onEdit && (
 					<button
 						type="button"
 						onClick={() => onEdit(loan)}

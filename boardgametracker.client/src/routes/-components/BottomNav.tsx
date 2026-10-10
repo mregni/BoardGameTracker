@@ -65,7 +65,7 @@ export const BottomNav = () => {
 								<User className="text-white/40" />
 							</div>
 							<div className="flex-1 min-w-0">
-								<div className="text-xs text-white/60 truncate">{user.username}</div>
+								<div className="text-xs text-white/60 truncate">{user.displayName || user.username}</div>
 							</div>
 							<BgtIconButton
 								icon={<LogOut className="size-4" />}

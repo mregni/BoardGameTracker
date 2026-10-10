@@ -23,6 +23,7 @@ import { useLoanModals } from "./-hooks/useLoanModels";
 import { useLoans } from "./-hooks/useLoans";
 import { EditLoanModal } from "./-modals/EditLoanModal";
 import NewLoanModal from "./-modals/NewLoanModal";
+import { ReturnLoanModal } from "./-modals/ReturnLoanModal";
 
 export const Route = createFileRoute("/loans/")({
 	component: RouteComponent,
@@ -38,6 +39,7 @@ function RouteComponent() {
 	const { gameById } = useGameById();
 	const { playerById } = usePlayerById();
 	const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
+	const [returnModalOpen, setReturnModalOpen] = useState(false);
 
 	const modals = useLoanModals();
 
@@ -56,6 +58,13 @@ function RouteComponent() {
 		setSelectedLoan(loan);
 		modals.editModal.show();
 	};
+
+	const requestReturn = (loan: Loan) => {
+		setSelectedLoan(loan);
+		setReturnModalOpen(true);
+	};
+
+	const selectedGameTitle = selectedLoan ? (gameById(selectedLoan.gameId)?.title ?? "") : "";
 
 	if (!isLoading && loans.length === 0) {
 		return (
@@ -119,7 +128,7 @@ function RouteComponent() {
 											game={gameById(loan.gameId) ?? undefined}
 											player={playerById(loan.playerId) ?? undefined}
 											dateFormat={settings.dateFormat}
-											onReturn={canWrite ? actions.handleReturnLoan : undefined}
+											onReturn={canWrite ? requestReturn : undefined}
 											onEdit={canWrite ? requestEdit : undefined}
 											onDelete={canWrite ? requestDelete : undefined}
 										/>
@@ -143,6 +152,7 @@ function RouteComponent() {
 											game={gameById(loan.gameId) ?? undefined}
 											player={playerById(loan.playerId) ?? undefined}
 											dateFormat={settings.dateFormat}
+											onEdit={canWrite ? requestEdit : undefined}
 											onDelete={canWrite ? requestDelete : undefined}
 										/>
 									))}
@@ -155,8 +165,16 @@ function RouteComponent() {
 							close={modals.editModal.hide}
 							onSave={updateLoan}
 						/>
+						<ReturnLoanModal
+							loan={selectedLoan}
+							gameTitle={selectedGameTitle}
+							open={returnModalOpen}
+							close={() => setReturnModalOpen(false)}
+							onReturn={actions.handleReturnLoan}
+						/>
 						<BgtDeleteModal
-							title={selectedLoan ? (gameById(selectedLoan.gameId)?.title ?? "") : ""}
+							title={selectedGameTitle}
+							heading={t("delete.title", { game: selectedGameTitle })}
 							open={modals.deleteModal.isOpen}
 							close={modals.deleteModal.hide}
 							onDelete={() => selectedLoan && actions.handleDelete(selectedLoan.id)}

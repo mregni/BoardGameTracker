@@ -13,17 +13,18 @@ interface Props {
 	close: () => void;
 	onDelete: (() => Promise<void>) | (() => void);
 	title: string;
+	heading?: string;
 	description: string;
 }
 
 export const BgtDeleteModal = (props: Props) => {
-	const { open, close, onDelete, title, description } = props;
+	const { open, close, onDelete, title, heading, description } = props;
 	const { t } = useTranslation();
 
 	return (
 		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
-				<BgtDialogTitle>{t("delete.title", { title: title })}</BgtDialogTitle>
+				<BgtDialogTitle>{heading ?? t("delete.title", { title: title })}</BgtDialogTitle>
 				<BgtDialogDescription>{description}</BgtDialogDescription>
 				<BgtDialogClose>
 					<BgtButton variant="cancel" onClick={() => close()}>

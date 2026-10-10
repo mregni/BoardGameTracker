@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import CogIcon from "@/assets/icons/cog.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -15,16 +15,25 @@ import { handleFormSubmit } from "@/utils/formUtils";
 import { AccountSettings } from "./-components/AccountSettings";
 import { AdvancedSettings } from "./-components/AdvancedSettings";
 import { BggSettings } from "./-components/BggSettings";
+import { DangerZoneSection } from "./-components/DangerZoneSection";
 import { GameNightsSettings } from "./-components/GameNightsSettings";
 import { GeneralSettings } from "./-components/GeneralSettings";
 import { type SettingsCategory, SettingsSidebar } from "./-components/SettingsSidebar";
 import { ShelfOfShameSettings } from "./-components/ShelfOfShameSettings";
 import { SsoSettings } from "./-components/SsoSettings";
 import { useSettingsData } from "./-hooks/useSettingsData";
+import { resolveSettingsCategory } from "./-utils/settingsCategory";
 import { settingsFormOpts } from "./-utils/settingsFormOpts";
+
+const settingsCategories = ["general", "shelf-of-shame", "game-nights", "bgg", "advanced", "account", "sso"] as const;
+
+const settingsSearchSchema = z.object({
+	tab: z.enum(settingsCategories).optional().catch(undefined),
+});
 
 export const Route = createFileRoute("/settings/")({
 	component: RouteComponent,
+	validateSearch: settingsSearchSchema,
 	loader: ({ context: { queryClient } }) => {
 		queryClient.prefetchQuery(getSettings());
 		queryClient.prefetchQuery(getLanguages());
@@ -56,7 +65,11 @@ interface SettingsPageContentProps {
 
 function SettingsPageContent({ settings, languages, isSaving, saveSettings }: SettingsPageContentProps) {
 	const { canManageSettings } = usePermissions();
-	const [activeCategory, setActiveCategory] = useState<SettingsCategory>(canManageSettings ? "general" : "account");
+	const { tab } = Route.useSearch();
+	const navigate = useNavigate();
+	const activeCategory = resolveSettingsCategory(tab, canManageSettings);
+	const setActiveCategory = (category: SettingsCategory) =>
+		navigate({ to: "/settings", search: { tab: category }, replace: true });
 	const { t } = useTranslation("settings");
 
 	const form = useAppForm({
@@ -148,6 +161,11 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 									</div>
 								</div>
 							</form>
+						)}
+						{activeCategory === "advanced" && (
+							<div className="mt-6 lg:ml-4 xl:ml-6">
+								<DangerZoneSection />
+							</div>
 						)}
 					</div>
 				</div>

@@ -1,4 +1,5 @@
 import { useMutation, useQueries } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { getLanguages, getSettings } from "@/services/queries/settings";
@@ -8,6 +9,7 @@ import { apiErrorMessage } from "@/utils/errorUtils";
 export const useSettingsData = () => {
 	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
+	const { i18n } = useTranslation();
 
 	const [settingsQuery, languageQuery] = useQueries({
 		queries: [getSettings(), getLanguages()],
@@ -18,7 +20,10 @@ export const useSettingsData = () => {
 
 	const saveSettingsMutation = useMutation({
 		mutationFn: updateSettingsCall,
-		onSuccess() {
+		async onSuccess(_data, variables) {
+			if (variables.uiLanguage && variables.uiLanguage !== i18n.language) {
+				await i18n.changeLanguage(variables.uiLanguage);
+			}
 			successToast("settings:save.successfull");
 			void invalidator.invalidateSettings();
 		},

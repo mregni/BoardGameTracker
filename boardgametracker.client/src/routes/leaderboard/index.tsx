@@ -16,6 +16,8 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import type { LeaderboardEntry } from "@/models";
 import { getLeaderboard } from "@/services/queries/leaderboard";
+import { formatMinutesToDuration } from "@/utils/dateUtils";
+import { HeaderWithHint } from "./-components/HeaderWithHint";
 import { LeaderboardHighlight } from "./-components/LeaderboardHighlight";
 
 export const Route = createFileRoute("/leaderboard/")({
@@ -25,21 +27,21 @@ export const Route = createFileRoute("/leaderboard/")({
 	},
 });
 
-const formatMinutes = (minutes: number, hourLabel: string, minuteLabel: string) => {
-	const hours = Math.floor(minutes / 60);
-	const rest = Math.round(minutes % 60);
-	return hours > 0 ? `${hours}${hourLabel} ${rest}${minuteLabel}` : `${rest}${minuteLabel}`;
-};
+const formatMinutes = (minutes: number, uiLanguage: string) =>
+	formatMinutesToDuration(Math.round(minutes), ["weeks", "days", "hours", "minutes"], uiLanguage) ?? "0";
 
 function RouteComponent() {
-	const { t } = useTranslation(["leaderboard", "common"]);
+	const { t, i18n } = useTranslation(["leaderboard", "common"]);
 	const { data: leaderboard, isLoading } = useQuery(getLeaderboard());
+	const uiLanguage = i18n.language;
+	const minimumPlayersForPodium = leaderboard?.minimumPlayersForPodium ?? 4;
 
 	const columns: ColumnDef<LeaderboardEntry>[] = useMemo(
 		() => [
 			{
 				accessorKey: "rank",
 				header: t("columns.rank"),
+				enableSorting: false,
 				cell: ({ row }) => <span className="font-semibold">{row.original.rank}</span>,
 			},
 			{
@@ -63,15 +65,24 @@ function RouteComponent() {
 				header: t("columns.win-rate"),
 				cell: ({ row }) => `${row.original.winPercentage}%`,
 			},
-			{ accessorKey: "podiumCount", header: t("columns.podiums"), meta: { hideOnMobile: true } },
+			{
+				accessorKey: "podiumCount",
+				header: () => (
+					<HeaderWithHint
+						label={t("columns.podiums")}
+						hint={t("columns.podiums-hint", { count: minimumPlayersForPodium })}
+					/>
+				),
+				meta: { hideOnMobile: true },
+			},
 			{
 				accessorKey: "minutesPlayed",
 				header: t("columns.time-played"),
-				cell: ({ row }) => formatMinutes(row.original.minutesPlayed, t("common:hour-short"), t("common:minute-short")),
+				cell: ({ row }) => formatMinutes(row.original.minutesPlayed, uiLanguage),
 				meta: { hideOnMobile: true },
 			},
 		],
-		[t],
+		[t, uiLanguage, minimumPlayersForPodium],
 	);
 
 	if (!isLoading && leaderboard && leaderboard.players.length === 0) {
@@ -111,16 +122,13 @@ function RouteComponent() {
 								entry={leaderboard.bestWinRate}
 								value={`${leaderboard.bestWinRate?.winPercentage ?? 0}%`}
 								emptyText={t("highlights.min-plays", { count: leaderboard.minimumPlaysForWinRate })}
+								hint={t("highlights.min-plays-hint", { count: leaderboard.minimumPlaysForWinRate })}
 								icon={TargetIcon}
 							/>
 							<LeaderboardHighlight
 								title={t("highlights.most-time")}
 								entry={leaderboard.mostTimePlayed}
-								value={formatMinutes(
-									leaderboard.mostTimePlayed?.minutesPlayed ?? 0,
-									t("common:hour-short"),
-									t("common:minute-short"),
-								)}
+								value={formatMinutes(leaderboard.mostTimePlayed?.minutesPlayed ?? 0, uiLanguage)}
 								emptyText={t("highlights.nobody-yet")}
 								icon={ClockIcon}
 							/>

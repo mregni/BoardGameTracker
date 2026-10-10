@@ -12,6 +12,7 @@ import { type BgtSelectItem, GameNightRsvpState, type GameNightRsvps } from "@/m
 
 interface Props {
 	invitedPlayers: GameNightRsvps[];
+	hostId: number;
 	onSubmit: (rsvpId: number, playerId: number, playerName: string, state: GameNightRsvpState) => void;
 	isSubmitting: boolean;
 }
@@ -46,7 +47,7 @@ const responseOptions = [
 	},
 ] as const;
 
-export const RsvpResponseForm = ({ invitedPlayers, onSubmit, isSubmitting }: Props) => {
+export const RsvpResponseForm = ({ invitedPlayers, hostId, onSubmit, isSubmitting }: Props) => {
 	const { t } = useTranslation("rsvp");
 	const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
 	const [selectedResponse, setSelectedResponse] = useState<GameNightRsvpState | null>(null);
@@ -54,8 +55,11 @@ export const RsvpResponseForm = ({ invitedPlayers, onSubmit, isSubmitting }: Pro
 	const canSubmit = selectedPlayerId !== null && selectedResponse !== null && !isSubmitting;
 
 	const playerItems: BgtSelectItem[] = useMemo(
-		() => invitedPlayers.map((rsvp) => ({ value: rsvp.playerId, label: rsvp.player.name })),
-		[invitedPlayers],
+		() =>
+			invitedPlayers
+				.filter((rsvp) => rsvp.playerId !== hostId)
+				.map((rsvp) => ({ value: rsvp.playerId, label: rsvp.player.name })),
+		[invitedPlayers, hostId],
 	);
 
 	const handleSubmit = () => {

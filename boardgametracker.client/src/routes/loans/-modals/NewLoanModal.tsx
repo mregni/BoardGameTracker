@@ -1,4 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { format } from "date-fns";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
@@ -12,7 +13,7 @@ import {
 } from "@/components/BgtDialog";
 import { BgtDatePicker, BgtSelect } from "@/components/BgtForm";
 import { useAppForm } from "@/hooks/form";
-import type { ModalProps, Player } from "@/models";
+import { GameState, type ModalProps, type Player } from "@/models";
 import { CreateLoanSchema } from "@/models/Loan/CreateLoan";
 import { CreatePlayerModal } from "@/routes/players/-modals/CreatePlayerModal";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -37,11 +38,13 @@ const NewLoanModal = (props: ModalProps) => {
 
 	const gamesSelectItems = useMemo(
 		() =>
-			games.map((x) => ({
-				value: x.id,
-				label: x.title,
-				image: x.image,
-			})),
+			games
+				.filter((x) => x.state === GameState.Owned && !x.isLoaned)
+				.map((x) => ({
+					value: x.id,
+					label: x.title,
+					image: x.image,
+				})),
 		[games],
 	);
 
@@ -59,7 +62,7 @@ const NewLoanModal = (props: ModalProps) => {
 		defaultValues: {
 			gameId: "",
 			playerId: "",
-			loanDate: "",
+			loanDate: format(new Date(), "yyyy-MM-dd"),
 			dueDate: "",
 		},
 		onSubmit: async ({ value }) => {
@@ -141,13 +144,18 @@ const NewLoanModal = (props: ModalProps) => {
 								validators={notBeforeValidator(CreateLoanSchema, "dueDate", "loanDate", "loans:new.end.before-start")}
 							>
 								{(field: AnyFieldApi) => (
-									<BgtDatePicker
-										field={field}
-										label={t("new.end.label")}
-										disabled={isLoading}
-										placeholder={t("new.end.placeholder")}
-										clearable
-									/>
+									<form.Subscribe selector={(state) => state.values.loanDate}>
+										{(loanDate) => (
+											<BgtDatePicker
+												field={field}
+												label={t("new.end.label")}
+												disabled={isLoading}
+												placeholder={t("new.end.placeholder")}
+												minValue={loanDate || null}
+												clearable
+											/>
+										)}
+									</form.Subscribe>
 								)}
 							</form.Field>
 						</div>

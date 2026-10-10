@@ -1,5 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import Home from "@/assets/icons/home.svg?react";
@@ -15,7 +16,7 @@ import { HeadToHead } from "./-components/HeadToHead";
 import { PlayerSelector } from "./-components/PlayerSelector";
 import { PlayerStatsSection } from "./-components/PlayerStatsSection";
 import { useCompareData } from "./-hooks/useCompareData";
-import { calculateOverallWinner } from "./-utils/compareUtils";
+import { calculateOverallWinner, resolveComparePlayers } from "./-utils/compareUtils";
 
 const compareSearchSchema = z.object({
 	left: z.number().optional(),
@@ -36,20 +37,15 @@ function RouteComponent() {
 	const search = Route.useSearch();
 	const { canWrite } = usePermissions();
 
-	const { players } = useCompareData({ playerLeft: 0, playerRight: 0 });
+	const { data: allPlayers } = useQuery(getPlayers());
 
-	// Determine player IDs: URL params > first two players > 0
-	const [leftPlayerId, rightPlayerId] = useMemo(() => {
-		if (search.left !== undefined && search.right !== undefined) {
-			return [search.left, search.right];
-		}
-		if (players && players.length >= 2) {
-			return [players[0].id, players[1].id];
-		}
-		return [0, 0];
-	}, [search.left, search.right, players]);
+	const [leftPlayerId, rightPlayerId] = useMemo(
+		() => resolveComparePlayers(allPlayers ?? [], search.left, search.right),
+		[search.left, search.right, allPlayers],
+	);
 
 	const {
+		players,
 		compare: actualCompare,
 		settings,
 		isLoading,
@@ -58,26 +54,36 @@ function RouteComponent() {
 		playerRight: rightPlayerId,
 	});
 
+	useEffect(() => {
+		if (leftPlayerId === 0 || rightPlayerId === 0) return;
+		if (search.left === leftPlayerId && search.right === rightPlayerId) return;
+		navigate({
+			to: "/compare",
+			search: { left: leftPlayerId, right: rightPlayerId },
+			replace: true,
+		});
+	}, [navigate, leftPlayerId, rightPlayerId, search.left, search.right]);
+
 	const handleLeftPlayerChange = useCallback(
 		(playerId: number) => {
 			navigate({
 				to: "/compare",
-				search: { left: playerId, right: rightPlayerId },
+				search: { left: playerId, right: playerId === rightPlayerId ? leftPlayerId : rightPlayerId },
 				replace: true,
 			});
 		},
-		[navigate, rightPlayerId],
+		[navigate, leftPlayerId, rightPlayerId],
 	);
 
 	const handleRightPlayerChange = useCallback(
 		(playerId: number) => {
 			navigate({
 				to: "/compare",
-				search: { left: leftPlayerId, right: playerId },
+				search: { left: playerId === leftPlayerId ? rightPlayerId : leftPlayerId, right: playerId },
 				replace: true,
 			});
 		},
-		[navigate, leftPlayerId],
+		[navigate, leftPlayerId, rightPlayerId],
 	);
 
 	const playerOne = useMemo(() => players?.find((p) => p.id === leftPlayerId), [players, leftPlayerId]);
@@ -113,6 +119,7 @@ function RouteComponent() {
 								<PlayerSelector
 									player={playerOne}
 									players={players}
+									excludeId={playerTwo.id}
 									isWinner={overallWinner === "playerOne"}
 									onPlayerChange={handleLeftPlayerChange}
 								/>
@@ -122,6 +129,7 @@ function RouteComponent() {
 								<PlayerSelector
 									player={playerTwo}
 									players={players}
+									excludeId={playerOne.id}
 									isWinner={overallWinner === "playerTwo"}
 									onPlayerChange={handleRightPlayerChange}
 								/>

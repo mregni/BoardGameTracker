@@ -11,7 +11,7 @@ interface Props {
 
 export const useLocationsData = ({ onDeleteSuccess }: Props) => {
 	const queryClient = useQueryClient();
-	const { infoToast, errorToast } = useToasts();
+	const { successToast, errorToast } = useToasts();
 
 	const [locationsQuery] = useQueries({
 		queries: [getLocations()],
@@ -24,7 +24,7 @@ export const useLocationsData = ({ onDeleteSuccess }: Props) => {
 			await deleteLocationCall(id);
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
-			infoToast("location:notifications.deleted");
+			successToast("location:notifications.deleted");
 			onDeleteSuccess?.();
 		} catch (error) {
 			errorToast(apiErrorMessage(error, "location:notifications.delete-failed"));

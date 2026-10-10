@@ -1,6 +1,5 @@
 import { cx } from "class-variance-authority";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
@@ -32,7 +31,6 @@ export const MultiSelectField = (props: Props) => {
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const triggerRef = useRef<HTMLButtonElement>(null);
-	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	const filteredOptions = useMemo(() => {
 		return options.filter(
@@ -63,42 +61,35 @@ export const MultiSelectField = (props: Props) => {
 	};
 
 	useEffect(() => {
-		if (isOpen && searchInputRef.current) {
-			setTimeout(() => searchInputRef.current?.focus(), 0);
+		if (isOpen) {
+			searchInputRef.current?.focus();
 		}
 	}, [isOpen]);
 
 	useEffect(() => {
+		if (!isOpen) return;
+
 		const handleClickOutside = (event: MouseEvent) => {
-			const target = event.target as Node;
-			if (
-				containerRef.current &&
-				!containerRef.current.contains(target) &&
-				dropdownRef.current &&
-				!dropdownRef.current.contains(target)
-			) {
+			if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
 				setIsOpen(false);
 				setSearchTerm("");
 			}
 		};
+		const handleEscape = (event: KeyboardEvent) => {
+			if (event.key !== "Escape") return;
+			event.stopPropagation();
+			event.preventDefault();
+			setIsOpen(false);
+			setSearchTerm("");
+			triggerRef.current?.focus();
+		};
+
 		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
-
-	const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
-
-	useEffect(() => {
-		if (isOpen && triggerRef.current) {
-			const rect = triggerRef.current.getBoundingClientRect();
-			setDropdownStyle({
-				position: "fixed",
-				top: rect.bottom + 4,
-				left: rect.left,
-				width: rect.width,
-				zIndex: 9999,
-				pointerEvents: "auto",
-			});
-		}
+		window.addEventListener("keydown", handleEscape, true);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+			window.removeEventListener("keydown", handleEscape, true);
+		};
 	}, [isOpen]);
 
 	return (
@@ -110,6 +101,7 @@ export const MultiSelectField = (props: Props) => {
 						type="button"
 						onClick={handleToggle}
 						disabled={disabled}
+						aria-expanded={isOpen}
 						className={cx(
 							"w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
 							"px-4 py-2 h-11 md:h-10 inline-flex justify-between items-center text-[15px]",
@@ -120,48 +112,43 @@ export const MultiSelectField = (props: Props) => {
 						{isOpen ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
 					</button>
 
-					{isOpen &&
-						createPortal(
-							<div
-								ref={dropdownRef}
-								style={dropdownStyle}
-								className="bg-input border border-primary/30 rounded-lg overflow-hidden"
-							>
-								<div className="p-2 border-b border-gray-700">
-									<div className="flex items-center px-2 bg-input rounded-sm">
-										<SearchIcon className="size-4 text-gray-400 mr-2" />
-										<input
-											ref={searchInputRef}
-											type="text"
-											value={searchTerm}
-											onChange={(e) => setSearchTerm(e.target.value)}
-											placeholder={t("search")}
-											className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
-										/>
-									</div>
+					{isOpen && (
+						<div className="mt-1 bg-input border border-primary/30 rounded-lg overflow-hidden">
+							<div className="p-2 border-b border-gray-700">
+								<div className="flex items-center px-2 bg-input rounded-sm">
+									<SearchIcon className="size-4 text-gray-400 mr-2" />
+									<input
+										ref={searchInputRef}
+										type="text"
+										value={searchTerm}
+										onChange={(e) => setSearchTerm(e.target.value)}
+										placeholder={t("search")}
+										aria-label={t("search")}
+										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
+									/>
 								</div>
-								<div className="max-h-[300px] overflow-y-auto p-1">
-									{filteredOptions.length > 0 ? (
-										filteredOptions.map((option) => (
-											<button
-												key={option.value}
-												type="button"
-												onClick={() => handleSelect(option.value)}
-												className="w-full text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pl-4 hover:bg-primary/60 transition-colors cursor-pointer"
-											>
-												<div className="flex flex-row justify-start items-center gap-2">
-													{option.image !== undefined && <BgtAvatar title={option.label} image={option.image} />}
-													{option.label}
-												</div>
-											</button>
-										))
-									) : (
-										<div className="text-[13px] py-2 px-4 text-gray-400">{t("no-results")}</div>
-									)}
-								</div>
-							</div>,
-							document.body,
-						)}
+							</div>
+							<div className="max-h-[240px] overflow-y-auto p-1">
+								{filteredOptions.length > 0 ? (
+									filteredOptions.map((option) => (
+										<button
+											key={option.value}
+											type="button"
+											onClick={() => handleSelect(option.value)}
+											className="w-full text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pl-4 hover:bg-primary/60 focus:bg-primary/60 focus:outline-none transition-colors cursor-pointer"
+										>
+											<div className="flex flex-row justify-start items-center gap-2">
+												{option.image !== undefined && <BgtAvatar title={option.label} image={option.image} />}
+												{option.label}
+											</div>
+										</button>
+									))
+								) : (
+									<div className="text-[13px] py-2 px-4 text-gray-400">{t("no-results")}</div>
+								)}
+							</div>
+						</div>
+					)}
 				</div>
 
 				{selectedItems.length > 0 && (

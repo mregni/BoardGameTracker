@@ -9,6 +9,7 @@ import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { GameNight } from "@/models";
+import { toDisplay } from "@/utils/dateUtils";
 
 interface Props {
 	gameNight: GameNight;
@@ -17,7 +18,7 @@ interface Props {
 }
 
 export const RsvpEventDetails = ({ gameNight, timeFormat, dateFormat }: Props) => {
-	const { t } = useTranslation("rsvp");
+	const { t, i18n } = useTranslation("rsvp");
 
 	return (
 		<BgtCard className="gap-3">
@@ -33,7 +34,7 @@ export const RsvpEventDetails = ({ gameNight, timeFormat, dateFormat }: Props) =
 							{t("when")}
 						</BgtText>
 						<BgtText size="3" weight="medium" color="white">
-							{format(gameNight.startDate, dateFormat)}
+							{toDisplay(gameNight.startDate, dateFormat, i18n.language)}
 						</BgtText>
 						<BgtText size="2" color="gray" className="flex items-center gap-1">
 							<Clock className="size-4" />

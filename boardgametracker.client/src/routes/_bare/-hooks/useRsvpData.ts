@@ -10,9 +10,10 @@ export const useRsvpData = (linkId: string) => {
 	const { errorToast } = useToasts();
 	const [isSubmitted, setIsSubmitted] = useState(false);
 	const [submittedPlayerName, setSubmittedPlayerName] = useState("");
+	const [submittedPlayerId, setSubmittedPlayerId] = useState<number | null>(null);
 	const [submittedState, setSubmittedState] = useState<GameNightRsvpState | null>(null);
 
-	const { data: gameNight, isLoading } = useQuery(getGameNightByLink(linkId));
+	const { data: gameNight, isLoading, refetch } = useQuery(getGameNightByLink(linkId));
 	const { data: manuals } = useQuery(getGameNightManuals(linkId));
 
 	const rsvpMutation = useMutation({
@@ -28,6 +29,7 @@ export const useRsvpData = (linkId: string) => {
 	const submitRsvp = (rsvpId: number, playerId: number, playerName: string, state: GameNightRsvpState) => {
 		if (!gameNight) return;
 		setSubmittedPlayerName(playerName);
+		setSubmittedPlayerId(playerId);
 		setSubmittedState(state);
 		rsvpMutation.mutate({
 			id: rsvpId,
@@ -37,8 +39,15 @@ export const useRsvpData = (linkId: string) => {
 		});
 	};
 
+	const changeResponse = () => {
+		setIsSubmitted(false);
+		refetch();
+	};
+
 	return {
 		gameNight,
+		changeResponse,
+		submittedPlayerId,
 		manuals: manuals ?? [],
 		isLoading,
 		submitRsvp,

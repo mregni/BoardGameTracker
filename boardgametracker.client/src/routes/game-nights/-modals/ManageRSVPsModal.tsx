@@ -59,38 +59,43 @@ export const ManageRSVPsModal = (props: Props) => {
 												<BgtAvatar title={rsvp.player.name} image={rsvp.player.image} size="large" />
 												<BgtText size="3" weight="medium">
 													{rsvp.player.name}
-													{isHost && <span className="ml-2 text-xs text-gray-400">({t("rsvp.host")})</span>}
 												</BgtText>
 											</div>
-											<div className="flex gap-2">
-												<RsvpStatusButton
-													rsvpId={rsvp.id}
-													state={GameNightRsvpState.Accepted}
-													onStatusChange={handleStatusChange}
-													disabled={isLoading || isHost}
-													isActive={rsvp.state === GameNightRsvpState.Accepted}
-													variant="green"
-													label={t("rsvp.accept")}
-												/>
-												<RsvpStatusButton
-													rsvpId={rsvp.id}
-													state={GameNightRsvpState.Pending}
-													onStatusChange={handleStatusChange}
-													disabled={isLoading || isHost}
-													isActive={rsvp.state === GameNightRsvpState.Pending}
-													variant="yellow"
-													label={t("rsvp.maybe")}
-												/>
-												<RsvpStatusButton
-													rsvpId={rsvp.id}
-													state={GameNightRsvpState.Declined}
-													onStatusChange={handleStatusChange}
-													disabled={isLoading || isHost}
-													isActive={rsvp.state === GameNightRsvpState.Declined}
-													variant="red"
-													label={t("rsvp.decline")}
-												/>
-											</div>
+											{isHost ? (
+												<span className="px-4 py-2 rounded-lg text-sm font-medium bg-green-500/20 text-green-300">
+													{t("rsvp.host")}
+												</span>
+											) : (
+												<div className="flex gap-2">
+													<RsvpStatusButton
+														rsvpId={rsvp.id}
+														state={GameNightRsvpState.Accepted}
+														onStatusChange={handleStatusChange}
+														disabled={isLoading}
+														isActive={rsvp.state === GameNightRsvpState.Accepted}
+														variant="green"
+														label={t("rsvp.accept")}
+													/>
+													<RsvpStatusButton
+														rsvpId={rsvp.id}
+														state={GameNightRsvpState.Pending}
+														onStatusChange={handleStatusChange}
+														disabled={isLoading}
+														isActive={rsvp.state === GameNightRsvpState.Pending}
+														variant="yellow"
+														label={t("rsvp.maybe")}
+													/>
+													<RsvpStatusButton
+														rsvpId={rsvp.id}
+														state={GameNightRsvpState.Declined}
+														onStatusChange={handleStatusChange}
+														disabled={isLoading}
+														isActive={rsvp.state === GameNightRsvpState.Declined}
+														variant="red"
+														label={t("rsvp.decline")}
+													/>
+												</div>
+											)}
 										</div>
 									</div>
 								);

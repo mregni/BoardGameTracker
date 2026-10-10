@@ -7,6 +7,7 @@ import { useAppForm } from "@/hooks/form";
 import type { Game, Location, Player } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
+import { defaultGameNightStart } from "../-utils/defaultStartDate";
 import { MultiSelectField } from "./MultiSelectField";
 
 export const GameNightFormSchema = z.object({
@@ -86,7 +87,7 @@ export const GameNightForm = (props: Props) => {
 	const form = useAppForm({
 		defaultValues: {
 			title: defaultValues?.title ?? "",
-			startDate: defaultValues?.startDate ?? new Date(),
+			startDate: defaultValues?.startDate ?? defaultGameNightStart(),
 			locationId: defaultValues?.locationId ?? 0,
 			hostId: defaultValues?.hostId ?? 0,
 			notes: defaultValues?.notes ?? "",

@@ -34,8 +34,18 @@ function RsvpPage() {
 	const { linkId } = Route.useSearch();
 	const isAuthenticated = useAuth((s) => s.isAuthenticated);
 	const authStatus = useAuth((s) => s.authStatus);
-	const { gameNight, manuals, isLoading, submitRsvp, isSubmitting, isSubmitted, submittedPlayerName, submittedState } =
-		useRsvpData(linkId);
+	const {
+		gameNight,
+		manuals,
+		isLoading,
+		submitRsvp,
+		isSubmitting,
+		isSubmitted,
+		submittedPlayerName,
+		submittedPlayerId,
+		submittedState,
+		changeResponse,
+	} = useRsvpData(linkId);
 
 	const requiresAuth = settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
 
@@ -55,7 +65,14 @@ function RsvpPage() {
 	}
 
 	if (isSubmitted) {
-		return <RsvpSuccessView playerName={submittedPlayerName} response={submittedState} />;
+		return (
+			<RsvpSuccessView
+				playerName={submittedPlayerName}
+				response={submittedState}
+				hostNotified={!!settings?.emailEnabled && submittedPlayerId !== gameNight?.hostId}
+				onChangeResponse={changeResponse}
+			/>
+		);
 	}
 
 	if (!isLoading && !gameNight) {
@@ -101,6 +118,7 @@ function RsvpPage() {
 
 							<RsvpResponseForm
 								invitedPlayers={gameNight.invitedPlayers}
+								hostId={gameNight.hostId}
 								onSubmit={submitRsvp}
 								isSubmitting={isSubmitting}
 							/>

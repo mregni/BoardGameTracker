@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import Check from "@/assets/icons/check.svg?react";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { GameNightRsvpState } from "@/models";
@@ -7,9 +8,11 @@ import { GameNightRsvpState } from "@/models";
 interface Props {
 	playerName: string;
 	response: GameNightRsvpState | null;
+	hostNotified: boolean;
+	onChangeResponse: () => void;
 }
 
-export const RsvpSuccessView = ({ playerName, response }: Props) => {
+export const RsvpSuccessView = ({ playerName, response, hostNotified, onChangeResponse }: Props) => {
 	const { t } = useTranslation("rsvp");
 
 	return (
@@ -25,7 +28,10 @@ export const RsvpSuccessView = ({ playerName, response }: Props) => {
 							<BgtText size="6" weight="bold" color="white">
 								{t("submitted-title")}
 							</BgtText>
-							<BgtText color="gray">{t("submitted-thanks", { name: playerName })}</BgtText>
+							<BgtText color="gray">
+								{t("submitted-thanks", { name: playerName })}
+								{hostNotified && ` ${t("submitted-notified")}`}
+							</BgtText>
 						</div>
 
 						<div className="bg-primary/10 border border-primary/30 rounded-lg p-4 w-full">
@@ -35,6 +41,10 @@ export const RsvpSuccessView = ({ playerName, response }: Props) => {
 								{response === GameNightRsvpState.Pending && t("submitted-maybe")}
 							</BgtText>
 						</div>
+
+						<BgtButton variant="text" onClick={onChangeResponse}>
+							{t("change-response")}
+						</BgtButton>
 					</div>
 				</BgtCard>
 			</div>

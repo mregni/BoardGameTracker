@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { addLocationCall, updateLocationCall } from "@/services/locationService";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
 	onSaveSuccess?: () => void;
@@ -20,8 +21,8 @@ export const useLocationModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 		},
-		onError: () => {
-			errorToast("location:notifications.create-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "location:notifications.create-failed"));
 		},
 	});
 
@@ -32,8 +33,8 @@ export const useLocationModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
 			onUpdateSuccess?.();
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.locations] });
 		},
-		onError: () => {
-			errorToast("location:notifications.update-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "location:notifications.update-failed"));
 		},
 	});
 

@@ -8,14 +8,18 @@ import { PlayerAvatarWithCrown } from "./PlayerAvatarWithCrown";
 interface PlayerSelectorProps {
 	player: Player;
 	players: Player[];
+	excludeId?: number;
 	isWinner: boolean;
 	onPlayerChange: (playerId: number) => void;
 }
 
-const PlayerSelectorComponent = ({ player, players, isWinner, onPlayerChange }: PlayerSelectorProps) => {
+const PlayerSelectorComponent = ({ player, players, excludeId, isWinner, onPlayerChange }: PlayerSelectorProps) => {
 	const { t } = useTranslation("compare");
 
-	const playerItems = useMemo(() => players.map((p) => ({ value: p.id, label: p.name, image: p.image })), [players]);
+	const playerItems = useMemo(
+		() => players.filter((p) => p.id !== excludeId).map((p) => ({ value: p.id, label: p.name, image: p.image })),
+		[players, excludeId],
+	);
 
 	const handleValueChange = useCallback(
 		(value: string | number) => {

@@ -22,7 +22,7 @@ export const FilterTabs = (props: Props) => {
 	];
 
 	return (
-		<div className="flex gap-2">
+		<div className="flex flex-wrap gap-2">
 			{tabs.map((tab) => (
 				<button
 					type="button"
