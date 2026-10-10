@@ -6,8 +6,8 @@ export const SafeHttpUrl = (value: string | null | undefined): string | null => 
 export const CssUrl = (value: string): string => {
 	const escaped = value
 		.replace(/[\r\n]/g, "")
-		.replaceAll("\\", "\\\\")
-		.replaceAll('"', '\\"');
+		.replaceAll("\\", String.raw`\\`)
+		.replaceAll('"', String.raw`\"`);
 	return `url("${escaped}")`;
 };
 
