@@ -56,7 +56,8 @@
     "play-time-range-incomplete": "Introduce tanto el tiempo de juego mínimo como el máximo",
     "range-min-above-max": "El mínimo no puede ser mayor que el máximo",
     "expansion-already-exists": "Esta expansión ya está vinculada al juego.",
-    "shop-url-not-public": "Usa la dirección de una tienda web pública; no se permiten direcciones de la red local"
+    "shop-url-not-public": "Usa la dirección de una tienda web pública; no se permiten direcciones de la red local",
+    "year-published-too-late": "El año de publicación no puede ser posterior al año que viene"
   },
   "something-went-wrong": "Algo salió mal, inténtalo de nuevo más tarde.",
   "unexpected-error": "Se ha producido un error inesperado.",
@@ -64,13 +65,18 @@
   "timeout": "La petición tardó demasiado. Inténtalo de nuevo.",
   "server": "Se ha producido un error en el servidor. Inténtalo de nuevo más tarde.",
   "location": {
-    "used-by-game-nights": "Esta ubicación se usa en una o más noches de juego"
+    "used-by-game-nights": "Esta ubicación se usa en una o más noches de juego",
+    "name-required": "El nombre de la ubicación es obligatorio",
+    "name-already-exists": "Ya existe una ubicación con este nombre"
   },
   "player": {
-    "hosts-game-nights": "Este jugador organiza una o más noches de juego"
+    "hosts-game-nights": "Este jugador organiza una o más noches de juego",
+    "name-required": "El nombre del jugador es obligatorio",
+    "name-already-exists": "Ya existe un jugador con este nombre"
   },
   "session": {
-    "invalid-expansion": "Una de las expansiones seleccionadas no pertenece a este juego"
+    "invalid-expansion": "Una de las expansiones seleccionadas no pertenece a este juego",
+    "start-in-future": "La fecha de inicio no puede estar en el futuro"
   },
   "email": {
     "not-configured": "El correo electrónico no está configurado en este servidor",
@@ -86,9 +92,13 @@
     "invalid-public-url": "La URL pública no es válida"
   },
   "game-night": {
-    "invites-cooldown": "Las invitaciones de esta noche de juegos se enviaron hace poco, inténtalo de nuevo en unos minutos"
+    "invites-cooldown": "Las invitaciones de esta noche de juegos se enviaron hace poco, inténtalo de nuevo en unos minutos",
+    "host-rsvp-locked": "El anfitrión siempre asiste a su propia noche de juegos"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD no cumple las reglas de contraseña (al menos 8 caracteres). Cámbiala o elimínala antes de restablecer de fábrica."
+  },
+  "feature": {
+    "disabled": "Esta función está desactivada en los ajustes"
   }
 }

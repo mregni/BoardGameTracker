@@ -74,19 +74,19 @@
   "win-percentage": {
     "green": {
       "title": "Lucky Streak",
-      "description": "Win 30% of your sessions."
+      "description": "Win 30% of at least 5 sessions."
     },
     "blue": {
       "title": "Skilled Player",
-      "description": "Win 50% of your sessions."
+      "description": "Win 50% of at least 5 sessions."
     },
     "red": {
       "title": "Dominator",
-      "description": "Win 65% of your sessions."
+      "description": "Win 65% of at least 5 sessions."
     },
     "gold": {
       "title": "Unstoppable",
-      "description": "Win 80% of your sessions."
+      "description": "Win 80% of at least 5 sessions."
     }
   },
   "solo-specialist": {

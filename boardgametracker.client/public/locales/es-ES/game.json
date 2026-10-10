@@ -3,7 +3,7 @@
   "sessions": "Ver partidas",
   "no-sessions": {
     "title": "Aún no hay partidas registradas",
-    "description": "  Empieza a registrar tus partidas para ver estadísticas detalladas, el rendimiento de los jugadores y el historial de partidas. ¡Registra tu primera partida para desbloquear todas las estadísticas!",
+    "description": "Empieza a registrar tus partidas para ver estadísticas detalladas, el rendimiento de los jugadores y el historial de partidas. ¡Registra tu primera partida para desbloquear todas las estadísticas!",
     "button": "Registra tu primera partida",
     "extra": "Los datos de la partida incluyen jugadores, puntuaciones, duración y más"
   },
@@ -83,12 +83,12 @@
     "description": "Elige un método para crear un nuevo juego.",
     "save": "Crear juego",
     "title": "Crear nuevo juego",
-    "bgg-title": "Importar juego",
+    "bgg-title": "Añadir un juego desde BGG",
     "bgg-subtext": "Importa los datos del juego desde BoardGameGeek",
     "bgg-description": "Rellena los campos obligatorios para importar un juego de BoardGameGeek",
     "manual-title": "Entrada manual",
     "manual-subtext": "Introduce los datos manualmente para crear un juego",
-    "bgg-import-title": "Importar de BoardGameGeek",
+    "bgg-import-title": "Importar colección de BGG",
     "bgg-import-subtext": "Importa tu colección de juegos desde BoardGameGeek",
     "manual": {
       "title": "Crear juego",
@@ -199,6 +199,16 @@
     "min-max": "El mínimo no puede ser mayor que el máximo",
     "rating": "Introduce una valoración entre 0 y 10",
     "weight": "Introduce una complejidad entre 0 y 5",
-    "year": "Introduce un año entre -5000 y 9999 (negativo para a. C.)"
+    "year": "Introduce un año entre -5000 y el año que viene (negativo para a. C.)",
+    "whole-number": "Introduce un número entero",
+    "max-below-min": "El máximo no puede ser menor que el mínimo"
+  },
+  "facts": {
+    "year": "Año de publicación",
+    "min-age": "Edad mínima"
+  },
+  "about": {
+    "show-more": "Mostrar más",
+    "show-less": "Mostrar menos"
   }
 }

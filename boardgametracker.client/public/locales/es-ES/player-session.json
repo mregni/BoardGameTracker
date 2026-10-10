@@ -18,13 +18,14 @@
     "create-player": "Crear nuevo jugador",
     "players": {
       "label": "Jugadores",
-      "add": "+ añadir jugador",
+      "add": "+ Añadir jugador",
       "minimum": "Añade al menos un jugador a esta partida"
     },
     "duration": {
       "label": "Duración",
       "placeholder": "en minutos",
-      "required": "La duración es obligatoria"
+      "required": "La duración es obligatoria",
+      "positive": "La duración debe ser mayor que 0"
     },
     "game": {
       "label": "Juego",
@@ -34,7 +35,8 @@
     "start": {
       "label": "Inicio",
       "required": "La fecha de inicio es obligatoria",
-      "placeholder": "Elige una fecha"
+      "placeholder": "Elige una fecha",
+      "future": "El inicio no puede estar en el futuro"
     },
     "location": {
       "label": "Ubicación",

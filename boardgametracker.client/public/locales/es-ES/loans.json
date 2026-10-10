@@ -19,13 +19,20 @@
   },
   "delete": {
     "button": "Eliminar",
+    "title": "Eliminar préstamo de {{game}}",
     "description": "¿Seguro que quieres eliminar este préstamo? ¡Esta acción no se puede deshacer!",
     "successfull": "Préstamo eliminado correctamente.",
     "failed": "Error al eliminar el préstamo, revisa los registros para más detalles."
   },
   "return": {
     "successfull": "Juego marcado como devuelto correctamente.",
-    "failed": "Error al marcar el juego como devuelto, revisa los registros para más detalles."
+    "failed": "Error al marcar el juego como devuelto, revisa los registros para más detalles.",
+    "title": "Devolver {{game}}",
+    "description": "¿Cuándo se devolvió el juego?",
+    "date": "Devuelto el",
+    "confirm": "Marcar como devuelto",
+    "required": "La fecha de devolución es obligatoria",
+    "before-start": "La fecha de devolución no puede ser anterior al inicio del préstamo"
   },
   "no-active-loans": "No hay préstamos activos en este momento.",
   "new": {

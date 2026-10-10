@@ -54,7 +54,9 @@
     "age-10-12": "10 - 12",
     "age-13plus": "13+",
     "show-more": "Mostrar más filtros",
-    "show-less": "Mostrar menos filtros"
+    "show-less": "Mostrar menos filtros",
+    "no-match": "Ningún juego coincide con los filtros actuales.",
+    "clear": "Borrar filtros"
   },
   "columns": {
     "title": "Título",
@@ -71,11 +73,11 @@
     "current-price": "Precio actual"
   },
   "table": {
-    "title": "Lista de juegos",
     "total-games": "Total de juegos",
-    "total-price": "Precio total",
-    "mean-price": "Precio medio",
-    "empty": "Ningún juego coincide con los filtros seleccionados."
+    "empty": "Ningún juego coincide con los filtros seleccionados.",
+    "total-price-owned": "Precio total (en propiedad)",
+    "mean-price-owned_one": "Precio medio (en propiedad) · {{count}} juego con precio",
+    "mean-price-owned_other": "Precio medio (en propiedad) · {{count}} juegos con precio"
   },
   "in-stock": {
     "yes": "En stock",
@@ -86,5 +88,9 @@
     "unavailable": "Precio no disponible"
   },
   "tracked": "Seguimiento de precio activo",
-  "tracked-pending": "Esperando la primera comprobación de precio"
+  "tracked-pending": "Esperando la primera comprobación de precio",
+  "view": {
+    "table": "Vista de tabla",
+    "grid": "Vista de cuadrícula"
+  }
 }

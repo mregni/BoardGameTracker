@@ -54,7 +54,9 @@
     "age-10-12": "10 - 12",
     "age-13plus": "13+",
     "show-more": "Show more filters",
-    "show-less": "Show less filters"
+    "show-less": "Show less filters",
+    "no-match": "No games match the current filters.",
+    "clear": "Clear filters"
   },
   "columns": {
     "title": "Title",
@@ -71,11 +73,11 @@
     "current-price": "Current price"
   },
   "table": {
-    "title": "Game list",
     "total-games": "Total games",
-    "total-price": "Total price",
-    "mean-price": "Mean price",
-    "empty": "No games match the selected filters."
+    "empty": "No games match the selected filters.",
+    "total-price-owned": "Total price (owned)",
+    "mean-price-owned_one": "Mean price (owned) · {{count}} priced game",
+    "mean-price-owned_other": "Mean price (owned) · {{count}} priced games"
   },
   "in-stock": {
     "yes": "In stock",
@@ -86,5 +88,9 @@
     "unavailable": "Price unavailable"
   },
   "tracked": "Price tracking active",
-  "tracked-pending": "Waiting for the first price check"
+  "tracked-pending": "Waiting for the first price check",
+  "view": {
+    "table": "Table view",
+    "grid": "Grid view"
+  }
 }

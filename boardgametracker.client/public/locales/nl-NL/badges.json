@@ -74,19 +74,19 @@
   "win-percentage": {
     "green": {
       "title": "Geluksreeks",
-      "description": "Win 30% van je sessies."
+      "description": "Win 30% van minstens 5 sessies."
     },
     "blue": {
       "title": "Bedreven speler",
-      "description": "Win 50% van je sessies."
+      "description": "Win 50% van minstens 5 sessies."
     },
     "red": {
       "title": "Heerser",
-      "description": "Win 65% van je sessies."
+      "description": "Win 65% van minstens 5 sessies."
     },
     "gold": {
       "title": "Onstuitbaar",
-      "description": "Win 80% van je sessies."
+      "description": "Win 80% van minstens 5 sessies."
     }
   },
   "solo-specialist": {

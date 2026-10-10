@@ -24,9 +24,11 @@
     "label": "{{player}} played a total of {{count}} game sessions."
   },
   "head-to-head": {
-    "title": "Head to Head",
-    "direct-wins": "{{player}} won {{count}} times against {{opponent}}",
-    "most-won-game": "{{player}} won most from {{opponent}} in {{game}} ({{count}} times)",
+    "title": "Head to head",
+    "direct-wins_one": "{{player}} won {{count}} time against {{opponent}}",
+    "direct-wins_other": "{{player}} won {{count}} times against {{opponent}}",
+    "most-won-game_one": "{{player}} won most from {{opponent}} in {{game}} ({{count}} time)",
+    "most-won-game_other": "{{player}} won most from {{opponent}} in {{game}} ({{count}} times)",
     "last-session": "Last session was won by {{player}} in {{game}}",
     "most-played-together": "Most played together: {{game}} ({{count}} sessions)",
     "closest-game": "{{player}} won by just {{points}} points in {{game}}",
@@ -34,10 +36,10 @@
   },
   "stats": {
     "total-wins": "Total wins",
-    "win-percentage": "Win Percentage",
+    "win-percentage": "Win percentage",
     "sessions": "Sessions",
     "total-duration": "Total gameplay time",
-    "player-stats": "{{player}}'s Stats"
+    "player-stats": "{{player}}'s stats"
   },
   "empty": {
     "insufficient-players": {

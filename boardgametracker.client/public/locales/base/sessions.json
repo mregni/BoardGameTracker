@@ -1,6 +1,6 @@
 {
   "new": "Add new session",
-  "title": "sessions",
+  "title": "Sessions",
   "notifications": {
     "deleted": "Session is successfully deleted",
     "delete-failed": "Failed deleting session"

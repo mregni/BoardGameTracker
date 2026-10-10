@@ -1,12 +1,13 @@
 {
   "title": "Clasificación",
   "columns": {
-    "rank": "#",
+    "rank": "Puesto",
     "player": "Jugador",
     "wins": "Victorias",
     "plays": "Partidas",
     "win-rate": "% de victorias",
     "podiums": "Podios",
+    "podiums-hint": "Puestos entre los 3 primeros en partidas con {{count}} o más jugadores puntuados",
     "time-played": "Tiempo jugado"
   },
   "highlights": {
@@ -16,7 +17,9 @@
     "most-time": "Más tiempo en la mesa",
     "nobody-yet": "Nadie todavía",
     "min-plays_one": "Necesita al menos {{count}} partida",
-    "min-plays_other": "Necesita al menos {{count}} partidas"
+    "min-plays_other": "Necesita al menos {{count}} partidas",
+    "min-plays-hint_one": "Mín. {{count}} partida",
+    "min-plays-hint_other": "Mín. {{count}} partidas"
   },
   "values": {
     "wins_one": "{{count}} victoria",

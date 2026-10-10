@@ -24,5 +24,7 @@
   "expansion-count": "Uitbreidingen",
   "best-player": "Beste speler",
   "in-collection": "In collectie",
-  "collection-value": "Waarde van de collectie"
+  "collection-value": "Waarde van de collectie",
+  "average-price-paid-priced_one": "Gem. betaalde prijs · {{count}} spel met prijs",
+  "average-price-paid-priced_other": "Gem. betaalde prijs · {{count}} spellen met prijs"
 }

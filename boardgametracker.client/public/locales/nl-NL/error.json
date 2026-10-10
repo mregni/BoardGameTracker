@@ -56,7 +56,8 @@
     "play-time-range-incomplete": "Vul zowel de minimale als de maximale speelduur in",
     "range-min-above-max": "Het minimum kan niet hoger zijn dan het maximum",
     "expansion-already-exists": "Deze uitbreiding is al aan het spel gekoppeld.",
-    "shop-url-not-public": "Gebruik het adres van een openbare webwinkel; adressen in het lokale netwerk zijn niet toegestaan"
+    "shop-url-not-public": "Gebruik het adres van een openbare webwinkel; adressen in het lokale netwerk zijn niet toegestaan",
+    "year-published-too-late": "Het jaar van uitgave kan niet later zijn dan volgend jaar"
   },
   "something-went-wrong": "Er ging iets mis, probeer het later opnieuw.",
   "unexpected-error": "Er is een onverwachte fout opgetreden.",
@@ -64,13 +65,18 @@
   "timeout": "De aanvraag duurde te lang. Probeer het opnieuw.",
   "server": "Er is een serverfout opgetreden. Probeer het later opnieuw.",
   "location": {
-    "used-by-game-nights": "Deze locatie wordt gebruikt door een of meer spelavonden"
+    "used-by-game-nights": "Deze locatie wordt gebruikt door een of meer spelavonden",
+    "name-required": "De naam van de locatie is verplicht",
+    "name-already-exists": "Er bestaat al een locatie met deze naam"
   },
   "player": {
-    "hosts-game-nights": "Deze speler is gastheer van een of meer spelavonden"
+    "hosts-game-nights": "Deze speler is gastheer van een of meer spelavonden",
+    "name-required": "De naam van de speler is verplicht",
+    "name-already-exists": "Er bestaat al een speler met deze naam"
   },
   "session": {
-    "invalid-expansion": "Een van de gekozen uitbreidingen hoort niet bij dit spel"
+    "invalid-expansion": "Een van de gekozen uitbreidingen hoort niet bij dit spel",
+    "start-in-future": "De startdatum kan niet in de toekomst liggen"
   },
   "email": {
     "not-configured": "E-mail is niet geconfigureerd op deze server",
@@ -86,9 +92,13 @@
     "invalid-public-url": "De publieke URL is ongeldig"
   },
   "game-night": {
-    "invites-cooldown": "De uitnodigingen voor deze spelavond zijn net verstuurd, probeer het over een paar minuten opnieuw"
+    "invites-cooldown": "De uitnodigingen voor deze spelavond zijn net verstuurd, probeer het over een paar minuten opnieuw",
+    "host-rsvp-locked": "De gastheer is altijd aanwezig op de eigen spelavond"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD voldoet niet aan de wachtwoordregels (minstens 8 tekens). Pas het aan of verwijder het vóór een fabrieksreset."
+  },
+  "feature": {
+    "disabled": "Deze functie staat uit in de instellingen"
   }
 }

@@ -19,13 +19,20 @@
   },
   "delete": {
     "button": "Verwijderen",
+    "title": "Uitlening van {{game}} verwijderen",
     "description": "Weet je zeker dat je deze uitlening wilt verwijderen? Dit kan niet ongedaan worden gemaakt!",
     "successfull": "Uitlening is verwijderd.",
     "failed": "Uitlening verwijderen mislukt, bekijk de logs voor meer details."
   },
   "return": {
     "successfull": "Spel is gemarkeerd als teruggebracht.",
-    "failed": "Spel markeren als teruggebracht mislukt, bekijk de logs voor meer details."
+    "failed": "Spel markeren als teruggebracht mislukt, bekijk de logs voor meer details.",
+    "title": "{{game}} terugbrengen",
+    "description": "Wanneer werd het spel teruggebracht?",
+    "date": "Teruggebracht op",
+    "confirm": "Markeren als teruggebracht",
+    "required": "De terugbrengdatum is verplicht",
+    "before-start": "De terugbrengdatum kan niet voor de start van de uitlening liggen"
   },
   "no-active-loans": "Er zijn momenteel geen lopende uitleningen.",
   "new": {

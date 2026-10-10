@@ -24,7 +24,9 @@
 			"description": "The address people use to reach BoardGameTracker, for example https://games.example.com. Invitation and password-reset emails link to it, and SSO uses it for its redirect URIs. Emails with links are only sent once it is set.",
 			"label": "Public URL",
 			"placeholder": "https://myboardgametracker.app",
-			"invalid": "Enter a valid http(s) URL"
+			"invalid": "Enter a valid http(s) URL",
+			"insecure-warning": "The public URL uses http while BoardGameTracker is opened over https. Links in emails, RSVP invitations and SSO redirects will use the insecure address.",
+			"host-mismatch-warning": "The public URL points to a different host than {{host}}. Links in emails, RSVP invitations and SSO redirects will use that host."
 		},
 		"ui-language": {
 			"label": "Language",

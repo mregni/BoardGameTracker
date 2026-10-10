@@ -4,7 +4,7 @@
     "description": "Aún no has añadido ninguna ubicación. Empieza añadiendo tu primera ubicación para registrar dónde juegas."
   },
   "new": {
-    "button": "Añadir nueva ubicación",
+    "button": "Añadir ubicación",
     "title": "Crear nueva ubicación",
     "description": "Introduce el nombre de la ubicación para crear una nueva.",
     "name": {
@@ -28,5 +28,8 @@
   "delete": {
     "description": "¿Seguro que quieres eliminar la ubicación '{{name}}'?",
     "extra-description": "La ubicación está vinculada a {{count}} partidas, que se desvincularán."
+  },
+  "columns": {
+    "sessions": "Partidas"
   }
 }

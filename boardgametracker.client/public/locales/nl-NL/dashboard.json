@@ -11,5 +11,10 @@
     "collection": "Collectie"
   },
   "recent-activity": "Recente activiteit",
-  "recent-added-games": "Recent toegevoegde spellen"
+  "recent-added-games": "Recent toegevoegde spellen",
+  "welcome-back-linked_one": "Als {{player}} heb je {{played}} van {{count}} sessie gespeeld.",
+  "welcome-back-linked_other": "Als {{player}} heb je {{played}} van {{count}} sessies gespeeld.",
+  "activity": {
+    "won": "<winner>{{winner}}</winner> heeft <game>{{game}}</game> gewonnen"
+  }
 }

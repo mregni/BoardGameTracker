@@ -54,7 +54,9 @@
     "age-10-12": "10 - 12",
     "age-13plus": "13+",
     "show-more": "Meer filters tonen",
-    "show-less": "Minder filters tonen"
+    "show-less": "Minder filters tonen",
+    "no-match": "Geen spellen gevonden voor de huidige filters.",
+    "clear": "Filters wissen"
   },
   "columns": {
     "title": "Titel",
@@ -71,11 +73,11 @@
     "current-price": "Huidige prijs"
   },
   "table": {
-    "title": "Spellenlijst",
     "total-games": "Totaal aantal spellen",
-    "total-price": "Totale prijs",
-    "mean-price": "Gemiddelde prijs",
-    "empty": "Geen spellen die aan de gekozen filters voldoen."
+    "empty": "Geen spellen die aan de gekozen filters voldoen.",
+    "total-price-owned": "Totale prijs (in bezit)",
+    "mean-price-owned_one": "Gemiddelde prijs (in bezit) · {{count}} spel met prijs",
+    "mean-price-owned_other": "Gemiddelde prijs (in bezit) · {{count}} spellen met prijs"
   },
   "in-stock": {
     "yes": "Op voorraad",
@@ -86,5 +88,9 @@
     "unavailable": "Prijs niet beschikbaar"
   },
   "tracked": "Prijs wordt gevolgd",
-  "tracked-pending": "Wacht op de eerste prijscontrole"
+  "tracked-pending": "Wacht op de eerste prijscontrole",
+  "view": {
+    "table": "Tabelweergave",
+    "grid": "Rasterweergave"
+  }
 }

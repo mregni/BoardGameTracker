@@ -1,6 +1,6 @@
 {
-  "title": "Asistente de reglas",
-  "menu": "Reglas",
+  "title": "Chat de reglas",
+  "menu": "Chat de reglas",
   "ask-button": "Preguntar al manual",
   "ask-button-disabled": "Sube un manual antes de entrar al chat",
   "select-game": "Selecciona un juego",

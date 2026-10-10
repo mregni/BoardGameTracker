@@ -1,16 +1,16 @@
 {
-  "save-new": "Create game play",
-  "save-update": "Update game play",
-  "title-new": "Add new game session",
-  "title-update": "Update game session",
+  "save-new": "Create session",
+  "save-update": "Update session",
+  "title-new": "Add new session",
+  "title-update": "Update session",
   "new": {
     "notifications": {
-      "created": "Game play is succesfully created",
-      "create-failed": "Failed creating game play"
+      "created": "Session successfully created",
+      "create-failed": "Failed creating session"
     },
     "save": "Add player",
     "title": "Add player",
-    "description": "Fill in the form to add a new player to this game play.",
+    "description": "Fill in the form to add a new player to this session.",
     "player": {
       "label": "Player",
       "required": "Player is required"
@@ -18,13 +18,14 @@
     "create-player": "Create new player",
     "players": {
       "label": "Players",
-      "add": "+ add player",
+      "add": "+ Add player",
       "minimum": "Add at least one player to this session"
     },
     "duration": {
       "label": "Duration",
       "placeholder": "in minutes",
-      "required": "Duration is required"
+      "required": "Duration is required",
+      "positive": "Duration must be greater than 0"
     },
     "game": {
       "label": "Game",
@@ -34,7 +35,8 @@
     "start": {
       "label": "Start",
       "required": "Start date is required",
-      "placeholder": "Pick a date"
+      "placeholder": "Pick a date",
+      "future": "Start can't be in the future"
     },
     "location": {
       "label": "Location",
@@ -44,7 +46,7 @@
     },
     "comment": {
       "label": "Comment",
-      "sub-label": "Extra comment on the game."
+      "sub-label": "Extra comment on the session."
     }
   },
   "update": {
@@ -52,8 +54,8 @@
     "title": "Update player",
     "description": "Update the form to change the details of {{name}}.",
     "notifications": {
-      "updated": "Game play is successfully updated",
-      "update-failed": "Failed updating game play"
+      "updated": "Session successfully updated",
+      "update-failed": "Failed updating session"
     }
   },
   "won": {
@@ -68,7 +70,7 @@
     "label": "Played game for the first time"
   },
   "delete": {
-    "successfull": "Game play is successfully deleted.",
-    "failed": "Game play deletion failed, check logs for more details."
+    "successfull": "Session successfully deleted.",
+    "failed": "Session deletion failed, check logs for more details."
   }
 }

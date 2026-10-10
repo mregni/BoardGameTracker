@@ -83,12 +83,12 @@
     "description": "Kies hoe je een nieuw spel wilt aanmaken.",
     "save": "Spel aanmaken",
     "title": "Nieuw spel aanmaken",
-    "bgg-title": "Spel importeren",
+    "bgg-title": "Eén spel toevoegen via BGG",
     "bgg-subtext": "Spelgegevens importeren van BoardGameGeek",
     "bgg-description": "Vul de verplichte velden in om een spel te importeren van BoardGameGeek",
     "manual-title": "Handmatige invoer",
     "manual-subtext": "Voer de gegevens zelf in om een spel aan te maken",
-    "bgg-import-title": "Importeren van BoardGameGeek",
+    "bgg-import-title": "BGG-collectie importeren",
     "bgg-import-subtext": "Importeer je spelcollectie van BoardGameGeek",
     "manual": {
       "title": "Spel aanmaken",
@@ -199,6 +199,16 @@
     "min-max": "Het minimum kan niet hoger zijn dan het maximum",
     "rating": "Geef een beoordeling tussen 0 en 10",
     "weight": "Geef een complexiteit tussen 0 en 5",
-    "year": "Geef een jaar tussen -5000 en 9999 (negatief voor v.Chr.)"
+    "year": "Geef een jaar tussen -5000 en volgend jaar (negatief voor v.Chr.)",
+    "whole-number": "Geef een geheel getal",
+    "max-below-min": "Het maximum kan niet lager zijn dan het minimum"
+  },
+  "facts": {
+    "year": "Jaar van uitgave",
+    "min-age": "Minimumleeftijd"
+  },
+  "about": {
+    "show-more": "Meer tonen",
+    "show-less": "Minder tonen"
   }
 }

@@ -56,7 +56,8 @@
     "play-time-range-incomplete": "Enter both the minimum and the maximum play time",
     "range-min-above-max": "The minimum cannot be higher than the maximum",
     "expansion-already-exists": "This expansion is already linked to the game.",
-    "shop-url-not-public": "Use the address of a public web shop; local network addresses are not allowed"
+    "shop-url-not-public": "Use the address of a public web shop; local network addresses are not allowed",
+    "year-published-too-late": "The year published cannot be later than next year"
   },
   "something-went-wrong": "Something went wrong, please try again later.",
   "unexpected-error": "An unexpected error occurred.",
@@ -64,13 +65,18 @@
   "timeout": "The request took too long. Please try again.",
   "server": "A server error occurred. Please try again later.",
   "location": {
-    "used-by-game-nights": "This location is used by one or more game nights"
+    "used-by-game-nights": "This location is used by one or more game nights",
+    "name-required": "Location name is required",
+    "name-already-exists": "A location with this name already exists"
   },
   "player": {
-    "hosts-game-nights": "This player hosts one or more game nights"
+    "hosts-game-nights": "This player hosts one or more game nights",
+    "name-required": "Player name is required",
+    "name-already-exists": "A player with this name already exists"
   },
   "session": {
-    "invalid-expansion": "One of the selected expansions does not belong to this game"
+    "invalid-expansion": "One of the selected expansions does not belong to this game",
+    "start-in-future": "The start date cannot be in the future"
   },
   "email": {
     "not-configured": "Email is not configured on this server",
@@ -86,9 +92,13 @@
     "invalid-public-url": "The public URL is not valid"
   },
   "game-night": {
-    "invites-cooldown": "Invitations for this game night were sent recently, try again in a few minutes"
+    "invites-cooldown": "Invitations for this game night were sent recently, try again in a few minutes",
+    "host-rsvp-locked": "The host always attends their own game night"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD does not meet the password rules (at least 8 characters). Change it or remove it before a factory reset."
+  },
+  "feature": {
+    "disabled": "This feature is turned off in the settings"
   }
 }

@@ -6,7 +6,7 @@
     "accept": "Accept",
     "decline": "Decline",
     "maybe": "Maybe",
-    "host": "Host is always attending"
+    "host": "Host – always attending"
   },
   "empty": {
     "title": "No game nights planned yet",
@@ -19,24 +19,24 @@
     "title": "Delete game night",
     "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
   },
-  "title": "Game Nights Planner",
+  "title": "Game nights planner",
   "create": {
-    "button": "Create Game Night",
-    "title": "Create new Game Night",
+    "button": "Create game night",
+    "title": "Create new game night",
     "description": "Fill out the form to create a new game night event.",
-    "save": "Create Game Night"
+    "save": "Create game night"
   },
   "edit": {
-    "title": "Edit Game Night",
+    "title": "Edit game night",
     "description": "Update the details of this game night event.",
-    "save": "Save Changes"
+    "save": "Save changes"
   },
   "upcoming": "Upcoming game nights",
   "past": "Past game nights",
   "card": {
     "hosted-by": "Hosted by {{host}}",
     "suggested-games": "Suggested games",
-    "rsvp-link": "RSVP Link",
+    "rsvp-link": "RSVP link",
     "upcoming": "Upcoming",
     "past": "Past",
     "copy-link": "Copy RSVP link",

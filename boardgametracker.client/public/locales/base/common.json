@@ -10,13 +10,14 @@
   "add-game": "Add game",
   "add-player": "Add player",
   "games": "Games",
-  "games-table": "Game list",
   "items_one": "{{count}} item",
   "items_other": "{{count}} items",
   "minutes_one": "minute",
   "never": "never",
   "accepted": "Accepted",
   "game-nights": "Game nights",
+  "upcoming-game-nights_one": "{{count}} upcoming game night",
+  "upcoming-game-nights_other": "{{count}} upcoming game nights",
   "declined": "Declined",
   "pending": "Pending",
   "minutes_other": "minutes",
@@ -101,8 +102,8 @@
   "game-play": "this game play",
   "delete": {
     "title": "Delete {{title}}",
-    "description": "Are you sure you want to delete {{title}} with all it's content. This cannot be reversed!",
-    "button": "delete"
+    "description": "Are you sure you want to delete {{title}} and all its content? This cannot be undone!",
+    "button": "Delete"
   },
   "no-sessions": {
     "title": "No sessions logged yet",
@@ -133,5 +134,7 @@
   "click-to-edit": "Click to edit",
   "leaderboard": "Leaderboard",
   "hour-short": "h",
-  "minute-short": "m"
+  "minute-short": "m",
+  "game": "Game",
+  "comment": "Comment"
 }

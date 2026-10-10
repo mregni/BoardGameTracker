@@ -4,7 +4,7 @@
     "description": "Je hebt nog geen locaties toegevoegd. Voeg je eerste locatie toe om bij te houden waar je je spellen speelt."
   },
   "new": {
-    "button": "Nieuwe locatie toevoegen",
+    "button": "Locatie toevoegen",
     "title": "Nieuwe locatie aanmaken",
     "description": "Voer de naam van de locatie in om een nieuwe aan te maken.",
     "name": {
@@ -28,5 +28,8 @@
   "delete": {
     "description": "Weet je zeker dat je locatie '{{name}}' wilt verwijderen?",
     "extra-description": "De locatie is gekoppeld aan {{count}} spelsessies, die worden ontkoppeld."
+  },
+  "columns": {
+    "sessions": "Sessies"
   }
 }

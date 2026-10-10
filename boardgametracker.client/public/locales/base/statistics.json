@@ -24,5 +24,7 @@
   "expansion-count": "Expansions",
   "best-player": "Best player",
   "in-collection": "In collection",
-  "collection-value": "Collection value"
+  "collection-value": "Collection value",
+  "average-price-paid-priced_one": "Avg. price paid · {{count}} priced game",
+  "average-price-paid-priced_other": "Avg. price paid · {{count}} priced games"
 }

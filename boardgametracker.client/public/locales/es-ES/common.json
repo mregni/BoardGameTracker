@@ -10,13 +10,14 @@
   "add-game": "Añadir juego",
   "add-player": "Añadir jugador",
   "games": "Juegos",
-  "games-table": "Lista de juegos",
   "items_one": "{{count}} elemento",
   "items_other": "{{count}} elementos",
   "minutes_one": "minuto",
   "never": "nunca",
   "accepted": "Aceptado",
   "game-nights": "Noches de juego",
+  "upcoming-game-nights_one": "{{count}} noche de juego próxima",
+  "upcoming-game-nights_other": "{{count}} noches de juego próximas",
   "declined": "Rechazado",
   "pending": "Pendiente",
   "minutes_other": "minutos",
@@ -102,7 +103,7 @@
   "delete": {
     "title": "Eliminar {{title}}",
     "description": "¿Seguro que quieres eliminar {{title}} con todo su contenido? ¡Esta acción no se puede deshacer!",
-    "button": "eliminar"
+    "button": "Eliminar"
   },
   "no-sessions": {
     "title": "Aún no hay partidas registradas",
@@ -133,5 +134,7 @@
   "click-to-edit": "Haz clic para editar",
   "leaderboard": "Clasificación",
   "hour-short": "h",
-  "minute-short": "min"
+  "minute-short": "min",
+  "game": "Juego",
+  "comment": "Comentario"
 }

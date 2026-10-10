@@ -10,13 +10,14 @@
   "add-game": "Spel toevoegen",
   "add-player": "Speler toevoegen",
   "games": "Spellen",
-  "games-table": "Spellenlijst",
   "items_one": "{{count}} item",
   "items_other": "{{count}} items",
   "minutes_one": "minuut",
   "never": "nooit",
   "accepted": "Geaccepteerd",
   "game-nights": "Spelavonden",
+  "upcoming-game-nights_one": "{{count}} komende spelavond",
+  "upcoming-game-nights_other": "{{count}} komende spelavonden",
   "declined": "Afgewezen",
   "pending": "In afwachting",
   "minutes_other": "minuten",
@@ -102,7 +103,7 @@
   "delete": {
     "title": "{{title}} verwijderen",
     "description": "Weet je zeker dat je {{title}} met alle inhoud wilt verwijderen? Dit kan niet ongedaan worden gemaakt!",
-    "button": "verwijderen"
+    "button": "Verwijderen"
   },
   "no-sessions": {
     "title": "Nog geen sessies geregistreerd",
@@ -133,5 +134,7 @@
   "click-to-edit": "Klik om te bewerken",
   "leaderboard": "Ranglijst",
   "hour-short": "u",
-  "minute-short": "m"
+  "minute-short": "m",
+  "game": "Spel",
+  "comment": "Opmerking"
 }
