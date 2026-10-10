@@ -15,4 +15,5 @@ public class ShameStatistics
     public int Count { get; set; }
     public decimal? TotalValue { get; set; }
     public decimal? AverageValue { get; set; }
+    public int PricedGameCount { get; set; }
 }

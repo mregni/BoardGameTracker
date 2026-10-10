@@ -4,7 +4,11 @@ using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Locations.Specifications;
+using BoardGameTracker.Core.Players.Interfaces;
+using BoardGameTracker.Core.Players.Specifications;
 using BoardGameTracker.Core.Rag.Interfaces;
 using BoardGameTracker.Core.Rag.Specifications;
 using BoardGameTracker.IntegrationTests.Infrastructure;
@@ -29,6 +33,39 @@ public class PostgresSemanticsTests : IAsyncLifetime
     public ValueTask InitializeAsync() => new(_fixture.ResetDataAsync());
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+    [Fact]
+    public async Task PlayerWithNameSpec_ShouldMatchCaseInsensitiveTrimmedNames_AndSkipTheExcludedPlayer()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+        var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+        var reggi = new Player("Reggi");
+        var percent = new Player("100%");
+        db.AddRange(reggi, percent);
+        await db.SaveChangesAsync();
+
+        (await repository.AnyAsync(new PlayerWithNameSpec("  rEGGI "))).Should().BeTrue();
+        (await repository.AnyAsync(new PlayerWithNameSpec("reggi", reggi.Id))).Should().BeFalse();
+        (await repository.AnyAsync(new PlayerWithNameSpec("Reg%"))).Should().BeFalse();
+        (await repository.AnyAsync(new PlayerWithNameSpec("R_ggi"))).Should().BeFalse();
+        (await repository.AnyAsync(new PlayerWithNameSpec("100%"))).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task LocationWithNameSpec_ShouldMatchCaseInsensitiveTrimmedNames_AndSkipTheExcludedLocation()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IRepository<Location>>();
+        var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+        var home = new Location("Thuis");
+        db.Add(home);
+        await db.SaveChangesAsync();
+
+        (await repository.AnyAsync(new LocationWithNameSpec(" THUIS"))).Should().BeTrue();
+        (await repository.AnyAsync(new LocationWithNameSpec("thuis", home.Id))).Should().BeFalse();
+        (await repository.AnyAsync(new LocationWithNameSpec("Thu_s"))).Should().BeFalse();
+    }
 
     [Fact]
     public async Task SetConfigValue_ShouldUpsert_WithoutDuplicatingTheKey()

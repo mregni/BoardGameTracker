@@ -7,6 +7,7 @@ public class LeaderboardDto
     public LeaderboardEntryDto? BestWinRate { get; set; }
     public LeaderboardEntryDto? MostTimePlayed { get; set; }
     public int MinimumPlaysForWinRate { get; set; }
+    public int MinimumPlayersForPodium { get; set; }
     public List<LeaderboardEntryDto> Players { get; set; } = [];
 }
 

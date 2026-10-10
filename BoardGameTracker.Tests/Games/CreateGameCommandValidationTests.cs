@@ -40,6 +40,24 @@ public class CreateGameCommandValidationTests
     }
 
     [Fact]
+    public void Validate_ShouldAcceptNextYear_ForAnnouncedGames()
+    {
+        var command = new CreateGameCommand { Title = "Game", YearPublished = System.DateTime.UtcNow.Year + 1 };
+
+        Validate(command).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Validate_ShouldRejectYearsAfterNextYear()
+    {
+        var command = new CreateGameCommand { Title = "Game", YearPublished = System.DateTime.UtcNow.Year + 2 };
+
+        var result = Validate(command).Should().ContainSingle().Subject;
+        result.ErrorMessage.Should().Be(Constants.Errors.YearPublishedTooLate);
+        result.MemberNames.Should().Contain(nameof(CreateGameCommand.YearPublished));
+    }
+
+    [Fact]
     public void Validate_ShouldRejectAMinimumAgeOfZero_WhichTheGameRejectsToo()
     {
         var command = new CreateGameCommand { Title = "Game", MinAge = 0 };

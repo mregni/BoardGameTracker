@@ -60,10 +60,20 @@ public class GameNightService : IGameNightService
         _logger = logger;
     }
 
-    public Task<List<GameNight>> GetGameNights()
+    public async Task<List<GameNight>> GetGameNights()
     {
         _logger.LogDebug("Fetching game nights");
-        return _gameNightRepository.ListAsync(new GameNightsOverviewSpec());
+        if (!await IsEnabledAsync())
+        {
+            throw new FeatureDisabledException(Constants.AppConfig.GameNightsEnabled);
+        }
+
+        return await _gameNightRepository.ListAsync(new GameNightsOverviewSpec());
+    }
+
+    private Task<bool> IsEnabledAsync()
+    {
+        return _configRepository.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true);
     }
 
     public Task<GameNight?> GetById(int id)
@@ -183,6 +193,11 @@ public class GameNightService : IGameNightService
 
     private async Task<GameNightRsvp> ApplyRsvpStateAsync(GameNightRsvp rsvp, GameNightRsvpState state)
     {
+        if (rsvp.PlayerId == rsvp.GameNight?.HostId && state != GameNightRsvpState.Accepted)
+        {
+            throw new DomainException(Constants.Errors.HostRsvpLocked);
+        }
+
         if (rsvp.State == state)
         {
             return rsvp;
@@ -310,9 +325,14 @@ public class GameNightService : IGameNightService
         return result;
     }
 
-    public Task<int> CountFutureGameNights(CancellationToken cancellationToken = default)
+    public async Task<int> CountFutureGameNights(CancellationToken cancellationToken = default)
     {
-        return _gameNightRepository.CountAsync(new FutureGameNightsSpec(_dateTimeProvider.UtcNow), cancellationToken);
+        if (!await IsEnabledAsync())
+        {
+            return 0;
+        }
+
+        return await _gameNightRepository.CountAsync(new FutureGameNightsSpec(_dateTimeProvider.UtcNow), cancellationToken);
     }
 
     public async Task<GameNight?> GetByLinkId(Guid linkId, bool isAuthenticated)

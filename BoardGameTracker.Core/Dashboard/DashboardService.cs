@@ -1,6 +1,5 @@
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
-using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Dashboard.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -44,6 +43,7 @@ public class DashboardService : IDashboardService
         var totalPlayedTime = await _sessionRepository.GetTotalPlayTime(cancellationToken);
         var totalCollectionValue = await _gameStatisticsRepository.GetTotalPayedAsync(cancellationToken);
         var avgGamePrice = await _gameStatisticsRepository.GetMeanPayedAsync(cancellationToken);
+        var pricedGameCount = await _gameStatisticsRepository.CountPricedOwnedGamesAsync(cancellationToken);
         var expansionsOwned = await _gameRepository.GetTotalExpansionCount(cancellationToken);
         var avgSessionTime = await _sessionRepository.GetMeanPlayTime(cancellationToken);
 
@@ -62,6 +62,7 @@ public class DashboardService : IDashboardService
             TotalPlayedTime = totalPlayedTime,
             TotalCollectionValue = totalCollectionValue,
             AvgGamePrice = avgGamePrice,
+            PricedGameCount = pricedGameCount,
             ExpansionsOwned = expansionsOwned,
             AvgSessionTime = avgSessionTime,
             RecentActivities = recentSessions.ToRecentActivityListDto(),
@@ -69,9 +70,7 @@ public class DashboardService : IDashboardService
             MostPlayedGames = mostPlayedGames.ToListDto(),
             TopPlayers = topPlayers.ToListDto(),
             RecentAddedGames = recentlyAddedGames.ToRecentAddedGameListDto(),
-            SessionsByDayOfWeek = PlayByDayBuckets.Count(sessionStartTimes, _dateTimeProvider)
-                .Select(x => new PlayByDay { DayOfWeek = x.Key, PlayCount = x.Value })
-                .ToList()
+            SessionsByDayOfWeek = PlayByDayBuckets.WeekStartingMonday(PlayByDayBuckets.Count(sessionStartTimes, _dateTimeProvider))
         };
     }
 }

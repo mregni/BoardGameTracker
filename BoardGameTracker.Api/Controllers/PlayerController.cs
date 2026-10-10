@@ -76,8 +76,14 @@ public class PlayerController : ControllerBase
     [HttpGet]
     [Route("{id:int}/statistics")]
     [ProducesResponseType<PlayerStatistics>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetPlayerStats(int id)
     {
+        if (!await _playerService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
         var stats = await _playerService.GetStats(id);
         return Ok(stats);
     }

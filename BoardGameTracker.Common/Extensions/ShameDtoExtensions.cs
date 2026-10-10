@@ -24,7 +24,8 @@ public static class ShameDtoExtensions
         {
             Count = statistics.Count,
             TotalValue = statistics.TotalValue,
-            AverageValue = statistics.AverageValue
+            AverageValue = statistics.AverageValue,
+            PricedGameCount = statistics.PricedGameCount
         };
     }
 

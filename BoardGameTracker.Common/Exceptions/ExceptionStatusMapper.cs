@@ -26,6 +26,7 @@ public static class ExceptionStatusMapper
         ValidationException or DomainException => (StatusCodes.Status400BadRequest, exception.Message),
         AuthenticationFailedException => (StatusCodes.Status401Unauthorized, exception.Message),
         EntityNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),
+        FeatureDisabledException => (StatusCodes.Status404NotFound, exception.Message),
         KeyNotFoundException => (StatusCodes.Status404NotFound, "The requested resource was not found."),
         ArgumentException => (StatusCodes.Status400BadRequest, "Invalid request."),
         DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "The resource was modified by another request. Please retry."),

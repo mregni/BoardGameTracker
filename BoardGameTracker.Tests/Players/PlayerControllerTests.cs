@@ -222,6 +222,9 @@ public class PlayerControllerTests
         };
 
         _playerServiceMock
+            .Setup(x => x.ExistsAsync(playerId))
+            .ReturnsAsync(true);
+        _playerServiceMock
             .Setup(x => x.GetStats(playerId))
             .ReturnsAsync(stats);
 
@@ -230,7 +233,23 @@ public class PlayerControllerTests
         result.Should().BeOfType<OkObjectResult>()
             .Which.Value.Should().BeSameAs(stats);
 
+        _playerServiceMock.Verify(x => x.ExistsAsync(playerId), Times.Once);
         _playerServiceMock.Verify(x => x.GetStats(playerId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetPlayerStats_ShouldReturnNotFound_WhenPlayerDoesNotExist()
+    {
+        _playerServiceMock
+            .Setup(x => x.ExistsAsync(5))
+            .ReturnsAsync(false);
+
+        var result = await _controller.GetPlayerStats(5);
+
+        result.Should().BeOfType<NotFoundResult>();
+
+        _playerServiceMock.Verify(x => x.ExistsAsync(5), Times.Once);
         VerifyNoOtherCalls();
     }
 

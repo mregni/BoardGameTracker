@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
@@ -118,31 +119,30 @@ public class ShameServiceTests
     #region GetShameGames Tests
 
     [Fact]
-    public async Task GetShameGames_ShouldReturnEmptyList_WhenFeatureDisabled()
+    public async Task GetShameGames_ShouldThrowFeatureDisabled_WhenFeatureDisabled()
     {
         _configRepositoryMock
             .Setup(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false))
             .ReturnsAsync(false);
 
-        var result = await _shameService.GetShameGames();
+        var action = () => _shameService.GetShameGames();
 
-        result.Should().BeEmpty();
+        await action.Should().ThrowAsync<FeatureDisabledException>()
+            .Where(e => e.Feature == Constants.AppConfig.ShelfOfShameEnabled && e.Message == Constants.Errors.FeatureDisabled);
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task GetShameStatistics_ShouldReturnZeroCount_WhenFeatureDisabled()
+    public async Task GetShameStatistics_ShouldThrowFeatureDisabled_WhenFeatureDisabled()
     {
         _configRepositoryMock
             .Setup(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false))
             .ReturnsAsync(false);
 
-        var result = await _shameService.GetShameStatistics();
+        var action = () => _shameService.GetShameStatistics();
 
-        result.Count.Should().Be(0);
-        result.TotalValue.Should().BeNull();
-        result.AverageValue.Should().BeNull();
+        await action.Should().ThrowAsync<FeatureDisabledException>();
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -214,6 +214,7 @@ public class ShameServiceTests
         result.Count.Should().Be(3);
         result.TotalValue.Should().Be(100.00m);
         result.AverageValue.Should().BeApproximately(33.33m, 0.01m);
+        result.PricedGameCount.Should().Be(3);
 
         VerifyShameGamesCalls(6);
     }
@@ -235,6 +236,7 @@ public class ShameServiceTests
         result.Count.Should().Be(3);
         result.TotalValue.Should().Be(80.00m);
         result.AverageValue.Should().Be(40.00m);
+        result.PricedGameCount.Should().Be(2);
 
         VerifyShameGamesCalls(6);
     }
@@ -255,6 +257,7 @@ public class ShameServiceTests
         result.Count.Should().Be(2);
         result.TotalValue.Should().BeNull();
         result.AverageValue.Should().BeNull();
+        result.PricedGameCount.Should().Be(0);
 
         VerifyShameGamesCalls(6);
     }

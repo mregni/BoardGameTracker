@@ -4,7 +4,7 @@ namespace BoardGameTracker.Common.DTOs.Commands;
 
 public class CreatePlayerCommand
 {
-    [Required]
+    [Required(AllowEmptyStrings = true)]
     [StringLength(200)]
     public required string Name { get; set; }
 

@@ -3,6 +3,7 @@ using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.Leaderboard;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Players.Specifications;
 using BoardGameTracker.Core.Sessions.Specifications;
@@ -130,7 +131,7 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
         var podiums = scored
             .GroupBy(x => x.SessionId)
             .Select(session => session.ToList())
-            .Where(session => session.Count >= MinimumPlayersForPodium)
+            .Where(session => session.Count >= LeaderboardService.MinimumPlayersForPodium)
             .SelectMany(PodiumPlayers)
             .GroupBy(playerId => playerId)
             .ToDictionary(g => g.Key, g => g.Count());
@@ -139,8 +140,6 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
             .Select(x => new LeaderboardRow(x.Id, x.Name, x.Image, x.PlayCount, x.WinCount, podiums.GetValueOrDefault(x.Id), x.MinutesPlayed))
             .ToList();
     }
-
-    private const int MinimumPlayersForPodium = 4;
 
     private static IEnumerable<int> PodiumPlayers(List<ScoredPlay> session)
     {

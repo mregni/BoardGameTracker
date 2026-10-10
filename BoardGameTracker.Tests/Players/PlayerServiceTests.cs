@@ -65,6 +65,12 @@ public class PlayerServiceTests
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
+    private void VerifyNameChecked()
+    {
+        _playerRepositoryMock.Verify(
+            x => x.AnyAsync(It.IsAny<PlayerWithNameSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     #region GetList Tests
 
     [Fact]
@@ -140,8 +146,59 @@ public class PlayerServiceTests
         result.Image.Should().Be("player.png");
         result.Email.Should().Be("player@example.com");
 
+        VerifyNameChecked();
         _playerRepositoryMock.Verify(x => x.CreateAsync(It.Is<Player>(p => p.Name == "New Player" && p.Image == "player.png" && p.Email == "player@example.com")), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Create_ShouldTrimName()
+    {
+        var command = new CreatePlayerCommand { Name = "  Alice  " };
+
+        _playerRepositoryMock
+            .Setup(x => x.CreateAsync(It.IsAny<Player>()))
+            .ReturnsAsync((Player p) => p);
+
+        var result = await _playerService.Create(command);
+
+        result.Name.Should().Be("Alice");
+
+        VerifyNameChecked();
+        _playerRepositoryMock.Verify(x => x.CreateAsync(It.Is<Player>(p => p.Name == "Alice")), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Create_ShouldThrowValidationException_WhenNameIsBlank(string name)
+    {
+        var command = new CreatePlayerCommand { Name = name };
+
+        var action = async () => await _playerService.Create(command);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.PlayerNameRequired);
+
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Create_ShouldThrowValidationException_WhenNameAlreadyExists()
+    {
+        var command = new CreatePlayerCommand { Name = "JOHN" };
+
+        _playerRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<PlayerWithNameSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var action = async () => await _playerService.Create(command);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.PlayerNameAlreadyExists);
+
+        VerifyNameChecked();
         VerifyNoOtherCalls();
     }
 
@@ -229,6 +286,7 @@ public class PlayerServiceTests
         result.Email.Should().Be("new@example.com");
 
         _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNameChecked();
         _imageServiceMock.Verify(x => x.DeleteImage("old.png"), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
@@ -289,12 +347,52 @@ public class PlayerServiceTests
         result.Image.Should().Be(existingImage);
 
         _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNameChecked();
         _imageServiceMock.Verify(x => x.DeleteImage(It.IsAny<string>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
         VerifyNoOtherCalls();
     }
 
     #endregion
+
+    [Fact]
+    public async Task Update_ShouldThrowValidationException_WhenAnotherPlayerHasTheName()
+    {
+        var existingPlayer = new Player("Old Name", "old.png") { Id = 1 };
+        var command = new UpdatePlayerCommand { Id = 1, Name = "Jane", Image = "new.png" };
+
+        _playerRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingPlayer);
+        _playerRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<PlayerWithNameSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var action = async () => await _playerService.Update(command);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.PlayerNameAlreadyExists);
+        existingPlayer.Name.Should().Be("Old Name");
+        existingPlayer.Image.Should().Be("old.png");
+
+        _playerRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<PlayerByIdForUpdateSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNameChecked();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ExistsAsync_ShouldReturnRepositoryResult()
+    {
+        _playerRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<PlayerByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await _playerService.ExistsAsync(4);
+
+        result.Should().BeTrue();
+
+        _playerRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<PlayerByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
 
     #region CountAsync Tests
 

@@ -212,6 +212,27 @@ public class GameFactoryTests
         result.Weight!.Value.Should().Be(3.5);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task CreateFromBggAsync_ShouldNotSetWeight_WhenBggHasNoWeightVotes(double averageWeight)
+    {
+        var item = CreateBasicItem();
+        item.Statistics = new ThingResponse.Statistics
+        {
+            Ratings = new ThingResponse.Ratings
+            {
+                Average = 7.1,
+                AverageWeight = averageWeight
+            }
+        };
+
+        var result = await _factory.CreateFromBggAsync(item, false, GameState.Owned, null, null);
+
+        result.Weight.Should().BeNull();
+        result.Rating!.Value.Should().Be(7.1);
+    }
+
     [Fact]
     public async Task CreateFromBggAsync_ShouldNotSetRatingAndWeight_WhenStatisticsAreNull()
     {

@@ -10,6 +10,7 @@ public interface IPlayerService
     Task<Player> Create(CreatePlayerCommand command);
     Task<Player?> Get(int id);
     Task<List<int>> GetExistingIdsAsync(IEnumerable<int> ids);
+    Task<bool> ExistsAsync(int id);
     Task Delete(int id);
     Task<PlayerStatistics> GetStats(int id);
     Task<int> GetTotalPlayCount(int id);

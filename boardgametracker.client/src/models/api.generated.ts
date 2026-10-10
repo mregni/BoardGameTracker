@@ -1363,6 +1363,17 @@ export interface paths {
                         "text/json": components["schemas"]["GameStatisticsResponse"];
                     };
                 };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1398,6 +1409,17 @@ export interface paths {
                         "text/plain": components["schemas"]["ShameDto"][];
                         "application/json": components["schemas"]["ShameDto"][];
                         "text/json": components["schemas"]["ShameDto"][];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -1437,6 +1459,17 @@ export interface paths {
                         "text/json": components["schemas"]["ShameStatisticsDto"];
                     };
                 };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1472,6 +1505,17 @@ export interface paths {
                         "text/plain": components["schemas"]["GameNightDto"][];
                         "application/json": components["schemas"]["GameNightDto"][];
                         "text/json": components["schemas"]["GameNightDto"][];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -3174,6 +3218,17 @@ export interface paths {
                         "text/json": components["schemas"]["PlayerStatistics"];
                     };
                 };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -3914,6 +3969,12 @@ export interface components {
             hasScoring?: boolean;
             /** Format: double */
             buyingPrice?: number | null;
+            /** Format: double */
+            rating?: number | null;
+            /** Format: double */
+            weight?: number | null;
+            /** Format: double */
+            soldPrice?: number | null;
             /** Format: date-time */
             additionDate?: string | null;
         };
@@ -4004,6 +4065,8 @@ export interface components {
             totalCollectionValue: number | null;
             /** Format: double */
             avgGamePrice: number | null;
+            /** Format: int32 */
+            pricedGameCount: number;
             /** Format: int32 */
             expansionsOwned: number;
             /** Format: double */
@@ -4251,6 +4314,8 @@ export interface components {
             mostTimePlayed: components["schemas"]["LeaderboardEntryDto"];
             /** Format: int32 */
             minimumPlaysForWinRate: number;
+            /** Format: int32 */
+            minimumPlayersForPodium: number;
             players: components["schemas"]["LeaderboardEntryDto"][];
         };
         LeaderboardEntryDto: {
@@ -4614,6 +4679,8 @@ export interface components {
             totalValue: number | null;
             /** Format: double */
             averageValue: number | null;
+            /** Format: int32 */
+            pricedGameCount: number;
         };
         TestOidcDiscoveryRequest: {
             authority: string;
@@ -4691,16 +4758,16 @@ export interface components {
             hasScoring?: boolean;
             /** Format: double */
             buyingPrice?: number | null;
-            /** Format: date-time */
-            additionDate?: string | null;
-            /** Format: int32 */
-            id?: number;
             /** Format: double */
             rating?: number | null;
             /** Format: double */
             weight?: number | null;
             /** Format: double */
             soldPrice?: number | null;
+            /** Format: date-time */
+            additionDate?: string | null;
+            /** Format: int32 */
+            id?: number;
         };
         UpdateGameExpansionsCommand: {
             expansionBggIds: number[];

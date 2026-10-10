@@ -52,7 +52,8 @@ public class PlayerService : IPlayerService
     public async Task<Player> Create(CreatePlayerCommand command)
     {
         _logger.LogDebug("Creating player {Name}", command.Name);
-        var player = new Player(command.Name, command.Image, command.Email);
+        var name = await EnsureUniqueName(command.Name, null);
+        var player = new Player(name, command.Image, command.Email);
         await _playerRepository.CreateAsync(player);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Player {PlayerId} ({Name}) created", player.Id, player.Name);
@@ -63,6 +64,11 @@ public class PlayerService : IPlayerService
     {
         _logger.LogDebug("Fetching player {PlayerId}", id);
         return _playerRepository.GetByIdAsync(id);
+    }
+
+    public Task<bool> ExistsAsync(int id)
+    {
+        return _playerRepository.AnyAsync(new PlayerByIdSpec(id));
     }
 
     public Task<List<int>> GetExistingIdsAsync(IEnumerable<int> ids)
@@ -79,9 +85,10 @@ public class PlayerService : IPlayerService
             throw new EntityNotFoundException(nameof(Player), command.Id);
         }
         
+        var name = await EnsureUniqueName(command.Name, command.Id);
         var previousImage = dbPlayer.Image;
         dbPlayer.UpdateImage(command.Image);
-        dbPlayer.UpdateName(command.Name);
+        dbPlayer.UpdateName(name);
         dbPlayer.UpdateEmail(command.Email);
         await _unitOfWork.SaveChangesAsync();
 
@@ -91,6 +98,22 @@ public class PlayerService : IPlayerService
         }
 
         return dbPlayer;
+    }
+
+    private async Task<string> EnsureUniqueName(string? name, int? excludedId)
+    {
+        var trimmed = name?.Trim();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            throw new ValidationException(nameof(CreatePlayerCommand.Name), Constants.Errors.PlayerNameRequired);
+        }
+
+        if (await _playerRepository.AnyAsync(new PlayerWithNameSpec(trimmed, excludedId)))
+        {
+            throw new ValidationException(nameof(CreatePlayerCommand.Name), Constants.Errors.PlayerNameAlreadyExists);
+        }
+
+        return trimmed;
     }
 
     public Task<int> CountAsync(CancellationToken cancellationToken = default)

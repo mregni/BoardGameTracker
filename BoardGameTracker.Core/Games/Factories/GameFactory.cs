@@ -75,7 +75,8 @@ public class GameFactory : IGameFactory
             game.UpdatePlayTime(minPlayTime, maxPlayTime);
             game.UpdateMinAge(item.MinAge > 0 ? item.MinAge : null);
             game.UpdateRating(item.Statistics?.Ratings?.Average);
-            game.UpdateWeight(item.Statistics?.Ratings?.AverageWeight);
+            var averageWeight = item.Statistics?.Ratings?.AverageWeight;
+            game.UpdateWeight(averageWeight > 0 ? averageWeight : null);
             game.UpdateBggId(item.Id);
             game.UpdateBuyingPrice(price);
             game.UpdateShopUrl(shopUrl);

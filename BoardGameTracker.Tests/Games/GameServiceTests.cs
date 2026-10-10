@@ -8,6 +8,7 @@ using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.ChangeDetection.Interfaces;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -40,6 +41,7 @@ public class GameServiceTests
     private readonly Mock<IManualService> _manualServiceMock;
     private readonly Mock<IChangeDetectionClient> _changeDetectionClientMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
     private readonly Mock<ILogger<GameService>> _loggerMock;
     private readonly GameService _gameService;
 
@@ -54,6 +56,10 @@ public class GameServiceTests
         _manualServiceMock = new Mock<IManualService>();
         _changeDetectionClientMock = new Mock<IChangeDetectionClient>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _dateTimeProviderMock = new Mock<IDateTimeProvider>();
+        _dateTimeProviderMock.Setup(x => x.Now).Returns(new DateTime(2026, 10, 10, 14, 30, 0, DateTimeKind.Utc));
+        _dateTimeProviderMock.Setup(x => x.ConvertToUtc(It.IsAny<DateTime>())).Returns((DateTime date) => DateTime.SpecifyKind(date, DateTimeKind.Utc));
+        _dateTimeProviderMock.Setup(x => x.ConvertToLocalTime(It.IsAny<DateTime>())).Returns((DateTime date) => date);
         _loggerMock = new Mock<ILogger<GameService>>();
 
         _gameService = new GameService(
@@ -65,6 +71,7 @@ public class GameServiceTests
             _settingsServiceMock.Object,
             _changeDetectionClientMock.Object,
             _unitOfWorkMock.Object,
+            _dateTimeProviderMock.Object,
             _loggerMock.Object);
     }
 
@@ -674,6 +681,9 @@ public class GameServiceTests
             MinAge = 10,
             BggId = 12345,
             BuyingPrice = 49.99m,
+            SoldPrice = 25.00m,
+            Rating = 7.5,
+            Weight = 2.8,
             AdditionDate = new DateTime(2023, 1, 15)
         };
 
@@ -706,6 +716,9 @@ public class GameServiceTests
         result.BggId.Should().Be(12345);
         result.BuyingPrice.Should().NotBeNull();
         result.BuyingPrice!.Amount.Should().Be(49.99m);
+        result.SoldPrice!.Amount.Should().Be(25.00m);
+        result.Rating!.Value.Should().Be(7.5);
+        result.Weight!.Value.Should().Be(2.8);
         result.AdditionDate.Should().Be(new DateTime(2023, 1, 15));
 
         _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Once);
@@ -737,6 +750,54 @@ public class GameServiceTests
         result.Title.Should().Be("Simple Game");
         result.HasScoring.Should().BeFalse();
         result.State.Should().Be(GameState.Wanted);
+
+        _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateGameFromCommand_ShouldKeepTheCreationTime_WhenAdditionDateIsToday()
+    {
+        var command = new CreateGameCommand
+        {
+            Title = "Fresh Game",
+            State = GameState.Owned,
+            AdditionDate = new DateTime(2026, 10, 10, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        _gameRepositoryMock
+            .Setup(x => x.CreateAsync(It.IsAny<Game>()))
+            .ReturnsAsync((Game g) => g);
+
+        var result = await _gameService.CreateGameFromCommand(command);
+
+        result.AdditionDate.Should().NotBe(command.AdditionDate);
+        result.AdditionDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
+
+        _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateGameFromCommand_ShouldUseTheGivenDate_WhenAdditionDateIsAnotherDay()
+    {
+        var additionDate = new DateTime(2026, 10, 9, 0, 0, 0, DateTimeKind.Utc);
+        var command = new CreateGameCommand
+        {
+            Title = "Older Game",
+            State = GameState.Owned,
+            AdditionDate = additionDate
+        };
+
+        _gameRepositoryMock
+            .Setup(x => x.CreateAsync(It.IsAny<Game>()))
+            .ReturnsAsync((Game g) => g);
+
+        var result = await _gameService.CreateGameFromCommand(command);
+
+        result.AdditionDate.Should().Be(additionDate);
 
         _gameRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Game>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);

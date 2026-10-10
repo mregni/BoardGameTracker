@@ -67,6 +67,7 @@ public class DashboardServiceTests
         _sessionRepositoryMock.Verify(x => x.GetMeanPlayTime(), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetTotalPayedAsync(), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetMeanPayedAsync(), Times.Once);
+        _gameStatisticsRepositoryMock.Verify(x => x.CountPricedOwnedGamesAsync(), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetTotalExpansionCount(), Times.Once);
         _sessionRepositoryMock.Verify(x => x.GetRecentSessions(4), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetGameStateCounts(), Times.Once);
@@ -86,6 +87,7 @@ public class DashboardServiceTests
         _sessionRepositoryMock.Setup(x => x.GetTotalPlayTime()).ReturnsAsync(5000.0);
         _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPayedAsync()).ReturnsAsync(887.5m);
         _gameStatisticsRepositoryMock.Setup(x => x.GetMeanPayedAsync()).ReturnsAsync(35.5m);
+        _gameStatisticsRepositoryMock.Setup(x => x.CountPricedOwnedGamesAsync()).ReturnsAsync(25);
         _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount()).ReturnsAsync(15);
         _sessionRepositoryMock.Setup(x => x.GetMeanPlayTime()).ReturnsAsync(50.0);
 
@@ -97,6 +99,7 @@ public class DashboardServiceTests
         result.TotalPlayedTime.Should().Be(5000.0);
         result.TotalCollectionValue.Should().Be(887.5m);
         result.AvgGamePrice.Should().Be(35.5m);
+        result.PricedGameCount.Should().Be(25);
         result.ExpansionsOwned.Should().Be(15);
         result.AvgSessionTime.Should().Be(50.0);
 
@@ -110,6 +113,7 @@ public class DashboardServiceTests
 
         result.TotalCollectionValue.Should().BeNull();
         result.AvgGamePrice.Should().BeNull();
+        result.PricedGameCount.Should().Be(0);
 
         VerifyGetStatisticsCalls();
     }
@@ -266,9 +270,10 @@ public class DashboardServiceTests
 
         var result = await _sut.GetStatistics();
 
-        result.SessionsByDayOfWeek.Should().HaveCount(2);
-        result.SessionsByDayOfWeek.Should().Contain(x => x.DayOfWeek == DayOfWeek.Monday && x.PlayCount == 5);
-        result.SessionsByDayOfWeek.Should().Contain(x => x.DayOfWeek == DayOfWeek.Friday && x.PlayCount == 3);
+        result.SessionsByDayOfWeek.Select(x => x.DayOfWeek).Should().Equal(
+            DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday,
+            DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday);
+        result.SessionsByDayOfWeek.Select(x => x.PlayCount).Should().Equal(5, 0, 0, 0, 3, 0, 0);
 
         VerifyGetStatisticsCalls();
     }
@@ -282,7 +287,8 @@ public class DashboardServiceTests
 
         var result = await _sut.GetStatistics();
 
-        result.SessionsByDayOfWeek.Should().ContainSingle(x => x.DayOfWeek == DayOfWeek.Monday && x.PlayCount == 1);
+        result.SessionsByDayOfWeek.Should().ContainSingle(x => x.PlayCount > 0)
+            .Which.DayOfWeek.Should().Be(DayOfWeek.Monday);
     }
 
 
@@ -297,6 +303,7 @@ public class DashboardServiceTests
         _sessionRepositoryMock.Setup(x => x.GetMeanPlayTime()).ReturnsAsync(0);
         _gameStatisticsRepositoryMock.Setup(x => x.GetTotalPayedAsync()).ReturnsAsync((decimal?)null);
         _gameStatisticsRepositoryMock.Setup(x => x.GetMeanPayedAsync()).ReturnsAsync((decimal?)null);
+        _gameStatisticsRepositoryMock.Setup(x => x.CountPricedOwnedGamesAsync()).ReturnsAsync(0);
         _gameRepositoryMock.Setup(x => x.GetTotalExpansionCount()).ReturnsAsync(0);
 
         _sessionRepositoryMock.Setup(x => x.GetRecentSessions(4)).ReturnsAsync([]);

@@ -46,6 +46,12 @@ public class LocationServiceTests
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
+    private void VerifyNameChecked()
+    {
+        _locationRepositoryMock.Verify(
+            x => x.AnyAsync(It.IsAny<LocationWithNameSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     private void VerifyGameNightsChecked()
     {
         _gameNightRepositoryMock.Verify(
@@ -151,8 +157,59 @@ public class LocationServiceTests
         result.Should().NotBeNull();
         result.Name.Should().Be("New Location");
 
+        VerifyNameChecked();
         _locationRepositoryMock.Verify(x => x.CreateAsync(It.Is<Location>(l => l.Name == "New Location")), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Create_ShouldTrimName()
+    {
+        var command = new CreateLocationCommand { Name = "  Attic  " };
+
+        _locationRepositoryMock
+            .Setup(x => x.CreateAsync(It.IsAny<Location>()))
+            .ReturnsAsync((Location l) => l);
+
+        var result = await _locationService.Create(command);
+
+        result.Name.Should().Be("Attic");
+
+        VerifyNameChecked();
+        _locationRepositoryMock.Verify(x => x.CreateAsync(It.Is<Location>(l => l.Name == "Attic")), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Create_ShouldThrowValidationException_WhenNameIsBlank(string name)
+    {
+        var command = new CreateLocationCommand { Name = name };
+
+        var action = async () => await _locationService.Create(command);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.LocationNameRequired);
+
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Create_ShouldThrowValidationException_WhenNameAlreadyExists()
+    {
+        var command = new CreateLocationCommand { Name = "living room" };
+
+        _locationRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<LocationWithNameSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var action = async () => await _locationService.Create(command);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.LocationNameAlreadyExists);
+
+        VerifyNameChecked();
         VerifyNoOtherCalls();
     }
 
@@ -232,7 +289,31 @@ public class LocationServiceTests
         result.Name.Should().Be("Updated Location");
 
         _locationRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        VerifyNameChecked();
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldThrowValidationException_WhenAnotherLocationHasTheName()
+    {
+        var command = new UpdateLocationCommand { Id = 1, Name = "Game Store" };
+        var existingLocation = new Location("Old Location") { Id = 1 };
+
+        _locationRepositoryMock
+            .Setup(x => x.GetByIdAsync(1))
+            .ReturnsAsync(existingLocation);
+        _locationRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<LocationWithNameSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var action = async () => await _locationService.Update(command);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.LocationNameAlreadyExists);
+        existingLocation.Name.Should().Be("Old Location");
+
+        _locationRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        VerifyNameChecked();
         VerifyNoOtherCalls();
     }
 

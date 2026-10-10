@@ -45,7 +45,8 @@ public class LocationService : ILocationService
     public async Task<Location> Create(CreateLocationCommand command)
     {
         _logger.LogDebug("Creating location {Name}", command.Name);
-        var location = new Location(command.Name);
+        var name = await EnsureUniqueName(command.Name, null);
+        var location = new Location(name);
         await _locationRepository.CreateAsync(location);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Location {LocationId} ({Name}) created", location.Id, location.Name);
@@ -75,10 +76,26 @@ public class LocationService : ILocationService
             throw new EntityNotFoundException(nameof(Location), command.Id);
         }
 
-        location.UpdateName(command.Name);
+        location.UpdateName(await EnsureUniqueName(command.Name, command.Id));
         await _unitOfWork.SaveChangesAsync();
 
         return location;
+    }
+
+    private async Task<string> EnsureUniqueName(string? name, int? excludedId)
+    {
+        var trimmed = name?.Trim();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            throw new ValidationException(nameof(CreateLocationCommand.Name), Constants.Errors.LocationNameRequired);
+        }
+
+        if (await _locationRepository.AnyAsync(new LocationWithNameSpec(trimmed, excludedId)))
+        {
+            throw new ValidationException(nameof(CreateLocationCommand.Name), Constants.Errors.LocationNameAlreadyExists);
+        }
+
+        return trimmed;
     }
 
     public Task<int> CountAsync(CancellationToken cancellationToken = default)

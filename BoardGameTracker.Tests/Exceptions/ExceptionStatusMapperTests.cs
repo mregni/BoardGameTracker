@@ -29,6 +29,7 @@ public class ExceptionStatusMapperTests
         { new DbUpdateException("save", new PostgresException("disk full", "ERROR", "ERROR", "53100")), true },
         { new BggFeatureDisabledException(), false },
         { new ConfigMissingException("BGG"), false },
+        { new FeatureDisabledException("shelf_of_shame_enabled"), false },
     };
 
     [Theory]
@@ -44,5 +45,14 @@ public class ExceptionStatusMapperTests
         var (status, _) = ExceptionStatusMapper.Map(new DbUpdateException("save", new PostgresException("duplicate", "ERROR", "ERROR", "23505")));
 
         status.Should().Be(400);
+    }
+
+    [Fact]
+    public void Map_ShouldTurnADisabledFeatureIntoANotFoundWithTheTranslationKey()
+    {
+        var (status, message) = ExceptionStatusMapper.Map(new FeatureDisabledException("game_nights_enabled"));
+
+        status.Should().Be(404);
+        message.Should().Be(BoardGameTracker.Common.Constants.Errors.FeatureDisabled);
     }
 }
