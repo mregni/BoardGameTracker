@@ -19,19 +19,16 @@ const FormFieldWrapperComponent = ({
 	className = "",
 }: FormFieldWrapperProps) => (
 	<div className={`flex flex-col justify-start ${className}`}>
-		{label && (
-			<div className="flex items-baseline justify-between">
-				{htmlFor ? (
-					<label htmlFor={htmlFor} className="text-[15px] font-medium leading-7">
-						{label}
-					</label>
-				) : (
-					<BgtFieldLabel>{label}</BgtFieldLabel>
-				)}
-				<BgtFormErrors errors={errors} />
-			</div>
-		)}
+		{label &&
+			(htmlFor ? (
+				<label htmlFor={htmlFor} className="text-[15px] font-medium leading-7">
+					{label}
+				</label>
+			) : (
+				<BgtFieldLabel>{label}</BgtFieldLabel>
+			))}
 		{children}
+		{label && <BgtFormErrors errors={errors} />}
 	</div>
 );
 

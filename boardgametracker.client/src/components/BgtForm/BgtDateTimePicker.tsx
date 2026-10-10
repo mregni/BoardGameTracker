@@ -59,10 +59,7 @@ export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
 
 	return (
 		<div className="flex flex-col justify-start w-full">
-			<div className="flex items-baseline justify-between">
-				<BgtFieldLabel>{label}</BgtFieldLabel>
-				<BgtFormErrors errors={field.state.meta.errors} />
-			</div>
+			<BgtFieldLabel>{label}</BgtFieldLabel>
 			<div className="flex gap-2">
 				<div className="flex-1">
 					<BgtDatePicker field={dateField as AnyFieldApi} label="" placeholder="" disabled={disabled} />
@@ -80,6 +77,7 @@ export const BgtDateTimePicker = (props: BgtDateTimePickerProps) => {
 					)}
 				/>
 			</div>
+			<BgtFormErrors errors={field.state.meta.errors} />
 		</div>
 	);
 };

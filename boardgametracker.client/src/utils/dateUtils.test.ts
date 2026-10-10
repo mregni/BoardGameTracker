@@ -193,10 +193,9 @@ describe("dateUtils", () => {
 			expect(toRelative("invalid-date", "en")).toBe("");
 		});
 
-		it("should respect addSuffix option", () => {
-			const pastDate = new Date("2024-06-14T10:30:00");
-			const result = toRelative(pastDate, "en", { addSuffix: false });
-			expect(result).not.toContain("ago");
+		it("should prefix future dates with in", () => {
+			const result = toRelative(new Date("2025-06-15T10:30:00"), "en");
+			expect(result).toBe("in about 1 year");
 		});
 	});
 

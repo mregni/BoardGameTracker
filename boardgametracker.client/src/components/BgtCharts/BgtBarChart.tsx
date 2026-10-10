@@ -1,6 +1,7 @@
 import { type BarDatum, ResponsiveBar } from "@nivo/bar";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { getIntegerTicks } from "@/utils/numberUtils";
 
 import { BgtText } from "../BgtText/BgtText";
 
@@ -72,6 +73,11 @@ export const BgtBarChart = (props: Props) => {
 		};
 	}, [handleResize]);
 
+	const ticks = useMemo(
+		() => getIntegerTicks(Math.max(0, ...(data ?? []).flatMap((datum) => keys.map((key) => Number(datum[key]) || 0)))),
+		[data, keys],
+	);
+
 	if (!data || data.length === 0) return null;
 
 	return (
@@ -95,7 +101,10 @@ export const BgtBarChart = (props: Props) => {
 					tickSize: 5,
 					tickPadding: 5,
 					tickRotation: 0,
+					tickValues: ticks,
 				}}
+				valueScale={{ type: "linear", min: 0, max: ticks[ticks.length - 1] }}
+				gridYValues={ticks}
 				enableLabel={false}
 				enableGridY={true}
 				theme={theme}

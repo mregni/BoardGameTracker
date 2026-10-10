@@ -18,6 +18,7 @@ import { BgtTable, BgtTableBody, BgtTableCell, BgtTableHead, BgtTableHeader, Bgt
 declare module "@tanstack/react-table" {
 	interface ColumnMeta<TData extends RowData, TValue> {
 		hideOnMobile?: boolean;
+		alignRight?: boolean;
 	}
 }
 
@@ -56,7 +57,7 @@ const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
 						key={head.id}
 						className={cx(
 							widths?.[i] ?? "",
-							i === header.headers.length - 1 && "text-right",
+							(i === header.headers.length - 1 || head.column.columnDef.meta?.alignRight) && "text-right",
 							hideOnMobile && "hidden md:table-cell",
 						)}
 					>
@@ -105,7 +106,7 @@ const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
 						<BgtTableCell
 							key={cell.id}
 							className={cx(
-								i === row.getVisibleCells().length - 1 && "text-right",
+								(i === row.getVisibleCells().length - 1 || cell.column.columnDef.meta?.alignRight) && "text-right",
 								hideOnMobile && "hidden md:table-cell",
 								cellClasses,
 							)}

@@ -23,6 +23,27 @@ describe("BgtDialog", () => {
 		});
 	});
 
+	describe("Nested dialogs", () => {
+		it("should stack a child dialog above its parent", () => {
+			renderWithTheme(
+				<BgtDialog open={true} onClose={vi.fn()}>
+					<BgtDialogContent>
+						<BgtDialogTitle>Parent</BgtDialogTitle>
+					</BgtDialogContent>
+					<BgtDialog open={true} onClose={vi.fn()}>
+						<BgtDialogContent>
+							<BgtDialogTitle>Child</BgtDialogTitle>
+						</BgtDialogContent>
+					</BgtDialog>
+				</BgtDialog>,
+			);
+
+			const parent = screen.getByText("Parent").closest("[role='dialog']") as HTMLElement;
+			const child = screen.getByText("Child").closest("[role='dialog']") as HTMLElement;
+			expect(Number(child.style.zIndex)).toBeGreaterThan(Number(parent.style.zIndex) + 10);
+		});
+	});
+
 	describe("BgtDialogTitle", () => {
 		it("should render title text", () => {
 			renderWithTheme(

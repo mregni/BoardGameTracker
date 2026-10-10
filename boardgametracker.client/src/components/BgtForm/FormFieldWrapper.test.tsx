@@ -43,6 +43,19 @@ describe("FormFieldWrapper", () => {
 			expect(screen.getByText("Needs uppercase")).toBeInTheDocument();
 		});
 
+		it("should render errors below the input instead of in the label row", () => {
+			render(
+				<FormFieldWrapper label="Email" errors={["Invalid email"]}>
+					<input data-testid="input" />
+				</FormFieldWrapper>,
+			);
+
+			const input = screen.getByTestId("input");
+			const error = screen.getByText("Invalid email");
+			expect(input.compareDocumentPosition(error) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+			expect(screen.getByText("Email").parentElement).toBe(input.parentElement);
+		});
+
 		it("should not render errors when array is empty", () => {
 			render(
 				<FormFieldWrapper label="Name" errors={[]}>

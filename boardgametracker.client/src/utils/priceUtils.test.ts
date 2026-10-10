@@ -19,6 +19,20 @@ describe("formatPrice", () => {
 		expect(formatPrice(12.5, "  ", "en-US")).toBe("12.50");
 	});
 
+	it("omits decimals for whole amounts", () => {
+		expect(formatPrice(140, "€", "en-US")).toBe("€140");
+		expect(formatPrice(1400, "€", "nl-BE")).toBe("€1.400");
+	});
+
+	it("keeps two decimals when the amount is not whole", () => {
+		expect(formatPrice(63.333, "€", "nl-BE")).toBe("€63,33");
+	});
+
+	it("renders a dash when there is no amount", () => {
+		expect(formatPrice(null, "€", "en-US")).toBe("-");
+		expect(formatPrice(undefined, "€", "en-US")).toBe("-");
+	});
+
 	it("falls back to a fixed format for invalid locales", () => {
 		expect(formatPrice(12.5, "€", "not a locale")).toBe("€12.50");
 	});

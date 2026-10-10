@@ -20,6 +20,8 @@ vi.mock("@/services/queries/settings", () => ({
 vi.mock("@/utils/localeUtils", () => ({
 	getDateFnsLocale: () => undefined,
 	getDatePickerLocale: () => "en-US",
+	getDateSeparator: () => null,
+	shouldForceLeadingZeros: () => false,
 }));
 
 const createMockField = (value: Date | string = "", errors: string[] = []) =>

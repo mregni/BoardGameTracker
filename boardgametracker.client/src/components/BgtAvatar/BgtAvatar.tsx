@@ -34,6 +34,7 @@ const avatarVariants = cva("shadow-gray-800 shadow-md", {
 
 export interface Props extends Omit<VariantProps<typeof avatarVariants>, "interactive" | "hasImage"> {
 	title?: string;
+	colorKey?: string;
 	image: string | undefined | null;
 	onClick?: () => void;
 	withTitle?: boolean;
@@ -47,7 +48,7 @@ const TEXT_SIZE_MAP: Record<string, "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8
 };
 
 export const BgtAvatar = (props: Props) => {
-	const { title, image, onClick, size, disabled, withTitle = false } = props;
+	const { title, colorKey, image, onClick, size, disabled, withTitle = false } = props;
 	const [failedImage, setFailedImage] = useState<string | null>(null);
 	const showImage = !!image && failedImage !== image;
 
@@ -57,7 +58,7 @@ export const BgtAvatar = (props: Props) => {
 		size,
 		interactive: !!onClick,
 		disabled,
-		hasImage: !!image,
+		hasImage: showImage,
 	});
 
 	const textSize = TEXT_SIZE_MAP[size || "medium"];
@@ -78,12 +79,13 @@ export const BgtAvatar = (props: Props) => {
 			}
 			role={onClick ? "button" : undefined}
 			tabIndex={onClick ? 0 : undefined}
+			title={title}
 		>
 			{showImage && (
 				<img className={avatarClasses} src={image} alt={title || ""} onError={() => setFailedImage(image ?? null)} />
 			)}
 			{!showImage && title && (
-				<div style={{ backgroundColor: StringToHsl(title) }} className={avatarClasses}>
+				<div style={{ backgroundColor: StringToHsl(colorKey ?? title) }} className={avatarClasses}>
 					<span className={cx(textSizeClasses[textSize], "capitalize")}>{title[0]}</span>
 				</div>
 			)}

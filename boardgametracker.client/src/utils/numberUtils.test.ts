@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatFileSize, GetPercentage, RoundDecimal } from "./numberUtils";
+import { formatFileSize, GetPercentage, getIntegerTicks, RoundDecimal } from "./numberUtils";
 
 describe("numberUtils", () => {
 	describe("RoundDecimal", () => {
@@ -99,6 +99,22 @@ describe("numberUtils", () => {
 			expect(formatFileSize(1048576)).toBe("1.0 MB");
 			expect(formatFileSize(5242880)).toBe("5.0 MB");
 			expect(formatFileSize(1572864)).toBe("1.5 MB");
+		});
+	});
+
+	describe("getIntegerTicks", () => {
+		it("should give one tick per whole number for small counts", () => {
+			expect(getIntegerTicks(2)).toEqual([0, 1, 2]);
+			expect(getIntegerTicks(5)).toEqual([0, 1, 2, 3, 4, 5]);
+		});
+
+		it("should keep at least one step when there is no data", () => {
+			expect(getIntegerTicks(0)).toEqual([0, 1]);
+		});
+
+		it("should use whole steps for larger counts", () => {
+			expect(getIntegerTicks(12)).toEqual([0, 3, 6, 9, 12]);
+			expect(getIntegerTicks(11)).toEqual([0, 3, 6, 9, 12]);
 		});
 	});
 });

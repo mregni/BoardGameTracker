@@ -20,8 +20,8 @@ export const BgtPageHeader = (props: Props) => {
 
 	return (
 		<div className="flex flex-col gap-2">
-			<div className="flex-auto flex-row flex justify-between max-lg:gap-2">
-				<div className="flex flex-row gap-3 content-center items-center">
+			<div className="flex-auto flex-row flex flex-wrap justify-between gap-y-2 max-lg:gap-2">
+				<div className="flex flex-row gap-3 content-center items-center min-w-0">
 					{backAction && backText && (
 						<BgtButton variant="text" onClick={backAction} className="pl-0">
 							<ArrowLeft className="w-4 h-4" />

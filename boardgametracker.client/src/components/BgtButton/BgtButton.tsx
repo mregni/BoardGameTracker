@@ -1,4 +1,4 @@
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva, cx, type VariantProps } from "class-variance-authority";
 import type { ComponentPropsWithoutRef } from "react";
 
 const buttonVariants = cva(
@@ -17,7 +17,7 @@ const buttonVariants = cva(
 				"3": "py-3 px-8",
 			},
 			disabled: {
-				true: "cursor-not-allowed opacity-50",
+				true: "cursor-not-allowed",
 				false: "hover:cursor-pointer",
 			},
 		},
@@ -29,6 +29,13 @@ const buttonVariants = cva(
 	},
 );
 
+const disabledVariantClasses: Record<NonNullable<VariantProps<typeof buttonVariants>["variant"]>, string> = {
+	primary: "bg-white/10 text-white/40",
+	cancel: "text-white/40 border border-white/20",
+	error: "bg-white/10 text-white/40",
+	text: "text-white/40",
+};
+
 interface Props
 	extends Omit<ComponentPropsWithoutRef<"button">, "color">,
 		Omit<VariantProps<typeof buttonVariants>, "disabled"> {}
@@ -37,10 +44,10 @@ const BgtButton = (props: Props) => {
 	const { children, variant, size, type = "button", disabled, className, ...rest } = props;
 
 	const buttonClasses = buttonVariants({
-		variant,
+		variant: disabled ? null : variant,
 		size,
 		disabled: !!disabled,
-		className,
+		className: cx(disabled && disabledVariantClasses[variant ?? "primary"], className),
 	});
 
 	return (

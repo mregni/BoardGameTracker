@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { GameState } from "@/models";
-import { StringToRgb } from "@/utils/stringUtils";
 import { getColorFromGameState, getItemStateTranslationKey } from "../../utils/ItemStateUtils";
+import { BgtFallbackImage } from "../BgtImage/BgtFallbackImage";
 import { BgtText } from "../BgtText/BgtText";
 
 interface Props {
@@ -23,16 +23,7 @@ export const BgtImageCard = (props: Props) => {
 		<Link to={link} from="/" className="[content-visibility:auto] [contain-intrinsic-size:auto_280px]">
 			<div className="bgt-image-card flex flex-col justify-center cursor-pointer flex-nowrap relative gap-1">
 				<div className="aspect-square rounded-lg overflow-hidden transition-all duration-200 relative">
-					{image ? (
-						<img src={image} alt={title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-					) : (
-						<div
-							style={{ "--fallback-color": StringToRgb(title) } as React.CSSProperties}
-							className="w-full h-full flex flex-col justify-center bg-(--fallback-color)"
-						>
-							<span className="flex justify-center align-middle h-max font-bold text-3xl capitalize">{title[0]}</span>
-						</div>
-					)}
+					<BgtFallbackImage title={title} image={image} lazy />
 					{badge && <div className="absolute top-2 right-2">{badge}</div>}
 				</div>
 				<div className="flex flex-row justify-between items-end">

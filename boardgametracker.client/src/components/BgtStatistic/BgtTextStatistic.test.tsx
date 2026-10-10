@@ -46,9 +46,9 @@ describe("BgtTextStatistic", () => {
 	});
 
 	describe("Prefix and Suffix", () => {
-		it("should render prefix", () => {
-			renderWithTheme(<BgtTextStatistic title="Price" content={99} prefix="$" />);
-			expect(screen.getByText("$")).toBeInTheDocument();
+		it("should render formatted price content as is", () => {
+			renderWithTheme(<BgtTextStatistic title="Price" content="€63.33" />);
+			expect(screen.getByText("€63.33")).toBeInTheDocument();
 		});
 
 		it("should render suffix", () => {
@@ -56,20 +56,26 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("min")).toBeInTheDocument();
 		});
 
-		it("should render both prefix and suffix", () => {
-			renderWithTheme(<BgtTextStatistic title="Score" content={100} prefix="+" suffix="pts" />);
-			expect(screen.getByText("+")).toBeInTheDocument();
-			expect(screen.getByText("pts")).toBeInTheDocument();
+		it("should render a percentage suffix without a space", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Win percentage" content={100} suffix="%" />);
+			expect(container.textContent).toContain("100%");
 		});
 
-		it("should not render prefix when null", () => {
-			renderWithTheme(<BgtTextStatistic title="Value" content={50} prefix={null} />);
-			expect(screen.queryByText("null")).not.toBeInTheDocument();
+		it("should format numbers with the app language", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Points" content={1234.5} />);
+			expect(container.textContent).toContain("1,234.5");
 		});
 
 		it("should not render suffix when null", () => {
 			renderWithTheme(<BgtTextStatistic title="Value" content={50} suffix={null} />);
 			expect(screen.queryByText("null")).not.toBeInTheDocument();
+		});
+	});
+
+	describe("Title", () => {
+		it("should expose the full title as a tooltip", () => {
+			renderWithTheme(<BgtTextStatistic title="Average session duration" content={5} />);
+			expect(screen.getByText("Average session duration")).toHaveAttribute("title", "Average session duration");
 		});
 	});
 

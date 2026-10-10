@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { cloneElement, isValidElement } from "react";
+import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
 import Plus from "@/assets/icons/plus.svg?react";
 import { BgtCard } from "../BgtCard/BgtCard";
@@ -10,7 +11,6 @@ interface Props {
 	title: string;
 	content: string | number | null;
 	suffix?: string | number | null;
-	prefix?: string | number | null;
 	icon?: React.ReactNode;
 	iconClassName?: string;
 	textSize?: "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
@@ -21,12 +21,23 @@ interface Props {
 	action?: React.ReactNode;
 }
 
+const formatContent = (content: string | number, language: string | undefined): string => {
+	if (typeof content !== "number") {
+		return content;
+	}
+
+	try {
+		return new Intl.NumberFormat(language || undefined).format(content);
+	} catch {
+		return content.toString();
+	}
+};
+
 export const BgtTextStatistic = (props: Props) => {
 	const {
 		title,
 		content,
 		suffix,
-		prefix,
 		icon,
 		iconClassName,
 		textSize = "5",
@@ -36,6 +47,7 @@ export const BgtTextStatistic = (props: Props) => {
 		onClick,
 		action,
 	} = props;
+	const { i18n } = useTranslation();
 
 	if (content === null || content === undefined) return null;
 
@@ -55,9 +67,11 @@ export const BgtTextStatistic = (props: Props) => {
 				isInteractive && "border-primary/25 transition-colors hover:border-primary/60 cursor-pointer",
 			)}
 		>
-			<div className="flex h-6 items-center gap-2 text-primary/70 mb-2">
+			<div className="flex min-h-6 items-center gap-2 text-primary/70 mb-2">
 				{iconWithClasses}
-				<span className="truncate">{title}</span>
+				<span className="line-clamp-2 break-words md:line-clamp-1" title={title}>
+					{title}
+				</span>
 				{action ? (
 					<span className="ml-auto flex shrink-0 items-center">{action}</span>
 				) : (
@@ -65,9 +79,9 @@ export const BgtTextStatistic = (props: Props) => {
 				)}
 			</div>
 			<BgtText size={textSize} color="cyan" weight="bold">
-				{prefix && <span>{prefix}&nbsp;</span>}
-				{content.toLocaleString()}
-				{suffix && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
+				{formatContent(content, i18n.language)}
+				{suffix === "%" && "%"}
+				{suffix && suffix !== "%" && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
 			</BgtText>
 		</BgtCard>
 	);

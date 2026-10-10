@@ -39,6 +39,19 @@ describe("BgtTable Components", () => {
 			const table = screen.getByRole("table");
 			expect(table).toHaveClass("custom-table");
 		});
+
+		it("should scroll wide tables inside their own container", () => {
+			render(
+				<BgtTable>
+					<tbody>
+						<tr>
+							<td>Content</td>
+						</tr>
+					</tbody>
+				</BgtTable>,
+			);
+			expect(screen.getByRole("table").parentElement).toHaveClass("overflow-x-auto");
+		});
 	});
 
 	describe("BgtTableHeader", () => {
