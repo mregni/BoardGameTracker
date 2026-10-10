@@ -1,6 +1,7 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
@@ -15,9 +16,16 @@ import { CreateLoanSchema } from "@/models/Loan/CreateLoan";
 import type { Loan } from "@/models/Loan/Loan";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { parseLocalDate } from "@/utils/localDate";
 import { notBeforeValidator, zodValidator } from "@/utils/zodValidator";
 
-const LoanDatesSchema = CreateLoanSchema.pick({ loanDate: true, dueDate: true });
+const LoanDatesSchema = CreateLoanSchema.pick({ loanDate: true, dueDate: true }).extend({
+	returnedDate: z
+		.string()
+		.optional()
+		.transform((val) => parseLocalDate(val) ?? null)
+		.nullable(),
+});
 
 interface Props {
 	loan: Loan | null;
@@ -35,6 +43,7 @@ export const EditLoanModal = (props: Props) => {
 		defaultValues: {
 			loanDate: toInputDate(loan?.loanDate ?? undefined, true),
 			dueDate: toInputDate(loan?.dueDate ?? undefined, false),
+			returnedDate: toInputDate(loan?.returnedDate ?? undefined, false),
 		},
 		onSubmit: async ({ value }) => {
 			if (loan === null) {
@@ -42,7 +51,12 @@ export const EditLoanModal = (props: Props) => {
 			}
 
 			const dates = LoanDatesSchema.parse(value);
-			await onSave({ ...loan, loanDate: dates.loanDate, dueDate: dates.dueDate });
+			await onSave({
+				...loan,
+				loanDate: dates.loanDate,
+				dueDate: dates.dueDate,
+				returnedDate: loan.returnedDate ? (dates.returnedDate ?? loan.returnedDate) : null,
+			});
 			close();
 		},
 	});
@@ -51,6 +65,7 @@ export const EditLoanModal = (props: Props) => {
 		form.reset({
 			loanDate: toInputDate(loan?.loanDate ?? undefined, true),
 			dueDate: toInputDate(loan?.dueDate ?? undefined, false),
+			returnedDate: toInputDate(loan?.returnedDate ?? undefined, false),
 		});
 	}, [loan, form]);
 
@@ -90,6 +105,30 @@ export const EditLoanModal = (props: Props) => {
 								</form.Subscribe>
 							)}
 						</form.Field>
+						{loan?.returnedDate && (
+							<form.Field
+								name="returnedDate"
+								validators={notBeforeValidator(
+									LoanDatesSchema,
+									"returnedDate",
+									"loanDate",
+									"loans:return.before-start",
+								)}
+							>
+								{(field: AnyFieldApi) => (
+									<form.Subscribe selector={(state) => state.values.loanDate}>
+										{(loanDate) => (
+											<BgtDatePicker
+												field={field}
+												label={t("return.date")}
+												disabled={disabled}
+												minValue={loanDate || null}
+											/>
+										)}
+									</form.Subscribe>
+								)}
+							</form.Field>
+						)}
 					</div>
 					<BgtDialogClose>
 						<BgtButton type="button" disabled={disabled} variant="cancel" className="flex-1" onClick={close}>

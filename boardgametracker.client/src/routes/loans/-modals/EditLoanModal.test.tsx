@@ -41,4 +41,25 @@ describe("EditLoanModal", () => {
 		await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
 		expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ dueDate: null }));
 	});
+
+	it("only offers the returned date for a returned loan", () => {
+		renderWithProviders(<EditLoanModal loan={loan(null)} open close={vi.fn()} onSave={vi.fn()} />);
+
+		expect(screen.queryByText("return.date")).not.toBeInTheDocument();
+	});
+
+	it("keeps the returned date of a returned loan when it is saved", async () => {
+		const onSave = vi.fn(() => Promise.resolve());
+		const returnedDate = new Date(2026, 8, 10);
+		renderWithProviders(
+			<EditLoanModal loan={{ ...loan(null), returnedDate, isActive: false }} open close={vi.fn()} onSave={onSave} />,
+		);
+
+		expect(screen.getByText("return.date")).toBeInTheDocument();
+		await userEvent.click(screen.getByRole("button", { name: "edit.save" }));
+
+		await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+		const saved = (onSave.mock.calls[0] as unknown as [Loan])[0];
+		expect(saved.returnedDate?.getDate()).toBe(10);
+	});
 });

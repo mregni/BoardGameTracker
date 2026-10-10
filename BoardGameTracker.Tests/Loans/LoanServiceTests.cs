@@ -474,6 +474,50 @@ public class LoanServiceTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task Update_ShouldChangeTheReturnedDate_WhenTheLoanWasReturned()
+    {
+        var loanDate = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var loan = new Loan(1, 1, loanDate) { Id = 1 };
+        loan.MarkAsReturned(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
+        var newReturnedDate = new DateTime(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc);
+
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(loan);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Game("Catan") { Id = 1 });
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        var result = await _loanService.Update(new UpdateLoanCommand { Id = 1, GameId = 1, PlayerId = 1, LoanDate = loanDate, ReturnedDate = newReturnedDate });
+
+        result.ReturnedDate.Should().Be(newReturnedDate);
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldIgnoreTheReturnedDate_WhenTheLoanIsStillActive()
+    {
+        var loanDate = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+        var loan = new Loan(1, 1, loanDate) { Id = 1 };
+
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(loan);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Game("Catan") { Id = 1 });
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        var result = await _loanService.Update(new UpdateLoanCommand { Id = 1, GameId = 1, PlayerId = 1, LoanDate = loanDate, ReturnedDate = new DateTime(2026, 9, 7, 0, 0, 0, DateTimeKind.Utc) });
+
+        result.ReturnedDate.Should().BeNull();
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region Delete Tests

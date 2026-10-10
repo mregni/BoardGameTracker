@@ -4797,6 +4797,8 @@ export interface components {
             dueDate: string | null;
             /** Format: int32 */
             id: number;
+            /** Format: date-time */
+            returnedDate: string | null;
         };
         UpdateLocationCommand: {
             name: string;

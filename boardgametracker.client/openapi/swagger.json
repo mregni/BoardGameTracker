@@ -7191,6 +7191,11 @@
             "minimum": 1,
             "type": "integer",
             "format": "int32"
+          },
+          "returnedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false
