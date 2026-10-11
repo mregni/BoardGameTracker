@@ -1,3 +1,4 @@
+import * as Select from "@radix-ui/react-select";
 import { cx } from "class-variance-authority";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,6 +8,7 @@ import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import Cross from "@/assets/icons/x.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { FormFieldWrapper } from "@/components/BgtForm";
+import { useKeyboardResizeGuard } from "@/components/BgtForm/useKeyboardResizeGuard";
 
 interface Option {
 	value: number;
@@ -26,84 +28,50 @@ interface Props {
 export const MultiSelectField = (props: Props) => {
 	const { label, options, selected, onChange, placeholder, disabled } = props;
 	const { t } = useTranslation("common");
-	const [searchTerm, setSearchTerm] = useState("");
 	const id = useId();
-	const [isOpen, setIsOpen] = useState(false);
+	const [open, setOpen] = useState(false);
+	const [searchTerm, setSearchTerm] = useState("");
 	const searchInputRef = useRef<HTMLInputElement>(null);
-	const containerRef = useRef<HTMLDivElement>(null);
-	const triggerRef = useRef<HTMLButtonElement>(null);
+	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
 
-	const filteredOptions = useMemo(() => {
-		return options.filter(
-			(option) => option.label.toLowerCase().includes(searchTerm.toLowerCase()) && !selected.includes(option.value),
-		);
-	}, [options, searchTerm, selected]);
+	const filteredOptions = useMemo(
+		() =>
+			options.filter(
+				(option) => option.label.toLowerCase().includes(searchTerm.toLowerCase()) && !selected.includes(option.value),
+			),
+		[options, searchTerm, selected],
+	);
 
-	const selectedItems = useMemo(() => {
-		return options.filter((option) => selected.includes(option.value));
-	}, [options, selected]);
+	const selectedItems = useMemo(() => options.filter((option) => selected.includes(option.value)), [options, selected]);
 
-	const handleSelect = (value: number) => {
-		onChange([...selected, value]);
-		setSearchTerm("");
-		setIsOpen(false);
+	const handleOpenChange = (isOpen: boolean) => {
+		if (!isOpen && isKeyboardResize()) return;
+		setOpen(isOpen);
+		if (!isOpen) setSearchTerm("");
 	};
 
-	const handleRemove = (value: number) => {
-		onChange(selected.filter((v) => v !== value));
-	};
-
-	const handleToggle = () => {
-		if (disabled) return;
-		setIsOpen((prev) => {
-			if (prev) setSearchTerm("");
-			return !prev;
-		});
+	const handleSelect = (value: string) => {
+		onChange([...selected, Number(value)]);
 	};
 
 	useEffect(() => {
-		if (isOpen) {
-			searchInputRef.current?.focus();
-		}
-	}, [isOpen]);
-
-	useEffect(() => {
-		if (!isOpen) return;
-
-		const handleClickOutside = (event: MouseEvent) => {
-			if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-				setIsOpen(false);
-				setSearchTerm("");
-			}
-		};
-		const handleEscape = (event: KeyboardEvent) => {
-			if (event.key !== "Escape") return;
-			event.stopPropagation();
-			event.preventDefault();
-			setIsOpen(false);
-			setSearchTerm("");
-			triggerRef.current?.focus();
-		};
-
-		document.addEventListener("mousedown", handleClickOutside);
-		window.addEventListener("keydown", handleEscape, true);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-			window.removeEventListener("keydown", handleEscape, true);
-		};
-	}, [isOpen]);
+		if (!open) return;
+		const timeout = setTimeout(() => searchInputRef.current?.focus(), 0);
+		return () => clearTimeout(timeout);
+	}, [open]);
 
 	return (
 		<FormFieldWrapper label={label} htmlFor={id} errors={[]} className="w-full">
-			<div className="flex flex-col gap-2" ref={containerRef}>
-				<div>
-					<button
+			<div className="flex flex-col gap-2">
+				<Select.Root
+					value=""
+					onValueChange={handleSelect}
+					open={open}
+					onOpenChange={handleOpenChange}
+					disabled={disabled}
+				>
+					<Select.Trigger
 						id={id}
-						ref={triggerRef}
-						type="button"
-						onClick={handleToggle}
-						disabled={disabled}
-						aria-expanded={isOpen}
 						className={cx(
 							"w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
 							"px-4 py-2 h-11 md:h-10 inline-flex justify-between items-center text-[15px]",
@@ -111,11 +79,17 @@ export const MultiSelectField = (props: Props) => {
 						)}
 					>
 						<span className="text-gray-400 text-sm">{placeholder}</span>
-						{isOpen ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
-					</button>
-
-					{isOpen && (
-						<div className="mt-1 bg-input border border-primary/30 rounded-lg overflow-hidden">
+						<Select.Icon>
+							{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
+						</Select.Icon>
+					</Select.Trigger>
+					<Select.Portal>
+						<Select.Content
+							position="popper"
+							sideOffset={5}
+							className="z-[9999] w-(--radix-select-trigger-width) overflow-hidden rounded-lg border border-primary/30 bg-input"
+							onCloseAutoFocus={(event) => event.preventDefault()}
+						>
 							<div className="p-2 border-b border-gray-700">
 								<div className="flex items-center px-2 bg-input rounded-sm">
 									<SearchIcon className="size-4 text-gray-400 mr-2" />
@@ -123,35 +97,37 @@ export const MultiSelectField = (props: Props) => {
 										ref={searchInputRef}
 										type="text"
 										value={searchTerm}
-										onChange={(e) => setSearchTerm(e.target.value)}
+										onChange={(event) => setSearchTerm(event.target.value)}
+										onKeyDown={(event) => event.stopPropagation()}
 										placeholder={t("search")}
 										aria-label={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 									/>
 								</div>
 							</div>
-							<div className="max-h-[240px] overflow-y-auto p-1">
+							<Select.Viewport className="max-h-[240px] p-1">
 								{filteredOptions.length > 0 ? (
 									filteredOptions.map((option) => (
-										<button
+										<Select.Item
 											key={option.value}
-											type="button"
-											onClick={() => handleSelect(option.value)}
-											className="w-full text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pl-4 hover:bg-primary/60 focus:bg-primary/60 focus:outline-none transition-colors cursor-pointer"
+											value={option.value.toString()}
+											className="text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pl-4 select-none cursor-pointer data-highlighted:bg-primary/60 data-highlighted:outline-hidden"
 										>
-											<div className="flex flex-row justify-start items-center gap-2">
-												{option.image !== undefined && <BgtAvatar title={option.label} image={option.image} />}
-												{option.label}
-											</div>
-										</button>
+											<Select.ItemText>
+												<span className="flex flex-row justify-start items-center gap-2">
+													{option.image !== undefined && <BgtAvatar title={option.label} image={option.image} />}
+													{option.label}
+												</span>
+											</Select.ItemText>
+										</Select.Item>
 									))
 								) : (
 									<div className="text-[13px] py-2 px-4 text-gray-400">{t("no-results")}</div>
 								)}
-							</div>
-						</div>
-					)}
-				</div>
+							</Select.Viewport>
+						</Select.Content>
+					</Select.Portal>
+				</Select.Root>
 
 				{selectedItems.length > 0 && (
 					<div className="flex flex-wrap gap-2">
@@ -164,7 +140,7 @@ export const MultiSelectField = (props: Props) => {
 								<span className="text-primary">{item.label}</span>
 								<button
 									type="button"
-									onClick={() => handleRemove(item.value)}
+									onClick={() => onChange(selected.filter((value) => value !== item.value))}
 									disabled={disabled}
 									className="text-primary cursor-pointer hover:text-white transition-colors py-2"
 								>
