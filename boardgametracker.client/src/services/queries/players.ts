@@ -1,8 +1,25 @@
 import { QUERY_KEYS } from "@/models";
-import { getPlayerCall, getPlayerSessionsCall, getPlayerStatisticsCall, getPlayersCall } from "../playerService";
-import { createEntityQuery, createListQuery, createNestedQuery, createNestedQueryWithKeys } from "./queryFactory";
+import {
+	getPlayerCall,
+	getPlayerSessionsCall,
+	getPlayerStatisticsCall,
+	getPlayersCall,
+	getPlayersOverviewCall,
+} from "../playerService";
+import {
+	createEntityQuery,
+	createEntityQueryWithKeys,
+	createListQuery,
+	createNestedQuery,
+	createNestedQueryWithKeys,
+} from "./queryFactory";
 
 export const getPlayers = createListQuery(QUERY_KEYS.players, getPlayersCall);
+
+export const getPlayersOverview = createEntityQueryWithKeys(
+	[QUERY_KEYS.players, QUERY_KEYS.overview],
+	getPlayersOverviewCall,
+);
 
 export const getPlayer = createEntityQuery(QUERY_KEYS.player, getPlayerCall);
 

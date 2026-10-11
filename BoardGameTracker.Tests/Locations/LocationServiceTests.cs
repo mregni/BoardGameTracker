@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
@@ -9,6 +9,8 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Locations;
+using BoardGameTracker.Core.Locations.Interfaces;
+using BoardGameTracker.Core.Sessions.Specifications;
 using BoardGameTracker.Core.Locations.Specifications;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -19,7 +21,8 @@ namespace BoardGameTracker.Tests.Locations;
 
 public class LocationServiceTests
 {
-    private readonly Mock<IRepository<Location>> _locationRepositoryMock;
+    private readonly Mock<ILocationRepository> _locationRepositoryMock;
+    private readonly Mock<IReadRepository<Session>> _sessionRepositoryMock;
     private readonly Mock<IReadRepository<GameNight>> _gameNightRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<LocationService>> _loggerMock;
@@ -27,13 +30,15 @@ public class LocationServiceTests
 
     public LocationServiceTests()
     {
-        _locationRepositoryMock = new Mock<IRepository<Location>>();
+        _locationRepositoryMock = new Mock<ILocationRepository>();
+        _sessionRepositoryMock = new Mock<IReadRepository<Session>>();
         _gameNightRepositoryMock = new Mock<IReadRepository<GameNight>>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _loggerMock = new Mock<ILogger<LocationService>>();
 
         _locationService = new LocationService(
             _locationRepositoryMock.Object,
+            _sessionRepositoryMock.Object,
             _gameNightRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _loggerMock.Object);
@@ -42,6 +47,7 @@ public class LocationServiceTests
     private void VerifyNoOtherCalls()
     {
         _locationRepositoryMock.VerifyNoOtherCalls();
+        _sessionRepositoryMock.VerifyNoOtherCalls();
         _gameNightRepositoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
@@ -358,6 +364,95 @@ public class LocationServiceTests
         result.Should().Be(10);
 
         _locationRepositoryMock.Verify(x => x.CountAsync(It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region Details Tests
+
+    [Fact]
+    public async Task GetDetails_ShouldReturnProjectedLocation_WhenLocationExists()
+    {
+        var location = new LocationDto { Id = 4, Name = "Home", PlayCount = 3 };
+        _locationRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LocationDetailsSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(location);
+
+        var result = await _locationService.GetDetails(4);
+
+        result.Should().BeSameAs(location);
+        _locationRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LocationDetailsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetDetails_ShouldReturnNull_WhenLocationDoesNotExist()
+    {
+        _locationRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LocationDetailsSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LocationDto?)null);
+
+        var result = await _locationService.GetDetails(4);
+
+        result.Should().BeNull();
+        _locationRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LocationDetailsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ExistsAsync_ShouldReturnRepositoryResult(bool exists)
+    {
+        _locationRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<LocationByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(exists);
+
+        var result = await _locationService.ExistsAsync(2);
+
+        result.Should().Be(exists);
+        _locationRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<LocationByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldCombineRepositoryAggregates()
+    {
+        _locationRepositoryMock.Setup(x => x.GetSessionCount(3)).ReturnsAsync(9);
+        _locationRepositoryMock.Setup(x => x.GetDistinctGameCount(3)).ReturnsAsync(6);
+        _locationRepositoryMock.Setup(x => x.GetDistinctPlayerCount(3)).ReturnsAsync(5);
+        _locationRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(3)).ReturnsAsync(460);
+
+        var result = await _locationService.GetStatistics(3);
+
+        result.SessionCount.Should().Be(9);
+        result.DistinctGameCount.Should().Be(6);
+        result.DistinctPlayerCount.Should().Be(5);
+        result.TotalPlayedTime.Should().Be(460);
+        _locationRepositoryMock.Verify(x => x.GetSessionCount(3), Times.Once);
+        _locationRepositoryMock.Verify(x => x.GetDistinctGameCount(3), Times.Once);
+        _locationRepositoryMock.Verify(x => x.GetDistinctPlayerCount(3), Times.Once);
+        _locationRepositoryMock.Verify(x => x.GetPlayLengthInMinutes(3), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetSessions_ShouldReturnSessionsAtLocation()
+    {
+        var sessions = new List<Session>
+        {
+            new(1, new System.DateTime(2030, 1, 2), new System.DateTime(2030, 1, 2, 1, 0, 0), string.Empty) { Id = 2 },
+            new(1, new System.DateTime(2030, 1, 1), new System.DateTime(2030, 1, 1, 1, 0, 0), string.Empty) { Id = 1 }
+        };
+        _sessionRepositoryMock
+            .Setup(x => x.ListAsync(It.IsAny<SessionsByLocationRecentFirstSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(sessions);
+
+        var result = await _locationService.GetSessions(3, 10);
+
+        result.Should().BeSameAs(sessions);
+        _sessionRepositoryMock.Verify(x => x.ListAsync(It.IsAny<SessionsByLocationRecentFirstSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

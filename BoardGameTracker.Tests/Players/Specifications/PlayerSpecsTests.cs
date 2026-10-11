@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Ardalis.Specification;
 using BoardGameTracker.Common.Entities;
@@ -72,6 +72,26 @@ public class PlayerSpecsTests
         var spec = new PlayerIdsSpec(new[] { 3, 1, 9 });
 
         spec.Evaluate(players).Should().BeEquivalentTo(new[] { 1, 3 });
+        spec.AsNoTracking.Should().BeTrue();
+    }
+
+    [Fact]
+    public void PlayersOverviewSpec_ShouldProjectPlayAndWinCounts_AndOrderByName()
+    {
+        var zoe = new Player("Zoe") { Id = 1 };
+        var alice = new Player("Alice") { Id = 2 };
+        alice.PlayerSessions.Add(new PlayerSession(2, won: true));
+        alice.PlayerSessions.Add(new PlayerSession(2, won: false));
+        alice.PlayerSessions.Add(new PlayerSession(2, won: true));
+
+        var spec = new PlayersOverviewSpec();
+        var result = spec.Evaluate([zoe, alice]).ToList();
+
+        result.Select(x => x.Name).Should().Equal("Alice", "Zoe");
+        result[0].PlayCount.Should().Be(3);
+        result[0].WinCount.Should().Be(2);
+        result[1].PlayCount.Should().Be(0);
+        result[1].WinCount.Should().Be(0);
         spec.AsNoTracking.Should().BeTrue();
     }
 }

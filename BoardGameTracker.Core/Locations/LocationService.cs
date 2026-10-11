@@ -7,24 +7,28 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Locations.Specifications;
+using BoardGameTracker.Core.Sessions.Specifications;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Locations;
 
 public class LocationService : ILocationService
 {
-    private readonly IRepository<Location> _locationRepository;
+    private readonly ILocationRepository _locationRepository;
+    private readonly IReadRepository<Session> _sessionRepository;
     private readonly IReadRepository<GameNight> _gameNightRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<LocationService> _logger;
 
     public LocationService(
-        IRepository<Location> locationRepository,
+        ILocationRepository locationRepository,
+        IReadRepository<Session> sessionRepository,
         IReadRepository<GameNight> gameNightRepository,
         IUnitOfWork unitOfWork,
         ILogger<LocationService> logger)
     {
         _locationRepository = locationRepository;
+        _sessionRepository = sessionRepository;
         _gameNightRepository = gameNightRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
@@ -40,6 +44,35 @@ public class LocationService : ILocationService
     {
         _logger.LogDebug("Fetching location {LocationId}", id);
         return _locationRepository.GetByIdAsync(id);
+    }
+
+    public Task<LocationDto?> GetDetails(int id)
+    {
+        _logger.LogDebug("Fetching details for location {LocationId}", id);
+        return _locationRepository.FirstOrDefaultAsync(new LocationDetailsSpec(id));
+    }
+
+    public Task<bool> ExistsAsync(int id)
+    {
+        return _locationRepository.AnyAsync(new LocationByIdSpec(id));
+    }
+
+    public async Task<LocationStatisticsDto> GetStatistics(int id)
+    {
+        _logger.LogDebug("Calculating statistics for location {LocationId}", id);
+        return new LocationStatisticsDto
+        {
+            SessionCount = await _locationRepository.GetSessionCount(id),
+            DistinctGameCount = await _locationRepository.GetDistinctGameCount(id),
+            DistinctPlayerCount = await _locationRepository.GetDistinctPlayerCount(id),
+            TotalPlayedTime = await _locationRepository.GetPlayLengthInMinutes(id)
+        };
+    }
+
+    public Task<List<Session>> GetSessions(int id, int? count)
+    {
+        _logger.LogDebug("Fetching sessions for location {LocationId}", id);
+        return _sessionRepository.ListAsync(new SessionsByLocationRecentFirstSpec(id, count));
     }
 
     public async Task<Location> Create(CreateLocationCommand command)
