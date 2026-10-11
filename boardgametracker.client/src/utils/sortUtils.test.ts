@@ -1,14 +1,16 @@
 import { describe, expect, it } from "vitest";
-import type { PlayerOverview } from "@/models";
-import { sortByActivity } from "./usePlayersData";
+import type { Location, PlayerOverview } from "@/models";
+import { sortByActivity } from "./sortUtils";
 
-const player = (id: number, name: string, playCount: number, winCount = 0): PlayerOverview => ({
+const player = (id: number, name: string, playCount: number): PlayerOverview => ({
 	id,
 	name,
 	image: null,
 	playCount,
-	winCount,
+	winCount: 0,
 });
+
+const location = (id: number, name: string, playCount: number): Location => ({ id, name, playCount });
 
 describe("sortByActivity", () => {
 	it("puts the players with the most sessions first", () => {
@@ -17,10 +19,16 @@ describe("sortByActivity", () => {
 		expect(sortByActivity(players).map((x) => x.name)).toEqual(["reggi", "Mikhael", "Kathleen", "dfgh"]);
 	});
 
-	it("sorts players with the same session count by name", () => {
+	it("sorts items with the same session count by name", () => {
 		const players = [player(1, "Zoe", 2), player(2, "Anna", 2), player(3, "Bram", 0), player(4, "Aaron", 0)];
 
 		expect(sortByActivity(players).map((x) => x.name)).toEqual(["Anna", "Zoe", "Aaron", "Bram"]);
+	});
+
+	it("puts the most used location first", () => {
+		const locations = [location(1, "Bij Kathleen", 0), location(2, "QA Location", 1), location(3, "Thuis", 9)];
+
+		expect(sortByActivity(locations).map((x) => x.name)).toEqual(["Thuis", "QA Location", "Bij Kathleen"]);
 	});
 
 	it("does not mutate the original list", () => {

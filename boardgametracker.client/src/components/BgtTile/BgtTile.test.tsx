@@ -72,6 +72,6 @@ describe("BgtTileGrid", () => {
 			</BgtTileGrid>,
 		);
 
-		expect(screen.getByTestId("grid")).toHaveClass("grid-cols-1", "sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]");
+		expect(screen.getByTestId("grid")).toHaveClass("grid-cols-1", "sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]");
 	});
 });

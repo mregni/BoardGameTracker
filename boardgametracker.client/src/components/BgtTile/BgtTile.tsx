@@ -22,7 +22,7 @@ export const BgtTile = (props: Props) => {
 				<div className="truncate font-medium text-white" title={title}>
 					{title}
 				</div>
-				<div className="truncate text-xs text-white/60 tabular-nums">{stats}</div>
+				<div className="text-xs text-white/60 tabular-nums">{stats}</div>
 			</div>
 			<CaretRight aria-hidden="true" className="size-4 shrink-0 text-white/50" />
 		</Link>
