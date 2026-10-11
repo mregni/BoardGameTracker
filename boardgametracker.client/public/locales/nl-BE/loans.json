@@ -55,13 +55,6 @@
     },
     "button": "+ Spel uitlenen",
     "lend-game": "{{game}} uitlenen",
-    "game": {
-      "label": "Spel",
-      "search": "Spellen zoeken",
-      "empty": "Geen spellen gevonden",
-      "on-loan": "Uitgeleend",
-      "on-loan-to": "Uitgeleend aan {{name}}"
-    },
     "due": {
       "one-week": "1 week",
       "two-weeks": "2 weken",

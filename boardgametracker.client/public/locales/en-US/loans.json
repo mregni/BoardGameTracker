@@ -55,13 +55,6 @@
     },
     "button": "+ Lend a game",
     "lend-game": "Lend {{game}}",
-    "game": {
-      "label": "Game",
-      "search": "Search games",
-      "empty": "No games found",
-      "on-loan": "On loan",
-      "on-loan-to": "On loan to {{name}}"
-    },
     "due": {
       "one-week": "1 week",
       "two-weeks": "2 weeks",

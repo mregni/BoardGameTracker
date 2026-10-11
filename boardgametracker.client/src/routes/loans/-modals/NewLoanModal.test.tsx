@@ -1,11 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type Game, GameState, type Player } from "@/models";
-import type { Loan } from "@/models/Loan/Loan";
 import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
 import NewLoanModal from "./NewLoanModal";
-
-const gameButton = (title: string) =>
-	screen.getByText(title, { selector: "span.truncate" }).closest("button") as HTMLElement;
 
 const { saveLoan } = vi.hoisted(() => ({ saveLoan: vi.fn() }));
 
@@ -16,20 +12,8 @@ const games = [
 
 const players = [{ id: 7, name: "Kathleen", image: null }] as unknown as Player[];
 
-const loans: Loan[] = [
-	{
-		id: 3,
-		loanDate: new Date(2026, 9, 1),
-		dueDate: null,
-		returnedDate: null,
-		gameId: 1,
-		playerId: 7,
-		isActive: true,
-	},
-];
-
 vi.mock("../-hooks/useNewLoanModal", () => ({
-	useNewLoanModal: () => ({ games, players, loans, isLoading: false, saveLoan }),
+	useNewLoanModal: () => ({ games, players, isLoading: false, saveLoan }),
 }));
 
 vi.mock("@/routes/players/-modals/CreatePlayerModal", () => ({
@@ -46,24 +30,6 @@ vi.mock("@/services/queries/settings", () => ({
 describe("NewLoanModal", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-	});
-
-	it("shows a game that is on loan as unavailable", () => {
-		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
-
-		expect(gameButton("Everdell")).toBeDisabled();
-		expect(gameButton("Everdell")).toHaveTextContent("new.game.on-loan-to");
-		expect(gameButton("Everdell Duo")).toBeEnabled();
-	});
-
-	it("names the picked game on the submit button", async () => {
-		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
-
-		expect(screen.getByRole("button", { name: "new.save" })).toBeInTheDocument();
-		await userEvent.click(gameButton("Everdell Duo"));
-
-		expect(gameButton("Everdell Duo")).toHaveAttribute("aria-pressed", "true");
-		expect(screen.getByRole("button", { name: "new.lend-game" })).toBeInTheDocument();
 	});
 
 	it("defaults to a two week due date and switches between presets", async () => {

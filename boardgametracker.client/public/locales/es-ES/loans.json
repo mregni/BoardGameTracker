@@ -55,13 +55,6 @@
     },
     "button": "+ Prestar un juego",
     "lend-game": "Prestar {{game}}",
-    "game": {
-      "label": "Juego",
-      "search": "Buscar juegos",
-      "empty": "No se han encontrado juegos",
-      "on-loan": "Prestado",
-      "on-loan-to": "Prestado a {{name}}"
-    },
     "due": {
       "one-week": "1 semana",
       "two-weeks": "2 semanas",
