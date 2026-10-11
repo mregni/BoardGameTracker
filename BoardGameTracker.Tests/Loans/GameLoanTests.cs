@@ -56,13 +56,28 @@ public class GameLoanTests
     }
 
     [Fact]
-    public void LoanToPlayer_ForFutureDateAfterDueDate_ShouldSucceed()
+    public void LoanToPlayer_AfterDueDateOfUnreturnedLoan_ShouldThrow()
     {
         var game = new Game("Test Game");
-        var firstLoan = game.LoanToPlayer(1, DateTime.UtcNow);
-        firstLoan.SetDueDate(DateTime.UtcNow.AddDays(7));
+        var firstLoan = game.LoanToPlayer(1, DateTime.UtcNow.AddDays(-14));
+        firstLoan.SetDueDate(DateTime.UtcNow.AddDays(-7));
 
-        var secondLoan = game.LoanToPlayer(2, DateTime.UtcNow.AddDays(10));
+        var act = () => game.LoanToPlayer(2, DateTime.UtcNow);
+
+        act.Should().Throw<DomainException>().WithMessage(Constants.Errors.GameAlreadyOnLoan);
+        game.Loans.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void LoanToPlayer_StartingOnReturnDateOfPreviousLoan_ShouldSucceed()
+    {
+        var anchor = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
+        var game = new Game("Test Game");
+        var firstLoan = game.LoanToPlayer(1, anchor);
+        firstLoan.SetDueDate(anchor.AddDays(30));
+        firstLoan.MarkAsReturned(anchor.AddDays(5));
+
+        var secondLoan = game.LoanToPlayer(2, anchor.AddDays(5));
 
         game.Loans.Should().HaveCount(2);
         secondLoan.PlayerId.Should().Be(2);
