@@ -124,19 +124,37 @@ describe("GameNightCard", () => {
 });
 
 describe("RsvpAvatarStack", () => {
-	it("shows at most five avatars and a +N chip for the rest", () => {
-		const rsvps = Array.from({ length: 7 }, (_, index) => ({
-			id: 100 + index,
-			playerId: 100 + index,
-			gameNightId: 4,
-			state: GameNightRsvpState.Pending,
-			player: player(100 + index, `Player ${index}`),
-		}));
+	const rsvps = Array.from({ length: 10 }, (_, index) => ({
+		id: 100 + index,
+		playerId: 100 + index,
+		gameNightId: 4,
+		state: GameNightRsvpState.Pending,
+		player: player(100 + index, `Player ${index}`),
+	}));
+
+	it("caps the stack at five on phones and eight from md up", () => {
 		renderWithProviders(<RsvpAvatarStack rsvps={rsvps} />);
 
 		const stack = screen.getByTestId("rsvp-avatar-stack");
+		expect(within(stack).getAllByRole("button")).toHaveLength(8);
+		expect(stack.querySelectorAll("[data-mobile-hidden]")).toHaveLength(3);
+		expect(stack.querySelectorAll("[data-desktop-hidden]")).toHaveLength(0);
+
+		const mobileChip = within(stack).getByText("+5");
+		expect(mobileChip).toHaveClass("md:hidden");
+		expect(mobileChip).toHaveAttribute("title", "Player 5, Player 6, Player 7, Player 8, Player 9");
+
+		const desktopChip = within(stack).getByText("+2");
+		expect(desktopChip).toHaveClass("hidden", "md:inline-flex");
+		expect(desktopChip).toHaveAttribute("title", "Player 8, Player 9");
+	});
+
+	it("shows no chip when everyone fits", () => {
+		renderWithProviders(<RsvpAvatarStack rsvps={rsvps.slice(0, 5)} />);
+
+		const stack = screen.getByTestId("rsvp-avatar-stack");
 		expect(within(stack).getAllByRole("button")).toHaveLength(5);
-		expect(within(stack).getByText("+2")).toHaveAttribute("title", "Player 5, Player 6");
+		expect(within(stack).queryByText(/^\+/)).not.toBeInTheDocument();
 	});
 });
 
