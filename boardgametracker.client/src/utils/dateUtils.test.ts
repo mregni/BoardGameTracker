@@ -120,6 +120,14 @@ describe("dateUtils", () => {
 		it("returns an empty string without a date", () => {
 			expect(toLongDisplay(null, "en-us")).toBe("");
 		});
+
+		it("parses ISO strings", () => {
+			expect(toLongDisplay("2026-10-11T19:30:00", "nl-be")).toBe("zondag 11 oktober 2026");
+		});
+
+		it("returns an empty string for an invalid date", () => {
+			expect(toLongDisplay("not-a-date", "en-us")).toBe("");
+		});
 	});
 
 	describe("toDisplay", () => {

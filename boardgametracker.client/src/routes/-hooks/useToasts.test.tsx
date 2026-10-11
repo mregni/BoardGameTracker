@@ -1,14 +1,16 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-const { language, toastSuccess, toastError } = vi.hoisted(() => ({
+const { language, toastSuccess, toastError, toastInfo, toastWarning } = vi.hoisted(() => ({
 	language: { current: "en" },
 	toastSuccess: vi.fn(),
 	toastError: vi.fn(),
+	toastInfo: vi.fn(),
+	toastWarning: vi.fn(),
 }));
 
 vi.mock("sonner", () => ({
-	toast: { success: toastSuccess, error: toastError, info: vi.fn(), warning: vi.fn() },
+	toast: { success: toastSuccess, error: toastError, info: toastInfo, warning: toastWarning },
 }));
 
 vi.mock("react-i18next", () => ({
@@ -34,5 +36,17 @@ describe("useToasts", () => {
 
 		expect(toastSuccess).toHaveBeenCalledWith("nl:settings:save.successfull");
 		expect(toastError).toHaveBeenCalledWith("nl:settings:save.failed");
+	});
+
+	it("translates info and warning toasts at call time as well", () => {
+		language.current = "en";
+		const { result } = renderHook(() => useToasts());
+
+		language.current = "es";
+		result.current.infoToast("common:info");
+		result.current.warningToast("common:warning");
+
+		expect(toastInfo).toHaveBeenCalledWith("es:common:info");
+		expect(toastWarning).toHaveBeenCalledWith("es:common:warning");
 	});
 });
