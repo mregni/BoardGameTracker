@@ -27,8 +27,8 @@ export const LoanRow = ({ loan, game, player, onReturn, onEdit, onDelete }: Prop
 	const playerName = player?.name ?? "";
 
 	return (
-		<div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2.5 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_7rem_9rem_auto] md:gap-4">
-			<div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2 md:col-start-auto md:row-start-auto">
+		<div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2.5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_9rem_auto] xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_7rem_9rem_auto] xl:gap-x-4">
+			<div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2 lg:col-start-auto lg:row-start-auto">
 				<BgtAvatar size="medium" title={gameTitle} image={game?.image ?? null} />
 				{game ? (
 					<Link
@@ -42,7 +42,7 @@ export const LoanRow = ({ loan, game, player, onReturn, onEdit, onDelete }: Prop
 					<span className="truncate font-semibold text-white">{gameTitle}</span>
 				)}
 			</div>
-			<div className="col-start-1 row-start-2 flex min-w-0 items-center gap-2 md:col-start-auto md:row-start-auto">
+			<div className="col-start-1 row-start-2 flex min-w-0 items-center gap-2 lg:col-start-auto lg:row-start-auto">
 				<BgtAvatar size="small" title={playerName} image={player?.image ?? null} />
 				{player ? (
 					<Link
@@ -56,13 +56,13 @@ export const LoanRow = ({ loan, game, player, onReturn, onEdit, onDelete }: Prop
 					<span className="truncate text-sm text-white/80">{playerName}</span>
 				)}
 			</div>
-			<span className="hidden text-sm text-white/50 md:block">
+			<span className="hidden text-sm text-white/50 xl:block">
 				{t("since", { date: toShortDate(loan.loanDate, i18n.language) })}
 			</span>
-			<div className="col-start-2 row-start-1 justify-self-end md:col-start-auto md:row-start-auto md:justify-self-start">
+			<div className="col-start-2 row-start-1 justify-self-end lg:col-start-auto lg:row-start-auto lg:justify-self-start">
 				<LoanStatusPill loan={loan} />
 			</div>
-			<div className="col-start-2 row-start-2 flex items-center justify-end gap-1.5 md:col-start-auto md:row-start-auto">
+			<div className="col-start-2 row-start-2 flex items-center justify-end gap-1.5 lg:col-start-auto lg:row-start-auto">
 				{onEdit && (
 					<BgtIconButton
 						intent="subtile"

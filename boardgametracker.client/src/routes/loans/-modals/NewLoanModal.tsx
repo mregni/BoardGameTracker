@@ -104,11 +104,11 @@ const NewLoanModal = (props: ModalProps) => {
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent>
+			<BgtDialogContent className="md:max-w-[880px]">
 				<form onSubmit={handleFormSubmit(form)} className="w-full">
 					<BgtDialogTitle>{t("new.title")}</BgtDialogTitle>
 					<BgtDialogDescription>{t("new.description")}</BgtDialogDescription>
-					<div className="flex flex-col gap-3 mt-3 mb-3 w-full">
+					<div className="mt-3 mb-3 grid w-full grid-cols-1 gap-3 md:grid-cols-2 md:gap-6">
 						<form.Field name="gameId" validators={zodValidator(CreateLoanSchema, "gameId")}>
 							{(field: AnyFieldApi) => (
 								<LoanGamePicker
@@ -121,89 +121,91 @@ const NewLoanModal = (props: ModalProps) => {
 								/>
 							)}
 						</form.Field>
-						<form.Field name="playerId" validators={zodValidator(CreateLoanSchema, "playerId")}>
-							{(field: AnyFieldApi) => (
-								<BgtSelect
-									field={field}
-									hasSearch
-									showAvatars
-									items={playersSelectItems}
-									label={t("new.player.label")}
-									disabled={isLoading}
-									placeholder={t("new.player.placeholder")}
-								/>
-							)}
-						</form.Field>
-						<div>
-							<BgtButton type="button" variant="text" size="1" onClick={() => setOpenCreatePlayerModal(true)}>
-								+ {t("player-session:new.create-player")}
-							</BgtButton>
-						</div>
-						<form.Field name="loanDate" validators={zodValidator(CreateLoanSchema, "loanDate")}>
-							{(field: AnyFieldApi) => (
-								<BgtDatePicker
-									field={field}
-									label={t("new.start.label")}
-									disabled={isLoading}
-									placeholder={t("new.start.placeholder")}
-								/>
-							)}
-						</form.Field>
-						<form.Subscribe selector={(state) => [state.values.loanDate, state.values.duePreset] as const}>
-							{([loanDate, duePreset]) => (
-								<div className="flex flex-col gap-2">
-									<BgtFieldLabel>{t("new.end.label")}</BgtFieldLabel>
-									<div className="flex flex-wrap gap-1.5">
-										{DUE_PRESETS.map((preset) => {
-											const selected = preset === duePreset;
-											return (
-												<button
-													key={preset}
-													type="button"
-													aria-pressed={selected}
-													disabled={isLoading}
-													onClick={() => {
-														form.setFieldValue("duePreset", preset);
-														if (preset !== "custom") {
-															form.setFieldValue("dueDate", "");
-														}
-													}}
-													className={cx(
-														"rounded-full border px-3 py-1.5 text-xs transition-colors",
-														selected
-															? "border-primary bg-primary/30 text-white"
-															: "border-primary/20 bg-primary/10 text-white/80 hover:border-primary/50",
-													)}
-												>
-													{presetLabel(preset, loanDate, selected)}
-												</button>
-											);
-										})}
+						<div className="flex min-w-0 flex-col gap-3">
+							<form.Field name="playerId" validators={zodValidator(CreateLoanSchema, "playerId")}>
+								{(field: AnyFieldApi) => (
+									<BgtSelect
+										field={field}
+										hasSearch
+										showAvatars
+										items={playersSelectItems}
+										label={t("new.player.label")}
+										disabled={isLoading}
+										placeholder={t("new.player.placeholder")}
+									/>
+								)}
+							</form.Field>
+							<div>
+								<BgtButton type="button" variant="text" size="1" onClick={() => setOpenCreatePlayerModal(true)}>
+									+ {t("player-session:new.create-player")}
+								</BgtButton>
+							</div>
+							<form.Field name="loanDate" validators={zodValidator(CreateLoanSchema, "loanDate")}>
+								{(field: AnyFieldApi) => (
+									<BgtDatePicker
+										field={field}
+										label={t("new.start.label")}
+										disabled={isLoading}
+										placeholder={t("new.start.placeholder")}
+									/>
+								)}
+							</form.Field>
+							<form.Subscribe selector={(state) => [state.values.loanDate, state.values.duePreset] as const}>
+								{([loanDate, duePreset]) => (
+									<div className="flex flex-col gap-2">
+										<BgtFieldLabel>{t("new.end.label")}</BgtFieldLabel>
+										<div className="flex flex-wrap gap-1.5">
+											{DUE_PRESETS.map((preset) => {
+												const selected = preset === duePreset;
+												return (
+													<button
+														key={preset}
+														type="button"
+														aria-pressed={selected}
+														disabled={isLoading}
+														onClick={() => {
+															form.setFieldValue("duePreset", preset);
+															if (preset !== "custom") {
+																form.setFieldValue("dueDate", "");
+															}
+														}}
+														className={cx(
+															"rounded-full border px-3 py-1.5 text-xs transition-colors",
+															selected
+																? "border-primary bg-primary/30 text-white"
+																: "border-primary/20 bg-primary/10 text-white/80 hover:border-primary/50",
+														)}
+													>
+														{presetLabel(preset, loanDate, selected)}
+													</button>
+												);
+											})}
+										</div>
+										{duePreset === "custom" && (
+											<form.Field
+												name="dueDate"
+												validators={notBeforeValidator(
+													CreateLoanSchema,
+													"dueDate",
+													"loanDate",
+													"loans:new.end.before-start",
+												)}
+											>
+												{(field: AnyFieldApi) => (
+													<BgtDatePicker
+														field={field}
+														label=""
+														disabled={isLoading}
+														placeholder={t("new.end.placeholder")}
+														minValue={loanDate || null}
+													/>
+												)}
+											</form.Field>
+										)}
 									</div>
-									{duePreset === "custom" && (
-										<form.Field
-											name="dueDate"
-											validators={notBeforeValidator(
-												CreateLoanSchema,
-												"dueDate",
-												"loanDate",
-												"loans:new.end.before-start",
-											)}
-										>
-											{(field: AnyFieldApi) => (
-												<BgtDatePicker
-													field={field}
-													label=""
-													disabled={isLoading}
-													placeholder={t("new.end.placeholder")}
-													minValue={loanDate || null}
-												/>
-											)}
-										</form.Field>
-									)}
-								</div>
-							)}
-						</form.Subscribe>
+								)}
+							</form.Subscribe>
+						</div>
 					</div>
 					<BgtDialogClose>
 						<BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={close}>

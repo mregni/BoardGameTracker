@@ -32,7 +32,7 @@ export const LoanGamePicker = ({ label, options, value, onChange, errors = [], d
 	}, [options, search, value]);
 
 	return (
-		<FormFieldWrapper label={label} errors={errors}>
+		<FormFieldWrapper label={label} errors={errors} className="min-w-0">
 			<div className="flex flex-col gap-2">
 				<SearchInputField
 					value={search}
@@ -41,7 +41,7 @@ export const LoanGamePicker = ({ label, options, value, onChange, errors = [], d
 				/>
 				<div
 					className={cx(
-						"flex max-h-56 flex-col gap-0.5 overflow-y-auto rounded-lg border p-1",
+						"flex max-h-56 flex-col gap-0.5 overflow-y-auto rounded-lg border p-1 md:h-72 md:max-h-72",
 						errors.length > 0 ? "border-error" : "border-primary/20",
 					)}
 				>
