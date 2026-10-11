@@ -218,6 +218,38 @@ public class LoanServiceTests
     }
 
     [Fact]
+    public async Task LoanGameToPlayer_ShouldThrowDomainException_WhenDueDateRunsIntoLaterLoan()
+    {
+        var gameId = 1;
+        var start = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
+        var game = new Game("Test Game") { Id = gameId };
+        game.LoanToPlayer(99, start.AddDays(10));
+
+        var command = new CreateLoanCommand
+        {
+            GameId = gameId,
+            PlayerId = 2,
+            LoanDate = start,
+            DueDate = start.AddDays(14)
+        };
+
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(game);
+
+        var act = async () => await _loanService.LoanGameToPlayer(command);
+
+        await act.Should().ThrowAsync<DomainException>()
+            .WithMessage(Constants.Errors.GameAlreadyOnLoan);
+
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyPlayerChecked();
+        _loanRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Loan>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task LoanGameToPlayer_ShouldThrowEntityNotFoundException_WhenGameDoesNotExist()
     {
         // Arrange

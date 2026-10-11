@@ -81,14 +81,16 @@ public class Game : BaseGame
         }
     }
 
-    public Loan LoanToPlayer(int playerId, DateTime loanDate)
+    public Loan LoanToPlayer(int playerId, DateTime loanDate, DateTime? dueDate = null)
     {
-        if (IsLoanedOn(loanDate))
+        var loan = new Loan(Id, playerId, loanDate);
+        loan.SetDueDate(dueDate);
+
+        if (Loans.Any(other => other.Overlaps(loanDate, dueDate)))
         {
             throw new DomainException(Constants.Errors.GameAlreadyOnLoan);
         }
 
-        var loan = new Loan(Id, playerId, loanDate);
         Loans.Add(loan);
         return loan;
     }

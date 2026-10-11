@@ -59,8 +59,7 @@ public class LoanService : ILoanService
             throw new EntityNotFoundException(nameof(Player), command.PlayerId);
         }
 
-        var loan = game.LoanToPlayer(command.PlayerId, command.LoanDate);
-        loan.SetDueDate(command.DueDate);
+        var loan = game.LoanToPlayer(command.PlayerId, command.LoanDate, command.DueDate);
 
         await _loanRepository.CreateAsync(loan);
         await _unitOfWork.SaveChangesAsync();
