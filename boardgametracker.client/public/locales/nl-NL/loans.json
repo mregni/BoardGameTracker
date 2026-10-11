@@ -4,12 +4,11 @@
     "title": "Nog niets uitgeleend",
     "description": "Je hebt nog niets uitgeleend. Leen een spel uit om bij te houden wie je spellen heeft."
   },
-  "mark-as-returned": "Teruggebracht",
-  "no-returned-loans": "Nog niets teruggebracht.",
   "statistics": {
-    "active": "Nu uitgeleend",
     "returned": "Teruggebracht",
-    "total-loans": "Totaal uitgeleend"
+    "on-loan": "Uitgeleend",
+    "overdue": "Te laat",
+    "due-this-week": "Terug deze week"
   },
   "notifications": {
     "created": "Uitleen is aangemaakt",
@@ -36,9 +35,9 @@
   },
   "no-active-loans": "Er is momenteel niets uitgeleend.",
   "new": {
-    "title": "Nieuwe uitleen toevoegen",
+    "title": "Spel uitlenen",
     "save": "Uitleen aanmaken",
-    "description": "Vul het formulier in om een nieuwe uitleen aan te maken.",
+    "description": "Kies een spel, wie het leent en wanneer het terug moet zijn.",
     "start": {
       "label": "Uitleendatum",
       "required": "Uitleendatum is verplicht",
@@ -50,16 +49,49 @@
       "before-start": "De terugbrengdatum kan niet voor de startdatum liggen"
     },
     "player": {
-      "label": "Speler",
+      "label": "Lener",
       "required": "Speler is verplicht",
-      "placeholder": "Kies een speler"
+      "placeholder": "Kies een lener"
+    },
+    "button": "+ Spel uitlenen",
+    "lend-game": "{{game}} uitlenen",
+    "game": {
+      "label": "Spel",
+      "search": "Spellen zoeken",
+      "empty": "Geen spellen gevonden",
+      "on-loan": "Uitgeleend",
+      "on-loan-to": "Uitgeleend aan {{name}}"
+    },
+    "due": {
+      "one-week": "1 week",
+      "two-weeks": "2 weken",
+      "one-month": "1 maand",
+      "none": "Geen einddatum",
+      "custom": "Datum kiezen"
     }
   },
-  "active": "Nog niet terug",
   "edit": {
     "title": "Uitleen bewerken",
     "description": "Wijzig de datums van deze uitleen.",
     "save": "Uitleen opslaan",
     "button": "Bewerken"
+  },
+  "status": {
+    "overdue_one": "{{count}} dag te laat",
+    "overdue_other": "{{count}} dagen te laat",
+    "due-today": "Vandaag terug",
+    "due-in_one": "Terug over {{count}} dag",
+    "due-in_other": "Terug over {{count}} dagen",
+    "due-on": "Terug op {{date}}",
+    "no-due-date": "Geen einddatum",
+    "returned": "Teruggebracht op {{date}}"
+  },
+  "since": "sinds {{date}}",
+  "returned-button": "Teruggebracht",
+  "history": {
+    "summary_one": "{{count}} keer teruggebracht",
+    "summary_other": "{{count}} keer teruggebracht",
+    "show": "Geschiedenis tonen",
+    "hide": "Geschiedenis verbergen"
   }
 }
