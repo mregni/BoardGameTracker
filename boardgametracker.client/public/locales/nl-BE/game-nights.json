@@ -1,19 +1,36 @@
 {
   "rsvp": {
     "title": "RSVP's beheren",
+    "host": "Gastheer · komt altijd",
+    "subtitle": "{{title}} · {{date}}",
+    "coming": "Komt",
+    "invited_one": "{{count}} uitgenodigd",
+    "invited_other": "{{count}} uitgenodigd",
+    "summary": {
+      "coming_one": "{{count}} komt",
+      "coming_other": "{{count}} komen",
+      "pending_one": "{{count}} in afwachting",
+      "pending_other": "{{count}} in afwachting",
+      "declined_one": "{{count}} afgewezen",
+      "declined_other": "{{count}} afgewezen"
+    },
+    "player-status": "RSVP van {{name}}",
+    "remove": "{{name}} verwijderen van deze avond",
+    "invite-more": "Meer spelers uitnodigen",
+    "search-players": "Spelers zoeken…",
+    "no-players-found": "Geen spelers gevonden",
+    "invite": "{{name}} uitnodigen",
+    "invite-link": "Uitnodigingslink",
+    "copy": "Kopiëren",
     "manual-note-prefix": "Stel de RSVP-status handmatig in",
     "manual-note": " voor spelers die telefonisch, per sms of persoonlijk geantwoord hebben.",
     "accept": "Accepteren",
-    "decline": "Afwijzen",
-    "maybe": "Misschien",
-    "host": "Gastheer – altijd aanwezig"
+    "decline": "Afwijzen"
   },
   "empty": {
     "title": "Nog geen spelavonden gepland",
     "description": "Nodig spelers uit om een spelavond te plannen.",
-    "upcoming": "Geen komende spelavonden",
-    "past": "Geen voorbije spelavonden",
-    "all": "Nog geen spelavonden"
+    "upcoming": "Geen komende spelavonden"
   },
   "delete": {
     "title": "Spelavond verwijderen",
@@ -31,21 +48,29 @@
     "description": "Werk de details van deze spelavond bij.",
     "save": "Wijzigingen opslaan"
   },
-  "upcoming": "Komende spelavonden",
-  "past": "Voorbije spelavonden",
+  "upcoming": "Komend",
+  "past": "Voorbij",
   "card": {
-    "hosted-by": "Georganiseerd door {{host}}",
-    "suggested-games": "Voorgestelde spellen",
-    "rsvp-link": "RSVP-link",
-    "upcoming": "Komend",
-    "past": "Voorbij",
-    "copy-link": "RSVP-link kopiëren",
+    "suggested-games": "Gastheer stelt voor:",
+    "copy-link": "Uitnodigingslink kopiëren",
     "copied": "Gekopieerd naar klembord",
     "copy-failed": "Kopiëren van de link is mislukt",
     "manage-rsvps": "RSVP's beheren",
     "email-invites": "Uitnodigingen mailen",
     "invites-sent": "Uitnodigingen verstuurd: {{sent}}",
-    "invites-failed": "Uitnodigingen versturen mislukt"
+    "invites-failed": "Uitnodigingen versturen mislukt",
+    "when": "{{when}} · {{time}}",
+    "host": "Gastheer: {{host}}",
+    "relative": {
+      "today": "Vandaag",
+      "tomorrow": "Morgen",
+      "days_one": "Over {{count}} dag",
+      "days_other": "Over {{count}} dagen",
+      "weeks_one": "Over {{count}} week",
+      "weeks_other": "Over {{count}} weken",
+      "months_one": "Over {{count}} maand",
+      "months_other": "Over {{count}} maanden"
+    }
   },
   "form": {
     "title": {
@@ -90,5 +115,11 @@
     "location-required": "Locatie is verplicht",
     "host-required": "Gastheer is verplicht"
   },
-  "create-first": "Plan je eerste spelavond"
+  "past-night": {
+    "summary": "{{location}} · {{attended}}",
+    "attended-count_one": "{{count}} aanwezig",
+    "attended-count_other": "{{count}} aanwezig",
+    "attended": "Aanwezig",
+    "nobody": "Niemand stond als aanwezig genoteerd"
+  }
 }

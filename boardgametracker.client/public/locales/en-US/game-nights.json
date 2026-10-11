@@ -1,19 +1,36 @@
 {
   "rsvp": {
     "title": "Manage RSVPs",
+    "host": "Host · always coming",
+    "subtitle": "{{title}} · {{date}}",
+    "coming": "Coming",
+    "invited_one": "{{count}} invited",
+    "invited_other": "{{count}} invited",
+    "summary": {
+      "coming_one": "{{count}} coming",
+      "coming_other": "{{count}} coming",
+      "pending_one": "{{count}} pending",
+      "pending_other": "{{count}} pending",
+      "declined_one": "{{count}} declined",
+      "declined_other": "{{count}} declined"
+    },
+    "player-status": "RSVP of {{name}}",
+    "remove": "Remove {{name}} from this night",
+    "invite-more": "Invite more players",
+    "search-players": "Search players…",
+    "no-players-found": "No players found",
+    "invite": "Invite {{name}}",
+    "invite-link": "Invite link",
+    "copy": "Copy",
     "manual-note-prefix": "Manually set RSVP status",
     "manual-note": " for players who responded via phone, text, or in person.",
     "accept": "Accept",
-    "decline": "Decline",
-    "maybe": "Maybe",
-    "host": "Host – always attending"
+    "decline": "Decline"
   },
   "empty": {
     "title": "No game nights planned yet",
     "description": "Invite players to plan a game night.",
-    "upcoming": "No upcoming game nights",
-    "past": "No past game nights",
-    "all": "No game nights yet"
+    "upcoming": "No upcoming game nights"
   },
   "delete": {
     "title": "Delete game night",
@@ -31,21 +48,29 @@
     "description": "Update the details of this game night event.",
     "save": "Save changes"
   },
-  "upcoming": "Upcoming game nights",
-  "past": "Past game nights",
+  "upcoming": "Upcoming",
+  "past": "Past",
   "card": {
-    "hosted-by": "Hosted by {{host}}",
-    "suggested-games": "Suggested games",
-    "rsvp-link": "RSVP link",
-    "upcoming": "Upcoming",
-    "past": "Past",
-    "copy-link": "Copy RSVP link",
+    "suggested-games": "Host suggests:",
+    "copy-link": "Copy invite link",
     "copied": "Copied to clipboard",
     "copy-failed": "Couldn't copy the link",
     "manage-rsvps": "Manage RSVPs",
     "email-invites": "Email invites",
     "invites-sent": "Invites sent: {{sent}} sent",
-    "invites-failed": "Failed to send invites"
+    "invites-failed": "Failed to send invites",
+    "when": "{{when}} · {{time}}",
+    "host": "Host: {{host}}",
+    "relative": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "days_one": "In {{count}} day",
+      "days_other": "In {{count}} days",
+      "weeks_one": "In {{count}} week",
+      "weeks_other": "In {{count}} weeks",
+      "months_one": "In {{count}} month",
+      "months_other": "In {{count}} months"
+    }
   },
   "form": {
     "title": {
@@ -90,5 +115,11 @@
     "location-required": "Location is required",
     "host-required": "Host is required"
   },
-  "create-first": "Plan your first game night"
+  "past-night": {
+    "summary": "{{location}} · {{attended}}",
+    "attended-count_one": "{{count}} attended",
+    "attended-count_other": "{{count}} attended",
+    "attended": "Attended",
+    "nobody": "Nobody confirmed they were coming"
+  }
 }

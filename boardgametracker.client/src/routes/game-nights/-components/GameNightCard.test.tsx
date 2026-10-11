@@ -1,0 +1,145 @@
+import { addDays } from "date-fns";
+import { describe, expect, it, vi } from "vitest";
+import { type GameNight, GameNightRsvpState, type Player, type Settings } from "@/models";
+import { renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
+
+vi.mock("@tanstack/react-router", () => ({
+	useNavigate: () => vi.fn(),
+}));
+
+vi.mock("@/routes/settings/-hooks/useSettingsData", () => ({
+	useSettingsData: () => ({ settings: { publicUrl: "https://games.example.com", emailEnabled: false } }),
+}));
+
+vi.mock("@/services/gameNightService", () => ({
+	sendInvitesCall: vi.fn(),
+}));
+
+vi.mock("@/utils/errorUtils", () => ({
+	apiErrorMessage: (_error: unknown, fallbackKey: string) => fallbackKey,
+}));
+
+import { GameNightCard } from "./GameNightCard";
+import { PastGameNightItem } from "./PastGameNightItem";
+
+const player = (id: number, name: string) => ({ id, name, image: null }) as unknown as Player;
+
+const settings = { dateFormat: "dd-MM-yyyy", timeFormat: "HH:mm", uiLanguage: "en-us" } as Settings;
+
+const gameNight = (startDate: Date) =>
+	({
+		id: 4,
+		title: "Strategy night",
+		notes: "",
+		startDate,
+		hostId: 1,
+		host: player(1, "Host"),
+		locationId: 3,
+		location: { id: 3, name: "Home" },
+		linkId: "abc-123",
+		suggestedGames: [{ id: 9, title: "Carcassonne", image: null }],
+		invitedPlayers: [
+			{ id: 11, playerId: 1, gameNightId: 4, state: GameNightRsvpState.Accepted, player: player(1, "Host") },
+			{ id: 12, playerId: 7, gameNightId: 4, state: GameNightRsvpState.Pending, player: player(7, "Guest") },
+			{ id: 13, playerId: 8, gameNightId: 4, state: GameNightRsvpState.Declined, player: player(8, "Other") },
+		],
+	}) as unknown as GameNight;
+
+describe("GameNightCard", () => {
+	it("keeps only the time pill and the title next to the date box", () => {
+		renderWithProviders(
+			<GameNightCard
+				gameNight={gameNight(addDays(new Date(), 1))}
+				settings={settings}
+				canWrite
+				onEdit={vi.fn()}
+				onDelete={vi.fn()}
+				onManageRsvps={vi.fn()}
+			/>,
+		);
+
+		const heading = screen.getByRole("heading", { name: "Strategy night" });
+		const head = heading.parentElement as HTMLElement;
+		expect(head.children).toHaveLength(2);
+		expect(within(head).getByText("card.when")).toBeInTheDocument();
+		expect(within(head).queryByRole("button")).not.toBeInTheDocument();
+		expect(within(head).queryByText("Home")).not.toBeInTheDocument();
+	});
+
+	it("shows location, host, RSVP summary and suggested games", () => {
+		renderWithProviders(
+			<GameNightCard
+				gameNight={gameNight(addDays(new Date(), 3))}
+				settings={settings}
+				canWrite
+				onEdit={vi.fn()}
+				onDelete={vi.fn()}
+				onManageRsvps={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByText("Home")).toBeInTheDocument();
+		expect(screen.getByText("card.host")).toBeInTheDocument();
+		expect(screen.getByRole("img", { name: /rsvp\.summary\.coming/ })).toBeInTheDocument();
+		expect(screen.getByText("Carcassonne")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "card.copy-link" })).toBeInTheDocument();
+	});
+
+	it("opens the RSVP dialog for this night", async () => {
+		const user = userEvent.setup();
+		const onManageRsvps = vi.fn();
+		const night = gameNight(addDays(new Date(), 3));
+		renderWithProviders(
+			<GameNightCard
+				gameNight={night}
+				settings={settings}
+				canWrite
+				onEdit={vi.fn()}
+				onDelete={vi.fn()}
+				onManageRsvps={onManageRsvps}
+			/>,
+		);
+
+		await user.click(screen.getByRole("button", { name: "card.manage-rsvps" }));
+
+		expect(onManageRsvps).toHaveBeenCalledWith(night);
+	});
+
+	it("hides the host actions for read-only users", () => {
+		renderWithProviders(
+			<GameNightCard
+				gameNight={gameNight(addDays(new Date(), 3))}
+				settings={settings}
+				canWrite={false}
+				onEdit={vi.fn()}
+				onDelete={vi.fn()}
+				onManageRsvps={vi.fn()}
+			/>,
+		);
+
+		expect(screen.queryByRole("button", { name: "card.copy-link" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "card.manage-rsvps" })).not.toBeInTheDocument();
+	});
+});
+
+describe("PastGameNightItem", () => {
+	it("lists only the players who were coming", async () => {
+		const user = userEvent.setup();
+		renderWithProviders(
+			<PastGameNightItem
+				gameNight={gameNight(addDays(new Date(), -2))}
+				settings={settings}
+				canWrite
+				onEdit={vi.fn()}
+				onDelete={vi.fn()}
+			/>,
+		);
+
+		await user.click(screen.getByText("Strategy night"));
+
+		expect(screen.getByText("past-night.summary")).toBeInTheDocument();
+		expect(screen.getByText("Host")).toBeInTheDocument();
+		expect(screen.queryByText("Guest")).not.toBeInTheDocument();
+		expect(screen.queryByText("Other")).not.toBeInTheDocument();
+	});
+});

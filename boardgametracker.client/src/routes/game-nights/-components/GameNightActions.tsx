@@ -1,38 +1,23 @@
 import { useMutation } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtText } from "@/components/BgtText/BgtText";
+import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import type { GameNight } from "@/models";
-import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 import { sendInvitesCall } from "@/services/gameNightService";
 import { apiErrorMessage } from "@/utils/errorUtils";
-import { effectivePublicUrl } from "@/utils/publicUrl";
+import { useInviteLink } from "../-hooks/useInviteLink";
 
 interface Props {
 	gameNight: GameNight;
-	onManageRsvps: (gameNight: GameNight) => void;
+	onEdit: (gameNight: GameNight) => void;
+	onDelete: (gameNight: GameNight) => void;
 }
 
 export const GameNightActions = (props: Props) => {
-	const { gameNight, onManageRsvps } = props;
+	const { gameNight, onEdit, onDelete } = props;
 	const { t } = useTranslation("game-nights");
-	const { settings } = useSettingsData();
-
-	const publicUrl = effectivePublicUrl(settings?.publicUrl, window.location.origin);
-	const rsvpLink = `${publicUrl}/rsvp?linkId=${gameNight.linkId}`;
-
-	const [copied, setCopied] = useState(false);
-
-	const onCopyLink = useCallback(() => {
-		const copy = async () => {
-			await navigator.clipboard.writeText(rsvpLink);
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
-		};
-		copy().catch(() => toast.error(t("card.copy-failed")));
-	}, [rsvpLink, t]);
+	const { copied, copy, emailEnabled } = useInviteLink(gameNight);
 
 	const sendInvitesMutation = useMutation({
 		mutationFn: () => sendInvitesCall(gameNight.id),
@@ -45,37 +30,21 @@ export const GameNightActions = (props: Props) => {
 	});
 
 	return (
-		<div className="bg-primary/10 border border-primary/30 rounded-lg p-3">
-			<div className="flex items-center justify-between gap-4 flex-wrap">
-				<div className="flex items-center gap-2 flex-1 min-w-0">
-					<div className="flex-1 min-w-0">
-						<BgtText size="2" weight="medium" color="gray" className="mb-1">
-							{t("card.rsvp-link")}
-						</BgtText>
-						<BgtText size="1" color="gray" className="truncate">
-							{rsvpLink}
-						</BgtText>
-					</div>
-				</div>
-				<div className="flex gap-2 shrink-0">
-					<BgtButton variant="cancel" size="1" onClick={() => onManageRsvps(gameNight)}>
-						{t("card.manage-rsvps")}
-					</BgtButton>
-					{settings?.emailEnabled && (
-						<BgtButton
-							variant="cancel"
-							size="1"
-							onClick={() => sendInvitesMutation.mutate()}
-							disabled={sendInvitesMutation.isPending}
-						>
-							{t("card.email-invites")}
-						</BgtButton>
-					)}
-					<BgtButton variant="primary" size="1" onClick={onCopyLink} disabled={copied}>
-						{copied ? t("card.copied") : t("card.copy-link")}
-					</BgtButton>
-				</div>
-			</div>
+		<div className="flex flex-wrap items-center gap-2 md:justify-end">
+			<BgtButton variant="cancel" size="1" onClick={copy} disabled={copied}>
+				{copied ? t("card.copied") : t("card.copy-link")}
+			</BgtButton>
+			{emailEnabled && (
+				<BgtButton
+					variant="cancel"
+					size="1"
+					onClick={() => sendInvitesMutation.mutate()}
+					disabled={sendInvitesMutation.isPending}
+				>
+					{t("card.email-invites")}
+				</BgtButton>
+			)}
+			<BgtEditDeleteButtons onEdit={() => onEdit(gameNight)} onDelete={() => onDelete(gameNight)} />
 		</div>
 	);
 };

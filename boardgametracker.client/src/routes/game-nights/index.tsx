@@ -1,22 +1,23 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { isPast } from "date-fns";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { BgtText } from "@/components/BgtText/BgtText";
 import { usePermissions } from "@/hooks/usePermissions";
+import type { GameNight } from "@/models";
 import { getGameNights } from "@/services/queries/gameNights";
 import { getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
-import { FilterTabs, type FilterType } from "./-components/FilterTabs";
 import { GameNightCard } from "./-components/GameNightCard";
-import { NoGameNights } from "./-components/NoGameNights";
+import { PastGameNightItem } from "./-components/PastGameNightItem";
 import { useGameNightActions } from "./-hooks/useGameNightActions";
 import { useGameNightData } from "./-hooks/useGameNightData";
 import { useGameNightModals } from "./-hooks/useGameNightModals";
@@ -43,7 +44,6 @@ export const Route = createFileRoute("/game-nights/")({
 function RouteComponent() {
 	const { t } = useTranslation("game-nights");
 	const { canWrite } = usePermissions();
-	const [filter, setFilter] = useState<FilterType>("all");
 	const [selectedGameNightId, setSelectedGameNightId] = useState<number | null>(null);
 
 	const {
@@ -80,9 +80,6 @@ function RouteComponent() {
 		setSelectedGameNightId,
 	});
 
-	const upcomingCount = useMemo(() => gameNights.filter((gn) => !isPast(gn.startDate)).length, [gameNights]);
-	const pastCount = useMemo(() => gameNights.filter((gn) => isPast(gn.startDate)).length, [gameNights]);
-
 	const upcomingGameNights = useMemo(
 		() =>
 			gameNights
@@ -99,16 +96,10 @@ function RouteComponent() {
 		[gameNights],
 	);
 
-	const filteredGameNights = useMemo(() => {
-		switch (filter) {
-			case "upcoming":
-				return upcomingGameNights;
-			case "past":
-				return pastGameNights;
-			default:
-				return [...upcomingGameNights, ...pastGameNights];
-		}
-	}, [upcomingGameNights, pastGameNights, filter]);
+	const handleDeleteClick = (gameNight: GameNight) => {
+		actions.handleDeleteClick(gameNight);
+		modals.deleteModal.show();
+	};
 
 	if (!isLoading && gameNights.length === 0) {
 		return (
@@ -152,71 +143,42 @@ function RouteComponent() {
 			<BgtPageContent isLoading={isLoading} data={{ settings, gameNights }}>
 				{({ settings }) => (
 					<>
-						<FilterTabs
-							filter={filter}
-							onFilterChange={setFilter}
-							allCount={gameNights.length}
-							upcomingCount={upcomingCount}
-							pastCount={pastCount}
-						/>
+						<section className="flex flex-col gap-3" aria-labelledby="upcoming-game-nights">
+							<SectionTitle id="upcoming-game-nights">{t("upcoming")}</SectionTitle>
+							{upcomingGameNights.length === 0 ? (
+								<BgtText size="2" color="gray">
+									{t("empty.upcoming")}
+								</BgtText>
+							) : (
+								upcomingGameNights.map((gameNight, index) => (
+									<GameNightCard
+										key={gameNight.id}
+										gameNight={gameNight}
+										settings={settings}
+										canWrite={canWrite}
+										highlight={index === 0}
+										onEdit={actions.handleEditGameNight}
+										onDelete={handleDeleteClick}
+										onManageRsvps={actions.handleManageRsvps}
+									/>
+								))
+							)}
+						</section>
 
-						{filteredGameNights.length === 0 ? (
-							<NoGameNights filter={filter} onCreateClick={modals.createModal.show} />
-						) : filter === "all" ? (
-							<div className="space-y-4">
-								{upcomingGameNights.map((gameNight) => (
-									<GameNightCard
-										key={gameNight.id}
-										gameNight={gameNight}
-										settings={settings}
-										canWrite={canWrite}
-										onEdit={actions.handleEditGameNight}
-										onDelete={() => {
-											actions.handleDeleteClick(gameNight);
-											modals.deleteModal.show();
-										}}
-										onManageRsvps={actions.handleManageRsvps}
-									/>
-								))}
-								{upcomingGameNights.length > 0 && pastGameNights.length > 0 && (
-									<div className="flex items-center gap-4">
-										<hr className="flex-1" />
-										<span className="text-sm text-white/50">{t("past")}</span>
-										<hr className="flex-1" />
-									</div>
-								)}
+						{pastGameNights.length > 0 && (
+							<section className="flex flex-col gap-2" aria-labelledby="past-game-nights">
+								<SectionTitle id="past-game-nights">{t("past")}</SectionTitle>
 								{pastGameNights.map((gameNight) => (
-									<GameNightCard
+									<PastGameNightItem
 										key={gameNight.id}
 										gameNight={gameNight}
 										settings={settings}
 										canWrite={canWrite}
 										onEdit={actions.handleEditGameNight}
-										onDelete={() => {
-											actions.handleDeleteClick(gameNight);
-											modals.deleteModal.show();
-										}}
-										onManageRsvps={actions.handleManageRsvps}
+										onDelete={handleDeleteClick}
 									/>
 								))}
-							</div>
-						) : (
-							<div className="space-y-4">
-								{filteredGameNights.map((gameNight) => (
-									<GameNightCard
-										key={gameNight.id}
-										gameNight={gameNight}
-										settings={settings}
-										canWrite={canWrite}
-										onEdit={actions.handleEditGameNight}
-										onDelete={() => {
-											actions.handleDeleteClick(gameNight);
-											modals.deleteModal.show();
-										}}
-										onManageRsvps={actions.handleManageRsvps}
-									/>
-								))}
-							</div>
+							</section>
 						)}
 
 						<CreateGameNightModal
@@ -273,3 +235,12 @@ function RouteComponent() {
 		</BgtPage>
 	);
 }
+
+const SectionTitle = ({ id, children }: { id: string; children: ReactNode }) => (
+	<h2
+		id={id}
+		className="flex items-center gap-3 text-xs tracking-widest text-gray-400 uppercase after:h-px after:flex-1 after:bg-white/10"
+	>
+		{children}
+	</h2>
+);
