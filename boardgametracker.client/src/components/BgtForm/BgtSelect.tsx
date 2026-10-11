@@ -1,7 +1,7 @@
 import * as Select from "@radix-ui/react-select";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { cx } from "class-variance-authority";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
@@ -26,12 +26,14 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 	const { items, label, field, disabled = false, placeholder = null, hasSearch = false, showAvatars = false } = props;
 
 	const { t } = useTranslation();
+	const id = useId();
 	const [searchTerm, setSearchTerm] = useState("");
 	const [open, setOpen] = useState(false);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
 
-	const currentValue = field.state.value?.toString();
+	const rawValue = field.state.value?.toString();
+	const currentValue = items.some((item) => item.value.toString() === rawValue) ? rawValue : "";
 
 	const filteredItems = useMemo(() => {
 		return items.filter((item) => {
@@ -89,7 +91,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 	}, [open]);
 
 	return (
-		<FormFieldWrapper label={label} errors={field.state.meta.errors}>
+		<FormFieldWrapper label={label} htmlFor={id} errors={field.state.meta.errors}>
 			<Select.Root
 				disabled={disabled}
 				onValueChange={handleValueChange}
@@ -98,6 +100,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 				onOpenChange={handleOpenChange}
 			>
 				<Select.Trigger
+					id={id}
 					className={cx(
 						"w-full bg-background text-white border border-primary/30 focus:border-primary focus:outline-none",
 						"py-2 h-11 md:h-10 shadow-none inline-flex justify-between items-center rounded-lg leading-none text-[15px]",

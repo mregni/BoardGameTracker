@@ -69,7 +69,7 @@ export const BgtTextStatistic = (props: Props) => {
 		>
 			<div className="flex min-h-6 items-center gap-2 text-primary/70 mb-2">
 				{iconWithClasses}
-				<span className="line-clamp-2 break-words md:line-clamp-1" title={title}>
+				<span className="line-clamp-2 break-words" title={title}>
 					{title}
 				</span>
 				{action ? (

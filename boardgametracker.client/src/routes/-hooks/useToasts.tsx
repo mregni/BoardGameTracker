@@ -2,22 +2,22 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export const useToasts = () => {
-	const { t } = useTranslation();
+	const { i18n } = useTranslation();
 
 	const successToast = (message: string) => {
-		toast.success(t(message));
+		toast.success(i18n.t(message));
 	};
 
 	const errorToast = (message: string) => {
-		toast.error(t(message));
+		toast.error(i18n.t(message));
 	};
 
 	const infoToast = (message: string) => {
-		toast.info(t(message));
+		toast.info(i18n.t(message));
 	};
 
 	const warningToast = (message: string) => {
-		toast.warning(t(message));
+		toast.warning(i18n.t(message));
 	};
 
 	return {

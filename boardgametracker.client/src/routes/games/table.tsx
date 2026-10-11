@@ -415,7 +415,7 @@ function RouteComponent() {
 					/>
 					<BgtTextStatistic
 						title={t("games:table.mean-price-owned", { count: ownedPrices.pricedCount })}
-						content={formatPrice(ownedPrices.mean, currency, uiLanguage)}
+						content={ownedPrices.pricedCount > 0 ? formatPrice(ownedPrices.mean, currency, uiLanguage) : "-"}
 					/>
 				</div>
 				<div className="hidden md:block">

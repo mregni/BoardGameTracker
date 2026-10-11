@@ -52,7 +52,7 @@ export const SessionPlayerManager = withForm({
 		useEffect(() => {
 			const silent = isFirstSync.current;
 			isFirstSync.current = false;
-			form.setFieldValue("playerSessions", players, { dontUpdateMeta: silent, dontValidate: silent });
+			form.setFieldValue("playerSessions", players, { dontUpdateMeta: silent });
 		}, [form, players]);
 
 		return (

@@ -1,5 +1,5 @@
 import { cx } from "class-variance-authority";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
@@ -27,6 +27,7 @@ export const MultiSelectField = (props: Props) => {
 	const { label, options, selected, onChange, placeholder, disabled } = props;
 	const { t } = useTranslation("common");
 	const [searchTerm, setSearchTerm] = useState("");
+	const id = useId();
 	const [isOpen, setIsOpen] = useState(false);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -93,10 +94,11 @@ export const MultiSelectField = (props: Props) => {
 	}, [isOpen]);
 
 	return (
-		<FormFieldWrapper label={label} errors={[]} className="w-full">
+		<FormFieldWrapper label={label} htmlFor={id} errors={[]} className="w-full">
 			<div className="flex flex-col gap-2" ref={containerRef}>
 				<div>
 					<button
+						id={id}
 						ref={triggerRef}
 						type="button"
 						onClick={handleToggle}

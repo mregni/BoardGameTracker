@@ -10,6 +10,7 @@ import {
 	toDisplayDateTime,
 	toInputDate,
 	toInputDateTime,
+	toLongDisplay,
 	toRelative,
 } from "./dateUtils";
 
@@ -107,6 +108,17 @@ describe("dateUtils", () => {
 			expect(normalizeDateFnsFormat("not a format", "yy-MM-dd")).toBe("yy-MM-dd");
 			expect(normalizeDateFnsFormat("", "HH:mm")).toBe("HH:mm");
 			expect(normalizeDateFnsFormat(null, "HH:mm")).toBe("HH:mm");
+		});
+	});
+
+	describe("toLongDisplay", () => {
+		it("writes out the weekday and month in the app language", () => {
+			expect(toLongDisplay(new Date(2026, 9, 11), "en-us")).toContain("Sunday");
+			expect(toLongDisplay(new Date(2026, 9, 11), "nl-be")).toBe("zondag 11 oktober 2026");
+		});
+
+		it("returns an empty string without a date", () => {
+			expect(toLongDisplay(null, "en-us")).toBe("");
 		});
 	});
 

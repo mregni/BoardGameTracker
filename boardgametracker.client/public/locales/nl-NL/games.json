@@ -1,5 +1,5 @@
 {
-  "back": "Terug naar spellen",
+  "back": "Terug",
   "import": {
     "loading": "BGG-gegevens laden...",
     "importing": "Spellen importeren van BoardGameGeek ({{done}}/{{total}})...",

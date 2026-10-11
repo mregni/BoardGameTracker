@@ -22,7 +22,7 @@ export interface StatConfig {
 }
 
 export const formatPlayTime = (minutes: number, uiLanguage: string): string =>
-	formatMinutesToDuration(minutes, ["weeks", "days", "hours", "minutes"], uiLanguage) ?? "0";
+	formatMinutesToDuration(minutes, ["weeks", "days", "hours", "minutes"], uiLanguage) ?? "-";
 
 export const formatWinRate = (fraction: number): string => `${Math.round(fraction * 1000) / 10}%`;
 
