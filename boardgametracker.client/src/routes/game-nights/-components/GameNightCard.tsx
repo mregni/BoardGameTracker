@@ -9,11 +9,12 @@ import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { type GameNight, GameNightRsvpState, type Settings } from "@/models";
+import type { GameNight, Settings } from "@/models";
 import { relativeDay } from "../-utils/relativeDay";
 import { sortRsvps } from "../-utils/sortRsvps";
 import { GameNightActions } from "./GameNightActions";
 import { GameNightDateBox } from "./GameNightDateBox";
+import { RsvpAvatarStack } from "./RsvpAvatarStack";
 import { RsvpProgress } from "./RsvpProgress";
 
 interface Props {
@@ -25,12 +26,6 @@ interface Props {
 	onDelete: (gameNight: GameNight) => void;
 	onManageRsvps: (gameNight: GameNight) => void;
 }
-
-const stateOpacity: Record<GameNightRsvpState, string> = {
-	[GameNightRsvpState.Accepted]: "",
-	[GameNightRsvpState.Pending]: "opacity-55",
-	[GameNightRsvpState.Declined]: "opacity-30",
-};
 
 export const GameNightCard = (props: Props) => {
 	const { gameNight, settings, canWrite, highlight = false, onEdit, onDelete, onManageRsvps } = props;
@@ -47,7 +42,7 @@ export const GameNightCard = (props: Props) => {
 					date={gameNight.startDate}
 					uiLanguage={settings.uiLanguage}
 					variant={highlight ? "highlight" : "soft"}
-					className="col-start-1 row-start-1 self-start md:row-span-2"
+					className="col-start-1 row-start-1 row-end-2 self-start md:row-end-3"
 				/>
 				<div className="col-start-2 row-start-1 flex min-w-0 flex-col items-start gap-1.5 self-center">
 					<span
@@ -66,13 +61,13 @@ export const GameNightCard = (props: Props) => {
 					</BgtHeading>
 				</div>
 				{canWrite && (
-					<div className="col-span-2 row-start-2 md:col-span-1 md:col-start-3 md:row-start-1 md:self-start">
+					<div className="col-start-1 col-end-3 row-start-2 md:col-start-3 md:col-end-4 md:row-start-1 md:self-start">
 						<GameNightActions gameNight={gameNight} onEdit={onEdit} onDelete={onDelete} />
 					</div>
 				)}
 				<div
 					className={cx(
-						"col-span-2 flex min-w-0 flex-col gap-3 md:col-start-2 md:row-start-2",
+						"col-start-1 col-end-3 flex min-w-0 flex-col gap-3 md:col-start-2 md:col-end-4 md:row-start-2",
 						canWrite ? "row-start-3" : "row-start-2",
 					)}
 				>
@@ -90,20 +85,7 @@ export const GameNightCard = (props: Props) => {
 					<div className="flex flex-col gap-2">
 						<RsvpProgress rsvps={gameNight.invitedPlayers} />
 						<div className="flex flex-wrap items-center justify-between gap-2">
-							<div className="flex">
-								{rsvps.map((rsvp) => (
-									<div
-										key={rsvp.id}
-										className={cx("-ml-2 rounded-md ring-2 ring-background first:ml-0", stateOpacity[rsvp.state])}
-									>
-										<BgtAvatar
-											title={rsvp.player.name}
-											image={rsvp.player.image}
-											onClick={() => navigate({ to: `/players/${rsvp.player.id}` })}
-										/>
-									</div>
-								))}
-							</div>
+							<RsvpAvatarStack rsvps={rsvps} />
 							{canWrite && (
 								<BgtButton variant="cancel" size="1" onClick={() => onManageRsvps(gameNight)}>
 									{t("card.manage-rsvps")}

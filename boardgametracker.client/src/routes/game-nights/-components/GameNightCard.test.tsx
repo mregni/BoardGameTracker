@@ -21,6 +21,7 @@ vi.mock("@/utils/errorUtils", () => ({
 
 import { GameNightCard } from "./GameNightCard";
 import { PastGameNightItem } from "./PastGameNightItem";
+import { RsvpAvatarStack } from "./RsvpAvatarStack";
 
 const player = (id: number, name: string) => ({ id, name, image: null }) as unknown as Player;
 
@@ -119,6 +120,23 @@ describe("GameNightCard", () => {
 
 		expect(screen.queryByRole("button", { name: "card.copy-link" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "card.manage-rsvps" })).not.toBeInTheDocument();
+	});
+});
+
+describe("RsvpAvatarStack", () => {
+	it("shows at most five avatars and a +N chip for the rest", () => {
+		const rsvps = Array.from({ length: 7 }, (_, index) => ({
+			id: 100 + index,
+			playerId: 100 + index,
+			gameNightId: 4,
+			state: GameNightRsvpState.Pending,
+			player: player(100 + index, `Player ${index}`),
+		}));
+		renderWithProviders(<RsvpAvatarStack rsvps={rsvps} />);
+
+		const stack = screen.getByTestId("rsvp-avatar-stack");
+		expect(within(stack).getAllByRole("button")).toHaveLength(5);
+		expect(within(stack).getByText("+2")).toHaveAttribute("title", "Player 5, Player 6");
 	});
 });
 
