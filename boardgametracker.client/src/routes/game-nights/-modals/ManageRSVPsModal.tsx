@@ -20,12 +20,19 @@ export const ManageRSVPsModal = (props: Props) => {
 	if (!gameNight) return null;
 
 	const handleStatusChange = async (rsvpId: number, status: GameNightRsvpState) => {
-		await onUpdateRsvp({
-			id: rsvpId,
-			gameNightId: gameNight.id,
-			playerId: 0,
-			state: status,
-		});
+		const rsvp = gameNight.invitedPlayers.find((x) => x.id === rsvpId);
+		if (!rsvp) return;
+
+		try {
+			await onUpdateRsvp({
+				id: rsvpId,
+				gameNightId: gameNight.id,
+				playerId: rsvp.playerId,
+				state: status,
+			});
+		} catch {
+			return;
+		}
 	};
 
 	const acceptedCount = gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Accepted).length;
@@ -83,7 +90,7 @@ export const ManageRSVPsModal = (props: Props) => {
 														disabled={isLoading}
 														isActive={rsvp.state === GameNightRsvpState.Pending}
 														variant="yellow"
-														label={t("rsvp.maybe")}
+														label={t("common:pending")}
 													/>
 													<RsvpStatusButton
 														rsvpId={rsvp.id}

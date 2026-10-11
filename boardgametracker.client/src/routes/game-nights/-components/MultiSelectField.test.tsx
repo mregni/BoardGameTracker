@@ -33,7 +33,7 @@ describe("MultiSelectField", () => {
 		const user = userEvent.setup();
 		renderWithTheme(<Harness onDialogClose={vi.fn()} />);
 
-		await user.click(screen.getByRole("button", { name: /pick players/i }));
+		await user.click(screen.getByRole("button", { name: "Players" }));
 
 		const search = screen.getByRole("textbox", { name: "search" });
 		expect(search).toHaveFocus();
@@ -50,7 +50,7 @@ describe("MultiSelectField", () => {
 		const onDialogClose = vi.fn();
 		renderWithTheme(<Harness onDialogClose={onDialogClose} />);
 
-		await user.click(screen.getByRole("button", { name: /pick players/i }));
+		await user.click(screen.getByRole("button", { name: "Players" }));
 		expect(screen.getByRole("textbox", { name: "search" })).toBeInTheDocument();
 
 		await user.keyboard("{Escape}");
@@ -64,7 +64,7 @@ describe("MultiSelectField", () => {
 		const user = userEvent.setup();
 		renderWithTheme(<Harness onDialogClose={vi.fn()} />);
 
-		await user.click(screen.getByRole("button", { name: /pick players/i }));
+		await user.click(screen.getByRole("button", { name: "Players" }));
 		await user.click(screen.getByRole("button", { name: "Alice" }));
 
 		expect(screen.getByText("Alice")).toBeInTheDocument();

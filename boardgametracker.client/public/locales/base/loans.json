@@ -45,9 +45,9 @@
       "placeholder": "Pick a date"
     },
     "end": {
-      "label": "Return date",
+      "label": "Due date",
       "placeholder": "Pick a date",
-      "before-start": "The return date can't be before the start date"
+      "before-start": "The due date can't be before the start date"
     },
     "player": {
       "label": "Player",

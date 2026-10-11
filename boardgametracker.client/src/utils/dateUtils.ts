@@ -98,6 +98,20 @@ export const toDisplay = (date: Date | string | undefined | null, dateFormat: st
 	return format(dateObj, dateFnsFormat, { locale });
 };
 
+export const toLongDisplay = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	if (!date) {
+		return "";
+	}
+
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+
+	if (!dateFnsIsValid(dateObj)) {
+		return "";
+	}
+
+	return format(dateObj, "PPPP", { locale: getDateFnsLocale(uiLanguage) });
+};
+
 export const toDisplayDateTime = (
 	date: Date | string | undefined,
 	dateFormat: string,

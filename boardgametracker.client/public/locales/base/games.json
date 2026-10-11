@@ -1,5 +1,5 @@
 {
-  "back": "Back to games",
+  "back": "Back",
   "import": {
     "loading": "Loading BGG data...",
     "importing": "Importing games from BoardGameGeek ({{done}}/{{total}})...",

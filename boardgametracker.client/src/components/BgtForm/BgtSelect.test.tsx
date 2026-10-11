@@ -58,6 +58,18 @@ describe("BgtSelect", () => {
 			expect(screen.getByRole("combobox")).toBeInTheDocument();
 		});
 
+		it("should show the placeholder when the value is not one of the items", () => {
+			renderWithTheme(
+				<BgtSelect field={createMockField("0")} label="Game" items={mockItems} placeholder="Choose game" />,
+			);
+			expect(screen.getByText("Choose game")).toBeInTheDocument();
+		});
+
+		it("should name the trigger after its label", () => {
+			renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} />);
+			expect(screen.getByRole("combobox", { name: "Category" })).toBeInTheDocument();
+		});
+
 		it("should show placeholder when no value", () => {
 			renderWithTheme(
 				<BgtSelect field={mockField} label="Category" items={mockItems} placeholder="Select an option" />,

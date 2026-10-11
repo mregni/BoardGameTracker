@@ -45,9 +45,9 @@
       "placeholder": "Elige una fecha"
     },
     "end": {
-      "label": "Fecha de devolución",
+      "label": "Fecha límite",
       "placeholder": "Elige una fecha",
-      "before-start": "La fecha de devolución no puede ser anterior a la fecha de inicio"
+      "before-start": "La fecha límite no puede ser anterior a la fecha de inicio"
     },
     "player": {
       "label": "Jugador",

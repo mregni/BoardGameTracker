@@ -108,11 +108,7 @@ function RsvpPage() {
 								</BgtText>
 							</div>
 
-							<RsvpEventDetails
-								gameNight={gameNight}
-								timeFormat={settings.timeFormat}
-								dateFormat={settings.dateFormat}
-							/>
+							<RsvpEventDetails gameNight={gameNight} timeFormat={settings.timeFormat} />
 
 							<RsvpManuals linkId={linkId} manuals={manuals} />
 
