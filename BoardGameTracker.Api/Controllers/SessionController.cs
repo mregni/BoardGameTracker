@@ -1,4 +1,4 @@
-using BoardGameTracker.Common.DTOs.Commands;
+﻿using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common;
@@ -33,6 +33,15 @@ public class SessionController : ControllerBase
         }
 
         return Ok(session.ToDto());
+    }
+
+    [HttpGet]
+    [Route("suggestions")]
+    [ProducesResponseType<SessionSuggestionsDto>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSuggestions(CancellationToken cancellationToken)
+    {
+        var suggestions = await _sessionService.GetSuggestions(cancellationToken);
+        return Ok(suggestions.ToDto());
     }
 
     [HttpPost]

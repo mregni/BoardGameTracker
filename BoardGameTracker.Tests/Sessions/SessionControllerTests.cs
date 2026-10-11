@@ -1,9 +1,11 @@
-using System;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -201,6 +203,36 @@ public class SessionControllerTests
         result.Should().BeOfType<NotFoundResult>();
 
         _sessionServiceMock.Verify(x => x.Get(sessionId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region GetSuggestions Tests
+
+    [Fact]
+    public async Task GetSuggestions_ShouldReturnOkWithSuggestions()
+    {
+        var suggestions = new SessionSuggestions
+        {
+            RecentGameIds = [3, 1],
+            FrequentPlayerIds = [8, 2, 5],
+            LastLocationId = 4
+        };
+
+        _sessionServiceMock
+            .Setup(x => x.GetSuggestions(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(suggestions);
+
+        var result = await _controller.GetSuggestions(TestContext.Current.CancellationToken);
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var dto = okResult.Value.Should().BeAssignableTo<SessionSuggestionsDto>().Subject;
+        dto.RecentGameIds.Should().Equal(3, 1);
+        dto.FrequentPlayerIds.Should().Equal(8, 2, 5);
+        dto.LastLocationId.Should().Be(4);
+
+        _sessionServiceMock.Verify(x => x.GetSuggestions(It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

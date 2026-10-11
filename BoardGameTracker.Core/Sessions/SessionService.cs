@@ -1,6 +1,7 @@
 ﻿using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Common;
@@ -9,6 +10,7 @@ using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
+using BoardGameTracker.Core.Sessions.Specifications;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Sessions;
@@ -250,5 +252,20 @@ public class SessionService : ISessionService
     {
         _logger.LogDebug("Fetching session {SessionId}", id);
         return _sessionRepository.GetByIdAsync(id);
+    }
+
+    public async Task<SessionSuggestions> GetSuggestions(CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Fetching session form suggestions");
+        var recentGameIds = await _sessionRepository.GetRecentlyPlayedGameIds(Constants.SessionForm.RecentGamesCount, cancellationToken);
+        var frequentPlayerIds = await _sessionRepository.GetMostFrequentPlayerIds(Constants.SessionForm.FrequentPlayersCount, cancellationToken);
+        var lastLocationId = await _sessionRepository.FirstOrDefaultAsync(new LastUsedLocationSpec(), cancellationToken);
+
+        return new SessionSuggestions
+        {
+            RecentGameIds = recentGameIds,
+            FrequentPlayerIds = frequentPlayerIds,
+            LastLocationId = lastLocationId
+        };
     }
 }
