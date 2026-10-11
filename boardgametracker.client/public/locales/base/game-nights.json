@@ -21,11 +21,7 @@
     "no-players-found": "No players found",
     "invite": "Invite {{name}}",
     "invite-link": "Invite link",
-    "copy": "Copy",
-    "manual-note-prefix": "Manually set RSVP status",
-    "manual-note": " for players who responded via phone, text, or in person.",
-    "accept": "Accept",
-    "decline": "Decline"
+    "copy": "Copy"
   },
   "empty": {
     "title": "No game nights planned yet",

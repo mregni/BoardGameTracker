@@ -1,123 +1,268 @@
+import { cx } from "class-variance-authority";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
+import PlusIcon from "@/assets/icons/plus.svg?react";
+import Cross from "@/assets/icons/x.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from "@/components/BgtDialog";
+import {
+	BgtDialog,
+	BgtDialogClose,
+	BgtDialogContent,
+	BgtDialogDescription,
+	BgtDialogTitle,
+} from "@/components/BgtDialog";
+import { BgtSimpleInputField } from "@/components/BgtForm/BgtSimpleInputField";
+import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { type GameNight, GameNightRsvpState, type ModalProps, type UpdateGameNightRsvp } from "@/models";
-import { RsvpStatBadge } from "../-components/RsvpStatBadge";
-import { RsvpStatusButton } from "../-components/RsvpStatusButton";
+import {
+	type GameNight,
+	GameNightRsvpState,
+	type GameNightRsvps,
+	type ModalProps,
+	type Player,
+	type Settings,
+	type UpdateGameNight,
+	type UpdateGameNightRsvp,
+} from "@/models";
+import { toDisplayDateTime } from "@/utils/dateUtils";
+import { RsvpProgress } from "../-components/RsvpProgress";
+import { useInviteLink } from "../-hooks/useInviteLink";
 
 interface Props extends ModalProps {
 	gameNight: GameNight | null;
+	players: Player[];
+	settings: Settings;
 	onUpdateRsvp: (rsvp: UpdateGameNightRsvp) => Promise<unknown>;
+	onUpdateGameNight: (gameNight: UpdateGameNight) => Promise<unknown>;
 	isLoading: boolean;
 }
 
+const MAX_SUGGESTIONS = 8;
+
+const options = [
+	{ state: GameNightRsvpState.Accepted, label: "rsvp.coming", active: "bg-green-500/20 text-green-300" },
+	{ state: GameNightRsvpState.Pending, label: "common:pending", active: "bg-amber-500/20 text-amber-300" },
+	{ state: GameNightRsvpState.Declined, label: "common:declined", active: "bg-red-500/20 text-red-300" },
+] as const;
+
 export const ManageRSVPsModal = (props: Props) => {
-	const { open, close, gameNight, onUpdateRsvp, isLoading } = props;
-	const { t } = useTranslation(["game-nights", "common"]);
+	const { gameNight, ...rest } = props;
 
 	if (!gameNight) return null;
 
-	const handleStatusChange = async (rsvpId: number, status: GameNightRsvpState) => {
-		const rsvp = gameNight.invitedPlayers.find((x) => x.id === rsvpId);
-		if (!rsvp) return;
+	return <ManageRSVPsDialog gameNight={gameNight} {...rest} />;
+};
+
+const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
+	const { open, close, gameNight, players, settings, onUpdateRsvp, onUpdateGameNight, isLoading } = props;
+	const { t } = useTranslation(["game-nights", "common"]);
+	const { link, copied, copy } = useInviteLink(gameNight);
+	const [query, setQuery] = useState("");
+
+	const rsvps = useMemo(
+		() =>
+			[...gameNight.invitedPlayers].sort((a, b) => {
+				if (a.playerId === gameNight.hostId) return -1;
+				if (b.playerId === gameNight.hostId) return 1;
+				return a.player.name.localeCompare(b.player.name);
+			}),
+		[gameNight.invitedPlayers, gameNight.hostId],
+	);
+
+	const suggestions = useMemo(() => {
+		const invited = new Set(gameNight.invitedPlayers.map((rsvp) => rsvp.playerId));
+		const search = query.trim().toLowerCase();
+		return players
+			.filter((player) => !invited.has(player.id))
+			.filter((player) => search === "" || player.name.toLowerCase().includes(search))
+			.slice(0, MAX_SUGGESTIONS);
+	}, [players, gameNight.invitedPlayers, query]);
+
+	const hasUninvitedPlayers = players.some(
+		(player) => !gameNight.invitedPlayers.some((rsvp) => rsvp.playerId === player.id),
+	);
+
+	const handleStatusChange = async (rsvp: GameNightRsvps, state: GameNightRsvpState) => {
+		if (rsvp.state === state) return;
 
 		try {
 			await onUpdateRsvp({
-				id: rsvpId,
+				id: rsvp.id,
 				gameNightId: gameNight.id,
 				playerId: rsvp.playerId,
-				state: status,
+				state,
 			});
 		} catch {
 			return;
 		}
 	};
 
-	const acceptedCount = gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Accepted).length;
-	const pendingCount = gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Pending).length;
-	const declinedCount = gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Declined).length;
+	const saveInvitedPlayers = async (playerIds: number[]) => {
+		try {
+			await onUpdateGameNight({
+				id: gameNight.id,
+				title: gameNight.title,
+				notes: gameNight.notes,
+				startDate: new Date(gameNight.startDate),
+				hostId: gameNight.hostId,
+				locationId: gameNight.locationId,
+				suggestedGameIds: gameNight.suggestedGames.map((game) => game.id),
+				invitedPlayerIds: playerIds.filter((id) => id !== gameNight.hostId),
+			});
+		} catch {
+			return;
+		}
+	};
+
+	const invitedIds = gameNight.invitedPlayers.map((rsvp) => rsvp.playerId);
+
+	const handleRemove = (playerId: number) => saveInvitedPlayers(invitedIds.filter((id) => id !== playerId));
+
+	const handleInvite = async (playerId: number) => {
+		await saveInvitedPlayers([...invitedIds, playerId]);
+		setQuery("");
+	};
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent className="max-w-3xl!">
-				<BgtDialogTitle>{t("rsvp.title")}</BgtDialogTitle>
-				<div className="flex flex-col gap-4">
-					<div className=" bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-						<BgtText size="2" color="blue">
-							<strong>{t("rsvp.manual-note-prefix")}</strong> {t("rsvp.manual-note")}
+			<BgtDialogContent className="md:max-w-xl! max-md:top-auto! max-md:bottom-0! max-md:w-full! max-md:max-w-none! max-md:translate-y-0! max-md:max-h-[90dvh]! max-md:rounded-b-none! max-md:p-4!">
+				<div className="flex flex-col gap-0.5 pr-6">
+					<BgtDialogTitle>{t("rsvp.title")}</BgtDialogTitle>
+					<BgtDialogDescription className="text-sm">
+						{t("rsvp.subtitle", {
+							title: gameNight.title,
+							date: toDisplayDateTime(
+								gameNight.startDate,
+								settings.dateFormat,
+								settings.timeFormat,
+								settings.uiLanguage,
+							),
+						})}
+					</BgtDialogDescription>
+				</div>
+
+				<RsvpProgress rsvps={gameNight.invitedPlayers} />
+
+				<ul className="flex flex-col gap-1.5">
+					{rsvps.map((rsvp) => {
+						const isHost = rsvp.playerId === gameNight.hostId;
+						return (
+							<li
+								key={rsvp.id}
+								data-testid={`rsvp-row-${rsvp.playerId}`}
+								className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-2 rounded-lg bg-white/5 px-2.5 py-2 md:grid-cols-[auto_minmax(0,1fr)_auto_auto]"
+							>
+								<BgtAvatar title={rsvp.player.name} image={rsvp.player.image} />
+								<div className="min-w-0">
+									<BgtText size="3" weight="bold" className="wrap-anywhere">
+										{rsvp.player.name}
+									</BgtText>
+									{isHost && (
+										<BgtText size="1" color="gray">
+											{t("rsvp.host")}
+										</BgtText>
+									)}
+								</div>
+								{isHost ? (
+									<span className="col-start-3 row-start-1 rounded-full bg-green-500/20 px-2.5 py-0.5 text-xs font-semibold text-green-300 md:col-span-2">
+										{t("rsvp.coming")}
+									</span>
+								) : (
+									<>
+										<fieldset
+											aria-label={t("rsvp.player-status", { name: rsvp.player.name })}
+											className="col-span-3 row-start-2 grid grid-cols-3 overflow-hidden rounded-lg border border-white/10 md:col-span-1 md:col-start-3 md:row-start-1 md:inline-flex"
+										>
+											{options.map((option) => {
+												const pressed = rsvp.state === option.state;
+												return (
+													<button
+														key={option.state}
+														type="button"
+														aria-pressed={pressed}
+														disabled={isLoading}
+														onClick={() => handleStatusChange(rsvp, option.state)}
+														className={cx(
+															"px-2.5 py-1.5 text-xs font-semibold transition-colors not-first:border-l not-first:border-white/10 disabled:cursor-not-allowed disabled:opacity-60",
+															pressed ? option.active : "bg-input text-gray-400 hover:bg-white/10",
+														)}
+													>
+														{t(option.label)}
+													</button>
+												);
+											})}
+										</fieldset>
+										<BgtIconButton
+											intent="subtile"
+											className="col-start-3 row-start-1 md:col-start-4"
+											icon={<Cross className="size-4" />}
+											disabled={isLoading}
+											aria-label={t("rsvp.remove", { name: rsvp.player.name })}
+											onClick={() => handleRemove(rsvp.playerId)}
+										/>
+									</>
+								)}
+							</li>
+						);
+					})}
+				</ul>
+
+				{hasUninvitedPlayers && (
+					<div className="flex flex-col gap-2">
+						<BgtText size="2" weight="bold">
+							{t("rsvp.invite-more")}
 						</BgtText>
+						<BgtSimpleInputField
+							type="text"
+							value={query}
+							onChange={(event) => setQuery(event.target.value)}
+							placeholder={t("rsvp.search-players")}
+							ariaLabel={t("rsvp.invite-more")}
+							className="w-full border border-primary/30 bg-primary/10"
+							inputClassName="placeholder:text-primary/80"
+							prefixLabel={<SearchIcon className="size-5 text-primary" />}
+						/>
+						{suggestions.length === 0 ? (
+							<BgtText size="2" color="gray">
+								{t("rsvp.no-players-found")}
+							</BgtText>
+						) : (
+							<div className="flex flex-wrap gap-2">
+								{suggestions.map((player) => (
+									<button
+										key={player.id}
+										type="button"
+										disabled={isLoading}
+										onClick={() => handleInvite(player.id)}
+										aria-label={t("rsvp.invite", { name: player.name })}
+										className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 py-1 pr-3 pl-1 text-xs font-medium hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+									>
+										<BgtAvatar title={player.name} image={player.image} size="small" />
+										{player.name}
+										<PlusIcon className="size-3.5 text-primary" />
+									</button>
+								))}
+							</div>
+						)}
 					</div>
+				)}
 
-					<div className="flex flex-col gap-4">
-						{[...gameNight.invitedPlayers]
-							.sort((a, b) => {
-								if (a.playerId === gameNight.hostId) return 1;
-								if (b.playerId === gameNight.hostId) return -1;
-								return 0;
-							})
-							.map((rsvp) => {
-								const isHost = rsvp.playerId === gameNight.hostId;
-								return (
-									<div key={rsvp.id} className="bg-white/5 border border-white/10 rounded-lg p-4">
-										<div className="flex items-center justify-between flex-row gap-4 flex-wrap">
-											<div className="flex items-center gap-3">
-												<BgtAvatar title={rsvp.player.name} image={rsvp.player.image} size="large" />
-												<BgtText size="3" weight="medium">
-													{rsvp.player.name}
-												</BgtText>
-											</div>
-											{isHost ? (
-												<span className="px-4 py-2 rounded-lg text-sm font-medium bg-green-500/20 text-green-300">
-													{t("rsvp.host")}
-												</span>
-											) : (
-												<div className="flex gap-2">
-													<RsvpStatusButton
-														rsvpId={rsvp.id}
-														state={GameNightRsvpState.Accepted}
-														onStatusChange={handleStatusChange}
-														disabled={isLoading}
-														isActive={rsvp.state === GameNightRsvpState.Accepted}
-														variant="green"
-														label={t("rsvp.accept")}
-													/>
-													<RsvpStatusButton
-														rsvpId={rsvp.id}
-														state={GameNightRsvpState.Pending}
-														onStatusChange={handleStatusChange}
-														disabled={isLoading}
-														isActive={rsvp.state === GameNightRsvpState.Pending}
-														variant="yellow"
-														label={t("common:pending")}
-													/>
-													<RsvpStatusButton
-														rsvpId={rsvp.id}
-														state={GameNightRsvpState.Declined}
-														onStatusChange={handleStatusChange}
-														disabled={isLoading}
-														isActive={rsvp.state === GameNightRsvpState.Declined}
-														variant="red"
-														label={t("rsvp.decline")}
-													/>
-												</div>
-											)}
-										</div>
-									</div>
-								);
-							})}
-					</div>
-
-					<div className="grid grid-cols-3 gap-4 mb-6">
-						<RsvpStatBadge count={acceptedCount} label={t("common:accepted")} variant="green" />
-						<RsvpStatBadge count={pendingCount} label={t("common:pending")} variant="amber" />
-						<RsvpStatBadge count={declinedCount} label={t("common:declined")} variant="red" />
+				<div className="flex flex-col gap-2">
+					<BgtText size="2" weight="bold">
+						{t("rsvp.invite-link")}
+					</BgtText>
+					<div className="flex min-w-0 items-center gap-2 rounded-lg border border-dashed border-white/15 bg-input py-1.5 pr-1.5 pl-3">
+						<code className="min-w-0 flex-1 truncate text-xs text-gray-400">{link}</code>
+						<BgtButton variant="cancel" size="1" onClick={copy} disabled={copied}>
+							{copied ? t("card.copied") : t("rsvp.copy")}
+						</BgtButton>
 					</div>
 				</div>
 
-				<BgtDialogClose>
-					<BgtButton variant="primary" className="flex-1" onClick={close}>
+				<BgtDialogClose className="justify-end">
+					<BgtButton variant="primary" onClick={close}>
 						{t("common:done")}
 					</BgtButton>
 				</BgtDialogClose>

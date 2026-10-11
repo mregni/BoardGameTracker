@@ -21,11 +21,7 @@
     "no-players-found": "Geen spelers gevonden",
     "invite": "{{name}} uitnodigen",
     "invite-link": "Uitnodigingslink",
-    "copy": "Kopiëren",
-    "manual-note-prefix": "Stel de RSVP-status handmatig in",
-    "manual-note": " voor spelers die telefonisch, per sms of persoonlijk hebben geantwoord.",
-    "accept": "Accepteren",
-    "decline": "Afwijzen"
+    "copy": "Kopiëren"
   },
   "empty": {
     "title": "Nog geen spelavonden gepland",

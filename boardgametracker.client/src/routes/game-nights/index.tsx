@@ -212,8 +212,11 @@ function RouteComponent() {
 								setSelectedGameNightId(null);
 							}}
 							gameNight={selectedGameNight}
+							players={players}
+							settings={settings}
 							onUpdateRsvp={updateRsvp}
-							isLoading={isUpdatingRsvp}
+							onUpdateGameNight={updateGameNight}
+							isLoading={isUpdatingRsvp || isUpdating}
 						/>
 
 						<BgtDeleteModal

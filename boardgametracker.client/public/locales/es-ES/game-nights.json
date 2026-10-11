@@ -21,11 +21,7 @@
     "no-players-found": "No se encontraron jugadores",
     "invite": "Invitar a {{name}}",
     "invite-link": "Enlace de invitación",
-    "copy": "Copiar",
-    "manual-note-prefix": "Establece manualmente el estado de RSVP",
-    "manual-note": " de los jugadores que respondieron por teléfono, mensaje o en persona.",
-    "accept": "Aceptar",
-    "decline": "Rechazar"
+    "copy": "Copiar"
   },
   "empty": {
     "title": "Aún no hay noches de juego planificadas",
