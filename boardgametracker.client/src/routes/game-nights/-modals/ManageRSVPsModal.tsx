@@ -40,7 +40,6 @@ interface Props extends ModalProps {
 }
 
 const MAX_SUGGESTIONS = 8;
-const SCROLL_THRESHOLD = 8;
 
 const options = [
 	{ state: GameNightRsvpState.Accepted, label: "rsvp.coming", active: "bg-green-500/20 text-green-300" },
@@ -128,7 +127,7 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent className="md:max-w-xl! lg:max-w-4xl! max-md:top-auto! max-md:bottom-0! max-md:w-full! max-md:max-w-none! max-md:translate-y-0! max-md:max-h-[90dvh]! max-md:rounded-b-none! max-md:p-4!">
+			<BgtDialogContent className="md:max-w-xl! max-md:top-auto! max-md:bottom-0! max-md:w-full! max-md:max-w-none! max-md:translate-y-0! max-md:max-h-[90dvh]! max-md:rounded-b-none! max-md:p-4!">
 				<div className="flex flex-col gap-0.5 pr-6">
 					<BgtDialogTitle>{t("rsvp.title")}</BgtDialogTitle>
 					<BgtDialogDescription className="text-sm">
@@ -144,16 +143,11 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 					</BgtDialogDescription>
 				</div>
 
-				<div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+				<div className="flex flex-col gap-4">
 					<div className="flex min-w-0 flex-col gap-3">
 						<RsvpProgress rsvps={gameNight.invitedPlayers} />
 
-						<ul
-							className={cx(
-								"flex flex-col gap-1.5",
-								rsvps.length > SCROLL_THRESHOLD && "lg:max-h-[55vh] lg:overflow-y-auto lg:pr-1",
-							)}
-						>
+						<ul className="flex flex-col gap-1.5 md:max-h-[45vh] md:overflow-y-auto">
 							{rsvps.map((rsvp) => {
 								const isHost = rsvp.playerId === gameNight.hostId;
 								return (
