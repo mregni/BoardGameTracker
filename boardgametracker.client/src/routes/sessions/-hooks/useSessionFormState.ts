@@ -1,7 +1,8 @@
 import { addMinutes } from "date-fns";
 import { useCallback, useEffect, useReducer, useRef } from "react";
 
-import type { CreatePlayerSessionNoScoring, CreateSessionPlayer, Expansion, Game } from "@/models";
+import type { CreateSessionPlayer, Expansion, Game } from "@/models";
+import { applyScoreWinners, winnersMatchScores } from "../-utils/sessionWinners";
 
 interface SessionFormApi {
 	store: {
@@ -11,82 +12,89 @@ interface SessionFormApi {
 	setFieldValue: (field: "minutes" | "start", value: number | Date) => void;
 }
 
+interface InitialPlayerSession {
+	playerId: number;
+	won: boolean;
+	firstPlay: boolean;
+	score?: number | null;
+}
+
 interface UseSessionFormStateProps {
 	form: SessionFormApi;
 	games: Game[];
 	initialGame?: Game;
 	initialExpansions?: Expansion[];
-	initialPlayerSessions?: (CreateSessionPlayer | CreatePlayerSessionNoScoring)[];
+	initialPlayerSessions?: InitialPlayerSession[];
 }
-
-type PlayerType = CreateSessionPlayer | CreatePlayerSessionNoScoring;
 
 interface SessionFormState {
 	selectedGameId: number;
 	selectedExpansionIds: number[];
-	players: PlayerType[];
-	playerModal: {
-		type: "create" | "update" | null;
-		playerIdToEdit: number | null;
-	};
+	players: CreateSessionPlayer[];
+	winnersFromScores: boolean;
 }
 
 type SessionFormAction =
 	| { type: "SET_GAME"; gameId: number }
 	| { type: "SET_SELECTED_EXPANSIONS"; expansionIds: number[] }
-	| { type: "ADD_PLAYER"; player: PlayerType }
-	| { type: "UPDATE_PLAYER"; player: PlayerType }
-	| { type: "REMOVE_PLAYER"; index: number }
-	| { type: "OPEN_CREATE_MODAL" }
-	| { type: "OPEN_UPDATE_MODAL"; playerId: number }
-	| { type: "CLOSE_MODAL" };
+	| { type: "ADD_PLAYER"; playerId: number }
+	| { type: "REMOVE_PLAYER"; playerId: number }
+	| { type: "SET_SCORE"; playerId: number; score: number | null }
+	| { type: "TOGGLE_WON"; playerId: number }
+	| { type: "TOGGLE_FIRST_PLAY"; playerId: number };
+
+const withWinners = (state: SessionFormState, players: CreateSessionPlayer[]): SessionFormState => ({
+	...state,
+	players: state.winnersFromScores ? applyScoreWinners(players) : players,
+});
+
+const updatePlayer = (
+	players: CreateSessionPlayer[],
+	playerId: number,
+	update: (player: CreateSessionPlayer) => CreateSessionPlayer,
+) => players.map((player) => (player.playerId === playerId ? update(player) : player));
 
 function sessionFormReducer(state: SessionFormState, action: SessionFormAction): SessionFormState {
 	switch (action.type) {
 		case "SET_GAME":
-			return {
-				...state,
-				selectedGameId: action.gameId,
-				selectedExpansionIds: [],
-			};
+			return { ...state, selectedGameId: action.gameId, selectedExpansionIds: [] };
 		case "SET_SELECTED_EXPANSIONS":
 			return { ...state, selectedExpansionIds: action.expansionIds };
 		case "ADD_PLAYER":
-			return {
-				...state,
-				players: [...state.players, action.player],
-				playerModal: { type: null, playerIdToEdit: null },
-			};
-		case "UPDATE_PLAYER": {
-			const index = state.players.findIndex((x) => x.playerId === action.player.playerId);
-			if (index === -1) return { ...state, playerModal: { type: null, playerIdToEdit: null } };
-			const players = [...state.players];
-			players[index] = action.player;
-			return {
-				...state,
-				players,
-				playerModal: { type: null, playerIdToEdit: null },
-			};
-		}
+			if (state.players.some((x) => x.playerId === action.playerId)) return state;
+			return withWinners(state, [
+				...state.players,
+				{ playerId: action.playerId, won: false, firstPlay: false, score: null },
+			]);
 		case "REMOVE_PLAYER":
+			return withWinners(
+				state,
+				state.players.filter((x) => x.playerId !== action.playerId),
+			);
+		case "SET_SCORE":
+			return withWinners(
+				state,
+				updatePlayer(state.players, action.playerId, (player) => ({ ...player, score: action.score })),
+			);
+		case "TOGGLE_WON":
 			return {
 				...state,
-				players: state.players.filter((_, i) => i !== action.index),
+				winnersFromScores: false,
+				players: updatePlayer(state.players, action.playerId, (player) => ({ ...player, won: !player.won })),
 			};
-		case "OPEN_CREATE_MODAL":
+		case "TOGGLE_FIRST_PLAY":
 			return {
 				...state,
-				playerModal: { type: "create", playerIdToEdit: null },
+				players: updatePlayer(state.players, action.playerId, (player) => ({
+					...player,
+					firstPlay: !player.firstPlay,
+				})),
 			};
-		case "OPEN_UPDATE_MODAL":
-			return {
-				...state,
-				playerModal: { type: "update", playerIdToEdit: action.playerId },
-			};
-		case "CLOSE_MODAL":
-			return { ...state, playerModal: { type: null, playerIdToEdit: null } };
 	}
 }
+
+const toSessionPlayers = (playerSessions: InitialPlayerSession[]): CreateSessionPlayer[] =>
+	playerSessions.map((x) => ({ playerId: x.playerId, won: x.won, firstPlay: x.firstPlay, score: x.score ?? null }));
 
 export const useSessionFormState = ({
 	form,
@@ -95,25 +103,23 @@ export const useSessionFormState = ({
 	initialExpansions = [],
 	initialPlayerSessions = [],
 }: UseSessionFormStateProps) => {
-	const [state, dispatch] = useReducer(sessionFormReducer, {
-		selectedGameId: initialGame?.id ?? 0,
-		selectedExpansionIds: initialExpansions.map((x) => x.id),
-		players: initialPlayerSessions,
-		playerModal: { type: null, playerIdToEdit: null },
+	const [state, dispatch] = useReducer(sessionFormReducer, initialPlayerSessions, (playerSessions) => {
+		const players = toSessionPlayers(playerSessions);
+		return {
+			selectedGameId: initialGame?.id ?? 0,
+			selectedExpansionIds: initialExpansions.map((x) => x.id),
+			players,
+			winnersFromScores: winnersMatchScores(players),
+		};
 	});
 
-	// Track latest selectedGameId in a ref to avoid stale closures in the subscription
 	const selectedGameIdRef = useRef(state.selectedGameId);
 	selectedGameIdRef.current = state.selectedGameId;
 
-	// Subscribe to game changes and update form accordingly
 	useEffect(() => {
 		const subscription = form.store.subscribe(() => {
 			const newGameId = form.store.state.values.gameId;
 			if (newGameId !== selectedGameIdRef.current) {
-				// Update ref immediately to prevent infinite loop:
-				// setFieldValue triggers store notifications synchronously,
-				// re-entering this callback before React re-renders
 				selectedGameIdRef.current = newGameId;
 
 				const selectedBoardGame = games.find((g) => g.id === newGameId);
@@ -127,28 +133,24 @@ export const useSessionFormState = ({
 		return () => subscription.unsubscribe();
 	}, [form, games]);
 
-	const addPlayer = useCallback((player: PlayerType) => {
-		dispatch({ type: "ADD_PLAYER", player });
+	const addPlayer = useCallback((playerId: number) => {
+		dispatch({ type: "ADD_PLAYER", playerId });
 	}, []);
 
-	const updatePlayer = useCallback((player: PlayerType) => {
-		dispatch({ type: "UPDATE_PLAYER", player });
+	const removePlayer = useCallback((playerId: number) => {
+		dispatch({ type: "REMOVE_PLAYER", playerId });
 	}, []);
 
-	const removePlayer = useCallback((index: number) => {
-		dispatch({ type: "REMOVE_PLAYER", index });
+	const setScore = useCallback((playerId: number, score: number | null) => {
+		dispatch({ type: "SET_SCORE", playerId, score });
 	}, []);
 
-	const openEditPlayerModal = useCallback((playerId: number) => {
-		dispatch({ type: "OPEN_UPDATE_MODAL", playerId });
+	const toggleWon = useCallback((playerId: number) => {
+		dispatch({ type: "TOGGLE_WON", playerId });
 	}, []);
 
-	const openCreateModal = useCallback(() => {
-		dispatch({ type: "OPEN_CREATE_MODAL" });
-	}, []);
-
-	const closeModal = useCallback(() => {
-		dispatch({ type: "CLOSE_MODAL" });
+	const toggleFirstPlay = useCallback((playerId: number) => {
+		dispatch({ type: "TOGGLE_FIRST_PLAY", playerId });
 	}, []);
 
 	const setSelectedExpansionIds = useCallback((expansionIds: number[]) => {
@@ -168,15 +170,11 @@ export const useSessionFormState = ({
 		setSelectedExpansionIds,
 
 		players: state.players,
+		winnersFromScores: state.winnersFromScores,
 		addPlayer,
-		updatePlayer,
 		removePlayer,
-		openEditPlayerModal,
-
-		isCreateModalOpen: state.playerModal.type === "create",
-		isUpdateModalOpen: state.playerModal.type === "update",
-		openCreateModal,
-		closeModal,
-		playerIdToEdit: state.playerModal.playerIdToEdit,
+		setScore,
+		toggleWon,
+		toggleFirstPlay,
 	};
 };

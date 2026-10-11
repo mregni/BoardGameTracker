@@ -1,52 +1,46 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { useEffect, useRef } from "react";
-import { BgtPlayerSelector } from "@/components/BgtForm";
+import { useEffect, useId, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { BgtFormErrors } from "@/components/BgtForm";
+import { BgtText } from "@/components/BgtText/BgtText";
 import { withForm } from "@/hooks/form";
-import {
-	type CreatePlayerSessionNoScoring,
-	type CreateSessionPlayer,
-	CreateSessionSchema,
-	type Player,
-} from "@/models";
-
+import { type CreateSessionPlayer, CreateSessionSchema, type Player } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
-import { CreateSessionPlayerModal } from "../-modals/CreateSessionPlayerModal";
-import { UpdateSessionPlayerModal } from "../-modals/UpdateSessionPlayerModal";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
+import { SessionPlayerPicker } from "./SessionPlayerPicker";
+import { SessionPlayerRow } from "./SessionPlayerRow";
 
 export const SessionPlayerManager = withForm({
 	...sessionFormOpts,
 	props: {
-		players: [] as (CreateSessionPlayer | CreatePlayerSessionNoScoring)[],
+		players: [] as CreateSessionPlayer[],
 		playerList: [] as Player[],
+		frequentPlayerIds: [] as number[],
 		hasScoring: true,
 		disabled: false,
-		isCreateModalOpen: false,
-		isUpdateModalOpen: false,
-		playerIdToEdit: null as number | null,
-		onOpenCreateModal: () => {},
-		onCloseModal: () => {},
-		onEditPlayer: (() => {}) as (playerId: number) => void,
-		onAddPlayer: (() => {}) as (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void,
-		onUpdatePlayer: (() => {}) as (player: CreateSessionPlayer | CreatePlayerSessionNoScoring) => void,
-		onRemovePlayer: (() => {}) as (index: number) => void,
+		onAddPlayer: (() => {}) as (playerId: number) => void,
+		onCreatePlayer: (async () => undefined) as (name: string) => Promise<Player | undefined>,
+		onRemovePlayer: (() => {}) as (playerId: number) => void,
+		onScoreChange: (() => {}) as (playerId: number, score: number | null) => void,
+		onToggleWon: (() => {}) as (playerId: number) => void,
+		onToggleFirstPlay: (() => {}) as (playerId: number) => void,
 	},
 	render: function Render({
 		form,
 		players,
 		playerList,
+		frequentPlayerIds,
 		hasScoring,
 		disabled,
-		isCreateModalOpen,
-		isUpdateModalOpen,
-		playerIdToEdit,
-		onOpenCreateModal,
-		onCloseModal,
-		onEditPlayer,
 		onAddPlayer,
-		onUpdatePlayer,
+		onCreatePlayer,
 		onRemovePlayer,
+		onScoreChange,
+		onToggleWon,
+		onToggleFirstPlay,
 	}) {
+		const { t } = useTranslation(["player-session", "player"]);
+		const inputId = useId();
 		const isFirstSync = useRef(true);
 
 		useEffect(() => {
@@ -56,38 +50,51 @@ export const SessionPlayerManager = withForm({
 		}, [form, players]);
 
 		return (
-			<>
-				<form.Field name="playerSessions" validators={zodValidator(CreateSessionSchema, "playerSessions")}>
-					{(field: AnyFieldApi) => (
-						<BgtPlayerSelector
-							onOpenCreateModal={onOpenCreateModal}
-							onEditPlayer={onEditPlayer}
-							remove={onRemovePlayer}
-							players={players}
-							disabled={disabled}
-							errors={field.state.meta.isTouched || form.state.submissionAttempts > 0 ? field.state.meta.errors : []}
-						/>
-					)}
-				</form.Field>
+			<form.Field name="playerSessions" validators={zodValidator(CreateSessionSchema, "playerSessions")}>
+				{(field: AnyFieldApi) => {
+					const errors: string[] =
+						field.state.meta.isTouched || form.state.submissionAttempts > 0 ? field.state.meta.errors : [];
 
-				<CreateSessionPlayerModal
-					open={isCreateModalOpen}
-					hasScoring={hasScoring}
-					onClose={onAddPlayer}
-					onCancel={onCloseModal}
-					selectedPlayerIds={players.map((x: CreateSessionPlayer | CreatePlayerSessionNoScoring) => x.playerId)}
-					players={playerList}
-				/>
-				<UpdateSessionPlayerModal
-					open={isUpdateModalOpen}
-					hasScoring={hasScoring}
-					onClose={onUpdatePlayer}
-					onCancel={onCloseModal}
-					playerToEdit={players.find(
-						(x: CreateSessionPlayer | CreatePlayerSessionNoScoring) => x.playerId === playerIdToEdit,
-					)}
-				/>
-			</>
+					return (
+						<div className="flex flex-col gap-2">
+							<label htmlFor={inputId} className="text-[15px] font-medium leading-7">
+								{hasScoring ? t("form.players.label") : t("form.players.label-no-scoring")}
+							</label>
+							<SessionPlayerPicker
+								inputId={inputId}
+								players={playerList}
+								selectedPlayerIds={players.map((x: CreateSessionPlayer) => x.playerId)}
+								frequentPlayerIds={frequentPlayerIds}
+								disabled={disabled}
+								hasErrors={errors.length > 0}
+								onAddPlayer={onAddPlayer}
+								onCreatePlayer={onCreatePlayer}
+							/>
+							<BgtFormErrors errors={errors} />
+							{players.length === 0 && errors.length === 0 && (
+								<BgtText color="primary">{t("player:new.players.none")}</BgtText>
+							)}
+							{players.length > 0 && (
+								<ul className="@container flex flex-col gap-2">
+									{players.map((entry: CreateSessionPlayer) => (
+										<SessionPlayerRow
+											key={entry.playerId}
+											entry={entry}
+											player={playerList.find((x: Player) => x.id === entry.playerId) ?? null}
+											hasScoring={hasScoring}
+											disabled={disabled}
+											onScoreChange={onScoreChange}
+											onToggleWon={onToggleWon}
+											onToggleFirstPlay={onToggleFirstPlay}
+											onRemove={onRemovePlayer}
+										/>
+									))}
+								</ul>
+							)}
+						</div>
+					);
+				}}
+			</form.Field>
 		);
 	},
 });

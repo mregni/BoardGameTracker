@@ -16,6 +16,7 @@ export interface BgtInputFieldProps {
 	suffixLabel?: string;
 	className?: string;
 	disabled?: boolean;
+	inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }
 
 const formatDateToLocalInput = (date: Date) => {
@@ -58,6 +59,7 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 		suffixLabel = undefined,
 		className = "",
 		disabled = false,
+		inputMode,
 	} = props;
 
 	const id = useId();
@@ -78,6 +80,7 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 					value={formatInput(field.state.value, type)}
 					disabled={disabled}
 					type={type}
+					inputMode={inputMode}
 					onChange={(event) => {
 						const raw = event.target.value;
 						const value = type === "number" ? (raw === "" ? undefined : Number(raw)) : raw;

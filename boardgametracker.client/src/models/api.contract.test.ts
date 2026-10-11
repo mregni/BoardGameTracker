@@ -14,6 +14,7 @@ import type {
 	Player,
 	PlayerSession,
 	Session,
+	SessionSuggestions,
 	Settings,
 } from "@/models";
 import type { LoginRequest, LoginResponse, OidcProvider, ProfileResponse, User } from "@/models/Auth/Auth";
@@ -50,6 +51,7 @@ describe("API contract", () => {
 		sameKeys<Player, Schemas["PlayerDto"]>(true);
 		sameKeys<Session, Schemas["SessionDto"]>(true);
 		sameKeys<PlayerSession, Schemas["PlayerSessionDto"]>(true);
+		sameKeys<SessionSuggestions, Schemas["SessionSuggestionsDto"]>(true);
 		sameKeys<Expansion, Schemas["ExpansionDto"]>(true);
 		sameKeys<Location, Schemas["LocationDto"]>(true);
 		sameKeys<Loan, Schemas["LoanDto"]>(true);

@@ -41,6 +41,7 @@ export type { MostPlayedGame, PlayerStatistics } from "./Player/PlayerStatistics
 export * from "./Session/CreateSession";
 export * from "./Session/PlayerSession";
 export * from "./Session/Session";
+export * from "./Session/SessionSuggestions";
 export * from "./Settings/BggConfigStatus";
 export * from "./Settings/ChangeDetectionConfigStatus";
 export * from "./Settings/Environment";

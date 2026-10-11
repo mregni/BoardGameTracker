@@ -79,6 +79,94 @@ describe("useSessionFormState", () => {
 		expect(result.current.selectedExpansionIds).toEqual([12]);
 	});
 
+	it("adds a player once and removes it again", () => {
+		const form = createForm(scored.id);
+		const { result } = renderHook(() => useSessionFormState({ form, games: [scored], initialGame: scored }));
+
+		act(() => result.current.addPlayer(5));
+		act(() => result.current.addPlayer(5));
+		act(() => result.current.addPlayer(6));
+
+		expect(result.current.players).toEqual([
+			{ playerId: 5, won: false, firstPlay: false, score: null },
+			{ playerId: 6, won: false, firstPlay: false, score: null },
+		]);
+
+		act(() => result.current.removePlayer(5));
+
+		expect(result.current.players.map((x) => x.playerId)).toEqual([6]);
+	});
+
+	it("pre-selects the winners from the scores, including ties", () => {
+		const form = createForm(scored.id);
+		const { result } = renderHook(() => useSessionFormState({ form, games: [scored], initialGame: scored }));
+
+		act(() => {
+			result.current.addPlayer(1);
+			result.current.addPlayer(2);
+			result.current.addPlayer(3);
+		});
+		act(() => result.current.setScore(1, 70));
+		act(() => result.current.setScore(2, 120));
+
+		expect(result.current.players.map((x) => x.won)).toEqual([false, true, false]);
+
+		act(() => result.current.setScore(3, 120));
+
+		expect(result.current.players.map((x) => x.won)).toEqual([false, true, true]);
+	});
+
+	it("stops following the scores once Won is toggled by hand", () => {
+		const form = createForm(scored.id);
+		const { result } = renderHook(() => useSessionFormState({ form, games: [scored], initialGame: scored }));
+
+		act(() => {
+			result.current.addPlayer(1);
+			result.current.addPlayer(2);
+		});
+		act(() => result.current.setScore(1, 10));
+		act(() => result.current.setScore(2, 20));
+		act(() => result.current.toggleWon(1));
+
+		expect(result.current.winnersFromScores).toBe(false);
+		expect(result.current.players.map((x) => x.won)).toEqual([true, true]);
+
+		act(() => result.current.setScore(1, 5));
+
+		expect(result.current.players.map((x) => x.won)).toEqual([true, true]);
+	});
+
+	it("keeps hand-picked winners of an existing session", () => {
+		const form = createForm(scored.id);
+		const { result } = renderHook(() =>
+			useSessionFormState({
+				form,
+				games: [scored],
+				initialGame: scored,
+				initialPlayerSessions: [
+					{ playerId: 1, score: 10, won: false, firstPlay: false },
+					{ playerId: 2, score: 5, won: true, firstPlay: true },
+				],
+			}),
+		);
+
+		expect(result.current.winnersFromScores).toBe(false);
+
+		act(() => result.current.setScore(2, 1));
+
+		expect(result.current.players.map((x) => x.won)).toEqual([false, true]);
+	});
+
+	it("toggles first play per player", () => {
+		const form = createForm(scored.id);
+		const { result } = renderHook(() => useSessionFormState({ form, games: [scored], initialGame: scored }));
+
+		act(() => result.current.addPlayer(1));
+		act(() => result.current.toggleFirstPlay(1));
+
+		expect(result.current.players[0].firstPlay).toBe(true);
+	});
+
 	it("uses the page's game until the games list is loaded", () => {
 		const form = createForm(cooperative.id);
 		const { result } = renderHook(() => useSessionFormState({ form, games: [], initialGame: cooperative }));
