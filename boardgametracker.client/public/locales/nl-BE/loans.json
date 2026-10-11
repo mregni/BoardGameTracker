@@ -60,7 +60,8 @@
       "two-weeks": "2 weken",
       "one-month": "1 maand",
       "none": "Geen einddatum",
-      "custom": "Datum kiezen"
+      "custom": "Datum kiezen",
+      "custom-label": "Terugbrengen op"
     }
   },
   "edit": {

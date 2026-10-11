@@ -60,7 +60,8 @@
       "two-weeks": "2 semanas",
       "one-month": "1 mes",
       "none": "Sin fecha límite",
-      "custom": "Elegir fecha"
+      "custom": "Elegir fecha",
+      "custom-label": "Fecha de devolución"
     }
   },
   "edit": {

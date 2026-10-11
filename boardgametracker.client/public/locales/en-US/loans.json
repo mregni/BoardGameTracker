@@ -60,7 +60,8 @@
       "two-weeks": "2 weeks",
       "one-month": "1 month",
       "none": "No due date",
-      "custom": "Pick date"
+      "custom": "Pick date",
+      "custom-label": "Return by"
     }
   },
   "edit": {

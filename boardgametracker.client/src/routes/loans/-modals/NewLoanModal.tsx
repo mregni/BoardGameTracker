@@ -104,6 +104,17 @@ const NewLoanModal = (props: ModalProps) => {
 		}
 	}, [open, form]);
 
+	const selectPreset = (preset: DuePreset, loanDate: string, current: DuePreset) => {
+		if (preset === "custom" && current !== "custom") {
+			const base = current === "none" ? DEFAULT_PRESET : current;
+			form.setFieldValue("dueDate", resolveDueDate(loanDate, base, ""));
+		}
+		if (preset !== "custom") {
+			form.setFieldValue("dueDate", "");
+		}
+		form.setFieldValue("duePreset", preset);
+	};
+
 	const presetLabel = (preset: DuePreset, loanDate: string, selected: boolean) => {
 		const label = t(`new.due.${preset}`);
 		const date = getPresetDueDate(loanDate, preset);
@@ -170,12 +181,7 @@ const NewLoanModal = (props: ModalProps) => {
 													type="button"
 													aria-pressed={selected}
 													disabled={isLoading}
-													onClick={() => {
-														form.setFieldValue("duePreset", preset);
-														if (preset !== "custom") {
-															form.setFieldValue("dueDate", "");
-														}
-													}}
+													onClick={() => selectPreset(preset, loanDate, duePreset)}
 													className={cx(
 														"rounded-full border px-3 py-1.5 text-xs transition-colors",
 														selected
@@ -201,7 +207,7 @@ const NewLoanModal = (props: ModalProps) => {
 											{(field: AnyFieldApi) => (
 												<BgtDatePicker
 													field={field}
-													label=""
+													label={t("new.due.custom-label")}
 													disabled={isLoading}
 													placeholder={t("new.end.placeholder")}
 													minValue={loanDate || null}
