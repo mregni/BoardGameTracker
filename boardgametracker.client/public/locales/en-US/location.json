@@ -31,5 +31,18 @@
   },
   "columns": {
     "sessions": "Sessions"
+  },
+  "count_one": "{{count}} location found",
+  "count_other": "{{count}} locations found",
+  "detail": {
+    "label": "Location",
+    "back": "Back to locations",
+    "sessions": "Sessions",
+    "games": "Games played",
+    "players": "Players",
+    "play-time": "Play time",
+    "no-sessions": "No sessions have been played at this location yet",
+    "show-all": "Show all {{count}} sessions",
+    "show-less": "Show fewer sessions"
   }
 }

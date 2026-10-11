@@ -31,5 +31,18 @@
   },
   "columns": {
     "sessions": "Sessies"
+  },
+  "count_one": "{{count}} locatie gevonden",
+  "count_other": "{{count}} locaties gevonden",
+  "detail": {
+    "label": "Locatie",
+    "back": "Terug naar locaties",
+    "sessions": "Sessies",
+    "games": "Gespeelde spellen",
+    "players": "Spelers",
+    "play-time": "Speeltijd",
+    "no-sessions": "Er zijn nog geen sessies gespeeld op deze locatie",
+    "show-all": "Toon alle {{count}} sessies",
+    "show-less": "Toon minder sessies"
   }
 }

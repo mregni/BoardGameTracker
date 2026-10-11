@@ -31,5 +31,18 @@
   },
   "columns": {
     "sessions": "Partidas"
+  },
+  "count_one": "{{count}} ubicación encontrada",
+  "count_other": "{{count}} ubicaciones encontradas",
+  "detail": {
+    "label": "Ubicación",
+    "back": "Volver a ubicaciones",
+    "sessions": "Partidas",
+    "games": "Juegos jugados",
+    "players": "Jugadores",
+    "play-time": "Tiempo de juego",
+    "no-sessions": "Aún no se ha jugado ninguna partida en esta ubicación",
+    "show-all": "Mostrar las {{count}} partidas",
+    "show-less": "Mostrar menos partidas"
   }
 }
