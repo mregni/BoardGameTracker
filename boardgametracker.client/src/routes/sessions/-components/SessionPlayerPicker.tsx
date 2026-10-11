@@ -16,6 +16,8 @@ interface Props {
 	onCreatePlayer: (name: string) => Promise<Player | undefined>;
 }
 
+const FALLBACK_SUGGESTION_COUNT = 5;
+
 type PickerOption = { kind: "player"; id: string; player: Player } | { kind: "create"; id: string; name: string };
 
 export const SessionPlayerPicker = (props: Props) => {
@@ -34,10 +36,13 @@ export const SessionPlayerPicker = (props: Props) => {
 		const term = query.trim();
 
 		if (term === "") {
-			return frequentPlayerIds
-				.map((id) => available.find((x) => x.id === id))
-				.filter((x): x is Player => x !== undefined)
-				.map((player) => ({ kind: "player", id: `${listId}-${player.id}`, player }));
+			const suggested =
+				frequentPlayerIds.length > 0
+					? frequentPlayerIds
+							.map((id) => available.find((x) => x.id === id))
+							.filter((x): x is Player => x !== undefined)
+					: [...available].sort((a, b) => a.name.localeCompare(b.name)).slice(0, FALLBACK_SUGGESTION_COUNT);
+			return suggested.map((player) => ({ kind: "player", id: `${listId}-${player.id}`, player }));
 		}
 
 		const lower = term.toLowerCase();

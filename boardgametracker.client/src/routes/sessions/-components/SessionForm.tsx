@@ -1,6 +1,7 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useRouter } from "@tanstack/react-router";
-import { useCallback, useEffect } from "react";
+import { addMinutes } from "date-fns";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
@@ -60,6 +61,8 @@ export const SessionForm = (props: Props) => {
 	const router = useRouter();
 	const { locations, games, players: playerList, suggestions } = useSessionForm();
 	const { savePlayer } = usePlayerModal({});
+	const isNewSession = locationId === undefined;
+	const [initialStart] = useState(() => start ?? addMinutes(new Date(), -(minutes ?? 30)));
 
 	const form = useAppForm({
 		...sessionFormOpts,
@@ -69,7 +72,7 @@ export const SessionForm = (props: Props) => {
 			locationId: locationId ?? 0,
 			minutes: minutes ?? 30,
 			comment: comment ?? "",
-			start: start ?? new Date(),
+			start: initialStart,
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = CreateSessionSchema.parse({
@@ -80,6 +83,15 @@ export const SessionForm = (props: Props) => {
 			await onClick(validatedData);
 		},
 	});
+
+	const syncStartWithDuration = useCallback(
+		(duration: number | undefined) => {
+			if (!isNewSession || typeof duration !== "number" || duration <= 0) return;
+			if (form.getFieldMeta("start")?.isDirty) return;
+			form.setFieldValue("start", addMinutes(new Date(), -duration), { dontUpdateMeta: true });
+		},
+		[form, isNewSession],
+	);
 
 	const {
 		selectedGameId,
@@ -99,10 +111,10 @@ export const SessionForm = (props: Props) => {
 		initialGame: game,
 		initialExpansions: expansions,
 		initialPlayerSessions: playerSessions,
+		onDurationDefaulted: syncStartWithDuration,
 	});
 
 	const lastLocationId = suggestions?.lastLocationId ?? null;
-	const isNewSession = locationId === undefined;
 
 	useEffect(() => {
 		if (!isNewSession || lastLocationId === null) return;
@@ -138,6 +150,7 @@ export const SessionForm = (props: Props) => {
 								recentGameIds={suggestions?.recentGameIds ?? []}
 								locations={locations}
 								disabled={disabled}
+								onMinutesChange={syncStartWithDuration}
 							/>
 
 							<SessionPlayerManager

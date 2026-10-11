@@ -41,6 +41,15 @@ describe("SessionPlayerPicker", () => {
 		expect(optionNames()).toEqual(["Reggi", "Kathleen"]);
 	});
 
+	it("falls back to the first players alphabetically without frequent players", async () => {
+		const user = userEvent.setup();
+		renderPicker({ frequentPlayerIds: [], selectedPlayerIds: [4], players: [...players, player(6, "Anna")] });
+
+		await user.click(screen.getByRole("combobox"));
+
+		expect(optionNames()).toEqual(["Anna", "Kathleen", "Mikhael", "Nova", "Reggi"]);
+	});
+
 	it("searches all players while typing and offers to create a new one", async () => {
 		const user = userEvent.setup();
 		renderPicker();

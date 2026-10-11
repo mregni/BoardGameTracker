@@ -1,5 +1,6 @@
 import { addMinutes } from "date-fns";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { StrictMode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Game, Player } from "@/models";
 import { renderWithTheme, screen, userEvent, waitFor } from "@/test/test-utils";
 import { SessionForm } from "./SessionForm";
@@ -10,6 +11,14 @@ const game = {
 	image: null,
 	hasScoring: true,
 	maxPlayTime: 45,
+	expansions: [],
+} as unknown as Game;
+const longGame = {
+	id: 2,
+	title: "Twilight Imperium",
+	image: null,
+	hasScoring: true,
+	maxPlayTime: 240,
 	expansions: [],
 } as unknown as Game;
 const players = [
@@ -30,7 +39,7 @@ vi.mock("../-hooks/useSessionForm", () => ({
 		isLoading: false,
 		settings: undefined,
 		locations: [],
-		games: [game],
+		games: [game, longGame],
 		players,
 		suggestions: { recentGameIds: [1], frequentPlayerIds: [1, 2], lastLocationId: null },
 	}),
@@ -52,6 +61,19 @@ const renderForm = () => {
 	return onClick;
 };
 
+const renderNewForm = () => {
+	const onClick = vi.fn().mockResolvedValue(undefined);
+	renderWithTheme(
+		<StrictMode>
+			<SessionForm buttonText="save" title="Log a session" onClick={onClick} disabled={false} />
+		</StrictMode>,
+	);
+	return onClick;
+};
+
+const startInput = () => screen.getByLabelText("new.start.label");
+const durationInput = () => screen.getByLabelText("new.duration.label");
+
 const addPlayer = async (user: ReturnType<typeof userEvent.setup>, name: string) => {
 	await user.click(screen.getByRole("combobox", { name: "form.players.label" }));
 	await user.click(screen.getByRole("option", { name }));
@@ -60,6 +82,66 @@ const addPlayer = async (user: ReturnType<typeof userEvent.setup>, name: string)
 describe("SessionForm", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it("hides the player error until the first submit in StrictMode", async () => {
+		const user = userEvent.setup();
+		const onClick = renderNewForm();
+
+		expect(screen.queryByText("player-session:new.players.minimum")).not.toBeInTheDocument();
+
+		await user.click(screen.getByRole("button", { name: "save" }));
+
+		expect(await screen.findByText("player-session:new.players.minimum")).toBeInTheDocument();
+		expect(onClick).not.toHaveBeenCalled();
+	});
+
+	it("shows the player error again once the last player is removed", async () => {
+		const user = userEvent.setup();
+		renderNewForm();
+
+		await addPlayer(user, "Mikhael");
+		await user.click(screen.getByRole("button", { name: "form.player.remove" }));
+
+		expect(await screen.findByText("player-session:new.players.minimum")).toBeInTheDocument();
+	});
+
+	it("starts a new session the default duration before now", () => {
+		vi.useFakeTimers({ toFake: ["Date"] });
+		vi.setSystemTime(new Date(2026, 9, 11, 9, 21));
+		renderNewForm();
+
+		expect(durationInput()).toHaveValue(30);
+		expect(startInput()).toHaveValue("2026-10-11T08:51");
+	});
+
+	it("moves the start with the game's play time and the duration until the start is edited", async () => {
+		vi.useFakeTimers({ toFake: ["Date"] });
+		vi.setSystemTime(new Date(2026, 9, 11, 9, 21));
+		const user = userEvent.setup();
+		renderNewForm();
+
+		await user.click(screen.getByRole("button", { name: "new.game.label" }));
+		await user.click(screen.getByRole("option", { name: "Twilight Imperium" }));
+
+		expect(durationInput()).toHaveValue(240);
+		expect(startInput()).toHaveValue("2026-10-11T05:21");
+
+		await user.clear(durationInput());
+		await user.type(durationInput(), "60");
+
+		expect(startInput()).toHaveValue("2026-10-11T08:21");
+
+		await user.clear(startInput());
+		await user.type(startInput(), "2026-10-11T07:00");
+		await user.clear(durationInput());
+		await user.type(durationInput(), "90");
+
+		expect(startInput()).toHaveValue("2026-10-11T07:00");
 	});
 
 	it("asks for at least one player on the first submit", async () => {

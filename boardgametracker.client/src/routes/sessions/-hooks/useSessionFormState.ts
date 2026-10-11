@@ -1,4 +1,3 @@
-import { addMinutes } from "date-fns";
 import { useCallback, useEffect, useReducer, useRef } from "react";
 
 import type { CreateSessionPlayer, Expansion, Game } from "@/models";
@@ -9,7 +8,7 @@ interface SessionFormApi {
 		subscribe: (listener: () => void) => { unsubscribe: () => void };
 		state: { values: { gameId: number } };
 	};
-	setFieldValue: (field: "minutes" | "start", value: number | Date) => void;
+	setFieldValue: (field: "minutes", value: number) => void;
 }
 
 interface InitialPlayerSession {
@@ -25,6 +24,7 @@ interface UseSessionFormStateProps {
 	initialGame?: Game;
 	initialExpansions?: Expansion[];
 	initialPlayerSessions?: InitialPlayerSession[];
+	onDurationDefaulted?: (minutes: number) => void;
 }
 
 interface SessionFormState {
@@ -102,6 +102,7 @@ export const useSessionFormState = ({
 	initialGame,
 	initialExpansions = [],
 	initialPlayerSessions = [],
+	onDurationDefaulted,
 }: UseSessionFormStateProps) => {
 	const [state, dispatch] = useReducer(sessionFormReducer, initialPlayerSessions, (playerSessions) => {
 		const players = toSessionPlayers(playerSessions);
@@ -112,6 +113,9 @@ export const useSessionFormState = ({
 			winnersFromScores: winnersMatchScores(players),
 		};
 	});
+
+	const onDurationDefaultedRef = useRef(onDurationDefaulted);
+	onDurationDefaultedRef.current = onDurationDefaulted;
 
 	const selectedGameIdRef = useRef(state.selectedGameId);
 	selectedGameIdRef.current = state.selectedGameId;
@@ -124,8 +128,9 @@ export const useSessionFormState = ({
 
 				const selectedBoardGame = games.find((g) => g.id === newGameId);
 				if (selectedBoardGame) {
-					form.setFieldValue("minutes", selectedBoardGame.maxPlayTime ?? 30);
-					form.setFieldValue("start", addMinutes(new Date(), -(selectedBoardGame.maxPlayTime ?? 30)));
+					const minutes = selectedBoardGame.maxPlayTime ?? 30;
+					form.setFieldValue("minutes", minutes);
+					onDurationDefaultedRef.current?.(minutes);
 				}
 				dispatch({ type: "SET_GAME", gameId: newGameId });
 			}

@@ -1,5 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtFormErrors } from "@/components/BgtForm";
 import { BgtText } from "@/components/BgtText/BgtText";
@@ -41,12 +41,10 @@ export const SessionPlayerManager = withForm({
 	}) {
 		const { t } = useTranslation(["player-session", "player"]);
 		const inputId = useId();
-		const isFirstSync = useRef(true);
 
 		useEffect(() => {
-			const silent = isFirstSync.current;
-			isFirstSync.current = false;
-			form.setFieldValue("playerSessions", players, { dontUpdateMeta: silent });
+			const quiet = players.length === 0 && !form.getFieldMeta("playerSessions")?.isTouched;
+			form.setFieldValue("playerSessions", players, { dontUpdateMeta: quiet, dontValidate: quiet });
 		}, [form, players]);
 
 		return (

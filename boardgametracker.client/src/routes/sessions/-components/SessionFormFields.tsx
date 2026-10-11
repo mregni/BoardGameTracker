@@ -15,8 +15,9 @@ export const SessionFormFields = withForm({
 		recentGameIds: [] as number[],
 		locations: [] as Location[],
 		disabled: false,
+		onMinutesChange: (() => {}) as (minutes: number | undefined) => void,
 	},
-	render: function Render({ form, games, recentGameIds, locations, disabled }) {
+	render: function Render({ form, games, recentGameIds, locations, disabled, onMinutesChange }) {
 		const { t } = useTranslation(["player-session", "common"]);
 
 		const locationsSelectItems = useMemo(
@@ -52,7 +53,11 @@ export const SessionFormFields = withForm({
 							)}
 						</form.Field>
 					</div>
-					<form.Field name="minutes" validators={zodValidator(CreateSessionSchema, "minutes")}>
+					<form.Field
+						name="minutes"
+						validators={zodValidator(CreateSessionSchema, "minutes")}
+						listeners={{ onChange: ({ value }) => onMinutesChange(value) }}
+					>
 						{(field: AnyFieldApi) => (
 							<BgtInputField
 								field={field}
