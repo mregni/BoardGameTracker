@@ -4,7 +4,7 @@ import type { Loan } from "@/models/Loan/Loan";
 import { getLoanStatus, getLoanStatusTone, type LoanStatus, toShortDate } from "../-utils/loanStatus";
 
 const pillVariants = cva(
-	"inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap",
+	"inline-block max-w-full truncate rounded-full px-2.5 py-0.5 align-middle text-xs font-semibold whitespace-nowrap",
 	{
 		variants: {
 			tone: {
@@ -48,8 +48,11 @@ interface Props {
 export const LoanStatusPill = ({ loan, className }: Props) => {
 	const label = useStatusLabel();
 	const status = getLoanStatus(loan);
+	const text = label(loan, status);
 
 	return (
-		<span className={cx(pillVariants({ tone: getLoanStatusTone(status) }), className)}>{label(loan, status)}</span>
+		<span title={text} className={cx(pillVariants({ tone: getLoanStatusTone(status) }), className)}>
+			{text}
+		</span>
 	);
 };
