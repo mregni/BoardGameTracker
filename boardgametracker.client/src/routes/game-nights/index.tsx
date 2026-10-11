@@ -53,7 +53,6 @@ function RouteComponent() {
 		games,
 		locations,
 		isLoading,
-		isUpdatingRsvp,
 		createGameNight,
 		deleteGameNight,
 		updateGameNight,
@@ -216,7 +215,7 @@ function RouteComponent() {
 							settings={settings}
 							onUpdateRsvp={updateRsvp}
 							onUpdateGameNight={updateGameNight}
-							isLoading={isUpdatingRsvp || isUpdating}
+							isLoading={isUpdating}
 						/>
 
 						<BgtDeleteModal

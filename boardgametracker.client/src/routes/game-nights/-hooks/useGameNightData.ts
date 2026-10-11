@@ -1,5 +1,6 @@
-import { useMutation, useQueries } from "@tanstack/react-query";
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
+import type { GameNight, UpdateGameNightRsvp } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import {
 	createGameNightCall,
@@ -14,6 +15,7 @@ import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
 
 export const useGameNightData = () => {
+	const queryClient = useQueryClient();
 	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
 
@@ -66,12 +68,35 @@ export const useGameNightData = () => {
 
 	const rsvpMutation = useMutation({
 		mutationFn: updateGameNightRsvpCall,
+		onMutate: async (rsvp: UpdateGameNightRsvp) => {
+			const queryKey = getGameNights().queryKey;
+			await queryClient.cancelQueries({ queryKey });
+			const previous = queryClient.getQueryData<GameNight[]>(queryKey);
+			queryClient.setQueryData<GameNight[]>(queryKey, (old) =>
+				old?.map((gameNight) =>
+					gameNight.id === rsvp.gameNightId
+						? {
+								...gameNight,
+								invitedPlayers: gameNight.invitedPlayers.map((invited) =>
+									invited.id === rsvp.id ? { ...invited, state: rsvp.state } : invited,
+								),
+							}
+						: gameNight,
+				),
+			);
+			return { previous };
+		},
 		onSuccess() {
 			successToast("game-nights:notifications.rsvp-updated");
-			invalidateQueries();
 		},
-		onError: () => {
+		onError: (_error, _rsvp, context) => {
+			if (context?.previous) {
+				queryClient.setQueryData(getGameNights().queryKey, context.previous);
+			}
 			errorToast("game-nights:notifications.rsvp-update-failed");
+		},
+		onSettled: () => {
+			invalidateQueries();
 		},
 	});
 
