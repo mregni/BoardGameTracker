@@ -56,6 +56,7 @@ function RouteComponent() {
 		createGameNight,
 		deleteGameNight,
 		updateGameNight,
+		updateInvitedPlayers,
 		updateRsvp,
 		isCreating,
 		isUpdating,
@@ -214,7 +215,7 @@ function RouteComponent() {
 							players={players}
 							settings={settings}
 							onUpdateRsvp={updateRsvp}
-							onUpdateGameNight={updateGameNight}
+							onUpdateGameNight={updateInvitedPlayers}
 							isLoading={isUpdating}
 						/>
 

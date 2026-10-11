@@ -1,11 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type React from "react";
-import { describe, expect, it, vi } from "vitest";
-import { type GameNight, GameNightRsvpState, QUERY_KEYS } from "@/models";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { type GameNight, GameNightRsvpState, QUERY_KEYS, type UpdateGameNight } from "@/models";
 import { act, renderHook, waitFor } from "@/test/test-utils";
 
-const { updateRsvpCall, invalidateGameNights, successToast, errorToast } = vi.hoisted(() => ({
+const { updateRsvpCall, updateCall, invalidateGameNights, successToast, errorToast } = vi.hoisted(() => ({
 	updateRsvpCall: vi.fn(),
+	updateCall: vi.fn(),
 	invalidateGameNights: vi.fn(),
 	successToast: vi.fn(),
 	errorToast: vi.fn(),
@@ -14,7 +15,7 @@ const { updateRsvpCall, invalidateGameNights, successToast, errorToast } = vi.ho
 vi.mock("@/services/gameNightService", () => ({
 	getGameNightsCall: vi.fn(() => new Promise(() => {})),
 	createGameNightCall: vi.fn(),
-	updateGameNightCall: vi.fn(),
+	updateGameNightCall: updateCall,
 	deleteGameNightCall: vi.fn(),
 	updateGameNightRsvpCall: updateRsvpCall,
 }));
@@ -73,6 +74,10 @@ const setup = () => {
 const update = { id: 12, gameNightId: 4, playerId: 7, state: GameNightRsvpState.Declined };
 
 describe("useGameNightData rsvp updates", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
 	it("applies the new state before the server answers", async () => {
 		let resolve: (value: unknown) => void = () => {};
 		updateRsvpCall.mockReturnValue(new Promise((r) => (resolve = r)));
@@ -100,5 +105,60 @@ describe("useGameNightData rsvp updates", () => {
 
 		expect(stateOf(12)).toBe(GameNightRsvpState.Pending);
 		expect(errorToast).toHaveBeenCalledWith("game-nights:notifications.rsvp-update-failed");
+	});
+});
+
+const gameNightUpdate = {
+	id: 4,
+	title: "Strategy night",
+	notes: "",
+	startDate: new Date(2026, 9, 11, 19, 30),
+	hostId: 1,
+	locationId: 3,
+	suggestedGameIds: [],
+	invitedPlayerIds: [7],
+} as UpdateGameNight;
+
+describe("useGameNightData game night updates", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it("confirms an edit with a success toast", async () => {
+		updateCall.mockResolvedValue({});
+		const { result } = setup();
+
+		await act(async () => {
+			await result.current.updateGameNight(gameNightUpdate);
+		});
+
+		expect(updateCall).toHaveBeenCalledWith(gameNightUpdate);
+		expect(successToast).toHaveBeenCalledWith("game-nights:notifications.updated");
+		expect(invalidateGameNights).toHaveBeenCalled();
+	});
+
+	it("invites or removes players from the RSVP dialog without a success toast", async () => {
+		updateCall.mockResolvedValue({});
+		const { result } = setup();
+
+		await act(async () => {
+			await result.current.updateInvitedPlayers(gameNightUpdate);
+		});
+
+		expect(updateCall).toHaveBeenCalledWith(gameNightUpdate);
+		expect(successToast).not.toHaveBeenCalled();
+		expect(invalidateGameNights).toHaveBeenCalled();
+	});
+
+	it("still reports a failed invite or removal", async () => {
+		updateCall.mockRejectedValue(new Error("400"));
+		const { result } = setup();
+
+		await act(async () => {
+			await result.current.updateInvitedPlayers(gameNightUpdate).catch(() => undefined);
+		});
+
+		expect(successToast).not.toHaveBeenCalled();
+		expect(errorToast).toHaveBeenCalledWith("game-nights:notifications.update-failed");
 	});
 });

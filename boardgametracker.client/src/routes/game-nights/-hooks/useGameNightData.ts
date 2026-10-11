@@ -1,6 +1,6 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
-import type { GameNight, UpdateGameNightRsvp } from "@/models";
+import type { GameNight, UpdateGameNight, UpdateGameNightRsvp } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import {
 	createGameNightCall,
@@ -45,9 +45,11 @@ export const useGameNightData = () => {
 	});
 
 	const updateMutation = useMutation({
-		mutationFn: updateGameNightCall,
-		onSuccess() {
-			successToast("game-nights:notifications.updated");
+		mutationFn: ({ gameNight }: { gameNight: UpdateGameNight; silent?: boolean }) => updateGameNightCall(gameNight),
+		onSuccess(_data, { silent }) {
+			if (!silent) {
+				successToast("game-nights:notifications.updated");
+			}
 			invalidateQueries();
 		},
 		onError: () => {
@@ -113,7 +115,8 @@ export const useGameNightData = () => {
 			gamesQuery.isLoading ||
 			locationsQuery.isLoading,
 		createGameNight: createMutation.mutateAsync,
-		updateGameNight: updateMutation.mutateAsync,
+		updateGameNight: (gameNight: UpdateGameNight) => updateMutation.mutateAsync({ gameNight }),
+		updateInvitedPlayers: (gameNight: UpdateGameNight) => updateMutation.mutateAsync({ gameNight, silent: true }),
 		deleteGameNight: deleteMutation.mutateAsync,
 		updateRsvp: rsvpMutation.mutateAsync,
 		isCreating: createMutation.isPending,
