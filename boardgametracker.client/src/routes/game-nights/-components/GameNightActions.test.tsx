@@ -33,11 +33,11 @@ describe("GameNightActions", () => {
 		toastError.mockClear();
 	});
 
-	it("copies the RSVP link and says so", async () => {
+	it("copies the invite link and says so", async () => {
 		const user = userEvent.setup();
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		setClipboard({ writeText });
-		renderWithProviders(<GameNightActions gameNight={gameNight} onManageRsvps={vi.fn()} />);
+		renderWithProviders(<GameNightActions gameNight={gameNight} onEdit={vi.fn()} onDelete={vi.fn()} />);
 
 		await user.click(screen.getByRole("button", { name: "card.copy-link" }));
 
@@ -49,11 +49,24 @@ describe("GameNightActions", () => {
 	it("reports a failed copy instead of claiming success when the clipboard is unavailable", async () => {
 		const user = userEvent.setup();
 		setClipboard(undefined);
-		renderWithProviders(<GameNightActions gameNight={gameNight} onManageRsvps={vi.fn()} />);
+		renderWithProviders(<GameNightActions gameNight={gameNight} onEdit={vi.fn()} onDelete={vi.fn()} />);
 
 		await user.click(screen.getByRole("button", { name: "card.copy-link" }));
 
 		await waitFor(() => expect(toastError).toHaveBeenCalledWith("card.copy-failed"));
 		expect(screen.getByRole("button", { name: "card.copy-link" })).toBeInTheDocument();
+	});
+
+	it("edits and deletes the game night", async () => {
+		const user = userEvent.setup();
+		const onEdit = vi.fn();
+		const onDelete = vi.fn();
+		renderWithProviders(<GameNightActions gameNight={gameNight} onEdit={onEdit} onDelete={onDelete} />);
+
+		await user.click(screen.getByRole("button", { name: "edit" }));
+		await user.click(screen.getByRole("button", { name: "delete.button" }));
+
+		expect(onEdit).toHaveBeenCalledWith(gameNight);
+		expect(onDelete).toHaveBeenCalledWith(gameNight);
 	});
 });

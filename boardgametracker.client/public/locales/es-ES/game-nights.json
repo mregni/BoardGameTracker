@@ -1,19 +1,32 @@
 {
   "rsvp": {
     "title": "Gestionar RSVP",
-    "manual-note-prefix": "Establece manualmente el estado de RSVP",
-    "manual-note": " de los jugadores que respondieron por teléfono, mensaje o en persona.",
-    "accept": "Aceptar",
-    "decline": "Rechazar",
-    "maybe": "Quizás",
-    "host": "Anfitrión – siempre asiste"
+    "host": "Anfitrión · siempre viene",
+    "subtitle": "{{title}} · {{date}}",
+    "coming": "Viene",
+    "invited_one": "{{count}} invitado",
+    "invited_other": "{{count}} invitados",
+    "summary": {
+      "coming_one": "{{count}} viene",
+      "coming_other": "{{count}} vienen",
+      "pending_one": "{{count}} pendiente",
+      "pending_other": "{{count}} pendientes",
+      "declined_one": "{{count}} rechazado",
+      "declined_other": "{{count}} rechazados"
+    },
+    "player-status": "RSVP de {{name}}",
+    "remove": "Quitar a {{name}} de esta noche",
+    "invite-more": "Invitar a más jugadores",
+    "search-players": "Buscar jugadores…",
+    "no-players-found": "No se encontraron jugadores",
+    "invite": "Invitar a {{name}}",
+    "invite-link": "Enlace de invitación",
+    "copy": "Copiar"
   },
   "empty": {
     "title": "Aún no hay noches de juego planificadas",
     "description": "Invita a jugadores para planificar una noche de juego.",
-    "upcoming": "No hay próximas noches de juego",
-    "past": "No hay noches de juego pasadas",
-    "all": "Todavía no hay noches de juego"
+    "upcoming": "No hay próximas noches de juego"
   },
   "delete": {
     "title": "Eliminar noche de juego",
@@ -31,21 +44,19 @@
     "description": "Actualiza los detalles de este evento de noche de juego.",
     "save": "Guardar cambios"
   },
-  "upcoming": "Próximas noches de juego",
-  "past": "Noches de juego pasadas",
+  "upcoming": "Próximas",
+  "past": "Pasadas",
   "card": {
-    "hosted-by": "Organizada por {{host}}",
-    "suggested-games": "Juegos sugeridos",
-    "rsvp-link": "Enlace de RSVP",
-    "upcoming": "Próxima",
-    "past": "Pasada",
-    "copy-link": "Copiar enlace de RSVP",
+    "suggested-games": "El anfitrión sugiere:",
+    "copy-link": "Copiar enlace de invitación",
     "copied": "Copiado al portapapeles",
     "copy-failed": "No se pudo copiar el enlace",
     "manage-rsvps": "Gestionar RSVP",
     "email-invites": "Invitar por correo",
     "invites-sent": "Invitaciones enviadas: {{sent}}",
-    "invites-failed": "No se pudieron enviar las invitaciones"
+    "invites-failed": "No se pudieron enviar las invitaciones",
+    "when": "{{when}} · {{time}}",
+    "host": "Anfitrión: {{host}}"
   },
   "form": {
     "title": {
@@ -90,5 +101,11 @@
     "location-required": "La ubicación es obligatoria",
     "host-required": "El anfitrión es obligatorio"
   },
-  "create-first": "Planifica tu primera noche de juego"
+  "past-night": {
+    "summary": "{{location}} · {{attended}}",
+    "attended-count_one": "{{count}} asistió",
+    "attended-count_other": "{{count}} asistieron",
+    "attended": "Asistieron",
+    "nobody": "Nadie confirmó su asistencia"
+  }
 }

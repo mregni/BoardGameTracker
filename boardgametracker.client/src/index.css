@@ -23,6 +23,7 @@
   --color-lime-green: #34d399;
   --color-error-dark: #ef44441a;
   --color-background: #0a0f1a;
+  --color-card-surface: color-mix(in srgb, var(--color-primary) 10%, var(--color-background));
 
   /* Font Family */
   --font-family-sans: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
