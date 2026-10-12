@@ -1,23 +1,83 @@
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type Game, GameState, type Player } from "@/models";
-import { renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
+import { act, fireEvent, renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
 import NewLoanModal from "./NewLoanModal";
 
-const { saveLoan } = vi.hoisted(() => ({ saveLoan: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+	saveLoan: vi.fn(),
+	players: [] as Player[],
+}));
+const { saveLoan } = mocks;
 
 const games = [
 	{ id: 1, title: "Everdell", image: null, state: GameState.Owned, isLoaned: true },
 	{ id: 2, title: "Everdell Duo", image: null, state: GameState.Owned, isLoaned: false },
 ] as unknown as Game[];
 
-const players = [{ id: 7, name: "Kathleen", image: null }] as unknown as Player[];
+const kathleen = { id: 7, name: "Kathleen", image: null } as unknown as Player;
+const nova = { id: 8, name: "Nova", image: null } as unknown as Player;
 
 vi.mock("../-hooks/useNewLoanModal", () => ({
-	useNewLoanModal: () => ({ games, players, isLoading: false, saveLoan }),
+	useNewLoanModal: ({ onSuccess }: { onSuccess: () => void }) => ({
+		games,
+		players: mocks.players,
+		isLoading: false,
+		saveLoan: async (data: unknown) => {
+			mocks.saveLoan(data);
+			onSuccess();
+		},
+	}),
+}));
+
+vi.mock("@/components/BgtForm", async (importOriginal) => ({
+	...(await importOriginal<typeof import("@/components/BgtForm")>()),
+	BgtSelect: ({
+		field,
+		label,
+		items,
+	}: {
+		field: AnyFieldApi;
+		label: string;
+		items: { value: number; label: string }[];
+	}) => (
+		<label>
+			{label}
+			<select
+				value={String(field.state.value ?? "")}
+				onChange={(event) => field.handleChange(Number(event.target.value))}
+			>
+				<option value="">-</option>
+				{items.map((item) => (
+					<option key={item.value} value={item.value}>
+						{item.label}
+					</option>
+				))}
+			</select>
+		</label>
+	),
 }));
 
 vi.mock("@/routes/players/-modals/CreatePlayerModal", () => ({
-	CreatePlayerModal: () => null,
+	CreatePlayerModal: ({
+		open,
+		close,
+		onPlayerCreated,
+	}: {
+		open: boolean;
+		close: () => void;
+		onPlayerCreated: (player: Player) => void;
+	}) =>
+		open ? (
+			<div>
+				<button type="button" onClick={() => onPlayerCreated(nova)}>
+					save-new-player
+				</button>
+				<button type="button" onClick={close}>
+					close-new-player
+				</button>
+			</div>
+		) : null,
 }));
 
 vi.mock("@/services/queries/settings", () => ({
@@ -30,6 +90,7 @@ vi.mock("@/services/queries/settings", () => ({
 describe("NewLoanModal", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.players = [kathleen];
 		vi.useFakeTimers({ toFake: ["Date"] });
 		vi.setSystemTime(new Date(2026, 9, 11, 12, 0));
 	});
@@ -116,5 +177,49 @@ describe("NewLoanModal", () => {
 		await userEvent.click(screen.getByRole("button", { name: "new.save" }));
 
 		await waitFor(() => expect(saveLoan).not.toHaveBeenCalled());
+	});
+
+	it("lends the picked game to the picked borrower with the preset due date", async () => {
+		const close = vi.fn();
+		renderWithProviders(<NewLoanModal open close={close} />);
+
+		await userEvent.selectOptions(screen.getByRole("combobox", { name: "player-session:new.game.label" }), "2");
+		await userEvent.selectOptions(screen.getByRole("combobox", { name: "new.player.label" }), "7");
+		await userEvent.click(preset("new.due.one-week"));
+		await userEvent.click(screen.getByRole("button", { name: "new.lend-game" }));
+
+		await waitFor(() =>
+			expect(saveLoan).toHaveBeenCalledWith({
+				gameId: 2,
+				playerId: 7,
+				loanDate: new Date(2026, 9, 11),
+				dueDate: new Date(2026, 9, 18),
+			}),
+		);
+		expect(close).toHaveBeenCalled();
+	});
+
+	it("selects a player created from the dialog once the player list has it", async () => {
+		const { rerender } = renderWithProviders(<NewLoanModal open close={vi.fn()} />);
+
+		await userEvent.click(screen.getByRole("button", { name: "+ player-session:new.create-player" }));
+		act(() => fireEvent.click(screen.getByRole("button", { name: "save-new-player", hidden: true })));
+		act(() => fireEvent.click(screen.getByRole("button", { name: "close-new-player", hidden: true })));
+		expect(screen.queryByRole("button", { name: "save-new-player", hidden: true })).not.toBeInTheDocument();
+
+		mocks.players = [kathleen, nova];
+		rerender(<NewLoanModal open close={vi.fn()} />);
+
+		await waitFor(() => expect(screen.getByRole("combobox", { name: "new.player.label" })).toHaveValue("8"));
+	});
+
+	it("starts over when the dialog is opened again", async () => {
+		const { rerender } = renderWithProviders(<NewLoanModal open close={vi.fn()} />);
+		await userEvent.click(preset("new.due.none"));
+
+		rerender(<NewLoanModal open={false} close={vi.fn()} />);
+		rerender(<NewLoanModal open close={vi.fn()} />);
+
+		await waitFor(() => expect(preset(/^new\.due\.two-weeks · /)).toBeChecked());
 	});
 });
