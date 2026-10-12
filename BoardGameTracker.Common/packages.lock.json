@@ -35,18 +35,18 @@
       },
       "Sentry.AspNetCore": {
         "type": "Direct",
-        "requested": "[6.11.0, )",
-        "resolved": "6.11.0",
-        "contentHash": "4yYpmdroeis+bibI0YEj+DhA6Q00v6GhQ1Tl8S6KdxVrqAWlvwjsVt8hloeiJCUqe9vGQop/A2zbcNxE9aCQmw==",
+        "requested": "[6.12.0, )",
+        "resolved": "6.12.0",
+        "contentHash": "znVAGER3PL9M9JaF9OjJBxaNxyiANWuP2ofWN172e0eGM+vsmeIIEYr9RKn/hUQ167zGFfo8JtHzdbZp4i9Wqw==",
         "dependencies": {
-          "Sentry.Extensions.Logging": "6.11.0"
+          "Sentry.Extensions.Logging": "6.12.0"
         }
       },
       "Serilog": {
         "type": "Direct",
-        "requested": "[4.3.0, )",
-        "resolved": "4.3.0",
-        "contentHash": "+cDryFR0GRhsGOnZSKwaDzRRl4MupvJ42FhCE4zhQRVanX0Jpg6WuCBk59OVhVDPmab1bB+nRykAnykYELA9qQ=="
+        "requested": "[4.4.0, )",
+        "resolved": "4.4.0",
+        "contentHash": "ZC6Le3rr4TVJJjS4KsQAesxeF1EhW9qcZmmG7eP5Y2G3+gTGkJEUXkq4+tZNPtyp05I0wWOxnIjwtxFweJsObw=="
       },
       "Microsoft.EntityFrameworkCore.Abstractions": {
         "type": "Transitive",
@@ -65,15 +65,15 @@
       },
       "Sentry": {
         "type": "Transitive",
-        "resolved": "6.11.0",
-        "contentHash": "TsT5Gj77PTh3lHQGS+8dLxucTmiZEfLxkqRygIHwYQXRXmMC4fFDbf1AoQe8LXOOFDYhPM2SNf8TTfexvkP0nQ=="
+        "resolved": "6.12.0",
+        "contentHash": "7IRSoMWSxzjD204mFrQs0+kU7/ZAQRcqNdiFB8tN9R8CxgwZvP/rrD2nuWmQnFleQwA3yZYcpR8m3EtGfP5x5w=="
       },
       "Sentry.Extensions.Logging": {
         "type": "Transitive",
-        "resolved": "6.11.0",
-        "contentHash": "ztK8OQVUoyb5SX49jFfBu4A/67VneE6w4gKqiUycYDCNPrtJo4pz5Ho5eow5sfe+1Sm8sMQqpu+Lvykfh4HqMg==",
+        "resolved": "6.12.0",
+        "contentHash": "I3IQzkJvjl2CcCeWYGwQ6YnGm9e5wAXYBPjij/adEc3G5jNg6QnoUwHebmwWGDfa2zgrR13Ho4Kz3pe2dBbyBg==",
         "dependencies": {
-          "Sentry": "6.11.0"
+          "Sentry": "6.12.0"
         }
       }
     }
