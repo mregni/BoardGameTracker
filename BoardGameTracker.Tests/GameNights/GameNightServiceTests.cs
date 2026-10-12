@@ -875,6 +875,61 @@ public class GameNightServiceTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task UpdateRsvpByLink_ShouldThrowRsvpClosed_WhenTheGameNightHasStarted(bool isAuthenticated)
+    {
+        var start = new DateTime(2026, 10, 10, 19, 30, 0, DateTimeKind.Utc);
+        var gameNight = GameNight.Create("Night", string.Empty, start, 1, 1);
+        var rsvp = GameNightRsvp.Create(3, GameNightRsvpState.Pending);
+        typeof(GameNightRsvp).GetProperty(nameof(GameNightRsvp.GameNight))!.SetValue(rsvp, gameNight);
+        var command = new UpdateRsvpCommand { Id = 5, State = GameNightRsvpState.Accepted };
+
+        SetupRsvpAuthentication(false);
+        _dateTimeProviderMock.SetupGet(x => x.UtcNow).Returns(start.AddMinutes(1));
+        _rsvpRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rsvp);
+
+        var action = async () => await _gameNightService.UpdateRsvpByLink(gameNight.LinkId, command, isAuthenticated);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.RsvpClosed);
+        rsvp.State.Should().Be(GameNightRsvpState.Pending);
+        _rsvpRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.RsvpAuthenticationEnabled, false), isAuthenticated ? Times.Never() : Times.Once());
+        _dateTimeProviderMock.VerifyGet(x => x.UtcNow, Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRsvpByLink_ShouldUpdate_WhenTheGameNightStartsLater()
+    {
+        var start = new DateTime(2026, 10, 10, 19, 30, 0, DateTimeKind.Utc);
+        var gameNight = GameNight.Create("Night", string.Empty, start, 1, 1);
+        var rsvp = GameNightRsvp.Create(3, GameNightRsvpState.Pending);
+        typeof(GameNightRsvp).GetProperty(nameof(GameNightRsvp.GameNight))!.SetValue(rsvp, gameNight);
+        var command = new UpdateRsvpCommand { Id = 5, State = GameNightRsvpState.Accepted };
+
+        _dateTimeProviderMock.SetupGet(x => x.UtcNow).Returns(start.AddMinutes(-1));
+        _rsvpRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rsvp);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        var result = await _gameNightService.UpdateRsvpByLink(gameNight.LinkId, command, true);
+
+        result.State.Should().Be(GameNightRsvpState.Accepted);
+        _rsvpRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNightRsvp>>(s => s is RsvpByIdSpec), It.IsAny<CancellationToken>()), Times.Once);
+        _dateTimeProviderMock.VerifyGet(x => x.UtcNow, Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _emailServiceMock.VerifyGet(x => x.IsConfigured, Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task UpdateRsvpByLink_ShouldThrowEntityNotFound_WhenTheLinkDoesNotMatch(bool isAuthenticated)
     {
         var gameNight = GameNight.Create("Night", string.Empty, DateTime.UtcNow, 1, 1);

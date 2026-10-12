@@ -8,14 +8,14 @@ import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { AvatarChip } from "@/components/GameNight/AvatarChip";
+import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
+import { RsvpProgress } from "@/components/GameNight/RsvpProgress";
 import type { GameNight, Settings } from "@/models";
-import { relativeDay } from "../-utils/relativeDay";
-import { sortRsvps } from "../-utils/sortRsvps";
-import { AvatarChip } from "./AvatarChip";
+import { relativeDay } from "@/utils/relativeDay";
+import { sortRsvps } from "@/utils/sortRsvps";
 import { GameNightActions } from "./GameNightActions";
-import { GameNightDateBox } from "./GameNightDateBox";
 import { RsvpAvatarStack } from "./RsvpAvatarStack";
-import { RsvpProgress } from "./RsvpProgress";
 
 interface Props {
 	gameNight: GameNight;

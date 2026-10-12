@@ -163,9 +163,14 @@ public class GameNightService : IGameNightService
         await GameNightLinkAccess.EnsureAllowedAsync(_configRepository, isAuthenticated);
 
         var rsvp = await FindRsvpAsync(command);
-        if (rsvp.GameNight?.LinkId != linkId)
+        if (rsvp.GameNight is not { } gameNight || gameNight.LinkId != linkId)
         {
             throw new EntityNotFoundException(nameof(GameNightRsvp), rsvp.Id);
+        }
+
+        if (gameNight.StartDate.ToUniversalTime() < _dateTimeProvider.UtcNow)
+        {
+            throw new ValidationException(Constants.Errors.RsvpClosed);
         }
 
         return await ApplyRsvpStateAsync(rsvp, command.State);

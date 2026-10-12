@@ -16,6 +16,8 @@ import {
 import { BgtSimpleInputField } from "@/components/BgtForm/BgtSimpleInputField";
 import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { AvatarChipButton } from "@/components/GameNight/AvatarChip";
+import { RsvpProgress } from "@/components/GameNight/RsvpProgress";
 import {
 	type GameNight,
 	GameNightRsvpState,
@@ -27,10 +29,8 @@ import {
 	type UpdateGameNightRsvp,
 } from "@/models";
 import { toDisplayDateTime } from "@/utils/dateUtils";
-import { AvatarChipButton } from "../-components/AvatarChip";
-import { RsvpProgress } from "../-components/RsvpProgress";
+import { byName, sortRsvps } from "@/utils/sortRsvps";
 import { useInviteLink } from "../-hooks/useInviteLink";
-import { byName, sortRsvps } from "../-utils/sortRsvps";
 import { toUpdateGameNight } from "../-utils/toUpdateGameNight";
 
 interface Props extends ModalProps {
