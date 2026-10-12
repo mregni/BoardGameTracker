@@ -31,9 +31,9 @@ const Harness = ({ onDialogClose }: { onDialogClose: () => void }) => {
 };
 
 beforeAll(() => {
-	Element.prototype.hasPointerCapture ??= () => false;
-	Element.prototype.releasePointerCapture ??= () => {};
-	Element.prototype.scrollIntoView ??= () => {};
+	Element.prototype.hasPointerCapture = vi.fn(() => false);
+	Element.prototype.releasePointerCapture = vi.fn();
+	Element.prototype.scrollIntoView = vi.fn();
 });
 
 const openList = async (user: ReturnType<typeof userEvent.setup>) => {
@@ -49,7 +49,7 @@ describe("MultiSelectField", () => {
 		const listbox = await openList(user);
 
 		expect(screen.getByTestId("form")).not.toContainElement(listbox);
-		expect(screen.getByTestId("form")).not.toContainElement(screen.getByRole("textbox", { name: "search" }));
+		expect(screen.getByTestId("form")).not.toContainElement(screen.getByPlaceholderText("search"));
 	});
 
 	it("focuses the search input and filters the options", async () => {
@@ -57,13 +57,13 @@ describe("MultiSelectField", () => {
 		renderWithTheme(<Harness onDialogClose={vi.fn()} />);
 
 		await openList(user);
-		const search = screen.getByRole("textbox", { name: "search" });
+		const search = screen.getByPlaceholderText("search");
 		await waitFor(() => expect(search).toHaveFocus());
 
 		await user.type(search, "bo");
 		expect(search).toHaveValue("bo");
-		expect(screen.queryByRole("option", { name: "Alice" })).not.toBeInTheDocument();
-		expect(screen.getByRole("option", { name: "Bob" })).toBeInTheDocument();
+		expect(screen.queryByRole("option", { name: /Alice/ })).not.toBeInTheDocument();
+		expect(screen.getByRole("option", { name: /Bob/ })).toBeInTheDocument();
 	});
 
 	it("closes only the list on Escape and keeps the dialog open", async () => {
@@ -84,7 +84,7 @@ describe("MultiSelectField", () => {
 		renderWithTheme(<Harness onDialogClose={vi.fn()} />);
 
 		await openList(user);
-		await user.click(screen.getByRole("option", { name: "Alice" }));
+		await user.click(screen.getByRole("option", { name: /Alice/ }));
 
 		await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
 		const form = screen.getByTestId("form");

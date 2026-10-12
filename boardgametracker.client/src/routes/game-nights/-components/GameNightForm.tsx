@@ -115,7 +115,7 @@ export const GameNightForm = (props: Props) => {
 		<form id="game-night-form" onSubmit={handleFormSubmit(form)} className="w-full">
 			{children}
 
-			<div className="mt-3 mb-3 flex max-h-[60vh] flex-col gap-4 overflow-y-auto pr-2 lg:grid lg:max-h-none lg:grid-cols-2 lg:items-start lg:gap-6 lg:overflow-visible lg:pr-0">
+			<div className="my-3 grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-6">
 				<div className="flex min-w-0 flex-col gap-4">
 					<form.Field name="title" validators={zodValidator(GameNightFormSchema, "title")}>
 						{(field: AnyFieldApi) => (

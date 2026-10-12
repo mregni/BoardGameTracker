@@ -38,7 +38,7 @@ export const CreateGameNightModal = (props: Props) => {
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent className="max-w-2xl! lg:max-w-5xl!">
+			<BgtDialogContent size="wide">
 				<GameNightForm
 					players={players}
 					games={games}
