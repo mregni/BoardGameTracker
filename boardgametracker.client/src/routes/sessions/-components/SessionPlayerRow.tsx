@@ -4,6 +4,7 @@ import SparklesIcon from "@/assets/icons/sparkles.svg?react";
 import TrophyIcon from "@/assets/icons/trophy.svg?react";
 import XIcon from "@/assets/icons/x.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
+import { BgtInputContainer } from "@/components/BgtForm";
 import type { CreateSessionPlayer, Player } from "@/models";
 
 interface Props {
@@ -20,7 +21,7 @@ interface Props {
 const toScoreText = (score: number | null | undefined) => (score === null || score === undefined ? "" : String(score));
 
 const toggleClasses =
-	"inline-flex items-center gap-1 h-9 px-2.5 rounded-full border text-sm font-semibold whitespace-nowrap";
+	"inline-flex items-center gap-1 h-8 px-2 rounded-full border text-xs font-semibold whitespace-nowrap";
 
 export const SessionPlayerRow = (props: Props) => {
 	const { entry, player, hasScoring, disabled, onScoreChange, onToggleWon, onToggleFirstPlay, onRemove } = props;
@@ -42,16 +43,18 @@ export const SessionPlayerRow = (props: Props) => {
 			<span className="min-w-0 break-words text-sm font-medium">{name}</span>
 			<div className="col-span-3 row-start-2 flex items-center justify-between gap-2 @xl:col-span-1 @xl:col-start-3 @xl:row-start-1 @xl:justify-end">
 				{hasScoring ? (
-					<input
-						type="number"
-						inputMode="numeric"
-						value={toScoreText(entry.score)}
-						disabled={disabled}
-						aria-label={t("form.player.score", { name })}
-						placeholder={t("form.player.score-placeholder")}
-						onChange={(event) => handleScoreChange(event.target.value)}
-						className="hide-arrow w-20 h-9 rounded-md border border-primary/30 bg-input text-center text-sm font-bold tabular-nums text-white focus:border-primary focus:outline-none disabled:opacity-50 [appearance:textfield]"
-					/>
+					<BgtInputContainer disabled={disabled} className="h-9 w-20 shrink-0 px-2! text-sm">
+						<input
+							type="number"
+							inputMode="numeric"
+							value={toScoreText(entry.score)}
+							disabled={disabled}
+							aria-label={t("form.player.score", { name })}
+							placeholder={t("form.player.score-placeholder")}
+							onChange={(event) => handleScoreChange(event.target.value)}
+							className="hide-arrow h-full w-full bg-transparent text-center font-semibold tabular-nums text-white focus:outline-none disabled:cursor-not-allowed [appearance:textfield]"
+						/>
+					</BgtInputContainer>
 				) : (
 					<span />
 				)}
@@ -68,7 +71,7 @@ export const SessionPlayerRow = (props: Props) => {
 								: "border-primary/30 text-white/60 hover:text-white hover:border-primary/60",
 						)}
 					>
-						<TrophyIcon className="size-3.5" />
+						<TrophyIcon className="size-3" />
 						{t("form.player.won")}
 					</button>
 					<button
@@ -83,7 +86,7 @@ export const SessionPlayerRow = (props: Props) => {
 								: "border-primary/30 text-white/60 hover:text-white hover:border-primary/60",
 						)}
 					>
-						<SparklesIcon className="size-3.5" />
+						<SparklesIcon className="size-3" />
 						{t("form.player.first-play")}
 					</button>
 				</div>
