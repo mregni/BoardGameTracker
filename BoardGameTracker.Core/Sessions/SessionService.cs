@@ -1,7 +1,6 @@
 ﻿using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
-using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Common;
@@ -10,7 +9,6 @@ using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions.Interfaces;
-using BoardGameTracker.Core.Sessions.Specifications;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Sessions;
@@ -22,19 +20,17 @@ public class SessionService : ISessionService
     private readonly IGameService _gameService;
     private readonly ILocationService _locationService;
     private readonly IPlayerService _playerService;
-    private readonly IPlayerRepository _playerRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<SessionService> _logger;
 
-    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IPlayerService playerService, IPlayerRepository playerRepository, IUnitOfWork unitOfWork, IDateTimeProvider dateTimeProvider, ILogger<SessionService> logger)
+    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IPlayerService playerService, IUnitOfWork unitOfWork, IDateTimeProvider dateTimeProvider, ILogger<SessionService> logger)
     {
         _sessionRepository = sessionRepository;
         _badgeService = badgeService;
         _gameService = gameService;
         _locationService = locationService;
         _playerService = playerService;
-        _playerRepository = playerRepository;
         _unitOfWork = unitOfWork;
         _dateTimeProvider = dateTimeProvider;
         _logger = logger;
@@ -254,20 +250,5 @@ public class SessionService : ISessionService
     {
         _logger.LogDebug("Fetching session {SessionId}", id);
         return _sessionRepository.GetByIdAsync(id);
-    }
-
-    public async Task<SessionSuggestionsDto> GetSuggestions(CancellationToken cancellationToken = default)
-    {
-        _logger.LogDebug("Fetching session form suggestions");
-        var recentGameIds = await _sessionRepository.GetRecentlyPlayedGameIds(Constants.SessionForm.RecentGamesCount, cancellationToken);
-        var frequentPlayers = await _playerRepository.GetTopPlayers(Constants.SessionForm.FrequentPlayersCount, cancellationToken);
-        var lastLocationId = await _sessionRepository.FirstOrDefaultAsync(new LastUsedLocationSpec(), cancellationToken);
-
-        return new SessionSuggestionsDto
-        {
-            RecentGameIds = recentGameIds,
-            FrequentPlayerIds = frequentPlayers.Select(x => x.Id).ToList(),
-            LastLocationId = lastLocationId
-        };
     }
 }

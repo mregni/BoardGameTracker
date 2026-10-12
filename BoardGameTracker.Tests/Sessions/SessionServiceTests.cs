@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
@@ -15,7 +14,6 @@ using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Sessions;
 using BoardGameTracker.Core.Sessions.Interfaces;
-using BoardGameTracker.Core.Sessions.Specifications;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -30,7 +28,6 @@ public class SessionServiceTests
     private readonly Mock<IGameService> _gameServiceMock;
     private readonly Mock<ILocationService> _locationServiceMock;
     private readonly Mock<IPlayerService> _playerServiceMock;
-    private readonly Mock<IPlayerRepository> _playerRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
     private readonly Mock<ILogger<SessionService>> _loggerMock;
@@ -43,7 +40,6 @@ public class SessionServiceTests
         _gameServiceMock = new Mock<IGameService>();
         _locationServiceMock = new Mock<ILocationService>();
         _playerServiceMock = new Mock<IPlayerService>();
-        _playerRepositoryMock = new Mock<IPlayerRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _dateTimeProviderMock = new Mock<IDateTimeProvider>();
         _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
@@ -55,7 +51,6 @@ public class SessionServiceTests
             _gameServiceMock.Object,
             _locationServiceMock.Object,
             _playerServiceMock.Object,
-            _playerRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _dateTimeProviderMock.Object,
             _loggerMock.Object);
@@ -73,7 +68,6 @@ public class SessionServiceTests
         _gameServiceMock.VerifyNoOtherCalls();
         _locationServiceMock.VerifyNoOtherCalls();
         _playerServiceMock.VerifyNoOtherCalls();
-        _playerRepositoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
@@ -876,60 +870,6 @@ public class SessionServiceTests
 
         _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    #endregion
-
-    #region GetSuggestions Tests
-
-    [Fact]
-    public async Task GetSuggestions_ShouldCombineRecentGamesFrequentPlayersAndLastLocation()
-    {
-        _sessionRepositoryMock
-            .Setup(x => x.GetRecentlyPlayedGameIds(Constants.SessionForm.RecentGamesCount, It.IsAny<CancellationToken>()))
-            .ReturnsAsync([4, 2, 9]);
-        _playerRepositoryMock
-            .Setup(x => x.GetTopPlayers(Constants.SessionForm.FrequentPlayersCount, It.IsAny<CancellationToken>()))
-            .ReturnsAsync([(7, "Mikhael", null, 12, 4), (3, "Reggi", null, 9, 2)]);
-        _sessionRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(5);
-
-        var result = await _sessionService.GetSuggestions(TestContext.Current.CancellationToken);
-
-        result.RecentGameIds.Should().Equal(4, 2, 9);
-        result.FrequentPlayerIds.Should().Equal(7, 3);
-        result.LastLocationId.Should().Be(5);
-
-        _sessionRepositoryMock.Verify(x => x.GetRecentlyPlayedGameIds(Constants.SessionForm.RecentGamesCount, It.IsAny<CancellationToken>()), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetTopPlayers(Constants.SessionForm.FrequentPlayersCount, It.IsAny<CancellationToken>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), It.IsAny<CancellationToken>()), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public async Task GetSuggestions_ShouldReturnEmptySuggestions_WhenNoSessionsExist()
-    {
-        _sessionRepositoryMock
-            .Setup(x => x.GetRecentlyPlayedGameIds(It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
-        _playerRepositoryMock
-            .Setup(x => x.GetTopPlayers(It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
-        _sessionRepositoryMock
-            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((int?)null);
-
-        var result = await _sessionService.GetSuggestions(TestContext.Current.CancellationToken);
-
-        result.RecentGameIds.Should().BeEmpty();
-        result.FrequentPlayerIds.Should().BeEmpty();
-        result.LastLocationId.Should().BeNull();
-
-        _sessionRepositoryMock.Verify(x => x.GetRecentlyPlayedGameIds(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
-        _playerRepositoryMock.Verify(x => x.GetTopPlayers(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
-        _sessionRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<LastUsedLocationSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

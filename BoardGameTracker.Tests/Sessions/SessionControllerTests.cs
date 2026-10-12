@@ -16,17 +16,20 @@ namespace BoardGameTracker.Tests.Sessions;
 public class SessionControllerTests
 {
     private readonly Mock<ISessionService> _sessionServiceMock;
+    private readonly Mock<ISessionSuggestionService> _sessionSuggestionServiceMock;
     private readonly SessionController _controller;
 
     public SessionControllerTests()
     {
         _sessionServiceMock = new Mock<ISessionService>();
-        _controller = new SessionController(_sessionServiceMock.Object);
+        _sessionSuggestionServiceMock = new Mock<ISessionSuggestionService>();
+        _controller = new SessionController(_sessionServiceMock.Object, _sessionSuggestionServiceMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
         _sessionServiceMock.VerifyNoOtherCalls();
+        _sessionSuggestionServiceMock.VerifyNoOtherCalls();
     }
 
     #region GetSession Tests
@@ -219,7 +222,7 @@ public class SessionControllerTests
             LastLocationId = 4
         };
 
-        _sessionServiceMock
+        _sessionSuggestionServiceMock
             .Setup(x => x.GetSuggestions(It.IsAny<CancellationToken>()))
             .ReturnsAsync(suggestions);
 
@@ -231,7 +234,7 @@ public class SessionControllerTests
         dto.FrequentPlayerIds.Should().Equal(8, 2, 5);
         dto.LastLocationId.Should().Be(4);
 
-        _sessionServiceMock.Verify(x => x.GetSuggestions(It.IsAny<CancellationToken>()), Times.Once);
+        _sessionSuggestionServiceMock.Verify(x => x.GetSuggestions(It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
