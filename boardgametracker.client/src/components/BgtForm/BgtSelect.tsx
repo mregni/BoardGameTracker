@@ -12,8 +12,23 @@ import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
 import { FormFieldWrapper } from "./FormFieldWrapper";
 import { useKeyboardResizeGuard } from "./useKeyboardResizeGuard";
 
-export interface BgtSelectProps {
+type SelectValue = number | string;
+
+interface FieldBinding {
 	field: AnyFieldApi;
+	value?: never;
+	onValueChange?: never;
+	errors?: never;
+}
+
+interface ControlledBinding {
+	field?: never;
+	value: SelectValue | null;
+	onValueChange: (value: SelectValue) => void;
+	errors?: string[];
+}
+
+export interface BgtSelectBaseProps {
 	label: string;
 	items: BgtSelectImageItem[] | BgtSelectItem[];
 	disabled?: boolean;
@@ -22,8 +37,24 @@ export interface BgtSelectProps {
 	showAvatars?: boolean;
 }
 
+export type BgtSelectProps = (FieldBinding | ControlledBinding) & BgtSelectBaseProps;
+
+type Item = BgtSelectImageItem | BgtSelectItem;
+
+const groupItems = (items: Item[]) =>
+	items.reduce<{ label: string; items: Item[] }[]>((groups, item) => {
+		const label = item.group ?? "";
+		const group = groups.find((x) => x.label === label);
+		if (group) {
+			group.items.push(item);
+		} else {
+			groups.push({ label, items: [item] });
+		}
+		return groups;
+	}, []);
+
 const BgtSelectComponent = (props: BgtSelectProps) => {
-	const { items, label, field, disabled = false, placeholder = null, hasSearch = false, showAvatars = false } = props;
+	const { items, label, disabled = false, placeholder = null, hasSearch = false, showAvatars = false } = props;
 
 	const { t } = useTranslation();
 	const id = useId();
@@ -32,7 +63,8 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
 
-	const rawValue = field.state.value?.toString();
+	const errors: string[] = props.field ? props.field.state.meta.errors : (props.errors ?? []);
+	const rawValue = (props.field ? props.field.state.value : props.value)?.toString();
 	const currentValue = items.some((item) => item.value.toString() === rawValue) ? rawValue : "";
 
 	const filteredItems = useMemo(() => {
@@ -43,6 +75,14 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 			return item.label.toLowerCase().includes(searchTerm.toLowerCase());
 		});
 	}, [items, currentValue, searchTerm]);
+
+	const visibleGroups = useMemo(
+		() =>
+			searchTerm === "" && filteredItems.some((item) => item.group)
+				? groupItems(filteredItems)
+				: [{ label: "", items: filteredItems }],
+		[filteredItems, searchTerm],
+	);
 
 	const isSelectImageItem = useCallback(
 		(item: BgtSelectImageItem | BgtSelectItem): item is BgtSelectImageItem =>
@@ -55,14 +95,20 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 		return !!selected && isSelectImageItem(selected);
 	}, [items, currentValue, isSelectImageItem]);
 
-	const hasErrors = field.state.meta.errors.length > 0;
+	const hasErrors = errors.length > 0;
+	const { field, onValueChange } = props;
 
 	const handleValueChange = useCallback(
 		(value: string) => {
 			const originalItem = items.find((item) => item.value.toString() === value);
-			field.handleChange(originalItem ? originalItem.value : value);
+			const next = originalItem ? originalItem.value : value;
+			if (field) {
+				field.handleChange(next);
+			} else {
+				onValueChange?.(next);
+			}
 		},
-		[field, items],
+		[field, onValueChange, items],
 	);
 
 	const handleOpenChange = useCallback(
@@ -91,7 +137,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 	}, [open]);
 
 	return (
-		<FormFieldWrapper label={label} htmlFor={id} errors={field.state.meta.errors}>
+		<FormFieldWrapper label={label} htmlFor={id} errors={errors}>
 			<Select.Root
 				disabled={disabled}
 				onValueChange={handleValueChange}
@@ -143,22 +189,31 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 						)}
 						<Select.Viewport className="p-1 max-h-[300px]">
 							{filteredItems.length > 0 ? (
-								filteredItems.map((item) => (
-									<Select.Item
-										value={item.value.toString()}
-										key={item.value}
-										className="text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pr-[35px] pl-[25px] relative select-none data-disabled:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
-									>
-										<Select.ItemText>
-											<div className="flex flex-row justify-start items-center gap-2">
-												{isSelectImageItem(item) && <BgtAvatar title={item.label} image={item.image} />}
-												{item.label}
-											</div>
-										</Select.ItemText>
-										<Select.ItemIndicator className="absolute left-0 w-[25px] inline-flex items-center justify-center">
-											<CheckIcon className="size-4" />
-										</Select.ItemIndicator>
-									</Select.Item>
+								visibleGroups.map((group) => (
+									<Select.Group key={group.label}>
+										{group.label && (
+											<Select.Label className="px-[25px] pt-2 pb-1 text-[11px] uppercase tracking-wider text-gray-400">
+												{group.label}
+											</Select.Label>
+										)}
+										{group.items.map((item) => (
+											<Select.Item
+												value={item.value.toString()}
+												key={item.value}
+												className="text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pr-[35px] pl-[25px] relative select-none data-disabled:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
+											>
+												<Select.ItemText>
+													<div className="flex flex-row justify-start items-center gap-2">
+														{isSelectImageItem(item) && <BgtAvatar title={item.label} image={item.image} />}
+														{item.label}
+													</div>
+												</Select.ItemText>
+												<Select.ItemIndicator className="absolute left-0 w-[25px] inline-flex items-center justify-center">
+													<CheckIcon className="size-4" />
+												</Select.ItemIndicator>
+											</Select.Item>
+										))}
+									</Select.Group>
 								))
 							) : (
 								<div className="text-[13px] py-2 px-4 text-gray-400">{t("no-results")}</div>
