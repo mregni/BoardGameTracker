@@ -23,6 +23,36 @@ describe("BgtDialog", () => {
 		});
 	});
 
+	describe("Sizes", () => {
+		const renderSized = (size?: "default" | "wide" | "sheet") =>
+			renderWithTheme(
+				<BgtDialog open={true} onClose={vi.fn()}>
+					<BgtDialogContent size={size}>
+						<BgtDialogTitle>Sized</BgtDialogTitle>
+					</BgtDialogContent>
+				</BgtDialog>,
+			);
+
+		it("is a centred 600px dialog by default", () => {
+			renderSized();
+			const dialog = screen.getByRole("dialog");
+			expect(dialog).toHaveClass("top-1/2", "max-w-[600px]");
+			expect(dialog).not.toHaveClass("lg:max-w-5xl");
+		});
+
+		it("grows on large screens when wide", () => {
+			renderSized("wide");
+			expect(screen.getByRole("dialog")).toHaveClass("max-w-[600px]", "lg:max-w-5xl");
+		});
+
+		it("sits at the bottom on phones when it is a sheet", () => {
+			renderSized("sheet");
+			const dialog = screen.getByRole("dialog");
+			expect(dialog).toHaveClass("bottom-0", "rounded-t-2xl", "md:top-1/2", "md:max-w-xl");
+			expect(dialog).not.toHaveClass("top-1/2");
+		});
+	});
+
 	describe("Nested dialogs", () => {
 		it("should stack a child dialog above its parent", () => {
 			renderWithTheme(

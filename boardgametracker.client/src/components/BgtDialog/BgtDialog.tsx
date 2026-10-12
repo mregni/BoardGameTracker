@@ -1,5 +1,5 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { cx } from "class-variance-authority";
+import { cva, cx, type VariantProps } from "class-variance-authority";
 import { type ComponentPropsWithoutRef, createContext, type ReactNode, useContext } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -37,8 +37,29 @@ export const BgtDialog = (props: BgtDialogProps) => {
 	);
 };
 
-export const BgtDialogContent = (props: ComponentPropsWithoutRef<typeof Dialog.Content>) => {
-	const { className, children, style, ...rest } = props;
+const centered = "left-1/2 top-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl";
+
+const dialogContent = cva(
+	"fixed flex max-h-[calc(100vh-2rem)] flex-col gap-3 overflow-y-auto bg-dialog p-6 text-white shadow-2xl focus:outline-none",
+	{
+		variants: {
+			size: {
+				default: [centered, "max-w-[600px]"],
+				wide: [centered, "max-w-[600px] lg:max-w-5xl"],
+				sheet: [
+					"inset-x-0 bottom-0 w-full rounded-t-2xl",
+					"md:inset-x-auto md:bottom-auto md:left-1/2 md:top-1/2 md:w-[calc(100vw-2rem)] md:max-w-xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl",
+				],
+			},
+		},
+		defaultVariants: { size: "default" },
+	},
+);
+
+type BgtDialogContentProps = ComponentPropsWithoutRef<typeof Dialog.Content> & VariantProps<typeof dialogContent>;
+
+export const BgtDialogContent = (props: BgtDialogContentProps) => {
+	const { className, children, style, size, ...rest } = props;
 	const onClose = useContext(DialogCloseContext);
 	const depth = useContext(DialogDepthContext);
 	const { t } = useTranslation();
@@ -49,10 +70,7 @@ export const BgtDialogContent = (props: ComponentPropsWithoutRef<typeof Dialog.C
 			<Dialog.Content
 				style={{ zIndex: overlayZIndex + 10, ...style }}
 				aria-describedby={undefined}
-				className={cx(
-					"fixed left-1/2 top-1/2 flex max-h-[calc(100vh-2rem)] w-[calc(100vw-2rem)] max-w-[600px] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 overflow-y-auto rounded-xl bg-dialog p-6 text-white shadow-2xl focus:outline-none",
-					className,
-				)}
+				className={cx(dialogContent({ size }), className)}
 				{...rest}
 			>
 				{onClose && (
