@@ -4,12 +4,11 @@
     "title": "No loans yet",
     "description": "You haven't created any loans yet. Start by lending a game to track who has your games."
   },
-  "mark-as-returned": "Return",
-  "no-returned-loans": "No returned loans yet.",
   "statistics": {
-    "active": "Active loans",
-    "returned": "Returned loans",
-    "total-loans": "Total loans"
+    "returned": "Returned",
+    "on-loan": "On loan",
+    "overdue": "Overdue",
+    "due-this-week": "Due this week"
   },
   "notifications": {
     "created": "Loan is successfully created",
@@ -36,9 +35,9 @@
   },
   "no-active-loans": "There are no active loans at the moment.",
   "new": {
-    "title": "Add new loan",
+    "title": "Lend a game",
     "save": "Create loan",
-    "description": "Fill out the form to create a new loan.",
+    "description": "Pick a game, who borrows it and when it should come back.",
     "start": {
       "label": "Loan start",
       "required": "Start loan date is required",
@@ -50,16 +49,41 @@
       "before-start": "The due date can't be before the start date"
     },
     "player": {
-      "label": "Player",
+      "label": "Borrower",
       "required": "Player is required",
-      "placeholder": "Choose player"
+      "placeholder": "Choose borrower"
+    },
+    "button": "+ Lend a game",
+    "lend-game": "Lend {{game}}",
+    "due": {
+      "one-week": "1 week",
+      "two-weeks": "2 weeks",
+      "one-month": "1 month",
+      "none": "No due date",
+      "custom": "Pick date",
+      "custom-label": "Return by"
     }
   },
-  "active": "Not returned yet",
   "edit": {
     "title": "Edit loan",
     "description": "Change the dates of this loan.",
     "save": "Save loan",
     "button": "Edit"
+  },
+  "status": {
+    "overdue": "{{distance}} overdue",
+    "due-today": "Due today",
+    "due-in": "Due in {{distance}}",
+    "due-on": "Due {{date}}",
+    "no-due-date": "No due date",
+    "returned": "Returned {{date}}"
+  },
+  "since": "since {{date}}",
+  "returned-button": "Returned",
+  "history": {
+    "summary_one": "{{count}} returned loan",
+    "summary_other": "{{count}} returned loans",
+    "show": "Show history",
+    "hide": "Hide history"
   }
 }

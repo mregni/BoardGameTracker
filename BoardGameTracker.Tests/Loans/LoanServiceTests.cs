@@ -218,6 +218,38 @@ public class LoanServiceTests
     }
 
     [Fact]
+    public async Task LoanGameToPlayer_ShouldThrowDomainException_WhenDueDateRunsIntoLaterLoan()
+    {
+        var gameId = 1;
+        var start = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
+        var game = new Game("Test Game") { Id = gameId };
+        game.LoanToPlayer(99, start.AddDays(10));
+
+        var command = new CreateLoanCommand
+        {
+            GameId = gameId,
+            PlayerId = 2,
+            LoanDate = start,
+            DueDate = start.AddDays(14)
+        };
+
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(game);
+
+        var act = async () => await _loanService.LoanGameToPlayer(command);
+
+        await act.Should().ThrowAsync<DomainException>()
+            .WithMessage(Constants.Errors.GameAlreadyOnLoan);
+
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyPlayerChecked();
+        _loanRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Loan>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task LoanGameToPlayer_ShouldThrowEntityNotFoundException_WhenGameDoesNotExist()
     {
         // Arrange
@@ -387,7 +419,7 @@ public class LoanServiceTests
         var game = new Game("Catan") { Id = 1 };
         var earlier = game.LoanToPlayer(2, new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc));
         earlier.Id = 7;
-        earlier.SetDueDate(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
+        earlier.MarkAsReturned(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
         var loan = game.LoanToPlayer(3, new DateTime(2026, 9, 20, 0, 0, 0, DateTimeKind.Utc));
         loan.Id = 8;
         _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
@@ -399,6 +431,37 @@ public class LoanServiceTests
 
         await act.Should().ThrowAsync<DomainException>().WithMessage(BoardGameTracker.Common.Constants.Errors.GameAlreadyOnLoan);
         loan.LoanDate.Should().Be(new DateTime(2026, 9, 20, 0, 0, 0, DateTimeKind.Utc));
+        _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
+        _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldRefuseDates_AfterTheDueDateOfAnUnreturnedLoan()
+    {
+        var game = new Game("Catan") { Id = 1 };
+        var loan = game.LoanToPlayer(3, new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc));
+        loan.Id = 8;
+        loan.MarkAsReturned(new DateTime(2026, 8, 10, 0, 0, 0, DateTimeKind.Utc));
+        var overdue = game.LoanToPlayer(2, new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc));
+        overdue.Id = 7;
+        overdue.SetDueDate(new DateTime(2026, 9, 10, 0, 0, 0, DateTimeKind.Utc));
+        _loanRepositoryMock.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(loan);
+        _gameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(game);
+
+        var act = () => _loanService.Update(new UpdateLoanCommand
+        {
+            Id = 8,
+            GameId = 1,
+            PlayerId = 3,
+            LoanDate = new DateTime(2026, 9, 20, 0, 0, 0, DateTimeKind.Utc),
+            ReturnedDate = new DateTime(2026, 9, 25, 0, 0, 0, DateTimeKind.Utc)
+        });
+
+        await act.Should().ThrowAsync<DomainException>().WithMessage(BoardGameTracker.Common.Constants.Errors.GameAlreadyOnLoan);
+        loan.LoanDate.Should().Be(new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc));
         _loanRepositoryMock.Verify(x => x.GetByIdAsync(8), Times.Once);
         _gameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameWithLoansSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
