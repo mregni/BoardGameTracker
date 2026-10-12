@@ -2,6 +2,12 @@
   "invited": "You're invited",
   "hosted-by": "Hosted by",
   "whos-coming": "Who's coming",
+  "group": {
+    "coming": "Coming ({{count}})",
+    "pending": "No answer yet ({{count}})",
+    "declined": "Can't come ({{count}})"
+  },
+  "host": "host",
   "can-you-make-it": "Can you make it?",
   "who-are-you": "Who are you?",
   "select-your-name": "Select your name…",

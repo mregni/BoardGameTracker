@@ -162,14 +162,9 @@ describe("RsvpPage", () => {
 		expect(screen.getByText("Bring snacks")).toBeInTheDocument();
 		expect(screen.getByText("whos-coming")).toBeInTheDocument();
 		expect(screen.getByTestId("rsvp-summary")).toHaveTextContent("rsvp.summary.coming · rsvp.summary.pending");
-		const players = screen.getByTestId("rsvp-players");
-		expect(within(players).getByText("Hank")).toBeInTheDocument();
-		expect(within(players).getByText("Gina").closest("li")).toHaveClass("opacity-60");
-		expect(within(players).getByText("Olaf").closest("li")).toHaveClass("opacity-35");
-		const items = within(players).getAllByRole("listitem");
-		expect(items.map((item) => item.querySelector(".sr-only")?.textContent)).toEqual(["coming", "maybe", "cant-come"]);
-		expect(within(items[0]).getByText("Hank")).toBeInTheDocument();
-		expect(within(players).queryByRole("button")).not.toBeInTheDocument();
+		expect(within(screen.getByRole("region", { name: "group.coming" })).getByText("Hank")).toBeInTheDocument();
+		expect(within(screen.getByRole("region", { name: "group.pending" })).getByText("Gina")).toBeInTheDocument();
+		expect(within(screen.getByRole("region", { name: "group.declined" })).getByText("Olaf")).toBeInTheDocument();
 		expect(screen.getByText("Carcassonne")).toBeInTheDocument();
 	});
 

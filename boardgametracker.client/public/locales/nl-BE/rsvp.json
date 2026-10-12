@@ -2,6 +2,12 @@
   "invited": "Je bent uitgenodigd",
   "hosted-by": "Georganiseerd door",
   "whos-coming": "Wie komt er?",
+  "group": {
+    "coming": "Komen ({{count}})",
+    "pending": "Nog geen antwoord ({{count}})",
+    "declined": "Kunnen niet ({{count}})"
+  },
+  "host": "gastheer",
   "can-you-make-it": "Kan je erbij zijn?",
   "who-are-you": "Wie ben je?",
   "select-your-name": "Kies je naam…",
