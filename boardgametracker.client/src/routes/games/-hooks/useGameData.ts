@@ -87,17 +87,21 @@ export const useGameData = (props: UseGameDataProps) => {
 		onError: (error) => errorToast(apiErrorMessage(error, "game:track-price.failed")),
 	});
 
-	const deleteGame = async () => {
-		if (gameId !== undefined) {
-			try {
-				await deleteGameCall(gameId);
-				await invalidator.invalidateGameDeleted();
-				successToast("game:delete.successfull");
-				onDeleteSuccess?.();
-			} catch {
-				errorToast("game:delete.failed");
-			}
+	const deleteGame = async (onDeleted?: () => Promise<unknown>) => {
+		if (gameId === undefined) return;
+
+		try {
+			await deleteGameCall(gameId);
+		} catch (error) {
+			errorToast(apiErrorMessage(error, "game:delete.failed"));
+			return;
 		}
+
+		successToast("game:delete.successfull");
+		await onDeleted?.();
+		onDeleteSuccess?.();
+		queryClient.removeQueries({ queryKey: [QUERY_KEYS.game, gameId] });
+		await invalidator.invalidateGameDeleted();
 	};
 
 	const deleteExpansion = async (id: number, gameIdParam: number) => {

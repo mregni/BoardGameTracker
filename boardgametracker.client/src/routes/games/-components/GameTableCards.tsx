@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { format } from "date-fns";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
@@ -8,8 +7,10 @@ import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpin
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { BgtSelectItem, Game, GameState } from "@/models";
 import type { GamePrice } from "@/models/Games/GamePrice";
+import { toDisplay } from "@/utils/dateUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { RoundDecimal } from "@/utils/numberUtils";
+import { formatPrice } from "@/utils/priceUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./EditableNumberCell";
 import { EditableSelectCell } from "./EditableSelectCell";
@@ -85,7 +86,7 @@ export const GameTableCards = (props: Props) => {
 						<Link
 							to="/games/$gameId"
 							params={{ gameId: game.id }}
-							className="flex items-center gap-2 mb-1 hover:text-primary"
+							className="flex items-center gap-2 mb-1 underline-offset-2 hover:text-primary hover:underline"
 						>
 							<BgtAvatar image={game.image} title={game.title} size="small" />
 							<span className="font-semibold truncate">{game.title}</span>
@@ -94,7 +95,7 @@ export const GameTableCards = (props: Props) => {
 						<Row label={t("games:columns.players")}>{formatRange(game.minPlayers, game.maxPlayers)}</Row>
 						<Row label={t("games:columns.play-time")}>{formatRange(game.minPlayTime, game.maxPlayTime, "min")}</Row>
 						<Row label={t("games:columns.weight")}>
-							{game.weight != null ? (RoundDecimal(game.weight, 0.1) ?? "-") : "-"}
+							{game.weight != null && game.weight > 0 ? (RoundDecimal(game.weight, 0.1) ?? "-") : "-"}
 						</Row>
 						<Row label={t("games:columns.rating")}>
 							{game.rating != null ? (RoundDecimal(game.rating, 0.1) ?? "-") : "-"}
@@ -103,6 +104,7 @@ export const GameTableCards = (props: Props) => {
 							<EditableSelectCell
 								readOnly={readOnly}
 								value={game.language ?? LANGUAGE_NONE}
+								emptyValue={LANGUAGE_NONE}
 								items={languageItems}
 								hasSearch
 								editing={isEditing(game.id, "language")}
@@ -110,6 +112,7 @@ export const GameTableCards = (props: Props) => {
 								onStopEdit={stopEdit}
 								onChange={(language) => updateGame({ ...game, language: language === LANGUAGE_NONE ? null : language })}
 								align="right"
+								size="sm"
 							/>
 						</Row>
 						<Row label={t("games:columns.state")}>
@@ -122,6 +125,7 @@ export const GameTableCards = (props: Props) => {
 								onStopEdit={stopEdit}
 								onChange={(state) => updateGame(withStateChange(game, state as GameState, livePrice))}
 								align="right"
+								size="sm"
 							/>
 						</Row>
 						{priceMap && (
@@ -130,7 +134,7 @@ export const GameTableCards = (props: Props) => {
 							</Row>
 						)}
 						<Row label={t("games:columns.added")}>
-							{game.additionDate && dateFormat ? format(new Date(game.additionDate), dateFormat) : "-"}
+							{game.additionDate && dateFormat ? toDisplay(game.additionDate, dateFormat, uiLanguage ?? "en-US") : "-"}
 						</Row>
 						<Row label={t("games:columns.price")}>
 							<EditableNumberCell
@@ -139,12 +143,14 @@ export const GameTableCards = (props: Props) => {
 								step={0.01}
 								min={0}
 								prefix={currency}
+								format={(price) => formatPrice(price, currency, uiLanguage)}
 								editing={isEditing(game.id, "buyingPrice")}
 								onStartEdit={() => startEdit(game.id, "buyingPrice")}
 								onStopEdit={stopEdit}
 								onChange={(buyingPrice) => updateGame({ ...game, buyingPrice })}
 								align="right"
-								className="h-9 w-full text-[12px]"
+								size="sm"
+								className="h-9 w-full text-sm"
 							/>
 						</Row>
 						{(shopUrl || game.bggId) && (

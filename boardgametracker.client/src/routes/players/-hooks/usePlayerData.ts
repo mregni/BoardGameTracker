@@ -1,4 +1,5 @@
 import { useQueries, useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { deletePlayerCall } from "@/services/playerService";
 import { getBadges } from "@/services/queries/basdges";
@@ -13,7 +14,7 @@ interface UsePLayerDataProps {
 
 export const usePlayerData = ({ playerId, onDeleteSuccess }: UsePLayerDataProps) => {
 	const queryClient = useQueryClient();
-	const { infoToast, errorToast } = useToasts();
+	const { successToast, errorToast } = useToasts();
 
 	const [playerQuery, statisticsQuery, badgesQuery, sessionsQuery, settingsQuery] = useQueries({
 		queries: [
@@ -37,15 +38,19 @@ export const usePlayerData = ({ playerId, onDeleteSuccess }: UsePLayerDataProps)
 		sessionsQuery.isLoading ||
 		settingsQuery.isLoading;
 
-	const deletePlayer = async (id: number) => {
+	const deletePlayer = async (id: number, onDeleted?: () => Promise<unknown>) => {
 		try {
 			await deletePlayerCall(id);
-			await queryClient.invalidateQueries();
-			infoToast("player:delete.successfull");
-			onDeleteSuccess?.();
 		} catch (error) {
 			errorToast(apiErrorMessage(error, "player:delete.failed"));
+			return;
 		}
+
+		successToast("player:delete.successfull");
+		await onDeleted?.();
+		onDeleteSuccess?.();
+		queryClient.removeQueries({ queryKey: [QUERY_KEYS.player, id] });
+		await queryClient.invalidateQueries();
 	};
 
 	return {

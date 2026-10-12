@@ -16,6 +16,7 @@ public interface IGameStatisticsRepository
     Task<double> GetTotalPlayedTime(int gameId, CancellationToken cancellationToken = default);
     Task<decimal?> GetMeanPayedAsync(CancellationToken cancellationToken = default);
     Task<decimal?> GetTotalPayedAsync(CancellationToken cancellationToken = default);
+    Task<int> CountPricedOwnedGamesAsync(CancellationToken cancellationToken = default);
     Task<List<GameStateChart>> GetGameStateCounts(CancellationToken cancellationToken = default);
     Task<List<DateTime>> GetSessionStartTimes(int gameId, CancellationToken cancellationToken = default);
     Task<List<IGrouping<int, int>>> GetPlayerCountChart(int gameId, CancellationToken cancellationToken = default);

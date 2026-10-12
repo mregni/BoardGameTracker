@@ -418,6 +418,9 @@ public class GameControllerTests
         var playerScoringChart = new List<PlayerScoringPoint>();
         var scoringRankChart = new List<ScoreRank>();
 
+        _gameServiceMock
+            .Setup(x => x.ExistsAsync(gameId))
+            .ReturnsAsync(true);
         _gameStatisticsDomainServiceMock
             .Setup(x => x.CalculateStatisticsAsync(gameId, TestContext.Current.CancellationToken))
             .ReturnsAsync(stats);
@@ -455,12 +458,28 @@ public class GameControllerTests
         response.PlayerScoringChart.Should().BeSameAs(playerScoringChart);
         response.ScoreRankChart.Should().BeSameAs(scoringRankChart);
 
+        _gameServiceMock.Verify(x => x.ExistsAsync(gameId), Times.Once);
         _gameStatisticsDomainServiceMock.Verify(x => x.CalculateStatisticsAsync(gameId, TestContext.Current.CancellationToken), Times.Once);
         _gameChartServiceMock.Verify(x => x.GetTopPlayers(gameId, TestContext.Current.CancellationToken), Times.Once);
         _gameChartServiceMock.Verify(x => x.GetPlayByDayChart(gameId, TestContext.Current.CancellationToken), Times.Once);
         _gameChartServiceMock.Verify(x => x.GetPlayerCountChart(gameId, TestContext.Current.CancellationToken), Times.Once);
         _gameChartServiceMock.Verify(x => x.GetPlayerScoringChart(gameId, TestContext.Current.CancellationToken), Times.Once);
         _gameChartServiceMock.Verify(x => x.GetScoringRankedChart(gameId, stats.AverageScore, TestContext.Current.CancellationToken), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGameStatistics_ShouldReturnNotFound_WhenGameDoesNotExist()
+    {
+        _gameServiceMock
+            .Setup(x => x.ExistsAsync(42))
+            .ReturnsAsync(false);
+
+        var result = await _controller.GetGameStatistics(42, TestContext.Current.CancellationToken);
+
+        result.Should().BeOfType<NotFoundResult>();
+
+        _gameServiceMock.Verify(x => x.ExistsAsync(42), Times.Once);
         VerifyNoOtherCalls();
     }
 

@@ -9,6 +9,7 @@ import type { RecentGame } from "@/models";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 import { toRelative } from "@/utils/dateUtils";
 import i18n from "@/utils/i18n";
+import { formatPrice } from "@/utils/priceUtils";
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
 	games: RecentGame[];
@@ -56,11 +57,7 @@ const GameCardItem = (props: ItemProps) => {
 				<BgtText color="white" opacity={50} size="2">
 					{toRelative(game.additionDate, i18n.language)}
 					{game.price !== null && game.price > 0 && (
-						<span>
-							{" "}
-							• {settings.currency}
-							{game.price}
-						</span>
+						<span> • {formatPrice(game.price, settings.currency, settings.uiLanguage)}</span>
 					)}
 				</BgtText>
 			</div>

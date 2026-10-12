@@ -14,7 +14,7 @@ const PlayerAvatarWithCrownComponent = ({ player, isWinner }: PlayerAvatarWithCr
 		<div className="w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center text-5xl md:text-6xl mb-4 relative">
 			<BgtPoster title={player.name} image={player.image} />
 			{isWinner && (
-				<div className="absolute -top-2 -right-2 bg-linear-to-br from-yellow-400 to-yellow-600 rounded-full p-2 shadow-lg">
+				<div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-linear-to-br from-yellow-400 to-yellow-600 rounded-full p-2 shadow-lg">
 					<Crown className="text-yellow-900 fill-yellow-900" />
 				</div>
 			)}

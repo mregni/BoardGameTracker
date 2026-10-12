@@ -30,7 +30,14 @@ export const BgtMenuItem = (props: Props) => {
 				<Icon className="size-5" />
 				<span className="text-[16px]/[24px]">{t(item.menuLabel)}</span>
 			</div>
-			{count !== undefined && <div className="py-1 px-3 flex items-center justify-center text-xs">{count}</div>}
+			{count !== undefined && (
+				<div
+					className="py-1 px-3 flex items-center justify-center text-xs"
+					title={item.countLabel ? t(item.countLabel, { count }) : undefined}
+				>
+					{count}
+				</div>
+			)}
 		</Link>
 	);
 };

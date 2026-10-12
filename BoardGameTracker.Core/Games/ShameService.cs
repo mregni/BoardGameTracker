@@ -1,4 +1,5 @@
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
@@ -44,7 +45,7 @@ public class ShameService : IShameService
         var cutoffDate = await GetCutoffDateAsync();
         if (cutoffDate == null)
         {
-            return [];
+            throw new FeatureDisabledException(Constants.AppConfig.ShelfOfShameEnabled);
         }
 
         return await _gameRepository.GetShameGames(cutoffDate.Value);
@@ -81,7 +82,8 @@ public class ShameService : IShameService
         {
             Count = count,
             TotalValue = totalValue > 0 ? totalValue : null,
-            AverageValue = averageValue
+            AverageValue = averageValue,
+            PricedGameCount = gamesWithPrice.Count
         };
     }
 }

@@ -9,6 +9,7 @@ export interface DashboardStatistics {
 	totalPlayedTime: number;
 	totalCollectionValue: number | null;
 	avgGamePrice: number | null;
+	pricedGameCount: number;
 	expansionsOwned: number;
 	avgSessionTime: number;
 

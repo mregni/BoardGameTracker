@@ -1,6 +1,6 @@
 {
   "new": "Añadir nueva partida",
-  "title": "partidas",
+  "title": "Partidas",
   "notifications": {
     "deleted": "Partida eliminada correctamente",
     "delete-failed": "Error al eliminar la partida"

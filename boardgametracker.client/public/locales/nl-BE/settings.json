@@ -24,7 +24,9 @@
 			"description": "Het adres waarop mensen BoardGameTracker bereiken, bijvoorbeeld https://games.example.com. Uitnodigingen en e-mails om je wachtwoord te herstellen linken ernaar, en SSO gebruikt het voor de redirect-URI's. E-mails met links worden pas verstuurd als het ingesteld is.",
 			"label": "Publieke URL",
 			"placeholder": "https://myboardgametracker.app",
-			"invalid": "Geef een geldige http(s)-URL op"
+			"invalid": "Geef een geldige http(s)-URL op",
+			"insecure-warning": "De publieke URL gebruikt http terwijl BoardGameTracker via https geopend is. Links in e-mails, RSVP-uitnodigingen en SSO-redirects gebruiken het onveilige adres.",
+			"host-mismatch-warning": "De publieke URL verwijst naar een andere host dan {{host}}. Links in e-mails, RSVP-uitnodigingen en SSO-redirects gebruiken die host."
 		},
 		"ui-language": {
 			"label": "Taal",

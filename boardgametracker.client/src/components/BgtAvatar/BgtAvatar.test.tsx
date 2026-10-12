@@ -55,6 +55,24 @@ describe("BgtAvatar", () => {
 
 			expect(screen.getByRole("img")).toHaveAttribute("src", "/two.webp");
 		});
+
+		it("should centre the initial when the image cannot be loaded", () => {
+			renderWithTheme(<BgtAvatar title="Alice" image="/broken.webp" />);
+
+			fireEvent.error(screen.getByRole("img"));
+
+			expect(screen.getByText("A").parentElement).toHaveClass("flex", "justify-center", "items-center");
+		});
+
+		it("should expose the full title as a tooltip", () => {
+			const { container } = renderWithTheme(<BgtAvatar title="Alice (12)" image={null} />);
+			expect(container.firstChild).toHaveAttribute("title", "Alice (12)");
+		});
+
+		it("should use the colour key for the fallback colour", () => {
+			renderWithTheme(<BgtAvatar title="Alice (12)" colorKey="Alice" image={null} />);
+			expect(screen.getByText("A").parentElement).toHaveStyle({ backgroundColor: StringToHsl("Alice") });
+		});
 	});
 
 	describe("Size Variants", () => {

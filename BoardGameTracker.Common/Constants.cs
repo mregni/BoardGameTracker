@@ -19,6 +19,12 @@ public static class Constants
         public const int TrendWindowSize = 5;
     }
 
+    public static class SessionForm
+    {
+        public const int RecentGamesCount = 8;
+        public const int FrequentPlayersCount = 3;
+    }
+
     public static class AppConfig
     {
         public const string Currency = "currency";
@@ -92,6 +98,15 @@ public static class Constants
         public const string LoanAlreadyReturned = "error.loan.already-returned";
         public const string LocationUsedByGameNights = "error.location.used-by-game-nights";
         public const string PlayerHostsGameNights = "error.player.hosts-game-nights";
+        public const string PlayerNameRequired = "error.player.name-required";
+        public const string PlayerNameAlreadyExists = "error.player.name-already-exists";
+        public const string LocationNameRequired = "error.location.name-required";
+        public const string LocationNameAlreadyExists = "error.location.name-already-exists";
+        public const string SessionStartInFuture = "error.session.start-in-future";
+        public const string HostRsvpLocked = "error.game-night.host-rsvp-locked";
+        public const string RsvpClosed = "error.game-night.rsvp-closed";
+        public const string FeatureDisabled = "error.feature.disabled";
+        public const string YearPublishedTooLate = "error.game.year-published-too-late";
         public const string InvalidExpansion = "error.session.invalid-expansion";
         public const string ChangeDetectionInvalidBaseUrl = "error.changedetection.invalid-base-url";
         public const string ChangeDetectionInsecureBaseUrl = "error.changedetection.insecure-base-url";

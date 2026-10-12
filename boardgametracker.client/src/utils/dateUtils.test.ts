@@ -10,6 +10,7 @@ import {
 	toDisplayDateTime,
 	toInputDate,
 	toInputDateTime,
+	toLongDisplay,
 	toRelative,
 } from "./dateUtils";
 
@@ -110,6 +111,25 @@ describe("dateUtils", () => {
 		});
 	});
 
+	describe("toLongDisplay", () => {
+		it("writes out the weekday and month in the app language", () => {
+			expect(toLongDisplay(new Date(2026, 9, 11), "en-us")).toContain("Sunday");
+			expect(toLongDisplay(new Date(2026, 9, 11), "nl-be")).toBe("zondag 11 oktober 2026");
+		});
+
+		it("returns an empty string without a date", () => {
+			expect(toLongDisplay(null, "en-us")).toBe("");
+		});
+
+		it("parses ISO strings", () => {
+			expect(toLongDisplay("2026-10-11T19:30:00", "nl-be")).toBe("zondag 11 oktober 2026");
+		});
+
+		it("returns an empty string for an invalid date", () => {
+			expect(toLongDisplay("not-a-date", "en-us")).toBe("");
+		});
+	});
+
 	describe("toDisplay", () => {
 		it("should return empty string for null/undefined date", () => {
 			expect(toDisplay(null, "DD/MM/YYYY", "en")).toBe("");
@@ -193,10 +213,9 @@ describe("dateUtils", () => {
 			expect(toRelative("invalid-date", "en")).toBe("");
 		});
 
-		it("should respect addSuffix option", () => {
-			const pastDate = new Date("2024-06-14T10:30:00");
-			const result = toRelative(pastDate, "en", { addSuffix: false });
-			expect(result).not.toContain("ago");
+		it("should prefix future dates with in", () => {
+			const result = toRelative(new Date("2025-06-15T10:30:00"), "en");
+			expect(result).toBe("in about 1 year");
 		});
 	});
 

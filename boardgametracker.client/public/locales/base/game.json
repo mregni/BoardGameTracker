@@ -2,18 +2,18 @@
   "add": "Add session",
   "sessions": "View sessions",
   "no-sessions": {
-    "title": "No Sessions Logged Yet",
-    "description": "  Start tracking your game sessions to see detailed statistics, player performance, and session history. Log your first session to unlock all the analytics!",
-    "button": "Log Your First Session",
+    "title": "No sessions logged yet",
+    "description": "Start tracking your game sessions to see detailed statistics, player performance, and session history. Log your first session to unlock all the analytics!",
+    "button": "Log your first session",
     "extra": "Session data includes players, scores, duration, and more"
   },
   "notifications": {
-    "created": "Game is succesfully created",
+    "created": "Game is successfully created",
     "create-failed": "Game creation failed",
     "not-found": "Could not find game",
     "duplicate": "Game already exists",
-    "deleted": "Game is succesfully deleted",
-    "updated": "Game is succesfully updated",
+    "deleted": "Game is successfully deleted",
+    "updated": "Game is successfully updated",
     "update-failed": "Failed updating game"
   },
   "added-date": {
@@ -83,12 +83,12 @@
     "description": "Choose a method to create a new game.",
     "save": "Create game",
     "title": "Create new game",
-    "bgg-title": "Import game",
+    "bgg-title": "Add one game from BGG",
     "bgg-subtext": "Import game data from BoardGameGeek",
     "bgg-description": "Enter required fields to import a game from BoardGameGeek",
     "manual-title": "Manual input",
     "manual-subtext": "Manual input data to create a game",
-    "bgg-import-title": "Import from BoardGameGeek",
+    "bgg-import-title": "Import BGG collection",
     "bgg-import-subtext": "Import your game collection from BoardGameGeek",
     "manual": {
       "title": "Create game",
@@ -199,6 +199,16 @@
     "min-max": "The minimum cannot be higher than the maximum",
     "rating": "Enter a rating between 0 and 10",
     "weight": "Enter a weight between 0 and 5",
-    "year": "Enter a year between -5000 and 9999 (negative for BCE)"
+    "year": "Enter a year between -5000 and next year (negative for BCE)",
+    "whole-number": "Enter a whole number",
+    "max-below-min": "The maximum cannot be lower than the minimum"
+  },
+  "facts": {
+    "year": "Year published",
+    "min-age": "Minimum age"
+  },
+  "about": {
+    "show-more": "Show more",
+    "show-less": "Show less"
   }
 }

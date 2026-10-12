@@ -73,6 +73,17 @@ public class GameStatisticsRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task CountPricedOwnedGames_ShouldOnlyCountOwnedGamesWithAPrice()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IGameStatisticsRepository>();
+
+        var count = await repository.CountPricedOwnedGamesAsync();
+
+        count.Should().Be(1);
+    }
+
+    [Fact]
     public async Task PricePerPlay_ShouldDivideTheBuyingPriceByTheSessionCount()
     {
         await using var scope = _fixture.CreateScope();

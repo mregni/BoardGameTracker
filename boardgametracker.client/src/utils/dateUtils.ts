@@ -11,7 +11,7 @@ import { getDateFnsLocale } from "./localeUtils";
 
 type DateInput = Date | string | undefined;
 
-export const DEFAULT_DATE_FORMAT = "yy-MM-dd";
+export const DEFAULT_DATE_FORMAT = "dd-MM-yyyy";
 export const DEFAULT_TIME_FORMAT = "HH:mm";
 
 const FORMAT_PROBE = new Date(2000, 0, 15, 13, 45, 30);
@@ -98,6 +98,20 @@ export const toDisplay = (date: Date | string | undefined | null, dateFormat: st
 	return format(dateObj, dateFnsFormat, { locale });
 };
 
+export const toLongDisplay = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	if (!date) {
+		return "";
+	}
+
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+
+	if (!dateFnsIsValid(dateObj)) {
+		return "";
+	}
+
+	return format(dateObj, "PPPP", { locale: getDateFnsLocale(uiLanguage) });
+};
+
 export const toDisplayDateTime = (
 	date: Date | string | undefined,
 	dateFormat: string,
@@ -124,7 +138,7 @@ export const toDisplayDateTime = (
 export const toRelative = (
 	date: Date | string | undefined,
 	uiLanguage: string,
-	options?: { addSuffix?: boolean; includeSeconds?: boolean },
+	options?: { includeSeconds?: boolean },
 ): string => {
 	if (!date) {
 		return "";
@@ -139,8 +153,8 @@ export const toRelative = (
 	const locale = getDateFnsLocale(uiLanguage);
 	return formatDistanceToNow(dateObj, {
 		locale,
+		includeSeconds: options?.includeSeconds,
 		addSuffix: true,
-		...options,
 	});
 };
 

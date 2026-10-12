@@ -69,6 +69,7 @@ export const menuItems: MenuItem[] = [
 		path: "/game-nights",
 		icon: UsersIcon,
 		mobileVisible: false,
+		countLabel: "common:upcoming-game-nights",
 	},
 	{
 		menuLabel: "common:loans",

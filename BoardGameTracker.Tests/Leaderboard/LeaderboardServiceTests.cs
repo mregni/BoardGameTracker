@@ -41,6 +41,7 @@ public class LeaderboardServiceTests
         result.MostTimePlayed!.Name.Should().Be("Cara");
         result.BestWinRate!.Name.Should().Be("Alice");
         result.MinimumPlaysForWinRate.Should().Be(LeaderboardService.MinimumPlaysForWinRate);
+        result.MinimumPlayersForPodium.Should().Be(LeaderboardService.MinimumPlayersForPodium);
         _playerRepositoryMock.Verify(x => x.GetLeaderboardRows(TestContext.Current.CancellationToken), Times.Once);
         _playerRepositoryMock.VerifyNoOtherCalls();
     }

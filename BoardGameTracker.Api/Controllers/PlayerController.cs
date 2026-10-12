@@ -31,6 +31,15 @@ public class PlayerController : ControllerBase
         return Ok(players.ToListDto());
     }
 
+    [HttpGet]
+    [Route("overview")]
+    [ProducesResponseType<List<PlayerOverviewDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPlayersOverview()
+    {
+        var players = await _playerService.GetOverview();
+        return Ok(players);
+    }
+
     [HttpPost]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     [ProducesResponseType<PlayerDto>(StatusCodes.Status201Created)]
@@ -76,8 +85,14 @@ public class PlayerController : ControllerBase
     [HttpGet]
     [Route("{id:int}/statistics")]
     [ProducesResponseType<PlayerStatistics>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetPlayerStats(int id)
     {
+        if (!await _playerService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
         var stats = await _playerService.GetStats(id);
         return Ok(stats);
     }

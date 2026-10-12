@@ -8,12 +8,12 @@
   "count_other": "{{count}} players found",
   "count_one": "{{count}} player found",
   "notifications": {
-    "created": "Player is succesfully created",
+    "created": "Player is successfully created",
     "create-failed": "Failed creating player",
     "not-found": "Could not find player",
-    "deleted": "Player is succesfully deleted",
+    "deleted": "Player is successfully deleted",
     "delete-failed": "Failed deleting player",
-    "updated": "Player is succesfully updated",
+    "updated": "Player is successfully updated",
     "update-failed": "Failed updating player"
   },
   "name": {
@@ -35,7 +35,7 @@
     }
   },
   "update": {
-    "save": "update player",
+    "save": "Update player",
     "title": "Update player",
     "description": "Change the name or image to update the player."
   },

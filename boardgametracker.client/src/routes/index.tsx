@@ -6,23 +6,23 @@ import Coins from "@/assets/icons/coins.svg?react";
 import Game from "@/assets/icons/gamepad.svg?react";
 import Home from "@/assets/icons/home.svg?react";
 import Players from "@/assets/icons/users.svg?react";
-import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
-import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
 import { getProfile } from "@/services/queries/auth";
 import { getDashboardStatistics } from "@/services/queries/dashboard";
-import { getPlayerStatistics } from "@/services/queries/players";
+import { getPlayer, getPlayerStatistics } from "@/services/queries/players";
 import { formatMinutesToDuration } from "@/utils/dateUtils";
+import { formatPrice } from "@/utils/priceUtils";
 import { GameStateChartCard } from "./-components/dashboard/GameStateChart";
 import { MostPlayedDashboardGamesCard } from "./-components/dashboard/MostPlayedDashboardGames";
 import { RecentActivityCard } from "./-components/dashboard/RecentActivity";
 import { RecentAddedGamesCard } from "./-components/dashboard/RecentAddedGames";
 import { TopPlayersCard } from "./-components/dashboard/TopPlayers";
+import { WelcomeCard } from "./-components/dashboard/WelcomeCard";
 import { useDashboardData } from "./-hooks/useDashboardData";
 import { SessionCountChartCard } from "./games/-components/SessionCountChartCard";
 
@@ -46,6 +46,10 @@ function RouteComponent() {
 	const { data: profile } = useQuery({ ...getProfile(), enabled: canPersonalize });
 	const { data: personalStats } = useQuery({
 		...getPlayerStatistics(profile?.playerId ?? 0),
+		enabled: profile?.playerId != null,
+	});
+	const { data: linkedPlayer } = useQuery({
+		...getPlayer(profile?.playerId ?? 0),
 		enabled: profile?.playerId != null,
 	});
 
@@ -80,12 +84,12 @@ function RouteComponent() {
 			<BgtPageHeader header={t("common:dashboard")} icon={Home} />
 			<BgtPageContent>
 				{profile?.playerId != null && personalStats && (
-					<BgtCard className="gap-1">
-						<BgtText size="5" weight="bold" color="white">
-							{t("dashboard:welcome-back-title", { name: username ?? "" })}
-						</BgtText>
-						<BgtText color="gray">{t("dashboard:welcome-back", { count: personalStats.playCount })}</BgtText>
-					</BgtCard>
+					<WelcomeCard
+						name={profile.displayName ?? username ?? ""}
+						playerName={linkedPlayer?.name ?? null}
+						playCount={personalStats.playCount}
+						totalSessions={statistics.sessionsPlayed}
+					/>
 				)}
 				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 					<BgtTextStatistic
@@ -118,9 +122,12 @@ function RouteComponent() {
 						addLabel={t("common:new-session")}
 					/>
 					<BgtTextStatistic
-						content={statistics.totalCollectionValue}
+						content={
+							statistics.totalCollectionValue === null
+								? null
+								: formatPrice(statistics.totalCollectionValue, settings.currency, settings.uiLanguage)
+						}
 						title={t("collection-value")}
-						prefix={settings.currency}
 						icon={<Coins />}
 						textSize="8"
 						iconClassName="size-9"
@@ -129,9 +136,8 @@ function RouteComponent() {
 				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 					<BgtTextStatistic content={totalPlayedTime} title={t("total-playtime")} />
 					<BgtTextStatistic
-						content={Math.round(statistics.avgGamePrice ?? 0)}
-						title={t("average-cost")}
-						prefix={settings.currency}
+						content={formatPrice(statistics.avgGamePrice ?? 0, settings.currency, settings.uiLanguage)}
+						title={t("average-price-paid-priced", { count: statistics.pricedGameCount })}
 					/>
 					<BgtTextStatistic content={statistics.expansionsOwned} title={t("expansion-count")} />
 					<BgtTextStatistic content={avgSessionTime} title={t("average-playtime")} />

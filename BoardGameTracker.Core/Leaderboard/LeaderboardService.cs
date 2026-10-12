@@ -8,6 +8,7 @@ namespace BoardGameTracker.Core.Leaderboard;
 public class LeaderboardService : ILeaderboardService
 {
     public const int MinimumPlaysForWinRate = 5;
+    public const int MinimumPlayersForPodium = 4;
 
     private readonly IPlayerRepository _playerRepository;
 
@@ -36,6 +37,7 @@ public class LeaderboardService : ILeaderboardService
         {
             Players = entries,
             MinimumPlaysForWinRate = MinimumPlaysForWinRate,
+            MinimumPlayersForPodium = MinimumPlayersForPodium,
             MostPlays = entries.OrderByDescending(x => x.PlayCount).ThenBy(x => x.Rank).FirstOrDefault(x => x.PlayCount > 0),
             MostWins = entries.FirstOrDefault(x => x.WinCount > 0),
             BestWinRate = entries.Where(x => x.PlayCount >= MinimumPlaysForWinRate).OrderByDescending(x => x.WinPercentage).ThenBy(x => x.Rank).FirstOrDefault(),

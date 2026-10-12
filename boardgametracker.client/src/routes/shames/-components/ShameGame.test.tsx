@@ -17,22 +17,20 @@ const shame: Shame = {
 };
 
 describe("ShameGame", () => {
-	it("links to the game and passes an uploaded cover with spaces and parentheses as a quoted css url", () => {
-		const { container } = renderWithTheme(<ShameGame shame={shame} dateFormat="dd/MM/yyyy" currency="€" />);
+	it("links to the game and shows an uploaded cover with spaces and parentheses", () => {
+		renderWithTheme(<ShameGame shame={shame} dateFormat="dd/MM/yyyy" currency="€" />);
 
 		expect(screen.getByRole("link")).toHaveAttribute("href", "/games/7");
-		const cover = container.querySelector<HTMLElement>(".bg-cover");
-		expect(cover?.style.getPropertyValue("--image-url")).toBe('url("/images/cover/Dwar7s Winter (2)_ab12cd.webp")');
-		expect(cover).toHaveClass("bg-(image:--image-url)");
+		expect(screen.getByRole("img", { name: "Dwar7s Winter" })).toHaveAttribute(
+			"src",
+			"/images/cover/Dwar7s Winter (2)_ab12cd.webp",
+		);
 	});
 
 	it("shows the first letter on a colour when the game has no cover", () => {
-		const { container } = renderWithTheme(
-			<ShameGame shame={{ ...shame, image: null }} dateFormat="dd/MM/yyyy" currency="€" />,
-		);
+		renderWithTheme(<ShameGame shame={{ ...shame, image: null }} dateFormat="dd/MM/yyyy" currency="€" />);
 
-		const cover = container.querySelector<HTMLElement>(".bg-cover");
-		expect(cover?.style.getPropertyValue("--image-url")).toBe("");
+		expect(screen.getByRole("img", { name: "Dwar7s Winter" })).not.toHaveAttribute("src");
 		expect(screen.getByText("D")).toBeInTheDocument();
 	});
 });

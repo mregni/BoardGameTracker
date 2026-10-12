@@ -70,7 +70,7 @@ describe("rangeValidator", () => {
 
 	it("refuses a minimum above the maximum from either side", () => {
 		expect(min.onChange({ value: 5, fieldApi: other(4) })).toBe("game:validation.min-max");
-		expect(max.onChange({ value: 4, fieldApi: other(5) })).toBe("game:validation.min-max");
+		expect(max.onChange({ value: 4, fieldApi: other(5) })).toBe("game:validation.max-below-min");
 	});
 
 	it("accepts an empty range and a valid range", () => {

@@ -1,6 +1,6 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { renderWithTheme, screen } from "@/test/test-utils";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { BgtSelect } from "./BgtSelect";
 
 // i18next is mocked globally in setup.ts
@@ -56,6 +56,18 @@ describe("BgtSelect", () => {
 		it("should render trigger button", () => {
 			renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} />);
 			expect(screen.getByRole("combobox")).toBeInTheDocument();
+		});
+
+		it("should show the placeholder when the value is not one of the items", () => {
+			renderWithTheme(
+				<BgtSelect field={createMockField("0")} label="Game" items={mockItems} placeholder="Choose game" />,
+			);
+			expect(screen.getByText("Choose game")).toBeInTheDocument();
+		});
+
+		it("should name the trigger after its label", () => {
+			renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} />);
+			expect(screen.getByRole("combobox", { name: "Category" })).toBeInTheDocument();
 		});
 
 		it("should show placeholder when no value", () => {
@@ -127,6 +139,69 @@ describe("BgtSelect", () => {
 		it("should handle hasSearch prop without error", () => {
 			renderWithTheme(<BgtSelect field={mockField} label="Category" items={mockItems} hasSearch />);
 			expect(screen.getByRole("combobox")).toBeInTheDocument();
+		});
+	});
+
+	describe("Controlled", () => {
+		beforeAll(() => {
+			Element.prototype.hasPointerCapture = vi.fn(() => false);
+			Element.prototype.releasePointerCapture = vi.fn();
+			Element.prototype.scrollIntoView = vi.fn();
+		});
+
+		it("reports the picked value and keeps showing the placeholder when its value stays empty", async () => {
+			const user = userEvent.setup();
+			const onValueChange = vi.fn();
+			renderWithTheme(
+				<BgtSelect
+					label="Players"
+					items={mockItems}
+					value={null}
+					onValueChange={onValueChange}
+					placeholder="Add a player"
+				/>,
+			);
+
+			await user.click(screen.getByRole("combobox", { name: "Players" }));
+			await user.click(await screen.findByRole("option", { name: "Option 2" }));
+
+			expect(onValueChange).toHaveBeenCalledWith("2");
+			expect(screen.getByText("Add a player")).toBeInTheDocument();
+		});
+
+		it("shows the errors it is given", () => {
+			renderWithTheme(
+				<BgtSelect label="Players" items={mockItems} value={null} onValueChange={vi.fn()} errors={["Add a player"]} />,
+			);
+			expect(screen.getByText("Add a player")).toBeInTheDocument();
+		});
+
+		it("shows group headings and drops them while searching", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(
+				<BgtSelect
+					label="Game"
+					hasSearch
+					value={null}
+					onValueChange={vi.fn()}
+					items={[
+						{ value: "1", label: "Azul", group: "Recently played" },
+						{ value: "2", label: "Catan", group: "All games" },
+						{ value: "3", label: "Carcassonne", group: "All games" },
+					]}
+				/>,
+			);
+
+			await user.click(screen.getByRole("combobox", { name: "Game" }));
+			expect(await screen.findByText("Recently played")).toBeInTheDocument();
+			expect(screen.getByText("All games")).toBeInTheDocument();
+
+			await user.type(screen.getByPlaceholderText("search"), "ca");
+			expect(screen.queryByText("Recently played")).not.toBeInTheDocument();
+			expect(screen.queryByText("All games")).not.toBeInTheDocument();
+			expect(screen.getByRole("option", { name: "Catan" })).toBeInTheDocument();
+			expect(screen.getByRole("option", { name: "Carcassonne" })).toBeInTheDocument();
+			expect(screen.queryByRole("option", { name: "Azul" })).not.toBeInTheDocument();
 		});
 	});
 });

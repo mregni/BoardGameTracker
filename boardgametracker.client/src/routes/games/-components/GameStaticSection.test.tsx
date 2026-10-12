@@ -57,6 +57,27 @@ describe("GameStaticSection", () => {
 
 			expect(screen.getByText("Trade and build settlements")).toBeInTheDocument();
 		});
+
+		it("should not offer a toggle for a short description", () => {
+			renderWithTheme(<GameStaticSection {...defaultProps} />);
+
+			expect(screen.queryByRole("button", { name: "about.show-more" })).not.toBeInTheDocument();
+		});
+
+		it("should expand and collapse a long description", async () => {
+			const user = userEvent.setup();
+			const description = "Settlers trade wood, brick and wool. ".repeat(10);
+			renderWithTheme(<GameStaticSection {...defaultProps} game={createGame({ description })} />);
+
+			const text = screen.getByText(description.trim());
+			expect(text).toHaveClass("line-clamp-3");
+
+			await user.click(screen.getByRole("button", { name: "about.show-more" }));
+			expect(text).not.toHaveClass("line-clamp-3");
+
+			await user.click(screen.getByRole("button", { name: "about.show-less" }));
+			expect(text).toHaveClass("line-clamp-3");
+		});
 	});
 
 	describe("Rulebook chat button", () => {

@@ -68,14 +68,15 @@ public class GameFactory : IGameFactory
                 .Select(l => new PersonKey(l.Value, l.Type.ToPersonTypeEnum())));
 
             var game = new Game(name, hasScoring, state);
-            game.UpdateImage(imageUrl);
+            game.UpdateImage(string.IsNullOrEmpty(imageUrl) ? null : imageUrl);
             game.UpdateDescription(item.Description ?? string.Empty);
             game.UpdateYearPublished(item.YearPublished);
             game.UpdatePlayerCount(minPlayers, maxPlayers);
             game.UpdatePlayTime(minPlayTime, maxPlayTime);
             game.UpdateMinAge(item.MinAge > 0 ? item.MinAge : null);
             game.UpdateRating(item.Statistics?.Ratings?.Average);
-            game.UpdateWeight(item.Statistics?.Ratings?.AverageWeight);
+            var averageWeight = item.Statistics?.Ratings?.AverageWeight;
+            game.UpdateWeight(averageWeight > 0 ? averageWeight : null);
             game.UpdateBggId(item.Id);
             game.UpdateBuyingPrice(price);
             game.UpdateShopUrl(shopUrl);

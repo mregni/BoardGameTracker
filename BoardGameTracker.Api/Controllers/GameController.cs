@@ -214,8 +214,14 @@ public class GameController : ControllerBase
     [HttpGet]
     [Route("{id:int}/statistics")]
     [ProducesResponseType<GameStatisticsResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetGameStatistics(int id, CancellationToken cancellationToken)
     {
+        if (!await _gameService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
         var stats = await _gameStatisticsService.CalculateStatisticsAsync(id, cancellationToken);
         var topPlayers = await _gameChartService.GetTopPlayers(id, cancellationToken);
         var playByDayChart = await _gameChartService.GetPlayByDayChart(id, cancellationToken);
@@ -237,6 +243,7 @@ public class GameController : ControllerBase
     [HttpGet]
     [Route("shames")]
     [ProducesResponseType<List<ShameDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetShameGames()
     {
         var games = await _shameService.GetShameGames();
@@ -246,6 +253,7 @@ public class GameController : ControllerBase
     [HttpGet]
     [Route("shames/statistics")]
     [ProducesResponseType<ShameStatisticsDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetShameStatistics()
     {
         var statistics = await _shameService.GetShameStatistics();

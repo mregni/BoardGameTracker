@@ -8,23 +8,18 @@
       "created": "Partida creada correctamente",
       "create-failed": "Error al crear la partida"
     },
-    "save": "Añadir jugador",
-    "title": "Añadir jugador",
-    "description": "Rellena el formulario para añadir un nuevo jugador a esta partida.",
     "player": {
       "label": "Jugador",
       "required": "El jugador es obligatorio"
     },
     "create-player": "Crear nuevo jugador",
     "players": {
-      "label": "Jugadores",
-      "add": "+ añadir jugador",
       "minimum": "Añade al menos un jugador a esta partida"
     },
     "duration": {
       "label": "Duración",
-      "placeholder": "en minutos",
-      "required": "La duración es obligatoria"
+      "required": "La duración es obligatoria",
+      "positive": "La duración debe ser mayor que 0"
     },
     "game": {
       "label": "Juego",
@@ -34,7 +29,8 @@
     "start": {
       "label": "Inicio",
       "required": "La fecha de inicio es obligatoria",
-      "placeholder": "Elige una fecha"
+      "placeholder": "Elige una fecha",
+      "future": "El inicio no puede estar en el futuro"
     },
     "location": {
       "label": "Ubicación",
@@ -48,27 +44,34 @@
     }
   },
   "update": {
-    "save": "Actualizar jugador",
-    "title": "Actualizar jugador",
-    "description": "Modifica el formulario para cambiar los datos de {{name}}.",
     "notifications": {
       "updated": "Partida actualizada correctamente",
       "update-failed": "Error al actualizar la partida"
     }
   },
-  "won": {
-    "label": "El jugador ha ganado la partida"
-  },
   "score": {
-    "label": "Puntuación final",
-    "required": "La puntuación es obligatoria",
-    "optional": "Déjalo vacío si no conoces la puntuación"
-  },
-  "first-play": {
-    "label": "Primera vez que juega a este juego"
+    "required": "La puntuación es obligatoria"
   },
   "delete": {
     "successfull": "Partida eliminada correctamente.",
     "failed": "Error al eliminar la partida, revisa los registros para más detalles."
+  },
+  "form": {
+    "game": {
+      "recent": "Jugados recientemente",
+      "all": "Todos los juegos"
+    },
+    "players": {
+      "label": "Jugadores y puntuaciones",
+      "label-no-scoring": "Jugadores",
+      "search": "Añadir un jugador…"
+    },
+    "player": {
+      "score": "Puntuación de {{name}}",
+      "score-placeholder": "Puntos",
+      "won": "Ganó",
+      "first-play": "Primera partida",
+      "remove": "Quitar a {{name}}"
+    }
   }
 }

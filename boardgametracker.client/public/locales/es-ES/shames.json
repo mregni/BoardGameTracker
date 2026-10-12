@@ -7,5 +7,7 @@
     "description": "¡Enhorabuena! No tienes juegos en la estantería de la vergüenza. Sigue así, jugando y disfrutando de tu colección."
   },
   "days-not-played": "Días sin jugar",
-  "last-session": "Última partida"
+  "last-session": "Última partida",
+  "average-value-priced_one": "Precio medio pagado · {{count}} juego con precio",
+  "average-value-priced_other": "Precio medio pagado · {{count}} juegos con precio"
 }

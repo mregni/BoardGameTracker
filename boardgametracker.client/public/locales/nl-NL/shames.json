@@ -7,5 +7,7 @@
     "description": "Gefeliciteerd! Je hebt geen spellen op je Shelf of Shame. Blijf zo doorspelen en geniet van je collectie."
   },
   "days-not-played": "Dagen niet gespeeld",
-  "last-session": "Laatste sessie"
+  "last-session": "Laatste sessie",
+  "average-value-priced_one": "Gem. betaalde prijs · {{count}} spel met prijs",
+  "average-value-priced_other": "Gem. betaalde prijs · {{count}} spellen met prijs"
 }

@@ -1363,6 +1363,17 @@ export interface paths {
                         "text/json": components["schemas"]["GameStatisticsResponse"];
                     };
                 };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1398,6 +1409,17 @@ export interface paths {
                         "text/plain": components["schemas"]["ShameDto"][];
                         "application/json": components["schemas"]["ShameDto"][];
                         "text/json": components["schemas"]["ShameDto"][];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -1437,6 +1459,17 @@ export interface paths {
                         "text/json": components["schemas"]["ShameStatisticsDto"];
                     };
                 };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1472,6 +1505,17 @@ export interface paths {
                         "text/plain": components["schemas"]["GameNightDto"][];
                         "application/json": components["schemas"]["GameNightDto"][];
                         "text/json": components["schemas"]["GameNightDto"][];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -2111,7 +2155,41 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LocationDto"];
+                        "application/json": components["schemas"]["LocationDto"];
+                        "text/json": components["schemas"]["LocationDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         put?: never;
         post?: never;
         delete: {
@@ -2134,6 +2212,95 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/location/{id}/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["LocationStatisticsDto"];
+                        "application/json": components["schemas"]["LocationStatisticsDto"];
+                        "text/json": components["schemas"]["LocationStatisticsDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/location/{id}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SessionDto"][];
+                        "application/json": components["schemas"]["SessionDto"][];
+                        "text/json": components["schemas"]["SessionDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -3087,6 +3254,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/player/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PlayerOverviewDto"][];
+                        "application/json": components["schemas"]["PlayerOverviewDto"][];
+                        "text/json": components["schemas"]["PlayerOverviewDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/player/{id}": {
         parameters: {
             query?: never;
@@ -3172,6 +3376,17 @@ export interface paths {
                         "text/plain": components["schemas"]["PlayerStatistics"];
                         "application/json": components["schemas"]["PlayerStatistics"];
                         "text/json": components["schemas"]["PlayerStatistics"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -3392,6 +3607,43 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/session/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SessionSuggestionsDto"];
+                        "application/json": components["schemas"]["SessionSuggestionsDto"];
+                        "text/json": components["schemas"]["SessionSuggestionsDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3914,6 +4166,12 @@ export interface components {
             hasScoring?: boolean;
             /** Format: double */
             buyingPrice?: number | null;
+            /** Format: double */
+            rating?: number | null;
+            /** Format: double */
+            weight?: number | null;
+            /** Format: double */
+            soldPrice?: number | null;
             /** Format: date-time */
             additionDate?: string | null;
         };
@@ -4004,6 +4262,8 @@ export interface components {
             totalCollectionValue: number | null;
             /** Format: double */
             avgGamePrice: number | null;
+            /** Format: int32 */
+            pricedGameCount: number;
             /** Format: int32 */
             expansionsOwned: number;
             /** Format: double */
@@ -4251,6 +4511,8 @@ export interface components {
             mostTimePlayed: components["schemas"]["LeaderboardEntryDto"];
             /** Format: int32 */
             minimumPlaysForWinRate: number;
+            /** Format: int32 */
+            minimumPlayersForPodium: number;
             players: components["schemas"]["LeaderboardEntryDto"][];
         };
         LeaderboardEntryDto: {
@@ -4292,6 +4554,14 @@ export interface components {
             name: string;
             /** Format: int32 */
             playCount: number;
+        };
+        LocationStatisticsDto: {
+            /** Format: int32 */
+            distinctGameCount: number;
+            /** Format: int32 */
+            distinctPlayerCount: number;
+            /** Format: double */
+            totalPlayedTime: number;
         };
         /** @enum {string} */
         LogEventLevel: "verbose" | "debug" | "information" | "warning" | "error" | "fatal";
@@ -4440,6 +4710,16 @@ export interface components {
             /** Format: int32 */
             id: number;
             name: string;
+        };
+        PlayerOverviewDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            image: string | null;
+            /** Format: int32 */
+            playCount: number;
+            /** Format: int32 */
+            winCount: number;
         };
         PlayerScoringPoint: {
             /** Format: date-time */
@@ -4595,6 +4875,12 @@ export interface components {
             playerSessions: components["schemas"]["PlayerSessionDto"][];
             expansions: components["schemas"]["ExpansionDto"][];
         };
+        SessionSuggestionsDto: {
+            recentGameIds: number[];
+            frequentPlayerIds: number[];
+            /** Format: int32 */
+            lastLocationId: number | null;
+        };
         ShameDto: {
             /** Format: int32 */
             id: number;
@@ -4614,6 +4900,8 @@ export interface components {
             totalValue: number | null;
             /** Format: double */
             averageValue: number | null;
+            /** Format: int32 */
+            pricedGameCount: number;
         };
         TestOidcDiscoveryRequest: {
             authority: string;
@@ -4691,16 +4979,16 @@ export interface components {
             hasScoring?: boolean;
             /** Format: double */
             buyingPrice?: number | null;
-            /** Format: date-time */
-            additionDate?: string | null;
-            /** Format: int32 */
-            id?: number;
             /** Format: double */
             rating?: number | null;
             /** Format: double */
             weight?: number | null;
             /** Format: double */
             soldPrice?: number | null;
+            /** Format: date-time */
+            additionDate?: string | null;
+            /** Format: int32 */
+            id?: number;
         };
         UpdateGameExpansionsCommand: {
             expansionBggIds: number[];
@@ -4730,6 +5018,8 @@ export interface components {
             dueDate: string | null;
             /** Format: int32 */
             id: number;
+            /** Format: date-time */
+            returnedDate: string | null;
         };
         UpdateLocationCommand: {
             name: string;

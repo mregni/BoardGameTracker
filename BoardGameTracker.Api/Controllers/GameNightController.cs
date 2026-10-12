@@ -25,6 +25,7 @@ public class GameNightController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType<List<GameNightDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetGameNights()
     {
         var gameNights = await _gameNightService.GetGameNights();

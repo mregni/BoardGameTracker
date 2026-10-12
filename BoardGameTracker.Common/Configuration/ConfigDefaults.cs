@@ -12,7 +12,7 @@ public static class ConfigDefaults
     public static IReadOnlyList<ConfigDefault> All { get; } = new List<ConfigDefault>
     {
         new(AppConfig.Currency, "€"),
-        new(AppConfig.DateFormat, "yy-MM-dd"),
+        new(AppConfig.DateFormat, "dd-MM-yyyy"),
         new(AppConfig.TimeFormat, "HH:mm"),
         new(AppConfig.UiLanguage, "en-us"),
         new(AppConfig.ShelfOfShameEnabled, "true"),

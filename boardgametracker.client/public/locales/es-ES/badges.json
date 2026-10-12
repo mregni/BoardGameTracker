@@ -74,19 +74,19 @@
   "win-percentage": {
     "green": {
       "title": "Racha de suerte",
-      "description": "Gana el 30 % de tus partidas."
+      "description": "Gana el 30 % de al menos 5 partidas."
     },
     "blue": {
       "title": "Jugador hábil",
-      "description": "Gana el 50 % de tus partidas."
+      "description": "Gana el 50 % de al menos 5 partidas."
     },
     "red": {
       "title": "Dominador",
-      "description": "Gana el 65 % de tus partidas."
+      "description": "Gana el 65 % de al menos 5 partidas."
     },
     "gold": {
       "title": "Imparable",
-      "description": "Gana el 80 % de tus partidas."
+      "description": "Gana el 80 % de al menos 5 partidas."
     }
   },
   "solo-specialist": {

@@ -1,12 +1,13 @@
 {
   "title": "Ranglijst",
   "columns": {
-    "rank": "#",
+    "rank": "Rang",
     "player": "Speler",
     "wins": "Overwinningen",
     "plays": "Partijen",
     "win-rate": "Winstpercentage",
     "podiums": "Podiumplaatsen",
+    "podiums-hint": "Top-3-plaatsen in spellen met {{count}} of meer spelers met een score",
     "time-played": "Speeltijd"
   },
   "highlights": {
@@ -16,7 +17,9 @@
     "most-time": "Meeste tijd aan tafel",
     "nobody-yet": "Nog niemand",
     "min-plays_one": "Minstens {{count}} partij nodig",
-    "min-plays_other": "Minstens {{count}} partijen nodig"
+    "min-plays_other": "Minstens {{count}} partijen nodig",
+    "min-plays-hint_one": "Min. {{count}} partij",
+    "min-plays-hint_other": "Min. {{count}} partijen"
   },
   "values": {
     "wins_one": "{{count}} overwinning",

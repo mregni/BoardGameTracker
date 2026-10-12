@@ -1,6 +1,6 @@
 {
   "new": "Nieuwe sessie toevoegen",
-  "title": "sessies",
+  "title": "Sessies",
   "notifications": {
     "deleted": "Sessie is verwijderd",
     "delete-failed": "Sessie verwijderen mislukt"

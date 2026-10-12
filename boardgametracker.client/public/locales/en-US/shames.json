@@ -7,5 +7,7 @@
     "description": "Congratulations! You have no games on your Shelf of Shame. Keep up the great work of playing and enjoying your collection."
   },
   "days-not-played": "Days not played",
-  "last-session": "Last session"
+  "last-session": "Last session",
+  "average-value-priced_one": "Avg. price paid · {{count}} priced game",
+  "average-value-priced_other": "Avg. price paid · {{count}} priced games"
 }

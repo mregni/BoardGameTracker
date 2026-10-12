@@ -7,7 +7,7 @@ import { GameState } from "./GameState";
 const positiveInteger = (message: string) =>
 	z
 		.number({ error: message })
-		.int({ message })
+		.int({ message: "game:validation.whole-number" })
 		.positive({ message })
 		.nullable()
 		.optional()
@@ -32,7 +32,7 @@ export const CreateGameSchema = z.object({
 		.number({ error: "game:validation.year" })
 		.int({ message: "game:validation.year" })
 		.min(-5000, { message: "game:validation.year" })
-		.max(9999, { message: "game:validation.year" })
+		.max(new Date().getFullYear() + 1, { message: "game:validation.year" })
 		.nullable()
 		.optional()
 		.transform((value) => value || null),

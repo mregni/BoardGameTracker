@@ -1,30 +1,25 @@
 {
-  "save-new": "Spelsessie aanmaken",
-  "save-update": "Spelsessie bijwerken",
-  "title-new": "Nieuwe spelsessie toevoegen",
-  "title-update": "Spelsessie bijwerken",
+  "save-new": "Sessie aanmaken",
+  "save-update": "Sessie bijwerken",
+  "title-new": "Nieuwe sessie toevoegen",
+  "title-update": "Sessie bijwerken",
   "new": {
     "notifications": {
-      "created": "Spelsessie is aangemaakt",
-      "create-failed": "Spelsessie aanmaken mislukt"
+      "created": "Sessie is aangemaakt",
+      "create-failed": "Sessie aanmaken mislukt"
     },
-    "save": "Speler toevoegen",
-    "title": "Speler toevoegen",
-    "description": "Vul het formulier in om een nieuwe speler aan deze spelsessie toe te voegen.",
     "player": {
       "label": "Speler",
       "required": "Speler is verplicht"
     },
     "create-player": "Nieuwe speler aanmaken",
     "players": {
-      "label": "Spelers",
-      "add": "+ speler toevoegen",
       "minimum": "Voeg minstens één speler toe aan deze sessie"
     },
     "duration": {
       "label": "Duur",
-      "placeholder": "in minuten",
-      "required": "Duur is verplicht"
+      "required": "Duur is verplicht",
+      "positive": "De duur moet groter zijn dan 0"
     },
     "game": {
       "label": "Spel",
@@ -34,7 +29,8 @@
     "start": {
       "label": "Start",
       "required": "Startdatum is verplicht",
-      "placeholder": "Kies een datum"
+      "placeholder": "Kies een datum",
+      "future": "De start kan niet in de toekomst liggen"
     },
     "location": {
       "label": "Locatie",
@@ -44,31 +40,38 @@
     },
     "comment": {
       "label": "Opmerking",
-      "sub-label": "Extra opmerking over het spel."
+      "sub-label": "Extra opmerking over de sessie."
     }
   },
   "update": {
-    "save": "Speler bijwerken",
-    "title": "Speler bijwerken",
-    "description": "Pas het formulier aan om de gegevens van {{name}} te wijzigen.",
     "notifications": {
-      "updated": "Spelsessie is bijgewerkt",
-      "update-failed": "Spelsessie bijwerken mislukt"
+      "updated": "Sessie is bijgewerkt",
+      "update-failed": "Sessie bijwerken mislukt"
     }
   },
-  "won": {
-    "label": "Speler heeft het spel gewonnen"
-  },
   "score": {
-    "label": "Eindscore",
-    "required": "Score is verplicht",
-    "optional": "Laat leeg als de score onbekend is"
-  },
-  "first-play": {
-    "label": "Spel voor het eerst gespeeld"
+    "required": "Score is verplicht"
   },
   "delete": {
-    "successfull": "Spelsessie is verwijderd.",
-    "failed": "Spelsessie verwijderen mislukt, bekijk de logs voor meer details."
+    "successfull": "Sessie is verwijderd.",
+    "failed": "Sessie verwijderen mislukt, bekijk de logs voor meer details."
+  },
+  "form": {
+    "game": {
+      "recent": "Recent gespeeld",
+      "all": "Alle spellen"
+    },
+    "players": {
+      "label": "Spelers & scores",
+      "label-no-scoring": "Spelers",
+      "search": "Voeg een speler toe…"
+    },
+    "player": {
+      "score": "Score van {{name}}",
+      "score-placeholder": "Score",
+      "won": "Gewonnen",
+      "first-play": "Eerste keer",
+      "remove": "Verwijder {{name}}"
+    }
   }
 }

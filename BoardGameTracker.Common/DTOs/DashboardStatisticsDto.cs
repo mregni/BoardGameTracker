@@ -10,6 +10,7 @@ public class DashboardStatisticsDto
     public double TotalPlayedTime { get; set; }
     public decimal? TotalCollectionValue { get; set; }
     public decimal? AvgGamePrice { get; set; }
+    public int PricedGameCount { get; set; }
     public int ExpansionsOwned { get; set; }
     public double AvgSessionTime { get; set; }
 

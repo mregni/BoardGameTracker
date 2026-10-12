@@ -78,7 +78,6 @@ const queryClient = new QueryClient({
 const router = createRouter({
 	routeTree,
 	defaultPreload: "intent",
-	defaultViewTransition: true,
 	defaultPendingComponent: BgtLoadingSpinner,
 	defaultPendingMinMs: 200,
 	context: { queryClient },

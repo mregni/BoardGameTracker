@@ -1,9 +1,9 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 
 interface UseGameActionsProps {
 	gameId: number;
-	deleteGame: () => Promise<void>;
+	deleteGame: (onDeleted?: () => Promise<unknown>) => Promise<void>;
 	deleteExpansion: (expansionId: number, gameId: number) => void;
 	onDeleteModalClose: () => void;
 	onExpansionModalOpen: () => void;
@@ -12,6 +12,7 @@ interface UseGameActionsProps {
 export const useGameActions = (props: UseGameActionsProps) => {
 	const { gameId, deleteGame, deleteExpansion, onDeleteModalClose, onExpansionModalOpen } = props;
 	const navigate = useNavigate();
+	const router = useRouter();
 
 	const handleAddSession = useCallback(() => {
 		navigate({ to: `/sessions/new/${gameId}` });
@@ -22,8 +23,7 @@ export const useGameActions = (props: UseGameActionsProps) => {
 	}, [navigate, gameId]);
 
 	const handleDelete = useCallback(async () => {
-		await deleteGame();
-		navigate({ to: "/games" });
+		await deleteGame(() => navigate({ to: "/games" }));
 		onDeleteModalClose();
 	}, [deleteGame, navigate, onDeleteModalClose]);
 
@@ -43,8 +43,12 @@ export const useGameActions = (props: UseGameActionsProps) => {
 	}, [navigate, gameId]);
 
 	const handleBackToGames = useCallback(() => {
+		if (router.history.canGoBack()) {
+			router.history.back();
+			return;
+		}
 		navigate({ to: "/games" });
-	}, [navigate]);
+	}, [navigate, router]);
 
 	return {
 		handleAddSession,

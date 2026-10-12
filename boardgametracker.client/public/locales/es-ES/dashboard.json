@@ -11,5 +11,10 @@
     "collection": "Colección"
   },
   "recent-activity": "Actividad reciente",
-  "recent-added-games": "Juegos añadidos recientemente"
+  "recent-added-games": "Juegos añadidos recientemente",
+  "welcome-back-linked_one": "Como {{player}}, has jugado {{played}} de {{count}} partida.",
+  "welcome-back-linked_other": "Como {{player}}, has jugado {{played}} de {{count}} partidas.",
+  "activity": {
+    "won": "<winner>{{winner}}</winner> ganó <game>{{game}}</game>"
+  }
 }

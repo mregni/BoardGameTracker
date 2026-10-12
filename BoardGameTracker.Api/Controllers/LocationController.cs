@@ -29,6 +29,45 @@ public class LocationController : ControllerBase
         return Ok(locations);
     }
 
+    [HttpGet]
+    [Route("{id:int}")]
+    [ProducesResponseType<LocationDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetLocationById(int id)
+    {
+        var location = await _locationService.GetDetails(id);
+        if (location == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(location);
+    }
+
+    [HttpGet]
+    [Route("{id:int}/statistics")]
+    [ProducesResponseType<LocationStatisticsDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetLocationStatistics(int id)
+    {
+        if (!await _locationService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        var statistics = await _locationService.GetStatistics(id);
+        return Ok(statistics);
+    }
+
+    [HttpGet]
+    [Route("{id:int}/sessions")]
+    [ProducesResponseType<List<SessionDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetLocationSessions(int id)
+    {
+        var sessions = await _locationService.GetSessions(id);
+        return Ok(sessions.ToListDto());
+    }
+
     [HttpPost]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     [ProducesResponseType<LocationDto>(StatusCodes.Status201Created)]

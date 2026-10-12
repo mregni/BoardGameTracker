@@ -54,8 +54,10 @@ export const useAchievementProgress = (allBadges: Badge[], playerBadges: Badge[]
 		return {
 			milestones,
 			feats,
-			earnedCount: allBadges.filter((badge) => earnedIds.has(badge.id)).length,
-			total: allBadges.length,
+			earnedCount:
+				milestones.filter((milestone) => milestone.earnedLevels.length > 0).length +
+				feats.filter((feat) => feat.earned).length,
+			total: milestones.length + feats.length,
 		};
 	}, [allBadges, playerBadges]);
 };

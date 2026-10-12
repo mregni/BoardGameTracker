@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Badges.Interfaces;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
@@ -27,6 +29,7 @@ public class SessionServiceTests
     private readonly Mock<ILocationService> _locationServiceMock;
     private readonly Mock<IPlayerService> _playerServiceMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
     private readonly Mock<ILogger<SessionService>> _loggerMock;
     private readonly SessionService _sessionService;
 
@@ -38,6 +41,8 @@ public class SessionServiceTests
         _locationServiceMock = new Mock<ILocationService>();
         _playerServiceMock = new Mock<IPlayerService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _dateTimeProviderMock = new Mock<IDateTimeProvider>();
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
         _loggerMock = new Mock<ILogger<SessionService>>();
 
         _sessionService = new SessionService(
@@ -47,6 +52,7 @@ public class SessionServiceTests
             _locationServiceMock.Object,
             _playerServiceMock.Object,
             _unitOfWorkMock.Object,
+            _dateTimeProviderMock.Object,
             _loggerMock.Object);
 
         _gameServiceMock.Setup(x => x.ExistsAsync(It.IsAny<int>())).ReturnsAsync(true);
@@ -380,6 +386,51 @@ public class SessionServiceTests
     }
 
     [Fact]
+    public async Task CreateFromCommand_ShouldThrowValidationException_WhenStartIsMoreThanADayAhead()
+    {
+        var command = new CreateSessionCommand
+        {
+            GameId = 10,
+            Start = DateTime.UtcNow.AddDays(2),
+            Minutes = 60,
+            PlayerSessions = []
+        };
+
+        var action = async () => await _sessionService.CreateFromCommand(command);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.SessionStartInFuture);
+
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldAllowStart_WithinTheClockSkewWindow()
+    {
+        var command = new CreateSessionCommand
+        {
+            GameId = 10,
+            Start = DateTime.UtcNow.AddHours(3),
+            Minutes = 60,
+            PlayerSessions = []
+        };
+
+        _sessionRepositoryMock
+            .Setup(x => x.CreateAsync(It.IsAny<Session>()))
+            .ReturnsAsync((Session s) => s);
+
+        var result = await _sessionService.CreateFromCommand(command);
+
+        result.Start.Should().Be(command.Start);
+
+        _gameServiceMock.Verify(x => x.ExistsAsync(10), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.AtMostOnce);
+        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task CreateFromCommand_ShouldThrowEntityNotFound_WhenGameDoesNotExist()
     {
         var command = new CreateSessionCommand
@@ -494,6 +545,25 @@ public class SessionServiceTests
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
         _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldThrowValidationException_WhenStartIsMoreThanADayAhead()
+    {
+        var command = new UpdateSessionCommand
+        {
+            Id = 3,
+            GameId = 1,
+            Start = DateTime.UtcNow.AddYears(1),
+            Minutes = 60,
+            PlayerSessions = []
+        };
+
+        var action = async () => await _sessionService.UpdateFromCommand(command);
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.SessionStartInFuture);
+
         VerifyNoOtherCalls();
     }
 

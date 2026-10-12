@@ -63,7 +63,7 @@ export function rangeValidator<TSchema extends z.ZodObject>(
 				const min = Number(role === "min" ? value : other);
 				const max = Number(role === "min" ? other : value);
 				if (min > max) {
-					return i18next.t("game:validation.min-max");
+					return i18next.t(role === "min" ? "game:validation.min-max" : "game:validation.max-below-min");
 				}
 			}
 

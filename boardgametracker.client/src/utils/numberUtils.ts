@@ -22,3 +22,13 @@ export const formatFileSize = (bytes: number): string => {
 
 	return `${(kilobytes / 1024).toFixed(1)} MB`;
 };
+
+export const getIntegerTicks = (maxValue: number, maxTicks = 5): number[] => {
+	const top = Math.max(1, Math.ceil(maxValue));
+	const step = Math.max(1, Math.ceil(top / maxTicks));
+	const ticks: number[] = [];
+	for (let tick = 0; tick < top + step; tick += step) {
+		ticks.push(tick);
+	}
+	return ticks;
+};

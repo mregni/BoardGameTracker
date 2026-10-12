@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { GameState } from "@/models";
 
-import { renderWithTheme, screen } from "@/test/test-utils";
+import { fireEvent, renderWithTheme, screen } from "@/test/test-utils";
 import { BgtImageCard } from "./BgtImageCard";
 
 // i18next is mocked globally in setup.ts
@@ -48,6 +48,14 @@ describe("BgtImageCard", () => {
 			const { container } = renderWithTheme(<BgtImageCard {...defaultProps} image={null} />);
 			const imageDiv = container.querySelector('[style*="--fallback-color"]');
 			expect(imageDiv).toBeInTheDocument();
+		});
+
+		it("should fall back to the initial when the image cannot be loaded", () => {
+			renderWithTheme(<BgtImageCard {...defaultProps} />);
+
+			fireEvent.error(screen.getByRole("img"));
+
+			expect(screen.getByText("C")).toBeInTheDocument();
 		});
 	});
 

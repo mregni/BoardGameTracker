@@ -1,9 +1,11 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
+import { BgtText } from "@/components/BgtText/BgtText";
 import { withForm } from "@/hooks/form";
 import { SettingsSchema } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
+import { getPublicUrlWarning } from "../-utils/publicUrlWarning";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { EnvOverrideHint } from "./EnvOverrideHint";
 import { SettingsSection } from "./SettingsSection";
@@ -94,6 +96,18 @@ export const GeneralSettings = withForm({
 						)}
 					</form.Field>
 					<EnvOverrideHint variable={overrides.publicUrl} />
+					<form.Subscribe selector={(state) => state.values.publicUrl}>
+						{(publicUrl) => {
+							const warning = getPublicUrlWarning(publicUrl, window.location);
+							return warning ? (
+								<div role="alert" className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+									<BgtText size="2" color="amber">
+										{t(`general.public-url.${warning}-warning`, { host: window.location.host })}
+									</BgtText>
+								</div>
+							) : null;
+						}}
+					</form.Subscribe>
 				</SettingsSection>
 			</>
 		);

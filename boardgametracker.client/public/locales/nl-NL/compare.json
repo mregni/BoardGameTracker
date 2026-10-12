@@ -25,8 +25,10 @@
   },
   "head-to-head": {
     "title": "Onderlinge duels",
-    "direct-wins": "{{player}} won {{count}} keer tegen {{opponent}}",
-    "most-won-game": "{{player}} won het vaakst van {{opponent}} in {{game}} ({{count}} keer)",
+    "direct-wins_one": "{{player}} won {{count}} keer tegen {{opponent}}",
+    "direct-wins_other": "{{player}} won {{count}} keer tegen {{opponent}}",
+    "most-won-game_one": "{{player}} won het vaakst van {{opponent}} in {{game}} ({{count}} keer)",
+    "most-won-game_other": "{{player}} won het vaakst van {{opponent}} in {{game}} ({{count}} keer)",
     "last-session": "De laatste sessie werd gewonnen door {{player}} in {{game}}",
     "most-played-together": "Meest samen gespeeld: {{game}} ({{count}} sessies)",
     "closest-game": "{{player}} won met slechts {{points}} punten verschil in {{game}}",

@@ -31,6 +31,7 @@ public class GameService : IGameService
     private readonly IManualService _manualService;
     private readonly IChangeDetectionClient _changeDetectionClient;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<GameService> _logger;
 
     public GameService(
@@ -42,6 +43,7 @@ public class GameService : IGameService
         ISettingsService settingsService,
         IChangeDetectionClient changeDetectionClient,
         IUnitOfWork unitOfWork,
+        IDateTimeProvider dateTimeProvider,
         ILogger<GameService> logger)
     {
         _gameRepository = gameRepository;
@@ -52,6 +54,7 @@ public class GameService : IGameService
         _settingsService = settingsService;
         _changeDetectionClient = changeDetectionClient;
         _unitOfWork = unitOfWork;
+        _dateTimeProvider = dateTimeProvider;
         _logger = logger;
     }
 
@@ -115,7 +118,10 @@ public class GameService : IGameService
         game.UpdateMinAge(command.MinAge);
         game.UpdateBggId(command.BggId);
         game.UpdateBuyingPrice(command.BuyingPrice);
-        if (command.AdditionDate.HasValue)
+        game.UpdateSoldPrice(command.SoldPrice);
+        game.UpdateRating(command.Rating);
+        game.UpdateWeight(command.Weight);
+        if (command.AdditionDate.HasValue && !IsToday(command.AdditionDate.Value))
         {
             game.UpdateAdditionDate(command.AdditionDate);
         }
@@ -124,6 +130,12 @@ public class GameService : IGameService
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Game {GameId} ({Title}) created", game.Id, game.Title);
         return game;
+    }
+
+    private bool IsToday(DateTime date)
+    {
+        var utc = _dateTimeProvider.ConvertToUtc(date);
+        return _dateTimeProvider.ConvertToLocalTime(utc).Date == _dateTimeProvider.Now.Date;
     }
 
     public Task<List<Session>> GetSessionsForGame(int id, int? count)

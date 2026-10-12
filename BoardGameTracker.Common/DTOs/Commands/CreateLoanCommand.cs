@@ -18,6 +18,8 @@ public class UpdateLoanCommand : CreateLoanCommand
 {
     [Range(1, int.MaxValue)]
     public int Id { get; set; }
+
+    public DateTime? ReturnedDate { get; set; }
 }
 
 public class ReturnLoanCommand

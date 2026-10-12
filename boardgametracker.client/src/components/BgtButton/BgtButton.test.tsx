@@ -39,6 +39,13 @@ describe("BgtButton", () => {
 			const button = screen.getByRole("button");
 			expect(button).toBeDisabled();
 		});
+
+		it("should grey out a disabled button instead of keeping the variant colour", () => {
+			render(<BgtButton disabled>Disabled</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).toHaveClass("bg-white/10", "text-white/40", "cursor-not-allowed");
+			expect(button).not.toHaveClass("bg-primary/60");
+		});
 	});
 
 	describe("Type Prop", () => {

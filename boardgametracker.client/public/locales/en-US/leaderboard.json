@@ -1,12 +1,13 @@
 {
   "title": "Leaderboard",
   "columns": {
-    "rank": "#",
+    "rank": "Rank",
     "player": "Player",
     "wins": "Wins",
     "plays": "Plays",
     "win-rate": "Win rate",
     "podiums": "Podiums",
+    "podiums-hint": "Top-3 finishes in games with {{count}}+ scored players",
     "time-played": "Time played"
   },
   "highlights": {
@@ -16,7 +17,9 @@
     "most-time": "Most time at the table",
     "nobody-yet": "Nobody yet",
     "min-plays_one": "Needs at least {{count}} play",
-    "min-plays_other": "Needs at least {{count}} plays"
+    "min-plays_other": "Needs at least {{count}} plays",
+    "min-plays-hint_one": "Min. {{count}} play",
+    "min-plays-hint_other": "Min. {{count}} plays"
   },
   "values": {
     "wins_one": "{{count}} win",

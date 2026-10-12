@@ -3,15 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
 import { BgtDatePicker } from "./BgtDatePicker";
 
+const mockSettings = vi.hoisted(() => ({
+	current: { dateFormat: "yyyy-MM-dd", timeFormat: "HH:mm", uiLanguage: "en-us" },
+}));
+
 vi.mock("@/services/queries/settings", () => ({
 	getSettings: () => ({
 		queryKey: ["settings"],
-		queryFn: () =>
-			Promise.resolve({
-				dateFormat: "yyyy-MM-dd",
-				timeFormat: "HH:mm",
-				uiLanguage: "en-us",
-			}),
+		queryFn: () => Promise.resolve(mockSettings.current),
 	}),
 }));
 
@@ -39,6 +38,7 @@ describe("BgtDatePicker", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockSettings.current = { dateFormat: "yyyy-MM-dd", timeFormat: "HH:mm", uiLanguage: "en-us" };
 	});
 
 	describe("Rendering", () => {
@@ -152,6 +152,47 @@ describe("BgtDatePicker", () => {
 				expect(text).toContain("2024");
 				expect(text).toContain("15");
 			});
+		});
+	});
+
+	describe("Locale", () => {
+		it("should order the segments by the date format and use its separator", async () => {
+			mockSettings.current = { dateFormat: "dd-MM-yyyy", timeFormat: "HH:mm", uiLanguage: "en-US" };
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={createMockField("2024-06-05")} />);
+
+			await waitFor(() => {
+				expect(screen.getByRole("group", { name: "Select Date" }).textContent).toContain("05-06-2024");
+			});
+		});
+
+		it("should show the calendar in the app language", async () => {
+			mockSettings.current = { dateFormat: "dd-MM-yyyy", timeFormat: "HH:mm", uiLanguage: "en-US" };
+			const user = userEvent.setup();
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={createMockField("2024-06-05")} />);
+
+			await waitFor(() => {
+				expect(screen.getByRole("group", { name: "Select Date" }).textContent).toContain("05-06-2024");
+			});
+			await user.click(screen.getByLabelText("common:open-calendar"));
+
+			expect(await screen.findByRole("heading", { name: /June 2024/ })).toBeInTheDocument();
+		});
+
+		it("should disable days before the minimum value", async () => {
+			const user = userEvent.setup();
+			renderWithProviders(
+				<BgtDatePicker {...defaultProps} field={createMockField("2024-06-15")} minValue="2024-06-10" />,
+			);
+
+			await user.click(screen.getByLabelText("common:open-calendar"));
+			await waitFor(() => {
+				expect(screen.getByRole("grid")).toBeInTheDocument();
+			});
+
+			const before = screen.getAllByRole("button").find((el) => el.textContent?.trim() === "9");
+			const after = screen.getAllByRole("button").find((el) => el.textContent?.trim() === "12");
+			expect(before).toHaveAttribute("aria-disabled", "true");
+			expect(after).not.toHaveAttribute("aria-disabled");
 		});
 	});
 

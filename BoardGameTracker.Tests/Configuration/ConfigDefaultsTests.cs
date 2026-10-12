@@ -12,7 +12,7 @@ public class ConfigDefaultsTests
     public static IEnumerable<object[]> ExpectedDefaults()
     {
         yield return new object[] { AppConfig.Currency, "€" };
-        yield return new object[] { AppConfig.DateFormat, "yy-MM-dd" };
+        yield return new object[] { AppConfig.DateFormat, "dd-MM-yyyy" };
         yield return new object[] { AppConfig.TimeFormat, "HH:mm" };
         yield return new object[] { AppConfig.UiLanguage, "en-us" };
         yield return new object[] { AppConfig.ShelfOfShameEnabled, "true" };

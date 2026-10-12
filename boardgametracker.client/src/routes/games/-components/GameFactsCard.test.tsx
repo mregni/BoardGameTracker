@@ -89,7 +89,7 @@ describe("GameFactsCard", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} />);
 
 			expect(screen.getByText("statistics:buy-price")).toBeInTheDocument();
-			expect(screen.getByText(/45\.00/)).toBeInTheDocument();
+			expect(screen.getByText(/45(?![.,]\d)/)).toBeInTheDocument();
 		});
 
 		it("should hide the price paid when it is unknown", () => {
@@ -135,6 +135,34 @@ describe("GameFactsCard", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} />);
 
 			expect(screen.queryByText("statistics:in-collection")).not.toBeInTheDocument();
+		});
+	});
+
+	describe("Game details", () => {
+		it("should render year, minimum age, rating and weight when they are set", () => {
+			renderWithTheme(
+				<GameFactsCard {...defaultProps} game={createGame({ minAge: 10, rating: 7.46, weight: 2.31 })} />,
+			);
+
+			expect(screen.getByText("game:facts.year")).toBeInTheDocument();
+			expect(screen.getByText("1995")).toBeInTheDocument();
+			expect(screen.getByText("10+")).toBeInTheDocument();
+			expect(screen.getByText("7.5 / 10")).toBeInTheDocument();
+			expect(screen.getByText("2.3 / 5")).toBeInTheDocument();
+		});
+
+		it("should leave out the rows that have no value", () => {
+			renderWithTheme(
+				<GameFactsCard
+					{...defaultProps}
+					game={createGame({ yearPublished: null, minAge: 0, rating: null, weight: 0 })}
+				/>,
+			);
+
+			expect(screen.queryByText("game:facts.year")).not.toBeInTheDocument();
+			expect(screen.queryByText("game:facts.min-age")).not.toBeInTheDocument();
+			expect(screen.queryByText("rating")).not.toBeInTheDocument();
+			expect(screen.queryByText("weight")).not.toBeInTheDocument();
 		});
 	});
 

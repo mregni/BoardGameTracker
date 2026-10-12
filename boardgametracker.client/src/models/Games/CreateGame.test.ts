@@ -14,8 +14,15 @@ describe("CreateGameSchema yearPublished and minAge", () => {
 		expect(CreateGameSchema.parse({ ...baseGame, yearPublished: -2200 }).yearPublished).toBe(-2200);
 	});
 
-	it("should reject a year outside -5000..9999", () => {
+	it("should reject a year before -5000", () => {
 		expect(CreateGameSchema.safeParse({ ...baseGame, yearPublished: -6000 }).success).toBe(false);
+	});
+
+	it("should accept next year but reject the year after", () => {
+		const nextYear = new Date().getFullYear() + 1;
+
+		expect(CreateGameSchema.safeParse({ ...baseGame, yearPublished: nextYear }).success).toBe(true);
+		expect(CreateGameSchema.safeParse({ ...baseGame, yearPublished: nextYear + 1 }).success).toBe(false);
 	});
 
 	it("should treat a minimum age of 0 as unknown", () => {
@@ -50,5 +57,20 @@ describe("CreateGameSchema soldPrice", () => {
 
 	it("should map an absent sold price to null", () => {
 		expect(CreateGameSchema.parse({ ...baseGame, soldPrice: undefined }).soldPrice).toBeNull();
+	});
+});
+
+describe("CreateGameSchema bggId", () => {
+	it("should ask for a whole number when the id has decimals", () => {
+		const result = CreateGameSchema.safeParse({ ...baseGame, bggId: 12.5 });
+
+		expect(result.success).toBe(false);
+		expect(result.error?.issues[0].message).toBe("game:validation.whole-number");
+	});
+
+	it("should ask for a positive number when the id is negative", () => {
+		const result = CreateGameSchema.safeParse({ ...baseGame, bggId: -3 });
+
+		expect(result.error?.issues[0].message).toBe("game:validation.positive-number");
 	});
 });

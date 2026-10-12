@@ -24,7 +24,9 @@
 			"description": "La dirección con la que la gente accede a BoardGameTracker, por ejemplo https://games.example.com. Las invitaciones y los correos para restablecer la contraseña enlazan a ella, y el SSO la usa para sus URI de redirección. Los correos con enlaces solo se envían cuando está configurada.",
 			"label": "URL pública",
 			"placeholder": "https://myboardgametracker.app",
-			"invalid": "Introduce una URL http(s) válida"
+			"invalid": "Introduce una URL http(s) válida",
+			"insecure-warning": "La URL pública usa http mientras BoardGameTracker se abre por https. Los enlaces de los correos, las invitaciones RSVP y las redirecciones SSO usarán la dirección insegura.",
+			"host-mismatch-warning": "La URL pública apunta a un host distinto de {{host}}. Los enlaces de los correos, las invitaciones RSVP y las redirecciones SSO usarán ese host."
 		},
 		"ui-language": {
 			"label": "Idioma",

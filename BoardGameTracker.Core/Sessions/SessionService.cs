@@ -1,7 +1,9 @@
 ﻿using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common;
 using BoardGameTracker.Core.Badges.Interfaces;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
@@ -19,9 +21,10 @@ public class SessionService : ISessionService
     private readonly ILocationService _locationService;
     private readonly IPlayerService _playerService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<SessionService> _logger;
 
-    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IPlayerService playerService, IUnitOfWork unitOfWork, ILogger<SessionService> logger)
+    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IPlayerService playerService, IUnitOfWork unitOfWork, IDateTimeProvider dateTimeProvider, ILogger<SessionService> logger)
     {
         _sessionRepository = sessionRepository;
         _badgeService = badgeService;
@@ -29,6 +32,7 @@ public class SessionService : ISessionService
         _locationService = locationService;
         _playerService = playerService;
         _unitOfWork = unitOfWork;
+        _dateTimeProvider = dateTimeProvider;
         _logger = logger;
     }
 
@@ -61,6 +65,14 @@ public class SessionService : ISessionService
         return session;
     }
 
+    private void EnsureStartNotInFuture(DateTime start)
+    {
+        if (start.ToUniversalTime() > _dateTimeProvider.UtcNow.AddDays(1))
+        {
+            throw new ValidationException(nameof(CreateSessionCommand.Start), Constants.Errors.SessionStartInFuture);
+        }
+    }
+
     private async Task AwardBadgesAfterSaveAsync(Session session)
     {
         try
@@ -78,6 +90,7 @@ public class SessionService : ISessionService
     public async Task<Session> CreateFromCommand(CreateSessionCommand command)
     {
         _logger.LogDebug("Creating session from command for game {GameId}", command.GameId);
+        EnsureStartNotInFuture(command.Start);
 
         if (!await _gameService.ExistsAsync(command.GameId))
         {
@@ -120,6 +133,7 @@ public class SessionService : ISessionService
     public async Task<Session> UpdateFromCommand(UpdateSessionCommand command)
     {
         _logger.LogDebug("Updating session {SessionId} from command", command.Id);
+        EnsureStartNotInFuture(command.Start);
         var existingSession = await _sessionRepository.GetByIdAsync(command.Id);
         if (existingSession == null)
         {

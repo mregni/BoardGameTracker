@@ -4,12 +4,11 @@
     "title": "Aún no hay préstamos",
     "description": "Aún no has creado ningún préstamo. Empieza prestando un juego para saber quién tiene tus juegos."
   },
-  "mark-as-returned": "Devolver",
-  "no-returned-loans": "Aún no hay préstamos devueltos.",
   "statistics": {
-    "active": "Préstamos activos",
-    "returned": "Préstamos devueltos",
-    "total-loans": "Total de préstamos"
+    "returned": "Devueltos",
+    "on-loan": "Prestados",
+    "overdue": "Con retraso",
+    "due-this-week": "Vencen esta semana"
   },
   "notifications": {
     "created": "Préstamo creado correctamente",
@@ -19,40 +18,72 @@
   },
   "delete": {
     "button": "Eliminar",
+    "title": "Eliminar préstamo de {{game}}",
     "description": "¿Seguro que quieres eliminar este préstamo? ¡Esta acción no se puede deshacer!",
     "successfull": "Préstamo eliminado correctamente.",
     "failed": "Error al eliminar el préstamo, revisa los registros para más detalles."
   },
   "return": {
     "successfull": "Juego marcado como devuelto correctamente.",
-    "failed": "Error al marcar el juego como devuelto, revisa los registros para más detalles."
+    "failed": "Error al marcar el juego como devuelto, revisa los registros para más detalles.",
+    "title": "Devolver {{game}}",
+    "description": "¿Cuándo se devolvió el juego?",
+    "date": "Devuelto el",
+    "confirm": "Marcar como devuelto",
+    "required": "La fecha de devolución es obligatoria",
+    "before-start": "La fecha de devolución no puede ser anterior al inicio del préstamo"
   },
   "no-active-loans": "No hay préstamos activos en este momento.",
   "new": {
-    "title": "Añadir nuevo préstamo",
+    "title": "Prestar un juego",
     "save": "Crear préstamo",
-    "description": "Rellena el formulario para crear un nuevo préstamo.",
+    "description": "Elige un juego, quién se lo lleva y cuándo debe volver.",
     "start": {
       "label": "Inicio del préstamo",
       "required": "La fecha de inicio del préstamo es obligatoria",
       "placeholder": "Elige una fecha"
     },
     "end": {
-      "label": "Fecha de devolución",
+      "label": "Fecha límite",
       "placeholder": "Elige una fecha",
-      "before-start": "La fecha de devolución no puede ser anterior a la fecha de inicio"
+      "before-start": "La fecha límite no puede ser anterior a la fecha de inicio"
     },
     "player": {
-      "label": "Jugador",
+      "label": "Prestatario",
       "required": "El jugador es obligatorio",
-      "placeholder": "Elige un jugador"
+      "placeholder": "Elige quién lo pide prestado"
+    },
+    "button": "+ Prestar un juego",
+    "lend-game": "Prestar {{game}}",
+    "due": {
+      "one-week": "1 semana",
+      "two-weeks": "2 semanas",
+      "one-month": "1 mes",
+      "none": "Sin fecha límite",
+      "custom": "Elegir fecha",
+      "custom-label": "Fecha de devolución"
     }
   },
-  "active": "Aún no devuelto",
   "edit": {
     "title": "Editar préstamo",
     "description": "Cambia las fechas de este préstamo.",
     "save": "Guardar préstamo",
     "button": "Editar"
+  },
+  "status": {
+    "overdue": "{{distance}} de retraso",
+    "due-today": "Vence hoy",
+    "due-in": "Vence en {{distance}}",
+    "due-on": "Vence el {{date}}",
+    "no-due-date": "Sin fecha límite",
+    "returned": "Devuelto {{date}}"
+  },
+  "since": "desde el {{date}}",
+  "returned-button": "Devuelto",
+  "history": {
+    "summary_one": "{{count}} préstamo devuelto",
+    "summary_other": "{{count}} préstamos devueltos",
+    "show": "Ver historial",
+    "hide": "Ocultar historial"
   }
 }

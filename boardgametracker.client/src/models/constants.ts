@@ -22,6 +22,8 @@ export const QUERY_KEYS = {
 	languages: "languages",
 	environment: "environment",
 	shortlist: "shortlist",
+	suggestions: "suggestions",
+	overview: "overview",
 	badges: "badges",
 	versionInfo: "versionInfo",
 	shames: "shames",

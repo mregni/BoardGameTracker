@@ -48,6 +48,12 @@ describe("BgtDeleteModal", () => {
 			rerender(<BgtDeleteModal {...defaultProps} title="Location" />);
 			expect(screen.getByText("Delete Location")).toBeInTheDocument();
 		});
+
+		it("uses the heading as the full title when it is given", () => {
+			renderWithTheme(<BgtDeleteModal {...defaultProps} heading="Delete game night" />);
+			expect(screen.getByText("Delete game night")).toBeInTheDocument();
+			expect(screen.queryByText("Delete Delete game night")).not.toBeInTheDocument();
+		});
 	});
 
 	describe("User Interactions", () => {

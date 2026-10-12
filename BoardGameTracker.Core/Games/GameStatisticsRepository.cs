@@ -108,6 +108,13 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .AverageAsync(x => (decimal?)x.BuyingPrice!.Amount, cancellationToken);
     }
 
+    public Task<int> CountPricedOwnedGamesAsync(CancellationToken cancellationToken = default)
+    {
+        return _context.Games
+            .AsNoTracking()
+            .CountAsync(x => x.State == GameState.Owned && x.BuyingPrice != null, cancellationToken);
+    }
+
     public async Task<decimal?> GetTotalPayedAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Games

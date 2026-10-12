@@ -11,7 +11,7 @@ export interface Player {
 }
 
 export const CreatePlayerSchema = z.object({
-	name: z.string().min(1, { message: "player:name.required" }),
+	name: z.string().trim().min(1, { message: "player:name.required" }),
 	email: z.string().email({ message: "player:email.invalid" }).or(z.literal("")).optional(),
 });
 

@@ -96,6 +96,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IPublicUrlBuilder, PublicUrlBuilder>();
         serviceCollection.AddScoped<IPlayerService, PlayerService>();
         serviceCollection.AddScoped<ISessionService, SessionService>();
+        serviceCollection.AddScoped<ISessionSuggestionService, SessionSuggestionService>();
         serviceCollection.AddScoped<ILocationService, LocationService>();
         serviceCollection.AddScoped<ILoanService, LoanService>();
         serviceCollection.AddScoped<IDashboardService, DashboardService>();
@@ -116,6 +117,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IGameRepository, GameRepository>();
         serviceCollection.AddScoped<IGameStatisticsRepository, GameStatisticsRepository>();
         serviceCollection.AddScoped<IPlayerRepository, PlayerRepository>();
+        serviceCollection.AddScoped<ILocationRepository, LocationRepository>();
         serviceCollection.AddScoped<ISessionRepository, SessionRepository>();
         serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
         serviceCollection.AddScoped<ICompareRepository, CompareRepository>();

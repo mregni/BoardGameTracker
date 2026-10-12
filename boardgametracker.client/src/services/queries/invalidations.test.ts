@@ -99,10 +99,24 @@ describe("QueryInvalidator", () => {
 		await invalidator.invalidateSettings();
 
 		const keys = invalidatedKeys(spy);
-		expect(keys).toEqual(expect.arrayContaining([[QUERY_KEYS.settings], [QUERY_KEYS.trackedPrices]]));
+		expect(keys).toEqual(
+			expect.arrayContaining([
+				[QUERY_KEYS.settings],
+				[QUERY_KEYS.trackedPrices],
+				[QUERY_KEYS.counts],
+				[QUERY_KEYS.shames],
+				[QUERY_KEYS.gameNights],
+			]),
+		);
 		const predicate = spy.mock.calls.map(([filters]) => filters?.predicate).find(Boolean);
 		expect(predicate?.({ queryKey: [QUERY_KEYS.game, 3, QUERY_KEYS.price] } as never)).toBe(true);
 		expect(predicate?.({ queryKey: [QUERY_KEYS.game, 3, QUERY_KEYS.sessions] } as never)).toBe(false);
+	});
+
+	it("invalidateGameNights refreshes the game nights and the menu counts", async () => {
+		await invalidator.invalidateGameNights();
+
+		expect(invalidatedKeys(spy)).toEqual(expect.arrayContaining([[QUERY_KEYS.gameNights], [QUERY_KEYS.counts]]));
 	});
 
 	it("invalidateGameCreated refreshes the list, counts, shames and dashboard", async () => {

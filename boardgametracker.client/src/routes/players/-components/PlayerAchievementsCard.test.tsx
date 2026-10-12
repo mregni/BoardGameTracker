@@ -36,10 +36,10 @@ describe("PlayerAchievementsSummary", () => {
 	it("shows the earned count, the progress and the highest earned badge per type", () => {
 		renderWithTheme(<PlayerAchievementsSummary badges={allBadges} playerBadges={earnedBadges} />);
 
-		expect(screen.getByText("titles.achievements (3/10)")).toBeInTheDocument();
+		expect(screen.getByText("titles.achievements (2/4)")).toBeInTheDocument();
 		const progress = screen.getByRole("progressbar", { name: "titles.achievements" });
-		expect(progress).toHaveAttribute("value", "3");
-		expect(progress).toHaveAttribute("max", "10");
+		expect(progress).toHaveAttribute("value", "2");
+		expect(progress).toHaveAttribute("max", "4");
 		const icons = screen.getAllByRole("img");
 		expect(icons.map((icon) => icon.getAttribute("src"))).toEqual([
 			"/images/badges/sessions-blue.png",

@@ -50,6 +50,15 @@ public class CreateGameCommand : IValidatableObject
     [Range(0, double.MaxValue)]
     public decimal? BuyingPrice { get; set; }
 
+    [Range(0, 10)]
+    public double? Rating { get; set; }
+
+    [Range(0, 5)]
+    public double? Weight { get; set; }
+
+    [Range(0, double.MaxValue)]
+    public decimal? SoldPrice { get; set; }
+
     public DateTime? AdditionDate { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -62,6 +71,11 @@ public class CreateGameCommand : IValidatableObject
         foreach (var result in ValidateRange(MinPlayTime, MaxPlayTime, nameof(MinPlayTime), nameof(MaxPlayTime), Constants.Errors.PlayTimeRangeIncomplete))
         {
             yield return result;
+        }
+
+        if (YearPublished > DateTime.UtcNow.Year + 1)
+        {
+            yield return new ValidationResult(Constants.Errors.YearPublishedTooLate, [nameof(YearPublished)]);
         }
     }
 
@@ -82,13 +96,4 @@ public class UpdateGameCommand : CreateGameCommand
 {
     [Range(1, int.MaxValue)]
     public int Id { get; set; }
-
-    [Range(0, 10)]
-    public double? Rating { get; set; }
-
-    [Range(0, 5)]
-    public double? Weight { get; set; }
-
-    [Range(0, double.MaxValue)]
-    public decimal? SoldPrice { get; set; }
 }

@@ -6,4 +6,5 @@ export const getCompare = (playerOne: number, playerTwo: number) =>
 	queryOptions({
 		queryKey: [QUERY_KEYS.compare, playerOne, playerTwo],
 		queryFn: () => getCompareCall(playerOne, playerTwo),
+		enabled: playerOne > 0 && playerTwo > 0 && playerOne !== playerTwo,
 	});

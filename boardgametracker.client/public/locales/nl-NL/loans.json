@@ -4,12 +4,11 @@
     "title": "Nog niets uitgeleend",
     "description": "Je hebt nog niets uitgeleend. Leen een spel uit om bij te houden wie je spellen heeft."
   },
-  "mark-as-returned": "Teruggebracht",
-  "no-returned-loans": "Nog niets teruggebracht.",
   "statistics": {
-    "active": "Nu uitgeleend",
     "returned": "Teruggebracht",
-    "total-loans": "Totaal uitgeleend"
+    "on-loan": "Uitgeleend",
+    "overdue": "Te laat",
+    "due-this-week": "Terug deze week"
   },
   "notifications": {
     "created": "Uitleen is aangemaakt",
@@ -19,19 +18,26 @@
   },
   "delete": {
     "button": "Verwijderen",
+    "title": "Uitlening van {{game}} verwijderen",
     "description": "Weet je zeker dat je deze uitleen wilt verwijderen? Dit kan niet ongedaan worden gemaakt!",
     "successfull": "Uitleen is verwijderd.",
     "failed": "Uitleen verwijderen mislukt, bekijk de logs voor meer details."
   },
   "return": {
     "successfull": "Spel is gemarkeerd als teruggebracht.",
-    "failed": "Spel markeren als teruggebracht mislukt, bekijk de logs voor meer details."
+    "failed": "Spel markeren als teruggebracht mislukt, bekijk de logs voor meer details.",
+    "title": "{{game}} terugbrengen",
+    "description": "Wanneer werd het spel teruggebracht?",
+    "date": "Teruggebracht op",
+    "confirm": "Markeren als teruggebracht",
+    "required": "De terugbrengdatum is verplicht",
+    "before-start": "De terugbrengdatum kan niet voor de start van de uitlening liggen"
   },
   "no-active-loans": "Er is momenteel niets uitgeleend.",
   "new": {
-    "title": "Nieuwe uitleen toevoegen",
+    "title": "Spel uitlenen",
     "save": "Uitleen aanmaken",
-    "description": "Vul het formulier in om een nieuwe uitleen aan te maken.",
+    "description": "Kies een spel, wie het leent en wanneer het terug moet zijn.",
     "start": {
       "label": "Uitleendatum",
       "required": "Uitleendatum is verplicht",
@@ -43,16 +49,41 @@
       "before-start": "De terugbrengdatum kan niet voor de startdatum liggen"
     },
     "player": {
-      "label": "Speler",
+      "label": "Lener",
       "required": "Speler is verplicht",
-      "placeholder": "Kies een speler"
+      "placeholder": "Kies een lener"
+    },
+    "button": "+ Spel uitlenen",
+    "lend-game": "{{game}} uitlenen",
+    "due": {
+      "one-week": "1 week",
+      "two-weeks": "2 weken",
+      "one-month": "1 maand",
+      "none": "Geen einddatum",
+      "custom": "Datum kiezen",
+      "custom-label": "Terugbrengen op"
     }
   },
-  "active": "Nog niet terug",
   "edit": {
     "title": "Uitleen bewerken",
     "description": "Wijzig de datums van deze uitleen.",
     "save": "Uitleen opslaan",
     "button": "Bewerken"
+  },
+  "status": {
+    "overdue": "{{distance}} te laat",
+    "due-today": "Vandaag terug",
+    "due-in": "Terug over {{distance}}",
+    "due-on": "Terug op {{date}}",
+    "no-due-date": "Geen einddatum",
+    "returned": "Teruggebracht {{date}}"
+  },
+  "since": "sinds {{date}}",
+  "returned-button": "Teruggebracht",
+  "history": {
+    "summary_one": "{{count}} keer teruggebracht",
+    "summary_other": "{{count}} keer teruggebracht",
+    "show": "Geschiedenis tonen",
+    "hide": "Geschiedenis verbergen"
   }
 }
