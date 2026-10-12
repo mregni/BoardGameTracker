@@ -2,7 +2,7 @@ import { addMinutes } from "date-fns";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Game, Player } from "@/models";
-import { renderWithTheme, screen, userEvent, waitFor } from "@/test/test-utils";
+import { fireEvent, renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
 import { SessionForm } from "./SessionForm";
 
 const game = {
@@ -43,6 +43,10 @@ vi.mock("@/routes/players/-modals/CreatePlayerModal", () => ({
 		) : null,
 }));
 
+vi.mock("@/services/queries/settings", () => ({
+	getSettings: () => ({ queryKey: ["settings"], queryFn: async () => ({}) }),
+}));
+
 Element.prototype.hasPointerCapture = () => false;
 Element.prototype.releasePointerCapture = () => {};
 Element.prototype.scrollIntoView = () => {};
@@ -60,7 +64,7 @@ vi.mock("../-hooks/useSessionForm", () => ({
 
 const renderForm = () => {
 	const onClick = vi.fn().mockResolvedValue(undefined);
-	renderWithTheme(
+	renderWithProviders(
 		<SessionForm
 			game={game}
 			minutes={45}
@@ -76,7 +80,7 @@ const renderForm = () => {
 
 const renderNewForm = () => {
 	const onClick = vi.fn().mockResolvedValue(undefined);
-	renderWithTheme(
+	renderWithProviders(
 		<StrictMode>
 			<SessionForm buttonText="save" title="Log a session" onClick={onClick} disabled={false} />
 		</StrictMode>,
@@ -84,7 +88,7 @@ const renderNewForm = () => {
 	return onClick;
 };
 
-const startInput = () => screen.getByLabelText("new.start.label");
+const startTime = () => document.querySelector<HTMLInputElement>('input[type="time"]') as HTMLInputElement;
 const durationInput = () => screen.getByLabelText("new.duration.label");
 
 const playerSelect = () => screen.getByRole("combobox", { name: "form.players.label" });
@@ -138,7 +142,8 @@ describe("SessionForm", () => {
 		renderNewForm();
 
 		expect(durationInput()).toHaveValue(30);
-		expect(startInput()).toHaveValue("2026-10-11T08:51");
+		expect(screen.getByText("new.start.label")).toBeInTheDocument();
+		expect(startTime()).toHaveValue("08:51");
 	});
 
 	it("moves the start with the game's play time and the duration until the start is edited", async () => {
@@ -151,19 +156,18 @@ describe("SessionForm", () => {
 		await user.click(screen.getByRole("option", { name: "Twilight Imperium" }));
 
 		expect(durationInput()).toHaveValue(240);
-		expect(startInput()).toHaveValue("2026-10-11T05:21");
+		expect(startTime()).toHaveValue("05:21");
 
 		await user.clear(durationInput());
 		await user.type(durationInput(), "60");
 
-		expect(startInput()).toHaveValue("2026-10-11T08:21");
+		expect(startTime()).toHaveValue("08:21");
 
-		await user.clear(startInput());
-		await user.type(startInput(), "2026-10-11T07:00");
+		fireEvent.change(startTime(), { target: { value: "07:00" } });
 		await user.clear(durationInput());
 		await user.type(durationInput(), "90");
 
-		expect(startInput()).toHaveValue("2026-10-11T07:00");
+		expect(startTime()).toHaveValue("07:00");
 	});
 
 	it("asks for at least one player on the first submit", async () => {
