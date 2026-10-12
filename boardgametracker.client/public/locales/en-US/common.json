@@ -30,11 +30,7 @@
   "duration": "Duration",
   "points_other": "{{count}} points",
   "points_one": "{{count}} point",
-  "overdue": "Overdue",
-  "loaned": "Loaned",
   "returned": "Returned",
-  "due-date": "Due date",
-  "history": "History",
   "name": "Name",
   "total": "Total",
   "players": "Players",
@@ -136,5 +132,11 @@
   "hour-short": "h",
   "minute-short": "m",
   "game": "Game",
-  "comment": "Comment"
+  "comment": "Comment",
+  "tile": {
+    "sessions_one": "session",
+    "sessions_other": "sessions",
+    "wins": "wins",
+    "no-sessions": "No sessions yet"
+  }
 }

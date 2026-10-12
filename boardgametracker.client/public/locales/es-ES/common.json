@@ -30,11 +30,7 @@
   "duration": "Duración",
   "points_other": "{{count}} puntos",
   "points_one": "{{count}} punto",
-  "overdue": "Vencido",
-  "loaned": "Prestado",
   "returned": "Devuelto",
-  "due-date": "Fecha límite",
-  "history": "Historial",
   "name": "Nombre",
   "total": "Total",
   "players": "Jugadores",
@@ -136,5 +132,11 @@
   "hour-short": "h",
   "minute-short": "min",
   "game": "Juego",
-  "comment": "Comentario"
+  "comment": "Comentario",
+  "tile": {
+    "sessions_one": "partida",
+    "sessions_other": "partidas",
+    "wins": "victorias",
+    "no-sessions": "Aún no hay partidas"
+  }
 }

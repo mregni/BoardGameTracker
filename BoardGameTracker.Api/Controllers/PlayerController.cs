@@ -31,6 +31,15 @@ public class PlayerController : ControllerBase
         return Ok(players.ToListDto());
     }
 
+    [HttpGet]
+    [Route("overview")]
+    [ProducesResponseType<List<PlayerOverviewDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPlayersOverview()
+    {
+        var players = await _playerService.GetOverview();
+        return Ok(players);
+    }
+
     [HttpPost]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     [ProducesResponseType<PlayerDto>(StatusCodes.Status201Created)]

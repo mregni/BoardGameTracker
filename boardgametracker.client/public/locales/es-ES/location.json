@@ -29,7 +29,14 @@
     "description": "¿Seguro que quieres eliminar la ubicación '{{name}}'?",
     "extra-description": "La ubicación está vinculada a {{count}} partidas, que se desvincularán."
   },
-  "columns": {
-    "sessions": "Partidas"
+  "count_one": "{{count}} ubicación encontrada",
+  "count_other": "{{count}} ubicaciones encontradas",
+  "detail": {
+    "label": "Ubicación",
+    "back": "Volver a ubicaciones",
+    "sessions": "Partidas",
+    "games": "Juegos jugados",
+    "players": "Jugadores",
+    "play-time": "Tiempo de juego"
   }
 }

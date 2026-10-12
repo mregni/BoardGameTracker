@@ -28,6 +28,7 @@ import { Route as GamesTableRouteImport } from './routes/games/table'
 import { Route as LeaderboardIndexRouteImport } from './routes/leaderboard/index'
 import { Route as LoansIndexRouteImport } from './routes/loans/index'
 import { Route as LocationsIndexRouteImport } from './routes/locations/index'
+import { Route as LocationsLocationIdRouteImport } from './routes/locations/$locationId'
 import { Route as PlayersIndexRouteImport } from './routes/players/index'
 import { Route as PlayersPlayerIdRouteImport } from './routes/players/$playerId'
 import { Route as PlayersNewRouteImport } from './routes/players/new'
@@ -136,6 +137,11 @@ const LocationsIndexRoute = LocationsIndexRouteImport.update({
   path: '/locations/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LocationsLocationIdRoute = LocationsLocationIdRouteImport.update({
+  id: '/locations/$locationId',
+  path: '/locations/$locationId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlayersIndexRoute = PlayersIndexRouteImport.update({
   id: '/players/',
   path: '/players/',
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
   '/games/table': typeof GamesTableRoute
+  '/locations/$locationId': typeof LocationsLocationIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/players/new': typeof PlayersNewRoute
   '/sessions/new': typeof SessionsNewRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
   '/games/table': typeof GamesTableRoute
+  '/locations/$locationId': typeof LocationsLocationIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/players/new': typeof PlayersNewRoute
   '/sessions/new': typeof SessionsNewRoute
@@ -282,6 +290,7 @@ export interface FileRoutesById {
   '/games/bgg': typeof GamesBggRoute
   '/games/new': typeof GamesNewRoute
   '/games/table': typeof GamesTableRoute
+  '/locations/$locationId': typeof LocationsLocationIdRoute
   '/players/$playerId': typeof PlayersPlayerIdRoute
   '/players/new': typeof PlayersNewRoute
   '/sessions/new': typeof SessionsNewRoute
@@ -317,6 +326,7 @@ export interface FileRouteTypes {
     | '/games/bgg'
     | '/games/new'
     | '/games/table'
+    | '/locations/$locationId'
     | '/players/$playerId'
     | '/players/new'
     | '/sessions/new'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/games/bgg'
     | '/games/new'
     | '/games/table'
+    | '/locations/$locationId'
     | '/players/$playerId'
     | '/players/new'
     | '/sessions/new'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/games/bgg'
     | '/games/new'
     | '/games/table'
+    | '/locations/$locationId'
     | '/players/$playerId'
     | '/players/new'
     | '/sessions/new'
@@ -414,6 +426,7 @@ export interface RootRouteChildren {
   GamesBggRoute: typeof GamesBggRoute
   GamesNewRoute: typeof GamesNewRoute
   GamesTableRoute: typeof GamesTableRoute
+  LocationsLocationIdRoute: typeof LocationsLocationIdRoute
   PlayersPlayerIdRoute: typeof PlayersPlayerIdRoute
   PlayersNewRoute: typeof PlayersNewRoute
   SessionsNewRoute: typeof SessionsNewRoute
@@ -571,6 +584,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/locations/$locationId': {
+      id: '/locations/$locationId'
+      path: '/locations/$locationId'
+      fullPath: '/locations/$locationId'
+      preLoaderRoute: typeof LocationsLocationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/players/': {
       id: '/players/'
       path: '/players'
@@ -691,6 +711,7 @@ const rootRouteChildren: RootRouteChildren = {
   GamesBggRoute: GamesBggRoute,
   GamesNewRoute: GamesNewRoute,
   GamesTableRoute: GamesTableRoute,
+  LocationsLocationIdRoute: LocationsLocationIdRoute,
   PlayersPlayerIdRoute: PlayersPlayerIdRoute,
   PlayersNewRoute: PlayersNewRoute,
   SessionsNewRoute: SessionsNewRoute,

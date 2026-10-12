@@ -1,10 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import History from "@/assets/icons/history.svg?react";
 import LeftRightArrowIcon from "@/assets/icons/left-right-arrow.svg?react";
-import Package from "@/assets/icons/package.svg?react";
-import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
@@ -17,13 +15,14 @@ import { BgtDeleteModal } from "@/routes/-modals/BgtDeleteModal";
 import { getLoans } from "@/services/queries/loans";
 import { useGameById } from "../-hooks/useGameById";
 import { usePlayerById } from "../-hooks/usePlayerById";
-import { LoanCard } from "./-components/LoanCard";
+import { LoanRow } from "./-components/LoanRow";
 import { useLoanActions } from "./-hooks/useLoanActions";
 import { useLoanModals } from "./-hooks/useLoanModels";
 import { useLoans } from "./-hooks/useLoans";
 import { EditLoanModal } from "./-modals/EditLoanModal";
 import NewLoanModal from "./-modals/NewLoanModal";
 import { ReturnLoanModal } from "./-modals/ReturnLoanModal";
+import { getLoanStats, partitionLoans } from "./-utils/loanStatus";
 
 export const Route = createFileRoute("/loans/")({
 	component: RouteComponent,
@@ -40,6 +39,7 @@ function RouteComponent() {
 	const { playerById } = usePlayerById();
 	const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
 	const [returnModalOpen, setReturnModalOpen] = useState(false);
+	const [showHistory, setShowHistory] = useState(false);
 
 	const modals = useLoanModals();
 
@@ -48,6 +48,9 @@ function RouteComponent() {
 		returnLoan: returnLoan,
 		onDeleteModalClose: modals.deleteModal.hide,
 	});
+
+	const { active: activeLoans, returned: returnedLoans } = useMemo(() => partitionLoans(loans), [loans]);
+	const stats = useMemo(() => getLoanStats(activeLoans), [activeLoans]);
 
 	const requestDelete = (loan: Loan) => {
 		setSelectedLoan(loan);
@@ -73,7 +76,7 @@ function RouteComponent() {
 				icon={LeftRightArrowIcon}
 				title={t("empty.title")}
 				description={t("empty.description")}
-				action={canWrite ? { label: t("new.title"), onClick: modals.createModal.show } : undefined}
+				action={canWrite ? { label: t("new.button"), onClick: modals.createModal.show } : undefined}
 			>
 				<NewLoanModal open={modals.createModal.isOpen} close={modals.createModal.hide} />
 			</BgtEmptyPage>
@@ -91,62 +94,55 @@ function RouteComponent() {
 								{
 									onClick: modals.createModal.show,
 									variant: "primary",
-									content: "loans:new.title",
+									content: "loans:new.button",
 								},
 							]
 						: []
 				}
 			/>
 			<BgtPageContent isLoading={isLoading} data={{ loans, settings }}>
-				{({ loans, settings }) => (
+				{({ settings }) => (
 					<>
 						<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:gap-6">
-							<BgtTextStatistic
-								title={t("statistics.active")}
-								content={loans.filter((loan) => loan.returnedDate === null).length}
-							/>
-							<BgtTextStatistic
-								title={t("statistics.returned")}
-								content={loans.filter((loan) => loan.returnedDate !== null).length}
-							/>
-							<BgtTextStatistic title={t("statistics.total-loans")} content={loans.length} />
+							<BgtTextStatistic title={t("statistics.on-loan")} content={activeLoans.length} />
+							<BgtTextStatistic title={t("statistics.overdue")} content={stats.overdue} />
+							<BgtTextStatistic title={t("statistics.due-this-week")} content={stats.dueThisWeek} />
+							<BgtTextStatistic title={t("statistics.returned")} content={returnedLoans.length} />
 						</div>
-						<BgtHeading size="5" className="flex items-center gap-2">
-							<Package className="text-primary text-2xl" />
-							{t("statistics.active")} ({loans.filter((loan) => loan.returnedDate === null).length})
-						</BgtHeading>
-						{loans.filter((loan) => loan.returnedDate === null).length === 0 ? (
+						{activeLoans.length === 0 ? (
 							<BgtText color="primary">{t("no-active-loans")}</BgtText>
 						) : (
-							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
-								{loans
-									.filter((loan) => loan.returnedDate === null)
-									.map((loan) => (
-										<LoanCard
-											key={loan.id}
-											loan={loan}
-											game={gameById(loan.gameId) ?? undefined}
-											player={playerById(loan.playerId) ?? undefined}
-											dateFormat={settings.dateFormat}
-											onReturn={canWrite ? requestReturn : undefined}
-											onEdit={canWrite ? requestEdit : undefined}
-											onDelete={canWrite ? requestDelete : undefined}
-										/>
-									))}
+							<div className="flex flex-col gap-2">
+								{activeLoans.map((loan) => (
+									<LoanRow
+										key={loan.id}
+										loan={loan}
+										game={gameById(loan.gameId) ?? undefined}
+										player={playerById(loan.playerId) ?? undefined}
+										dateFormat={settings.dateFormat}
+										onReturn={canWrite ? requestReturn : undefined}
+										onEdit={canWrite ? requestEdit : undefined}
+										onDelete={canWrite ? requestDelete : undefined}
+									/>
+								))}
 							</div>
 						)}
-						<BgtHeading size="5" className="flex items-center gap-2">
-							<History className="text-primary text-2xl" />
-							{t("common:history")} ({loans.filter((loan) => loan.returnedDate !== null).length})
-						</BgtHeading>
-						{loans.filter((loan) => loan.returnedDate !== null).length === 0 ? (
-							<BgtText color="primary">{t("no-returned-loans")}</BgtText>
-						) : (
-							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
-								{loans
-									.filter((loan) => loan.returnedDate !== null)
-									.map((loan) => (
-										<LoanCard
+						{returnedLoans.length > 0 && (
+							<div className="flex flex-col gap-2">
+								<div className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-primary/30 px-3 py-2 text-sm text-white/60">
+									<span>{t("history.summary", { count: returnedLoans.length })}</span>
+									<BgtButton
+										variant="text"
+										size="1"
+										aria-expanded={showHistory}
+										onClick={() => setShowHistory((value) => !value)}
+									>
+										{showHistory ? t("history.hide") : t("history.show")}
+									</BgtButton>
+								</div>
+								{showHistory &&
+									returnedLoans.map((loan) => (
+										<LoanRow
 											key={loan.id}
 											loan={loan}
 											game={gameById(loan.gameId) ?? undefined}

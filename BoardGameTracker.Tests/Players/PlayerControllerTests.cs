@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
@@ -305,6 +305,23 @@ public class PlayerControllerTests
         returnedSessions.Should().BeEmpty();
 
         _playerServiceMock.Verify(x => x.GetSessions(playerId, count), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetPlayersOverview_ShouldReturnOkWithOverview()
+    {
+        var overview = new List<PlayerOverviewDto>
+        {
+            new() { Id = 1, Name = "Alice", PlayCount = 4, WinCount = 2 },
+            new() { Id = 2, Name = "Bob" }
+        };
+        _playerServiceMock.Setup(x => x.GetOverview()).ReturnsAsync(overview);
+
+        var result = await _controller.GetPlayersOverview();
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(overview);
+        _playerServiceMock.Verify(x => x.GetOverview(), Times.Once);
         VerifyNoOtherCalls();
     }
 }

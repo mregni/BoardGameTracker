@@ -1,4 +1,5 @@
-﻿using BoardGameTracker.Common.DTOs.Commands;
+﻿using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models;
 
@@ -7,6 +8,7 @@ namespace BoardGameTracker.Core.Players.Interfaces;
 public interface IPlayerService
 {
     Task<List<Player>> GetList();
+    Task<List<PlayerOverviewDto>> GetOverview();
     Task<Player> Create(CreatePlayerCommand command);
     Task<Player?> Get(int id);
     Task<List<int>> GetExistingIdsAsync(IEnumerable<int> ids);

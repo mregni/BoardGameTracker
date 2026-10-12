@@ -75,21 +75,28 @@ public class Game : BaseGame
 
     public void EnsureLoanDatesAreFree(Loan loan, DateTime loanDate, DateTime? end)
     {
-        if (Loans.Any(other => !ReferenceEquals(other, loan) && other.Id != loan.Id && other.Overlaps(loanDate, end)))
-        {
-            throw new DomainException(Constants.Errors.GameAlreadyOnLoan);
-        }
+        EnsureFree(loanDate, end, loan);
     }
 
-    public Loan LoanToPlayer(int playerId, DateTime loanDate)
+    public Loan LoanToPlayer(int playerId, DateTime loanDate, DateTime? dueDate = null)
     {
-        if (IsLoanedOn(loanDate))
+        var loan = new Loan(Id, playerId, loanDate);
+        loan.SetDueDate(dueDate);
+        EnsureFree(loanDate, dueDate);
+
+        Loans.Add(loan);
+        return loan;
+    }
+
+    private void EnsureFree(DateTime start, DateTime? end, Loan? except = null)
+    {
+        var overlaps = Loans
+            .Where(other => except == null || (!ReferenceEquals(other, except) && (except.Id == 0 || other.Id != except.Id)))
+            .Any(other => other.Overlaps(start, end));
+
+        if (overlaps)
         {
             throw new DomainException(Constants.Errors.GameAlreadyOnLoan);
         }
-
-        var loan = new Loan(Id, playerId, loanDate);
-        Loans.Add(loan);
-        return loan;
     }
 }
