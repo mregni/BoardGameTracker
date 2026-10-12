@@ -56,17 +56,7 @@
     "invites-sent": "Uitnodigingen verstuurd: {{sent}}",
     "invites-failed": "Uitnodigingen versturen mislukt",
     "when": "{{when}} · {{time}}",
-    "host": "Gastheer: {{host}}",
-    "relative": {
-      "today": "Vandaag",
-      "tomorrow": "Morgen",
-      "days_one": "Over {{count}} dag",
-      "days_other": "Over {{count}} dagen",
-      "weeks_one": "Over {{count}} week",
-      "weeks_other": "Over {{count}} weken",
-      "months_one": "Over {{count}} maand",
-      "months_other": "Over {{count}} maanden"
-    }
+    "host": "Gastheer: {{host}}"
   },
   "form": {
     "title": {

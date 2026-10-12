@@ -56,17 +56,7 @@
     "invites-sent": "Invites sent: {{sent}} sent",
     "invites-failed": "Failed to send invites",
     "when": "{{when}} · {{time}}",
-    "host": "Host: {{host}}",
-    "relative": {
-      "today": "Today",
-      "tomorrow": "Tomorrow",
-      "days_one": "In {{count}} day",
-      "days_other": "In {{count}} days",
-      "weeks_one": "In {{count}} week",
-      "weeks_other": "In {{count}} weeks",
-      "months_one": "In {{count}} month",
-      "months_other": "In {{count}} months"
-    }
+    "host": "Host: {{host}}"
   },
   "form": {
     "title": {

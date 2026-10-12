@@ -56,17 +56,7 @@
     "invites-sent": "Invitaciones enviadas: {{sent}}",
     "invites-failed": "No se pudieron enviar las invitaciones",
     "when": "{{when}} · {{time}}",
-    "host": "Anfitrión: {{host}}",
-    "relative": {
-      "today": "Hoy",
-      "tomorrow": "Mañana",
-      "days_one": "En {{count}} día",
-      "days_other": "En {{count}} días",
-      "weeks_one": "En {{count}} semana",
-      "weeks_other": "En {{count}} semanas",
-      "months_one": "En {{count}} mes",
-      "months_other": "En {{count}} meses"
-    }
+    "host": "Anfitrión: {{host}}"
   },
   "form": {
     "title": {
