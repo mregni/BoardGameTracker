@@ -28,13 +28,13 @@ import { SessionFormFields } from "./SessionFormFields";
 import { SessionPlayerManager } from "./SessionPlayerManager";
 
 interface Props {
-	game?: Game | undefined;
+	game?: Game;
 	locationId?: number | null;
-	minutes?: number | undefined;
+	minutes?: number;
 	comment?: string | null;
-	start?: Date | undefined;
-	expansions?: Expansion[] | undefined;
-	playerSessions?: Pick<PlayerSession, "playerId" | "won" | "firstPlay" | "score">[] | undefined;
+	start?: Date;
+	expansions?: Expansion[];
+	playerSessions?: Pick<PlayerSession, "playerId" | "won" | "firstPlay" | "score">[];
 	onClick: (data: CreateSession) => Promise<void>;
 	buttonText: string;
 	title: string;

@@ -15,7 +15,9 @@ import { SessionPlayerRow } from "./SessionPlayerRow";
 const toPlayerOptions = (players: Player[], selected: CreateSessionPlayer[], frequentIds: number[]) => {
 	const available = players.filter((x) => !selected.some((y) => y.playerId === x.id));
 	const { suggested, rest } = splitSuggested(available, frequentIds);
-	return [...suggested, ...rest.sort((a, b) => a.name.localeCompare(b.name))].map((x) => ({
+	const others = [...rest];
+	others.sort((a, b) => a.name.localeCompare(b.name));
+	return [...suggested, ...others].map((x) => ({
 		value: x.id,
 		label: x.name,
 		image: x.image,
