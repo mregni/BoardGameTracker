@@ -42,17 +42,6 @@ public class Loan : HasId
         return LoanDate <= now && (ReturnedDate == null || now < ReturnedDate.Value);
     }
 
-    public bool IsActiveOn(DateTime date)
-    {
-        if (LoanDate > date)
-        {
-            return false;
-        }
-
-        var effectiveEnd = ReturnedDate ?? DueDate;
-        return effectiveEnd == null || date < effectiveEnd.Value;
-    }
-
     public bool Overlaps(DateTime start, DateTime? end)
     {
         return (end == null || LoanDate < end.Value) && (ReturnedDate == null || start < ReturnedDate.Value);

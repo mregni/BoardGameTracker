@@ -286,34 +286,6 @@ public class LoanValidationTests
 
     private static readonly DateTime Anchor = new(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc);
 
-    [Fact]
-    public void IsActiveOn_BeforeLoanDate_ShouldReturnFalse()
-    {
-        var loan = new Loan(1, 1, Anchor);
-
-        loan.IsActiveOn(Anchor.AddDays(-1)).Should().BeFalse();
-    }
-
-    [Fact]
-    public void IsActiveOn_OpenLoanWithoutDueDate_ShouldReturnTrue_ForAnyDateFromLoanDate()
-    {
-        var loan = new Loan(1, 1, Anchor);
-
-        loan.IsActiveOn(Anchor).Should().BeTrue();
-        loan.IsActiveOn(Anchor.AddYears(1)).Should().BeTrue();
-    }
-
-    [Fact]
-    public void IsActiveOn_WithDueDate_ShouldUseDueDateAsExpectedEnd()
-    {
-        var loan = new Loan(1, 1, Anchor);
-        loan.SetDueDate(Anchor.AddDays(7));
-
-        loan.IsActiveOn(Anchor.AddDays(3)).Should().BeTrue();
-        loan.IsActiveOn(Anchor.AddDays(7)).Should().BeFalse();
-        loan.IsActiveOn(Anchor.AddDays(10)).Should().BeFalse();
-    }
-
     [Theory]
     [InlineData(1, 0)]
     [InlineData(1, -1)]
@@ -331,17 +303,5 @@ public class LoanValidationTests
         var loan = new Loan(0, 1, Anchor);
 
         loan.GameId.Should().Be(0);
-    }
-
-    [Fact]
-    public void IsActiveOn_ReturnedDate_ShouldTakePriorityOverDueDate()
-    {
-        var loan = new Loan(1, 1, Anchor);
-        loan.SetDueDate(Anchor.AddDays(7));
-        loan.MarkAsReturned(Anchor.AddDays(2));
-
-        loan.IsActiveOn(Anchor.AddDays(1)).Should().BeTrue();
-        loan.IsActiveOn(Anchor.AddDays(2)).Should().BeFalse();
-        loan.IsActiveOn(Anchor.AddDays(5)).Should().BeFalse();
     }
 }
