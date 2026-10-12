@@ -101,7 +101,7 @@ export const SessionPlayerManager = withForm({
 								<BgtText color="primary">{t("player:new.players.none")}</BgtText>
 							)}
 							{players.length > 0 && (
-								<ul className="@container flex flex-col gap-2">
+								<ul className="@container flex flex-col gap-1.5">
 									{players.map((entry: CreateSessionPlayer) => (
 										<SessionPlayerRow
 											key={entry.playerId}

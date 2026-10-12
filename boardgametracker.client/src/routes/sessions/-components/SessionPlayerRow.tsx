@@ -20,7 +20,7 @@ interface Props {
 const toScoreText = (score: number | null | undefined) => (score === null || score === undefined ? "" : String(score));
 
 const toggleClasses =
-	"inline-flex items-center gap-1.5 h-9 px-3 rounded-full border text-xs font-semibold whitespace-nowrap";
+	"inline-flex items-center gap-1 h-9 px-2.5 rounded-full border text-sm font-semibold whitespace-nowrap";
 
 export const SessionPlayerRow = (props: Props) => {
 	const { entry, player, hasScoring, disabled, onScoreChange, onToggleWon, onToggleFirstPlay, onRemove } = props;
@@ -37,9 +37,9 @@ export const SessionPlayerRow = (props: Props) => {
 	};
 
 	return (
-		<li className="grid grid-cols-[2.75rem_minmax(0,1fr)_auto] @xl:grid-cols-[2.75rem_minmax(0,1fr)_auto_auto] items-center gap-x-3 gap-y-2 rounded-lg border border-primary/30 bg-background px-3 py-2">
-			<BgtAvatar size="large" title={name} image={player?.image} />
-			<span className="min-w-0 break-words font-medium">{name}</span>
+		<li className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] @xl:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto] items-center gap-x-2.5 gap-y-1.5 rounded-lg border border-primary/30 bg-background px-2.5 py-1.5">
+			<BgtAvatar size="medium" title={name} image={player?.image} />
+			<span className="min-w-0 break-words text-sm font-medium">{name}</span>
 			<div className="col-span-3 row-start-2 flex items-center justify-between gap-2 @xl:col-span-1 @xl:col-start-3 @xl:row-start-1 @xl:justify-end">
 				{hasScoring ? (
 					<input
@@ -50,7 +50,7 @@ export const SessionPlayerRow = (props: Props) => {
 						aria-label={t("form.player.score", { name })}
 						placeholder={t("form.player.score-placeholder")}
 						onChange={(event) => handleScoreChange(event.target.value)}
-						className="hide-arrow w-20 h-9 rounded-md border border-primary/30 bg-input text-center font-bold tabular-nums text-white focus:border-primary focus:outline-none disabled:opacity-50 [appearance:textfield]"
+						className="hide-arrow w-20 h-9 rounded-md border border-primary/30 bg-input text-center text-sm font-bold tabular-nums text-white focus:border-primary focus:outline-none disabled:opacity-50 [appearance:textfield]"
 					/>
 				) : (
 					<span />
@@ -68,7 +68,7 @@ export const SessionPlayerRow = (props: Props) => {
 								: "border-primary/30 text-white/60 hover:text-white hover:border-primary/60",
 						)}
 					>
-						<TrophyIcon className="size-4" />
+						<TrophyIcon className="size-3.5" />
 						{t("form.player.won")}
 					</button>
 					<button
@@ -83,7 +83,7 @@ export const SessionPlayerRow = (props: Props) => {
 								: "border-primary/30 text-white/60 hover:text-white hover:border-primary/60",
 						)}
 					>
-						<SparklesIcon className="size-4" />
+						<SparklesIcon className="size-3.5" />
 						{t("form.player.first-play")}
 					</button>
 				</div>
@@ -94,7 +94,7 @@ export const SessionPlayerRow = (props: Props) => {
 				aria-label={t("form.player.remove", { name })}
 				title={t("form.player.remove", { name })}
 				onClick={() => onRemove(entry.playerId)}
-				className="col-start-3 row-start-1 @xl:col-start-4 justify-self-end size-9 inline-flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 disabled:opacity-50"
+				className="col-start-3 row-start-1 @xl:col-start-4 justify-self-end size-8 inline-flex items-center justify-center rounded-md text-white/60 hover:text-white hover:bg-white/10 disabled:opacity-50"
 			>
 				<XIcon className="size-4" />
 			</button>
