@@ -45,11 +45,8 @@ export const useGameNightData = () => {
 	});
 
 	const updateMutation = useMutation({
-		mutationFn: ({ gameNight }: { gameNight: UpdateGameNight; silent?: boolean }) => updateGameNightCall(gameNight),
-		onSuccess(_data, { silent }) {
-			if (!silent) {
-				successToast("game-nights:notifications.updated");
-			}
+		mutationFn: updateGameNightCall,
+		onSuccess() {
 			invalidateQueries();
 		},
 		onError: () => {
@@ -115,13 +112,15 @@ export const useGameNightData = () => {
 			gamesQuery.isLoading ||
 			locationsQuery.isLoading,
 		createGameNight: createMutation.mutateAsync,
-		updateGameNight: (gameNight: UpdateGameNight) => updateMutation.mutateAsync({ gameNight }),
-		updateInvitedPlayers: (gameNight: UpdateGameNight) => updateMutation.mutateAsync({ gameNight, silent: true }),
+		updateGameNight: (gameNight: UpdateGameNight) =>
+			updateMutation.mutateAsync(gameNight, {
+				onSuccess: () => successToast("game-nights:notifications.updated"),
+			}),
+		updateInvitedPlayers: updateMutation.mutate,
 		deleteGameNight: deleteMutation.mutateAsync,
-		updateRsvp: rsvpMutation.mutateAsync,
+		updateRsvp: rsvpMutation.mutate,
 		isCreating: createMutation.isPending,
 		isUpdating: updateMutation.isPending,
 		isDeleting: deleteMutation.isPending,
-		isUpdatingRsvp: rsvpMutation.isPending,
 	};
 };

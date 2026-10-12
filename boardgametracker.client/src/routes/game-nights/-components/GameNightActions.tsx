@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import type { GameNight } from "@/models";
+import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 import { sendInvitesCall } from "@/services/gameNightService";
 import { apiErrorMessage } from "@/utils/errorUtils";
 import { useInviteLink } from "../-hooks/useInviteLink";
@@ -17,7 +18,8 @@ interface Props {
 export const GameNightActions = (props: Props) => {
 	const { gameNight, onEdit, onDelete } = props;
 	const { t } = useTranslation("game-nights");
-	const { copied, copy, emailEnabled } = useInviteLink(gameNight);
+	const { copied, copy } = useInviteLink(gameNight);
+	const { settings } = useSettingsData();
 
 	const sendInvitesMutation = useMutation({
 		mutationFn: () => sendInvitesCall(gameNight.id),
@@ -34,7 +36,7 @@ export const GameNightActions = (props: Props) => {
 			<BgtButton variant="cancel" size="1" onClick={copy} disabled={copied}>
 				{copied ? t("card.copied") : t("card.copy-link")}
 			</BgtButton>
-			{emailEnabled && (
+			{settings?.emailEnabled && (
 				<BgtButton
 					variant="cancel"
 					size="1"

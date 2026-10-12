@@ -37,8 +37,8 @@ const renderModal = (overrides: Partial<Parameters<typeof ManageRSVPsModal>[0]> 
 		gameNight,
 		players,
 		settings,
-		onUpdateRsvp: vi.fn().mockResolvedValue(undefined),
-		onUpdateGameNight: vi.fn().mockResolvedValue(undefined),
+		onUpdateRsvp: vi.fn(),
+		onUpdateGameNight: vi.fn(),
 		isLoading: false,
 		...overrides,
 	};
@@ -62,16 +62,6 @@ describe("ManageRSVPsModal", () => {
 				state: GameNightRsvpState.Accepted,
 			}),
 		);
-	});
-
-	it("does not throw when the update fails", async () => {
-		const user = userEvent.setup();
-		const { onUpdateRsvp } = renderModal({ onUpdateRsvp: vi.fn().mockRejectedValue(new Error("400")) });
-
-		const guestRow = screen.getByTestId("rsvp-row-7");
-		await user.click(within(guestRow).getByRole("button", { name: "common:declined" }));
-
-		await waitFor(() => expect(onUpdateRsvp).toHaveBeenCalledTimes(1));
 	});
 
 	it("does not resend the state that is already selected", async () => {

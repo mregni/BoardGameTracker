@@ -84,7 +84,7 @@ describe("useGameNightData rsvp updates", () => {
 		const { result, stateOf } = setup();
 
 		act(() => {
-			void result.current.updateRsvp(update);
+			result.current.updateRsvp(update);
 		});
 
 		await waitFor(() => expect(stateOf(12)).toBe(GameNightRsvpState.Declined));
@@ -99,10 +99,11 @@ describe("useGameNightData rsvp updates", () => {
 		updateRsvpCall.mockRejectedValue(new Error("400"));
 		const { result, stateOf } = setup();
 
-		await act(async () => {
-			await result.current.updateRsvp(update).catch(() => undefined);
+		act(() => {
+			result.current.updateRsvp(update);
 		});
 
+		await waitFor(() => expect(errorToast).toHaveBeenCalled());
 		expect(stateOf(12)).toBe(GameNightRsvpState.Pending);
 		expect(errorToast).toHaveBeenCalledWith("game-nights:notifications.rsvp-update-failed");
 	});
@@ -132,7 +133,7 @@ describe("useGameNightData game night updates", () => {
 			await result.current.updateGameNight(gameNightUpdate);
 		});
 
-		expect(updateCall).toHaveBeenCalledWith(gameNightUpdate);
+		expect(updateCall.mock.calls[0][0]).toEqual(gameNightUpdate);
 		expect(successToast).toHaveBeenCalledWith("game-nights:notifications.updated");
 		expect(invalidateGameNights).toHaveBeenCalled();
 	});
@@ -141,11 +142,12 @@ describe("useGameNightData game night updates", () => {
 		updateCall.mockResolvedValue({});
 		const { result } = setup();
 
-		await act(async () => {
-			await result.current.updateInvitedPlayers(gameNightUpdate);
+		act(() => {
+			result.current.updateInvitedPlayers(gameNightUpdate);
 		});
 
-		expect(updateCall).toHaveBeenCalledWith(gameNightUpdate);
+		await waitFor(() => expect(invalidateGameNights).toHaveBeenCalled());
+		expect(updateCall.mock.calls[0][0]).toEqual(gameNightUpdate);
 		expect(successToast).not.toHaveBeenCalled();
 		expect(invalidateGameNights).toHaveBeenCalled();
 	});
@@ -154,10 +156,11 @@ describe("useGameNightData game night updates", () => {
 		updateCall.mockRejectedValue(new Error("400"));
 		const { result } = setup();
 
-		await act(async () => {
-			await result.current.updateInvitedPlayers(gameNightUpdate).catch(() => undefined);
+		act(() => {
+			result.current.updateInvitedPlayers(gameNightUpdate);
 		});
 
+		await waitFor(() => expect(errorToast).toHaveBeenCalled());
 		expect(successToast).not.toHaveBeenCalled();
 		expect(errorToast).toHaveBeenCalledWith("game-nights:notifications.update-failed");
 	});

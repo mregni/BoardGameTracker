@@ -10,6 +10,7 @@ import {
 } from "@/components/BgtDialog";
 import type { Game, GameNight, Location, ModalProps, Player, UpdateGameNight } from "@/models";
 import { GameNightForm, type GameNightFormValues } from "../-components/GameNightForm";
+import { toUpdateGameNight } from "../-utils/toUpdateGameNight";
 
 interface Props extends ModalProps {
 	gameNight: GameNight | null;
@@ -27,33 +28,14 @@ export const EditGameNightModal = (props: Props) => {
 	if (!gameNight) return null;
 
 	const handleSubmit = async (values: GameNightFormValues) => {
-		await onSave({
-			id: gameNight.id,
-			title: values.title,
-			notes: values.notes,
-			startDate: values.startDate,
-			hostId: values.hostId,
-			locationId: values.locationId,
-			suggestedGameIds: values.suggestedGameIds,
-			invitedPlayerIds: values.invitedPlayerIds,
-		});
+		await onSave({ id: gameNight.id, ...values });
 	};
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent className="max-w-2xl! lg:max-w-5xl!">
+			<BgtDialogContent size="wide">
 				<GameNightForm
-					defaultValues={{
-						title: gameNight.title,
-						startDate: new Date(gameNight.startDate),
-						locationId: gameNight.locationId,
-						hostId: gameNight.hostId,
-						notes: gameNight.notes,
-						suggestedGameIds: gameNight.suggestedGames.map((g) => g.id),
-						invitedPlayerIds: gameNight.invitedPlayers
-							.filter((p) => p.playerId !== gameNight.hostId)
-							.map((p) => p.playerId),
-					}}
+					defaultValues={toUpdateGameNight(gameNight)}
 					players={players}
 					games={games}
 					locations={locations}

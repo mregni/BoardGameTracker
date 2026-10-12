@@ -27,15 +27,18 @@ import {
 	type UpdateGameNightRsvp,
 } from "@/models";
 import { toDisplayDateTime } from "@/utils/dateUtils";
+import { AvatarChipButton } from "../-components/AvatarChip";
 import { RsvpProgress } from "../-components/RsvpProgress";
 import { useInviteLink } from "../-hooks/useInviteLink";
+import { byName, sortRsvps } from "../-utils/sortRsvps";
+import { toUpdateGameNight } from "../-utils/toUpdateGameNight";
 
 interface Props extends ModalProps {
 	gameNight: GameNight | null;
 	players: Player[];
 	settings: Settings;
-	onUpdateRsvp: (rsvp: UpdateGameNightRsvp) => Promise<unknown>;
-	onUpdateGameNight: (gameNight: UpdateGameNight) => Promise<unknown>;
+	onUpdateRsvp: (rsvp: UpdateGameNightRsvp) => void;
+	onUpdateGameNight: (gameNight: UpdateGameNight) => void;
 	isLoading: boolean;
 }
 
@@ -62,72 +65,40 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 	const [query, setQuery] = useState("");
 
 	const rsvps = useMemo(
-		() =>
-			[...gameNight.invitedPlayers].sort((a, b) => {
-				if (a.playerId === gameNight.hostId) return -1;
-				if (b.playerId === gameNight.hostId) return 1;
-				return a.player.name.localeCompare(b.player.name);
-			}),
+		() => sortRsvps(gameNight.invitedPlayers, gameNight.hostId, byName),
 		[gameNight.invitedPlayers, gameNight.hostId],
 	);
 
-	const suggestions = useMemo(() => {
-		const invited = new Set(gameNight.invitedPlayers.map((rsvp) => rsvp.playerId));
-		const search = query.trim().toLowerCase();
-		return players
-			.filter((player) => !invited.has(player.id))
-			.filter((player) => search === "" || player.name.toLowerCase().includes(search))
-			.slice(0, MAX_SUGGESTIONS);
-	}, [players, gameNight.invitedPlayers, query]);
-
-	const hasUninvitedPlayers = players.some(
-		(player) => !gameNight.invitedPlayers.some((rsvp) => rsvp.playerId === player.id),
+	const uninvited = useMemo(
+		() => players.filter((player) => !gameNight.invitedPlayers.some((rsvp) => rsvp.playerId === player.id)),
+		[players, gameNight.invitedPlayers],
 	);
 
-	const handleStatusChange = async (rsvp: GameNightRsvps, state: GameNightRsvpState) => {
+	const search = query.trim().toLowerCase();
+	const suggestions = uninvited
+		.filter((player) => player.name.toLowerCase().includes(search))
+		.slice(0, MAX_SUGGESTIONS);
+
+	const handleStatusChange = (rsvp: GameNightRsvps, state: GameNightRsvpState) => {
 		if (rsvp.state === state) return;
-
-		try {
-			await onUpdateRsvp({
-				id: rsvp.id,
-				gameNightId: gameNight.id,
-				playerId: rsvp.playerId,
-				state,
-			});
-		} catch {
-			return;
-		}
+		onUpdateRsvp({ id: rsvp.id, gameNightId: gameNight.id, playerId: rsvp.playerId, state });
 	};
 
-	const saveInvitedPlayers = async (playerIds: number[]) => {
-		try {
-			await onUpdateGameNight({
-				id: gameNight.id,
-				title: gameNight.title,
-				notes: gameNight.notes,
-				startDate: new Date(gameNight.startDate),
-				hostId: gameNight.hostId,
-				locationId: gameNight.locationId,
-				suggestedGameIds: gameNight.suggestedGames.map((game) => game.id),
-				invitedPlayerIds: playerIds.filter((id) => id !== gameNight.hostId),
-			});
-		} catch {
-			return;
-		}
-	};
+	const saveInvitedPlayers = (playerIds: number[]) =>
+		onUpdateGameNight({ ...toUpdateGameNight(gameNight), invitedPlayerIds: playerIds });
 
-	const invitedIds = gameNight.invitedPlayers.map((rsvp) => rsvp.playerId);
+	const invitedIds = toUpdateGameNight(gameNight).invitedPlayerIds;
 
 	const handleRemove = (playerId: number) => saveInvitedPlayers(invitedIds.filter((id) => id !== playerId));
 
-	const handleInvite = async (playerId: number) => {
-		await saveInvitedPlayers([...invitedIds, playerId]);
+	const handleInvite = (playerId: number) => {
+		saveInvitedPlayers([...invitedIds, playerId]);
 		setQuery("");
 	};
 
 	return (
 		<BgtDialog open={open} onClose={close}>
-			<BgtDialogContent className="md:max-w-xl! max-md:top-auto! max-md:bottom-0! max-md:w-full! max-md:max-w-none! max-md:translate-y-0! max-md:max-h-[90dvh]! max-md:rounded-b-none! max-md:p-4!">
+			<BgtDialogContent size="sheet">
 				<div className="flex flex-col gap-0.5 pr-6">
 					<BgtDialogTitle>{t("rsvp.title")}</BgtDialogTitle>
 					<BgtDialogDescription className="text-sm">
@@ -215,7 +186,7 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 					</div>
 
 					<div className="flex min-w-0 flex-col gap-4">
-						{hasUninvitedPlayers && (
+						{uninvited.length > 0 && (
 							<div className="flex flex-col gap-2">
 								<BgtText size="2" weight="bold">
 									{t("rsvp.invite-more")}
@@ -237,18 +208,16 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 								) : (
 									<div className="flex flex-wrap gap-2">
 										{suggestions.map((player) => (
-											<button
+											<AvatarChipButton
 												key={player.id}
-												type="button"
+												title={player.name}
+												image={player.image}
 												disabled={isLoading}
 												onClick={() => handleInvite(player.id)}
-												aria-label={t("rsvp.invite", { name: player.name })}
-												className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 py-1 pr-3 pl-1 text-xs font-medium hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+												label={t("rsvp.invite", { name: player.name })}
 											>
-												<BgtAvatar title={player.name} image={player.image} size="small" />
-												{player.name}
 												<PlusIcon className="size-3.5 text-primary" />
-											</button>
+											</AvatarChipButton>
 										))}
 									</div>
 								)}
