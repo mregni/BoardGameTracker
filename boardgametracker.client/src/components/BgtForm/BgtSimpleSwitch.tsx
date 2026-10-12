@@ -23,7 +23,7 @@ export const BgtSimpleSwitch = (props: Props) => {
 						onCheckedChange={onChange}
 						disabled={disabled}
 						checked={value}
-						className="w-[42px] h-[21px] rounded-full relative data-disabled:bg-slate-600 data-[state=checked]:bg-primary outline-hidden cursor-defaul bg-slate-500"
+						className="w-[42px] h-[21px] rounded-full relative data-disabled:bg-slate-600 data-[state=checked]:bg-primary cursor-defaul bg-slate-500"
 					>
 						<Switch.Thumb className="block w-[21px] h-[21px] -left-[2px] top-0 absolute bg-white rounded-full transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[23px]" />
 					</Switch.Root>
