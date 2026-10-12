@@ -70,22 +70,4 @@ public class SessionRepositorySuggestionsTests
 
         result.Should().BeEmpty();
     }
-
-    [Fact]
-    public async Task GetMostFrequentPlayerIds_ShouldReturnPlayersBySessionCountDescending()
-    {
-        var databaseName = await SeedAsync(
-            MakeSession(1, 1, 10, 20, 30),
-            MakeSession(1, 2, 20, 30),
-            MakeSession(2, 3, 20, 40),
-            MakeSession(2, 4, 40, 50),
-            MakeSession(3, 5, 40));
-
-        await using var context = CreateContext(databaseName);
-        var repository = new SessionRepository(context);
-
-        var result = await repository.GetMostFrequentPlayerIds(3, TestContext.Current.CancellationToken);
-
-        result.Should().Equal(20, 40, 30);
-    }
 }

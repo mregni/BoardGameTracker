@@ -100,6 +100,7 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
                 WinCount = g.Count(x => x.Won)
             })
             .OrderByDescending(x => x.PlayCount)
+            .ThenBy(x => x.Id)
             .Take(count)
             .ToListAsync(cancellationToken);
 

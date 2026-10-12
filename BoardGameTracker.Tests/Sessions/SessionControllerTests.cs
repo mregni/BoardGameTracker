@@ -5,7 +5,6 @@ using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Sessions.Interfaces;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -213,7 +212,7 @@ public class SessionControllerTests
     [Fact]
     public async Task GetSuggestions_ShouldReturnOkWithSuggestions()
     {
-        var suggestions = new SessionSuggestions
+        var suggestions = new SessionSuggestionsDto
         {
             RecentGameIds = [3, 1],
             FrequentPlayerIds = [8, 2, 5],

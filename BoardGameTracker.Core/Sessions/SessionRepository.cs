@@ -86,19 +86,6 @@ public class SessionRepository : EfRepository<Session>, ISessionRepository
             .ToListAsync(cancellationToken);
     }
 
-    public Task<List<int>> GetMostFrequentPlayerIds(int count, CancellationToken cancellationToken = default)
-    {
-        return _context.PlayerSessions
-            .AsNoTracking()
-            .GroupBy(x => x.PlayerId)
-            .Select(g => new { PlayerId = g.Key, SessionCount = g.Count() })
-            .OrderByDescending(x => x.SessionCount)
-            .ThenBy(x => x.PlayerId)
-            .Take(count)
-            .Select(x => x.PlayerId)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task DeleteByPlayerIdAsync(int playerId)
     {
         var sessions = await _context.Sessions

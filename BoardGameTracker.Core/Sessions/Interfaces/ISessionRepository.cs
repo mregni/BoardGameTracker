@@ -11,6 +11,5 @@ public interface ISessionRepository: IRepository<Session>
     Task<List<Session>> GetRecentSessions(int count, CancellationToken cancellationToken = default);
     Task<List<DateTime>> GetSessionStartTimes(CancellationToken cancellationToken = default);
     Task<List<int>> GetRecentlyPlayedGameIds(int count, CancellationToken cancellationToken = default);
-    Task<List<int>> GetMostFrequentPlayerIds(int count, CancellationToken cancellationToken = default);
     Task DeleteByPlayerIdAsync(int playerId);
 }

@@ -1,6 +1,6 @@
 ﻿using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.DTOs;
 
 namespace BoardGameTracker.Core.Sessions.Interfaces;
 
@@ -10,5 +10,5 @@ public interface ISessionService
     Task Delete(int id);
     Task<Session> UpdateFromCommand(UpdateSessionCommand command);
     Task<Session?> Get(int id);
-    Task<SessionSuggestions> GetSuggestions(CancellationToken cancellationToken = default);
+    Task<SessionSuggestionsDto> GetSuggestions(CancellationToken cancellationToken = default);
 }

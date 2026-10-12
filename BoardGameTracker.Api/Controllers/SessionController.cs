@@ -1,4 +1,4 @@
-﻿using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common;
@@ -41,7 +41,7 @@ public class SessionController : ControllerBase
     public async Task<IActionResult> GetSuggestions(CancellationToken cancellationToken)
     {
         var suggestions = await _sessionService.GetSuggestions(cancellationToken);
-        return Ok(suggestions.ToDto());
+        return Ok(suggestions);
     }
 
     [HttpPost]
