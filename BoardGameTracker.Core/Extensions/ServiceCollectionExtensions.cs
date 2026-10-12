@@ -116,6 +116,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IGameRepository, GameRepository>();
         serviceCollection.AddScoped<IGameStatisticsRepository, GameStatisticsRepository>();
         serviceCollection.AddScoped<IPlayerRepository, PlayerRepository>();
+        serviceCollection.AddScoped<ILocationRepository, LocationRepository>();
         serviceCollection.AddScoped<ISessionRepository, SessionRepository>();
         serviceCollection.AddScoped<IBadgeRepository, BadgeRepository>();
         serviceCollection.AddScoped<ICompareRepository, CompareRepository>();

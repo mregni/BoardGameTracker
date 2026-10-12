@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
@@ -182,6 +183,76 @@ public class LocationControllerTests
         result.Should().BeOfType<NotFoundResult>();
 
         _locationServiceMock.Verify(x => x.GetByIdAsync(locationId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLocationById_ShouldReturnOk_WhenLocationExists()
+    {
+        var location = new LocationDto { Id = 3, Name = "Home", PlayCount = 2 };
+        _locationServiceMock.Setup(x => x.GetDetails(3)).ReturnsAsync(location);
+
+        var result = await _controller.GetLocationById(3);
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(location);
+        _locationServiceMock.Verify(x => x.GetDetails(3), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLocationById_ShouldReturnNotFound_WhenLocationDoesNotExist()
+    {
+        _locationServiceMock.Setup(x => x.GetDetails(3)).ReturnsAsync((LocationDto?)null);
+
+        var result = await _controller.GetLocationById(3);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _locationServiceMock.Verify(x => x.GetDetails(3), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLocationStatistics_ShouldReturnOk_WhenLocationExists()
+    {
+        var statistics = new LocationStatisticsDto { DistinctGameCount = 2, DistinctPlayerCount = 3, TotalPlayedTime = 120 };
+        _locationServiceMock.Setup(x => x.ExistsAsync(3)).ReturnsAsync(true);
+        _locationServiceMock.Setup(x => x.GetStatistics(3)).ReturnsAsync(statistics);
+
+        var result = await _controller.GetLocationStatistics(3);
+
+        result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeSameAs(statistics);
+        _locationServiceMock.Verify(x => x.ExistsAsync(3), Times.Once);
+        _locationServiceMock.Verify(x => x.GetStatistics(3), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLocationStatistics_ShouldReturnNotFound_WhenLocationDoesNotExist()
+    {
+        _locationServiceMock.Setup(x => x.ExistsAsync(3)).ReturnsAsync(false);
+
+        var result = await _controller.GetLocationStatistics(3);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _locationServiceMock.Verify(x => x.ExistsAsync(3), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetLocationSessions_ShouldReturnOkWithSessionDtos()
+    {
+        var sessions = new List<Session>
+        {
+            new(1, new System.DateTime(2030, 1, 2), new System.DateTime(2030, 1, 2, 1, 0, 0), string.Empty) { Id = 2 },
+            new(1, new System.DateTime(2030, 1, 1), new System.DateTime(2030, 1, 1, 1, 0, 0), string.Empty) { Id = 1 }
+        };
+        _locationServiceMock.Setup(x => x.GetSessions(3)).ReturnsAsync(sessions);
+
+        var result = await _controller.GetLocationSessions(3);
+
+        var returned = result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeAssignableTo<List<SessionDto>>().Subject;
+        returned.Select(x => x.Id).Should().Equal(2, 1);
+        _locationServiceMock.Verify(x => x.GetSessions(3), Times.Once);
         VerifyNoOtherCalls();
     }
 }

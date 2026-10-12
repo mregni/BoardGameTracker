@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Ardalis.Specification;
 using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
@@ -605,6 +606,24 @@ public class PlayerServiceTests
 
         result.Should().Equal(1, 3);
         _playerRepositoryMock.Verify(x => x.ListAsync(It.IsAny<PlayerIdsSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetOverview_ShouldReturnProjectedPlayers()
+    {
+        var overview = new List<PlayerOverviewDto>
+        {
+            new() { Id = 1, Name = "Alice", PlayCount = 4, WinCount = 2 }
+        };
+        _playerRepositoryMock
+            .Setup(x => x.ListAsync(It.IsAny<PlayersOverviewSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(overview);
+
+        var result = await _playerService.GetOverview();
+
+        result.Should().BeSameAs(overview);
+        _playerRepositoryMock.Verify(x => x.ListAsync(It.IsAny<PlayersOverviewSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 }

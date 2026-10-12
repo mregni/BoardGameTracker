@@ -132,5 +132,11 @@
   "hour-short": "h",
   "minute-short": "min",
   "game": "Juego",
-  "comment": "Comentario"
+  "comment": "Comentario",
+  "tile": {
+    "sessions_one": "partida",
+    "sessions_other": "partidas",
+    "wins": "victorias",
+    "no-sessions": "Aún no hay partidas"
+  }
 }

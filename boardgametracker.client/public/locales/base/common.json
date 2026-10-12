@@ -132,5 +132,11 @@
   "hour-short": "h",
   "minute-short": "m",
   "game": "Game",
-  "comment": "Comment"
+  "comment": "Comment",
+  "tile": {
+    "sessions_one": "session",
+    "sessions_other": "sessions",
+    "wins": "wins",
+    "no-sessions": "No sessions yet"
+  }
 }

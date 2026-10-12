@@ -1,4 +1,5 @@
 ﻿using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
@@ -47,6 +48,12 @@ public class PlayerService : IPlayerService
     {
         _logger.LogDebug("Fetching all players");
         return _playerRepository.GetAllAsync();
+    }
+
+    public Task<List<PlayerOverviewDto>> GetOverview()
+    {
+        _logger.LogDebug("Fetching players overview");
+        return _playerRepository.ListAsync(new PlayersOverviewSpec());
     }
 
     public async Task<Player> Create(CreatePlayerCommand command)

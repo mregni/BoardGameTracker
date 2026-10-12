@@ -11,7 +11,9 @@ import type {
 	Leaderboard,
 	LeaderboardEntry,
 	Location,
+	LocationStatistics,
 	Player,
+	PlayerOverview,
 	PlayerSession,
 	Session,
 	Settings,
@@ -52,6 +54,8 @@ describe("API contract", () => {
 		sameKeys<PlayerSession, Schemas["PlayerSessionDto"]>(true);
 		sameKeys<Expansion, Schemas["ExpansionDto"]>(true);
 		sameKeys<Location, Schemas["LocationDto"]>(true);
+		sameKeys<LocationStatistics, Schemas["LocationStatisticsDto"]>(true);
+		sameKeys<PlayerOverview, Schemas["PlayerOverviewDto"]>(true);
 		sameKeys<Loan, Schemas["LoanDto"]>(true);
 		sameKeys<GameNight, Schemas["GameNightDto"]>(true);
 		sameKeys<Badge, Schemas["BadgeDto"]>(true);

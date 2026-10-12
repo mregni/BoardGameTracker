@@ -1,10 +1,16 @@
-import type { Player, PlayerStatistics, Session } from "../models";
+import type { Player, PlayerOverview, PlayerStatistics, Session } from "../models";
 import { axiosInstance } from "../utils/axiosInstance";
 
 const domain = "player";
 
 export const getPlayersCall = (): Promise<Player[]> => {
 	return axiosInstance.get<Player[]>(domain).then((response) => {
+		return response.data;
+	});
+};
+
+export const getPlayersOverviewCall = (): Promise<PlayerOverview[]> => {
+	return axiosInstance.get<PlayerOverview[]>(`${domain}/overview`).then((response) => {
 		return response.data;
 	});
 };
