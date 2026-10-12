@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common.DTOs;
@@ -15,20 +15,17 @@ namespace BoardGameTracker.Tests.Sessions;
 public class SessionControllerTests
 {
     private readonly Mock<ISessionService> _sessionServiceMock;
-    private readonly Mock<ISessionSuggestionService> _sessionSuggestionServiceMock;
     private readonly SessionController _controller;
 
     public SessionControllerTests()
     {
         _sessionServiceMock = new Mock<ISessionService>();
-        _sessionSuggestionServiceMock = new Mock<ISessionSuggestionService>();
-        _controller = new SessionController(_sessionServiceMock.Object, _sessionSuggestionServiceMock.Object);
+        _controller = new SessionController(_sessionServiceMock.Object);
     }
 
     private void VerifyNoOtherCalls()
     {
         _sessionServiceMock.VerifyNoOtherCalls();
-        _sessionSuggestionServiceMock.VerifyNoOtherCalls();
     }
 
     #region GetSession Tests
@@ -204,36 +201,6 @@ public class SessionControllerTests
         result.Should().BeOfType<NotFoundResult>();
 
         _sessionServiceMock.Verify(x => x.Get(sessionId), Times.Once);
-        VerifyNoOtherCalls();
-    }
-
-    #endregion
-
-    #region GetSuggestions Tests
-
-    [Fact]
-    public async Task GetSuggestions_ShouldReturnOkWithSuggestions()
-    {
-        var suggestions = new SessionSuggestionsDto
-        {
-            RecentGameIds = [3, 1],
-            FrequentPlayerIds = [8, 2, 5],
-            LastLocationId = 4
-        };
-
-        _sessionSuggestionServiceMock
-            .Setup(x => x.GetSuggestions(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(suggestions);
-
-        var result = await _controller.GetSuggestions(TestContext.Current.CancellationToken);
-
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var dto = okResult.Value.Should().BeAssignableTo<SessionSuggestionsDto>().Subject;
-        dto.RecentGameIds.Should().Equal(3, 1);
-        dto.FrequentPlayerIds.Should().Equal(8, 2, 5);
-        dto.LastLocationId.Should().Be(4);
-
-        _sessionSuggestionServiceMock.Verify(x => x.GetSuggestions(It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

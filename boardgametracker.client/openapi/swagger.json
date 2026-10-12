@@ -3781,35 +3781,6 @@
         }
       }
     },
-    "/api/session/suggestions": {
-      "get": {
-        "tags": [
-          "Session"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionSuggestionsDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionSuggestionsDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionSuggestionsDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/session": {
       "post": {
         "tags": [
@@ -3897,6 +3868,35 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/session/suggestions": {
+      "get": {
+        "tags": [
+          "Session"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSuggestionsDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSuggestionsDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSuggestionsDto"
                 }
               }
             }

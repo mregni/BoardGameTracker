@@ -15,12 +15,10 @@ namespace BoardGameTracker.Api.Controllers;
 public class SessionController : ControllerBase
 {
     private readonly ISessionService _sessionService;
-    private readonly ISessionSuggestionService _sessionSuggestionService;
 
-    public SessionController(ISessionService sessionService, ISessionSuggestionService sessionSuggestionService)
+    public SessionController(ISessionService sessionService)
     {
         _sessionService = sessionService;
-        _sessionSuggestionService = sessionSuggestionService;
     }
 
     [HttpGet]
@@ -35,15 +33,6 @@ public class SessionController : ControllerBase
         }
 
         return Ok(session.ToDto());
-    }
-
-    [HttpGet]
-    [Route("suggestions")]
-    [ProducesResponseType<SessionSuggestionsDto>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetSuggestions(CancellationToken cancellationToken)
-    {
-        var suggestions = await _sessionSuggestionService.GetSuggestions(cancellationToken);
-        return Ok(suggestions);
     }
 
     [HttpPost]
