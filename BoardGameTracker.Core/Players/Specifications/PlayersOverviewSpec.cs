@@ -9,7 +9,8 @@ public sealed class PlayersOverviewSpec : Specification<Player, PlayerOverviewDt
     public PlayersOverviewSpec()
     {
         Query
-            .OrderBy(x => x.Name)
+            .OrderByDescending(x => x.PlayerSessions.Count)
+            .ThenBy(x => x.Name)
             .AsNoTracking();
 
         Query.Select(x => new PlayerOverviewDto

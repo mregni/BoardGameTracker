@@ -419,18 +419,15 @@ public class LocationServiceTests
     [Fact]
     public async Task GetStatistics_ShouldCombineRepositoryAggregates()
     {
-        _locationRepositoryMock.Setup(x => x.GetSessionCount(3)).ReturnsAsync(9);
         _locationRepositoryMock.Setup(x => x.GetDistinctGameCount(3)).ReturnsAsync(6);
         _locationRepositoryMock.Setup(x => x.GetDistinctPlayerCount(3)).ReturnsAsync(5);
         _locationRepositoryMock.Setup(x => x.GetPlayLengthInMinutes(3)).ReturnsAsync(460);
 
         var result = await _locationService.GetStatistics(3);
 
-        result.SessionCount.Should().Be(9);
         result.DistinctGameCount.Should().Be(6);
         result.DistinctPlayerCount.Should().Be(5);
         result.TotalPlayedTime.Should().Be(460);
-        _locationRepositoryMock.Verify(x => x.GetSessionCount(3), Times.Once);
         _locationRepositoryMock.Verify(x => x.GetDistinctGameCount(3), Times.Once);
         _locationRepositoryMock.Verify(x => x.GetDistinctPlayerCount(3), Times.Once);
         _locationRepositoryMock.Verify(x => x.GetPlayLengthInMinutes(3), Times.Once);
@@ -449,7 +446,7 @@ public class LocationServiceTests
             .Setup(x => x.ListAsync(It.IsAny<SessionsByLocationRecentFirstSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(sessions);
 
-        var result = await _locationService.GetSessions(3, 10);
+        var result = await _locationService.GetSessions(3);
 
         result.Should().BeSameAs(sessions);
         _sessionRepositoryMock.Verify(x => x.ListAsync(It.IsAny<SessionsByLocationRecentFirstSpec>(), It.IsAny<CancellationToken>()), Times.Once);

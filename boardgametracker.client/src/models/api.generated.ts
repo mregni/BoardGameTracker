@@ -2276,9 +2276,7 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: {
-                    count?: number;
-                };
+                query?: never;
                 header?: never;
                 path: {
                     id: number;
@@ -4521,8 +4519,6 @@ export interface components {
             playCount: number;
         };
         LocationStatisticsDto: {
-            /** Format: int32 */
-            sessionCount: number;
             /** Format: int32 */
             distinctGameCount: number;
             /** Format: int32 */

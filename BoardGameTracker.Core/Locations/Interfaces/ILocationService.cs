@@ -11,7 +11,7 @@ public interface ILocationService
     Task<LocationDto?> GetDetails(int id);
     Task<bool> ExistsAsync(int id);
     Task<LocationStatisticsDto> GetStatistics(int id);
-    Task<List<Session>> GetSessions(int id, int? count);
+    Task<List<Session>> GetSessions(int id);
     Task<Location> Create(CreateLocationCommand command);
     Task Delete(int id);
     Task<Location> Update(UpdateLocationCommand command);

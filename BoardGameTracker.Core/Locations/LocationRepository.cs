@@ -1,8 +1,6 @@
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Core.Datastore;
-using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
-using BoardGameTracker.Core.Sessions.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Locations;
@@ -10,17 +8,10 @@ namespace BoardGameTracker.Core.Locations;
 public class LocationRepository : EfRepository<Location>, ILocationRepository
 {
     private readonly MainDbContext _dbContext;
-    private readonly IReadRepository<Session> _sessionReadRepository;
 
-    public LocationRepository(MainDbContext dbContext, IReadRepository<Session> sessionReadRepository) : base(dbContext)
+    public LocationRepository(MainDbContext dbContext) : base(dbContext)
     {
         _dbContext = dbContext;
-        _sessionReadRepository = sessionReadRepository;
-    }
-
-    public Task<int> GetSessionCount(int id)
-    {
-        return _sessionReadRepository.CountAsync(new SessionsByLocationSpec(id));
     }
 
     public Task<int> GetDistinctGameCount(int id)

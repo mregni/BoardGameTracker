@@ -20,42 +20,18 @@ public class SessionsByLocationSpecsTests
     }
 
     [Fact]
-    public void SessionsByLocationSpec_ShouldMatchOnlyThatLocation_AndNotTrack()
-    {
-        var home = SessionAt(1, Home, new DateTime(2030, 1, 1));
-        var office = SessionAt(2, Office, new DateTime(2030, 1, 2));
-        var nowhere = new SessionBuilder().WithId(3).Build();
-        var spec = new SessionsByLocationSpec(1);
-
-        var result = spec.Evaluate([home, office, nowhere]).ToList();
-
-        result.Select(x => x.Id).Should().Equal(1);
-        spec.AsNoTracking.Should().BeTrue();
-    }
-
-    [Fact]
     public void SessionsByLocationRecentFirstSpec_ShouldFilterByLocation_NewestFirst_AndIncludePlayers()
     {
         var older = SessionAt(1, Home, new DateTime(2030, 1, 1));
         var newer = SessionAt(2, Home, new DateTime(2030, 1, 5));
         var office = SessionAt(3, Office, new DateTime(2030, 1, 9));
+        var nowhere = new SessionBuilder().WithId(4).Build();
         var spec = new SessionsByLocationRecentFirstSpec(1);
 
-        var result = spec.Evaluate([older, newer, office]).ToList();
+        var result = spec.Evaluate([older, newer, office, nowhere]).ToList();
 
         result.Select(x => x.Id).Should().Equal(2, 1);
         spec.AsNoTracking.Should().BeTrue();
         spec.ShouldIncludeExactly("PlayerSessions");
-    }
-
-    [Fact]
-    public void SessionsByLocationRecentFirstSpec_ShouldApplyTake_WhenCountGiven()
-    {
-        var older = SessionAt(1, Home, new DateTime(2030, 1, 1));
-        var newer = SessionAt(2, Home, new DateTime(2030, 1, 5));
-
-        var result = new SessionsByLocationRecentFirstSpec(1, 1).Evaluate([older, newer]).ToList();
-
-        result.Should().ContainSingle().Which.Id.Should().Be(2);
     }
 }

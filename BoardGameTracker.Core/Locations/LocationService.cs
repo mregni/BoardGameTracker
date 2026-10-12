@@ -62,17 +62,16 @@ public class LocationService : ILocationService
         _logger.LogDebug("Calculating statistics for location {LocationId}", id);
         return new LocationStatisticsDto
         {
-            SessionCount = await _locationRepository.GetSessionCount(id),
             DistinctGameCount = await _locationRepository.GetDistinctGameCount(id),
             DistinctPlayerCount = await _locationRepository.GetDistinctPlayerCount(id),
             TotalPlayedTime = await _locationRepository.GetPlayLengthInMinutes(id)
         };
     }
 
-    public Task<List<Session>> GetSessions(int id, int? count)
+    public Task<List<Session>> GetSessions(int id)
     {
         _logger.LogDebug("Fetching sessions for location {LocationId}", id);
-        return _sessionRepository.ListAsync(new SessionsByLocationRecentFirstSpec(id, count));
+        return _sessionRepository.ListAsync(new SessionsByLocationRecentFirstSpec(id));
     }
 
     public async Task<Location> Create(CreateLocationCommand command)

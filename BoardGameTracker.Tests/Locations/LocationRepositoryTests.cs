@@ -40,7 +40,7 @@ public class LocationRepositoryTests
 
     private static LocationRepository CreateRepository(MainDbContext context)
     {
-        return new LocationRepository(context, new EfReadRepository<Session>(context));
+        return new LocationRepository(context);
     }
 
     [Fact]
@@ -51,7 +51,6 @@ public class LocationRepositoryTests
         await using var context = CreateContext(databaseName);
         var repository = CreateRepository(context);
 
-        (await repository.GetSessionCount(homeId)).Should().Be(3);
         (await repository.GetDistinctGameCount(homeId)).Should().Be(2);
         (await repository.GetDistinctPlayerCount(homeId)).Should().Be(3);
         (await repository.GetPlayLengthInMinutes(homeId)).Should().BeApproximately(135, 0.01);
@@ -65,7 +64,6 @@ public class LocationRepositoryTests
         await using var context = CreateContext(databaseName);
         var repository = CreateRepository(context);
 
-        (await repository.GetSessionCount(999)).Should().Be(0);
         (await repository.GetDistinctGameCount(999)).Should().Be(0);
         (await repository.GetDistinctPlayerCount(999)).Should().Be(0);
         (await repository.GetPlayLengthInMinutes(999)).Should().Be(0);
