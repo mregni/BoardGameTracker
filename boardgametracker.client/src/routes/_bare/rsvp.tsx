@@ -1,21 +1,22 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { isPast } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import AlertTriangle from "@/assets/icons/alert-triangle.svg?react";
-import PartyPopper from "@/assets/icons/party-popper.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
-import { GameNightRsvpState } from "@/models";
-import { RsvpSection } from "@/routes/game-nights/-components/RsvpSection";
+import { toLongDisplay } from "@/utils/dateUtils";
 import { useSettingsData } from "../settings/-hooks/useSettingsData";
 import { RsvpEventDetails } from "./-components/RsvpEventDetails";
-import { RsvpManuals } from "./-components/RsvpManuals";
+import { RsvpGames } from "./-components/RsvpGames";
 import { RsvpResponseForm } from "./-components/RsvpResponseForm";
 import { RsvpSuccessView } from "./-components/RsvpSuccessView";
+import { RsvpWhosComing } from "./-components/RsvpWhosComing";
 import { useRsvpData } from "./-hooks/useRsvpData";
 
 const rsvpSearchSchema = z.object({
@@ -29,23 +30,13 @@ export const Route = createFileRoute("/_bare/rsvp")({
 
 function RsvpPage() {
 	const { settings } = useSettingsData();
-	const { t } = useTranslation(["rsvp", "auth", "common"]);
+	const { t } = useTranslation(["rsvp", "auth"]);
 	const navigate = useNavigate();
 	const { linkId } = Route.useSearch();
 	const isAuthenticated = useAuth((s) => s.isAuthenticated);
 	const authStatus = useAuth((s) => s.authStatus);
-	const {
-		gameNight,
-		manuals,
-		isLoading,
-		submitRsvp,
-		isSubmitting,
-		isSubmitted,
-		submittedPlayerName,
-		submittedPlayerId,
-		submittedState,
-		changeResponse,
-	} = useRsvpData(linkId);
+	const { gameNight, manuals, isLoading, answer, isEditing, submitRsvp, isSubmitting, changeResponse } =
+		useRsvpData(linkId);
 
 	const requiresAuth = settings?.rsvpAuthenticationEnabled && authStatus?.authEnabled && !isAuthenticated;
 
@@ -60,17 +51,6 @@ function RsvpPage() {
 					label: t("auth:login"),
 					onClick: () => navigate({ to: "/login", search: { redirect: `/rsvp?linkId=${linkId}` } }),
 				}}
-			></BgtEmptyPage>
-		);
-	}
-
-	if (isSubmitted) {
-		return (
-			<RsvpSuccessView
-				playerName={submittedPlayerName}
-				response={submittedState}
-				hostNotified={!!settings?.emailEnabled && submittedPlayerId !== gameNight?.hostId}
-				onChangeResponse={changeResponse}
 			/>
 		);
 	}
@@ -78,7 +58,7 @@ function RsvpPage() {
 	if (!isLoading && !gameNight) {
 		return (
 			<BgtEmptyPage
-				header={t("not-found")}
+				showHeader={false}
 				icon={AlertTriangle}
 				title={t("not-found")}
 				description={t("not-found-description")}
@@ -88,62 +68,45 @@ function RsvpPage() {
 
 	return (
 		<BgtPage>
-			<BgtPageContent isLoading={isLoading} data={{ gameNight, settings }} className="max-w-3xl mx-auto w-full">
+			<BgtPageContent isLoading={isLoading} data={{ gameNight, settings }} className="mx-auto w-full max-w-2xl">
 				{({ gameNight, settings }) => {
-					const acceptedPlayers = gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Accepted);
-					const pendingPlayers = gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Pending);
-					const declinedPlayers = gameNight.invitedPlayers.filter((x) => x.state === GameNightRsvpState.Declined);
+					if (isPast(gameNight.startDate)) {
+						return (
+							<BgtCard className="gap-1.5" data-testid="rsvp-past">
+								<BgtHeading size="5" className="wrap-anywhere">
+									{t("past-title", { title: gameNight.title })}
+								</BgtHeading>
+								<BgtText size="2" color="gray" className="first-letter:uppercase">
+									{toLongDisplay(gameNight.startDate, settings.uiLanguage)}
+								</BgtText>
+								<BgtText size="2">{t("past-description")}</BgtText>
+							</BgtCard>
+						);
+					}
+
+					const answeredPlayer = gameNight.invitedPlayers.find((rsvp) => rsvp.playerId === answer?.playerId);
 
 					return (
 						<>
-							<div className="text-center">
-								<div className="inline-flex items-center justify-center w-12 h-12 bg-primary/20 rounded-full mb-3">
-									<PartyPopper className="size-6 text-primary" />
-								</div>
-								<BgtText size="7" weight="bold" color="white" className="block">
-									{t("youre-invited")}
-								</BgtText>
-								<BgtText color="gray" size="2">
-									{t("let-us-know")}
-								</BgtText>
-							</div>
-
-							<RsvpEventDetails gameNight={gameNight} timeFormat={settings.timeFormat} />
-
-							<RsvpManuals linkId={linkId} manuals={manuals} />
-
-							<RsvpResponseForm
-								invitedPlayers={gameNight.invitedPlayers}
-								hostId={gameNight.hostId}
-								onSubmit={submitRsvp}
-								isSubmitting={isSubmitting}
-							/>
-
-							<BgtCard>
-								<BgtText size="4" weight="bold" className="mb-3">
-									{t("whos-coming")}
-								</BgtText>
-								<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-									<RsvpSection
-										title={t("common:accepted")}
-										count={acceptedPlayers.length}
-										players={acceptedPlayers.map((x) => x.player)}
-										variant="accepted"
-									/>
-									<RsvpSection
-										title={t("common:pending")}
-										count={pendingPlayers.length}
-										players={pendingPlayers.map((x) => x.player)}
-										variant="pending"
-									/>
-									<RsvpSection
-										title={t("common:declined")}
-										count={declinedPlayers.length}
-										players={declinedPlayers.map((x) => x.player)}
-										variant="declined"
-									/>
-								</div>
-							</BgtCard>
+							<RsvpEventDetails gameNight={gameNight} settings={settings} />
+							<RsvpWhosComing gameNight={gameNight} />
+							{answer && answeredPlayer && !isEditing ? (
+								<RsvpSuccessView
+									playerName={answeredPlayer.player.name}
+									response={answer.state}
+									hostNotified={settings.emailEnabled && answeredPlayer.playerId !== gameNight.hostId}
+									onChangeResponse={changeResponse}
+								/>
+							) : (
+								<RsvpResponseForm
+									invitedPlayers={gameNight.invitedPlayers}
+									hostId={gameNight.hostId}
+									initialAnswer={answer}
+									onSubmit={submitRsvp}
+									isSubmitting={isSubmitting}
+								/>
+							)}
+							<RsvpGames linkId={linkId} games={gameNight.suggestedGames} manuals={manuals} />
 						</>
 					);
 				}}

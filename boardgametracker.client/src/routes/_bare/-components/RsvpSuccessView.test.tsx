@@ -13,7 +13,7 @@ describe("RsvpSuccessView", () => {
 				onChangeResponse={vi.fn()}
 			/>,
 		);
-		expect(screen.queryByText(/submitted-notified/)).not.toBeInTheDocument();
+		expect(screen.queryByText("host-notified")).not.toBeInTheDocument();
 
 		rerender(
 			<RsvpSuccessView
@@ -23,7 +23,19 @@ describe("RsvpSuccessView", () => {
 				onChangeResponse={vi.fn()}
 			/>,
 		);
-		expect(screen.getByText(/submitted-notified/)).toBeInTheDocument();
+		expect(screen.getByText("host-notified")).toBeInTheDocument();
+	});
+
+	it.each([
+		[GameNightRsvpState.Accepted, "answered-accepted"],
+		[GameNightRsvpState.Pending, "answered-maybe"],
+		[GameNightRsvpState.Declined, "answered-declined"],
+	])("confirms a %s answer", (state, message) => {
+		renderWithTheme(
+			<RsvpSuccessView playerName="Alice" response={state} hostNotified={false} onChangeResponse={vi.fn()} />,
+		);
+
+		expect(screen.getByRole("status")).toHaveTextContent(message);
 	});
 
 	it("lets the responder go back and change the response", async () => {

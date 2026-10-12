@@ -7,47 +7,40 @@ import { GameNightRsvpState } from "@/models";
 
 interface Props {
 	playerName: string;
-	response: GameNightRsvpState | null;
+	response: GameNightRsvpState;
 	hostNotified: boolean;
 	onChangeResponse: () => void;
 }
+
+const messages = {
+	[GameNightRsvpState.Accepted]: "answered-accepted",
+	[GameNightRsvpState.Pending]: "answered-maybe",
+	[GameNightRsvpState.Declined]: "answered-declined",
+} as const;
 
 export const RsvpSuccessView = ({ playerName, response, hostNotified, onChangeResponse }: Props) => {
 	const { t } = useTranslation("rsvp");
 
 	return (
-		<div className="min-h-screen flex items-center justify-center p-4">
-			<div className="max-w-md w-full">
-				<BgtCard className="text-center">
-					<div className="flex flex-col items-center gap-4">
-						<div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
-							<Check className="size-8 text-green-400" />
-						</div>
-
-						<div className="space-y-2">
-							<BgtText size="6" weight="bold" color="white">
-								{t("submitted-title")}
-							</BgtText>
-							<BgtText color="gray">
-								{t("submitted-thanks", { name: playerName })}
-								{hostNotified && ` ${t("submitted-notified")}`}
-							</BgtText>
-						</div>
-
-						<div className="bg-primary/10 border border-primary/30 rounded-lg p-4 w-full">
-							<BgtText size="2" color="white">
-								{response === GameNightRsvpState.Accepted && t("submitted-accepted")}
-								{response === GameNightRsvpState.Declined && t("submitted-declined")}
-								{response === GameNightRsvpState.Pending && t("submitted-maybe")}
-							</BgtText>
-						</div>
-
-						<BgtButton variant="text" onClick={onChangeResponse}>
-							{t("change-response")}
-						</BgtButton>
-					</div>
-				</BgtCard>
+		<BgtCard className="gap-3" role="status">
+			<div className="flex items-center gap-3">
+				<div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-green-500/20">
+					<Check className="size-5 text-green-400" />
+				</div>
+				<div className="flex min-w-0 flex-col gap-0.5">
+					<BgtText size="3" weight="bold">
+						{t(messages[response], { name: playerName })}
+					</BgtText>
+					{hostNotified && (
+						<BgtText size="2" color="gray">
+							{t("host-notified")}
+						</BgtText>
+					)}
+				</div>
 			</div>
-		</div>
+			<BgtButton variant="cancel" className="self-start" onClick={onChangeResponse}>
+				{t("change-response")}
+			</BgtButton>
+		</BgtCard>
 	);
 };
