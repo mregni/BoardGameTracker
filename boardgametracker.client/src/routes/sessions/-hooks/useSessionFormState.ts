@@ -1,52 +1,18 @@
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import type { CreateSessionPlayer, Expansion, Game } from "@/models";
 import { applyScoreWinners, winnersMatchScores } from "../-utils/sessionWinners";
 
-interface SessionFormApi {
-	store: {
-		subscribe: (listener: () => void) => { unsubscribe: () => void };
-		state: { values: { gameId: number } };
-	};
-	setFieldValue: (field: "minutes", value: number) => void;
-}
-
-interface InitialPlayerSession {
-	playerId: number;
-	won: boolean;
-	firstPlay: boolean;
-	score?: number | null;
-}
+type PlayersUpdater = (players: CreateSessionPlayer[]) => CreateSessionPlayer[];
 
 interface UseSessionFormStateProps {
-	form: SessionFormApi;
+	selectedGameId: number;
 	games: Game[];
 	initialGame?: Game;
 	initialExpansions?: Expansion[];
-	initialPlayerSessions?: InitialPlayerSession[];
-	onDurationDefaulted?: (minutes: number) => void;
+	initialPlayers: CreateSessionPlayer[];
+	setPlayers: (updater: PlayersUpdater) => void;
 }
-
-interface SessionFormState {
-	selectedGameId: number;
-	selectedExpansionIds: number[];
-	players: CreateSessionPlayer[];
-	winnersFromScores: boolean;
-}
-
-type SessionFormAction =
-	| { type: "SET_GAME"; gameId: number }
-	| { type: "SET_SELECTED_EXPANSIONS"; expansionIds: number[] }
-	| { type: "ADD_PLAYER"; playerId: number }
-	| { type: "REMOVE_PLAYER"; playerId: number }
-	| { type: "SET_SCORE"; playerId: number; score: number | null }
-	| { type: "TOGGLE_WON"; playerId: number }
-	| { type: "TOGGLE_FIRST_PLAY"; playerId: number };
-
-const withWinners = (state: SessionFormState, players: CreateSessionPlayer[]): SessionFormState => ({
-	...state,
-	players: state.winnersFromScores ? applyScoreWinners(players) : players,
-});
 
 const updatePlayer = (
 	players: CreateSessionPlayer[],
@@ -54,128 +20,85 @@ const updatePlayer = (
 	update: (player: CreateSessionPlayer) => CreateSessionPlayer,
 ) => players.map((player) => (player.playerId === playerId ? update(player) : player));
 
-function sessionFormReducer(state: SessionFormState, action: SessionFormAction): SessionFormState {
-	switch (action.type) {
-		case "SET_GAME":
-			return { ...state, selectedGameId: action.gameId, selectedExpansionIds: [] };
-		case "SET_SELECTED_EXPANSIONS":
-			return { ...state, selectedExpansionIds: action.expansionIds };
-		case "ADD_PLAYER":
-			if (state.players.some((x) => x.playerId === action.playerId)) return state;
-			return withWinners(state, [
-				...state.players,
-				{ playerId: action.playerId, won: false, firstPlay: false, score: null },
-			]);
-		case "REMOVE_PLAYER":
-			return withWinners(
-				state,
-				state.players.filter((x) => x.playerId !== action.playerId),
-			);
-		case "SET_SCORE":
-			return withWinners(
-				state,
-				updatePlayer(state.players, action.playerId, (player) => ({ ...player, score: action.score })),
-			);
-		case "TOGGLE_WON":
-			return {
-				...state,
-				winnersFromScores: false,
-				players: updatePlayer(state.players, action.playerId, (player) => ({ ...player, won: !player.won })),
-			};
-		case "TOGGLE_FIRST_PLAY":
-			return {
-				...state,
-				players: updatePlayer(state.players, action.playerId, (player) => ({
-					...player,
-					firstPlay: !player.firstPlay,
-				})),
-			};
-	}
-}
-
-const toSessionPlayers = (playerSessions: InitialPlayerSession[]): CreateSessionPlayer[] =>
-	playerSessions.map((x) => ({ playerId: x.playerId, won: x.won, firstPlay: x.firstPlay, score: x.score ?? null }));
-
 export const useSessionFormState = ({
-	form,
+	selectedGameId,
 	games,
 	initialGame,
 	initialExpansions = [],
-	initialPlayerSessions = [],
-	onDurationDefaulted,
+	initialPlayers,
+	setPlayers,
 }: UseSessionFormStateProps) => {
-	const [state, dispatch] = useReducer(sessionFormReducer, initialPlayerSessions, (playerSessions) => {
-		const players = toSessionPlayers(playerSessions);
-		return {
-			selectedGameId: initialGame?.id ?? 0,
-			selectedExpansionIds: initialExpansions.map((x) => x.id),
-			players,
-			winnersFromScores: winnersMatchScores(players),
-		};
-	});
+	const [expansionSelection, setExpansionSelection] = useState(() => ({
+		gameId: initialGame?.id ?? 0,
+		ids: initialExpansions.map((x) => x.id),
+	}));
+	const winnersFromScores = useRef(winnersMatchScores(initialPlayers));
 
-	const onDurationDefaultedRef = useRef(onDurationDefaulted);
-	onDurationDefaultedRef.current = onDurationDefaulted;
+	const changePlayers = useCallback(
+		(updater: PlayersUpdater) => {
+			setPlayers((players) => {
+				const next = updater(players);
+				return winnersFromScores.current ? applyScoreWinners(next) : next;
+			});
+		},
+		[setPlayers],
+	);
 
-	const selectedGameIdRef = useRef(state.selectedGameId);
-	selectedGameIdRef.current = state.selectedGameId;
+	const addPlayer = useCallback(
+		(playerId: number) => {
+			changePlayers((players) =>
+				players.some((x) => x.playerId === playerId)
+					? players
+					: [...players, { playerId, won: false, firstPlay: false, score: null }],
+			);
+		},
+		[changePlayers],
+	);
 
-	useEffect(() => {
-		const subscription = form.store.subscribe(() => {
-			const newGameId = form.store.state.values.gameId;
-			if (newGameId !== selectedGameIdRef.current) {
-				selectedGameIdRef.current = newGameId;
+	const removePlayer = useCallback(
+		(playerId: number) => {
+			changePlayers((players) => players.filter((x) => x.playerId !== playerId));
+		},
+		[changePlayers],
+	);
 
-				const selectedBoardGame = games.find((g) => g.id === newGameId);
-				if (selectedBoardGame) {
-					const minutes = selectedBoardGame.maxPlayTime ?? 30;
-					form.setFieldValue("minutes", minutes);
-					onDurationDefaultedRef.current?.(minutes);
-				}
-				dispatch({ type: "SET_GAME", gameId: newGameId });
-			}
-		});
-		return () => subscription.unsubscribe();
-	}, [form, games]);
+	const setScore = useCallback(
+		(playerId: number, score: number | null) => {
+			changePlayers((players) => updatePlayer(players, playerId, (player) => ({ ...player, score })));
+		},
+		[changePlayers],
+	);
 
-	const addPlayer = useCallback((playerId: number) => {
-		dispatch({ type: "ADD_PLAYER", playerId });
-	}, []);
+	const toggleWon = useCallback(
+		(playerId: number) => {
+			winnersFromScores.current = false;
+			changePlayers((players) => updatePlayer(players, playerId, (player) => ({ ...player, won: !player.won })));
+		},
+		[changePlayers],
+	);
 
-	const removePlayer = useCallback((playerId: number) => {
-		dispatch({ type: "REMOVE_PLAYER", playerId });
-	}, []);
+	const toggleFirstPlay = useCallback(
+		(playerId: number) => {
+			changePlayers((players) =>
+				updatePlayer(players, playerId, (player) => ({ ...player, firstPlay: !player.firstPlay })),
+			);
+		},
+		[changePlayers],
+	);
 
-	const setScore = useCallback((playerId: number, score: number | null) => {
-		dispatch({ type: "SET_SCORE", playerId, score });
-	}, []);
-
-	const toggleWon = useCallback((playerId: number) => {
-		dispatch({ type: "TOGGLE_WON", playerId });
-	}, []);
-
-	const toggleFirstPlay = useCallback((playerId: number) => {
-		dispatch({ type: "TOGGLE_FIRST_PLAY", playerId });
-	}, []);
-
-	const setSelectedExpansionIds = useCallback((expansionIds: number[]) => {
-		dispatch({ type: "SET_SELECTED_EXPANSIONS", expansionIds });
-	}, []);
+	const setSelectedExpansionIds = useCallback(
+		(ids: number[]) => setExpansionSelection({ gameId: selectedGameId, ids }),
+		[selectedGameId],
+	);
 
 	const selectedGame =
-		games.find((g) => g.id === state.selectedGameId) ??
-		(initialGame?.id === state.selectedGameId ? initialGame : undefined);
-	const expansionList: Expansion[] = selectedGame?.expansions ?? [];
+		games.find((g) => g.id === selectedGameId) ?? (initialGame?.id === selectedGameId ? initialGame : undefined);
 
 	return {
-		selectedGameId: state.selectedGameId,
 		hasScoring: selectedGame?.hasScoring ?? true,
-		expansionList,
-		selectedExpansionIds: state.selectedExpansionIds,
+		expansionList: selectedGame?.expansions ?? [],
+		selectedExpansionIds: expansionSelection.gameId === selectedGameId ? expansionSelection.ids : [],
 		setSelectedExpansionIds,
-
-		players: state.players,
-		winnersFromScores: state.winnersFromScores,
 		addPlayer,
 		removePlayer,
 		setScore,

@@ -5,6 +5,7 @@ import TrophyIcon from "@/assets/icons/trophy.svg?react";
 import XIcon from "@/assets/icons/x.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtInputContainer } from "@/components/BgtForm";
+import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import type { CreateSessionPlayer, Player } from "@/models";
 
 interface Props {
@@ -91,16 +92,15 @@ export const SessionPlayerRow = (props: Props) => {
 					</button>
 				</div>
 			</div>
-			<button
-				type="button"
+			<BgtIconButton
+				icon={<XIcon className="size-4" />}
+				intent="subtile"
+				size="1"
 				disabled={disabled}
 				aria-label={t("form.player.remove", { name })}
-				title={t("form.player.remove", { name })}
 				onClick={() => onRemove(entry.playerId)}
-				className="col-start-3 row-start-1 @xl:col-start-4 justify-self-end size-8 inline-flex items-center justify-center rounded-md text-white/60 hover:text-white hover:bg-white/10 disabled:opacity-50"
-			>
-				<XIcon className="size-4" />
-			</button>
+				className="col-start-3 row-start-1 @xl:col-start-4 justify-self-end"
+			/>
 		</li>
 	);
 };

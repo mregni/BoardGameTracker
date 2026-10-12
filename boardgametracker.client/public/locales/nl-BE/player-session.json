@@ -58,11 +58,8 @@
   },
   "form": {
     "game": {
-      "search": "Zoek spellen…",
-      "list": "Spellen",
       "recent": "Recent gespeeld",
-      "all": "Alle spellen",
-      "no-results": "Geen spellen gevonden"
+      "all": "Alle spellen"
     },
     "players": {
       "label": "Spelers & scores",

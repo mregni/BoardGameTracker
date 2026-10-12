@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const CreatePlayerSessionNoScoringSchema = z.object({
+export const CreatePlayerSessionSchema = z.object({
 	playerId: z.coerce
 		.number({
 			error: "player-session:new.player.required",
@@ -9,9 +9,6 @@ export const CreatePlayerSessionNoScoringSchema = z.object({
 		.positive({ message: "player-session:new.player.required" }),
 	won: z.boolean(),
 	firstPlay: z.boolean(),
-});
-
-export const CreatePlayerSessionSchema = CreatePlayerSessionNoScoringSchema.extend({
 	score: z
 		.number({
 			error: "player-session:score.required",
@@ -52,7 +49,7 @@ export const CreateSessionSchema = z.object({
 			message: "player-session:new.duration.positive",
 		}),
 	comment: z.string().nullable(),
-	playerSessions: CreatePlayerSessionSchema.or(CreatePlayerSessionNoScoringSchema).array().min(1, {
+	playerSessions: CreatePlayerSessionSchema.array().min(1, {
 		message: "player-session:new.players.minimum",
 	}),
 	expansionIds: z.array(z.number()).optional(),
@@ -60,4 +57,3 @@ export const CreateSessionSchema = z.object({
 
 export type CreateSession = z.infer<typeof CreateSessionSchema>;
 export type CreateSessionPlayer = z.infer<typeof CreatePlayerSessionSchema>;
-export type CreatePlayerSessionNoScoring = z.infer<typeof CreatePlayerSessionNoScoringSchema>;

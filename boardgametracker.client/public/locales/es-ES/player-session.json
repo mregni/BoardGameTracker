@@ -58,11 +58,8 @@
   },
   "form": {
     "game": {
-      "search": "Buscar juegos…",
-      "list": "Juegos",
       "recent": "Jugados recientemente",
-      "all": "Todos los juegos",
-      "no-results": "Ningún juego coincide"
+      "all": "Todos los juegos"
     },
     "players": {
       "label": "Jugadores y puntuaciones",

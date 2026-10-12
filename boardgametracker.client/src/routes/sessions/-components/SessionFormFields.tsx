@@ -3,10 +3,10 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtDateTimePicker, BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
-import { CreateSessionSchema, type Game, type Location } from "@/models";
+import { type BgtSelectImageItem, CreateSessionSchema, type Game, type Location } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
-import { SessionGameCombobox } from "./SessionGameCombobox";
+import { splitSuggested } from "../-utils/splitSuggested";
 
 export const SessionFormFields = withForm({
 	...sessionFormOpts,
@@ -15,10 +15,21 @@ export const SessionFormFields = withForm({
 		recentGameIds: [] as number[],
 		locations: [] as Location[],
 		disabled: false,
+		onGameChange: (() => {}) as (gameId: number) => void,
 		onMinutesChange: (() => {}) as (minutes: number | undefined) => void,
 	},
-	render: function Render({ form, games, recentGameIds, locations, disabled, onMinutesChange }) {
+	render: function Render({ form, games, recentGameIds, locations, disabled, onGameChange, onMinutesChange }) {
 		const { t } = useTranslation(["player-session", "common"]);
+
+		const gameSelectItems = useMemo<BgtSelectImageItem[]>(() => {
+			const { suggested, rest } = splitSuggested(games, recentGameIds);
+			const toItem = (game: Game, group?: string) => ({ value: game.id, label: game.title, image: game.image, group });
+			if (suggested.length === 0) return games.map((x) => toItem(x));
+			return [
+				...suggested.map((x) => toItem(x, t("form.game.recent"))),
+				...rest.map((x) => toItem(x, t("form.game.all"))),
+			];
+		}, [games, recentGameIds, t]);
 
 		const locationsSelectItems = useMemo(
 			() => [
@@ -33,12 +44,16 @@ export const SessionFormFields = withForm({
 
 		return (
 			<div className="@container flex flex-col gap-3">
-				<form.Field name="gameId" validators={zodValidator(CreateSessionSchema, "gameId")}>
+				<form.Field
+					name="gameId"
+					validators={zodValidator(CreateSessionSchema, "gameId")}
+					listeners={{ onChange: ({ value }) => onGameChange(value) }}
+				>
 					{(field: AnyFieldApi) => (
-						<SessionGameCombobox
+						<BgtSelect
 							field={field}
-							games={games}
-							recentGameIds={recentGameIds}
+							hasSearch
+							items={gameSelectItems}
 							label={t("new.game.label")}
 							disabled={disabled}
 							placeholder={t("new.game.placeholder")}

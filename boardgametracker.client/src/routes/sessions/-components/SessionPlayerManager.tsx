@@ -1,30 +1,30 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtSelect } from "@/components/BgtForm";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { withForm } from "@/hooks/form";
-import { type BgtSelectImageItem, type CreateSessionPlayer, CreateSessionSchema, type Player } from "@/models";
+import { type CreateSessionPlayer, CreateSessionSchema, type Player } from "@/models";
 import { CreatePlayerModal } from "@/routes/players/-modals/CreatePlayerModal";
 import { zodValidator } from "@/utils/zodValidator";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
+import { splitSuggested } from "../-utils/splitSuggested";
 import { SessionPlayerRow } from "./SessionPlayerRow";
 
-const toPlayerOptions = (players: Player[], selectedIds: number[], frequentIds: number[]): BgtSelectImageItem[] => {
-	const available = players.filter((x) => !selectedIds.includes(x.id));
-	const frequent = frequentIds
-		.map((id) => available.find((x) => x.id === id))
-		.filter((x): x is Player => x !== undefined);
-	const rest = available.filter((x) => !frequent.includes(x)).sort((a, b) => a.name.localeCompare(b.name));
-
-	return [...frequent, ...rest].map((x) => ({ value: x.id, label: x.name, image: x.image }));
+const toPlayerOptions = (players: Player[], selected: CreateSessionPlayer[], frequentIds: number[]) => {
+	const available = players.filter((x) => !selected.some((y) => y.playerId === x.id));
+	const { suggested, rest } = splitSuggested(available, frequentIds);
+	return [...suggested, ...rest.sort((a, b) => a.name.localeCompare(b.name))].map((x) => ({
+		value: x.id,
+		label: x.name,
+		image: x.image,
+	}));
 };
 
 export const SessionPlayerManager = withForm({
 	...sessionFormOpts,
 	props: {
-		players: [] as CreateSessionPlayer[],
 		playerList: [] as Player[],
 		frequentPlayerIds: [] as number[],
 		hasScoring: true,
@@ -37,7 +37,6 @@ export const SessionPlayerManager = withForm({
 	},
 	render: function Render({
 		form,
-		players,
 		playerList,
 		frequentPlayerIds,
 		hasScoring,
@@ -51,37 +50,22 @@ export const SessionPlayerManager = withForm({
 		const { t } = useTranslation(["player-session", "player"]);
 		const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-		useEffect(() => {
-			const quiet = players.length === 0 && !form.getFieldMeta("playerSessions")?.isTouched;
-			form.setFieldValue("playerSessions", players, { dontUpdateMeta: quiet, dontValidate: quiet });
-		}, [form, players]);
-
-		const options = toPlayerOptions(
-			playerList,
-			players.map((x: CreateSessionPlayer) => x.playerId),
-			frequentPlayerIds,
-		);
-
 		return (
 			<form.Field name="playerSessions" validators={zodValidator(CreateSessionSchema, "playerSessions")}>
 				{(field: AnyFieldApi) => {
+					const players: CreateSessionPlayer[] = field.state.value;
 					const errors: string[] =
 						field.state.meta.isTouched || form.state.submissionAttempts > 0 ? field.state.meta.errors : [];
-
-					const pickerField = {
-						name: "playerPicker",
-						state: { value: "", meta: { errors } },
-						handleChange: (value: number | string) => onAddPlayer(Number(value)),
-						handleBlur: () => {},
-					} as unknown as AnyFieldApi;
 
 					return (
 						<div className="flex flex-col gap-2">
 							<BgtSelect
-								field={pickerField}
+								value={null}
+								onValueChange={(value) => onAddPlayer(Number(value))}
+								errors={errors}
 								hasSearch
 								showAvatars
-								items={options}
+								items={toPlayerOptions(playerList, players, frequentPlayerIds)}
 								disabled={disabled}
 								label={hasScoring ? t("form.players.label") : t("form.players.label-no-scoring")}
 								placeholder={t("form.players.search")}
@@ -102,7 +86,7 @@ export const SessionPlayerManager = withForm({
 							)}
 							{players.length > 0 && (
 								<ul className="@container flex flex-col gap-1.5">
-									{players.map((entry: CreateSessionPlayer) => (
+									{players.map((entry) => (
 										<SessionPlayerRow
 											key={entry.playerId}
 											entry={entry}

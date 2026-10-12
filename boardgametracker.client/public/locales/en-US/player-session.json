@@ -58,11 +58,8 @@
   },
   "form": {
     "game": {
-      "search": "Search games…",
-      "list": "Games",
       "recent": "Recently played",
-      "all": "All games",
-      "no-results": "No games match"
+      "all": "All games"
     },
     "players": {
       "label": "Players & scores",

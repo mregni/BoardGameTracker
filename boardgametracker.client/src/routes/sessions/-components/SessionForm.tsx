@@ -1,4 +1,4 @@
-import type { AnyFieldApi } from "@tanstack/react-form";
+import { type AnyFieldApi, useStore } from "@tanstack/react-form";
 import { useRouter } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
@@ -10,7 +10,14 @@ import { BgtTextArea } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
-import { type CreateSession, CreateSessionSchema, type Expansion, type Game } from "@/models";
+import {
+	type CreateSession,
+	type CreateSessionPlayer,
+	CreateSessionSchema,
+	type Expansion,
+	type Game,
+	type PlayerSession,
+} from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { useSessionForm } from "../-hooks/useSessionForm";
@@ -20,13 +27,6 @@ import { SessionExpansionSelector } from "./SessionExpansionSelector";
 import { SessionFormFields } from "./SessionFormFields";
 import { SessionPlayerManager } from "./SessionPlayerManager";
 
-interface InitialPlayerSession {
-	playerId: number;
-	won: boolean;
-	firstPlay: boolean;
-	score?: number | null;
-}
-
 interface Props {
 	game?: Game | undefined;
 	locationId?: number | null;
@@ -34,7 +34,7 @@ interface Props {
 	comment?: string | null;
 	start?: Date | undefined;
 	expansions?: Expansion[] | undefined;
-	playerSessions?: InitialPlayerSession[] | undefined;
+	playerSessions?: Pick<PlayerSession, "playerId" | "won" | "firstPlay" | "score">[] | undefined;
 	onClick: (data: CreateSession) => Promise<void>;
 	buttonText: string;
 	title: string;
@@ -61,6 +61,9 @@ export const SessionForm = (props: Props) => {
 	const { locations, games, players: playerList, suggestions } = useSessionForm();
 	const isNewSession = locationId === undefined;
 	const [initialStart] = useState(() => start ?? addMinutes(new Date(), -(minutes ?? 30)));
+	const [initialPlayers] = useState<CreateSessionPlayer[]>(() =>
+		playerSessions.map(({ playerId, won, firstPlay, score }) => ({ playerId, won, firstPlay, score: score ?? null })),
+	);
 
 	const form = useAppForm({
 		...sessionFormOpts,
@@ -71,11 +74,12 @@ export const SessionForm = (props: Props) => {
 			minutes: minutes ?? 30,
 			comment: comment ?? "",
 			start: initialStart,
+			playerSessions: initialPlayers,
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = CreateSessionSchema.parse({
 				...value,
-				playerSessions: players.map((x) => (hasScoring ? x : { ...x, score: null })),
+				playerSessions: value.playerSessions.map((x) => (hasScoring ? x : { ...x, score: null })),
 				expansionIds: selectedExpansionIds,
 			});
 			await onClick(validatedData);
@@ -91,25 +95,33 @@ export const SessionForm = (props: Props) => {
 		[form, isNewSession],
 	);
 
+	const handleGameChange = useCallback(
+		(gameId: number) => {
+			const selected = games.find((x) => x.id === gameId);
+			if (selected) form.setFieldValue("minutes", selected.maxPlayTime ?? 30);
+		},
+		[form, games],
+	);
+
+	const selectedGameId = useStore(form.store, (state) => state.values.gameId);
+
 	const {
-		selectedGameId,
 		hasScoring,
 		expansionList,
 		selectedExpansionIds,
 		setSelectedExpansionIds,
-		players,
 		addPlayer,
 		removePlayer,
 		setScore,
 		toggleWon,
 		toggleFirstPlay,
 	} = useSessionFormState({
-		form,
+		selectedGameId,
 		games,
 		initialGame: game,
 		initialExpansions: expansions,
-		initialPlayerSessions: playerSessions,
-		onDurationDefaulted: syncStartWithDuration,
+		initialPlayers,
+		setPlayers: (updater) => form.setFieldValue("playerSessions", updater),
 	});
 
 	const lastLocationId = suggestions?.lastLocationId ?? null;
@@ -137,12 +149,12 @@ export const SessionForm = (props: Props) => {
 								recentGameIds={suggestions?.recentGameIds ?? []}
 								locations={locations}
 								disabled={disabled}
+								onGameChange={handleGameChange}
 								onMinutesChange={syncStartWithDuration}
 							/>
 
 							<SessionPlayerManager
 								form={form}
-								players={players}
 								playerList={playerList}
 								frequentPlayerIds={suggestions?.frequentPlayerIds ?? []}
 								hasScoring={hasScoring}

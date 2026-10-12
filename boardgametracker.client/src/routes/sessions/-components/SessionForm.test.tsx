@@ -2,7 +2,7 @@ import { addMinutes } from "date-fns";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Game, Player } from "@/models";
-import { fireEvent, renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
+import { fireEvent, renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
 import { SessionForm } from "./SessionForm";
 
 const game = {
@@ -152,8 +152,8 @@ describe("SessionForm", () => {
 		const user = userEvent.setup();
 		renderNewForm();
 
-		await user.click(screen.getByRole("button", { name: "new.game.label" }));
-		await user.click(screen.getByRole("option", { name: "Twilight Imperium" }));
+		await user.click(screen.getByRole("combobox", { name: "new.game.label" }));
+		await user.click(await screen.findByRole("option", { name: "Twilight Imperium" }));
 
 		expect(durationInput()).toHaveValue(240);
 		expect(startTime()).toHaveValue("05:21");
@@ -168,6 +168,31 @@ describe("SessionForm", () => {
 		await user.type(durationInput(), "90");
 
 		expect(startTime()).toHaveValue("07:00");
+	});
+
+	it("groups recently played games above the other games until searching", async () => {
+		const user = userEvent.setup();
+		renderNewForm();
+
+		await user.click(screen.getByRole("combobox", { name: "new.game.label" }));
+
+		const recent = await screen.findByRole("group", { name: "form.game.recent" });
+		const all = screen.getByRole("group", { name: "form.game.all" });
+		expect(
+			within(recent)
+				.getAllByRole("option")
+				.map((x) => x.textContent),
+		).toEqual(["Carcassonne"]);
+		expect(
+			within(all)
+				.getAllByRole("option")
+				.map((x) => x.textContent),
+		).toEqual(["Twilight Imperium"]);
+
+		await user.type(screen.getByPlaceholderText("search"), "c");
+
+		expect(screen.queryByRole("group", { name: "form.game.recent" })).not.toBeInTheDocument();
+		expect(screen.getAllByRole("option").map((x) => x.textContent)).toEqual(["Carcassonne"]);
 	});
 
 	it("asks for at least one player on the first submit", async () => {
