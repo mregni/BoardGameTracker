@@ -1,15 +1,18 @@
 import type { FC } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Session } from "@/models";
-import { renderWithProviders, screen } from "@/test/test-utils";
+import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
 
 interface CapturedRoute {
 	component: FC;
+	loader: (args: { params: { locationId: number }; context: { queryClient: unknown } }) => void;
 }
 
 const mocks = vi.hoisted(() => ({
 	captured: {} as { config: CapturedRoute },
 	sessions: [] as Session[],
+	navigate: vi.fn(),
+	deleteLocationCall: vi.fn(),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -17,7 +20,7 @@ vi.mock("@tanstack/react-router", () => ({
 		mocks.captured.config = config;
 		return { ...config, useParams: () => ({ locationId: 3 }) };
 	},
-	useNavigate: () => vi.fn(),
+	useNavigate: () => mocks.navigate,
 	Link: ({ children, to, params }: { children: React.ReactNode; to: string; params?: { sessionId: number } }) => (
 		<a href={params ? to.replace("$sessionId", String(params.sessionId)) : to}>{children}</a>
 	),
@@ -33,6 +36,12 @@ vi.mock("@/routes/-hooks/useToasts", () => ({
 
 vi.mock("@/utils/errorUtils", () => ({
 	apiErrorMessage: (_error: unknown, fallback: string) => fallback,
+}));
+
+vi.mock("@/services/locationService", () => ({
+	deleteLocationCall: (id: number) => mocks.deleteLocationCall(id),
+	updateLocationCall: vi.fn(),
+	addLocationCall: vi.fn(),
 }));
 
 vi.mock("@/services/queries/locations", () => ({
@@ -96,6 +105,59 @@ const renderPage = () => {
 };
 
 describe("Location detail page", () => {
+	beforeEach(() => {
+		mocks.navigate.mockReset().mockResolvedValue(undefined);
+		mocks.deleteLocationCall.mockReset().mockResolvedValue(undefined);
+	});
+
+	it("prefetches the location, its statistics, sessions, games and players in the loader", () => {
+		const queryClient = { prefetchQuery: vi.fn() };
+
+		mocks.captured.config.loader({ params: { locationId: 3 }, context: { queryClient } });
+
+		const keys = queryClient.prefetchQuery.mock.calls.map(([options]) => options.queryKey);
+		expect(keys).toEqual(
+			expect.arrayContaining([
+				["locations", 3],
+				["locations", 3, "statistics"],
+				["locations", 3, "sessions"],
+				["games"],
+				["players"],
+			]),
+		);
+	});
+
+	it("goes back to the locations overview", async () => {
+		const user = userEvent.setup();
+		renderPage();
+
+		await user.click(await screen.findByRole("button", { name: /detail.back/ }));
+
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/locations" });
+	});
+
+	it("opens the edit dialog with the location name", async () => {
+		const user = userEvent.setup();
+		renderPage();
+
+		await user.click(await screen.findByRole("button", { name: "edit" }));
+
+		expect(await screen.findByDisplayValue("Café De Spelerij Gent-Sint-Pieters")).toBeInTheDocument();
+	});
+
+	it("warns about the linked sessions and deletes the location after confirming", async () => {
+		const user = userEvent.setup();
+		renderPage();
+
+		await user.click(await screen.findByRole("button", { name: "delete.button" }));
+		expect(await screen.findByText(/delete.extra-description/)).toBeInTheDocument();
+
+		const confirm = screen.getAllByRole("button", { name: "delete.button" }).at(-1);
+		await user.click(confirm as HTMLElement);
+
+		await waitFor(() => expect(mocks.deleteLocationCall).toHaveBeenCalledWith(3));
+		await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/locations" }));
+	});
 	it("shows the location name on one line with a tooltip", async () => {
 		renderPage();
 
