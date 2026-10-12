@@ -10,8 +10,7 @@ import { BgtTextArea } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { useAppForm } from "@/hooks/form";
-import { type CreateSession, CreateSessionSchema, type Expansion, type Game, type Player } from "@/models";
-import { usePlayerModal } from "@/routes/players/-hooks/usePlayerModal";
+import { type CreateSession, CreateSessionSchema, type Expansion, type Game } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { useSessionForm } from "../-hooks/useSessionForm";
@@ -60,7 +59,6 @@ export const SessionForm = (props: Props) => {
 	const { t } = useTranslation();
 	const router = useRouter();
 	const { locations, games, players: playerList, suggestions } = useSessionForm();
-	const { savePlayer } = usePlayerModal({});
 	const isNewSession = locationId === undefined;
 	const [initialStart] = useState(() => start ?? addMinutes(new Date(), -(minutes ?? 30)));
 
@@ -123,17 +121,6 @@ export const SessionForm = (props: Props) => {
 		form.setFieldValue("locationId", lastLocationId, { dontUpdateMeta: true });
 	}, [form, isNewSession, lastLocationId, locations]);
 
-	const createPlayer = useCallback(
-		async (name: string): Promise<Player | undefined> => {
-			try {
-				return await savePlayer({ id: 0, name, image: null, email: null, badges: [] });
-			} catch {
-				return undefined;
-			}
-		},
-		[savePlayer],
-	);
-
 	const handleCancel = useCallback(() => {
 		router.history.back();
 	}, [router]);
@@ -161,7 +148,6 @@ export const SessionForm = (props: Props) => {
 								hasScoring={hasScoring}
 								disabled={disabled}
 								onAddPlayer={addPlayer}
-								onCreatePlayer={createPlayer}
 								onRemovePlayer={removePlayer}
 								onScoreChange={setScore}
 								onToggleWon={toggleWon}

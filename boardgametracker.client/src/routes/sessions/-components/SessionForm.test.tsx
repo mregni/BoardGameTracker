@@ -24,15 +24,28 @@ const longGame = {
 const players = [
 	{ id: 1, name: "Mikhael", image: null },
 	{ id: 2, name: "Reggi", image: null },
+	{ id: 3, name: "Nova", image: null },
+	{ id: 4, name: "Anna", image: null },
 ] as unknown as Player[];
 
 vi.mock("@tanstack/react-router", () => ({
 	useRouter: () => ({ history: { back: vi.fn() } }),
 }));
 
-vi.mock("@/routes/players/-hooks/usePlayerModal", () => ({
-	usePlayerModal: () => ({ savePlayer: vi.fn() }),
+const createdPlayer = { id: 3, name: "Nova", image: null } as unknown as Player;
+
+vi.mock("@/routes/players/-modals/CreatePlayerModal", () => ({
+	CreatePlayerModal: ({ open, onPlayerCreated }: { open: boolean; onPlayerCreated?: (player: Player) => void }) =>
+		open ? (
+			<button type="button" onClick={() => onPlayerCreated?.(createdPlayer)}>
+				save-new-player
+			</button>
+		) : null,
 }));
+
+Element.prototype.hasPointerCapture = () => false;
+Element.prototype.releasePointerCapture = () => {};
+Element.prototype.scrollIntoView = () => {};
 
 vi.mock("../-hooks/useSessionForm", () => ({
 	useSessionForm: () => ({
@@ -41,7 +54,7 @@ vi.mock("../-hooks/useSessionForm", () => ({
 		locations: [],
 		games: [game, longGame],
 		players,
-		suggestions: { recentGameIds: [1], frequentPlayerIds: [1, 2], lastLocationId: null },
+		suggestions: { recentGameIds: [1], frequentPlayerIds: [2, 1], lastLocationId: null },
 	}),
 }));
 
@@ -74,9 +87,18 @@ const renderNewForm = () => {
 const startInput = () => screen.getByLabelText("new.start.label");
 const durationInput = () => screen.getByLabelText("new.duration.label");
 
+const playerSelect = () => screen.getByRole("combobox", { name: "form.players.label" });
+
+const openPlayerSelect = async (user: ReturnType<typeof userEvent.setup>) => {
+	await user.click(playerSelect());
+	return screen.findByRole("listbox");
+};
+
+const optionNames = () => screen.getAllByRole("option").map((x) => x.textContent?.slice(1));
+
 const addPlayer = async (user: ReturnType<typeof userEvent.setup>, name: string) => {
-	await user.click(screen.getByRole("combobox", { name: "form.players.label" }));
-	await user.click(screen.getByRole("option", { name }));
+	await openPlayerSelect(user);
+	await user.click(screen.getByRole("option", { name: new RegExp(name) }));
 };
 
 describe("SessionForm", () => {
@@ -152,6 +174,52 @@ describe("SessionForm", () => {
 
 		expect(await screen.findByText("player-session:new.players.minimum")).toBeInTheDocument();
 		expect(onClick).not.toHaveBeenCalled();
+	});
+
+	it("lists frequent players first and closes after adding a player", async () => {
+		const user = userEvent.setup();
+		renderForm();
+
+		await openPlayerSelect(user);
+
+		expect(optionNames()).toEqual(["Reggi", "Mikhael", "Anna", "Nova"]);
+
+		await user.click(screen.getByRole("option", { name: /Mikhael/ }));
+
+		expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+		expect(screen.getByText("Mikhael")).toBeInTheDocument();
+		expect(playerSelect()).toHaveTextContent("form.players.search");
+	});
+
+	it("leaves already added players out of the options", async () => {
+		const user = userEvent.setup();
+		renderForm();
+
+		await addPlayer(user, "Reggi");
+		await openPlayerSelect(user);
+
+		expect(optionNames()).toEqual(["Mikhael", "Anna", "Nova"]);
+	});
+
+	it("searches players inside the dropdown", async () => {
+		const user = userEvent.setup();
+		renderForm();
+
+		await openPlayerSelect(user);
+		await user.type(screen.getByPlaceholderText("search"), "nn");
+
+		expect(optionNames()).toEqual(["Anna"]);
+	});
+
+	it("adds a newly created player as a row", async () => {
+		const user = userEvent.setup();
+		renderForm();
+
+		await user.click(screen.getByRole("button", { name: /new\.create-player/ }));
+		await user.click(screen.getByText("save-new-player"));
+
+		expect(screen.getAllByRole("button", { name: "form.player.remove" })).toHaveLength(1);
+		expect(screen.getByText("Nova")).toBeInTheDocument();
 	});
 
 	it("adds and removes player rows", async () => {

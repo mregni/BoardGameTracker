@@ -67,9 +67,7 @@
     "players": {
       "label": "Players & scores",
       "label-no-scoring": "Players",
-      "search": "Add a player…",
-      "suggestions": "Player suggestions",
-      "create": "Create \"{{name}}\" as new player"
+      "search": "Add a player…"
     },
     "player": {
       "score": "Score of {{name}}",

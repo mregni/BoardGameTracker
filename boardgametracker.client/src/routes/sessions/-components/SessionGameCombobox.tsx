@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
 import CheckIcon from "@/assets/icons/check.svg?react";
+import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { FormFieldWrapper } from "@/components/BgtForm";
 import type { Game } from "@/models";
@@ -174,45 +175,52 @@ export const SessionGameCombobox = (props: Props) => {
 					onClick={() => (open ? close(false) : openList())}
 					onKeyDown={handleTriggerKeyDown}
 					className={cx(
-						"w-full bg-background text-white border border-primary/30 rounded-lg h-11 md:h-10 text-[15px]",
-						"flex items-center gap-2 text-left focus:border-primary focus:outline-none",
-						selectedGame ? "pl-2 pr-3" : "px-4",
-						open && "border-primary",
-						hasErrors && "border-error bg-error-dark!",
+						"w-full bg-background text-white border border-primary/30 focus:border-primary focus:outline-none",
+						"py-2 h-11 md:h-10 shadow-none inline-flex justify-between items-center gap-2 rounded-lg leading-none text-[15px] text-left",
+						selectedGame ? "pl-2 pr-4" : "px-4",
+						hasErrors && "border border-error bg-error-dark!",
 						disabled && "opacity-50 cursor-not-allowed",
 					)}
 				>
 					{selectedGame && <BgtAvatar title={selectedGame.title} image={selectedGame.image} />}
-					<span className={cx("flex-1 min-w-0 truncate", !selectedGame && "text-white/50")}>
-						{selectedGame?.title ?? placeholder}
-					</span>
+					<span className="flex-1 min-w-0 truncate">{selectedGame?.title ?? placeholder}</span>
 					{open ? <CaretUpIcon className="size-5 shrink-0" /> : <CaretDownIcon className="size-5 shrink-0" />}
 				</button>
 
 				{open && (
-					<div className="absolute left-0 right-0 top-full mt-1 z-30 bg-input border border-primary/30 rounded-lg shadow-xl p-2 flex flex-col gap-1">
-						<input
-							ref={searchRef}
-							type="text"
-							role="combobox"
-							aria-expanded={true}
-							aria-controls={listId}
-							aria-autocomplete="list"
-							aria-activedescendant={options[activeIndex]?.id}
-							aria-label={t("form.game.search")}
-							placeholder={t("form.game.search")}
-							value={query}
-							onChange={(event) => handleQueryChange(event.target.value)}
-							onKeyDown={handleSearchKeyDown}
-							className="w-full bg-background text-white border border-primary/30 rounded-md h-10 px-3 text-[15px] focus:border-primary focus:outline-none"
-						/>
-						<div id={listId} role="listbox" aria-label={t("form.game.list")} className="max-h-72 overflow-y-auto">
+					<div className="absolute left-0 right-0 top-full mt-[5px] z-30 overflow-hidden bg-input rounded-md">
+						<div className="p-2 border-b border-gray-700">
+							<div className="flex items-center px-2 bg-input rounded-sm">
+								<SearchIcon className="size-4 text-gray-400 mr-2" />
+								<input
+									ref={searchRef}
+									type="text"
+									role="combobox"
+									aria-expanded={true}
+									aria-controls={listId}
+									aria-autocomplete="list"
+									aria-activedescendant={options[activeIndex]?.id}
+									aria-label={t("form.game.search")}
+									placeholder={t("form.game.search")}
+									value={query}
+									onChange={(event) => handleQueryChange(event.target.value)}
+									onKeyDown={handleSearchKeyDown}
+									className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
+								/>
+							</div>
+						</div>
+						<div
+							id={listId}
+							role="listbox"
+							aria-label={t("form.game.list")}
+							className="p-1 max-h-[300px] overflow-y-auto"
+						>
 							{options.length === 0 && (
-								<div className="text-[13px] py-2 px-3 text-gray-400">{t("form.game.no-results")}</div>
+								<div className="text-[13px] py-2 px-4 text-gray-400">{t("form.game.no-results")}</div>
 							)}
 							{groups.map((group) => (
 								<fieldset key={group.key} className="m-0 min-w-0 border-0 p-0">
-									<legend className="text-[11px] uppercase tracking-widest text-white/50 px-2 pt-2 pb-1">
+									<legend className="text-[11px] uppercase tracking-widest text-gray-400 pl-[25px] pr-2 pt-2 pb-1">
 										{group.label}
 									</legend>
 									{options.map((option, index) => {
@@ -235,13 +243,17 @@ export const SessionGameCombobox = (props: Props) => {
 													if (event.key === "Enter") select(game);
 												}}
 												className={cx(
-													"flex items-center gap-2 px-2 h-11 md:h-10 rounded-md text-[14px] cursor-pointer select-none",
-													isActive && "bg-primary/40",
+													"relative flex items-center gap-2 text-[13px] leading-none rounded-lg h-11 md:h-10 pr-[35px] pl-[25px] cursor-pointer select-none",
+													isActive && "bg-primary/60",
 												)}
 											>
+												{isSelected && (
+													<span className="absolute left-0 w-[25px] inline-flex items-center justify-center">
+														<CheckIcon className="size-4" />
+													</span>
+												)}
 												<BgtAvatar title={game.title} image={game.image} />
 												<span className="flex-1 min-w-0 truncate">{game.title}</span>
-												{isSelected && <CheckIcon className="size-4 shrink-0" />}
 											</div>
 										);
 									})}

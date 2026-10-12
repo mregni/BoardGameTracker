@@ -67,9 +67,7 @@
     "players": {
       "label": "Spelers & scores",
       "label-no-scoring": "Spelers",
-      "search": "Voeg een speler toe…",
-      "suggestions": "Voorgestelde spelers",
-      "create": "Maak \"{{name}}\" aan als nieuwe speler"
+      "search": "Voeg een speler toe…"
     },
     "player": {
       "score": "Score van {{name}}",

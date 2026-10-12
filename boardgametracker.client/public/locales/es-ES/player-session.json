@@ -67,9 +67,7 @@
     "players": {
       "label": "Jugadores y puntuaciones",
       "label-no-scoring": "Jugadores",
-      "search": "Añadir un jugador…",
-      "suggestions": "Jugadores sugeridos",
-      "create": "Crear \"{{name}}\" como nuevo jugador"
+      "search": "Añadir un jugador…"
     },
     "player": {
       "score": "Puntuación de {{name}}",
