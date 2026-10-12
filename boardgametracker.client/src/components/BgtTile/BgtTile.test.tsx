@@ -49,18 +49,16 @@ describe("BgtTile", () => {
 
 describe("BgtTileSessions", () => {
 	it("says there are no sessions yet when the count is zero", () => {
-		renderWithTheme(<BgtTileSessions count={0} prefix={<span>50% wins</span>} />);
+		renderWithTheme(<BgtTileSessions count={0} />);
 
 		expect(screen.getByText("tile.no-sessions")).toBeInTheDocument();
-		expect(screen.queryByText("50% wins")).not.toBeInTheDocument();
 	});
 
-	it("shows the session count and the prefix when there are sessions", () => {
-		const { container } = renderWithTheme(<BgtTileSessions count={9} prefix={<span>40% wins</span>} />);
+	it("shows the session count when there are sessions", () => {
+		const { container } = renderWithTheme(<BgtTileSessions count={9} />);
 
 		expect(screen.getByText("9")).toBeInTheDocument();
-		expect(screen.getByText("40% wins")).toBeInTheDocument();
-		expect(container).toHaveTextContent("40% wins · 9 tile.sessions");
+		expect(container).toHaveTextContent("9 tile.sessions");
 	});
 });
 

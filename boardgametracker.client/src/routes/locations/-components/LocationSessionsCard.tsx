@@ -1,15 +1,15 @@
-import { useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
-import BgtButton from "@/components/BgtButton/BgtButton";
+import Crown from "@/assets/icons/crown.svg?react";
+import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
-import { BgtText } from "@/components/BgtText/BgtText";
+import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import type { Session } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
-import { LocationSessionRow } from "./LocationSessionRow";
-
-const VISIBLE_SESSIONS = 10;
+import { formatMinutesToDuration, toDisplay } from "@/utils/dateUtils";
 
 interface Props {
 	sessions: Session[];
@@ -23,39 +23,56 @@ export const LocationSessionsCard = (props: Props) => {
 	const { t } = useTranslation("location");
 	const { gameById } = useGameById();
 	const { playerById } = usePlayerById();
-	const [showAll, setShowAll] = useState(false);
-
-	const visibleSessions = showAll ? sessions : sessions.slice(0, VISIBLE_SESSIONS);
 
 	return (
 		<BgtCard title={t("detail.sessions")} icon={Calendar}>
-			{sessions.length === 0 && (
-				<BgtText size="2" color="white" opacity={60}>
-					{t("detail.no-sessions")}
-				</BgtText>
-			)}
-			{sessions.length > 0 && (
-				<div className="flex flex-col gap-1.5">
-					{visibleSessions.map((session) => (
-						<LocationSessionRow
-							key={session.id}
-							session={session}
-							game={gameById(session.gameId)}
-							winners={session.playerSessions
-								.filter((x) => x.won)
-								.map((x) => playerById(x.playerId)?.name)
-								.filter((name): name is string => name !== undefined)}
-							dateFormat={dateFormat}
-							uiLanguage={uiLanguage}
-							canOpen={canOpen}
-						/>
-					))}
-				</div>
-			)}
-			{sessions.length > VISIBLE_SESSIONS && (
-				<BgtButton variant="text" className="mt-3 self-center" onClick={() => setShowAll((value) => !value)}>
-					{showAll ? t("detail.show-less") : t("detail.show-all", { count: sessions.length })}
-				</BgtButton>
+			{sessions.length === 0 ? (
+				<BgtNoData />
+			) : (
+				<ul className="flex flex-col divide-y divide-primary/10">
+					{sessions.map((session) => {
+						const game = gameById(session.gameId);
+						const winnerSession = session.playerSessions.find((playerSession) => playerSession.won);
+						const winner = winnerSession ? playerById(winnerSession.playerId) : undefined;
+						const row = (
+							<>
+								<span className="flex min-w-0 flex-1 items-center gap-2">
+									<BgtAvatar image={game?.image} title={game?.title} size="medium" />
+									<span className="truncate font-semibold">{game?.title}</span>
+									<span className="ml-auto flex min-w-0 shrink items-center gap-1">
+										{winner && <Crown className="size-4 shrink-0 text-yellow-400" />}
+										<span className="truncate">{winner?.name ?? "-"}</span>
+									</span>
+								</span>
+								<span className="flex justify-between gap-3 text-sm tabular-nums text-white/60 sm:contents">
+									<span className="shrink-0 sm:order-first sm:w-24">
+										{toDisplay(session.start, dateFormat, uiLanguage)}
+									</span>
+									<span className="shrink-0 sm:order-last">
+										{formatMinutesToDuration(session.minutes, ["hours", "minutes"], uiLanguage)}
+									</span>
+								</span>
+							</>
+						);
+						const rowClasses = "flex flex-col gap-1 py-2 sm:flex-row sm:items-center sm:gap-3";
+
+						return (
+							<li key={session.id}>
+								{canOpen ? (
+									<Link
+										to="/sessions/update/$sessionId"
+										params={{ sessionId: session.id }}
+										className={cx(rowClasses, "cursor-pointer hover:text-primary")}
+									>
+										{row}
+									</Link>
+								) : (
+									<div className={rowClasses}>{row}</div>
+								)}
+							</li>
+						);
+					})}
+				</ul>
 			)}
 		</BgtCard>
 	);

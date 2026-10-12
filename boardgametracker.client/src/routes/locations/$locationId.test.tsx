@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import { describe, expect, it, vi } from "vitest";
 import type { Session } from "@/models";
-import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
+import { renderWithProviders, screen } from "@/test/test-utils";
 
 interface CapturedRoute {
 	component: FC;
@@ -42,8 +42,7 @@ vi.mock("@/services/queries/locations", () => ({
 	}),
 	getLocationStatistics: (id: number) => ({
 		queryKey: ["locations", id, "statistics"],
-		queryFn: () =>
-			Promise.resolve({ sessionCount: 12, distinctGameCount: 6, distinctPlayerCount: 5, totalPlayedTime: 460 }),
+		queryFn: () => Promise.resolve({ distinctGameCount: 6, distinctPlayerCount: 5, totalPlayedTime: 460 }),
 	}),
 	getLocationSessions: (id: number) => ({
 		queryKey: ["locations", id, "sessions"],
@@ -117,24 +116,15 @@ describe("Location detail page", () => {
 		expect(screen.getByText("5")).toBeInTheDocument();
 	});
 
-	it("lists the newest ten sessions with game, winner and a link to the session", async () => {
+	it("lists the sessions newest first with game, winner and a link to the session", async () => {
 		renderPage();
 
-		expect(await screen.findAllByText("Carcassonne")).toHaveLength(10);
-		expect(screen.getAllByText("Mikhael")).toHaveLength(10);
-		expect(screen.getByText("20-10-2026")).toBeInTheDocument();
-		expect(screen.queryByText("09-10-2026")).not.toBeInTheDocument();
-		expect(screen.getAllByRole("link")[0]).toHaveAttribute("href", "/sessions/update/1");
-	});
-
-	it("shows every session after clicking show all", async () => {
-		const user = userEvent.setup();
-		renderPage();
-
-		await user.click(await screen.findByRole("button", { name: "detail.show-all" }));
-
-		expect(screen.getAllByText("Carcassonne")).toHaveLength(12);
-		expect(screen.getByRole("button", { name: "detail.show-less" })).toBeInTheDocument();
+		expect(await screen.findAllByText("Carcassonne")).toHaveLength(12);
+		expect(screen.getAllByText("Mikhael")).toHaveLength(12);
+		const links = screen.getAllByRole("link");
+		expect(links[0]).toHaveAttribute("href", "/sessions/update/1");
+		expect(links[0]).toHaveTextContent("20-10-2026");
+		expect(links[11]).toHaveTextContent("09-10-2026");
 	});
 
 	it("shows the edit and delete buttons for writers", async () => {

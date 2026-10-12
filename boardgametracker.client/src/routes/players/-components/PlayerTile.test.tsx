@@ -11,7 +11,7 @@ describe("PlayerTile", () => {
 		renderWithTheme(<PlayerTile player={{ id: 4, name: "Mikhael", image: null, playCount: 8, winCount: 5 }} />);
 
 		expect(screen.getByRole("link")).toHaveAttribute("href", "/players/4");
-		expect(screen.getByText("62.5%")).toBeInTheDocument();
+		expect(screen.getByText("63%")).toBeInTheDocument();
 		expect(screen.getByText("8")).toBeInTheDocument();
 	});
 

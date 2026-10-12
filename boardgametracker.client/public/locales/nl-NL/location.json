@@ -29,9 +29,6 @@
     "description": "Weet je zeker dat je locatie '{{name}}' wilt verwijderen?",
     "extra-description": "De locatie is gekoppeld aan {{count}} spelsessies, die worden ontkoppeld."
   },
-  "columns": {
-    "sessions": "Sessies"
-  },
   "count_one": "{{count}} locatie gevonden",
   "count_other": "{{count}} locaties gevonden",
   "detail": {
@@ -40,9 +37,6 @@
     "sessions": "Sessies",
     "games": "Gespeelde spellen",
     "players": "Spelers",
-    "play-time": "Speeltijd",
-    "no-sessions": "Er zijn nog geen sessies gespeeld op deze locatie",
-    "show-all": "Toon alle {{count}} sessies",
-    "show-less": "Toon minder sessies"
+    "play-time": "Speeltijd"
   }
 }

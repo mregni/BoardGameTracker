@@ -29,9 +29,6 @@
     "description": "Are you sure you want to delete location '{{name}}'?",
     "extra-description": "The location is connected to {{count}} game sessions, they will be disconnected."
   },
-  "columns": {
-    "sessions": "Sessions"
-  },
   "count_one": "{{count}} location found",
   "count_other": "{{count}} locations found",
   "detail": {
@@ -40,9 +37,6 @@
     "sessions": "Sessions",
     "games": "Games played",
     "players": "Players",
-    "play-time": "Play time",
-    "no-sessions": "No sessions have been played at this location yet",
-    "show-all": "Show all {{count}} sessions",
-    "show-less": "Show fewer sessions"
+    "play-time": "Play time"
   }
 }

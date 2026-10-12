@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getLocations } from "@/services/queries/locations";
-import { sortByActivity } from "@/utils/sortUtils";
 
 export const useLocationsData = () => {
 	const { data, isLoading } = useQuery(getLocations());
 
-	const locations = useMemo(() => sortByActivity(data ?? []), [data]);
+	const locations = useMemo(
+		() => [...(data ?? [])].sort((a, b) => b.playCount - a.playCount || a.name.localeCompare(b.name)),
+		[data],
+	);
 
 	return {
 		locations,
