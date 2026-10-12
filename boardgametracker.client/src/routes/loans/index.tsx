@@ -102,7 +102,7 @@ function RouteComponent() {
 				}
 			/>
 			<BgtPageContent isLoading={isLoading} data={{ loans, settings }}>
-				{() => (
+				{({ settings }) => (
 					<>
 						<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:gap-6">
 							<BgtTextStatistic title={t("statistics.on-loan")} content={stats.onLoan} />
@@ -120,6 +120,7 @@ function RouteComponent() {
 										loan={loan}
 										game={gameById(loan.gameId) ?? undefined}
 										player={playerById(loan.playerId) ?? undefined}
+										dateFormat={settings.dateFormat}
 										onReturn={canWrite ? requestReturn : undefined}
 										onEdit={canWrite ? requestEdit : undefined}
 										onDelete={canWrite ? requestDelete : undefined}
@@ -147,6 +148,7 @@ function RouteComponent() {
 											loan={loan}
 											game={gameById(loan.gameId) ?? undefined}
 											player={playerById(loan.playerId) ?? undefined}
+											dateFormat={settings.dateFormat}
 											onEdit={canWrite ? requestEdit : undefined}
 											onDelete={canWrite ? requestDelete : undefined}
 										/>

@@ -78,7 +78,7 @@
     "due-in_other": "Vence en {{count}} días",
     "due-on": "Vence el {{date}}",
     "no-due-date": "Sin fecha límite",
-    "returned": "Devuelto el {{date}}"
+    "returned": "Devuelto {{date}}"
   },
   "since": "desde el {{date}}",
   "returned-button": "Devuelto",

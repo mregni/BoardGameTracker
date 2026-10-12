@@ -1,7 +1,7 @@
 import { cva, cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import type { Loan } from "@/models/Loan/Loan";
-import { getLoanStatus, getLoanStatusTone, type LoanStatus, toShortDate } from "../-utils/loanStatus";
+import { formatLoanDate, getLoanStatus, getLoanStatusTone, type LoanStatus } from "../-utils/loanStatus";
 
 const pillVariants = cva(
 	"inline-block max-w-full truncate rounded-full px-2.5 py-0.5 align-middle text-xs font-semibold whitespace-nowrap",
@@ -19,7 +19,7 @@ const pillVariants = cva(
 	},
 );
 
-const useStatusLabel = () => {
+const useStatusLabel = (dateFormat: string) => {
 	const { t, i18n } = useTranslation("loans");
 
 	return (loan: Loan, status: LoanStatus): string => {
@@ -31,9 +31,9 @@ const useStatusLabel = () => {
 			case "due-soon":
 				return t("status.due-in", { count: status.days });
 			case "due":
-				return t("status.due-on", { date: toShortDate(status.date, i18n.language) });
+				return t("status.due-on", { date: formatLoanDate(status.date, dateFormat, i18n.language) });
 			case "returned":
-				return t("status.returned", { date: toShortDate(loan.returnedDate, i18n.language) });
+				return t("status.returned", { date: formatLoanDate(loan.returnedDate, dateFormat, i18n.language) });
 			default:
 				return t("status.no-due-date");
 		}
@@ -42,11 +42,12 @@ const useStatusLabel = () => {
 
 interface Props {
 	loan: Loan;
+	dateFormat: string;
 	className?: string;
 }
 
-export const LoanStatusPill = ({ loan, className }: Props) => {
-	const label = useStatusLabel();
+export const LoanStatusPill = ({ loan, dateFormat, className }: Props) => {
+	const label = useStatusLabel(dateFormat);
 	const status = getLoanStatus(loan);
 	const text = label(loan, status);
 

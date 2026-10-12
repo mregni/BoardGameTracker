@@ -1,7 +1,7 @@
-import { addMonths, addWeeks, differenceInCalendarDays, format, isSameYear, isValid, parseISO } from "date-fns";
+import { addMonths, addWeeks, differenceInCalendarDays, format, isValid, parseISO } from "date-fns";
 import type { Loan } from "@/models/Loan/Loan";
+import { DEFAULT_DATE_FORMAT, toDisplay } from "@/utils/dateUtils";
 import { parseLocalDate } from "@/utils/localDate";
-import { getDateFnsLocale } from "@/utils/localeUtils";
 
 export const DUE_SOON_DAYS = 7;
 
@@ -134,12 +134,8 @@ export const resolveDueDate = (loanDate: string, preset: DuePreset, customDate: 
 	return date ? format(date, "yyyy-MM-dd") : "";
 };
 
-export const toShortDate = (value: Date | string | null | undefined, language: string, now: Date = new Date()) => {
-	const date = toLoanDate(value);
-	if (!date) {
-		return "";
-	}
-
-	const pattern = isSameYear(date, now) ? "d MMM" : "d MMM yyyy";
-	return format(date, pattern, { locale: getDateFnsLocale(language) });
-};
+export const formatLoanDate = (
+	value: Date | string | null | undefined,
+	dateFormat: string | null | undefined,
+	language: string,
+): string => toDisplay(toLoanDate(value), dateFormat || DEFAULT_DATE_FORMAT, language);

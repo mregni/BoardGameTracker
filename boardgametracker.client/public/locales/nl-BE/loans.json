@@ -78,7 +78,7 @@
     "due-in_other": "Terug over {{count}} dagen",
     "due-on": "Terug op {{date}}",
     "no-due-date": "Geen einddatum",
-    "returned": "Teruggebracht op {{date}}"
+    "returned": "Teruggebracht {{date}}"
   },
   "since": "sinds {{date}}",
   "returned-button": "Teruggebracht",

@@ -9,25 +9,26 @@ import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import type { Game } from "@/models/Games/Game";
 import type { Loan } from "@/models/Loan/Loan";
 import type { Player } from "@/models/Player/Player";
-import { toShortDate } from "../-utils/loanStatus";
+import { formatLoanDate } from "../-utils/loanStatus";
 import { LoanStatusPill } from "./LoanStatusPill";
 
 interface Props {
 	loan: Loan;
 	game: Game | undefined;
 	player: Player | undefined;
+	dateFormat: string;
 	onReturn?: (loan: Loan) => void;
 	onEdit?: (loan: Loan) => void;
 	onDelete?: (loan: Loan) => void;
 }
 
-export const LoanRow = ({ loan, game, player, onReturn, onEdit, onDelete }: Props) => {
+export const LoanRow = ({ loan, game, player, dateFormat, onReturn, onEdit, onDelete }: Props) => {
 	const { t, i18n } = useTranslation(["loans", "common"]);
 	const gameTitle = game?.title ?? "";
 	const playerName = player?.name ?? "";
 
 	return (
-		<div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 gap-y-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2.5 lg:grid-cols-[minmax(8rem,20rem)_minmax(6rem,12rem)_1fr_10rem_4.5rem_8rem] lg:gap-x-3 xl:grid-cols-[minmax(8rem,20rem)_minmax(6rem,12rem)_1fr_7rem_10rem_4.5rem_8rem] xl:gap-x-4">
+		<div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 gap-y-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2.5 lg:grid-cols-[minmax(8rem,20rem)_minmax(6rem,12rem)_1fr_11rem_4.5rem_8rem] lg:gap-x-3 xl:grid-cols-[minmax(8rem,20rem)_minmax(6rem,12rem)_1fr_9rem_11rem_4.5rem_8rem] xl:gap-x-4">
 			<div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2">
 				<BgtAvatar size="medium" title={gameTitle} image={game?.image ?? null} />
 				{game ? (
@@ -57,10 +58,10 @@ export const LoanRow = ({ loan, game, player, onReturn, onEdit, onDelete }: Prop
 				)}
 			</div>
 			<span className="hidden text-sm whitespace-nowrap text-white/50 xl:col-start-4 xl:row-start-1 xl:block">
-				{t("since", { date: toShortDate(loan.loanDate, i18n.language) })}
+				{t("since", { date: formatLoanDate(loan.loanDate, dateFormat, i18n.language) })}
 			</span>
 			<div className="col-span-2 col-start-2 row-start-1 min-w-0 max-w-full justify-self-end lg:col-span-1 lg:col-start-4 lg:justify-self-start xl:col-start-5">
-				<LoanStatusPill loan={loan} />
+				<LoanStatusPill loan={loan} dateFormat={dateFormat} />
 			</div>
 			<div className="col-start-2 row-start-2 flex items-center justify-end gap-1.5 lg:col-start-5 lg:row-start-1 xl:col-start-6">
 				{onEdit && (

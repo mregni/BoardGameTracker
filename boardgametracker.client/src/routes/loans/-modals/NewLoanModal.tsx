@@ -1,4 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { useQuery } from "@tanstack/react-query";
 import { cx } from "class-variance-authority";
 import { format } from "date-fns";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -18,10 +19,11 @@ import { useAppForm } from "@/hooks/form";
 import { GameState, type ModalProps, type Player } from "@/models";
 import { CreateLoanSchema } from "@/models/Loan/CreateLoan";
 import { CreatePlayerModal } from "@/routes/players/-modals/CreatePlayerModal";
+import { getSettings } from "@/services/queries/settings";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { notBeforeValidator, zodValidator } from "@/utils/zodValidator";
 import { useNewLoanModal } from "../-hooks/useNewLoanModal";
-import { DUE_PRESETS, type DuePreset, getPresetDueDate, resolveDueDate, toShortDate } from "../-utils/loanStatus";
+import { DUE_PRESETS, type DuePreset, formatLoanDate, getPresetDueDate, resolveDueDate } from "../-utils/loanStatus";
 
 const DEFAULT_PRESET: DuePreset = "two-weeks";
 
@@ -37,6 +39,7 @@ const NewLoanModal = (props: ModalProps) => {
 	const { open, close } = props;
 	const { t, i18n } = useTranslation(["loans", "player-session", "common"]);
 
+	const { data: settings } = useQuery(getSettings());
 	const [openCreatePlayerModal, setOpenCreatePlayerModal] = useState(false);
 	const newlyCreatedPlayerIdRef = useRef<number | null>(null);
 
@@ -118,7 +121,7 @@ const NewLoanModal = (props: ModalProps) => {
 	const presetLabel = (preset: DuePreset, loanDate: string, selected: boolean) => {
 		const label = t(`new.due.${preset}`);
 		const date = getPresetDueDate(loanDate, preset);
-		return selected && date ? `${label} · ${toShortDate(date, i18n.language)}` : label;
+		return selected && date ? `${label} · ${formatLoanDate(date, settings?.dateFormat, i18n.language)}` : label;
 	};
 
 	return (

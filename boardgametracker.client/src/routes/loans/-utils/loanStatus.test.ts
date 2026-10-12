@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Loan } from "@/models/Loan/Loan";
 import {
+	formatLoanDate,
 	getLoanStats,
 	getLoanStatus,
 	getLoanStatusTone,
@@ -8,7 +9,6 @@ import {
 	resolveDueDate,
 	sortActiveLoans,
 	sortReturnedLoans,
-	toShortDate,
 } from "./loanStatus";
 
 const now = new Date(2026, 9, 11, 15, 30);
@@ -148,20 +148,25 @@ describe("due date presets", () => {
 	});
 });
 
-describe("toShortDate", () => {
-	it("leaves out the year for dates in the current year", () => {
-		expect(toShortDate(new Date(2026, 8, 26), "en-us", now)).toBe("26 Sep");
+describe("formatLoanDate", () => {
+	it("uses the date format from the settings", () => {
+		expect(formatLoanDate(new Date(2026, 8, 14), "dd-MM-yyyy", "en-us")).toBe("14-09-2026");
+		expect(formatLoanDate(new Date(2026, 8, 14), "yyyy/MM/dd", "en-us")).toBe("2026/09/14");
 	});
 
-	it("adds the year for dates in another year", () => {
-		expect(toShortDate(new Date(2025, 11, 3), "en-us", now)).toBe("3 Dec 2025");
+	it("accepts the setting in its upper case form", () => {
+		expect(formatLoanDate(new Date(2026, 8, 14), "DD-MM-YYYY", "en-us")).toBe("14-09-2026");
 	});
 
-	it("uses the ui language", () => {
-		expect(toShortDate(new Date(2026, 9, 4), "nl-be", now)).toBe("4 okt.");
+	it("formats the iso strings the api sends", () => {
+		expect(formatLoanDate("2026-09-14T10:00:00", "dd-MM-yyyy", "en-us")).toBe("14-09-2026");
+	});
+
+	it("falls back to the default format without a setting", () => {
+		expect(formatLoanDate(new Date(2026, 8, 14), undefined, "en-us")).toBe("14-09-2026");
 	});
 
 	it("returns an empty string without a date", () => {
-		expect(toShortDate(null, "en-us", now)).toBe("");
+		expect(formatLoanDate(null, "dd-MM-yyyy", "en-us")).toBe("");
 	});
 });
