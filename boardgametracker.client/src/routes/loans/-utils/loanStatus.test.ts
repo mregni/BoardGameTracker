@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Loan } from "@/models/Loan/Loan";
 import {
+	formatDayCount,
 	formatLoanDate,
 	getLoanStats,
 	getLoanStatus,
@@ -28,7 +29,7 @@ describe("getLoanStatus", () => {
 	it("marks a loan past its due date as overdue with the number of days", () => {
 		const status = getLoanStatus(loan({ dueDate: new Date(2026, 9, 8) }), now);
 
-		expect(status).toEqual({ kind: "overdue", days: 3, date: new Date(2026, 9, 8) });
+		expect(status).toEqual({ kind: "overdue", days: 3 });
 		expect(getLoanStatusTone(status)).toBe("red");
 	});
 
@@ -42,14 +43,12 @@ describe("getLoanStatus", () => {
 	it("marks a loan due within a week as due soon", () => {
 		const status = getLoanStatus(loan({ dueDate: new Date(2026, 9, 15) }), now);
 
-		expect(status).toEqual({ kind: "due-soon", days: 4, date: new Date(2026, 9, 15) });
+		expect(status).toEqual({ kind: "due-soon", days: 4 });
 		expect(getLoanStatusTone(status)).toBe("amber");
 	});
 
 	it("still counts a loan due in exactly seven days as due soon", () => {
-		expect(getLoanStatus(loan({ dueDate: new Date(2026, 9, 18) }), now)).toEqual(
-			expect.objectContaining({ kind: "due-soon", days: 7 }),
-		);
+		expect(getLoanStatus(loan({ dueDate: new Date(2026, 9, 18) }), now)).toEqual({ kind: "due-soon", days: 7 });
 	});
 
 	it("shows the due date when it is more than a week away", () => {
@@ -76,7 +75,7 @@ describe("getLoanStatus", () => {
 	it("accepts the ISO strings the api returns", () => {
 		const raw = loan({ dueDate: "2026-10-09T00:00:00" as unknown as Date });
 
-		expect(getLoanStatus(raw, now)).toEqual(expect.objectContaining({ kind: "overdue", days: 2 }));
+		expect(getLoanStatus(raw, now)).toEqual({ kind: "overdue", days: 2 });
 	});
 });
 
@@ -147,6 +146,41 @@ describe("due date presets", () => {
 		expect(resolveDueDate("2026-10-11", "two-weeks", "")).toBe("2026-10-25");
 		expect(resolveDueDate("2026-10-11", "none", "2026-12-01")).toBe("");
 		expect(resolveDueDate("2026-10-11", "custom", "2026-12-01")).toBe("2026-12-01");
+	});
+});
+
+describe("formatDayCount", () => {
+	beforeEach(() => {
+		vi.useFakeTimers({ toFake: ["Date"] });
+		vi.setSystemTime(now);
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it.each([
+		["en-us", 1, "1 day"],
+		["en-us", 3, "3 days"],
+		["nl-be", 1, "1 dag"],
+		["nl-be", 3, "3 dagen"],
+		["es-es", 1, "1 día"],
+		["es-es", 3, "3 días"],
+	])("words %s for %i days", (language, days, expected) => {
+		expect(formatDayCount(days, language)).toBe(expected);
+	});
+
+	it("words the days of an overdue loan without a sign", () => {
+		const status = getLoanStatus(loan({ dueDate: new Date(2026, 9, 8) }));
+
+		expect(status.kind === "overdue" && formatDayCount(status.days, "en-us")).toBe("3 days");
+		expect(formatDayCount(-3, "nl-be")).toBe("3 dagen");
+	});
+
+	it("words the days until a loan is due", () => {
+		const status = getLoanStatus(loan({ dueDate: new Date(2026, 9, 12) }));
+
+		expect(status.kind === "due-soon" && formatDayCount(status.days, "es-es")).toBe("1 día");
 	});
 });
 

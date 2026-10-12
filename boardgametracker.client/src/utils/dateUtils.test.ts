@@ -213,29 +213,6 @@ describe("dateUtils", () => {
 			expect(toRelative("invalid-date", "en")).toBe("");
 		});
 
-		it("counts whole calendar days with the day unit", () => {
-			const options = { unit: "day" as const, addSuffix: false };
-
-			expect(toRelative(new Date("2024-06-12T23:00:00"), "en", options)).toBe("3 days");
-			expect(toRelative(new Date("2024-06-19T08:00:00"), "en", options)).toBe("4 days");
-			expect(toRelative(new Date("2024-06-16T01:00:00"), "en", options)).toBe("1 day");
-		});
-
-		it("uses the ui language for the day unit", () => {
-			const options = { unit: "day" as const, addSuffix: false };
-
-			expect(toRelative(new Date("2024-06-12T23:00:00"), "nl-be", options)).toBe("3 dagen");
-			expect(toRelative(new Date("2024-06-16T01:00:00"), "nl-be", options)).toBe("1 dag");
-			expect(toRelative(new Date("2024-06-19T08:00:00"), "es-es", options)).toBe("4 días");
-		});
-
-		it("measures the day unit from a given moment and adds the suffix by default", () => {
-			const now = new Date("2024-07-01T09:00:00");
-
-			expect(toRelative(new Date("2024-07-03T18:00:00"), "en", { unit: "day", now })).toBe("in 2 days");
-			expect(toRelative(new Date("2024-06-28T18:00:00"), "en", { unit: "day", now })).toBe("3 days ago");
-		});
-
 		it("should prefix future dates with in", () => {
 			const result = toRelative(new Date("2025-06-15T10:30:00"), "en");
 			expect(result).toBe("in about 1 year");

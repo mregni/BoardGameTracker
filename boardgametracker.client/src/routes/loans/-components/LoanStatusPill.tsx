@@ -1,8 +1,13 @@
 import { cva, cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import type { Loan } from "@/models/Loan/Loan";
-import { toRelative } from "@/utils/dateUtils";
-import { formatLoanDate, getLoanStatus, getLoanStatusTone, type LoanStatus } from "../-utils/loanStatus";
+import {
+	formatDayCount,
+	formatLoanDate,
+	getLoanStatus,
+	getLoanStatusTone,
+	type LoanStatus,
+} from "../-utils/loanStatus";
 
 const pillVariants = cva(
 	"inline-block max-w-full truncate rounded-full px-2.5 py-0.5 align-middle text-xs font-semibold whitespace-nowrap",
@@ -23,16 +28,14 @@ const pillVariants = cva(
 const useStatusLabel = (dateFormat: string) => {
 	const { t, i18n } = useTranslation("loans");
 
-	const dayDistance = (date: Date) => toRelative(date, i18n.language, { unit: "day", addSuffix: false });
-
 	return (loan: Loan, status: LoanStatus): string => {
 		switch (status.kind) {
 			case "overdue":
-				return t("status.overdue", { distance: dayDistance(status.date) });
+				return t("status.overdue", { distance: formatDayCount(status.days, i18n.language) });
 			case "due-today":
 				return t("status.due-today");
 			case "due-soon":
-				return t("status.due-in", { distance: dayDistance(status.date) });
+				return t("status.due-in", { distance: formatDayCount(status.days, i18n.language) });
 			case "due":
 				return t("status.due-on", { date: formatLoanDate(status.date, dateFormat, i18n.language) });
 			case "returned":
