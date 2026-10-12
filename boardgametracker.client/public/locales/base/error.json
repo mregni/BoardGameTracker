@@ -93,7 +93,8 @@
   },
   "game-night": {
     "invites-cooldown": "Invitations for this game night were sent recently, try again in a few minutes",
-    "host-rsvp-locked": "The host always attends their own game night"
+    "host-rsvp-locked": "The host always attends their own game night",
+    "rsvp-closed": "This game night has already taken place"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD does not meet the password rules (at least 8 characters). Change it or remove it before a factory reset."

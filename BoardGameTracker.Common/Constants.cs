@@ -104,6 +104,7 @@ public static class Constants
         public const string LocationNameAlreadyExists = "error.location.name-already-exists";
         public const string SessionStartInFuture = "error.session.start-in-future";
         public const string HostRsvpLocked = "error.game-night.host-rsvp-locked";
+        public const string RsvpClosed = "error.game-night.rsvp-closed";
         public const string FeatureDisabled = "error.feature.disabled";
         public const string YearPublishedTooLate = "error.game.year-published-too-late";
         public const string InvalidExpansion = "error.session.invalid-expansion";
