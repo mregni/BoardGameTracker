@@ -28,7 +28,7 @@ describe("getLoanStatus", () => {
 	it("marks a loan past its due date as overdue with the number of days", () => {
 		const status = getLoanStatus(loan({ dueDate: new Date(2026, 9, 8) }), now);
 
-		expect(status).toEqual({ kind: "overdue", days: 3 });
+		expect(status).toEqual({ kind: "overdue", days: 3, date: new Date(2026, 9, 8) });
 		expect(getLoanStatusTone(status)).toBe("red");
 	});
 
@@ -42,12 +42,14 @@ describe("getLoanStatus", () => {
 	it("marks a loan due within a week as due soon", () => {
 		const status = getLoanStatus(loan({ dueDate: new Date(2026, 9, 15) }), now);
 
-		expect(status).toEqual({ kind: "due-soon", days: 4 });
+		expect(status).toEqual({ kind: "due-soon", days: 4, date: new Date(2026, 9, 15) });
 		expect(getLoanStatusTone(status)).toBe("amber");
 	});
 
 	it("still counts a loan due in exactly seven days as due soon", () => {
-		expect(getLoanStatus(loan({ dueDate: new Date(2026, 9, 18) }), now)).toEqual({ kind: "due-soon", days: 7 });
+		expect(getLoanStatus(loan({ dueDate: new Date(2026, 9, 18) }), now)).toEqual(
+			expect.objectContaining({ kind: "due-soon", days: 7 }),
+		);
 	});
 
 	it("shows the due date when it is more than a week away", () => {
@@ -74,7 +76,7 @@ describe("getLoanStatus", () => {
 	it("accepts the ISO strings the api returns", () => {
 		const raw = loan({ dueDate: "2026-10-09T00:00:00" as unknown as Date });
 
-		expect(getLoanStatus(raw, now)).toEqual({ kind: "overdue", days: 2 });
+		expect(getLoanStatus(raw, now)).toEqual(expect.objectContaining({ kind: "overdue", days: 2 }));
 	});
 });
 

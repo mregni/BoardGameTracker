@@ -71,11 +71,9 @@
     "button": "Editar"
   },
   "status": {
-    "overdue_one": "{{count}} día de retraso",
-    "overdue_other": "{{count}} días de retraso",
+    "overdue": "{{distance}} de retraso",
     "due-today": "Vence hoy",
-    "due-in_one": "Vence en {{count}} día",
-    "due-in_other": "Vence en {{count}} días",
+    "due-in": "Vence en {{distance}}",
     "due-on": "Vence el {{date}}",
     "no-due-date": "Sin fecha límite",
     "returned": "Devuelto {{date}}"

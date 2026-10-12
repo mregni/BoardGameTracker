@@ -2,9 +2,11 @@ import {
 	isValid as dateFnsIsValid,
 	differenceInDays,
 	format,
+	formatDistanceStrict,
 	formatDistanceToNow,
 	formatDuration,
 	parseISO,
+	startOfDay,
 } from "date-fns";
 
 import { getDateFnsLocale } from "./localeUtils";
@@ -138,7 +140,7 @@ export const toDisplayDateTime = (
 export const toRelative = (
 	date: Date | string | undefined,
 	uiLanguage: string,
-	options?: { includeSeconds?: boolean },
+	options?: { includeSeconds?: boolean; unit?: "day"; addSuffix?: boolean; now?: Date },
 ): string => {
 	if (!date) {
 		return "";
@@ -151,10 +153,20 @@ export const toRelative = (
 	}
 
 	const locale = getDateFnsLocale(uiLanguage);
+	const addSuffix = options?.addSuffix ?? true;
+
+	if (options?.unit === "day") {
+		return formatDistanceStrict(startOfDay(dateObj), startOfDay(options.now ?? new Date()), {
+			locale,
+			unit: "day",
+			addSuffix,
+		});
+	}
+
 	return formatDistanceToNow(dateObj, {
 		locale,
 		includeSeconds: options?.includeSeconds,
-		addSuffix: true,
+		addSuffix,
 	});
 };
 

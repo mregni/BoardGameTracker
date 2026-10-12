@@ -7,9 +7,9 @@ export const DUE_SOON_DAYS = 7;
 
 export type LoanStatus =
 	| { kind: "returned" }
-	| { kind: "overdue"; days: number }
+	| { kind: "overdue"; days: number; date: Date }
 	| { kind: "due-today" }
-	| { kind: "due-soon"; days: number }
+	| { kind: "due-soon"; days: number; date: Date }
 	| { kind: "due"; date: Date }
 	| { kind: "no-due-date" };
 
@@ -47,13 +47,13 @@ export const getLoanStatus = (loan: Loan, now: Date = new Date()): LoanStatus =>
 
 	const days = differenceInCalendarDays(due, now);
 	if (days < 0) {
-		return { kind: "overdue", days: -days };
+		return { kind: "overdue", days: -days, date: due };
 	}
 	if (days === 0) {
 		return { kind: "due-today" };
 	}
 	if (days <= DUE_SOON_DAYS) {
-		return { kind: "due-soon", days };
+		return { kind: "due-soon", days, date: due };
 	}
 	return { kind: "due", date: due };
 };

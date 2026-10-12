@@ -1,6 +1,7 @@
 import { cva, cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import type { Loan } from "@/models/Loan/Loan";
+import { toRelative } from "@/utils/dateUtils";
 import { formatLoanDate, getLoanStatus, getLoanStatusTone, type LoanStatus } from "../-utils/loanStatus";
 
 const pillVariants = cva(
@@ -22,14 +23,16 @@ const pillVariants = cva(
 const useStatusLabel = (dateFormat: string) => {
 	const { t, i18n } = useTranslation("loans");
 
+	const dayDistance = (date: Date) => toRelative(date, i18n.language, { unit: "day", addSuffix: false });
+
 	return (loan: Loan, status: LoanStatus): string => {
 		switch (status.kind) {
 			case "overdue":
-				return t("status.overdue", { count: status.days });
+				return t("status.overdue", { distance: dayDistance(status.date) });
 			case "due-today":
 				return t("status.due-today");
 			case "due-soon":
-				return t("status.due-in", { count: status.days });
+				return t("status.due-in", { distance: dayDistance(status.date) });
 			case "due":
 				return t("status.due-on", { date: formatLoanDate(status.date, dateFormat, i18n.language) });
 			case "returned":

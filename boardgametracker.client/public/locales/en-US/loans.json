@@ -71,11 +71,9 @@
     "button": "Edit"
   },
   "status": {
-    "overdue_one": "{{count}} day overdue",
-    "overdue_other": "{{count}} days overdue",
+    "overdue": "{{distance}} overdue",
     "due-today": "Due today",
-    "due-in_one": "Due in {{count}} day",
-    "due-in_other": "Due in {{count}} days",
+    "due-in": "Due in {{distance}}",
     "due-on": "Due {{date}}",
     "no-due-date": "No due date",
     "returned": "Returned {{date}}"

@@ -71,11 +71,9 @@
     "button": "Bewerken"
   },
   "status": {
-    "overdue_one": "{{count}} dag te laat",
-    "overdue_other": "{{count}} dagen te laat",
+    "overdue": "{{distance}} te laat",
     "due-today": "Vandaag terug",
-    "due-in_one": "Terug over {{count}} dag",
-    "due-in_other": "Terug over {{count}} dagen",
+    "due-in": "Terug over {{distance}}",
     "due-on": "Terug op {{date}}",
     "no-due-date": "Geen einddatum",
     "returned": "Teruggebracht {{date}}"
