@@ -1,8 +1,8 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { cx } from "class-variance-authority";
-import { format } from "date-fns";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ToggleButton, ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
@@ -20,20 +20,24 @@ import { GameState, type ModalProps, type Player } from "@/models";
 import { CreateLoanSchema } from "@/models/Loan/CreateLoan";
 import { CreatePlayerModal } from "@/routes/players/-modals/CreatePlayerModal";
 import { getSettings } from "@/services/queries/settings";
+import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { notBeforeValidator, zodValidator } from "@/utils/zodValidator";
 import { useNewLoanModal } from "../-hooks/useNewLoanModal";
-import { DUE_PRESETS, type DuePreset, formatLoanDate, getPresetDueDate, resolveDueDate } from "../-utils/loanStatus";
+import { DUE_PRESETS, type DuePreset, formatLoanDate, getPresetDueDate } from "../-utils/loanStatus";
 
 const DEFAULT_PRESET: DuePreset = "two-weeks";
 
-const defaultValues = () => ({
-	gameId: "" as number | "",
-	playerId: "",
-	loanDate: format(new Date(), "yyyy-MM-dd"),
-	duePreset: DEFAULT_PRESET as DuePreset,
-	dueDate: "",
-});
+const defaultValues = () => {
+	const loanDate = toInputDate(undefined, true);
+	return {
+		gameId: "" as number | "",
+		playerId: "",
+		loanDate,
+		duePreset: DEFAULT_PRESET as DuePreset,
+		dueDate: getPresetDueDate(loanDate, DEFAULT_PRESET),
+	};
+};
 
 const NewLoanModal = (props: ModalProps) => {
 	const { open, close } = props;
@@ -77,13 +81,7 @@ const NewLoanModal = (props: ModalProps) => {
 	const form = useAppForm({
 		defaultValues: defaultValues(),
 		onSubmit: async ({ value }) => {
-			const validatedData = CreateLoanSchema.parse({
-				gameId: value.gameId,
-				playerId: value.playerId,
-				loanDate: value.loanDate,
-				dueDate: resolveDueDate(value.loanDate, value.duePreset, value.dueDate),
-			});
-			await saveLoan(validatedData);
+			await saveLoan(CreateLoanSchema.parse(value));
 		},
 	});
 
@@ -107,21 +105,18 @@ const NewLoanModal = (props: ModalProps) => {
 		}
 	}, [open, form]);
 
-	const selectPreset = (preset: DuePreset, loanDate: string, current: DuePreset) => {
-		if (preset === "custom" && current !== "custom") {
-			const base = current === "none" ? DEFAULT_PRESET : current;
-			form.setFieldValue("dueDate", resolveDueDate(loanDate, base, ""));
-		}
-		if (preset !== "custom") {
-			form.setFieldValue("dueDate", "");
-		}
+	const selectPreset = (preset: DuePreset, loanDate: string) => {
 		form.setFieldValue("duePreset", preset);
+		if (preset !== "custom") {
+			form.setFieldValue("dueDate", getPresetDueDate(loanDate, preset));
+		}
 	};
 
-	const presetLabel = (preset: DuePreset, loanDate: string, selected: boolean) => {
+	const presetLabel = (preset: DuePreset, selected: boolean, dueDate: string) => {
 		const label = t(`new.due.${preset}`);
-		const date = getPresetDueDate(loanDate, preset);
-		return selected && date ? `${label} · ${formatLoanDate(date, settings?.dateFormat, i18n.language)}` : label;
+		return selected && preset !== "custom" && dueDate
+			? `${label} · ${formatLoanDate(dueDate, settings?.dateFormat, i18n.language)}`
+			: label;
 	};
 
 	return (
@@ -161,7 +156,18 @@ const NewLoanModal = (props: ModalProps) => {
 								+ {t("player-session:new.create-player")}
 							</BgtButton>
 						</div>
-						<form.Field name="loanDate" validators={zodValidator(CreateLoanSchema, "loanDate")}>
+						<form.Field
+							name="loanDate"
+							validators={zodValidator(CreateLoanSchema, "loanDate")}
+							listeners={{
+								onChange: ({ value }) => {
+									const preset = form.getFieldValue("duePreset");
+									if (preset !== "custom") {
+										form.setFieldValue("dueDate", getPresetDueDate(value, preset));
+									}
+								},
+							}}
+						>
 							{(field: AnyFieldApi) => (
 								<BgtDatePicker
 									field={field}
@@ -171,32 +177,43 @@ const NewLoanModal = (props: ModalProps) => {
 								/>
 							)}
 						</form.Field>
-						<form.Subscribe selector={(state) => [state.values.loanDate, state.values.duePreset] as const}>
-							{([loanDate, duePreset]) => (
+						<form.Subscribe
+							selector={(state) => [state.values.loanDate, state.values.duePreset, state.values.dueDate] as const}
+						>
+							{([loanDate, duePreset, dueDate]) => (
 								<div className="flex flex-col gap-2">
 									<BgtFieldLabel>{t("new.end.label")}</BgtFieldLabel>
-									<div className="flex flex-wrap gap-1.5">
-										{DUE_PRESETS.map((preset) => {
-											const selected = preset === duePreset;
-											return (
-												<button
-													key={preset}
-													type="button"
-													aria-pressed={selected}
-													disabled={isLoading}
-													onClick={() => selectPreset(preset, loanDate, duePreset)}
-													className={cx(
-														"rounded-full border px-3 py-1.5 text-xs transition-colors",
-														selected
+									<ToggleButtonGroup
+										selectionMode="single"
+										disallowEmptySelection
+										selectedKeys={[duePreset]}
+										onSelectionChange={(keys) => {
+											const [preset] = [...keys] as DuePreset[];
+											if (preset) {
+												selectPreset(preset, loanDate);
+											}
+										}}
+										isDisabled={isLoading}
+										aria-label={t("new.end.label")}
+										className="flex flex-wrap gap-1.5"
+									>
+										{DUE_PRESETS.map((preset) => (
+											<ToggleButton
+												key={preset}
+												id={preset}
+												className={({ isSelected }) =>
+													cx(
+														"rounded-full border px-3 py-1.5 text-xs transition-colors outline-none data-[focus-visible]:ring-2 data-[focus-visible]:ring-primary",
+														isSelected
 															? "border-primary bg-primary/30 text-white"
 															: "border-primary/20 bg-primary/10 text-white/80 hover:border-primary/50",
-													)}
-												>
-													{presetLabel(preset, loanDate, selected)}
-												</button>
-											);
-										})}
-									</div>
+													)
+												}
+											>
+												{presetLabel(preset, preset === duePreset, dueDate)}
+											</ToggleButton>
+										))}
+									</ToggleButtonGroup>
 									{duePreset === "custom" && (
 										<form.Field
 											name="dueDate"

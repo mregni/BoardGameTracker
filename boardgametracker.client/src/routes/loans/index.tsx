@@ -22,7 +22,7 @@ import { useLoans } from "./-hooks/useLoans";
 import { EditLoanModal } from "./-modals/EditLoanModal";
 import NewLoanModal from "./-modals/NewLoanModal";
 import { ReturnLoanModal } from "./-modals/ReturnLoanModal";
-import { getLoanStats, isActiveLoan, sortActiveLoans, sortReturnedLoans } from "./-utils/loanStatus";
+import { getLoanStats, partitionLoans } from "./-utils/loanStatus";
 
 export const Route = createFileRoute("/loans/")({
 	component: RouteComponent,
@@ -49,9 +49,8 @@ function RouteComponent() {
 		onDeleteModalClose: modals.deleteModal.hide,
 	});
 
-	const stats = useMemo(() => getLoanStats(loans), [loans]);
-	const activeLoans = useMemo(() => sortActiveLoans(loans.filter(isActiveLoan)), [loans]);
-	const returnedLoans = useMemo(() => sortReturnedLoans(loans.filter((loan) => !isActiveLoan(loan))), [loans]);
+	const { active: activeLoans, returned: returnedLoans } = useMemo(() => partitionLoans(loans), [loans]);
+	const stats = useMemo(() => getLoanStats(activeLoans), [activeLoans]);
 
 	const requestDelete = (loan: Loan) => {
 		setSelectedLoan(loan);
@@ -105,10 +104,10 @@ function RouteComponent() {
 				{({ settings }) => (
 					<>
 						<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:gap-6">
-							<BgtTextStatistic title={t("statistics.on-loan")} content={stats.onLoan} />
+							<BgtTextStatistic title={t("statistics.on-loan")} content={activeLoans.length} />
 							<BgtTextStatistic title={t("statistics.overdue")} content={stats.overdue} />
 							<BgtTextStatistic title={t("statistics.due-this-week")} content={stats.dueThisWeek} />
-							<BgtTextStatistic title={t("statistics.returned")} content={stats.returned} />
+							<BgtTextStatistic title={t("statistics.returned")} content={returnedLoans.length} />
 						</div>
 						{activeLoans.length === 0 ? (
 							<BgtText color="primary">{t("no-active-loans")}</BgtText>

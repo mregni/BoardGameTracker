@@ -1,13 +1,13 @@
-import { addMonths, addWeeks, differenceInCalendarDays, format, formatDuration, isValid, parseISO } from "date-fns";
+import { addMonths, addWeeks, differenceInCalendarDays, formatDuration } from "date-fns";
 import type { Loan } from "@/models/Loan/Loan";
-import { DEFAULT_DATE_FORMAT, toDisplay } from "@/utils/dateUtils";
+import { DEFAULT_DATE_FORMAT, safeParseDate, toDisplay, toInputDate } from "@/utils/dateUtils";
 import { parseLocalDate } from "@/utils/localDate";
 import { getDateFnsLocale } from "@/utils/localeUtils";
 
 export const DUE_SOON_DAYS = 7;
 
 export type LoanStatus =
-	| { kind: "returned" }
+	| { kind: "returned"; date: Date }
 	| { kind: "overdue"; days: number }
 	| { kind: "due-today" }
 	| { kind: "due-soon"; days: number }
@@ -16,32 +16,30 @@ export type LoanStatus =
 
 export type LoanStatusTone = "red" | "amber" | "neutral";
 
-export interface LoanStats {
-	onLoan: number;
-	overdue: number;
-	dueThisWeek: number;
-	returned: number;
-}
+export const LOAN_STATUS_TONE: Record<LoanStatus["kind"], LoanStatusTone> = {
+	overdue: "red",
+	"due-today": "amber",
+	"due-soon": "amber",
+	due: "neutral",
+	"no-due-date": "neutral",
+	returned: "neutral",
+};
 
 export type DuePreset = "one-week" | "two-weeks" | "one-month" | "none" | "custom";
 
 export const DUE_PRESETS: DuePreset[] = ["one-week", "two-weeks", "one-month", "none", "custom"];
 
-export const toLoanDate = (value: Date | string | null | undefined): Date | null => {
-	if (!value) {
-		return null;
-	}
+type DateValue = Date | string | null | undefined;
 
-	const date = typeof value === "string" ? parseISO(value) : value;
-	return isValid(date) ? date : null;
-};
+const toDate = (value: DateValue) => safeParseDate(value ?? undefined);
 
 export const getLoanStatus = (loan: Loan, now: Date = new Date()): LoanStatus => {
-	if (toLoanDate(loan.returnedDate)) {
-		return { kind: "returned" };
+	const returned = toDate(loan.returnedDate);
+	if (returned) {
+		return { kind: "returned", date: returned };
 	}
 
-	const due = toLoanDate(loan.dueDate);
+	const due = toDate(loan.dueDate);
 	if (!due) {
 		return { kind: "no-due-date" };
 	}
@@ -59,87 +57,50 @@ export const getLoanStatus = (loan: Loan, now: Date = new Date()): LoanStatus =>
 	return { kind: "due", date: due };
 };
 
-export const getLoanStatusTone = (status: LoanStatus): LoanStatusTone => {
-	switch (status.kind) {
-		case "overdue":
-			return "red";
-		case "due-today":
-		case "due-soon":
-			return "amber";
-		default:
-			return "neutral";
-	}
+export const getLoanStats = (activeLoans: Loan[], now: Date = new Date()) => {
+	const kinds = activeLoans.map((loan) => getLoanStatus(loan, now).kind);
+	return {
+		overdue: kinds.filter((kind) => kind === "overdue").length,
+		dueThisWeek: kinds.filter((kind) => kind === "due-today" || kind === "due-soon").length,
+	};
 };
 
-export const isActiveLoan = (loan: Loan): boolean => toLoanDate(loan.returnedDate) === null;
+const timeOf = (value: DateValue, fallback: number): number => toDate(value)?.getTime() ?? fallback;
 
-export const getLoanStats = (loans: Loan[], now: Date = new Date()): LoanStats => {
-	const stats: LoanStats = { onLoan: 0, overdue: 0, dueThisWeek: 0, returned: 0 };
+export const partitionLoans = (loans: Loan[]) => {
+	const active = loans.filter((loan) => !loan.returnedDate);
+	const returned = loans.filter((loan) => !!loan.returnedDate);
 
-	for (const loan of loans) {
-		const status = getLoanStatus(loan, now);
-		if (status.kind === "returned") {
-			stats.returned += 1;
-			continue;
-		}
-
-		stats.onLoan += 1;
-		if (status.kind === "overdue") {
-			stats.overdue += 1;
-		}
-		if (status.kind === "due-today" || status.kind === "due-soon") {
-			stats.dueThisWeek += 1;
-		}
-	}
-
-	return stats;
+	return {
+		active: active.sort(
+			(a, b) =>
+				timeOf(a.dueDate, Number.POSITIVE_INFINITY) - timeOf(b.dueDate, Number.POSITIVE_INFINITY) ||
+				timeOf(a.loanDate, 0) - timeOf(b.loanDate, 0),
+		),
+		returned: returned.sort((a, b) => timeOf(b.returnedDate, 0) - timeOf(a.returnedDate, 0)),
+	};
 };
 
-const timeOf = (value: Date | string | null | undefined, fallback: number): number =>
-	toLoanDate(value)?.getTime() ?? fallback;
-
-export const sortActiveLoans = (loans: Loan[]): Loan[] =>
-	[...loans].sort(
-		(a, b) =>
-			timeOf(a.dueDate, Number.POSITIVE_INFINITY) - timeOf(b.dueDate, Number.POSITIVE_INFINITY) ||
-			timeOf(a.loanDate, 0) - timeOf(b.loanDate, 0),
-	);
-
-export const sortReturnedLoans = (loans: Loan[]): Loan[] =>
-	[...loans].sort((a, b) => timeOf(b.returnedDate, 0) - timeOf(a.returnedDate, 0));
-
-export const getPresetDueDate = (loanDate: string, preset: DuePreset): Date | null => {
+export const getPresetDueDate = (loanDate: string, preset: DuePreset): string => {
 	const start = parseLocalDate(loanDate);
 	if (!start) {
-		return null;
+		return "";
 	}
 
 	switch (preset) {
 		case "one-week":
-			return addWeeks(start, 1);
+			return toInputDate(addWeeks(start, 1), false);
 		case "two-weeks":
-			return addWeeks(start, 2);
+			return toInputDate(addWeeks(start, 2), false);
 		case "one-month":
-			return addMonths(start, 1);
+			return toInputDate(addMonths(start, 1), false);
 		default:
-			return null;
+			return "";
 	}
-};
-
-export const resolveDueDate = (loanDate: string, preset: DuePreset, customDate: string): string => {
-	if (preset === "custom") {
-		return customDate;
-	}
-
-	const date = getPresetDueDate(loanDate, preset);
-	return date ? format(date, "yyyy-MM-dd") : "";
 };
 
 export const formatDayCount = (days: number, language: string): string =>
 	formatDuration({ days: Math.abs(days) }, { format: ["days"], locale: getDateFnsLocale(language) });
 
-export const formatLoanDate = (
-	value: Date | string | null | undefined,
-	dateFormat: string | null | undefined,
-	language: string,
-): string => toDisplay(toLoanDate(value), dateFormat || DEFAULT_DATE_FORMAT, language);
+export const formatLoanDate = (value: DateValue, dateFormat: string | null | undefined, language: string): string =>
+	toDisplay(value, dateFormat || DEFAULT_DATE_FORMAT, language);

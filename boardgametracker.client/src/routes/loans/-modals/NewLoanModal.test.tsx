@@ -40,6 +40,8 @@ describe("NewLoanModal", () => {
 
 	const dueDateField = () => screen.getByRole("group", { name: "new.due.custom-label" });
 
+	const preset = (name: string | RegExp) => screen.getByRole("radio", { name });
+
 	const segmentValues = (group: HTMLElement) =>
 		within(group)
 			.getAllByRole("spinbutton")
@@ -48,46 +50,46 @@ describe("NewLoanModal", () => {
 	it("defaults to a two week due date and switches between presets", async () => {
 		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
 
-		expect(screen.getByRole("button", { name: /^new\.due\.two-weeks · / })).toHaveAttribute("aria-pressed", "true");
+		expect(preset(/^new\.due\.two-weeks · /)).toBeChecked();
 
-		await userEvent.click(screen.getByRole("button", { name: "new.due.none" }));
+		await userEvent.click(preset("new.due.none"));
 
-		expect(screen.getByRole("button", { name: "new.due.none" })).toHaveAttribute("aria-pressed", "true");
-		expect(screen.getByRole("button", { name: "new.due.two-weeks" })).toHaveAttribute("aria-pressed", "false");
+		expect(preset("new.due.none")).toBeChecked();
+		expect(preset("new.due.two-weeks")).not.toBeChecked();
 	});
 
-	it("shows the app date field for pick date, prefilled with the selected preset", async () => {
+	it("shows the app date field for pick date with the due date of the selected preset", async () => {
 		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
 
 		expect(screen.queryByRole("group", { name: "new.due.custom-label" })).not.toBeInTheDocument();
-		await userEvent.click(screen.getByRole("button", { name: "new.due.custom" }));
+		await userEvent.click(preset("new.due.custom"));
 
 		const field = await waitFor(dueDateField);
 		expect(within(field).getByLabelText("common:open-calendar")).toBeInTheDocument();
 		expect(segmentValues(field)).toEqual(["2026", "10", "25"]);
 	});
 
-	it("prefills pick date from the preset that was selected before", async () => {
+	it("keeps the due date of the preset that was selected before", async () => {
 		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
 
-		await userEvent.click(screen.getByRole("button", { name: "new.due.one-month" }));
-		await userEvent.click(screen.getByRole("button", { name: "new.due.custom" }));
+		await userEvent.click(preset("new.due.one-month"));
+		await userEvent.click(preset("new.due.custom"));
 
 		expect(segmentValues(await waitFor(dueDateField))).toEqual(["2026", "11", "11"]);
 	});
 
-	it("prefills pick date two weeks out after no due date was selected", async () => {
+	it("leaves pick date empty after no due date was selected", async () => {
 		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
 
-		await userEvent.click(screen.getByRole("button", { name: "new.due.none" }));
-		await userEvent.click(screen.getByRole("button", { name: "new.due.custom" }));
+		await userEvent.click(preset("new.due.none"));
+		await userEvent.click(preset("new.due.custom"));
 
-		expect(segmentValues(await waitFor(dueDateField))).toEqual(["2026", "10", "25"]);
+		expect(segmentValues(await waitFor(dueDateField))).toEqual([null, null, null]);
 	});
 
 	it("shows an error under the picked date when it is before the loan start", async () => {
 		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
-		await userEvent.click(screen.getByRole("button", { name: "new.due.custom" }));
+		await userEvent.click(preset("new.due.custom"));
 		const field = await waitFor(dueDateField);
 
 		const day = within(field).getAllByRole("spinbutton")[2];
@@ -95,6 +97,17 @@ describe("NewLoanModal", () => {
 		await userEvent.keyboard("01");
 
 		expect(await screen.findByText("loans:new.end.before-start")).toBeInTheDocument();
+	});
+
+	it("moves the preset due date along with the loan start", async () => {
+		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
+		await waitFor(() => expect(preset(/^new\.due\.two-weeks · /)).toHaveTextContent("2026-10-25"));
+
+		const day = within(screen.getByRole("group", { name: "new.start.label" })).getAllByRole("spinbutton")[2];
+		await userEvent.click(day);
+		await userEvent.keyboard("15");
+
+		await waitFor(() => expect(preset(/^new\.due\.two-weeks · /)).toHaveTextContent("2026-10-29"));
 	});
 
 	it("does not save without a game and a borrower", async () => {

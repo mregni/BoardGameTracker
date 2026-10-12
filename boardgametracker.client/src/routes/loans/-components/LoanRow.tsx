@@ -27,68 +27,82 @@ export const LoanRow = ({ loan, game, player, dateFormat, onReturn, onEdit, onDe
 	const gameTitle = game?.title ?? "";
 	const playerName = player?.name ?? "";
 
+	const gameCell = game ? (
+		<Link
+			to="/games/$gameId"
+			params={{ gameId: game.id }}
+			className="truncate font-semibold text-white hover:text-primary"
+		>
+			{gameTitle}
+		</Link>
+	) : (
+		<span className="truncate font-semibold text-white">{gameTitle}</span>
+	);
+
+	const playerCell = player ? (
+		<Link
+			to="/players/$playerId"
+			params={{ playerId: player.id }}
+			className="truncate text-sm text-white/80 hover:text-primary"
+		>
+			{playerName}
+		</Link>
+	) : (
+		<span className="truncate text-sm text-white/80">{playerName}</span>
+	);
+
 	return (
-		<div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 gap-y-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2.5 lg:grid-cols-[minmax(8rem,20rem)_minmax(6rem,12rem)_1fr_11rem_4.5rem_8rem] lg:gap-x-3 xl:grid-cols-[minmax(8rem,20rem)_minmax(6rem,12rem)_1fr_9rem_11rem_4.5rem_8rem] xl:gap-x-4">
-			<div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2">
-				<BgtAvatar size="medium" title={gameTitle} image={game?.image ?? null} />
-				{game ? (
-					<Link
-						to="/games/$gameId"
-						params={{ gameId: game.id }}
-						className="truncate font-semibold text-white hover:text-primary"
+		<div className="flex flex-col gap-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2.5 lg:grid lg:grid-cols-[minmax(8rem,20rem)_minmax(6rem,12rem)_1fr_auto_11rem_4.5rem_8rem] lg:items-center lg:gap-x-2 xl:gap-x-4">
+			<div className="flex items-center justify-between gap-2 lg:contents">
+				<div className="flex min-w-0 items-center gap-2 lg:order-1">
+					<BgtAvatar size="medium" title={gameTitle} image={game?.image ?? null} />
+					{gameCell}
+				</div>
+				<div className="shrink-0 lg:order-5 lg:min-w-0">
+					<LoanStatusPill loan={loan} dateFormat={dateFormat} />
+				</div>
+			</div>
+			<div className="flex items-center gap-2 lg:contents">
+				<div className="flex min-w-0 items-center gap-2 lg:order-2">
+					<BgtAvatar size="small" title={playerName} image={player?.image ?? null} />
+					{playerCell}
+				</div>
+				<div className="ml-auto flex items-center gap-1.5 lg:order-6 lg:ml-0 lg:justify-end">
+					{onEdit && (
+						<BgtIconButton
+							intent="subtile"
+							icon={<Pencil className="size-4" />}
+							aria-label={t("edit.button")}
+							onClick={() => onEdit(loan)}
+						/>
+					)}
+					{onDelete && (
+						<BgtIconButton
+							intent="subtile"
+							icon={<Trash className="size-4" />}
+							aria-label={t("delete.button")}
+							onClick={() => onDelete(loan)}
+						/>
+					)}
+				</div>
+				{onReturn && (
+					<BgtButton
+						size="1"
+						variant="primary"
+						className="whitespace-nowrap lg:order-7 lg:justify-self-start"
+						onClick={() => onReturn(loan)}
 					>
-						{gameTitle}
-					</Link>
-				) : (
-					<span className="truncate font-semibold text-white">{gameTitle}</span>
-				)}
-			</div>
-			<div className="col-start-1 row-start-2 flex min-w-0 items-center gap-2 lg:col-start-2 lg:row-start-1">
-				<BgtAvatar size="small" title={playerName} image={player?.image ?? null} />
-				{player ? (
-					<Link
-						to="/players/$playerId"
-						params={{ playerId: player.id }}
-						className="truncate text-sm text-white/80 hover:text-primary"
-					>
-						{playerName}
-					</Link>
-				) : (
-					<span className="truncate text-sm text-white/80">{playerName}</span>
-				)}
-			</div>
-			<span className="hidden text-sm whitespace-nowrap text-white/50 xl:col-start-4 xl:row-start-1 xl:block">
-				{t("since", { date: formatLoanDate(loan.loanDate, dateFormat, i18n.language) })}
-			</span>
-			<div className="col-span-2 col-start-2 row-start-1 min-w-0 max-w-full justify-self-end lg:col-span-1 lg:col-start-4 lg:justify-self-start xl:col-start-5">
-				<LoanStatusPill loan={loan} dateFormat={dateFormat} />
-			</div>
-			<div className="col-start-2 row-start-2 flex items-center justify-end gap-1.5 lg:col-start-5 lg:row-start-1 xl:col-start-6">
-				{onEdit && (
-					<BgtIconButton
-						intent="subtile"
-						icon={<Pencil className="size-4" />}
-						aria-label={t("edit.button")}
-						onClick={() => onEdit(loan)}
-					/>
-				)}
-				{onDelete && (
-					<BgtIconButton
-						intent="subtile"
-						icon={<Trash className="size-4" />}
-						aria-label={t("delete.button")}
-						onClick={() => onDelete(loan)}
-					/>
-				)}
-			</div>
-			{onReturn && (
-				<div className="col-start-3 row-start-2 justify-self-end lg:col-start-6 lg:row-start-1 lg:justify-self-start xl:col-start-7">
-					<BgtButton size="1" variant="primary" className="whitespace-nowrap" onClick={() => onReturn(loan)}>
 						<Check className="size-4" />
 						{t("returned-button")}
 					</BgtButton>
-				</div>
-			)}
+				)}
+			</div>
+			<div className="hidden lg:order-3 lg:block" />
+			<div className="hidden lg:order-4 lg:block">
+				<span className="hidden w-36 text-sm whitespace-nowrap text-white/50 xl:block">
+					{t("since", { date: formatLoanDate(loan.loanDate, dateFormat, i18n.language) })}
+				</span>
+			</div>
 		</div>
 	);
 };
