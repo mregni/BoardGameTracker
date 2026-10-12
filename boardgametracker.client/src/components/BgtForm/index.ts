@@ -7,7 +7,6 @@ export { BgtFormErrors } from "./BgtFormErrors";
 export { BgtImageSelector } from "./BgtImageSelector";
 export { BgtInputContainer } from "./BgtInputContainer";
 export { BgtInputField } from "./BgtInputField";
-export { BgtPlayerSelector } from "./BgtPlayerSelector";
 export { BgtSelect } from "./BgtSelect";
 export { BgtSimpleCheckbox } from "./BgtSimpleCheckbox";
 export { BgtSimpleInputField } from "./BgtSimpleInputField";

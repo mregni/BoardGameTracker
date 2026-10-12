@@ -4080,6 +4080,35 @@
         }
       }
     },
+    "/api/session/suggestions": {
+      "get": {
+        "tags": [
+          "Session"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSuggestionsDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSuggestionsDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSuggestionsDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/settings": {
       "get": {
         "tags": [
@@ -6992,6 +7021,31 @@
             "items": {
               "$ref": "#/components/schemas/ExpansionDto"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "SessionSuggestionsDto": {
+        "type": "object",
+        "properties": {
+          "recentGameIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "frequentPlayerIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "lastLocationId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false

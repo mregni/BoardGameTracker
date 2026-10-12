@@ -96,6 +96,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IPublicUrlBuilder, PublicUrlBuilder>();
         serviceCollection.AddScoped<IPlayerService, PlayerService>();
         serviceCollection.AddScoped<ISessionService, SessionService>();
+        serviceCollection.AddScoped<ISessionSuggestionService, SessionSuggestionService>();
         serviceCollection.AddScoped<ILocationService, LocationService>();
         serviceCollection.AddScoped<ILoanService, LoanService>();
         serviceCollection.AddScoped<IDashboardService, DashboardService>();

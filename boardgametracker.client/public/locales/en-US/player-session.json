@@ -8,22 +8,16 @@
       "created": "Session successfully created",
       "create-failed": "Failed creating session"
     },
-    "save": "Add player",
-    "title": "Add player",
-    "description": "Fill in the form to add a new player to this session.",
     "player": {
       "label": "Player",
       "required": "Player is required"
     },
     "create-player": "Create new player",
     "players": {
-      "label": "Players",
-      "add": "+ Add player",
       "minimum": "Add at least one player to this session"
     },
     "duration": {
       "label": "Duration",
-      "placeholder": "in minutes",
       "required": "Duration is required",
       "positive": "Duration must be greater than 0"
     },
@@ -50,27 +44,34 @@
     }
   },
   "update": {
-    "save": "Update player",
-    "title": "Update player",
-    "description": "Update the form to change the details of {{name}}.",
     "notifications": {
       "updated": "Session successfully updated",
       "update-failed": "Failed updating session"
     }
   },
-  "won": {
-    "label": "Player has won the game"
-  },
   "score": {
-    "label": "End scoring",
-    "required": "Score is required",
-    "optional": "Leave empty when the score is unknown"
-  },
-  "first-play": {
-    "label": "Played game for the first time"
+    "required": "Score is required"
   },
   "delete": {
     "successfull": "Session successfully deleted.",
     "failed": "Session deletion failed, check logs for more details."
+  },
+  "form": {
+    "game": {
+      "recent": "Recently played",
+      "all": "All games"
+    },
+    "players": {
+      "label": "Players & scores",
+      "label-no-scoring": "Players",
+      "search": "Add a player…"
+    },
+    "player": {
+      "score": "Score of {{name}}",
+      "score-placeholder": "Score",
+      "won": "Won",
+      "first-play": "First play",
+      "remove": "Remove {{name}}"
+    }
   }
 }

@@ -3,29 +3,33 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtDateTimePicker, BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
-import { CreateSessionSchema, type Game, type Location } from "@/models";
+import { type BgtSelectImageItem, CreateSessionSchema, type Game, type Location } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
+import { splitSuggested } from "../-utils/splitSuggested";
 
 export const SessionFormFields = withForm({
 	...sessionFormOpts,
 	props: {
 		games: [] as Game[],
+		recentGameIds: [] as number[],
 		locations: [] as Location[],
 		disabled: false,
+		onGameChange: (() => {}) as (gameId: number) => void,
+		onMinutesChange: (() => {}) as (minutes: number | undefined) => void,
 	},
-	render: function Render({ form, games, locations, disabled }) {
-		const { t } = useTranslation("player-session");
+	render: function Render({ form, games, recentGameIds, locations, disabled, onGameChange, onMinutesChange }) {
+		const { t } = useTranslation(["player-session", "common"]);
 
-		const gamesSelectItems = useMemo(
-			() =>
-				games?.map((x: Game) => ({
-					value: x.id,
-					label: x.title,
-					image: x.image,
-				})) ?? [],
-			[games],
-		);
+		const gameSelectItems = useMemo<BgtSelectImageItem[]>(() => {
+			const { suggested, rest } = splitSuggested(games, recentGameIds);
+			const toItem = (game: Game, group?: string) => ({ value: game.id, label: game.title, image: game.image, group });
+			if (suggested.length === 0) return games.map((x) => toItem(x));
+			return [
+				...suggested.map((x) => toItem(x, t("form.game.recent"))),
+				...rest.map((x) => toItem(x, t("form.game.all"))),
+			];
+		}, [games, recentGameIds, t]);
 
 		const locationsSelectItems = useMemo(
 			() => [
@@ -39,47 +43,60 @@ export const SessionFormFields = withForm({
 		);
 
 		return (
-			<>
-				<form.Field name="gameId" validators={zodValidator(CreateSessionSchema, "gameId")}>
+			<div className="@container flex flex-col gap-3">
+				<form.Field
+					name="gameId"
+					validators={zodValidator(CreateSessionSchema, "gameId")}
+					listeners={{ onChange: ({ value }) => onGameChange(value) }}
+				>
 					{(field: AnyFieldApi) => (
 						<BgtSelect
 							field={field}
 							hasSearch
-							items={gamesSelectItems}
+							items={gameSelectItems}
 							label={t("new.game.label")}
 							disabled={disabled}
 							placeholder={t("new.game.placeholder")}
 						/>
 					)}
 				</form.Field>
-				<form.Field name="locationId" validators={zodValidator(CreateSessionSchema, "locationId")}>
-					{(field: AnyFieldApi) => (
-						<BgtSelect
-							field={field}
-							hasSearch
-							items={locationsSelectItems}
-							label={t("new.location.label")}
-							disabled={disabled}
-							placeholder={t("new.location.placeholder")}
-						/>
-					)}
-				</form.Field>
-				<form.Field name="minutes" validators={zodValidator(CreateSessionSchema, "minutes")}>
-					{(field: AnyFieldApi) => (
-						<BgtInputField
-							field={field}
-							type="number"
-							disabled={disabled}
-							label={t("new.duration.label")}
-							placeholder={t("new.duration.placeholder")}
-							suffixLabel={t("common:minutes-abbreviation")}
-						/>
-					)}
-				</form.Field>
-				<form.Field name="start" validators={zodValidator(CreateSessionSchema, "start")}>
-					{(field: AnyFieldApi) => <BgtDateTimePicker field={field} disabled={disabled} label={t("new.start.label")} />}
-				</form.Field>
-			</>
+				<div className="grid grid-cols-2 @2xl:grid-cols-[minmax(0,1.6fr)_minmax(0,0.7fr)_minmax(0,1fr)] gap-x-3 gap-y-3">
+					<div className="col-span-2 @2xl:col-span-1">
+						<form.Field name="start" validators={zodValidator(CreateSessionSchema, "start")}>
+							{(field: AnyFieldApi) => (
+								<BgtDateTimePicker field={field} disabled={disabled} label={t("new.start.label")} />
+							)}
+						</form.Field>
+					</div>
+					<form.Field
+						name="minutes"
+						validators={zodValidator(CreateSessionSchema, "minutes")}
+						listeners={{ onChange: ({ value }) => onMinutesChange(value) }}
+					>
+						{(field: AnyFieldApi) => (
+							<BgtInputField
+								field={field}
+								type="number"
+								inputMode="numeric"
+								disabled={disabled}
+								label={t("new.duration.label")}
+								suffixLabel={t("common:minutes-abbreviation")}
+							/>
+						)}
+					</form.Field>
+					<form.Field name="locationId" validators={zodValidator(CreateSessionSchema, "locationId")}>
+						{(field: AnyFieldApi) => (
+							<BgtSelect
+								field={field}
+								items={locationsSelectItems}
+								label={t("new.location.label")}
+								disabled={disabled}
+								placeholder={t("new.location.placeholder")}
+							/>
+						)}
+					</form.Field>
+				</div>
+			</div>
 		);
 	},
 });

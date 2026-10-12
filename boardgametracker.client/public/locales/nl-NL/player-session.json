@@ -8,22 +8,16 @@
       "created": "Sessie is aangemaakt",
       "create-failed": "Sessie aanmaken mislukt"
     },
-    "save": "Speler toevoegen",
-    "title": "Speler toevoegen",
-    "description": "Vul het formulier in om een nieuwe speler aan deze sessie toe te voegen.",
     "player": {
       "label": "Speler",
       "required": "Speler is verplicht"
     },
     "create-player": "Nieuwe speler aanmaken",
     "players": {
-      "label": "Spelers",
-      "add": "+ Speler toevoegen",
       "minimum": "Voeg minstens één speler toe aan deze sessie"
     },
     "duration": {
       "label": "Duur",
-      "placeholder": "in minuten",
       "required": "Duur is verplicht",
       "positive": "De duur moet groter zijn dan 0"
     },
@@ -50,27 +44,34 @@
     }
   },
   "update": {
-    "save": "Speler bijwerken",
-    "title": "Speler bijwerken",
-    "description": "Pas het formulier aan om de gegevens van {{name}} te wijzigen.",
     "notifications": {
       "updated": "Sessie is bijgewerkt",
       "update-failed": "Sessie bijwerken mislukt"
     }
   },
-  "won": {
-    "label": "Speler heeft het spel gewonnen"
-  },
   "score": {
-    "label": "Eindscore",
-    "required": "Score is verplicht",
-    "optional": "Laat leeg als de score onbekend is"
-  },
-  "first-play": {
-    "label": "Spel voor het eerst gespeeld"
+    "required": "Score is verplicht"
   },
   "delete": {
     "successfull": "Sessie is verwijderd.",
     "failed": "Sessie verwijderen mislukt, bekijk de logs voor meer details."
+  },
+  "form": {
+    "game": {
+      "recent": "Recent gespeeld",
+      "all": "Alle spellen"
+    },
+    "players": {
+      "label": "Spelers & scores",
+      "label-no-scoring": "Spelers",
+      "search": "Voeg een speler toe…"
+    },
+    "player": {
+      "score": "Score van {{name}}",
+      "score-placeholder": "Score",
+      "won": "Gewonnen",
+      "first-play": "Eerste keer",
+      "remove": "Verwijder {{name}}"
+    }
   }
 }

@@ -73,6 +73,19 @@ public class SessionRepository : EfRepository<Session>, ISessionRepository
             .ToListAsync(cancellationToken);
     }
 
+    public Task<List<int>> GetRecentlyPlayedGameIds(int count, CancellationToken cancellationToken = default)
+    {
+        return _context.Sessions
+            .AsNoTracking()
+            .GroupBy(x => x.GameId)
+            .Select(g => new { GameId = g.Key, LastStart = g.Max(x => x.Start) })
+            .OrderByDescending(x => x.LastStart)
+            .ThenBy(x => x.GameId)
+            .Take(count)
+            .Select(x => x.GameId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task DeleteByPlayerIdAsync(int playerId)
     {
         var sessions = await _context.Sessions

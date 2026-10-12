@@ -19,6 +19,12 @@ public static class Constants
         public const int TrendWindowSize = 5;
     }
 
+    public static class SessionForm
+    {
+        public const int RecentGamesCount = 8;
+        public const int FrequentPlayersCount = 3;
+    }
+
     public static class AppConfig
     {
         public const string Currency = "currency";

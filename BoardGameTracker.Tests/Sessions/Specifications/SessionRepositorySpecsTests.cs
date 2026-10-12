@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Ardalis.Specification;
 using BoardGameTracker.Common.Entities;
@@ -56,6 +56,22 @@ public class SessionRepositorySpecsTests
 
         result.Select(x => x.Id).Should().Equal(3, 2);
         spec.ShouldIncludeExactly("Game", "PlayerSessions", "PlayerSessions.Player");
+        spec.AsNoTracking.Should().BeTrue();
+    }
+
+    [Fact]
+    public void LastUsedLocationSpec_ShouldSelectLocationOfLatestSessionWithALocation()
+    {
+        var older = SessionWithPlayer(1, 1, 5, won: false);
+        older.SetLocation(new Location("Kitchen") { Id = 10 });
+        var newer = SessionWithPlayer(2, 1, 5, won: false);
+        newer.SetLocation(new Location("Attic") { Id = 20 });
+        var newestWithoutLocation = SessionWithPlayer(3, 1, 5, won: false);
+        var spec = new LastUsedLocationSpec();
+
+        var result = spec.Evaluate(new[] { older, newestWithoutLocation, newer }).ToList();
+
+        result.Should().Equal(20, 10);
         spec.AsNoTracking.Should().BeTrue();
     }
 }
