@@ -4,7 +4,7 @@
   "whos-coming": "Quién viene",
   "group": {
     "coming": "Vienen ({{count}})",
-    "pending": "Sin respuesta todavía ({{count}})",
+    "pending": "Quizás o sin respuesta todavía ({{count}})",
     "declined": "No pueden venir ({{count}})"
   },
   "host": "anfitrión",

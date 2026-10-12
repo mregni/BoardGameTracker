@@ -16,13 +16,11 @@ interface Props {
 	image: string | null | undefined;
 	onClick?: () => void;
 	tone?: keyof typeof tones;
-	icon?: ReactNode;
 	children?: ReactNode;
 }
 
-export const AvatarChip = ({ title, image, onClick, tone = "neutral", icon, children }: Props) => (
-	<div className={cx(chip, tones[tone], icon && "pl-2")}>
-		{icon}
+export const AvatarChip = ({ title, image, onClick, tone = "neutral", children }: Props) => (
+	<div className={cx(chip, tones[tone])}>
 		<BgtAvatar title={title} image={image} size="small" withTitle onClick={onClick} />
 		{children}
 	</div>

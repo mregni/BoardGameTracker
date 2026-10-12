@@ -40,6 +40,7 @@ describe("RsvpWhosComing", () => {
 		expect(within(declined).getAllByRole("listitem")).toHaveLength(1);
 		expect(within(declined).getByText("Olaf")).toBeInTheDocument();
 		expect(within(declined).getByText("Olaf").closest(".rounded-full")).toHaveClass("border-red-400/50");
+		expect(within(declined).getByRole("listitem").querySelector("svg")).toBeNull();
 	});
 
 	it("hides groups without players", () => {

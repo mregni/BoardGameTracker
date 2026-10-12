@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import XIcon from "@/assets/icons/x.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
@@ -42,16 +41,7 @@ export const RsvpWhosComing = ({ gameNight }: Props) => {
 						<ul className="flex flex-wrap gap-2" data-testid={headingId}>
 							{players.map((rsvp) => (
 								<li key={rsvp.id}>
-									<AvatarChip
-										title={rsvp.player.name}
-										image={rsvp.player.image}
-										tone={group.tone}
-										icon={
-											group.state === GameNightRsvpState.Declined ? (
-												<XIcon className="size-3 text-red-400" aria-hidden />
-											) : undefined
-										}
-									>
+									<AvatarChip title={rsvp.player.name} image={rsvp.player.image} tone={group.tone}>
 										{rsvp.playerId === gameNight.hostId && <span className="text-gray-400">· {t("host")}</span>}
 									</AvatarChip>
 								</li>

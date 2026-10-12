@@ -4,7 +4,7 @@
   "whos-coming": "Wie komt er?",
   "group": {
     "coming": "Komen ({{count}})",
-    "pending": "Nog geen antwoord ({{count}})",
+    "pending": "Misschien of nog geen antwoord ({{count}})",
     "declined": "Kunnen niet ({{count}})"
   },
   "host": "gastheer",

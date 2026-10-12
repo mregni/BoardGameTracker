@@ -4,7 +4,7 @@
   "whos-coming": "Who's coming",
   "group": {
     "coming": "Coming ({{count}})",
-    "pending": "No answer yet ({{count}})",
+    "pending": "Maybe or no answer yet ({{count}})",
     "declined": "Can't come ({{count}})"
   },
   "host": "host",
