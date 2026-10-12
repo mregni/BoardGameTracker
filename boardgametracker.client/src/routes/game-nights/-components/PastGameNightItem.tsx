@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { AvatarChip } from "@/components/GameNight/AvatarChip";
+import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import { type GameNight, GameNightRsvpState, type Settings } from "@/models";
-import { sortRsvps } from "../-utils/sortRsvps";
-import { AvatarChip } from "./AvatarChip";
-import { GameNightDateBox } from "./GameNightDateBox";
+import { sortRsvps } from "@/utils/sortRsvps";
 
 interface Props {
 	gameNight: GameNight;
