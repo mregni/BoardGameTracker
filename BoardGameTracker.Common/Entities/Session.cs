@@ -35,6 +35,8 @@ public class Session : HasId
     public ICollection<Expansion> Expansions { get; private set; }
     public int? LocationId { get; private set; }
     public Location? Location { get; private set; }
+    public int? GameNightId { get; private set; }
+    public GameNight? GameNight { get; private set; }
     public ICollection<Image> ExtraImages { get; private set; }
     public ICollection<PlayerSession> PlayerSessions { get; private set; }
 
@@ -72,6 +74,16 @@ public class Session : HasId
     {
         Location = location;
         LocationId = location?.Id;
+    }
+
+    public void SetGameNight(int? gameNightId)
+    {
+        if (gameNightId.HasValue)
+        {
+            Guard.Against.NegativeOrZero(gameNightId.Value);
+        }
+
+        GameNightId = gameNightId;
     }
 
     public void AddExpansion(Expansion expansion)

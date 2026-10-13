@@ -82,6 +82,17 @@ public class GameNightService : IGameNightService
         return _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(id));
     }
 
+    public async Task<GameNight?> GetDetail(int id)
+    {
+        _logger.LogDebug("Fetching details of game night {GameNightId}", id);
+        if (!await IsEnabledAsync())
+        {
+            throw new FeatureDisabledException(Constants.AppConfig.GameNightsEnabled);
+        }
+
+        return await _gameNightRepository.SingleOrDefaultAsync(new GameNightDetailSpec(id));
+    }
+
     public async Task<GameNight> Create(CreateGameNightCommand command)
     {
         _logger.LogDebug("Creating game night {Title}", command.Title);

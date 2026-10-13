@@ -9,6 +9,7 @@ public class SessionDto
     public DateTime End { get; set; }
     public double Minutes { get; set; }
     public int? LocationId { get; set; }
+    public int? GameNightId { get; set; }
     public List<PlayerSessionDto> PlayerSessions { get; set; } = [];
     public List<ExpansionDto> Expansions { get; set; } = [];
 }

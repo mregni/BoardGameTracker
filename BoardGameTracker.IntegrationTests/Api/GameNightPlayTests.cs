@@ -1,0 +1,126 @@
+using System.Net;
+using System.Net.Http.Json;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Enums;
+using BoardGameTracker.IntegrationTests.Infrastructure;
+using FluentAssertions;
+using Xunit;
+
+namespace BoardGameTracker.IntegrationTests.Api;
+
+[Collection(IntegrationCollection.Name)]
+public class GameNightPlayTests
+{
+    private readonly IntegrationFixture _fixture;
+
+    public GameNightPlayTests(IntegrationFixture fixture)
+    {
+        _fixture = fixture;
+    }
+
+    [Fact]
+    public async Task FinishingARunningGame_ShouldLeaveOneSessionOfTheNight_AndNoRunningGame()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, gameId, hostId, guestId) = await CreateNightAsync(user);
+
+        var started = await user.PostAsJsonAsync($"/api/gamenight/{gameNightId}/running-games", new StartRunningGameCommand { GameId = gameId, PlayerIds = [hostId, guestId] });
+        started.StatusCode.Should().Be(HttpStatusCode.Created, await started.Content.ReadAsStringAsync());
+        var runningGame = (await started.Content.ReadFromJsonAsync<RunningGameDto>(IntegrationFixture.Json))!;
+
+        var during = await GetDetailAsync(user, gameNightId);
+        during.RunningGames.Should().ContainSingle(x => x.Id == runningGame.Id && x.PlayerIds.Count == 2);
+        during.Sessions.Should().BeEmpty();
+
+        var finished = await user.PostAsJsonAsync($"/api/gamenight/running-games/{runningGame.Id}/finish", new FinishRunningGameCommand
+        {
+            PlayerSessions =
+            [
+                new CreatePlayerSessionCommand { PlayerId = hostId, Score = 82, Won = true },
+                new CreatePlayerSessionCommand { PlayerId = guestId, Score = 71 },
+            ],
+        });
+        finished.StatusCode.Should().Be(HttpStatusCode.OK, await finished.Content.ReadAsStringAsync());
+        var session = (await finished.Content.ReadFromJsonAsync<SessionDto>(IntegrationFixture.Json))!;
+        session.GameNightId.Should().Be(gameNightId);
+
+        var after = await GetDetailAsync(user, gameNightId);
+        after.RunningGames.Should().BeEmpty();
+        after.Sessions.Should().ContainSingle(x => x.Id == session.Id);
+        after.GameNight.Summary.GamesPlayed.Should().Be(1);
+        after.GameNight.Summary.WinnerIds.Should().Equal(hostId);
+    }
+
+    [Fact]
+    public async Task DeletingTheNight_ShouldKeepItsSessions_AndDropItsRunningGames()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, gameId, hostId, _) = await CreateNightAsync(user);
+
+        var logged = await user.PostAsJsonAsync("/api/session", new CreateSessionCommand
+        {
+            GameId = gameId,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 40,
+            GameNightId = gameNightId,
+            PlayerSessions = [new CreatePlayerSessionCommand { PlayerId = hostId, Won = true }],
+        });
+        logged.StatusCode.Should().Be(HttpStatusCode.Created, await logged.Content.ReadAsStringAsync());
+        var session = (await logged.Content.ReadFromJsonAsync<SessionDto>(IntegrationFixture.Json))!;
+        var started = await user.PostAsJsonAsync($"/api/gamenight/{gameNightId}/running-games", new StartRunningGameCommand { GameId = gameId, PlayerIds = [hostId] });
+        var runningGame = (await started.Content.ReadFromJsonAsync<RunningGameDto>(IntegrationFixture.Json))!;
+
+        (await user.DeleteAsync($"/api/gamenight/{gameNightId}")).StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var kept = await user.GetFromJsonAsync<SessionDto>($"/api/session/{session.Id}", IntegrationFixture.Json);
+        kept!.GameNightId.Should().BeNull();
+        (await user.DeleteAsync($"/api/gamenight/running-games/{runningGame.Id}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task StartingAGame_ShouldBeRefused_ForAReader()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        using var reader = await _fixture.CreateClientAsAsync("reader");
+        var (gameNightId, gameId, hostId, _) = await CreateNightAsync(user);
+
+        var response = await reader.PostAsJsonAsync($"/api/gamenight/{gameNightId}/running-games", new StartRunningGameCommand { GameId = gameId, PlayerIds = [hostId] });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await reader.GetAsync($"/api/gamenight/{gameNightId}")).StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    private static async Task<GameNightDetailDto> GetDetailAsync(HttpClient user, int gameNightId)
+    {
+        var response = await user.GetAsync($"/api/gamenight/{gameNightId}");
+        response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+        return (await response.Content.ReadFromJsonAsync<GameNightDetailDto>(IntegrationFixture.Json))!;
+    }
+
+    private static async Task<int> CreateAsync<TDto>(HttpClient user, string url, object command, Func<TDto, int> id)
+    {
+        var response = await user.PostAsJsonAsync(url, command);
+        response.StatusCode.Should().Be(HttpStatusCode.Created, await response.Content.ReadAsStringAsync());
+        return id((await response.Content.ReadFromJsonAsync<TDto>(IntegrationFixture.Json))!);
+    }
+
+    private static async Task<(int GameNightId, int GameId, int HostId, int GuestId)> CreateNightAsync(HttpClient user)
+    {
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        var hostId = await CreateAsync<PlayerDto>(user, "/api/player", new CreatePlayerCommand { Name = "Host " + suffix }, x => x.Id);
+        var guestId = await CreateAsync<PlayerDto>(user, "/api/player", new CreatePlayerCommand { Name = "Guest " + suffix }, x => x.Id);
+        var locationId = await CreateAsync<LocationDto>(user, "/api/location", new CreateLocationCommand { Name = "Table " + suffix }, x => x.Id);
+        var gameId = await CreateAsync<GameDto>(user, "/api/game", new CreateGameCommand { Title = "Azul " + suffix, State = GameState.Owned, HasScoring = true }, x => x.Id);
+        var gameNightId = await CreateAsync<GameNightDto>(user, "/api/gamenight", new CreateGameNightCommand
+        {
+            Title = "Strategy night",
+            StartDate = DateTime.UtcNow.AddHours(-3),
+            HostId = hostId,
+            LocationId = locationId,
+            InvitedPlayerIds = [guestId],
+        }, x => x.Id);
+
+        return (gameNightId, gameId, hostId, guestId);
+    }
+}

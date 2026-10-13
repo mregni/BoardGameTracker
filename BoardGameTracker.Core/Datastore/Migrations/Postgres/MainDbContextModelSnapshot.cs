@@ -911,6 +911,21 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.ToTable("PlayerSessions");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Helpers.RunningGamePlayer", b =>
+                {
+                    b.Property<int>("RunningGameId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("RunningGameId", "PlayerId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("RunningGamePlayer");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Image", b =>
                 {
                     b.Property<int>("Id")
@@ -1174,6 +1189,32 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.ToTable("Players");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.RunningGame", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GameNightId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Start")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId");
+
+                    b.HasIndex("GameNightId");
+
+                    b.ToTable("RunningGames");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Session", b =>
                 {
                     b.Property<int>("Id")
@@ -1192,6 +1233,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int>("GameId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("GameNightId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("LocationId")
                         .HasColumnType("integer");
 
@@ -1199,6 +1243,8 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GameNightId");
 
                     b.HasIndex("LocationId");
 
@@ -1688,6 +1734,25 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("Session");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Helpers.RunningGamePlayer", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.RunningGame", "RunningGame")
+                        .WithMany("Players")
+                        .HasForeignKey("RunningGameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Player");
+
+                    b.Navigation("RunningGame");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Image", b =>
                 {
                     b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
@@ -1747,6 +1812,25 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("Manual");
                 });
 
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.RunningGame", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BoardGameTracker.Common.Entities.GameNight", "GameNight")
+                        .WithMany("RunningGames")
+                        .HasForeignKey("GameNightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+
+                    b.Navigation("GameNight");
+                });
+
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Session", b =>
                 {
                     b.HasOne("BoardGameTracker.Common.Entities.Game", "Game")
@@ -1755,12 +1839,19 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BoardGameTracker.Common.Entities.GameNight", "GameNight")
+                        .WithMany("Sessions")
+                        .HasForeignKey("GameNightId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BoardGameTracker.Common.Entities.Location", "Location")
                         .WithMany("Sessions")
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Game");
+
+                    b.Navigation("GameNight");
 
                     b.Navigation("Location");
                 });
@@ -1907,6 +1998,10 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
             modelBuilder.Entity("BoardGameTracker.Common.Entities.GameNight", b =>
                 {
                     b.Navigation("InvitedPlayers");
+
+                    b.Navigation("RunningGames");
+
+                    b.Navigation("Sessions");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Location", b =>
@@ -1926,6 +2021,11 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Navigation("Loans");
 
                     b.Navigation("PlayerSessions");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.RunningGame", b =>
+                {
+                    b.Navigation("Players");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Session", b =>

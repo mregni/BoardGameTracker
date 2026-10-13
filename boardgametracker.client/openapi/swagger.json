@@ -1788,6 +1788,87 @@
         }
       }
     },
+    "/api/gamenight/{id}": {
+      "get": {
+        "tags": [
+          "GameNight"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameNightDetailDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameNightDetailDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameNightDetailDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "GameNight"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/gamenight/{id}/send-invites": {
       "post": {
         "tags": [
@@ -1824,29 +1905,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/gamenight/{id}": {
-      "delete": {
-        "tags": [
-          "GameNight"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
           }
         }
       }
@@ -3925,6 +3983,147 @@
         }
       }
     },
+    "/api/gamenight/{gameNightId}/running-games": {
+      "post": {
+        "tags": [
+          "RunningGame"
+        ],
+        "parameters": [
+          {
+            "name": "gameNightId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartRunningGameCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartRunningGameCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartRunningGameCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunningGameDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunningGameDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunningGameDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gamenight/running-games/{id}/finish": {
+      "post": {
+        "tags": [
+          "RunningGame"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinishRunningGameCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinishRunningGameCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinishRunningGameCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gamenight/running-games/{id}": {
+      "delete": {
+        "tags": [
+          "RunningGame"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/session/{id}": {
       "get": {
         "tags": [
@@ -5225,6 +5424,13 @@
             "format": "int32",
             "nullable": true
           },
+          "gameNightId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "playerSessions": {
             "type": "array",
             "items": {
@@ -5449,6 +5655,31 @@
         },
         "additionalProperties": false
       },
+      "FinishRunningGameCommand": {
+        "type": "object",
+        "properties": {
+          "playerSessions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreatePlayerSessionCommand"
+            }
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "minutes": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "FirstGameTogether": {
         "type": "object",
         "properties": {
@@ -5616,6 +5847,27 @@
         },
         "additionalProperties": false
       },
+      "GameNightDetailDto": {
+        "type": "object",
+        "properties": {
+          "gameNight": {
+            "$ref": "#/components/schemas/GameNightDto"
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionDto"
+            }
+          },
+          "runningGames": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RunningGameDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "GameNightDto": {
         "type": "object",
         "properties": {
@@ -5662,6 +5914,9 @@
             "items": {
               "$ref": "#/components/schemas/GameNightRsvpDto"
             }
+          },
+          "summary": {
+            "$ref": "#/components/schemas/GameNightSummaryDto"
           }
         },
         "additionalProperties": false
@@ -5716,6 +5971,31 @@
           "pending"
         ],
         "type": "string"
+      },
+      "GameNightSummaryDto": {
+        "type": "object",
+        "properties": {
+          "gamesPlayed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalMinutes": {
+            "type": "number",
+            "format": "double"
+          },
+          "mostWins": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "winnerIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "GamePersonDto": {
         "type": "object",
@@ -6952,6 +7232,35 @@
         },
         "additionalProperties": false
       },
+      "RunningGameDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gameNightId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "playerIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "ScoreRank": {
         "required": [
           "key"
@@ -7009,6 +7318,11 @@
             "format": "double"
           },
           "locationId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "gameNightId": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -7105,6 +7419,26 @@
           "pricedGameCount": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StartRunningGameCommand": {
+        "type": "object",
+        "properties": {
+          "gameId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         },
         "additionalProperties": false
@@ -7712,6 +8046,13 @@
             "format": "int32",
             "nullable": true
           },
+          "gameNightId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "playerSessions": {
             "type": "array",
             "items": {
@@ -7928,6 +8269,9 @@
     },
     {
       "name": "Rag"
+    },
+    {
+      "name": "RunningGame"
     },
     {
       "name": "Session"

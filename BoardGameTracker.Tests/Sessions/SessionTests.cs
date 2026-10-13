@@ -131,4 +131,27 @@ public class SessionTests
         act.Should().Throw<ArgumentNullException>();
         session.Comment.Should().Be("before");
     }
+
+    [Fact]
+    public void SetGameNight_ShouldLinkAndUnlinkTheNight()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+
+        session.SetGameNight(4);
+        session.GameNightId.Should().Be(4);
+
+        session.SetGameNight(null);
+        session.GameNightId.Should().BeNull();
+    }
+
+    [Fact]
+    public void SetGameNight_ShouldRejectAnIdThatIsNotPositive()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+
+        var act = () => session.SetGameNight(0);
+
+        act.Should().Throw<ArgumentException>();
+        session.GameNightId.Should().BeNull();
+    }
 }

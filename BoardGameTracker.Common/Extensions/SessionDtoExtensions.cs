@@ -16,6 +16,7 @@ public static class SessionDtoExtensions
             End = session.End,
             Minutes = session.GetDuration().TotalMinutes,
             LocationId = session.LocationId,
+            GameNightId = session.GameNightId,
             PlayerSessions = session.PlayerSessions.Select(ps => ps.ToDto()).ToList(),
             Expansions = session.Expansions.Select(e => e.ToDto()).ToList(),
         };

@@ -19,6 +19,8 @@ public class GameNight: HasId
 
     public ICollection<Game> SuggestedGames { get; private set; } = [];
     public ICollection<GameNightRsvp> InvitedPlayers { get; private set; } = [];
+    public ICollection<Session> Sessions { get; private set; } = [];
+    public ICollection<RunningGame> RunningGames { get; private set; } = [];
 
     public static GameNight Create(string title, string notes, DateTime startDate, int hostId, int locationId)
     {
@@ -89,5 +91,41 @@ public class GameNight: HasId
         
             SuggestedGames.Add(suggestedGame);
         }
+    }
+
+    public double GetTotalPlayMinutes()
+    {
+        return Sessions.Sum(x => x.GetDuration().TotalMinutes);
+    }
+
+    public int GetMostWins()
+    {
+        var wins = CountWinsPerPlayer();
+        return wins.Count == 0 ? 0 : wins.Values.Max();
+    }
+
+    public List<int> GetNightWinnerIds()
+    {
+        var wins = CountWinsPerPlayer();
+        if (wins.Count == 0)
+        {
+            return [];
+        }
+
+        var mostWins = wins.Values.Max();
+        return wins
+            .Where(x => x.Value == mostWins)
+            .Select(x => x.Key)
+            .Order()
+            .ToList();
+    }
+
+    private Dictionary<int, int> CountWinsPerPlayer()
+    {
+        return Sessions
+            .SelectMany(x => x.PlayerSessions)
+            .Where(x => x.Won)
+            .GroupBy(x => x.PlayerId)
+            .ToDictionary(x => x.Key, x => x.Count());
     }
 }

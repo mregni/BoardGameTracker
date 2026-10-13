@@ -17,6 +17,9 @@ public class CreateSessionCommand
     [Range(1, int.MaxValue)]
     public int? LocationId { get; set; }
 
+    [Range(1, int.MaxValue)]
+    public int? GameNightId { get; set; }
+
     public List<CreatePlayerSessionCommand> PlayerSessions { get; set; } = [];
 
     public List<int> ExpansionIds { get; set; } = [];

@@ -32,6 +32,21 @@ public class GameNightController : ControllerBase
         return Ok(gameNights.ToListDto());
     }
 
+    [HttpGet]
+    [Route("{id:int}")]
+    [ProducesResponseType<GameNightDetailDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetGameNight(int id)
+    {
+        var gameNight = await _gameNightService.GetDetail(id);
+        if (gameNight == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(gameNight.ToDetailDto());
+    }
+
     [HttpPost]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     [ProducesResponseType<GameNightDto>(StatusCodes.Status201Created)]

@@ -1,6 +1,8 @@
 import type { Game } from "../Games/Game";
 import type { Location } from "../Location/Location";
 import type { Player } from "../Player/Player";
+import type { CreateSessionPlayer } from "../Session/CreateSession";
+import type { Session } from "../Session/Session";
 
 export enum GameNightRsvpState {
 	Accepted = "accepted",
@@ -28,6 +30,39 @@ export interface GameNight {
 	invitedPlayers: GameNightRsvps[];
 	suggestedGames: Game[];
 	notes: string;
+	summary: GameNightSummary;
+}
+
+export interface GameNightSummary {
+	gamesPlayed: number;
+	totalMinutes: number;
+	mostWins: number;
+	winnerIds: number[];
+}
+
+export interface RunningGame {
+	id: number;
+	gameNightId: number;
+	gameId: number;
+	start: Date;
+	playerIds: number[];
+}
+
+export interface GameNightDetail {
+	gameNight: GameNight;
+	sessions: Session[];
+	runningGames: RunningGame[];
+}
+
+export interface StartRunningGame {
+	gameId: number;
+	playerIds: number[];
+}
+
+export interface FinishRunningGame {
+	playerSessions: CreateSessionPlayer[];
+	start: Date | null;
+	minutes: number | null;
 }
 
 export interface CreateGameNight {

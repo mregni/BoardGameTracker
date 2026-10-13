@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
@@ -8,6 +9,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
@@ -27,6 +29,7 @@ public class SessionServiceTests
     private readonly Mock<IGameService> _gameServiceMock;
     private readonly Mock<ILocationService> _locationServiceMock;
     private readonly Mock<IPlayerService> _playerServiceMock;
+    private readonly Mock<IReadRepository<GameNight>> _gameNightRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
     private readonly Mock<ILogger<SessionService>> _loggerMock;
@@ -39,6 +42,7 @@ public class SessionServiceTests
         _gameServiceMock = new Mock<IGameService>();
         _locationServiceMock = new Mock<ILocationService>();
         _playerServiceMock = new Mock<IPlayerService>();
+        _gameNightRepositoryMock = new Mock<IReadRepository<GameNight>>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _dateTimeProviderMock = new Mock<IDateTimeProvider>();
         _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
@@ -50,6 +54,7 @@ public class SessionServiceTests
             _gameServiceMock.Object,
             _locationServiceMock.Object,
             _playerServiceMock.Object,
+            _gameNightRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _dateTimeProviderMock.Object,
             _loggerMock.Object);
@@ -67,6 +72,7 @@ public class SessionServiceTests
         _gameServiceMock.VerifyNoOtherCalls();
         _locationServiceMock.VerifyNoOtherCalls();
         _playerServiceMock.VerifyNoOtherCalls();
+        _gameNightRepositoryMock.VerifyNoOtherCalls();
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
@@ -503,6 +509,67 @@ public class SessionServiceTests
 
     #endregion
 
+    [Fact]
+    public async Task CreateFromCommand_ShouldLinkTheGameNight_WhenGameNightIdProvided()
+    {
+        var command = new CreateSessionCommand
+        {
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 45,
+            GameNightId = 7,
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
+        };
+
+        _gameNightRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _sessionRepositoryMock
+            .Setup(x => x.CreateAsync(It.IsAny<Session>()))
+            .ReturnsAsync((Session s) => s);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        var result = await _sessionService.CreateFromCommand(command);
+
+        result.GameNightId.Should().Be(7);
+
+        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldThrowEntityNotFound_WhenGameNightDoesNotExist()
+    {
+        var command = new CreateSessionCommand
+        {
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 45,
+            GameNightId = 7,
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1}]
+        };
+
+        _gameNightRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var action = () => _sessionService.CreateFromCommand(command);
+
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+
+        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #region UpdateFromCommand Tests
 
     [Fact]
@@ -541,6 +608,77 @@ public class SessionServiceTests
         result.PlayerSessions.Should().ContainSingle(ps => ps.PlayerId == 1 && ps.Score == 100 && ps.Won);
 
         _sessionRepositoryMock.Verify(x => x.GetByIdAsync(sessionId), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldKeepTheGameNightLink_WhenGameNightIdProvided()
+    {
+        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-3), DateTime.UtcNow.AddHours(-1), "") { Id = 1 };
+        existingSession.SetGameNight(7);
+
+        var command = new UpdateSessionCommand
+        {
+            Id = 1,
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 60,
+            GameNightId = 7,
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
+        };
+
+        _sessionRepositoryMock
+            .Setup(x => x.GetByIdAsync(1))
+            .ReturnsAsync(existingSession);
+        _gameNightRepositoryMock
+            .Setup(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        var result = await _sessionService.UpdateFromCommand(command);
+
+        result.GameNightId.Should().Be(7);
+
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldUnlinkTheGameNight_WhenGameNightIdMissing()
+    {
+        var existingSession = new Session(1, DateTime.UtcNow.AddHours(-3), DateTime.UtcNow.AddHours(-1), "") { Id = 1 };
+        existingSession.SetGameNight(7);
+
+        var command = new UpdateSessionCommand
+        {
+            Id = 1,
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 60,
+            PlayerSessions = [new CreatePlayerSessionCommand {PlayerId = 1, Won = true}]
+        };
+
+        _sessionRepositoryMock
+            .Setup(x => x.GetByIdAsync(1))
+            .ReturnsAsync(existingSession);
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync(default))
+            .ReturnsAsync(1);
+
+        var result = await _sessionService.UpdateFromCommand(command);
+
+        result.GameNightId.Should().BeNull();
+
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
         _badgeServiceMock.Verify(x => x.AwardBadgesAsync(existingSession), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));

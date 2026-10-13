@@ -190,6 +190,41 @@ public class GameNightServiceTests
 
     #endregion
 
+    #region GetDetail Tests
+
+    [Fact]
+    public async Task GetDetail_ShouldReturnTheNightWithItsDetails()
+    {
+        var gameNight = GameNight.Create("Night 1", "Notes", DateTime.UtcNow, 1, 1);
+        SetupGameNightsEnabled(true);
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightDetailSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(gameNight);
+
+        var result = await _gameNightService.GetDetail(1);
+
+        result.Should().BeSameAs(gameNight);
+
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightDetailSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyGameNightsEnabledChecked();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetDetail_ShouldThrowFeatureDisabled_WhenGameNightsAreDisabled()
+    {
+        SetupGameNightsEnabled(false);
+
+        var action = () => _gameNightService.GetDetail(1);
+
+        await action.Should().ThrowAsync<FeatureDisabledException>();
+
+        VerifyGameNightsEnabledChecked();
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
     #region Create Tests
 
     [Fact]
