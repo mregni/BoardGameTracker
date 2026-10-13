@@ -3,33 +3,38 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtDateTimePicker, BgtInputField, BgtSelect } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
-import { type BgtSelectImageItem, CreateSessionSchema, type Game, type Location } from "@/models";
+import { CreateSessionSchema, type Game, type Location } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
+import { toGameSelectItems } from "../-utils/gameSelectItems";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
-import { splitSuggested } from "../-utils/splitSuggested";
 
 export const SessionFormFields = withForm({
 	...sessionFormOpts,
 	props: {
 		games: [] as Game[],
 		recentGameIds: [] as number[],
+		recentGamesLabel: "",
 		locations: [] as Location[],
 		disabled: false,
 		onGameChange: (() => {}) as (gameId: number) => void,
 		onMinutesChange: (() => {}) as (minutes: number | undefined) => void,
 	},
-	render: function Render({ form, games, recentGameIds, locations, disabled, onGameChange, onMinutesChange }) {
+	render: function Render({
+		form,
+		games,
+		recentGameIds,
+		recentGamesLabel,
+		locations,
+		disabled,
+		onGameChange,
+		onMinutesChange,
+	}) {
 		const { t } = useTranslation(["player-session", "common"]);
 
-		const gameSelectItems = useMemo<BgtSelectImageItem[]>(() => {
-			const { suggested, rest } = splitSuggested(games, recentGameIds);
-			const toItem = (game: Game, group?: string) => ({ value: game.id, label: game.title, image: game.image, group });
-			if (suggested.length === 0) return games.map((x) => toItem(x));
-			return [
-				...suggested.map((x) => toItem(x, t("form.game.recent"))),
-				...rest.map((x) => toItem(x, t("form.game.all"))),
-			];
-		}, [games, recentGameIds, t]);
+		const gameSelectItems = useMemo(
+			() => toGameSelectItems(games, recentGameIds, recentGamesLabel, t("form.game.all")),
+			[games, recentGameIds, recentGamesLabel, t],
+		);
 
 		const locationsSelectItems = useMemo(
 			() => [

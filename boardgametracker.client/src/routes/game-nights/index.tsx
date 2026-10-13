@@ -1,7 +1,7 @@
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { isPast } from "date-fns";
-import { type ReactNode, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
@@ -18,6 +18,7 @@ import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { GameNightCard } from "./-components/GameNightCard";
+import { NightSectionTitle } from "./-components/NightSectionTitle";
 import { PastGameNightItem } from "./-components/PastGameNightItem";
 import { useGameNightActions } from "./-hooks/useGameNightActions";
 import { useGameNightData } from "./-hooks/useGameNightData";
@@ -145,7 +146,7 @@ function RouteComponent() {
 				{({ settings }) => (
 					<>
 						<section className="flex flex-col gap-3" aria-labelledby="upcoming-game-nights">
-							<SectionTitle id="upcoming-game-nights">{t("upcoming")}</SectionTitle>
+							<NightSectionTitle id="upcoming-game-nights">{t("upcoming")}</NightSectionTitle>
 							{upcomingGameNights.length === 0 ? (
 								<BgtText size="2" color="gray">
 									{t("empty.upcoming")}
@@ -168,16 +169,9 @@ function RouteComponent() {
 
 						{pastGameNights.length > 0 && (
 							<section className="flex flex-col gap-2" aria-labelledby="past-game-nights">
-								<SectionTitle id="past-game-nights">{t("past")}</SectionTitle>
+								<NightSectionTitle id="past-game-nights">{t("past")}</NightSectionTitle>
 								{pastGameNights.map((gameNight) => (
-									<PastGameNightItem
-										key={gameNight.id}
-										gameNight={gameNight}
-										settings={settings}
-										canWrite={canWrite}
-										onEdit={actions.handleEditGameNight}
-										onDelete={handleDeleteClick}
-									/>
+									<PastGameNightItem key={gameNight.id} gameNight={gameNight} settings={settings} players={players} />
 								))}
 							</section>
 						)}
@@ -239,12 +233,3 @@ function RouteComponent() {
 		</BgtPage>
 	);
 }
-
-const SectionTitle = ({ id, children }: { id: string; children: ReactNode }) => (
-	<h2
-		id={id}
-		className="flex items-center gap-3 text-xs tracking-widest text-gray-400 uppercase after:h-px after:flex-1 after:bg-white/10"
-	>
-		{children}
-	</h2>
-);

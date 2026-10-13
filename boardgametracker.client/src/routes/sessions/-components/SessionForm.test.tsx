@@ -195,7 +195,7 @@ describe("SessionForm", () => {
 
 		await user.click(screen.getByRole("combobox", { name: "new.game.label" }));
 
-		const recent = await screen.findByRole("group", { name: "form.game.recent" });
+		const recent = await screen.findByRole("group", { name: "player-session:form.game.recent" });
 		const all = screen.getByRole("group", { name: "form.game.all" });
 		expect(
 			within(recent)
@@ -210,7 +210,7 @@ describe("SessionForm", () => {
 
 		await user.type(screen.getByPlaceholderText("search"), "c");
 
-		expect(screen.queryByRole("group", { name: "form.game.recent" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("group", { name: "player-session:form.game.recent" })).not.toBeInTheDocument();
 		expect(screen.getAllByRole("option").map((x) => x.textContent)).toEqual(["Carcassonne"]);
 	});
 

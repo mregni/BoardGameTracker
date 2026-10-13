@@ -102,10 +102,79 @@
     "host-required": "Gastheer is verplicht"
   },
   "past-night": {
-    "summary": "{{location}} · {{attended}}",
     "attended-count_one": "{{count}} aanwezig",
     "attended-count_other": "{{count}} aanwezig",
-    "attended": "Aanwezig",
-    "nobody": "Niemand stond als aanwezig genoteerd"
+    "nobody": "Niemand stond als aanwezig genoteerd",
+    "nothing-logged": "nog niets gespeeld",
+    "games-played_one": "{{count}} spel gespeeld",
+    "games-played_other": "{{count}} spellen gespeeld",
+    "winner": "winnaar {{names}}"
+  },
+  "detail": {
+    "back": "Spelavonden"
+  },
+  "play": {
+    "start": {
+      "button": "▶ Start een spel",
+      "title": "Start een spel",
+      "game": "Spel",
+      "players": "Wie speelt er mee?",
+      "save": "Starten"
+    },
+    "log": {
+      "button": "Gespeeld spel toevoegen",
+      "title": "Gespeeld spel toevoegen"
+    },
+    "finish": {
+      "button": "Beëindigen",
+      "title": "{{game}} beëindigen",
+      "subtitle": "Gestart om {{time}} · {{duration}} · {{location}}",
+      "ends-now": "Eindigt nu · pas de tijden aan als jullie eerder klaar waren",
+      "change": "Aanpassen"
+    },
+    "discard": {
+      "button": "{{game}} weggooien",
+      "title": "Dit spel weggooien?",
+      "description": "Het lopende spel wordt verwijderd en er wordt geen sessie opgeslagen."
+    },
+    "games": {
+      "tonight": "Vanavond & gepland"
+    },
+    "leave-out-hint": "Tik op een speler om die weg te laten",
+    "leave-out": "{{name}} weglaten",
+    "save": "Sessie opslaan",
+    "now-playing": "Nu bezig: {{game}}",
+    "running": "Gestart om {{time}} · {{duration}} · {{players}}",
+    "again": "Nog eens spelen:",
+    "again-game": "{{game}} nog eens spelen",
+    "notifications": {
+      "started": "Spel gestart",
+      "start-failed": "Spel starten mislukt",
+      "discarded": "Lopend spel weggegooid",
+      "discard-failed": "Lopend spel weggooien mislukt"
+    }
+  },
+  "summary": {
+    "games-played": "Gespeelde spellen",
+    "play-time": "Speeltijd",
+    "leading": "Vanavond aan de leiding",
+    "night-winner": "Winnaar van de avond",
+    "no-winner": "Nog geen winnaar",
+    "wins_one": "{{count}} van {{total}} spellen gewonnen",
+    "wins_other": "{{count}} van {{total}} spellen gewonnen"
+  },
+  "played": {
+    "tonight": "Vanavond gespeeld",
+    "after": "Gespeeld",
+    "empty": "Nog niets gespeeld. Tik op “Start een spel” zodra een spel begint; datum, tijd, locatie en spelers worden voor je ingevuld."
+  },
+  "table": {
+    "title": "Aan tafel",
+    "host": "· gastheer",
+    "edit": "Aanwezigen aanpassen"
+  },
+  "planned": {
+    "title": "Gepland",
+    "played": "Gespeeld"
   }
 }

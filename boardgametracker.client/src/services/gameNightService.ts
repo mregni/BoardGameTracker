@@ -1,4 +1,15 @@
-import type { CreateGameNight, GameNight, SendInvitesResult, UpdateGameNight, UpdateGameNightRsvp } from "@/models";
+import type {
+	CreateGameNight,
+	FinishRunningGame,
+	GameNight,
+	GameNightDetail,
+	RunningGame,
+	SendInvitesResult,
+	Session,
+	StartRunningGame,
+	UpdateGameNight,
+	UpdateGameNightRsvp,
+} from "@/models";
 import { axiosInstance } from "@/utils/axiosInstance";
 
 const domain = "gamenight";
@@ -45,4 +56,22 @@ export const getGameNightByLinkCall = (linkId: string): Promise<GameNight> => {
 	return axiosInstance.get<GameNight>(`${domain}/link/${linkId}`).then((response) => {
 		return response.data;
 	});
+};
+
+export const getGameNightCall = (id: number): Promise<GameNightDetail> => {
+	return axiosInstance.get<GameNightDetail>(`${domain}/${id}`).then((response) => response.data);
+};
+
+export const startRunningGameCall = (gameNightId: number, command: StartRunningGame): Promise<RunningGame> => {
+	return axiosInstance
+		.post<RunningGame>(`${domain}/${gameNightId}/running-games`, command)
+		.then((response) => response.data);
+};
+
+export const finishRunningGameCall = (id: number, command: FinishRunningGame): Promise<Session> => {
+	return axiosInstance.post<Session>(`${domain}/running-games/${id}/finish`, command).then((response) => response.data);
+};
+
+export const discardRunningGameCall = (id: number): Promise<void> => {
+	return axiosInstance.delete(`${domain}/running-games/${id}`);
 };

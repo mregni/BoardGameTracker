@@ -147,6 +147,7 @@ export const SessionForm = (props: Props) => {
 								form={form}
 								games={games}
 								recentGameIds={suggestions?.recentGameIds ?? []}
+								recentGamesLabel={t("player-session:form.game.recent")}
 								locations={locations}
 								disabled={disabled}
 								onGameChange={handleGameChange}
