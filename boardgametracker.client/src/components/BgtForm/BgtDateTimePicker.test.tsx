@@ -1,27 +1,17 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
+import { act, renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 import { BgtDateTimePicker } from "./BgtDateTimePicker";
 
-// i18next is mocked globally in setup.ts
+const mockSettings = vi.hoisted(() => ({
+	current: { dateFormat: "yyyy-MM-dd", timeFormat: "HH:mm", uiLanguage: "en-US" },
+}));
 
 vi.mock("@/services/queries/settings", () => ({
 	getSettings: () => ({
 		queryKey: ["settings"],
-		queryFn: () =>
-			Promise.resolve({
-				dateFormat: "yyyy-MM-dd",
-				timeFormat: "HH:mm",
-				uiLanguage: "en-us",
-			}),
+		queryFn: () => Promise.resolve(mockSettings.current),
 	}),
-}));
-
-vi.mock("@/utils/localeUtils", () => ({
-	getDateFnsLocale: () => undefined,
-	getDatePickerLocale: () => "en-US",
-	getDateSeparator: () => null,
-	shouldForceLeadingZeros: () => false,
 }));
 
 const createMockField = (value: Date | string = "", errors: string[] = []) =>
@@ -39,6 +29,9 @@ const createMockField = (value: Date | string = "", errors: string[] = []) =>
 		name: "testDateTime",
 	}) as unknown as AnyFieldApi;
 
+const timeGroup = () => screen.getByRole("group", { name: "common:time" });
+const timeSegment = (name: RegExp) => within(timeGroup()).getByRole("spinbutton", { name });
+
 describe("BgtDateTimePicker", () => {
 	const defaultProps = {
 		field: createMockField(),
@@ -47,95 +40,96 @@ describe("BgtDateTimePicker", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockSettings.current = { dateFormat: "yyyy-MM-dd", timeFormat: "HH:mm", uiLanguage: "en-US" };
 	});
 
 	describe("Rendering", () => {
-		it("should render label and both date and time inputs", () => {
+		it("should render the label, the date picker and a labelled segmented time field", () => {
 			renderWithProviders(<BgtDateTimePicker {...defaultProps} />);
 
 			expect(screen.getByText("Select Date and Time")).toBeInTheDocument();
-			expect(screen.getByRole("button")).toBeInTheDocument(); // Date picker button
-			// Time input has no implicit ARIA role, so we query by placeholder
-			expect(screen.getByPlaceholderText("xx:xx")).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: /open-calendar/ })).toBeInTheDocument();
+			expect(timeSegment(/hour/i)).toBeInTheDocument();
+			expect(timeSegment(/minute/i)).toBeInTheDocument();
+		});
+
+		it("should show placeholders when no date is set", () => {
+			renderWithProviders(<BgtDateTimePicker {...defaultProps} />);
+
+			expect(timeSegment(/hour/i)).not.toHaveAttribute("aria-valuenow");
+			expect(timeSegment(/minute/i)).not.toHaveAttribute("aria-valuenow");
+		});
+
+		it("should show the time of the field value", () => {
+			renderWithProviders(
+				<BgtDateTimePicker {...defaultProps} field={createMockField(new Date("2024-06-15T14:05:00"))} />,
+			);
+
+			expect(timeSegment(/hour/i)).toHaveTextContent("14");
+			expect(timeSegment(/minute/i)).toHaveTextContent("05");
+		});
+
+		it("should handle an ISO string value", () => {
+			renderWithProviders(<BgtDateTimePicker {...defaultProps} field={createMockField("2024-06-15T10:30:00.000Z")} />);
+
+			expect(timeSegment(/minute/i)).toHaveTextContent("30");
+		});
+	});
+
+	describe("Hour cycle", () => {
+		it("should use a 24-hour clock for HH:mm", async () => {
+			renderWithProviders(
+				<BgtDateTimePicker {...defaultProps} field={createMockField(new Date("2024-06-15T14:30:00"))} />,
+			);
+
+			expect(await screen.findByRole("spinbutton", { name: /hour/i })).toHaveTextContent("14");
+			expect(within(timeGroup()).queryByRole("spinbutton", { name: /AM\/PM/i })).not.toBeInTheDocument();
+		});
+
+		it("should use a 12-hour clock for hh:mm a", async () => {
+			mockSettings.current = { dateFormat: "yyyy-MM-dd", timeFormat: "hh:mm a", uiLanguage: "en-US" };
+
+			renderWithProviders(
+				<BgtDateTimePicker {...defaultProps} field={createMockField(new Date("2024-06-15T14:30:00"))} />,
+			);
+
+			expect(await screen.findByRole("spinbutton", { name: /AM\/PM/i })).toHaveTextContent("PM");
+			expect(timeSegment(/hour/i)).toHaveTextContent("02");
 		});
 	});
 
 	describe("Disabled State", () => {
-		it("should disable both date and time inputs when disabled", () => {
+		it("should disable both the date and the time field", () => {
 			renderWithProviders(<BgtDateTimePicker {...defaultProps} disabled={true} />);
 
-			expect(screen.getByRole("button")).toBeDisabled();
-			expect(screen.getByPlaceholderText("xx:xx")).toBeDisabled();
+			expect(screen.getByRole("button", { name: /open-calendar/ })).toBeDisabled();
+			expect(timeSegment(/hour/i)).toHaveAttribute("aria-disabled", "true");
 		});
 	});
 
-	describe("Time Input Behavior", () => {
-		it("should call handleChange when time is modified", async () => {
+	describe("Time changes", () => {
+		it("should keep the date and update the time when the hour is changed", async () => {
 			const user = userEvent.setup();
-			const mockHandleChange = vi.fn();
-			const field = {
-				...createMockField(new Date("2024-06-15T10:30:00")),
-				handleChange: mockHandleChange,
-			} as unknown as AnyFieldApi;
+			const field = createMockField(new Date(2024, 5, 15, 10, 30));
 
 			renderWithProviders(<BgtDateTimePicker {...defaultProps} field={field} />);
 
-			// When there's a value, query by the displayed value
-			const timeInput = screen.getByDisplayValue("10:30");
-			await user.clear(timeInput);
-			await user.type(timeInput, "14:30");
+			act(() => timeSegment(/hour/i).focus());
+			await user.keyboard("{ArrowUp}");
 
-			expect(mockHandleChange).toHaveBeenCalled();
+			expect(field.handleChange).toHaveBeenCalledWith(new Date(2024, 5, 15, 11, 30));
 		});
 
-		it("should display formatted time when date is set", () => {
-			const dateWithTime = new Date("2024-06-15T10:30:00");
-			const fieldWithValue = createMockField(dateWithTime);
-
-			renderWithProviders(<BgtDateTimePicker {...defaultProps} field={fieldWithValue} />);
-
-			// Assert the value is displayed correctly
-			expect(screen.getByDisplayValue("10:30")).toBeInTheDocument();
-		});
-
-		it("should display empty time when no date is set", () => {
-			renderWithProviders(<BgtDateTimePicker {...defaultProps} />);
-
-			const timeInput = screen.getByPlaceholderText("xx:xx") as HTMLInputElement;
-			expect(timeInput.value).toBe("");
-		});
-
-		it("should preserve existing time value", () => {
-			const dateWithTime = new Date("2024-06-15T14:30:00");
-			const field = createMockField(dateWithTime);
-
-			renderWithProviders(<BgtDateTimePicker {...defaultProps} field={field} />);
-
-			expect(screen.getByDisplayValue("14:30")).toBeInTheDocument();
-		});
-	});
-
-	describe("Edge Cases", () => {
-		it("should handle clearing time input without crashing", async () => {
+		it("should update the minutes when they are typed", async () => {
 			const user = userEvent.setup();
-			const field = createMockField(new Date("2024-06-15T10:30:00"));
+			const field = createMockField(new Date(2024, 5, 15, 10, 30));
 
 			renderWithProviders(<BgtDateTimePicker {...defaultProps} field={field} />);
 
-			const timeInput = screen.getByDisplayValue("10:30");
-			expect(timeInput).toBeInTheDocument();
+			act(() => timeSegment(/minute/i).focus());
+			await user.keyboard("7");
 
-			await user.clear(timeInput);
-			expect(timeInput).toBeInTheDocument();
-		});
-
-		it("should handle ISO string date value", () => {
-			const fieldWithIsoString = createMockField("2024-06-15T10:30:00.000Z");
-
-			renderWithProviders(<BgtDateTimePicker {...defaultProps} field={fieldWithIsoString} />);
-
-			// The time input should be rendered (value depends on timezone)
-			expect(screen.getByPlaceholderText("xx:xx")).toBeInTheDocument();
+			expect(field.handleChange).toHaveBeenLastCalledWith(new Date(2024, 5, 15, 10, 7));
 		});
 	});
 });

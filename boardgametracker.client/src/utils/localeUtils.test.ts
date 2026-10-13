@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getDatePickerLocale, getDateSeparator, shouldForceLeadingZeros } from "./localeUtils";
+import { getDatePickerLocale, getDateSeparator, getHourCycle, shouldForceLeadingZeros } from "./localeUtils";
 
 describe("getDatePickerLocale", () => {
 	it.each([
@@ -39,5 +39,20 @@ describe("shouldForceLeadingZeros", () => {
 	it("should force leading zeros for two-digit day or month tokens", () => {
 		expect(shouldForceLeadingZeros("dd-MM-yyyy")).toBe(true);
 		expect(shouldForceLeadingZeros("d-M-yyyy")).toBe(false);
+	});
+});
+
+describe("getHourCycle", () => {
+	it.each([
+		["HH:mm", 24],
+		["H:mm", 24],
+		["hh:mm a", 12],
+		["h:mm a", 12],
+		["KK:mm", 12],
+		["HH'h'mm", 24],
+		[null, 24],
+		[undefined, 24],
+	])("should derive the hour cycle of %s", (timeFormat, expected) => {
+		expect(getHourCycle(timeFormat)).toBe(expected);
 	});
 });
