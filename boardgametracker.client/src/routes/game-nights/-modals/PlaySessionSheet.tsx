@@ -1,5 +1,5 @@
 import { type AnyFieldApi, useStore } from "@tanstack/react-form";
-import { differenceInMinutes, format, startOfMinute } from "date-fns";
+import { differenceInMinutes, format, startOfMinute, subMinutes } from "date-fns";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
@@ -32,6 +32,8 @@ import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 
 const DEFAULT_MINUTES = 30;
+
+const endingNow = (minutes: number) => subMinutes(startOfMinute(new Date()), minutes);
 
 interface Props {
 	close: () => void;
@@ -68,11 +70,12 @@ export const PlaySessionSheet = (props: Props) => {
 	const [initialPlayers] = useState(() => toPlayers(runningGame?.playerIds ?? attendeeIds));
 	const [defaults] = useState(() => {
 		const gameId = runningGame?.gameId ?? 0;
-		const start = runningGame ? new Date(runningGame.start) : startOfMinute(new Date());
-		const minutes = runningGame
-			? Math.max(1, differenceInMinutes(new Date(), start))
-			: (games.find((x) => x.id === gameId)?.maxPlayTime ?? DEFAULT_MINUTES);
-		return { gameId, start, minutes };
+		if (runningGame) {
+			const start = new Date(runningGame.start);
+			return { gameId, start, minutes: Math.max(1, differenceInMinutes(new Date(), start)) };
+		}
+		const minutes = games.find((x) => x.id === gameId)?.maxPlayTime ?? DEFAULT_MINUTES;
+		return { gameId, start: endingNow(minutes), minutes };
 	});
 
 	const form = useAppForm({
@@ -105,9 +108,18 @@ export const PlaySessionSheet = (props: Props) => {
 
 	const runningGameTitle = games.find((x) => x.id === runningGame?.gameId)?.title ?? "";
 
+	const syncStartWithDuration = (minutes: number | undefined) => {
+		if (typeof minutes !== "number" || minutes <= 0) return;
+		if (form.getFieldMeta("start")?.isDirty) return;
+		form.setFieldValue("start", endingNow(minutes), { dontUpdateMeta: true });
+	};
+
 	const handleGameChange = (gameId: number) => {
 		const selected = games.find((x) => x.id === gameId);
-		if (selected) form.setFieldValue("minutes", selected.maxPlayTime ?? DEFAULT_MINUTES);
+		if (!selected) return;
+		const minutes = selected.maxPlayTime ?? DEFAULT_MINUTES;
+		form.setFieldValue("minutes", minutes);
+		syncStartWithDuration(minutes);
 	};
 
 	return (
@@ -162,7 +174,7 @@ export const PlaySessionSheet = (props: Props) => {
 								locations={locations}
 								disabled={isPending}
 								onGameChange={handleGameChange}
-								onMinutesChange={() => undefined}
+								onMinutesChange={syncStartWithDuration}
 							/>
 						)}
 					</div>

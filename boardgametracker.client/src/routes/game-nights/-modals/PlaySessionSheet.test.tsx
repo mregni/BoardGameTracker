@@ -1,7 +1,7 @@
-import { addMinutes, format } from "date-fns";
-import { describe, expect, it, vi } from "vitest";
+import { addMinutes } from "date-fns";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Game, GameNight, Location, Player, RunningGame, Settings } from "@/models";
-import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
+import { fireEvent, renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
 import { PlaySessionSheet } from "./PlaySessionSheet";
 
 Element.prototype.hasPointerCapture = () => false;
@@ -23,6 +23,8 @@ const players = [
 const locations = [{ id: 5, name: "Thuis" }] as unknown as Location[];
 const gameNight = { id: 4, locationId: 5, location: { id: 5, name: "Thuis" } } as unknown as GameNight;
 const settings = { timeFormat: "HH:mm", dateFormat: "dd-MM-yyyy", uiLanguage: "en-us" } as Settings;
+
+const startTime = () => document.querySelector<HTMLInputElement>('input[type="time"]')?.value;
 
 const renderSheet = (runningGame: RunningGame | null) => {
 	const onSave = vi.fn().mockResolvedValue(undefined);
@@ -94,24 +96,57 @@ describe("PlaySessionSheet", () => {
 		expect(onSave.mock.calls[0][0].minutes).toBe(50);
 	});
 
-	it("logs a finished game with the play time of the picked game", async () => {
-		const user = userEvent.setup();
-		const before = format(new Date(), "HH:mm");
-		const { onSave } = renderSheet(null);
-		const after = format(new Date(), "HH:mm");
+	describe("logging a finished game", () => {
+		beforeEach(() => {
+			vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ["Date"] });
+			vi.setSystemTime(new Date(2026, 9, 16, 22, 30, 45));
+		});
 
-		expect(screen.getByText("play.log.title")).toBeInTheDocument();
-		const time = document.querySelector<HTMLInputElement>('input[type="time"]');
-		expect([before, after]).toContain(time?.value);
-		await user.click(screen.getByRole("combobox", { name: "new.game.label" }));
-		await user.click(await screen.findByRole("option", { name: "Brass" }));
-		expect(screen.getByRole("spinbutton", { name: "new.duration.label" })).toHaveValue(120);
-		await user.click(screen.getAllByRole("button", { name: "form.player.won" })[0]);
-		await user.click(screen.getByRole("button", { name: "play.save" }));
+		afterEach(() => {
+			vi.useRealTimers();
+		});
 
-		await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
-		expect(onSave.mock.calls[0][0]).toMatchObject({ gameId: 2, minutes: 120, gameNightId: 4, locationId: 5 });
-		expect(onSave.mock.calls[0][0].start.getSeconds()).toBe(0);
+		it("logs a finished game that ends now with the play time of the picked game", async () => {
+			const user = userEvent.setup();
+			const { onSave } = renderSheet(null);
+
+			expect(screen.getByText("play.log.title")).toBeInTheDocument();
+			expect(startTime()).toBe("22:00");
+			await user.click(screen.getByRole("combobox", { name: "new.game.label" }));
+			await user.click(await screen.findByRole("option", { name: "Brass" }));
+			expect(screen.getByRole("spinbutton", { name: "new.duration.label" })).toHaveValue(120);
+			expect(startTime()).toBe("20:30");
+			await user.click(screen.getAllByRole("button", { name: "form.player.won" })[0]);
+			await user.click(screen.getByRole("button", { name: "play.save" }));
+
+			await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+			expect(onSave.mock.calls[0][0]).toMatchObject({ gameId: 2, minutes: 120, gameNightId: 4, locationId: 5 });
+			expect(onSave.mock.calls[0][0].start).toEqual(new Date(2026, 9, 16, 20, 30));
+		});
+
+		it("moves the start when the duration is typed", async () => {
+			const user = userEvent.setup();
+			renderSheet(null);
+
+			const duration = screen.getByRole("spinbutton", { name: "new.duration.label" });
+			await user.clear(duration);
+			await user.type(duration, "50");
+
+			expect(startTime()).toBe("21:40");
+		});
+
+		it("keeps a start that was set by hand", async () => {
+			const user = userEvent.setup();
+			renderSheet(null);
+
+			fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, {
+				target: { value: "07:00" },
+			});
+			await user.click(screen.getByRole("combobox", { name: "new.game.label" }));
+			await user.click(await screen.findByRole("option", { name: "Brass" }));
+
+			expect(startTime()).toBe("07:00");
+		});
 	});
 
 	it("closes without saving", async () => {
