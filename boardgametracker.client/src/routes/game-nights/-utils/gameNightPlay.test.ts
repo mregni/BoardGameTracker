@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { type GameNight, type GameNightDetail, GameNightRsvpState, type Session } from "@/models";
-import { attendeeIds, isNightOver, latestEnd, latestPlays, nightGameIds } from "./gameNightPlay";
+import { attendeeIds, isNightOver, isNightPast, latestPlays, nightGameIds, splitGameNights } from "./gameNightPlay";
 
 const session = (id: number, gameId: number, end: Date) =>
 	({ id, gameId, start: end, end, minutes: 30, playerSessions: [] }) as unknown as Session;
@@ -58,10 +58,29 @@ describe("gameNightPlay", () => {
 		expect(latestPlays([newest, other, oldest])).toEqual([newest, other]);
 	});
 
-	it("finds when the last game ended", () => {
-		const end = new Date(2026, 9, 16, 23, 0);
+	it("counts a night as past once it ended or twelve hours after its start", () => {
+		const start = new Date(2026, 9, 16, 20, 0);
 
-		expect(latestEnd([])).toBeNull();
-		expect(latestEnd([session(1, 7, new Date(2026, 9, 16, 21, 0)), session(2, 3, end)])).toEqual(end);
+		expect(isNightPast({ startDate: start, endedAt: null }, new Date(2026, 9, 16, 22, 0))).toBe(false);
+		expect(isNightPast({ startDate: start, endedAt: null }, new Date(2026, 9, 17, 8, 1))).toBe(true);
+		expect(isNightPast({ startDate: start, endedAt: new Date(2026, 9, 16, 23, 0) }, new Date(2026, 9, 16, 23, 5))).toBe(
+			true,
+		);
+	});
+
+	it("keeps started nights upcoming and orders both lists", () => {
+		const night = (id: number, startDate: Date, endedAt: Date | null = null) =>
+			({ id, startDate, endedAt }) as unknown as GameNight;
+		const now = new Date(2026, 9, 16, 22, 0);
+		const started = night(1, new Date(2026, 9, 16, 20, 0));
+		const nextWeek = night(2, new Date(2026, 9, 23, 20, 0));
+		const lastWeek = night(3, new Date(2026, 9, 9, 20, 0));
+		const yesterday = night(4, new Date(2026, 9, 15, 20, 0));
+		const endedTonight = night(5, new Date(2026, 9, 16, 18, 0), new Date(2026, 9, 16, 21, 0));
+
+		const { upcoming, past } = splitGameNights([nextWeek, lastWeek, started, endedTonight, yesterday], now);
+
+		expect(upcoming.map((x) => x.id)).toEqual([1, 2]);
+		expect(past.map((x) => x.id)).toEqual([5, 4, 3]);
 	});
 });

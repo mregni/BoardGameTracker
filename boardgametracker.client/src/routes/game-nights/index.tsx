@@ -1,6 +1,5 @@
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { isPast } from "date-fns";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
@@ -26,6 +25,7 @@ import { useGameNightModals } from "./-hooks/useGameNightModals";
 import { CreateGameNightModal } from "./-modals/CreateGameNightModal";
 import { EditGameNightModal } from "./-modals/EditGameNightModal";
 import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
+import { splitGameNights } from "./-utils/gameNightPlay";
 
 export const Route = createFileRoute("/game-nights/")({
 	component: RouteComponent,
@@ -82,19 +82,8 @@ function RouteComponent() {
 		setSelectedGameNightId,
 	});
 
-	const upcomingGameNights = useMemo(
-		() =>
-			gameNights
-				.filter((gn) => !isPast(gn.startDate))
-				.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()),
-		[gameNights],
-	);
-
-	const pastGameNights = useMemo(
-		() =>
-			gameNights
-				.filter((gn) => isPast(gn.startDate))
-				.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()),
+	const { upcoming: upcomingGameNights, past: pastGameNights } = useMemo(
+		() => splitGameNights(gameNights),
 		[gameNights],
 	);
 

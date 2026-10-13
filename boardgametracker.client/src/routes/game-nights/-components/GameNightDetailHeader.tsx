@@ -74,7 +74,7 @@ export const GameNightDetailHeader = (props: Props) => {
 							{t("card.host", { host: gameNight.host.name })}
 						</span>
 					</div>
-					{canWrite && (
+					{canWrite && (gameNight.endedAt || !isOver) && (
 						<div className="flex flex-wrap items-center gap-x-3 gap-y-1">
 							{gameNight.endedAt ? (
 								<BgtButton variant="cancel" size="1" onClick={onReopen}>

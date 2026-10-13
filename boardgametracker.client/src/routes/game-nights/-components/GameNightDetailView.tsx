@@ -50,6 +50,7 @@ export const GameNightDetailView = (props: Props) => {
 
 	const isOver = isNightOver(detail);
 	const canPlay = canWrite && gameNight.endedAt === null;
+	const isOverByTime = isOver && gameNight.endedAt === null;
 	const gameOf = (gameId: number) => games.find((game) => game.id === gameId) ?? null;
 	const attendees = attendeeIds(gameNight)
 		.map((id) => players.find((player) => player.id === id))
@@ -85,15 +86,22 @@ export const GameNightDetailView = (props: Props) => {
 
 			{canPlay && (
 				<div className="flex flex-col gap-2">
-					<div className="fixed inset-x-0 bottom-20 z-20 grid grid-cols-2 gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:flex md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
-						<BgtButton
-							variant="primary"
-							size="2"
-							className="py-3 text-sm"
-							onClick={() => onStart(null, attendeeIds(gameNight))}
-						>
-							{t("play.start.button")}
-						</BgtButton>
+					<div
+						className={cx(
+							"fixed inset-x-0 bottom-20 z-20 grid gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:flex md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none",
+							isOver ? "grid-cols-1" : "grid-cols-2",
+						)}
+					>
+						{!isOver && (
+							<BgtButton
+								variant="primary"
+								size="2"
+								className="py-3 text-sm"
+								onClick={() => onStart(null, attendeeIds(gameNight))}
+							>
+								{t("play.start.button")}
+							</BgtButton>
+						)}
 						<BgtButton variant="cancel" size="2" className="py-3 text-sm" onClick={onLog}>
 							{t("play.log.button")}
 						</BgtButton>
@@ -141,6 +149,7 @@ export const GameNightDetailView = (props: Props) => {
 						players={players}
 						uiLanguage={settings.uiLanguage}
 						canOpen={canWrite}
+						emptyText={isOverByTime ? t("played.empty-after") : t("played.empty")}
 					/>
 				</section>
 				<NightSidePanel

@@ -1,4 +1,4 @@
-import { addMinutes } from "date-fns";
+import { addMinutes, format } from "date-fns";
 import { describe, expect, it, vi } from "vitest";
 import type { Game, GameNight, Location, Player, RunningGame, Settings } from "@/models";
 import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
@@ -32,7 +32,6 @@ const renderSheet = (runningGame: RunningGame | null) => {
 			close={close}
 			gameNight={gameNight}
 			runningGame={runningGame}
-			initialStart={addMinutes(new Date(), -90)}
 			games={games}
 			players={players}
 			locations={locations}
@@ -55,7 +54,7 @@ const runningGame = {
 } as RunningGame;
 
 describe("PlaySessionSheet", () => {
-	it("finishes a running game with the scores, the winner from the highest score and no changed times", async () => {
+	it("finishes a running game with the scores, the winner from the highest score and the times since the start", async () => {
 		const user = userEvent.setup();
 		const { onSave, close } = renderSheet(runningGame);
 
@@ -66,8 +65,8 @@ describe("PlaySessionSheet", () => {
 		await user.click(screen.getByRole("button", { name: "play.save" }));
 
 		await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
-		const [session, timesChanged] = onSave.mock.calls[0];
-		expect(timesChanged).toBe(false);
+		const [session] = onSave.mock.calls[0];
+		expect(session.start).toEqual(runningGame.start);
 		expect(session).toMatchObject({
 			gameId: 1,
 			locationId: 5,
@@ -81,26 +80,29 @@ describe("PlaySessionSheet", () => {
 		expect(close).toHaveBeenCalled();
 	});
 
-	it("sends the times once they are changed", async () => {
+	it("always shows the times and sends a changed duration", async () => {
 		const user = userEvent.setup();
 		const { onSave } = renderSheet(runningGame);
 
-		await user.click(screen.getByRole("button", { name: "play.finish.change" }));
+		expect(screen.queryByRole("button", { name: "play.finish.change" })).not.toBeInTheDocument();
 		const duration = screen.getByRole("spinbutton", { name: "player-session:new.duration.label" });
 		await user.clear(duration);
 		await user.type(duration, "50");
 		await user.click(screen.getByRole("button", { name: "play.save" }));
 
 		await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
-		expect(onSave.mock.calls[0][1]).toBe(true);
 		expect(onSave.mock.calls[0][0].minutes).toBe(50);
 	});
 
 	it("logs a finished game with the play time of the picked game", async () => {
 		const user = userEvent.setup();
+		const before = format(new Date(), "HH:mm");
 		const { onSave } = renderSheet(null);
+		const after = format(new Date(), "HH:mm");
 
 		expect(screen.getByText("play.log.title")).toBeInTheDocument();
+		const time = document.querySelector<HTMLInputElement>('input[type="time"]');
+		expect([before, after]).toContain(time?.value);
 		await user.click(screen.getByRole("combobox", { name: "new.game.label" }));
 		await user.click(await screen.findByRole("option", { name: "Brass" }));
 		expect(screen.getByRole("spinbutton", { name: "new.duration.label" })).toHaveValue(120);
@@ -109,7 +111,7 @@ describe("PlaySessionSheet", () => {
 
 		await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
 		expect(onSave.mock.calls[0][0]).toMatchObject({ gameId: 2, minutes: 120, gameNightId: 4, locationId: 5 });
-		expect(onSave.mock.calls[0][1]).toBe(true);
+		expect(onSave.mock.calls[0][0].start.getSeconds()).toBe(0);
 	});
 
 	it("closes without saving", async () => {

@@ -161,12 +161,22 @@ describe("GameNightDetailView", () => {
 		expect(props.onEditAttendees).toHaveBeenCalled();
 	});
 
-	it("shows the night winner and hides the buttons once the night is over", () => {
+	it("shows the night winner and only keeps logging once the night is over by time", () => {
 		renderView(buildDetail(addHours(new Date(), -30), played(), false));
 
 		expect(screen.getByText("summary.night-winner")).toBeInTheDocument();
 		expect(screen.getByText("played.after")).toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "play.again-game" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "play.start.button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "end.button" })).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "play.log.button" })).toBeInTheDocument();
+	});
+
+	it("explains how to add games afterwards when nothing was logged", () => {
+		renderView(buildDetail(addHours(new Date(), -30), [], false));
+
+		expect(screen.getByText("played.empty-after")).toBeInTheDocument();
+		expect(screen.queryByText("played.empty")).not.toBeInTheDocument();
 	});
 
 	it("explains how to start when nothing was played yet", () => {
@@ -239,12 +249,5 @@ describe("GameNightDetailView", () => {
 		await user.click(screen.getByRole("button", { name: "end.reopen" }));
 
 		expect(props.onReopen).toHaveBeenCalled();
-	});
-
-	it("keeps logging possible when the night is only over because it is late", () => {
-		renderView(buildDetail(addHours(new Date(), -30), played(), false));
-
-		expect(screen.getByRole("button", { name: "play.log.button" })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "end.button" })).toBeEnabled();
 	});
 });

@@ -56,7 +56,8 @@
     "invites-sent": "Invites sent: {{sent}} sent",
     "invites-failed": "Failed to send invites",
     "when": "{{when}} · {{time}}",
-    "host": "Host: {{host}}"
+    "host": "Host: {{host}}",
+    "open": "Open night"
   },
   "form": {
     "title": {
@@ -128,9 +129,7 @@
     "finish": {
       "button": "Finish",
       "title": "Finish {{game}}",
-      "subtitle": "Started {{time}} · {{duration}} · {{location}}",
-      "ends-now": "Ends now · change the times if you finished earlier",
-      "change": "Change"
+      "subtitle": "Started {{time}} · {{duration}} · {{location}}"
     },
     "discard": {
       "button": "Discard {{game}}",
@@ -166,7 +165,8 @@
   "played": {
     "tonight": "Played tonight",
     "after": "Played",
-    "empty": "Nothing played yet. Tap “Start a game” when a game begins; date, time, location and players are filled in for you."
+    "empty": "Nothing played yet. Tap “Start a game” when a game begins; date, time, location and players are filled in for you.",
+    "empty-after": "Nothing was logged for this night. Use “Log a finished game” to add what was played."
   },
   "table": {
     "title": "At the table",

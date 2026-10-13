@@ -1,5 +1,5 @@
 import { type AnyFieldApi, useStore } from "@tanstack/react-form";
-import { differenceInMinutes, format } from "date-fns";
+import { differenceInMinutes, format, startOfMinute } from "date-fns";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
@@ -11,7 +11,6 @@ import {
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtDateTimePicker, BgtInputField } from "@/components/BgtForm";
-import { BgtText } from "@/components/BgtText/BgtText";
 import { useAppForm } from "@/hooks/form";
 import {
 	type CreateSession,
@@ -38,7 +37,6 @@ interface Props {
 	close: () => void;
 	gameNight: GameNight;
 	runningGame: RunningGame | null;
-	initialStart: Date;
 	games: Game[];
 	players: Player[];
 	locations: Location[];
@@ -46,7 +44,7 @@ interface Props {
 	attendeeIds: number[];
 	settings: Settings;
 	isPending: boolean;
-	onSave: (session: CreateSession, timesChanged: boolean) => Promise<unknown>;
+	onSave: (session: CreateSession) => Promise<unknown>;
 }
 
 const toPlayers = (playerIds: number[]): CreateSessionPlayer[] =>
@@ -57,7 +55,6 @@ export const PlaySessionSheet = (props: Props) => {
 		close,
 		gameNight,
 		runningGame,
-		initialStart,
 		games,
 		players,
 		locations,
@@ -68,11 +65,10 @@ export const PlaySessionSheet = (props: Props) => {
 		onSave,
 	} = props;
 	const { t } = useTranslation(["game-nights", "player-session", "common"]);
-	const [showTimes, setShowTimes] = useState(runningGame === null);
 	const [initialPlayers] = useState(() => toPlayers(runningGame?.playerIds ?? attendeeIds));
 	const [defaults] = useState(() => {
 		const gameId = runningGame?.gameId ?? 0;
-		const start = runningGame ? new Date(runningGame.start) : initialStart;
+		const start = runningGame ? new Date(runningGame.start) : startOfMinute(new Date());
 		const minutes = runningGame
 			? Math.max(1, differenceInMinutes(new Date(), start))
 			: (games.find((x) => x.id === gameId)?.maxPlayTime ?? DEFAULT_MINUTES);
@@ -94,7 +90,7 @@ export const PlaySessionSheet = (props: Props) => {
 				expansionIds: [],
 				gameNightId: gameNight.id,
 			});
-			await onSave(session, showTimes);
+			await onSave(session);
 			close();
 		},
 	});
@@ -117,24 +113,47 @@ export const PlaySessionSheet = (props: Props) => {
 	return (
 		<BgtDialog open onClose={close}>
 			<BgtDialogContent size="sheet" className="lg:max-w-4xl">
-				<form onSubmit={handleFormSubmit(form)} className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-x-6">
-					<div className="flex min-w-0 flex-col gap-3">
-						<div className="flex flex-col gap-0.5 pr-6">
-							<BgtDialogTitle>
-								{runningGame ? t("play.finish.title", { game: runningGameTitle }) : t("play.log.title")}
-							</BgtDialogTitle>
-							{runningGame && (
-								<BgtDialogDescription className="text-sm">
-									{t("play.finish.subtitle", {
-										time: format(defaults.start, settings.timeFormat),
-										duration: formatMinutesToDuration(defaults.minutes, ["hours", "minutes"], settings.uiLanguage),
-										location: gameNight.location.name,
-									})}
-								</BgtDialogDescription>
-							)}
-						</div>
+				<form
+					onSubmit={handleFormSubmit(form)}
+					className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_1fr_auto] lg:gap-x-6"
+				>
+					<div className="flex flex-col gap-0.5 pr-6 lg:col-start-1 lg:row-start-1">
+						<BgtDialogTitle>
+							{runningGame ? t("play.finish.title", { game: runningGameTitle }) : t("play.log.title")}
+						</BgtDialogTitle>
+						{runningGame && (
+							<BgtDialogDescription className="text-sm">
+								{t("play.finish.subtitle", {
+									time: format(defaults.start, settings.timeFormat),
+									duration: formatMinutesToDuration(defaults.minutes, ["hours", "minutes"], settings.uiLanguage),
+									location: gameNight.location.name,
+								})}
+							</BgtDialogDescription>
+						)}
+					</div>
 
-						{!runningGame && (
+					<div className="min-w-0 lg:col-start-1 lg:row-start-2">
+						{runningGame ? (
+							<div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-3">
+								<form.Field name="start" validators={zodValidator(CreateSessionSchema, "start")}>
+									{(field: AnyFieldApi) => (
+										<BgtDateTimePicker field={field} disabled={isPending} label={t("player-session:new.start.label")} />
+									)}
+								</form.Field>
+								<form.Field name="minutes" validators={zodValidator(CreateSessionSchema, "minutes")}>
+									{(field: AnyFieldApi) => (
+										<BgtInputField
+											field={field}
+											type="number"
+											inputMode="numeric"
+											disabled={isPending}
+											label={t("player-session:new.duration.label")}
+											suffixLabel={t("common:minutes-abbreviation")}
+										/>
+									)}
+								</form.Field>
+							</div>
+						) : (
 							<SessionFormFields
 								form={form}
 								games={games}
@@ -146,44 +165,9 @@ export const PlaySessionSheet = (props: Props) => {
 								onMinutesChange={() => undefined}
 							/>
 						)}
-						{runningGame &&
-							(showTimes ? (
-								<div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-3">
-									<form.Field name="start" validators={zodValidator(CreateSessionSchema, "start")}>
-										{(field: AnyFieldApi) => (
-											<BgtDateTimePicker
-												field={field}
-												disabled={isPending}
-												label={t("player-session:new.start.label")}
-											/>
-										)}
-									</form.Field>
-									<form.Field name="minutes" validators={zodValidator(CreateSessionSchema, "minutes")}>
-										{(field: AnyFieldApi) => (
-											<BgtInputField
-												field={field}
-												type="number"
-												inputMode="numeric"
-												disabled={isPending}
-												label={t("player-session:new.duration.label")}
-												suffixLabel={t("common:minutes-abbreviation")}
-											/>
-										)}
-									</form.Field>
-								</div>
-							) : (
-								<div className="flex items-center justify-between gap-3">
-									<BgtText size="2" color="gray">
-										{t("play.finish.ends-now")}
-									</BgtText>
-									<BgtButton variant="cancel" size="1" onClick={() => setShowTimes(true)}>
-										{t("play.finish.change")}
-									</BgtButton>
-								</div>
-							))}
 					</div>
 
-					<div className="min-w-0">
+					<div className="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1">
 						<SessionPlayerManager
 							form={form}
 							playerList={players}
@@ -198,7 +182,7 @@ export const PlaySessionSheet = (props: Props) => {
 						/>
 					</div>
 
-					<BgtDialogClose className="lg:col-span-2">
+					<BgtDialogClose className="lg:col-span-2 lg:row-start-3">
 						<BgtButton variant="cancel" onClick={close} disabled={isPending}>
 							{t("common:cancel")}
 						</BgtButton>

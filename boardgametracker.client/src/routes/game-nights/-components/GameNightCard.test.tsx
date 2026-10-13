@@ -4,13 +4,14 @@ import { type GameNight, GameNightRsvpState, type Player, type Settings } from "
 import { renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 
 const media = vi.hoisted(() => ({ isDesktop: false }));
+const navigate = vi.hoisted(() => vi.fn());
 
 vi.mock("@/hooks/useMediaQuery", () => ({
 	useMediaQuery: () => media.isDesktop,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-	useNavigate: () => vi.fn(),
+	useNavigate: () => navigate,
 	Link: ({ children, to, params }: { children: React.ReactNode; to: string; params: { gameNightId: number } }) => (
 		<a href={to.replace("$gameNightId", String(params.gameNightId))}>{children}</a>
 	),
@@ -218,5 +219,39 @@ describe("GameNightCard title", () => {
 		);
 
 		expect(screen.getByRole("link", { name: "Strategy night" })).toHaveAttribute("href", "/game-nights/4");
+	});
+});
+
+describe("GameNightCard open button", () => {
+	it("opens the night from every card, as the main action on the highlighted one", async () => {
+		const user = userEvent.setup();
+		renderWithProviders(
+			<>
+				<GameNightCard
+					gameNight={gameNight(addDays(new Date(), 1))}
+					settings={settings}
+					canWrite={false}
+					highlight
+					onEdit={vi.fn()}
+					onDelete={vi.fn()}
+					onManageRsvps={vi.fn()}
+				/>
+				<GameNightCard
+					gameNight={gameNight(addDays(new Date(), 8))}
+					settings={settings}
+					canWrite
+					onEdit={vi.fn()}
+					onDelete={vi.fn()}
+					onManageRsvps={vi.fn()}
+				/>
+			</>,
+		);
+
+		const [highlighted, other] = screen.getAllByRole("button", { name: "card.open" });
+		expect(highlighted.className).toContain("bg-primary");
+		expect(other.className).not.toContain("bg-primary");
+		await user.click(highlighted);
+
+		expect(navigate).toHaveBeenCalledWith({ to: "/game-nights/$gameNightId", params: { gameNightId: 4 } });
 	});
 });

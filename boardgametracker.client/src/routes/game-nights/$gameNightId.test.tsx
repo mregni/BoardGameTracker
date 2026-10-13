@@ -121,15 +121,10 @@ const session = {
 } as unknown as CreateSession;
 
 vi.mock("./-modals/PlaySessionSheet", () => ({
-	PlaySessionSheet: ({ onSave }: { onSave: (session: CreateSession, timesChanged: boolean) => void }) => (
-		<>
-			<button type="button" onClick={() => onSave(session, false)}>
-				save-now
-			</button>
-			<button type="button" onClick={() => onSave(session, true)}>
-				save-changed
-			</button>
-		</>
+	PlaySessionSheet: ({ onSave }: { onSave: (session: CreateSession) => void }) => (
+		<button type="button" onClick={() => onSave(session)}>
+			save-sheet
+		</button>
 	),
 }));
 
@@ -199,19 +194,14 @@ describe("Game night detail page", () => {
 		expect(mocks.startGame).toHaveBeenCalledWith({ gameId: 7, playerIds: [1] });
 	});
 
-	it("finishes the running game now, or with the changed times", async () => {
+	it("finishes the running game with the times from the sheet", async () => {
 		const user = userEvent.setup();
 		renderPage();
 
 		await user.click(screen.getByRole("button", { name: "play.finish.button" }));
-		await user.click(screen.getByRole("button", { name: "save-now" }));
-		await user.click(screen.getByRole("button", { name: "save-changed" }));
+		await user.click(screen.getByRole("button", { name: "save-sheet" }));
 
-		expect(mocks.finishGame).toHaveBeenNthCalledWith(1, {
-			id: 12,
-			command: { playerSessions: [], start: null, minutes: null },
-		});
-		expect(mocks.finishGame).toHaveBeenNthCalledWith(2, {
+		expect(mocks.finishGame).toHaveBeenCalledWith({
 			id: 12,
 			command: { playerSessions: [], start: session.start, minutes: 40 },
 		});
@@ -222,7 +212,7 @@ describe("Game night detail page", () => {
 		renderPage();
 
 		await user.click(screen.getByRole("button", { name: "play.log.button" }));
-		await user.click(screen.getByRole("button", { name: "save-changed" }));
+		await user.click(screen.getByRole("button", { name: "save-sheet" }));
 		mocks.onNewSessionSuccess?.();
 
 		expect(mocks.saveSession).toHaveBeenCalledWith(session);

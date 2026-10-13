@@ -56,7 +56,8 @@
     "invites-sent": "Uitnodigingen verstuurd: {{sent}}",
     "invites-failed": "Uitnodigingen versturen mislukt",
     "when": "{{when}} · {{time}}",
-    "host": "Gastheer: {{host}}"
+    "host": "Gastheer: {{host}}",
+    "open": "Avond openen"
   },
   "form": {
     "title": {
@@ -128,9 +129,7 @@
     "finish": {
       "button": "Beëindigen",
       "title": "{{game}} beëindigen",
-      "subtitle": "Gestart om {{time}} · {{duration}} · {{location}}",
-      "ends-now": "Eindigt nu · pas de tijden aan als jullie eerder klaar waren",
-      "change": "Aanpassen"
+      "subtitle": "Gestart om {{time}} · {{duration}} · {{location}}"
     },
     "discard": {
       "button": "{{game}} weggooien",
@@ -166,7 +165,8 @@
   "played": {
     "tonight": "Vanavond gespeeld",
     "after": "Gespeeld",
-    "empty": "Nog niets gespeeld. Tik op “Start een spel” zodra een spel begint; datum, tijd, locatie en spelers worden voor je ingevuld."
+    "empty": "Nog niets gespeeld. Tik op “Start een spel” zodra een spel begint; datum, tijd, locatie en spelers worden voor je ingevuld.",
+    "empty-after": "Er werd niets gespeeld genoteerd voor deze avond. Gebruik “Gespeeld spel toevoegen” om toe te voegen wat er gespeeld werd."
   },
   "table": {
     "title": "Aan tafel",

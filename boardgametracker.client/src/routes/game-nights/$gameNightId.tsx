@@ -25,7 +25,7 @@ import { EndNightModal } from "./-modals/EndNightModal";
 import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
 import { PlaySessionSheet } from "./-modals/PlaySessionSheet";
 import { StartGameSheet } from "./-modals/StartGameSheet";
-import { attendeeIds, latestEnd, nightGameIds } from "./-utils/gameNightPlay";
+import { attendeeIds, nightGameIds } from "./-utils/gameNightPlay";
 
 export const Route = createFileRoute("/game-nights/$gameNightId")({
 	component: RouteComponent,
@@ -107,14 +107,14 @@ function RouteComponent() {
 					const attendees = attendeeIds(detail.gameNight);
 					const gameIds = nightGameIds(detail);
 
-					const saveSheet = (session: CreateSession, timesChanged: boolean) =>
+					const saveSheet = (session: CreateSession) =>
 						sheet?.kind === "finish"
 							? finishGame({
 									id: sheet.runningGame.id,
 									command: {
 										playerSessions: session.playerSessions,
-										start: timesChanged ? session.start : null,
-										minutes: timesChanged ? session.minutes : null,
+										start: session.start,
+										minutes: session.minutes,
 									},
 								})
 							: saveSession(session);
@@ -157,7 +157,6 @@ function RouteComponent() {
 									close={closeSheet}
 									gameNight={detail.gameNight}
 									runningGame={sheet.kind === "finish" ? sheet.runningGame : null}
-									initialStart={latestEnd(detail.sessions) ?? new Date(detail.gameNight.startDate)}
 									games={games}
 									players={players}
 									locations={locations}

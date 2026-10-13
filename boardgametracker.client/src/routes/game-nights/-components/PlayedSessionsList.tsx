@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
-import { useTranslation } from "react-i18next";
 import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
@@ -14,14 +13,14 @@ interface Props {
 	players: Player[];
 	uiLanguage: string;
 	canOpen: boolean;
+	emptyText: string;
 }
 
 const byScore = (a: Session["playerSessions"][number], b: Session["playerSessions"][number]) =>
 	(b.score ?? Number.NEGATIVE_INFINITY) - (a.score ?? Number.NEGATIVE_INFINITY);
 
 export const PlayedSessionsList = (props: Props) => {
-	const { sessions, games, players, uiLanguage, canOpen } = props;
-	const { t } = useTranslation("game-nights");
+	const { sessions, games, players, uiLanguage, canOpen, emptyText } = props;
 
 	const nameOf = (playerId: number) => players.find((player) => player.id === playerId)?.name ?? "";
 
@@ -29,7 +28,7 @@ export const PlayedSessionsList = (props: Props) => {
 		return (
 			<BgtCard>
 				<BgtText size="2" color="gray">
-					{t("played.empty")}
+					{emptyText}
 				</BgtText>
 			</BgtCard>
 		);

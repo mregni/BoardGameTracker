@@ -56,7 +56,8 @@
     "invites-sent": "Invitaciones enviadas: {{sent}}",
     "invites-failed": "No se pudieron enviar las invitaciones",
     "when": "{{when}} · {{time}}",
-    "host": "Anfitrión: {{host}}"
+    "host": "Anfitrión: {{host}}",
+    "open": "Abrir la noche"
   },
   "form": {
     "title": {
@@ -128,9 +129,7 @@
     "finish": {
       "button": "Terminar",
       "title": "Terminar {{game}}",
-      "subtitle": "Empezó a las {{time}} · {{duration}} · {{location}}",
-      "ends-now": "Termina ahora · cambia las horas si terminasteis antes",
-      "change": "Cambiar"
+      "subtitle": "Empezó a las {{time}} · {{duration}} · {{location}}"
     },
     "discard": {
       "button": "Descartar {{game}}",
@@ -166,7 +165,8 @@
   "played": {
     "tonight": "Jugado esta noche",
     "after": "Jugado",
-    "empty": "Aún no se ha jugado nada. Toca «Empezar un juego» cuando empiece una partida; la fecha, la hora, el lugar y los jugadores se rellenan solos."
+    "empty": "Aún no se ha jugado nada. Toca «Empezar un juego» cuando empiece una partida; la fecha, la hora, el lugar y los jugadores se rellenan solos.",
+    "empty-after": "No se registró nada para esta noche. Usa «Registrar un juego terminado» para añadir lo que se jugó."
   },
   "table": {
     "title": "En la mesa",

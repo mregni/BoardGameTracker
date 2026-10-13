@@ -1,12 +1,23 @@
-import { addHours, isAfter, max } from "date-fns";
+import { addHours, compareAsc, compareDesc, isAfter } from "date-fns";
 import { type GameNight, type GameNightDetail, GameNightRsvpState, type Session } from "@/models";
 import { sortRsvps } from "@/utils/sortRsvps";
 
 const NIGHT_LENGTH_HOURS = 12;
 
+export const isNightPast = (gameNight: Pick<GameNight, "startDate" | "endedAt">, now: Date = new Date()) =>
+	gameNight.endedAt !== null || isAfter(now, addHours(gameNight.startDate, NIGHT_LENGTH_HOURS));
+
+export const splitGameNights = (gameNights: GameNight[], now: Date = new Date()) => ({
+	upcoming: gameNights
+		.filter((gameNight) => !isNightPast(gameNight, now))
+		.sort((a, b) => compareAsc(a.startDate, b.startDate)),
+	past: gameNights
+		.filter((gameNight) => isNightPast(gameNight, now))
+		.sort((a, b) => compareDesc(a.startDate, b.startDate)),
+});
+
 export const isNightOver = (detail: GameNightDetail, now: Date = new Date()) =>
-	detail.gameNight.endedAt !== null ||
-	(detail.runningGames.length === 0 && isAfter(now, addHours(detail.gameNight.startDate, NIGHT_LENGTH_HOURS)));
+	detail.gameNight.endedAt !== null || (detail.runningGames.length === 0 && isNightPast(detail.gameNight, now));
 
 export const attendeeIds = (gameNight: GameNight) =>
 	sortRsvps(gameNight.invitedPlayers, gameNight.hostId)
@@ -23,5 +34,3 @@ export const nightGameIds = (detail: GameNightDetail) => [
 
 export const latestPlays = (sessions: Session[]) =>
 	sessions.filter((session, index) => sessions.findIndex((x) => x.gameId === session.gameId) === index);
-
-export const latestEnd = (sessions: Session[]) => (sessions.length === 0 ? null : max(sessions.map((x) => x.end)));
