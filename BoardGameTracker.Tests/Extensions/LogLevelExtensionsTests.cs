@@ -1,4 +1,3 @@
-using System;
 using BoardGameTracker.Common.Extensions;
 using FluentAssertions;
 using Serilog.Events;

@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Threading.Tasks;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Core.Auth.Interfaces;
 using FluentAssertions;

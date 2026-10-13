@@ -1,4 +1,3 @@
-using System;
 using BoardGameTracker.Common.Exceptions;
 using FluentAssertions;
 using Xunit;
