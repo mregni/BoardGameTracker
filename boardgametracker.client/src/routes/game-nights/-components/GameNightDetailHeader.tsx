@@ -12,6 +12,7 @@ import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import type { GameNight, Settings } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { relativeDay } from "@/utils/relativeDay";
+import { NightEndAction } from "./NightEndAction";
 
 interface Props {
 	gameNight: GameNight;
@@ -23,20 +24,31 @@ interface Props {
 	onDelete: () => void;
 	onEnd: () => void;
 	onReopen: () => void;
+	onStart: () => void;
+	onLog: () => void;
 }
 
 export const GameNightDetailHeader = (props: Props) => {
-	const { gameNight, settings, isOver, canWrite, hasRunningGames, onEdit, onDelete, onEnd, onReopen } = props;
+	const { gameNight, settings, isOver, canWrite, hasRunningGames, onEdit, onDelete, onEnd, onReopen, onStart, onLog } =
+		props;
 	const { t } = useTranslation("game-nights");
+
+	const hasEnded = gameNight.endedAt !== null;
+	const showEndAction = canWrite && (hasEnded || !isOver);
+	const showLog = canWrite && !hasEnded;
+	const showStart = showLog && !isOver;
+	const endAction = showEndAction && (
+		<NightEndAction hasEnded={hasEnded} hasRunningGames={hasRunningGames} onEnd={onEnd} onReopen={onReopen} />
+	);
 
 	return (
 		<BgtCard>
-			<article className="grid grid-cols-[3.5rem_minmax(0,1fr)_auto] gap-x-3 gap-y-3 md:grid-cols-[4.75rem_minmax(0,1fr)_auto] md:gap-x-4">
+			<article className="grid grid-cols-[3.5rem_minmax(0,1fr)_auto] gap-x-3 gap-y-3 md:grid-cols-[4.75rem_minmax(0,1fr)_auto] md:gap-x-4 md:gap-y-2">
 				<GameNightDateBox
 					date={gameNight.startDate}
 					uiLanguage={settings.uiLanguage}
 					variant={isOver ? "soft" : "highlight"}
-					className="self-start"
+					className="self-start md:row-span-2"
 				/>
 				<div className="flex min-w-0 flex-col items-start gap-1.5 self-center">
 					<span
@@ -57,13 +69,14 @@ export const GameNightDetailHeader = (props: Props) => {
 					</BgtHeading>
 				</div>
 				{canWrite ? (
-					<div className="self-start">
+					<div className="flex flex-col-reverse items-end gap-2 self-start">
+						{endAction && <div className="md:hidden">{endAction}</div>}
 						<BgtEditDeleteButtons onEdit={onEdit} onDelete={onDelete} />
 					</div>
 				) : (
 					<span />
 				)}
-				<div className="col-span-3 flex flex-col gap-3 md:col-span-2 md:col-start-2">
+				<div className="col-span-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 md:col-span-2 md:col-start-2">
 					<div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-400">
 						<span className="inline-flex items-center gap-1.5">
 							<MapPin className="size-4 shrink-0" />
@@ -74,34 +87,29 @@ export const GameNightDetailHeader = (props: Props) => {
 							{t("card.host", { host: gameNight.host.name })}
 						</span>
 					</div>
-					{canWrite && (gameNight.endedAt || !isOver) && (
-						<div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-							{gameNight.endedAt ? (
-								<BgtButton variant="cancel" size="1" onClick={onReopen}>
-									{t("end.reopen")}
+					{(endAction || showLog) && (
+						<div className="hidden flex-wrap items-center justify-end gap-2 md:flex">
+							{endAction}
+							{showLog && (
+								<BgtButton variant="cancel" size="1" onClick={onLog}>
+									{t("play.log.button")}
 								</BgtButton>
-							) : (
-								<>
-									<BgtButton variant="cancel" size="1" disabled={hasRunningGames} onClick={onEnd}>
-										{t("end.button")}
-									</BgtButton>
-									{hasRunningGames && (
-										<BgtText size="1" color="gray">
-											{t("end.running-hint")}
-										</BgtText>
-									)}
-								</>
+							)}
+							{showStart && (
+								<BgtButton variant="primary" size="1" onClick={onStart}>
+									{t("play.start.button")}
+								</BgtButton>
 							)}
 						</div>
 					)}
-					{gameNight.notes && (
-						<div className="rounded-lg border border-white/10 bg-white/5 p-3">
-							<BgtText size="2" color="gray">
-								{gameNight.notes}
-							</BgtText>
-						</div>
-					)}
 				</div>
+				{gameNight.notes && (
+					<div className="col-span-3 rounded-lg border border-white/10 bg-white/5 p-3 md:col-span-2 md:col-start-2">
+						<BgtText size="2" color="gray">
+							{gameNight.notes}
+						</BgtText>
+					</div>
+				)}
 			</article>
 		</BgtCard>
 	);

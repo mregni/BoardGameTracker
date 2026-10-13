@@ -188,7 +188,7 @@ describe("Game night detail page", () => {
 		const user = userEvent.setup();
 		renderPage();
 
-		await user.click(screen.getByRole("button", { name: "play.start.button" }));
+		await user.click(screen.getAllByRole("button", { name: "play.start.button" })[0]);
 		await user.click(screen.getByRole("button", { name: "start-sheet" }));
 
 		expect(mocks.startGame).toHaveBeenCalledWith({ gameId: 7, playerIds: [1] });
@@ -211,7 +211,7 @@ describe("Game night detail page", () => {
 		const user = userEvent.setup();
 		renderPage();
 
-		await user.click(screen.getByRole("button", { name: "play.log.button" }));
+		await user.click(screen.getAllByRole("button", { name: "play.log.button" })[0]);
 		await user.click(screen.getByRole("button", { name: "save-sheet" }));
 		mocks.onNewSessionSuccess?.();
 
@@ -248,7 +248,7 @@ describe("Game night detail page", () => {
 		try {
 			renderPage();
 
-			await user.click(screen.getByRole("button", { name: "end.button" }));
+			await user.click(screen.getAllByRole("button", { name: "end.button" })[0]);
 			const buttons = await screen.findAllByRole("button", { name: "end.button" });
 			await user.click(buttons.at(-1) as HTMLElement);
 
@@ -264,7 +264,7 @@ describe("Game night detail page", () => {
 		try {
 			renderPage();
 
-			await user.click(screen.getByRole("button", { name: "end.reopen" }));
+			await user.click(screen.getAllByRole("button", { name: "end.reopen" })[0]);
 
 			expect(mocks.reopenNight).toHaveBeenCalled();
 		} finally {

@@ -56,6 +56,7 @@ export const GameNightDetailView = (props: Props) => {
 		.map((id) => players.find((player) => player.id === id))
 		.filter((player): player is Player => player !== undefined);
 	const playAgain = latestPlays(sessions);
+	const startWithAttendees = () => onStart(null, attendeeIds(gameNight));
 
 	return (
 		<div className={cx("flex flex-col gap-3 xl:gap-6", canPlay && "pb-16 md:pb-0")}>
@@ -69,6 +70,8 @@ export const GameNightDetailView = (props: Props) => {
 				onDelete={onDelete}
 				onEnd={onEnd}
 				onReopen={onReopen}
+				onStart={startWithAttendees}
+				onLog={onLog}
 			/>
 
 			{runningGames.map((runningGame) => (
@@ -85,49 +88,43 @@ export const GameNightDetailView = (props: Props) => {
 			))}
 
 			{canPlay && (
-				<div className="flex flex-col gap-2">
-					<div
-						className={cx(
-							"fixed inset-x-0 bottom-20 z-20 grid gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:flex md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none",
-							isOver ? "grid-cols-1" : "grid-cols-2",
-						)}
-					>
-						{!isOver && (
-							<BgtButton
-								variant="primary"
-								size="2"
-								className="py-3 text-sm"
-								onClick={() => onStart(null, attendeeIds(gameNight))}
-							>
-								{t("play.start.button")}
-							</BgtButton>
-						)}
-						<BgtButton variant="cancel" size="2" className="py-3 text-sm" onClick={onLog}>
-							{t("play.log.button")}
-						</BgtButton>
-					</div>
-					{!isOver && playAgain.length > 0 && (
-						<div className="flex flex-wrap items-center gap-2">
-							<span className="text-sm text-gray-400">{t("play.again")}</span>
-							{playAgain.map((session) => {
-								const game = gameOf(session.gameId);
-								return (
-									<AvatarChipButton
-										key={session.gameId}
-										title={game?.title ?? ""}
-										image={game?.image}
-										label={t("play.again-game", { game: game?.title ?? "" })}
-										onClick={() =>
-											onStart(
-												session.gameId,
-												session.playerSessions.map((x) => x.playerId),
-											)
-										}
-									/>
-								);
-							})}
-						</div>
+				<div
+					className={cx(
+						"fixed inset-x-0 bottom-20 z-20 grid gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:hidden",
+						isOver ? "grid-cols-1" : "grid-cols-2",
 					)}
+				>
+					{!isOver && (
+						<BgtButton variant="primary" size="2" className="py-3 text-sm" onClick={startWithAttendees}>
+							{t("play.start.button")}
+						</BgtButton>
+					)}
+					<BgtButton variant="cancel" size="2" className="py-3 text-sm" onClick={onLog}>
+						{t("play.log.button")}
+					</BgtButton>
+				</div>
+			)}
+
+			{canPlay && !isOver && playAgain.length > 0 && (
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="text-sm text-gray-400">{t("play.again")}</span>
+					{playAgain.map((session) => {
+						const game = gameOf(session.gameId);
+						return (
+							<AvatarChipButton
+								key={session.gameId}
+								title={game?.title ?? ""}
+								image={game?.image}
+								label={t("play.again-game", { game: game?.title ?? "" })}
+								onClick={() =>
+									onStart(
+										session.gameId,
+										session.playerSessions.map((x) => x.playerId),
+									)
+								}
+							/>
+						);
+					})}
 				</div>
 			)}
 
