@@ -2,7 +2,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import type { FinishRunningGame, Session, StartRunningGame } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
-import { discardRunningGameCall, finishRunningGameCall, startRunningGameCall } from "@/services/gameNightService";
+import {
+	discardRunningGameCall,
+	endGameNightCall,
+	finishRunningGameCall,
+	reopenGameNightCall,
+	startRunningGameCall,
+} from "@/services/gameNightService";
 import { getGameNight } from "@/services/queries/gameNights";
 import { apiErrorMessage } from "@/utils/errorUtils";
 
@@ -54,12 +60,41 @@ export const useGameNightDetail = (gameNightId: number) => {
 		},
 	});
 
+	const endMutation = useMutation({
+		mutationFn: () => endGameNightCall(gameNightId),
+		onSuccess: async () => {
+			successToast("game-nights:end.notifications.ended");
+			await invalidator.invalidateGameNights();
+		},
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "game-nights:end.notifications.end-failed"));
+		},
+	});
+
+	const reopenMutation = useMutation({
+		mutationFn: () => reopenGameNightCall(gameNightId),
+		onSuccess: async () => {
+			successToast("game-nights:end.notifications.reopened");
+			await invalidator.invalidateGameNights();
+		},
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "game-nights:end.notifications.reopen-failed"));
+		},
+	});
+
 	return {
 		detail: detailQuery.data,
+		endNight: endMutation.mutateAsync,
+		reopenNight: reopenMutation.mutateAsync,
 		isLoading: detailQuery.isLoading,
 		startGame: startMutation.mutateAsync,
 		finishGame: finishMutation.mutateAsync,
 		discardGame: discardMutation.mutateAsync,
-		isPending: startMutation.isPending || finishMutation.isPending || discardMutation.isPending,
+		isPending:
+			startMutation.isPending ||
+			finishMutation.isPending ||
+			discardMutation.isPending ||
+			endMutation.isPending ||
+			reopenMutation.isPending,
 	};
 };

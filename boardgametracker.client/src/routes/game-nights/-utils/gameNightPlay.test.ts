@@ -9,6 +9,7 @@ const gameNight = {
 	id: 4,
 	hostId: 2,
 	startDate: new Date(2026, 9, 16, 20, 0),
+	endedAt: null,
 	suggestedGames: [{ id: 9 }, { id: 7 }],
 	invitedPlayers: [
 		{ id: 1, playerId: 5, state: GameNightRsvpState.Accepted, player: { name: "Anna" } },
@@ -31,6 +32,12 @@ describe("gameNightPlay", () => {
 		expect(isNightOver(detail([]), new Date(2026, 9, 17, 1, 0))).toBe(false);
 		expect(isNightOver(detail([]), late)).toBe(true);
 		expect(isNightOver(detail([], [3]), late)).toBe(false);
+	});
+
+	it("is over as soon as the night was ended", () => {
+		const ended = { ...detail([]), gameNight: { ...gameNight, endedAt: new Date(2026, 9, 16, 23, 0) } };
+
+		expect(isNightOver(ended, new Date(2026, 9, 16, 23, 5))).toBe(true);
 	});
 
 	it("lists the players who are coming with the host first", () => {

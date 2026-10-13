@@ -43,13 +43,14 @@ const session = (id: number, gameId: number, start: Date, scores: [number, numbe
 		playerSessions: scores.map(([playerId, score, won]) => ({ sessionId: id, playerId, score, won, firstPlay: false })),
 	}) as unknown as Session;
 
-const buildDetail = (startDate: Date, sessions: Session[], running = true) =>
+const buildDetail = (startDate: Date, sessions: Session[], running = true, endedAt: Date | null = null) =>
 	({
 		gameNight: {
 			id: 4,
 			title: "Strategy night",
 			notes: "Bring snacks",
 			startDate,
+			endedAt,
 			hostId: 1,
 			host: players[0],
 			locationId: 5,
@@ -77,6 +78,8 @@ const handlers = () => ({
 	onLog: vi.fn(),
 	onFinish: vi.fn(),
 	onDiscard: vi.fn(),
+	onEnd: vi.fn(),
+	onReopen: vi.fn(),
 });
 
 const renderView = (detail: GameNightDetail, canWrite = true) => {
@@ -204,5 +207,44 @@ describe("GameNightDetailView", () => {
 
 		expect(navigate).toHaveBeenCalledWith({ to: "/players/2" });
 		expect(navigate).toHaveBeenCalledWith({ to: "/games/9" });
+	});
+
+	it("only lets the host end the night once no game is running", () => {
+		renderView(buildDetail(tonight(), played()));
+
+		expect(screen.getByRole("button", { name: "end.button" })).toBeDisabled();
+		expect(screen.getByText("end.running-hint")).toBeInTheDocument();
+	});
+
+	it("ends the night when no game is running", async () => {
+		const user = userEvent.setup();
+		const props = renderView(buildDetail(tonight(), played(), false));
+
+		expect(screen.queryByText("end.running-hint")).not.toBeInTheDocument();
+		await user.click(screen.getByRole("button", { name: "end.button" }));
+
+		expect(props.onEnd).toHaveBeenCalled();
+	});
+
+	it("shows an ended night with its winner and offers to reopen it", async () => {
+		const user = userEvent.setup();
+		const props = renderView(buildDetail(tonight(), played(), false, new Date()));
+
+		expect(screen.getByText("summary.night-winner")).toBeInTheDocument();
+		expect(screen.getByText("played.after")).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "play.start.button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "play.log.button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "play.again-game" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "end.button" })).not.toBeInTheDocument();
+		await user.click(screen.getByRole("button", { name: "end.reopen" }));
+
+		expect(props.onReopen).toHaveBeenCalled();
+	});
+
+	it("keeps logging possible when the night is only over because it is late", () => {
+		renderView(buildDetail(addHours(new Date(), -30), played(), false));
+
+		expect(screen.getByRole("button", { name: "play.log.button" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "end.button" })).toBeEnabled();
 	});
 });

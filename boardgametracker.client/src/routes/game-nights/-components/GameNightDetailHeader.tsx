@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import MapPin from "@/assets/icons/map-pin.svg?react";
 import User from "@/assets/icons/user.svg?react";
+import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
@@ -17,12 +18,15 @@ interface Props {
 	settings: Settings;
 	isOver: boolean;
 	canWrite: boolean;
+	hasRunningGames: boolean;
 	onEdit: () => void;
 	onDelete: () => void;
+	onEnd: () => void;
+	onReopen: () => void;
 }
 
 export const GameNightDetailHeader = (props: Props) => {
-	const { gameNight, settings, isOver, canWrite, onEdit, onDelete } = props;
+	const { gameNight, settings, isOver, canWrite, hasRunningGames, onEdit, onDelete, onEnd, onReopen } = props;
 	const { t } = useTranslation("game-nights");
 
 	return (
@@ -70,6 +74,26 @@ export const GameNightDetailHeader = (props: Props) => {
 							{t("card.host", { host: gameNight.host.name })}
 						</span>
 					</div>
+					{canWrite && (
+						<div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+							{gameNight.endedAt ? (
+								<BgtButton variant="cancel" size="1" onClick={onReopen}>
+									{t("end.reopen")}
+								</BgtButton>
+							) : (
+								<>
+									<BgtButton variant="cancel" size="1" disabled={hasRunningGames} onClick={onEnd}>
+										{t("end.button")}
+									</BgtButton>
+									{hasRunningGames && (
+										<BgtText size="1" color="gray">
+											{t("end.running-hint")}
+										</BgtText>
+									)}
+								</>
+							)}
+						</div>
+					)}
 					{gameNight.notes && (
 						<div className="rounded-lg border border-white/10 bg-white/5 p-3">
 							<BgtText size="2" color="gray">

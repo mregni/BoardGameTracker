@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { useModalState } from "@/hooks/useModalState";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import type { CreateSession, RunningGame } from "@/models";
@@ -20,6 +21,7 @@ import { useGameNightData } from "./-hooks/useGameNightData";
 import { useGameNightDetail } from "./-hooks/useGameNightDetail";
 import { useGameNightModals } from "./-hooks/useGameNightModals";
 import { EditGameNightModal } from "./-modals/EditGameNightModal";
+import { EndNightModal } from "./-modals/EndNightModal";
 import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
 import { PlaySessionSheet } from "./-modals/PlaySessionSheet";
 import { StartGameSheet } from "./-modals/StartGameSheet";
@@ -75,8 +77,11 @@ function RouteComponent() {
 		startGame,
 		finishGame,
 		discardGame,
+		endNight,
+		reopenNight,
 		isPending,
 	} = useGameNightDetail(gameNightId);
+	const endModal = useModalState();
 	const { saveSession, isPending: isSaving } = useNewSessionData({
 		onSuccess: () => invalidator.invalidateGameNights(),
 	});
@@ -124,6 +129,8 @@ function RouteComponent() {
 								canWrite={canWrite}
 								onEdit={modals.editModal.show}
 								onDelete={modals.deleteModal.show}
+								onEnd={endModal.show}
+								onReopen={() => reopenNight()}
 								onEditAttendees={modals.manageRsvpModal.show}
 								onStart={(gameId, playerIds) => setSheet({ kind: "start", gameId, playerIds })}
 								onLog={() => setSheet({ kind: "log" })}
@@ -183,6 +190,8 @@ function RouteComponent() {
 								onUpdateGameNight={updateInvitedPlayers}
 								isLoading={isUpdating}
 							/>
+
+							<EndNightModal open={endModal.isOpen} close={endModal.hide} isPending={isPending} onConfirm={endNight} />
 
 							<BgtDeleteModal
 								open={modals.deleteModal.isOpen}

@@ -6,8 +6,10 @@ vi.mock("../utils/axiosInstance", () => ({ axiosInstance: axiosMock }));
 
 import {
 	discardRunningGameCall,
+	endGameNightCall,
 	finishRunningGameCall,
 	getGameNightCall,
+	reopenGameNightCall,
 	startRunningGameCall,
 } from "./gameNightService";
 
@@ -40,5 +42,13 @@ describe("gameNightService", () => {
 	it("discards a running game", async () => {
 		await discardRunningGameCall(12);
 		expect(axiosMock.delete).toHaveBeenCalledWith("gamenight/running-games/12");
+	});
+
+	it("ends and reopens a night", async () => {
+		await endGameNightCall(4);
+		await reopenGameNightCall(4);
+
+		expect(axiosMock.post).toHaveBeenCalledWith("gamenight/4/end");
+		expect(axiosMock.post).toHaveBeenCalledWith("gamenight/4/reopen");
 	});
 });

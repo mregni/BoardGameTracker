@@ -176,5 +176,18 @@
   "planned": {
     "title": "Planned",
     "played": "Played"
+  },
+  "end": {
+    "button": "End night",
+    "title": "End this game night?",
+    "description": "Nothing can be started or logged on this night until it is reopened.",
+    "running-hint": "Finish or discard the running games first",
+    "reopen": "Reopen night",
+    "notifications": {
+      "ended": "Game night ended",
+      "end-failed": "Failed to end the game night",
+      "reopened": "Game night reopened",
+      "reopen-failed": "Failed to reopen the game night"
+    }
   }
 }

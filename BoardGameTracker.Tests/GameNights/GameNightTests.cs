@@ -33,6 +33,30 @@ public class GameNightTests
     }
 
     [Fact]
+    public void End_ShouldRecordWhenTheNightEnded_AndReopenShouldClearIt()
+    {
+        var gameNight = CreateNight();
+        var endedAt = Start.AddHours(4);
+
+        gameNight.End(endedAt);
+        gameNight.EndedAt.Should().Be(endedAt);
+
+        gameNight.Reopen();
+        gameNight.EndedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public void End_ShouldRejectAMissingTime()
+    {
+        var gameNight = CreateNight();
+
+        var act = () => gameNight.End(default);
+
+        act.Should().Throw<ArgumentException>();
+        gameNight.EndedAt.Should().BeNull();
+    }
+
+    [Fact]
     public void GetTotalPlayMinutes_ShouldAddUpEverySession()
     {
         var gameNight = CreateNight();

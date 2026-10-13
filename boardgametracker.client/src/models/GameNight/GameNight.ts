@@ -22,6 +22,7 @@ export interface GameNight {
 	id: number;
 	title: string;
 	startDate: Date;
+	endedAt: Date | null;
 	location: Location;
 	locationId: number;
 	host: Player;

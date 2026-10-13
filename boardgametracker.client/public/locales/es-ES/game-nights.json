@@ -176,5 +176,18 @@
   "planned": {
     "title": "Planificados",
     "played": "Jugado"
+  },
+  "end": {
+    "button": "Cerrar la noche",
+    "title": "¿Cerrar esta noche de juegos?",
+    "description": "No se puede empezar ni registrar nada en esta noche hasta que se vuelva a abrir.",
+    "running-hint": "Termina o descarta primero los juegos en curso",
+    "reopen": "Reabrir la noche",
+    "notifications": {
+      "ended": "Noche de juegos cerrada",
+      "end-failed": "No se pudo cerrar la noche de juegos",
+      "reopened": "Noche de juegos reabierta",
+      "reopen-failed": "No se pudo reabrir la noche de juegos"
+    }
   }
 }

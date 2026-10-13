@@ -10,6 +10,7 @@ public class GameNight: HasId
     public string Notes { get; private set; } = string.Empty;
     public Guid LinkId { get; private set; }
     public DateTime StartDate { get; private set; }
+    public DateTime? EndedAt { get; private set; }
 
     public int HostId { get; private set; }
     public Player Host { get; private set; } = null!;
@@ -91,6 +92,16 @@ public class GameNight: HasId
         
             SuggestedGames.Add(suggestedGame);
         }
+    }
+
+    public void End(DateTime endedAt)
+    {
+        EndedAt = Guard.Against.Default(endedAt);
+    }
+
+    public void Reopen()
+    {
+        EndedAt = null;
     }
 
     public double GetTotalPlayMinutes()

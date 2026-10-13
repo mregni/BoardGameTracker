@@ -101,7 +101,7 @@ public class SessionService : ISessionService
         }
 
         await EnsurePlayersExistAsync(command.PlayerSessions.Select(ps => ps.PlayerId));
-        await EnsureGameNightExistsAsync(command.GameNightId);
+        await EnsureGameNightOpenAsync(command.GameNightId);
 
         var end = command.Start.AddMinutes(command.Minutes);
         var session = new Session(command.GameId, command.Start, end, command.Comment ?? string.Empty);
@@ -250,6 +250,25 @@ public class SessionService : ISessionService
         if (missing.Count > 0)
         {
             throw new EntityNotFoundException(nameof(Player), missing[0]);
+        }
+    }
+
+    private async Task EnsureGameNightOpenAsync(int? gameNightId)
+    {
+        if (!gameNightId.HasValue)
+        {
+            return;
+        }
+
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdSpec(gameNightId.Value));
+        if (gameNight == null)
+        {
+            throw new EntityNotFoundException(nameof(GameNight), gameNightId.Value);
+        }
+
+        if (gameNight.EndedAt.HasValue)
+        {
+            throw new ValidationException(nameof(CreateSessionCommand.GameNightId), Constants.Errors.GameNightEnded);
         }
     }
 

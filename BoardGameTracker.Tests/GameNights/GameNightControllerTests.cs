@@ -196,6 +196,54 @@ public class GameNightControllerTests
     }
 
     [Fact]
+    public async Task End_ShouldReturnNoContent_WhenTheNightEnded()
+    {
+        _gameNightServiceMock.Setup(x => x.End(4)).ReturnsAsync(GameNight.Create("Night", "", DateTime.UtcNow, 1, 1));
+
+        var result = await _controller.End(4);
+
+        result.Should().BeOfType<NoContentResult>();
+        _gameNightServiceMock.Verify(x => x.End(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task End_ShouldReturnNotFound_WhenTheNightDoesNotExist()
+    {
+        _gameNightServiceMock.Setup(x => x.End(4)).ReturnsAsync((GameNight?)null);
+
+        var result = await _controller.End(4);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _gameNightServiceMock.Verify(x => x.End(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Reopen_ShouldReturnNoContent_WhenTheNightReopened()
+    {
+        _gameNightServiceMock.Setup(x => x.Reopen(4)).ReturnsAsync(GameNight.Create("Night", "", DateTime.UtcNow, 1, 1));
+
+        var result = await _controller.Reopen(4);
+
+        result.Should().BeOfType<NoContentResult>();
+        _gameNightServiceMock.Verify(x => x.Reopen(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Reopen_ShouldReturnNotFound_WhenTheNightDoesNotExist()
+    {
+        _gameNightServiceMock.Setup(x => x.Reopen(4)).ReturnsAsync((GameNight?)null);
+
+        var result = await _controller.Reopen(4);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _gameNightServiceMock.Verify(x => x.Reopen(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task Delete_ShouldReturnNoContent_WhenGameNightExists()
     {
         var gameNightId = 1;

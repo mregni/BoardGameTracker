@@ -176,5 +176,18 @@
   "planned": {
     "title": "Gepland",
     "played": "Gespeeld"
+  },
+  "end": {
+    "button": "Avond afsluiten",
+    "title": "Deze spelavond afsluiten?",
+    "description": "Er kan niets meer gestart of toegevoegd worden tot de avond weer geopend wordt.",
+    "running-hint": "Beëindig of gooi eerst de lopende spellen weg",
+    "reopen": "Avond heropenen",
+    "notifications": {
+      "ended": "Spelavond afgesloten",
+      "end-failed": "Spelavond afsluiten mislukt",
+      "reopened": "Spelavond heropend",
+      "reopen-failed": "Spelavond heropenen mislukt"
+    }
   }
 }

@@ -13,6 +13,7 @@ public static class GameNightDtoExtensions
             Title = gameNight.Title,
             Notes = gameNight.Notes,
             StartDate = gameNight.StartDate,
+            EndedAt = gameNight.EndedAt,
             HostId = gameNight.HostId,
             Host = gameNight.Host.ToPublicDto(),
             LocationId = gameNight.LocationId,

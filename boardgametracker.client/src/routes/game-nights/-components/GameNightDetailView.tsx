@@ -1,3 +1,4 @@
+import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { AvatarChipButton } from "@/components/GameNight/AvatarChip";
@@ -18,6 +19,8 @@ interface Props {
 	canWrite: boolean;
 	onEdit: () => void;
 	onDelete: () => void;
+	onEnd: () => void;
+	onReopen: () => void;
 	onEditAttendees: () => void;
 	onStart: (gameId: number | null, playerIds: number[]) => void;
 	onLog: () => void;
@@ -34,6 +37,8 @@ export const GameNightDetailView = (props: Props) => {
 		canWrite,
 		onEdit,
 		onDelete,
+		onEnd,
+		onReopen,
 		onEditAttendees,
 		onStart,
 		onLog,
@@ -44,6 +49,7 @@ export const GameNightDetailView = (props: Props) => {
 	const { gameNight, sessions, runningGames } = detail;
 
 	const isOver = isNightOver(detail);
+	const canPlay = canWrite && gameNight.endedAt === null;
 	const gameOf = (gameId: number) => games.find((game) => game.id === gameId) ?? null;
 	const attendees = attendeeIds(gameNight)
 		.map((id) => players.find((player) => player.id === id))
@@ -51,14 +57,17 @@ export const GameNightDetailView = (props: Props) => {
 	const playAgain = latestPlays(sessions);
 
 	return (
-		<div className="flex flex-col gap-3 pb-16 md:pb-0 xl:gap-6">
+		<div className={cx("flex flex-col gap-3 xl:gap-6", canPlay && "pb-16 md:pb-0")}>
 			<GameNightDetailHeader
 				gameNight={gameNight}
 				settings={settings}
 				isOver={isOver}
 				canWrite={canWrite}
+				hasRunningGames={runningGames.length > 0}
 				onEdit={onEdit}
 				onDelete={onDelete}
+				onEnd={onEnd}
+				onReopen={onReopen}
 			/>
 
 			{runningGames.map((runningGame) => (
@@ -74,7 +83,7 @@ export const GameNightDetailView = (props: Props) => {
 				/>
 			))}
 
-			{canWrite && (
+			{canPlay && (
 				<div className="flex flex-col gap-2">
 					<div className="fixed inset-x-0 bottom-20 z-20 grid grid-cols-2 gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:flex md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
 						<BgtButton

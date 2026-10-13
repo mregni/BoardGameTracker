@@ -18,6 +18,12 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                 type: "integer",
                 nullable: true);
 
+            migrationBuilder.AddColumn<DateTime>(
+                name: "EndedAt",
+                table: "GameNights",
+                type: "timestamp with time zone",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "RunningGames",
                 columns: table => new
@@ -118,6 +124,10 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
             migrationBuilder.DropColumn(
                 name: "GameNightId",
                 table: "Sessions");
+
+            migrationBuilder.DropColumn(
+                name: "EndedAt",
+                table: "GameNights");
         }
     }
 }

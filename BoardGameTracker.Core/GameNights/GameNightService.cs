@@ -93,6 +93,43 @@ public class GameNightService : IGameNightService
         return await _gameNightRepository.SingleOrDefaultAsync(new GameNightDetailSpec(id));
     }
 
+    public async Task<GameNight?> End(int id)
+    {
+        _logger.LogDebug("Ending game night {GameNightId}", id);
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightWithRunningGamesSpec(id));
+        if (gameNight == null)
+        {
+            return null;
+        }
+
+        if (gameNight.RunningGames.Count > 0)
+        {
+            throw new ValidationException(Constants.Errors.GameNightGamesRunning);
+        }
+
+        gameNight.End(_dateTimeProvider.UtcNow);
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game night {GameNightId} ended", id);
+
+        return gameNight;
+    }
+
+    public async Task<GameNight?> Reopen(int id)
+    {
+        _logger.LogDebug("Reopening game night {GameNightId}", id);
+        var gameNight = await _gameNightRepository.GetByIdAsync(id);
+        if (gameNight == null)
+        {
+            return null;
+        }
+
+        gameNight.Reopen();
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game night {GameNightId} reopened", id);
+
+        return gameNight;
+    }
+
     public async Task<GameNight> Create(CreateGameNightCommand command)
     {
         _logger.LogDebug("Creating game night {Title}", command.Title);

@@ -8,6 +8,7 @@ public class GameNightDto
     public string Title { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
+    public DateTime? EndedAt { get; set; }
     public int HostId { get; set; }
     public PlayerDto? Host { get; set; }
     public int LocationId { get; set; }

@@ -190,6 +190,89 @@ public class GameNightServiceTests
 
     #endregion
 
+    #region End and Reopen Tests
+
+    [Fact]
+    public async Task End_ShouldEndTheNightNow()
+    {
+        var now = new DateTime(2026, 10, 17, 1, 30, 0, DateTimeKind.Utc);
+        var gameNight = GameNight.Create("Night", "", now.AddHours(-5), 1, 1);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(now);
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(gameNight);
+
+        var result = await _gameNightService.End(4);
+
+        result.Should().BeSameAs(gameNight);
+        gameNight.EndedAt.Should().Be(now);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task End_ShouldBeRefused_WhileAGameIsRunning()
+    {
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow.AddHours(-2), 1, 1);
+        gameNight.RunningGames.Add(RunningGame.Create(4, 9, DateTime.UtcNow, [1]));
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(gameNight);
+
+        var action = () => _gameNightService.End(4);
+
+        var error = await action.Should().ThrowAsync<ValidationException>();
+        error.Which.Message.Should().Be(Constants.Errors.GameNightGamesRunning);
+        gameNight.EndedAt.Should().BeNull();
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task End_ShouldReturnNull_WhenTheNightDoesNotExist()
+    {
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GameNight?)null);
+
+        var result = await _gameNightService.End(4);
+
+        result.Should().BeNull();
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Reopen_ShouldClearTheEnd()
+    {
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow.AddHours(-5), 1, 1);
+        gameNight.End(DateTime.UtcNow);
+        _gameNightRepositoryMock.Setup(x => x.GetByIdAsync(4)).ReturnsAsync(gameNight);
+
+        var result = await _gameNightService.Reopen(4);
+
+        result.Should().BeSameAs(gameNight);
+        gameNight.EndedAt.Should().BeNull();
+        _gameNightRepositoryMock.Verify(x => x.GetByIdAsync(4), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Reopen_ShouldReturnNull_WhenTheNightDoesNotExist()
+    {
+        _gameNightRepositoryMock.Setup(x => x.GetByIdAsync(4)).ReturnsAsync((GameNight?)null);
+
+        var result = await _gameNightService.Reopen(4);
+
+        result.Should().BeNull();
+        _gameNightRepositoryMock.Verify(x => x.GetByIdAsync(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
     #region GetDetail Tests
 
     [Fact]

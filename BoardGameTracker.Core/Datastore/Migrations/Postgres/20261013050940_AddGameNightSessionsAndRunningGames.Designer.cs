@@ -13,7 +13,7 @@ using Pgvector;
 namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20261013003351_AddGameNightSessionsAndRunningGames")]
+    [Migration("20261013050940_AddGameNightSessionsAndRunningGames")]
     partial class AddGameNightSessionsAndRunningGames
     {
         /// <inheritdoc />
@@ -832,6 +832,9 @@ namespace BoardGameTracker.Core.Datastore.Migrations.Postgres
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("HostId")
                         .HasColumnType("integer");

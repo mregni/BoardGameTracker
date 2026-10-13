@@ -1,3 +1,4 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
@@ -52,9 +53,15 @@ public class RunningGameService : IRunningGameService
     public async Task<RunningGame> Start(int gameNightId, StartRunningGameCommand command)
     {
         _logger.LogDebug("Starting game {GameId} on game night {GameNightId}", command.GameId, gameNightId);
-        if (!await _gameNightRepository.AnyAsync(new GameNightByIdSpec(gameNightId)))
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdSpec(gameNightId));
+        if (gameNight == null)
         {
             throw new EntityNotFoundException(nameof(GameNight), gameNightId);
+        }
+
+        if (gameNight.EndedAt.HasValue)
+        {
+            throw new ValidationException(Constants.Errors.GameNightEnded);
         }
 
         if (!await _gameService.ExistsAsync(command.GameId))

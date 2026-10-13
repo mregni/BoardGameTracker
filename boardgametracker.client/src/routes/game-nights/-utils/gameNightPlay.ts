@@ -5,7 +5,8 @@ import { sortRsvps } from "@/utils/sortRsvps";
 const NIGHT_LENGTH_HOURS = 12;
 
 export const isNightOver = (detail: GameNightDetail, now: Date = new Date()) =>
-	detail.runningGames.length === 0 && isAfter(now, addHours(detail.gameNight.startDate, NIGHT_LENGTH_HOURS));
+	detail.gameNight.endedAt !== null ||
+	(detail.runningGames.length === 0 && isAfter(now, addHours(detail.gameNight.startDate, NIGHT_LENGTH_HOURS)));
 
 export const attendeeIds = (gameNight: GameNight) =>
 	sortRsvps(gameNight.invitedPlayers, gameNight.hostId)

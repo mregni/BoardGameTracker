@@ -830,6 +830,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("HostId")
                         .HasColumnType("integer");
 

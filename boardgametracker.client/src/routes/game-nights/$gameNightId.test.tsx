@@ -15,10 +15,13 @@ const mocks = vi.hoisted(() => ({
 	startGame: vi.fn(),
 	finishGame: vi.fn(),
 	discardGame: vi.fn(),
+	endNight: vi.fn(),
+	reopenNight: vi.fn(),
 	saveSession: vi.fn(),
 	deleteGameNight: vi.fn(),
 	invalidateGameNights: vi.fn(),
 	onNewSessionSuccess: undefined as undefined | (() => void),
+	detail: undefined as unknown,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -47,6 +50,7 @@ const detail = {
 		title: "Strategy night",
 		notes: "",
 		startDate: new Date(),
+		endedAt: null,
 		hostId: 1,
 		host: { id: 1, name: "Mikhael", image: null },
 		locationId: 5,
@@ -61,6 +65,7 @@ const detail = {
 	sessions: [],
 	runningGames: [runningGame],
 } as unknown as GameNightDetail;
+mocks.detail = detail;
 
 vi.mock("./-hooks/useGameNightData", () => ({
 	useGameNightData: () => ({
@@ -79,11 +84,13 @@ vi.mock("./-hooks/useGameNightData", () => ({
 
 vi.mock("./-hooks/useGameNightDetail", () => ({
 	useGameNightDetail: () => ({
-		detail,
+		detail: mocks.detail,
 		isLoading: false,
 		startGame: mocks.startGame,
 		finishGame: mocks.finishGame,
 		discardGame: mocks.discardGame,
+		endNight: mocks.endNight,
+		reopenNight: mocks.reopenNight,
 		isPending: false,
 	}),
 }));
@@ -147,6 +154,7 @@ describe("Game night detail page", () => {
 		mocks.startGame.mockResolvedValue(undefined);
 		mocks.finishGame.mockResolvedValue(undefined);
 		mocks.discardGame.mockResolvedValue(undefined);
+		mocks.endNight.mockResolvedValue(undefined);
 		mocks.saveSession.mockResolvedValue(undefined);
 		mocks.deleteGameNight.mockResolvedValue(undefined);
 	});
@@ -241,5 +249,36 @@ describe("Game night detail page", () => {
 
 		await waitFor(() => expect(mocks.deleteGameNight).toHaveBeenCalledWith(4));
 		await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/game-nights" }));
+	});
+
+	it("asks before ending the night", async () => {
+		const user = userEvent.setup();
+		const night = { ...detail, runningGames: [] };
+		mocks.detail = night;
+		try {
+			renderPage();
+
+			await user.click(screen.getByRole("button", { name: "end.button" }));
+			const buttons = await screen.findAllByRole("button", { name: "end.button" });
+			await user.click(buttons.at(-1) as HTMLElement);
+
+			await waitFor(() => expect(mocks.endNight).toHaveBeenCalled());
+		} finally {
+			mocks.detail = detail;
+		}
+	});
+
+	it("reopens an ended night", async () => {
+		const user = userEvent.setup();
+		mocks.detail = { ...detail, runningGames: [], gameNight: { ...detail.gameNight, endedAt: new Date() } };
+		try {
+			renderPage();
+
+			await user.click(screen.getByRole("button", { name: "end.reopen" }));
+
+			expect(mocks.reopenNight).toHaveBeenCalled();
+		} finally {
+			mocks.detail = detail;
+		}
 	});
 });

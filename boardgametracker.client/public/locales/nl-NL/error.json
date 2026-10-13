@@ -94,7 +94,9 @@
   "game-night": {
     "invites-cooldown": "De uitnodigingen voor deze spelavond zijn net verstuurd, probeer het over een paar minuten opnieuw",
     "host-rsvp-locked": "De gastheer is altijd aanwezig op de eigen spelavond",
-    "rsvp-closed": "Deze spelavond heeft al plaatsgevonden"
+    "rsvp-closed": "Deze spelavond heeft al plaatsgevonden",
+    "games-running": "Beëindig of gooi de lopende spellen weg voor je de avond afsluit",
+    "ended": "Deze spelavond is afgesloten, heropen ze om spellen toe te voegen"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD voldoet niet aan de wachtwoordregels (minstens 8 tekens). Pas het aan of verwijder het vóór een fabrieksreset."

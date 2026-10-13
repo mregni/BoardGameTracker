@@ -79,6 +79,37 @@ public class GameNightPlayTests
     }
 
     [Fact]
+    public async Task EndingTheNight_ShouldWaitForRunningGames_AndCloseItUntilReopened()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, gameId, hostId, _) = await CreateNightAsync(user);
+        var start = new StartRunningGameCommand { GameId = gameId, PlayerIds = [hostId] };
+        var started = await user.PostAsJsonAsync($"/api/gamenight/{gameNightId}/running-games", start);
+        var runningGame = (await started.Content.ReadFromJsonAsync<RunningGameDto>(IntegrationFixture.Json))!;
+
+        (await user.PostAsync($"/api/gamenight/{gameNightId}/end", null)).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        (await user.DeleteAsync($"/api/gamenight/running-games/{runningGame.Id}")).StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await user.PostAsync($"/api/gamenight/{gameNightId}/end", null)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await GetDetailAsync(user, gameNightId)).GameNight.EndedAt.Should().NotBeNull();
+        (await user.PostAsJsonAsync($"/api/gamenight/{gameNightId}/running-games", start)).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var logged = await user.PostAsJsonAsync("/api/session", new CreateSessionCommand
+        {
+            GameId = gameId,
+            Start = DateTime.UtcNow.AddHours(-1),
+            Minutes = 30,
+            GameNightId = gameNightId,
+            PlayerSessions = [new CreatePlayerSessionCommand { PlayerId = hostId }],
+        });
+        logged.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        (await user.PostAsync($"/api/gamenight/{gameNightId}/reopen", null)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await GetDetailAsync(user, gameNightId)).GameNight.EndedAt.Should().BeNull();
+        (await user.PostAsJsonAsync($"/api/gamenight/{gameNightId}/running-games", start)).StatusCode.Should().Be(HttpStatusCode.Created);
+        (await user.PostAsync("/api/gamenight/999999/end", null)).StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task StartingAGame_ShouldBeRefused_ForAReader()
     {
         using var user = await _fixture.CreateClientAsAsync("user");

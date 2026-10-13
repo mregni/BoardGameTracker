@@ -72,6 +72,14 @@ export const finishRunningGameCall = (id: number, command: FinishRunningGame): P
 	return axiosInstance.post<Session>(`${domain}/running-games/${id}/finish`, command).then((response) => response.data);
 };
 
+export const endGameNightCall = (id: number): Promise<void> => {
+	return axiosInstance.post(`${domain}/${id}/end`);
+};
+
+export const reopenGameNightCall = (id: number): Promise<void> => {
+	return axiosInstance.post(`${domain}/${id}/reopen`);
+};
+
 export const discardRunningGameCall = (id: number): Promise<void> => {
 	return axiosInstance.delete(`${domain}/running-games/${id}`);
 };

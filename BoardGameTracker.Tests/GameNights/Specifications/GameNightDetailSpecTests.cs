@@ -53,6 +53,20 @@ public class GameNightDetailSpecTests
     }
 
     [Fact]
+    public void GameNightWithRunningGamesSpec_ShouldMatchOnlyTheRequestedId_AndTrackItsRunningGames()
+    {
+        var gameNight = GameNight.Create("Night", "", Start, 1, 1);
+        gameNight.Id = 5;
+
+        var spec = new GameNightWithRunningGamesSpec(5);
+
+        spec.IsSatisfiedBy(gameNight).Should().BeTrue();
+        new GameNightWithRunningGamesSpec(6).IsSatisfiedBy(gameNight).Should().BeFalse();
+        spec.ShouldIncludeExactly("RunningGames");
+        spec.AsNoTracking.Should().BeFalse();
+    }
+
+    [Fact]
     public void RunningGameByIdSpec_ShouldMatchOnlyTheRequestedId_AndIncludeTheNight()
     {
         var runningGame = RunningGame.Create(3, 9, Start, [1]);

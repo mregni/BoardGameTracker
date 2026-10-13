@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
 	startRunningGameCall: vi.fn(),
 	finishRunningGameCall: vi.fn(),
 	discardRunningGameCall: vi.fn(),
+	endGameNightCall: vi.fn(),
+	reopenGameNightCall: vi.fn(),
 	invalidateGameNights: vi.fn(),
 	invalidateSession: vi.fn(),
 	successToast: vi.fn(),
@@ -21,6 +23,8 @@ vi.mock("@/services/gameNightService", () => ({
 	startRunningGameCall: (id: number, command: unknown) => mocks.startRunningGameCall(id, command),
 	finishRunningGameCall: (id: number, command: unknown) => mocks.finishRunningGameCall(id, command),
 	discardRunningGameCall: (id: number) => mocks.discardRunningGameCall(id),
+	endGameNightCall: (id: number) => mocks.endGameNightCall(id),
+	reopenGameNightCall: (id: number) => mocks.reopenGameNightCall(id),
 }));
 
 vi.mock("@/hooks/useQueryInvalidator", () => ({
@@ -127,5 +131,32 @@ describe("useGameNightDetail", () => {
 		await act(() => result.current.discardGame(12).catch(() => undefined));
 
 		expect(mocks.errorToast).toHaveBeenCalledWith("game-nights:play.notifications.discard-failed");
+	});
+
+	it("ends and reopens the night", async () => {
+		mocks.endGameNightCall.mockResolvedValue(undefined);
+		mocks.reopenGameNightCall.mockResolvedValue(undefined);
+		const result = setup();
+
+		await act(() => result.current.endNight());
+		await act(() => result.current.reopenNight());
+
+		expect(mocks.endGameNightCall).toHaveBeenCalledWith(4);
+		expect(mocks.reopenGameNightCall).toHaveBeenCalledWith(4);
+		expect(mocks.successToast).toHaveBeenCalledWith("game-nights:end.notifications.ended");
+		expect(mocks.successToast).toHaveBeenCalledWith("game-nights:end.notifications.reopened");
+		expect(mocks.invalidateGameNights).toHaveBeenCalledTimes(2);
+	});
+
+	it("tells when ending or reopening fails", async () => {
+		mocks.endGameNightCall.mockRejectedValue(new Error("nope"));
+		mocks.reopenGameNightCall.mockRejectedValue(new Error("nope"));
+		const result = setup();
+
+		await act(() => result.current.endNight().catch(() => undefined));
+		await act(() => result.current.reopenNight().catch(() => undefined));
+
+		expect(mocks.errorToast).toHaveBeenCalledWith("game-nights:end.notifications.end-failed");
+		expect(mocks.errorToast).toHaveBeenCalledWith("game-nights:end.notifications.reopen-failed");
 	});
 });

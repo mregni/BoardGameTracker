@@ -48,6 +48,28 @@ public class GameNightController : ControllerBase
     }
 
     [HttpPost]
+    [Route("{id:int}/end")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> End(int id)
+    {
+        var gameNight = await _gameNightService.End(id);
+        return gameNight == null ? NotFound() : NoContent();
+    }
+
+    [HttpPost]
+    [Route("{id:int}/reopen")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Reopen(int id)
+    {
+        var gameNight = await _gameNightService.Reopen(id);
+        return gameNight == null ? NotFound() : NoContent();
+    }
+
+    [HttpPost]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
     [ProducesResponseType<GameNightDto>(StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] CreateGameNightCommand command)

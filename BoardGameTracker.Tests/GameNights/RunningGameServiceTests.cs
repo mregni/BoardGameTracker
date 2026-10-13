@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
@@ -65,12 +66,14 @@ public class RunningGameServiceTests
         _unitOfWorkMock.VerifyNoOtherCalls();
     }
 
-    private void SetupGameNightExists(bool exists)
+    private void SetupGameNight(GameNight? gameNight)
     {
         _gameNightRepositoryMock
-            .Setup(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(exists);
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(gameNight);
     }
+
+    private static GameNight CreateNight() => GameNight.Create("Night", "", Now.AddHours(-2), 1, 5);
 
     private static RunningGame CreateRunningGame(DateTime start)
     {
@@ -97,7 +100,7 @@ public class RunningGameServiceTests
     [Fact]
     public async Task Start_ShouldCreateARunningGame_StartingNow()
     {
-        SetupGameNightExists(true);
+        SetupGameNight(CreateNight());
         _gameServiceMock.Setup(x => x.ExistsAsync(9)).ReturnsAsync(true);
         _playerServiceMock
             .Setup(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()))
@@ -113,7 +116,7 @@ public class RunningGameServiceTests
         result.Start.Should().Be(Now);
         result.GetPlayerIds().Should().Equal(1, 2);
 
-        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         _gameServiceMock.Verify(x => x.ExistsAsync(9), Times.Once);
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 1, 2 }))), Times.Once);
         _runningGameRepositoryMock.Verify(x => x.CreateAsync(result), Times.Once);
@@ -124,25 +127,40 @@ public class RunningGameServiceTests
     [Fact]
     public async Task Start_ShouldThrowEntityNotFound_WhenTheGameNightDoesNotExist()
     {
-        SetupGameNightExists(false);
+        SetupGameNight(null);
 
         var act = () => _service.Start(3, new StartRunningGameCommand { GameId = 9, PlayerIds = [1] });
 
         await act.Should().ThrowAsync<EntityNotFoundException>();
-        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Start_ShouldBeRefused_WhenTheNightHasEnded()
+    {
+        var gameNight = CreateNight();
+        gameNight.End(Now.AddMinutes(-5));
+        SetupGameNight(gameNight);
+
+        var act = () => _service.Start(3, new StartRunningGameCommand { GameId = 9, PlayerIds = [1] });
+
+        var error = await act.Should().ThrowAsync<ValidationException>();
+        error.Which.Message.Should().Be(Constants.Errors.GameNightEnded);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task Start_ShouldThrowEntityNotFound_WhenTheGameDoesNotExist()
     {
-        SetupGameNightExists(true);
+        SetupGameNight(CreateNight());
         _gameServiceMock.Setup(x => x.ExistsAsync(9)).ReturnsAsync(false);
 
         var act = () => _service.Start(3, new StartRunningGameCommand { GameId = 9, PlayerIds = [1] });
 
         await act.Should().ThrowAsync<EntityNotFoundException>();
-        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         _gameServiceMock.Verify(x => x.ExistsAsync(9), Times.Once);
         VerifyNoOtherCalls();
     }
@@ -150,7 +168,7 @@ public class RunningGameServiceTests
     [Fact]
     public async Task Start_ShouldThrowEntityNotFound_WhenAPlayerDoesNotExist()
     {
-        SetupGameNightExists(true);
+        SetupGameNight(CreateNight());
         _gameServiceMock.Setup(x => x.ExistsAsync(9)).ReturnsAsync(true);
         _playerServiceMock
             .Setup(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()))
@@ -160,7 +178,7 @@ public class RunningGameServiceTests
 
         var error = await act.Should().ThrowAsync<EntityNotFoundException>();
         error.Which.EntityId.Should().Be(8);
-        _gameNightRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         _gameServiceMock.Verify(x => x.ExistsAsync(9), Times.Once);
         _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
         VerifyNoOtherCalls();
