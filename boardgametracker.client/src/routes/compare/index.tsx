@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { noop, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/compare/")({
 	component: RouteComponent,
 	validateSearch: compareSearchSchema,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getPlayers());
+		queryClient.query(getPlayers()).catch(noop);
 	},
 });
 

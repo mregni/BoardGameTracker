@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import MapPinIcon from "@/assets/icons/map-pin.svg?react";
@@ -19,7 +20,7 @@ import { useLocationsData } from "./-hooks/useLocationsData";
 export const Route = createFileRoute("/locations/")({
 	component: RouteComponent,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getLocations());
+		queryClient.query(getLocations()).catch(noop);
 	},
 });
 

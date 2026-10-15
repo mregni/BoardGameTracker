@@ -64,7 +64,7 @@ function RootComponent() {
 		if (!isAuthenticated && authStatus?.authEnabled) return;
 
 		queryClient
-			.fetchQuery(getSettings())
+			.query(getSettings())
 			.then((settings) => {
 				if (settings.statistics) {
 					initSentry();
