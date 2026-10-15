@@ -1,6 +1,5 @@
 import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import { AvatarChipButton } from "@/components/GameNight/AvatarChip";
 import type { Game, GameNightDetail, Player, RunningGame, Settings } from "@/models";
 import { attendeeIds, isNightOver, latestPlays } from "../-utils/gameNightPlay";
@@ -86,24 +85,6 @@ export const GameNightDetailView = (props: Props) => {
 					onDiscard={onDiscard}
 				/>
 			))}
-
-			{canPlay && (
-				<div
-					className={cx(
-						"fixed inset-x-0 bottom-20 z-20 grid gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:hidden",
-						isOver ? "grid-cols-1" : "grid-cols-2",
-					)}
-				>
-					{!isOver && (
-						<BgtButton variant="primary" size="2" className="py-3 text-sm" onClick={startWithAttendees}>
-							{t("play.start.button")}
-						</BgtButton>
-					)}
-					<BgtButton variant="cancel" size="2" className="py-3 text-sm" onClick={onLog}>
-						{t("play.log.button")}
-					</BgtButton>
-				</div>
-			)}
 
 			{canPlay && !isOver && playAgain.length > 0 && (
 				<div className="flex flex-wrap items-center gap-2">

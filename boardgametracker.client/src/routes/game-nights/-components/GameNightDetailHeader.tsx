@@ -28,6 +28,8 @@ interface Props {
 	onLog: () => void;
 }
 
+const phoneButton = "max-md:py-3 max-md:text-sm";
+
 export const GameNightDetailHeader = (props: Props) => {
 	const { gameNight, settings, isOver, canWrite, hasRunningGames, onEdit, onDelete, onEnd, onReopen, onStart, onLog } =
 		props;
@@ -37,6 +39,7 @@ export const GameNightDetailHeader = (props: Props) => {
 	const showEndAction = canWrite && (hasEnded || !isOver);
 	const showLog = canWrite && !hasEnded;
 	const showStart = showLog && !isOver;
+	const hasActions = showEndAction || showLog;
 	const endAction = showEndAction && (
 		<NightEndAction hasEnded={hasEnded} hasRunningGames={hasRunningGames} onEnd={onEnd} onReopen={onReopen} />
 	);
@@ -69,40 +72,54 @@ export const GameNightDetailHeader = (props: Props) => {
 					</BgtHeading>
 				</div>
 				{canWrite ? (
-					<div className="flex flex-col-reverse items-end gap-2 self-start">
-						{endAction && <div className="md:hidden">{endAction}</div>}
+					<div className="self-start">
 						<BgtEditDeleteButtons onEdit={onEdit} onDelete={onDelete} />
 					</div>
 				) : (
 					<span />
 				)}
-				<div className="col-span-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 md:col-span-2 md:col-start-2">
-					<div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-400">
-						<span className="inline-flex items-center gap-1.5">
-							<MapPin className="size-4 shrink-0" />
-							{gameNight.location.name}
-						</span>
-						<span className="inline-flex items-center gap-1.5">
-							<User className="size-4 shrink-0" />
-							{t("card.host", { host: gameNight.host.name })}
-						</span>
-					</div>
-					{(endAction || showLog) && (
-						<div className="hidden flex-wrap items-center justify-end gap-2 md:flex">
-							{endAction}
-							{showLog && (
-								<BgtButton variant="cancel" size="1" onClick={onLog}>
+				<div
+					className={cx(
+						"flex flex-wrap items-center gap-x-4 gap-y-1 self-center text-sm text-gray-400 md:col-start-2",
+						hasActions ? "col-span-2 md:col-span-1" : "col-span-3 md:col-span-2",
+					)}
+				>
+					<span className="inline-flex items-center gap-1.5">
+						<MapPin className="size-4 shrink-0" />
+						{gameNight.location.name}
+					</span>
+					<span className="inline-flex items-center gap-1.5">
+						<User className="size-4 shrink-0" />
+						{t("card.host", { host: gameNight.host.name })}
+					</span>
+				</div>
+				{hasActions && (
+					<div className="flex items-center justify-end gap-2 self-center" data-testid="night-actions">
+						{endAction}
+						{showLog && (
+							<div
+								className={cx(
+									"fixed inset-x-0 bottom-20 z-20 grid gap-2 border-t border-white/10 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:flex md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none",
+									showStart ? "grid-cols-2" : "grid-cols-1",
+								)}
+							>
+								<BgtButton variant="cancel" size="1" className={phoneButton} onClick={onLog}>
 									{t("play.log.button")}
 								</BgtButton>
-							)}
-							{showStart && (
-								<BgtButton variant="primary" size="1" onClick={onStart}>
-									{t("play.start.button")}
-								</BgtButton>
-							)}
-						</div>
-					)}
-				</div>
+								{showStart && (
+									<BgtButton
+										variant="primary"
+										size="1"
+										className={cx(phoneButton, "order-first md:order-none")}
+										onClick={onStart}
+									>
+										{t("play.start.button")}
+									</BgtButton>
+								)}
+							</div>
+						)}
+					</div>
+				)}
 				{gameNight.notes && (
 					<div className="col-span-3 rounded-lg border border-white/10 bg-white/5 p-3 md:col-span-2 md:col-start-2">
 						<BgtText size="2" color="gray">

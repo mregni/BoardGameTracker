@@ -127,8 +127,8 @@ describe("GameNightDetailView", () => {
 		const user = userEvent.setup();
 		const props = renderView(buildDetail(tonight(), played()));
 
-		await user.click(screen.getAllByRole("button", { name: "play.start.button" })[0]);
-		await user.click(screen.getAllByRole("button", { name: "play.log.button" })[0]);
+		await user.click(screen.getByRole("button", { name: "play.start.button" }));
+		await user.click(screen.getByRole("button", { name: "play.log.button" }));
 		await user.click(screen.getAllByRole("button", { name: "play.again-game" })[0]);
 
 		expect(props.onStart).toHaveBeenNthCalledWith(1, null, [1, 2]);
@@ -167,9 +167,9 @@ describe("GameNightDetailView", () => {
 		expect(screen.getByText("summary.night-winner")).toBeInTheDocument();
 		expect(screen.getByText("played.after")).toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "play.again-game" })).not.toBeInTheDocument();
-		expect(screen.queryAllByRole("button", { name: "play.start.button" })).toHaveLength(0);
-		expect(screen.queryAllByRole("button", { name: "end.button" })).toHaveLength(0);
-		expect(screen.getAllByRole("button", { name: "play.log.button" })[0]).toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "play.start.button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "end.button" })).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "play.log.button" })).toBeInTheDocument();
 	});
 
 	it("explains how to add games afterwards when nothing was logged", () => {
@@ -189,7 +189,7 @@ describe("GameNightDetailView", () => {
 	it("is read-only for readers", () => {
 		renderView(buildDetail(tonight(), played()), false);
 
-		expect(screen.queryAllByRole("button", { name: "play.start.button" })).toHaveLength(0);
+		expect(screen.queryByRole("button", { name: "play.start.button" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "play.finish.button" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "table.edit" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("link")).not.toBeInTheDocument();
@@ -222,13 +222,10 @@ describe("GameNightDetailView", () => {
 	it("only lets the host end the night once no game is running", () => {
 		renderView(buildDetail(tonight(), played()));
 
-		const endButtons = screen.getAllByRole("button", { name: "end.button" });
-		expect(endButtons).toHaveLength(2);
-		for (const button of endButtons) {
-			expect(button).toBeDisabled();
-			expect(button).toHaveAccessibleDescription("end.running-hint");
-			expect(button.parentElement).toHaveAttribute("title", "end.running-hint");
-		}
+		const endButton = screen.getByRole("button", { name: "end.button" });
+		expect(endButton).toBeDisabled();
+		expect(endButton).toHaveAccessibleDescription("end.running-hint");
+		expect(endButton.parentElement).toHaveAttribute("title", "end.running-hint");
 	});
 
 	it("ends the night when no game is running", async () => {
@@ -236,7 +233,7 @@ describe("GameNightDetailView", () => {
 		const props = renderView(buildDetail(tonight(), played(), false));
 
 		expect(screen.queryByText("end.running-hint")).not.toBeInTheDocument();
-		await user.click(screen.getAllByRole("button", { name: "end.button" })[0]);
+		await user.click(screen.getByRole("button", { name: "end.button" }));
 
 		expect(props.onEnd).toHaveBeenCalled();
 	});
@@ -247,12 +244,36 @@ describe("GameNightDetailView", () => {
 
 		expect(screen.getByText("summary.night-winner")).toBeInTheDocument();
 		expect(screen.getByText("played.after")).toBeInTheDocument();
-		expect(screen.queryAllByRole("button", { name: "play.start.button" })).toHaveLength(0);
-		expect(screen.queryAllByRole("button", { name: "play.log.button" })).toHaveLength(0);
+		expect(screen.queryByRole("button", { name: "play.start.button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "play.log.button" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("button", { name: "play.again-game" })).not.toBeInTheDocument();
-		expect(screen.queryAllByRole("button", { name: "end.button" })).toHaveLength(0);
-		await user.click(screen.getAllByRole("button", { name: "end.reopen" })[0]);
+		expect(screen.queryByRole("button", { name: "end.button" })).not.toBeInTheDocument();
+		await user.click(screen.getByRole("button", { name: "end.reopen" }));
 
 		expect(props.onReopen).toHaveBeenCalled();
+	});
+
+	it("renders one set of night actions, with Start pinned first on phones", () => {
+		renderView(buildDetail(tonight(), played(), false));
+
+		const actions = screen.getByTestId("night-actions");
+		const buttons = within(actions).getAllByRole("button");
+		expect(buttons.map((x) => x.textContent)).toEqual(["end.button", "play.log.button", "play.start.button"]);
+		expect(buttons[2]).toHaveClass("order-first", "md:order-none");
+		expect(buttons[1].parentElement).toHaveClass("fixed", "md:static");
+	});
+
+	it("only offers logging in the header when the night is over by time", () => {
+		renderView(buildDetail(addHours(new Date(), -30), [], false));
+
+		const buttons = within(screen.getByTestId("night-actions")).getAllByRole("button");
+		expect(buttons.map((x) => x.textContent)).toEqual(["play.log.button"]);
+		expect(buttons[0].parentElement).toHaveClass("grid-cols-1");
+	});
+
+	it("shows no night actions to readers", () => {
+		renderView(buildDetail(tonight(), [], false), false);
+
+		expect(screen.queryByTestId("night-actions")).not.toBeInTheDocument();
 	});
 });
