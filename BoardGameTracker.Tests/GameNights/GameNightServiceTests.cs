@@ -1401,6 +1401,7 @@ public class GameNightServiceTests
     public async Task CountFutureGameNights_ShouldReturnCountFromRepository()
     {
         SetupGameNightsEnabled(true);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(new DateTime(2030, 1, 1, 22, 0, 0, DateTimeKind.Utc));
         _gameNightRepositoryMock
             .Setup(x => x.CountAsync(It.Is<ISpecification<GameNight>>(s => s is FutureGameNightsSpec), It.IsAny<CancellationToken>()))
             .ReturnsAsync(7);
