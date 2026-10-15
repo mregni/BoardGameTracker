@@ -11,6 +11,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
+import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { Session } from "@/models";
 import { getGames } from "@/services/queries/games";
@@ -90,15 +91,18 @@ function RouteComponent() {
 						},
 						{
 							accessorKey: "4",
-							cell: ({ row }) => (
-								<PlayerSessionAvatars
-									playerSessions={row.original.playerSessions}
-									players={players}
-									games={games}
-									gameId={row.original.gameId}
-									won={true}
-								/>
-							),
+							cell: ({ row }) =>
+								row.original.isCoop ? (
+									<CoopResultPill won={row.original.teamWon === true} />
+								) : (
+									<PlayerSessionAvatars
+										playerSessions={row.original.playerSessions}
+										players={players}
+										games={games}
+										gameId={row.original.gameId}
+										won={true}
+									/>
+								),
 							header: t("winners"),
 						},
 						{
@@ -109,7 +113,7 @@ function RouteComponent() {
 									players={players}
 									games={games}
 									gameId={row.original.gameId}
-									won={false}
+									won={row.original.isCoop && row.original.teamWon === true}
 								/>
 							),
 							header: t("other-players"),
@@ -117,6 +121,7 @@ function RouteComponent() {
 						{
 							accessorKey: "6",
 							cell: ({ row }) => {
+								if (row.original.isCoop) return row.original.teamScore ?? "";
 								const highScore = row.original.playerSessions
 									.filter((x) => x.score != null)
 									.sort((a, b) => b.score! - a.score!);

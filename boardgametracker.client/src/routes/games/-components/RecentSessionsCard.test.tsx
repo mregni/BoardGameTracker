@@ -61,6 +61,31 @@ describe("RecentSessionsCard", () => {
 		expect(screen.getByRole("listitem")).toHaveTextContent(/^26-10-05Mikhaël$/);
 	});
 
+	it("shows the team result and team score instead of a winner for a co-op session", () => {
+		renderWithTheme(
+			<RecentSessionsCard
+				gameId={3}
+				dateFormat="yy-MM-dd"
+				sessions={[
+					{
+						...session(1, [
+							{ playerId: 1, won: true, score: null },
+							{ playerId: 2, won: true, score: null },
+						]),
+						isCoop: true,
+						teamWon: true,
+						teamScore: 42,
+					},
+				]}
+			/>,
+		);
+
+		const row = screen.getByRole("listitem");
+		expect(row).toHaveTextContent("coop.won");
+		expect(row).toHaveTextContent("42");
+		expect(row).not.toHaveTextContent("Kathleen");
+	});
+
 	it("links to every session of the game", () => {
 		renderWithTheme(<RecentSessionsCard gameId={3} dateFormat="yy-MM-dd" sessions={[]} />);
 
