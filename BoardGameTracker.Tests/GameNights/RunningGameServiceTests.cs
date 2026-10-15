@@ -265,6 +265,31 @@ public class RunningGameServiceTests
     }
 
     [Fact]
+    public async Task Finish_ShouldPassTheTeamResultOn_WhenCoop()
+    {
+        var runningGame = CreateRunningGame(Now.AddMinutes(-37));
+        _runningGameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(runningGame);
+        _sessionServiceMock
+            .Setup(x => x.CreateFromCommand(It.IsAny<CreateSessionCommand>()))
+            .ReturnsAsync(new Session(9, runningGame.Start, Now, string.Empty));
+
+        await _service.Finish(12, new FinishRunningGameCommand
+        {
+            PlayerSessions = [new CreatePlayerSessionCommand { PlayerId = 1 }],
+            IsCoop = true,
+            TeamWon = false,
+            TeamScore = 14,
+        });
+
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _runningGameRepositoryMock.Verify(x => x.DeleteAsync(12), Times.Once);
+        _sessionServiceMock.Verify(x => x.CreateFromCommand(It.Is<CreateSessionCommand>(c => c.IsCoop && c.TeamWon == false && c.TeamScore == 14)), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task Finish_ShouldCountAtLeastOneMinute_WhenFinishedRightAway()
     {
         var runningGame = CreateRunningGame(Now.AddSeconds(-10));

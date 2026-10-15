@@ -23,6 +23,8 @@ public class GameDto
     public int? BggId { get; set; }
     public GameState State { get; set; }
     public bool HasScoring { get; set; }
+    public bool HasCoopMode { get; set; }
+    public bool CoopByDefault { get; set; }
     public decimal? BuyingPrice { get; set; }
     public decimal? SoldPrice { get; set; }
     public DateTime? AdditionDate { get; set; }

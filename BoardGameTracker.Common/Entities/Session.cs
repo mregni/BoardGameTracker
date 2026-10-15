@@ -7,6 +7,9 @@ public class Session : HasId
 {
     public string Comment { get; private set; }
     public int GameId { get; private set; }
+    public bool IsCoop { get; private set; }
+    public bool? TeamWon { get; private set; }
+    public double? TeamScore { get; private set; }
 
     private DateTime _start;
     private DateTime _end;
@@ -105,7 +108,9 @@ public class Session : HasId
     {
         Guard.Against.NegativeOrZero(playerId);
 
-        var playerSession = new PlayerSession(playerId, score, firstPlay, won);
+        var playerSession = IsCoop
+            ? new PlayerSession(playerId, null, firstPlay, TeamWon == true)
+            : new PlayerSession(playerId, score, firstPlay, won);
         if (PlayerSessions.All(ps => ps.PlayerId != playerSession.PlayerId))
         {
             PlayerSessions.Add(playerSession);
@@ -119,6 +124,32 @@ public class Session : HasId
         {
             PlayerSessions.Remove(playerSession);
         }
+    }
+
+    public void MarkAsCoop(bool teamWon, double? teamScore)
+    {
+        IsCoop = true;
+        TeamWon = teamWon;
+        TeamScore = teamScore;
+        foreach (var playerSession in PlayerSessions)
+        {
+            playerSession.UpdateScore(null);
+            if (teamWon)
+            {
+                playerSession.MarkAsWinner();
+            }
+            else
+            {
+                playerSession.MarkAsLoser();
+            }
+        }
+    }
+
+    public void MarkAsCompetitive()
+    {
+        IsCoop = false;
+        TeamWon = null;
+        TeamScore = null;
     }
 
     public void AddImage(Image image)

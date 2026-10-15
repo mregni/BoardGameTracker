@@ -38,6 +38,8 @@ public class GameStatisticsService : IGameStatisticsService
             ExpansionCount = await _gameStatisticsRepository.GetExpansionCount(gameId, cancellationToken),
         };
 
+        (stats.CoopWinCount, stats.CoopLossCount) = await _gameStatisticsRepository.GetCoopResults(gameId, cancellationToken);
+
         var (mostWinPlayer, wins) = await _gameStatisticsRepository.GetMostWins(gameId, cancellationToken);
         if (mostWinPlayer != null)
         {

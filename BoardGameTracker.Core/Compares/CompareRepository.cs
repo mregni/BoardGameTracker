@@ -20,10 +20,10 @@ public class CompareRepository : ICompareRepository
 
     public async Task<CompareRow<int>> GetDirectWins(int playerOne, int playerTwo)
     {
-        var player1Wins = await SessionsTogether(playerOne, playerTwo)
+        var player1Wins = await OpposingSessions(playerOne, playerTwo)
             .CountAsync(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne && ps.Won));
 
-        var player2Wins = await SessionsTogether(playerOne, playerTwo)
+        var player2Wins = await OpposingSessions(playerOne, playerTwo)
             .CountAsync(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo && ps.Won));
 
         return new CompareRow<int>(player1Wins, player2Wins);
@@ -31,7 +31,7 @@ public class CompareRepository : ICompareRepository
 
     public async Task<CompareRow<MostWonGame?>> GetMostWonGame(int playerOne, int playerTwo)
     {
-        var player1Game = await SessionsTogether(playerOne, playerTwo)
+        var player1Game = await OpposingSessions(playerOne, playerTwo)
             .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne && ps.Won))
             .GroupBy(s => s.GameId)
             .OrderByDescending(g => g.Count())
@@ -42,7 +42,7 @@ public class CompareRepository : ICompareRepository
             })
             .FirstOrDefaultAsync();
 
-        var player2Game = await SessionsTogether(playerOne, playerTwo)
+        var player2Game = await OpposingSessions(playerOne, playerTwo)
             .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo && ps.Won))
             .GroupBy(s => s.GameId)
             .OrderByDescending(g => g.Count())
@@ -89,7 +89,7 @@ public class CompareRepository : ICompareRepository
 
     public async Task<LastWonGame?> GetLastWonGame(int playerOne, int playerTwo)
     {
-        var lastSession = await SessionsTogether(playerOne, playerTwo)
+        var lastSession = await OpposingSessions(playerOne, playerTwo)
             .Include(s => s.PlayerSessions)
             .OrderByDescending(s => s.Start)
             .FirstOrDefaultAsync();
@@ -195,5 +195,10 @@ public class CompareRepository : ICompareRepository
     private IQueryable<Session> SessionsTogether(int playerOne, int playerTwo)
     {
         return _context.Sessions.WithSpecification(new SessionsWithBothPlayersSpec(playerOne, playerTwo));
+    }
+
+    private IQueryable<Session> OpposingSessions(int playerOne, int playerTwo)
+    {
+        return SessionsTogether(playerOne, playerTwo).Where(s => !s.IsCoop);
     }
 }
