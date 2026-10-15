@@ -101,11 +101,11 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 	const handleValueChange = useCallback(
 		(value: string) => {
 			const originalItem = items.find((item) => item.value.toString() === value);
-			const next = originalItem ? originalItem.value : value;
+			if (!originalItem) return;
 			if (field) {
-				field.handleChange(next);
+				field.handleChange(originalItem.value);
 			} else {
-				onValueChange?.(next);
+				onValueChange?.(originalItem.value);
 			}
 		},
 		[field, onValueChange, items],
