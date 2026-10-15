@@ -27,8 +27,13 @@ public class ChangeDetectionController : ControllerBase
     [ProducesResponseType<ChangeDetectionConnectionTestDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> TestConnection(CancellationToken cancellationToken)
     {
-        var (ok, version) = await _changeDetectionClient.TestConnectionAsync(cancellationToken);
-        return Ok(new ChangeDetectionConnectionTestDto { Ok = ok, Version = version });
+        var (status, version) = await _changeDetectionClient.TestConnectionAsync(cancellationToken);
+        return Ok(new ChangeDetectionConnectionTestDto
+        {
+            Ok = status == ChangeDetectionStatus.Ok,
+            Status = status,
+            Version = version
+        });
     }
 
     [HttpGet("watch/{watchId}")]

@@ -432,7 +432,13 @@
 		"test": {
 			"button": "Verbinding testen",
 			"success": "Verbonden met changedetection.io {{version}}",
-			"failed": "Kon geen verbinding maken met changedetection.io, controleer de URL en API-sleutel"
+			"failed": "Kon geen verbinding maken met changedetection.io, controleer de URL en API-sleutel",
+			"reason": {
+				"unauthorized": "changedetection.io heeft de API-sleutel geweigerd",
+				"unreachable": "Kon changedetection.io niet bereiken op deze URL",
+				"misconfigured": "De basis-URL of API-sleutel is ongeldig",
+				"notConfigured": "Sla eerst een basis-URL en API-sleutel op"
+			}
 		}
 	}
 }

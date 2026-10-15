@@ -38,7 +38,9 @@ export const BggSettings = withForm({
 				if (result.ok) {
 					toast.success(t("changedetection.test.success", { version: result.version ?? "" }));
 				} else {
-					toast.error(t("changedetection.test.failed"));
+					toast.error(t("changedetection.test.failed"), {
+						description: t(`changedetection.test.reason.${result.status}`),
+					});
 				}
 			},
 			onError: () => toast.error(t("changedetection.test.failed")),

@@ -78,6 +78,11 @@ public class SettingsService : ISettingsService
         var publicUrl = ValidateOptionalHttpUrl(model.PublicUrl, Constants.Errors.SettingsInvalidPublicUrl);
         var changeDetectionBaseUrl = ValidateOptionalHttpUrl(model.ChangeDetectionBaseUrl,
             Constants.Errors.ChangeDetectionInvalidBaseUrl);
+        if (changeDetectionBaseUrl.Length > 0 && HasUserInfo(changeDetectionBaseUrl))
+        {
+            throw new ValidationException(Constants.Errors.ChangeDetectionInvalidBaseUrl);
+        }
+
         if (changeDetectionBaseUrl.Length > 0 && !SecureUrlPolicy.IsAcceptable(changeDetectionBaseUrl))
         {
             throw new ValidationException(Constants.Errors.ChangeDetectionInsecureBaseUrl);
@@ -107,6 +112,9 @@ public class SettingsService : ISettingsService
 
         return await GetSettingsAsync();
     }
+
+    private static bool HasUserInfo(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.UserInfo.Length > 0;
 
     private static string ValidateOptionalHttpUrl(string? value, string errorKey)
     {

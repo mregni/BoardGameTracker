@@ -1,9 +1,23 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useAppForm } from "@/hooks/form";
 import type { BggConfigStatus, ChangeDetectionConfigStatus } from "@/models";
 import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { BggSettings } from "./BggSettings";
+
+const { toastSuccess, toastError, testConnectionCall } = vi.hoisted(() => ({
+	toastSuccess: vi.fn(),
+	toastError: vi.fn(),
+	testConnectionCall: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+	toast: { success: toastSuccess, error: toastError },
+}));
+
+vi.mock("@/services/changeDetectionService", () => ({
+	testChangeDetectionConnectionCall: testConnectionCall,
+}));
 
 const createBggStatus = (overrides: Partial<BggConfigStatus> = {}): BggConfigStatus => ({
 	isConfigured: false,
@@ -189,6 +203,47 @@ describe("BggSettings", () => {
 				<Harness bggStatus={createBggStatus({ isConfigured: false })} disabled />,
 			);
 			expect(container.querySelector('input[type="password"]')).toBeDisabled();
+		});
+	});
+
+	describe("changedetection.io connection test", () => {
+		beforeEach(() => {
+			vi.clearAllMocks();
+		});
+
+		it("should report the instance version when the connection works", async () => {
+			const user = userEvent.setup();
+			testConnectionCall.mockResolvedValue({ ok: true, status: "ok", version: "0.50.1" });
+			renderWithProviders(<Harness bggStatus={createBggStatus()} changeDetectionStatus={cdConfigured} />);
+
+			await user.click(screen.getByRole("button", { name: "changedetection.test.button" }));
+
+			await vi.waitFor(() => expect(toastSuccess).toHaveBeenCalledWith("changedetection.test.success"));
+			expect(toastError).not.toHaveBeenCalled();
+		});
+
+		it("should explain why the connection failed", async () => {
+			const user = userEvent.setup();
+			testConnectionCall.mockResolvedValue({ ok: false, status: "unauthorized", version: null });
+			renderWithProviders(<Harness bggStatus={createBggStatus()} changeDetectionStatus={cdConfigured} />);
+
+			await user.click(screen.getByRole("button", { name: "changedetection.test.button" }));
+
+			await vi.waitFor(() =>
+				expect(toastError).toHaveBeenCalledWith("changedetection.test.failed", {
+					description: "changedetection.test.reason.unauthorized",
+				}),
+			);
+		});
+
+		it("should report a failure when the request itself fails", async () => {
+			const user = userEvent.setup();
+			testConnectionCall.mockRejectedValue(new Error("Network Error"));
+			renderWithProviders(<Harness bggStatus={createBggStatus()} changeDetectionStatus={cdConfigured} />);
+
+			await user.click(screen.getByRole("button", { name: "changedetection.test.button" }));
+
+			await vi.waitFor(() => expect(toastError).toHaveBeenCalledWith("changedetection.test.failed"));
 		});
 	});
 });

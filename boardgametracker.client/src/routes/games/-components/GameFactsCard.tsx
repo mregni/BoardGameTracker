@@ -16,6 +16,7 @@ import type { Game, GamePrice } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { RoundDecimal } from "@/utils/numberUtils";
 import { formatPrice } from "@/utils/priceUtils";
+import { LivePrice } from "./LivePrice";
 import { PriceRefreshButton } from "./PriceRefreshButton";
 
 const formatMinMax = (min: number | null, max: number | null): string | null => {
@@ -135,9 +136,7 @@ export const GameFactsCard = (props: Props) => {
 			)}
 			{game.changeDetectionWatchId && (
 				<FactRow icon={Target} label={t("game:current-price.title")}>
-					{price?.available && price.price != null
-						? formatPrice(price.price, price.currency ?? currency, uiLanguage)
-						: "-"}
+					<LivePrice livePrice={price} currency={currency} uiLanguage={uiLanguage} />
 					{onRefreshPrice && <PriceRefreshButton onRefresh={onRefreshPrice} isRefreshing={!!isRefreshingPrice} />}
 				</FactRow>
 			)}

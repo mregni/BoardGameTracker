@@ -116,6 +116,30 @@ describe("GameFactsCard", () => {
 			expect(onRefreshPrice).toHaveBeenCalledTimes(1);
 		});
 
+		it("should flag why the current price is unavailable instead of a bare dash", () => {
+			renderWithTheme(
+				<GameFactsCard
+					{...defaultProps}
+					game={createGame({ changeDetectionWatchId: "e0808154-28da-4b85-9a71-24a409e694f1" })}
+					price={{ gameId: 3, available: false, status: "unauthorized", price: null } as never}
+				/>,
+			);
+
+			expect(screen.getByRole("img", { name: "game:price.unavailable.unauthorized" })).toHaveTextContent("!");
+		});
+
+		it("should say the price is pending while the first check has not run", () => {
+			renderWithTheme(
+				<GameFactsCard
+					{...defaultProps}
+					game={createGame({ changeDetectionWatchId: "e0808154-28da-4b85-9a71-24a409e694f1" })}
+					price={{ gameId: 3, available: false, status: "pending", price: null } as never}
+				/>,
+			);
+
+			expect(screen.getByTitle("games:tracked-pending")).toHaveTextContent("-");
+		});
+
 		it("should not show a current price for a game without a price watch", () => {
 			renderWithTheme(<GameFactsCard {...defaultProps} />);
 

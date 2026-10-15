@@ -432,7 +432,13 @@
 		"test": {
 			"button": "Test connection",
 			"success": "Connected to changedetection.io {{version}}",
-			"failed": "Couldn't connect to changedetection.io, check the URL and API key"
+			"failed": "Couldn't connect to changedetection.io, check the URL and API key",
+			"reason": {
+				"unauthorized": "changedetection.io rejected the API key",
+				"unreachable": "Couldn't reach changedetection.io at this URL",
+				"misconfigured": "The base URL or API key is not valid",
+				"notConfigured": "Save a base URL and API key first"
+			}
 		}
 	}
 }

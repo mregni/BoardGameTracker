@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -20,6 +19,7 @@ public class ChangeDetectionClient : IChangeDetectionClient
     private static readonly TimeSpan RecheckThrottle = TimeSpan.FromMinutes(10);
     private const string CacheKeyPrefix = "changedetection:watch:";
     private const string RecheckKeyPrefix = "changedetection:recheck:";
+    private const double MaxUnixSeconds = 253402300799;
 
     private const int MaxConcurrentFetches = 4;
     private static readonly SemaphoreSlim FetchGate = new(MaxConcurrentFetches, MaxConcurrentFetches);
@@ -162,7 +162,7 @@ public class ChangeDetectionClient : IChangeDetectionClient
 
         return await GuardedAsync(async () =>
         {
-            var response = await client.PutAsJsonAsync($"api/v1/watch/{watchId}", new { url, title }, cancellationToken);
+            using var response = await client.PutAsJsonAsync($"api/v1/watch/{watchId}", new { url, title }, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 return MapStatus(response.StatusCode);
@@ -195,7 +195,7 @@ public class ChangeDetectionClient : IChangeDetectionClient
                 time_between_check = new { hours = 24 }
             };
 
-            var response = await client.PostAsJsonAsync("api/v1/watch", payload, cancellationToken);
+            using var response = await client.PostAsJsonAsync("api/v1/watch", payload, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -216,26 +216,27 @@ public class ChangeDetectionClient : IChangeDetectionClient
         }, (ChangeDetectionStatus.Unreachable, (string?)null), "create watch", cancellationToken);
     }
 
-    public async Task<(bool Ok, string? Version)> TestConnectionAsync(CancellationToken cancellationToken = default)
+    public async Task<(ChangeDetectionStatus Status, string? Version)> TestConnectionAsync(CancellationToken cancellationToken = default)
     {
-        var (client, _) = await TryCreateClientAsync();
+        var (client, status) = await TryCreateClientAsync();
         if (client == null)
         {
-            return (false, null);
+            return (status, null);
         }
 
         return await GuardedAsync(async () =>
         {
-            var response = await client.GetAsync("api/v1/systeminfo", cancellationToken);
+            using var response = await client.GetAsync("api/v1/systeminfo", cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
-                return (false, (string?)null);
+                _logger.LogWarning("changedetection.io connection test returned {StatusCode}", response.StatusCode);
+                return (MapStatus(response.StatusCode), (string?)null);
             }
 
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             var info = JsonSerializer.Deserialize<JsonElement>(body);
-            return (true, GetString(info, "version"));
-        }, (false, (string?)null), "connection test", cancellationToken);
+            return (ChangeDetectionStatus.Ok, GetString(info, "version"));
+        }, (ChangeDetectionStatus.Unreachable, (string?)null), "connection test", cancellationToken);
     }
 
     private bool TryGetCached(string watchId, out ChangeDetectionResult result)
@@ -269,7 +270,7 @@ public class ChangeDetectionClient : IChangeDetectionClient
         if (!Uri.TryCreate(baseUrl.Trim().TrimEnd('/') + "/", UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
-            _logger.LogWarning("changedetection.io base URL is invalid: {BaseUrl}", baseUrl);
+            _logger.LogWarning("changedetection.io base URL is not a valid http(s) URL");
             return null;
         }
 
@@ -321,7 +322,7 @@ public class ChangeDetectionClient : IChangeDetectionClient
             var result = watch.Value.TryGetProperty("restock", out var restock) ? ParseRestock(restock) : null;
             if (result == null)
             {
-                var response = await client.GetAsync($"api/v1/watch/{watchId}/history/latest", cancellationToken);
+                using var response = await client.GetAsync($"api/v1/watch/{watchId}/history/latest", cancellationToken);
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogDebug("changedetection.io returned {StatusCode} for the latest snapshot of watch {WatchId}",
@@ -334,6 +335,10 @@ public class ChangeDetectionClient : IChangeDetectionClient
                 }
 
                 result = ChangeDetectionSnapshotParser.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+                if (result.Status == ChangeDetectionStatus.ParseError)
+                {
+                    _logger.LogWarning("changedetection.io snapshot for watch {WatchId} is not a restock snapshot", watchId);
+                }
             }
 
             ApplyWatchMetadata(result, watch.Value);
@@ -348,7 +353,7 @@ public class ChangeDetectionClient : IChangeDetectionClient
         CancellationToken cancellationToken)
     {
         var path = $"api/v1/watch/{watchId}";
-        var response = await client.GetAsync(path, cancellationToken);
+        using var response = await client.GetAsync(path, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             var status = MapStatus(response.StatusCode);
@@ -388,7 +393,7 @@ public class ChangeDetectionClient : IChangeDetectionClient
             return false;
         }
 
-        var response = await client.GetAsync($"api/v1/watch/{watchId}?recheck=1", cancellationToken);
+        using var response = await client.GetAsync($"api/v1/watch/{watchId}?recheck=1", cancellationToken);
         if (response.IsSuccessStatusCode)
         {
             return true;
@@ -444,14 +449,13 @@ public class ChangeDetectionClient : IChangeDetectionClient
         decimal? price = null;
         if (restock.TryGetProperty("price", out var priceElement))
         {
-            if (priceElement.ValueKind == JsonValueKind.Number && priceElement.TryGetDecimal(out var numeric))
+            if (priceElement.ValueKind == JsonValueKind.Number && priceElement.TryGetDecimal(out var numeric) && numeric >= 0)
             {
                 price = numeric;
             }
-            else if (priceElement.ValueKind == JsonValueKind.String &&
-                     decimal.TryParse(priceElement.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
+            else if (priceElement.ValueKind == JsonValueKind.String)
             {
-                price = parsed;
+                price = ChangeDetectionSnapshotParser.ParsePrice(priceElement.GetString());
             }
         }
 
@@ -529,7 +533,8 @@ public class ChangeDetectionClient : IChangeDetectionClient
             !element.TryGetProperty(property, out var value) ||
             value.ValueKind != JsonValueKind.Number ||
             !value.TryGetDouble(out var seconds) ||
-            seconds <= 0)
+            seconds <= 0 ||
+            seconds > MaxUnixSeconds)
         {
             return null;
         }
