@@ -1,4 +1,3 @@
-using System;
 using BoardGameTracker.Common.Entities;
 using FluentAssertions;
 using Xunit;

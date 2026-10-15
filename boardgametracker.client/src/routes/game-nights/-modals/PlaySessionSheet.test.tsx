@@ -1,12 +1,16 @@
 import { addMinutes } from "date-fns";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Game, GameNight, Location, Player, RunningGame, Settings } from "@/models";
-import { fireEvent, renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
+import { act, renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
 import { PlaySessionSheet } from "./PlaySessionSheet";
 
 Element.prototype.hasPointerCapture = () => false;
 Element.prototype.releasePointerCapture = () => {};
 Element.prototype.scrollIntoView = () => {};
+
+vi.mock("@/services/queries/settings", () => ({
+	getSettings: () => ({ queryKey: ["settings"], queryFn: async () => ({}) }),
+}));
 
 vi.mock("@/routes/players/-modals/CreatePlayerModal", () => ({
 	CreatePlayerModal: () => null,
@@ -24,7 +28,9 @@ const locations = [{ id: 5, name: "Thuis" }] as unknown as Location[];
 const gameNight = { id: 4, locationId: 5, location: { id: 5, name: "Thuis" } } as unknown as GameNight;
 const settings = { timeFormat: "HH:mm", dateFormat: "dd-MM-yyyy", uiLanguage: "en-us" } as Settings;
 
-const startTime = () => document.querySelector<HTMLInputElement>('input[type="time"]')?.value;
+const startTimeSegment = (name: RegExp) =>
+	within(screen.getByRole("group", { name: "common:time" })).getByRole("spinbutton", { name });
+const startTime = () => `${startTimeSegment(/hour/i).textContent}:${startTimeSegment(/minute/i).textContent}`;
 
 const renderSheet = (runningGame: RunningGame | null) => {
 	const onSave = vi.fn().mockResolvedValue(undefined);
@@ -139,9 +145,10 @@ describe("PlaySessionSheet", () => {
 			const user = userEvent.setup();
 			renderSheet(null);
 
-			fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, {
-				target: { value: "07:00" },
-			});
+			act(() => startTimeSegment(/hour/i).focus());
+			await user.keyboard("07");
+			act(() => startTimeSegment(/minute/i).focus());
+			await user.keyboard("00");
 			await user.click(screen.getByRole("combobox", { name: "new.game.label" }));
 			await user.click(await screen.findByRole("option", { name: "Brass" }));
 
