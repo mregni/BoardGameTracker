@@ -53,6 +53,7 @@ function RouteComponent() {
 					comment={session.comment}
 					locationId={session.locationId}
 					playerSessions={session.playerSessions}
+					coop={{ isCoop: session.isCoop, teamWon: session.teamWon, teamScore: session.teamScore }}
 					expansions={session.expansions}
 					buttonText={t("save-update")}
 					onClick={save}

@@ -4416,6 +4416,8 @@ export interface components {
             bggId?: number | null;
             state?: components["schemas"]["GameState"];
             hasScoring?: boolean;
+            hasCoopMode?: boolean;
+            coopByDefault?: boolean;
             /** Format: double */
             buyingPrice?: number | null;
             /** Format: double */
@@ -4497,6 +4499,10 @@ export interface components {
             locationId?: number | null;
             /** Format: int32 */
             gameNightId?: number | null;
+            isCoop?: boolean;
+            teamWon?: boolean | null;
+            /** Format: double */
+            teamScore?: number | null;
             playerSessions?: components["schemas"]["CreatePlayerSessionCommand"][];
             expansionIds?: number[];
         };
@@ -4574,6 +4580,10 @@ export interface components {
         };
         FinishRunningGameCommand: {
             playerSessions: components["schemas"]["CreatePlayerSessionCommand"][];
+            isCoop: boolean;
+            teamWon: boolean | null;
+            /** Format: double */
+            teamScore: number | null;
             /** Format: date-time */
             start: string | null;
             /** Format: int32 */
@@ -4622,6 +4632,8 @@ export interface components {
             bggId: number | null;
             state: components["schemas"]["GameState"];
             hasScoring: boolean;
+            hasCoopMode: boolean;
+            coopByDefault: boolean;
             /** Format: double */
             buyingPrice: number | null;
             /** Format: double */
@@ -4739,6 +4751,10 @@ export interface components {
             lastPlayed: string | null;
             /** Format: int32 */
             expansionCount: number | null;
+            /** Format: int32 */
+            coopWinCount: number;
+            /** Format: int32 */
+            coopLossCount: number;
         };
         GameStatisticsResponse: {
             gameStats: components["schemas"]["GameStatistics"];
@@ -5027,6 +5043,10 @@ export interface components {
             totalPlayedTime: number;
             /** Format: int32 */
             distinctGameCount: number;
+            /** Format: int32 */
+            coopWinCount: number;
+            /** Format: int32 */
+            coopLossCount: number;
             mostPlayedGames: components["schemas"]["MostPlayedGame"][];
         };
         PreferredGame: {
@@ -5092,6 +5112,8 @@ export interface components {
             /** Format: int32 */
             winnerId: number | null;
             winnerName: string | null;
+            isCoop: boolean;
+            teamWon: boolean | null;
         };
         RecentGameDto: {
             /** Format: int32 */
@@ -5157,6 +5179,10 @@ export interface components {
             comment: string;
             /** Format: int32 */
             gameId: number;
+            isCoop: boolean;
+            teamWon: boolean | null;
+            /** Format: double */
+            teamScore: number | null;
             /** Format: date-time */
             start: string;
             /** Format: date-time */
@@ -5277,6 +5303,8 @@ export interface components {
             bggId?: number | null;
             state?: components["schemas"]["GameState"];
             hasScoring?: boolean;
+            hasCoopMode?: boolean;
+            coopByDefault?: boolean;
             /** Format: double */
             buyingPrice?: number | null;
             /** Format: double */
@@ -5383,6 +5411,10 @@ export interface components {
             locationId?: number | null;
             /** Format: int32 */
             gameNightId?: number | null;
+            isCoop?: boolean;
+            teamWon?: boolean | null;
+            /** Format: double */
+            teamScore?: number | null;
             playerSessions?: components["schemas"]["CreatePlayerSessionCommand"][];
             expansionIds?: number[];
             /** Format: int32 */

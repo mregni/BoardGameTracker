@@ -54,6 +54,13 @@ export const CreateSessionSchema = z.object({
 	}),
 	expansionIds: z.array(z.number()).optional(),
 	gameNightId: z.number().int().positive().nullable().optional(),
+	isCoop: z.boolean(),
+	teamWon: z.boolean().nullable(),
+	teamScore: z
+		.number({ error: "player-session:score.required" })
+		.nullable()
+		.optional()
+		.transform((value) => value ?? null),
 });
 
 export type CreateSession = z.infer<typeof CreateSessionSchema>;

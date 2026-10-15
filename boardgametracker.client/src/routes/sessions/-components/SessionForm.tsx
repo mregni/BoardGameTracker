@@ -15,11 +15,13 @@ import {
 	type Expansion,
 	type Game,
 	type PlayerSession,
+	type Session,
 } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { useBack } from "../../-hooks/useBack";
 import { useSessionForm } from "../-hooks/useSessionForm";
 import { useSessionFormState } from "../-hooks/useSessionFormState";
+import { applyPlayMode, coopDefaults } from "../-utils/coopSession";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
 import { SessionFormFields } from "./SessionFormFields";
 
@@ -31,6 +33,7 @@ interface Props {
 	start?: Date;
 	expansions?: Expansion[];
 	playerSessions?: Pick<PlayerSession, "playerId" | "won" | "firstPlay" | "score">[];
+	coop?: Pick<Session, "isCoop" | "teamWon" | "teamScore">;
 	onClick: (data: CreateSession) => Promise<void>;
 	buttonText: string;
 	title: string;
@@ -47,6 +50,7 @@ export const SessionForm = (props: Props) => {
 		start,
 		playerSessions = [],
 		expansions = [],
+		coop,
 		onClick,
 		buttonText,
 		title,
@@ -73,11 +77,11 @@ export const SessionForm = (props: Props) => {
 			comment: comment ?? "",
 			start: initialStart,
 			playerSessions: initialPlayers,
+			...(coop ?? coopDefaults(game)),
 		},
 		onSubmit: async ({ value }) => {
 			const validatedData = CreateSessionSchema.parse({
-				...value,
-				playerSessions: value.playerSessions.map((x) => (sessionState.hasScoring ? x : { ...x, score: null })),
+				...applyPlayMode(value, sessionState.hasScoring),
 				expansionIds: sessionState.selectedExpansionIds,
 			});
 			await onClick(validatedData);

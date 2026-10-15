@@ -5239,6 +5239,12 @@
           "hasScoring": {
             "type": "boolean"
           },
+          "hasCoopMode": {
+            "type": "boolean"
+          },
+          "coopByDefault": {
+            "type": "boolean"
+          },
           "buyingPrice": {
             "maximum": 1.7976931348623157E+308,
             "minimum": 0,
@@ -5517,6 +5523,18 @@
             "format": "int32",
             "nullable": true
           },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "playerSessions": {
             "type": "array",
             "items": {
@@ -5751,6 +5769,18 @@
               "$ref": "#/components/schemas/CreatePlayerSessionCommand"
             }
           },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "start": {
             "type": "string",
             "format": "date-time",
@@ -5890,6 +5920,12 @@
             "$ref": "#/components/schemas/GameState"
           },
           "hasScoring": {
+            "type": "boolean"
+          },
+          "hasCoopMode": {
+            "type": "boolean"
+          },
+          "coopByDefault": {
             "type": "boolean"
           },
           "buyingPrice": {
@@ -6236,6 +6272,14 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "coopWinCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coopLossCount": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -7054,6 +7098,14 @@
             "type": "integer",
             "format": "int32"
           },
+          "coopWinCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coopLossCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "mostPlayedGames": {
             "type": "array",
             "items": {
@@ -7234,6 +7286,13 @@
           "winnerName": {
             "type": "string",
             "nullable": true
+          },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -7413,6 +7472,18 @@
           "gameId": {
             "type": "integer",
             "format": "int32"
+          },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
           },
           "start": {
             "type": "string",
@@ -7802,6 +7873,12 @@
           "hasScoring": {
             "type": "boolean"
           },
+          "hasCoopMode": {
+            "type": "boolean"
+          },
+          "coopByDefault": {
+            "type": "boolean"
+          },
           "buyingPrice": {
             "maximum": 1.7976931348623157E+308,
             "minimum": 0,
@@ -8160,6 +8237,18 @@
             "minimum": 1,
             "type": "integer",
             "format": "int32",
+            "nullable": true
+          },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
             "nullable": true
           },
           "playerSessions": {

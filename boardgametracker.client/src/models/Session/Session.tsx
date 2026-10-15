@@ -6,6 +6,9 @@ export interface Session {
 	id: number;
 	comment: string;
 	gameId: number;
+	isCoop: boolean;
+	teamWon: boolean | null;
+	teamScore: number | null;
 	start: Date;
 	end: Date;
 	minutes: number;

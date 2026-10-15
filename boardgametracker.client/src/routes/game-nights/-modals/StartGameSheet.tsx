@@ -43,6 +43,8 @@ export const StartGameSheet = (props: Props) => {
 		.map((id) => players.find((player) => player.id === id))
 		.filter((player): player is Player => player !== undefined);
 
+	const selectedGame = games.find((game) => game.id === gameId);
+
 	const handleStart = async () => {
 		if (gameId === null) return;
 		await onStart({ gameId, playerIds });
@@ -61,6 +63,11 @@ export const StartGameSheet = (props: Props) => {
 					label={t("play.start.game")}
 					placeholder={t("player-session:new.game.placeholder")}
 				/>
+				{selectedGame?.hasCoopMode && (
+					<BgtText size="2" color="gray">
+						{selectedGame.coopByDefault ? t("play.start.coop-default") : t("play.start.coop-optional")}
+					</BgtText>
+				)}
 				<div className="flex flex-col gap-2">
 					<BgtSelect
 						value={null}
