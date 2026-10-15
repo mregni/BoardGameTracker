@@ -53,6 +53,64 @@ public class GameNightPlayTests
     }
 
     [Fact]
+    public async Task DiscardingARunningGame_ShouldLeaveNoSessionAndNoRunningGame()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, gameId, hostId, _) = await CreateNightAsync(user);
+        var started = await user.PostAsJsonAsync($"/api/gamenight/{gameNightId}/running-games", new StartRunningGameCommand { GameId = gameId, PlayerIds = [hostId] });
+        var runningGame = (await started.Content.ReadFromJsonAsync<RunningGameDto>(IntegrationFixture.Json))!;
+
+        (await user.DeleteAsync($"/api/gamenight/running-games/{runningGame.Id}")).StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var detail = await GetDetailAsync(user, gameNightId);
+        detail.RunningGames.Should().BeEmpty();
+        detail.Sessions.Should().BeEmpty();
+        (await user.DeleteAsync($"/api/gamenight/running-games/{runningGame.Id}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var finishDiscarded = await user.PostAsJsonAsync($"/api/gamenight/running-games/{runningGame.Id}/finish", new FinishRunningGameCommand
+        {
+            PlayerSessions = [new CreatePlayerSessionCommand { PlayerId = hostId }],
+        });
+        finishDiscarded.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task LoggingAFinishedGame_ShouldAddASessionToTheNight()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, gameId, hostId, guestId) = await CreateNightAsync(user);
+
+        var logged = await LogAsync(user, gameNightId, gameId, DateTime.UtcNow.AddMinutes(-50), 45, (hostId, true), (guestId, false));
+
+        logged.GameNightId.Should().Be(gameNightId);
+        logged.Minutes.Should().Be(45);
+        var detail = await GetDetailAsync(user, gameNightId);
+        detail.Sessions.Should().ContainSingle(x => x.Id == logged.Id && x.PlayerSessions.Count == 2);
+        detail.GameNight.Summary.GamesPlayed.Should().Be(1);
+        detail.GameNight.Summary.TotalMinutes.Should().Be(45);
+    }
+
+    [Fact]
+    public async Task TheNightWinner_ShouldBeShared_WhenPlayersWonAsOften()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, gameId, hostId, guestId) = await CreateNightAsync(user);
+
+        await LogAsync(user, gameNightId, gameId, DateTime.UtcNow.AddHours(-2), 30, (hostId, true), (guestId, false));
+        await LogAsync(user, gameNightId, gameId, DateTime.UtcNow.AddHours(-1), 30, (hostId, false), (guestId, true));
+
+        var tied = (await GetDetailAsync(user, gameNightId)).GameNight.Summary;
+        tied.WinnerIds.Should().BeEquivalentTo([hostId, guestId]);
+        tied.MostWins.Should().Be(1);
+
+        await LogAsync(user, gameNightId, gameId, DateTime.UtcNow.AddMinutes(-40), 30, (hostId, false), (guestId, true));
+
+        var decided = (await GetDetailAsync(user, gameNightId)).GameNight.Summary;
+        decided.WinnerIds.Should().Equal(guestId);
+        decided.MostWins.Should().Be(2);
+        decided.GamesPlayed.Should().Be(3);
+    }
+
+    [Fact]
     public async Task DeletingTheNight_ShouldKeepItsSessions_AndDropItsRunningGames()
     {
         using var user = await _fixture.CreateClientAsAsync("user");
@@ -127,6 +185,20 @@ public class GameNightPlayTests
         var response = await user.GetAsync($"/api/gamenight/{gameNightId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
         return (await response.Content.ReadFromJsonAsync<GameNightDetailDto>(IntegrationFixture.Json))!;
+    }
+
+    private static async Task<SessionDto> LogAsync(HttpClient user, int gameNightId, int gameId, DateTime start, int minutes, params (int PlayerId, bool Won)[] players)
+    {
+        var response = await user.PostAsJsonAsync("/api/session", new CreateSessionCommand
+        {
+            GameId = gameId,
+            Start = start,
+            Minutes = minutes,
+            GameNightId = gameNightId,
+            PlayerSessions = players.Select(x => new CreatePlayerSessionCommand { PlayerId = x.PlayerId, Won = x.Won }).ToList(),
+        });
+        response.StatusCode.Should().Be(HttpStatusCode.Created, await response.Content.ReadAsStringAsync());
+        return (await response.Content.ReadFromJsonAsync<SessionDto>(IntegrationFixture.Json))!;
     }
 
     private static async Task<int> CreateAsync<TDto>(HttpClient user, string url, object command, Func<TDto, int> id)
