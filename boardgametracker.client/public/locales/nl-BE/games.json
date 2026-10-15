@@ -56,7 +56,9 @@
     "show-more": "Meer filters tonen",
     "show-less": "Minder filters tonen",
     "no-match": "Geen spellen gevonden voor de huidige filters.",
-    "clear": "Filters wissen"
+    "clear": "Filters wissen",
+    "state-any": "Status: alle",
+    "language-any": "Taal: alle"
   },
   "columns": {
     "title": "Titel",

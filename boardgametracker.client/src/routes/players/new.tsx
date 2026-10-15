@@ -7,9 +7,11 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtImageSelector, BgtInputField } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import { CreatePlayerSchema, type Player } from "@/models";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
+import { useGoBack } from "@/routes/-hooks/useGoBack";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { usePlayerModal } from "./-hooks/usePlayerModal";
@@ -22,6 +24,7 @@ function RouteComponent() {
 	const { t } = useTranslation(["player", "common"]);
 	const navigate = useNavigate();
 	const router = useRouter();
+	const goBack = useGoBack("/players");
 	const [image, setImage] = useState<File | undefined | null>(undefined);
 
 	const { savePlayer, uploadImage, isLoading } = usePlayerModal({});
@@ -58,8 +61,9 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageContent className="flex-1 items-center">
-				<BgtCard title={t("new.title")} className="w-full max-w-xl my-auto">
+			<BgtPageHeader backAction={goBack} backText={t("common:back")} header={t("new.title")} />
+			<BgtPageContent className="items-center">
+				<BgtCard className="w-full max-w-xl">
 					<p className="text-cancel mb-4">{t("new.description")}</p>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-row gap-3 mb-6">

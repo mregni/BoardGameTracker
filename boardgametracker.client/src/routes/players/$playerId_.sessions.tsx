@@ -18,6 +18,7 @@ import { getSettings } from "@/services/queries/settings";
 import { toDisplay } from "@/utils/dateUtils";
 import { playerIdParamSchema } from "@/utils/routeSchemas";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
+import { SessionCardList } from "../sessions/-components/SessionCardList";
 import { SessionCommentCell } from "../sessions/-components/SessionCommentCell";
 import { usePlayerSessionData } from "./-hooks/usePlayerSessionData";
 
@@ -162,11 +163,26 @@ function RouteComponent() {
 								}
 							/>
 							<BgtCard className="p-4">
-								<BgtDataTable
-									columns={columns}
-									data={sessions}
-									noDataMessage={t("no-data-yet")}
-									widths={["w-[70px]", "w-[100px]", "w-[75px]"]}
+								<div className="hidden md:block">
+									<BgtDataTable
+										columns={columns}
+										data={sessions}
+										noDataMessage={t("no-data-yet")}
+										widths={["w-[70px]", "w-[100px]", "w-[75px]"]}
+									/>
+								</div>
+								<SessionCardList
+									className="md:hidden"
+									sessions={sessions}
+									players={players}
+									games={games}
+									dateFormat={settings.dateFormat}
+									timeFormat={settings.timeFormat}
+									uiLanguage={settings.uiLanguage}
+									showGame
+									canWrite={canWrite}
+									onEdit={(sessionId) => navigate({ to: `/sessions/update/${sessionId}` })}
+									onDelete={setSessionToDelete}
 								/>
 								<BgtDeleteModal
 									open={sessionToDelete !== null}

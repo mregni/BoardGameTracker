@@ -118,6 +118,10 @@
       "description": {
         "label": "Game description"
       }
+    },
+    "bgg-missing": {
+      "description": "To search and import games from BoardGameGeek, add a BGG API key in Settings → Integrations or set the BGG_API_KEY environment variable.",
+      "link": "Open Settings → Integrations"
     }
   },
   "price": {

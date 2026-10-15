@@ -53,6 +53,7 @@ function RouteComponent() {
 					onClick={save}
 					disabled={isPending}
 					title={t("title-update")}
+					backTo={`/games/${session.gameId}/sessions`}
 				/>
 			)}
 		</BgtDataGuard>

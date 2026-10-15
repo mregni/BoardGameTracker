@@ -28,7 +28,15 @@ function RouteComponent() {
 		await saveGame(game);
 	};
 
-	return <GameForm buttonText={t("new.save")} title={t("new.manual.title")} onClick={save} disabled={isLoading} />;
+	return (
+		<GameForm
+			buttonText={t("new.save")}
+			title={t("new.manual.title")}
+			backTo="/games/add"
+			onClick={save}
+			disabled={isLoading}
+		/>
+	);
 }
 
 function WriteRouteComponent() {

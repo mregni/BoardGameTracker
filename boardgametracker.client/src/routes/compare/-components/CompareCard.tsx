@@ -39,8 +39,8 @@ const iconVariants = cva("", {
 const labelVariants = cva("text-xs tracking-wider mb-1", {
 	variants: {
 		color: {
-			red: "text-error/80",
-			blue: "text-blue-600/90",
+			red: "text-red-200",
+			blue: "text-blue-200",
 		},
 	},
 });

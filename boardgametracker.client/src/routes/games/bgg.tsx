@@ -1,5 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate, useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
@@ -8,9 +8,11 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtDatePicker, BgtInputField, BgtSelect, BgtSwitch } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import { BggSearchSchema, type Game, GameState } from "@/models";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
+import { useGoBack } from "@/routes/-hooks/useGoBack";
 import { getSettings } from "@/services/queries/settings";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -29,6 +31,7 @@ function RouteComponent() {
 	const { t } = useTranslation(["game", "common"]);
 	const navigate = useNavigate();
 	const router = useRouter();
+	const goBack = useGoBack("/games/add");
 
 	const onSuccess = useCallback(
 		(game: Game) => {
@@ -61,10 +64,15 @@ function RouteComponent() {
 		},
 	});
 
+	if (settings && !settings.bggStatus?.isConfigured) {
+		return <Navigate to="/games/add" replace />;
+	}
+
 	return (
 		<BgtPage>
-			<BgtPageContent className="flex-1 items-center">
-				<BgtCard title={t("new.title")} className="w-full max-w-xl my-auto">
+			<BgtPageHeader backAction={goBack} backText={t("common:back")} header={t("new.title")} />
+			<BgtPageContent className="items-center">
+				<BgtCard className="w-full max-w-xl">
 					<p className="text-cancel mb-4">{t("new.bgg-description")}</p>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-4 mb-6">

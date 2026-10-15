@@ -118,6 +118,10 @@
       "description": {
         "label": "Descripción del juego"
       }
+    },
+    "bgg-missing": {
+      "description": "Para buscar e importar juegos de BoardGameGeek, añade una clave API de BGG en Ajustes → Integraciones o define la variable de entorno BGG_API_KEY.",
+      "link": "Abrir Ajustes → Integraciones"
     }
   },
   "price": {

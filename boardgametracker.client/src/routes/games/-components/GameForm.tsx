@@ -7,6 +7,7 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtImageSelector, BgtSwitch, BgtTextArea } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import type { Game, GamePrice } from "@/models";
 import { type CreateGame, CreateGameSchema } from "@/models/Games/CreateGame";
@@ -15,6 +16,7 @@ import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { zodValidator } from "@/utils/zodValidator";
+import { useGoBack } from "../../-hooks/useGoBack";
 import { useGameForm } from "../-hooks/useGameForm";
 import { useImageUpload } from "../-hooks/useImageUpload";
 import { gameFormOpts } from "../-utils/gameFormOpts";
@@ -30,13 +32,15 @@ interface Props {
 	game?: Game;
 	livePrice?: GamePrice;
 	title: string;
+	backTo: string;
 }
 
 export const GameForm = (props: Props) => {
-	const { onClick, buttonText, disabled, game, livePrice, title } = props;
+	const { onClick, buttonText, disabled, game, livePrice, title, backTo } = props;
 	const { settings } = useGameForm();
 	const { t } = useTranslation(["game", "common"]);
 	const router = useRouter();
+	const goBack = useGoBack(backTo);
 	const { poster, setPoster, uploadPoster } = useImageUpload(game?.image);
 
 	const form = useAppForm({
@@ -76,8 +80,9 @@ export const GameForm = (props: Props) => {
 
 	return (
 		<BgtPage>
-			<BgtPageContent className="flex-1 items-center">
-				<BgtCard title={title} className="w-full max-w-4xl my-auto">
+			<BgtPageHeader backAction={goBack} backText={t("common:back")} header={title} />
+			<BgtPageContent className="items-center">
+				<BgtCard className="w-full max-w-4xl">
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-4 w-full">
 							<div className="flex flex-row gap-3">

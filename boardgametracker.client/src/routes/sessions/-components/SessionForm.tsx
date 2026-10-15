@@ -9,6 +9,7 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtTextArea } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import {
 	type CreateSession,
@@ -20,6 +21,7 @@ import {
 } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
+import { useGoBack } from "../../-hooks/useGoBack";
 import { useSessionForm } from "../-hooks/useSessionForm";
 import { useSessionFormState } from "../-hooks/useSessionFormState";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
@@ -38,6 +40,7 @@ interface Props {
 	onClick: (data: CreateSession) => Promise<void>;
 	buttonText: string;
 	title: string;
+	backTo: string;
 	disabled: boolean;
 }
 
@@ -53,11 +56,13 @@ export const SessionForm = (props: Props) => {
 		onClick,
 		buttonText,
 		title,
+		backTo,
 		disabled,
 	} = props;
 
 	const { t } = useTranslation();
 	const router = useRouter();
+	const goBack = useGoBack(backTo);
 	const { locations, games, players: playerList, suggestions } = useSessionForm();
 	const isNewSession = locationId === undefined;
 	const [initialStart] = useState(() => start ?? addMinutes(new Date(), -(minutes ?? 30)));
@@ -139,8 +144,9 @@ export const SessionForm = (props: Props) => {
 
 	return (
 		<BgtPage>
-			<BgtPageContent className="flex-1 items-center">
-				<BgtCard title={title} className="w-full max-w-3xl my-auto">
+			<BgtPageHeader backAction={goBack} backText={t("back")} header={title} />
+			<BgtPageContent className="items-center">
+				<BgtCard className="w-full max-w-3xl">
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-4 w-full">
 							<SessionFormFields

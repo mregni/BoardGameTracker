@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import Home from "@/assets/icons/home.svg?react";
+import TrendUp from "@/assets/icons/trend-up.svg?react";
 import Users from "@/assets/icons/users.svg?react";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -104,7 +104,7 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageHeader header={t("title")} icon={Home} />
+			<BgtPageHeader header={t("title")} icon={TrendUp} />
 			<BgtPageContent isLoading={isLoading} data={{ players }} centered={players?.length < 2}>
 				{({ players }) => {
 					if (!actualCompare || !settings || !playerOne || !playerTwo) {

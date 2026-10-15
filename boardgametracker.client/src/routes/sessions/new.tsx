@@ -55,6 +55,7 @@ function RouteComponent() {
 			onClick={save}
 			disabled={isPending}
 			title={t("title-new")}
+			backTo="/"
 		/>
 	);
 }

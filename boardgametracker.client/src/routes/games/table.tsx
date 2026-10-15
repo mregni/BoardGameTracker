@@ -137,14 +137,14 @@ function RouteComponent() {
 
 	const stateItems = useMemo(
 		() => [
-			{ value: ANY, label: t("games:filters.any") },
+			{ value: ANY, label: t("games:filters.state-any") },
 			...Object.values(GameState).map((value) => ({ value, label: t(getItemStateTranslationKey(value, false)) })),
 		],
 		[t],
 	);
 	const languageItems = useMemo(
 		() => [
-			{ value: ANY, label: t("games:filters.any") },
+			{ value: ANY, label: t("games:filters.language-any") },
 			{ value: LANGUAGE_NONE, label: t("game:language.none") },
 			{ value: LANGUAGE_INDEPENDENT, label: t("game:language-independent") },
 			...COMMON_LANGUAGE_CODES.map((code) => ({ value: code, label: getLanguageName(code, i18n.language) })),

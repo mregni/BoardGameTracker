@@ -28,8 +28,11 @@ const players = [
 	{ id: 4, name: "Anna", image: null },
 ] as unknown as Player[];
 
+const router = vi.hoisted(() => ({ back: vi.fn(), navigate: vi.fn() }));
+
 vi.mock("@tanstack/react-router", () => ({
-	useRouter: () => ({ history: { back: vi.fn() } }),
+	useRouter: () => ({ history: { back: router.back, canGoBack: () => false } }),
+	useNavigate: () => router.navigate,
 }));
 
 const createdPlayer = { id: 3, name: "Nova", image: null } as unknown as Player;
@@ -71,6 +74,7 @@ const renderForm = () => {
 			start={addMinutes(new Date(), -45)}
 			buttonText="save"
 			title="Log a session"
+			backTo="/games/1"
 			onClick={onClick}
 			disabled={false}
 		/>,
@@ -82,7 +86,7 @@ const renderNewForm = () => {
 	const onClick = vi.fn().mockResolvedValue(undefined);
 	renderWithProviders(
 		<StrictMode>
-			<SessionForm buttonText="save" title="Log a session" onClick={onClick} disabled={false} />
+			<SessionForm buttonText="save" title="Log a session" backTo="/" onClick={onClick} disabled={false} />
 		</StrictMode>,
 	);
 	return onClick;
@@ -114,6 +118,16 @@ describe("SessionForm", () => {
 
 	afterEach(() => {
 		vi.useRealTimers();
+	});
+
+	it("shows the page title and a back link above the form", async () => {
+		const user = userEvent.setup();
+		renderForm();
+
+		expect(screen.getByRole("heading", { name: "Log a session" })).toBeInTheDocument();
+		await user.click(screen.getByRole("button", { name: /back/ }));
+
+		expect(router.navigate).toHaveBeenCalledWith({ to: "/games/1" });
 	});
 
 	it("hides the player error until the first submit in StrictMode", async () => {
