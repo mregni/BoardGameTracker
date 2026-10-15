@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import Target from "@/assets/icons/target.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { RoundDecimal } from "@/utils/numberUtils";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { usePlayerById } from "../../-hooks/usePlayerById";
 import { SCORING_COLORS } from "../-utils/gameColorMappings";
 
@@ -20,6 +20,7 @@ export const ScoringResultsCard = (props: Props) => {
 	const { scoreRankChart } = props;
 	const { t } = useTranslation("game");
 	const { playerById } = usePlayerById();
+	const { decimal } = useNumberFormat();
 
 	if (scoreRankChart.length === 0) return null;
 
@@ -36,7 +37,7 @@ export const ScoringResultsCard = (props: Props) => {
 								<BgtText color="primary">{playerById(item.playerId)?.name}</BgtText>
 							</div>
 							<BgtText size="5" weight="bold" color="cyan">
-								{RoundDecimal(item.score)}
+								{decimal(item.score)}
 							</BgtText>
 						</div>
 						<div className="w-full bg-primary/10 rounded-full h-2 overflow-hidden">

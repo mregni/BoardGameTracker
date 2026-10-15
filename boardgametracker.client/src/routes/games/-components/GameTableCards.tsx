@@ -9,8 +9,7 @@ import type { BgtSelectItem, Game, GameState } from "@/models";
 import type { GamePrice } from "@/models/Games/GamePrice";
 import { toDisplay } from "@/utils/dateUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
-import { RoundDecimal } from "@/utils/numberUtils";
-import { formatPrice } from "@/utils/priceUtils";
+import { formatDecimal, formatPrice } from "@/utils/numberUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./EditableNumberCell";
 import { EditableSelectCell } from "./EditableSelectCell";
@@ -95,11 +94,9 @@ export const GameTableCards = (props: Props) => {
 						<Row label={t("games:columns.players")}>{formatRange(game.minPlayers, game.maxPlayers)}</Row>
 						<Row label={t("games:columns.play-time")}>{formatRange(game.minPlayTime, game.maxPlayTime, "min")}</Row>
 						<Row label={t("games:columns.weight")}>
-							{game.weight != null && game.weight > 0 ? (RoundDecimal(game.weight, 0.1) ?? "-") : "-"}
+							{game.weight != null && game.weight > 0 ? formatDecimal(game.weight, uiLanguage) : "-"}
 						</Row>
-						<Row label={t("games:columns.rating")}>
-							{game.rating != null ? (RoundDecimal(game.rating, 0.1) ?? "-") : "-"}
-						</Row>
+						<Row label={t("games:columns.rating")}>{formatDecimal(game.rating, uiLanguage)}</Row>
 						<Row label={t("games:columns.language")}>
 							<EditableSelectCell
 								readOnly={readOnly}
@@ -140,7 +137,6 @@ export const GameTableCards = (props: Props) => {
 							<EditableNumberCell
 								readOnly={readOnly}
 								value={game.buyingPrice}
-								step={0.01}
 								min={0}
 								prefix={currency}
 								format={(price) => formatPrice(price, currency, uiLanguage)}

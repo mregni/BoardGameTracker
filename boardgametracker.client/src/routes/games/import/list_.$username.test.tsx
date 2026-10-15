@@ -73,7 +73,7 @@ describe("BGG import list", () => {
 
 		expect(price).toHaveFocus();
 		expect(price).toHaveDisplayValue("100");
-		expect(price).toHaveValue(100);
+		expect(price).toHaveValue("100");
 	});
 
 	it("selects every importable game from the header checkbox", async () => {

@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtCheckboxList } from "@/components/BgtForm";
@@ -44,14 +43,13 @@ export const ExpansionSelectorModal = (props: Props) => {
 						disabled={isLoading || isPending}
 					/>
 				</div>
-				<BgtDialogClose>
-					<BgtButton variant="cancel" onClick={() => close()} disabled={isLoading || isPending}>
-						{t("common:cancel")}
-					</BgtButton>
-					<BgtButton type="button" variant="primary" disabled={isLoading || isPending} onClick={saveModal}>
-						{t("expansions.update")}
-					</BgtButton>
-				</BgtDialogClose>
+				<BgtDialogFooter
+					onCancel={close}
+					confirmLabel={t("expansions.update")}
+					onConfirm={saveModal}
+					disabled={isLoading || isPending}
+					cancelDisabled={isLoading || isPending}
+				/>
 			</BgtDialogContent>
 		</BgtDialog>
 	);

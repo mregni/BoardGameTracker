@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from "@/components/BgtDialog";
+import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtInputField } from "@/components/BgtForm";
 import { useAppForm } from "@/hooks/form";
 import { CreateLocationSchema, type Location } from "@/models";
@@ -50,14 +49,13 @@ export const EditLocationModal = (props: Props) => {
 							)}
 						</form.Field>
 					</div>
-					<BgtDialogClose>
-						<BgtButton variant="cancel" onClick={() => close()} disabled={isLoading}>
-							{t("common:cancel")}
-						</BgtButton>
-						<BgtButton variant="primary" type="submit" disabled={isLoading}>
-							{t("common:save")}
-						</BgtButton>
-					</BgtDialogClose>
+					<BgtDialogFooter
+						onCancel={close}
+						confirmLabel={t("common:save")}
+						confirmType="submit"
+						disabled={isLoading}
+						cancelDisabled={isLoading}
+					/>
 				</form>
 			</BgtDialogContent>
 		</BgtDialog>

@@ -5,6 +5,7 @@ import TrendingUp from "@/assets/icons/trend-up.svg?react";
 import Trophy from "@/assets/icons/trophy.svg?react";
 import type { Player } from "@/models";
 import { formatMinutesToDuration } from "@/utils/dateUtils";
+import { formatInteger, formatPercent } from "@/utils/numberUtils";
 
 export interface CompareData {
 	winCount: { playerOne: number; playerTwo: number };
@@ -24,7 +25,7 @@ export interface StatConfig {
 export const formatPlayTime = (minutes: number, uiLanguage: string): string =>
 	formatMinutesToDuration(minutes, ["weeks", "days", "hours", "minutes"], uiLanguage) ?? "-";
 
-export const formatWinRate = (fraction: number): string => `${Math.round(fraction * 1000) / 10}%`;
+export const formatWinRate = (fraction: number, uiLanguage: string): string => formatPercent(fraction, uiLanguage, 1);
 
 export const resolveComparePlayers = (
 	players: Pick<Player, "id">[],
@@ -46,21 +47,21 @@ export const getStatConfigs = (uiLanguage: string): StatConfig[] => [
 		translationKey: "stats.total-wins",
 		icon: <Trophy className="size-6" />,
 		getRawValue: (data, player) => data.winCount[player],
-		getValue: (data, player) => data.winCount[player],
+		getValue: (data, player) => formatInteger(data.winCount[player], uiLanguage),
 	},
 	{
 		key: "winPercentage",
 		translationKey: "stats.win-percentage",
 		icon: <TrendingUp className="size-6" />,
 		getRawValue: (data, player) => data.winPercentage[player],
-		getValue: (data, player) => formatWinRate(data.winPercentage[player]),
+		getValue: (data, player) => formatWinRate(data.winPercentage[player], uiLanguage),
 	},
 	{
 		key: "sessionCounts",
 		translationKey: "stats.sessions",
 		icon: <GamePad className="size-6" />,
 		getRawValue: (data, player) => data.sessionCounts[player],
-		getValue: (data, player) => data.sessionCounts[player],
+		getValue: (data, player) => formatInteger(data.sessionCounts[player], uiLanguage),
 	},
 	{
 		key: "totalDuration",

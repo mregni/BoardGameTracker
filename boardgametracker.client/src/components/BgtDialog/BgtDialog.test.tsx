@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, renderWithTheme, screen, userEvent } from "@/test/test-utils";
-import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogDescription, BgtDialogTitle } from "./BgtDialog";
+import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { BgtDialog, BgtDialogContent, BgtDialogDescription, BgtDialogTitle } from "./BgtDialog";
 
 describe("BgtDialog", () => {
 	describe("BgtDialog Root", () => {
@@ -124,29 +124,6 @@ describe("BgtDialog", () => {
 		});
 	});
 
-	describe("BgtDialogClose", () => {
-		it("should render children", () => {
-			render(
-				<BgtDialogClose>
-					<button type="button">Cancel</button>
-					<button type="button">Confirm</button>
-				</BgtDialogClose>,
-			);
-			expect(screen.getByText("Cancel")).toBeInTheDocument();
-			expect(screen.getByText("Confirm")).toBeInTheDocument();
-		});
-
-		it("should apply custom className", () => {
-			const { container } = render(
-				<BgtDialogClose className="custom-close">
-					<button type="button">Cancel</button>
-				</BgtDialogClose>,
-			);
-			const wrapper = container.firstChild as HTMLElement;
-			expect(wrapper).toHaveClass("custom-close");
-		});
-	});
-
 	describe("BgtDialogContent", () => {
 		it("should close on Escape", async () => {
 			const onClose = vi.fn();
@@ -194,10 +171,8 @@ describe("BgtDialog", () => {
 					<BgtDialogContent>
 						<BgtDialogTitle>Confirm Action</BgtDialogTitle>
 						<BgtDialogDescription>Are you sure you want to proceed?</BgtDialogDescription>
-						<BgtDialogClose>
-							<button type="button">Cancel</button>
-							<button type="button">Confirm</button>
-						</BgtDialogClose>
+						<button type="button">Cancel</button>
+						<button type="button">Confirm</button>
 					</BgtDialogContent>
 				</BgtDialog>,
 			);

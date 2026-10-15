@@ -90,6 +90,33 @@ describe("BgtInputField", () => {
 			expect(mockField.handleChange).toHaveBeenCalledWith(5);
 		});
 
+		it.each([
+			["8,1", 8.1],
+			["8.1", 8.1],
+		])("should parse %s for decimal type", async (typed, expected) => {
+			const user = userEvent.setup();
+			renderWithTheme(<BgtInputField field={mockField} type="decimal" />);
+
+			const input = screen.getByRole("textbox");
+			expect(input).toHaveAttribute("inputmode", "decimal");
+			await user.type(input, typed);
+			expect(mockField.handleChange).toHaveBeenLastCalledWith(expected);
+			expect(input).toHaveValue(typed);
+		});
+
+		it("should show a decimal value and clear it to undefined", async () => {
+			const user = userEvent.setup();
+			const field = createMockField(2.5);
+			renderWithTheme(<BgtInputField field={field} type="decimal" />);
+
+			const input = screen.getByRole("textbox");
+			expect(input).toHaveValue("2.5");
+			await user.clear(input);
+			await user.tab();
+			expect(field.handleChange).toHaveBeenLastCalledWith(undefined);
+			expect(field.handleBlur).toHaveBeenCalled();
+		});
+
 		it("should call handleBlur on blur", async () => {
 			const user = userEvent.setup();
 			renderWithTheme(<BgtInputField field={mockField} type="text" />);

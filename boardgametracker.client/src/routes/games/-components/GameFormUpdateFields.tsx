@@ -19,12 +19,12 @@ export const GameFormUpdateFields = withForm({
 			<>
 				<form.Field name="rating" validators={zodValidator(CreateGameSchema, "rating")}>
 					{(field: AnyFieldApi) => (
-						<BgtInputField field={field} label={t("update.rating.label")} type="number" disabled={disabled} />
+						<BgtInputField field={field} label={t("update.rating.label")} type="decimal" disabled={disabled} />
 					)}
 				</form.Field>
 				<form.Field name="weight" validators={zodValidator(CreateGameSchema, "weight")}>
 					{(field: AnyFieldApi) => (
-						<BgtInputField field={field} label={t("update.weight.label")} type="number" disabled={disabled} />
+						<BgtInputField field={field} label={t("update.weight.label")} type="decimal" disabled={disabled} />
 					)}
 				</form.Field>
 				<form.Subscribe selector={(state) => state.values.state}>
@@ -35,7 +35,7 @@ export const GameFormUpdateFields = withForm({
 									<BgtInputField
 										field={field}
 										label={t("update.sold-price.label")}
-										type="number"
+										type="decimal"
 										disabled={disabled}
 										prefixLabel={currency}
 									/>

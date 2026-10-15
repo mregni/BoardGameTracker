@@ -15,6 +15,7 @@ import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
 import { BgtPaging } from "@/components/BgtTable/BgtPaging";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useDecimalInput } from "@/hooks/useDecimalInput";
 import { GameState, type ImportGame } from "@/models";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getBggCollection, getGames } from "@/services/queries/games";
@@ -22,6 +23,31 @@ import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { parseLocalDate } from "@/utils/localDate";
 import { useList } from "./-hooks/useList";
+
+interface ImportPriceInputProps {
+	price: number;
+	onChange: (price: number) => void;
+	placeholder: string;
+	disabled: boolean;
+	currency?: string;
+}
+
+const ImportPriceInput = ({ price, onChange, placeholder, disabled, currency }: ImportPriceInputProps) => {
+	const decimal = useDecimalInput(price || null, (value) => onChange(value ?? 0));
+	return (
+		<BgtSimpleInputField
+			type="text"
+			inputMode="decimal"
+			value={decimal.value}
+			onChange={(event) => decimal.onChange(event.target.value)}
+			onBlur={decimal.onBlur}
+			placeholder={placeholder}
+			disabled={disabled}
+			className="w-32.5"
+			suffixLabel={currency}
+		/>
+	);
+};
 
 export const Route = createFileRoute("/games/import/list_/$username")({
 	component: WriteRouteComponent,
@@ -163,18 +189,12 @@ function RouteComponent() {
 			{
 				accessorKey: "4",
 				cell: ({ row }) => (
-					<BgtSimpleInputField
-						type="number"
-						value={row.original.price || ""}
-						onChange={(event) =>
-							updateGame(row.original.bggId, {
-								price: Number(event.target.value),
-							})
-						}
+					<ImportPriceInput
+						price={row.original.price}
+						onChange={(price) => updateGame(row.original.bggId, { price })}
 						placeholder={t("game:price.placeholder")}
 						disabled={row.original.inCollection}
-						className="w-32.5"
-						suffixLabel={settings?.currency}
+						currency={settings?.currency}
 					/>
 				),
 				header: t("game:price.label"),

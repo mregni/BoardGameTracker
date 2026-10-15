@@ -17,6 +17,7 @@ import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
 import type { LeaderboardEntry } from "@/models";
 import { getLeaderboard } from "@/services/queries/leaderboard";
 import { formatMinutesToDuration } from "@/utils/dateUtils";
+import { formatPercent } from "@/utils/numberUtils";
 import { HeaderWithHint } from "./-components/HeaderWithHint";
 import { LeaderboardHighlight } from "./-components/LeaderboardHighlight";
 
@@ -63,7 +64,7 @@ function RouteComponent() {
 			{
 				accessorKey: "winPercentage",
 				header: t("columns.win-rate"),
-				cell: ({ row }) => `${row.original.winPercentage}%`,
+				cell: ({ row }) => formatPercent(row.original.winPercentage / 100, uiLanguage, 1),
 			},
 			{
 				accessorKey: "podiumCount",
@@ -120,7 +121,7 @@ function RouteComponent() {
 							<LeaderboardHighlight
 								title={t("highlights.best-win-rate")}
 								entry={leaderboard.bestWinRate}
-								value={`${leaderboard.bestWinRate?.winPercentage ?? 0}%`}
+								value={formatPercent((leaderboard.bestWinRate?.winPercentage ?? 0) / 100, uiLanguage, 1)}
 								emptyText={t("highlights.min-plays", { count: leaderboard.minimumPlaysForWinRate })}
 								hint={t("highlights.min-plays-hint", { count: leaderboard.minimumPlaysForWinRate })}
 								icon={TargetIcon}

@@ -25,7 +25,7 @@ describe("EditableNumberCell", () => {
 		await user.click(button);
 
 		expect(props.onStartEdit).toHaveBeenCalledTimes(1);
-		expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+		expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
 	});
 
 	it("shows a dash for an empty value", () => {
@@ -38,7 +38,7 @@ describe("EditableNumberCell", () => {
 		const user = userEvent.setup();
 		const props = renderCell({ editing: true });
 
-		const input = screen.getByRole("spinbutton");
+		const input = screen.getByRole("textbox");
 		expect(input).toHaveFocus();
 		await user.clear(input);
 		await user.type(input, "20{Enter}");
@@ -51,7 +51,7 @@ describe("EditableNumberCell", () => {
 		const user = userEvent.setup();
 		const props = renderCell({ editing: true });
 
-		await user.clear(screen.getByRole("spinbutton"));
+		await user.clear(screen.getByRole("textbox"));
 		await user.tab();
 
 		expect(props.onChange).toHaveBeenCalledWith(null);
@@ -71,11 +71,44 @@ describe("EditableNumberCell", () => {
 		const user = userEvent.setup();
 		const props = renderCell({ editing: true });
 
-		const input = screen.getByRole("spinbutton");
+		const input = screen.getByRole("textbox");
 		await user.clear(input);
 		await user.type(input, "99{Escape}");
 
 		expect(props.onChange).not.toHaveBeenCalled();
 		expect(props.onStopEdit).toHaveBeenCalled();
+	});
+
+	it.each([
+		["12,75", 12.75],
+		["12.75", 12.75],
+	])("accepts %s as a decimal", async (typed, expected) => {
+		const user = userEvent.setup();
+		const props = renderCell({ editing: true });
+
+		const input = screen.getByRole("textbox");
+		expect(input).toHaveAttribute("inputmode", "decimal");
+		await user.clear(input);
+		await user.type(input, `${typed}{Enter}`);
+
+		expect(props.onChange).toHaveBeenCalledWith(expected);
+	});
+
+	it("does not commit text that is not a number or is out of range", async () => {
+		const user = userEvent.setup();
+		const props = renderCell({ editing: true, min: 0 });
+
+		const input = screen.getByRole("textbox");
+		await user.clear(input);
+		await user.type(input, "-5{Enter}");
+
+		expect(props.onChange).not.toHaveBeenCalled();
+		expect(props.onStopEdit).toHaveBeenCalled();
+	});
+
+	it("formats the value without a custom formatter", () => {
+		renderCell({ value: 12.345, prefix: undefined, suffix: "kg" });
+
+		expect(screen.getByRole("button", { name: "12.35 kg" })).toBeInTheDocument();
 	});
 });

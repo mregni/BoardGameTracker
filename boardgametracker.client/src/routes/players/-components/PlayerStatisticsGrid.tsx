@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import type { Settings } from "@/models";
 import { formatMinutesToDuration } from "@/utils/dateUtils";
-import { GetPercentage } from "@/utils/numberUtils";
+import { formatRatio } from "@/utils/numberUtils";
 
 interface PlayerStatistics {
 	playCount: number;
@@ -32,9 +32,8 @@ export const PlayerStatisticsGrid = (props: Props) => {
 			<BgtTextStatistic content={totalPlayedTime} title={t("total-play-time")} textSize="4" />
 			<BgtTextStatistic content={statistics.winCount} title={t("win-count")} textSize="4" />
 			<BgtTextStatistic
-				content={GetPercentage(statistics.winCount, statistics.playCount)}
+				content={formatRatio(statistics.winCount, statistics.playCount, settings?.uiLanguage)}
 				title={t("win-percentage")}
-				suffix={"%"}
 				textSize="4"
 			/>
 			<BgtTextStatistic content={statistics.distinctGameCount} title={t("distinct-game-count")} textSize="4" />

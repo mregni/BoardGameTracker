@@ -2,8 +2,8 @@ import { useTranslation } from "react-i18next";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtTile } from "@/components/BgtTile/BgtTile";
 import { BgtTileSessions } from "@/components/BgtTile/BgtTileSessions";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { PlayerOverview } from "@/models";
-import { GetPercentage } from "@/utils/numberUtils";
 
 interface Props {
 	player: PlayerOverview;
@@ -12,6 +12,7 @@ interface Props {
 export const PlayerTile = (props: Props) => {
 	const { player } = props;
 	const { t } = useTranslation("common");
+	const { ratio } = useNumberFormat();
 
 	return (
 		<BgtTile
@@ -22,7 +23,7 @@ export const PlayerTile = (props: Props) => {
 				<>
 					{player.playCount > 0 && (
 						<>
-							<span className="font-semibold text-white">{GetPercentage(player.winCount, player.playCount)}%</span>{" "}
+							<span className="font-semibold text-white">{ratio(player.winCount, player.playCount)}</span>{" "}
 							{t("tile.wins")} ·{" "}
 						</>
 					)}

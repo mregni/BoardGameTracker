@@ -115,8 +115,8 @@ export const GameNightForm = (props: Props) => {
 		<form id="game-night-form" onSubmit={handleFormSubmit(form)} className="w-full">
 			{children}
 
-			<div className="my-3 grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-6">
-				<div className="flex min-w-0 flex-col gap-4">
+			<div className="my-3 grid gap-3 md:gap-4 lg:grid-cols-2 lg:items-start lg:gap-6">
+				<div className="flex min-w-0 flex-col gap-3 md:gap-4">
 					<form.Field name="title" validators={zodValidator(GameNightFormSchema, "title")}>
 						{(field: AnyFieldApi) => (
 							<BgtInputField
@@ -135,7 +135,7 @@ export const GameNightForm = (props: Props) => {
 						)}
 					</form.Field>
 
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div className="grid grid-cols-2 gap-3 md:gap-4">
 						<form.Field name="hostId" validators={zodValidator(GameNightFormSchema, "hostId")}>
 							{(field: AnyFieldApi) => (
 								<BgtSelect
@@ -163,7 +163,7 @@ export const GameNightForm = (props: Props) => {
 						</form.Field>
 					</div>
 				</div>
-				<div className="flex min-w-0 flex-col gap-4">
+				<div className="flex min-w-0 flex-col gap-3 md:gap-4">
 					<form.Field name="selectedPlayers">
 						{(field: AnyFieldApi) => (
 							<MultiSelectField
