@@ -2,7 +2,7 @@ import { addMinutes } from "date-fns";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Game, Player } from "@/models";
-import { fireEvent, renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
+import { act, renderWithProviders, screen, userEvent, waitFor, within } from "@/test/test-utils";
 import { SessionForm } from "./SessionForm";
 
 const game = {
@@ -88,7 +88,9 @@ const renderNewForm = () => {
 	return onClick;
 };
 
-const startTime = () => document.querySelector<HTMLInputElement>('input[type="time"]') as HTMLInputElement;
+const startTimeSegment = (name: RegExp) =>
+	within(screen.getByRole("group", { name: "common:time" })).getByRole("spinbutton", { name });
+const startTime = () => `${startTimeSegment(/hour/i).textContent}:${startTimeSegment(/minute/i).textContent}`;
 const durationInput = () => screen.getByLabelText("new.duration.label");
 
 const playerSelect = () => screen.getByRole("combobox", { name: "form.players.label" });
@@ -143,7 +145,7 @@ describe("SessionForm", () => {
 
 		expect(durationInput()).toHaveValue(30);
 		expect(screen.getByText("new.start.label")).toBeInTheDocument();
-		expect(startTime()).toHaveValue("08:51");
+		expect(startTime()).toBe("08:51");
 	});
 
 	it("moves the start with the game's play time and the duration until the start is edited", async () => {
@@ -156,18 +158,21 @@ describe("SessionForm", () => {
 		await user.click(await screen.findByRole("option", { name: "Twilight Imperium" }));
 
 		expect(durationInput()).toHaveValue(240);
-		expect(startTime()).toHaveValue("05:21");
+		expect(startTime()).toBe("05:21");
 
 		await user.clear(durationInput());
 		await user.type(durationInput(), "60");
 
-		expect(startTime()).toHaveValue("08:21");
+		expect(startTime()).toBe("08:21");
 
-		fireEvent.change(startTime(), { target: { value: "07:00" } });
+		act(() => startTimeSegment(/hour/i).focus());
+		await user.keyboard("07");
+		act(() => startTimeSegment(/minute/i).focus());
+		await user.keyboard("00");
 		await user.clear(durationInput());
 		await user.type(durationInput(), "90");
 
-		expect(startTime()).toHaveValue("07:00");
+		expect(startTime()).toBe("07:00");
 	});
 
 	it("groups recently played games above the other games until searching", async () => {

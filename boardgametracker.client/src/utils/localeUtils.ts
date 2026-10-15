@@ -97,3 +97,6 @@ export const getDateSeparator = (dateFormat?: string | null): string | null => {
 
 export const shouldForceLeadingZeros = (dateFormat?: string | null): boolean =>
 	!!dateFormat && /dd|mm/i.test(dateFormat);
+
+export const getHourCycle = (timeFormat?: string | null): 12 | 24 =>
+	timeFormat && /[hKa]/.test(timeFormat.replace(/'[^']*'/g, "")) ? 12 : 24;
