@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using BoardGameTracker.Api.Infrastructure;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;

@@ -7,7 +7,6 @@ using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Disk.Interfaces;
 using BoardGameTracker.Core.Rag.Interfaces;
 using BoardGameTracker.Core.Rag.Specifications;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Pgvector;
 

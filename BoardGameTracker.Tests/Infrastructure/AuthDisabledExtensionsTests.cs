@@ -1,4 +1,3 @@
-using System;
 using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using FluentAssertions;

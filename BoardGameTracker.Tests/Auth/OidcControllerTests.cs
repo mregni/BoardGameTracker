@@ -1,4 +1,3 @@
-using System;
 using System.Net.Http;
 using BoardGameTracker.Api.Controllers;
 using BoardGameTracker.Common;

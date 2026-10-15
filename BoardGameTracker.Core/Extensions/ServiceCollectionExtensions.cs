@@ -52,7 +52,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using Pgvector.EntityFrameworkCore;
 using Pgvector.Npgsql;
 
 namespace BoardGameTracker.Core.Extensions;

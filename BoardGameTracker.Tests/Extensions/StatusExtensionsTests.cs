@@ -1,4 +1,3 @@
-using System;
 using BoardGamer.BoardGameGeek.BoardGameGeekXmlApi2;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;

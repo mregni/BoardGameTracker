@@ -1,4 +1,3 @@
-using System;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.AspNetCore.Identity;

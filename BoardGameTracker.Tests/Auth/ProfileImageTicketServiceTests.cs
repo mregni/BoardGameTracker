@@ -1,4 +1,3 @@
-using System;
 using BoardGameTracker.Core.Auth;
 using BoardGameTracker.Core.Common;
 using FluentAssertions;
