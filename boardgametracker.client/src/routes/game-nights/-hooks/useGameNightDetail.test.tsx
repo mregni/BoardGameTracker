@@ -90,7 +90,7 @@ describe("useGameNightDetail", () => {
 	it("finishes a game and refreshes the night and the session", async () => {
 		mocks.finishRunningGameCall.mockResolvedValue({ id: 40, gameId: 9, playerSessions: [{ playerId: 1 }] });
 		const result = setup();
-		const command = { playerSessions: [], start: null, minutes: null };
+		const command = { playerSessions: [], start: new Date(2026, 9, 16, 21, 0), minutes: 40 };
 
 		await act(() => result.current.finishGame({ id: 12, command }));
 
@@ -106,7 +106,7 @@ describe("useGameNightDetail", () => {
 
 		await act(() =>
 			result.current
-				.finishGame({ id: 12, command: { playerSessions: [], start: null, minutes: null } })
+				.finishGame({ id: 12, command: { playerSessions: [], start: new Date(2026, 9, 16, 21, 0), minutes: 40 } })
 				.catch(() => undefined),
 		);
 

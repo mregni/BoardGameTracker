@@ -33,7 +33,7 @@ describe("gameNightService", () => {
 	});
 
 	it("finishes a running game", async () => {
-		const command = { playerSessions: [], start: null, minutes: null };
+		const command = { playerSessions: [], start: new Date(2026, 9, 16, 21, 0), minutes: 40 };
 
 		await expect(finishRunningGameCall(12, command)).resolves.toBe("created");
 		expect(axiosMock.post).toHaveBeenCalledWith("gamenight/running-games/12/finish", command);
