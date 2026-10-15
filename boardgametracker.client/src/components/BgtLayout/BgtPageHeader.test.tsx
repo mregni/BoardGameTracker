@@ -15,6 +15,11 @@ describe("BgtPageHeader", () => {
 			expect(screen.getByText("Page Title")).toBeInTheDocument();
 		});
 
+		it("should make the header the page's level-one heading", () => {
+			renderWithTheme(<BgtPageHeader header="Page Title" />);
+			expect(screen.getByRole("heading", { level: 1, name: "Page Title" })).toBeInTheDocument();
+		});
+
 		it("should not render header when not provided", () => {
 			renderWithTheme(<BgtPageHeader />);
 			expect(screen.queryByRole("heading")).not.toBeInTheDocument();

@@ -73,7 +73,7 @@ function RsvpPage() {
 					if (isPast(gameNight.startDate)) {
 						return (
 							<BgtCard className="gap-1.5" data-testid="rsvp-past">
-								<BgtHeading size="5" className="wrap-anywhere">
+								<BgtHeading as="h1" size="5" className="wrap-anywhere">
 									{t("past-title", { title: gameNight.title })}
 								</BgtHeading>
 								<BgtText size="2" color="gray" className="first-letter:uppercase">

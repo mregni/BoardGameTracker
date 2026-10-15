@@ -61,6 +61,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [open, setOpen] = useState(false);
 	const searchInputRef = useRef<HTMLInputElement>(null);
+	const triggerRef = useRef<HTMLButtonElement>(null);
 	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
 
 	const errors: string[] = props.field ? props.field.state.meta.errors : (props.errors ?? []);
@@ -128,6 +129,17 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 		setSearchTerm(e.target.value);
 	}, []);
 
+	const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "ArrowDown") {
+			e.preventDefault();
+			e.currentTarget
+				.closest('[role="listbox"]')
+				?.querySelector<HTMLElement>('[role="option"]:not([data-disabled])')
+				?.focus();
+		}
+		e.stopPropagation();
+	}, []);
+
 	useEffect(() => {
 		if (open && searchInputRef.current) {
 			setTimeout(() => {
@@ -146,6 +158,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 				onOpenChange={handleOpenChange}
 			>
 				<Select.Trigger
+					ref={triggerRef}
 					id={id}
 					className={cx(
 						"w-full bg-background text-white border border-primary/30 focus:border-primary focus:outline-none",
@@ -166,6 +179,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 						style={{ bottom: "auto" }}
 						onCloseAutoFocus={(e) => {
 							e.preventDefault();
+							triggerRef.current?.focus({ preventScroll: true });
 						}}
 					>
 						{hasSearch && (
@@ -178,11 +192,10 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 										value={searchTerm}
 										onChange={handleSearchChange}
 										placeholder={t("search")}
+										aria-label={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										onClick={(e) => e.stopPropagation()}
-										onKeyDown={(e) => {
-											e.stopPropagation();
-										}}
+										onKeyDown={handleSearchKeyDown}
 									/>
 								</div>
 							</div>

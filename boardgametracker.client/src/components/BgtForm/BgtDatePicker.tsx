@@ -2,7 +2,7 @@ import { type CalendarDate, parseDate } from "@internationalized/date";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { cx } from "class-variance-authority";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import {
 	Button,
 	Calendar,
@@ -25,6 +25,7 @@ import { useTranslation } from "react-i18next";
 import CalendarIcon from "@/assets/icons/calendar.svg?react";
 import { getSettings } from "@/services/queries/settings";
 import { getDatePickerLocale, getDateSeparator, shouldForceLeadingZeros } from "@/utils/localeUtils";
+import { useDialogPortalContainer } from "../BgtDialog/BgtDialog";
 import { BgtFieldLabel } from "./BgtFieldLabel";
 import { BgtFormErrors } from "./BgtFormErrors";
 
@@ -53,6 +54,14 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 	const { field, label, disabled = false, className = "", clearable = false, minValue, maxValue } = props;
 	const { t } = useTranslation();
 	const { data: settings } = useQuery(getSettings());
+	const portalContainer = useDialogPortalContainer();
+	const calendarButtonRef = useRef<HTMLButtonElement>(null);
+
+	const handleOpenChange = (isOpen: boolean) => {
+		if (!isOpen && portalContainer) {
+			requestAnimationFrame(() => calendarButtonRef.current?.focus());
+		}
+	};
 
 	const locale = useMemo(
 		() => getDatePickerLocale(settings?.dateFormat, settings?.uiLanguage),
@@ -82,6 +91,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 					maxValue={safeParseDateValue(maxValue) ?? undefined}
 					shouldForceLeadingZeros={forceLeadingZeros}
 					shouldCloseOnSelect
+					onOpenChange={handleOpenChange}
 					aria-label={label || t("common:date")}
 				>
 					<Group
@@ -113,8 +123,8 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 								type="button"
 								onClick={() => field.handleChange("")}
 								className={cx(
-									"flex-none text-gray-400 hover:text-white transition-colors",
-									"cursor-pointer bg-transparent border-none p-0 outline-none text-lg leading-none",
+									"flex-none inline-flex size-6 -mx-1.5 items-center justify-center rounded text-gray-400 hover:text-white transition-colors",
+									"cursor-pointer bg-transparent border-none p-0 text-lg leading-none",
 								)}
 								aria-label={t("common:clear-date")}
 							>
@@ -123,10 +133,11 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 						)}
 						<Button
 							className={cx(
-								"flex-none text-gray-400 hover:text-white transition-colors",
-								"cursor-pointer bg-transparent border-none p-0 outline-none",
+								"flex-none inline-flex size-6 -m-0.5 items-center justify-center rounded text-gray-400 hover:text-white transition-colors",
+								"cursor-pointer bg-transparent border-none p-0",
 								"disabled:cursor-not-allowed disabled:hover:text-gray-400",
 							)}
+							ref={calendarButtonRef}
 							aria-label={t("common:open-calendar")}
 						>
 							<CalendarIcon className="size-5" />
@@ -134,6 +145,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 					</Group>
 					<I18nProvider locale={calendarLocale}>
 						<Popover
+							UNSTABLE_portalContainer={portalContainer}
 							placement="bottom end"
 							offset={5}
 							className="bg-background border border-primary/30 rounded-lg p-4 shadow-lg z-[9999] pointer-events-auto"
@@ -179,7 +191,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 													date={date}
 													className={cx(
 														"size-9 rounded-md flex items-center justify-center text-sm cursor-pointer",
-														"outline-none transition-colors",
+														"transition-colors",
 														"data-[outside-month]:text-white/20 data-[outside-month]:opacity-50",
 														"hover:bg-primary/20",
 														"data-[selected]:bg-primary data-[selected]:text-white data-[selected]:hover:bg-primary",

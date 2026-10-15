@@ -1,12 +1,15 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { cva, cx, type VariantProps } from "class-variance-authority";
-import { type ComponentPropsWithoutRef, createContext, type ReactNode, useContext } from "react";
+import { type ComponentPropsWithoutRef, createContext, type ReactNode, useContext, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import Cross from "@/assets/icons/x.svg?react";
 
 const DialogCloseContext = createContext<(() => void) | undefined>(undefined);
 const DialogDepthContext = createContext(0);
+const DialogPortalContainerContext = createContext<HTMLElement | undefined>(undefined);
+
+export const useDialogPortalContainer = () => useContext(DialogPortalContainerContext);
 
 const OVERLAY_BASE_Z_INDEX = 40;
 const Z_INDEX_STEP = 20;
@@ -39,38 +42,66 @@ export const BgtDialog = (props: BgtDialogProps) => {
 
 const centered = "left-1/2 top-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl";
 
-const dialogContent = cva(
-	"fixed flex max-h-[calc(100vh-2rem)] flex-col gap-3 overflow-y-auto bg-dialog p-6 text-white shadow-2xl focus:outline-none",
-	{
-		variants: {
-			size: {
-				default: [centered, "max-w-[600px]"],
-				wide: [centered, "max-w-[600px] lg:max-w-5xl"],
-				sheet: [
-					"inset-x-0 bottom-0 w-full rounded-t-2xl",
-					"md:inset-x-auto md:bottom-auto md:left-1/2 md:top-1/2 md:w-[calc(100vw-2rem)] md:max-w-xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl",
-				],
-			},
+const dialogContent = cva("fixed flex bg-dialog text-white shadow-2xl focus:outline-none", {
+	variants: {
+		size: {
+			default: [centered, "max-w-[600px]"],
+			wide: [centered, "max-w-[600px] lg:max-w-5xl"],
+			sheet: [
+				"inset-x-0 bottom-0 w-full rounded-t-2xl",
+				"md:inset-x-auto md:bottom-auto md:left-1/2 md:top-1/2 md:w-[calc(100vw-2rem)] md:max-w-xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl",
+			],
 		},
-		defaultVariants: { size: "default" },
 	},
-);
+	defaultVariants: { size: "default" },
+});
 
 type BgtDialogContentProps = ComponentPropsWithoutRef<typeof Dialog.Content> & VariantProps<typeof dialogContent>;
 
 export const BgtDialogContent = (props: BgtDialogContentProps) => {
-	const { className, children, style, size, ...rest } = props;
+	const { className, children, style, size, onOpenAutoFocus, onCloseAutoFocus, onEscapeKeyDown, ...rest } = props;
 	const onClose = useContext(DialogCloseContext);
 	const depth = useContext(DialogDepthContext);
 	const { t } = useTranslation();
+	const [container, setContainer] = useState<HTMLElement>();
+	const returnFocusRef = useRef<HTMLElement | null>(null);
 	const overlayZIndex = OVERLAY_BASE_Z_INDEX + Math.max(0, depth - 1) * Z_INDEX_STEP;
+
+	const handleOpenAutoFocus = (event: Event) => {
+		const active = document.activeElement;
+		returnFocusRef.current = active instanceof HTMLElement && active !== document.body ? active : null;
+		onOpenAutoFocus?.(event);
+	};
+
+	const handleCloseAutoFocus = (event: Event) => {
+		onCloseAutoFocus?.(event);
+		if (event.defaultPrevented) return;
+		const target = returnFocusRef.current;
+		returnFocusRef.current = null;
+		if (target?.isConnected) {
+			event.preventDefault();
+			target.focus();
+		}
+	};
+
+	const handleEscapeKeyDown = (event: KeyboardEvent) => {
+		if (event.target instanceof Element && event.target.closest("[data-trigger]")) {
+			event.preventDefault();
+			return;
+		}
+		onEscapeKeyDown?.(event);
+	};
+
 	return (
 		<Dialog.Portal>
 			<Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-[2px]" style={{ zIndex: overlayZIndex }} />
 			<Dialog.Content
+				ref={(node) => setContainer(node ?? undefined)}
 				style={{ zIndex: overlayZIndex + 10, ...style }}
-				aria-describedby={undefined}
 				className={cx(dialogContent({ size }), className)}
+				onOpenAutoFocus={handleOpenAutoFocus}
+				onCloseAutoFocus={handleCloseAutoFocus}
+				onEscapeKeyDown={handleEscapeKeyDown}
 				{...rest}
 			>
 				{onClose && (
@@ -83,7 +114,9 @@ export const BgtDialogContent = (props: BgtDialogContentProps) => {
 						<Cross className="size-5" />
 					</button>
 				)}
-				{children}
+				<div className="flex max-h-[calc(100vh-2rem)] w-full flex-col gap-3 overflow-y-auto rounded-[inherit] p-6">
+					<DialogPortalContainerContext.Provider value={container}>{children}</DialogPortalContainerContext.Provider>
+				</div>
 			</Dialog.Content>
 		</Dialog.Portal>
 	);

@@ -3,6 +3,13 @@ import { renderWithTheme, screen } from "@/test/test-utils";
 import { BgtHeading } from "./BgtHeading";
 
 describe("BgtHeading", () => {
+	describe("Level", () => {
+		it("renders the heading level it is asked for", () => {
+			renderWithTheme(<BgtHeading as="h1">Loans</BgtHeading>);
+			expect(screen.getByRole("heading", { level: 1, name: "Loans" })).toHaveClass("font-bold");
+		});
+	});
+
 	describe("Rendering", () => {
 		it("should render children text content", () => {
 			renderWithTheme(<BgtHeading>Test Heading</BgtHeading>);

@@ -94,4 +94,16 @@ describe("MultiSelectField", () => {
 		await user.click(within(chip).getByRole("button"));
 		expect(within(form).queryByText("Alice", { selector: "span" })).not.toBeInTheDocument();
 	});
+
+	it("names each remove button after its chip", async () => {
+		const user = userEvent.setup();
+		renderWithTheme(<Harness onDialogClose={vi.fn()} />);
+
+		await openList(user);
+		await user.click(screen.getByRole("option", { name: /Bob/ }));
+
+		await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+		await user.click(screen.getByRole("button", { name: "common:remove-item" }));
+		expect(within(screen.getByTestId("form")).queryByText("Bob", { selector: "span" })).not.toBeInTheDocument();
+	});
 });

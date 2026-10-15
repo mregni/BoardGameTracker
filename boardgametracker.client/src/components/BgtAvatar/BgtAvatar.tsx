@@ -85,7 +85,11 @@ export const BgtAvatar = (props: Props) => {
 				<img className={avatarClasses} src={image} alt={title || ""} onError={() => setFailedImage(image ?? null)} />
 			)}
 			{!showImage && title && (
-				<div style={{ backgroundColor: StringToHsl(colorKey ?? title) }} className={avatarClasses}>
+				<div
+					style={{ backgroundColor: StringToHsl(colorKey ?? title) }}
+					className={avatarClasses}
+					aria-hidden={onClick ? true : undefined}
+				>
 					<span className={cx(textSizeClasses[textSize], "capitalize")}>{title[0]}</span>
 				</div>
 			)}

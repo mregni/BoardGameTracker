@@ -37,7 +37,7 @@ export const RsvpEventDetails = ({ gameNight, settings }: Props) => {
 							time: format(startDate, settings.timeFormat),
 						})}
 					</span>
-					<BgtHeading size="6" className="wrap-anywhere">
+					<BgtHeading as="h1" size="6" className="wrap-anywhere">
 						{gameNight.title}
 					</BgtHeading>
 					<BgtText size="2" color="gray" className="first-letter:uppercase">

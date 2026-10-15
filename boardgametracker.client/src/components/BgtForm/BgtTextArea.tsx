@@ -1,6 +1,6 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { cx } from "class-variance-authority";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useId } from "react";
 
 import { FormFieldWrapper } from "./FormFieldWrapper";
 
@@ -13,6 +13,7 @@ export interface BgtTextAreaProps {
 
 const BgtTextAreaComponent = (props: BgtTextAreaProps) => {
 	const { field, disabled = false, className, label } = props;
+	const id = useId();
 
 	const handleChange = useCallback(
 		(event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -22,8 +23,9 @@ const BgtTextAreaComponent = (props: BgtTextAreaProps) => {
 	);
 
 	return (
-		<FormFieldWrapper label={label} errors={field.state.meta.errors}>
+		<FormFieldWrapper label={label} htmlFor={id} errors={field.state.meta.errors}>
 			<textarea
+				id={id}
 				className={cx(
 					"w-full rounded-lg border border-primary/30 bg-background px-3 py-2 text-[15px] text-white focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-60",
 					className,
