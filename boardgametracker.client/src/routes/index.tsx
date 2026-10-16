@@ -76,7 +76,7 @@ function RouteComponent() {
 						content={statistics.totalGames}
 						textSize="7"
 						link="/games"
-						detail={t("tiles.games-detail", {
+						caption={t("tiles.games-detail", {
 							owned: integer(statistics.ownedGames),
 							expansions: integer(statistics.expansionsOwned),
 							count: statistics.expansionsOwned,
@@ -87,7 +87,7 @@ function RouteComponent() {
 						content={statistics.activePlayers}
 						textSize="7"
 						link="/players"
-						detail={t("tiles.players-detail", {
+						caption={t("tiles.players-detail", {
 							count: statistics.activePlayersThisMonth,
 							value: integer(statistics.activePlayersThisMonth),
 						})}
@@ -96,7 +96,7 @@ function RouteComponent() {
 						title={t("tiles.sessions")}
 						content={statistics.sessionsPlayed}
 						textSize="7"
-						detail={t("tiles.sessions-detail", {
+						caption={t("tiles.sessions-detail", {
 							count: statistics.sessionsThisMonth,
 							value: integer(statistics.sessionsThisMonth),
 						})}
@@ -105,7 +105,7 @@ function RouteComponent() {
 						title={t("tiles.play-time")}
 						content={shortDuration(statistics.totalPlayedTime)}
 						textSize="7"
-						detail={
+						caption={
 							statistics.sessionsPlayed > 0
 								? t("tiles.play-time-detail", { duration: shortDuration(statistics.avgSessionTime) })
 								: undefined
