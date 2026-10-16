@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
@@ -20,11 +21,11 @@ export const Route = createFileRoute("/locations/$locationId")({
 	component: RouteComponent,
 	params: locationIdParamSchema,
 	loader: ({ params, context: { queryClient } }) => {
-		queryClient.prefetchQuery(getLocation(params.locationId));
-		queryClient.prefetchQuery(getLocationStatistics(params.locationId));
-		queryClient.prefetchQuery(getLocationSessions(params.locationId));
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getPlayers());
+		queryClient.query(getLocation(params.locationId)).catch(noop);
+		queryClient.query(getLocationStatistics(params.locationId)).catch(noop);
+		queryClient.query(getLocationSessions(params.locationId)).catch(noop);
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getPlayers()).catch(noop);
 	},
 });
 

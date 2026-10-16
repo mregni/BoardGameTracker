@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,7 +28,7 @@ import { getLoanStats, partitionLoans } from "./-utils/loanStatus";
 export const Route = createFileRoute("/loans/")({
 	component: RouteComponent,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getLoans());
+		queryClient.query(getLoans()).catch(noop);
 	},
 });
 

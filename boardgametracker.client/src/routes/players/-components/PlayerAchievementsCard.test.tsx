@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { renderWithTheme, screen } from "@/test/test-utils";
+import { renderWithTheme, screen, within } from "@/test/test-utils";
 import { allBadges, earnedBadges } from "../-hooks/achievementFixtures";
 import { PlayerAchievementsCard } from "./PlayerAchievementsCard";
 import { PlayerAchievementsSummary } from "./PlayerAchievementsSummary";
@@ -40,10 +40,20 @@ describe("PlayerAchievementsSummary", () => {
 		const progress = screen.getByRole("progressbar", { name: "titles.achievements" });
 		expect(progress).toHaveAttribute("value", "2");
 		expect(progress).toHaveAttribute("max", "4");
+		expect(within(progress.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({ width: "50%" });
 		const icons = screen.getAllByRole("img");
 		expect(icons.map((icon) => icon.getAttribute("src"))).toEqual([
 			"/images/badges/sessions-blue.png",
 			"/images/badges/firstTry.png",
 		]);
+	});
+
+	it("shows an empty progress bar when there are no badges", () => {
+		renderWithTheme(<PlayerAchievementsSummary badges={[]} playerBadges={[]} />);
+
+		const progress = screen.getByRole("progressbar", { name: "titles.achievements" });
+		expect(progress).toHaveAttribute("value", "0");
+		expect(progress).toHaveAttribute("max", "1");
+		expect(within(progress.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({ width: "0%" });
 	});
 });
