@@ -20,4 +20,11 @@ public class FinishRunningGameCommand
 
     [Range(1, int.MaxValue)]
     public int? Minutes { get; set; }
+
+    [Range(1, int.MaxValue)]
+    public int? LocationId { get; set; }
+
+    public string? Comment { get; set; }
+
+    public List<int> ExpansionIds { get; set; } = [];
 }

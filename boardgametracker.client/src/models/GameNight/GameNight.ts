@@ -64,6 +64,9 @@ export interface FinishRunningGame {
 	playerSessions: CreateSessionPlayer[];
 	start: Date;
 	minutes: number;
+	locationId: number | null;
+	comment: string | null;
+	expansionIds: number[];
 }
 
 export interface CreateGameNight {

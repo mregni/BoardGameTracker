@@ -40,10 +40,13 @@ public class GameNightPlayTests
                 new CreatePlayerSessionCommand { PlayerId = hostId, Score = 82, Won = true },
                 new CreatePlayerSessionCommand { PlayerId = guestId, Score = 71 },
             ],
+            Comment = "Close one",
         });
         finished.StatusCode.Should().Be(HttpStatusCode.OK, await finished.Content.ReadAsStringAsync());
         var session = (await finished.Content.ReadFromJsonAsync<SessionDto>(IntegrationFixture.Json))!;
         session.GameNightId.Should().Be(gameNightId);
+        session.Comment.Should().Be("Close one");
+        session.LocationId.Should().NotBeNull();
 
         var after = await GetDetailAsync(user, gameNightId);
         after.RunningGames.Should().BeEmpty();

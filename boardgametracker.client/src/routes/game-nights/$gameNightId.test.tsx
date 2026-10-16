@@ -118,6 +118,9 @@ const session = {
 	gameId: 7,
 	start: new Date(2026, 9, 16, 21, 0),
 	minutes: 40,
+	locationId: 5,
+	comment: "Close one",
+	expansionIds: [3],
 	playerSessions: [],
 } as unknown as CreateSession;
 
@@ -204,7 +207,14 @@ describe("Game night detail page", () => {
 
 		expect(mocks.finishGame).toHaveBeenCalledWith({
 			id: 12,
-			command: { playerSessions: [], start: session.start, minutes: 40 },
+			command: {
+				playerSessions: [],
+				start: session.start,
+				minutes: 40,
+				locationId: 5,
+				comment: "Close one",
+				expansionIds: [3],
+			},
 		});
 	});
 

@@ -118,6 +118,9 @@ function RouteComponent() {
 										playerSessions: session.playerSessions,
 										start: session.start,
 										minutes: session.minutes,
+										locationId: session.locationId,
+										comment: session.comment,
+										expansionIds: session.expansionIds ?? [],
 									},
 								})
 							: saveSession(session);

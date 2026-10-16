@@ -102,8 +102,10 @@ public class RunningGameService : IRunningGameService
             GameId = runningGame.GameId,
             Start = start,
             Minutes = minutes,
-            LocationId = runningGame.GameNight.LocationId,
+            LocationId = command.LocationId ?? runningGame.GameNight.LocationId,
             GameNightId = runningGame.GameNightId,
+            Comment = command.Comment,
+            ExpansionIds = command.ExpansionIds,
             PlayerSessions = command.PlayerSessions,
         });
         _logger.LogInformation("Running game {RunningGameId} finished as session {SessionId}", id, session.Id);

@@ -4578,6 +4578,10 @@ export interface components {
             start: string | null;
             /** Format: int32 */
             minutes: number | null;
+            /** Format: int32 */
+            locationId: number | null;
+            comment: string | null;
+            expansionIds: number[];
         };
         FirstGameTogether: {
             /** Format: int32 */
