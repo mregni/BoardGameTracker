@@ -3,6 +3,8 @@ import type {
 	FinishRunningGame,
 	GameNight,
 	GameNightDetail,
+	GameNightStatistics,
+	GameNightStatisticsPeriod,
 	RunningGame,
 	SendInvitesResult,
 	Session,
@@ -82,4 +84,10 @@ export const reopenGameNightCall = (id: number): Promise<void> => {
 
 export const discardRunningGameCall = (id: number): Promise<void> => {
 	return axiosInstance.delete(`${domain}/running-games/${id}`);
+};
+
+export const getGameNightStatisticsCall = (period: GameNightStatisticsPeriod): Promise<GameNightStatistics> => {
+	return axiosInstance
+		.get<GameNightStatistics>(`${domain}/statistics`, { params: { period } })
+		.then((response) => response.data);
 };

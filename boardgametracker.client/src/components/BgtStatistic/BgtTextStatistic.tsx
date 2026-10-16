@@ -12,6 +12,7 @@ interface Props {
 	title: string;
 	content: string | number | null;
 	suffix?: string | number | null;
+	hint?: string | null;
 	icon?: React.ReactNode;
 	iconClassName?: string;
 	textSize?: "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
@@ -30,6 +31,7 @@ export const BgtTextStatistic = (props: Props) => {
 		title,
 		content,
 		suffix,
+		hint,
 		icon,
 		iconClassName,
 		textSize = "5",
@@ -75,6 +77,11 @@ export const BgtTextStatistic = (props: Props) => {
 				{suffix === "%" && "%"}
 				{suffix && suffix !== "%" && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
 			</BgtText>
+			{hint && (
+				<BgtText size="1" color="gray" className="mt-1">
+					{hint}
+				</BgtText>
+			)}
 		</BgtCard>
 	);
 

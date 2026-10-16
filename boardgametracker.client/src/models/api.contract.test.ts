@@ -10,14 +10,27 @@ import type {
 	Game,
 	GameNight,
 	GameNightDetail,
+	GameNightRecord,
+	GameNightRecords,
+	GameNightReference,
+	GameNightStatistics,
+	GameNightStatisticsPeriod,
+	GameNightStreaks,
 	GameNightSummary,
+	GameStreak,
 	Leaderboard,
 	LeaderboardEntry,
 	Location,
 	LocationStatistics,
+	NightAttendance,
+	NightGameStatistic,
+	NightHistory,
+	NightWinnerStatistic,
+	PlannedGameStatistic,
 	Player,
 	PlayerOverview,
 	PlayerSession,
+	PlayerStreak,
 	RunningGame,
 	Session,
 	SessionSuggestions,
@@ -67,6 +80,18 @@ describe("API contract", () => {
 		sameKeys<GameNight, Schemas["GameNightDto"]>(true);
 		sameKeys<GameNightSummary, Schemas["GameNightSummaryDto"]>(true);
 		sameKeys<GameNightDetail, Schemas["GameNightDetailDto"]>(true);
+		sameKeys<GameNightStatistics, Schemas["GameNightStatisticsDto"]>(true);
+		sameKeys<NightWinnerStatistic, Schemas["NightWinnerStatisticDto"]>(true);
+		sameKeys<NightHistory, Schemas["NightHistoryDto"]>(true);
+		sameKeys<NightGameStatistic, Schemas["NightGameStatisticDto"]>(true);
+		sameKeys<PlannedGameStatistic, Schemas["PlannedGameStatisticDto"]>(true);
+		sameKeys<GameNightStreaks, Schemas["GameNightStreaksDto"]>(true);
+		sameKeys<PlayerStreak, Schemas["PlayerStreakDto"]>(true);
+		sameKeys<GameStreak, Schemas["GameStreakDto"]>(true);
+		sameKeys<GameNightReference, Schemas["GameNightReferenceDto"]>(true);
+		sameKeys<NightAttendance, Schemas["NightAttendanceDto"]>(true);
+		sameKeys<GameNightRecords, Schemas["GameNightRecordsDto"]>(true);
+		sameKeys<GameNightRecord, Schemas["GameNightRecordDto"]>(true);
 		sameKeys<RunningGame, Schemas["RunningGameDto"]>(true);
 		sameKeys<Badge, Schemas["BadgeDto"]>(true);
 		sameKeys<Leaderboard, Schemas["LeaderboardDto"]>(true);
@@ -97,5 +122,6 @@ describe("API contract", () => {
 	it("keeps the string enums aligned", () => {
 		sameValues<Schemas["GameState"], `${Game["state"]}`>(true);
 		sameValues<Schemas["BadgeType"], `${Badge["type"]}`>(true);
+		sameValues<Schemas["GameNightStatisticsPeriod"], `${GameNightStatisticsPeriod}`>(true);
 	});
 });

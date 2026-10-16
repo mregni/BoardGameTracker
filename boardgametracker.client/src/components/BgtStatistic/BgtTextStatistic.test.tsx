@@ -18,6 +18,11 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("Chess")).toBeInTheDocument();
 		});
 
+		it("should render a hint below the value", () => {
+			renderWithTheme(<BgtTextStatistic title="Games played" content={57} hint="3.2 per night" />);
+			expect(screen.getByText("3.2 per night")).toBeInTheDocument();
+		});
+
 		it("should render content as number", () => {
 			renderWithTheme(<BgtTextStatistic title="Wins" content={100} />);
 			expect(screen.getByText("100")).toBeInTheDocument();

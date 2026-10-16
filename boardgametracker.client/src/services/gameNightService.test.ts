@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { GameNightStatisticsPeriod } from "@/models";
 
 const axiosMock = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), delete: vi.fn() }));
 
@@ -9,6 +10,7 @@ import {
 	endGameNightCall,
 	finishRunningGameCall,
 	getGameNightCall,
+	getGameNightStatisticsCall,
 	reopenGameNightCall,
 	startRunningGameCall,
 } from "./gameNightService";
@@ -57,5 +59,10 @@ describe("gameNightService", () => {
 
 		expect(axiosMock.post).toHaveBeenCalledWith("gamenight/4/end");
 		expect(axiosMock.post).toHaveBeenCalledWith("gamenight/4/reopen");
+	});
+
+	it("fetches the statistics of a period", async () => {
+		await expect(getGameNightStatisticsCall(GameNightStatisticsPeriod.Last12Months)).resolves.toBe("night");
+		expect(axiosMock.get).toHaveBeenCalledWith("gamenight/statistics", { params: { period: "last12Months" } });
 	});
 });
