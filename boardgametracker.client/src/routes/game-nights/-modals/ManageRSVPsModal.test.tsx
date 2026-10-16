@@ -89,11 +89,32 @@ describe("ManageRSVPsModal", () => {
 		expect(within(otherGroup).getByRole("button", { name: "common:declined" })).toHaveAttribute("aria-pressed", "true");
 	});
 
-	it("labels the middle state the same as the counters", () => {
+	it("offers maybe and no answer as separate states, in the same order as the counters", () => {
 		renderModal();
 
-		expect(screen.getAllByRole("button", { name: "common:pending" })).toHaveLength(2);
-		expect(screen.queryByRole("button", { name: "rsvp.maybe" })).not.toBeInTheDocument();
+		const guestGroup = within(screen.getByTestId("rsvp-row-7")).getByRole("group", { name: "rsvp.player-status" });
+		expect(
+			within(guestGroup)
+				.getAllByRole("button")
+				.map((button) => button.textContent),
+		).toEqual(["rsvp.coming", "rsvp.maybe", "common:pending", "common:declined"]);
+		expect(screen.getAllByRole("button", { name: "rsvp.maybe" })).toHaveLength(2);
+	});
+
+	it("saves a maybe answer as maybe", async () => {
+		const user = userEvent.setup();
+		const { onUpdateRsvp } = renderModal();
+
+		await user.click(within(screen.getByTestId("rsvp-row-7")).getByRole("button", { name: "rsvp.maybe" }));
+
+		await waitFor(() =>
+			expect(onUpdateRsvp).toHaveBeenCalledWith({
+				id: 12,
+				gameNightId: 4,
+				playerId: 7,
+				state: GameNightRsvpState.Maybe,
+			}),
+		);
 	});
 
 	it("shows the host first without a switch or a remove button", () => {

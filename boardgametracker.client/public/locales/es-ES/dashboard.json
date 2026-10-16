@@ -21,6 +21,8 @@
     "details": "{{time}} · {{location}} · anfitrión {{host}}",
     "coming_one": "{{count}} viene",
     "coming_other": "{{count}} vienen",
+    "maybe_one": "{{count}} quizás",
+    "maybe_other": "{{count}} quizás",
     "pending_one": "{{count}} sin respuesta",
     "pending_other": "{{count}} sin respuesta",
     "declined_one": "{{count}} no viene",

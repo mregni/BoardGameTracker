@@ -102,6 +102,11 @@ public class GameNightService : IGameNightService
             return null;
         }
 
+        if (!gameNight.HasPlayOpened(_dateTimeProvider.UtcNow))
+        {
+            throw new ValidationException(Constants.Errors.GameNightNotStarted);
+        }
+
         if (gameNight.RunningGames.Count > 0)
         {
             throw new ValidationException(Constants.Errors.GameNightGamesRunning);
@@ -359,7 +364,8 @@ public class GameNightService : IGameNightService
         {
             GameNightRsvpState.Accepted => "will come to",
             GameNightRsvpState.Declined => "will not come to",
-            _ => "is not sure about"
+            GameNightRsvpState.Maybe => "might come to",
+            _ => "has not decided yet about"
         };
 
         var subject = $"RSVP update: {gameNight.Title}";

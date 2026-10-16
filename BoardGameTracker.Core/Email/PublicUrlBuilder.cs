@@ -1,5 +1,4 @@
 using BoardGameTracker.Common;
-using BoardGameTracker.Common.Configuration;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Email.Interfaces;
@@ -29,18 +28,18 @@ public class PublicUrlBuilder : IPublicUrlBuilder
 
     public async Task<string?> GetConfiguredBaseUrlAsync()
     {
-        var url = await GetBaseUrlAsync();
-        return string.IsNullOrWhiteSpace(url) || string.Equals(url, ConfigDefaults.DefaultPublicUrl, StringComparison.OrdinalIgnoreCase) ? null : url;
+        var url = await _configRepository.GetConfigValueAsync<string>(Constants.AppConfig.PublicUrl);
+        return Normalize(url);
+    }
+
+    public static string? Normalize(string? url)
+    {
+        var trimmed = (url ?? string.Empty).Trim().TrimEnd('/');
+        return trimmed.Length == 0 ? null : trimmed;
     }
 
     private async Task<string> RequireBaseUrlAsync()
     {
         return await GetConfiguredBaseUrlAsync() ?? throw new DomainException(Constants.Errors.PublicUrlNotConfigured);
-    }
-
-    private async Task<string> GetBaseUrlAsync()
-    {
-        var url = await _configRepository.GetConfigValueAsync<string>(Constants.AppConfig.PublicUrl);
-        return (url ?? string.Empty).TrimEnd('/');
     }
 }

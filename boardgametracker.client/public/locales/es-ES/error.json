@@ -103,7 +103,8 @@
     "already-over": "Esta noche de juegos ya ha tenido lugar",
     "suggested-game-not-owned": "Solo puedes sugerir juegos que tengas para una noche de juegos",
     "games-running": "Termina o descarta los juegos en curso antes de cerrar la noche",
-    "ended": "Esta noche de juegos está cerrada, reábrela para añadir juegos"
+    "ended": "Esta noche de juegos está cerrada, reábrela para añadir juegos",
+    "not-started": "Esta noche de juegos aún no ha empezado, se puede jugar desde 12 horas antes del inicio"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD no cumple las reglas de contraseña (al menos 8 caracteres). Cámbiala o elimínala antes de restablecer de fábrica."

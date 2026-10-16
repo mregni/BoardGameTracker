@@ -4872,6 +4872,8 @@ export interface components {
             /** Format: int32 */
             acceptedCount: number;
             /** Format: int32 */
+            maybeCount: number;
+            /** Format: int32 */
             pendingCount: number;
             /** Format: int32 */
             declinedCount: number;
@@ -5122,7 +5124,7 @@ export interface components {
             state: components["schemas"]["GameNightRsvpState"];
         };
         /** @enum {string} */
-        GameNightRsvpState: "accepted" | "declined" | "pending";
+        GameNightRsvpState: "accepted" | "declined" | "pending" | "maybe";
         GameNightStatisticsDto: {
             period: components["schemas"]["GameNightStatisticsPeriod"];
             /** Format: int32 */

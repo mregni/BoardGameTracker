@@ -151,6 +151,37 @@ public class RunningGameServiceTests
     }
 
     [Fact]
+    public async Task Start_ShouldBeRefused_WhenTheNightIsMoreThanTwelveHoursAway()
+    {
+        SetupGameNight(GameNight.Create("Night", "", Now.AddDays(7), 1, 5));
+
+        var act = () => _service.Start(3, new StartRunningGameCommand { GameId = 9, PlayerIds = [1] });
+
+        var error = await act.Should().ThrowAsync<ValidationException>();
+        error.Which.Message.Should().Be(Constants.Errors.GameNightNotStarted);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Finish_ShouldBeRefused_WhenTheNightIsMoreThanTwelveHoursAway()
+    {
+        var runningGame = RunningGame.Create(3, 9, Now, [1]);
+        runningGame.Id = 12;
+        typeof(RunningGame).GetProperty(nameof(RunningGame.GameNight))!.SetValue(runningGame, GameNight.Create("Night", "", Now.AddHours(13), 1, 5));
+        _runningGameRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(runningGame);
+
+        var act = () => _service.Finish(12, new FinishRunningGameCommand { PlayerSessions = [] });
+
+        var error = await act.Should().ThrowAsync<ValidationException>();
+        error.Which.Message.Should().Be(Constants.Errors.GameNightNotStarted);
+        _runningGameRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<RunningGameByIdSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task Start_ShouldThrowEntityNotFound_WhenTheGameDoesNotExist()
     {
         SetupGameNight(CreateNight());

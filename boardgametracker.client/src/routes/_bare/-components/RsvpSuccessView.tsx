@@ -14,7 +14,8 @@ interface Props {
 
 const messages = {
 	[GameNightRsvpState.Accepted]: "answered-accepted",
-	[GameNightRsvpState.Pending]: "answered-maybe",
+	[GameNightRsvpState.Maybe]: "answered-maybe",
+	[GameNightRsvpState.Pending]: "answered-pending",
 	[GameNightRsvpState.Declined]: "answered-declined",
 } as const;
 

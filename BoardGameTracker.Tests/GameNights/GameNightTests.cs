@@ -21,6 +21,17 @@ public class GameNightTests
         return session;
     }
 
+    [Theory]
+    [InlineData(-24 * 7, false)]
+    [InlineData(-13, false)]
+    [InlineData(-12, true)]
+    [InlineData(-1, true)]
+    [InlineData(30, true)]
+    public void HasPlayOpened_ShouldOpenTwelveHoursBeforeTheStart(int hoursFromStart, bool expected)
+    {
+        CreateNight().HasPlayOpened(Start.AddHours(hoursFromStart)).Should().Be(expected);
+    }
+
     [Fact]
     public void Summary_ShouldBeEmpty_WhenNothingWasPlayed()
     {

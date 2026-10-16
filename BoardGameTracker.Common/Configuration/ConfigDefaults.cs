@@ -7,8 +7,6 @@ public record ConfigDefault(string Key, string Value);
 
 public static class ConfigDefaults
 {
-    public const string DefaultPublicUrl = "http://localhost:5444";
-
     public static IReadOnlyList<ConfigDefault> All { get; } = new List<ConfigDefault>
     {
         new(AppConfig.Currency, "€"),
@@ -18,7 +16,7 @@ public static class ConfigDefaults
         new(AppConfig.ShelfOfShameEnabled, "true"),
         new(AppConfig.ShelfOfShameMonths, AppConfig.DefaultShelfOfShameMonths.ToString(CultureInfo.InvariantCulture)),
         new(AppConfig.GameNightsEnabled, "true"),
-        new(AppConfig.PublicUrl, DefaultPublicUrl),
+        new(AppConfig.PublicUrl, ""),
         new(AppConfig.RsvpAuthenticationEnabled, "false"),
 
         new(BggConfig.ApiKey, ""),

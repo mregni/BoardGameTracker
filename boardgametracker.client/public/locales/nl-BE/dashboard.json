@@ -21,6 +21,8 @@
     "details": "{{time}} · {{location}} · host {{host}}",
     "coming_one": "{{count}} komt",
     "coming_other": "{{count}} komen",
+    "maybe_one": "{{count}} misschien",
+    "maybe_other": "{{count}} misschien",
     "pending_one": "{{count}} zonder antwoord",
     "pending_other": "{{count}} zonder antwoord",
     "declined_one": "{{count}} komt niet",

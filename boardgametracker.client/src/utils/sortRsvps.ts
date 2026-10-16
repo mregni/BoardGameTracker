@@ -4,8 +4,9 @@ type Compare = (a: GameNightRsvps, b: GameNightRsvps) => number;
 
 const stateOrder: Record<GameNightRsvpState, number> = {
 	[GameNightRsvpState.Accepted]: 0,
-	[GameNightRsvpState.Pending]: 1,
-	[GameNightRsvpState.Declined]: 2,
+	[GameNightRsvpState.Maybe]: 1,
+	[GameNightRsvpState.Pending]: 2,
+	[GameNightRsvpState.Declined]: 3,
 };
 
 export const byState: Compare = (a, b) => stateOrder[a.state] - stateOrder[b.state];

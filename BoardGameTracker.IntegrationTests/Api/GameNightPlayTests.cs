@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Enums;
@@ -171,6 +172,64 @@ public class GameNightPlayTests
     }
 
     [Fact]
+    public async Task PlayingOnANightAWeekAway_ShouldBeRefused_UntilTheNightOpens()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, gameId, hostId, _) = await CreateNightAsync(user, DateTime.UtcNow.AddDays(7));
+
+        var started = await user.PostAsJsonAsync($"/api/gamenight/{gameNightId}/running-games", new StartRunningGameCommand { GameId = gameId, PlayerIds = [hostId] });
+        var logged = await user.PostAsJsonAsync("/api/session", new CreateSessionCommand
+        {
+            GameId = gameId,
+            Start = DateTime.UtcNow.AddHours(-1),
+            Minutes = 30,
+            GameNightId = gameNightId,
+            PlayerSessions = [new CreatePlayerSessionCommand { PlayerId = hostId }],
+        });
+        var ended = await user.PostAsync($"/api/gamenight/{gameNightId}/end", null);
+
+        started.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await started.Content.ReadAsStringAsync()).Should().Contain(Constants.Errors.GameNightNotStarted);
+        logged.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await logged.Content.ReadAsStringAsync()).Should().Contain(Constants.Errors.GameNightNotStarted);
+        ended.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await ended.Content.ReadAsStringAsync()).Should().Contain(Constants.Errors.GameNightNotStarted);
+        var detail = await GetDetailAsync(user, gameNightId);
+        detail.GameNight.EndedAt.Should().BeNull();
+        detail.RunningGames.Should().BeEmpty();
+        detail.Sessions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FinishingAGame_ShouldBeRefused_WhenTheNightWasMovedAWeekAhead()
+    {
+        using var user = await _fixture.CreateClientAsAsync("user");
+        var (gameNightId, gameId, hostId, guestId) = await CreateNightAsync(user);
+        var started = await user.PostAsJsonAsync($"/api/gamenight/{gameNightId}/running-games", new StartRunningGameCommand { GameId = gameId, PlayerIds = [hostId] });
+        var runningGame = (await started.Content.ReadFromJsonAsync<RunningGameDto>(IntegrationFixture.Json))!;
+        var night = (await GetDetailAsync(user, gameNightId)).GameNight;
+        var moved = await user.PutAsJsonAsync("/api/gamenight", new UpdateGameNightCommand
+        {
+            Id = gameNightId,
+            Title = night.Title,
+            StartDate = DateTime.UtcNow.AddDays(7),
+            HostId = hostId,
+            LocationId = night.LocationId,
+            InvitedPlayerIds = [guestId],
+        });
+        moved.StatusCode.Should().Be(HttpStatusCode.OK, await moved.Content.ReadAsStringAsync());
+
+        var finished = await user.PostAsJsonAsync($"/api/gamenight/running-games/{runningGame.Id}/finish", new FinishRunningGameCommand
+        {
+            PlayerSessions = [new CreatePlayerSessionCommand { PlayerId = hostId }],
+        });
+
+        finished.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await finished.Content.ReadAsStringAsync()).Should().Contain(Constants.Errors.GameNightNotStarted);
+        (await GetDetailAsync(user, gameNightId)).RunningGames.Should().ContainSingle(x => x.Id == runningGame.Id);
+    }
+
+    [Fact]
     public async Task StartingAGame_ShouldBeRefused_ForAReader()
     {
         using var user = await _fixture.CreateClientAsAsync("user");
@@ -211,7 +270,7 @@ public class GameNightPlayTests
         return id((await response.Content.ReadFromJsonAsync<TDto>(IntegrationFixture.Json))!);
     }
 
-    private static async Task<(int GameNightId, int GameId, int HostId, int GuestId)> CreateNightAsync(HttpClient user)
+    private static async Task<(int GameNightId, int GameId, int HostId, int GuestId)> CreateNightAsync(HttpClient user, DateTime? startDate = null)
     {
         var suffix = Guid.NewGuid().ToString("N")[..6];
         var hostId = await CreateAsync<PlayerDto>(user, "/api/player", new CreatePlayerCommand { Name = "Host " + suffix }, x => x.Id);
@@ -221,7 +280,7 @@ public class GameNightPlayTests
         var gameNightId = await CreateAsync<GameNightDto>(user, "/api/gamenight", new CreateGameNightCommand
         {
             Title = "Strategy night",
-            StartDate = DateTime.UtcNow.AddHours(-3),
+            StartDate = startDate ?? DateTime.UtcNow.AddHours(-3),
             HostId = hostId,
             LocationId = locationId,
             InvitedPlayerIds = [guestId],

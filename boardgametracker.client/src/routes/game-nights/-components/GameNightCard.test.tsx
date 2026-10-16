@@ -62,6 +62,7 @@ describe("GameNightCard", () => {
 		renderWithProviders(
 			<GameNightCard
 				gameNight={gameNight(addDays(new Date(), 1))}
+				players={[]}
 				settings={settings}
 				canWrite
 				onEdit={vi.fn()}
@@ -82,6 +83,7 @@ describe("GameNightCard", () => {
 		renderWithProviders(
 			<GameNightCard
 				gameNight={gameNight(addDays(new Date(), 3))}
+				players={[]}
 				settings={settings}
 				canWrite
 				onEdit={vi.fn()}
@@ -104,6 +106,7 @@ describe("GameNightCard", () => {
 		renderWithProviders(
 			<GameNightCard
 				gameNight={night}
+				players={[]}
 				settings={settings}
 				canWrite
 				onEdit={vi.fn()}
@@ -121,6 +124,7 @@ describe("GameNightCard", () => {
 		renderWithProviders(
 			<GameNightCard
 				gameNight={gameNight(addDays(new Date(), 3))}
+				players={[]}
 				settings={settings}
 				canWrite={false}
 				onEdit={vi.fn()}
@@ -210,6 +214,7 @@ describe("GameNightCard title", () => {
 		renderWithProviders(
 			<GameNightCard
 				gameNight={gameNight(addDays(new Date(), 1))}
+				players={[]}
 				settings={settings}
 				canWrite={false}
 				onEdit={vi.fn()}
@@ -229,6 +234,7 @@ describe("GameNightCard open button", () => {
 			<>
 				<GameNightCard
 					gameNight={gameNight(addDays(new Date(), 1))}
+					players={[]}
 					settings={settings}
 					canWrite={false}
 					highlight
@@ -238,6 +244,7 @@ describe("GameNightCard open button", () => {
 				/>
 				<GameNightCard
 					gameNight={gameNight(addDays(new Date(), 8))}
+					players={[]}
 					settings={settings}
 					canWrite
 					onEdit={vi.fn()}

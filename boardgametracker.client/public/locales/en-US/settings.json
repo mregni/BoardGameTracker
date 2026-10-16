@@ -25,6 +25,7 @@
 			"label": "Public URL",
 			"placeholder": "https://myboardgametracker.app",
 			"invalid": "Enter a valid http(s) URL",
+			"not-set": "Not set. Invitation and password-reset emails are not sent, and SSO uses the address you open the app on.",
 			"insecure-warning": "The public URL uses http while BoardGameTracker is opened over https. Links in emails, RSVP invitations and SSO redirects will use the insecure address.",
 			"host-mismatch-warning": "The public URL points to a different host than {{host}}. Links in emails, RSVP invitations and SSO redirects will use that host."
 		},

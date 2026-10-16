@@ -21,6 +21,8 @@
     "details": "{{time}} · {{location}} · host {{host}}",
     "coming_one": "{{count}} coming",
     "coming_other": "{{count}} coming",
+    "maybe_one": "{{count}} maybe",
+    "maybe_other": "{{count}} maybe",
     "pending_one": "{{count}} no answer",
     "pending_other": "{{count}} no answer",
     "declined_one": "{{count}} not coming",

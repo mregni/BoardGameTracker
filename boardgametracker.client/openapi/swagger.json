@@ -6191,6 +6191,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "maybeCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "pendingCount": {
             "type": "integer",
             "format": "int32"
@@ -6911,7 +6915,8 @@
         "enum": [
           "accepted",
           "declined",
-          "pending"
+          "pending",
+          "maybe"
         ],
         "type": "string"
       },
