@@ -20,26 +20,35 @@ interface Props {
 	data: PieChartDatum[];
 	showLegend?: boolean;
 	tooltipPrefix: string;
+	ariaLabel?: string;
 }
 
 export const BgtPieChart = (props: Props) => {
-	const { data, showLegend = false, tooltipPrefix } = props;
+	const { data, showLegend = false, tooltipPrefix, ariaLabel } = props;
 	const { t } = useTranslation();
 
 	if (!data || data.length === 0) return null;
 
+	const coloredData = data.map((item, index) => ({
+		...item,
+		color: item.color ?? pieColors[index % pieColors.length],
+	}));
+	const total = data.reduce((sum, item) => sum + item.value, 0);
+	const label =
+		ariaLabel ?? `${data.map((item) => `${item.label}: ${item.value}`).join(", ")}, ${t("total")}: ${total}`;
+
 	return (
 		<>
 			<div className="flex items-center flex-col justify-between h-full mb-4">
-				<div className="relative w-48 h-48">
+				<div className="relative w-48 h-48" role="img" aria-label={label}>
 					<ResponsivePie
-						data={data}
+						data={coloredData}
 						margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
 						innerRadius={0.6}
 						padAngle={2}
 						cornerRadius={3}
 						activeOuterRadiusOffset={8}
-						colors={pieColors}
+						colors={{ datum: "data.color" }}
 						enableArcLinkLabels={false}
 						enableArcLabels={false}
 						borderWidth={0}
@@ -49,7 +58,6 @@ export const BgtPieChart = (props: Props) => {
 						}}
 						theme={theme}
 						tooltip={({ datum }) => {
-							const total = data.reduce((sum, item) => sum + item.value, 0);
 							const percentage = ((datum.value / total) * 100).toFixed(1);
 							return (
 								<div className="bg-background border border-primary/30 rounded-lg p-3 shadow-lg min-w-40">
@@ -63,7 +71,7 @@ export const BgtPieChart = (props: Props) => {
 					/>
 					<div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
 						<BgtText color="cyan" size="8">
-							{data.reduce((sum, item) => sum + item.value, 0)}
+							{total}
 						</BgtText>
 						<div className="text-white/50 text-xs">{t("total")}</div>
 					</div>
@@ -71,10 +79,14 @@ export const BgtPieChart = (props: Props) => {
 			</div>
 			{showLegend && (
 				<div className="space-y-2">
-					{data.map((item, index) => (
+					{coloredData.map((item) => (
 						<div key={String(item.id ?? item.label)} className="flex items-center justify-between">
 							<div className="flex items-center gap-3">
-								<div className="w-3 h-3 rounded-full" style={{ backgroundColor: pieColors[index] }} />
+								<div
+									className="w-3 h-3 rounded-full"
+									style={{ backgroundColor: item.color }}
+									data-testid={`legend-swatch-${item.id}`}
+								/>
 								<span className="text-white/70 text-sm">{item.label}</span>
 							</div>
 							<BgtText color="white">{item.value}</BgtText>

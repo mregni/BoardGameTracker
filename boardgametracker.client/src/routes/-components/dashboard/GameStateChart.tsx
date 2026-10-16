@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import GamePad from "@/assets/icons/gamepad.svg?react";
 import type { GameStateChart } from "@/models";
 
-import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
+import { gameStateChartColors, getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { BgtChartCard } from "../../../components/BgtCard/BgtChartCard";
 import { BgtPieChart } from "../../../components/BgtCharts/BgtPieChart";
 import { BgtNoData } from "../../../components/BgtNoData/BgtNoData";
@@ -23,6 +23,7 @@ export const GameStateChartCard = (props: Props) => {
 					id: rank.type,
 					label: t(getItemStateTranslationKey(rank.type, false)),
 					value: rank.gameCount,
+					color: gameStateChartColors[rank.type],
 				}))
 				.reverse();
 		}

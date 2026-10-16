@@ -30,8 +30,10 @@
     "most-won-game_one": "{{player}} won het vaakst van {{opponent}} in {{game}} ({{count}} keer)",
     "most-won-game_other": "{{player}} won het vaakst van {{opponent}} in {{game}} ({{count}} keer)",
     "last-session": "De laatste sessie werd gewonnen door {{player}} in {{game}}",
-    "most-played-together": "Meest samen gespeeld: {{game}} ({{count}} sessies)",
-    "closest-game": "{{player}} won met slechts {{points}} punten verschil in {{game}}",
+    "most-played-together_one": "Meest samen gespeeld: {{game}} ({{count}} sessie)",
+    "most-played-together_other": "Meest samen gespeeld: {{game}} ({{count}} sessies)",
+    "closest-game_one": "{{player}} won met slechts {{count}} punt verschil in {{game}}",
+    "closest-game_other": "{{player}} won met slechts {{count}} punten verschil in {{game}}",
     "first-game-together": "Eerste spel samen: {{game}} op {{date}}"
   },
   "stats": {
