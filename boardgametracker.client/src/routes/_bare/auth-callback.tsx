@@ -12,6 +12,7 @@ import { useToasts } from "@/routes/-hooks/useToasts";
 import { adoptOidcLoginCall } from "@/services/authService";
 import { translateApiError } from "@/utils/errorUtils";
 import { safeRedirectPath } from "@/utils/redirectUtils";
+import { announceSessionChange } from "@/utils/sessionSync";
 
 const callbackSearchSchema = z.object({
 	error: z.string().optional(),
@@ -28,7 +29,7 @@ function AuthCallbackPage() {
 	const navigate = useNavigate();
 	const { t } = useTranslation("auth");
 	const { successToast } = useToasts();
-	const setTokens = useAuth((s) => s.setTokens);
+	const setSession = useAuth((s) => s.setSession);
 	const isAuthenticated = useAuth((s) => s.isAuthenticated);
 	const { error, redirect, linked } = Route.useSearch();
 	const [failure, setFailure] = useState<string | null>(null);
@@ -56,7 +57,8 @@ function AuthCallbackPage() {
 			.then((login) => {
 				if (cancelled || handled.current) return;
 				handled.current = true;
-				setTokens(login.accessToken, login.refreshToken, login.user);
+				setSession(login.accessToken, login.user);
+				announceSessionChange("login");
 				navigate({ to: safeRedirectPath(redirect), replace: true });
 			})
 			.catch(() => {
@@ -68,7 +70,7 @@ function AuthCallbackPage() {
 		return () => {
 			cancelled = true;
 		};
-	}, [error, linked, redirect, navigate, setTokens, successToast]);
+	}, [error, linked, redirect, navigate, setSession, successToast]);
 
 	return (
 		<BgtPage>

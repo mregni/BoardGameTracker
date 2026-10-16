@@ -28,19 +28,19 @@ describe("useResetQueriesOnIdentityChange", () => {
 	it("resets every query when someone signs in, so data cached for the anonymous visitor is refetched", () => {
 		renderHook(() => useResetQueriesOnIdentityChange(), { wrapper });
 
-		act(() => useAuth.getState().setTokens("access", "refresh", admin));
+		act(() => useAuth.getState().setSession("access", admin));
 
 		expect(queryClient.resetQueries).toHaveBeenCalledTimes(1);
 	});
 
 	it("ignores a token refresh for the same user and resets again on a role change or sign-out", () => {
 		renderHook(() => useResetQueriesOnIdentityChange(), { wrapper });
-		act(() => useAuth.getState().setTokens("access", "refresh", admin));
+		act(() => useAuth.getState().setSession("access", admin));
 
-		act(() => useAuth.getState().setTokens("access-2", "refresh-2", { ...admin }));
+		act(() => useAuth.getState().setSession("access-2", { ...admin }));
 		expect(queryClient.resetQueries).toHaveBeenCalledTimes(1);
 
-		act(() => useAuth.getState().setTokens("access-3", "refresh-3", { ...admin, roles: ["User"] }));
+		act(() => useAuth.getState().setSession("access-3", { ...admin, roles: ["User"] }));
 		expect(queryClient.resetQueries).toHaveBeenCalledTimes(2);
 
 		act(() => useAuth.getState().clearAuth());

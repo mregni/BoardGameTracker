@@ -6,9 +6,10 @@ const mocks = vi.hoisted(() => ({
 	navigate: vi.fn(),
 	search: {} as { error?: string; redirect?: string; linked?: string },
 	adoptOidcLoginCall: vi.fn(),
-	setTokens: vi.fn(),
+	setSession: vi.fn(),
 	isAuthenticated: false,
 	successToast: vi.fn(),
+	announceSessionChange: vi.fn(),
 	captured: {} as { Page: FC },
 }));
 
@@ -26,8 +27,12 @@ vi.mock("@/services/authService", () => ({
 }));
 
 vi.mock("@/hooks/useAuth", () => ({
-	useAuth: (selector: (state: { setTokens: typeof mocks.setTokens; isAuthenticated: boolean }) => unknown) =>
-		selector({ setTokens: mocks.setTokens, isAuthenticated: mocks.isAuthenticated }),
+	useAuth: (selector: (state: { setSession: typeof mocks.setSession; isAuthenticated: boolean }) => unknown) =>
+		selector({ setSession: mocks.setSession, isAuthenticated: mocks.isAuthenticated }),
+}));
+
+vi.mock("@/utils/sessionSync", () => ({
+	announceSessionChange: (change: string) => mocks.announceSessionChange(change),
 }));
 
 vi.mock("@/routes/-hooks/useToasts", () => ({
@@ -50,7 +55,6 @@ import "./auth-callback";
 
 const login = {
 	accessToken: "access",
-	refreshToken: "refresh",
 	expiresAt: new Date(),
 	user: { id: "u1", username: "jane", displayName: "Jane", roles: ["User"] },
 };
@@ -68,7 +72,8 @@ describe("AuthCallbackPage", () => {
 
 		renderWithTheme(<mocks.captured.Page />);
 
-		await waitFor(() => expect(mocks.setTokens).toHaveBeenCalledWith("access", "refresh", login.user));
+		await waitFor(() => expect(mocks.setSession).toHaveBeenCalledWith("access", login.user));
+		expect(mocks.announceSessionChange).toHaveBeenCalledWith("login");
 		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/3", replace: true });
 	});
 
@@ -85,7 +90,7 @@ describe("AuthCallbackPage", () => {
 		rerender(<mocks.captured.Page />);
 		resolveAdopt(login);
 
-		await waitFor(() => expect(mocks.setTokens).toHaveBeenCalledTimes(1));
+		await waitFor(() => expect(mocks.setSession).toHaveBeenCalledTimes(1));
 		expect(mocks.adoptOidcLoginCall).toHaveBeenCalledTimes(1);
 		expect(mocks.navigate).toHaveBeenCalledTimes(1);
 		expect(screen.queryByText("The sign-in took too long to complete. Please try again.")).not.toBeInTheDocument();
@@ -129,7 +134,7 @@ describe("AuthCallbackPage", () => {
 		renderWithTheme(<mocks.captured.Page />);
 
 		expect(await screen.findByText("The sign-in took too long to complete. Please try again.")).toBeInTheDocument();
-		expect(mocks.setTokens).not.toHaveBeenCalled();
+		expect(mocks.setSession).not.toHaveBeenCalled();
 	});
 
 	it("confirms a linked provider and returns to the settings", async () => {

@@ -17,6 +17,7 @@ import type {
 import type { ExternalLogin } from "@/models/Auth/Oidc";
 import { isApiError } from "@/models/Common/ApiError";
 import { axiosInstance } from "../utils/axiosInstance";
+import { SESSION_HEADERS } from "../utils/tokenRefresh";
 
 const domain = "auth";
 
@@ -26,8 +27,8 @@ export const loginCall = (request: LoginRequest): Promise<LoginResponse> => {
 	});
 };
 
-export const logoutCall = (refreshToken?: string): Promise<void> => {
-	return axiosInstance.post(`${domain}/logout`, { refreshToken });
+export const logoutCall = (): Promise<void> => {
+	return axiosInstance.post(`${domain}/logout`, null, { headers: SESSION_HEADERS });
 };
 
 export const getAuthStatusCall = (): Promise<AuthStatus> => {

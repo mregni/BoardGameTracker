@@ -7,11 +7,28 @@ const authService = vi.hoisted(() => ({
 	getAuthStatusCall: vi.fn(),
 }));
 
-vi.mock("@/services/authService", () => authService);
+const sessionSync = vi.hoisted(() => ({
+	announceSessionChange: vi.fn(),
+}));
 
-import { useAuth } from "./useAuth";
+vi.hoisted(() => {
+	localStorage.setItem(
+		"bgt-auth",
+		JSON.stringify({ state: { accessToken: "old", refreshToken: "old-refresh", isAuthenticated: true }, version: 0 }),
+	);
+});
+
+vi.mock("@/services/authService", () => authService);
+vi.mock("@/utils/sessionSync", () => sessionSync);
+
+import { LEGACY_AUTH_STORAGE_KEY, removeLegacySession, useAuth } from "./useAuth";
 
 const user: User = { id: "u1", username: "alice", displayName: null, roles: ["User"] };
+
+const storedValues = () => [
+	...Object.keys(localStorage).map((key) => localStorage.getItem(key) ?? ""),
+	...Object.keys(sessionStorage).map((key) => sessionStorage.getItem(key) ?? ""),
+];
 
 describe("useAuth", () => {
 	beforeEach(() => {
@@ -19,18 +36,35 @@ describe("useAuth", () => {
 		useAuth.getState().clearAuth();
 	});
 
-	it("login stores the tokens and the user", async () => {
-		authService.loginCall.mockResolvedValue({ accessToken: "access", refreshToken: "refresh", user });
+	it("drops the refresh token a previous version kept in localStorage", () => {
+		expect(localStorage.getItem(LEGACY_AUTH_STORAGE_KEY)).toBeNull();
+		expect(useAuth.getState().isAuthenticated).toBe(false);
+		expect(useAuth.getState().accessToken).toBeNull();
+	});
+
+	it("tolerates storage that cannot be reached", () => {
+		const removeItem = vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
+			throw new Error("blocked");
+		});
+
+		expect(() => removeLegacySession()).not.toThrow();
+		removeItem.mockRestore();
+	});
+
+	it("login keeps the access token in memory only and tells other tabs", async () => {
+		authService.loginCall.mockResolvedValue({ accessToken: "access", expiresAt: new Date(), user });
 
 		await useAuth.getState().login({ username: "alice", password: "pw" });
 
 		const state = useAuth.getState();
 		expect(state.isAuthenticated).toBe(true);
 		expect(state.accessToken).toBe("access");
-		expect(state.refreshToken).toBe("refresh");
+		expect(state).not.toHaveProperty("refreshToken");
 		expect(state.hasRole("User")).toBe(true);
 		expect(state.hasRole("Admin")).toBe(false);
 		expect(state.isLoading).toBe(false);
+		expect(storedValues().some((value) => value.includes("access"))).toBe(false);
+		expect(sessionSync.announceSessionChange).toHaveBeenCalledWith("login");
 	});
 
 	it("login resets the loading flag and rethrows the original error when the call fails", async () => {
@@ -41,23 +75,28 @@ describe("useAuth", () => {
 
 		expect(useAuth.getState().isAuthenticated).toBe(false);
 		expect(useAuth.getState().isLoading).toBe(false);
+		expect(sessionSync.announceSessionChange).not.toHaveBeenCalled();
 	});
 
-	it("logout revokes the stored refresh token and clears the session even when the call fails", async () => {
-		useAuth.getState().setTokens("access", "refresh", user);
+	it("logout asks the server to revoke the cookie session and clears memory even when the call fails", async () => {
+		useAuth.getState().setSession("access", user);
 		authService.logoutCall.mockRejectedValue(new Error("network"));
 
 		await expect(useAuth.getState().logout()).rejects.toThrow("network");
 
-		expect(authService.logoutCall).toHaveBeenCalledWith("refresh");
+		expect(authService.logoutCall).toHaveBeenCalledWith();
 		expect(useAuth.getState().isAuthenticated).toBe(false);
 		expect(useAuth.getState().accessToken).toBeNull();
+		expect(useAuth.getState().user).toBeNull();
+		expect(sessionSync.announceSessionChange).toHaveBeenCalledWith("logout");
 	});
 
-	it("logout skips the server call when there is no refresh token", async () => {
+	it("logout always calls the server because only the server can see the cookie", async () => {
+		authService.logoutCall.mockResolvedValue(undefined);
+
 		await useAuth.getState().logout();
 
-		expect(authService.logoutCall).not.toHaveBeenCalled();
+		expect(authService.logoutCall).toHaveBeenCalledTimes(1);
 	});
 
 	it("fetchAuthStatus shares one in-flight request", async () => {
