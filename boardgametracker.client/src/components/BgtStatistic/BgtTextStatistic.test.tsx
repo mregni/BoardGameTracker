@@ -87,6 +87,18 @@ describe("BgtTextStatistic", () => {
 		});
 	});
 
+	describe("Detail", () => {
+		it("should render the small detail line under the value", () => {
+			renderWithTheme(<BgtTextStatistic title="Games" content={52} detail="41 owned · 4 expansions" />);
+			expect(screen.getByTestId("statistic-detail")).toHaveTextContent("41 owned · 4 expansions");
+		});
+
+		it("should not render a detail line without detail", () => {
+			renderWithTheme(<BgtTextStatistic title="Games" content={52} />);
+			expect(screen.queryByTestId("statistic-detail")).not.toBeInTheDocument();
+		});
+	});
+
 	describe("Edge Cases", () => {
 		it("should handle zero content", () => {
 			renderWithTheme(<BgtTextStatistic title="Losses" content={0} />);

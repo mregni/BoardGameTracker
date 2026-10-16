@@ -1,20 +1,97 @@
 {
-  "welcome-back-title": "Welcome back, {{name}}!",
-  "welcome-back_one": "You've played {{count}} session.",
-  "welcome-back_other": "You've played {{count}} sessions.",
   "empty": {
     "title": "No games in your collection",
     "description": "You haven't added any games to your collection yet. Start by adding your first game to track your gameplay sessions and statistics.",
     "button": "Add Your First Game"
   },
-  "charts": {
-    "collection": "Collection"
+  "welcome": {
+    "title": "Welcome back, {{name}}",
+    "linked_one": "This month you played {{played}} of the group's {{total}} session and won {{wins}}.",
+    "linked_other": "This month you played {{played}} of the group's {{total}} sessions and won {{wins}}.",
+    "group_one": "This month the group played {{total}} session.",
+    "group_other": "This month the group played {{total}} sessions."
   },
-  "recent-activity": "Recent activity",
-  "recent-added-games": "Recently added games",
-  "welcome-back-linked_one": "As {{player}}, you've played {{played}} of {{count}} session.",
-  "welcome-back-linked_other": "As {{player}}, you've played {{played}} of {{count}} sessions.",
-  "activity": {
-    "won": "<winner>{{winner}}</winner> won <game>{{game}}</game>"
+  "actions": {
+    "add-game": "Add game",
+    "log-session": "Log session"
+  },
+  "night": {
+    "label": "Next game night",
+    "when": "Next game night · {{when}}",
+    "details": "{{time}} · {{location}} · host {{host}}",
+    "coming_one": "{{count}} coming",
+    "coming_other": "{{count}} coming",
+    "pending_one": "{{count}} no answer",
+    "pending_other": "{{count}} no answer",
+    "declined_one": "{{count}} not coming",
+    "declined_other": "{{count}} not coming",
+    "suggested": "Suggested:",
+    "open": "Open night",
+    "more_one": "{{count}} more planned",
+    "more_other": "{{count}} more planned",
+    "none": "No game night planned",
+    "plan": "Plan one"
+  },
+  "tiles": {
+    "games": "Games",
+    "games-detail_one": "{{owned}} owned · {{expansions}} expansion",
+    "games-detail_other": "{{owned}} owned · {{expansions}} expansions",
+    "players": "Players",
+    "players-detail_one": "{{value}} played this month",
+    "players-detail_other": "{{value}} played this month",
+    "sessions": "Sessions",
+    "sessions-detail_one": "{{value}} this month",
+    "sessions-detail_other": "{{value}} this month",
+    "play-time": "Play time",
+    "play-time-detail": "avg {{duration}} a session"
+  },
+  "duration": {
+    "minutes": "{{minutes}} min",
+    "hours": "{{hours}}h",
+    "hours-minutes": "{{hours}}h {{minutes}}m"
+  },
+  "last-sessions": {
+    "title": "Last sessions",
+    "players_one": "{{count}} player",
+    "players_other": "{{count}} players",
+    "no-winner": "No winner",
+    "empty": "No sessions logged yet"
+  },
+  "shame": {
+    "title_one": "{{value}} game on the shelf of shame",
+    "title_other": "{{value}} games on the shelf of shame",
+    "never-played_one": "{{value}} never played",
+    "never-played_other": "{{value}} never played",
+    "paid": "{{value}} paid"
+  },
+  "top-players": {
+    "title": "Top players",
+    "leaderboard": "Leaderboard",
+    "sessions_one": "{{value}} session",
+    "sessions_other": "{{value}} sessions",
+    "won": "{{percent}} won",
+    "row_one": "{{name}}: {{wins}} wins of {{total}} session",
+    "row_other": "{{name}}: {{wins}} wins of {{total}} sessions",
+    "hint": "Ranked by wins. The bar is the win rate.",
+    "empty": "No sessions played yet"
+  },
+  "most-played": {
+    "title": "Most played",
+    "period": "Period",
+    "this-month": "This month",
+    "all-time": "All time",
+    "times": "{{value}}×",
+    "empty": "No sessions played yet",
+    "empty-month": "Nothing played this month yet"
+  },
+  "collection": {
+    "title": "Collection",
+    "games": "Games",
+    "summary_one": "{{total}} game: {{parts}}",
+    "summary_other": "{{total}} games: {{parts}}",
+    "paid": "Paid for owned games",
+    "priced": "{{priced}} of {{owned}} priced",
+    "no-prices": "No prices yet",
+    "recently-added": "Recently added"
   }
 }

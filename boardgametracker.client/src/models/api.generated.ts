@@ -4250,9 +4250,52 @@ export interface components {
         CreateWatchCommand: {
             url: string;
         };
+        DashboardGameDto: {
+            /** Format: int32 */
+            id: number;
+            title: string;
+            image: string | null;
+        };
+        DashboardGameNightDto: {
+            /** Format: int32 */
+            id: number;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
+            locationName: string;
+            /** Format: int32 */
+            hostId: number;
+            hostName: string;
+            /** Format: int32 */
+            acceptedCount: number;
+            /** Format: int32 */
+            pendingCount: number;
+            /** Format: int32 */
+            declinedCount: number;
+            suggestedGames: components["schemas"]["DashboardGameDto"][];
+        };
+        DashboardLinkedPlayerDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            /** Format: int32 */
+            sessionsThisMonth: number;
+            /** Format: int32 */
+            winsThisMonth: number;
+        };
+        DashboardShelfOfShameDto: {
+            /** Format: int32 */
+            count: number;
+            /** Format: int32 */
+            neverPlayedCount: number;
+            /** Format: double */
+            totalValue: number | null;
+        };
         DashboardStatisticsDto: {
             /** Format: int32 */
             totalGames: number;
+            /** Format: int32 */
+            ownedGames: number;
             /** Format: int32 */
             activePlayers: number;
             /** Format: int32 */
@@ -4261,20 +4304,27 @@ export interface components {
             totalPlayedTime: number;
             /** Format: double */
             totalCollectionValue: number | null;
-            /** Format: double */
-            avgGamePrice: number | null;
             /** Format: int32 */
             pricedGameCount: number;
             /** Format: int32 */
             expansionsOwned: number;
             /** Format: double */
             avgSessionTime: number;
+            /** Format: int32 */
+            sessionsThisMonth: number;
+            /** Format: int32 */
+            activePlayersThisMonth: number;
+            linkedPlayer: components["schemas"]["DashboardLinkedPlayerDto"];
+            nextGameNight: components["schemas"]["DashboardGameNightDto"];
+            /** Format: int32 */
+            plannedGameNights: number;
+            shelfOfShame: components["schemas"]["DashboardShelfOfShameDto"];
             recentActivities: components["schemas"]["RecentActivityDto"][];
             collection: components["schemas"]["GameStateChart"][];
             mostPlayedGames: components["schemas"]["MostPlayedGameDto"][];
+            mostPlayedGamesThisMonth: components["schemas"]["MostPlayedGameDto"][];
             topPlayers: components["schemas"]["DashboardTopPlayerDto"][];
             recentAddedGames: components["schemas"]["RecentGameDto"][];
-            sessionsByDayOfWeek: components["schemas"]["PlayByDay"][];
         };
         DashboardTopPlayerDto: {
             /** Format: int32 */
@@ -4285,6 +4335,12 @@ export interface components {
             playCount: number;
             /** Format: int32 */
             winCount: number;
+        };
+        DashboardWinnerDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            image: string | null;
         };
         /** @enum {string} */
         DayOfWeek: "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";
@@ -4808,9 +4864,7 @@ export interface components {
             playerCount: number;
             /** Format: double */
             durationInMinutes: number;
-            /** Format: int32 */
-            winnerId: number | null;
-            winnerName: string | null;
+            winners: components["schemas"]["DashboardWinnerDto"][];
         };
         RecentGameDto: {
             /** Format: int32 */

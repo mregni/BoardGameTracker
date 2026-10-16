@@ -1,3 +1,4 @@
+﻿using System.Security.Claims;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Core.Dashboard.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +23,7 @@ public class DashboardController : ControllerBase
     [ProducesResponseType<DashboardStatisticsDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDashboardStatistics(CancellationToken cancellationToken)
     {
-        var statistics = await _dashboardService.GetStatistics(cancellationToken);
+        var statistics = await _dashboardService.GetStatistics(User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken);
         return Ok(statistics);
     }
 }

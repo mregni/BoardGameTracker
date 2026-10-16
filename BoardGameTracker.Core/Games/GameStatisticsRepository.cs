@@ -1,4 +1,4 @@
-using BoardGameTracker.Common.Entities;
+﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
@@ -100,14 +100,6 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .SumAsync(x => (x.End - x.Start).TotalMinutes, cancellationToken);
     }
 
-    public async Task<decimal?> GetMeanPayedAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.Games
-            .AsNoTracking()
-            .Where(x => x.State == GameState.Owned && x.BuyingPrice != null)
-            .AverageAsync(x => (decimal?)x.BuyingPrice!.Amount, cancellationToken);
-    }
-
     public Task<int> CountPricedOwnedGamesAsync(CancellationToken cancellationToken = default)
     {
         return _context.Games
@@ -187,11 +179,19 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGames(int count, CancellationToken cancellationToken = default)
+    public Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGames(int count, CancellationToken cancellationToken = default)
     {
-        var result = await _context.Sessions
-            .AsNoTracking()
-            .Include(x => x.Game)
+        return MostPlayedGames(_context.Sessions.AsNoTracking(), count, cancellationToken);
+    }
+
+    public Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGamesSince(int count, DateTime since, CancellationToken cancellationToken = default)
+    {
+        return MostPlayedGames(_context.Sessions.AsNoTracking().Where(x => x.Start >= since), count, cancellationToken);
+    }
+
+    private static async Task<List<(int GameId, string Title, string? Image, int PlayCount)>> MostPlayedGames(IQueryable<Session> sessions, int count, CancellationToken cancellationToken)
+    {
+        var result = await sessions
             .GroupBy(x => x.GameId)
             .Select(g => new
             {
@@ -201,6 +201,7 @@ public class GameStatisticsRepository : IGameStatisticsRepository
                 PlayCount = g.Count()
             })
             .OrderByDescending(x => x.PlayCount)
+            .ThenBy(x => x.Title)
             .Take(count)
             .ToListAsync(cancellationToken);
 

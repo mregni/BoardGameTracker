@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exceptions;
@@ -108,6 +108,49 @@ public class ShameServiceTests
         var result = await _shameService.CountShelfOfShameGames();
 
         result.Should().Be(0);
+
+        _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region GetShameSummary Tests
+
+    [Fact]
+    public async Task GetShameSummary_ShouldSummariseGamesOlderThanConfiguredCutoff_WhenFeatureEnabled()
+    {
+        var summary = new ShameSummary { Count = 9, NeverPlayedCount = 5, TotalValue = 365m };
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false))
+            .ReturnsAsync(true);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameMonths, Constants.AppConfig.DefaultShelfOfShameMonths))
+            .ReturnsAsync(6);
+        _gameRepositoryMock
+            .Setup(x => x.GetShameSummary(FixedUtcNow.AddMonths(-6), TestContext.Current.CancellationToken))
+            .ReturnsAsync(summary);
+
+        var result = await _shameService.GetShameSummary(TestContext.Current.CancellationToken);
+
+        result.Should().BeSameAs(summary);
+
+        _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameMonths, Constants.AppConfig.DefaultShelfOfShameMonths), Times.Once);
+        _gameRepositoryMock.Verify(x => x.GetShameSummary(FixedUtcNow.AddMonths(-6), TestContext.Current.CancellationToken), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetShameSummary_ShouldReturnNull_WhenFeatureDisabled()
+    {
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false))
+            .ReturnsAsync(false);
+
+        var result = await _shameService.GetShameSummary(TestContext.Current.CancellationToken);
+
+        result.Should().BeNull();
 
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false), Times.Once);
         VerifyNoOtherCalls();

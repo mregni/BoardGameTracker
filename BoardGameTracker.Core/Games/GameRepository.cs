@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using Ardalis.Specification.EntityFrameworkCore;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models;
@@ -160,6 +160,21 @@ public class GameRepository : EfRepository<Game>, IGameRepository
     public Task<int> CountGamesWithNoRecentSessions(DateTime cutoffDate, CancellationToken cancellationToken = default)
     {
         return CountAsync(new GamesWithNoRecentSessionsSpec(cutoffDate), cancellationToken);
+    }
+
+    public async Task<ShameSummary> GetShameSummary(DateTime cutoffDate, CancellationToken cancellationToken = default)
+    {
+        var summary = await ApplySpecification(new GamesWithNoRecentSessionsSpec(cutoffDate), evaluateCriteriaOnly: true)
+            .GroupBy(_ => 1)
+            .Select(g => new ShameSummary
+            {
+                Count = g.Count(),
+                NeverPlayedCount = g.Count(x => x.Sessions.Count == 0),
+                TotalValue = g.Sum(x => x.BuyingPrice != null ? (decimal?)x.BuyingPrice.Amount : null)
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return summary ?? new ShameSummary();
     }
 
     public Task<List<ShameGame>> GetShameGames(DateTime cutoffDate)

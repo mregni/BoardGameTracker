@@ -1,20 +1,97 @@
 {
-  "welcome-back-title": "Welkom terug, {{name}}!",
-  "welcome-back_one": "Je hebt {{count}} sessie gespeeld.",
-  "welcome-back_other": "Je hebt {{count}} sessies gespeeld.",
   "empty": {
     "title": "Geen spellen in je collectie",
     "description": "Je hebt nog geen spellen aan je collectie toegevoegd. Voeg je eerste spel toe om je spelsessies en statistieken bij te houden.",
     "button": "Voeg je eerste spel toe"
   },
-  "charts": {
-    "collection": "Collectie"
+  "welcome": {
+    "title": "Welkom terug, {{name}}",
+    "linked_one": "Deze maand speelde je {{played}} van de {{total}} sessie van de groep en won je er {{wins}}.",
+    "linked_other": "Deze maand speelde je {{played}} van de {{total}} sessies van de groep en won je er {{wins}}.",
+    "group_one": "Deze maand speelde de groep {{total}} sessie.",
+    "group_other": "Deze maand speelde de groep {{total}} sessies."
   },
-  "recent-activity": "Recente activiteit",
-  "recent-added-games": "Recent toegevoegde spellen",
-  "welcome-back-linked_one": "Als {{player}} heb je {{played}} van {{count}} sessie gespeeld.",
-  "welcome-back-linked_other": "Als {{player}} heb je {{played}} van {{count}} sessies gespeeld.",
-  "activity": {
-    "won": "<winner>{{winner}}</winner> heeft <game>{{game}}</game> gewonnen"
+  "actions": {
+    "add-game": "Spel toevoegen",
+    "log-session": "Sessie toevoegen"
+  },
+  "night": {
+    "label": "Volgende spelavond",
+    "when": "Volgende spelavond · {{when}}",
+    "details": "{{time}} · {{location}} · host {{host}}",
+    "coming_one": "{{count}} komt",
+    "coming_other": "{{count}} komen",
+    "pending_one": "{{count}} zonder antwoord",
+    "pending_other": "{{count}} zonder antwoord",
+    "declined_one": "{{count}} komt niet",
+    "declined_other": "{{count}} komen niet",
+    "suggested": "Voorgesteld:",
+    "open": "Spelavond openen",
+    "more_one": "nog {{count}} gepland",
+    "more_other": "nog {{count}} gepland",
+    "none": "Geen spelavond gepland",
+    "plan": "Plan er een"
+  },
+  "tiles": {
+    "games": "Spellen",
+    "games-detail_one": "{{owned}} in bezit · {{expansions}} uitbreiding",
+    "games-detail_other": "{{owned}} in bezit · {{expansions}} uitbreidingen",
+    "players": "Spelers",
+    "players-detail_one": "{{value}} speelde deze maand",
+    "players-detail_other": "{{value}} speelden deze maand",
+    "sessions": "Sessies",
+    "sessions-detail_one": "{{value}} deze maand",
+    "sessions-detail_other": "{{value}} deze maand",
+    "play-time": "Speeltijd",
+    "play-time-detail": "gem. {{duration}} per sessie"
+  },
+  "duration": {
+    "minutes": "{{minutes}} min",
+    "hours": "{{hours}}u",
+    "hours-minutes": "{{hours}}u {{minutes}}m"
+  },
+  "last-sessions": {
+    "title": "Laatste sessies",
+    "players_one": "{{count}} speler",
+    "players_other": "{{count}} spelers",
+    "no-winner": "Geen winnaar",
+    "empty": "Nog geen sessies gelogd"
+  },
+  "shame": {
+    "title_one": "{{value}} spel op de Shelf of Shame",
+    "title_other": "{{value}} spellen op de Shelf of Shame",
+    "never-played_one": "{{value}} nooit gespeeld",
+    "never-played_other": "{{value}} nooit gespeeld",
+    "paid": "{{value}} betaald"
+  },
+  "top-players": {
+    "title": "Topspelers",
+    "leaderboard": "Ranglijst",
+    "sessions_one": "{{value}} sessie",
+    "sessions_other": "{{value}} sessies",
+    "won": "{{percent}} gewonnen",
+    "row_one": "{{name}}: {{wins}} keer gewonnen in {{total}} sessie",
+    "row_other": "{{name}}: {{wins}} keer gewonnen in {{total}} sessies",
+    "hint": "Gerangschikt op overwinningen. De balk is het winstpercentage.",
+    "empty": "Nog geen sessies gespeeld"
+  },
+  "most-played": {
+    "title": "Meest gespeeld",
+    "period": "Periode",
+    "this-month": "Deze maand",
+    "all-time": "Altijd",
+    "times": "{{value}}×",
+    "empty": "Nog geen sessies gespeeld",
+    "empty-month": "Deze maand nog niets gespeeld"
+  },
+  "collection": {
+    "title": "Collectie",
+    "games": "Spellen",
+    "summary_one": "{{total}} spel: {{parts}}",
+    "summary_other": "{{total}} spellen: {{parts}}",
+    "paid": "Betaald voor spellen in bezit",
+    "priced": "{{priced}} van {{owned}} met prijs",
+    "no-prices": "Nog geen prijzen",
+    "recently-added": "Recent toegevoegd"
   }
 }

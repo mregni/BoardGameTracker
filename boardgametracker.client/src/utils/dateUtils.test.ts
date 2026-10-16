@@ -12,6 +12,7 @@ import {
 	toInputDateTime,
 	toLongDisplay,
 	toRelative,
+	toShortDisplay,
 } from "./dateUtils";
 
 describe("dateUtils", () => {
@@ -108,6 +109,18 @@ describe("dateUtils", () => {
 			expect(normalizeDateFnsFormat("not a format", "yy-MM-dd")).toBe("yy-MM-dd");
 			expect(normalizeDateFnsFormat("", "HH:mm")).toBe("HH:mm");
 			expect(normalizeDateFnsFormat(null, "HH:mm")).toBe("HH:mm");
+		});
+	});
+
+	describe("toShortDisplay", () => {
+		it("shows the day and the short month in the app language", () => {
+			expect(toShortDisplay(new Date(2026, 9, 4), "en-us")).toBe("4 Oct");
+			expect(toShortDisplay("2026-09-21T10:00:00", "nl-be")).toBe("21 sep.");
+		});
+
+		it("returns an empty string without a valid date", () => {
+			expect(toShortDisplay(null, "en-us")).toBe("");
+			expect(toShortDisplay("not a date", "en-us")).toBe("");
 		});
 	});
 

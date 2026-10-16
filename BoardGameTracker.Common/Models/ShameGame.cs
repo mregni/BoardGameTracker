@@ -17,3 +17,10 @@ public class ShameStatistics
     public decimal? AverageValue { get; set; }
     public int PricedGameCount { get; set; }
 }
+
+public class ShameSummary
+{
+    public int Count { get; set; }
+    public int NeverPlayedCount { get; set; }
+    public decimal? TotalValue { get; set; }
+}

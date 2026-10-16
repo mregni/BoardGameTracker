@@ -112,6 +112,20 @@ export const toLongDisplay = (date: Date | string | undefined | null, uiLanguage
 	return format(dateObj, "PPPP", { locale: getDateFnsLocale(uiLanguage) });
 };
 
+export const toShortDisplay = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	if (!date) {
+		return "";
+	}
+
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+
+	if (!dateFnsIsValid(dateObj)) {
+		return "";
+	}
+
+	return format(dateObj, "d MMM", { locale: getDateFnsLocale(uiLanguage) });
+};
+
 export const toDisplayDateTime = (
 	date: Date | string | undefined,
 	dateFormat: string,

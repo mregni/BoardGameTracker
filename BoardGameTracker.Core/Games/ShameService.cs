@@ -1,4 +1,4 @@
-using BoardGameTracker.Common;
+﻿using BoardGameTracker.Common;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Common;
@@ -37,6 +37,18 @@ public class ShameService : IShameService
         }
 
         return await _gameRepository.CountGamesWithNoRecentSessions(cutoffDate.Value, cancellationToken);
+    }
+
+    public async Task<ShameSummary?> GetShameSummary(CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Summarising shelf of shame games");
+        var cutoffDate = await GetCutoffDateAsync();
+        if (cutoffDate == null)
+        {
+            return null;
+        }
+
+        return await _gameRepository.GetShameSummary(cutoffDate.Value, cancellationToken);
     }
 
     public async Task<List<ShameGame>> GetShameGames()

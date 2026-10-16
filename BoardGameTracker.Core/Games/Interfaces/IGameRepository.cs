@@ -1,4 +1,4 @@
-using BoardGameTracker.Common.Entities;
+﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.Datastore.Interfaces;
@@ -23,5 +23,6 @@ public interface IGameRepository: IRepository<Game>
     Task<List<Game>> GetRecentlyAddedGames(int count, CancellationToken cancellationToken = default);
     Task<int> CountGamesWithNoRecentSessions(DateTime cutoffDate, CancellationToken cancellationToken = default);
     Task<List<ShameGame>> GetShameGames(DateTime cutoffDate);
+    Task<ShameSummary> GetShameSummary(DateTime cutoffDate, CancellationToken cancellationToken = default);
     Task<List<Game>> GetByIdsAsync(IEnumerable<int> ids);
 }
