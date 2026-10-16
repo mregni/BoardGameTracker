@@ -1,12 +1,12 @@
 {
-  "title": "Rulebook chat",
-  "menu": "Rulebook chat",
-  "ask-button": "Ask the rulebook",
-  "ask-button-disabled": "Upload a rulebook before entering chat",
+  "title": "Rules chat",
+  "menu": "Rules chat",
+  "ask-button": "Ask the manual",
+  "ask-button-disabled": "Upload a manual before entering chat",
   "select-game": "Select a game",
-  "all-manuals": "All rulebooks",
+  "all-manuals": "All manuals",
   "sources": "Sources",
-  "untitled-manual": "Rulebook",
+  "untitled-manual": "Manual",
   "page": "page {{page}}",
   "unknown-page": "unknown page",
   "you": "You",
@@ -24,25 +24,25 @@
   "empty": {
     "no-game": {
       "title": "Pick a game to start",
-      "description": "Choose a game above to ask questions about its rulebook."
+      "description": "Choose a game above to ask questions about its manual."
     },
     "no-rulebooks": {
-      "title": "No rulebooks yet",
-      "description": "Upload a PDF rulebook on a game's page to ask questions about it here."
+      "title": "No manuals yet",
+      "description": "Upload a PDF manual on a game's page to ask questions about it here."
     },
     "no-manuals": {
-      "title": "No rulebook yet",
-      "description": "This game has no manuals. Upload a rulebook on the game page first."
+      "title": "No manual yet",
+      "description": "This game has no manuals. Upload a manual on the game page first."
     },
     "not-indexed": {
-      "title": "Rulebook not ready",
-      "description": "The rulebook is still being indexed. Check back in a moment."
+      "title": "Manual not ready",
+      "description": "The manual is still being indexed. Check back in a moment."
     },
     "ask-something": "Ask a question about the rules to get started."
   },
   "composer": {
     "placeholder": "Ask a question about the rules…",
-    "disabled-placeholder": "Select a game with an indexed rulebook to ask a question.",
+    "disabled-placeholder": "Select a game with an indexed manual to ask a question.",
     "send": "Send"
   },
   "rate-limited": "You asked a lot of questions in a short time. Wait a minute and try again."

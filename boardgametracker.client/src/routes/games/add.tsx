@@ -5,7 +5,6 @@ import Database from "@/assets/icons/database.svg?react";
 import Keyboard from "@/assets/icons/keyboard.svg?react";
 import MagnifyingGlass from "@/assets/icons/magnifying-glass.svg?react";
 import BgtBigButton from "@/components/BgtButton/BgtBigButton";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
@@ -43,7 +42,7 @@ function RouteComponent() {
 			<BgtPageContent className="items-center">
 				<BgtCard className="w-full max-w-xl">
 					<p className="text-cancel mb-4">{t("game:new.description")}</p>
-					<div className="flex flex-col gap-4 mb-6">
+					<div className="flex flex-col gap-4">
 						{settings && !bggEnabled && (
 							<BgtStatus
 								variant="warning"
@@ -103,9 +102,6 @@ function RouteComponent() {
 							disabled={!bggEnabled}
 						/>
 					</div>
-					<BgtButton variant="cancel" className="w-full" onClick={goBack}>
-						{t("common:cancel")}
-					</BgtButton>
 				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>

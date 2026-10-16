@@ -29,7 +29,7 @@
     "failed-unknown": "Failed importing games from BoardGameGeek, check logs for more details."
   },
   "title": "Games",
-  "new": "Add new game",
+  "new": "Add game",
   "count_other": "{{count}} games found",
   "count_one": "{{count}} game found",
   "cards": {

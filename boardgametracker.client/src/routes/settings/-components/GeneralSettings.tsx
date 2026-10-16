@@ -22,7 +22,7 @@ export const GeneralSettings = withForm({
 
 		return (
 			<>
-				<SettingsSection title={t("general.language.title")} description={t("general.language.description")}>
+				<SettingsSection title={t("general.language.title")}>
 					<form.Field name="uiLanguage" validators={zodValidator(SettingsSchema, "uiLanguage")}>
 						{(field: AnyFieldApi) => (
 							<BgtSelect
@@ -39,7 +39,7 @@ export const GeneralSettings = withForm({
 					<EnvOverrideHint variable={overrides.uiLanguage} />
 				</SettingsSection>
 
-				<SettingsSection title={t("general.date-time.title")} description={t("general.date-time.description")}>
+				<SettingsSection title={t("general.date-time.title")}>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 						<form.Field name="dateFormat" validators={zodValidator(SettingsSchema, "dateFormat")}>
 							{(field: AnyFieldApi) => (
@@ -68,7 +68,7 @@ export const GeneralSettings = withForm({
 					<EnvOverrideHint variable={overrides.timeFormat} />
 				</SettingsSection>
 
-				<SettingsSection title={t("general.currency.title")} description={t("general.currency.description")}>
+				<SettingsSection title={t("general.currency.title")}>
 					<form.Field name="currency" validators={zodValidator(SettingsSchema, "currency")}>
 						{(field: AnyFieldApi) => (
 							<BgtInputField

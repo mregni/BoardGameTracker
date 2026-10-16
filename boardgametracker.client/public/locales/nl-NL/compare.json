@@ -6,32 +6,30 @@
   "updating": "Vergelijking wordt bijgewerkt",
   "change-left": "Linker speler wijzigen, nu {{player}}",
   "change-right": "Rechter speler wijzigen, nu {{player}}",
-  "player-summary_one": "{{count}} spel · {{rate}} gewonnen",
-  "player-summary_other": "{{count}} spellen · {{rate}} gewonnen",
-  "games_one": "{{count}} spel",
-  "games_other": "{{count}} spellen",
+  "player-summary_one": "{{count}} sessie · {{rate}} gewonnen",
+  "player-summary_other": "{{count}} sessies · {{rate}} gewonnen",
+  "games_one": "{{count}} sessie",
+  "games_other": "{{count}} sessies",
   "record": {
-    "label": "Stand over alle spellen samen",
+    "label": "Stand over alle sessies samen",
     "wins_zero": "nog geen overwinningen voor {{player}}",
     "wins_one": "overwinning voor {{player}}",
     "wins_other": "overwinningen voor {{player}}",
-    "together_one": "{{count}} spel samen",
-    "together_other": "{{count}} spellen samen",
     "leads": "{{player}} staat voor",
     "won": "{{player}} won",
     "someone-else": "iemand anders won",
-    "summary_one": "{{count}} spel samen: {{playerOne}} won {{one}}, iemand anders won {{others}}, {{playerTwo}} won {{two}}",
-    "summary_other": "{{count}} spellen samen: {{playerOne}} won {{one}}, iemand anders won {{others}}, {{playerTwo}} won {{two}}",
+    "summary_one": "{{count}} sessie samen: {{playerOne}} won {{one}}, iemand anders won {{others}}, {{playerTwo}} won {{two}}",
+    "summary_other": "{{count}} sessies samen: {{playerOne}} won {{one}}, iemand anders won {{others}}, {{playerTwo}} won {{two}}",
     "same-team": "zelfde co-op team",
     "same-team-value": "{{total}} ({{won}} gewonnen, {{lost}} verloren)",
     "summary-team_one": "zelfde co-op team {{total}} ({{won}} gewonnen, {{lost}} verloren)",
     "summary-team_other": "zelfde co-op team {{total}} ({{won}} gewonnen, {{lost}} verloren)"
   },
   "form": {
-    "title_one": "Laatste spel samen",
-    "title_other": "Laatste {{count}} spellen samen",
+    "title_one": "Laatste sessie samen",
+    "title_other": "Laatste {{count}} sessies samen",
     "order": "(oudste → nieuwste)",
-    "label": "Laatste spellen samen, oudste eerst: {{list}}",
+    "label": "Laatste sessies samen, oudste eerst: {{list}}",
     "legend": "{{one}} of {{two}}: wie won · –: iemand anders",
     "legend-both": "+: allebei gewonnen",
     "both": "allebei gewonnen",
@@ -43,12 +41,12 @@
     "same-team-lost": "zelfde team, verloren"
   },
   "tiles": {
-    "games-together": "Spellen samen",
+    "games-together": "Sessies samen",
     "since": "sinds {{date}}",
     "time-together": "Tijd samen",
-    "average": "gem. {{duration}} per spel",
+    "average": "gem. {{duration}} per sessie",
     "most-played": "Meest gespeeld",
-    "closest": "Spannendste spel",
+    "closest": "Spannendste sessie",
     "points_one": "{{value}} pt",
     "points_other": "{{value}} ptn",
     "closest-winner": "{{game}} · {{player}} won",
@@ -86,7 +84,7 @@
     "note_other": "Alleen spellen die minstens {{count}} keer samen gespeeld zijn."
   },
   "recent": {
-    "title": "Recente spellen samen",
+    "title": "Recente sessies samen",
     "both-won": "Allebei gewonnen",
     "no-winner": "Geen winnaar",
     "same-team": "zelfde team"
@@ -95,19 +93,19 @@
     "title": "Globaal, niet alleen samen",
     "wins": "Overwinningen",
     "win-rate": "Winstpercentage",
-    "games": "Spellen",
+    "games": "Sessies",
     "play-time": "Speeltijd",
     "higher": "hoger",
     "stat": "Statistiek"
   },
   "highlights": {
     "title": "Hoogtepunten",
-    "first-game": "eerste spel samen · {{date}}",
-    "longest-game": "langste spel · {{duration}}"
+    "first-game": "eerste sessie samen · {{date}}",
+    "longest-game": "langste sessie · {{duration}}"
   },
   "no-games-together": {
-    "title": "Nog geen spellen samen",
-    "description": "{{playerOne}} en {{playerTwo}} hebben nog geen spel samen gespeeld."
+    "title": "Nog geen sessies samen",
+    "description": "{{playerOne}} en {{playerTwo}} hebben nog niet samen gespeeld."
   },
   "empty": {
     "insufficient-players": {

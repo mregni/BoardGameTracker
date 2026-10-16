@@ -35,43 +35,38 @@
 		"title": "General settings",
 		"description": "Change the general settings of the application.",
 		"date-time": {
-			"title": "Date and Time settings",
-			"description": "Configure the date and time format used in the application.",
+			"title": "Date and time",
 			"date-format": "Date format",
 			"time-format": "Time format"
 		},
 		"currency": {
-			"title": "Currency settings",
-			"description": "Configure the currency used in the application.",
+			"title": "Currency",
 			"label": "Currency"
 		},
 		"language": {
-			"title": "Language settings",
-			"description": "Configure the language used in the application.",
+			"title": "Language",
 			"label": "Language"
 		}
 	},
 	"shame": {
-		"title": "Shelf of Shame settings",
-		"description": "Configure how the Shelf of Shame is calculated and displayed.",
+		"title": "Shelf of Shame",
 		"enabled": {
 			"label": "Enable Shelf of Shame",
 			"description": "Track games that haven't been played in a while."
 		},
 		"months": {
-			"label": "Months Threshold"
+			"label": "Months threshold"
 		}
 	},
 	"game-nights": {
-		"title": "Game Nights settings",
-		"description": "Configure how game nights are managed and displayed.",
+		"title": "Game nights",
 		"enabled": {
-			"label": "Enable Game Nights",
-			"description": "Enable the game nights feature to plan and manage game night events with your friends."
+			"label": "Enable game nights",
+			"description": "Plan game nights and collect RSVPs."
 		},
 		"rsvp-authentication": {
 			"label": "Require authentication for RSVPs",
-			"description": "When enabled, players will need to log in to RSVP for game nights. This adds an extra layer of security and helps prevent spam RSVPs."
+			"description": "Only signed-in users can answer invitations."
 		}
 	},
 	"advanced": {
@@ -88,17 +83,16 @@
 			}
 		},
 		"updates": {
-			"title": "Update check settings",
-			"description": "Configure how the application checks for updates.",
+			"title": "Update check",
 			"enabled": {
 				"label": "Enable update check",
-				"description": "When enabled, the application will automatically check for and install updates."
+				"description": "Checks for new versions and shows them in the sidebar."
 			}
 		},
 		"bug": "Report a bug",
 		"translate": "Help us translate the app",
 		"danger": {
-			"title": "Danger Zone",
+			"title": "Danger zone",
 			"description": "Irreversible actions. Proceed with caution.",
 			"reset": {
 				"button": "Reset data",
@@ -130,19 +124,19 @@
 	"sidebar": {
 		"general": {
 			"title": "General",
-			"description": "Basic app configuration"
+			"description": "Language, formats, public URL"
 		},
 		"shelf-of-shame": {
 			"title": "Shelf of Shame",
-			"description": "Configure Shelf of Shame settings"
+			"description": "When a game counts as unplayed"
 		},
 		"advanced": {
 			"title": "Advanced",
-			"description": "Advanced app configuration"
+			"description": "Updates and data reset"
 		},
 		"game-nights": {
-			"title": "Game Nights",
-			"description": "Configure Game Nights settings"
+			"title": "Game nights",
+			"description": "Planning and RSVPs"
 		},
 		"bgg": {
 			"title": "Integrations",
@@ -159,25 +153,19 @@
 	},
 	"bgg": {
 		"title": "BoardGameGeek API",
-		"description": "Configure the BGG API key to enable searching and importing games from BoardGameGeek.",
+		"description": "An API key lets you search and import games and your collection from BoardGameGeek.",
 		"status": {
-			"title": "Status",
-			"configured": "API key configured",
-			"not-configured": "API key not configured",
-			"source-env": "BGG API key is set via environment variable (BGG_API_KEY)",
-			"source-db": "BGG API key is stored in the database.",
-			"not-configured-description": "To use BGG integration features, you need to provide a BGG API key. You can either set it via the BGG_API_KEY environment variable or enter it directly in the settings below."
+			"not-configured": "API key not configured"
 		},
 		"api-key": {
-			"label": "BGG API Key",
+			"label": "BGG API key",
 			"placeholder": "Enter your BGG API key",
-			"save": "Save API Key",
-			"clear": "Remove API Key",
+			"save": "Save API key",
+			"clear": "Remove API key",
 			"clear-hint": "Save settings to apply the removal.",
 			"read-only": "The API key is read only.",
 			"read-only-description": "The API key is managed via the BGG_API_KEY environment variable and cannot be changed here.",
-			"help-title": "BGG API usage",
-			"help-description": "The BGG API allows the app to search and import game data, import your collection, and more. You can get an API key by following the instructions on the BoardGameGeek <requestPage>request page</requestPage>."
+			"help-description": "Get a key from the BoardGameGeek <requestPage>request page</requestPage>."
 		},
 		"notifications": {
 			"saved": "BGG API key saved successfully",
@@ -188,7 +176,7 @@
 	},
 	"account": {
 		"profile": {
-			"title": "My Account",
+			"title": "My account",
 			"description": "Manage your profile and password.",
 			"display-name": {
 				"label": "Display name"
@@ -211,7 +199,7 @@
 		},
 		"password": {
 			"change-button": "Change password",
-			"title": "Change Password",
+			"title": "Change password",
 			"description": "Enter your current password and choose a new one.",
 			"current": {
 				"label": "Current password"
@@ -227,8 +215,7 @@
 			"save": "Change password"
 		},
 		"users": {
-			"title": "User Management",
-			"description": "Create and manage user accounts.",
+			"title": "User management",
 			"last-login": "Last login",
 			"role": "Role",
 			"roles": {
@@ -242,7 +229,7 @@
 			},
 			"create-button": "Create user",
 			"create": {
-				"title": "Create New User",
+				"title": "Create user",
 				"description": "Fill out the form to create a new user.",
 				"username": {
 					"label": "Username"
@@ -265,20 +252,20 @@
 				"save": "Create user"
 			},
 			"edit": {
-				"title": "Edit User",
+				"title": "Edit user",
 				"description": "Change the role for \"{{username}}\"."
 			},
 			"reset-password": {
 				"button": "Reset password"
 			},
 			"temp-password": {
-				"title": "Temporary Password",
+				"title": "Temporary password",
 				"description": "Password reset for \"{{username}}\". Save this password — it won't be shown again.",
 				"copy": "Copy to clipboard",
-				"copied": "Copied!"
+				"copied": "Copied"
 			},
 			"delete": {
-				"title": "Delete User",
+				"title": "Delete user",
 				"description": "Are you sure you want to delete \"{{username}}\"? This cannot be undone."
 			},
 			"never-logged-in": "Never",
@@ -409,26 +396,19 @@
 	},
 	"changedetection": {
 		"title": "changedetection.io",
-		"description": "Configure a changedetection.io instance to fetch live price and stock for games that have a watch id.",
-		"status": {
-			"configured": "Configured",
-			"not-configured": "Not configured",
-			"source-db": "Configured and stored in the database.",
-			"not-configured-description": "Provide the base URL and API key of your changedetection.io instance to enable live price and stock lookups."
-		},
+		"description": "Shows live price and stock for games that have a watch id.",
 		"base-url": {
 			"label": "Base URL",
 			"placeholder": "https://changes.example.com",
 			"invalid": "Enter a valid http(s) URL"
 		},
 		"api-key": {
-			"label": "API Key",
+			"label": "API key",
 			"placeholder": "Enter your changedetection.io API key",
-			"clear": "Remove API Key",
+			"clear": "Remove API key",
 			"clear-hint": "Save settings to apply the removal."
 		},
-		"help-title": "How it works",
-		"help-description": "Add a changedetection.io watch id to a game to see its current price and stock. The API key is found under Settings in your changedetection.io instance."
+		"help-description": "Find the API key under Settings in your changedetection.io instance."
 	},
 	"integrations": {
 		"name": {
@@ -457,6 +437,7 @@
 			"rate-limited": "Too many requests, try again in a few minutes",
 			"misconfigured": "The base URL or API key is not valid",
 			"unexpected-response": "The service sent an unexpected response"
-		}
+		},
+		"test-hint": "Save an API key to test the connection."
 	}
 }

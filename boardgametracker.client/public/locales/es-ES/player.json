@@ -31,7 +31,7 @@
     "save": "Crear jugador",
     "title": "Crear jugador",
     "players": {
-      "none": "Aún no hay jugadores. ¡Añade tu primer jugador!"
+      "none": "Todavía no hay jugadores en esta partida"
     }
   },
   "update": {

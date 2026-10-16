@@ -37,7 +37,7 @@ export const AdvancedSettings = withForm({
 
 		return (
 			<div className="space-y-6">
-				<SettingsSection title={t("advanced.updates.title")} description={t("advanced.updates.description")}>
+				<SettingsSection title={t("advanced.updates.title")}>
 					<form.Field name="updateCheckEnabled" validators={zodValidator(SettingsSchema, "updateCheckEnabled")}>
 						{(field: AnyFieldApi) => (
 							<SettingsToggle

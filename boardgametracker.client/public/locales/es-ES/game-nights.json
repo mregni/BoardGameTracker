@@ -32,7 +32,7 @@
     "title": "Eliminar noche de juego",
     "description": "¿Seguro que quieres eliminar la noche de juego \"{{title}}\"? Esta acción no se puede deshacer y eliminará todas las respuestas RSVP asociadas."
   },
-  "title": "Planificador de noches de juego",
+  "title": "Noches de juego",
   "create": {
     "button": "Crear noche de juego",
     "title": "Crear nueva noche de juego",
@@ -125,8 +125,8 @@
       "coop-optional": "Este juego se puede jugar en cooperativo: lo activas al terminarlo."
     },
     "log": {
-      "button": "Registrar un juego terminado",
-      "title": "Registrar un juego terminado"
+      "button": "Registrar partida",
+      "title": "Registrar partida"
     },
     "finish": {
       "button": "Terminar",
@@ -143,7 +143,7 @@
     },
     "leave-out-hint": "Toca a un jugador para dejarlo fuera",
     "leave-out": "Dejar fuera a {{name}}",
-    "save": "Guardar sesión",
+    "save": "Guardar partida",
     "now-playing": "Jugando ahora: {{game}}",
     "running": "Empezó a las {{time}} · {{duration}} · {{players}}",
     "again": "Jugar otra vez:",
@@ -168,7 +168,7 @@
     "tonight": "Jugado esta noche",
     "after": "Jugado",
     "empty": "Aún no se ha jugado nada. Toca «Empezar un juego» cuando empiece una partida; la fecha, la hora, el lugar y los jugadores se rellenan solos.",
-    "empty-after": "No se registró nada para esta noche. Usa «Registrar un juego terminado» para añadir lo que se jugó."
+    "empty-after": "No se registró nada para esta noche. Usa «Registrar partida» para añadir lo que se jugó."
   },
   "table": {
     "title": "En la mesa",

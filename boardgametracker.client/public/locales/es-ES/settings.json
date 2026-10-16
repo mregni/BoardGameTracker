@@ -35,25 +35,21 @@
 		"title": "Ajustes generales",
 		"description": "Cambia los ajustes generales de la aplicación.",
 		"date-time": {
-			"title": "Ajustes de fecha y hora",
-			"description": "Configura el formato de fecha y hora que usa la aplicación.",
+			"title": "Fecha y hora",
 			"date-format": "Formato de fecha",
 			"time-format": "Formato de hora"
 		},
 		"currency": {
-			"title": "Ajustes de moneda",
-			"description": "Configura la moneda que usa la aplicación.",
+			"title": "Moneda",
 			"label": "Moneda"
 		},
 		"language": {
-			"title": "Ajustes de idioma",
-			"description": "Configura el idioma que usa la aplicación.",
+			"title": "Idioma",
 			"label": "Idioma"
 		}
 	},
 	"shame": {
-		"title": "Ajustes de la estantería de la vergüenza",
-		"description": "Configura cómo se calcula y se muestra la estantería de la vergüenza.",
+		"title": "Estantería de la vergüenza",
 		"enabled": {
 			"label": "Activar la estantería de la vergüenza",
 			"description": "Sigue los juegos a los que no has jugado desde hace tiempo."
@@ -63,15 +59,14 @@
 		}
 	},
 	"game-nights": {
-		"title": "Ajustes de noches de juego",
-		"description": "Configura cómo se gestionan y se muestran las noches de juego.",
+		"title": "Noches de juego",
 		"enabled": {
 			"label": "Activar noches de juego",
-			"description": "Activa la función de noches de juego para planificar y gestionar noches de juego con tus amigos."
+			"description": "Planifica noches de juego y recoge las respuestas."
 		},
 		"rsvp-authentication": {
 			"label": "Requerir autenticación para los RSVP",
-			"description": "Si se activa, los jugadores deberán iniciar sesión para responder a las noches de juego. Esto añade una capa extra de seguridad y ayuda a evitar respuestas de spam."
+			"description": "Solo los usuarios con sesión iniciada pueden responder a las invitaciones."
 		}
 	},
 	"advanced": {
@@ -88,11 +83,10 @@
 			}
 		},
 		"updates": {
-			"title": "Ajustes de comprobación de actualizaciones",
-			"description": "Configura cómo comprueba la aplicación si hay actualizaciones.",
+			"title": "Comprobación de actualizaciones",
 			"enabled": {
 				"label": "Activar la comprobación de actualizaciones",
-				"description": "Si se activa, la aplicación buscará e instalará actualizaciones automáticamente."
+				"description": "Busca nuevas versiones y las muestra en la barra lateral."
 			}
 		},
 		"bug": "Informar de un error",
@@ -130,19 +124,19 @@
 	"sidebar": {
 		"general": {
 			"title": "General",
-			"description": "Configuración básica de la aplicación"
+			"description": "Idioma, formatos, URL pública"
 		},
 		"shelf-of-shame": {
 			"title": "Estantería de la vergüenza",
-			"description": "Configura la estantería de la vergüenza"
+			"description": "Cuándo un juego cuenta como sin jugar"
 		},
 		"advanced": {
 			"title": "Avanzado",
-			"description": "Configuración avanzada de la aplicación"
+			"description": "Actualizaciones y borrado de datos"
 		},
 		"game-nights": {
 			"title": "Noches de juego",
-			"description": "Configura las noches de juego"
+			"description": "Planificación y RSVP"
 		},
 		"bgg": {
 			"title": "Integraciones",
@@ -159,14 +153,9 @@
 	},
 	"bgg": {
 		"title": "API de BoardGameGeek",
-		"description": "Configura la clave API de BGG para poder buscar e importar juegos de BoardGameGeek.",
+		"description": "Con una clave API puedes buscar e importar juegos y tu colección de BoardGameGeek.",
 		"status": {
-			"title": "Estado",
-			"configured": "Clave API configurada",
-			"not-configured": "Clave API no configurada",
-			"source-env": "La clave API de BGG está definida mediante una variable de entorno (BGG_API_KEY)",
-			"source-db": "La clave API de BGG está almacenada en la base de datos.",
-			"not-configured-description": "Para usar las funciones de integración con BGG, necesitas una clave API de BGG. Puedes definirla con la variable de entorno BGG_API_KEY o introducirla directamente en los ajustes de abajo."
+			"not-configured": "Clave API no configurada"
 		},
 		"api-key": {
 			"label": "Clave API de BGG",
@@ -176,8 +165,7 @@
 			"clear-hint": "Guarda los ajustes para aplicar la eliminación.",
 			"read-only": "La clave API es de solo lectura.",
 			"read-only-description": "La clave API se gestiona mediante la variable de entorno BGG_API_KEY y no se puede cambiar aquí.",
-			"help-title": "Uso de la API de BGG",
-			"help-description": "La API de BGG permite a la aplicación buscar e importar datos de juegos, importar tu colección y más. Puedes obtener una clave API siguiendo las instrucciones de la <requestPage>página de solicitud</requestPage> de BoardGameGeek."
+			"help-description": "Consigue una clave en la <requestPage>página de solicitud</requestPage> de BoardGameGeek."
 		},
 		"notifications": {
 			"saved": "Clave API de BGG guardada correctamente",
@@ -228,7 +216,6 @@
 		},
 		"users": {
 			"title": "Gestión de usuarios",
-			"description": "Crea y gestiona cuentas de usuario.",
 			"last-login": "Último inicio de sesión",
 			"role": "Rol",
 			"roles": {
@@ -242,7 +229,7 @@
 			},
 			"create-button": "Crear usuario",
 			"create": {
-				"title": "Crear nuevo usuario",
+				"title": "Crear usuario",
 				"description": "Rellena el formulario para crear un nuevo usuario.",
 				"username": {
 					"label": "Nombre de usuario"
@@ -275,7 +262,7 @@
 				"title": "Contraseña temporal",
 				"description": "Contraseña restablecida para \"{{username}}\". Guarda esta contraseña: no se volverá a mostrar.",
 				"copy": "Copiar al portapapeles",
-				"copied": "¡Copiado!"
+				"copied": "Copiado"
 			},
 			"delete": {
 				"title": "Eliminar usuario",
@@ -409,13 +396,7 @@
 	},
 	"changedetection": {
 		"title": "changedetection.io",
-		"description": "Configura una instancia de changedetection.io para obtener el precio y el stock en vivo de los juegos que tengan un id de watch.",
-		"status": {
-			"configured": "Configurado",
-			"not-configured": "No configurado",
-			"source-db": "Configurado y almacenado en la base de datos.",
-			"not-configured-description": "Proporciona la URL base y la clave API de tu instancia de changedetection.io para habilitar la consulta de precio y stock en vivo."
-		},
+		"description": "Muestra el precio y el stock en vivo de los juegos que tienen un id de watch.",
 		"base-url": {
 			"label": "URL base",
 			"placeholder": "https://changes.example.com",
@@ -427,8 +408,7 @@
 			"clear": "Eliminar clave API",
 			"clear-hint": "Guarda los ajustes para aplicar la eliminación."
 		},
-		"help-title": "Cómo funciona",
-		"help-description": "Añade un id de watch de changedetection.io a un juego para ver su precio y stock actuales. La clave API se encuentra en Ajustes de tu instancia de changedetection.io."
+		"help-description": "La clave API está en Ajustes de tu instancia de changedetection.io."
 	},
 	"integrations": {
 		"name": {
@@ -457,6 +437,7 @@
 			"rate-limited": "Demasiadas solicitudes, inténtalo de nuevo en unos minutos",
 			"misconfigured": "La URL base o la clave API no son válidas",
 			"unexpected-response": "El servicio envió una respuesta inesperada"
-		}
+		},
+		"test-hint": "Guarda una clave API para probar la conexión."
 	}
 }

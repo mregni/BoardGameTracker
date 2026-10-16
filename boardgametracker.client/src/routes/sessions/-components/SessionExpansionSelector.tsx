@@ -25,7 +25,7 @@ const SessionExpansionSelectorComponent = ({
 		<div className="flex flex-col justify-start">
 			<BgtFieldLabel className="pb-2">{t("expansions.title")}</BgtFieldLabel>
 			{expansionList.length === 0 && (
-				<BgtText color="primary">
+				<BgtText size="2" color="white" opacity={50}>
 					{selectedGameId !== undefined && selectedGameId !== 0 && t("expansions.none")}
 					{(selectedGameId === undefined || selectedGameId === 0) && t("expansions.no-game")}
 				</BgtText>

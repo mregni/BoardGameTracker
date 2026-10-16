@@ -1,5 +1,5 @@
 {
-  "new": "Add new session",
+  "new": "Log session",
   "title": "Sessions",
   "notifications": {
     "deleted": "Session is successfully deleted",

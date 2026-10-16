@@ -3,8 +3,8 @@
   "subtitle_other": "Owned games not played in {{count}}+ months",
   "change-in-settings": "change in Settings",
   "none": {
-    "title": "No Games on the Shelf of Shame!",
-    "description": "Congratulations! You have no games on your Shelf of Shame. Keep up the great work of playing and enjoying your collection."
+    "title": "Nothing on the shelf",
+    "description": "Owned games that haven't been played in a while show up here."
   },
   "no-matches": "No games on the shelf match these filters.",
   "tiles": {
@@ -61,8 +61,8 @@
     "planned": "Planned · {{date}}",
     "plan": "Plan",
     "plan-label": "Plan {{title}} for {{night}}",
-    "log-play": "Log a play",
-    "log-play-label": "Log a play of {{title}}"
+    "log-play": "Log session",
+    "log-play-label": "Log a session of {{title}}"
   },
   "plan": {
     "added": "{{game}} added to the suggestions for {{night}} · {{date}}",

@@ -29,7 +29,7 @@
     "failed-unknown": "Error al importar juegos de BoardGameGeek, revisa los registros para más detalles."
   },
   "title": "Juegos",
-  "new": "Añadir nuevo juego",
+  "new": "Añadir juego",
   "count_other": "{{count}} juegos encontrados",
   "count_one": "{{count}} juego encontrado",
   "cards": {

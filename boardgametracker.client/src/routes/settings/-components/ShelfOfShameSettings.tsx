@@ -21,7 +21,7 @@ export const ShelfOfShameSettings = withForm({
 
 		return (
 			<div className="space-y-6">
-				<SettingsSection title={t("shame.title")} description={t("shame.description")}>
+				<SettingsSection title={t("shame.title")}>
 					<form.Field name="shelfOfShameEnabled" validators={zodValidator(SettingsSchema, "shelfOfShameEnabled")}>
 						{(field: AnyFieldApi) => (
 							<SettingsToggle

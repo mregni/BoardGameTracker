@@ -6,7 +6,7 @@
   "all": "Alle",
   "cancel": "Annuleren",
   "dashboard": "Dashboard",
-  "new-session": "Sessie toevoegen",
+  "new-session": "Sessie registreren",
   "add-game": "Spel toevoegen",
   "add-player": "Speler toevoegen",
   "games": "Spellen",
@@ -51,7 +51,7 @@
   "none": "Geen",
   "minutes-abbreviation": "min",
   "edit": "Bewerken",
-  "close": "sluiten",
+  "close": "Sluiten",
   "details": "details",
   "categories": "categorieën",
   "try-again": "Opnieuw proberen",
@@ -98,7 +98,7 @@
   "game-play": "deze spelsessie",
   "delete": {
     "title": "{{title}} verwijderen",
-    "description": "Weet je zeker dat je {{title}} met alle inhoud wilt verwijderen? Dit kan niet ongedaan worden gemaakt!",
+    "description": "Weet je zeker dat je {{title}} met alle inhoud wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
     "button": "Verwijderen"
   },
   "no-sessions": {

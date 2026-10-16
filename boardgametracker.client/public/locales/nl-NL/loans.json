@@ -19,7 +19,7 @@
   "delete": {
     "button": "Verwijderen",
     "title": "Uitlening van {{game}} verwijderen",
-    "description": "Weet je zeker dat je deze uitleen wilt verwijderen? Dit kan niet ongedaan worden gemaakt!",
+    "description": "Weet je zeker dat je deze uitleen wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
     "successfull": "Uitleen is verwijderd.",
     "failed": "Uitleen verwijderen mislukt, bekijk de logs voor meer details."
   },
