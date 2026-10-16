@@ -5,6 +5,22 @@ import { BgtCard } from "./BgtCard";
 // i18next is mocked globally in setup.ts
 
 describe("BgtCard", () => {
+	describe("Title level", () => {
+		it("uses a level-two heading by default", () => {
+			render(<BgtCard title="Recent sessions">Content</BgtCard>);
+			expect(screen.getByRole("heading", { level: 2, name: "Recent sessions" })).toBeInTheDocument();
+		});
+
+		it("can carry the page title as a level-one heading", () => {
+			render(
+				<BgtCard title="Log session" titleAs="h1">
+					Content
+				</BgtCard>,
+			);
+			expect(screen.getByRole("heading", { level: 1, name: "Log session" })).toBeInTheDocument();
+		});
+	});
+
 	describe("Rendering", () => {
 		it("should render children", () => {
 			render(<BgtCard>Card Content</BgtCard>);

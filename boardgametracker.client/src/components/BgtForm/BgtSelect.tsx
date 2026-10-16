@@ -1,7 +1,7 @@
 import * as Select from "@radix-ui/react-select";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { cx } from "class-variance-authority";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
@@ -10,25 +10,66 @@ import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import type { BgtSelectImageItem, BgtSelectItem } from "@/models";
 import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
 import { FormFieldWrapper } from "./FormFieldWrapper";
+import { findSearchMatch, handleSelectSearchKeyDown } from "./selectSearch";
+import { useKeyboardResizeGuard } from "./useKeyboardResizeGuard";
+import { useTriggerToggle } from "./useTriggerToggle";
 
-export interface BgtSelectProps {
+type SelectValue = number | string;
+
+interface FieldBinding {
 	field: AnyFieldApi;
+	value?: never;
+	onValueChange?: never;
+	errors?: never;
+}
+
+interface ControlledBinding {
+	field?: never;
+	value: SelectValue | null;
+	onValueChange: (value: SelectValue) => void;
+	errors?: string[];
+}
+
+export interface BgtSelectBaseProps {
 	label: string;
 	items: BgtSelectImageItem[] | BgtSelectItem[];
 	disabled?: boolean;
 	placeholder?: string;
 	hasSearch?: boolean;
+	showAvatars?: boolean;
 }
 
+export type BgtSelectProps = (FieldBinding | ControlledBinding) & BgtSelectBaseProps;
+
+type Item = BgtSelectImageItem | BgtSelectItem;
+
+const groupItems = (items: Item[]) =>
+	items.reduce<{ label: string; items: Item[] }[]>((groups, item) => {
+		const label = item.group ?? "";
+		const group = groups.find((x) => x.label === label);
+		if (group) {
+			group.items.push(item);
+		} else {
+			groups.push({ label, items: [item] });
+		}
+		return groups;
+	}, []);
+
 const BgtSelectComponent = (props: BgtSelectProps) => {
-	const { items, label, field, disabled = false, placeholder = null, hasSearch = false } = props;
+	const { items, label, disabled = false, placeholder = null, hasSearch = false, showAvatars = false } = props;
 
 	const { t } = useTranslation();
+	const id = useId();
 	const [searchTerm, setSearchTerm] = useState("");
 	const [open, setOpen] = useState(false);
 	const searchInputRef = useRef<HTMLInputElement>(null);
+	const triggerRef = useRef<HTMLButtonElement>(null);
+	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
+	const { onPointerDownOutside, onTriggerPointerDown, onTriggerClick } = useTriggerToggle(triggerRef);
 
-	const currentValue = field.state.value?.toString();
+	const errors: string[] = props.field ? props.field.state.meta.errors : (props.errors ?? []);
+	const rawValue = (props.field ? props.field.state.value : props.value)?.toString();
+	const currentValue = items.some((item) => item.value.toString() === rawValue) ? rawValue : "";
 
 	const filteredItems = useMemo(() => {
 		return items.filter((item) => {
@@ -39,31 +80,64 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 		});
 	}, [items, currentValue, searchTerm]);
 
-	const isSelectImageItem = useCallback((item: BgtSelectImageItem | BgtSelectItem): item is BgtSelectImageItem => {
-		return item && typeof item === "object" && "image" in item && item.image !== null;
-	}, []);
+	const visibleGroups = useMemo(
+		() =>
+			searchTerm === "" && filteredItems.some((item) => item.group)
+				? groupItems(filteredItems)
+				: [{ label: "", items: filteredItems }],
+		[filteredItems, searchTerm],
+	);
+
+	const isSelectImageItem = useCallback(
+		(item: BgtSelectImageItem | BgtSelectItem): item is BgtSelectImageItem =>
+			item && typeof item === "object" && "image" in item && (showAvatars || item.image !== null),
+		[showAvatars],
+	);
 
 	const selectedHasImage = useMemo(() => {
 		const selected = items.find((item) => item.value.toString() === currentValue);
 		return !!selected && isSelectImageItem(selected);
 	}, [items, currentValue, isSelectImageItem]);
 
-	const hasErrors = field.state.meta.errors.length > 0;
+	const hasErrors = errors.length > 0;
+	const { field, onValueChange } = props;
 
 	const handleValueChange = useCallback(
 		(value: string) => {
 			const originalItem = items.find((item) => item.value.toString() === value);
-			field.handleChange(originalItem ? originalItem.value : value);
+			if (!originalItem) return;
+			if (field) {
+				field.handleChange(originalItem.value);
+			} else {
+				onValueChange?.(originalItem.value);
+			}
 		},
-		[field, items],
+		[field, onValueChange, items],
 	);
 
-	const handleOpenChange = useCallback((isOpen: boolean) => {
-		setOpen(isOpen);
-		if (!isOpen) {
-			setSearchTerm("");
+	const handleOpenChange = useCallback(
+		(isOpen: boolean) => {
+			if (!isOpen && isKeyboardResize()) {
+				return;
+			}
+			setOpen(isOpen);
+			if (!isOpen) {
+				setSearchTerm("");
+			}
+		},
+		[isKeyboardResize],
+	);
+
+	const selectSearchMatch = useCallback(() => {
+		const match = findSearchMatch(items, searchTerm);
+		if (!match) {
+			return;
 		}
-	}, []);
+		handleValueChange(match.value.toString());
+		setOpen(false);
+		setSearchTerm("");
+		requestAnimationFrame(() => triggerRef.current?.focus());
+	}, [items, searchTerm, handleValueChange]);
 
 	const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchTerm(e.target.value);
@@ -77,18 +151,8 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 		}
 	}, [open]);
 
-	useEffect(() => {
-		const onResize = (event: Event) => {
-			event.stopImmediatePropagation();
-		};
-		window.addEventListener("resize", onResize);
-		return () => {
-			window.removeEventListener("resize", onResize);
-		};
-	}, []);
-
 	return (
-		<FormFieldWrapper label={label} errors={field.state.meta.errors}>
+		<FormFieldWrapper label={label} htmlFor={id} errors={errors}>
 			<Select.Root
 				disabled={disabled}
 				onValueChange={handleValueChange}
@@ -97,16 +161,24 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 				onOpenChange={handleOpenChange}
 			>
 				<Select.Trigger
+					ref={triggerRef}
+					onPointerDown={onTriggerPointerDown}
+					onClick={onTriggerClick}
+					id={id}
 					className={cx(
 						"w-full bg-background text-white border border-primary/30 focus:border-primary focus:outline-none",
-						"py-2 h-11 md:h-10 shadow-none inline-flex justify-between items-center rounded-lg leading-none text-[15px]",
+						"py-2 h-11 md:h-10 shadow-none inline-flex justify-between items-center gap-2 rounded-lg leading-none text-[15px]",
 						selectedHasImage ? "pl-2 pr-4" : "px-4",
 						hasErrors && "border border-error bg-error-dark!",
 						disabled && "opacity-50 cursor-not-allowed",
 					)}
 				>
-					<Select.Value placeholder={placeholder} />
-					<Select.Icon>{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}</Select.Icon>
+					<span className="min-w-0 flex-1 truncate py-0.5 text-left">
+						<Select.Value placeholder={placeholder} />
+					</span>
+					<Select.Icon className="shrink-0">
+						{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
+					</Select.Icon>
 				</Select.Trigger>
 				<Select.Portal>
 					<Select.Content
@@ -114,8 +186,10 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 						position="popper"
 						sideOffset={5}
 						style={{ bottom: "auto" }}
+						onPointerDownOutside={onPointerDownOutside}
 						onCloseAutoFocus={(e) => {
 							e.preventDefault();
+							triggerRef.current?.focus({ preventScroll: true });
 						}}
 					>
 						{hasSearch && (
@@ -127,34 +201,42 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 										type="text"
 										value={searchTerm}
 										onChange={handleSearchChange}
-										placeholder="Search..."
+										placeholder={t("search")}
+										aria-label={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										onClick={(e) => e.stopPropagation()}
-										onKeyDown={(e) => {
-											e.stopPropagation();
-										}}
+										onKeyDown={(e) => handleSelectSearchKeyDown(e, selectSearchMatch)}
 									/>
 								</div>
 							</div>
 						)}
 						<Select.Viewport className="p-1 max-h-[300px]">
 							{filteredItems.length > 0 ? (
-								filteredItems.map((item) => (
-									<Select.Item
-										value={item.value.toString()}
-										key={item.value}
-										className="text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pr-[35px] pl-[25px] relative select-none data-disabled:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
-									>
-										<Select.ItemText>
-											<div className="flex flex-row justify-start items-center gap-2">
-												{isSelectImageItem(item) && <BgtAvatar title={item.label} image={item.image} />}
-												{item.label}
-											</div>
-										</Select.ItemText>
-										<Select.ItemIndicator className="absolute left-0 w-[25px] inline-flex items-center justify-center">
-											<CheckIcon className="size-4" />
-										</Select.ItemIndicator>
-									</Select.Item>
+								visibleGroups.map((group) => (
+									<Select.Group key={group.label}>
+										{group.label && (
+											<Select.Label className="px-[25px] pt-2 pb-1 text-[11px] uppercase tracking-wider text-gray-400">
+												{group.label}
+											</Select.Label>
+										)}
+										{group.items.map((item) => (
+											<Select.Item
+												value={item.value.toString()}
+												key={item.value}
+												className="text-[13px] leading-none rounded-lg h-11 md:h-10 flex items-center pr-[35px] pl-[25px] relative select-none data-disabled:text-mauve8 data-disabled:pointer-events-none data-highlighted:outline-hidden data-highlighted:bg-primary/60 hover:cursor-pointer"
+											>
+												<Select.ItemText>
+													<div className="flex flex-row justify-start items-center gap-2">
+														{isSelectImageItem(item) && <BgtAvatar title={item.label} image={item.image} />}
+														{item.label}
+													</div>
+												</Select.ItemText>
+												<Select.ItemIndicator className="absolute left-0 w-[25px] inline-flex items-center justify-center">
+													<CheckIcon className="size-4" />
+												</Select.ItemIndicator>
+											</Select.Item>
+										))}
+									</Select.Group>
 								))
 							) : (
 								<div className="text-[13px] py-2 px-4 text-gray-400">{t("no-results")}</div>

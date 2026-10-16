@@ -1,4 +1,4 @@
-import type { CreateSession, Session } from "@/models";
+import type { CreateSession, Session, SessionSuggestions } from "@/models";
 import { axiosInstance } from "@/utils/axiosInstance";
 
 const domain = "session";
@@ -21,6 +21,12 @@ export const getSessionCall = (id: number): Promise<Session> => {
 
 export const updateSessionCall = (play: Session): Promise<Session> => {
 	return axiosInstance.put<Session>(domain, play).then((response) => {
+		return response.data;
+	});
+};
+
+export const getSessionSuggestionsCall = (): Promise<SessionSuggestions> => {
+	return axiosInstance.get<SessionSuggestions>(`${domain}/suggestions`).then((response) => {
 		return response.data;
 	});
 };

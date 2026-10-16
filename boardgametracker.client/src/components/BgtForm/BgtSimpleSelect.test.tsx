@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { renderWithTheme, screen } from "@/test/test-utils";
+import { act, fireEvent, renderWithTheme, screen, userEvent, waitFor } from "@/test/test-utils";
 import { BgtSimpleSelect } from "./BgtSimpleSelect";
 
 // i18next is mocked globally in setup.ts
@@ -25,6 +25,7 @@ beforeAll(() => {
 	HTMLElement.prototype.hasPointerCapture = vi.fn(() => false);
 	HTMLElement.prototype.setPointerCapture = vi.fn();
 	HTMLElement.prototype.releasePointerCapture = vi.fn();
+	HTMLElement.prototype.scrollIntoView = vi.fn();
 });
 
 afterAll(() => {
@@ -42,6 +43,89 @@ describe("BgtSimpleSelect", () => {
 		items: defaultItems,
 		onValueChange: vi.fn(),
 	};
+
+	describe("Keyboard", () => {
+		const games = [
+			{ value: 1, label: "Agricola" },
+			{ value: 12, label: "Carcassonne" },
+			{ value: 14, label: "Catan" },
+		];
+
+		it("should select the first search match with Enter and close the list", async () => {
+			const onValueChange = vi.fn();
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSimpleSelect items={games} onValueChange={onValueChange} hasSearch defaultOpen />);
+
+			await user.type(await screen.findByPlaceholderText("search"), "carc{Enter}");
+
+			expect(onValueChange).toHaveBeenCalledWith(12);
+			await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+		});
+
+		it("should keep the list open on Enter when nothing matches", async () => {
+			const onValueChange = vi.fn();
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSimpleSelect items={games} onValueChange={onValueChange} hasSearch defaultOpen />);
+
+			await user.type(await screen.findByPlaceholderText("search"), "brass{Enter}");
+
+			expect(onValueChange).not.toHaveBeenCalled();
+			expect(screen.getByRole("listbox")).toBeInTheDocument();
+		});
+
+		it("should move focus to the first matching option with ArrowDown", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSimpleSelect items={games} onValueChange={vi.fn()} hasSearch defaultOpen />);
+
+			await user.type(await screen.findByPlaceholderText("search"), "ca{ArrowDown}");
+
+			expect(document.activeElement).toHaveAttribute("role", "option");
+			expect(document.activeElement).toHaveTextContent("Carcassonne");
+		});
+	});
+
+	describe("Avatars", () => {
+		const players = [
+			{ value: 1, label: "Kathleen", image: null },
+			{ value: 2, label: "Mikhael", image: "/images/profile/mikhael.png" },
+		];
+
+		it("should show every player's avatar, with the initial when there is no picture", async () => {
+			renderWithTheme(<BgtSimpleSelect items={players} onValueChange={vi.fn()} showAvatars defaultOpen />);
+
+			expect(await screen.findByText("K")).toBeInTheDocument();
+			expect(screen.getByAltText("Mikhael")).toHaveAttribute("src", "/images/profile/mikhael.png");
+		});
+
+		it("should only show pictures when avatars are off", async () => {
+			renderWithTheme(<BgtSimpleSelect items={players} onValueChange={vi.fn()} defaultOpen />);
+
+			expect(await screen.findByAltText("Mikhael")).toBeInTheDocument();
+			expect(screen.queryByText("K")).not.toBeInTheDocument();
+		});
+	});
+
+	describe("On-screen keyboard", () => {
+		it("should stay open when the keyboard resizes the window while searching", async () => {
+			renderWithTheme(<BgtSimpleSelect {...defaultProps} hasSearch defaultOpen />);
+			const search = await screen.findByPlaceholderText("search");
+			act(() => search.focus());
+
+			fireEvent(window, new Event("resize"));
+
+			expect(screen.getByRole("listbox")).toBeInTheDocument();
+		});
+
+		it("should still close on a resize when the search box is not focused", async () => {
+			renderWithTheme(<BgtSimpleSelect {...defaultProps} hasSearch defaultOpen />);
+			const search = await screen.findByPlaceholderText("search");
+			act(() => search.blur());
+
+			fireEvent(window, new Event("resize"));
+
+			await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+		});
+	});
 
 	describe("Rendering", () => {
 		it("should render select trigger", () => {
@@ -68,6 +152,27 @@ describe("BgtSimpleSelect", () => {
 		it("should render caret down icon when closed", () => {
 			renderWithTheme(<BgtSimpleSelect {...defaultProps} />);
 			expect(screen.getByTestId("caret-down-icon")).toBeInTheDocument();
+		});
+
+		it("should render a custom trigger with its own classes and name, and still open the list", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(
+				<BgtSimpleSelect
+					{...defaultProps}
+					value="2"
+					trigger={<span>Custom face</span>}
+					triggerClassName="custom-trigger"
+					aria-label="Change left player"
+				/>,
+			);
+
+			const trigger = screen.getByRole("combobox", { name: "Change left player" });
+			expect(trigger).toHaveClass("custom-trigger");
+			expect(trigger).toHaveTextContent("Custom face");
+			expect(screen.queryByTestId("caret-down-icon")).not.toBeInTheDocument();
+
+			await user.click(trigger);
+			expect(await screen.findByRole("option", { name: "Option 3" })).toBeInTheDocument();
 		});
 	});
 

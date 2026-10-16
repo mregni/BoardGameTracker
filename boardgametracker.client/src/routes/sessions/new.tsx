@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -14,9 +15,9 @@ import { useNewSessionData } from "./-hooks/useNewSessionData";
 export const Route = createFileRoute("/sessions/new")({
 	component: RouteComponent,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getPlayers());
-		queryClient.prefetchQuery(getLocations());
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getPlayers()).catch(noop);
+		queryClient.query(getLocations()).catch(noop);
 	},
 });
 
@@ -24,7 +25,7 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const { t } = useTranslation(["player-session", "dashboard"]);
 	const { canWrite } = usePermissions();
-	const { isPending, saveSession, games } = useNewSessionData();
+	const { isPending, isLoading, saveSession, games } = useNewSessionData();
 
 	if (!canWrite) return <Navigate to="/" />;
 
@@ -33,7 +34,7 @@ function RouteComponent() {
 		navigate({ to: `/games/${result.gameId}` });
 	};
 
-	if (games?.length === 0) {
+	if (!isLoading && games.length === 0) {
 		return (
 			<BgtEmptyPage
 				header={t("title-new")}
@@ -55,6 +56,7 @@ function RouteComponent() {
 			onClick={save}
 			disabled={isPending}
 			title={t("title-new")}
+			backTo="/"
 		/>
 	);
 }

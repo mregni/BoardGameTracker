@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using BoardGameTracker.Common;
+﻿using BoardGameTracker.Common;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Extensions;
 using FluentAssertions;

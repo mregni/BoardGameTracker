@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
 	search: {} as ChatSearch,
 	getGamesCall: vi.fn(),
 	getManualsCall: vi.fn(),
+	getGameIdsWithManualsCall: vi.fn(),
 	askRagCall: vi.fn(),
 	redirect: vi.fn((options: unknown) => ({ redirectTo: options })),
 	captured: {} as { config: CapturedRoute },
@@ -34,6 +35,10 @@ vi.mock("@tanstack/react-router", () => ({
 	useNavigate: () => mocks.navigate,
 }));
 
+vi.mock("@/hooks/usePermissions", () => ({
+	usePermissions: () => ({ isAdmin: false, canWrite: true, canManageSettings: false }),
+}));
+
 vi.mock("@/services/queries/games", () => ({
 	getGames: () => ({ queryKey: ["games"], queryFn: () => mocks.getGamesCall() }),
 }));
@@ -42,6 +47,10 @@ vi.mock("@/services/queries/manuals", () => ({
 	getGameManuals: (gameId: number) => ({
 		queryKey: ["game", gameId, "manuals"],
 		queryFn: () => mocks.getManualsCall(gameId),
+	}),
+	getGameIdsWithManuals: () => ({
+		queryKey: ["games", "manuals"],
+		queryFn: () => mocks.getGameIdsWithManualsCall(),
 	}),
 }));
 
@@ -131,11 +140,12 @@ beforeEach(() => {
 	mocks.search = {};
 	mocks.getGamesCall.mockResolvedValue(games);
 	mocks.getManualsCall.mockResolvedValue([]);
+	mocks.getGameIdsWithManualsCall.mockResolvedValue([1, 2]);
 });
 
 describe("chat route config", () => {
 	it("should redirect to home when rag is disabled", async () => {
-		const queryClient = { ensureQueryData: vi.fn().mockResolvedValue({ ragEnabled: false }) };
+		const queryClient = { query: vi.fn().mockResolvedValue({ ragEnabled: false }) };
 
 		await expect(mocks.captured.config.beforeLoad({ context: { queryClient } })).rejects.toEqual({
 			redirectTo: { to: "/" },
@@ -143,18 +153,20 @@ describe("chat route config", () => {
 	});
 
 	it("should allow the route when rag is enabled", async () => {
-		const queryClient = { ensureQueryData: vi.fn().mockResolvedValue({ ragEnabled: true }) };
+		const queryClient = { query: vi.fn().mockResolvedValue({ ragEnabled: true }) };
 
 		await expect(mocks.captured.config.beforeLoad({ context: { queryClient } })).resolves.toBeUndefined();
 		expect(mocks.redirect).not.toHaveBeenCalled();
+		expect(queryClient.query).toHaveBeenCalledWith(expect.objectContaining({ staleTime: "static" }));
 	});
 
-	it("should prefetch games in the loader", () => {
-		const queryClient = { prefetchQuery: vi.fn() };
+	it("should prefetch games and the games with rulebooks in the loader", () => {
+		const queryClient = { query: vi.fn().mockResolvedValue(undefined) };
 
 		mocks.captured.config.loader({ context: { queryClient } });
 
-		expect(queryClient.prefetchQuery).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ["games"] }));
+		expect(queryClient.query).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ["games"] }));
+		expect(queryClient.query).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ["games", "manuals"] }));
 	});
 
 	it("should keep valid search ids", () => {
@@ -166,6 +178,35 @@ describe("chat route config", () => {
 
 	it("should drop invalid search ids", () => {
 		expect(mocks.captured.config.validateSearch.parse({ gameId: -1, manualId: "abc" })).toEqual({});
+	});
+});
+
+describe("game list", () => {
+	it("should only offer games that have a rulebook", async () => {
+		mocks.getGameIdsWithManualsCall.mockResolvedValue([2]);
+		renderRoute();
+
+		expect(await screen.findByRole("option", { name: "Azul" })).toBeInTheDocument();
+		expect(screen.queryByRole("option", { name: "Catan" })).not.toBeInTheDocument();
+	});
+
+	it("should ignore a gameId whose game has no rulebook", async () => {
+		mocks.getGameIdsWithManualsCall.mockResolvedValue([2]);
+		mocks.search = { gameId: 1 };
+		renderRoute();
+
+		await screen.findByRole("option", { name: "Azul" });
+		expect(screen.getByText("empty.no-game.title")).toBeInTheDocument();
+		expect(mocks.getManualsCall).not.toHaveBeenCalled();
+	});
+
+	it("should explain how to add a rulebook when no game has one", async () => {
+		mocks.getGameIdsWithManualsCall.mockResolvedValue([]);
+		renderRoute();
+
+		expect(await screen.findByText("empty.no-rulebooks.title")).toBeInTheDocument();
+		expect(screen.getByText("empty.no-rulebooks.description")).toBeInTheDocument();
+		expect(screen.queryByText("empty.no-game.title")).not.toBeInTheDocument();
 	});
 });
 

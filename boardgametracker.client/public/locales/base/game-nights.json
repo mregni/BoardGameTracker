@@ -1,47 +1,63 @@
 {
   "rsvp": {
     "title": "Manage RSVPs",
-    "manual-note-prefix": "Manually set RSVP status",
-    "manual-note": " for players who responded via phone, text, or in person.",
-    "accept": "Accept",
-    "decline": "Decline",
-    "maybe": "Maybe",
-    "host": "Host is always attending"
+    "host": "Host · always coming",
+    "subtitle": "{{title}} · {{date}}",
+    "coming": "Coming",
+    "invited_one": "{{count}} invited",
+    "invited_other": "{{count}} invited",
+    "summary": {
+      "coming_one": "{{count}} coming",
+      "coming_other": "{{count}} coming",
+      "pending_one": "{{count}} pending",
+      "pending_other": "{{count}} pending",
+      "declined_one": "{{count}} declined",
+      "declined_other": "{{count}} declined"
+    },
+    "player-status": "RSVP of {{name}}",
+    "remove": "Remove {{name}} from this night",
+    "invite-more": "Invite more players",
+    "search-players": "Search players…",
+    "no-players-found": "No players found",
+    "invite": "Invite {{name}}",
+    "invite-link": "Invite link",
+    "copy": "Copy"
   },
   "empty": {
     "title": "No game nights planned yet",
-    "description": "Invite players to plan a game night."
+    "description": "Invite players to plan a game night.",
+    "upcoming": "No upcoming game nights"
   },
   "delete": {
     "title": "Delete game night",
     "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
   },
-  "title": "Game Nights Planner",
+  "title": "Game nights planner",
   "create": {
-    "button": "Create Game Night",
-    "title": "Create new Game Night",
+    "button": "Create game night",
+    "title": "Create new game night",
     "description": "Fill out the form to create a new game night event.",
-    "save": "Create Game Night"
+    "save": "Create game night"
   },
   "edit": {
-    "title": "Edit Game Night",
+    "title": "Edit game night",
     "description": "Update the details of this game night event.",
-    "save": "Save Changes"
+    "save": "Save changes"
   },
-  "upcoming": "Upcoming game nights",
-  "past": "Past game nights",
+  "upcoming": "Upcoming",
+  "past": "Past",
   "card": {
-    "hosted-by": "Hosted by {{host}}",
-    "suggested-games": "Suggested games",
-    "rsvp-link": "RSVP Link",
-    "upcoming": "Upcoming",
-    "past": "Past",
-    "copy-link": "Copy RSVP link",
+    "suggested-games": "Host suggests:",
+    "copy-link": "Copy invite link",
     "copied": "Copied to clipboard",
+    "copy-failed": "Couldn't copy the link",
     "manage-rsvps": "Manage RSVPs",
     "email-invites": "Email invites",
     "invites-sent": "Invites sent: {{sent}} sent",
-    "invites-failed": "Failed to send invites"
+    "invites-failed": "Failed to send invites",
+    "when": "{{when}} · {{time}}",
+    "host": "Host: {{host}}",
+    "open": "Open night"
   },
   "form": {
     "title": {
@@ -53,19 +69,19 @@
     },
     "location": {
       "label": "Location",
-      "placeholder": "Enter location"
+      "placeholder": "Location"
     },
     "host": {
       "label": "Host",
-      "placeholder": "Enter host player"
+      "placeholder": "Choose host"
     },
     "invited-players": {
       "label": "Invited players",
-      "description": "Select players to invite to this game night"
+      "description": "Choose players to invite"
     },
     "suggested-games": {
       "label": "Suggested games",
-      "description": "Select games that you suggest to play during this game night"
+      "description": "Choose games to suggest"
     },
     "notes": {
       "label": "Notes"
@@ -80,5 +96,211 @@
     "delete-failed": "Failed to delete game night",
     "rsvp-updated": "RSVP updated successfully",
     "rsvp-update-failed": "Failed to update RSVP"
+  },
+  "validation": {
+    "title-required": "Title is required",
+    "location-required": "Location is required",
+    "host-required": "Host is required"
+  },
+  "past-night": {
+    "attended-count_one": "{{count}} attended",
+    "attended-count_other": "{{count}} attended",
+    "nobody": "Nobody confirmed they were coming",
+    "nothing-logged": "nothing logged yet",
+    "games-played_one": "{{count}} game played",
+    "games-played_other": "{{count}} games played",
+    "winner": "winner {{names}}"
+  },
+  "detail": {
+    "back": "Game nights"
+  },
+  "play": {
+    "start": {
+      "button": "▶ Start a game",
+      "title": "Start a game",
+      "game": "Game",
+      "players": "Who plays?",
+      "save": "Start",
+      "coop-default": "Co-op game: you pick “We won” or “We lost” when you finish it.",
+      "coop-optional": "This game can be played co-op: you can switch it on when you finish it."
+    },
+    "log": {
+      "button": "Log a finished game",
+      "title": "Log a finished game"
+    },
+    "finish": {
+      "button": "Finish",
+      "title": "Finish {{game}}",
+      "subtitle": "Started {{time}} · {{duration}} · {{location}}"
+    },
+    "discard": {
+      "button": "Discard {{game}}",
+      "title": "Discard this game?",
+      "description": "The running game is removed and no session is saved."
+    },
+    "games": {
+      "tonight": "Tonight & planned"
+    },
+    "leave-out-hint": "Tap a player to leave them out",
+    "leave-out": "Leave {{name}} out",
+    "save": "Save session",
+    "now-playing": "Now playing: {{game}}",
+    "running": "Started {{time}} · {{duration}} · {{players}}",
+    "again": "Play again:",
+    "again-game": "Play {{game}} again",
+    "notifications": {
+      "started": "Game started",
+      "start-failed": "Failed to start the game",
+      "discarded": "Running game discarded",
+      "discard-failed": "Failed to discard the running game"
+    }
+  },
+  "summary": {
+    "games-played": "Games played",
+    "play-time": "Play time",
+    "leading": "Leading tonight",
+    "night-winner": "Night winner",
+    "no-winner": "No winner yet",
+    "wins_one": "{{count}} of {{total}} games won",
+    "wins_other": "{{count}} of {{total}} games won"
+  },
+  "played": {
+    "tonight": "Played tonight",
+    "after": "Played",
+    "empty": "Nothing played yet. Tap “Start a game” when a game begins; date, time, location and players are filled in for you.",
+    "empty-after": "Nothing was logged for this night. Use “Log a finished game” to add what was played."
+  },
+  "table": {
+    "title": "At the table",
+    "host": "· host",
+    "edit": "Edit who's here"
+  },
+  "planned": {
+    "title": "Planned",
+    "played": "Played"
+  },
+  "end": {
+    "button": "End night",
+    "title": "End this game night?",
+    "description": "Nothing can be started or logged on this night until it is reopened.",
+    "running-hint": "Finish or discard the running games first",
+    "reopen": "Reopen night",
+    "notifications": {
+      "ended": "Game night ended",
+      "end-failed": "Failed to end the game night",
+      "reopened": "Game night reopened",
+      "reopen-failed": "Failed to reopen the game night"
+    }
+  },
+  "view": {
+    "label": "View",
+    "nights": "Nights",
+    "stats": "Statistics"
+  },
+  "stats": {
+    "period": {
+      "label": "Period",
+      "allTime": "All time",
+      "thisYear": "This year",
+      "last12Months": "Last 12 months"
+    },
+    "logged_one": "{{count}} of {{total}} nights has sessions logged",
+    "logged_other": "{{count}} of {{total}} nights have sessions logged",
+    "empty": {
+      "title": "No game nights to count yet",
+      "description": "Statistics count the nights that have sessions logged or were ended. Log games from a night's page to see them here."
+    },
+    "tiles": {
+      "nights": "Game nights",
+      "every-week_one": "about one every week",
+      "every-week_other": "about one every {{count}} weeks",
+      "every-day_one": "about one every day",
+      "every-day_other": "about one every {{count}} days",
+      "games": "Games played",
+      "per-night": "{{value}} per night",
+      "play-time": "Play time",
+      "table": "Average table",
+      "table-hint": "players per night"
+    },
+    "winners": {
+      "title": "Night winners",
+      "subtitle": "most sessions won that night · ties share",
+      "nights_one": "{{count}} night",
+      "nights_other": "{{count}} nights",
+      "games-won_one": "{{count}} game won",
+      "games-won_other": "{{count}} games won",
+      "share": "{{value}} of nights",
+      "bar": "{{name}}: {{won}} of {{attended}} nights won",
+      "footer": "Ranked by nights won; the bar is the share of their nights they won.",
+      "ties_one": "{{count}} night ended in a tie and counts for every winner.",
+      "ties_other": "{{count}} nights ended in a tie and count for every winner.",
+      "empty": "Nobody has won a night yet."
+    },
+    "history": {
+      "title": "Night winner history",
+      "all_one": "All {{count}} night",
+      "all_other": "All {{count}} nights",
+      "less": "Show fewer",
+      "games_one": "{{count}} game",
+      "games_other": "{{count}} games",
+      "score": "{{wins}} of {{total}}",
+      "streak": "{{count}} in a row",
+      "no-winner": "No winner",
+      "no-sessions": "No sessions logged",
+      "coop-shared_one": "{{count}} shares the night",
+      "coop-shared_other": "All {{count}} share the night",
+      "coop-only": "co-op only"
+    },
+    "games": {
+      "title": "Most played at game nights",
+      "nights_one": "at {{count}} night",
+      "nights_other": "at {{count}} nights",
+      "planned": "planned {{count}}×",
+      "times": "{{count}}×",
+      "bar": "{{name}}: played {{count}} times",
+      "never-played": "Planned but never played:",
+      "empty": "No games played at game nights yet."
+    },
+    "streaks": {
+      "title": "Streaks",
+      "winner-current": "{{name}} won the last {{count}} nights",
+      "winner-current-hint": "Current streak",
+      "winner-record": "record is {{name}} with {{count}} ({{from}} – {{to}})",
+      "winner-longest": "{{name}} won {{count}} nights in a row",
+      "winner-longest-hint": "Longest streak · {{from}} – {{to}}",
+      "attendance": "{{name}} came to {{count}} nights in a row",
+      "attendance-hint": "Current attendance streak · since {{date}}",
+      "game": "{{name}} played at {{count}} nights in a row",
+      "game-current": "Current game streak · since {{date}}",
+      "game-longest": "Longest game streak · {{from}} – {{to}}",
+      "empty": "No streaks yet: a streak starts at two nights in a row."
+    },
+    "attendance": {
+      "title": "Attendance",
+      "of_one": "of {{count}} night",
+      "of_other": "of {{count}} nights",
+      "hosted": "host {{count}}×",
+      "bar": "{{name}} came to {{count}} of {{total}} nights",
+      "select": "Show the last nights of {{name}}",
+      "recent_one": "{{name}}, last night",
+      "recent_other": "{{name}}, last {{count}} nights",
+      "came": "came",
+      "absent": "not there",
+      "dot": "{{title}} · {{date}}: {{state}}",
+      "empty": "Nobody was marked at the table yet."
+    },
+    "records": {
+      "title": "Records",
+      "longest-night": "Longest night",
+      "most-games": "Most games in one night",
+      "biggest-table": "Biggest table",
+      "latest-finish": "Latest finish",
+      "night": "{{title}} · {{date}}",
+      "games_one": "{{count}} game",
+      "games_other": "{{count}} games",
+      "mostly": "mostly {{name}}",
+      "finish": "{{title}} · {{game}}, {{duration}}",
+      "empty": "No records yet."
+    }
   }
 }

@@ -1,38 +1,36 @@
 import { useTranslation } from "react-i18next";
-import BgtButton from "../../components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
-} from "../../components/BgtDialog/BgtDialog";
+} from "../../components/BgtDialog";
 
 interface Props {
 	open: boolean;
 	close: () => void;
 	onDelete: (() => Promise<void>) | (() => void);
 	title: string;
+	heading?: string;
 	description: string;
 }
 
 export const BgtDeleteModal = (props: Props) => {
-	const { open, close, onDelete, title, description } = props;
+	const { open, close, onDelete, title, heading, description } = props;
 	const { t } = useTranslation();
 
 	return (
-		<BgtDialog open={open}>
+		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
-				<BgtDialogTitle>{t("delete.title", { title: title })}</BgtDialogTitle>
+				<BgtDialogTitle>{heading ?? t("delete.title", { title: title })}</BgtDialogTitle>
 				<BgtDialogDescription>{description}</BgtDialogDescription>
-				<BgtDialogClose>
-					<BgtButton variant="cancel" onClick={() => close()}>
-						{t("cancel")}
-					</BgtButton>
-					<BgtButton variant="error" onClick={onDelete}>
-						{t("delete.button")}
-					</BgtButton>
-				</BgtDialogClose>
+				<BgtDialogFooter
+					onCancel={close}
+					confirmLabel={t("delete.button")}
+					onConfirm={onDelete}
+					variant="destructive"
+				/>
 			</BgtDialogContent>
 		</BgtDialog>
 	);

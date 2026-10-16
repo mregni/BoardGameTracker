@@ -1,5 +1,3 @@
-using BoardGameTracker.Common;
-using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.ChangeDetection.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -22,15 +20,8 @@ public class ChangeDetectionController : ControllerBase
         _changeDetectionClient = changeDetectionClient;
     }
 
-    [HttpGet("test")]
-    [Authorize(Roles = Constants.AuthRoles.Admin)]
-    public async Task<IActionResult> TestConnection(CancellationToken cancellationToken)
-    {
-        var (ok, version) = await _changeDetectionClient.TestConnectionAsync(cancellationToken);
-        return Ok(new ChangeDetectionConnectionTestDto { Ok = ok, Version = version });
-    }
-
     [HttpGet("watch/{watchId}")]
+    [ProducesResponseType<ChangeDetectionWatchInfo>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetWatch(string watchId, CancellationToken cancellationToken)
     {
         if (!Guid.TryParse(watchId, out _))

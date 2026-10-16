@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { renderWithTheme, screen, userEvent, waitFor } from "@/test/test-utils";
+import { renderWithTheme, screen, userEvent, waitFor, within } from "@/test/test-utils";
 import { NewLocationModal } from "./NewLocationModal";
 
 // i18next is mocked globally in setup.ts
@@ -49,6 +49,17 @@ describe("NewLocationModal", () => {
 		it("should render save button", () => {
 			renderWithTheme(<NewLocationModal {...defaultProps} />);
 			expect(screen.getByRole("button", { name: "common:save" })).toBeInTheDocument();
+		});
+
+		it("puts cancel on the left and the save submit on the right of the footer", () => {
+			renderWithTheme(<NewLocationModal {...defaultProps} />);
+
+			const footer = document.querySelector("[data-slot='dialog-footer']") as HTMLElement;
+			const buttons = within(footer).getAllByRole("button");
+			expect(buttons.map((button) => button.textContent)).toEqual(["common:cancel", "common:save"]);
+			expect(buttons[0]).toHaveAttribute("type", "button");
+			expect(buttons[1]).toHaveAttribute("type", "submit");
+			expect(buttons[1]).toHaveClass("bg-primary/60");
 		});
 
 		it("should not render when open is false", () => {

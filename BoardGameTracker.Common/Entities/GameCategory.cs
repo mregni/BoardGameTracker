@@ -25,6 +25,4 @@ public class GameCategory : HasId
     {
         Name = name;
     }
-
-    public int GetGameCount() => Games.Count;
 }

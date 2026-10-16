@@ -1,9 +1,11 @@
-﻿using BoardGameTracker.Common.DTOs.Commands;
+﻿using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore.Interfaces;
-using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Images.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.Core.Players.Specifications;
@@ -19,6 +21,7 @@ public class PlayerService : IPlayerService
     private readonly IImageService _imageService;
     private readonly IPlayerStatisticsService _playerStatisticsService;
     private readonly ISessionRepository _sessionRepository;
+    private readonly IReadRepository<GameNight> _gameNightRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<PlayerService> _logger;
 
@@ -27,6 +30,7 @@ public class PlayerService : IPlayerService
         IImageService imageService,
         IPlayerStatisticsService playerStatisticsService,
         ISessionRepository sessionRepository,
+        IReadRepository<GameNight> gameNightRepository,
         IUnitOfWork unitOfWork,
         ILogger<PlayerService> logger)
     {
@@ -34,6 +38,7 @@ public class PlayerService : IPlayerService
         _imageService = imageService;
         _playerStatisticsService = playerStatisticsService;
         _sessionRepository = sessionRepository;
+        _gameNightRepository = gameNightRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -44,10 +49,17 @@ public class PlayerService : IPlayerService
         return _playerRepository.GetAllAsync();
     }
 
+    public Task<List<PlayerOverviewDto>> GetOverview()
+    {
+        _logger.LogDebug("Fetching players overview");
+        return _playerRepository.ListAsync(new PlayersOverviewSpec());
+    }
+
     public async Task<Player> Create(CreatePlayerCommand command)
     {
         _logger.LogDebug("Creating player {Name}", command.Name);
-        var player = new Player(command.Name, command.Image, command.Email);
+        var name = await EnsureUniqueName(command.Name, null);
+        var player = new Player(name, command.Image, command.Email);
         await _playerRepository.CreateAsync(player);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Player {PlayerId} ({Name}) created", player.Id, player.Name);
@@ -60,6 +72,16 @@ public class PlayerService : IPlayerService
         return _playerRepository.GetByIdAsync(id);
     }
 
+    public Task<bool> ExistsAsync(int id)
+    {
+        return _playerRepository.AnyAsync(new PlayerByIdSpec(id));
+    }
+
+    public Task<List<int>> GetExistingIdsAsync(IEnumerable<int> ids)
+    {
+        return _playerRepository.ListAsync(new PlayerIdsSpec(ids));
+    }
+
     public async Task<Player> Update(UpdatePlayerCommand command)
     {
         _logger.LogDebug("Updating player {PlayerId}", command.Id);
@@ -69,22 +91,40 @@ public class PlayerService : IPlayerService
             throw new EntityNotFoundException(nameof(Player), command.Id);
         }
         
-        if (command.Image != dbPlayer.Image)
-        {
-            _imageService.DeleteImage(dbPlayer.Image);
-            dbPlayer.UpdateImage(command.Image);
-        }
-        
-        dbPlayer.UpdateName(command.Name);
+        var name = await EnsureUniqueName(command.Name, command.Id);
+        var previousImage = dbPlayer.Image;
+        dbPlayer.UpdateImage(command.Image);
+        dbPlayer.UpdateName(name);
         dbPlayer.UpdateEmail(command.Email);
         await _unitOfWork.SaveChangesAsync();
+
+        if (previousImage != dbPlayer.Image)
+        {
+            _imageService.DeleteImage(previousImage);
+        }
 
         return dbPlayer;
     }
 
-    public Task<int> CountAsync()
+    private async Task<string> EnsureUniqueName(string? name, int? excludedId)
     {
-        return _playerRepository.CountAsync();
+        var trimmed = name?.Trim();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            throw new ValidationException(nameof(CreatePlayerCommand.Name), Constants.Errors.PlayerNameRequired);
+        }
+
+        if (await _playerRepository.AnyAsync(new PlayerWithNameSpec(trimmed, excludedId)))
+        {
+            throw new ValidationException(nameof(CreatePlayerCommand.Name), Constants.Errors.PlayerNameAlreadyExists);
+        }
+
+        return trimmed;
+    }
+
+    public Task<int> CountAsync(CancellationToken cancellationToken = default)
+    {
+        return _playerRepository.CountAsync(cancellationToken);
     }
 
     public Task<List<Session>> GetSessions(int id, int? count)
@@ -102,11 +142,16 @@ public class PlayerService : IPlayerService
             throw new EntityNotFoundException(nameof(Player), id);
         }
 
-        await _sessionRepository.DeleteByPlayerIdAsync(id);
+        if (await _gameNightRepository.AnyAsync(new GameNightsHostedByPlayerSpec(id)))
+        {
+            throw new DomainException(Constants.Errors.PlayerHostsGameNights);
+        }
 
-        _imageService.DeleteImage(player.Image);
+        await _sessionRepository.DeleteByPlayerIdAsync(id);
         await _playerRepository.DeleteAsync(player.Id);
         await _unitOfWork.SaveChangesAsync();
+
+        _imageService.DeleteImage(player.Image);
         _logger.LogInformation("Player {PlayerId} deleted", id);
     }
 

@@ -7,7 +7,30 @@ const baseGame = {
 	additionDate: "2026-01-01",
 	state: GameState.Wanted,
 	hasScoring: false,
+	hasCoopMode: false,
+	coopByDefault: false,
 };
+
+describe("CreateGameSchema yearPublished and minAge", () => {
+	it("should accept a BCE year such as Go's", () => {
+		expect(CreateGameSchema.parse({ ...baseGame, yearPublished: -2200 }).yearPublished).toBe(-2200);
+	});
+
+	it("should reject a year before -5000", () => {
+		expect(CreateGameSchema.safeParse({ ...baseGame, yearPublished: -6000 }).success).toBe(false);
+	});
+
+	it("should accept next year but reject the year after", () => {
+		const nextYear = new Date().getFullYear() + 1;
+
+		expect(CreateGameSchema.safeParse({ ...baseGame, yearPublished: nextYear }).success).toBe(true);
+		expect(CreateGameSchema.safeParse({ ...baseGame, yearPublished: nextYear + 1 }).success).toBe(false);
+	});
+
+	it("should treat a minimum age of 0 as unknown", () => {
+		expect(CreateGameSchema.parse({ ...baseGame, minAge: 0 }).minAge).toBeNull();
+	});
+});
 
 describe("CreateGameSchema buyingPrice", () => {
 	it("should preserve a buying price of 0 instead of nulling it", () => {
@@ -26,5 +49,30 @@ describe("CreateGameSchema buyingPrice", () => {
 		const result = CreateGameSchema.parse({ ...baseGame, buyingPrice: 22.5 });
 
 		expect(result.buyingPrice).toBe(22.5);
+	});
+});
+
+describe("CreateGameSchema soldPrice", () => {
+	it("should keep a sold price of 0 for a game given away", () => {
+		expect(CreateGameSchema.parse({ ...baseGame, soldPrice: 0 }).soldPrice).toBe(0);
+	});
+
+	it("should map an absent sold price to null", () => {
+		expect(CreateGameSchema.parse({ ...baseGame, soldPrice: undefined }).soldPrice).toBeNull();
+	});
+});
+
+describe("CreateGameSchema bggId", () => {
+	it("should ask for a whole number when the id has decimals", () => {
+		const result = CreateGameSchema.safeParse({ ...baseGame, bggId: 12.5 });
+
+		expect(result.success).toBe(false);
+		expect(result.error?.issues[0].message).toBe("game:validation.whole-number");
+	});
+
+	it("should ask for a positive number when the id is negative", () => {
+		const result = CreateGameSchema.safeParse({ ...baseGame, bggId: -3 });
+
+		expect(result.error?.issues[0].message).toBe("game:validation.positive-number");
 	});
 });

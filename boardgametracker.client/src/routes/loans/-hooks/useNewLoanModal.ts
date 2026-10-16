@@ -1,16 +1,17 @@
-import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/models";
+import { useMutation, useQueries } from "@tanstack/react-query";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { saveLoanCall } from "@/services/loanService";
 import { getGames } from "@/services/queries/games";
 import { getPlayers } from "@/services/queries/players";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
 	onSuccess?: () => void;
 }
 
 export const useNewLoanModal = ({ onSuccess }: Props) => {
-	const queryClient = useQueryClient();
+	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
 
 	const [gamesQuery, playerQuery] = useQueries({
@@ -22,15 +23,13 @@ export const useNewLoanModal = ({ onSuccess }: Props) => {
 
 	const saveLoanMutation = useMutation({
 		mutationFn: saveLoanCall,
-		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.loans] });
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
+		onSuccess: async (loan) => {
+			await invalidator.invalidateLoan(loan.id, loan.gameId);
 			successToast("loans:notifications.created");
 			onSuccess?.();
 		},
-		onError: () => {
-			errorToast("loans:notifications.create-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "loans:notifications.create-failed"));
 		},
 	});
 

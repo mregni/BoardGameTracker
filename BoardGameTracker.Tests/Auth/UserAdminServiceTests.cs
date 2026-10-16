@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
@@ -496,8 +495,6 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.FindByIdAsync(targetUserId)).ReturnsAsync(targetUser);
         _userManagerMock.Setup(x => x.UpdateAsync(targetUser)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.RemoveFromRolesAsync(targetUser, currentRoles)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.SetupSequence(x => x.GetRolesAsync(targetUser))
             .ReturnsAsync(currentRoles)
             .ReturnsAsync(currentRoles);
@@ -509,8 +506,8 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
-        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, currentRoles), Times.Once);
-        _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.User), Times.Once);
+        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, It.IsAny<IEnumerable<string>>()), Times.Never);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, It.IsAny<string>()), Times.Never);
         VerifyInformationLogged(currentUserId, targetUserId);
         VerifyNoOtherCalls();
     }
@@ -604,8 +601,6 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.FindByIdAsync(targetUserId)).ReturnsAsync(targetUser);
         _userManagerMock.Setup(x => x.UpdateAsync(targetUser)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.RemoveFromRolesAsync(targetUser, roles)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.SetupSequence(x => x.GetRolesAsync(targetUser)).ReturnsAsync(roles).ReturnsAsync(roles);
 
         var result = await _service.UpdateUserAsync(targetUserId, "bob", "b@test.com", Constants.AuthRoles.User, 5, currentUserId);
@@ -616,8 +611,8 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
-        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, roles), Times.Once);
-        _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.User), Times.Once);
+        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, It.IsAny<IEnumerable<string>>()), Times.Never);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, It.IsAny<string>()), Times.Never);
         VerifyInformationLogged();
         VerifyNoOtherCalls();
     }
@@ -633,8 +628,6 @@ public class UserAdminServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.FindByIdAsync(targetUserId)).ReturnsAsync(targetUser);
         _userManagerMock.Setup(x => x.UpdateAsync(targetUser)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.RemoveFromRolesAsync(targetUser, roles)).ReturnsAsync(IdentityResult.Success);
-        _userManagerMock.Setup(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.User)).ReturnsAsync(IdentityResult.Success);
         _userManagerMock.SetupSequence(x => x.GetRolesAsync(targetUser)).ReturnsAsync(roles).ReturnsAsync(roles);
 
         var result = await _service.UpdateUserAsync(targetUserId, "bob", "b@test.com", Constants.AuthRoles.User, null, currentUserId);
@@ -645,8 +638,8 @@ public class UserAdminServiceTests : IDisposable
         _userManagerMock.Verify(x => x.FindByIdAsync(targetUserId), Times.Once);
         _userManagerMock.Verify(x => x.UpdateAsync(targetUser), Times.Once);
         _userManagerMock.Verify(x => x.GetRolesAsync(targetUser), Times.Exactly(2));
-        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, roles), Times.Once);
-        _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, Constants.AuthRoles.User), Times.Once);
+        _userManagerMock.Verify(x => x.RemoveFromRolesAsync(targetUser, It.IsAny<IEnumerable<string>>()), Times.Never);
+        _userManagerMock.Verify(x => x.AddToRoleAsync(targetUser, It.IsAny<string>()), Times.Never);
         VerifyInformationLogged();
         VerifyNoOtherCalls();
     }

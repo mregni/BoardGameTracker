@@ -5,6 +5,7 @@ import { deletePlayerCall } from "@/services/playerService";
 import { getBadges } from "@/services/queries/basdges";
 import { getPlayer, getPlayerSessionsShortList, getPlayerStatistics } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface UsePLayerDataProps {
 	playerId: number;
@@ -13,7 +14,7 @@ interface UsePLayerDataProps {
 
 export const usePlayerData = ({ playerId, onDeleteSuccess }: UsePLayerDataProps) => {
 	const queryClient = useQueryClient();
-	const { infoToast, errorToast } = useToasts();
+	const { successToast, errorToast } = useToasts();
 
 	const [playerQuery, statisticsQuery, badgesQuery, sessionsQuery, settingsQuery] = useQueries({
 		queries: [
@@ -37,16 +38,19 @@ export const usePlayerData = ({ playerId, onDeleteSuccess }: UsePLayerDataProps)
 		sessionsQuery.isLoading ||
 		settingsQuery.isLoading;
 
-	const deletePlayer = async (id: number) => {
+	const deletePlayer = async (id: number, onDeleted?: () => Promise<unknown>) => {
 		try {
 			await deletePlayerCall(id);
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
-			infoToast("player:delete.successfull");
-			onDeleteSuccess?.();
-		} catch {
-			errorToast("player:delete.failed");
+		} catch (error) {
+			errorToast(apiErrorMessage(error, "player:delete.failed"));
+			return;
 		}
+
+		successToast("player:delete.successfull");
+		await onDeleted?.();
+		onDeleteSuccess?.();
+		queryClient.removeQueries({ queryKey: [QUERY_KEYS.player, id] });
+		await queryClient.invalidateQueries();
 	};
 
 	return {

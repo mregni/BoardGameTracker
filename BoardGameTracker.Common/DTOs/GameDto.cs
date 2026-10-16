@@ -17,12 +17,14 @@ public class GameDto
     public int? MinPlayTime { get; set; }
     public int? MaxPlayTime { get; set; }
     public int? MinAge { get; set; }
-    public bool isLoaned { get; set; }
+    public bool IsLoaned { get; set; }
     public double? Rating { get; set; }
     public double? Weight { get; set; }
     public int? BggId { get; set; }
     public GameState State { get; set; }
     public bool HasScoring { get; set; }
+    public bool HasCoopMode { get; set; }
+    public bool CoopByDefault { get; set; }
     public decimal? BuyingPrice { get; set; }
     public decimal? SoldPrice { get; set; }
     public DateTime? AdditionDate { get; set; }

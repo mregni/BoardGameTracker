@@ -100,12 +100,12 @@ describe("usePermissions", () => {
 			mockAuthStatus = null;
 		});
 
-		it("should treat null authStatus as auth disabled", () => {
+		it("should fall back to the user's roles while the auth status is unknown", () => {
 			const { result } = renderHook(() => usePermissions());
 
-			expect(result.current.isAdmin).toBe(true);
-			expect(result.current.canWrite).toBe(true);
-			expect(result.current.canManageSettings).toBe(true);
+			expect(result.current.isAdmin).toBe(false);
+			expect(result.current.canWrite).toBe(false);
+			expect(result.current.canManageSettings).toBe(false);
 		});
 	});
 });

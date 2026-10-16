@@ -1,6 +1,7 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
-import { useCallback, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import LinkIcon from "@/assets/icons/arrow-square-out.svg?react";
 import Database from "@/assets/icons/database.svg?react";
@@ -15,29 +16,80 @@ import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
 import { BgtPaging } from "@/components/BgtTable/BgtPaging";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useDecimalInput } from "@/hooks/useDecimalInput";
 import { GameState, type ImportGame } from "@/models";
+import { IntegrationSettingsButton } from "@/routes/-components/IntegrationSettingsButton";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
+import { parseLocalDate } from "@/utils/localDate";
 import { useList } from "./-hooks/useList";
+import { needsIntegrationSettings } from "./-utils/importErrors";
+
+interface ImportPriceInputProps {
+	price: number;
+	onChange: (price: number) => void;
+	placeholder: string;
+	disabled: boolean;
+	currency?: string;
+}
+
+const ImportPriceInput = ({ price, onChange, placeholder, disabled, currency }: ImportPriceInputProps) => {
+	const decimal = useDecimalInput(price || null, (value) => onChange(value ?? 0));
+	return (
+		<BgtSimpleInputField
+			type="text"
+			inputMode="decimal"
+			value={decimal.value}
+			onChange={(event) => decimal.onChange(event.target.value)}
+			onBlur={decimal.onBlur}
+			placeholder={placeholder}
+			disabled={disabled}
+			className="w-32.5"
+			suffixLabel={currency}
+		/>
+	);
+};
 
 export const Route = createFileRoute("/games/import/list_/$username")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 	beforeLoad: async ({ context: { queryClient } }) => {
-		const settings = await queryClient.ensureQueryData(getSettings());
+		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
 		if (!settings.bggStatus?.isConfigured) {
 			throw redirect({ to: "/games" });
 		}
 	},
 	loader: async ({ params, context: { queryClient } }) => {
-		queryClient.prefetchQuery(getBggCollection(params.username));
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getSettings());
+		queryClient.query(getBggCollection(params.username)).catch(noop);
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getSettings()).catch(noop);
 	},
 });
 
 const countPerPage = 50;
 const maxImport = 25;
+
+interface SelectAllState {
+	checked: boolean;
+	disabled: boolean;
+	onChange: (checked: boolean) => void;
+}
+
+const SelectAllContext = createContext<SelectAllState | undefined>(undefined);
+
+const SelectAllHeader = () => {
+	const selectAll = useContext(SelectAllContext);
+	return (
+		<BgtSimpleCheckbox
+			id="select-all-import"
+			label=""
+			disabled={selectAll?.disabled ?? true}
+			checked={selectAll?.checked ?? false}
+			onCheckedChange={(checked) => selectAll?.onChange(checked)}
+		/>
+	);
+};
 
 function RouteComponent() {
 	const { username } = Route.useParams();
@@ -45,6 +97,8 @@ function RouteComponent() {
 
 	const {
 		bggError,
+		bggErrorKind,
+		retryCollection,
 		settings,
 		games,
 		updateGame,
@@ -56,6 +110,7 @@ function RouteComponent() {
 		totalCount,
 		startImport,
 		importing,
+		importProgress,
 	} = useList({
 		username,
 	});
@@ -77,6 +132,11 @@ function RouteComponent() {
 		[selectableGames, setSelection],
 	);
 
+	const selectAll = useMemo(
+		() => ({ checked: allSelected, disabled: selectionCap === 0, onChange: toggleSelectAll }),
+		[allSelected, selectionCap, toggleSelectAll],
+	);
+
 	const columns: DataTableProps<ImportGame>["columns"] = useMemo(
 		() => [
 			{
@@ -84,24 +144,17 @@ function RouteComponent() {
 				enableSorting: false,
 				cell: ({ row }) => (
 					<BgtSimpleCheckbox
-						id={""}
+						id={`import-${row.original.bggId}`}
 						disabled={row.original.inCollection}
 						label={""}
+						aria-label={row.original.title}
 						checked={row.original.checked}
 						onCheckedChange={(state) => {
 							updateGame(row.original.bggId, { checked: state });
 						}}
 					/>
 				),
-				header: () => (
-					<BgtSimpleCheckbox
-						id="select-all-import"
-						label=""
-						disabled={selectionCap === 0}
-						checked={allSelected}
-						onCheckedChange={toggleSelectAll}
-					/>
-				),
+				header: SelectAllHeader,
 			},
 			{
 				accessorKey: "1",
@@ -117,7 +170,7 @@ function RouteComponent() {
 			},
 			{
 				accessorKey: "2",
-				cell: ({ row }) => <div className={cx(row.original.inCollection && "text-gray-500")}>{row.original.title}</div>,
+				cell: ({ row }) => <div className={cx(row.original.inCollection && "text-gray-400")}>{row.original.title}</div>,
 				header: t("name"),
 			},
 			{
@@ -134,23 +187,17 @@ function RouteComponent() {
 						</a>
 					</div>
 				),
-				header: t("name"),
+				header: t("common:bgg-id"),
 			},
 			{
 				accessorKey: "4",
 				cell: ({ row }) => (
-					<BgtSimpleInputField
-						type="number"
-						value={row.original.price}
-						onChange={(event) =>
-							updateGame(row.original.bggId, {
-								price: Number(event.target.value),
-							})
-						}
+					<ImportPriceInput
+						price={row.original.price}
+						onChange={(price) => updateGame(row.original.bggId, { price })}
 						placeholder={t("game:price.placeholder")}
 						disabled={row.original.inCollection}
-						className="w-32.5"
-						suffixLabel={settings?.currency}
+						currency={settings?.currency}
 					/>
 				),
 				header: t("game:price.label"),
@@ -189,7 +236,7 @@ function RouteComponent() {
 						value={row.original.addedDate}
 						onChange={(event) =>
 							updateGame(row.original.bggId, {
-								addedDate: new Date(event.target.value),
+								addedDate: parseLocalDate(event.target.value) ?? row.original.addedDate,
 							})
 						}
 						type="date"
@@ -199,7 +246,7 @@ function RouteComponent() {
 				header: t("game:added-date.label"),
 			},
 		],
-		[settings?.currency, t, updateGame, allSelected, selectionCap, toggleSelectAll],
+		[settings?.currency, t, updateGame],
 	);
 
 	const isLoading = processingGames || importing;
@@ -208,18 +255,28 @@ function RouteComponent() {
 		startImport(games.filter((game) => game.checked));
 	};
 
+	const loadingLabel = importing ? t("games:import.importing", importProgress) : undefined;
+
 	return (
 		<BgtPage>
 			<BgtPageHeader header={t("bgg-import:title")} actions={[]} icon={Database} />
 			<BgtPageContent>
 				{bggError ? (
-					<BgtStatus
-						variant="warning"
-						title={t("games:import.error-title")}
-						description={t("games:import.error-description")}
-					/>
+					<div className="flex flex-col gap-4">
+						<BgtStatus
+							variant="warning"
+							title={t("games:import.error-title")}
+							description={t(`games:import.error-${bggErrorKind}`)}
+						/>
+						<div className="flex flex-wrap gap-2">
+							<BgtButton type="button" variant="primary" onClick={() => void retryCollection()}>
+								{t("common:retry")}
+							</BgtButton>
+							{needsIntegrationSettings(bggErrorKind) && <IntegrationSettingsButton />}
+						</div>
+					</div>
 				) : isLoading ? (
-					<BgtLoadingSpinner />
+					<BgtLoadingSpinner label={loadingLabel} />
 				) : (
 					<>
 						<div className="flex flex-row justify-between gap-4 mb-16">
@@ -249,17 +306,27 @@ function RouteComponent() {
 
 						<BgtPaging page={page} setPage={setPage} totalCount={games.length} countPerPage={countPerPage} />
 
-						<BgtDataTable
-							columns={columns}
-							data={games.slice(page * countPerPage, (page + 1) * countPerPage)}
-							noDataMessage={t("no-data")}
-							widths={["w-[48px]", "w-[70px]", null, "w-[100px]"]}
-						/>
+						<SelectAllContext.Provider value={selectAll}>
+							<BgtDataTable
+								columns={columns}
+								data={games.slice(page * countPerPage, (page + 1) * countPerPage)}
+								noDataMessage={t("no-data")}
+								widths={["w-[48px]", "w-[70px]", null, "w-[100px]"]}
+							/>
+						</SelectAllContext.Provider>
 
 						<BgtPaging page={page} setPage={setPage} totalCount={games.length} countPerPage={countPerPage} />
 					</>
 				)}
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

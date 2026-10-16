@@ -1,7 +1,7 @@
 export interface Expansion {
 	id: number;
 	title: string;
-	bggId: number;
+	bggId: number | null;
 	gameId: number | null;
 }
 

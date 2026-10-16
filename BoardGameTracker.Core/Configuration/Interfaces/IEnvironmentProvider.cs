@@ -13,6 +13,7 @@ public interface IEnvironmentProvider
     bool AuthEnabled { get; }
     string? JwtSecret { get; }
     string? AdminPassword { get; }
+    string? DataProtectionKey { get; }
     IReadOnlyList<string> TrustedProxies { get; }
     IReadOnlyList<string> CorsOrigins { get; }
     bool SwaggerEnabled { get; }

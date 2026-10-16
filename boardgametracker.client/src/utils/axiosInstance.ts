@@ -1,10 +1,12 @@
 import axios, { type AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 
+import { useAuth } from "@/hooks/useAuth";
 import type { ApiError, ApiErrorKind } from "@/models";
 
 import { apiUrl } from "./apiUrl";
+import { refreshAccessToken, tokensRefreshedElsewhere } from "./tokenRefresh";
 
-const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
+const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,7})?(Z|[+-]\d{2}:\d{2})?$/;
 
 // biome-ignore lint/suspicious/noExplicitAny: recursive date converter needs any for generic object traversal
 function convertDatesInObject(obj: any): any {
@@ -100,38 +102,29 @@ function processQueue(error: unknown, token: string | null = null) {
 	failedQueue = [];
 }
 
+const isApiRequest = (url?: string) => {
+	if (!url) {
+		return true;
+	}
+
+	if (!/^https?:\/\//i.test(url)) {
+		return true;
+	}
+
+	return url.startsWith(apiUrl);
+};
+
 // Request interceptor: attach JWT token
 axiosInstance.interceptors.request.use(
 	(config) => {
-		// Import dynamically to avoid circular dependency
-		const authStorage = localStorage.getItem("bgt-auth");
-		if (authStorage) {
-			try {
-				const parsed = JSON.parse(authStorage);
-				const accessToken = parsed?.state?.accessToken;
-				if (accessToken) {
-					config.headers.Authorization = `Bearer ${accessToken}`;
-				}
-			} catch {
-				// Ignore parse errors
-			}
+		const accessToken = useAuth.getState().accessToken;
+		if (accessToken && isApiRequest(config.url)) {
+			config.headers.Authorization = `Bearer ${accessToken}`;
 		}
 		return config;
 	},
 	(error) => Promise.reject(error),
 );
-
-function getStoredRefreshToken(): string | null {
-	const authStorage = localStorage.getItem("bgt-auth");
-	if (!authStorage) return null;
-
-	try {
-		const parsed = JSON.parse(authStorage);
-		return parsed?.state?.refreshToken ?? null;
-	} catch {
-		return null;
-	}
-}
 
 async function handleTokenRefresh(
 	originalRequest: InternalAxiosRequestConfig,
@@ -140,8 +133,8 @@ async function handleTokenRefresh(
 	(originalRequest as { _retry?: boolean })._retry = true;
 	isRefreshing = true;
 
-	const refreshToken = getStoredRefreshToken();
-	if (!refreshToken) {
+	const staleRefreshToken = useAuth.getState().refreshToken;
+	if (!staleRefreshToken) {
 		isRefreshing = false;
 		processQueue(error, null);
 		clearAuthState();
@@ -149,17 +142,13 @@ async function handleTokenRefresh(
 	}
 
 	try {
-		const response = await axios.post(`${apiUrl}auth/refresh`, { refreshToken });
-		const { accessToken: newAccessToken, refreshToken: newRefreshToken, user } = response.data;
-
-		const currentStorage = localStorage.getItem("bgt-auth");
-		if (currentStorage) {
-			const parsed = JSON.parse(currentStorage);
-			parsed.state.accessToken = newAccessToken;
-			parsed.state.refreshToken = newRefreshToken;
-			parsed.state.user = user;
-			localStorage.setItem("bgt-auth", JSON.stringify(parsed));
-		}
+		const newAccessToken = await refreshAccessToken(staleRefreshToken).catch(async (refreshError: unknown) => {
+			const refreshedElsewhere = await tokensRefreshedElsewhere(staleRefreshToken);
+			if (refreshedElsewhere) {
+				return refreshedElsewhere;
+			}
+			throw refreshError;
+		});
 
 		if (originalRequest.headers) {
 			originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -220,17 +209,5 @@ axiosInstance.interceptors.response.use(
 );
 
 function clearAuthState() {
-	const authStorage = localStorage.getItem("bgt-auth");
-	if (authStorage) {
-		try {
-			const parsed = JSON.parse(authStorage);
-			parsed.state.accessToken = null;
-			parsed.state.refreshToken = null;
-			parsed.state.user = null;
-			parsed.state.isAuthenticated = false;
-			localStorage.setItem("bgt-auth", JSON.stringify(parsed));
-		} catch {
-			localStorage.removeItem("bgt-auth");
-		}
-	}
+	useAuth.getState().clearAuth();
 }

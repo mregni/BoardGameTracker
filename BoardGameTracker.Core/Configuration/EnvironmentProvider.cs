@@ -35,6 +35,15 @@ public class EnvironmentProvider : IEnvironmentProvider
 
     public string? AdminPassword => Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
 
+    public string? DataProtectionKey
+    {
+        get
+        {
+            var value = Environment.GetEnvironmentVariable("DATA_PROTECTION_KEY");
+            return string.IsNullOrWhiteSpace(value) ? null : value;
+        }
+    }
+
     public IReadOnlyList<string> TrustedProxies => SplitList(Environment.GetEnvironmentVariable("TRUSTED_PROXIES"));
 
     public IReadOnlyList<string> CorsOrigins => SplitList(Environment.GetEnvironmentVariable("CORS_ORIGINS"));
@@ -44,10 +53,10 @@ public class EnvironmentProvider : IEnvironmentProvider
             ? swaggerEnabled
             : IsDevelopment;
 
-    private static IReadOnlyList<string> SplitList(string? value) =>
+    private static string[] SplitList(string? value) =>
         string.IsNullOrWhiteSpace(value)
             ? []
-            : value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            : value.Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     public string? SmtpHost => Environment.GetEnvironmentVariable("SMTP_HOST");
 

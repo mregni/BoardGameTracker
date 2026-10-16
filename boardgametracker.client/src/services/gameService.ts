@@ -1,4 +1,4 @@
-import type { CreateGame, Expansion, ExpansionLink, ExpansionUpdate } from "@/models/";
+import type { CreateGame, Expansion, ExpansionData, ExpansionUpdate } from "@/models/";
 import type { ShameStatistics } from "@/models/Games/ShameStatistics";
 import type { BggSearch, Game, GamePrice, GameStatistics, ImportGame, Session, Shame } from "../models";
 import { axiosInstance } from "../utils/axiosInstance";
@@ -75,8 +75,8 @@ export const updateGameCall = (game: Game): Promise<Game> => {
 	});
 };
 
-export const getGameExpansionsCall = (id: number): Promise<ExpansionLink[]> => {
-	return axiosInstance.get<ExpansionLink[]>(`${domain}/${id}/expansions`).then((response) => {
+export const getGameExpansionsCall = (id: number): Promise<ExpansionData[]> => {
+	return axiosInstance.get<ExpansionData[]>(`${domain}/${id}/expansions`).then((response) => {
 		return response.data;
 	});
 };
@@ -92,23 +92,35 @@ export const saveGameExpansionCall = (expansionUpdate: ExpansionUpdate): Promise
 };
 
 export const importGamesCall = (games: ImportGame[]): Promise<boolean> => {
-	return axiosInstance.post<boolean>(`${domain}/bgg/import`, { games: [...games] }).then((response) => {
-		return response.data;
-	});
+	return axiosInstance
+		.post<boolean>(`${domain}/bgg/import`, { games: [...games] }, { timeout: 120000 })
+		.then((response) => {
+			return response.data;
+		});
+};
+
+export const addManualExpansionCall = (gameId: number, title: string): Promise<Expansion> => {
+	return axiosInstance
+		.post<Expansion>(`${domain}/${gameId}/expansions/manual`, { title })
+		.then((response) => response.data);
 };
 
 export const deleteExpansionCall = (id: number, gameId: number): Promise<void> => {
 	return axiosInstance.delete(`${domain}/${gameId}/expansion/${id}`);
 };
 
-export const getShamesCall = (): Promise<Shame[]> => {
-	return axiosInstance.get<Shame[]>(`${domain}/shames`).then((response) => {
+const monthsParams = (months?: number) => (months === undefined ? undefined : { months });
+
+export const getShamesCall = (months?: number): Promise<Shame[]> => {
+	return axiosInstance.get<Shame[]>(`${domain}/shames`, { params: monthsParams(months) }).then((response) => {
 		return response.data;
 	});
 };
 
-export const getShameStatisticsCall = (): Promise<ShameStatistics> => {
-	return axiosInstance.get<ShameStatistics>(`${domain}/shames/statistics`).then((response) => {
-		return response.data;
-	});
+export const getShameStatisticsCall = (months?: number): Promise<ShameStatistics> => {
+	return axiosInstance
+		.get<ShameStatistics>(`${domain}/shames/statistics`, { params: monthsParams(months) })
+		.then((response) => {
+			return response.data;
+		});
 };

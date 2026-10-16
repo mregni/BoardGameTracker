@@ -25,13 +25,4 @@ public class Location: HasId
     {
         Name = name;
     }
-
-    public int GetPlayCount() => Sessions.Count;
-
-    public IEnumerable<Game> GetGamesPlayedAtLocation()
-    {
-        return Sessions
-            .Select(s => s.Game)
-            .Distinct();
-    }
 }

@@ -1,10 +1,13 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
+import { BgtText } from "@/components/BgtText/BgtText";
 import { withForm } from "@/hooks/form";
 import { SettingsSchema } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
+import { getPublicUrlWarning } from "../-utils/publicUrlWarning";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
+import { EnvOverrideHint } from "./EnvOverrideHint";
 import { SettingsSection } from "./SettingsSection";
 
 export const GeneralSettings = withForm({
@@ -12,8 +15,9 @@ export const GeneralSettings = withForm({
 	props: {
 		languages: [] as { key: string; translationKey: string }[],
 		disabled: false,
+		overrides: {} as Record<string, string>,
 	},
-	render: function Render({ form, languages, disabled }) {
+	render: function Render({ form, languages, disabled, overrides }) {
 		const { t } = useTranslation(["settings", "language"]);
 
 		return (
@@ -23,7 +27,7 @@ export const GeneralSettings = withForm({
 						{(field: AnyFieldApi) => (
 							<BgtSelect
 								field={field}
-								disabled={disabled}
+								disabled={disabled || !!overrides.uiLanguage}
 								label={t("general.language.label")}
 								items={languages.map((value: { key: string; translationKey: string }) => ({
 									label: t(`language:${value.translationKey}`),
@@ -32,6 +36,7 @@ export const GeneralSettings = withForm({
 							/>
 						)}
 					</form.Field>
+					<EnvOverrideHint variable={overrides.uiLanguage} />
 				</SettingsSection>
 
 				<SettingsSection title={t("general.date-time.title")} description={t("general.date-time.description")}>
@@ -40,7 +45,7 @@ export const GeneralSettings = withForm({
 							{(field: AnyFieldApi) => (
 								<BgtInputField
 									field={field}
-									disabled={disabled}
+									disabled={disabled || !!overrides.dateFormat}
 									type="text"
 									label={t("general.date-time.date-format")}
 									placeholder="MM/DD/YYYY"
@@ -51,7 +56,7 @@ export const GeneralSettings = withForm({
 							{(field: AnyFieldApi) => (
 								<BgtInputField
 									field={field}
-									disabled={disabled}
+									disabled={disabled || !!overrides.timeFormat}
 									type="text"
 									label={t("general.date-time.time-format")}
 									placeholder="HH:mm"
@@ -59,6 +64,8 @@ export const GeneralSettings = withForm({
 							)}
 						</form.Field>
 					</div>
+					<EnvOverrideHint variable={overrides.dateFormat} />
+					<EnvOverrideHint variable={overrides.timeFormat} />
 				</SettingsSection>
 
 				<SettingsSection title={t("general.currency.title")} description={t("general.currency.description")}>
@@ -66,13 +73,41 @@ export const GeneralSettings = withForm({
 						{(field: AnyFieldApi) => (
 							<BgtInputField
 								field={field}
-								disabled={disabled}
+								disabled={disabled || !!overrides.currency}
 								type="text"
 								label={t("general.currency.label")}
 								placeholder="USD"
 							/>
 						)}
 					</form.Field>
+					<EnvOverrideHint variable={overrides.currency} />
+				</SettingsSection>
+
+				<SettingsSection title={t("general.public-url.title")} description={t("general.public-url.description")}>
+					<form.Field name="publicUrl" validators={zodValidator(SettingsSchema, "publicUrl")}>
+						{(field: AnyFieldApi) => (
+							<BgtInputField
+								field={field}
+								disabled={disabled || !!overrides.publicUrl}
+								type="text"
+								label={t("general.public-url.label")}
+								placeholder={t("general.public-url.placeholder")}
+							/>
+						)}
+					</form.Field>
+					<EnvOverrideHint variable={overrides.publicUrl} />
+					<form.Subscribe selector={(state) => state.values.publicUrl}>
+						{(publicUrl) => {
+							const warning = getPublicUrlWarning(publicUrl, window.location);
+							return warning ? (
+								<div role="alert" className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+									<BgtText size="2" color="amber">
+										{t(`general.public-url.${warning}-warning`, { host: window.location.host })}
+									</BgtText>
+								</div>
+							) : null;
+						}}
+					</form.Subscribe>
 				</SettingsSection>
 			</>
 		);

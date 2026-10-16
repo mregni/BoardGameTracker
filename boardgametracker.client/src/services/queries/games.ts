@@ -12,13 +12,7 @@ import {
 	getShamesCall,
 	getTrackedPricesCall,
 } from "../gameService";
-import {
-	createEntityQuery,
-	createEntityQueryWithKeys,
-	createListQuery,
-	createNestedQuery,
-	createNestedQueryWithKeys,
-} from "./queryFactory";
+import { createEntityQuery, createListQuery, createNestedQuery, createNestedQueryWithKeys } from "./queryFactory";
 
 export const getGames = createListQuery(QUERY_KEYS.games, getGamesCall);
 
@@ -48,9 +42,17 @@ export const getBggCollection = (username: string) =>
 		retry: false,
 	});
 
-export const getShames = createListQuery(QUERY_KEYS.shames, getShamesCall);
+export const getShames = (months?: number) =>
+	queryOptions({
+		queryKey: months === undefined ? [QUERY_KEYS.shames] : [QUERY_KEYS.shames, months],
+		queryFn: () => getShamesCall(months),
+	});
 
-export const getShameStatistics = createEntityQueryWithKeys(
-	[QUERY_KEYS.shames, QUERY_KEYS.statistics],
-	getShameStatisticsCall,
-);
+export const getShameStatistics = (months?: number) =>
+	queryOptions({
+		queryKey:
+			months === undefined
+				? [QUERY_KEYS.shames, QUERY_KEYS.statistics]
+				: [QUERY_KEYS.shames, QUERY_KEYS.statistics, months],
+		queryFn: () => getShameStatisticsCall(months),
+	});

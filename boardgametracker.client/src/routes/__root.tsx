@@ -13,7 +13,7 @@ import { ErrorFallback } from "@/components/ErrorBoundary/ErrorFallback";
 import { NotFound } from "@/components/NotFound/NotFound";
 import { useAuth } from "@/hooks/useAuth";
 import type { MenuItem } from "@/models";
-import { getEnvironment } from "@/services/queries/settings";
+import { getSettings } from "@/services/queries/settings";
 import { initSentry } from "@/utils/sentry";
 import { BottomNav } from "./-components/BottomNav";
 import { Sidebar } from "./-components/Sidebar";
@@ -39,7 +39,9 @@ function RootComponent() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { queryClient } = Route.useRouteContext();
-	const { isAuthenticated, authStatus, fetchAuthStatus } = useAuth();
+	const isAuthenticated = useAuth((s) => s.isAuthenticated);
+	const authStatus = useAuth((s) => s.authStatus);
+	const fetchAuthStatus = useAuth((s) => s.fetchAuthStatus);
 	const [authChecked, setAuthChecked] = useState(false);
 
 	useEffect(() => {
@@ -62,9 +64,9 @@ function RootComponent() {
 		if (!isAuthenticated && authStatus?.authEnabled) return;
 
 		queryClient
-			.fetchQuery(getEnvironment())
-			.then((env) => {
-				if (env.enableStatistics) {
+			.query(getSettings())
+			.then((settings) => {
+				if (settings.statistics) {
 					initSentry();
 				}
 			})
@@ -91,7 +93,7 @@ function RootComponent() {
 		<div className="flex w-full text-white bg-background md:h-dvh md:overflow-hidden">
 			<Sidebar />
 
-			<main className="flex-1 pb-20 md:pb-0 min-h-dvh md:min-h-0 md:h-dvh md:overflow-auto bg-background">
+			<main className="flex-1 min-w-0 pb-20 md:pb-0 min-h-dvh md:min-h-0 md:h-dvh md:overflow-auto md:[scrollbar-gutter:stable] bg-background">
 				<ErrorBoundary FallbackComponent={ErrorFallback}>
 					<Outlet />
 				</ErrorBoundary>

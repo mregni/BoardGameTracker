@@ -1,42 +1,66 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { isPast } from "date-fns";
+import { noop } from "@tanstack/react-query";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { BgtSegmentedControl } from "@/components/BgtSegmentedControl/BgtSegmentedControl";
+import { BgtText } from "@/components/BgtText/BgtText";
 import { usePermissions } from "@/hooks/usePermissions";
+import { type GameNight, GameNightStatisticsPeriod } from "@/models";
 import { getGameNights } from "@/services/queries/gameNights";
 import { getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
+import { getSettings } from "@/services/queries/settings";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
-import { FilterTabs, type FilterType } from "./-components/FilterTabs";
 import { GameNightCard } from "./-components/GameNightCard";
-import { NoGameNights } from "./-components/NoGameNights";
+import { NightSectionTitle } from "./-components/NightSectionTitle";
+import { PastGameNightItem } from "./-components/PastGameNightItem";
+import { GameNightStatsView } from "./-components/stats/GameNightStatsView";
 import { useGameNightActions } from "./-hooks/useGameNightActions";
 import { useGameNightData } from "./-hooks/useGameNightData";
 import { useGameNightModals } from "./-hooks/useGameNightModals";
 import { CreateGameNightModal } from "./-modals/CreateGameNightModal";
 import { EditGameNightModal } from "./-modals/EditGameNightModal";
 import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
+import { splitGameNights } from "./-utils/gameNightPlay";
+
+const gameNightsSearchSchema = z.object({
+	view: z.enum(["nights", "stats"]).optional(),
+	period: z.enum(GameNightStatisticsPeriod).optional(),
+});
+
+type GameNightsView = "nights" | "stats";
 
 export const Route = createFileRoute("/game-nights/")({
 	component: RouteComponent,
+	validateSearch: gameNightsSearchSchema,
+	beforeLoad: async ({ context: { queryClient } }) => {
+		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
+		if (!settings.gameNightsEnabled) {
+			throw redirect({ to: "/" });
+		}
+	},
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getGameNights());
-		queryClient.prefetchQuery(getPlayers());
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getLocations());
+		queryClient.query(getGameNights()).catch(noop);
+		queryClient.query(getPlayers()).catch(noop);
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getLocations()).catch(noop);
 	},
 });
 
 function RouteComponent() {
 	const { t } = useTranslation("game-nights");
 	const { canWrite } = usePermissions();
-	const [filter, setFilter] = useState<FilterType>("all");
+	const navigate = useNavigate();
+	const search = Route.useSearch();
+	const view: GameNightsView = search.view ?? "nights";
+	const period = search.period ?? GameNightStatisticsPeriod.AllTime;
 	const [selectedGameNightId, setSelectedGameNightId] = useState<number | null>(null);
 
 	const {
@@ -49,6 +73,7 @@ function RouteComponent() {
 		createGameNight,
 		deleteGameNight,
 		updateGameNight,
+		updateInvitedPlayers,
 		updateRsvp,
 		isCreating,
 		isUpdating,
@@ -72,37 +97,24 @@ function RouteComponent() {
 		setSelectedGameNightId,
 	});
 
-	const upcomingCount = useMemo(() => gameNights.filter((gn) => !isPast(gn.startDate)).length, [gameNights]);
-	const pastCount = useMemo(() => gameNights.filter((gn) => isPast(gn.startDate)).length, [gameNights]);
-
-	const upcomingGameNights = useMemo(
-		() =>
-			gameNights
-				.filter((gn) => !isPast(gn.startDate))
-				.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()),
+	const { upcoming: upcomingGameNights, past: pastGameNights } = useMemo(
+		() => splitGameNights(gameNights),
 		[gameNights],
 	);
 
-	const pastGameNights = useMemo(
-		() =>
-			gameNights
-				.filter((gn) => isPast(gn.startDate))
-				.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()),
-		[gameNights],
-	);
+	const changeSearch = (next: { view?: GameNightsView; period?: GameNightStatisticsPeriod }) =>
+		navigate({
+			to: "/game-nights",
+			search: (previous) => ({ ...previous, ...next }),
+			replace: true,
+		});
 
-	const filteredGameNights = useMemo(() => {
-		switch (filter) {
-			case "upcoming":
-				return upcomingGameNights;
-			case "past":
-				return pastGameNights;
-			default:
-				return [...upcomingGameNights, ...pastGameNights];
-		}
-	}, [upcomingGameNights, pastGameNights, filter]);
+	const handleDeleteClick = (gameNight: GameNight) => {
+		actions.handleDeleteClick(gameNight);
+		modals.deleteModal.show();
+	};
 
-	if (gameNights.length === 0) {
+	if (!isLoading && gameNights.length === 0) {
 		return (
 			<BgtEmptyPage
 				header={t("title")}
@@ -140,75 +152,68 @@ function RouteComponent() {
 							]
 						: []
 				}
-			/>
+			>
+				<BgtSegmentedControl
+					aria-label={t("view.label")}
+					size="sm"
+					value={view}
+					onChange={(value) => changeSearch({ view: value })}
+					options={[
+						{ value: "nights", label: t("view.nights") },
+						{ value: "stats", label: t("view.stats") },
+					]}
+				/>
+			</BgtPageHeader>
 			<BgtPageContent isLoading={isLoading} data={{ settings, gameNights }}>
 				{({ settings }) => (
 					<>
-						<FilterTabs
-							filter={filter}
-							onFilterChange={setFilter}
-							allCount={gameNights.length}
-							upcomingCount={upcomingCount}
-							pastCount={pastCount}
-						/>
-
-						{filteredGameNights.length === 0 ? (
-							<NoGameNights filter={filter} onCreateClick={modals.createModal.show} />
-						) : filter === "all" ? (
-							<div className="space-y-4">
-								{upcomingGameNights.map((gameNight) => (
-									<GameNightCard
-										key={gameNight.id}
-										gameNight={gameNight}
-										settings={settings}
-										canWrite={canWrite}
-										onEdit={actions.handleEditGameNight}
-										onDelete={() => {
-											actions.handleDeleteClick(gameNight);
-											modals.deleteModal.show();
-										}}
-										onManageRsvps={actions.handleManageRsvps}
-									/>
-								))}
-								{upcomingGameNights.length > 0 && pastGameNights.length > 0 && (
-									<div className="flex items-center gap-4">
-										<hr className="flex-1" />
-										<span className="text-sm text-white/50">{t("past")}</span>
-										<hr className="flex-1" />
-									</div>
-								)}
-								{pastGameNights.map((gameNight) => (
-									<GameNightCard
-										key={gameNight.id}
-										gameNight={gameNight}
-										settings={settings}
-										canWrite={canWrite}
-										onEdit={actions.handleEditGameNight}
-										onDelete={() => {
-											actions.handleDeleteClick(gameNight);
-											modals.deleteModal.show();
-										}}
-										onManageRsvps={actions.handleManageRsvps}
-									/>
-								))}
-							</div>
+						{view === "stats" ? (
+							<GameNightStatsView
+								period={period}
+								onPeriodChange={(value) => changeSearch({ period: value })}
+								settings={settings}
+								players={players}
+								games={games}
+								locations={locations}
+							/>
 						) : (
-							<div className="space-y-4">
-								{filteredGameNights.map((gameNight) => (
-									<GameNightCard
-										key={gameNight.id}
-										gameNight={gameNight}
-										settings={settings}
-										canWrite={canWrite}
-										onEdit={actions.handleEditGameNight}
-										onDelete={() => {
-											actions.handleDeleteClick(gameNight);
-											modals.deleteModal.show();
-										}}
-										onManageRsvps={actions.handleManageRsvps}
-									/>
-								))}
-							</div>
+							<>
+								<section className="flex flex-col gap-3" aria-labelledby="upcoming-game-nights">
+									<NightSectionTitle id="upcoming-game-nights">{t("upcoming")}</NightSectionTitle>
+									{upcomingGameNights.length === 0 ? (
+										<BgtText size="2" color="gray">
+											{t("empty.upcoming")}
+										</BgtText>
+									) : (
+										upcomingGameNights.map((gameNight, index) => (
+											<GameNightCard
+												key={gameNight.id}
+												gameNight={gameNight}
+												settings={settings}
+												canWrite={canWrite}
+												highlight={index === 0}
+												onEdit={actions.handleEditGameNight}
+												onDelete={handleDeleteClick}
+												onManageRsvps={actions.handleManageRsvps}
+											/>
+										))
+									)}
+								</section>
+
+								{pastGameNights.length > 0 && (
+									<section className="flex flex-col gap-2" aria-labelledby="past-game-nights">
+										<NightSectionTitle id="past-game-nights">{t("past")}</NightSectionTitle>
+										{pastGameNights.map((gameNight) => (
+											<PastGameNightItem
+												key={gameNight.id}
+												gameNight={gameNight}
+												settings={settings}
+												players={players}
+											/>
+										))}
+									</section>
+								)}
+							</>
 						)}
 
 						<CreateGameNightModal
@@ -242,8 +247,11 @@ function RouteComponent() {
 								setSelectedGameNightId(null);
 							}}
 							gameNight={selectedGameNight}
+							players={players}
+							settings={settings}
 							onUpdateRsvp={updateRsvp}
-							isLoading={isLoading}
+							onUpdateGameNight={updateInvitedPlayers}
+							isLoading={isUpdating}
 						/>
 
 						<BgtDeleteModal
@@ -253,7 +261,8 @@ function RouteComponent() {
 								setSelectedGameNightId(null);
 							}}
 							onDelete={actions.handleDelete}
-							title={t("delete.title")}
+							title={selectedGameNight?.title ?? ""}
+							heading={t("delete.title")}
 							description={t("delete.description", {
 								title: selectedGameNight?.title,
 							})}

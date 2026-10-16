@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using BoardGameTracker.Core.Rag;
 using FluentAssertions;
@@ -17,6 +16,16 @@ public class RulebookChunkerTests
         new List<PdfPageText> { new(1, "   \n  \t ") },
         new List<PdfPageText> { new(1, "\r\r") }
     };
+
+    [Fact]
+    public void Chunk_ShouldDropControlCharacters_ThatPostgresCannotStore()
+    {
+        var result = _chunker.Chunk([new PdfPageText(1, "Setup\0 the board.\u0001\u0007 Each player\tdraws\nfive cards.")]);
+
+        var content = string.Join(" ", result.Select(c => c.Content));
+        content.Should().NotContain("\0").And.NotContain("\u0001").And.NotContain("\u0007");
+        content.Should().Contain("Setup the board.").And.Contain("five cards.");
+    }
 
     [Theory]
     [MemberData(nameof(NoContentPages))]

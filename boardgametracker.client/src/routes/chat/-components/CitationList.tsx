@@ -31,7 +31,7 @@ export const CitationList = ({ citations, activeIndex, onSelect }: Props) => {
 						>
 							<span>{citation.page != null ? t("page", { page: citation.page }) : t("unknown-page")}</span>
 							{isTop && (
-								<span className="rounded bg-primary/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+								<span className="rounded border border-primary bg-primary/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-chip-selected">
 									{t("top-match")}
 								</span>
 							)}

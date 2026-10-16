@@ -48,6 +48,7 @@ public class ResetService : IResetService
     public async Task FactoryResetAsync(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Starting factory reset");
+        await _maintenanceSeeder.EnsureAdminPasswordAcceptedAsync(cancellationToken);
 
         await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
         await _maintenanceRepository.ClearUserDataAsync(cancellationToken);

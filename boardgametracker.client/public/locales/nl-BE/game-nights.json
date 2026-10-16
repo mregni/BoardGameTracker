@@ -1,84 +1,306 @@
 {
   "rsvp": {
-    "title": "Manage RSVPs",
-    "manual-note-prefix": "Manually set RSVP status",
-    "manual-note": " for players who responded via phone, text, or in person.",
-    "accept": "Accept",
-    "decline": "Decline",
-    "maybe": "Maybe",
-    "host": "Host is always attending"
+    "title": "RSVP's beheren",
+    "host": "Gastheer · komt altijd",
+    "subtitle": "{{title}} · {{date}}",
+    "coming": "Komt",
+    "invited_one": "{{count}} uitgenodigd",
+    "invited_other": "{{count}} uitgenodigd",
+    "summary": {
+      "coming_one": "{{count}} komt",
+      "coming_other": "{{count}} komen",
+      "pending_one": "{{count}} in afwachting",
+      "pending_other": "{{count}} in afwachting",
+      "declined_one": "{{count}} afgewezen",
+      "declined_other": "{{count}} afgewezen"
+    },
+    "player-status": "RSVP van {{name}}",
+    "remove": "{{name}} verwijderen van deze avond",
+    "invite-more": "Meer spelers uitnodigen",
+    "search-players": "Spelers zoeken…",
+    "no-players-found": "Geen spelers gevonden",
+    "invite": "{{name}} uitnodigen",
+    "invite-link": "Uitnodigingslink",
+    "copy": "Kopiëren"
   },
   "empty": {
-    "title": "No game nights planned yet",
-    "description": "Invite players to plan a game night."
+    "title": "Nog geen spelavonden gepland",
+    "description": "Nodig spelers uit om een spelavond te plannen.",
+    "upcoming": "Geen komende spelavonden"
   },
   "delete": {
-    "title": "Delete game night",
-    "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
+    "title": "Spelavond verwijderen",
+    "description": "Weet je zeker dat je de spelavond \"{{title}}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt en verwijdert ook alle bijhorende RSVP's."
   },
-  "title": "Game Nights Planner",
+  "title": "Spelavondplanner",
   "create": {
-    "button": "Create Game Night",
-    "title": "Create new Game Night",
-    "description": "Fill out the form to create a new game night event.",
-    "save": "Create Game Night"
+    "button": "Spelavond aanmaken",
+    "title": "Nieuwe spelavond aanmaken",
+    "description": "Vul het formulier in om een nieuwe spelavond aan te maken.",
+    "save": "Spelavond aanmaken"
   },
   "edit": {
-    "title": "Edit Game Night",
-    "description": "Update the details of this game night event.",
-    "save": "Save Changes"
+    "title": "Spelavond bewerken",
+    "description": "Werk de details van deze spelavond bij.",
+    "save": "Wijzigingen opslaan"
   },
-  "upcoming": "Upcoming game nights",
-  "past": "Past game nights",
+  "upcoming": "Komend",
+  "past": "Voorbij",
   "card": {
-    "hosted-by": "Hosted by {{host}}",
-    "suggested-games": "Suggested games",
-    "rsvp-link": "RSVP Link",
-    "upcoming": "Upcoming",
-    "past": "Past",
-    "copy-link": "Copy RSVP link",
-    "copied": "Copied to clipboard",
-    "manage-rsvps": "Manage RSVPs",
-    "email-invites": "Email invites",
-    "invites-sent": "Invites sent: {{sent}} sent",
-    "invites-failed": "Failed to send invites"
+    "suggested-games": "Gastheer stelt voor:",
+    "copy-link": "Uitnodigingslink kopiëren",
+    "copied": "Gekopieerd naar klembord",
+    "copy-failed": "Kopiëren van de link is mislukt",
+    "manage-rsvps": "RSVP's beheren",
+    "email-invites": "Uitnodigingen mailen",
+    "invites-sent": "Uitnodigingen verstuurd: {{sent}}",
+    "invites-failed": "Uitnodigingen versturen mislukt",
+    "when": "{{when}} · {{time}}",
+    "host": "Gastheer: {{host}}",
+    "open": "Avond openen"
   },
   "form": {
     "title": {
-      "label": "Event title",
-      "placeholder": "Enter game night title"
+      "label": "Titel van het evenement",
+      "placeholder": "Voer de titel van de spelavond in"
     },
     "start": {
-      "label": "Date"
+      "label": "Datum"
     },
     "location": {
-      "label": "Location",
-      "placeholder": "Enter location"
+      "label": "Locatie",
+      "placeholder": "Locatie"
     },
     "host": {
-      "label": "Host",
-      "placeholder": "Enter host player"
+      "label": "Gastheer",
+      "placeholder": "Gastheer"
     },
     "invited-players": {
-      "label": "Invited players",
-      "description": "Select players to invite to this game night"
+      "label": "Uitgenodigde spelers",
+      "description": "Kies spelers om uit te nodigen"
     },
     "suggested-games": {
-      "label": "Suggested games",
-      "description": "Select games that you suggest to play during this game night"
+      "label": "Voorgestelde spellen",
+      "description": "Kies spellen om voor te stellen"
     },
     "notes": {
-      "label": "Notes"
+      "label": "Notities"
     }
   },
   "notifications": {
-    "created": "Game night created successfully",
-    "create-failed": "Failed to create game night",
-    "updated": "Game night updated successfully",
-    "update-failed": "Failed to update game night",
-    "deleted": "Game night deleted successfully",
-    "delete-failed": "Failed to delete game night",
-    "rsvp-updated": "RSVP updated successfully",
-    "rsvp-update-failed": "Failed to update RSVP"
+    "created": "Spelavond aangemaakt",
+    "create-failed": "Spelavond aanmaken mislukt",
+    "updated": "Spelavond bijgewerkt",
+    "update-failed": "Spelavond bijwerken mislukt",
+    "deleted": "Spelavond verwijderd",
+    "delete-failed": "Spelavond verwijderen mislukt",
+    "rsvp-updated": "RSVP bijgewerkt",
+    "rsvp-update-failed": "RSVP bijwerken mislukt"
+  },
+  "validation": {
+    "title-required": "Titel is verplicht",
+    "location-required": "Locatie is verplicht",
+    "host-required": "Gastheer is verplicht"
+  },
+  "past-night": {
+    "attended-count_one": "{{count}} aanwezig",
+    "attended-count_other": "{{count}} aanwezig",
+    "nobody": "Niemand stond als aanwezig genoteerd",
+    "nothing-logged": "nog niets gespeeld",
+    "games-played_one": "{{count}} spel gespeeld",
+    "games-played_other": "{{count}} spellen gespeeld",
+    "winner": "winnaar {{names}}"
+  },
+  "detail": {
+    "back": "Spelavonden"
+  },
+  "play": {
+    "start": {
+      "button": "▶ Start een spel",
+      "title": "Start een spel",
+      "game": "Spel",
+      "players": "Wie speelt er mee?",
+      "save": "Starten",
+      "coop-default": "Coöperatief spel: je kiest “We wonnen” of “We verloren” bij het afronden.",
+      "coop-optional": "Dit spel kan coöperatief gespeeld worden: je zet het aan bij het afronden."
+    },
+    "log": {
+      "button": "Gespeeld spel toevoegen",
+      "title": "Gespeeld spel toevoegen"
+    },
+    "finish": {
+      "button": "Beëindigen",
+      "title": "{{game}} beëindigen",
+      "subtitle": "Gestart om {{time}} · {{duration}} · {{location}}"
+    },
+    "discard": {
+      "button": "{{game}} weggooien",
+      "title": "Dit spel weggooien?",
+      "description": "Het lopende spel wordt verwijderd en er wordt geen sessie opgeslagen."
+    },
+    "games": {
+      "tonight": "Vanavond & gepland"
+    },
+    "leave-out-hint": "Tik op een speler om die weg te laten",
+    "leave-out": "{{name}} weglaten",
+    "save": "Sessie opslaan",
+    "now-playing": "Nu bezig: {{game}}",
+    "running": "Gestart om {{time}} · {{duration}} · {{players}}",
+    "again": "Nog eens spelen:",
+    "again-game": "{{game}} nog eens spelen",
+    "notifications": {
+      "started": "Spel gestart",
+      "start-failed": "Spel starten mislukt",
+      "discarded": "Lopend spel weggegooid",
+      "discard-failed": "Lopend spel weggooien mislukt"
+    }
+  },
+  "summary": {
+    "games-played": "Gespeelde spellen",
+    "play-time": "Speeltijd",
+    "leading": "Vanavond aan de leiding",
+    "night-winner": "Winnaar van de avond",
+    "no-winner": "Nog geen winnaar",
+    "wins_one": "{{count}} van {{total}} spellen gewonnen",
+    "wins_other": "{{count}} van {{total}} spellen gewonnen"
+  },
+  "played": {
+    "tonight": "Vanavond gespeeld",
+    "after": "Gespeeld",
+    "empty": "Nog niets gespeeld. Tik op “Start een spel” zodra een spel begint; datum, tijd, locatie en spelers worden voor je ingevuld.",
+    "empty-after": "Er werd niets gespeeld genoteerd voor deze avond. Gebruik “Gespeeld spel toevoegen” om toe te voegen wat er gespeeld werd."
+  },
+  "table": {
+    "title": "Aan tafel",
+    "host": "· gastheer",
+    "edit": "Aanwezigen aanpassen"
+  },
+  "planned": {
+    "title": "Gepland",
+    "played": "Gespeeld"
+  },
+  "end": {
+    "button": "Avond afsluiten",
+    "title": "Deze spelavond afsluiten?",
+    "description": "Er kan niets meer gestart of toegevoegd worden tot de avond weer geopend wordt.",
+    "running-hint": "Beëindig of gooi eerst de lopende spellen weg",
+    "reopen": "Avond heropenen",
+    "notifications": {
+      "ended": "Spelavond afgesloten",
+      "end-failed": "Spelavond afsluiten mislukt",
+      "reopened": "Spelavond heropend",
+      "reopen-failed": "Spelavond heropenen mislukt"
+    }
+  },
+  "view": {
+    "label": "Weergave",
+    "nights": "Avonden",
+    "stats": "Statistieken"
+  },
+  "stats": {
+    "period": {
+      "label": "Periode",
+      "allTime": "Altijd",
+      "thisYear": "Dit jaar",
+      "last12Months": "Laatste 12 maanden"
+    },
+    "logged_one": "{{count}} van {{total}} avonden heeft gelogde sessies",
+    "logged_other": "{{count}} van {{total}} avonden hebben gelogde sessies",
+    "empty": {
+      "title": "Nog geen spelavonden om te tellen",
+      "description": "De statistieken tellen de avonden met gelogde sessies of die afgesloten zijn. Log spellen vanaf de pagina van een avond om ze hier te zien."
+    },
+    "tiles": {
+      "nights": "Spelavonden",
+      "every-week_one": "ongeveer één per week",
+      "every-week_other": "ongeveer één om de {{count}} weken",
+      "every-day_one": "ongeveer één per dag",
+      "every-day_other": "ongeveer één om de {{count}} dagen",
+      "games": "Gespeelde spellen",
+      "per-night": "{{value}} per avond",
+      "play-time": "Speeltijd",
+      "table": "Gemiddelde tafel",
+      "table-hint": "spelers per avond"
+    },
+    "winners": {
+      "title": "Winnaars van de avond",
+      "subtitle": "meeste sessies gewonnen die avond · gelijkspel wordt gedeeld",
+      "nights_one": "{{count}} avond",
+      "nights_other": "{{count}} avonden",
+      "games-won_one": "{{count}} spel gewonnen",
+      "games-won_other": "{{count}} spellen gewonnen",
+      "share": "{{value}} van de avonden",
+      "bar": "{{name}}: {{won}} van {{attended}} avonden gewonnen",
+      "footer": "Gerangschikt op gewonnen avonden; de balk is het deel van hun avonden dat ze wonnen.",
+      "ties_one": "{{count}} avond eindigde gelijk en telt voor elke winnaar.",
+      "ties_other": "{{count}} avonden eindigden gelijk en tellen voor elke winnaar.",
+      "empty": "Nog niemand heeft een avond gewonnen."
+    },
+    "history": {
+      "title": "Geschiedenis van de winnaars",
+      "all_one": "Alle {{count}} avond",
+      "all_other": "Alle {{count}} avonden",
+      "less": "Minder tonen",
+      "games_one": "{{count}} spel",
+      "games_other": "{{count}} spellen",
+      "score": "{{wins}} van {{total}}",
+      "streak": "{{count}} op rij",
+      "no-winner": "Geen winnaar",
+      "no-sessions": "Geen sessies gelogd",
+      "coop-shared_one": "{{count}} deelt de avond",
+      "coop-shared_other": "Alle {{count}} delen de avond",
+      "coop-only": "enkel co-op"
+    },
+    "games": {
+      "title": "Meest gespeeld op spelavonden",
+      "nights_one": "op {{count}} avond",
+      "nights_other": "op {{count}} avonden",
+      "planned": "{{count}}× gepland",
+      "times": "{{count}}×",
+      "bar": "{{name}}: {{count}} keer gespeeld",
+      "never-played": "Gepland maar nooit gespeeld:",
+      "empty": "Nog geen spellen gespeeld op spelavonden."
+    },
+    "streaks": {
+      "title": "Reeksen",
+      "winner-current": "{{name}} won de laatste {{count}} avonden",
+      "winner-current-hint": "Huidige reeks",
+      "winner-record": "record is {{name}} met {{count}} ({{from}} – {{to}})",
+      "winner-longest": "{{name}} won {{count}} avonden op rij",
+      "winner-longest-hint": "Langste reeks · {{from}} – {{to}}",
+      "attendance": "{{name}} kwam {{count}} avonden op rij",
+      "attendance-hint": "Huidige aanwezigheidsreeks · sinds {{date}}",
+      "game": "{{name}} gespeeld op {{count}} avonden op rij",
+      "game-current": "Huidige spelreeks · sinds {{date}}",
+      "game-longest": "Langste spelreeks · {{from}} – {{to}}",
+      "empty": "Nog geen reeksen: een reeks begint bij twee avonden op rij."
+    },
+    "attendance": {
+      "title": "Aanwezigheid",
+      "of_one": "van {{count}} avond",
+      "of_other": "van {{count}} avonden",
+      "hosted": "gastheer {{count}}×",
+      "bar": "{{name}} kwam naar {{count}} van {{total}} avonden",
+      "select": "Toon de laatste avonden van {{name}}",
+      "recent_one": "{{name}}, laatste avond",
+      "recent_other": "{{name}}, laatste {{count}} avonden",
+      "came": "aanwezig",
+      "absent": "niet aanwezig",
+      "dot": "{{title}} · {{date}}: {{state}}",
+      "empty": "Nog niemand stond aan tafel genoteerd."
+    },
+    "records": {
+      "title": "Records",
+      "longest-night": "Langste avond",
+      "most-games": "Meeste spellen op één avond",
+      "biggest-table": "Grootste tafel",
+      "latest-finish": "Laatste einde",
+      "night": "{{title}} · {{date}}",
+      "games_one": "{{count}} spel",
+      "games_other": "{{count}} spellen",
+      "mostly": "vooral {{name}}",
+      "finish": "{{title}} · {{game}}, {{duration}}",
+      "empty": "Nog geen records."
+    }
   }
 }

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { BgtInputField } from "@/components/BgtForm";
 import { withForm } from "@/hooks/form";
 import { CreateGameSchema } from "@/models";
-import { zodValidator } from "@/utils/zodValidator";
+import { rangeValidator } from "@/utils/zodValidator";
 import { gameFormOpts } from "../-utils/gameFormOpts";
 
 export const GameFormTimeFields = withForm({
@@ -16,7 +16,10 @@ export const GameFormTimeFields = withForm({
 
 		return (
 			<>
-				<form.Field name="minPlayTime" validators={zodValidator(CreateGameSchema, "minPlayTime")}>
+				<form.Field
+					name="minPlayTime"
+					validators={rangeValidator(CreateGameSchema, "minPlayTime", "maxPlayTime", "min")}
+				>
 					{(field: AnyFieldApi) => (
 						<BgtInputField
 							field={field}
@@ -27,7 +30,10 @@ export const GameFormTimeFields = withForm({
 						/>
 					)}
 				</form.Field>
-				<form.Field name="maxPlayTime" validators={zodValidator(CreateGameSchema, "maxPlayTime")}>
+				<form.Field
+					name="maxPlayTime"
+					validators={rangeValidator(CreateGameSchema, "maxPlayTime", "minPlayTime", "max")}
+				>
 					{(field: AnyFieldApi) => (
 						<BgtInputField
 							field={field}

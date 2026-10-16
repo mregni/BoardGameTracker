@@ -3,6 +3,7 @@ using BoardGameTracker.Common.Entities.Helpers;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Games.Interfaces;
+using BoardGameTracker.Core.Games.Specifications;
 
 namespace BoardGameTracker.Core.Badges.BadgeEvaluators;
 
@@ -36,8 +37,8 @@ public class CloseLossBadgeEvaluator : IBadgeEvaluator
             return false;
         }
 
-        var game = await _gameRepository.GetByIdAsync(session.GameId);
-        if (game is not {HasScoring: true})
+        var hasScoring = await _gameRepository.FirstOrDefaultAsync(new GameHasScoringSpec(session.GameId));
+        if (hasScoring != true)
         {
             return false;
         }
@@ -48,20 +49,16 @@ public class CloseLossBadgeEvaluator : IBadgeEvaluator
     private static bool IsCloseLoss(Session session, PlayerSession player)
     {
         var playerScore = player.Score!.Value;
-        var otherScores = session.PlayerSessions
-            .Where(x => x.PlayerId != player.PlayerId)
+        var winnerScores = session.PlayerSessions
+            .Where(x => x.Won && x.PlayerId != player.PlayerId)
             .Select(ps => ps.Score!.Value)
             .ToList();
-    
-        var bestOtherScore = otherScores.Max(); 
-        var worstOtherScore = otherScores.Min();
-    
-        var closeLossToHighestScorer = bestOtherScore > playerScore && 
-                                       bestOtherScore - playerScore <= MaxDifference;
-    
-        var closeLossToLowestScorer = worstOtherScore < playerScore && 
-                                      playerScore - worstOtherScore <= MaxDifference;
-    
-        return closeLossToHighestScorer || closeLossToLowestScorer;
+        if (winnerScores.Count == 0)
+        {
+            return false;
+        }
+
+        var difference = winnerScores.Min(score => Math.Abs(score - playerScore));
+        return difference > 0 && difference <= MaxDifference;
     }
 }

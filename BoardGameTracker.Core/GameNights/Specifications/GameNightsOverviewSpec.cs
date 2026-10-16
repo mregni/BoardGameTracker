@@ -13,6 +13,8 @@ public sealed class GameNightsOverviewSpec : Specification<GameNight>
             .Include(x => x.SuggestedGames)
             .Include(x => x.InvitedPlayers)
                 .ThenInclude(x => x.Player)
+            .Include(x => x.Sessions)
+                .ThenInclude(x => x.PlayerSessions)
             .OrderByDescending(x => x.StartDate)
             .AsNoTracking();
     }

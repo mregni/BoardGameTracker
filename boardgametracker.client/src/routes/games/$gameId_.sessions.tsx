@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -9,23 +10,28 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
+import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { Session } from "@/models";
 import { getGame, getGameSessions } from "@/services/queries/games";
 import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
+import { toDisplay } from "@/utils/dateUtils";
 import { gameIdParamSchema } from "@/utils/routeSchemas";
+import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
+import { SessionCardList } from "../sessions/-components/SessionCardList";
+import { SessionCommentCell } from "../sessions/-components/SessionCommentCell";
 import { useGameSessionsData } from "./-hooks/useGameSessionsData";
 
 export const Route = createFileRoute("/games/$gameId_/sessions")({
 	component: RouteComponent,
 	params: gameIdParamSchema,
 	loader: ({ params, context: { queryClient } }) => {
-		queryClient.prefetchQuery(getGame(params.gameId));
-		queryClient.prefetchQuery(getSettings());
-		queryClient.prefetchQuery(getPlayers());
-		queryClient.prefetchQuery(getGameSessions(params.gameId));
+		queryClient.query(getGame(params.gameId)).catch(noop);
+		queryClient.query(getSettings()).catch(noop);
+		queryClient.query(getPlayers()).catch(noop);
+		queryClient.query(getGameSessions(params.gameId)).catch(noop);
 	},
 });
 
@@ -35,6 +41,7 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const { canWrite } = usePermissions();
 	const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
+	const goBack = useBack(`/games/${gameId}`);
 
 	const { settings, game, sessions, deleteSession, players, isLoading } = useGameSessionsData({
 		gameId,
@@ -50,7 +57,7 @@ function RouteComponent() {
 					const columns: DataTableProps<Session>["columns"] = [
 						{
 							accessorKey: "0",
-							cell: ({ row }) => format(new Date(row.original.start), settings.dateFormat),
+							cell: ({ row }) => toDisplay(row.original.start, settings.dateFormat, settings.uiLanguage),
 							header: t("date"),
 						},
 						{
@@ -65,14 +72,17 @@ function RouteComponent() {
 						},
 						{
 							accessorKey: "3",
-							cell: ({ row }) => (
-								<PlayerSessionAvatars
-									playerSessions={row.original.playerSessions}
-									players={players}
-									game={game}
-									won={true}
-								/>
-							),
+							cell: ({ row }) =>
+								row.original.isCoop ? (
+									<CoopResultPill won={row.original.teamWon === true} />
+								) : (
+									<PlayerSessionAvatars
+										playerSessions={row.original.playerSessions}
+										players={players}
+										game={game}
+										won={true}
+									/>
+								),
 							header: t("winners"),
 						},
 						{
@@ -82,7 +92,7 @@ function RouteComponent() {
 									playerSessions={row.original.playerSessions}
 									players={players}
 									game={game}
-									won={false}
+									won={row.original.isCoop && row.original.teamWon === true}
 								/>
 							),
 							header: t("other-players"),
@@ -90,8 +100,9 @@ function RouteComponent() {
 						{
 							accessorKey: "5",
 							cell: ({ row }) => {
+								if (row.original.isCoop) return row.original.teamScore ?? "";
 								const highScore = row.original.playerSessions
-									.filter((x) => x.score !== undefined)
+									.filter((x) => x.score != null)
 									.sort((a, b) => b.score! - a.score!);
 
 								if (highScore.length === 0) return "";
@@ -99,6 +110,11 @@ function RouteComponent() {
 								return highScore[0].score;
 							},
 							header: t("high-score"),
+						},
+						{
+							accessorKey: "6",
+							cell: ({ row }) => <SessionCommentCell comment={row.original.comment} />,
+							header: t("comment"),
 						},
 						...(canWrite
 							? [
@@ -119,7 +135,7 @@ function RouteComponent() {
 					return (
 						<>
 							<BgtPageHeader
-								backAction={() => navigate({ to: `/games/${gameId}` })}
+								backAction={goBack}
 								header={`${game.title} - ${t("sessions:title")}`}
 								actions={
 									canWrite
@@ -134,11 +150,25 @@ function RouteComponent() {
 								}
 							/>
 							<BgtCard className="p-4">
-								<BgtDataTable
-									columns={columns}
-									data={sessions}
-									noDataMessage={t("no-data-yet")}
-									widths={["w-[70px]", "w-[100px]", "w-[75px]"]}
+								<div className="hidden md:block">
+									<BgtDataTable
+										columns={columns}
+										data={sessions}
+										noDataMessage={t("no-data-yet")}
+										widths={["w-[70px]", "w-[100px]", "w-[75px]"]}
+									/>
+								</div>
+								<SessionCardList
+									className="md:hidden"
+									sessions={sessions}
+									players={players}
+									games={[game]}
+									dateFormat={settings.dateFormat}
+									timeFormat={settings.timeFormat}
+									uiLanguage={settings.uiLanguage}
+									canWrite={canWrite}
+									onEdit={(sessionId) => navigate({ to: `/sessions/update/${sessionId}` })}
+									onDelete={setSessionToDelete}
 								/>
 								<BgtDeleteModal
 									open={sessionToDelete !== null}

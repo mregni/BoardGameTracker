@@ -36,9 +36,15 @@ public static partial class ChangeDetectionSnapshotParser
         };
     }
 
-    private static decimal? ParsePrice(string raw)
+    public static decimal? ParsePrice(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        raw = raw.Trim();
+        if (!char.IsAsciiDigit(raw[0]))
         {
             return null;
         }
@@ -71,7 +77,7 @@ public static partial class ChangeDetectionSnapshotParser
             normalized = raw;
         }
 
-        return decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
+        return decimal.TryParse(normalized, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var parsed)
             ? parsed
             : null;
     }

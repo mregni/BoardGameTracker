@@ -1,16 +1,17 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { Game } from "@/models";
 import type { CreateGame } from "@/models/Games/CreateGame";
-
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getSettings } from "@/services/queries/settings";
 import { GameForm } from "./-components/GameForm";
 import { useNewGame } from "./-hooks/useNewGame";
 
 export const Route = createFileRoute("/games/new")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 	loader: async ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getSettings());
+		queryClient.query(getSettings()).catch(noop);
 	},
 });
 
@@ -25,9 +26,24 @@ function RouteComponent() {
 
 	const { saveGame, isLoading } = useNewGame({ onSuccess });
 	const save = async (game: CreateGame) => {
-		const result = await saveGame(game);
-		navigate({ to: `/games/${result.id}` });
+		await saveGame(game);
 	};
 
-	return <GameForm buttonText={t("new.save")} title={t("new.manual.title")} onClick={save} disabled={isLoading} />;
+	return (
+		<GameForm
+			buttonText={t("new.save")}
+			title={t("new.manual.title")}
+			backTo="/games/add"
+			onClick={save}
+			disabled={isLoading}
+		/>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
+	);
 }

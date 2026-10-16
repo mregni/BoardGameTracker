@@ -1,11 +1,14 @@
-using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
+using BoardGameTracker.Core.Integrations.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Updates.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
@@ -19,21 +22,25 @@ public class SettingsController : ControllerBase
     private readonly IEnvironmentProvider _environmentProvider;
     private readonly ILanguageService _languageService;
     private readonly IUpdateService _updateService;
+    private readonly IIntegrationStatusService _integrationStatusService;
 
     public SettingsController(
         ISettingsService settingsService,
         IEnvironmentProvider environmentProvider,
         ILanguageService languageService,
-        IUpdateService updateService)
+        IUpdateService updateService,
+        IIntegrationStatusService integrationStatusService)
     {
         _settingsService = settingsService;
         _environmentProvider = environmentProvider;
         _languageService = languageService;
         _updateService = updateService;
+        _integrationStatusService = integrationStatusService;
     }
 
     [HttpGet]
     [AllowAnonymous]
+    [ProducesResponseType<UIResourceDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Get()
     {
         var settings = await _settingsService.GetSettingsAsync();
@@ -46,7 +53,7 @@ public class SettingsController : ControllerBase
     }
 
     [HttpGet("version-info")]
-    [AllowAnonymous]
+    [ProducesResponseType<UpdateStatusDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetVersionInfo()
     {
         var status = await _updateService.GetVersionInfoAsync();
@@ -55,14 +62,17 @@ public class SettingsController : ControllerBase
 
     [HttpPut]
     [Authorize(Roles = Constants.AuthRoles.Admin)]
+    [ProducesResponseType<UIResourceDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Update([FromBody] UIResourceDto model)
     {
         var updated = await _settingsService.UpdateSettingsAsync(model);
+        _integrationStatusService.Invalidate();
         return Ok(updated);
     }
 
     [HttpGet("environment")]
-    [Authorize]
+    [Authorize(Roles = Constants.AuthRoles.Admin)]
+    [ProducesResponseType<UIEnvironmentDto>(StatusCodes.Status200OK)]
     public IActionResult GetEnvironment()
     {
         var resources = new UIEnvironmentDto
@@ -79,6 +89,7 @@ public class SettingsController : ControllerBase
 
     [HttpGet("languages")]
     [AllowAnonymous]
+    [ProducesResponseType<List<Language>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetLanguages()
     {
         var languages = await _languageService.GetAllAsync();

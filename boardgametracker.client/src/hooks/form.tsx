@@ -1,8 +1,8 @@
 import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
-import { BgtDatePicker, type BgtDatePickerProps } from "@/components/BgtForm/BgtDatePicker";
+import { BgtDatePicker, type BgtDatePickerBaseProps } from "@/components/BgtForm/BgtDatePicker";
 import { BgtDateTimePicker, type BgtDateTimePickerProps } from "@/components/BgtForm/BgtDateTimePicker";
 import { BgtInputField, type BgtInputFieldProps } from "@/components/BgtForm/BgtInputField";
-import { BgtSelect, type BgtSelectProps } from "@/components/BgtForm/BgtSelect";
+import { BgtSelect, type BgtSelectBaseProps } from "@/components/BgtForm/BgtSelect";
 import { BgtSwitch, type BgtSwitchProps } from "@/components/BgtForm/BgtSwitch";
 import { BgtTextArea, type BgtTextAreaProps } from "@/components/BgtForm/BgtTextArea";
 
@@ -13,12 +13,12 @@ function AppInputField(props: Omit<BgtInputFieldProps, "field">) {
 	return <BgtInputField field={field} {...props} />;
 }
 
-function AppSelect(props: Omit<BgtSelectProps, "field">) {
+function AppSelect(props: BgtSelectBaseProps) {
 	const field = useFieldContext();
 	return <BgtSelect field={field} {...props} />;
 }
 
-function AppDatePicker(props: Omit<BgtDatePickerProps, "field">) {
+function AppDatePicker(props: BgtDatePickerBaseProps) {
 	const field = useFieldContext();
 	return <BgtDatePicker field={field} {...props} />;
 }

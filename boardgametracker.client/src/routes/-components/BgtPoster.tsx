@@ -1,7 +1,7 @@
 import { cx } from "class-variance-authority";
-import type { ComponentPropsWithoutRef, CSSProperties } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 
-import { StringToRgb } from "../../utils/stringUtils";
+import { BgtFallbackImage } from "@/components/BgtImage/BgtFallbackImage";
 
 interface Props extends ComponentPropsWithoutRef<"div"> {
 	title: string;
@@ -12,23 +12,8 @@ export const BgtPoster = (props: Props) => {
 	const { className, title, image } = props;
 
 	return (
-		<div
-			style={
-				{
-					"--image-url": `url(${image})`,
-					"--fallback-color": StringToRgb(title),
-				} as CSSProperties
-			}
-			className={cx(
-				className,
-				"relative overflow-hidden aspect-square rounded-xl flex justify-center flex-col px-3 w-full bg-cover bg-no-repeat bg-center",
-				image && "bg-(image:--image-url)",
-				!image && `bg-(--fallback-color)`,
-			)}
-		>
-			{!image && (
-				<span className="flex justify-center align-middle h-max font-bold text-3xl capitalize">{title[0]}</span>
-			)}
+		<div className={cx(className, "relative overflow-hidden aspect-square rounded-xl w-full")}>
+			<BgtFallbackImage title={title} image={image} />
 		</div>
 	);
 };

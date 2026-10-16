@@ -3,6 +3,7 @@ import { QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { uploadImageCall } from "@/services/imageService";
 import { addPlayerCall, updatePlayerCall } from "@/services/playerService";
+import { apiErrorMessage } from "@/utils/errorUtils";
 
 interface Props {
 	onSaveSuccess?: () => void;
@@ -26,8 +27,8 @@ export const usePlayerModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.dashboard] });
 		},
-		onError: () => {
-			errorToast("player:notifications.create-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "player:notifications.create-failed"));
 		},
 	});
 
@@ -39,8 +40,8 @@ export const usePlayerModal = ({ onSaveSuccess, onUpdateSuccess }: Props) => {
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.players] });
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.player] });
 		},
-		onError: () => {
-			errorToast("player:notifications.update-failed");
+		onError: (error) => {
+			errorToast(apiErrorMessage(error, "player:notifications.update-failed"));
 		},
 	});
 

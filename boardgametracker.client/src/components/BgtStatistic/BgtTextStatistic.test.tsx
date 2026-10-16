@@ -13,6 +13,23 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("Total Games")).toBeInTheDocument();
 		});
 
+		it("should render a caption under the value when given", () => {
+			renderWithTheme(<BgtTextStatistic title="On the shelf" content={9} caption="of 41 owned games" />);
+			expect(screen.getByText("of 41 owned games")).toHaveAttribute("title", "of 41 owned games");
+		});
+
+		it("should render a caption that is not plain text without a title", () => {
+			renderWithTheme(<BgtTextStatistic title="Games together" content={49} caption={<em>since 12-03-2025</em>} />);
+			const caption = screen.getByText("since 12-03-2025").parentElement;
+			expect(caption).toHaveClass("text-white/50");
+			expect(caption).not.toHaveAttribute("title");
+		});
+
+		it("should leave the caption out when there is none", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Games together" content={49} caption={null} />);
+			expect(container.querySelector("span.text-white\\/50")).toBeNull();
+		});
+
 		it("should render content as string", () => {
 			renderWithTheme(<BgtTextStatistic title="Best Game" content="Chess" />);
 			expect(screen.getByText("Chess")).toBeInTheDocument();
@@ -46,9 +63,9 @@ describe("BgtTextStatistic", () => {
 	});
 
 	describe("Prefix and Suffix", () => {
-		it("should render prefix", () => {
-			renderWithTheme(<BgtTextStatistic title="Price" content={99} prefix="$" />);
-			expect(screen.getByText("$")).toBeInTheDocument();
+		it("should render formatted price content as is", () => {
+			renderWithTheme(<BgtTextStatistic title="Price" content="€63.33" />);
+			expect(screen.getByText("€63.33")).toBeInTheDocument();
 		});
 
 		it("should render suffix", () => {
@@ -56,15 +73,14 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("min")).toBeInTheDocument();
 		});
 
-		it("should render both prefix and suffix", () => {
-			renderWithTheme(<BgtTextStatistic title="Score" content={100} prefix="+" suffix="pts" />);
-			expect(screen.getByText("+")).toBeInTheDocument();
-			expect(screen.getByText("pts")).toBeInTheDocument();
+		it("should render a percentage suffix without a space", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Win percentage" content={100} suffix="%" />);
+			expect(container.textContent).toContain("100%");
 		});
 
-		it("should not render prefix when null", () => {
-			renderWithTheme(<BgtTextStatistic title="Value" content={50} prefix={null} />);
-			expect(screen.queryByText("null")).not.toBeInTheDocument();
+		it("should format numbers with the app language", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Points" content={1234.5} />);
+			expect(container.textContent).toContain("1,234.5");
 		});
 
 		it("should not render suffix when null", () => {
@@ -73,11 +89,47 @@ describe("BgtTextStatistic", () => {
 		});
 	});
 
+	describe("Title", () => {
+		it("should expose the full title as a tooltip", () => {
+			renderWithTheme(<BgtTextStatistic title="Average session duration" content={5} />);
+			expect(screen.getByText("Average session duration")).toHaveAttribute("title", "Average session duration");
+		});
+
+		it("should colour the title row with the stat title token", () => {
+			renderWithTheme(<BgtTextStatistic title="Sessions" content={5} />);
+			const row = screen.getByText("Sessions").closest("div");
+			expect(row).toHaveClass("text-stat-title");
+			expect(row?.className).not.toContain("text-primary/70");
+		});
+	});
+
 	describe("Icon", () => {
 		it("should render icon when provided", () => {
 			const TestIcon = (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="test-icon" {...props} />;
 			renderWithTheme(<BgtTextStatistic title="Achievements" content={5} icon={<TestIcon />} />);
 			expect(screen.getByTestId("test-icon")).toBeInTheDocument();
+		});
+	});
+
+	describe("Caption", () => {
+		it("should render the caption below the value", () => {
+			renderWithTheme(<BgtTextStatistic title="Most wins" content={54} caption={<span>Mikhaël</span>} />);
+			expect(screen.getByText("Mikhaël")).toBeInTheDocument();
+		});
+
+		it("should expose a text caption as a tooltip", () => {
+			renderWithTheme(<BgtTextStatistic title="Best win rate" content="41%" caption="Kathleen · min. 5" />);
+			expect(screen.getByText("Kathleen · min. 5")).toHaveAttribute("title", "Kathleen · min. 5");
+		});
+
+		it("should render a caption under the value when given", () => {
+			renderWithTheme(<BgtTextStatistic title="Games" content={52} caption="41 owned · 4 expansions" />);
+			expect(screen.getByText("41 owned · 4 expansions")).toHaveAttribute("title", "41 owned · 4 expansions");
+		});
+
+		it("should not render a caption without one", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Games" content={52} />);
+			expect(container.querySelector("span[title='41 owned · 4 expansions']")).toBeNull();
 		});
 	});
 

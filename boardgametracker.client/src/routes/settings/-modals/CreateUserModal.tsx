@@ -1,18 +1,25 @@
-import { useForm } from "@tanstack/react-form";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
-import { type BgtSelectItem, isApiError, type Player, type RegisterRequest, type UserDto } from "@/models";
+import { useAppForm } from "@/hooks/form";
+import {
+	type BgtSelectItem,
+	CreateUserSchema,
+	isApiError,
+	type Player,
+	type RegisterRequest,
+	type UserDto,
+} from "@/models";
 import { translateApiError } from "@/utils/errorUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 import { buildLinkablePlayerItems } from "../-utils/playerLinkOptions";
 
 interface Props {
@@ -48,7 +55,7 @@ export const CreateUserModal = ({ open, close, players, users, onSubmit, isLoadi
 
 	const playerItems: BgtSelectItem[] = useMemo(() => buildLinkablePlayerItems(players, users), [players, users]);
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			username: "",
 			email: "",
@@ -86,15 +93,7 @@ export const CreateUserModal = ({ open, close, players, users, onSubmit, isLoadi
 					<BgtDialogTitle>{t("account.users.create.title")}</BgtDialogTitle>
 					<BgtDialogDescription>{t("account.users.create.description")}</BgtDialogDescription>
 					<div className="flex flex-col gap-2 mb-3 mt-3">
-						<form.Field
-							name="username"
-							validators={{
-								onChange: ({ value }) => {
-									if (!value) return t("common:required", "Required");
-									return undefined;
-								},
-							}}
-						>
+						<form.Field name="username" validators={zodValidator(CreateUserSchema, "username")}>
 							{(field) => (
 								<BgtInputField
 									field={field}
@@ -104,15 +103,7 @@ export const CreateUserModal = ({ open, close, players, users, onSubmit, isLoadi
 								/>
 							)}
 						</form.Field>
-						<form.Field
-							name="email"
-							validators={{
-								onChange: ({ value }) => {
-									if (!value) return t("common:required", "Required");
-									return undefined;
-								},
-							}}
-						>
+						<form.Field name="email" validators={zodValidator(CreateUserSchema, "email")}>
 							{(field) => (
 								<BgtInputField
 									field={field}
@@ -122,16 +113,7 @@ export const CreateUserModal = ({ open, close, players, users, onSubmit, isLoadi
 								/>
 							)}
 						</form.Field>
-						<form.Field
-							name="password"
-							validators={{
-								onChange: ({ value }) => {
-									if (!value) return t("common:required", "Required");
-									if (value.length < 4) return t("account.password.min-length");
-									return undefined;
-								},
-							}}
-						>
+						<form.Field name="password" validators={zodValidator(CreateUserSchema, "password")}>
 							{(field) => (
 								<BgtInputField
 									field={field}
@@ -175,14 +157,13 @@ export const CreateUserModal = ({ open, close, players, users, onSubmit, isLoadi
 						</form.Subscribe>
 					</div>
 					{error && <div className="text-error text-sm mb-2">{error}</div>}
-					<BgtDialogClose>
-						<BgtButton variant="cancel" onClick={close} disabled={isLoading}>
-							{t("common:cancel")}
-						</BgtButton>
-						<BgtButton variant="primary" type="submit" disabled={isLoading}>
-							{t("account.users.create.save")}
-						</BgtButton>
-					</BgtDialogClose>
+					<BgtDialogFooter
+						onCancel={close}
+						confirmLabel={t("account.users.create.save")}
+						confirmType="submit"
+						disabled={isLoading}
+						cancelDisabled={isLoading}
+					/>
 				</form>
 			</BgtDialogContent>
 		</BgtDialog>

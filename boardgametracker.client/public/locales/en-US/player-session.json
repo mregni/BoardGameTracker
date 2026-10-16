@@ -1,30 +1,25 @@
 {
-  "save-new": "Create game play",
-  "save-update": "Update game play",
-  "title-new": "Add new game session",
-  "title-update": "Update game session",
+  "save-new": "Create session",
+  "save-update": "Update session",
+  "title-new": "Add new session",
+  "title-update": "Update session",
   "new": {
     "notifications": {
-      "created": "Game play is succesfully created",
-      "create-failed": "Failed creating game play"
+      "created": "Session successfully created",
+      "create-failed": "Failed creating session"
     },
-    "save": "Add player",
-    "title": "Add player",
-    "description": "Fill in the form to add a new player to this game play.",
     "player": {
       "label": "Player",
       "required": "Player is required"
     },
     "create-player": "Create new player",
     "players": {
-      "label": "Players",
-      "add": "+ add player",
       "minimum": "Add at least one player to this session"
     },
     "duration": {
       "label": "Duration",
-      "placeholder": "in minutes",
-      "required": "Duration is required"
+      "required": "Duration is required",
+      "positive": "Duration must be greater than 0"
     },
     "game": {
       "label": "Game",
@@ -34,43 +29,57 @@
     "start": {
       "label": "Start",
       "required": "Start date is required",
-      "placeholder": "Pick a date"
+      "placeholder": "Pick a date",
+      "future": "Start can't be in the future"
     },
     "location": {
       "label": "Location",
       "placeholder": "Choose location",
-      "create-new": "Create location '{{name}}'",
-      "required": "Location is required"
+      "required": "Location is required",
+      "none": "No location"
     },
     "comment": {
       "label": "Comment",
-      "sub-label": "Extra comment on the game."
+      "sub-label": "Extra comment on the session."
     }
   },
   "update": {
-    "save": "Update player",
-    "title": "Update player",
-    "description": "Update the form to change the details of {{name}}.",
     "notifications": {
-      "updated": "Game play is succesfully created",
-      "update-failed": "Failed creating game play"
+      "updated": "Session successfully updated",
+      "update-failed": "Failed updating session"
     }
   },
-  "won": {
-    "label": "Player has won the game"
-  },
-  "bot": {
-    "label": "Player is a bot"
-  },
   "score": {
-    "label": "End scoring",
     "required": "Score is required"
   },
-  "first-play": {
-    "label": "Played game for the first time"
-  },
   "delete": {
-    "successfull": "Game play is successfully deleted.",
-    "failed": "Game play deletion failed, check logs for more details."
+    "successfull": "Session successfully deleted.",
+    "failed": "Session deletion failed, check logs for more details."
+  },
+  "form": {
+    "game": {
+      "recent": "Recently played",
+      "all": "All games"
+    },
+    "players": {
+      "label": "Players & scores",
+      "label-no-scoring": "Players",
+      "search": "Add a player…"
+    },
+    "player": {
+      "score": "Score of {{name}}",
+      "score-placeholder": "Score",
+      "won": "Won",
+      "first-play": "First play",
+      "remove": "Remove {{name}}"
+    }
+  },
+  "coop": {
+    "played": "Played co-op",
+    "result": "Team result",
+    "won": "We won",
+    "lost": "We lost",
+    "team-score": "Team score",
+    "result-required": "Pick whether the team won or lost"
   }
 }

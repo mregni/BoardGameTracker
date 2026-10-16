@@ -1,4 +1,3 @@
-import { Text } from "@radix-ui/themes";
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
@@ -29,11 +28,16 @@ export const BgtMenuItem = (props: Props) => {
 		>
 			<div className="flex items-center gap-2">
 				<Icon className="size-5" />
-				<Text as="span" size="3">
-					{t(item.menuLabel)}
-				</Text>
+				<span className="text-[16px]/[24px]">{t(item.menuLabel)}</span>
 			</div>
-			{count !== undefined && <div className="py-1 px-3 flex items-center justify-center text-xs">{count}</div>}
+			{count !== undefined && (
+				<div
+					className="py-1 px-3 flex items-center justify-center text-xs"
+					title={item.countLabel ? t(item.countLabel, { count }) : undefined}
+				>
+					{count}
+				</div>
+			)}
 		</Link>
 	);
 };

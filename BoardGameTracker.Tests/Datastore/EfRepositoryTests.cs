@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Ardalis.Specification;
@@ -111,23 +110,6 @@ public class EfRepositoryTests
         var result = await repository.GetAllAsync();
 
         result.Should().HaveCount(3);
-    }
-
-    [Fact]
-    public async Task Update_ShouldMarkModifiedWithoutPersisting()
-    {
-        await using var context = CreateContext();
-        var loan = new Loan(1, 1, DateTime.UtcNow);
-        await context.Loans.AddAsync(loan);
-        await context.SaveChangesAsync();
-        context.ChangeTracker.Clear();
-
-        var repository = new EfRepository<Loan>(context);
-        loan.MarkAsReturned(DateTime.UtcNow);
-
-        await repository.Update(loan);
-
-        context.ChangeTracker.Entries<Loan>().Single().State.Should().Be(EntityState.Modified);
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { RagCitation } from "@/models";
 import { PageImage } from "./PageImage";
@@ -14,6 +14,12 @@ export const SourcesOverlay = ({ citations, index, onIndexChange, onClose }: Pro
 	const { t } = useTranslation("chat");
 	const current = citations[index];
 	const lastIndex = citations.length - 1;
+
+	const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+	useEffect(() => {
+		closeButtonRef.current?.focus();
+	}, []);
 
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => {
@@ -49,6 +55,7 @@ export const SourcesOverlay = ({ citations, index, onIndexChange, onClose }: Pro
 					{docName} · {pageLabel}
 				</span>
 				<button
+					ref={closeButtonRef}
 					type="button"
 					onClick={onClose}
 					aria-label={t("close")}
@@ -60,14 +67,18 @@ export const SourcesOverlay = ({ citations, index, onIndexChange, onClose }: Pro
 				</button>
 			</div>
 
-			<div onClick={onClose} className="flex min-h-0 flex-1 cursor-zoom-out items-center justify-center px-3">
+			<div
+				role="presentation"
+				onClick={(event) => event.target === event.currentTarget && onClose()}
+				onKeyDown={(event) => event.key === "Escape" && onClose()}
+				className="flex min-h-0 flex-1 cursor-zoom-out items-center justify-center px-3"
+			>
 				<PageImage
 					key={`${current.manualId}-${current.page}`}
 					url={current.imageUrl}
 					alt={`${docName} · ${pageLabel}`}
 					className="max-h-full max-w-full cursor-default rounded object-contain"
 					fallback={<span className="text-sm text-white/40">{t("image-unavailable")}</span>}
-					onClick={(event) => event.stopPropagation()}
 				/>
 			</div>
 

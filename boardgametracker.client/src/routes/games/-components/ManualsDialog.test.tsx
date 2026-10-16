@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GameManual } from "@/models";
-import { fireEvent, renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { fireEvent, renderWithTheme, screen, userEvent, within } from "@/test/test-utils";
 import { ManualsDialog } from "./ManualsDialog";
 
 const mockUseGameManuals = vi.fn();
@@ -89,6 +89,47 @@ describe("ManualsDialog", () => {
 		});
 	});
 
+	describe("Footer", () => {
+		const footer = () => document.querySelector("[data-slot='dialog-footer']") as HTMLElement;
+		const footerLabels = () =>
+			within(footer())
+				.getAllByRole("button")
+				.map((button) => button.textContent);
+
+		it("puts close on the left and add on the right when the user can write", () => {
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+
+			expect(footerLabels()).toEqual(["common:close", "manuals.add"]);
+			expect(within(footer()).getByRole("button", { name: "manuals.add" })).toHaveClass("bg-primary/60");
+		});
+
+		it("only shows close when the user cannot write", () => {
+			renderWithTheme(<ManualsDialog {...defaultProps} canWrite={false} />);
+
+			expect(footerLabels()).toEqual(["common:close"]);
+		});
+
+		it("closes from the footer close button", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+
+			await user.click(within(footer()).getByRole("button", { name: "common:close" }));
+
+			expect(defaultProps.close).toHaveBeenCalledTimes(1);
+		});
+
+		it("opens the file picker from the footer add button", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+			const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+			const clickSpy = vi.spyOn(input, "click");
+
+			await user.click(within(footer()).getByRole("button", { name: "manuals.add" }));
+
+			expect(clickSpy).toHaveBeenCalledTimes(1);
+		});
+	});
+
 	describe("Polling", () => {
 		it("should poll while indexing when rag is enabled and the dialog is open", () => {
 			renderWithTheme(<ManualsDialog {...defaultProps} />);
@@ -131,16 +172,40 @@ describe("ManualsDialog", () => {
 	});
 
 	describe("Status badge", () => {
+		it.each(["pending", "indexing", "indexed", "failed"] as const)(
+			"should show the %s status when rag is enabled",
+			(status) => {
+				mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual({ indexStatus: status })] }));
+				renderWithTheme(<ManualsDialog {...defaultProps} />);
+
+				expect(screen.getByText(`manuals.status.${status}`)).toBeInTheDocument();
+			},
+		);
+
 		it.each([
-			"pending",
-			"indexing",
-			"indexed",
-			"failed",
-		] as const)("should show the %s status when rag is enabled", (status) => {
+			["pending", "border-transparent"],
+			["indexing", "border-primary"],
+			["indexed", "border-transparent"],
+			["failed", "border-transparent"],
+		] as const)("should give the %s badge a %s border so the selected state does not shift", (status, border) => {
 			mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual({ indexStatus: status })] }));
 			renderWithTheme(<ManualsDialog {...defaultProps} />);
 
-			expect(screen.getByText(`manuals.status.${status}`)).toBeInTheDocument();
+			expect(screen.getByText(`manuals.status.${status}`)).toHaveClass("border", border);
+		});
+
+		it("should show the indexing badge as a selected chip", () => {
+			mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual({ indexStatus: "indexing" })] }));
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+
+			expect(screen.getByText("manuals.status.indexing")).toHaveClass("bg-primary/20", "text-chip-selected");
+		});
+
+		it("should show the failed badge in the error colour", () => {
+			mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual({ indexStatus: "failed" })] }));
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+
+			expect(screen.getByText("manuals.status.failed")).toHaveClass("bg-error/20", "text-error");
 		});
 
 		it("should not show a status badge when rag is disabled", () => {

@@ -1,76 +1,85 @@
 {
-  "save-new": "Create game play",
-  "save-update": "Update game play",
-  "title-new": "Add new game session",
-  "title-update": "Update game session",
+  "save-new": "Sessie aanmaken",
+  "save-update": "Sessie bijwerken",
+  "title-new": "Nieuwe sessie toevoegen",
+  "title-update": "Sessie bijwerken",
   "new": {
     "notifications": {
-      "created": "Game play is succesfully created",
-      "create-failed": "Failed creating game play"
+      "created": "Sessie is aangemaakt",
+      "create-failed": "Sessie aanmaken mislukt"
     },
-    "save": "Add player",
-    "title": "Add player",
-    "description": "Fill in the form to add a new player to this game play.",
     "player": {
-      "label": "Player",
-      "required": "Player is required"
+      "label": "Speler",
+      "required": "Speler is verplicht"
     },
-    "create-player": "Create new player",
+    "create-player": "Nieuwe speler aanmaken",
     "players": {
-      "label": "Players",
-      "add": "+ add player",
-      "minimum": "Add at least one player to this session"
+      "minimum": "Voeg minstens één speler toe aan deze sessie"
     },
     "duration": {
-      "label": "Duration",
-      "placeholder": "in minutes",
-      "required": "Duration is required"
+      "label": "Duur",
+      "required": "Duur is verplicht",
+      "positive": "De duur moet groter zijn dan 0"
     },
     "game": {
-      "label": "Game",
-      "placeholder": "Choose game",
-      "required": "Game is required"
+      "label": "Spel",
+      "placeholder": "Kies een spel",
+      "required": "Spel is verplicht"
     },
     "start": {
       "label": "Start",
-      "required": "Start date is required",
-      "placeholder": "Pick a date"
+      "required": "Startdatum is verplicht",
+      "placeholder": "Kies een datum",
+      "future": "De start kan niet in de toekomst liggen"
     },
     "location": {
-      "label": "Location",
-      "placeholder": "Choose location",
-      "create-new": "Create location '{{name}}'",
-      "required": "Location is required"
+      "label": "Locatie",
+      "placeholder": "Kies een locatie",
+      "required": "Locatie is verplicht",
+      "none": "Geen locatie"
     },
     "comment": {
-      "label": "Comment",
-      "sub-label": "Extra comment on the game."
+      "label": "Opmerking",
+      "sub-label": "Extra opmerking over de sessie."
     }
   },
   "update": {
-    "save": "Update player",
-    "title": "Update player",
-    "description": "Update the form to change the details of {{name}}.",
     "notifications": {
-      "updated": "Game play is succesfully created",
-      "update-failed": "Failed creating game play"
+      "updated": "Sessie is bijgewerkt",
+      "update-failed": "Sessie bijwerken mislukt"
     }
   },
-  "won": {
-    "label": "Player has won the game"
-  },
-  "bot": {
-    "label": "Player is a bot"
-  },
   "score": {
-    "label": "End scoring",
-    "required": "Score is required"
-  },
-  "first-play": {
-    "label": "Played game for the first time"
+    "required": "Score is verplicht"
   },
   "delete": {
-    "successfull": "Game play is successfully deleted.",
-    "failed": "Game play deletion failed, check logs for more details."
+    "successfull": "Sessie is verwijderd.",
+    "failed": "Sessie verwijderen mislukt, bekijk de logs voor meer details."
+  },
+  "form": {
+    "game": {
+      "recent": "Recent gespeeld",
+      "all": "Alle spellen"
+    },
+    "players": {
+      "label": "Spelers & scores",
+      "label-no-scoring": "Spelers",
+      "search": "Voeg een speler toe…"
+    },
+    "player": {
+      "score": "Score van {{name}}",
+      "score-placeholder": "Score",
+      "won": "Gewonnen",
+      "first-play": "Eerste keer",
+      "remove": "Verwijder {{name}}"
+    }
+  },
+  "coop": {
+    "played": "Coöperatief gespeeld",
+    "result": "Teamresultaat",
+    "won": "We wonnen",
+    "lost": "We verloren",
+    "team-score": "Teamscore",
+    "result-required": "Kies of het team won of verloor"
   }
 }

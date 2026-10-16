@@ -1,3 +1,20 @@
 # Force shell scripts to always use LF line endings
 *.sh text eol=lf
 entrypoint.sh text eol=lf
+
+# The client is formatted by Biome with LF; keep working copies LF on every platform
+boardgametracker.client/** text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.pdf binary
+
+# NuGet lock files are written with LF
+packages.lock.json text eol=lf

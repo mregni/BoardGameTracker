@@ -83,6 +83,30 @@ public class ChangeDetectionSnapshotParserTests
     }
 
     [Theory]
+    [InlineData("39.99", 39.99)]
+    [InlineData(" 12,50 ", 12.5)]
+    [InlineData("1299", 1299)]
+    public void ParsePrice_ShouldParseAPlainAmount(string raw, double expected)
+    {
+        ChangeDetectionSnapshotParser.ParsePrice(raw).Should().Be((decimal)expected);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("-5")]
+    [InlineData("+5")]
+    [InlineData("1,234")]
+    [InlineData("1.299,99")]
+    [InlineData("12.50 EUR")]
+    [InlineData("EUR 12.50")]
+    [InlineData("1e3")]
+    public void ParsePrice_ShouldRejectSignedAmbiguousOrDecoratedValues(string? raw)
+    {
+        ChangeDetectionSnapshotParser.ParsePrice(raw).Should().BeNull();
+    }
+
+    [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]

@@ -1,6 +1,6 @@
 import { cx } from "class-variance-authority";
 import { format } from "date-fns";
-import type { ChangeEventHandler, ReactNode } from "react";
+import { type ChangeEventHandler, type FocusEventHandler, type HTMLAttributes, type ReactNode, useId } from "react";
 
 import { BgtText } from "../BgtText/BgtText";
 import { BgtFieldLabel } from "./BgtFieldLabel";
@@ -27,7 +27,10 @@ export interface Props {
 	className?: string;
 	inputClassName?: string;
 	disabled?: boolean;
+	ariaLabel?: string;
 	onChange: ChangeEventHandler<HTMLInputElement> | undefined;
+	onBlur?: FocusEventHandler<HTMLInputElement>;
+	inputMode?: HTMLAttributes<HTMLInputElement>["inputMode"];
 }
 
 export const BgtSimpleInputField = (props: Props) => {
@@ -41,13 +44,17 @@ export const BgtSimpleInputField = (props: Props) => {
 		className = "",
 		inputClassName = "",
 		disabled = false,
+		ariaLabel,
 		onChange,
+		onBlur,
+		inputMode,
 	} = props;
+	const labelId = useId();
 
 	return (
 		<div className="flex flex-col justify-start w-full">
 			<div className="flex items-baseline justify-between">
-				<BgtFieldLabel>{label}</BgtFieldLabel>
+				<BgtFieldLabel id={labelId}>{label}</BgtFieldLabel>
 			</div>
 			<div
 				className={cx(
@@ -63,7 +70,11 @@ export const BgtSimpleInputField = (props: Props) => {
 					disabled={disabled}
 					type={type}
 					onChange={onChange}
+					onBlur={onBlur}
+					inputMode={inputMode}
 					placeholder={placeholder}
+					aria-labelledby={label ? labelId : undefined}
+					aria-label={label ? undefined : ariaLabel}
 				/>
 				{suffixLabel && (typeof suffixLabel === "string" ? <BgtText>{suffixLabel}</BgtText> : suffixLabel)}
 			</div>

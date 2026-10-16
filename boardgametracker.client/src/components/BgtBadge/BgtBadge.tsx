@@ -11,7 +11,7 @@ const badgeVariants = cva("group px-3 py-1 rounded-full text-xs flex flex-row ga
 		color: {
 			green: "text-card-value bg-[#34FFAA1F]",
 			red: "text-error-dark y bg-error-dark/20 border-error-dark/30",
-			primary: "text-primary bg-primary/20 border-primary/30",
+			primary: "text-chip-selected bg-primary/20 border-primary/30",
 		},
 		interactive: {
 			true: "cursor-pointer",
@@ -48,16 +48,18 @@ export const BgtBadge = (props: Props) => {
 		<div
 			className={badgeClasses}
 			onClick={onClick}
-			{...(onClick && {
-				role: "button",
-				tabIndex: 0,
-				onKeyDown: (e: React.KeyboardEvent) => {
-					if (e.key === "Enter" || e.key === " ") {
-						e.preventDefault();
-						onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
-					}
-				},
-			})}
+			onKeyDown={
+				onClick
+					? (e: React.KeyboardEvent) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+							}
+						}
+					: undefined
+			}
+			role={onClick ? "button" : undefined}
+			tabIndex={onClick ? 0 : undefined}
 			{...rest}
 		>
 			{children}

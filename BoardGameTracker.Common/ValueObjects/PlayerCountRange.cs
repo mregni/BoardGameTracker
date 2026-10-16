@@ -13,7 +13,9 @@ public record PlayerCountRange
         Guard.Against.NegativeOrZero(max);
 
         if (max < min)
+        {
             throw new ArgumentException("Maximum players cannot be less than minimum players.");
+        }
 
         Min = min;
         Max = max;

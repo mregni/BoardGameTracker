@@ -75,7 +75,7 @@ public class BadgeService : IBadgeService
             if (await evaluator.CanAwardBadge(player.PlayerId, newBadge, session, sessions))
             {
                 _logger.LogInformation("Awarding badge {BadgeId} ({BadgeType}) to player {PlayerId}", newBadge.Id, newBadge.Type, player.PlayerId);
-                await _badgeRepository.AwardBatchToPlayer(player.PlayerId, newBadge.Id);
+                await _badgeRepository.AwardBadgeToPlayer(player.PlayerId, newBadge.Id);
             }
             else
             {
