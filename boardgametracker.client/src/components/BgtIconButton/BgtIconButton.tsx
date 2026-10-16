@@ -5,7 +5,7 @@ const iconButtonVariants = cva("rounded-lg inline-flex items-center justify-cent
 	variants: {
 		intent: {
 			primary: "text-primary bg-primary/20 hover:bg-primary/40 transition-colors",
-			danger: "text-error bg-error/20 hover:bg-error/40 transition-colors",
+			danger: "text-error bg-error/20 hover:bg-error/40 transition-colors [--focus-color:var(--color-bad)]",
 			header: "text-white hover:text-gray-400 transition-colors",
 			subtile: "text-white/40 hover:text-white/20 transition-colors",
 		},
