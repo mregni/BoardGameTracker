@@ -1,16 +1,17 @@
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { isPast } from "date-fns";
-import { type ReactNode, useMemo, useState } from "react";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 import Calendar from "@/assets/icons/calendar.svg?react";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { BgtSegmentedControl } from "@/components/BgtSegmentedControl/BgtSegmentedControl";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { usePermissions } from "@/hooks/usePermissions";
-import type { GameNight } from "@/models";
+import { type GameNight, GameNightStatisticsPeriod } from "@/models";
 import { getGameNights } from "@/services/queries/gameNights";
 import { getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";
@@ -18,16 +19,27 @@ import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { GameNightCard } from "./-components/GameNightCard";
+import { NightSectionTitle } from "./-components/NightSectionTitle";
 import { PastGameNightItem } from "./-components/PastGameNightItem";
+import { GameNightStatsView } from "./-components/stats/GameNightStatsView";
 import { useGameNightActions } from "./-hooks/useGameNightActions";
 import { useGameNightData } from "./-hooks/useGameNightData";
 import { useGameNightModals } from "./-hooks/useGameNightModals";
 import { CreateGameNightModal } from "./-modals/CreateGameNightModal";
 import { EditGameNightModal } from "./-modals/EditGameNightModal";
 import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
+import { splitGameNights } from "./-utils/gameNightPlay";
+
+const gameNightsSearchSchema = z.object({
+	view: z.enum(["nights", "stats"]).optional(),
+	period: z.enum(GameNightStatisticsPeriod).optional(),
+});
+
+type GameNightsView = "nights" | "stats";
 
 export const Route = createFileRoute("/game-nights/")({
 	component: RouteComponent,
+	validateSearch: gameNightsSearchSchema,
 	beforeLoad: async ({ context: { queryClient } }) => {
 		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
 		if (!settings.gameNightsEnabled) {
@@ -45,6 +57,10 @@ export const Route = createFileRoute("/game-nights/")({
 function RouteComponent() {
 	const { t } = useTranslation("game-nights");
 	const { canWrite } = usePermissions();
+	const navigate = useNavigate();
+	const search = Route.useSearch();
+	const view: GameNightsView = search.view ?? "nights";
+	const period = search.period ?? GameNightStatisticsPeriod.AllTime;
 	const [selectedGameNightId, setSelectedGameNightId] = useState<number | null>(null);
 
 	const {
@@ -81,21 +97,17 @@ function RouteComponent() {
 		setSelectedGameNightId,
 	});
 
-	const upcomingGameNights = useMemo(
-		() =>
-			gameNights
-				.filter((gn) => !isPast(gn.startDate))
-				.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()),
+	const { upcoming: upcomingGameNights, past: pastGameNights } = useMemo(
+		() => splitGameNights(gameNights),
 		[gameNights],
 	);
 
-	const pastGameNights = useMemo(
-		() =>
-			gameNights
-				.filter((gn) => isPast(gn.startDate))
-				.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()),
-		[gameNights],
-	);
+	const changeSearch = (next: { view?: GameNightsView; period?: GameNightStatisticsPeriod }) =>
+		navigate({
+			to: "/game-nights",
+			search: (previous) => ({ ...previous, ...next }),
+			replace: true,
+		});
 
 	const handleDeleteClick = (gameNight: GameNight) => {
 		actions.handleDeleteClick(gameNight);
@@ -140,46 +152,68 @@ function RouteComponent() {
 							]
 						: []
 				}
-			/>
+			>
+				<BgtSegmentedControl
+					aria-label={t("view.label")}
+					size="sm"
+					value={view}
+					onChange={(value) => changeSearch({ view: value })}
+					options={[
+						{ value: "nights", label: t("view.nights") },
+						{ value: "stats", label: t("view.stats") },
+					]}
+				/>
+			</BgtPageHeader>
 			<BgtPageContent isLoading={isLoading} data={{ settings, gameNights }}>
 				{({ settings }) => (
 					<>
-						<section className="flex flex-col gap-3" aria-labelledby="upcoming-game-nights">
-							<SectionTitle id="upcoming-game-nights">{t("upcoming")}</SectionTitle>
-							{upcomingGameNights.length === 0 ? (
-								<BgtText size="2" color="gray">
-									{t("empty.upcoming")}
-								</BgtText>
-							) : (
-								upcomingGameNights.map((gameNight, index) => (
-									<GameNightCard
-										key={gameNight.id}
-										gameNight={gameNight}
-										settings={settings}
-										canWrite={canWrite}
-										highlight={index === 0}
-										onEdit={actions.handleEditGameNight}
-										onDelete={handleDeleteClick}
-										onManageRsvps={actions.handleManageRsvps}
-									/>
-								))
-							)}
-						</section>
+						{view === "stats" ? (
+							<GameNightStatsView
+								period={period}
+								onPeriodChange={(value) => changeSearch({ period: value })}
+								settings={settings}
+								players={players}
+								games={games}
+								locations={locations}
+							/>
+						) : (
+							<>
+								<section className="flex flex-col gap-3" aria-labelledby="upcoming-game-nights">
+									<NightSectionTitle id="upcoming-game-nights">{t("upcoming")}</NightSectionTitle>
+									{upcomingGameNights.length === 0 ? (
+										<BgtText size="2" color="gray">
+											{t("empty.upcoming")}
+										</BgtText>
+									) : (
+										upcomingGameNights.map((gameNight, index) => (
+											<GameNightCard
+												key={gameNight.id}
+												gameNight={gameNight}
+												settings={settings}
+												canWrite={canWrite}
+												highlight={index === 0}
+												onEdit={actions.handleEditGameNight}
+												onDelete={handleDeleteClick}
+												onManageRsvps={actions.handleManageRsvps}
+											/>
+										))
+									)}
+								</section>
 
-						{pastGameNights.length > 0 && (
-							<section className="flex flex-col gap-2" aria-labelledby="past-game-nights">
-								<SectionTitle id="past-game-nights">{t("past")}</SectionTitle>
-								{pastGameNights.map((gameNight) => (
-									<PastGameNightItem
-										key={gameNight.id}
-										gameNight={gameNight}
-										settings={settings}
-										canWrite={canWrite}
-										onEdit={actions.handleEditGameNight}
-										onDelete={handleDeleteClick}
-									/>
-								))}
-							</section>
+								{pastGameNights.length > 0 && (
+									<section className="flex flex-col gap-2" aria-labelledby="past-game-nights">
+										<NightSectionTitle id="past-game-nights">{t("past")}</NightSectionTitle>
+										{pastGameNights.map((gameNight) => (
+											<PastGameNightItem
+												key={gameNight.id}
+												gameNight={gameNight}
+												settings={settings}
+												players={players}
+											/>
+										))}
+									</section>
+								)}
+							</>
 						)}
 
 						<CreateGameNightModal
@@ -239,12 +273,3 @@ function RouteComponent() {
 		</BgtPage>
 	);
 }
-
-const SectionTitle = ({ id, children }: { id: string; children: ReactNode }) => (
-	<h2
-		id={id}
-		className="flex items-center gap-3 text-xs tracking-widest text-gray-400 uppercase after:h-px after:flex-1 after:bg-white/10"
-	>
-		{children}
-	</h2>
-);

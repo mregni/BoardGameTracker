@@ -198,7 +198,7 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 									placeholder={t("rsvp.search-players")}
 									ariaLabel={t("rsvp.invite-more")}
 									className="w-full border border-primary/30 bg-primary/10"
-									inputClassName="placeholder:text-primary/80"
+									inputClassName="placeholder:text-primary-text"
 									prefixLabel={<SearchIcon className="size-5 text-primary" />}
 								/>
 								{suggestions.length === 0 ? (

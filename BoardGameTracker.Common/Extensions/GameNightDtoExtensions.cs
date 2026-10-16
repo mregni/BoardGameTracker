@@ -13,13 +13,48 @@ public static class GameNightDtoExtensions
             Title = gameNight.Title,
             Notes = gameNight.Notes,
             StartDate = gameNight.StartDate,
+            EndedAt = gameNight.EndedAt,
             HostId = gameNight.HostId,
             Host = gameNight.Host.ToPublicDto(),
             LocationId = gameNight.LocationId,
             Location = gameNight.Location.ToDto(),
             LinkId =  gameNight.LinkId,
             SuggestedGames = gameNight.SuggestedGames.Select(g => g.ToDto()).ToList(),
-            InvitedPlayers = gameNight.InvitedPlayers.Select(p => p.ToDto()).ToList()
+            InvitedPlayers = gameNight.InvitedPlayers.Select(p => p.ToDto()).ToList(),
+            Summary = gameNight.ToSummaryDto()
+        };
+    }
+
+    public static GameNightSummaryDto ToSummaryDto(this GameNight gameNight)
+    {
+        return new GameNightSummaryDto
+        {
+            GamesPlayed = gameNight.Sessions.Count,
+            TotalMinutes = gameNight.GetTotalPlayMinutes(),
+            MostWins = gameNight.GetMostWins(),
+            WinnerIds = gameNight.GetNightWinnerIds()
+        };
+    }
+
+    public static GameNightDetailDto ToDetailDto(this GameNight gameNight)
+    {
+        return new GameNightDetailDto
+        {
+            GameNight = gameNight.ToDto(),
+            Sessions = gameNight.Sessions.OrderByDescending(s => s.Start).ToListDto(),
+            RunningGames = gameNight.RunningGames.OrderBy(r => r.Start).Select(r => r.ToDto()).ToList()
+        };
+    }
+
+    public static RunningGameDto ToDto(this RunningGame runningGame)
+    {
+        return new RunningGameDto
+        {
+            Id = runningGame.Id,
+            GameNightId = runningGame.GameNightId,
+            GameId = runningGame.GameId,
+            Start = runningGame.Start,
+            PlayerIds = runningGame.GetPlayerIds()
         };
     }
 

@@ -19,6 +19,7 @@ import { Route as BareRsvpRouteImport } from './routes/_bare/rsvp'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as CompareIndexRouteImport } from './routes/compare/index'
 import { Route as GameNightsIndexRouteImport } from './routes/game-nights/index'
+import { Route as GameNightsGameNightIdRouteImport } from './routes/game-nights/$gameNightId'
 import { Route as GamesIndexRouteImport } from './routes/games/index'
 import { Route as GamesGameIdRouteImport } from './routes/games/$gameId'
 import { Route as GamesAddRouteImport } from './routes/games/add'
@@ -90,6 +91,11 @@ const CompareIndexRoute = CompareIndexRouteImport.update({
 const GameNightsIndexRoute = GameNightsIndexRouteImport.update({
   id: '/game-nights/',
   path: '/game-nights/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GameNightsGameNightIdRoute = GameNightsGameNightIdRouteImport.update({
+  id: '/game-nights/$gameNightId',
+  path: '/game-nights/$gameNightId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesIndexRoute = GamesIndexRouteImport.update({
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof BareLoginRoute
   '/reset-password': typeof BareResetPasswordRoute
   '/rsvp': typeof BareRsvpRoute
+  '/game-nights/$gameNightId': typeof GameNightsGameNightIdRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/add': typeof GamesAddRoute
   '/games/bgg': typeof GamesBggRoute
@@ -249,6 +256,7 @@ export interface FileRoutesByTo {
   '/login': typeof BareLoginRoute
   '/reset-password': typeof BareResetPasswordRoute
   '/rsvp': typeof BareRsvpRoute
+  '/game-nights/$gameNightId': typeof GameNightsGameNightIdRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/add': typeof GamesAddRoute
   '/games/bgg': typeof GamesBggRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/_bare/login': typeof BareLoginRoute
   '/_bare/reset-password': typeof BareResetPasswordRoute
   '/_bare/rsvp': typeof BareRsvpRoute
+  '/game-nights/$gameNightId': typeof GameNightsGameNightIdRoute
   '/games/$gameId': typeof GamesGameIdRoute
   '/games/add': typeof GamesAddRoute
   '/games/bgg': typeof GamesBggRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/rsvp'
+    | '/game-nights/$gameNightId'
     | '/games/$gameId'
     | '/games/add'
     | '/games/bgg'
@@ -355,6 +365,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/rsvp'
+    | '/game-nights/$gameNightId'
     | '/games/$gameId'
     | '/games/add'
     | '/games/bgg'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/_bare/login'
     | '/_bare/reset-password'
     | '/_bare/rsvp'
+    | '/game-nights/$gameNightId'
     | '/games/$gameId'
     | '/games/add'
     | '/games/bgg'
@@ -421,6 +433,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BareRoute: typeof BareRouteWithChildren
+  GameNightsGameNightIdRoute: typeof GameNightsGameNightIdRoute
   GamesGameIdRoute: typeof GamesGameIdRoute
   GamesAddRoute: typeof GamesAddRoute
   GamesBggRoute: typeof GamesBggRoute
@@ -519,6 +532,13 @@ declare module '@tanstack/react-router' {
       path: '/game-nights'
       fullPath: '/game-nights/'
       preLoaderRoute: typeof GameNightsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/game-nights/$gameNightId': {
+      id: '/game-nights/$gameNightId'
+      path: '/game-nights/$gameNightId'
+      fullPath: '/game-nights/$gameNightId'
+      preLoaderRoute: typeof GameNightsGameNightIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/': {
@@ -706,6 +726,7 @@ const BareRouteWithChildren = BareRoute._addFileChildren(BareRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BareRoute: BareRouteWithChildren,
+  GameNightsGameNightIdRoute: GameNightsGameNightIdRoute,
   GamesGameIdRoute: GamesGameIdRoute,
   GamesAddRoute: GamesAddRoute,
   GamesBggRoute: GamesBggRoute,

@@ -1,47 +1,113 @@
 {
-  "title": "Spelers vergelijken",
-  "select-player": "Kies een speler om te vergelijken",
-  "total-games-played": "Totaal samen gespeeld",
-  "minutes-played": "Minuten gespeeld",
-  "most-played-game": "Meest gespeelde spel",
-  "wins": {
-    "winner": "{{player}} won {{winCount}} keer van {{otherPlayer}}",
-    "loser": "{{player}} won maar {{winCount}} keer van {{otherPlayer}}"
+  "title": "Speler tegen speler",
+  "select-player": "Kies een speler",
+  "vs": "VS",
+  "swap": "Spelers wisselen",
+  "updating": "Vergelijking wordt bijgewerkt",
+  "change-left": "Linkse speler wijzigen, nu {{player}}",
+  "change-right": "Rechtse speler wijzigen, nu {{player}}",
+  "player-summary_one": "{{count}} spel · {{rate}} gewonnen",
+  "player-summary_other": "{{count}} spellen · {{rate}} gewonnen",
+  "games_one": "{{count}} spel",
+  "games_other": "{{count}} spellen",
+  "record": {
+    "label": "Stand over alle spellen samen",
+    "wins_zero": "nog geen overwinningen voor {{player}}",
+    "wins_one": "overwinning voor {{player}}",
+    "wins_other": "overwinningen voor {{player}}",
+    "together_one": "{{count}} spel samen",
+    "together_other": "{{count}} spellen samen",
+    "leads": "{{player}} staat voor",
+    "won": "{{player}} won",
+    "someone-else": "iemand anders won",
+    "summary_one": "{{count}} spel samen: {{playerOne}} won {{one}}, iemand anders won {{others}}, {{playerTwo}} won {{two}}",
+    "summary_other": "{{count}} spellen samen: {{playerOne}} won {{one}}, iemand anders won {{others}}, {{playerTwo}} won {{two}}",
+    "same-team": "zelfde co-op team",
+    "same-team-value": "{{total}} ({{won}} gewonnen, {{lost}} verloren)",
+    "summary-team_one": "zelfde co-op team {{total}} ({{won}} gewonnen, {{lost}} verloren)",
+    "summary-team_other": "zelfde co-op team {{total}} ({{won}} gewonnen, {{lost}} verloren)"
   },
-  "best-game": {
-    "label": "Het beste spel van {{player}} tegen {{otherPlayer}} is {{game}} met {{count}} overwinningen"
+  "form": {
+    "title_one": "Laatste spel samen",
+    "title_other": "Laatste {{count}} spellen samen",
+    "order": "(oudste → nieuwste)",
+    "label": "Laatste spellen samen, oudste eerst: {{list}}",
+    "legend": "{{one}} of {{two}}: wie won · –: iemand anders",
+    "legend-both": "+: allebei gewonnen",
+    "both": "allebei gewonnen",
+    "other": "iemand anders",
+    "streak_one": "{{player}} {{count}} op rij",
+    "streak_other": "{{player}} {{count}} op rij",
+    "legend-same-team": "=: zelfde co-op team, breekt of verlengt geen reeks",
+    "same-team-won": "zelfde team, gewonnen",
+    "same-team-lost": "zelfde team, verloren"
   },
-  "total-wins": {
-    "label": "{{player}} won in totaal {{count}} spelsessies."
+  "tiles": {
+    "games-together": "Spellen samen",
+    "since": "sinds {{date}}",
+    "time-together": "Tijd samen",
+    "average": "gem. {{duration}} per spel",
+    "most-played": "Meest gespeeld",
+    "closest": "Spannendste spel",
+    "points_one": "{{value}} pt",
+    "points_other": "{{value}} ptn",
+    "closest-winner": "{{game}} · {{player}} won",
+    "closest-other": "{{game}} · iemand anders won"
   },
-  "win-percentage": {
-    "label": "{{player}} heeft een winstpercentage van {{percentage}}%"
+  "per-game": {
+    "title": "Per spel",
+    "sort": "Sorteren",
+    "most-played": "Meest gespeeld",
+    "biggest-lead": "Grootste voorsprong",
+    "game": "Spel",
+    "wins": "Overwinningen",
+    "last": "Laatste",
+    "average": "gem. {{one}} – {{two}}",
+    "no-scores": "geen scores",
+    "others_one": "+{{count}} ander",
+    "others_other": "+{{count}} anderen",
+    "row_one": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, iemand anders {{count}}",
+    "row_other": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, iemand anders {{count}}",
+    "show-all_one": "Toon alle {{count}} spel",
+    "show-all_other": "Toon alle {{count}} spellen",
+    "show-less": "Toon minder",
+    "coop": "co-op",
+    "same-team_one": "Zelfde team · {{won}} van {{count}} gewonnen",
+    "same-team_other": "Zelfde team · {{won}} van {{count}} gewonnen",
+    "same-team-extra_one": "+{{count}} zelfde team",
+    "same-team-extra_other": "+{{count}} zelfde team"
   },
-  "total-duration": {
-    "label": "{{player}} speelde in totaal {{duration}} minuten."
+  "best-worst": {
+    "against": "{{player}} tegen {{opponent}}",
+    "best": "Beste",
+    "worst": "Slechtste",
+    "none": "Nog niets",
+    "note_one": "Enkel spellen die minstens {{count}} keer samen gespeeld zijn.",
+    "note_other": "Enkel spellen die minstens {{count}} keer samen gespeeld zijn."
   },
-  "total-sessions": {
-    "label": "{{player}} speelde in totaal {{count}} spelsessies."
+  "recent": {
+    "title": "Recente spellen samen",
+    "both-won": "Allebei gewonnen",
+    "no-winner": "Geen winnaar",
+    "same-team": "zelfde team"
   },
-  "head-to-head": {
-    "title": "Onderlinge duels",
-    "direct-wins_one": "{{player}} won {{count}} keer tegen {{opponent}}",
-    "direct-wins_other": "{{player}} won {{count}} keer tegen {{opponent}}",
-    "most-won-game_one": "{{player}} won het vaakst van {{opponent}} in {{game}} ({{count}} keer)",
-    "most-won-game_other": "{{player}} won het vaakst van {{opponent}} in {{game}} ({{count}} keer)",
-    "last-session": "De laatste sessie werd gewonnen door {{player}} in {{game}}",
-    "most-played-together_one": "Meest samen gespeeld: {{game}} ({{count}} sessie)",
-    "most-played-together_other": "Meest samen gespeeld: {{game}} ({{count}} sessies)",
-    "closest-game_one": "{{player}} won met slechts {{count}} punt verschil in {{game}}",
-    "closest-game_other": "{{player}} won met slechts {{count}} punten verschil in {{game}}",
-    "first-game-together": "Eerste spel samen: {{game}} op {{date}}"
+  "overall": {
+    "title": "Globaal, niet alleen samen",
+    "wins": "Overwinningen",
+    "win-rate": "Winstpercentage",
+    "games": "Spellen",
+    "play-time": "Speeltijd",
+    "higher": "hoger",
+    "stat": "Statistiek"
   },
-  "stats": {
-    "total-wins": "Totaal aantal overwinningen",
-    "win-percentage": "Winstpercentage",
-    "sessions": "Sessies",
-    "total-duration": "Totale speeltijd",
-    "player-stats": "Statistieken van {{player}}"
+  "highlights": {
+    "title": "Hoogtepunten",
+    "first-game": "eerste spel samen · {{date}}",
+    "longest-game": "langste spel · {{duration}}"
+  },
+  "no-games-together": {
+    "title": "Nog geen spellen samen",
+    "description": "{{playerOne}} en {{playerTwo}} hebben nog geen spel samen gespeeld."
   },
   "empty": {
     "insufficient-players": {

@@ -82,6 +82,54 @@ public class GameNightService : IGameNightService
         return _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(id));
     }
 
+    public async Task<GameNight?> GetDetail(int id)
+    {
+        _logger.LogDebug("Fetching details of game night {GameNightId}", id);
+        if (!await IsEnabledAsync())
+        {
+            throw new FeatureDisabledException(Constants.AppConfig.GameNightsEnabled);
+        }
+
+        return await _gameNightRepository.SingleOrDefaultAsync(new GameNightDetailSpec(id));
+    }
+
+    public async Task<GameNight?> End(int id)
+    {
+        _logger.LogDebug("Ending game night {GameNightId}", id);
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightWithRunningGamesSpec(id));
+        if (gameNight == null)
+        {
+            return null;
+        }
+
+        if (gameNight.RunningGames.Count > 0)
+        {
+            throw new ValidationException(Constants.Errors.GameNightGamesRunning);
+        }
+
+        gameNight.End(_dateTimeProvider.UtcNow);
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game night {GameNightId} ended", id);
+
+        return gameNight;
+    }
+
+    public async Task<GameNight?> Reopen(int id)
+    {
+        _logger.LogDebug("Reopening game night {GameNightId}", id);
+        var gameNight = await _gameNightRepository.GetByIdAsync(id);
+        if (gameNight == null)
+        {
+            return null;
+        }
+
+        gameNight.Reopen();
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game night {GameNightId} reopened", id);
+
+        return gameNight;
+    }
+
     public async Task<GameNight> Create(CreateGameNightCommand command)
     {
         _logger.LogDebug("Creating game night {Title}", command.Title);
@@ -150,6 +198,64 @@ public class GameNightService : IGameNightService
         await _gameNightRepository.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("Game night {GameNightId} deleted", id);
+    }
+
+    public async Task<GameNight> AddSuggestedGame(AddSuggestedGameCommand command)
+    {
+        _logger.LogDebug("Adding game {GameId} to the suggestions of game night {GameNightId}", command.GameId, command.GameNightId);
+        var gameNight = await GetOpenGameNightAsync(command.GameNightId);
+
+        var game = await _gameRepository.GetByIdAsync(command.GameId);
+        if (game == null)
+        {
+            throw new EntityNotFoundException(nameof(Game), command.GameId);
+        }
+
+        if (game.State != GameState.Owned)
+        {
+            throw new ValidationException(Constants.Errors.SuggestedGameNotOwned);
+        }
+
+        if (gameNight.AddSuggestedGame(game))
+        {
+            await _unitOfWork.SaveChangesAsync();
+            _logger.LogInformation("Game {GameId} added to the suggestions of game night {GameNightId}", command.GameId, command.GameNightId);
+        }
+
+        return gameNight;
+    }
+
+    public async Task RemoveSuggestedGame(RemoveSuggestedGameCommand command)
+    {
+        _logger.LogDebug("Removing game {GameId} from the suggestions of game night {GameNightId}", command.GameId, command.GameNightId);
+        var gameNight = await GetOpenGameNightAsync(command.GameNightId);
+
+        if (gameNight.RemoveSuggestedGame(command.GameId))
+        {
+            await _unitOfWork.SaveChangesAsync();
+            _logger.LogInformation("Game {GameId} removed from the suggestions of game night {GameNightId}", command.GameId, command.GameNightId);
+        }
+    }
+
+    private async Task<GameNight> GetOpenGameNightAsync(int id)
+    {
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(id));
+        if (gameNight == null)
+        {
+            throw new EntityNotFoundException(nameof(GameNight), id);
+        }
+
+        if (gameNight.EndedAt.HasValue)
+        {
+            throw new ValidationException(Constants.Errors.GameNightEnded);
+        }
+
+        if (gameNight.StartDate.ToUniversalTime() <= _dateTimeProvider.UtcNow - GameNight.PlayWindow)
+        {
+            throw new ValidationException(Constants.Errors.GameNightOver);
+        }
+
+        return gameNight;
     }
 
     public async Task<GameNightRsvp> UpdateRsvp(UpdateRsvpCommand command)

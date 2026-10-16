@@ -1,24 +1,69 @@
 import type { GameState } from "../Games/GameState";
-import type { PlayByDayChartData } from "../Games/GameStatistics";
-import type { MostPlayedGame } from "../Player/PlayerStatistics";
 
 export interface DashboardStatistics {
 	totalGames: number;
+	ownedGames: number;
 	activePlayers: number;
 	sessionsPlayed: number;
 	totalPlayedTime: number;
 	totalCollectionValue: number | null;
-	avgGamePrice: number | null;
 	pricedGameCount: number;
 	expansionsOwned: number;
 	avgSessionTime: number;
+	sessionsThisMonth: number;
+	activePlayersThisMonth: number;
+
+	linkedPlayer: DashboardLinkedPlayer | null;
+	nextGameNight: DashboardGameNight | null;
+	plannedGameNights: number;
+	shelfOfShame: DashboardShelfOfShame | null;
 
 	recentActivities: RecentActivity[];
 	collection: GameStateChart[];
-	mostPlayedGames: MostPlayedGame[];
+	mostPlayedGames: DashboardMostPlayedGame[];
+	mostPlayedGamesThisMonth: DashboardMostPlayedGame[];
 	topPlayers: DashboardTopPlayer[];
+	topPlayersIncludeCoopWins: boolean;
 	recentAddedGames: RecentGame[];
-	sessionsByDayOfWeek: PlayByDayChartData[];
+}
+
+export interface DashboardLinkedPlayer {
+	id: number;
+	name: string;
+	sessionsThisMonth: number;
+	winsThisMonth: number;
+}
+
+export interface DashboardGame {
+	id: number;
+	title: string;
+	image: string | null;
+}
+
+export interface DashboardGameNight {
+	id: number;
+	title: string;
+	startDate: Date | string;
+	locationName: string;
+	hostId: number;
+	hostName: string;
+	acceptedCount: number;
+	pendingCount: number;
+	declinedCount: number;
+	suggestedGames: DashboardGame[];
+}
+
+export interface DashboardMostPlayedGame {
+	id: number;
+	title: string;
+	image: string | null;
+	totalSessions: number;
+}
+
+export interface DashboardShelfOfShame {
+	count: number;
+	neverPlayedCount: number;
+	totalValue: number | null;
 }
 
 export interface GameStateChart {
@@ -26,16 +71,23 @@ export interface GameStateChart {
 	gameCount: number;
 }
 
+export interface DashboardWinner {
+	id: number;
+	name: string;
+	image: string | null;
+}
+
 export interface RecentActivity {
 	id: number;
 	gameId: number;
 	gameTitle: string;
 	gameImage: string | null;
-	start: Date;
+	start: Date | string;
 	playerCount: number;
-	winnerName: string | null;
-	winnerId: number | null;
 	durationInMinutes: number;
+	winners: DashboardWinner[];
+	isCoop: boolean;
+	teamWon: boolean | null;
 }
 
 export interface DashboardTopPlayer {
@@ -50,6 +102,6 @@ export interface RecentGame {
 	id: number;
 	title: string;
 	image: string | null;
-	additionDate: Date;
+	additionDate: Date | string | null;
 	price: number | null;
 }

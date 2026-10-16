@@ -180,6 +180,7 @@ export class QueryInvalidator {
 		await Promise.all([
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights] }),
 			this.invalidateCounts(),
+			this.invalidateDashboard(),
 		]);
 	}
 
@@ -190,6 +191,7 @@ export class QueryInvalidator {
 			this.invalidateCounts(),
 			this.invalidateShames(),
 			this.queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.gameNights] }),
+			this.invalidateDashboard(),
 			this.queryClient.invalidateQueries({
 				predicate: (query) => query.queryKey[0] === QUERY_KEYS.game && query.queryKey[2] === QUERY_KEYS.price,
 			}),

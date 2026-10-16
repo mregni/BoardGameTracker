@@ -1,5 +1,7 @@
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common.Helpers;
 using Microsoft.AspNetCore.Hosting;
+using Sentry.Extensibility;
 using Serilog.Events;
 
 namespace BoardGameTracker.Common.Extensions;
@@ -30,9 +32,24 @@ public static class WebHostBuilderExtensions
                     @event.ServerName = null;
                     return @event;
                 });
+
+                o.ApplySentryScrubbing();
             });
         }
 
         return builder;
+    }
+
+    public static SentryOptions ApplySentryScrubbing(this SentryOptions options)
+    {
+        options.AddEventProcessor(new ScrubbingEventProcessor());
+        options.SetBeforeSendTransaction(SentryScrubber.ScrubTransaction);
+        options.SetBeforeBreadcrumb(SentryScrubber.ScrubBreadcrumb);
+        return options;
+    }
+
+    private sealed class ScrubbingEventProcessor : ISentryEventProcessor
+    {
+        public SentryEvent Process(SentryEvent @event) => SentryScrubber.ScrubEvent(@event);
     }
 }

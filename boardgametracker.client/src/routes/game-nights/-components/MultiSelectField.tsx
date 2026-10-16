@@ -52,7 +52,7 @@ export const MultiSelectField = (props: Props) => {
 							className="pl-1 pr-2 py-1 bg-primary/20 border border-primary/30 rounded text-sm flex items-center gap-2"
 						>
 							{item.image !== undefined && <BgtAvatar title={item.label} image={item.image} size="medium" />}
-							<span className="text-primary">{item.label}</span>
+							<span className="text-chip-selected">{item.label}</span>
 							<button
 								type="button"
 								onClick={() => onChange(selected.filter((value) => value !== item.value))}

@@ -190,6 +190,124 @@ public class GameNightServiceTests
 
     #endregion
 
+    #region End and Reopen Tests
+
+    [Fact]
+    public async Task End_ShouldEndTheNightNow()
+    {
+        var now = new DateTime(2026, 10, 17, 1, 30, 0, DateTimeKind.Utc);
+        var gameNight = GameNight.Create("Night", "", now.AddHours(-5), 1, 1);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(now);
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(gameNight);
+
+        var result = await _gameNightService.End(4);
+
+        result.Should().BeSameAs(gameNight);
+        gameNight.EndedAt.Should().Be(now);
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task End_ShouldBeRefused_WhileAGameIsRunning()
+    {
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow.AddHours(-2), 1, 1);
+        gameNight.RunningGames.Add(RunningGame.Create(4, 9, DateTime.UtcNow, [1]));
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(gameNight);
+
+        var action = () => _gameNightService.End(4);
+
+        var error = await action.Should().ThrowAsync<ValidationException>();
+        error.Which.Message.Should().Be(Constants.Errors.GameNightGamesRunning);
+        gameNight.EndedAt.Should().BeNull();
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task End_ShouldReturnNull_WhenTheNightDoesNotExist()
+    {
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GameNight?)null);
+
+        var result = await _gameNightService.End(4);
+
+        result.Should().BeNull();
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightWithRunningGamesSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Reopen_ShouldClearTheEnd()
+    {
+        var gameNight = GameNight.Create("Night", "", DateTime.UtcNow.AddHours(-5), 1, 1);
+        gameNight.End(DateTime.UtcNow);
+        _gameNightRepositoryMock.Setup(x => x.GetByIdAsync(4)).ReturnsAsync(gameNight);
+
+        var result = await _gameNightService.Reopen(4);
+
+        result.Should().BeSameAs(gameNight);
+        gameNight.EndedAt.Should().BeNull();
+        _gameNightRepositoryMock.Verify(x => x.GetByIdAsync(4), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Reopen_ShouldReturnNull_WhenTheNightDoesNotExist()
+    {
+        _gameNightRepositoryMock.Setup(x => x.GetByIdAsync(4)).ReturnsAsync((GameNight?)null);
+
+        var result = await _gameNightService.Reopen(4);
+
+        result.Should().BeNull();
+        _gameNightRepositoryMock.Verify(x => x.GetByIdAsync(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region GetDetail Tests
+
+    [Fact]
+    public async Task GetDetail_ShouldReturnTheNightWithItsDetails()
+    {
+        var gameNight = GameNight.Create("Night 1", "Notes", DateTime.UtcNow, 1, 1);
+        SetupGameNightsEnabled(true);
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.IsAny<GameNightDetailSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(gameNight);
+
+        var result = await _gameNightService.GetDetail(1);
+
+        result.Should().BeSameAs(gameNight);
+
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.IsAny<GameNightDetailSpec>(), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyGameNightsEnabledChecked();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetDetail_ShouldThrowFeatureDisabled_WhenGameNightsAreDisabled()
+    {
+        SetupGameNightsEnabled(false);
+
+        var action = () => _gameNightService.GetDetail(1);
+
+        await action.Should().ThrowAsync<FeatureDisabledException>();
+
+        VerifyGameNightsEnabledChecked();
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
     #region Create Tests
 
     [Fact]
@@ -1283,6 +1401,7 @@ public class GameNightServiceTests
     public async Task CountFutureGameNights_ShouldReturnCountFromRepository()
     {
         SetupGameNightsEnabled(true);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(new DateTime(2030, 1, 1, 22, 0, 0, DateTimeKind.Utc));
         _gameNightRepositoryMock
             .Setup(x => x.CountAsync(It.Is<ISpecification<GameNight>>(s => s is FutureGameNightsSpec), It.IsAny<CancellationToken>()))
             .ReturnsAsync(7);
@@ -1377,6 +1496,201 @@ public class GameNightServiceTests
         result.Should().BeNull();
 
         _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByLinkIdSpec), It.IsAny<CancellationToken>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
+
+    #region Suggested games
+
+    private static readonly DateTime SuggestionNow = new(2026, 10, 16, 12, 0, 0, DateTimeKind.Utc);
+
+    private void SetupSuggestionNight(GameNight? gameNight)
+    {
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(SuggestionNow);
+        _gameNightRepositoryMock
+            .Setup(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(gameNight);
+    }
+
+    private void VerifySuggestionNightLookup()
+    {
+        _gameNightRepositoryMock.Verify(x => x.SingleOrDefaultAsync(It.Is<ISingleResultSpecification<GameNight>>(s => s is GameNightByIdWithDetailsSpec), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddSuggestedGame_ShouldAddTheGameAndSave_WhenItIsNotSuggestedYet()
+    {
+        var gameNight = GameNight.Create("Friday", "", SuggestionNow.AddDays(7), 1, 1);
+        var game = new Game("Root", false, GameState.Owned) { Id = 9 };
+        SetupSuggestionNight(gameNight);
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(9)).ReturnsAsync(game);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        var result = await _gameNightService.AddSuggestedGame(new AddSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        result.Should().BeSameAs(gameNight);
+        result.SuggestedGames.Should().ContainSingle().Which.Should().BeSameAs(game);
+        VerifySuggestionNightLookup();
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(9), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AddSuggestedGame_ShouldNotSave_WhenTheGameIsAlreadySuggested()
+    {
+        var game = new Game("Root", false, GameState.Owned) { Id = 9 };
+        var gameNight = GameNight.Create("Friday", "", SuggestionNow.AddDays(7), 1, 1);
+        gameNight.SetSuggestedGames([game]);
+        SetupSuggestionNight(gameNight);
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(9)).ReturnsAsync(game);
+
+        var result = await _gameNightService.AddSuggestedGame(new AddSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        result.SuggestedGames.Should().ContainSingle();
+        VerifySuggestionNightLookup();
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(9), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AddSuggestedGame_ShouldThrowNotFound_WhenTheGameNightDoesNotExist()
+    {
+        SetupSuggestionNight(null);
+
+        var action = () => _gameNightService.AddSuggestedGame(new AddSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+        VerifySuggestionNightLookup();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AddSuggestedGame_ShouldThrowValidation_WhenTheGameNightIsOver()
+    {
+        SetupSuggestionNight(GameNight.Create("Last week", "", SuggestionNow.AddDays(-7), 1, 1));
+
+        var action = () => _gameNightService.AddSuggestedGame(new AddSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.GameNightOver);
+        VerifySuggestionNightLookup();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AddSuggestedGame_ShouldThrowValidation_WhenTheGameNightWasEnded()
+    {
+        var gameNight = GameNight.Create("Tonight", "", SuggestionNow.AddHours(-1), 1, 1);
+        gameNight.End(SuggestionNow);
+        SetupSuggestionNight(gameNight);
+
+        var action = () => _gameNightService.AddSuggestedGame(new AddSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.GameNightEnded);
+        VerifySuggestionNightLookup();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AddSuggestedGame_ShouldAccept_ANightThatIsStillBeingPlayed()
+    {
+        var gameNight = GameNight.Create("Tonight", "", SuggestionNow.AddHours(-2), 1, 1);
+        var game = new Game("Root", false, GameState.Owned) { Id = 9 };
+        SetupSuggestionNight(gameNight);
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(9)).ReturnsAsync(game);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        var result = await _gameNightService.AddSuggestedGame(new AddSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        result.SuggestedGames.Should().ContainSingle();
+        VerifySuggestionNightLookup();
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(9), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AddSuggestedGame_ShouldThrowNotFound_WhenTheGameDoesNotExist()
+    {
+        SetupSuggestionNight(GameNight.Create("Friday", "", SuggestionNow.AddDays(7), 1, 1));
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(9)).ReturnsAsync((Game?)null);
+
+        var action = () => _gameNightService.AddSuggestedGame(new AddSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+        VerifySuggestionNightLookup();
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(9), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(GameState.Wanted)]
+    [InlineData(GameState.PreviouslyOwned)]
+    [InlineData(GameState.ForTrade)]
+    public async Task AddSuggestedGame_ShouldThrowValidation_WhenTheGameIsNotOwned(GameState state)
+    {
+        SetupSuggestionNight(GameNight.Create("Friday", "", SuggestionNow.AddDays(7), 1, 1));
+        _gameRepositoryMock.Setup(x => x.GetByIdAsync(9)).ReturnsAsync(new Game("Root", false, state) { Id = 9 });
+
+        var action = () => _gameNightService.AddSuggestedGame(new AddSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.SuggestedGameNotOwned);
+        VerifySuggestionNightLookup();
+        _gameRepositoryMock.Verify(x => x.GetByIdAsync(9), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RemoveSuggestedGame_ShouldRemoveTheGameAndSave_WhenItIsSuggested()
+    {
+        var gameNight = GameNight.Create("Friday", "", SuggestionNow.AddDays(7), 1, 1);
+        gameNight.SetSuggestedGames([new Game("Root") { Id = 9 }, new Game("Everdell") { Id = 10 }]);
+        SetupSuggestionNight(gameNight);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+
+        await _gameNightService.RemoveSuggestedGame(new RemoveSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        gameNight.SuggestedGames.Should().ContainSingle().Which.Id.Should().Be(10);
+        VerifySuggestionNightLookup();
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RemoveSuggestedGame_ShouldNotSave_WhenTheGameIsNotSuggested()
+    {
+        var gameNight = GameNight.Create("Friday", "", SuggestionNow.AddDays(7), 1, 1);
+        SetupSuggestionNight(gameNight);
+
+        await _gameNightService.RemoveSuggestedGame(new RemoveSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        gameNight.SuggestedGames.Should().BeEmpty();
+        VerifySuggestionNightLookup();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RemoveSuggestedGame_ShouldThrowNotFound_WhenTheGameNightDoesNotExist()
+    {
+        SetupSuggestionNight(null);
+
+        var action = () => _gameNightService.RemoveSuggestedGame(new RemoveSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        await action.Should().ThrowAsync<EntityNotFoundException>();
+        VerifySuggestionNightLookup();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RemoveSuggestedGame_ShouldThrowValidation_WhenTheGameNightIsOver()
+    {
+        SetupSuggestionNight(GameNight.Create("Last week", "", SuggestionNow.AddDays(-7), 1, 1));
+
+        var action = () => _gameNightService.RemoveSuggestedGame(new RemoveSuggestedGameCommand { GameNightId = 3, GameId = 9 });
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.GameNightOver);
+        VerifySuggestionNightLookup();
         VerifyNoOtherCalls();
     }
 

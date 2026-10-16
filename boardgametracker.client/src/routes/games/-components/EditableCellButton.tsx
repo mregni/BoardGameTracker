@@ -43,7 +43,7 @@ export const EditableCellButton = ({
 			onClick={onClick}
 			title={t("click-to-edit")}
 			className={cx(
-				"h-9 w-full rounded-lg px-2 truncate border border-transparent hover:border-primary/30 hover:text-primary",
+				"h-9 w-full rounded-lg px-2 truncate border border-transparent hover:border-primary/30 hover:text-primary-text",
 				sizeClass,
 				align === "right" ? "text-right" : "text-left",
 				className,

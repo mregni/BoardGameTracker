@@ -4,6 +4,8 @@ export interface PlayerStatistics {
 	mostPlayedGames: MostPlayedGame[];
 	totalPlayedTime: number;
 	distinctGameCount: number;
+	coopWinCount: number;
+	coopLossCount: number;
 }
 
 export interface MostPlayedGame {

@@ -1,6 +1,4 @@
 using Ardalis.Specification.EntityFrameworkCore;
-using BoardGameTracker.Common.Entities;
-using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.Compare;
 using BoardGameTracker.Core.Compares.Interfaces;
 using BoardGameTracker.Core.Compares.Specifications;
@@ -18,182 +16,56 @@ public class CompareRepository : ICompareRepository
         _context = context;
     }
 
-    public async Task<CompareRow<int>> GetDirectWins(int playerOne, int playerTwo)
+    public async Task<List<SessionTogether>> GetSessionsTogether(int playerOne, int playerTwo)
     {
-        var player1Wins = await SessionsTogether(playerOne, playerTwo)
-            .CountAsync(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne && ps.Won));
-
-        var player2Wins = await SessionsTogether(playerOne, playerTwo)
-            .CountAsync(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo && ps.Won));
-
-        return new CompareRow<int>(player1Wins, player2Wins);
-    }
-
-    public async Task<CompareRow<MostWonGame?>> GetMostWonGame(int playerOne, int playerTwo)
-    {
-        var player1Game = await SessionsTogether(playerOne, playerTwo)
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerOne && ps.Won))
-            .GroupBy(s => s.GameId)
-            .OrderByDescending(g => g.Count())
-            .Select(g => new MostWonGame
-            {
-                GameId = g.Key,
-                Count = g.Count()
-            })
-            .FirstOrDefaultAsync();
-
-        var player2Game = await SessionsTogether(playerOne, playerTwo)
-            .Where(s => s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo && ps.Won))
-            .GroupBy(s => s.GameId)
-            .OrderByDescending(g => g.Count())
-            .Select(g => new MostWonGame
-            {
-                GameId = g.Key,
-                Count = g.Count()
-            })
-            .FirstOrDefaultAsync();
-
-        return new CompareRow<MostWonGame?>(player1Game, player2Game);
-    }
-
-    public async Task<int> GetTotalSessionsTogether(int playerOne, int playerTwo)
-    {
-        return await SessionsTogether(playerOne, playerTwo).CountAsync();
-    }
-
-    public async Task<double> GetMinutesPlayedTogether(int playerOne, int playerTwo)
-    {
-        return await SessionsTogether(playerOne, playerTwo)
-            .SumAsync(s => (s.End - s.Start).TotalMinutes);
-    }
-
-    public async Task<PreferredGame?> GetPreferredGame(int playerOne, int playerTwo)
-    {
-        var result = await SessionsTogether(playerOne, playerTwo)
-            .GroupBy(s => s.GameId)
-            .OrderByDescending(g => g.Count())
-            .Select(g => new { GameId = g.Key, Count = g.Count() })
-            .FirstOrDefaultAsync();
-
-        if (result == null)
-        {
-            return null;
-        }
-
-        return new PreferredGame
-        {
-            GameId = result.GameId,
-            SessionCount = result.Count
-        };
-    }
-
-    public async Task<LastWonGame?> GetLastWonGame(int playerOne, int playerTwo)
-    {
-        var lastSession = await SessionsTogether(playerOne, playerTwo)
-            .Include(s => s.PlayerSessions)
+        return await _context.Sessions
+            .WithSpecification(new SessionsWithBothPlayersSpec(playerOne, playerTwo))
             .OrderByDescending(s => s.Start)
-            .FirstOrDefaultAsync();
-
-        if (lastSession == null)
-        {
-            return null;
-        }
-
-        var winningPlayer = lastSession.PlayerSessions
-            .FirstOrDefault(ps => (ps.PlayerId == playerOne || ps.PlayerId == playerTwo) && ps.Won);
-
-        if (winningPlayer == null)
-        {
-            return null;
-        }
-
-        return new LastWonGame
-        {
-            PlayerId = winningPlayer.PlayerId,
-            GameId = lastSession.GameId
-        };
-    }
-
-    public async Task<int?> GetLongestSessionTogether(int playerOne, int playerTwo)
-    {
-        var longestDuration = await SessionsTogether(playerOne, playerTwo)
-            .Select(s => (int?)(s.End - s.Start).TotalMinutes)
-            .OrderByDescending(duration => duration)
-            .FirstOrDefaultAsync();
-
-        return longestDuration;
-    }
-
-    public async Task<FirstGameTogether?> GetFirstGameTogether(int playerOne, int playerTwo)
-    {
-        var firstSession = await SessionsTogether(playerOne, playerTwo)
-            .OrderBy(s => s.Start)
-            .FirstOrDefaultAsync();
-
-        if (firstSession == null)
-        {
-            return null;
-        }
-
-        return new FirstGameTogether
-        {
-            GameId = firstSession.GameId,
-            StartDate = firstSession.Start
-        };
-    }
-
-    public async Task<ClosestGame?> GetClosestGame(int playerOne, int playerTwo)
-    {
-        var sessionScores = await SessionsTogether(playerOne, playerTwo)
-            .Where(s => s.Game.HasScoring)
-            .Select(s => new
+            .ThenByDescending(s => s.Id)
+            .Select(s => new SessionTogether
             {
+                SessionId = s.Id,
                 GameId = s.GameId,
+                HasScoring = s.Game.HasScoring,
+                Start = s.Start,
+                End = s.End,
                 PlayerOneScore = s.PlayerSessions
                     .Where(ps => ps.PlayerId == playerOne)
                     .Select(ps => ps.Score)
                     .FirstOrDefault(),
+                PlayerOneWon = s.PlayerSessions.Any(ps => ps.PlayerId == playerOne && ps.Won),
                 PlayerTwoScore = s.PlayerSessions
                     .Where(ps => ps.PlayerId == playerTwo)
                     .Select(ps => ps.Score)
                     .FirstOrDefault(),
-                PlayerOneWon = s.PlayerSessions
-                    .Where(ps => ps.PlayerId == playerOne)
-                    .Select(ps => ps.Won)
+                PlayerTwoWon = s.PlayerSessions.Any(ps => ps.PlayerId == playerTwo && ps.Won),
+                OtherWinnerId = s.PlayerSessions
+                    .Where(ps => ps.Won && ps.PlayerId != playerOne && ps.PlayerId != playerTwo)
+                    .OrderBy(ps => ps.PlayerId)
+                    .Select(ps => (int?)ps.PlayerId)
                     .FirstOrDefault(),
-                PlayerTwoWon = s.PlayerSessions
-                    .Where(ps => ps.PlayerId == playerTwo)
-                    .Select(ps => ps.Won)
-                    .FirstOrDefault()
+                IsCoop = s.IsCoop,
+                TeamWon = s.TeamWon
             })
-            .Where(x => x.PlayerOneScore != null && x.PlayerTwoScore != null)
             .ToListAsync();
-
-        var closestSession = sessionScores
-            .Select(x => new
-            {
-                x.GameId,
-                ScoreDifference = Math.Abs(x.PlayerOneScore!.Value - x.PlayerTwoScore!.Value),
-                WinnerId = x.PlayerOneWon ? playerOne : x.PlayerTwoWon ? playerTwo : (int?)null
-            })
-            .OrderBy(x => x.ScoreDifference)
-            .FirstOrDefault();
-
-        if (closestSession == null)
-        {
-            return null;
-        }
-
-        return new ClosestGame
-        {
-            PlayerId = closestSession.WinnerId,
-            GameId = closestSession.GameId,
-            ScoringDifference = closestSession.ScoreDifference
-        };
     }
 
-    private IQueryable<Session> SessionsTogether(int playerOne, int playerTwo)
+    public async Task<ComparePairDto?> GetPairWithMostSessions()
     {
-        return _context.Sessions.WithSpecification(new SessionsWithBothPlayersSpec(playerOne, playerTwo));
+        return await (
+                from one in _context.PlayerSessions
+                join two in _context.PlayerSessions on one.SessionId equals two.SessionId
+                where one.PlayerId < two.PlayerId
+                group one by new { One = one.PlayerId, Two = two.PlayerId }
+                into pair
+                orderby pair.Count() descending, pair.Key.One, pair.Key.Two
+                select new ComparePairDto
+                {
+                    PlayerOneId = pair.Key.One,
+                    PlayerTwoId = pair.Key.Two,
+                    SessionCount = pair.Count()
+                })
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
     }
 }

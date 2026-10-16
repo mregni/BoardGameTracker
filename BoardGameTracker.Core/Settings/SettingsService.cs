@@ -15,17 +15,20 @@ public class SettingsService : ISettingsService
     private readonly IConfigRepository _configRepository;
     private readonly IEnvironmentProvider _environmentProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IIntegrationKeyProtector _keyProtector;
     private readonly ILogger<SettingsService> _logger;
 
     public SettingsService(
         IConfigRepository configRepository,
         IEnvironmentProvider environmentProvider,
         IUnitOfWork unitOfWork,
+        IIntegrationKeyProtector keyProtector,
         ILogger<SettingsService> logger)
     {
         _configRepository = configRepository;
         _environmentProvider = environmentProvider;
         _unitOfWork = unitOfWork;
+        _keyProtector = keyProtector;
         _logger = logger;
     }
 
@@ -62,7 +65,7 @@ public class SettingsService : ISettingsService
             RsvpAuthenticationEnabled = Resolve<bool>(nameof(UIResourceDto.RsvpAuthenticationEnabled), Constants.AppConfig.RsvpAuthenticationEnabled),
             EmailEnabled = _environmentProvider.EmailEnabled,
             RagEnabled = _environmentProvider.RagEnabled,
-            BggStatus = GetBggConfigStatusAsync(configs),
+            BggStatus = GetBggConfigStatus(configs),
             BggApiKey = string.Empty, //Never return key to UI
             ChangeDetectionBaseUrl = configs.GetValueOrDefault(
                 Constants.ChangeDetectionConfig.BaseUrl.ToLowerInvariant(), string.Empty), //DB value only, never the env override
@@ -141,7 +144,7 @@ public class SettingsService : ISettingsService
         }
         else if (!string.IsNullOrWhiteSpace(submitted))
         {
-            await _configRepository.SetConfigValueAsync(key, submitted.Trim());
+            await _configRepository.SetConfigValueAsync(key, _keyProtector.Protect(submitted.Trim()));
         }
     }
 
@@ -185,7 +188,8 @@ public class SettingsService : ISettingsService
             return envValue.Trim();
         }
 
-        return await _configRepository.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey);
+        var stored = await _configRepository.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey);
+        return _keyProtector.Reveal(Constants.BggConfig.ApiKey, stored);
     }
 
     public async Task<bool> IsBggEnabled()
@@ -198,10 +202,11 @@ public class SettingsService : ISettingsService
     {
         var configs = await _configRepository.GetConfigsByPrefixAsync(Constants.ChangeDetectionConfig.Prefix);
         return (configs.GetValueOrDefault(Constants.ChangeDetectionConfig.BaseUrl),
-            configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey));
+            _keyProtector.Reveal(Constants.ChangeDetectionConfig.ApiKey,
+                configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey)));
     }
 
-    private static BggConfigStatusDto GetBggConfigStatusAsync(Dictionary<string, string> configs)
+    private BggConfigStatusDto GetBggConfigStatus(Dictionary<string, string> configs)
     {
         var envValue = Environment.GetEnvironmentVariable(Constants.BggConfig.EnvApiKeyName);
         if (!string.IsNullOrWhiteSpace(envValue))
@@ -214,7 +219,8 @@ public class SettingsService : ISettingsService
             };
         }
 
-        var dbValue = ResolveValue<string>(configs, Constants.BggConfig.ApiKey);
+        var dbValue = _keyProtector.Reveal(Constants.BggConfig.ApiKey,
+            configs.GetValueOrDefault(Constants.BggConfig.ApiKey));
         if (!string.IsNullOrWhiteSpace(dbValue))
         {
             return new BggConfigStatusDto
@@ -233,10 +239,11 @@ public class SettingsService : ISettingsService
         };
     }
 
-    private static ChangeDetectionConfigStatusDto GetChangeDetectionConfigStatus(Dictionary<string, string> configs)
+    private ChangeDetectionConfigStatusDto GetChangeDetectionConfigStatus(Dictionary<string, string> configs)
     {
         var baseUrl = configs.GetValueOrDefault(Constants.ChangeDetectionConfig.BaseUrl.ToLowerInvariant(), string.Empty);
-        var apiKey = configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey.ToLowerInvariant(), string.Empty);
+        var apiKey = _keyProtector.Reveal(Constants.ChangeDetectionConfig.ApiKey,
+            configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey));
 
         var isConfigured = !string.IsNullOrWhiteSpace(baseUrl) && !string.IsNullOrWhiteSpace(apiKey);
 

@@ -39,3 +39,21 @@ public class UpdateRsvpCommand
     public int? PlayerId { get; set; }
     public GameNightRsvpState State { get; set; }
 }
+
+public class AddSuggestedGameCommand
+{
+    [Range(1, int.MaxValue)]
+    public int GameNightId { get; set; }
+
+    [Range(1, int.MaxValue)]
+    public int GameId { get; set; }
+}
+
+public class RemoveSuggestedGameCommand
+{
+    [Range(1, int.MaxValue)]
+    public int GameNightId { get; set; }
+
+    [Range(1, int.MaxValue)]
+    public int GameId { get; set; }
+}

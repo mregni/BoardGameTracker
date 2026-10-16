@@ -13,6 +13,23 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("Total Games")).toBeInTheDocument();
 		});
 
+		it("should render a caption under the value when given", () => {
+			renderWithTheme(<BgtTextStatistic title="On the shelf" content={9} caption="of 41 owned games" />);
+			expect(screen.getByText("of 41 owned games")).toHaveAttribute("title", "of 41 owned games");
+		});
+
+		it("should render a caption that is not plain text without a title", () => {
+			renderWithTheme(<BgtTextStatistic title="Games together" content={49} caption={<em>since 12-03-2025</em>} />);
+			const caption = screen.getByText("since 12-03-2025").parentElement;
+			expect(caption).toHaveClass("text-white/50");
+			expect(caption).not.toHaveAttribute("title");
+		});
+
+		it("should leave the caption out when there is none", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Games together" content={49} caption={null} />);
+			expect(container.querySelector("span.text-white\\/50")).toBeNull();
+		});
+
 		it("should render content as string", () => {
 			renderWithTheme(<BgtTextStatistic title="Best Game" content="Chess" />);
 			expect(screen.getByText("Chess")).toBeInTheDocument();
@@ -77,6 +94,13 @@ describe("BgtTextStatistic", () => {
 			renderWithTheme(<BgtTextStatistic title="Average session duration" content={5} />);
 			expect(screen.getByText("Average session duration")).toHaveAttribute("title", "Average session duration");
 		});
+
+		it("should colour the title row with the stat title token", () => {
+			renderWithTheme(<BgtTextStatistic title="Sessions" content={5} />);
+			const row = screen.getByText("Sessions").closest("div");
+			expect(row).toHaveClass("text-stat-title");
+			expect(row?.className).not.toContain("text-primary/70");
+		});
 	});
 
 	describe("Icon", () => {
@@ -84,6 +108,28 @@ describe("BgtTextStatistic", () => {
 			const TestIcon = (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="test-icon" {...props} />;
 			renderWithTheme(<BgtTextStatistic title="Achievements" content={5} icon={<TestIcon />} />);
 			expect(screen.getByTestId("test-icon")).toBeInTheDocument();
+		});
+	});
+
+	describe("Caption", () => {
+		it("should render the caption below the value", () => {
+			renderWithTheme(<BgtTextStatistic title="Most wins" content={54} caption={<span>Mikhaël</span>} />);
+			expect(screen.getByText("Mikhaël")).toBeInTheDocument();
+		});
+
+		it("should expose a text caption as a tooltip", () => {
+			renderWithTheme(<BgtTextStatistic title="Best win rate" content="41%" caption="Kathleen · min. 5" />);
+			expect(screen.getByText("Kathleen · min. 5")).toHaveAttribute("title", "Kathleen · min. 5");
+		});
+
+		it("should render a caption under the value when given", () => {
+			renderWithTheme(<BgtTextStatistic title="Games" content={52} caption="41 owned · 4 expansions" />);
+			expect(screen.getByText("41 owned · 4 expansions")).toHaveAttribute("title", "41 owned · 4 expansions");
+		});
+
+		it("should not render a caption without one", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Games" content={52} />);
+			expect(container.querySelector("span[title='41 owned · 4 expansions']")).toBeNull();
 		});
 	});
 

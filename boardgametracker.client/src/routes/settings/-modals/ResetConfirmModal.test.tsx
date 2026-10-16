@@ -52,7 +52,7 @@ describe("ResetConfirmModal", () => {
 
 		await user.type(keywordInput(), "RESET");
 
-		expect(confirmButton()).toHaveClass("bg-error");
+		expect(confirmButton()).toHaveClass("bg-error-strong");
 		expect(confirmButton()).not.toHaveClass("bg-primary/60");
 	});
 

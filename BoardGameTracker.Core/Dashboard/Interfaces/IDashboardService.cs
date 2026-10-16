@@ -1,8 +1,8 @@
-using BoardGameTracker.Common.DTOs;
+﻿using BoardGameTracker.Common.DTOs;
 
 namespace BoardGameTracker.Core.Dashboard.Interfaces;
 
 public interface IDashboardService
 {
-    Task<DashboardStatisticsDto> GetStatistics(CancellationToken cancellationToken = default);
+    Task<DashboardStatisticsDto> GetStatistics(string? userId, CancellationToken cancellationToken = default);
 }

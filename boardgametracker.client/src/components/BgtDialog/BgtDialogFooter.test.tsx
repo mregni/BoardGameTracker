@@ -34,7 +34,7 @@ describe("BgtDialogFooter", () => {
 		renderWithTheme(<BgtDialogFooter onCancel={vi.fn()} confirmLabel="Delete" variant="destructive" />);
 
 		const remove = screen.getByRole("button", { name: "Delete" });
-		expect(remove).toHaveClass("bg-error");
+		expect(remove).toHaveClass("bg-error-strong");
 		expect(remove).not.toHaveClass("bg-primary/60");
 	});
 

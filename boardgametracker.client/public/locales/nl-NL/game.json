@@ -214,5 +214,14 @@
   "about": {
     "show-more": "Meer tonen",
     "show-less": "Minder tonen"
+  },
+  "coop": {
+    "mode": {
+      "label": "Kan coöperatief gespeeld worden"
+    },
+    "default": {
+      "label": "Nieuwe sessies starten coöperatief"
+    },
+    "hint": "Geldt alleen voor nieuwe sessies; gelogde sessies blijven zoals ze gespeeld zijn."
   }
 }

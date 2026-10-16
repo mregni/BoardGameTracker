@@ -1,34 +1,74 @@
 {
   "title": "Clasificación",
+  "filters": {
+    "period": "Periodo",
+    "all-time": "Siempre",
+    "last-12-months": "12 meses",
+    "custom": "Personalizado",
+    "from": "Desde",
+    "to": "Hasta",
+    "game": "Juego",
+    "all-games": "Todos los juegos",
+    "min-sessions": "Mín. partidas",
+    "min-sessions-value_one": "{{count}} partida",
+    "min-sessions-value_other": "{{count}} partidas",
+    "rank-by": "Ordenar por",
+    "rank-by-wins": "Victorias",
+    "rank-by-win-rate": "% de victorias",
+    "rank-by-sessions": "Partidas"
+  },
+  "highlights": {
+    "most-wins": "Más victorias",
+    "most-sessions": "Más partidas",
+    "best-win-rate": "Mejor % de victorias",
+    "most-time": "Más tiempo",
+    "nobody-yet": "Nadie todavía",
+    "min-sessions": "mín. {{count}}"
+  },
   "columns": {
     "rank": "Puesto",
     "player": "Jugador",
     "wins": "Victorias",
-    "plays": "Partidas",
+    "sessions": "Partidas",
     "win-rate": "% de victorias",
     "podiums": "Podios",
-    "podiums-hint": "Puestos entre los 3 primeros en partidas con {{count}} o más jugadores puntuados",
-    "time-played": "Tiempo jugado"
-  },
-  "highlights": {
-    "most-wins": "Más victorias",
-    "most-plays": "Más partidas",
-    "best-win-rate": "Mejor % de victorias",
-    "most-time": "Más tiempo en la mesa",
-    "nobody-yet": "Nadie todavía",
-    "min-plays_one": "Necesita al menos {{count}} partida",
-    "min-plays_other": "Necesita al menos {{count}} partidas",
-    "min-plays-hint_one": "Mín. {{count}} partida",
-    "min-plays-hint_other": "Mín. {{count}} partidas"
+    "podiums-hint": "Puestos entre los 3 primeros en juegos puntuados con {{count}} o más jugadores",
+    "time": "Tiempo"
   },
   "values": {
     "wins_one": "{{count}} victoria",
     "wins_other": "{{count}} victorias",
-    "plays_one": "{{count}} partida",
-    "plays_other": "{{count}} partidas"
+    "sessions_one": "{{count}} partida",
+    "sessions_other": "{{count}} partidas",
+    "podiums_one": "{{count}} podio",
+    "podiums_other": "{{count}} podios",
+    "to-rank_one": "falta {{count}} para entrar",
+    "to-rank_other": "faltan {{count}} para entrar"
+  },
+  "ranking": {
+    "label": "Clasificación",
+    "podium": "Podio",
+    "not-ranked-rank": "Sin clasificar",
+    "not-ranked_one": "Menos de {{count}} partida · sin clasificar",
+    "not-ranked_other": "Menos de {{count}} partidas · sin clasificar",
+    "ties": "Los empates comparten puesto.",
+    "coop_one": "Las victorias y derrotas cooperativas cuentan: una victoria del equipo es una victoria para todos en la mesa y una derrota del equipo, una derrota ({{count}} de las {{total}} victorias).",
+    "coop_other": "Las victorias y derrotas cooperativas cuentan: una victoria del equipo es una victoria para todos en la mesa y una derrota del equipo, una derrota ({{count}} de las {{total}} victorias)."
+  },
+  "no-podium": {
+    "all_one": "Sin podio: solo {{count}} jugador está clasificado. Un podio necesita al menos {{minimum}}; si no, todos estarían en él.",
+    "all_other": "Sin podio: solo {{count}} jugadores están clasificados. Un podio necesita al menos {{minimum}}; si no, todos estarían en él.",
+    "game_one": "Sin podio: solo {{count}} jugador está clasificado en {{game}}. Un podio necesita al menos {{minimum}}; si no, todos estarían en él.",
+    "game_other": "Sin podio: solo {{count}} jugadores están clasificados en {{game}}. Un podio necesita al menos {{minimum}}; si no, todos estarían en él.",
+    "none": "Sin podio: todavía no hay nadie clasificado.",
+    "none-game": "Sin podio: todavía no hay nadie clasificado en {{game}}.",
+    "include-one": "Baja el mínimo para incluir a {{name}}.",
+    "include-more": "Baja el mínimo para incluir a más jugadores."
   },
   "empty": {
     "title": "Aún no hay partidas registradas",
-    "description": "Registra algunas partidas y la clasificación se llenará sola."
+    "description": "Registra algunas partidas y la clasificación se llenará sola.",
+    "filtered-title": "Ninguna partida coincide con estos filtros",
+    "filtered-description": "Elige otro periodo u otro juego."
   }
 }

@@ -4,14 +4,19 @@ import {
 	formatMinutesToDuration,
 	isValidDate,
 	minutesToDuration,
+	monthsSince,
 	normalizeDateFnsFormat,
 	safeParseDate,
 	toDisplay,
 	toDisplayDateTime,
+	toDisplayTime,
 	toInputDate,
 	toInputDateTime,
 	toLongDisplay,
+	toMonthYear,
 	toRelative,
+	toShortDayDate,
+	toShortDisplay,
 } from "./dateUtils";
 
 describe("dateUtils", () => {
@@ -111,6 +116,18 @@ describe("dateUtils", () => {
 		});
 	});
 
+	describe("toShortDisplay", () => {
+		it("shows the day and the short month in the app language", () => {
+			expect(toShortDisplay(new Date(2026, 9, 4), "en-us")).toBe("4 Oct");
+			expect(toShortDisplay("2026-09-21T10:00:00", "nl-be")).toBe("21 sep.");
+		});
+
+		it("returns an empty string without a valid date", () => {
+			expect(toShortDisplay(null, "en-us")).toBe("");
+			expect(toShortDisplay("not a date", "en-us")).toBe("");
+		});
+	});
+
 	describe("toLongDisplay", () => {
 		it("writes out the weekday and month in the app language", () => {
 			expect(toLongDisplay(new Date(2026, 9, 11), "en-us")).toContain("Sunday");
@@ -181,6 +198,25 @@ describe("dateUtils", () => {
 
 		it("should return empty string for invalid date", () => {
 			expect(toDisplayDateTime("invalid-date", "DD/MM/YYYY", "HH:mm", "en")).toBe("");
+		});
+	});
+
+	describe("toDisplayTime", () => {
+		it("should return empty string for a missing date", () => {
+			expect(toDisplayTime(null, "HH:mm", "en")).toBe("");
+		});
+
+		it("should format only the time with the user's time format", () => {
+			expect(toDisplayTime(new Date("2024-03-20T14:45:30"), "HH:mm", "en")).toBe("14:45");
+			expect(toDisplayTime("2024-03-20T14:45:30", "hh:mm", "en")).toBe("02:45");
+		});
+
+		it("should fall back to the default time format when the format is invalid", () => {
+			expect(toDisplayTime("2024-03-20T14:45:30", "", "en")).toBe("14:45");
+		});
+
+		it("should return empty string for an invalid date", () => {
+			expect(toDisplayTime("invalid-date", "HH:mm", "en")).toBe("");
 		});
 	});
 
@@ -382,6 +418,48 @@ describe("dateUtils", () => {
 			const result = formatMinutesToDuration(1590, ["days", "hours", "minutes"]);
 			expect(result).toContain("1");
 			expect(result).toContain("day");
+		});
+	});
+
+	describe("toMonthYear", () => {
+		it("shows the short month and the year", () => {
+			expect(toMonthYear(new Date(2023, 7, 14), "en-US")).toBe("Aug 2023");
+		});
+
+		it("accepts an ISO string", () => {
+			expect(toMonthYear("2023-08-14T10:00:00Z", "en-US")).toBe("Aug 2023");
+		});
+
+		it("returns an empty string for a missing or invalid date", () => {
+			expect(toMonthYear(null, "en-US")).toBe("");
+			expect(toMonthYear(new Date("nope"), "en-US")).toBe("");
+		});
+	});
+
+	describe("toShortDayDate", () => {
+		it("shows the weekday, day and month", () => {
+			expect(toShortDayDate(new Date(2026, 9, 23, 19, 0), "en-US")).toBe("Fri 23 Oct");
+		});
+
+		it("returns an empty string for a missing date", () => {
+			expect(toShortDayDate(undefined, "en-US")).toBe("");
+		});
+	});
+
+	describe("monthsSince", () => {
+		const now = new Date(2026, 9, 16);
+
+		it("counts whole months", () => {
+			expect(monthsSince(new Date(2025, 2, 10), now)).toBe(19);
+			expect(monthsSince(new Date(2026, 8, 20), now)).toBe(0);
+		});
+
+		it("never goes below zero", () => {
+			expect(monthsSince(new Date(2027, 0, 1), now)).toBe(0);
+		});
+
+		it("returns null without a date", () => {
+			expect(monthsSince(null, now)).toBeNull();
 		});
 	});
 });

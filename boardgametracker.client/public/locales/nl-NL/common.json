@@ -43,7 +43,7 @@
   "done": "Klaar",
   "won": "Gewonnen",
   "lost": "Verloren",
-  "compare": "Vergelijken",
+  "compare": "Speler tegen speler",
   "rating": "Beoordeling",
   "weight": "Complexiteit",
   "price": "Prijs",
@@ -140,5 +140,9 @@
     "sessions_other": "sessies",
     "wins": "gewonnen",
     "no-sessions": "Nog geen sessies"
+  },
+  "coop": {
+    "won": "Co-op · gewonnen",
+    "lost": "Co-op · verloren"
   }
 }

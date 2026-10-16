@@ -65,7 +65,7 @@ const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
 							<button
 								type="button"
 								onClick={head.column.getToggleSortingHandler()}
-								className="inline-flex items-center gap-1 cursor-pointer hover:text-primary"
+								className="inline-flex items-center gap-1 cursor-pointer hover:text-primary-text"
 							>
 								{content}
 								{sorted === "asc" && <CaretUpIcon className="size-3" />}

@@ -214,5 +214,14 @@
   "about": {
     "show-more": "Mostrar más",
     "show-less": "Mostrar menos"
+  },
+  "coop": {
+    "mode": {
+      "label": "Se puede jugar en cooperativo"
+    },
+    "default": {
+      "label": "Las sesiones nuevas empiezan en cooperativo"
+    },
+    "hint": "Solo afecta a las sesiones nuevas; las registradas se quedan como se jugaron."
   }
 }

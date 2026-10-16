@@ -127,7 +127,7 @@ function RouteComponent() {
 					<button
 						type="button"
 						onClick={() => setShowFilters((value) => !value)}
-						className="md:hidden flex items-center justify-center gap-1 w-full text-sm text-primary hover:text-primary/80 cursor-pointer"
+						className="md:hidden flex items-center justify-center gap-1 w-full text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
 					>
 						{showFilters ? t("filters.show-less") : t("filters.show-more")}
 						{showFilters ? <CaretUpIcon className="size-4" /> : <CaretDownIcon className="size-4" />}

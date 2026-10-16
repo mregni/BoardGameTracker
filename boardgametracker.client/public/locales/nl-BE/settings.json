@@ -428,17 +428,35 @@
 			"clear-hint": "Sla instellingen op om de verwijdering toe te passen."
 		},
 		"help-title": "Hoe het werkt",
-		"help-description": "Voeg een changedetection.io watch-id toe aan een spel om de huidige prijs en voorraad te zien. De API-sleutel vind je onder Instellingen in je changedetection.io-instantie.",
-		"test": {
-			"button": "Verbinding testen",
-			"success": "Verbonden met changedetection.io {{version}}",
-			"failed": "Kon geen verbinding maken met changedetection.io, controleer de URL en API-sleutel",
-			"reason": {
-				"unauthorized": "changedetection.io heeft de API-sleutel geweigerd",
-				"unreachable": "Kon changedetection.io niet bereiken op deze URL",
-				"misconfigured": "De basis-URL of API-sleutel is ongeldig",
-				"notConfigured": "Sla eerst een basis-URL en API-sleutel op"
-			}
+		"help-description": "Voeg een changedetection.io watch-id toe aan een spel om de huidige prijs en voorraad te zien. De API-sleutel vind je onder Instellingen in je changedetection.io-instantie."
+	},
+	"integrations": {
+		"name": {
+			"bgg": "BoardGameGeek",
+			"changeDetection": "changedetection.io"
+		},
+		"status": {
+			"ok": "Verbonden",
+			"unauthorized": "Geweigerd",
+			"unreachable": "Onbereikbaar",
+			"rateLimited": "Te veel verzoeken",
+			"notConfigured": "Niet geconfigureerd"
+		},
+		"checked-at": "gecontroleerd om {{time}}",
+		"checking": "Controleren…",
+		"test": "Verbinding testen",
+		"testing": "Testen…",
+		"test-failed": "De verbindingstest kon niet worden uitgevoerd",
+		"save-failed": "Instellingen opgeslagen, maar {{name}} is niet verbonden",
+		"reason": {
+			"ok": "De verbinding werkt",
+			"not-configured": "Nog geen API-sleutel opgeslagen",
+			"unauthorized": "De API-sleutel werd geweigerd",
+			"unreachable": "De dienst kon niet worden bereikt",
+			"timeout": "De dienst antwoordde niet binnen 10 seconden",
+			"rate-limited": "Te veel verzoeken, probeer het over enkele minuten opnieuw",
+			"misconfigured": "De basis-URL of API-sleutel is ongeldig",
+			"unexpected-response": "De dienst gaf een onverwacht antwoord"
 		}
 	}
 }

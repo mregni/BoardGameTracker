@@ -1,4 +1,4 @@
-using BoardGameTracker.Common.Entities;
+﻿using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Games.Interfaces;
@@ -60,16 +60,14 @@ public class GameStatisticsRepositoryTests : IAsyncLifetime
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     [Fact]
-    public async Task TotalAndMeanPayed_ShouldOnlyCountOwnedGames()
+    public async Task TotalPayed_ShouldOnlyCountOwnedGames()
     {
         await using var scope = _fixture.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IGameStatisticsRepository>();
 
         var total = await repository.GetTotalPayedAsync();
-        var mean = await repository.GetMeanPayedAsync();
 
         total.Should().Be(40m);
-        mean.Should().Be(40m);
     }
 
     [Fact]

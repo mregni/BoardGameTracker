@@ -20,6 +20,9 @@ export const Route = createFileRoute("/sessions/update_/$sessionId")({
 	},
 });
 
+const parentOf = (session: Session) =>
+	session.gameNightId ? `/game-nights/${session.gameNightId}` : `/games/${session.gameId}/sessions`;
+
 function RouteComponent() {
 	const { sessionId } = Route.useParams();
 	const { t } = useTranslation("player-session");
@@ -34,10 +37,10 @@ function RouteComponent() {
 
 	const save = async (data: CreateSession) => {
 		if (session === undefined) return;
-		const updatedSession = { ...data } as Session;
+		const updatedSession = { ...data, gameNightId: session.gameNightId } as Session;
 		updatedSession.id = session.id;
 		const result = await updateSession(updatedSession);
-		backTo(`/games/${result.gameId}/sessions`);
+		backTo(parentOf(result));
 	};
 
 	return (
@@ -50,12 +53,13 @@ function RouteComponent() {
 					comment={session.comment}
 					locationId={session.locationId}
 					playerSessions={session.playerSessions}
+					coop={{ isCoop: session.isCoop, teamWon: session.teamWon, teamScore: session.teamScore }}
 					expansions={session.expansions}
 					buttonText={t("save-update")}
 					onClick={save}
 					disabled={isPending}
 					title={t("title-update")}
-					backTo={`/games/${session.gameId}/sessions`}
+					backTo={parentOf(session)}
 				/>
 			)}
 		</BgtDataGuard>

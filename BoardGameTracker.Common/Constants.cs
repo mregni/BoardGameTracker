@@ -98,6 +98,7 @@ public static class Constants
         public const string LoanAlreadyReturned = "error.loan.already-returned";
         public const string LocationUsedByGameNights = "error.location.used-by-game-nights";
         public const string PlayerHostsGameNights = "error.player.hosts-game-nights";
+        public const string CompareSamePlayer = "error.compare.same-player";
         public const string PlayerNameRequired = "error.player.name-required";
         public const string PlayerNameAlreadyExists = "error.player.name-already-exists";
         public const string LocationNameRequired = "error.location.name-required";
@@ -105,6 +106,12 @@ public static class Constants
         public const string SessionStartInFuture = "error.session.start-in-future";
         public const string HostRsvpLocked = "error.game-night.host-rsvp-locked";
         public const string RsvpClosed = "error.game-night.rsvp-closed";
+        public const string GameNightOver = "error.game-night.already-over";
+        public const string SuggestedGameNotOwned = "error.game-night.suggested-game-not-owned";
+        public const string GameNightGamesRunning = "error.game-night.games-running";
+        public const string GameNightEnded = "error.game-night.ended";
+        public const string CoopNotSupported = "error.session.coop-not-supported";
+        public const string CoopResultRequired = "error.session.coop-result-required";
         public const string FeatureDisabled = "error.feature.disabled";
         public const string YearPublishedTooLate = "error.game.year-published-too-late";
         public const string InvalidExpansion = "error.session.invalid-expansion";

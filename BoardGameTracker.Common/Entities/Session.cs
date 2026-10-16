@@ -7,6 +7,9 @@ public class Session : HasId
 {
     public string Comment { get; private set; }
     public int GameId { get; private set; }
+    public bool IsCoop { get; private set; }
+    public bool? TeamWon { get; private set; }
+    public double? TeamScore { get; private set; }
 
     private DateTime _start;
     private DateTime _end;
@@ -35,6 +38,8 @@ public class Session : HasId
     public ICollection<Expansion> Expansions { get; private set; }
     public int? LocationId { get; private set; }
     public Location? Location { get; private set; }
+    public int? GameNightId { get; private set; }
+    public GameNight? GameNight { get; private set; }
     public ICollection<Image> ExtraImages { get; private set; }
     public ICollection<PlayerSession> PlayerSessions { get; private set; }
 
@@ -74,6 +79,16 @@ public class Session : HasId
         LocationId = location?.Id;
     }
 
+    public void SetGameNight(int? gameNightId)
+    {
+        if (gameNightId.HasValue)
+        {
+            Guard.Against.NegativeOrZero(gameNightId.Value);
+        }
+
+        GameNightId = gameNightId;
+    }
+
     public void AddExpansion(Expansion expansion)
     {
         Guard.Against.Null(expansion);
@@ -93,7 +108,9 @@ public class Session : HasId
     {
         Guard.Against.NegativeOrZero(playerId);
 
-        var playerSession = new PlayerSession(playerId, score, firstPlay, won);
+        var playerSession = IsCoop
+            ? new PlayerSession(playerId, null, firstPlay, TeamWon == true)
+            : new PlayerSession(playerId, score, firstPlay, won);
         if (PlayerSessions.All(ps => ps.PlayerId != playerSession.PlayerId))
         {
             PlayerSessions.Add(playerSession);
@@ -107,6 +124,32 @@ public class Session : HasId
         {
             PlayerSessions.Remove(playerSession);
         }
+    }
+
+    public void MarkAsCoop(bool teamWon, double? teamScore)
+    {
+        IsCoop = true;
+        TeamWon = teamWon;
+        TeamScore = teamScore;
+        foreach (var playerSession in PlayerSessions)
+        {
+            playerSession.UpdateScore(null);
+            if (teamWon)
+            {
+                playerSession.MarkAsWinner();
+            }
+            else
+            {
+                playerSession.MarkAsLoser();
+            }
+        }
+    }
+
+    public void MarkAsCompetitive()
+    {
+        IsCoop = false;
+        TeamWon = null;
+        TeamScore = null;
     }
 
     public void AddImage(Image image)

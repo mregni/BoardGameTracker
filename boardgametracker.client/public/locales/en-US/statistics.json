@@ -26,5 +26,8 @@
   "in-collection": "In collection",
   "collection-value": "Collection value",
   "average-price-paid-priced_one": "Avg. price paid · {{count}} priced game",
-  "average-price-paid-priced_other": "Avg. price paid · {{count}} priced games"
+  "average-price-paid-priced_other": "Avg. price paid · {{count}} priced games",
+  "coop-won-lost": "Co-op won · lost",
+  "coop-results": "{{won}} · {{lost}}",
+  "team-win-rate": "Team win rate"
 }

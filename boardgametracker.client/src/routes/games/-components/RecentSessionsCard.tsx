@@ -4,6 +4,7 @@ import Calendar from "@/assets/icons/calendar.svg?react";
 import Crown from "@/assets/icons/crown.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
+import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import type { Session } from "@/models";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
 import { toDisplay } from "@/utils/dateUtils";
@@ -38,12 +39,20 @@ export const RecentSessionsCard = (props: Props) => {
 								<span className="shrink-0 text-sm tabular-nums text-white/60">
 									{toDisplay(session.start, dateFormat, i18n.language)}
 								</span>
-								<span className="flex min-w-0 flex-1 items-center gap-1">
-									{winner && <Crown className="size-4 shrink-0 text-yellow-400" />}
-									<span className="truncate">{winner?.name ?? "-"}</span>
-								</span>
-								{winnerSession?.score != null && (
-									<span className="shrink-0 text-sm font-semibold text-card-value">{winnerSession.score}</span>
+								{session.isCoop ? (
+									<span className="flex min-w-0 flex-1 items-center">
+										<CoopResultPill won={session.teamWon === true} />
+									</span>
+								) : (
+									<span className="flex min-w-0 flex-1 items-center gap-1">
+										{winner && <Crown className="size-4 shrink-0 text-yellow-400" />}
+										<span className="truncate">{winner?.name ?? "-"}</span>
+									</span>
+								)}
+								{(session.isCoop ? session.teamScore : winnerSession?.score) != null && (
+									<span className="shrink-0 text-sm font-semibold text-card-value">
+										{session.isCoop ? session.teamScore : winnerSession?.score}
+									</span>
 								)}
 							</li>
 						);
@@ -53,7 +62,7 @@ export const RecentSessionsCard = (props: Props) => {
 			<Link
 				to="/games/$gameId/sessions"
 				params={{ gameId }}
-				className="mt-2 self-end text-sm text-primary hover:underline"
+				className="mt-2 self-end text-sm text-primary-text hover:underline"
 			>
 				{t("sessions")}
 			</Link>

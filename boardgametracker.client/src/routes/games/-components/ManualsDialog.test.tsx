@@ -182,6 +182,32 @@ describe("ManualsDialog", () => {
 			},
 		);
 
+		it.each([
+			["pending", "border-transparent"],
+			["indexing", "border-primary"],
+			["indexed", "border-transparent"],
+			["failed", "border-transparent"],
+		] as const)("should give the %s badge a %s border so the selected state does not shift", (status, border) => {
+			mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual({ indexStatus: status })] }));
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+
+			expect(screen.getByText(`manuals.status.${status}`)).toHaveClass("border", border);
+		});
+
+		it("should show the indexing badge as a selected chip", () => {
+			mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual({ indexStatus: "indexing" })] }));
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+
+			expect(screen.getByText("manuals.status.indexing")).toHaveClass("bg-primary/20", "text-chip-selected");
+		});
+
+		it("should show the failed badge in the error colour", () => {
+			mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual({ indexStatus: "failed" })] }));
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+
+			expect(screen.getByText("manuals.status.failed")).toHaveClass("bg-error/20", "text-error");
+		});
+
 		it("should not show a status badge when rag is disabled", () => {
 			mockUseGameManuals.mockReturnValue(hookResult({ manuals: [createManual()] }));
 			renderWithTheme(<ManualsDialog {...defaultProps} ragEnabled={false} />);

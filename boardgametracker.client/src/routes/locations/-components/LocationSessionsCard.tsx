@@ -6,6 +6,7 @@ import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
+import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import type { Session } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
@@ -39,10 +40,14 @@ export const LocationSessionsCard = (props: Props) => {
 								<span className="flex min-w-0 flex-1 items-center gap-2">
 									<BgtAvatar image={game?.image} title={game?.title} size="medium" />
 									<span className="truncate font-semibold">{game?.title}</span>
-									<span className="ml-auto flex min-w-0 shrink items-center gap-1">
-										{winner && <Crown className="size-4 shrink-0 text-yellow-400" />}
-										<span className="truncate">{winner?.name ?? "-"}</span>
-									</span>
+									{session.isCoop ? (
+										<CoopResultPill won={session.teamWon === true} className="ml-auto" />
+									) : (
+										<span className="ml-auto flex min-w-0 shrink items-center gap-1">
+											{winner && <Crown className="size-4 shrink-0 text-yellow-400" />}
+											<span className="truncate">{winner?.name ?? "-"}</span>
+										</span>
+									)}
 								</span>
 								<span className="flex justify-between gap-3 text-sm tabular-nums text-white/60 sm:contents">
 									<span className="shrink-0 sm:order-first sm:w-24">
@@ -62,7 +67,7 @@ export const LocationSessionsCard = (props: Props) => {
 									<Link
 										to="/sessions/update/$sessionId"
 										params={{ sessionId: session.id }}
-										className={cx(rowClasses, "cursor-pointer hover:text-primary")}
+										className={cx(rowClasses, "cursor-pointer hover:text-primary-text")}
 									>
 										{row}
 									</Link>

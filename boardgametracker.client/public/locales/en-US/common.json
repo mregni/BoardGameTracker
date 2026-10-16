@@ -43,7 +43,7 @@
   "done": "Done",
   "won": "Won",
   "lost": "Lost",
-  "compare": "Compare",
+  "compare": "Player vs player",
   "rating": "Rating",
   "weight": "Weight",
   "price": "Price",
@@ -140,5 +140,9 @@
     "sessions_other": "sessions",
     "wins": "wins",
     "no-sessions": "No sessions yet"
+  },
+  "coop": {
+    "won": "Co-op · won",
+    "lost": "Co-op · lost"
   }
 }
