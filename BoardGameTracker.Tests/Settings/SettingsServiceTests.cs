@@ -8,6 +8,7 @@ using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Datastore.Interfaces;
 using BoardGameTracker.Core.Settings;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -16,9 +17,19 @@ using Xunit;
 
 namespace BoardGameTracker.Tests.Settings;
 
-[Collection("EnvironmentVariables")]
-public class SettingsServiceTests
+[Collection(EnvironmentVariablesCollection.Name)]
+public class SettingsServiceTests : IDisposable
 {
+    private static readonly string[] EnvironmentKeys =
+    [
+        Constants.AppConfig.Currency, Constants.AppConfig.DateFormat, Constants.AppConfig.TimeFormat,
+        Constants.AppConfig.UiLanguage, Constants.AppConfig.ShelfOfShameEnabled, Constants.AppConfig.ShelfOfShameMonths,
+        Constants.AppConfig.GameNightsEnabled, Constants.AppConfig.PublicUrl, Constants.AppConfig.RsvpAuthenticationEnabled,
+        Constants.UpdateConfig.CheckEnabled, Constants.UpdateConfig.Track, Constants.ChangeDetectionConfig.BaseUrl,
+        Constants.BggConfig.EnvApiKeyName
+    ];
+
+    private readonly Dictionary<string, string?> _originalEnvironmentVariables = new();
     private readonly Mock<IConfigRepository> _configRepositoryMock;
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
@@ -28,6 +39,13 @@ public class SettingsServiceTests
 
     public SettingsServiceTests()
     {
+        foreach (var key in EnvironmentKeys)
+        {
+            var variable = key.ToUpperInvariant();
+            _originalEnvironmentVariables[variable] = Environment.GetEnvironmentVariable(variable);
+            Environment.SetEnvironmentVariable(variable, null);
+        }
+
         _configRepositoryMock = new Mock<IConfigRepository>();
         _configRepositoryMock
             .Setup(x => x.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey))
@@ -100,18 +118,20 @@ public class SettingsServiceTests
         _environmentProviderMock.VerifyGet(x => x.RagEnabled, Times.Once);
     }
 
-    private static async Task<T> WithEnvVar<T>(string name, string? value, Func<Task<T>> action)
+    public void Dispose()
     {
-        var original = Environment.GetEnvironmentVariable(name);
+        foreach (var kvp in _originalEnvironmentVariables)
+        {
+            Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
+        }
+        GC.SuppressFinalize(this);
+    }
+
+    private Task<T> WithEnvVar<T>(string name, string? value, Func<Task<T>> action)
+    {
+        _originalEnvironmentVariables.TryAdd(name, Environment.GetEnvironmentVariable(name));
         Environment.SetEnvironmentVariable(name, value);
-        try
-        {
-            return await action();
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable(name, original);
-        }
+        return action();
     }
 
     #region GetSettingsAsync Tests
