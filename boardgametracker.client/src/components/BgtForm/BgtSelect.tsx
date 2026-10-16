@@ -12,6 +12,7 @@ import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
 import { FormFieldWrapper } from "./FormFieldWrapper";
 import { findSearchMatch, handleSelectSearchKeyDown } from "./selectSearch";
 import { useKeyboardResizeGuard } from "./useKeyboardResizeGuard";
+import { useTriggerToggle } from "./useTriggerToggle";
 
 type SelectValue = number | string;
 
@@ -64,6 +65,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 	const searchInputRef = useRef<HTMLInputElement>(null);
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
+	const { onPointerDownOutside, onTriggerPointerDown, onTriggerClick } = useTriggerToggle(triggerRef);
 
 	const errors: string[] = props.field ? props.field.state.meta.errors : (props.errors ?? []);
 	const rawValue = (props.field ? props.field.state.value : props.value)?.toString();
@@ -160,6 +162,8 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 			>
 				<Select.Trigger
 					ref={triggerRef}
+					onPointerDown={onTriggerPointerDown}
+					onClick={onTriggerClick}
 					id={id}
 					className={cx(
 						"w-full bg-background text-white border border-primary/30 focus:border-primary focus:outline-none",
@@ -178,6 +182,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 						position="popper"
 						sideOffset={5}
 						style={{ bottom: "auto" }}
+						onPointerDownOutside={onPointerDownOutside}
 						onCloseAutoFocus={(e) => {
 							e.preventDefault();
 							triggerRef.current?.focus({ preventScroll: true });
