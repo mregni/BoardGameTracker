@@ -9,10 +9,11 @@ export interface BgtTextAreaProps {
 	disabled?: boolean;
 	label: string;
 	className?: string;
+	rows?: number;
 }
 
 const BgtTextAreaComponent = (props: BgtTextAreaProps) => {
-	const { field, disabled = false, className, label } = props;
+	const { field, disabled = false, className, label, rows = 4 } = props;
 	const id = useId();
 
 	const handleChange = useCallback(
@@ -30,7 +31,7 @@ const BgtTextAreaComponent = (props: BgtTextAreaProps) => {
 					"w-full rounded-lg border border-primary/30 bg-background px-3 py-2 text-[15px] text-white focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-60",
 					className,
 				)}
-				rows={4}
+				rows={rows}
 				disabled={disabled}
 				value={field.state.value ?? ""}
 				onChange={handleChange}

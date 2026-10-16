@@ -195,7 +195,7 @@ describe("SessionForm", () => {
 
 		await user.click(screen.getByRole("combobox", { name: "new.game.label" }));
 
-		const recent = await screen.findByRole("group", { name: "form.game.recent" });
+		const recent = await screen.findByRole("group", { name: "player-session:form.game.recent" });
 		const all = screen.getByRole("group", { name: "form.game.all" });
 		expect(
 			within(recent)
@@ -210,7 +210,7 @@ describe("SessionForm", () => {
 
 		await user.type(screen.getByPlaceholderText("search"), "c");
 
-		expect(screen.queryByRole("group", { name: "form.game.recent" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("group", { name: "player-session:form.game.recent" })).not.toBeInTheDocument();
 		expect(screen.getAllByRole("option").map((x) => x.textContent)).toEqual(["Carcassonne"]);
 	});
 
@@ -322,5 +322,33 @@ describe("SessionForm", () => {
 			locationId: null,
 			playerSessions: [{ playerId: 1, score: 42, won: true, firstPlay: true }],
 		});
+	});
+
+	it("lays out the shared fields in two columns on wide screens with compact player rows", async () => {
+		const user = userEvent.setup();
+		renderForm();
+
+		const fields = screen.getByTestId("session-form-fields");
+		expect(fields).toHaveClass("lg:grid", "lg:grid-cols-2");
+		expect(screen.getByText("expansions.title")).toBeInTheDocument();
+		expect(screen.getByLabelText("new.comment.label")).toHaveAttribute("rows", "2");
+
+		await addPlayer(user, "Mikhael");
+
+		const row = screen.getByTestId("session-player-row");
+		expect(row).toHaveClass("@md:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto]");
+		expect(row.parentElement).toHaveClass("@container");
+	});
+
+	it("sends the comment with the session", async () => {
+		const user = userEvent.setup();
+		const onClick = renderForm();
+
+		await addPlayer(user, "Mikhael");
+		await user.type(screen.getByLabelText("new.comment.label"), "Close one");
+		await user.click(screen.getByRole("button", { name: "save" }));
+
+		await waitFor(() => expect(onClick).toHaveBeenCalledTimes(1));
+		expect(onClick.mock.calls[0][0]).toMatchObject({ comment: "Close one", expansionIds: [] });
 	});
 });

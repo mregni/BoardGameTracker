@@ -82,6 +82,54 @@ public class GameNightService : IGameNightService
         return _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(id));
     }
 
+    public async Task<GameNight?> GetDetail(int id)
+    {
+        _logger.LogDebug("Fetching details of game night {GameNightId}", id);
+        if (!await IsEnabledAsync())
+        {
+            throw new FeatureDisabledException(Constants.AppConfig.GameNightsEnabled);
+        }
+
+        return await _gameNightRepository.SingleOrDefaultAsync(new GameNightDetailSpec(id));
+    }
+
+    public async Task<GameNight?> End(int id)
+    {
+        _logger.LogDebug("Ending game night {GameNightId}", id);
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightWithRunningGamesSpec(id));
+        if (gameNight == null)
+        {
+            return null;
+        }
+
+        if (gameNight.RunningGames.Count > 0)
+        {
+            throw new ValidationException(Constants.Errors.GameNightGamesRunning);
+        }
+
+        gameNight.End(_dateTimeProvider.UtcNow);
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game night {GameNightId} ended", id);
+
+        return gameNight;
+    }
+
+    public async Task<GameNight?> Reopen(int id)
+    {
+        _logger.LogDebug("Reopening game night {GameNightId}", id);
+        var gameNight = await _gameNightRepository.GetByIdAsync(id);
+        if (gameNight == null)
+        {
+            return null;
+        }
+
+        gameNight.Reopen();
+        await _unitOfWork.SaveChangesAsync();
+        _logger.LogInformation("Game night {GameNightId} reopened", id);
+
+        return gameNight;
+    }
+
     public async Task<GameNight> Create(CreateGameNightCommand command)
     {
         _logger.LogDebug("Creating game night {Title}", command.Title);
@@ -197,7 +245,12 @@ public class GameNightService : IGameNightService
             throw new EntityNotFoundException(nameof(GameNight), id);
         }
 
-        if (gameNight.StartDate.ToUniversalTime() < _dateTimeProvider.UtcNow)
+        if (gameNight.EndedAt.HasValue)
+        {
+            throw new ValidationException(Constants.Errors.GameNightEnded);
+        }
+
+        if (gameNight.StartDate.ToUniversalTime() <= _dateTimeProvider.UtcNow - GameNight.PlayWindow)
         {
             throw new ValidationException(Constants.Errors.GameNightOver);
         }

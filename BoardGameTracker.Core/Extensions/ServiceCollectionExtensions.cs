@@ -6,6 +6,8 @@ using BoardGameTracker.Core.Badges.BadgeEvaluators;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.ChangeDetection;
 using BoardGameTracker.Core.ChangeDetection.Interfaces;
+using BoardGameTracker.Core.Integrations;
+using BoardGameTracker.Core.Integrations.Interfaces;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Compares;
 using BoardGameTracker.Core.Compares.Interfaces;
@@ -69,6 +71,9 @@ public static class ServiceCollectionExtensions
         
         serviceCollection.AddScoped<IGameService, GameService>();
         serviceCollection.AddScoped<IChangeDetectionClient, ChangeDetectionClient>();
+        serviceCollection.AddScoped<IIntegrationTester, BggConnectionTester>();
+        serviceCollection.AddScoped<IIntegrationTester, ChangeDetectionConnectionTester>();
+        serviceCollection.AddScoped<IIntegrationStatusService, IntegrationStatusService>();
         serviceCollection.AddScoped<IBggImportService, BggImportService>();
         serviceCollection.AddScoped<IGameChartService, GameChartService>();
         serviceCollection.AddScoped<IShameService, ShameService>();
@@ -105,6 +110,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<ICompareService, CompareService>();
         serviceCollection.AddScoped<IUpdateService, UpdateService>();
         serviceCollection.AddScoped<IGameNightService, GameNightService>();
+        serviceCollection.AddScoped<IRunningGameService, RunningGameService>();
         serviceCollection.AddScoped<ISettingsService, SettingsService>();
         serviceCollection.AddScoped<IMaintenanceRepository, MaintenanceRepository>();
         serviceCollection.AddScoped<IMaintenanceSeeder, MaintenanceSeeder>();

@@ -76,7 +76,9 @@
   },
   "session": {
     "invalid-expansion": "Een van de gekozen uitbreidingen hoort niet bij dit spel",
-    "start-in-future": "De startdatum kan niet in de toekomst liggen"
+    "start-in-future": "De startdatum kan niet in de toekomst liggen",
+    "coop-not-supported": "Dit spel kan niet coöperatief gespeeld worden",
+    "coop-result-required": "Een coöperatieve sessie heeft een teamresultaat nodig"
   },
   "email": {
     "not-configured": "E-mail is niet geconfigureerd op deze server",
@@ -96,7 +98,9 @@
     "host-rsvp-locked": "De gastheer is altijd aanwezig op de eigen spelavond",
     "rsvp-closed": "Deze spelavond heeft al plaatsgevonden",
     "already-over": "Deze spelavond heeft al plaatsgevonden",
-    "suggested-game-not-owned": "Je kunt alleen spellen in je bezit voorstellen voor een spelavond"
+    "suggested-game-not-owned": "Je kunt alleen spellen in je bezit voorstellen voor een spelavond",
+    "games-running": "Beëindig of gooi de lopende spellen weg voor je de avond afsluit",
+    "ended": "Deze spelavond is afgesloten, heropen ze om spellen toe te voegen"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD voldoet niet aan de wachtwoordregels (minstens 8 tekens). Pas het aan of verwijder het vóór een fabrieksreset."

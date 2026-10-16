@@ -49,6 +49,8 @@ const createGame = (overrides: Partial<Game> = {}): Game => ({
 	mechanics: [],
 	people: [],
 	hasScoring: true,
+	hasCoopMode: false,
+	coopByDefault: false,
 	buyingPrice: 45.5,
 	soldPrice: null,
 	additionDate: null,

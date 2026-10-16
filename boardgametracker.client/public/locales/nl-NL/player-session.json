@@ -73,5 +73,13 @@
       "first-play": "Eerste keer",
       "remove": "Verwijder {{name}}"
     }
+  },
+  "coop": {
+    "played": "Coöperatief gespeeld",
+    "result": "Teamresultaat",
+    "won": "We wonnen",
+    "lost": "We verloren",
+    "team-score": "Teamscore",
+    "result-required": "Kies of het team won of verloor"
   }
 }

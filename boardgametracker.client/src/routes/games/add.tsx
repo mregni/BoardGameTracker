@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Database from "@/assets/icons/database.svg?react";
@@ -10,9 +11,12 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
+import { usePermissions } from "@/hooks/usePermissions";
+import { isIntegrationFailure } from "@/models/Settings/IntegrationStatus";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { useBack } from "@/routes/-hooks/useBack";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
+import { getIntegrationStatuses } from "@/services/queries/settings";
 
 export const Route = createFileRoute("/games/add")({
 	component: WriteRouteComponent,
@@ -24,7 +28,14 @@ function RouteComponent() {
 	const goBack = useBack("/games");
 	const { settings } = useSettingsData();
 
+	const { canManageSettings } = usePermissions();
+
 	const bggEnabled = settings?.bggStatus?.isConfigured ?? false;
+	const { data: integrationStatuses } = useQuery({
+		...getIntegrationStatuses(),
+		enabled: bggEnabled && canManageSettings,
+	});
+	const bggConnection = integrationStatuses?.find((status) => status.integration === "bgg");
 
 	return (
 		<BgtPage>
@@ -40,6 +51,25 @@ function RouteComponent() {
 								description={
 									<>
 										{t("game:new.bgg-missing.description")}{" "}
+										<Link
+											to="/settings"
+											search={{ tab: "bgg" }}
+											className="font-medium text-white underline hover:text-orange-300"
+										>
+											{t("game:new.bgg-missing.link")}
+										</Link>
+									</>
+								}
+							/>
+						)}
+
+						{bggEnabled && isIntegrationFailure(bggConnection) && (
+							<BgtStatus
+								variant="warning"
+								title={t(`settings:integrations.status.${bggConnection.status}`)}
+								description={
+									<>
+										{t(`settings:integrations.reason.${bggConnection.messageKey}`)}{" "}
 										<Link
 											to="/settings"
 											search={{ tab: "bgg" }}

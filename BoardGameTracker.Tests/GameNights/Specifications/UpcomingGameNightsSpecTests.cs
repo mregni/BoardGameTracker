@@ -39,6 +39,20 @@ public class UpcomingGameNightsSpecTests
     }
 
     [Fact]
+    public void Evaluate_ShouldKeepANightThatIsStillBeingPlayed_AndDropOnesThatEnded()
+    {
+        var playing = Night(5, "Playing", Now.AddHours(-2));
+        var ended = Night(6, "Ended", Now.AddHours(2));
+        ended.End(Now);
+        var outsideWindow = Night(7, "Yesterday", Now - GameNight.PlayWindow);
+        var spec = new UpcomingGameNightsSpec(Now);
+
+        var result = spec.Evaluate([playing, ended, outsideWindow]).ToList();
+
+        result.Select(x => x.Title).Should().Equal("Playing");
+    }
+
+    [Fact]
     public void Evaluate_ShouldProjectTheNightAndItsSuggestedGameIds()
     {
         var spec = new UpcomingGameNightsSpec(Now);

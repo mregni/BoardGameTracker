@@ -21,6 +21,7 @@ export const QUERY_KEYS = {
 	charts: "charts",
 	languages: "languages",
 	environment: "environment",
+	integrationStatus: "integrationStatus",
 	shortlist: "shortlist",
 	suggestions: "suggestions",
 	overview: "overview",

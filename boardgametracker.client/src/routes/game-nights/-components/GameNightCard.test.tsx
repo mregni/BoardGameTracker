@@ -4,13 +4,17 @@ import { type GameNight, GameNightRsvpState, type Player, type Settings } from "
 import { renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 
 const media = vi.hoisted(() => ({ isDesktop: false }));
+const navigate = vi.hoisted(() => vi.fn());
 
 vi.mock("@/hooks/useMediaQuery", () => ({
 	useMediaQuery: () => media.isDesktop,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-	useNavigate: () => vi.fn(),
+	useNavigate: () => navigate,
+	Link: ({ children, to, params }: { children: React.ReactNode; to: string; params: { gameNightId: number } }) => (
+		<a href={to.replace("$gameNightId", String(params.gameNightId))}>{children}</a>
+	),
 }));
 
 vi.mock("@/routes/settings/-hooks/useSettingsData", () => ({
@@ -50,6 +54,7 @@ const gameNight = (startDate: Date) =>
 			{ id: 12, playerId: 7, gameNightId: 4, state: GameNightRsvpState.Pending, player: player(7, "Guest") },
 			{ id: 13, playerId: 8, gameNightId: 4, state: GameNightRsvpState.Declined, player: player(8, "Other") },
 		],
+		summary: { gamesPlayed: 0, totalMinutes: 0, mostWins: 0, winnerIds: [] },
 	}) as unknown as GameNight;
 
 describe("GameNightCard", () => {
@@ -175,23 +180,78 @@ describe("RsvpAvatarStack", () => {
 });
 
 describe("PastGameNightItem", () => {
-	it("lists only the players who were coming", async () => {
-		const user = userEvent.setup();
+	it("opens the night and says nothing was logged yet", () => {
 		renderWithProviders(
-			<PastGameNightItem
-				gameNight={gameNight(addDays(new Date(), -2))}
+			<PastGameNightItem gameNight={gameNight(addDays(new Date(), -2))} settings={settings} players={[]} />,
+		);
+
+		expect(screen.getByRole("link")).toHaveAttribute("href", "/game-nights/4");
+		expect(screen.getByText("Home · past-night.attended-count · past-night.nothing-logged")).toBeInTheDocument();
+	});
+
+	it("shows how many games were played and who won the night", () => {
+		const night = {
+			...gameNight(addDays(new Date(), -2)),
+			summary: { gamesPlayed: 4, totalMinutes: 200, mostWins: 2, winnerIds: [1, 7] },
+		} as GameNight;
+
+		renderWithProviders(
+			<PastGameNightItem gameNight={night} settings={settings} players={[player(1, "Host"), player(7, "Guest")]} />,
+		);
+
+		expect(
+			screen.getByText("Home · past-night.attended-count · past-night.games-played · past-night.winner"),
+		).toBeInTheDocument();
+	});
+});
+
+describe("GameNightCard title", () => {
+	it("links to the night", () => {
+		renderWithProviders(
+			<GameNightCard
+				gameNight={gameNight(addDays(new Date(), 1))}
 				settings={settings}
-				canWrite
+				canWrite={false}
 				onEdit={vi.fn()}
 				onDelete={vi.fn()}
+				onManageRsvps={vi.fn()}
 			/>,
 		);
 
-		await user.click(screen.getByText("Strategy night"));
+		expect(screen.getByRole("link", { name: "Strategy night" })).toHaveAttribute("href", "/game-nights/4");
+	});
+});
 
-		expect(screen.getByText("past-night.summary")).toBeInTheDocument();
-		expect(screen.getByText("Host")).toBeInTheDocument();
-		expect(screen.queryByText("Guest")).not.toBeInTheDocument();
-		expect(screen.queryByText("Other")).not.toBeInTheDocument();
+describe("GameNightCard open button", () => {
+	it("opens the night from every card, as the main action on the highlighted one", async () => {
+		const user = userEvent.setup();
+		renderWithProviders(
+			<>
+				<GameNightCard
+					gameNight={gameNight(addDays(new Date(), 1))}
+					settings={settings}
+					canWrite={false}
+					highlight
+					onEdit={vi.fn()}
+					onDelete={vi.fn()}
+					onManageRsvps={vi.fn()}
+				/>
+				<GameNightCard
+					gameNight={gameNight(addDays(new Date(), 8))}
+					settings={settings}
+					canWrite
+					onEdit={vi.fn()}
+					onDelete={vi.fn()}
+					onManageRsvps={vi.fn()}
+				/>
+			</>,
+		);
+
+		const [highlighted, other] = screen.getAllByRole("button", { name: "card.open" });
+		expect(highlighted.className).toContain("bg-primary");
+		expect(other.className).not.toContain("bg-primary");
+		await user.click(highlighted);
+
+		expect(navigate).toHaveBeenCalledWith({ to: "/game-nights/$gameNightId", params: { gameNightId: 4 } });
 	});
 });

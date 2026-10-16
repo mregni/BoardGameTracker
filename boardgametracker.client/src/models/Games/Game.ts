@@ -26,6 +26,8 @@ export interface Game {
 	mechanics: GameLink[];
 	people: GamePerson[];
 	hasScoring: boolean;
+	hasCoopMode: boolean;
+	coopByDefault: boolean;
 	buyingPrice: number | null;
 	soldPrice: number | null;
 	additionDate: Date | null;

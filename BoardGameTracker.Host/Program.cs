@@ -184,6 +184,14 @@ builder.Services.AddRateLimiter(options =>
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
+    options.AddPolicy("integrations", context => RateLimitPartition.GetFixedWindowLimiter(
+        ClientAddressKey.From(context.Connection.RemoteIpAddress),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 20,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
     options.AddPolicy("gamenight-link", context => RateLimitPartition.GetFixedWindowLimiter(
         ClientAddressKey.From(context.Connection.RemoteIpAddress),
         _ => new FixedWindowRateLimiterOptions
@@ -230,6 +238,8 @@ builder.Services.AddHttpClient(BoardGameTracker.Core.ChangeDetection.ChangeDetec
         client.MaxResponseContentBufferSize = 1024 * 1024;
     })
     .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+builder.Services.AddHttpClient(BoardGameTracker.Core.Integrations.BggConnectionTester.HttpClientName)
+    .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddHttpClient(OidcService.HttpClientName)
     .ConfigureHttpClient(client => client.MaxResponseContentBufferSize = 1024 * 1024)
     .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });

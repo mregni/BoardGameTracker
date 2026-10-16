@@ -6,8 +6,11 @@ import type {
 	CreatePlayer,
 	CreateSession,
 	Expansion,
+	FinishRunningGame,
 	Game,
 	GameNight,
+	GameNightDetail,
+	GameNightSummary,
 	Leaderboard,
 	LeaderboardEntry,
 	Location,
@@ -15,16 +18,19 @@ import type {
 	Player,
 	PlayerOverview,
 	PlayerSession,
+	RunningGame,
 	Session,
 	SessionSuggestions,
 	Settings,
 	Shame,
 	ShameGameNight,
 	ShameStatistics,
+	StartRunningGame,
 } from "@/models";
 import type { LoginRequest, LoginResponse, OidcProvider, ProfileResponse, User } from "@/models/Auth/Auth";
 import type { ExternalLogin, OidcDiscoveryResult, OidcProviderConfig, OidcSetup } from "@/models/Auth/Oidc";
 import type { Loan } from "@/models/Loan/Loan";
+import type { IntegrationStatus } from "@/models/Settings/IntegrationStatus";
 import type { VersionInfo } from "@/models/Settings/VersionInfo";
 import type { components } from "./api.generated";
 
@@ -63,6 +69,9 @@ describe("API contract", () => {
 		sameKeys<PlayerOverview, Schemas["PlayerOverviewDto"]>(true);
 		sameKeys<Loan, Schemas["LoanDto"]>(true);
 		sameKeys<GameNight, Schemas["GameNightDto"]>(true);
+		sameKeys<GameNightSummary, Schemas["GameNightSummaryDto"]>(true);
+		sameKeys<GameNightDetail, Schemas["GameNightDetailDto"]>(true);
+		sameKeys<RunningGame, Schemas["RunningGameDto"]>(true);
 		sameKeys<Badge, Schemas["BadgeDto"]>(true);
 		sameKeys<Leaderboard, Schemas["LeaderboardDto"]>(true);
 		sameKeys<LeaderboardEntry, Schemas["LeaderboardEntryDto"]>(true);
@@ -71,6 +80,7 @@ describe("API contract", () => {
 		sameKeys<ShameStatistics, Schemas["ShameStatisticsDto"]>(true);
 		sameKeys<ShameGameNight, Schemas["ShameGameNightDto"]>(true);
 		sameKeys<VersionInfo, Schemas["UpdateStatusDto"]>(true);
+		sameKeys<IntegrationStatus, Schemas["IntegrationStatusDto"]>(true);
 		sameKeys<User, Schemas["UserInfo"]>(true);
 		sameKeys<LoginResponse, Schemas["LoginResponse"]>(true);
 		sameKeys<ProfileResponse, Schemas["ProfileResponse"]>(true);
@@ -87,11 +97,15 @@ describe("API contract", () => {
 		coversApiKeys<CreatePlayer, Omit<Schemas["CreatePlayerCommand"], "image">>(true);
 		sameKeys<CreateLocation, Schemas["CreateLocationCommand"]>(true);
 		sameKeys<CreateSession, Schemas["CreateSessionCommand"]>(true);
+		sameKeys<StartRunningGame, Schemas["StartRunningGameCommand"]>(true);
+		sameKeys<FinishRunningGame, Schemas["FinishRunningGameCommand"]>(true);
 		sameKeys<LoginRequest, Schemas["LoginRequest"]>(true);
 	});
 
 	it("keeps the string enums aligned", () => {
 		sameValues<Schemas["GameState"], `${Game["state"]}`>(true);
 		sameValues<Schemas["BadgeType"], `${Badge["type"]}`>(true);
+		sameValues<Schemas["IntegrationKind"], IntegrationStatus["integration"]>(true);
+		sameValues<Schemas["IntegrationConnectionStatus"], IntegrationStatus["status"]>(true);
 	});
 });

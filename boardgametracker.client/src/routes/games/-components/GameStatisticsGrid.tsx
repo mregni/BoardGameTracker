@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { getSettings } from "@/services/queries/settings";
 import { formatMinutesToDuration, toRelative } from "@/utils/dateUtils";
-import { formatDecimal, formatPrice, type NumberValue } from "@/utils/numberUtils";
+import { formatDecimal, formatPrice, formatRatio, type NumberValue } from "@/utils/numberUtils";
 
 interface GameStats {
 	playCount: number;
@@ -13,6 +13,8 @@ interface GameStats {
 	averageScore: number | null;
 	averagePlayTime: number | null;
 	lastPlayed: string | null;
+	coopWinCount: number;
+	coopLossCount: number;
 }
 
 interface Props {
@@ -36,6 +38,8 @@ export const GameStatisticsGrid = (props: Props) => {
 		settings?.uiLanguage,
 	);
 
+	const coopPlayCount = gameStats.coopWinCount + gameStats.coopLossCount;
+
 	return (
 		<div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-6 gap-3 xl:gap-6">
 			<BgtTextStatistic content={gameStats.playCount} title={t("play-count")} textSize="4" />
@@ -50,6 +54,13 @@ export const GameStatisticsGrid = (props: Props) => {
 			<BgtTextStatistic content={decimalOrNull(gameStats.highScore)} title={t("high-score")} textSize="4" />
 			<BgtTextStatistic content={decimalOrNull(gameStats.averageScore)} title={t("average-score")} textSize="4" />
 			<BgtTextStatistic content={lastPlayedRelative} title={t("last-played")} textSize="4" />
+			{coopPlayCount > 0 && (
+				<BgtTextStatistic
+					content={formatRatio(gameStats.coopWinCount, coopPlayCount, settings?.uiLanguage)}
+					title={t("team-win-rate")}
+					textSize="4"
+				/>
+			)}
 		</div>
 	);
 };
