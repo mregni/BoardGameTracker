@@ -1,8 +1,12 @@
-﻿using BoardGameTracker.Common;
+using System.ComponentModel.DataAnnotations;
 using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BoardGameTracker.Api.Controllers;
@@ -20,22 +24,34 @@ public class PlayerController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType<List<PlayerDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPlayers()
     {
         var players = await _playerService.GetList();
         return Ok(players.ToListDto());
     }
 
+    [HttpGet]
+    [Route("overview")]
+    [ProducesResponseType<List<PlayerOverviewDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPlayersOverview()
+    {
+        var players = await _playerService.GetOverview();
+        return Ok(players);
+    }
+
     [HttpPost]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<PlayerDto>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreatePlayer([FromBody] CreatePlayerCommand command)
     {
         var player = await _playerService.Create(command);
-        return Ok(player.ToDto());
+        return CreatedAtAction(nameof(GetPlayerById), new { id = player.Id }, player.ToDto());
     }
 
     [HttpPut]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<PlayerDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdatePlayer([FromBody] UpdatePlayerCommand command)
     {
         var player = await _playerService.Update(command);
@@ -44,6 +60,7 @@ public class PlayerController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
+    [ProducesResponseType<PlayerDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPlayerById(int id)
     {
         var player = await _playerService.Get(id);
@@ -58,6 +75,7 @@ public class PlayerController : ControllerBase
     [HttpDelete]
     [Route("{id:int}")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeletePlayerById(int id)
     {
         await _playerService.Delete(id);
@@ -66,15 +84,23 @@ public class PlayerController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}/statistics")]
+    [ProducesResponseType<PlayerStatistics>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetPlayerStats(int id)
     {
+        if (!await _playerService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
         var stats = await _playerService.GetStats(id);
         return Ok(stats);
     }
 
     [HttpGet]
     [Route("{id:int}/sessions")]
-    public async Task<IActionResult> GetPlayerSessionsById(int id, [FromQuery] int? count)
+    [ProducesResponseType<List<SessionDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPlayerSessionsById(int id, [FromQuery, Range(1, int.MaxValue)] int? count)
     {
         var sessions = await _playerService.GetSessions(id, count);
         return Ok(sessions.ToListDto());

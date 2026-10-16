@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace BoardGameTracker.Common.DTOs.Auth;
 
 public record OidcProviderInfo(
@@ -6,45 +8,58 @@ public record OidcProviderInfo(
     string? IconUrl,
     string? ButtonColor);
 
-public record OidcCallbackRequest(string Code, string State);
+public record OidcSetupDto(
+    string PublicBaseUrl,
+    bool PublicUrlConfigured,
+    string CallbackUriTemplate,
+    string LinkCallbackUriTemplate);
+
+public record TestOidcDiscoveryRequest([Required, Url] string Authority);
+
+public record OidcDiscoveryResultDto(
+    string Issuer,
+    string AuthorizationEndpoint,
+    string TokenEndpoint,
+    string UserInfoEndpoint,
+    bool IssuerMatchesAuthority);
 
 public record CreateOidcProviderRequest(
-    string Name,
-    string DisplayName,
-    string Authority,
-    string ClientId,
+    [Required, StringLength(100)] string Name,
+    [Required, StringLength(200)] string DisplayName,
+    [Required, Url] string Authority,
+    [Required] string ClientId,
     string? ClientSecret,
-    string Scopes,
+    [Required] string Scopes,
     bool AutoProvisionUsers,
-    string? AuthorizationEndpoint,
-    string? TokenEndpoint,
-    string? UserInfoEndpoint,
+    [Url] string? AuthorizationEndpoint,
+    [Url] string? TokenEndpoint,
+    [Url] string? UserInfoEndpoint,
     string? UsernameClaimType,
     string? EmailClaimType,
     string? DisplayNameClaimType,
     string? RolesClaimType,
     string? AdminGroupValue,
-    string? IconUrl,
+    [Url] string? IconUrl,
     string? ButtonColor);
 
 public record UpdateOidcProviderRequest(
-    int Id,
-    string DisplayName,
-    string Authority,
-    string ClientId,
+    [Range(1, int.MaxValue)] int Id,
+    [Required, StringLength(200)] string DisplayName,
+    [Required, Url] string Authority,
+    [Required] string ClientId,
     string? ClientSecret,
     bool Enabled,
-    string Scopes,
+    [Required] string Scopes,
     bool AutoProvisionUsers,
-    string? AuthorizationEndpoint,
-    string? TokenEndpoint,
-    string? UserInfoEndpoint,
+    [Url] string? AuthorizationEndpoint,
+    [Url] string? TokenEndpoint,
+    [Url] string? UserInfoEndpoint,
     string? UsernameClaimType,
     string? EmailClaimType,
     string? DisplayNameClaimType,
     string? RolesClaimType,
     string? AdminGroupValue,
-    string? IconUrl,
+    [Url] string? IconUrl,
     string? ButtonColor);
 
 public record OidcProviderListDto(

@@ -90,7 +90,7 @@ public class RulebookChunker : IRulebookChunker
 
         foreach (var c in text)
         {
-            if (c == '\r')
+            if (c == '\r' || (char.IsControl(c) && c != '\n' && c != '\t'))
             {
                 continue;
             }

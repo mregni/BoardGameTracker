@@ -13,8 +13,15 @@ export default defineConfig({
     css: true,
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['**/main.tsx', '**/App.tsx', '**/routeTree.gen.ts', '**/vite-env.d.ts'],
-      reporter: ['lcov'],
+      exclude: ['**/main.tsx', '**/App.tsx', '**/routeTree.gen.ts', '**/api.generated.ts', '**/vite-env.d.ts'],
+      reporter: ['lcov', 'text-summary'],
+      thresholds: {
+        autoUpdate: true,
+        statements: 38.3,
+        branches: 42.67,
+        functions: 30.72,
+        lines: 38.65,
+      },
     },
     reporters: ['default', ['vitest-sonar-reporter', { outputFile: 'coverage/sonar-report.xml' }]],
   },

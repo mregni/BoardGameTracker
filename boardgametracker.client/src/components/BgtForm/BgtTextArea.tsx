@@ -1,7 +1,6 @@
-import { TextArea } from "@radix-ui/themes";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { cx } from "class-variance-authority";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useId } from "react";
 
 import { FormFieldWrapper } from "./FormFieldWrapper";
 
@@ -10,10 +9,12 @@ export interface BgtTextAreaProps {
 	disabled?: boolean;
 	label: string;
 	className?: string;
+	rows?: number;
 }
 
 const BgtTextAreaComponent = (props: BgtTextAreaProps) => {
-	const { field, disabled = false, className, label } = props;
+	const { field, disabled = false, className, label, rows = 4 } = props;
+	const id = useId();
 
 	const handleChange = useCallback(
 		(event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -23,20 +24,19 @@ const BgtTextAreaComponent = (props: BgtTextAreaProps) => {
 	);
 
 	return (
-		<FormFieldWrapper label={label} errors={field.state.meta.errors}>
-			<div className="w-full  text-whiterounded-lg border-none ">
-				<TextArea
-					className={cx(
-						"bg-background! shadow-none!border rounded-lg! border-primary/30! focus:border-primary!",
-						className,
-					)}
-					rows={4}
-					disabled={disabled}
-					value={field.state.value ?? ""}
-					onChange={handleChange}
-					onBlur={field.handleBlur}
-				/>
-			</div>
+		<FormFieldWrapper label={label} htmlFor={id} errors={field.state.meta.errors}>
+			<textarea
+				id={id}
+				className={cx(
+					"w-full rounded-lg border border-primary/30 bg-background px-3 py-2 text-[15px] text-white focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-60",
+					className,
+				)}
+				rows={rows}
+				disabled={disabled}
+				value={field.state.value ?? ""}
+				onChange={handleChange}
+				onBlur={field.handleBlur}
+			/>
 		</FormFieldWrapper>
 	);
 };

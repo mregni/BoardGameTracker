@@ -5,6 +5,7 @@ backend:
           - "BoardGameTracker.Api/**"
           - "BoardGameTracker.Common/**"
           - "BoardGameTracker.Host/**"
+          - "BoardGameTracker.AppHost/**"
 
 frontend:
   - changed-files:
@@ -42,11 +43,13 @@ dependencies:
       - any-glob-to-any-file:
           - "boardgametracker.client/package*.json"
           - "**/*.csproj"
+          - "Directory.Packages.props"
 
 tests:
   - changed-files:
       - any-glob-to-any-file:
           - "BoardGameTracker.Tests/**"
+          - "BoardGameTracker.IntegrationTests/**"
           - "boardgametracker.client/**/*.test.*"
           - "boardgametracker.client/**/*.spec.*"
 

@@ -1,21 +1,13 @@
-﻿using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common.Helpers;
 using Microsoft.AspNetCore.Hosting;
+using Sentry.Extensibility;
 using Serilog.Events;
 
 namespace BoardGameTracker.Common.Extensions;
 
 public static class WebHostBuilderExtensions
 {
-    private static readonly HashSet<Type> IgnoredExceptionTypes =
-    [
-        typeof(ValidationException),
-        typeof(DomainException),
-        typeof(EntityNotFoundException),
-        typeof(UnauthorizedAccessException),
-        typeof(KeyNotFoundException),
-        typeof(ArgumentException)
-    ];
-
     public static IWebHostBuilder UseConfiguredSentry(this IWebHostBuilder builder)
     {
         if (bool.TryParse(Environment.GetEnvironmentVariable("STATISTICS_ENABLED"), out var statisticsEnabled) &&  statisticsEnabled)
@@ -26,11 +18,13 @@ public static class WebHostBuilderExtensions
                 o.Debug = EnvironmentExtensions.IsDevelopment() && LogLevelExtensions.GetEnvironmentLogLevel() == LogEventLevel.Debug;
                 o.TracesSampleRate = 0.1;
                 o.SendDefaultPii = false;
-                o.Dsn = "https://3d89aa9317b0a7b3108edbafd31da95a@o4506121302573056.ingest.us.sentry.io/4506121326559232";
-                
+                o.Dsn = Environment.GetEnvironmentVariable("SENTRY_DSN") is { Length: > 0 } dsn
+                    ? dsn
+                    : "https://3d89aa9317b0a7b3108edbafd31da95a@o4506121302573056.ingest.us.sentry.io/4506121326559232";
+
                 o.SetBeforeSend((@event, _) =>
                 {
-                    if (@event.Exception != null && IgnoredExceptionTypes.Contains(@event.Exception.GetType()))
+                    if (@event.Exception != null && !ExceptionStatusMapper.ShouldReport(@event.Exception))
                     {
                         return null;
                     }
@@ -38,9 +32,24 @@ public static class WebHostBuilderExtensions
                     @event.ServerName = null;
                     return @event;
                 });
+
+                o.ApplySentryScrubbing();
             });
         }
 
         return builder;
+    }
+
+    public static SentryOptions ApplySentryScrubbing(this SentryOptions options)
+    {
+        options.AddEventProcessor(new ScrubbingEventProcessor());
+        options.SetBeforeSendTransaction(SentryScrubber.ScrubTransaction);
+        options.SetBeforeBreadcrumb(SentryScrubber.ScrubBreadcrumb);
+        return options;
+    }
+
+    private sealed class ScrubbingEventProcessor : ISentryEventProcessor
+    {
+        public SentryEvent Process(SentryEvent @event) => SentryScrubber.ScrubEvent(@event);
     }
 }

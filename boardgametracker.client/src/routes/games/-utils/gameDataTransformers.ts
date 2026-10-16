@@ -7,7 +7,7 @@ export const transformPlayerCountChartData = (
 	t: TFunction,
 ): PieChartDatum[] => {
 	return data.map((item) => ({
-		label: t("player", { count: +(item.players as number) }),
+		label: t("common:player", { count: +(item.players as number) }),
 		id: item.players,
 		value: item.playCount,
 	}));

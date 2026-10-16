@@ -1,11 +1,89 @@
 {
-  "total-shames": "Total games",
-  "total-value": "Total value of games",
-  "average-value": "Average value of games",
+  "subtitle_one": "Owned games not played in {{count}}+ month",
+  "subtitle_other": "Owned games not played in {{count}}+ months",
+  "change-in-settings": "change in Settings",
   "none": {
     "title": "No Games on the Shelf of Shame!",
     "description": "Congratulations! You have no games on your Shelf of Shame. Keep up the great work of playing and enjoying your collection."
   },
-  "days-not-played": "Days not played",
-  "last-session": "Last session"
+  "no-matches": "No games on the shelf match these filters.",
+  "tiles": {
+    "on-shelf": "On the shelf",
+    "of-owned_one": "of {{total}} owned game",
+    "of-owned_other": "of {{total}} owned games",
+    "never-played": "Never played",
+    "oldest": "oldest: {{title}}",
+    "oldest-since": "oldest: {{title}}, since {{date}}",
+    "paid-not-played": "Paid, not played",
+    "priced_one": "{{priced}} of {{total}} priced",
+    "priced_other": "{{priced}} of {{total}} priced",
+    "share": "{{share}} of {{total}}",
+    "no-prices": "no prices entered",
+    "planned": "Planned",
+    "planned-for": "for {{date}}",
+    "no-night": "no game night coming up"
+  },
+  "filters": {
+    "show": "Show",
+    "all": "All",
+    "never": "Never played",
+    "played": "Played before",
+    "not-played-in": "Not played in",
+    "months_one": "{{count}}+ month",
+    "months_other": "{{count}}+ months",
+    "owned": "Owned",
+    "owned-any": "any time",
+    "owned-1y": "more than 1 year",
+    "owned-2y": "more than 2 years",
+    "sort": "Sort",
+    "sort-unplayed": "Longest unplayed",
+    "sort-price": "Price paid",
+    "sort-owned": "Owned since",
+    "sort-title": "Title"
+  },
+  "list": {
+    "label": "Games on the shelf",
+    "game": "Game",
+    "last-played": "Last played",
+    "paid": "Paid"
+  },
+  "row": {
+    "owned-since": "owned since {{date}}",
+    "plays_one": "{{count}} play",
+    "plays_other": "{{count}} plays",
+    "players_one": "{{range}} player",
+    "players_other": "{{range}} players",
+    "minutes": "{{range}} min",
+    "never-played": "Never played",
+    "months-ago_one": "{{count}} month ago",
+    "months-ago_other": "{{count}} months ago",
+    "no-price": "No price",
+    "planned": "Planned · {{date}}",
+    "plan": "Plan",
+    "plan-label": "Plan {{title}} for {{night}}",
+    "log-play": "Log a play",
+    "log-play-label": "Log a play of {{title}}"
+  },
+  "plan": {
+    "added": "{{game}} added to the suggestions for {{night}} · {{date}}",
+    "undo": "Undo",
+    "removed": "{{game}} is no longer suggested",
+    "failed": "Could not add the game to the game night",
+    "undo-failed": "Could not undo, remove the game on the game night instead",
+    "no-night": "No game night coming up, so there is nothing to plan games for yet.",
+    "plan-night": "Plan a game night"
+  },
+  "money": {
+    "title": "Money on the shelf",
+    "subtitle": "owned games only, priced ones",
+    "never-played": "Never played",
+    "not-played_one": "Not played in {{count}}+ month",
+    "not-played_other": "Not played in {{count}}+ months",
+    "rest": "Played or added recently",
+    "label": "Of {{total}} paid for owned games: {{parts}}",
+    "unpriced-one": "{{title}} has no price, so it isn't in the money.",
+    "unpriced_one": "{{count}} game on the shelf has no price, so it isn't in the money.",
+    "unpriced_other": "{{count}} games on the shelf have no price, so they aren't in the money.",
+    "sort-by-price": "Sort by price paid"
+  }
 }

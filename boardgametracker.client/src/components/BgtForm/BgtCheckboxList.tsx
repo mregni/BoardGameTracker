@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { BgtSimpleCheckbox } from "./BgtSimpleCheckbox";
 
 interface ListItem {
@@ -17,19 +15,10 @@ interface CheckboxListProps<T extends ListItem> {
 
 export const BgtCheckboxList = <T extends ListItem>(props: CheckboxListProps<T>) => {
 	const { items, selectedIds = [], onSelectionChange, disabled = false, renderLabel = (item) => item.value } = props;
-	const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set(selectedIds));
 
 	const handleCheckedChange = (id: number, checked: boolean) => {
-		const updatedCheckedIds = new Set(checkedIds);
-
-		if (checked) {
-			updatedCheckedIds.add(id);
-		} else {
-			updatedCheckedIds.delete(id);
-		}
-
-		setCheckedIds(updatedCheckedIds);
-		onSelectionChange?.(Array.from(updatedCheckedIds));
+		const remaining = selectedIds.filter((selectedId) => selectedId !== id);
+		onSelectionChange?.(checked ? [...remaining, id] : remaining);
 	};
 
 	return (
@@ -39,7 +28,7 @@ export const BgtCheckboxList = <T extends ListItem>(props: CheckboxListProps<T>)
 					key={item.id}
 					id={`item-${item.id}`}
 					label={renderLabel(item)}
-					checked={checkedIds.has(item.id)}
+					checked={selectedIds.includes(item.id)}
 					onCheckedChange={(checked) => handleCheckedChange(item.id, checked)}
 					disabled={disabled}
 				/>

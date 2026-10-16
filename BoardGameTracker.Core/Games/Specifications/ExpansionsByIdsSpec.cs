@@ -5,8 +5,8 @@ namespace BoardGameTracker.Core.Games.Specifications;
 
 public sealed class ExpansionsByIdsSpec : Specification<Expansion>
 {
-    public ExpansionsByIdsSpec(IEnumerable<int> ids)
+    public ExpansionsByIdsSpec(int gameId, IEnumerable<int> ids)
     {
-        Query.Where(x => ids.Contains(x.Id));
+        Query.Where(x => x.GameId == gameId && ids.Contains(x.Id));
     }
 }

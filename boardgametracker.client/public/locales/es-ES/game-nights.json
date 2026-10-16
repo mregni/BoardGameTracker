@@ -1,84 +1,306 @@
 {
   "rsvp": {
-    "title": "Manage RSVPs",
-    "manual-note-prefix": "Manually set RSVP status",
-    "manual-note": " for players who responded via phone, text, or in person.",
-    "accept": "Accept",
-    "decline": "Decline",
-    "maybe": "Maybe",
-    "host": "Host is always attending"
+    "title": "Gestionar RSVP",
+    "host": "Anfitrión · siempre viene",
+    "subtitle": "{{title}} · {{date}}",
+    "coming": "Viene",
+    "invited_one": "{{count}} invitado",
+    "invited_other": "{{count}} invitados",
+    "summary": {
+      "coming_one": "{{count}} viene",
+      "coming_other": "{{count}} vienen",
+      "pending_one": "{{count}} pendiente",
+      "pending_other": "{{count}} pendientes",
+      "declined_one": "{{count}} rechazado",
+      "declined_other": "{{count}} rechazados"
+    },
+    "player-status": "RSVP de {{name}}",
+    "remove": "Quitar a {{name}} de esta noche",
+    "invite-more": "Invitar a más jugadores",
+    "search-players": "Buscar jugadores…",
+    "no-players-found": "No se encontraron jugadores",
+    "invite": "Invitar a {{name}}",
+    "invite-link": "Enlace de invitación",
+    "copy": "Copiar"
   },
   "empty": {
-    "title": "No game nights planned yet",
-    "description": "Invite players to plan a game night."
+    "title": "Aún no hay noches de juego planificadas",
+    "description": "Invita a jugadores para planificar una noche de juego.",
+    "upcoming": "No hay próximas noches de juego"
   },
   "delete": {
-    "title": "Delete game night",
-    "description": "Are you sure you want to delete this game night \"{{title}}\"? This cannot be reversed and will delete all associated RSVPs."
+    "title": "Eliminar noche de juego",
+    "description": "¿Seguro que quieres eliminar la noche de juego \"{{title}}\"? Esta acción no se puede deshacer y eliminará todas las respuestas RSVP asociadas."
   },
-  "title": "Game Nights Planner",
+  "title": "Planificador de noches de juego",
   "create": {
-    "button": "Create Game Night",
-    "title": "Create new Game Night",
-    "description": "Fill out the form to create a new game night event.",
-    "save": "Create Game Night"
+    "button": "Crear noche de juego",
+    "title": "Crear nueva noche de juego",
+    "description": "Rellena el formulario para crear un nuevo evento de noche de juego.",
+    "save": "Crear noche de juego"
   },
   "edit": {
-    "title": "Edit Game Night",
-    "description": "Update the details of this game night event.",
-    "save": "Save Changes"
+    "title": "Editar noche de juego",
+    "description": "Actualiza los detalles de este evento de noche de juego.",
+    "save": "Guardar cambios"
   },
-  "upcoming": "Upcoming game nights",
-  "past": "Past game nights",
+  "upcoming": "Próximas",
+  "past": "Pasadas",
   "card": {
-    "hosted-by": "Hosted by {{host}}",
-    "suggested-games": "Suggested games",
-    "rsvp-link": "RSVP Link",
-    "upcoming": "Upcoming",
-    "past": "Past",
-    "copy-link": "Copy RSVP link",
-    "copied": "Copied to clipboard",
-    "manage-rsvps": "Manage RSVPs",
-    "email-invites": "Email invites",
-    "invites-sent": "Invites sent: {{sent}} sent",
-    "invites-failed": "Failed to send invites"
+    "suggested-games": "El anfitrión sugiere:",
+    "copy-link": "Copiar enlace de invitación",
+    "copied": "Copiado al portapapeles",
+    "copy-failed": "No se pudo copiar el enlace",
+    "manage-rsvps": "Gestionar RSVP",
+    "email-invites": "Invitar por correo",
+    "invites-sent": "Invitaciones enviadas: {{sent}}",
+    "invites-failed": "No se pudieron enviar las invitaciones",
+    "when": "{{when}} · {{time}}",
+    "host": "Anfitrión: {{host}}",
+    "open": "Abrir la noche"
   },
   "form": {
     "title": {
-      "label": "Event title",
-      "placeholder": "Enter game night title"
+      "label": "Título del evento",
+      "placeholder": "Introduce el título de la noche de juego"
     },
     "start": {
-      "label": "Date"
+      "label": "Fecha"
     },
     "location": {
-      "label": "Location",
-      "placeholder": "Enter location"
+      "label": "Ubicación",
+      "placeholder": "Ubicación"
     },
     "host": {
-      "label": "Host",
-      "placeholder": "Enter host player"
+      "label": "Anfitrión",
+      "placeholder": "Anfitrión"
     },
     "invited-players": {
-      "label": "Invited players",
-      "description": "Select players to invite to this game night"
+      "label": "Jugadores invitados",
+      "description": "Elige jugadores para invitar"
     },
     "suggested-games": {
-      "label": "Suggested games",
-      "description": "Select games that you suggest to play during this game night"
+      "label": "Juegos sugeridos",
+      "description": "Elige juegos para proponer"
     },
     "notes": {
-      "label": "Notes"
+      "label": "Notas"
     }
   },
   "notifications": {
-    "created": "Game night created successfully",
-    "create-failed": "Failed to create game night",
-    "updated": "Game night updated successfully",
-    "update-failed": "Failed to update game night",
-    "deleted": "Game night deleted successfully",
-    "delete-failed": "Failed to delete game night",
-    "rsvp-updated": "RSVP updated successfully",
-    "rsvp-update-failed": "Failed to update RSVP"
+    "created": "Noche de juego creada correctamente",
+    "create-failed": "No se pudo crear la noche de juego",
+    "updated": "Noche de juego actualizada correctamente",
+    "update-failed": "No se pudo actualizar la noche de juego",
+    "deleted": "Noche de juego eliminada correctamente",
+    "delete-failed": "No se pudo eliminar la noche de juego",
+    "rsvp-updated": "RSVP actualizado correctamente",
+    "rsvp-update-failed": "No se pudo actualizar el RSVP"
+  },
+  "validation": {
+    "title-required": "El título es obligatorio",
+    "location-required": "La ubicación es obligatoria",
+    "host-required": "El anfitrión es obligatorio"
+  },
+  "past-night": {
+    "attended-count_one": "{{count}} asistió",
+    "attended-count_other": "{{count}} asistieron",
+    "nobody": "Nadie confirmó su asistencia",
+    "nothing-logged": "aún no hay nada registrado",
+    "games-played_one": "{{count}} juego jugado",
+    "games-played_other": "{{count}} juegos jugados",
+    "winner": "ganador {{names}}"
+  },
+  "detail": {
+    "back": "Noches de juegos"
+  },
+  "play": {
+    "start": {
+      "button": "▶ Empezar un juego",
+      "title": "Empezar un juego",
+      "game": "Juego",
+      "players": "¿Quién juega?",
+      "save": "Empezar",
+      "coop-default": "Juego cooperativo: eliges “Ganamos” o “Perdimos” al terminarlo.",
+      "coop-optional": "Este juego se puede jugar en cooperativo: lo activas al terminarlo."
+    },
+    "log": {
+      "button": "Registrar un juego terminado",
+      "title": "Registrar un juego terminado"
+    },
+    "finish": {
+      "button": "Terminar",
+      "title": "Terminar {{game}}",
+      "subtitle": "Empezó a las {{time}} · {{duration}} · {{location}}"
+    },
+    "discard": {
+      "button": "Descartar {{game}}",
+      "title": "¿Descartar este juego?",
+      "description": "El juego en curso se elimina y no se guarda ninguna sesión."
+    },
+    "games": {
+      "tonight": "Esta noche y planificados"
+    },
+    "leave-out-hint": "Toca a un jugador para dejarlo fuera",
+    "leave-out": "Dejar fuera a {{name}}",
+    "save": "Guardar sesión",
+    "now-playing": "Jugando ahora: {{game}}",
+    "running": "Empezó a las {{time}} · {{duration}} · {{players}}",
+    "again": "Jugar otra vez:",
+    "again-game": "Jugar {{game}} otra vez",
+    "notifications": {
+      "started": "Juego empezado",
+      "start-failed": "No se pudo empezar el juego",
+      "discarded": "Juego en curso descartado",
+      "discard-failed": "No se pudo descartar el juego en curso"
+    }
+  },
+  "summary": {
+    "games-played": "Juegos jugados",
+    "play-time": "Tiempo de juego",
+    "leading": "Liderando esta noche",
+    "night-winner": "Ganador de la noche",
+    "no-winner": "Aún no hay ganador",
+    "wins_one": "{{count}} de {{total}} juegos ganados",
+    "wins_other": "{{count}} de {{total}} juegos ganados"
+  },
+  "played": {
+    "tonight": "Jugado esta noche",
+    "after": "Jugado",
+    "empty": "Aún no se ha jugado nada. Toca «Empezar un juego» cuando empiece una partida; la fecha, la hora, el lugar y los jugadores se rellenan solos.",
+    "empty-after": "No se registró nada para esta noche. Usa «Registrar un juego terminado» para añadir lo que se jugó."
+  },
+  "table": {
+    "title": "En la mesa",
+    "host": "· anfitrión",
+    "edit": "Editar quién está"
+  },
+  "planned": {
+    "title": "Planificados",
+    "played": "Jugado"
+  },
+  "end": {
+    "button": "Cerrar la noche",
+    "title": "¿Cerrar esta noche de juegos?",
+    "description": "No se puede empezar ni registrar nada en esta noche hasta que se vuelva a abrir.",
+    "running-hint": "Termina o descarta primero los juegos en curso",
+    "reopen": "Reabrir la noche",
+    "notifications": {
+      "ended": "Noche de juegos cerrada",
+      "end-failed": "No se pudo cerrar la noche de juegos",
+      "reopened": "Noche de juegos reabierta",
+      "reopen-failed": "No se pudo reabrir la noche de juegos"
+    }
+  },
+  "view": {
+    "label": "Vista",
+    "nights": "Noches",
+    "stats": "Estadísticas"
+  },
+  "stats": {
+    "period": {
+      "label": "Periodo",
+      "allTime": "Siempre",
+      "thisYear": "Este año",
+      "last12Months": "Últimos 12 meses"
+    },
+    "logged_one": "{{count}} de {{total}} noches tiene partidas registradas",
+    "logged_other": "{{count}} de {{total}} noches tienen partidas registradas",
+    "empty": {
+      "title": "Aún no hay noches de juegos que contar",
+      "description": "Las estadísticas cuentan las noches con partidas registradas o que se cerraron. Registra juegos desde la página de una noche para verlas aquí."
+    },
+    "tiles": {
+      "nights": "Noches de juegos",
+      "every-week_one": "más o menos una por semana",
+      "every-week_other": "más o menos una cada {{count}} semanas",
+      "every-day_one": "más o menos una por día",
+      "every-day_other": "más o menos una cada {{count}} días",
+      "games": "Juegos jugados",
+      "per-night": "{{value}} por noche",
+      "play-time": "Tiempo de juego",
+      "table": "Mesa media",
+      "table-hint": "jugadores por noche"
+    },
+    "winners": {
+      "title": "Ganadores de la noche",
+      "subtitle": "más partidas ganadas esa noche · los empates se comparten",
+      "nights_one": "{{count}} noche",
+      "nights_other": "{{count}} noches",
+      "games-won_one": "{{count}} partida ganada",
+      "games-won_other": "{{count}} partidas ganadas",
+      "share": "{{value}} de las noches",
+      "bar": "{{name}}: {{won}} de {{attended}} noches ganadas",
+      "footer": "Ordenados por noches ganadas; la barra es la parte de sus noches que ganaron.",
+      "ties_one": "{{count}} noche terminó en empate y cuenta para cada ganador.",
+      "ties_other": "{{count}} noches terminaron en empate y cuentan para cada ganador.",
+      "empty": "Nadie ha ganado una noche todavía."
+    },
+    "history": {
+      "title": "Historial de ganadores",
+      "all_one": "Ver {{count}} noche",
+      "all_other": "Ver las {{count}} noches",
+      "less": "Mostrar menos",
+      "games_one": "{{count}} juego",
+      "games_other": "{{count}} juegos",
+      "score": "{{wins}} de {{total}}",
+      "streak": "{{count}} seguidas",
+      "no-winner": "Sin ganador",
+      "no-sessions": "Sin partidas registradas",
+      "coop-shared_one": "{{count}} comparte la noche",
+      "coop-shared_other": "Los {{count}} comparten la noche",
+      "coop-only": "solo cooperativo"
+    },
+    "games": {
+      "title": "Lo más jugado en las noches",
+      "nights_one": "en {{count}} noche",
+      "nights_other": "en {{count}} noches",
+      "planned": "planificado {{count}}×",
+      "times": "{{count}}×",
+      "bar": "{{name}}: jugado {{count}} veces",
+      "never-played": "Planificado pero nunca jugado:",
+      "empty": "Aún no se ha jugado nada en las noches de juegos."
+    },
+    "streaks": {
+      "title": "Rachas",
+      "winner-current": "{{name}} ganó las últimas {{count}} noches",
+      "winner-current-hint": "Racha actual",
+      "winner-record": "el récord es de {{name}} con {{count}} ({{from}} – {{to}})",
+      "winner-longest": "{{name}} ganó {{count}} noches seguidas",
+      "winner-longest-hint": "Racha más larga · {{from}} – {{to}}",
+      "attendance": "{{name}} vino a {{count}} noches seguidas",
+      "attendance-hint": "Racha de asistencia actual · desde {{date}}",
+      "game": "{{name}} se jugó en {{count}} noches seguidas",
+      "game-current": "Racha de juego actual · desde {{date}}",
+      "game-longest": "Racha de juego más larga · {{from}} – {{to}}",
+      "empty": "Aún no hay rachas: una racha empieza con dos noches seguidas."
+    },
+    "attendance": {
+      "title": "Asistencia",
+      "of_one": "de {{count}} noche",
+      "of_other": "de {{count}} noches",
+      "hosted": "anfitrión {{count}}×",
+      "bar": "{{name}} vino a {{count}} de {{total}} noches",
+      "select": "Mostrar las últimas noches de {{name}}",
+      "recent_one": "{{name}}, última noche",
+      "recent_other": "{{name}}, últimas {{count}} noches",
+      "came": "vino",
+      "absent": "no estuvo",
+      "dot": "{{title}} · {{date}}: {{state}}",
+      "empty": "Aún no hay nadie anotado en la mesa."
+    },
+    "records": {
+      "title": "Récords",
+      "longest-night": "Noche más larga",
+      "most-games": "Más juegos en una noche",
+      "biggest-table": "Mesa más grande",
+      "latest-finish": "Final más tardío",
+      "night": "{{title}} · {{date}}",
+      "games_one": "{{count}} juego",
+      "games_other": "{{count}} juegos",
+      "mostly": "sobre todo {{name}}",
+      "finish": "{{title}} · {{game}}, {{duration}}",
+      "empty": "Aún no hay récords."
+    }
   }
 }

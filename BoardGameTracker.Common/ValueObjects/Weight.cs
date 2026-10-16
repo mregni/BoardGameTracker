@@ -1,3 +1,4 @@
+using System.Globalization;
 using Ardalis.GuardClauses;
 
 namespace BoardGameTracker.Common.ValueObjects;
@@ -19,5 +20,5 @@ public record Weight
 
     public static implicit operator double(Weight weight) => weight.Value;
 
-    public override string ToString() => Value.ToString("F2");
+    public override string ToString() => Value.ToString("F2", CultureInfo.InvariantCulture);
 }

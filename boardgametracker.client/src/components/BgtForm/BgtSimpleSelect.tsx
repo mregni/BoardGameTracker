@@ -1,6 +1,6 @@
 import * as Select from "@radix-ui/react-select";
 import { cx } from "class-variance-authority";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
@@ -9,6 +9,9 @@ import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import type { BgtSelectImageItem, BgtSelectItem } from "@/models";
 import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
 import { BgtFieldLabel } from "./BgtFieldLabel";
+import { findSearchMatch, handleSelectSearchKeyDown } from "./selectSearch";
+import { useKeyboardResizeGuard } from "./useKeyboardResizeGuard";
+import { useTriggerToggle } from "./useTriggerToggle";
 
 interface Props {
 	label?: string;
@@ -18,7 +21,13 @@ interface Props {
 	hasSearch?: boolean;
 	value?: string | number | null;
 	onValueChange?: (value: string | number) => void;
+	defaultOpen?: boolean;
+	onOpenChange?: (open: boolean) => void;
 	className?: string;
+	showAvatars?: boolean;
+	trigger?: ReactNode;
+	triggerClassName?: string;
+	"aria-label"?: string;
 }
 
 export const BgtSimpleSelect = (props: Props) => {
@@ -30,13 +39,22 @@ export const BgtSimpleSelect = (props: Props) => {
 		hasSearch = false,
 		value,
 		onValueChange,
+		defaultOpen = false,
+		onOpenChange,
 		className = "",
+		showAvatars = false,
+		trigger,
+		triggerClassName,
+		"aria-label": ariaLabel,
 	} = props;
 
 	const { t } = useTranslation();
 	const [searchTerm, setSearchTerm] = useState("");
-	const [open, setOpen] = useState(false);
+	const [open, setOpen] = useState(defaultOpen);
 	const searchInputRef = useRef<HTMLInputElement>(null);
+	const triggerRef = useRef<HTMLButtonElement>(null);
+	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
+	const { onPointerDownOutside, onTriggerPointerDown, onTriggerClick } = useTriggerToggle(triggerRef);
 
 	const currentValue = value?.toString();
 	const filteredItems = items.filter((item) => {
@@ -47,7 +65,19 @@ export const BgtSimpleSelect = (props: Props) => {
 	});
 
 	const isSelectImageItem = (item: BgtSelectImageItem | BgtSelectItem): item is BgtSelectImageItem => {
-		return item && typeof item === "object" && "image" in item && item.image !== null;
+		return item && typeof item === "object" && "image" in item && (showAvatars || item.image !== null);
+	};
+
+	const selectSearchMatch = () => {
+		const match = findSearchMatch(items, searchTerm);
+		if (!match) {
+			return;
+		}
+		onValueChange?.(match.value);
+		setOpen(false);
+		onOpenChange?.(false);
+		setSearchTerm("");
+		requestAnimationFrame(() => triggerRef.current?.focus());
 	};
 
 	useEffect(() => {
@@ -57,16 +87,6 @@ export const BgtSimpleSelect = (props: Props) => {
 			}, 0);
 		}
 	}, [open]);
-
-	useEffect(() => {
-		const onResize = (event: Event) => {
-			event.stopImmediatePropagation();
-		};
-		window.addEventListener("resize", onResize);
-		return () => {
-			window.removeEventListener("resize", onResize);
-		};
-	}, []);
 
 	return (
 		<div className={cx("flex flex-col justify-start", className)}>
@@ -80,22 +100,38 @@ export const BgtSimpleSelect = (props: Props) => {
 				value={currentValue}
 				open={open}
 				onOpenChange={(isOpen) => {
+					if (!isOpen && isKeyboardResize()) {
+						return;
+					}
 					setOpen(isOpen);
+					onOpenChange?.(isOpen);
 					if (!isOpen) {
 						setSearchTerm("");
 					}
 				}}
 			>
 				<Select.Trigger
-					className={cx(
-						"relative w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-						"pl-4 pr-9 py-2 h-9 shadow-none flex items-center leading-none text-[12px]",
-					)}
+					ref={triggerRef}
+					onPointerDown={onTriggerPointerDown}
+					onClick={onTriggerClick}
+					aria-label={ariaLabel}
+					className={
+						trigger
+							? triggerClassName
+							: cx(
+									"relative w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
+									"pl-4 pr-9 py-2 h-9 shadow-none flex items-center leading-none text-[12px]",
+								)
+					}
 				>
-					<Select.Value placeholder={placeholder} className="min-w-0 flex-1 truncate text-left" />
-					<Select.Icon className="absolute right-3 top-1/2 -translate-y-1/2">
-						{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
-					</Select.Icon>
+					{trigger ?? (
+						<>
+							<Select.Value placeholder={placeholder} className="min-w-0 flex-1 truncate text-left" />
+							<Select.Icon className="absolute right-3 top-1/2 -translate-y-1/2">
+								{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
+							</Select.Icon>
+						</>
+					)}
 				</Select.Trigger>
 				<Select.Portal>
 					<Select.Content
@@ -103,8 +139,10 @@ export const BgtSimpleSelect = (props: Props) => {
 						position="popper"
 						sideOffset={5}
 						style={{ bottom: "auto" }}
+						onPointerDownOutside={onPointerDownOutside}
 						onCloseAutoFocus={(e) => {
 							e.preventDefault();
+							triggerRef.current?.focus({ preventScroll: true });
 						}}
 					>
 						{hasSearch && (
@@ -116,12 +154,10 @@ export const BgtSimpleSelect = (props: Props) => {
 										type="text"
 										value={searchTerm}
 										onChange={(e) => setSearchTerm(e.target.value)}
-										placeholder="Search..."
+										placeholder={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										onClick={(e) => e.stopPropagation()}
-										onKeyDown={(e) => {
-											e.stopPropagation();
-										}}
+										onKeyDown={(e) => handleSelectSearchKeyDown(e, selectSearchMatch)}
 									/>
 								</div>
 							</div>

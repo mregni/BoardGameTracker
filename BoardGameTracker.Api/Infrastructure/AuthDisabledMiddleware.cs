@@ -6,6 +6,8 @@ namespace BoardGameTracker.Api.Infrastructure;
 
 public class AuthDisabledMiddleware
 {
+    public const string AuthenticationType = "AuthDisabled";
+
     private readonly RequestDelegate _next;
 
     public AuthDisabledMiddleware(RequestDelegate next)
@@ -25,7 +27,7 @@ public class AuthDisabledMiddleware
                 new Claim("display_name", "Admin")
             };
 
-            var identity = new ClaimsIdentity(claims, "AuthDisabled");
+            var identity = new ClaimsIdentity(claims, AuthenticationType);
             context.User = new ClaimsPrincipal(identity);
         }
 

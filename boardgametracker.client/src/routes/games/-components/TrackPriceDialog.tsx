@@ -1,8 +1,13 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Target from "@/assets/icons/target.svg?react";
-import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtDialog, BgtDialogContent, BgtDialogDescription, BgtDialogTitle } from "@/components/BgtDialog/BgtDialog";
+import {
+	BgtDialog,
+	BgtDialogContent,
+	BgtDialogDescription,
+	BgtDialogFooter,
+	BgtDialogTitle,
+} from "@/components/BgtDialog";
 import { BgtSimpleInputField } from "@/components/BgtForm";
 
 interface Props {
@@ -51,14 +56,14 @@ export const TrackPriceDialog = ({ open, close, initialUrl, isPending, onSubmit 
 						placeholder={t("game:track-price.url-placeholder")}
 						disabled={isPending}
 					/>
-					<div className="flex justify-end gap-2">
-						<BgtButton variant="cancel" type="button" onClick={close} disabled={isPending}>
-							{t("common:cancel")}
-						</BgtButton>
-						<BgtButton variant="primary" type="submit" disabled={!valid || isPending}>
-							{t("game:track-price.submit")}
-						</BgtButton>
-					</div>
+					<BgtDialogFooter
+						onCancel={close}
+						cancelDisabled={isPending}
+						confirmLabel={t("game:track-price.submit")}
+						confirmType="submit"
+						disabled={!valid}
+						loading={isPending}
+					/>
 				</form>
 			</BgtDialogContent>
 		</BgtDialog>

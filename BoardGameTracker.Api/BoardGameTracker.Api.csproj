@@ -10,4 +10,8 @@
       <ProjectReference Include="..\BoardGameTracker.Core\BoardGameTracker.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <InternalsVisibleTo Include="BoardGameTracker.Tests" />
+    </ItemGroup>
+
 </Project>

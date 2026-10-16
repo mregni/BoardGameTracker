@@ -1,34 +1,18 @@
 {
-	"titles": {
-		"localisation": "Localisation settings",
-		"currency": "Currency settings",
-		"environment": "Environment"
-	},
-	"time-zone": {
-		"label": "Time zone",
-		"required": "Time zone is required"
-	},
 	"date-format": {
 		"label": "Date format",
-		"required": "Date format is required"
+		"required": "Date format is required",
+		"invalid": "Use a date pattern such as dd/MM/yyyy or yyyy-MM-dd"
 	},
 	"time-format": {
 		"label": "Time format",
-		"required": "Time format is required"
+		"required": "Time format is required",
+		"invalid": "Use a time pattern such as HH:mm or h:mm a"
 	},
 	"currency": {
 		"label": "Currency",
 		"required": "Currency is required"
 	},
-	"environment": {
-		"name": "Environment",
-		"port": "Port",
-		"statistics": "Statistics",
-		"log-level": "Log level",
-		"version": "Version"
-	},
-	"feature-request": "Feature request",
-	"translations": "Translate the app",
 	"save": {
 		"button": "Save settings",
 		"failed": "Failed saving settings",
@@ -36,9 +20,13 @@
 	},
 	"general": {
 		"public-url": {
+			"title": "Public address",
+			"description": "The address people use to reach BoardGameTracker, for example https://games.example.com. Invitation and password-reset emails link to it, and SSO uses it for its redirect URIs. Emails with links are only sent once it is set.",
 			"label": "Public URL",
 			"placeholder": "https://myboardgametracker.app",
-			"invalid": "Enter a valid http(s) URL"
+			"invalid": "Enter a valid http(s) URL",
+			"insecure-warning": "The public URL uses http while BoardGameTracker is opened over https. Links in emails, RSVP invitations and SSO redirects will use the insecure address.",
+			"host-mismatch-warning": "The public URL points to a different host than {{host}}. Links in emails, RSVP invitations and SSO redirects will use that host."
 		},
 		"ui-language": {
 			"label": "Language",
@@ -80,10 +68,6 @@
 		"enabled": {
 			"label": "Enable Game Nights",
 			"description": "Enable the game nights feature to plan and manage game night events with your friends."
-		},
-		"public-url": {
-			"label": "Public URL",
-			"placeholder": "https://myboardgametracker.app"
 		},
 		"rsvp-authentication": {
 			"label": "Require authentication for RSVPs",
@@ -167,6 +151,10 @@
 		"account": {
 			"title": "Account",
 			"description": "Profile & user management"
+		},
+		"sso": {
+			"title": "Single sign-on",
+			"description": "OpenID Connect provider"
 		}
 	},
 	"bgg": {
@@ -175,7 +163,7 @@
 		"status": {
 			"title": "Status",
 			"configured": "API key configured",
-			"not-configured": "API key not Configured",
+			"not-configured": "API key not configured",
 			"source-env": "BGG API key is set via environment variable (BGG_API_KEY)",
 			"source-db": "BGG API key is stored in the database.",
 			"not-configured-description": "To use BGG integration features, you need to provide a BGG API key. You can either set it via the BGG_API_KEY environment variable or enter it directly in the settings below."
@@ -215,7 +203,11 @@
 				"label": "Linked player",
 				"none": "Not linked"
 			},
-			"save": "Save profile"
+			"save": "Save profile",
+			"current-password": {
+				"label": "Current password",
+				"placeholder": "Needed to change your email address"
+			}
 		},
 		"password": {
 			"change-button": "Change password",
@@ -289,7 +281,8 @@
 				"title": "Delete User",
 				"description": "Are you sure you want to delete \"{{username}}\"? This cannot be undone."
 			},
-			"never-logged-in": "Never"
+			"never-logged-in": "Never",
+			"no-users": "No users yet"
 		},
 		"notifications": {
 			"profile-updated": "Profile updated successfully",
@@ -305,6 +298,113 @@
 			"user-updated": "User updated successfully",
 			"user-update-failed": "Failed to update user",
 			"password-reset-failed": "Failed to reset password"
+		},
+		"external-logins": {
+			"title": "External logins",
+			"description": "Sign in with your identity provider instead of a password.",
+			"none": "No external login linked yet.",
+			"linked-on": "linked on {{date}}",
+			"link": "Link {{provider}}",
+			"unlink": "Unlink",
+			"notifications": {
+				"unlinked": "External login removed.",
+				"unlink-failed": "The external login could not be removed.",
+				"link-failed": "The link could not be started."
+			},
+			"unlink-confirm": "You will no longer be able to sign in with this provider until you link it again."
+		}
+	},
+	"env-override": "Set by the environment variable {{variable}}. Change it there to update this setting.",
+	"sso": {
+		"title": "OpenID Connect provider",
+		"description": {
+			"empty": "Let people sign in through your identity provider (Keycloak, Authentik, Authelia, Zitadel, Entra ID, …). Register a public client there first, then fill in the details below.",
+			"configured": "Sign-in through {{name}} is configured. Changes apply to the next sign-in."
+		},
+		"fields": {
+			"name": {
+				"label": "Short name",
+				"placeholder": "keycloak"
+			},
+			"display-name": {
+				"label": "Button label",
+				"placeholder": "Company login"
+			},
+			"authority": {
+				"label": "Authority (issuer URL)",
+				"placeholder": "https://sso.example.com/realms/games",
+				"relink-warning": "Changing the address unlinks every account linked to this provider. Users then sign in with their password and link it again from their profile; users without a password need one first."
+			},
+			"client-id": {
+				"label": "Client ID"
+			},
+			"client-secret": {
+				"label": "Client secret (optional)",
+				"placeholder": "Leave empty for a public client",
+				"unchanged": "Stored — leave empty to keep it"
+			},
+			"scopes": {
+				"label": "Scopes"
+			},
+			"username-claim": {
+				"label": "Username claim"
+			},
+			"email-claim": {
+				"label": "E-mail claim"
+			},
+			"display-name-claim": {
+				"label": "Display name claim"
+			},
+			"roles-claim": {
+				"label": "Groups/roles claim"
+			},
+			"admin-group": {
+				"label": "Admin group value",
+				"placeholder": "bgt-admins"
+			},
+			"auto-provision": {
+				"label": "Create accounts on first sign-in",
+				"description": "New people get a User account automatically. When off, only linked accounts can sign in."
+			},
+			"enabled": {
+				"label": "Enabled",
+				"description": "Show the sign-in button on the login page."
+			}
+		},
+		"discovery": {
+			"button": "Test discovery",
+			"testing": "Testing…",
+			"ok": "The provider answered and its issuer matches the authority.",
+			"issuer-mismatch": "The provider answered, but reports issuer {{issuer}}. Use that value as the authority.",
+			"failed": "The provider could not be reached or did not return a discovery document.",
+			"authorization": "Authorization",
+			"token": "Token",
+			"userinfo": "User info"
+		},
+		"setup": {
+			"title": "Register at the provider",
+			"description": "Allow these redirect URIs on the client you created at your identity provider.",
+			"public-url-warning": "No public URL is configured, so the redirect URIs are derived from the current request ({{url}}). Set the public URL under General if that is not the address people use.",
+			"redirect-uri": "Sign-in redirect URI",
+			"link-redirect-uri": "Account-linking redirect URI",
+			"copy": "Copy"
+		},
+		"validation": {
+			"name": "Use lowercase letters, digits and dashes (1–100 characters)",
+			"display-name": "A button label is required",
+			"authority": "Enter the provider's https URL",
+			"client-id": "The client ID is required",
+			"scopes": "At least the openid scope is required"
+		},
+		"create": "Create provider",
+		"save": "Save provider",
+		"delete": "Remove provider",
+		"delete-description": "Removing the provider also removes every linked external account. People keep their local password if they have one.",
+		"notifications": {
+			"saved": "Provider saved.",
+			"save-failed": "The provider could not be saved.",
+			"deleted": "Provider removed.",
+			"delete-failed": "The provider could not be removed."
 		}
 	},
 	"changedetection": {
@@ -328,11 +428,35 @@
 			"clear-hint": "Save settings to apply the removal."
 		},
 		"help-title": "How it works",
-		"help-description": "Add a changedetection.io watch id to a game to see its current price and stock. The API key is found under Settings in your changedetection.io instance.",
-		"test": {
-			"button": "Test connection",
-			"success": "Connected to changedetection.io {{version}}",
-			"failed": "Couldn't connect to changedetection.io, check the URL and API key"
+		"help-description": "Add a changedetection.io watch id to a game to see its current price and stock. The API key is found under Settings in your changedetection.io instance."
+	},
+	"integrations": {
+		"name": {
+			"bgg": "BoardGameGeek",
+			"changeDetection": "changedetection.io"
+		},
+		"status": {
+			"ok": "Connected",
+			"unauthorized": "Rejected",
+			"unreachable": "Unreachable",
+			"rateLimited": "Rate limited",
+			"notConfigured": "Not configured"
+		},
+		"checked-at": "checked {{time}}",
+		"checking": "Checking…",
+		"test": "Test connection",
+		"testing": "Testing…",
+		"test-failed": "Couldn't run the connection test",
+		"save-failed": "Settings saved, but {{name}} isn't connected",
+		"reason": {
+			"ok": "The connection works",
+			"not-configured": "No API key saved yet",
+			"unauthorized": "The API key was rejected",
+			"unreachable": "The service could not be reached",
+			"timeout": "The service did not answer within 10 seconds",
+			"rate-limited": "Too many requests, try again in a few minutes",
+			"misconfigured": "The base URL or API key is not valid",
+			"unexpected-response": "The service sent an unexpected response"
 		}
 	}
 }

@@ -10,9 +10,11 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAppForm } from "@/hooks/form";
+import { ResetPasswordSchema } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { confirmResetPasswordCall } from "@/services/authService";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 
 const resetPasswordSearchSchema = z.object({
 	userId: z.string(),
@@ -71,16 +73,7 @@ function ResetPasswordPage() {
 					</div>
 
 					<form onSubmit={handleFormSubmit(form)} className="space-y-4">
-						<form.Field
-							name="newPassword"
-							validators={{
-								onChange: ({ value }: { value: string }) => {
-									if (!value) return t("common:required", "Required");
-									if (value.length < 4) return t("settings:account.password.min-length");
-									return undefined;
-								},
-							}}
-						>
+						<form.Field name="newPassword" validators={zodValidator(ResetPasswordSchema, "newPassword")}>
 							{(field: AnyFieldApi) => (
 								<BgtInputField
 									field={field}

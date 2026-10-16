@@ -8,6 +8,8 @@ namespace BoardGameTracker.Common.Entities;
 public class Game : BaseGame
 {
     public bool HasScoring { get; private set; }
+    public bool HasCoopMode { get; private set; }
+    public bool CoopByDefault { get; private set; }
     public ICollection<Expansion> Expansions { get; private set; }
     public ICollection<GameAccessory> Accessories { get; private set; }
     public ICollection<GameCategory> Categories { get; private set; }
@@ -31,33 +33,78 @@ public class Game : BaseGame
         HasScoring = hasScoring;
     }
 
+    public void UpdateCoopMode(bool hasCoopMode, bool coopByDefault)
+    {
+        HasCoopMode = hasCoopMode;
+        CoopByDefault = hasCoopMode && coopByDefault;
+    }
+
+    public void AddCategory(GameCategory category)
+    {
+        Guard.Against.Null(category);
+        if (Categories.All(c => c.Name != category.Name))
+        {
+            Categories.Add(category);
+        }
+    }
+
+    public void AddMechanic(GameMechanic mechanic)
+    {
+        Guard.Against.Null(mechanic);
+        if (Mechanics.All(m => m.Name != mechanic.Name))
+        {
+            Mechanics.Add(mechanic);
+        }
+    }
+
+    public void AddPerson(Person person)
+    {
+        Guard.Against.Null(person);
+        if (People.All(p => p.Name != person.Name || p.Type != person.Type))
+        {
+            People.Add(person);
+        }
+    }
+
     public void AddExpansion(Expansion expansion)
     {
         Guard.Against.Null(expansion);
-        if (!Expansions.Any(e => e.BggId == expansion.BggId))
+        if (!Expansions.Any(e => e.Matches(expansion)))
         {
             Expansions.Add(expansion);
         }
     }
 
-    public void RemoveExpansion(int expansionBggId)
+    public void RemoveExpansion(Expansion expansion)
     {
-        var expansion = Expansions.FirstOrDefault(e => e.BggId == expansionBggId);
-        if (expansion != null)
-        {
-            Expansions.Remove(expansion);
-        }
+        Guard.Against.Null(expansion);
+        Expansions.Remove(expansion);
     }
 
-    public Loan LoanToPlayer(int playerId, DateTime loanDate)
+    public void EnsureLoanDatesAreFree(Loan loan, DateTime loanDate, DateTime? end)
     {
-        if (IsLoanedOn(loanDate))
+        EnsureFree(loanDate, end, loan);
+    }
+
+    public Loan LoanToPlayer(int playerId, DateTime loanDate, DateTime? dueDate = null)
+    {
+        var loan = new Loan(Id, playerId, loanDate);
+        loan.SetDueDate(dueDate);
+        EnsureFree(loanDate, dueDate);
+
+        Loans.Add(loan);
+        return loan;
+    }
+
+    private void EnsureFree(DateTime start, DateTime? end, Loan? except = null)
+    {
+        var overlaps = Loans
+            .Where(other => except == null || (!ReferenceEquals(other, except) && (except.Id == 0 || other.Id != except.Id)))
+            .Any(other => other.Overlaps(start, end));
+
+        if (overlaps)
         {
             throw new DomainException(Constants.Errors.GameAlreadyOnLoan);
         }
-
-        var loan = new Loan(Id, playerId, loanDate);
-        Loans.Add(loan);
-        return loan;
     }
 }

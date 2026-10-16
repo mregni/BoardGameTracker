@@ -5,4 +5,5 @@ export interface Loan {
 	returnedDate: Date | null;
 	gameId: number;
 	playerId: number;
+	isActive: boolean;
 }

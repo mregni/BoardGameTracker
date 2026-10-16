@@ -4,4 +4,5 @@ public interface IPublicUrlBuilder
 {
     Task<string> BuildRsvpUrlAsync(Guid linkId);
     Task<string> BuildResetUrlAsync(string userId, string token);
+    Task<string?> GetConfiguredBaseUrlAsync();
 }

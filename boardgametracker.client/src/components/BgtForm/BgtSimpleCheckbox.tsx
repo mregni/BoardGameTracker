@@ -26,7 +26,7 @@ const BgtSimpleCheckboxComponent = (props: Props) => {
 	return (
 		<div className="flex items-center space-x-2">
 			<Checkbox.Root
-				className="flex h-4 w-4 appearance-none items-center justify-center rounded-xs border border-gray-300 bg-card-border data-[state=checked]:bg-primary data-[state=checked]:border-primary/60 focus:outline-hidden focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+				className="flex h-4 w-4 appearance-none items-center justify-center rounded-xs border border-gray-300 bg-card-border data-[state=checked]:bg-primary data-[state=checked]:border-primary/60 disabled:cursor-not-allowed disabled:opacity-50"
 				id={id}
 				checked={checked}
 				onCheckedChange={handleCheckedChange}

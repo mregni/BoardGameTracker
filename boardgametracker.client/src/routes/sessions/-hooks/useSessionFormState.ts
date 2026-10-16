@@ -1,182 +1,111 @@
-import { addMinutes } from "date-fns";
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 
-import type { CreatePlayerSessionNoScoring, CreateSessionPlayer, Expansion, Game } from "@/models";
+import type { CreateSessionPlayer, Expansion, Game } from "@/models";
+import { applyScoreWinners, winnersMatchScores } from "../-utils/sessionWinners";
 
-interface SessionFormApi {
-	store: {
-		subscribe: (listener: () => void) => { unsubscribe: () => void };
-		state: { values: { gameId: number } };
-	};
-	setFieldValue: (field: "minutes" | "start", value: number | Date) => void;
-}
+type PlayersUpdater = (players: CreateSessionPlayer[]) => CreateSessionPlayer[];
 
 interface UseSessionFormStateProps {
-	form: SessionFormApi;
-	games: Game[];
-	initialGameId?: number;
-	initialExpansions?: Expansion[];
-	initialPlayerSessions?: (CreateSessionPlayer | CreatePlayerSessionNoScoring)[];
-}
-
-type PlayerType = CreateSessionPlayer | CreatePlayerSessionNoScoring;
-
-interface SessionFormState {
 	selectedGameId: number;
-	expansionList: Expansion[];
-	selectedExpansionIds: number[];
-	players: PlayerType[];
-	playerModal: {
-		type: "create" | "update" | null;
-		playerIdToEdit: number | null;
-	};
+	games: Game[];
+	initialGame?: Game;
+	initialExpansions?: Expansion[];
+	initialPlayers: CreateSessionPlayer[];
+	setPlayers: (updater: PlayersUpdater) => void;
 }
 
-type SessionFormAction =
-	| { type: "SET_GAME"; gameId: number; expansionList: Expansion[] }
-	| { type: "SET_SELECTED_EXPANSIONS"; expansionIds: number[] }
-	| { type: "ADD_PLAYER"; player: PlayerType }
-	| { type: "UPDATE_PLAYER"; player: PlayerType }
-	| { type: "REMOVE_PLAYER"; index: number }
-	| { type: "OPEN_CREATE_MODAL" }
-	| { type: "OPEN_UPDATE_MODAL"; playerId: number }
-	| { type: "CLOSE_MODAL" };
-
-function sessionFormReducer(state: SessionFormState, action: SessionFormAction): SessionFormState {
-	switch (action.type) {
-		case "SET_GAME":
-			return {
-				...state,
-				selectedGameId: action.gameId,
-				expansionList: action.expansionList,
-			};
-		case "SET_SELECTED_EXPANSIONS":
-			return { ...state, selectedExpansionIds: action.expansionIds };
-		case "ADD_PLAYER":
-			return {
-				...state,
-				players: [...state.players, action.player],
-				playerModal: { type: null, playerIdToEdit: null },
-			};
-		case "UPDATE_PLAYER": {
-			const index = state.players.findIndex((x) => x.playerId === action.player.playerId);
-			if (index === -1) return { ...state, playerModal: { type: null, playerIdToEdit: null } };
-			const players = [...state.players];
-			players[index] = action.player;
-			return {
-				...state,
-				players,
-				playerModal: { type: null, playerIdToEdit: null },
-			};
-		}
-		case "REMOVE_PLAYER":
-			return {
-				...state,
-				players: state.players.filter((_, i) => i !== action.index),
-			};
-		case "OPEN_CREATE_MODAL":
-			return {
-				...state,
-				playerModal: { type: "create", playerIdToEdit: null },
-			};
-		case "OPEN_UPDATE_MODAL":
-			return {
-				...state,
-				playerModal: { type: "update", playerIdToEdit: action.playerId },
-			};
-		case "CLOSE_MODAL":
-			return { ...state, playerModal: { type: null, playerIdToEdit: null } };
-	}
-}
+const updatePlayer = (
+	players: CreateSessionPlayer[],
+	playerId: number,
+	update: (player: CreateSessionPlayer) => CreateSessionPlayer,
+) => players.map((player) => (player.playerId === playerId ? update(player) : player));
 
 export const useSessionFormState = ({
-	form,
+	selectedGameId,
 	games,
-	initialGameId,
+	initialGame,
 	initialExpansions = [],
-	initialPlayerSessions = [],
+	initialPlayers,
+	setPlayers,
 }: UseSessionFormStateProps) => {
-	const [state, dispatch] = useReducer(sessionFormReducer, {
-		selectedGameId: initialGameId ?? 0,
-		expansionList: [],
-		selectedExpansionIds: initialExpansions.map((x) => x.id),
-		players: initialPlayerSessions,
-		playerModal: { type: null, playerIdToEdit: null },
-	});
+	const [expansionSelection, setExpansionSelection] = useState(() => ({
+		gameId: initialGame?.id ?? 0,
+		ids: initialExpansions.map((x) => x.id),
+	}));
+	const winnersFromScores = useRef(winnersMatchScores(initialPlayers));
 
-	// Track latest selectedGameId in a ref to avoid stale closures in the subscription
-	const selectedGameIdRef = useRef(state.selectedGameId);
-	selectedGameIdRef.current = state.selectedGameId;
+	const changePlayers = useCallback(
+		(updater: PlayersUpdater) => {
+			setPlayers((players) => {
+				const next = updater(players);
+				return winnersFromScores.current ? applyScoreWinners(next) : next;
+			});
+		},
+		[setPlayers],
+	);
 
-	// Subscribe to game changes and update form accordingly
-	useEffect(() => {
-		const subscription = form.store.subscribe(() => {
-			const newGameId = form.store.state.values.gameId;
-			if (newGameId !== selectedGameIdRef.current) {
-				// Update ref immediately to prevent infinite loop:
-				// setFieldValue triggers store notifications synchronously,
-				// re-entering this callback before React re-renders
-				selectedGameIdRef.current = newGameId;
+	const addPlayer = useCallback(
+		(playerId: number) => {
+			changePlayers((players) =>
+				players.some((x) => x.playerId === playerId)
+					? players
+					: [...players, { playerId, won: false, firstPlay: false, score: null }],
+			);
+		},
+		[changePlayers],
+	);
 
-				const selectedBoardGame = games.find((g) => g.id === newGameId);
-				if (selectedBoardGame) {
-					form.setFieldValue("minutes", selectedBoardGame.maxPlayTime ?? 30);
-					form.setFieldValue("start", addMinutes(new Date(), -(selectedBoardGame?.maxPlayTime ?? 30)));
-					dispatch({
-						type: "SET_GAME",
-						gameId: newGameId,
-						expansionList: selectedBoardGame.expansions,
-					});
-				}
-			}
-		});
-		return () => subscription.unsubscribe();
-	}, [form, games]);
+	const removePlayer = useCallback(
+		(playerId: number) => {
+			changePlayers((players) => players.filter((x) => x.playerId !== playerId));
+		},
+		[changePlayers],
+	);
 
-	const addPlayer = useCallback((player: PlayerType) => {
-		dispatch({ type: "ADD_PLAYER", player });
-	}, []);
+	const setScore = useCallback(
+		(playerId: number, score: number | null) => {
+			changePlayers((players) => updatePlayer(players, playerId, (player) => ({ ...player, score })));
+		},
+		[changePlayers],
+	);
 
-	const updatePlayer = useCallback((player: PlayerType) => {
-		dispatch({ type: "UPDATE_PLAYER", player });
-	}, []);
+	const toggleWon = useCallback(
+		(playerId: number) => {
+			winnersFromScores.current = false;
+			changePlayers((players) => updatePlayer(players, playerId, (player) => ({ ...player, won: !player.won })));
+		},
+		[changePlayers],
+	);
 
-	const removePlayer = useCallback((index: number) => {
-		dispatch({ type: "REMOVE_PLAYER", index });
-	}, []);
+	const toggleFirstPlay = useCallback(
+		(playerId: number) => {
+			changePlayers((players) =>
+				updatePlayer(players, playerId, (player) => ({ ...player, firstPlay: !player.firstPlay })),
+			);
+		},
+		[changePlayers],
+	);
 
-	const openEditPlayerModal = useCallback((playerId: number) => {
-		dispatch({ type: "OPEN_UPDATE_MODAL", playerId });
-	}, []);
+	const setSelectedExpansionIds = useCallback(
+		(ids: number[]) => setExpansionSelection({ gameId: selectedGameId, ids }),
+		[selectedGameId],
+	);
 
-	const openCreateModal = useCallback(() => {
-		dispatch({ type: "OPEN_CREATE_MODAL" });
-	}, []);
-
-	const closeModal = useCallback(() => {
-		dispatch({ type: "CLOSE_MODAL" });
-	}, []);
-
-	const setSelectedExpansionIds = useCallback((expansionIds: number[]) => {
-		dispatch({ type: "SET_SELECTED_EXPANSIONS", expansionIds });
-	}, []);
+	const selectedGame =
+		games.find((g) => g.id === selectedGameId) ?? (initialGame?.id === selectedGameId ? initialGame : undefined);
 
 	return {
-		selectedGameId: state.selectedGameId,
-		expansionList: state.expansionList,
-		selectedExpansionIds: state.selectedExpansionIds,
+		hasScoring: selectedGame?.hasScoring ?? true,
+		hasCoopMode: selectedGame?.hasCoopMode ?? false,
+		expansionList: selectedGame?.expansions ?? [],
+		selectedExpansionIds: expansionSelection.gameId === selectedGameId ? expansionSelection.ids : [],
 		setSelectedExpansionIds,
-
-		players: state.players,
 		addPlayer,
-		updatePlayer,
 		removePlayer,
-		openEditPlayerModal,
-
-		isCreateModalOpen: state.playerModal.type === "create",
-		isUpdateModalOpen: state.playerModal.type === "update",
-		openCreateModal,
-		closeModal,
-		playerIdToEdit: state.playerModal.playerIdToEdit,
+		setScore,
+		toggleWon,
+		toggleFirstPlay,
 	};
 };
+
+export type SessionFormState = ReturnType<typeof useSessionFormState>;

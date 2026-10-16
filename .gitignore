@@ -654,3 +654,19 @@ BoardGameTracker.Host/Properties/launchSettings.json
 /*.md
 !/README.md
 !/CONTRIBUTING.md
+!/SECURITY.md
+!/CHANGELOG.md
+!/CODE_OF_CONDUCT.md
+
+### BoardGameTracker runtime data ###
+/postgres-data/
+/images/
+/manuals/
+/ollama/
+/BoardGameTracker.Host/wwwroot/
+/BoardGameTracker.Host/images/cover/
+/BoardGameTracker.Host/images/profile/
+/BoardGameTracker.Host/manuals/
+/BoardGameTracker.Host/Logs/
+.env.*
+!.env.example

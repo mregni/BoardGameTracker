@@ -15,17 +15,20 @@ public class SettingsService : ISettingsService
     private readonly IConfigRepository _configRepository;
     private readonly IEnvironmentProvider _environmentProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IIntegrationKeyProtector _keyProtector;
     private readonly ILogger<SettingsService> _logger;
 
     public SettingsService(
         IConfigRepository configRepository,
         IEnvironmentProvider environmentProvider,
         IUnitOfWork unitOfWork,
+        IIntegrationKeyProtector keyProtector,
         ILogger<SettingsService> logger)
     {
         _configRepository = configRepository;
         _environmentProvider = environmentProvider;
         _unitOfWork = unitOfWork;
+        _keyProtector = keyProtector;
         _logger = logger;
     }
 
@@ -33,29 +36,42 @@ public class SettingsService : ISettingsService
     {
         _logger.LogDebug("Fetching settings");
         var configs = await _configRepository.GetAllConfigsAsync();
+        var overrides = new Dictionary<string, string>();
+
+        T Resolve<T>(string field, string key, T fallback = default!)
+        {
+            var value = ResolveValue(configs, key, fallback, out var fromEnvironment);
+            if (fromEnvironment)
+            {
+                overrides[ToCamelCase(field)] = EnvironmentVariableFor(key);
+            }
+
+            return value;
+        }
 
         return new UIResourceDto
         {
-            TimeFormat = ResolveValue<string>(configs, Constants.AppConfig.TimeFormat),
-            DateFormat = ResolveValue<string>(configs, Constants.AppConfig.DateFormat),
-            UiLanguage = ResolveValue<string>(configs, Constants.AppConfig.UiLanguage),
-            Currency = ResolveValue<string>(configs, Constants.AppConfig.Currency),
+            TimeFormat = Resolve<string>(nameof(UIResourceDto.TimeFormat), Constants.AppConfig.TimeFormat),
+            DateFormat = Resolve<string>(nameof(UIResourceDto.DateFormat), Constants.AppConfig.DateFormat),
+            UiLanguage = Resolve<string>(nameof(UIResourceDto.UiLanguage), Constants.AppConfig.UiLanguage),
+            Currency = Resolve<string>(nameof(UIResourceDto.Currency), Constants.AppConfig.Currency),
             Statistics = _environmentProvider.StatisticsEnabled,
-            UpdateCheckEnabled = ResolveValue<bool>(configs, Constants.UpdateConfig.CheckEnabled),
-            VersionTrack = ResolveValue<VersionTrack>(configs, Constants.UpdateConfig.Track),
-            ShelfOfShameEnabled = ResolveValue<bool>(configs, Constants.AppConfig.ShelfOfShameEnabled),
-            ShelfOfShameMonthsLimit = ResolveValue<int>(configs, Constants.AppConfig.ShelfOfShameMonths),
-            GameNightsEnabled = ResolveValue<bool>(configs, Constants.AppConfig.GameNightsEnabled),
-            PublicUrl = ResolveValue<string>(configs, Constants.AppConfig.PublicUrl),
-            RsvpAuthenticationEnabled = ResolveValue<bool>(configs, Constants.AppConfig.RsvpAuthenticationEnabled),
+            UpdateCheckEnabled = Resolve<bool>(nameof(UIResourceDto.UpdateCheckEnabled), Constants.UpdateConfig.CheckEnabled),
+            VersionTrack = Resolve<VersionTrack>(nameof(UIResourceDto.VersionTrack), Constants.UpdateConfig.Track),
+            ShelfOfShameEnabled = Resolve<bool>(nameof(UIResourceDto.ShelfOfShameEnabled), Constants.AppConfig.ShelfOfShameEnabled),
+            ShelfOfShameMonthsLimit = Resolve(nameof(UIResourceDto.ShelfOfShameMonthsLimit), Constants.AppConfig.ShelfOfShameMonths, Constants.AppConfig.DefaultShelfOfShameMonths),
+            GameNightsEnabled = Resolve<bool>(nameof(UIResourceDto.GameNightsEnabled), Constants.AppConfig.GameNightsEnabled),
+            PublicUrl = Resolve<string>(nameof(UIResourceDto.PublicUrl), Constants.AppConfig.PublicUrl),
+            RsvpAuthenticationEnabled = Resolve<bool>(nameof(UIResourceDto.RsvpAuthenticationEnabled), Constants.AppConfig.RsvpAuthenticationEnabled),
             EmailEnabled = _environmentProvider.EmailEnabled,
             RagEnabled = _environmentProvider.RagEnabled,
-            BggStatus = GetBggConfigStatusAsync(configs),
+            BggStatus = GetBggConfigStatus(configs),
             BggApiKey = string.Empty, //Never return key to UI
             ChangeDetectionBaseUrl = configs.GetValueOrDefault(
                 Constants.ChangeDetectionConfig.BaseUrl.ToLowerInvariant(), string.Empty), //DB value only, never the env override
             ChangeDetectionStatus = GetChangeDetectionConfigStatus(configs),
-            ChangeDetectionApiKey = string.Empty //Never return key to UI
+            ChangeDetectionApiKey = string.Empty, //Never return key to UI
+            EnvironmentOverrides = overrides
         };
     }
 
@@ -65,28 +81,43 @@ public class SettingsService : ISettingsService
         var publicUrl = ValidateOptionalHttpUrl(model.PublicUrl, Constants.Errors.SettingsInvalidPublicUrl);
         var changeDetectionBaseUrl = ValidateOptionalHttpUrl(model.ChangeDetectionBaseUrl,
             Constants.Errors.ChangeDetectionInvalidBaseUrl);
+        if (changeDetectionBaseUrl.Length > 0 && HasUserInfo(changeDetectionBaseUrl))
+        {
+            throw new ValidationException(Constants.Errors.ChangeDetectionInvalidBaseUrl);
+        }
+
+        if (changeDetectionBaseUrl.Length > 0 && !SecureUrlPolicy.IsAcceptable(changeDetectionBaseUrl))
+        {
+            throw new ValidationException(Constants.Errors.ChangeDetectionInsecureBaseUrl);
+        }
 
         await using var transaction = await _unitOfWork.BeginTransactionAsync();
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.Currency, model.Currency);
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.TimeFormat, model.TimeFormat);
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.DateFormat, model.DateFormat);
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.UiLanguage, model.UiLanguage);
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.ShelfOfShameEnabled, model.ShelfOfShameEnabled);
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.ShelfOfShameMonths,
-            model.ShelfOfShameMonthsLimit);
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled);
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.PublicUrl, publicUrl);
-        await _configRepository.SetConfigValueAsync(Constants.AppConfig.RsvpAuthenticationEnabled,
-            model.RsvpAuthenticationEnabled);
-        await _configRepository.SetConfigValueAsync(Constants.UpdateConfig.CheckEnabled, model.UpdateCheckEnabled);
-        await _configRepository.SetConfigValueAsync(Constants.UpdateConfig.Track, model.VersionTrack);
+        await SetUnlessOverriddenAsync(Constants.AppConfig.Currency, model.Currency);
+        await SetUnlessOverriddenAsync(Constants.AppConfig.TimeFormat, model.TimeFormat);
+        await SetUnlessOverriddenAsync(Constants.AppConfig.DateFormat, model.DateFormat);
+        await SetUnlessOverriddenAsync(Constants.AppConfig.UiLanguage, model.UiLanguage);
+        await SetUnlessOverriddenAsync(Constants.AppConfig.ShelfOfShameEnabled, model.ShelfOfShameEnabled);
+        await SetUnlessOverriddenAsync(Constants.AppConfig.ShelfOfShameMonths, model.ShelfOfShameMonthsLimit);
+        await SetUnlessOverriddenAsync(Constants.AppConfig.GameNightsEnabled, model.GameNightsEnabled);
+        await SetUnlessOverriddenAsync(Constants.AppConfig.PublicUrl, publicUrl);
+        await SetUnlessOverriddenAsync(Constants.AppConfig.RsvpAuthenticationEnabled, model.RsvpAuthenticationEnabled);
+        await SetUnlessOverriddenAsync(Constants.UpdateConfig.CheckEnabled, model.UpdateCheckEnabled);
+        await SetUnlessOverriddenAsync(Constants.UpdateConfig.Track, model.VersionTrack);
         await _configRepository.SetConfigValueAsync(Constants.ChangeDetectionConfig.BaseUrl, changeDetectionBaseUrl);
-        await StoreSecretAsync(Constants.BggConfig.ApiKey, model.BggApiKey);
+
+        if (!IsOverriddenByEnvironment(Constants.BggConfig.EnvApiKeyName))
+        {
+            await StoreSecretAsync(Constants.BggConfig.ApiKey, model.BggApiKey);
+        }
+
         await StoreSecretAsync(Constants.ChangeDetectionConfig.ApiKey, model.ChangeDetectionApiKey);
         await transaction.CommitAsync();
 
         return await GetSettingsAsync();
     }
+
+    private static bool HasUserInfo(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.UserInfo.Length > 0;
 
     private static string ValidateOptionalHttpUrl(string? value, string errorKey)
     {
@@ -113,9 +144,41 @@ public class SettingsService : ISettingsService
         }
         else if (!string.IsNullOrWhiteSpace(submitted))
         {
-            await _configRepository.SetConfigValueAsync(key, submitted.Trim());
+            await _configRepository.SetConfigValueAsync(key, _keyProtector.Protect(submitted.Trim()));
         }
     }
+
+    private async Task SetUnlessOverriddenAsync<T>(string key, T value)
+    {
+        var variable = EnvironmentVariableFor(key);
+        if (TryReadEnvironment<T>(variable, out _))
+        {
+            _logger.LogDebug("Skipping {Key}: value is forced by environment variable {Variable}", key, variable);
+            return;
+        }
+
+        await _configRepository.SetConfigValueAsync(key, value);
+    }
+
+    private static string EnvironmentVariableFor(string key) => key.ToUpperInvariant();
+
+    private static bool IsOverriddenByEnvironment(string variable) =>
+        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(variable));
+
+    private static bool TryReadEnvironment<T>(string variable, out T value)
+    {
+        var envValue = Environment.GetEnvironmentVariable(variable);
+        if (!string.IsNullOrWhiteSpace(envValue) && TypeConverter.TryConvertFromString<T>(envValue.Trim(), out var result))
+        {
+            value = result;
+            return true;
+        }
+
+        value = default!;
+        return false;
+    }
+
+    private static string ToCamelCase(string name) => char.ToLowerInvariant(name[0]) + name[1..];
 
     public async Task<string?> GetBggApiKeyAsync()
     {
@@ -125,7 +188,8 @@ public class SettingsService : ISettingsService
             return envValue.Trim();
         }
 
-        return await _configRepository.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey);
+        var stored = await _configRepository.GetConfigValueAsync<string>(Constants.BggConfig.ApiKey);
+        return _keyProtector.Reveal(Constants.BggConfig.ApiKey, stored);
     }
 
     public async Task<bool> IsBggEnabled()
@@ -138,10 +202,11 @@ public class SettingsService : ISettingsService
     {
         var configs = await _configRepository.GetConfigsByPrefixAsync(Constants.ChangeDetectionConfig.Prefix);
         return (configs.GetValueOrDefault(Constants.ChangeDetectionConfig.BaseUrl),
-            configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey));
+            _keyProtector.Reveal(Constants.ChangeDetectionConfig.ApiKey,
+                configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey)));
     }
 
-    private static BggConfigStatusDto GetBggConfigStatusAsync(Dictionary<string, string> configs)
+    private BggConfigStatusDto GetBggConfigStatus(Dictionary<string, string> configs)
     {
         var envValue = Environment.GetEnvironmentVariable(Constants.BggConfig.EnvApiKeyName);
         if (!string.IsNullOrWhiteSpace(envValue))
@@ -154,7 +219,8 @@ public class SettingsService : ISettingsService
             };
         }
 
-        var dbValue = ResolveValue<string>(configs, Constants.BggConfig.ApiKey);
+        var dbValue = _keyProtector.Reveal(Constants.BggConfig.ApiKey,
+            configs.GetValueOrDefault(Constants.BggConfig.ApiKey));
         if (!string.IsNullOrWhiteSpace(dbValue))
         {
             return new BggConfigStatusDto
@@ -173,10 +239,11 @@ public class SettingsService : ISettingsService
         };
     }
 
-    private static ChangeDetectionConfigStatusDto GetChangeDetectionConfigStatus(Dictionary<string, string> configs)
+    private ChangeDetectionConfigStatusDto GetChangeDetectionConfigStatus(Dictionary<string, string> configs)
     {
         var baseUrl = configs.GetValueOrDefault(Constants.ChangeDetectionConfig.BaseUrl.ToLowerInvariant(), string.Empty);
-        var apiKey = configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey.ToLowerInvariant(), string.Empty);
+        var apiKey = _keyProtector.Reveal(Constants.ChangeDetectionConfig.ApiKey,
+            configs.GetValueOrDefault(Constants.ChangeDetectionConfig.ApiKey));
 
         var isConfigured = !string.IsNullOrWhiteSpace(baseUrl) && !string.IsNullOrWhiteSpace(apiKey);
 
@@ -188,11 +255,15 @@ public class SettingsService : ISettingsService
         };
     }
 
-    private static T ResolveValue<T>(Dictionary<string, string> configs, string key)
+    private static T ResolveValue<T>(Dictionary<string, string> configs, string key, T fallback = default!)
     {
-        var envValue = Environment.GetEnvironmentVariable(key.ToUpperInvariant());
-        if (!string.IsNullOrWhiteSpace(envValue) &&
-            TypeConverter.TryConvertFromString<T>(envValue.Trim(), out var envResult))
+        return ResolveValue(configs, key, fallback, out _);
+    }
+
+    private static T ResolveValue<T>(Dictionary<string, string> configs, string key, T fallback, out bool fromEnvironment)
+    {
+        fromEnvironment = TryReadEnvironment<T>(EnvironmentVariableFor(key), out var envResult);
+        if (fromEnvironment)
         {
             return envResult;
         }
@@ -204,6 +275,6 @@ public class SettingsService : ISettingsService
             return dbResult;
         }
 
-        return default!;
+        return fallback;
     }
 }

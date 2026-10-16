@@ -5,7 +5,7 @@ import { BgtSimpleSelect } from "@/components/BgtForm/BgtSimpleSelect";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { useAuth } from "@/hooks/useAuth";
 
-export type SettingsCategory = "general" | "shelf-of-shame" | "game-nights" | "bgg" | "advanced" | "account";
+export type SettingsCategory = "general" | "shelf-of-shame" | "game-nights" | "bgg" | "advanced" | "account" | "sso";
 
 interface CategoryItem {
 	id: SettingsCategory;
@@ -40,6 +40,11 @@ const CATEGORIES: CategoryItem[] = [
 		description: "settings:sidebar.game-nights.description",
 	},
 	{
+		id: "sso",
+		label: "settings:sidebar.sso.title",
+		description: "settings:sidebar.sso.description",
+	},
+	{
 		id: "advanced",
 		label: "settings:sidebar.advanced.title",
 		description: "settings:sidebar.advanced.description",
@@ -59,6 +64,7 @@ export const SettingsSidebar = ({ activeCategory, onCategoryChange, canManageSet
 
 	const visibleCategories = CATEGORIES.filter((c) => {
 		if (c.id === "account") return showAccountTab;
+		if (c.id === "sso") return showAccountTab && canManageSettings;
 		return canManageSettings;
 	});
 
@@ -81,6 +87,7 @@ export const SettingsSidebar = ({ activeCategory, onCategoryChange, canManageSet
 
 					return (
 						<button
+							type="button"
 							key={category.id}
 							onClick={() => onCategoryChange(category.id)}
 							className={cx(

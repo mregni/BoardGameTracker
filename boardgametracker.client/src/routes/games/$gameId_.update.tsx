@@ -1,19 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
+import { noop, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { CreateGame, Game } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getGamePrice } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
-
 import { gameIdParamSchema } from "@/utils/routeSchemas";
 import { GameForm } from "./-components/GameForm";
 import { useUpdateGame } from "./-hooks/useUpdateGame";
 
 export const Route = createFileRoute("/games/$gameId_/update")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 	params: gameIdParamSchema,
 	loader: async ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getSettings());
+		queryClient.query(getSettings()).catch(noop);
 	},
 });
 
@@ -40,7 +40,7 @@ function RouteComponent() {
 		const updatedGame: Game = {
 			...game,
 			...data,
-			image: data.image ?? game.image,
+			image: data.image === undefined ? game.image : (data.image ?? ""),
 			additionDate: data.additionDate ?? null,
 		};
 		const result = await updateGame(updatedGame);
@@ -54,8 +54,17 @@ function RouteComponent() {
 			livePrice={priceQuery.data}
 			buttonText={t("update.save")}
 			title={t("update.title")}
+			backTo={`/games/${gameId}`}
 			onClick={save}
 			disabled={isLoading}
 		/>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

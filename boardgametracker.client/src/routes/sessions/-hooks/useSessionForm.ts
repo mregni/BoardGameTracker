@@ -2,17 +2,19 @@ import { useQueries } from "@tanstack/react-query";
 import { getGames } from "@/services/queries/games";
 import { getLocations } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
+import { getSessionSuggestions } from "@/services/queries/sessions";
 import { getSettings } from "@/services/queries/settings";
 
 export const useSessionForm = () => {
-	const [settingsQuery, locationQuery, gamesQuery, playersQuery] = useQueries({
-		queries: [getSettings(), getLocations(), getGames(), getPlayers()],
+	const [settingsQuery, locationQuery, gamesQuery, playersQuery, suggestionsQuery] = useQueries({
+		queries: [getSettings(), getLocations(), getGames(), getPlayers(), getSessionSuggestions()],
 	});
 
 	const settings = settingsQuery.data;
 	const locations = locationQuery.data ?? [];
 	const games = gamesQuery.data ?? [];
 	const players = playersQuery.data ?? [];
+	const suggestions = suggestionsQuery.data;
 
 	const isLoading = settingsQuery.isLoading || locationQuery.isLoading || gamesQuery.isLoading;
 
@@ -22,5 +24,6 @@ export const useSessionForm = () => {
 		locations,
 		games,
 		players,
+		suggestions,
 	};
 };

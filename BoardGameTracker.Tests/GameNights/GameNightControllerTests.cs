@@ -1,0 +1,513 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Security.Claims;
+using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Common;
+using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs.Commands;
+using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Core.GameNights.Interfaces;
+using FluentAssertions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using Xunit;
+
+namespace BoardGameTracker.Tests.GameNights;
+
+public class GameNightControllerTests
+{
+    private readonly Mock<IGameNightService> _gameNightServiceMock;
+    private readonly GameNightController _controller;
+
+    public GameNightControllerTests()
+    {
+        _gameNightServiceMock = new Mock<IGameNightService>();
+        _controller = new GameNightController(_gameNightServiceMock.Object);
+    }
+
+    private void VerifyNoOtherCalls()
+    {
+        _gameNightServiceMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGameNights_ShouldReturnOkWithGameNights_WhenGameNightsExist()
+    {
+        var startDate = new DateTime(2026, 4, 1, 18, 0, 0, DateTimeKind.Utc);
+        var gameNights = new List<GameNight>
+        {
+            GameNight.Create("Game Night Alpha", "Bring snacks", startDate, 1, 1),
+            GameNight.Create("Game Night Beta", "", startDate.AddDays(7), 2, 2)
+        };
+
+        _gameNightServiceMock
+            .Setup(x => x.GetGameNights())
+            .ReturnsAsync(gameNights);
+
+        var result = await _controller.GetGameNights();
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var returnedGameNights = okResult.Value.Should().BeAssignableTo<List<GameNightDto>>().Subject;
+
+        returnedGameNights.Should().HaveCount(2);
+        returnedGameNights[0].Title.Should().Be("Game Night Alpha");
+        returnedGameNights[1].Title.Should().Be("Game Night Beta");
+
+        _gameNightServiceMock.Verify(x => x.GetGameNights(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGameNights_ShouldReturnOkWithEmptyList_WhenNoGameNightsExist()
+    {
+        _gameNightServiceMock
+            .Setup(x => x.GetGameNights())
+            .ReturnsAsync([]);
+
+        var result = await _controller.GetGameNights();
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var returnedGameNights = okResult.Value.Should().BeAssignableTo<List<GameNightDto>>().Subject;
+
+        returnedGameNights.Should().BeEmpty();
+
+        _gameNightServiceMock.Verify(x => x.GetGameNights(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Create_ShouldReturnCreatedWithGameNight_WhenCommandIsValid()
+    {
+        var command = new CreateGameNightCommand
+        {
+            Title = "New Game Night",
+            Notes = "First edition",
+            StartDate = new DateTime(2026, 5, 10, 19, 0, 0, DateTimeKind.Utc),
+            HostId = 1,
+            LocationId = 2
+        };
+
+        var createdGameNight = GameNight.Create(command.Title, command.Notes, command.StartDate, command.HostId, command.LocationId);
+
+        _gameNightServiceMock
+            .Setup(x => x.Create(command))
+            .ReturnsAsync(createdGameNight);
+
+        var result = await _controller.Create(command);
+
+        var okResult = result.Should().BeOfType<CreatedResult>().Subject;
+        var gameNightDto = okResult.Value.Should().BeAssignableTo<GameNightDto>().Subject;
+
+        gameNightDto.Title.Should().Be("New Game Night");
+        gameNightDto.Notes.Should().Be("First edition");
+        gameNightDto.HostId.Should().Be(1);
+        gameNightDto.LocationId.Should().Be(2);
+
+        _gameNightServiceMock.Verify(x => x.Create(command), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldReturnOkWithUpdatedGameNight_WhenCommandIsValid()
+    {
+        var command = new UpdateGameNightCommand
+        {
+            Id = 1,
+            Title = "Updated Game Night",
+            Notes = "Revised notes",
+            StartDate = new DateTime(2026, 6, 15, 20, 0, 0, DateTimeKind.Utc),
+            HostId = 3,
+            LocationId = 4
+        };
+
+        var updatedGameNight = GameNight.Create(command.Title, command.Notes, command.StartDate, command.HostId, command.LocationId);
+
+        _gameNightServiceMock
+            .Setup(x => x.Update(command))
+            .ReturnsAsync(updatedGameNight);
+
+        var result = await _controller.Update(command);
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var gameNightDto = okResult.Value.Should().BeAssignableTo<GameNightDto>().Subject;
+
+        gameNightDto.Title.Should().Be("Updated Game Night");
+        gameNightDto.Notes.Should().Be("Revised notes");
+        gameNightDto.HostId.Should().Be(3);
+        gameNightDto.LocationId.Should().Be(4);
+
+        _gameNightServiceMock.Verify(x => x.Update(command), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGameNight_ShouldReturnTheNightWithItsSessionsRunningGamesAndSummary()
+    {
+        var startDate = new DateTime(2026, 10, 16, 18, 0, 0, DateTimeKind.Utc);
+        var gameNight = GameNight.Create("Strategy night", "", startDate, 1, 1);
+        gameNight.Id = 4;
+        var first = new Session(7, startDate, startDate.AddMinutes(80), string.Empty) { Id = 1 };
+        first.AddPlayerSession(1, 98, false, true);
+        first.AddPlayerSession(2, 90, false, false);
+        var second = new Session(8, startDate.AddMinutes(90), startDate.AddMinutes(120), string.Empty) { Id = 2 };
+        second.AddPlayerSession(1, 70, false, false);
+        second.AddPlayerSession(2, 77, false, true);
+        var third = new Session(8, startDate.AddMinutes(130), startDate.AddMinutes(155), string.Empty) { Id = 3 };
+        third.AddPlayerSession(1, 82, false, true);
+        gameNight.Sessions.Add(first);
+        gameNight.Sessions.Add(third);
+        gameNight.Sessions.Add(second);
+        var runningGame = RunningGame.Create(4, 8, startDate.AddMinutes(160), [1, 2]);
+        runningGame.Id = 9;
+        gameNight.RunningGames.Add(runningGame);
+
+        _gameNightServiceMock.Setup(x => x.GetDetail(4)).ReturnsAsync(gameNight);
+
+        var result = await _controller.GetGameNight(4);
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var detail = okResult.Value.Should().BeOfType<GameNightDetailDto>().Subject;
+        detail.GameNight.Id.Should().Be(4);
+        detail.Sessions.Select(x => x.Id).Should().Equal(3, 2, 1);
+        detail.RunningGames.Should().ContainSingle(x => x.Id == 9 && x.GameId == 8);
+        detail.GameNight.Summary.GamesPlayed.Should().Be(3);
+        detail.GameNight.Summary.TotalMinutes.Should().Be(135);
+        detail.GameNight.Summary.WinnerIds.Should().Equal(1);
+        detail.GameNight.Summary.MostWins.Should().Be(2);
+
+        _gameNightServiceMock.Verify(x => x.GetDetail(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetGameNight_ShouldReturnNotFound_WhenGameNightDoesNotExist()
+    {
+        _gameNightServiceMock.Setup(x => x.GetDetail(4)).ReturnsAsync((GameNight?)null);
+
+        var result = await _controller.GetGameNight(4);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _gameNightServiceMock.Verify(x => x.GetDetail(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task End_ShouldReturnNoContent_WhenTheNightEnded()
+    {
+        _gameNightServiceMock.Setup(x => x.End(4)).ReturnsAsync(GameNight.Create("Night", "", DateTime.UtcNow, 1, 1));
+
+        var result = await _controller.End(4);
+
+        result.Should().BeOfType<NoContentResult>();
+        _gameNightServiceMock.Verify(x => x.End(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task End_ShouldReturnNotFound_WhenTheNightDoesNotExist()
+    {
+        _gameNightServiceMock.Setup(x => x.End(4)).ReturnsAsync((GameNight?)null);
+
+        var result = await _controller.End(4);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _gameNightServiceMock.Verify(x => x.End(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Reopen_ShouldReturnNoContent_WhenTheNightReopened()
+    {
+        _gameNightServiceMock.Setup(x => x.Reopen(4)).ReturnsAsync(GameNight.Create("Night", "", DateTime.UtcNow, 1, 1));
+
+        var result = await _controller.Reopen(4);
+
+        result.Should().BeOfType<NoContentResult>();
+        _gameNightServiceMock.Verify(x => x.Reopen(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Reopen_ShouldReturnNotFound_WhenTheNightDoesNotExist()
+    {
+        _gameNightServiceMock.Setup(x => x.Reopen(4)).ReturnsAsync((GameNight?)null);
+
+        var result = await _controller.Reopen(4);
+
+        result.Should().BeOfType<NotFoundResult>();
+        _gameNightServiceMock.Verify(x => x.Reopen(4), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Delete_ShouldReturnNoContent_WhenGameNightExists()
+    {
+        var gameNightId = 1;
+        var gameNight = GameNight.Create("Game Night", "", DateTime.UtcNow, 1, 1);
+
+        _gameNightServiceMock
+            .Setup(x => x.GetById(gameNightId))
+            .ReturnsAsync(gameNight);
+
+        _gameNightServiceMock
+            .Setup(x => x.Delete(gameNightId))
+            .Returns(Task.CompletedTask);
+
+        var result = await _controller.Delete(gameNightId);
+
+        result.Should().BeOfType<NoContentResult>();
+
+        _gameNightServiceMock.Verify(x => x.GetById(gameNightId), Times.Once);
+        _gameNightServiceMock.Verify(x => x.Delete(gameNightId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Delete_ShouldReturnNotFound_WhenGameNightDoesNotExist()
+    {
+        var gameNightId = 999;
+
+        _gameNightServiceMock
+            .Setup(x => x.GetById(gameNightId))
+            .ReturnsAsync((GameNight?)null);
+
+        var result = await _controller.Delete(gameNightId);
+
+        result.Should().BeOfType<NotFoundResult>();
+
+        _gameNightServiceMock.Verify(x => x.GetById(gameNightId), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AddSuggestedGame_ShouldReturnOkWithTheGameNight()
+    {
+        var gameNight = GameNight.Create("Game Night", "", new DateTime(2026, 10, 23, 19, 0, 0, DateTimeKind.Utc), 1, 1);
+        gameNight.AddSuggestedGame(new Game("Root") { Id = 9 });
+
+        _gameNightServiceMock
+            .Setup(x => x.AddSuggestedGame(It.Is<AddSuggestedGameCommand>(c => c.GameNightId == 4 && c.GameId == 9)))
+            .ReturnsAsync(gameNight);
+
+        var result = await _controller.AddSuggestedGame(4, 9);
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var dto = okResult.Value.Should().BeOfType<GameNightDto>().Subject;
+        dto.Title.Should().Be("Game Night");
+        dto.SuggestedGames.Should().ContainSingle(x => x.Id == 9);
+
+        _gameNightServiceMock.Verify(x => x.AddSuggestedGame(It.Is<AddSuggestedGameCommand>(c => c.GameNightId == 4 && c.GameId == 9)), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RemoveSuggestedGame_ShouldReturnNoContent()
+    {
+        _gameNightServiceMock
+            .Setup(x => x.RemoveSuggestedGame(It.Is<RemoveSuggestedGameCommand>(c => c.GameNightId == 4 && c.GameId == 9)))
+            .Returns(Task.CompletedTask);
+
+        var result = await _controller.RemoveSuggestedGame(4, 9);
+
+        result.Should().BeOfType<NoContentResult>();
+
+        _gameNightServiceMock.Verify(x => x.RemoveSuggestedGame(It.Is<RemoveSuggestedGameCommand>(c => c.GameNightId == 4 && c.GameId == 9)), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(nameof(GameNightController.AddSuggestedGame))]
+    [InlineData(nameof(GameNightController.RemoveSuggestedGame))]
+    public void SuggestionEndpoints_ShouldOnlyAllowUsersAndAdmins(string action)
+    {
+        var method = typeof(GameNightController).GetMethod(action)!;
+
+        method.GetCustomAttributes<AuthorizeAttribute>().Should().ContainSingle(x => x.Roles == Constants.AuthRoles.UserOrAdmin);
+        method.GetCustomAttributes<AllowAnonymousAttribute>().Should().BeEmpty();
+        method.GetCustomAttributes<RouteAttribute>().Should().ContainSingle(x => x.Template == "{id:int}/suggestions/{gameId:int}");
+    }
+
+    public static TheoryData<UpdateRsvpCommand> UpdateRsvpCommands => new()
+    {
+        new UpdateRsvpCommand { Id = 5, State = GameNightRsvpState.Accepted },
+        new UpdateRsvpCommand { GameNightId = 10, PlayerId = 3, State = GameNightRsvpState.Declined }
+    };
+
+    [Theory]
+    [MemberData(nameof(UpdateRsvpCommands))]
+    public async Task UpdateRsvp_ShouldReturnOkWithRsvpDto_WhenCommandIsValid(UpdateRsvpCommand command)
+    {
+        var rsvp = GameNightRsvp.Create(3, command.State);
+        SetAuthenticatedUser();
+
+        _gameNightServiceMock
+            .Setup(x => x.UpdateRsvp(command))
+            .ReturnsAsync(rsvp);
+
+        var result = await _controller.UpdateRsvp(command);
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var rsvpDto = okResult.Value.Should().BeAssignableTo<GameNightRsvpDto>().Subject;
+
+        rsvpDto.PlayerId.Should().Be(3);
+        rsvpDto.State.Should().Be(command.State);
+
+        _gameNightServiceMock.Verify(x => x.UpdateRsvp(command), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void UpdateRsvp_ShouldRequireASignedInUser_AndTheLinkRouteShouldNot()
+    {
+        var byAccount = typeof(GameNightController).GetMethod(nameof(GameNightController.UpdateRsvp))!;
+        var byLink = typeof(GameNightController).GetMethod(nameof(GameNightController.UpdateRsvpByLink))!;
+
+        byAccount.GetCustomAttributes<AuthorizeAttribute>().Should().ContainSingle(x => x.Roles == Constants.AuthRoles.UserOrAdmin);
+        byAccount.GetCustomAttributes<AllowAnonymousAttribute>().Should().BeEmpty();
+        byLink.GetCustomAttributes<AllowAnonymousAttribute>().Should().ContainSingle();
+        byLink.GetCustomAttributes<RouteAttribute>().Should().ContainSingle(x => x.Template == "link/{linkId:guid}/rsvp");
+    }
+
+    [Theory]
+    [MemberData(nameof(UpdateRsvpCommands))]
+    public async Task UpdateRsvpByLink_ShouldPassTheRouteLinkAndAuthenticationState_ToTheService(UpdateRsvpCommand command)
+    {
+        var linkId = Guid.NewGuid();
+        var rsvp = GameNightRsvp.Create(3, command.State);
+
+        _gameNightServiceMock
+            .Setup(x => x.UpdateRsvpByLink(linkId, command, false))
+            .ReturnsAsync(rsvp);
+
+        var result = await _controller.UpdateRsvpByLink(linkId, command);
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.Value.Should().BeAssignableTo<GameNightRsvpDto>().Which.State.Should().Be(command.State);
+
+        _gameNightServiceMock.Verify(x => x.UpdateRsvpByLink(linkId, command, false), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRsvpByLink_ShouldTellTheService_WhenTheCallerIsSignedIn()
+    {
+        var linkId = Guid.NewGuid();
+        var command = new UpdateRsvpCommand { Id = 5, State = GameNightRsvpState.Accepted };
+        SetAuthenticatedUser();
+
+        _gameNightServiceMock
+            .Setup(x => x.UpdateRsvpByLink(linkId, command, true))
+            .ReturnsAsync(GameNightRsvp.Create(3, command.State));
+
+        var result = await _controller.UpdateRsvpByLink(linkId, command);
+
+        result.Should().BeOfType<OkObjectResult>();
+
+        _gameNightServiceMock.Verify(x => x.UpdateRsvpByLink(linkId, command, true), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRsvp_ShouldThrowArgumentNullException_WhenIdAndGameNightIdAreNull()
+    {
+        var command = new UpdateRsvpCommand
+        {
+            State = GameNightRsvpState.Accepted
+        };
+        SetAuthenticatedUser();
+
+        var act = () => _controller.UpdateRsvp(command);
+
+        await act.Should().ThrowAsync<ArgumentNullException>();
+
+        _gameNightServiceMock.Verify(x => x.UpdateRsvp(It.IsAny<UpdateRsvpCommand>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateRsvpByLink_ShouldThrowArgumentNullException_WhenIdAndPlayerIdAreNull()
+    {
+        var command = new UpdateRsvpCommand
+        {
+            GameNightId = 10,
+            State = GameNightRsvpState.Accepted
+        };
+
+        var act = () => _controller.UpdateRsvpByLink(Guid.NewGuid(), command);
+
+        await act.Should().ThrowAsync<ArgumentNullException>();
+
+        _gameNightServiceMock.Verify(x => x.UpdateRsvpByLink(It.IsAny<Guid>(), It.IsAny<UpdateRsvpCommand>(), It.IsAny<bool>()), Times.Never);
+        VerifyNoOtherCalls();
+    }
+
+    private void SetAuthenticatedUser()
+    {
+        var identity = new ClaimsIdentity([new Claim(ClaimTypes.Name, "tester")], "test");
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }
+        };
+    }
+
+    [Fact]
+    public async Task SendInvites_ShouldReturnOkWithResult()
+    {
+        var gameNightId = 4;
+        var sendResult = new SendInvitesResultDto { Sent = 3 };
+
+        _gameNightServiceMock
+            .Setup(x => x.SendInvitesAsync(gameNightId, TestContext.Current.CancellationToken))
+            .ReturnsAsync(sendResult);
+
+        var result = await _controller.SendInvites(gameNightId, TestContext.Current.CancellationToken);
+
+        result.Should().BeOfType<OkObjectResult>()
+            .Which.Value.Should().BeSameAs(sendResult);
+
+        _gameNightServiceMock.Verify(x => x.SendInvitesAsync(gameNightId, TestContext.Current.CancellationToken), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetByLink_ShouldReturnOkWithGameNightDto_WhenLinkIdExists()
+    {
+        var linkId = Guid.NewGuid();
+        var gameNight = GameNight.Create("Link Night", "Found via link", DateTime.UtcNow, 1, 1);
+
+        _gameNightServiceMock
+            .Setup(x => x.GetByLinkId(linkId, false))
+            .ReturnsAsync(gameNight);
+
+        var result = await _controller.GetByLink(linkId);
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var gameNightDto = okResult.Value.Should().BeAssignableTo<GameNightDto>().Subject;
+
+        gameNightDto.Title.Should().Be("Link Night");
+
+        _gameNightServiceMock.Verify(x => x.GetByLinkId(linkId, false), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetByLink_ShouldReturnNotFound_WhenLinkIdDoesNotExist()
+    {
+        var linkId = Guid.NewGuid();
+
+        _gameNightServiceMock
+            .Setup(x => x.GetByLinkId(linkId, false))
+            .ReturnsAsync((GameNight?)null);
+
+        var result = await _controller.GetByLink(linkId);
+
+        result.Should().BeOfType<NotFoundResult>();
+
+        _gameNightServiceMock.Verify(x => x.GetByLinkId(linkId, false), Times.Once);
+        VerifyNoOtherCalls();
+    }
+}

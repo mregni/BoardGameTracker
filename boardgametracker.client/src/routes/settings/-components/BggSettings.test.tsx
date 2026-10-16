@@ -1,9 +1,25 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useAppForm } from "@/hooks/form";
 import type { BggConfigStatus, ChangeDetectionConfigStatus } from "@/models";
 import { renderWithProviders, screen, userEvent } from "@/test/test-utils";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
 import { BggSettings } from "./BggSettings";
+
+const { toastSuccess, toastError, getStatusesCall, testIntegrationCall } = vi.hoisted(() => ({
+	toastSuccess: vi.fn(),
+	toastError: vi.fn(),
+	getStatusesCall: vi.fn(),
+	testIntegrationCall: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+	toast: { success: toastSuccess, error: toastError },
+}));
+
+vi.mock("@/services/integrationService", () => ({
+	getIntegrationStatusesCall: getStatusesCall,
+	testIntegrationCall: testIntegrationCall,
+}));
 
 const createBggStatus = (overrides: Partial<BggConfigStatus> = {}): BggConfigStatus => ({
 	isConfigured: false,
@@ -44,7 +60,13 @@ const Harness = ({
 
 	return (
 		<>
-			<BggSettings form={form} bggStatus={bggStatus} changeDetectionStatus={changeDetectionStatus} disabled={disabled} />
+			<BggSettings
+				form={form}
+				bggStatus={bggStatus}
+				changeDetectionStatus={changeDetectionStatus}
+				disabled={disabled}
+				timeFormat="HH:mm"
+			/>
 			<form.Subscribe selector={(state) => state.values.bggApiKey}>
 				{(value) => <span data-testid="bggApiKey-value">{value === null ? "null" : String(value)}</span>}
 			</form.Subscribe>
@@ -59,6 +81,10 @@ const cdConfigured: ChangeDetectionConfigStatus = { isConfigured: true, isReadOn
 const cdNotConfigured: ChangeDetectionConfigStatus = { isConfigured: false, isReadOnly: false, source: "none" };
 
 describe("BggSettings", () => {
+	beforeEach(() => {
+		getStatusesCall.mockResolvedValue([]);
+	});
+
 	describe("Section", () => {
 		it("should render the section title", () => {
 			renderWithProviders(<Harness bggStatus={createBggStatus()} />);
@@ -184,6 +210,99 @@ describe("BggSettings", () => {
 				<Harness bggStatus={createBggStatus({ isConfigured: false })} disabled />,
 			);
 			expect(container.querySelector('input[type="password"]')).toBeDisabled();
+		});
+	});
+
+	describe("Integration status", () => {
+		beforeEach(() => {
+			vi.clearAllMocks();
+			getStatusesCall.mockResolvedValue([
+				{ integration: "bgg", status: "ok", checkedAt: "2026-10-16T09:30:00Z", messageKey: "ok" },
+				{
+					integration: "changeDetection",
+					status: "notConfigured",
+					checkedAt: "2026-10-16T09:30:00Z",
+					messageKey: "not-configured",
+				},
+			]);
+		});
+
+		it("should show a status badge per integration when the tab opens", async () => {
+			renderWithProviders(<Harness bggStatus={createBggStatus({ isConfigured: true })} />);
+
+			expect(await screen.findByText("integrations.status.ok")).toBeInTheDocument();
+			expect(screen.getByText("integrations.status.notConfigured")).toBeInTheDocument();
+			expect(getStatusesCall).toHaveBeenCalledTimes(1);
+		});
+
+		it("should show the loading state while a test runs and the result inline afterwards", async () => {
+			const user = userEvent.setup();
+			let resolveTest: (value: unknown) => void = () => undefined;
+			testIntegrationCall.mockReturnValue(
+				new Promise((resolve) => {
+					resolveTest = resolve;
+				}),
+			);
+			renderWithProviders(<Harness bggStatus={createBggStatus({ isConfigured: true })} />);
+			await screen.findByText("integrations.status.ok");
+
+			await user.click(screen.getAllByRole("button", { name: "integrations.test" })[0]);
+
+			const testing = await screen.findByRole("button", { name: "integrations.testing" });
+			expect(testing).toBeDisabled();
+			expect(testing).toHaveAttribute("aria-busy", "true");
+			expect(testIntegrationCall).toHaveBeenCalledWith("bgg", expect.anything());
+
+			resolveTest({
+				integration: "bgg",
+				status: "unauthorized",
+				checkedAt: "2026-10-16T09:31:00Z",
+				messageKey: "unauthorized",
+			});
+
+			expect(await screen.findByText("integrations.status.unauthorized")).toBeInTheDocument();
+			expect(screen.getByText("integrations.reason.unauthorized")).toBeInTheDocument();
+			expect(screen.queryByText("integrations.status.ok")).not.toBeInTheDocument();
+			expect(screen.getAllByRole("button", { name: "integrations.test" })[0]).toBeEnabled();
+			expect(toastError).not.toHaveBeenCalled();
+		});
+
+		it("should test changedetection.io on its own button", async () => {
+			const user = userEvent.setup();
+			testIntegrationCall.mockResolvedValue({
+				integration: "changeDetection",
+				status: "unreachable",
+				checkedAt: "2026-10-16T09:31:00Z",
+				messageKey: "timeout",
+			});
+			renderWithProviders(<Harness bggStatus={createBggStatus()} changeDetectionStatus={cdConfigured} />);
+			await screen.findByText("integrations.status.ok");
+
+			await user.click(screen.getAllByRole("button", { name: "integrations.test" })[1]);
+
+			expect(await screen.findByText("integrations.status.unreachable")).toBeInTheDocument();
+			expect(screen.getByText("integrations.reason.timeout")).toBeInTheDocument();
+			expect(testIntegrationCall).toHaveBeenCalledWith("changeDetection", expect.anything());
+		});
+
+		it("should not allow a test before a key is saved", async () => {
+			renderWithProviders(<Harness bggStatus={createBggStatus()} changeDetectionStatus={cdNotConfigured} />);
+			await screen.findByText("integrations.status.ok");
+
+			for (const button of screen.getAllByRole("button", { name: "integrations.test" })) {
+				expect(button).toBeDisabled();
+			}
+		});
+
+		it("should report a failure when the test request itself fails", async () => {
+			const user = userEvent.setup();
+			testIntegrationCall.mockRejectedValue(new Error("Network Error"));
+			renderWithProviders(<Harness bggStatus={createBggStatus({ isConfigured: true })} />);
+			await screen.findByText("integrations.status.ok");
+
+			await user.click(screen.getAllByRole("button", { name: "integrations.test" })[0]);
+
+			await vi.waitFor(() => expect(toastError).toHaveBeenCalledWith("integrations.test-failed"));
 		});
 	});
 });

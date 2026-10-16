@@ -19,6 +19,7 @@ export const BgtPlayerAvatar = (props: AvatarProps) => {
 		<BgtAvatar
 			key={`${playerSession.playerId}_${playerSession.sessionId}`}
 			title={game.hasScoring ? `${player.name} (${playerSession.score})` : player.name}
+			colorKey={player.name}
 			image={player.image}
 			onClick={() => navigate({ to: `/players/${player.id}` })}
 		/>

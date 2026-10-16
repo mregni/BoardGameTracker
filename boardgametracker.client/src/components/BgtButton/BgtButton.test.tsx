@@ -39,6 +39,13 @@ describe("BgtButton", () => {
 			const button = screen.getByRole("button");
 			expect(button).toBeDisabled();
 		});
+
+		it("should grey out a disabled button instead of keeping the variant colour", () => {
+			render(<BgtButton disabled>Disabled</BgtButton>);
+			const button = screen.getByRole("button");
+			expect(button).toHaveClass("bg-white/10", "text-white/40", "cursor-not-allowed");
+			expect(button).not.toHaveClass("bg-primary/60");
+		});
 	});
 
 	describe("Type Prop", () => {
@@ -137,5 +144,37 @@ describe("BgtButton", () => {
 			await user.click(button);
 			expect(handleClick).toHaveBeenCalled();
 		});
+	});
+});
+
+describe("BgtButton focus colour", () => {
+	it("uses the bad colour for the focus ring of the error variant", () => {
+		render(<BgtButton variant="error">Delete</BgtButton>);
+
+		expect(screen.getByRole("button", { name: "Delete" })).toHaveClass("[--focus-color:var(--color-bad)]");
+	});
+
+	it.each(["primary", "cancel", "text"] as const)("keeps the default focus ring for the %s variant", (variant) => {
+		render(<BgtButton variant={variant}>Save</BgtButton>);
+
+		expect(screen.getByRole("button", { name: "Save" }).className).not.toContain("--focus-color");
+	});
+});
+
+describe("BgtButton colours", () => {
+	it("uses the primary text token for the text variant", () => {
+		render(<BgtButton variant="text">Edit who's here</BgtButton>);
+
+		const button = screen.getByRole("button", { name: "Edit who's here" });
+		expect(button).toHaveClass("text-primary-text", "hover:text-indigo-300");
+		expect(button).not.toHaveClass("text-primary");
+	});
+
+	it("keeps the strong red fill for the error variant", () => {
+		render(<BgtButton variant="error">Delete</BgtButton>);
+
+		const button = screen.getByRole("button", { name: "Delete" });
+		expect(button).toHaveClass("bg-error-strong", "text-white");
+		expect(button).not.toHaveClass("bg-error");
 	});
 });

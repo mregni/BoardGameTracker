@@ -8,6 +8,7 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { cx } from "class-variance-authority";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
@@ -17,6 +18,7 @@ import { BgtTable, BgtTableBody, BgtTableCell, BgtTableHead, BgtTableHeader, Bgt
 declare module "@tanstack/react-table" {
 	interface ColumnMeta<TData extends RowData, TValue> {
 		hideOnMobile?: boolean;
+		alignRight?: boolean;
 	}
 }
 
@@ -31,7 +33,7 @@ export interface DataTableProps<T> {
 	widths?: (string | null)[];
 }
 
-export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
+const BgtDataTableComponent = <T,>(props: DataTableProps<T>) => {
 	const { columns, data, size = "md", noDataMessage, isLoading = false, widths, noHeaders } = props;
 	const { t } = useTranslation();
 	const table = useReactTable({
@@ -55,7 +57,7 @@ export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
 						key={head.id}
 						className={cx(
 							widths?.[i] ?? "",
-							i === header.headers.length - 1 && "text-right",
+							(i === header.headers.length - 1 || head.column.columnDef.meta?.alignRight) && "text-right",
 							hideOnMobile && "hidden md:table-cell",
 						)}
 					>
@@ -63,7 +65,7 @@ export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
 							<button
 								type="button"
 								onClick={head.column.getToggleSortingHandler()}
-								className="inline-flex items-center gap-1 cursor-pointer hover:text-primary"
+								className="inline-flex items-center gap-1 cursor-pointer hover:text-primary-text"
 							>
 								{content}
 								{sorted === "asc" && <CaretUpIcon className="size-3" />}
@@ -104,7 +106,7 @@ export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
 						<BgtTableCell
 							key={cell.id}
 							className={cx(
-								i === row.getVisibleCells().length - 1 && "text-right",
+								(i === row.getVisibleCells().length - 1 || cell.column.columnDef.meta?.alignRight) && "text-right",
 								hideOnMobile && "hidden md:table-cell",
 								cellClasses,
 							)}
@@ -134,3 +136,5 @@ export const BgtDataTable = <T,>(props: DataTableProps<T>) => {
 		</BgtTable>
 	);
 };
+
+export const BgtDataTable = memo(BgtDataTableComponent) as typeof BgtDataTableComponent;

@@ -1,12 +1,11 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { useRouter } from "@tanstack/react-router";
-import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtImageSelector, BgtSwitch, BgtTextArea } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import type { Game, GamePrice } from "@/models";
 import { type CreateGame, CreateGameSchema } from "@/models/Games/CreateGame";
@@ -15,12 +14,15 @@ import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { zodValidator } from "@/utils/zodValidator";
+import { useBack } from "../../-hooks/useBack";
 import { useGameForm } from "../-hooks/useGameForm";
 import { useImageUpload } from "../-hooks/useImageUpload";
 import { gameFormOpts } from "../-utils/gameFormOpts";
 import { GameFormBasicFields } from "./GameFormBasicFields";
+import { GameFormCoopFields } from "./GameFormCoopFields";
 import { GameFormPlayerFields } from "./GameFormPlayerFields";
 import { GameFormTimeFields } from "./GameFormTimeFields";
+import { GameFormUpdateFields } from "./GameFormUpdateFields";
 
 interface Props {
 	onClick: (data: CreateGame) => Promise<void>;
@@ -29,13 +31,14 @@ interface Props {
 	game?: Game;
 	livePrice?: GamePrice;
 	title: string;
+	backTo: string;
 }
 
 export const GameForm = (props: Props) => {
-	const { onClick, buttonText, disabled, game, livePrice, title } = props;
+	const { onClick, buttonText, disabled, game, livePrice, title, backTo } = props;
 	const { settings } = useGameForm();
 	const { t } = useTranslation(["game", "common"]);
-	const router = useRouter();
+	const goBack = useBack(backTo);
 	const { poster, setPoster, uploadPoster } = useImageUpload(game?.image);
 
 	const form = useAppForm({
@@ -44,6 +47,8 @@ export const GameForm = (props: Props) => {
 			id: game?.id ?? undefined,
 			title: game?.title ?? "",
 			hasScoring: game?.hasScoring ?? true,
+			hasCoopMode: game?.hasCoopMode ?? false,
+			coopByDefault: game?.coopByDefault ?? false,
 			description: game?.description ?? "",
 			state: game?.state ?? GameState.Wanted,
 			yearPublished: game?.yearPublished ?? undefined,
@@ -58,22 +63,25 @@ export const GameForm = (props: Props) => {
 			image: game?.image ?? null,
 			changeDetectionWatchId: game?.changeDetectionWatchId ?? "",
 			language: game?.language ?? LANGUAGE_NONE,
+			rating: game?.rating ?? undefined,
+			weight: game?.weight ?? undefined,
+			soldPrice: game?.soldPrice ?? undefined,
 		},
 		onSubmit: async ({ value }) => {
-			const validatedData = CreateGameSchema.parse(value);
+			const validatedData = CreateGameSchema.parse({
+				...value,
+				coopByDefault: value.hasCoopMode && value.coopByDefault,
+			});
 			validatedData.image = await uploadPoster(poster);
 			await onClick(validatedData);
 		},
 	});
 
-	const handleCancel = useCallback(() => {
-		router.history.back();
-	}, [router]);
-
 	return (
 		<BgtPage>
-			<BgtPageContent className="flex-1 items-center">
-				<BgtCard title={title} className="w-full max-w-4xl my-auto">
+			<BgtPageHeader backAction={goBack} backText={t("common:back")} header={title} />
+			<BgtPageContent className="items-center">
+				<BgtCard className="w-full max-w-4xl">
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-4 w-full">
 							<div className="flex flex-row gap-3">
@@ -93,6 +101,7 @@ export const GameForm = (props: Props) => {
 									livePrice={livePrice}
 								/>
 								<GameFormTimeFields form={form} disabled={disabled} />
+								<GameFormUpdateFields form={form} disabled={disabled} currency={settings?.currency} />
 								<div className="lg:col-span-2">
 									<form.Field name="description" validators={zodValidator(CreateGameSchema, "description")}>
 										{(field: AnyFieldApi) => (
@@ -102,22 +111,15 @@ export const GameForm = (props: Props) => {
 								</div>
 							</div>
 
-							{game === undefined && (
+							<div className="flex flex-col gap-3 pt-3">
 								<form.Field name="hasScoring" validators={zodValidator(CreateGameSchema, "hasScoring")}>
-									{(field: AnyFieldApi) => (
-										<BgtSwitch field={field} label={t("scoring.label")} className="pt-3" disabled={disabled} />
-									)}
+									{(field: AnyFieldApi) => <BgtSwitch field={field} label={t("scoring.label")} disabled={disabled} />}
 								</form.Field>
-							)}
+								<GameFormCoopFields form={form} disabled={disabled} />
+							</div>
 
 							<div className="flex flex-row gap-2 mt-2">
-								<BgtButton
-									variant="cancel"
-									type="button"
-									className="flex-none"
-									onClick={handleCancel}
-									disabled={disabled}
-								>
+								<BgtButton variant="cancel" type="button" className="flex-none" onClick={goBack} disabled={disabled}>
 									{t("common:cancel")}
 								</BgtButton>
 								<BgtButton type="submit" className="flex-1" variant="primary" disabled={disabled}>

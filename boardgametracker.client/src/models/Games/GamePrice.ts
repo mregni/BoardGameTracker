@@ -34,3 +34,8 @@ export const isPriceError = (status: ChangeDetectionStatus | undefined): boolean
 	status !== undefined && ERROR_STATUSES.has(status);
 
 export const priceErrorKey = (status: ChangeDetectionStatus): string => `game:price.unavailable.${status}`;
+
+const SETTINGS_ERROR_STATUSES: ReadonlySet<ChangeDetectionStatus> = new Set(["misconfigured", "unauthorized"]);
+
+export const isPriceSettingsError = (status: ChangeDetectionStatus | undefined): boolean =>
+	status !== undefined && SETTINGS_ERROR_STATUSES.has(status);

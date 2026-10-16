@@ -2,10 +2,14 @@ import { useMutation, useQueries } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import type { ImportGame } from "@/models";
+import { useIntegrationSettings } from "@/routes/-hooks/useIntegrationSettings";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { importGamesCall } from "@/services/gameService";
 import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
+import { classifyImportError, needsIntegrationSettings } from "../-utils/importErrors";
+
+export const IMPORT_BATCH_SIZE = 5;
 
 interface Props {
 	username: string;
@@ -14,6 +18,7 @@ interface Props {
 export const useList = ({ username }: Props) => {
 	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
+	const { integrationSettingsAction } = useIntegrationSettings();
 
 	const [bggCollectionQuery, gamesQuery, settingsQuery] = useQueries({
 		queries: [getBggCollection(username), getGames(), getSettings()],
@@ -21,6 +26,8 @@ export const useList = ({ username }: Props) => {
 
 	const settings = settingsQuery.data;
 	const bggError = bggCollectionQuery.error;
+	const bggErrorKind = bggError ? classifyImportError(bggError) : null;
+	const retryCollection = useCallback(() => bggCollectionQuery.refetch(), [bggCollectionQuery]);
 
 	const [filterCollected, setFilterCollected] = useState<boolean>(true);
 
@@ -87,19 +94,30 @@ export const useList = ({ username }: Props) => {
 		});
 	}, []);
 
+	const [importProgress, setImportProgress] = useState({ done: 0, total: 0 });
+
 	const startImportMutation = useMutation({
-		mutationFn: importGamesCall,
-		async onSuccess() {
+		mutationFn: async (selected: ImportGame[]) => {
+			setImportProgress({ done: 0, total: selected.length });
+			for (let start = 0; start < selected.length; start += IMPORT_BATCH_SIZE) {
+				const batch = selected.slice(start, start + IMPORT_BATCH_SIZE);
+				await importGamesCall(batch);
+				setImportProgress({ done: start + batch.length, total: selected.length });
+			}
+		},
+		async onSettled() {
 			await Promise.all([
 				invalidator.invalidateGames(),
 				invalidator.invalidateCounts(),
 				invalidator.invalidateDashboard(),
 			]);
-
+		},
+		onSuccess() {
 			successToast("games:import.success");
 		},
-		onError() {
-			errorToast("games:import.failed");
+		onError(error) {
+			const kind = classifyImportError(error);
+			errorToast(`games:import.failed-${kind}`, needsIntegrationSettings(kind) ? integrationSettingsAction : undefined);
 		},
 	});
 
@@ -107,6 +125,8 @@ export const useList = ({ username }: Props) => {
 		games,
 		settings,
 		bggError,
+		bggErrorKind,
+		retryCollection,
 		updateGame,
 		setSelection,
 		filterCollected,
@@ -114,7 +134,8 @@ export const useList = ({ username }: Props) => {
 		inCollectionCount,
 		processingGames,
 		totalCount,
-		startImport: startImportMutation.mutateAsync,
+		startImport: startImportMutation.mutate,
 		importing: startImportMutation.isPending,
+		importProgress,
 	};
 };

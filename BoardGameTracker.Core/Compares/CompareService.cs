@@ -1,4 +1,5 @@
-﻿using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.Models.Compare;
 using BoardGameTracker.Core.Compares.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,7 @@ public class CompareService : ICompareService
         _logger.LogDebug("Comparing players {PlayerOneId} and {PlayerTwoId}", playerOne, playerTwo);
         var sessionCountPlayerOne = await _playerRepository.GetTotalPlayCount(playerOne);
         var sessionCountPlayerTwo = await _playerRepository.GetTotalPlayCount(playerTwo);
-        
+
         var durationPlayerOne = await _playerRepository.GetPlayLengthInMinutes(playerOne);
         var durationPlayerTwo = await _playerRepository.GetPlayLengthInMinutes(playerTwo);
 
@@ -33,31 +34,22 @@ public class CompareService : ICompareService
         var winPercentagePlayerOne = sessionCountPlayerOne > 0 ? (double)winCountPlayerOne / sessionCountPlayerOne : 0;
         var winPercentagePlayerTwo = sessionCountPlayerTwo > 0 ? (double)winCountPlayerTwo / sessionCountPlayerTwo : 0;
 
-        var totalSessionsTogether = await _compareRepository.GetTotalSessionsTogether(playerOne, playerTwo);
-        var minutesPlayedTogether = await _compareRepository.GetMinutesPlayedTogether(playerOne, playerTwo);
-        var preferredGame = await _compareRepository.GetPreferredGame(playerOne, playerTwo);
-        var lastWonGame = await _compareRepository.GetLastWonGame(playerOne, playerTwo);
-        var longestSessionTogether = await _compareRepository.GetLongestSessionTogether(playerOne, playerTwo);
-        var firstGameTogether = await _compareRepository.GetFirstGameTogether(playerOne, playerTwo);
-        var closestGame = await _compareRepository.GetClosestGame(playerOne, playerTwo);
+        var sessionsTogether = await _compareRepository.GetSessionsTogether(playerOne, playerTwo);
 
         var result = new CompareResultDto
         {
-            DirectWins = await _compareRepository.GetDirectWins(playerOne, playerTwo),
-            MostWonGame = await _compareRepository.GetMostWonGame(playerOne, playerTwo),
             SessionCounts = new CompareRow<int>(sessionCountPlayerOne, sessionCountPlayerTwo),
             TotalDuration = new CompareRow<double>(durationPlayerOne, durationPlayerTwo),
             WinCount = new CompareRow<int>(winCountPlayerOne, winCountPlayerTwo),
-            WinPercentage = new CompareRow<double>(winPercentagePlayerOne, winPercentagePlayerTwo),
-            TotalSessionsTogether = totalSessionsTogether,
-            MinutesPlayed = (int)minutesPlayedTogether,
-            PreferredGame = preferredGame,
-            LastWonGame = lastWonGame,
-            LongestSessionTogether = longestSessionTogether,
-            FirstGameTogether = firstGameTogether,
-            ClosestGame = closestGame
+            WinPercentage = new CompareRow<double>(winPercentagePlayerOne, winPercentagePlayerTwo)
         };
+        HeadToHeadCalculator.Fill(result, sessionsTogether, playerOne, playerTwo);
 
         return result;
+    }
+
+    public Task<ComparePairDto?> GetDefaultPair()
+    {
+        return _compareRepository.GetPairWithMostSessions();
     }
 }

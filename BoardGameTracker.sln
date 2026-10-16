@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.Tests", "B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.AppHost", "BoardGameTracker.AppHost\BoardGameTracker.AppHost.csproj", "{98E38108-C497-4723-A07B-990BA96867C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardGameTracker.IntegrationTests", "BoardGameTracker.IntegrationTests\BoardGameTracker.IntegrationTests.csproj", "{EBEDC324-065F-4512-87A8-BD03887CD282}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +106,18 @@ Global
 		{98E38108-C497-4723-A07B-990BA96867C8}.Release|x64.Build.0 = Release|Any CPU
 		{98E38108-C497-4723-A07B-990BA96867C8}.Release|x86.ActiveCfg = Release|Any CPU
 		{98E38108-C497-4723-A07B-990BA96867C8}.Release|x86.Build.0 = Release|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Debug|x64.Build.0 = Debug|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Debug|x86.Build.0 = Debug|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Release|x64.ActiveCfg = Release|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Release|x64.Build.0 = Release|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Release|x86.ActiveCfg = Release|Any CPU
+		{EBEDC324-065F-4512-87A8-BD03887CD282}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

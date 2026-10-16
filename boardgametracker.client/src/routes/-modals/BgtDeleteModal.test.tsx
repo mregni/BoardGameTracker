@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { renderWithTheme, screen, userEvent, within } from "@/test/test-utils";
 import { BgtDeleteModal } from "./BgtDeleteModal";
 
 // i18next is mocked globally in setup.ts
@@ -34,6 +34,17 @@ describe("BgtDeleteModal", () => {
 			expect(screen.getByRole("button", { name: /delete/i })).toBeInTheDocument();
 		});
 
+		it("puts cancel on the left and a destructive delete on the right of the footer", () => {
+			renderWithTheme(<BgtDeleteModal {...defaultProps} />);
+
+			const footer = document.querySelector("[data-slot='dialog-footer']") as HTMLElement;
+			const buttons = within(footer).getAllByRole("button");
+			expect(buttons.map((button) => button.textContent)).toEqual(["common:cancel", "delete.button"]);
+			expect(buttons[0]).toHaveAttribute("type", "button");
+			expect(buttons[1]).toHaveClass("bg-error-strong");
+			expect(buttons[1]).not.toHaveClass("bg-primary/60");
+		});
+
 		it("should not render when open is false", () => {
 			renderWithTheme(<BgtDeleteModal {...defaultProps} open={false} />);
 			expect(screen.queryByText("Delete Game")).not.toBeInTheDocument();
@@ -47,6 +58,12 @@ describe("BgtDeleteModal", () => {
 
 			rerender(<BgtDeleteModal {...defaultProps} title="Location" />);
 			expect(screen.getByText("Delete Location")).toBeInTheDocument();
+		});
+
+		it("uses the heading as the full title when it is given", () => {
+			renderWithTheme(<BgtDeleteModal {...defaultProps} heading="Delete game night" />);
+			expect(screen.getByText("Delete game night")).toBeInTheDocument();
+			expect(screen.queryByText("Delete Delete game night")).not.toBeInTheDocument();
 		});
 	});
 

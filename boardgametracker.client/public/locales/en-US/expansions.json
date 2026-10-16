@@ -3,5 +3,9 @@
   "delete": {
     "successfull": "Expansion is successfully deleted.",
     "failed": "Expansion deletion failed, check logs for more details."
+  },
+  "manual": {
+    "successfull": "Expansion added.",
+    "failed": "The expansion could not be added."
   }
 }

@@ -1,6 +1,6 @@
 {
-  "debug": "Debug",
-  "info": "Info",
-  "warn": "Warning",
+  "debug": "Depuración",
+  "info": "Información",
+  "warn": "Advertencia",
   "error": "Error"
 }

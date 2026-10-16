@@ -4,13 +4,15 @@ public class GameStatistics
 {
     public int PlayCount { get; set; }
     public double TotalPlayedTime { get; set; }
-    public double? PricePerPlay { get; set; }
+    public decimal? PricePerPlay { get; set; }
     public double? HighScore { get; set; }
     public double? AverageScore { get; set; }
     public MostWinningPlayer? MostWinsPlayer { get; set; }
     public double AveragePlayTime { get; set; }
     public DateTime? LastPlayed { get; set; }
     public int? ExpansionCount { get; set; }
+    public int CoopWinCount { get; set; }
+    public int CoopLossCount { get; set; }
 }
 
 public class MostWinningPlayer

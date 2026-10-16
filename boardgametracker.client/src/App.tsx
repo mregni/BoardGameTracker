@@ -1,13 +1,16 @@
-import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
-import { lazy } from "react";
+import { lazy, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { BgtLoadingSpinner } from "./components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { ErrorFallback } from "./components/ErrorBoundary/ErrorFallback";
+import { useResetQueriesOnIdentityChange } from "./hooks/useResetQueriesOnIdentityChange";
 import { isApiError } from "./models";
 import { routeTree } from "./routeTree.gen";
+import { getSettings } from "./services/queries/settings";
 import { translateApiError } from "./utils/errorUtils";
+import { trackHistory } from "./utils/historyTrail";
 import i18n from "./utils/i18n";
 
 const TanStackQueryDevtools = import.meta.env.PROD
@@ -57,7 +60,8 @@ const queryClient = new QueryClient({
 		},
 	},
 	queryCache: new QueryCache({
-		onError: (error) => {
+		onError: (error, query) => {
+			if (query.meta?.silent === true) return;
 			if (isApiError(error) && error.status === 401) return;
 			const now = Date.now();
 			if (now - lastErrorToastTime < ERROR_TOAST_DEBOUNCE_MS) return;
@@ -75,16 +79,34 @@ const queryClient = new QueryClient({
 const router = createRouter({
 	routeTree,
 	defaultPreload: "intent",
-	defaultViewTransition: true,
 	defaultPendingComponent: BgtLoadingSpinner,
 	defaultPendingMinMs: 200,
 	context: { queryClient },
 });
+trackHistory(router.history);
 
 declare module "@tanstack/react-router" {
 	interface Register {
 		router: typeof router;
 	}
+}
+
+function AuthCacheSync() {
+	useResetQueriesOnIdentityChange();
+	return null;
+}
+
+function LanguageSync() {
+	const { data } = useQuery(getSettings());
+	const uiLanguage = data?.uiLanguage;
+
+	useEffect(() => {
+		if (uiLanguage) {
+			void i18n.changeLanguage(uiLanguage);
+		}
+	}, [uiLanguage]);
+
+	return null;
 }
 
 function AppContainer() {
@@ -102,6 +124,8 @@ function AppContainer() {
 			}}
 		>
 			<QueryClientProvider client={queryClient}>
+				<AuthCacheSync />
+				<LanguageSync />
 				<RouterProvider router={router} context={{ queryClient }} />
 				<TanStackQueryDevtools initialIsOpen />
 				<TanStackRouterDevtools router={router} />

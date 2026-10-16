@@ -1,17 +1,17 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
+import { BgtDialog, BgtDialogContent, BgtDialogTitle } from "../BgtDialog/BgtDialog";
 import { BgtDatePicker } from "./BgtDatePicker";
+
+const mockSettings = vi.hoisted(() => ({
+	current: { dateFormat: "yyyy-MM-dd", timeFormat: "HH:mm", uiLanguage: "en-us" },
+}));
 
 vi.mock("@/services/queries/settings", () => ({
 	getSettings: () => ({
 		queryKey: ["settings"],
-		queryFn: () =>
-			Promise.resolve({
-				dateFormat: "yyyy-MM-dd",
-				timeFormat: "HH:mm",
-				uiLanguage: "en-us",
-			}),
+		queryFn: () => Promise.resolve(mockSettings.current),
 	}),
 }));
 
@@ -39,6 +39,7 @@ describe("BgtDatePicker", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockSettings.current = { dateFormat: "yyyy-MM-dd", timeFormat: "HH:mm", uiLanguage: "en-us" };
 	});
 
 	describe("Rendering", () => {
@@ -49,7 +50,7 @@ describe("BgtDatePicker", () => {
 
 		it("should render the calendar trigger button", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
-			expect(screen.getByLabelText("Open calendar")).toBeInTheDocument();
+			expect(screen.getByLabelText("common:open-calendar")).toBeInTheDocument();
 		});
 
 		it("should render segmented date input", () => {
@@ -68,12 +69,12 @@ describe("BgtDatePicker", () => {
 	describe("Disabled State", () => {
 		it("should disable the calendar button when disabled is true", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} disabled />);
-			expect(screen.getByLabelText("Open calendar")).toBeDisabled();
+			expect(screen.getByLabelText("common:open-calendar")).toBeDisabled();
 		});
 
 		it("should not disable the calendar button by default", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
-			expect(screen.getByLabelText("Open calendar")).not.toBeDisabled();
+			expect(screen.getByLabelText("common:open-calendar")).not.toBeDisabled();
 		});
 	});
 
@@ -96,7 +97,7 @@ describe("BgtDatePicker", () => {
 			const user = userEvent.setup();
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
 
-			await user.click(screen.getByLabelText("Open calendar"));
+			await user.click(screen.getByLabelText("common:open-calendar"));
 
 			await waitFor(() => {
 				expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -108,7 +109,7 @@ describe("BgtDatePicker", () => {
 			const user = userEvent.setup();
 			renderWithProviders(<BgtDatePicker {...defaultProps} disabled />);
 
-			await user.click(screen.getByLabelText("Open calendar"));
+			await user.click(screen.getByLabelText("common:open-calendar"));
 
 			expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		});
@@ -125,7 +126,7 @@ describe("BgtDatePicker", () => {
 
 			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} />);
 
-			await user.click(screen.getByLabelText("Open calendar"));
+			await user.click(screen.getByLabelText("common:open-calendar"));
 
 			await waitFor(() => {
 				expect(screen.getByRole("grid")).toBeInTheDocument();
@@ -155,10 +156,148 @@ describe("BgtDatePicker", () => {
 		});
 	});
 
+	describe("Locale", () => {
+		it("should order the segments by the date format and use its separator", async () => {
+			mockSettings.current = { dateFormat: "dd-MM-yyyy", timeFormat: "HH:mm", uiLanguage: "en-US" };
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={createMockField("2024-06-05")} />);
+
+			await waitFor(() => {
+				expect(screen.getByRole("group", { name: "Select Date" }).textContent).toContain("05-06-2024");
+			});
+		});
+
+		it("should show the calendar in the app language", async () => {
+			mockSettings.current = { dateFormat: "dd-MM-yyyy", timeFormat: "HH:mm", uiLanguage: "en-US" };
+			const user = userEvent.setup();
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={createMockField("2024-06-05")} />);
+
+			await waitFor(() => {
+				expect(screen.getByRole("group", { name: "Select Date" }).textContent).toContain("05-06-2024");
+			});
+			await user.click(screen.getByLabelText("common:open-calendar"));
+
+			expect(await screen.findByRole("heading", { name: /June 2024/ })).toBeInTheDocument();
+		});
+
+		it("should disable days before the minimum value", async () => {
+			const user = userEvent.setup();
+			renderWithProviders(
+				<BgtDatePicker {...defaultProps} field={createMockField("2024-06-15")} minValue="2024-06-10" />,
+			);
+
+			await user.click(screen.getByLabelText("common:open-calendar"));
+			await waitFor(() => {
+				expect(screen.getByRole("grid")).toBeInTheDocument();
+			});
+
+			const before = screen.getAllByRole("button").find((el) => el.textContent?.trim() === "9");
+			const after = screen.getAllByRole("button").find((el) => el.textContent?.trim() === "12");
+			expect(before).toHaveAttribute("aria-disabled", "true");
+			expect(after).not.toHaveAttribute("aria-disabled");
+		});
+	});
+
+	describe("Clearable", () => {
+		it("should clear the value with the clear button", async () => {
+			const field = createMockField("2024-06-15");
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={field} clearable />);
+
+			await userEvent.click(screen.getByRole("button", { name: "common:clear-date" }));
+
+			expect(field.handleChange).toHaveBeenCalledWith("");
+		});
+
+		it("should not offer a clear button without a value or when not clearable", () => {
+			renderWithProviders(<BgtDatePicker {...defaultProps} clearable />);
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={createMockField("2024-06-15")} />);
+
+			expect(screen.queryByRole("button", { name: "common:clear-date" })).not.toBeInTheDocument();
+		});
+	});
+
+	describe("Controlled", () => {
+		it("should report a picked date through onValueChange", async () => {
+			const user = userEvent.setup();
+			const onValueChange = vi.fn();
+			renderWithProviders(<BgtDatePicker label="From" value="2024-06-15" onValueChange={onValueChange} />);
+
+			await user.click(screen.getByLabelText("common:open-calendar"));
+			await waitFor(() => {
+				expect(screen.getByRole("grid")).toBeInTheDocument();
+			});
+			const cells = screen.getAllByRole("button").filter((el) => el.textContent?.trim() === "20");
+			await user.click(cells[0]);
+
+			expect(onValueChange).toHaveBeenCalledWith("2024-06-20");
+		});
+
+		it("should clear through onValueChange and show the given errors", async () => {
+			const onValueChange = vi.fn();
+			renderWithProviders(
+				<BgtDatePicker label="To" value="2024-06-15" onValueChange={onValueChange} clearable errors={["Too early"]} />,
+			);
+
+			await userEvent.click(screen.getByRole("button", { name: "common:clear-date" }));
+
+			expect(onValueChange).toHaveBeenCalledWith("");
+			expect(screen.getByText("Too early")).toBeInTheDocument();
+		});
+
+		it("should show no date when the value is empty", () => {
+			renderWithProviders(<BgtDatePicker label="To" value={null} onValueChange={vi.fn()} clearable />);
+
+			expect(screen.queryByRole("button", { name: "common:clear-date" })).not.toBeInTheDocument();
+		});
+	});
+
 	describe("Accessibility", () => {
 		it("should expose the input group with the label as an accessible name", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
 			expect(screen.getByRole("group", { name: "Select Date" })).toBeInTheDocument();
+		});
+
+		it("should keep the default focus outline on its buttons", () => {
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={createMockField("2024-06-15")} clearable />);
+
+			expect(screen.getByLabelText("common:open-calendar")).not.toHaveClass("outline-none");
+			expect(screen.getByRole("button", { name: "common:clear-date" })).not.toHaveClass("outline-none");
+		});
+
+		describe("inside a dialog", () => {
+			const renderInDialog = (onClose = vi.fn()) =>
+				renderWithProviders(
+					<BgtDialog open onClose={onClose}>
+						<BgtDialogContent>
+							<BgtDialogTitle>Lend a game</BgtDialogTitle>
+							<BgtDatePicker {...defaultProps} field={createMockField("2024-06-15")} />
+						</BgtDialogContent>
+					</BgtDialog>,
+				);
+
+			it("should open the calendar inside the dialog so it can take focus", async () => {
+				const user = userEvent.setup();
+				renderInDialog();
+
+				await user.click(screen.getByLabelText("common:open-calendar"));
+
+				const grid = await screen.findByRole("grid");
+				expect(screen.getByRole("dialog", { name: "Lend a game" })).toContainElement(grid);
+			});
+
+			it("should close only the calendar on Escape and give focus back to its button", async () => {
+				const user = userEvent.setup();
+				const onClose = vi.fn();
+				renderInDialog(onClose);
+				const calendarButton = screen.getByLabelText("common:open-calendar");
+
+				await user.click(calendarButton);
+				await screen.findByRole("grid");
+				await user.keyboard("{Escape}");
+
+				await waitFor(() => expect(screen.queryByRole("grid")).not.toBeInTheDocument());
+				expect(onClose).not.toHaveBeenCalled();
+				await waitFor(() => expect(calendarButton).toHaveFocus());
+			});
 		});
 	});
 });

@@ -15,14 +15,29 @@
   --color-card-border: #243044;
   --color-input: #1b2535;
   --color-primary: #6366f1;
+  --color-primary-text: #818cf8;
+  --color-primary-strong: #4f46e5;
+  --color-stat-title: #a5b4fc;
+  --color-chip-selected: #a5b4fc;
   --color-dialog: #141c2b;
   --color-card: #141c2b;
   --color-cancel: #94a3b8;
-  --color-error: #dc2626;
+  --color-error: #f87171;
+  --color-error-strong: #dc2626;
   --color-card-value: #22d3ee;
   --color-lime-green: #34d399;
   --color-error-dark: #ef44441a;
   --color-background: #0a0f1a;
+  --color-card-surface: color-mix(in srgb, var(--color-primary) 10%, var(--color-background));
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
+  --color-bad: #f87171;
+  --color-gold: #facc15;
+  --color-player-one: #f87171;
+  --color-player-two: #3b82f6;
+  --color-bar-muted: #475569;
+  --color-bar-subtle: #334155;
+  --color-bar-hatch: #64748b;
 
   /* Font Family */
   --font-family-sans: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
@@ -32,6 +47,14 @@
 
   /* Animations */
   --animate-slide-in-right: slide-in-right 0.3s ease-out;
+}
+
+@utility bg-hatch {
+  background-image: repeating-linear-gradient(45deg, var(--color-bar-hatch) 0 3px, var(--color-bar-subtle) 3px 6px);
+}
+
+@utility bg-overflow-stripes {
+  background-image: repeating-linear-gradient(135deg, var(--color-warn) 0 3px, transparent 3px 6px);
 }
 
 @keyframes slide-in-right {
@@ -58,13 +81,16 @@
 	[role="button"]:not(:disabled) {
 		cursor: pointer;
 	}
+
+	:focus-visible {
+		outline: 2px solid var(--focus-color, var(--color-primary));
+		outline-offset: 2px;
+	}
 }
 
-.radix-themes {
+:root {
 	--default-font-family: "Chakra Petch", sans-serif;
-	--heading-font-family: "Chakra Petch", sans-serif;
-	--color-background: #0a0f1a;
-	background-color: var(--color-background);
+	color-scheme: dark;
 }
 
 .hide-arrow[type="number"]::-webkit-inner-spin-button,
@@ -75,12 +101,8 @@
 
 body {
 	font-family: var(--default-font-family);
-}
-
-/* Apply to Radix components */
-[class^="radix-"],
-[class*=" radix-"] {
-	font-family: var(--default-font-family);
+	background-color: var(--color-background);
+	color: white;
 }
 
 .mobile-menu {
@@ -90,10 +112,6 @@ body {
 
 .mobile-menu.hidden-menu {
 	transform: translateY(-130%);
-}
-
-.rt-TextFieldInput {
-	display: block !important;
 }
 
 .bgt-image-card img {

@@ -9,7 +9,7 @@ import { withForm } from "@/hooks/form";
 import { SettingsSchema } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
-import { DangerZoneSection } from "./DangerZoneSection";
+import { EnvOverrideHint } from "./EnvOverrideHint";
 import { SettingsSection } from "./SettingsSection";
 import { SettingsToggle } from "./SettingsToggle";
 
@@ -30,8 +30,9 @@ export const AdvancedSettings = withForm({
 	...settingsFormOpts,
 	props: {
 		disabled: false,
+		overrides: {} as Record<string, string>,
 	},
-	render: function Render({ form, disabled }) {
+	render: function Render({ form, disabled, overrides }) {
 		const { t } = useTranslation("settings");
 
 		return (
@@ -43,10 +44,11 @@ export const AdvancedSettings = withForm({
 								field={field}
 								label={t("advanced.updates.enabled.label")}
 								description={t("advanced.updates.enabled.description")}
-								disabled={disabled}
+								disabled={disabled || !!overrides.updateCheckEnabled}
 							/>
 						)}
 					</form.Field>
+					<EnvOverrideHint variable={overrides.updateCheckEnabled} />
 
 					<form.Field name="versionTrack" validators={zodValidator(SettingsSchema, "versionTrack")}>
 						{(field: AnyFieldApi) => (
@@ -54,15 +56,16 @@ export const AdvancedSettings = withForm({
 								<BgtText size="2" weight="medium" color="white">
 									{t("advanced.version-track.label")}
 								</BgtText>
-								<div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-2" data-testid="version-tracks">
 									{VERSION_TRACKS.map((track) => (
 										<button
 											key={track.id}
 											type="button"
 											onClick={() => field.handleChange(track.id)}
-											disabled={disabled}
+											disabled={disabled || !!overrides.versionTrack}
+											aria-pressed={field.state.value === track.id}
 											className={cx(
-												"p-3 rounded-lg border transition-all text-left",
+												"flex h-full flex-col items-start justify-start p-3 rounded-lg border transition-all text-left",
 												field.state.value === track.id
 													? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
 													: "bg-background border-white/10 hover:border-white/20",
@@ -84,6 +87,7 @@ export const AdvancedSettings = withForm({
 										</button>
 									))}
 								</div>
+								<EnvOverrideHint variable={overrides.versionTrack} />
 							</div>
 						)}
 					</form.Field>
@@ -107,8 +111,6 @@ export const AdvancedSettings = withForm({
 						{t("advanced.translate")}
 					</BgtButton>
 				</div>
-
-				<DangerZoneSection />
 			</div>
 		);
 	},

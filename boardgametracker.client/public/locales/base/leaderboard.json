@@ -1,0 +1,74 @@
+{
+  "title": "Leaderboard",
+  "filters": {
+    "period": "Period",
+    "all-time": "All time",
+    "last-12-months": "12 months",
+    "custom": "Custom",
+    "from": "From",
+    "to": "To",
+    "game": "Game",
+    "all-games": "All games",
+    "min-sessions": "Min. sessions",
+    "min-sessions-value_one": "{{count}} session",
+    "min-sessions-value_other": "{{count}} sessions",
+    "rank-by": "Rank by",
+    "rank-by-wins": "Wins",
+    "rank-by-win-rate": "Win rate",
+    "rank-by-sessions": "Sessions"
+  },
+  "highlights": {
+    "most-wins": "Most wins",
+    "most-sessions": "Most sessions",
+    "best-win-rate": "Best win rate",
+    "most-time": "Most time",
+    "nobody-yet": "Nobody yet",
+    "min-sessions": "min. {{count}}"
+  },
+  "columns": {
+    "rank": "Rank",
+    "player": "Player",
+    "wins": "Wins",
+    "sessions": "Sessions",
+    "win-rate": "Win rate",
+    "podiums": "Podiums",
+    "podiums-hint": "Top-3 finishes in scored games with {{count}} or more players",
+    "time": "Time"
+  },
+  "values": {
+    "wins_one": "{{count}} win",
+    "wins_other": "{{count}} wins",
+    "sessions_one": "{{count}} session",
+    "sessions_other": "{{count}} sessions",
+    "podiums_one": "{{count}} podium",
+    "podiums_other": "{{count}} podiums",
+    "to-rank_one": "{{count}} more to be ranked",
+    "to-rank_other": "{{count}} more to be ranked"
+  },
+  "ranking": {
+    "label": "Ranking",
+    "podium": "Podium",
+    "not-ranked-rank": "Not ranked",
+    "not-ranked_one": "Fewer than {{count}} session · not ranked",
+    "not-ranked_other": "Fewer than {{count}} sessions · not ranked",
+    "ties": "Ties share the rank.",
+    "coop_one": "Co-op wins and losses count: a team win is a win for everyone at the table, a team loss a loss ({{count}} of the {{total}} wins).",
+    "coop_other": "Co-op wins and losses count: a team win is a win for everyone at the table, a team loss a loss ({{count}} of the {{total}} wins)."
+  },
+  "no-podium": {
+    "all_one": "No podium: only {{count}} player is ranked. A podium needs at least {{minimum}}, otherwise everyone is on it.",
+    "all_other": "No podium: only {{count}} players are ranked. A podium needs at least {{minimum}}, otherwise everyone is on it.",
+    "game_one": "No podium: only {{count}} player is ranked for {{game}}. A podium needs at least {{minimum}}, otherwise everyone is on it.",
+    "game_other": "No podium: only {{count}} players are ranked for {{game}}. A podium needs at least {{minimum}}, otherwise everyone is on it.",
+    "none": "No podium: nobody is ranked yet.",
+    "none-game": "No podium: nobody is ranked for {{game}} yet.",
+    "include-one": "Lower the minimum to include {{name}}.",
+    "include-more": "Lower the minimum to include more players."
+  },
+  "empty": {
+    "title": "No plays recorded yet",
+    "description": "Log a few sessions and the leaderboard fills itself.",
+    "filtered-title": "No sessions match these filters",
+    "filtered-description": "Pick another period or game."
+  }
+}

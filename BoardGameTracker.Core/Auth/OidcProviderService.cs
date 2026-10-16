@@ -1,6 +1,8 @@
+using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Auth.Interfaces;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -12,12 +14,14 @@ public class OidcProviderService : IOidcProviderService
 {
     private readonly MainDbContext _context;
     private readonly IMemoryCache _cache;
+    private readonly ISecretProtector _secretProtector;
     private readonly ILogger<OidcProviderService> _logger;
 
-    public OidcProviderService(MainDbContext context, IMemoryCache cache, ILogger<OidcProviderService> logger)
+    public OidcProviderService(MainDbContext context, IMemoryCache cache, ISecretProtector secretProtector, ILogger<OidcProviderService> logger)
     {
         _context = context;
         _cache = cache;
+        _secretProtector = secretProtector;
         _logger = logger;
     }
 
@@ -45,8 +49,9 @@ public class OidcProviderService : IOidcProviderService
             throw new DomainException("Only one OIDC provider is supported. Delete the existing provider first.");
         }
 
+        EnsureSecureAuthority(authority);
         var provider = new OidcProvider(name, displayName, authority, clientId);
-        provider.Update(displayName, authority, clientId, clientSecret, true, scopes, autoProvisionUsers,
+        provider.Update(displayName, authority, clientId, ProtectSecret(clientSecret), true, scopes, autoProvisionUsers,
             authorizationEndpoint, tokenEndpoint, userInfoEndpoint,
             usernameClaimType, emailClaimType, displayNameClaimType,
             rolesClaimType, adminGroupValue,
@@ -70,11 +75,23 @@ public class OidcProviderService : IOidcProviderService
         var provider = await _context.OidcProviders.FindAsync(id)
             ?? throw new EntityNotFoundException(nameof(OidcProvider), id);
 
-        provider.Update(displayName, authority, clientId, clientSecret, enabled, scopes, autoProvisionUsers,
+        EnsureSecureAuthority(authority);
+        var authorityChanged = !string.Equals(NormalizeAuthority(provider.Authority), NormalizeAuthority(authority), StringComparison.OrdinalIgnoreCase);
+        provider.Update(displayName, authority, clientId, ProtectSecret(clientSecret), enabled, scopes, autoProvisionUsers,
             authorizationEndpoint, tokenEndpoint, userInfoEndpoint,
             usernameClaimType, emailClaimType, displayNameClaimType,
             rolesClaimType, adminGroupValue,
             iconUrl, buttonColor);
+
+        if (authorityChanged)
+        {
+            var externalLogins = await _context.ExternalLogins
+                .Where(x => x.Provider == provider.Name)
+                .ToListAsync();
+            _context.ExternalLogins.RemoveRange(externalLogins);
+            _logger.LogWarning("OIDC provider {ProviderName} now points at a different authority; {Count} linked accounts must link it again",
+                provider.Name, externalLogins.Count);
+        }
 
         await _context.SaveChangesAsync();
 
@@ -103,5 +120,20 @@ public class OidcProviderService : IOidcProviderService
 
         _logger.LogInformation("OIDC provider {ProviderName} deleted with {Count} associated external logins removed",
             provider.Name, externalLogins.Count);
+    }
+
+    private static string NormalizeAuthority(string authority) => authority.Trim().TrimEnd('/');
+
+    private string? ProtectSecret(string? clientSecret)
+    {
+        return string.IsNullOrEmpty(clientSecret) ? clientSecret : _secretProtector.Protect(clientSecret);
+    }
+
+    private static void EnsureSecureAuthority(string authority)
+    {
+        if (!SecureUrlPolicy.IsAcceptable(authority))
+        {
+            throw new ValidationException(Constants.Errors.InsecureAuthority);
+        }
     }
 }

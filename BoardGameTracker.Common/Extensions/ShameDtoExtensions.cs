@@ -14,7 +14,14 @@ public static class ShameDtoExtensions
             Image = shameGame.Image,
             AdditionDate = shameGame.AdditionDate,
             Price = shameGame.Price,
-            LastSessionDate = shameGame.LastSessionDate
+            LastSessionDate = shameGame.LastSessionDate,
+            PlayCount = shameGame.PlayCount,
+            MinPlayers = shameGame.MinPlayers,
+            MaxPlayers = shameGame.MaxPlayers,
+            MinPlayTime = shameGame.MinPlayTime,
+            MaxPlayTime = shameGame.MaxPlayTime,
+            PlannedGameNightId = shameGame.PlannedGameNightId,
+            PlannedFor = shameGame.PlannedFor
         };
     }
 
@@ -24,7 +31,22 @@ public static class ShameDtoExtensions
         {
             Count = statistics.Count,
             TotalValue = statistics.TotalValue,
-            AverageValue = statistics.AverageValue
+            AverageValue = statistics.AverageValue,
+            PricedGameCount = statistics.PricedGameCount,
+            Months = statistics.Months,
+            OwnedCount = statistics.OwnedCount,
+            CollectionValue = statistics.CollectionValue,
+            NeverPlayedCount = statistics.NeverPlayedCount,
+            NeverPlayedValue = statistics.NeverPlayedValue,
+            PlannedCount = statistics.PlannedCount,
+            NextGameNight = statistics.NextGameNight == null
+                ? null
+                : new ShameGameNightDto
+                {
+                    Id = statistics.NextGameNight.Id,
+                    Title = statistics.NextGameNight.Title,
+                    StartDate = statistics.NextGameNight.StartDate
+                }
         };
     }
 

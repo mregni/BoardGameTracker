@@ -1,6 +1,6 @@
 ﻿using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Badges.Interfaces;
-using BoardGameTracker.Core.Badges.Specifications;
 using BoardGameTracker.Core.Datastore;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,15 +8,11 @@ namespace BoardGameTracker.Core.Badges;
 
 public class BadgeRepository : EfRepository<Badge>, IBadgeRepository
 {
+    private const string BadgePlayerJoinEntity = "BadgePlayer";
     private readonly MainDbContext _context;
     public BadgeRepository(MainDbContext context) : base(context)
     {
         _context = context;
-    }
-
-    public Task<List<Badge>> GetPlayerBadgesAsync(int playerId)
-    {
-        return ListAsync(new BadgesByPlayerSpec(playerId));
     }
 
     public async Task<Dictionary<int, List<Badge>>> GetPlayerBadgesBatchAsync(IEnumerable<int> playerIds)
@@ -45,23 +41,31 @@ public class BadgeRepository : EfRepository<Badge>, IBadgeRepository
         return result;
     }
 
-    public async Task<bool> AwardBatchToPlayer(int playerId, int badgeId)
+    public async Task<bool> AwardBadgeToPlayer(int playerId, int badgeId)
     {
-        var badge = await _context.Badges
-            .Include(x => x.Players)
-            .SingleOrDefaultAsync(x => x.Id == badgeId);
+        if (!await _context.Badges.AnyAsync(x => x.Id == badgeId))
+        {
+            throw new EntityNotFoundException(nameof(Badge), badgeId);
+        }
 
-        if (badge == null)
-            throw new BoardGameTracker.Common.Exceptions.EntityNotFoundException(nameof(Badge), badgeId);
+        if (!await _context.Players.AnyAsync(x => x.Id == playerId))
+        {
+            throw new EntityNotFoundException(nameof(Player), playerId);
+        }
 
-        var player = await _context.Players.SingleOrDefaultAsync(x => x.Id == playerId);
-        if (player == null)
-            throw new BoardGameTracker.Common.Exceptions.EntityNotFoundException(nameof(Player), playerId);
-
-        if (badge.Players.Any(p => p.Id == playerId))
+        var alreadyAwarded = await _context.Badges
+            .Where(x => x.Id == badgeId)
+            .AnyAsync(x => x.Players.Any(p => p.Id == playerId));
+        if (alreadyAwarded)
+        {
             return false;
+        }
 
-        badge.Players.Add(player);
+        _context.Set<Dictionary<string, object>>(BadgePlayerJoinEntity).Add(new Dictionary<string, object>
+        {
+            ["BadgesId"] = badgeId,
+            ["PlayersId"] = playerId
+        });
         return true;
     }
 }

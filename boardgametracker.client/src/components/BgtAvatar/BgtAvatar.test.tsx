@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { fireEvent, render, renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { StringToHsl } from "@/utils/stringUtils";
 import { BgtAvatar } from "./BgtAvatar";
 
@@ -37,6 +37,42 @@ describe("BgtAvatar", () => {
 			renderWithTheme(<BgtAvatar title="Alice" image={undefined} />);
 			expect(screen.getByText("A")).toBeInTheDocument();
 		});
+
+		it("should fall back to the initial when the image cannot be loaded", () => {
+			renderWithTheme(<BgtAvatar title="Alice" image="/images/profile/private.webp" />);
+
+			fireEvent.error(screen.getByRole("img"));
+
+			expect(screen.queryByRole("img")).not.toBeInTheDocument();
+			expect(screen.getByText("A")).toBeInTheDocument();
+		});
+
+		it("should try again when a new image is provided after a failure", () => {
+			const { rerender } = renderWithTheme(<BgtAvatar title="Alice" image="/one.webp" />);
+			fireEvent.error(screen.getByRole("img"));
+
+			rerender(<BgtAvatar title="Alice" image="/two.webp" />);
+
+			expect(screen.getByRole("img")).toHaveAttribute("src", "/two.webp");
+		});
+
+		it("should centre the initial when the image cannot be loaded", () => {
+			renderWithTheme(<BgtAvatar title="Alice" image="/broken.webp" />);
+
+			fireEvent.error(screen.getByRole("img"));
+
+			expect(screen.getByText("A").parentElement).toHaveClass("flex", "justify-center", "items-center");
+		});
+
+		it("should expose the full title as a tooltip", () => {
+			const { container } = renderWithTheme(<BgtAvatar title="Alice (12)" image={null} />);
+			expect(container.firstChild).toHaveAttribute("title", "Alice (12)");
+		});
+
+		it("should use the colour key for the fallback colour", () => {
+			renderWithTheme(<BgtAvatar title="Alice (12)" colorKey="Alice" image={null} />);
+			expect(screen.getByText("A").parentElement).toHaveStyle({ backgroundColor: StringToHsl("Alice") });
+		});
 	});
 
 	describe("Size Variants", () => {
@@ -58,6 +94,25 @@ describe("BgtAvatar", () => {
 		it("should render with big size", () => {
 			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" size="big" />);
 			expect(screen.getByRole("img")).toBeInTheDocument();
+		});
+	});
+
+	describe("Shape", () => {
+		it("keeps the rounded-square corners per size by default", () => {
+			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" size="small" />);
+			expect(screen.getByRole("img")).toHaveClass("rounded-xs");
+			expect(screen.getByRole("img")).not.toHaveClass("rounded-full");
+		});
+
+		it("keeps the medium rounded square by default", () => {
+			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" />);
+			expect(screen.getByRole("img")).toHaveClass("rounded-md");
+		});
+
+		it("renders a round avatar when asked to", () => {
+			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" size="small" shape="round" />);
+			expect(screen.getByRole("img")).toHaveClass("rounded-full");
+			expect(screen.getByRole("img")).not.toHaveClass("rounded-xs");
 		});
 	});
 
@@ -100,6 +155,18 @@ describe("BgtAvatar", () => {
 			await user.click(screen.getByText("J"));
 
 			expect(handleClick).toHaveBeenCalledTimes(1);
+		});
+
+		it("is a button named after the full title rather than the initial", () => {
+			renderWithTheme(<BgtAvatar title="John" image={null} onClick={vi.fn()} />);
+
+			expect(screen.getByRole("button", { name: "John" })).toBeInTheDocument();
+		});
+
+		it("keeps the initial readable when it is not clickable", () => {
+			renderWithTheme(<BgtAvatar title="John" image={null} />);
+
+			expect(screen.getByText("J").parentElement).not.toHaveAttribute("aria-hidden");
 		});
 	});
 

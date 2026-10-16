@@ -9,6 +9,10 @@ param dbPassword string
 @secure()
 param jwtSecret string
 
+@description('Initial password of the seeded admin account the scanner signs in with')
+@secure()
+param adminPassword string
+
 @description('Username for pulling the image from ghcr.io')
 param registryUsername string
 
@@ -62,6 +66,7 @@ resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: [
         { name: 'db-password', value: dbPassword }
         { name: 'jwt-secret', value: jwtSecret }
+        { name: 'admin-password', value: adminPassword }
         { name: 'ghcr-token', value: registryPassword }
       ]
       registries: [
@@ -82,7 +87,7 @@ resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
       containers: [
         {
           name: 'postgres'
-          image: 'docker.io/library/postgres:16-alpine'
+          image: 'docker.io/pgvector/pgvector:pg16'
           resources: {
             cpu: json('0.5')
             memory: '1Gi'
@@ -109,7 +114,9 @@ resource bgtApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'DB_PASSWORD', secretRef: 'db-password' }
             { name: 'DB_NAME', value: 'boardgametracker' }
             { name: 'JWT_SECRET', secretRef: 'jwt-secret' }
+            { name: 'ADMIN_PASSWORD', secretRef: 'admin-password' }
             { name: 'AUTH_ENABLED', value: 'true' }
+            { name: 'SWAGGER_ENABLED', value: 'true' }
             { name: 'TZ', value: 'UTC' }
           ]
           probes: [

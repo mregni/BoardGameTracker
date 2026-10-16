@@ -1,5 +1,4 @@
-import { useForm } from "@tanstack/react-form";
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
@@ -8,23 +7,28 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtImageSelector, BgtInputField } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
+import { useAppForm } from "@/hooks/form";
 import { CreatePlayerSchema, type Player } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
+import { useBack } from "@/routes/-hooks/useBack";
 import { handleFormSubmit } from "@/utils/formUtils";
+import { zodValidator } from "@/utils/zodValidator";
 import { usePlayerModal } from "./-hooks/usePlayerModal";
 
 export const Route = createFileRoute("/players/new")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 });
 
 function RouteComponent() {
 	const { t } = useTranslation(["player", "common"]);
 	const navigate = useNavigate();
-	const router = useRouter();
+	const goBack = useBack("/players");
 	const [image, setImage] = useState<File | undefined | null>(undefined);
 
 	const { savePlayer, uploadImage, isLoading } = usePlayerModal({});
 
-	const form = useForm({
+	const form = useAppForm({
 		defaultValues: {
 			name: "",
 			email: "",
@@ -50,14 +54,11 @@ function RouteComponent() {
 		},
 	});
 
-	const handleCancel = () => {
-		router.history.back();
-	};
-
 	return (
 		<BgtPage>
-			<BgtPageContent className="flex-1 items-center">
-				<BgtCard title={t("new.title")} className="w-full max-w-xl my-auto">
+			<BgtPageHeader backAction={goBack} backText={t("common:back")} header={t("new.title")} />
+			<BgtPageContent className="items-center">
+				<BgtCard className="w-full max-w-xl">
 					<p className="text-cancel mb-4">{t("new.description")}</p>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-row gap-3 mb-6">
@@ -65,18 +66,7 @@ function RouteComponent() {
 								<BgtImageSelector image={image} setImage={setImage} />
 							</div>
 							<div className="grow">
-								<form.Field
-									name="name"
-									validators={{
-										onChange: ({ value }) => {
-											const result = CreatePlayerSchema.shape.name.safeParse(value);
-											if (!result.success) {
-												return t(result.error.issues[0].message);
-											}
-											return undefined;
-										},
-									}}
-								>
+								<form.Field name="name" validators={zodValidator(CreatePlayerSchema, "name")}>
 									{(field) => (
 										<BgtInputField
 											field={field}
@@ -87,18 +77,7 @@ function RouteComponent() {
 										/>
 									)}
 								</form.Field>
-								<form.Field
-									name="email"
-									validators={{
-										onChange: ({ value }) => {
-											const result = CreatePlayerSchema.shape.email.safeParse(value);
-											if (!result.success) {
-												return t(result.error.issues[0].message);
-											}
-											return undefined;
-										},
-									}}
-								>
+								<form.Field name="email" validators={zodValidator(CreatePlayerSchema, "email")}>
 									{(field) => (
 										<BgtInputField
 											field={field}
@@ -112,7 +91,7 @@ function RouteComponent() {
 							</div>
 						</div>
 						<div className="flex flex-row gap-2">
-							<BgtButton variant="cancel" type="button" onClick={handleCancel} disabled={isLoading}>
+							<BgtButton variant="cancel" type="button" onClick={goBack} disabled={isLoading}>
 								{t("common:cancel")}
 							</BgtButton>
 							<BgtButton type="submit" variant="primary" disabled={isLoading} className="flex-1">
@@ -124,5 +103,13 @@ function RouteComponent() {
 				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

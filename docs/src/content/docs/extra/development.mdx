@@ -32,12 +32,15 @@ don't have to run or maintain the database container or the UI yourself.
    pnpm install
    ```
 
-2. **(Optional)** Configure SMTP only if you want to test outgoing email. Adjust the SMTP
-   settings in `BoardGameTracker.AppHost/AppHost.cs` to your provider, and supply the password
-   through the AppHost's [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets)
-   store so it stays out of source control:
+2. **(Optional)** Configure SMTP only if you want to test outgoing email. Put your provider's
+   settings and password in the AppHost's [user-secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets)
+   store so they stay out of source control (the `Smtp` section in
+   `BoardGameTracker.AppHost/appsettings.Development.json` lists every key):
 
-   ```sh title="SMTP secret (optional)"
+   ```sh title="SMTP settings (optional)"
+   dotnet user-secrets set "Smtp:Host" "smtp.your-provider.com" --project BoardGameTracker.AppHost
+   dotnet user-secrets set "Smtp:Username" "<your-smtp-user>" --project BoardGameTracker.AppHost
+   dotnet user-secrets set "Smtp:FromAddress" "noreply@your-domain.com" --project BoardGameTracker.AppHost
    dotnet user-secrets set "Parameters:smtp-password" "<your-smtp-password>" --project BoardGameTracker.AppHost
    ```
 
@@ -68,7 +71,10 @@ don't have to run or maintain the database container or the UI yourself.
 The optional [rules assistant](/BoardGameTracker/getting-started/rag/) runs entirely locally — Aspire
 starts an Ollama resource automatically, and the required models are downloaded on first use (a few GB,
 then cached in a Docker volume). GPU acceleration is on by default; set `Ollama__UseGpu=false` to run
-Ollama on CPU if your host has no GPU with container passthrough.
+Ollama on CPU if your host has no GPU with container passthrough. To use a hosted chat model instead,
+set `Ai:Provider` to `openai` plus `Ai:BaseUrl` and `Ai:ChatModel` in the AppHost user-secrets, and the
+key with `dotnet user-secrets set "Parameters:ai-api-key" "<key>" --project BoardGameTracker.AppHost`;
+Aspire then no longer waits for Ollama before starting the API.
 </Aside>
 
 <Aside type="tip" title="HTTPS dashboard">

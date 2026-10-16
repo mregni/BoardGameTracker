@@ -8,13 +8,14 @@ namespace BoardGameTracker.Core.Manuals.Interfaces;
 public interface IManualService
 {
     Task<List<Manual>> GetManualsForGame(int gameId);
+    Task<List<int>> GetGameIdsWithManuals(CancellationToken cancellationToken = default);
     Task<List<Manual>> UploadManuals(int gameId, IReadOnlyList<IFormFile> files);
     Task RequeueManualForIndexing(int id);
     Task DeleteManual(int id);
     Task<ManualDownload> GetManualForDownload(int id);
     Task<ManualDownload?> GetManualPageImage(int id, int page, CancellationToken cancellationToken = default);
-    Task<ManualDownload> GetManualForGameNightDownload(Guid linkId, int manualId);
-    Task<List<GameNightManualsDto>> GetManualsForGameNight(Guid linkId);
-    Task DeleteManualFilesForGame(int gameId);
+    Task<ManualDownload> GetManualForGameNightDownload(Guid linkId, int manualId, bool isAuthenticated);
+    Task<List<GameNightManualsDto>> GetManualsForGameNight(Guid linkId, bool isAuthenticated);
+    void DeleteManualFiles(IEnumerable<Manual> manuals);
     void ClearAllManuals();
 }

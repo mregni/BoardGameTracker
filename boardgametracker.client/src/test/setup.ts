@@ -23,6 +23,7 @@ vi.mock("react-i18next", () => ({
 		i18n: {
 			language: "en",
 			changeLanguage: vi.fn(),
+			t: (key: string) => key,
 		},
 	}),
 	Trans: ({ children }: { children: React.ReactNode }) => children,
@@ -52,6 +53,14 @@ if (!window.matchMedia) {
 			removeListener: vi.fn(),
 			dispatchEvent: vi.fn(),
 		}) as unknown as MediaQueryList;
+}
+
+if (typeof globalThis.ResizeObserver === "undefined") {
+	globalThis.ResizeObserver = class {
+		observe() {}
+		unobserve() {}
+		disconnect() {}
+	};
 }
 
 afterEach(() => {
