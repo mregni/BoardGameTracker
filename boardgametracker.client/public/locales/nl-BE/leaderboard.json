@@ -1,34 +1,74 @@
 {
   "title": "Ranglijst",
+  "filters": {
+    "period": "Periode",
+    "all-time": "Altijd",
+    "last-12-months": "12 maanden",
+    "custom": "Aangepast",
+    "from": "Van",
+    "to": "Tot",
+    "game": "Spel",
+    "all-games": "Alle spellen",
+    "min-sessions": "Min. sessies",
+    "min-sessions-value_one": "{{count}} sessie",
+    "min-sessions-value_other": "{{count}} sessies",
+    "rank-by": "Rangschikken op",
+    "rank-by-wins": "Overwinningen",
+    "rank-by-win-rate": "Winstpercentage",
+    "rank-by-sessions": "Sessies"
+  },
+  "highlights": {
+    "most-wins": "Meeste overwinningen",
+    "most-sessions": "Meeste sessies",
+    "best-win-rate": "Beste winstpercentage",
+    "most-time": "Meeste tijd",
+    "nobody-yet": "Nog niemand",
+    "min-sessions": "min. {{count}}"
+  },
   "columns": {
     "rank": "Rang",
     "player": "Speler",
     "wins": "Overwinningen",
-    "plays": "Partijen",
+    "sessions": "Sessies",
     "win-rate": "Winstpercentage",
     "podiums": "Podiumplaatsen",
-    "podiums-hint": "Top-3-plaatsen in spellen met {{count}} of meer spelers met een score",
-    "time-played": "Speeltijd"
-  },
-  "highlights": {
-    "most-wins": "Meeste overwinningen",
-    "most-plays": "Meeste partijen",
-    "best-win-rate": "Beste winstpercentage",
-    "most-time": "Meeste tijd aan tafel",
-    "nobody-yet": "Nog niemand",
-    "min-plays_one": "Minstens {{count}} partij nodig",
-    "min-plays_other": "Minstens {{count}} partijen nodig",
-    "min-plays-hint_one": "Min. {{count}} partij",
-    "min-plays-hint_other": "Min. {{count}} partijen"
+    "podiums-hint": "Top-3-plaatsen in spellen met een score en {{count}} of meer spelers",
+    "time": "Tijd"
   },
   "values": {
     "wins_one": "{{count}} overwinning",
     "wins_other": "{{count}} overwinningen",
-    "plays_one": "{{count}} partij",
-    "plays_other": "{{count}} partijen"
+    "sessions_one": "{{count}} sessie",
+    "sessions_other": "{{count}} sessies",
+    "podiums_one": "{{count}} podiumplaats",
+    "podiums_other": "{{count}} podiumplaatsen",
+    "to-rank_one": "nog {{count}} tot gerangschikt",
+    "to-rank_other": "nog {{count}} tot gerangschikt"
+  },
+  "ranking": {
+    "label": "Rangschikking",
+    "podium": "Podium",
+    "not-ranked-rank": "Niet gerangschikt",
+    "not-ranked_one": "Minder dan {{count}} sessie · niet gerangschikt",
+    "not-ranked_other": "Minder dan {{count}} sessies · niet gerangschikt",
+    "ties": "Bij gelijkstand delen spelers de rang.",
+    "coop_one": "Coöperatieve overwinningen en verliezen tellen mee: een teamoverwinning is een overwinning voor iedereen aan tafel, een teamverlies een verlies ({{count}} van de {{total}} overwinningen).",
+    "coop_other": "Coöperatieve overwinningen en verliezen tellen mee: een teamoverwinning is een overwinning voor iedereen aan tafel, een teamverlies een verlies ({{count}} van de {{total}} overwinningen)."
+  },
+  "no-podium": {
+    "all_one": "Geen podium: slechts {{count}} speler is gerangschikt. Een podium vraagt er minstens {{minimum}}, anders staat iedereen erop.",
+    "all_other": "Geen podium: slechts {{count}} spelers zijn gerangschikt. Een podium vraagt er minstens {{minimum}}, anders staat iedereen erop.",
+    "game_one": "Geen podium: slechts {{count}} speler is gerangschikt voor {{game}}. Een podium vraagt er minstens {{minimum}}, anders staat iedereen erop.",
+    "game_other": "Geen podium: slechts {{count}} spelers zijn gerangschikt voor {{game}}. Een podium vraagt er minstens {{minimum}}, anders staat iedereen erop.",
+    "none": "Geen podium: nog niemand is gerangschikt.",
+    "none-game": "Geen podium: nog niemand is gerangschikt voor {{game}}.",
+    "include-one": "Verlaag het minimum om {{name}} mee te tellen.",
+    "include-more": "Verlaag het minimum om meer spelers mee te tellen."
   },
   "empty": {
     "title": "Nog geen partijen geregistreerd",
-    "description": "Registreer een paar sessies en de ranglijst vult zichzelf."
+    "description": "Registreer een paar sessies en de ranglijst vult zichzelf.",
+    "filtered-title": "Geen sessies voor deze filters",
+    "filtered-description": "Kies een andere periode of een ander spel."
   }
 }

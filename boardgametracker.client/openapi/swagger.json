@@ -2563,6 +2563,52 @@
         "tags": [
           "Leaderboard"
         ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "gameId",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "minSessions",
+            "in": "query",
+            "schema": {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32",
+              "default": 5
+            }
+          },
+          {
+            "name": "rankBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LeaderboardRankBy"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -2580,6 +2626,26 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LeaderboardDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -7365,11 +7431,29 @@
           "mostTimePlayed": {
             "$ref": "#/components/schemas/LeaderboardEntryDto"
           },
-          "minimumPlaysForWinRate": {
+          "minimumSessions": {
             "type": "integer",
             "format": "int32"
           },
           "minimumPlayersForPodium": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rankBy": {
+            "$ref": "#/components/schemas/LeaderboardRankBy"
+          },
+          "showPodium": {
+            "type": "boolean"
+          },
+          "rankedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "winCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coopWinCount": {
             "type": "integer",
             "format": "int32"
           },
@@ -7387,7 +7471,8 @@
         "properties": {
           "rank": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "playerId": {
             "type": "integer",
@@ -7419,9 +7504,24 @@
           "minutesPlayed": {
             "type": "number",
             "format": "double"
+          },
+          "isRanked": {
+            "type": "boolean"
+          },
+          "sessionsToRank": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
+      },
+      "LeaderboardRankBy": {
+        "enum": [
+          "wins",
+          "winRate",
+          "sessions"
+        ],
+        "type": "string"
       },
       "LoanDto": {
         "type": "object",
