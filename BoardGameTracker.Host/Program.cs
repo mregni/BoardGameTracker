@@ -11,6 +11,7 @@ using BoardGameTracker.Common.Entities.Auth;
 using BoardGameTracker.Common.Extensions;
 using BoardGameTracker.Common.Helpers;
 using BoardGameTracker.Core.Auth;
+using BoardGameTracker.Core.Auth.Interfaces;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Configuration.Interfaces;
@@ -24,7 +25,6 @@ using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Updates;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -70,17 +70,12 @@ builder.Services.AddHealthChecks()
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddScoped<AuthDisabledFilter>();
 builder.Services.AddProblemDetails();
+var environmentProvider = new EnvironmentProvider();
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<MainDbContext>()
-    .SetApplicationName("boardgametracker");
+    .SetApplicationName("boardgametracker")
+    .ProtectKeysWithSecret(environmentProvider.DataProtectionKey);
 
-var environmentProvider = new EnvironmentProvider();
-if (environmentProvider.DataProtectionKey is { } dataProtectionKey)
-{
-    var keyMaterial = new DataProtectionKeyMaterial(dataProtectionKey);
-    builder.Services.AddSingleton(keyMaterial);
-    builder.Services.Configure<KeyManagementOptions>(options => options.XmlEncryptor = new SecretXmlEncryptor(keyMaterial));
-}
 var trustedProxies = TrustedProxyList.Parse(environmentProvider.TrustedProxies);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -465,6 +460,8 @@ if (!authEnabled)
         "AUTH_ENABLED=false: every request is treated as an administrator. Anyone who can reach this port can change settings, store API keys, upload files, import games and use the AI assistant. Only use this on a trusted network or behind a proxy that authenticates for you");
 }
 
+logger.WarnWhenKeysAreUnencrypted(app.Services);
+
 if (environmentProvider.EfSensitiveDataLogging)
 {
     logger.LogWarning(
@@ -480,6 +477,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 RunDbMigrations(app.Services);
+await EncryptDataProtectionKeys(app.Services);
 await SeedConfig(app.Services);
 await ProtectIntegrationKeys(app.Services);
 if (authEnabled)
@@ -613,6 +611,13 @@ static async Task SeedConfig(IServiceProvider serviceProvider)
     using var scope = serviceProvider.CreateScope();
     var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
     await configRepository.SeedConfigAsync(ConfigDefaults.All);
+}
+
+static async Task EncryptDataProtectionKeys(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var reEncryptor = scope.ServiceProvider.GetRequiredService<IDataProtectionKeyReEncryptor>();
+    await reEncryptor.EncryptPlaintextKeysAsync();
 }
 
 static async Task ProtectIntegrationKeys(IServiceProvider serviceProvider)

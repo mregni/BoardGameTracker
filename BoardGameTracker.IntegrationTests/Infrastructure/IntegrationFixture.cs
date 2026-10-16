@@ -9,6 +9,7 @@ using BoardGameTracker.Core.Maintenance.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -21,6 +22,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
     public const string UserPassword = "UserTest123!";
     public const string IndexMarker = "<!-- integration-index -->";
     public const string AssetMarker = "/* integration-asset */";
+    public const string DataProtectionKey = "integration-data-protection-key-that-is-long-enough";
 
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -67,6 +69,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
         SetEnvironmentVariable("DB_PASSWORD", "bgt");
         SetEnvironmentVariable("DB_NAME", "boardgametracker");
         SetEnvironmentVariable("JWT_SECRET", "integration-test-secret-that-is-long-enough-for-the-guard");
+        SetEnvironmentVariable("DATA_PROTECTION_KEY", DataProtectionKey);
         SetEnvironmentVariable("ADMIN_PASSWORD", AdminPassword);
         SetEnvironmentVariable("AUTH_ENABLED", "true");
         SetEnvironmentVariable("RAG_ENABLED", "false");
@@ -129,6 +132,9 @@ public sealed class IntegrationFixture : IAsyncLifetime
     public Task<HttpClient> CreateAdminClientAsync() => CreateClientAsAsync(AdminUsername);
 
     public AsyncServiceScope CreateScope() => _factory.Services.CreateAsyncScope();
+
+    public string GetConnectionString(string database) =>
+        new NpgsqlConnectionStringBuilder(_postgres.GetConnectionString()) { Database = database }.ConnectionString;
 
     public async Task RestoreTestUsersAsync()
     {
