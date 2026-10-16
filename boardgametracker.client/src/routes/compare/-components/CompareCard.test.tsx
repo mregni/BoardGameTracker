@@ -9,6 +9,7 @@ describe("CompareCard", () => {
 		const label = screen.getByText("Total wins");
 		expect(label).toHaveClass("text-red-200");
 		expect(label.className).not.toMatch(/text-error/);
+		expect(label.closest(".border")).toHaveClass("bg-player-one/10", "border-player-one/30");
 	});
 
 	it("uses a light blue label on the blue card", () => {

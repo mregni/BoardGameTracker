@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { noop, useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -35,14 +35,14 @@ export const Route = createFileRoute("/chat/")({
 	component: WriteRouteComponent,
 	validateSearch: chatSearchSchema,
 	beforeLoad: async ({ context: { queryClient } }) => {
-		const settings = await queryClient.ensureQueryData(getSettings());
+		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
 		if (!settings.ragEnabled) {
 			throw redirect({ to: "/" });
 		}
 	},
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getGameIdsWithManuals());
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getGameIdsWithManuals()).catch(noop);
 	},
 });
 

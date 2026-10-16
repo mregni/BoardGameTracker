@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -14,9 +15,9 @@ import { useNewSessionData } from "./-hooks/useNewSessionData";
 export const Route = createFileRoute("/sessions/new")({
 	component: RouteComponent,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getPlayers());
-		queryClient.prefetchQuery(getLocations());
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getPlayers()).catch(noop);
+		queryClient.query(getLocations()).catch(noop);
 	},
 });
 

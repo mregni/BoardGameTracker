@@ -6,8 +6,8 @@ import { BgtText } from "@/components/BgtText/BgtText";
 const cardVariants = cva("border rounded-xl p-5 backdrop-blur-sm relative transition-all duration-200", {
 	variants: {
 		color: {
-			red: "bg-error/10 border-error/30",
-			blue: "bg-blue-600/10 border-blue-600/30",
+			red: "bg-player-one/10 border-player-one/30",
+			blue: "bg-player-two/10 border-player-two/30",
 		},
 		isWinner: {
 			true: "",
@@ -17,12 +17,12 @@ const cardVariants = cva("border rounded-xl p-5 backdrop-blur-sm relative transi
 		{
 			color: "red",
 			isWinner: true,
-			class: "ring-4 ring-error/20 ",
+			class: "ring-4 ring-player-one/20",
 		},
 		{
 			color: "blue",
 			isWinner: true,
-			class: "ring-4 ring-blue-600/20 ",
+			class: "ring-4 ring-player-two/20",
 		},
 	],
 });
@@ -30,8 +30,8 @@ const cardVariants = cva("border rounded-xl p-5 backdrop-blur-sm relative transi
 const iconVariants = cva("", {
 	variants: {
 		color: {
-			red: "text-error",
-			blue: "text-blue-600",
+			red: "text-player-one",
+			blue: "text-player-two",
 		},
 	},
 });

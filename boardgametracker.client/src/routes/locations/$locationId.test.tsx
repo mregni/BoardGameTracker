@@ -112,11 +112,11 @@ describe("Location detail page", () => {
 	});
 
 	it("prefetches the location, its statistics, sessions, games and players in the loader", () => {
-		const queryClient = { prefetchQuery: vi.fn() };
+		const queryClient = { query: vi.fn().mockResolvedValue(undefined) };
 
 		mocks.captured.config.loader({ params: { locationId: 3 }, context: { queryClient } });
 
-		const keys = queryClient.prefetchQuery.mock.calls.map(([options]) => options.queryKey);
+		const keys = queryClient.query.mock.calls.map(([options]) => options.queryKey);
 		expect(keys).toEqual(
 			expect.arrayContaining([
 				["locations", 3],

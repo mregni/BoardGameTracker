@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { Game } from "@/models";
@@ -10,7 +11,7 @@ import { useNewGame } from "./-hooks/useNewGame";
 export const Route = createFileRoute("/games/new")({
 	component: WriteRouteComponent,
 	loader: async ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getSettings());
+		queryClient.query(getSettings()).catch(noop);
 	},
 });
 

@@ -1,4 +1,4 @@
-import { type AnyFieldApi, useStore } from "@tanstack/react-form";
+import { type AnyFieldApi, useSelector } from "@tanstack/react-form";
 import { addMinutes } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -106,7 +106,7 @@ export const SessionForm = (props: Props) => {
 		[form, games],
 	);
 
-	const selectedGameId = useStore(form.store, (state) => state.values.gameId);
+	const selectedGameId = useSelector(form.store, (state) => state.values.gameId);
 
 	const {
 		hasScoring,

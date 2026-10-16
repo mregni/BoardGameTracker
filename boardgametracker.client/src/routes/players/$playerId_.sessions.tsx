@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -27,11 +28,11 @@ export const Route = createFileRoute("/players/$playerId_/sessions")({
 	component: RouteComponent,
 	params: playerIdParamSchema,
 	loader: ({ params, context: { queryClient } }) => {
-		queryClient.prefetchQuery(getSettings());
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getPlayers());
-		queryClient.prefetchQuery(getPlayer(params.playerId));
-		queryClient.prefetchQuery(getPlayerSessions(params.playerId));
+		queryClient.query(getSettings()).catch(noop);
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getPlayers()).catch(noop);
+		queryClient.query(getPlayer(params.playerId)).catch(noop);
+		queryClient.query(getPlayerSessions(params.playerId)).catch(noop);
 	},
 });
 

@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Coins from "@/assets/icons/coins.svg?react";
@@ -17,14 +18,14 @@ import { useShameData } from "./-hooks/useShameData";
 export const Route = createFileRoute("/shames/")({
 	component: RouteComponent,
 	beforeLoad: async ({ context: { queryClient } }) => {
-		const settings = await queryClient.ensureQueryData(getSettings());
+		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
 		if (!settings.shelfOfShameEnabled) {
 			throw redirect({ to: "/" });
 		}
 	},
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getShames());
-		queryClient.prefetchQuery(getShameStatistics());
+		queryClient.query(getShames()).catch(noop);
+		queryClient.query(getShameStatistics()).catch(noop);
 	},
 });
 

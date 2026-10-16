@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { BgtDataGuard } from "@/components/BgtDataGuard/BgtDataGuard";
@@ -14,8 +15,8 @@ export const Route = createFileRoute("/sessions/update_/$sessionId")({
 	component: RouteComponent,
 	params: sessionIdParamSchema,
 	loader: async ({ params, context: { queryClient } }) => {
-		const data = await queryClient.fetchQuery(getSession(params.sessionId));
-		queryClient.prefetchQuery(getGame(data.gameId));
+		const data = await queryClient.query(getSession(params.sessionId));
+		queryClient.query(getGame(data.gameId)).catch(noop);
 	},
 });
 

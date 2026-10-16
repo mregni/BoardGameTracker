@@ -24,6 +24,14 @@
   --color-error-dark: #ef44441a;
   --color-background: #0a0f1a;
   --color-card-surface: color-mix(in srgb, var(--color-primary) 10%, var(--color-background));
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
+  --color-bad: #f87171;
+  --color-player-one: #f87171;
+  --color-player-two: #3b82f6;
+  --color-bar-muted: #475569;
+  --color-bar-subtle: #334155;
+  --color-bar-hatch: #64748b;
 
   /* Font Family */
   --font-family-sans: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
@@ -33,6 +41,14 @@
 
   /* Animations */
   --animate-slide-in-right: slide-in-right 0.3s ease-out;
+}
+
+@utility bg-hatch {
+  background-image: repeating-linear-gradient(45deg, var(--color-bar-hatch) 0 3px, var(--color-bar-subtle) 3px 6px);
+}
+
+@utility bg-overflow-stripes {
+  background-image: repeating-linear-gradient(135deg, var(--color-warn) 0 3px, transparent 3px 6px);
 }
 
 @keyframes slide-in-right {
