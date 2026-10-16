@@ -11,7 +11,7 @@ import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtDataTable";
-import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
+import { SessionWinnersCell } from "@/components/CoopResultPill/SessionWinnersCell";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { Session } from "@/models";
 import { getGames } from "@/services/queries/games";
@@ -91,18 +91,7 @@ function RouteComponent() {
 						},
 						{
 							accessorKey: "4",
-							cell: ({ row }) =>
-								row.original.isCoop ? (
-									<CoopResultPill won={row.original.teamWon === true} />
-								) : (
-									<PlayerSessionAvatars
-										playerSessions={row.original.playerSessions}
-										players={players}
-										games={games}
-										gameId={row.original.gameId}
-										won={true}
-									/>
-								),
+							cell: ({ row }) => <SessionWinnersCell session={row.original} players={players} games={games} />,
 							header: t("winners"),
 						},
 						{
