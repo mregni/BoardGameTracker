@@ -18,7 +18,7 @@ export const GameNightDateBox = (props: Props) => {
 		<div
 			className={cx(
 				"flex flex-col items-center text-center leading-tight",
-				variant === "highlight" && "rounded-xl bg-primary px-1 py-2 text-white",
+				variant === "highlight" && "rounded-xl bg-primary-strong px-1 py-2 text-white",
 				variant === "soft" && "rounded-xl border border-white/10 bg-white/5 px-1 py-2",
 				variant === "compact" && "text-xs text-gray-400",
 				className,

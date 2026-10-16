@@ -83,7 +83,7 @@ export const PlayerAchievementsCard = (props: Props) => {
 		<BgtCard title={t("titles.achievements")} icon={Award}>
 			<div className="flex flex-col gap-4">
 				<section className="flex flex-col gap-2">
-					<h3 className="text-sm text-primary/70">{t("achievements.milestones")}</h3>
+					<h3 className="text-sm text-stat-title">{t("achievements.milestones")}</h3>
 					<ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-4">
 						{milestones.map((milestone) => (
 							<MilestoneTile key={milestone.type} milestone={milestone} />
@@ -92,7 +92,7 @@ export const PlayerAchievementsCard = (props: Props) => {
 				</section>
 				{feats.length > 0 && (
 					<section className="flex flex-col gap-2">
-						<h3 className="text-sm text-primary/70">{t("achievements.feats")}</h3>
+						<h3 className="text-sm text-stat-title">{t("achievements.feats")}</h3>
 						<ul className="flex flex-wrap gap-3">
 							{feats.map((feat) => (
 								<FeatItem key={feat.badge.id} feat={feat} />

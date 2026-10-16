@@ -94,6 +94,13 @@ describe("BgtTextStatistic", () => {
 			renderWithTheme(<BgtTextStatistic title="Average session duration" content={5} />);
 			expect(screen.getByText("Average session duration")).toHaveAttribute("title", "Average session duration");
 		});
+
+		it("should colour the title row with the stat title token", () => {
+			renderWithTheme(<BgtTextStatistic title="Sessions" content={5} />);
+			const row = screen.getByText("Sessions").closest("div");
+			expect(row).toHaveClass("text-stat-title");
+			expect(row?.className).not.toContain("text-primary/70");
+		});
 	});
 
 	describe("Icon", () => {

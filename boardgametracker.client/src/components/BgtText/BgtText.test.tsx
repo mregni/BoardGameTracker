@@ -80,6 +80,17 @@ describe("BgtText", () => {
 			renderWithTheme(<BgtText color="primary">Primary Text</BgtText>);
 			expect(screen.getByText("Primary Text")).toBeInTheDocument();
 		});
+
+		it("should render red text with the bad token", () => {
+			renderWithTheme(<BgtText color="red">Lost</BgtText>);
+			expect(screen.getByText("Lost")).toHaveClass("text-bad");
+			expect(screen.getByText("Lost")).not.toHaveClass("text-red-500");
+		});
+
+		it("should render primary text with the primary text token", () => {
+			renderWithTheme(<BgtText color="primary">Link</BgtText>);
+			expect(screen.getByText("Link")).toHaveClass("text-primary-text");
+		});
 	});
 
 	describe("Opacity Prop", () => {

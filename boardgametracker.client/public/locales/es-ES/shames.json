@@ -1,13 +1,89 @@
 {
-  "total-shames": "Total de juegos",
-  "total-value": "Valor total de los juegos",
-  "average-value": "Valor medio de los juegos",
+  "subtitle_one": "Juegos en propiedad sin jugar en {{count}}+ mes",
+  "subtitle_other": "Juegos en propiedad sin jugar en {{count}}+ meses",
+  "change-in-settings": "cambiar en Ajustes",
   "none": {
     "title": "¡No hay juegos en la estantería de la vergüenza!",
     "description": "¡Enhorabuena! No tienes juegos en la estantería de la vergüenza. Sigue así, jugando y disfrutando de tu colección."
   },
-  "days-not-played": "Días sin jugar",
-  "last-session": "Última partida",
-  "average-value-priced_one": "Precio medio pagado · {{count}} juego con precio",
-  "average-value-priced_other": "Precio medio pagado · {{count}} juegos con precio"
+  "no-matches": "Ningún juego de la estantería coincide con estos filtros.",
+  "tiles": {
+    "on-shelf": "En la estantería",
+    "of-owned_one": "de {{total}} juego en propiedad",
+    "of-owned_other": "de {{total}} juegos en propiedad",
+    "never-played": "Nunca jugados",
+    "oldest": "el más antiguo: {{title}}",
+    "oldest-since": "el más antiguo: {{title}}, desde {{date}}",
+    "paid-not-played": "Pagado, sin jugar",
+    "priced_one": "{{priced}} de {{total}} con precio",
+    "priced_other": "{{priced}} de {{total}} con precio",
+    "share": "{{share}} de {{total}}",
+    "no-prices": "sin precios",
+    "planned": "Planificados",
+    "planned-for": "para el {{date}}",
+    "no-night": "no hay noche de juegos prevista"
+  },
+  "filters": {
+    "show": "Mostrar",
+    "all": "Todos",
+    "never": "Nunca jugados",
+    "played": "Ya jugados",
+    "not-played-in": "Sin jugar en",
+    "months_one": "{{count}}+ mes",
+    "months_other": "{{count}}+ meses",
+    "owned": "En propiedad",
+    "owned-any": "cualquier momento",
+    "owned-1y": "más de 1 año",
+    "owned-2y": "más de 2 años",
+    "sort": "Ordenar",
+    "sort-unplayed": "Más tiempo sin jugar",
+    "sort-price": "Precio pagado",
+    "sort-owned": "En propiedad desde",
+    "sort-title": "Título"
+  },
+  "list": {
+    "label": "Juegos en la estantería",
+    "game": "Juego",
+    "last-played": "Última partida",
+    "paid": "Pagado"
+  },
+  "row": {
+    "owned-since": "en propiedad desde {{date}}",
+    "plays_one": "{{count}} partida",
+    "plays_other": "{{count}} partidas",
+    "players_one": "{{range}} jugador",
+    "players_other": "{{range}} jugadores",
+    "minutes": "{{range}} min",
+    "never-played": "Nunca jugado",
+    "months-ago_one": "hace {{count}} mes",
+    "months-ago_other": "hace {{count}} meses",
+    "no-price": "Sin precio",
+    "planned": "Planificado · {{date}}",
+    "plan": "Planificar",
+    "plan-label": "Planificar {{title}} para {{night}}",
+    "log-play": "Registrar partida",
+    "log-play-label": "Registrar una partida de {{title}}"
+  },
+  "plan": {
+    "added": "{{game}} añadido a las sugerencias de {{night}} · {{date}}",
+    "undo": "Deshacer",
+    "removed": "{{game}} ya no está sugerido",
+    "failed": "No se pudo añadir el juego a la noche de juegos",
+    "undo-failed": "No se pudo deshacer, quita el juego en la noche de juegos",
+    "no-night": "Aún no hay ninguna noche de juegos prevista, así que todavía no puedes planificar juegos.",
+    "plan-night": "Planificar una noche de juegos"
+  },
+  "money": {
+    "title": "Dinero en la estantería",
+    "subtitle": "solo juegos en propiedad con precio",
+    "never-played": "Nunca jugados",
+    "not-played_one": "Sin jugar en {{count}}+ mes",
+    "not-played_other": "Sin jugar en {{count}}+ meses",
+    "rest": "Jugados o comprados hace poco",
+    "label": "De {{total}} pagados por juegos en propiedad: {{parts}}",
+    "unpriced-one": "{{title}} no tiene precio, así que no cuenta.",
+    "unpriced_one": "{{count}} juego de la estantería no tiene precio, así que no cuenta.",
+    "unpriced_other": "{{count}} juegos de la estantería no tienen precio, así que no cuentan.",
+    "sort-by-price": "Ordenar por precio pagado"
+  }
 }

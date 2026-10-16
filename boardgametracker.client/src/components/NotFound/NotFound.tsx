@@ -51,7 +51,7 @@ export const NotFound = () => {
 	return (
 		<div className="flex flex-col items-center justify-center min-h-screen p-4 gap-6">
 			<div className="flex flex-col items-center text-center gap-4">
-				<span className="text-8xl md:text-9xl font-black text-primary/60 leading-none">404</span>
+				<span className="text-8xl md:text-9xl font-black text-primary-text/60 leading-none">404</span>
 				<BgtText size="6" weight="bold" color="white">
 					{t("title")}
 				</BgtText>

@@ -30,17 +30,17 @@ interface Props {
 }
 
 const statusStyles: Record<ManualIndexStatus, string> = {
-	pending: "bg-white/10 text-white/60",
-	indexing: "bg-primary/20 text-primary",
-	indexed: "bg-green-500/20 text-green-400",
-	failed: "bg-error/20 text-error",
+	pending: "border-transparent bg-white/10 text-white/60",
+	indexing: "border-primary bg-primary/20 text-chip-selected",
+	indexed: "border-transparent bg-green-500/20 text-green-400",
+	failed: "border-transparent bg-error/20 text-error",
 };
 
 const ManualStatusBadge = ({ manual }: { manual: GameManual }) => {
 	const { t } = useTranslation("game");
 	return (
 		<span
-			className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${statusStyles[manual.indexStatus]}`}
+			className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${statusStyles[manual.indexStatus]}`}
 			title={manual.indexStatus === "failed" ? (manual.indexError ?? undefined) : undefined}
 		>
 			{t(`manuals.status.${manual.indexStatus}`)}

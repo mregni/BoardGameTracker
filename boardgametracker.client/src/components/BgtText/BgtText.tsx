@@ -8,13 +8,13 @@ const textVariants = cva("", {
 		color: {
 			amber: "text-amber-500",
 			orange: "text-orange-500",
-			red: "text-red-500",
+			red: "text-bad",
 			purple: "text-slate-400",
 			blue: "text-blue-500",
 			cyan: "text-cyan-500",
 			green: "text-green-500",
 			white: "text-white",
-			primary: "text-primary",
+			primary: "text-primary-text",
 			gray: "text-gray-400",
 		},
 		opacity: {

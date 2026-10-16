@@ -100,6 +100,8 @@
     "invites-cooldown": "Invitations for this game night were sent recently, try again in a few minutes",
     "host-rsvp-locked": "The host always attends their own game night",
     "rsvp-closed": "This game night has already taken place",
+    "already-over": "This game night has already taken place",
+    "suggested-game-not-owned": "Only games you own can be suggested for a game night",
     "games-running": "Finish or discard the running games before ending the night",
     "ended": "This game night has ended, reopen it to add games"
   },
