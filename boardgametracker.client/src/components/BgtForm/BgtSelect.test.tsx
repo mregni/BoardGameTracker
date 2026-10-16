@@ -1,6 +1,6 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { renderWithTheme, screen, userEvent, waitFor } from "@/test/test-utils";
 import { BgtSelect } from "./BgtSelect";
 
 // i18next is mocked globally in setup.ts
@@ -240,6 +240,109 @@ describe("BgtSelect", () => {
 			expect(screen.getByRole("option", { name: "Catan" })).toBeInTheDocument();
 			expect(screen.getByRole("option", { name: "Carcassonne" })).toBeInTheDocument();
 			expect(screen.queryByRole("option", { name: "Azul" })).not.toBeInTheDocument();
+		});
+	});
+
+	describe("Keyboard", () => {
+		const games = [
+			{ value: 1, label: "Agricola" },
+			{ value: 12, label: "Carcassonne" },
+			{ value: 14, label: "Catan" },
+		];
+
+		beforeAll(() => {
+			Element.prototype.hasPointerCapture = vi.fn(() => false);
+			Element.prototype.setPointerCapture = vi.fn();
+			Element.prototype.releasePointerCapture = vi.fn();
+			Element.prototype.scrollIntoView = vi.fn();
+		});
+
+		it("should pick the searched game with Enter and return focus to the field", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSelect field={mockField} label="Game" items={games} hasSearch />);
+
+			await user.click(screen.getByRole("combobox"));
+			await user.type(await screen.findByPlaceholderText("search"), "carc{Enter}");
+
+			expect(mockField.handleChange).toHaveBeenCalledWith(12);
+			await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+			await waitFor(() => expect(screen.getByRole("combobox")).toHaveFocus());
+		});
+
+		it("should keep the list open on Enter when nothing matches", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSelect field={mockField} label="Game" items={games} hasSearch />);
+
+			await user.click(screen.getByRole("combobox"));
+			await user.type(await screen.findByPlaceholderText("search"), "brass{Enter}");
+
+			expect(mockField.handleChange).not.toHaveBeenCalled();
+			expect(screen.getByRole("listbox")).toBeInTheDocument();
+		});
+
+		it("should move focus from the search box to the first option with ArrowDown", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSelect field={mockField} label="Game" items={games} hasSearch />);
+
+			await user.click(screen.getByRole("combobox"));
+			await user.type(await screen.findByPlaceholderText("search"), "cat{ArrowDown}");
+
+			expect(document.activeElement).toHaveAttribute("role", "option");
+			expect(document.activeElement).toHaveTextContent("Catan");
+		});
+
+		it("should close the list with Escape from the search box", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSelect field={mockField} label="Game" items={games} hasSearch />);
+
+			await user.click(screen.getByRole("combobox"));
+			await user.type(await screen.findByPlaceholderText("search"), "ca{Escape}");
+
+			await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+			expect(mockField.handleChange).not.toHaveBeenCalled();
+		});
+
+		it("should report the first match in controlled mode", async () => {
+			const user = userEvent.setup();
+			const onValueChange = vi.fn();
+			renderWithTheme(<BgtSelect label="Game" items={games} value={null} onValueChange={onValueChange} hasSearch />);
+
+			await user.click(screen.getByRole("combobox"));
+			await user.type(await screen.findByPlaceholderText("search"), "ca{Enter}");
+
+			expect(onValueChange).toHaveBeenCalledWith(12);
+			await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+		});
+
+		it("should pick the first option of the flat search results when items are grouped", async () => {
+			const user = userEvent.setup();
+			const onValueChange = vi.fn();
+			renderWithTheme(
+				<BgtSelect
+					label="Game"
+					hasSearch
+					value={null}
+					onValueChange={onValueChange}
+					items={[
+						{ value: "2", label: "Catan", group: "All games" },
+						{ value: "1", label: "Azul", group: "Recently played" },
+						{ value: "3", label: "Carcassonne", group: "All games" },
+					]}
+				/>,
+			);
+
+			await user.click(screen.getByRole("combobox"));
+			const search = await screen.findByPlaceholderText("search");
+			await user.type(search, "a");
+			expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+				"Catan",
+				"Azul",
+				"Carcassonne",
+			]);
+
+			await user.type(search, "{Enter}");
+
+			expect(onValueChange).toHaveBeenCalledWith("2");
 		});
 	});
 });
