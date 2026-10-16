@@ -139,11 +139,12 @@ describe("UserAccessModal", () => {
 		expect(within(dialog).getByRole("button", { name: "account.users.access.unlink" })).toBeDisabled();
 	});
 
-	it("shows a spinner while the identities load", () => {
+	it("shows nothing about the identities while they load", () => {
 		mocks.state.isLoading = true;
+		mocks.state.logins = [];
 		renderModal();
 
 		expect(screen.queryByText("account.users.access.sso-none")).not.toBeInTheDocument();
-		expect(screen.queryByText("keycloak · Jane Doe")).not.toBeInTheDocument();
+		expect(screen.queryByRole("list")).not.toBeInTheDocument();
 	});
 });

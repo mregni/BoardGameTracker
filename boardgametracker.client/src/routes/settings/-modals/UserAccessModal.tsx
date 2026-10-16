@@ -9,7 +9,6 @@ import {
 	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
-import { BgtLoadingSpinner } from "@/components/BgtLoadingSpinner/BgtLoadingSpinner";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { UserDto } from "@/models";
 import type { ExternalLogin } from "@/models/Auth/Oidc";
@@ -67,13 +66,12 @@ export const UserAccessModal = ({ open, close, user, isCurrentUser }: Props) => 
 						<BgtText color="white" className="font-semibold">
 							{t("account.users.access.sso-title")}
 						</BgtText>
-						{isLoading ? (
-							<BgtLoadingSpinner />
-						) : logins.length === 0 ? (
+						{!isLoading && logins.length === 0 && (
 							<BgtText size="2" color="gray">
 								{t("account.users.access.sso-none")}
 							</BgtText>
-						) : (
+						)}
+						{logins.length > 0 && (
 							<ul className="flex flex-col gap-2">
 								{logins.map((login) => (
 									<li
