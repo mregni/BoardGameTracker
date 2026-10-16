@@ -77,6 +77,13 @@ public static class Constants
         public const string OidcHandoffExpired = "error.auth.oidc-handoff-expired";
         public const string OidcFailed = "error.auth.oidc-failed";
         public const string OidcProviderUnavailable = "error.auth.oidc-provider-unavailable";
+        public const string OidcIdTokenInvalid = "error.auth.oidc-id-token-invalid";
+        public const string OidcUsernameTaken = "error.auth.oidc-username-taken";
+        public const string OidcProviderNameInvalid = "error.auth.oidc-provider-name-invalid";
+        public const string OidcRoleNotManaged = "error.auth.oidc-role-not-managed";
+        public const string AccountDisabled = "error.auth.account-disabled";
+        public const string CannotDisableSelf = "error.auth.cannot-disable-self";
+        public const string CannotDisableLastAdmin = "error.auth.cannot-disable-last-admin";
         public const string TooManyRequests = "error.auth.too-many-requests";
         public const string GameAlreadyExists = "error.game.already-exists";
         public const string ExpansionAlreadyExists = "error.game.expansion-already-exists";

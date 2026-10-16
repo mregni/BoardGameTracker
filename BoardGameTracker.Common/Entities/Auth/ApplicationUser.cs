@@ -9,6 +9,7 @@ public class ApplicationUser : IdentityUser
     public DateTime? LastLoginAt { get; private set; }
     public int? PlayerId { get; private set; }
     public Player? Player { get; private set; }
+    public bool RoleManagedByIdentityProvider { get; private set; }
 
     private ApplicationUser() { }
 
@@ -34,6 +35,18 @@ public class ApplicationUser : IdentityUser
     {
         LastLoginAt = DateTime.UtcNow;
     }
+
+    public void ManageRoleByIdentityProvider()
+    {
+        RoleManagedByIdentityProvider = true;
+    }
+
+    public void ManageRoleLocally()
+    {
+        RoleManagedByIdentityProvider = false;
+    }
+
+    public bool IsDisabled => LockoutEnd.HasValue && LockoutEnd.Value > DateTimeOffset.UtcNow;
 
     public void LinkPlayer(int playerId)
     {

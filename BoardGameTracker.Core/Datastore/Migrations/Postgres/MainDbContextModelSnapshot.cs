@@ -18,7 +18,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
@@ -93,6 +93,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int?>("PlayerId")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("RoleManagedByIdentityProvider")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
@@ -127,6 +130,9 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Issuer")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("LastUsedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -152,7 +158,7 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("Provider", "ProviderKey")
+                    b.HasIndex("Issuer", "ProviderKey")
                         .IsUnique();
 
                     b.ToTable("ExternalLogins", "auth");
@@ -187,6 +193,10 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .HasColumnType("text");
 
                     b.Property<string>("ClientSecret")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DefaultRole")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("DisplayName")
@@ -231,6 +241,45 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                         .IsUnique();
 
                     b.ToTable("OidcProviders", "auth");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.OidcSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IdToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("KeyHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProviderId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KeyHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OidcSessions", "auth");
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.RefreshToken", b =>
@@ -1523,6 +1572,17 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                 });
 
             modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.ExternalLogin", b =>
+                {
+                    b.HasOne("BoardGameTracker.Common.Entities.Auth.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BoardGameTracker.Common.Entities.Auth.OidcSession", b =>
                 {
                     b.HasOne("BoardGameTracker.Common.Entities.Auth.ApplicationUser", "User")
                         .WithMany()
