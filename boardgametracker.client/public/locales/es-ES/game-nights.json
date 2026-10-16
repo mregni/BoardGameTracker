@@ -120,7 +120,9 @@
       "title": "Empezar un juego",
       "game": "Juego",
       "players": "¿Quién juega?",
-      "save": "Empezar"
+      "save": "Empezar",
+      "coop-default": "Juego cooperativo: eliges “Ganamos” o “Perdimos” al terminarlo.",
+      "coop-optional": "Este juego se puede jugar en cooperativo: lo activas al terminarlo."
     },
     "log": {
       "button": "Registrar un juego terminado",
@@ -244,7 +246,10 @@
       "score": "{{wins}} de {{total}}",
       "streak": "{{count}} seguidas",
       "no-winner": "Sin ganador",
-      "no-sessions": "Sin partidas registradas"
+      "no-sessions": "Sin partidas registradas",
+      "coop-shared_one": "{{count}} comparte la noche",
+      "coop-shared_other": "Los {{count}} comparten la noche",
+      "coop-only": "solo cooperativo"
     },
     "games": {
       "title": "Lo más jugado en las noches",

@@ -67,6 +67,9 @@ export interface FinishRunningGame {
 	locationId: number | null;
 	comment: string | null;
 	expansionIds: number[];
+	isCoop: boolean;
+	teamWon: boolean | null;
+	teamScore: number | null;
 }
 
 export interface CreateGameNight {

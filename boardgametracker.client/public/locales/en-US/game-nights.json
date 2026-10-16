@@ -120,7 +120,9 @@
       "title": "Start a game",
       "game": "Game",
       "players": "Who plays?",
-      "save": "Start"
+      "save": "Start",
+      "coop-default": "Co-op game: you pick “We won” or “We lost” when you finish it.",
+      "coop-optional": "This game can be played co-op: you can switch it on when you finish it."
     },
     "log": {
       "button": "Log a finished game",
@@ -244,7 +246,10 @@
       "score": "{{wins}} of {{total}}",
       "streak": "{{count}} in a row",
       "no-winner": "No winner",
-      "no-sessions": "No sessions logged"
+      "no-sessions": "No sessions logged",
+      "coop-shared_one": "{{count}} shares the night",
+      "coop-shared_other": "All {{count}} share the night",
+      "coop-only": "co-op only"
     },
     "games": {
       "title": "Most played at game nights",

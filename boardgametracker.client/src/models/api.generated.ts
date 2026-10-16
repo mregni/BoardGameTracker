@@ -575,43 +575,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/changedetection/test": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ChangeDetectionConnectionTestDto"];
-                        "application/json": components["schemas"]["ChangeDetectionConnectionTestDto"];
-                        "text/json": components["schemas"]["ChangeDetectionConnectionTestDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/changedetection/watch/{watchId}": {
         parameters: {
             query?: never;
@@ -1994,6 +1957,93 @@ export interface paths {
                         "text/plain": string;
                         "application/json": string;
                         "text/json": string;
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/integrations/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["IntegrationStatusDto"][];
+                        "application/json": components["schemas"]["IntegrationStatusDto"][];
+                        "text/json": components["schemas"]["IntegrationStatusDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/integrations/{integration}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    integration: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["IntegrationStatusDto"];
+                        "application/json": components["schemas"]["IntegrationStatusDto"];
+                        "text/json": components["schemas"]["IntegrationStatusDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -4397,11 +4447,6 @@ export interface components {
             source: string;
             isReadOnly: boolean;
         };
-        ChangeDetectionConnectionTestDto: {
-            ok: boolean;
-            status: components["schemas"]["ChangeDetectionStatus"];
-            version: string | null;
-        };
         /** @enum {string} */
         ChangeDetectionStatus: "ok" | "notConfigured" | "misconfigured" | "unauthorized" | "watchNotFound" | "unreachable" | "parseError" | "pending";
         ChangeDetectionWatchInfo: {
@@ -4466,6 +4511,8 @@ export interface components {
             bggId?: number | null;
             state?: components["schemas"]["GameState"];
             hasScoring?: boolean;
+            hasCoopMode?: boolean;
+            coopByDefault?: boolean;
             /** Format: double */
             buyingPrice?: number | null;
             /** Format: double */
@@ -4547,6 +4594,10 @@ export interface components {
             locationId?: number | null;
             /** Format: int32 */
             gameNightId?: number | null;
+            isCoop?: boolean;
+            teamWon?: boolean | null;
+            /** Format: double */
+            teamScore?: number | null;
             playerSessions?: components["schemas"]["CreatePlayerSessionCommand"][];
             expansionIds?: number[];
         };
@@ -4624,6 +4675,10 @@ export interface components {
         };
         FinishRunningGameCommand: {
             playerSessions: components["schemas"]["CreatePlayerSessionCommand"][];
+            isCoop: boolean;
+            teamWon: boolean | null;
+            /** Format: double */
+            teamScore: number | null;
             /** Format: date-time */
             start: string | null;
             /** Format: int32 */
@@ -4672,6 +4727,8 @@ export interface components {
             bggId: number | null;
             state: components["schemas"]["GameState"];
             hasScoring: boolean;
+            hasCoopMode: boolean;
+            coopByDefault: boolean;
             /** Format: double */
             buyingPrice: number | null;
             /** Format: double */
@@ -4852,6 +4909,10 @@ export interface components {
             lastPlayed: string | null;
             /** Format: int32 */
             expansionCount: number | null;
+            /** Format: int32 */
+            coopWinCount: number;
+            /** Format: int32 */
+            coopLossCount: number;
         };
         GameStatisticsResponse: {
             gameStats: components["schemas"]["GameStatistics"];
@@ -4897,6 +4958,17 @@ export interface components {
             key: string;
             /** Format: int32 */
             value: number;
+        };
+        /** @enum {string} */
+        IntegrationConnectionStatus: "ok" | "notConfigured" | "unauthorized" | "unreachable" | "rateLimited";
+        /** @enum {string} */
+        IntegrationKind: "bgg" | "changeDetection";
+        IntegrationStatusDto: {
+            integration: components["schemas"]["IntegrationKind"];
+            status: components["schemas"]["IntegrationConnectionStatus"];
+            /** Format: date-time */
+            checkedAt: string;
+            messageKey: string;
         };
         Language: {
             /** Format: int32 */
@@ -5077,6 +5149,8 @@ export interface components {
             winnerIds: number[];
             /** Format: int32 */
             winnerStreak: number;
+            coopOnly: boolean;
+            sharedThroughCoop: boolean;
         };
         NightWinnerStatisticDto: {
             /** Format: int32 */
@@ -5204,6 +5278,10 @@ export interface components {
             totalPlayedTime: number;
             /** Format: int32 */
             distinctGameCount: number;
+            /** Format: int32 */
+            coopWinCount: number;
+            /** Format: int32 */
+            coopLossCount: number;
             mostPlayedGames: components["schemas"]["MostPlayedGame"][];
         };
         PlayerStreakDto: {
@@ -5279,6 +5357,8 @@ export interface components {
             /** Format: int32 */
             winnerId: number | null;
             winnerName: string | null;
+            isCoop: boolean;
+            teamWon: boolean | null;
         };
         RecentGameDto: {
             /** Format: int32 */
@@ -5344,6 +5424,10 @@ export interface components {
             comment: string;
             /** Format: int32 */
             gameId: number;
+            isCoop: boolean;
+            teamWon: boolean | null;
+            /** Format: double */
+            teamScore: number | null;
             /** Format: date-time */
             start: string;
             /** Format: date-time */
@@ -5464,6 +5548,8 @@ export interface components {
             bggId?: number | null;
             state?: components["schemas"]["GameState"];
             hasScoring?: boolean;
+            hasCoopMode?: boolean;
+            coopByDefault?: boolean;
             /** Format: double */
             buyingPrice?: number | null;
             /** Format: double */
@@ -5570,6 +5656,10 @@ export interface components {
             locationId?: number | null;
             /** Format: int32 */
             gameNightId?: number | null;
+            isCoop?: boolean;
+            teamWon?: boolean | null;
+            /** Format: double */
+            teamScore?: number | null;
             playerSessions?: components["schemas"]["CreatePlayerSessionCommand"][];
             expansionIds?: number[];
             /** Format: int32 */

@@ -24,6 +24,7 @@ import {
 } from "@/models";
 import { SessionFormFields } from "@/routes/sessions/-components/SessionFormFields";
 import { useSessionFormState } from "@/routes/sessions/-hooks/useSessionFormState";
+import { applyPlayMode, coopDefaults } from "@/routes/sessions/-utils/coopSession";
 import { sessionFormOpts } from "@/routes/sessions/-utils/sessionFormOpts";
 import { formatMinutesToDuration } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -82,11 +83,11 @@ export const PlaySessionSheet = (props: Props) => {
 			...defaults,
 			locationId: gameNight.locationId,
 			playerSessions: initialPlayers,
+			...coopDefaults(games.find((x) => x.id === defaults.gameId)),
 		},
 		onSubmit: async ({ value }) => {
 			const session = CreateSessionSchema.parse({
-				...value,
-				playerSessions: value.playerSessions.map((x) => (sessionState.hasScoring ? x : { ...x, score: null })),
+				...applyPlayMode(value, sessionState.hasScoring),
 				expansionIds: sessionState.selectedExpansionIds,
 				gameNightId: gameNight.id,
 			});

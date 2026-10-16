@@ -86,6 +86,9 @@ const session: Session = {
 	],
 	expansions: [],
 	gameNightId: null,
+	isCoop: false,
+	teamWon: null,
+	teamScore: null,
 };
 
 vi.mock("@/services/queries/sessions", () => ({
@@ -189,6 +192,9 @@ describe("Update session page", () => {
 			start: new Date(2026, 9, 10, 20, 15),
 			expansionIds: [],
 			gameNightId: null,
+			isCoop: false,
+			teamWon: null,
+			teamScore: null,
 			playerSessions: [
 				{ playerId: 7, won: false, firstPlay: true, score: 31 },
 				{ playerId: 8, won: true, firstPlay: false, score: 48 },

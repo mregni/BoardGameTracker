@@ -86,6 +86,27 @@ describe("NightWinnerHistoryCard", () => {
 		expect(within(items[3]).getByText("stats.history.no-sessions")).toBeInTheDocument();
 	});
 
+	it("shares a night won through co-op with the whole team and marks a co-op only night", () => {
+		const [first, second] = statistics.history;
+		render(
+			<NightWinnerHistoryCard
+				history={[
+					{ ...first, winnerIds: [1, 2, 3], coopOnly: true, sharedThroughCoop: true },
+					{ ...second, coopOnly: false, sharedThroughCoop: false },
+				]}
+				lookup={lookup}
+			/>,
+		);
+
+		const items = screen.getAllByRole("listitem");
+		expect(within(items[0]).getByText("stats.history.coop-shared")).toBeInTheDocument();
+		expect(within(items[0]).queryByText("Kathleen")).not.toBeInTheDocument();
+		expect(within(items[0]).queryByText("stats.history.streak")).not.toBeInTheDocument();
+		expect(within(items[0]).getByText("stats.history.games · stats.history.coop-only · Thuis")).toBeInTheDocument();
+		expect(within(items[1]).queryByText("stats.history.coop-shared")).not.toBeInTheDocument();
+		expect(within(items[1]).getByText("stats.history.games · Thuis")).toBeInTheDocument();
+	});
+
 	it("shows every night on demand and folds them back", async () => {
 		render(<NightWinnerHistoryCard history={statistics.history} lookup={lookup} />);
 

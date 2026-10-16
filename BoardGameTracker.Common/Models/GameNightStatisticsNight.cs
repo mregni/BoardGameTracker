@@ -20,5 +20,6 @@ public class GameNightStatisticsSession
     public int GameId { get; set; }
     public DateTime Start { get; set; }
     public DateTime End { get; set; }
+    public bool IsCoop { get; set; }
     public List<NightResult> Results { get; set; } = [];
 }

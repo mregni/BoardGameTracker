@@ -107,6 +107,9 @@ public class RunningGameService : IRunningGameService
             Comment = command.Comment,
             ExpansionIds = command.ExpansionIds,
             PlayerSessions = command.PlayerSessions,
+            IsCoop = command.IsCoop,
+            TeamWon = command.TeamWon,
+            TeamScore = command.TeamScore,
         });
         _logger.LogInformation("Running game {RunningGameId} finished as session {SessionId}", id, session.Id);
 

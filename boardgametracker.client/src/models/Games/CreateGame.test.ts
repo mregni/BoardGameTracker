@@ -7,6 +7,8 @@ const baseGame = {
 	additionDate: "2026-01-01",
 	state: GameState.Wanted,
 	hasScoring: false,
+	hasCoopMode: false,
+	coopByDefault: false,
 };
 
 describe("CreateGameSchema yearPublished and minAge", () => {

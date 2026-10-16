@@ -297,6 +297,37 @@ public class GameNightStatisticsServiceTests
     }
 
     [Fact]
+    public async Task GetStatistics_ShouldShareTheNight_WithEveryoneAtTheTable_WhenTheTeamWonACoopNight()
+    {
+        SetupEnabled();
+        var coopWin = Played(13, January, 60, (1, true), (2, true), (3, true));
+        coopWin.IsCoop = true;
+        var coopLoss = Played(13, January.AddHours(1), 60, (1, false), (2, false), (3, false));
+        coopLoss.IsCoop = true;
+        var mixedCoop = Played(13, February, 60, (1, true), (2, true));
+        mixedCoop.IsCoop = true;
+        SetupNights(
+            Night(1, January, 1, [1, 2, 3], coopWin, coopLoss),
+            Night(2, February, 1, [1, 2], mixedCoop, Played(10, February.AddHours(1), 30, (1, true), (2, false))));
+
+        var result = await _service.GetStatistics(GameNightStatisticsPeriod.AllTime);
+
+        var coopNight = result.History.Single(x => x.GameNightId == 1);
+        coopNight.WinnerIds.Should().Equal(1, 2, 3);
+        coopNight.MostWins.Should().Be(1);
+        coopNight.CoopOnly.Should().BeTrue();
+        coopNight.SharedThroughCoop.Should().BeTrue();
+        var mixedNight = result.History.Single(x => x.GameNightId == 2);
+        mixedNight.WinnerIds.Should().Equal(1);
+        mixedNight.CoopOnly.Should().BeFalse();
+        mixedNight.SharedThroughCoop.Should().BeFalse();
+        result.TiedNights.Should().Be(1);
+        result.Winners.Select(x => (x.PlayerId, x.NightsWon)).Should().Equal((1, 2), (3, 1), (2, 1));
+        VerifyLoaded();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public async Task GetStatistics_ShouldBreakTheWinnerStreak_WhenNobodyWonANight()
     {
         SetupEnabled();

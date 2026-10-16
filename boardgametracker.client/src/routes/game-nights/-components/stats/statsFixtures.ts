@@ -51,6 +51,8 @@ export const buildStatistics = (overrides: Partial<GameNightStatistics> = {}): G
 			mostWins: 3,
 			winnerIds: [1],
 			winnerStreak: 3,
+			coopOnly: false,
+			sharedThroughCoop: false,
 		},
 		{
 			gameNightId: 30,
@@ -61,6 +63,8 @@ export const buildStatistics = (overrides: Partial<GameNightStatistics> = {}): G
 			mostWins: 1,
 			winnerIds: [1, 3],
 			winnerStreak: 2,
+			coopOnly: false,
+			sharedThroughCoop: false,
 		},
 		{
 			gameNightId: 29,
@@ -71,6 +75,8 @@ export const buildStatistics = (overrides: Partial<GameNightStatistics> = {}): G
 			mostWins: 0,
 			winnerIds: [],
 			winnerStreak: 0,
+			coopOnly: false,
+			sharedThroughCoop: false,
 		},
 		{
 			gameNightId: 28,
@@ -81,6 +87,8 @@ export const buildStatistics = (overrides: Partial<GameNightStatistics> = {}): G
 			mostWins: 0,
 			winnerIds: [],
 			winnerStreak: 0,
+			coopOnly: false,
+			sharedThroughCoop: false,
 		},
 		{
 			gameNightId: 27,
@@ -91,6 +99,8 @@ export const buildStatistics = (overrides: Partial<GameNightStatistics> = {}): G
 			mostWins: 1,
 			winnerIds: [2],
 			winnerStreak: 1,
+			coopOnly: false,
+			sharedThroughCoop: false,
 		},
 		{
 			gameNightId: 26,
@@ -101,6 +111,8 @@ export const buildStatistics = (overrides: Partial<GameNightStatistics> = {}): G
 			mostWins: 1,
 			winnerIds: [2],
 			winnerStreak: 1,
+			coopOnly: false,
+			sharedThroughCoop: false,
 		},
 	],
 	games: [

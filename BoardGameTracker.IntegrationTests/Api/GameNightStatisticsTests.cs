@@ -6,6 +6,7 @@ using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.IntegrationTests.Infrastructure;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -140,6 +141,42 @@ public class GameNightStatisticsTests : IAsyncLifetime
         statistics.Nights.Should().Be(4);
         statistics.TotalNights.Should().Be(5);
         statistics.GamesPlayed.Should().Be(6);
+    }
+
+    [Fact]
+    public async Task Statistics_ShouldShareACoopNight_WithEveryoneOnTheWinningTeam()
+    {
+        int coopNightId;
+        await using (var scope = _fixture.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+            var anna = await db.Players.SingleAsync(x => x.Id == _annaId);
+            var bram = await db.Players.SingleAsync(x => x.Id == _bramId);
+            var cleo = await db.Players.SingleAsync(x => x.Id == _cleoId);
+            var azul = await db.Games.SingleAsync(x => x.Id == _azulId);
+            var home = await db.Locations.FirstAsync();
+            var night = Night(db, "Co-op night", _today.AddDays(-3), anna, home, [anna, bram, cleo], []);
+            await db.SaveChangesAsync();
+            var session = new Session(azul.Id, night.StartDate, night.StartDate.AddMinutes(50), string.Empty);
+            session.SetGameNight(night.Id);
+            session.AddPlayerSession(anna.Id, null, false, false);
+            session.AddPlayerSession(bram.Id, null, false, false);
+            session.AddPlayerSession(cleo.Id, null, false, false);
+            session.MarkAsCoop(true, null);
+            db.Sessions.Add(session);
+            await db.SaveChangesAsync();
+            coopNightId = night.Id;
+        }
+
+        using var user = await _fixture.CreateClientAsAsync("user");
+
+        var statistics = await user.GetFromJsonAsync<GameNightStatisticsDto>("/api/gamenight/statistics", IntegrationFixture.Json);
+
+        var coopNight = statistics!.History.Single(x => x.GameNightId == coopNightId);
+        coopNight.WinnerIds.Should().BeEquivalentTo([_annaId, _bramId, _cleoId]);
+        coopNight.CoopOnly.Should().BeTrue();
+        coopNight.SharedThroughCoop.Should().BeTrue();
+        statistics.History.Single(x => x.GameNightId == _firstNightId).CoopOnly.Should().BeFalse();
     }
 
     [Fact]

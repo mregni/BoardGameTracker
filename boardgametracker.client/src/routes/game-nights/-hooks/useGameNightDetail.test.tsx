@@ -97,6 +97,9 @@ describe("useGameNightDetail", () => {
 			locationId: 5,
 			comment: null,
 			expansionIds: [],
+			isCoop: false,
+			teamWon: null,
+			teamScore: null,
 		};
 
 		await act(() => result.current.finishGame({ id: 12, command }));
@@ -122,6 +125,9 @@ describe("useGameNightDetail", () => {
 						locationId: 5,
 						comment: null,
 						expansionIds: [],
+						isCoop: false,
+						teamWon: null,
+						teamScore: null,
 					},
 				})
 				.catch(() => undefined),

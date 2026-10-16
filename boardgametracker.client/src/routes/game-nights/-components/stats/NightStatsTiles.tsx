@@ -17,7 +17,7 @@ export const NightStatsTiles = ({ statistics, uiLanguage }: Props) => {
 	const { nights, gamesPlayed, totalMinutes, averageTable, averageDaysBetweenNights } = statistics;
 
 	const frequency = () => {
-		if (averageDaysBetweenNights === null) return null;
+		if (averageDaysBetweenNights === null) return undefined;
 		if (averageDaysBetweenNights >= DAYS_PER_WEEK) {
 			return t("stats.tiles.every-week", { count: Math.round(averageDaysBetweenNights / DAYS_PER_WEEK) });
 		}
@@ -28,17 +28,17 @@ export const NightStatsTiles = ({ statistics, uiLanguage }: Props) => {
 
 	return (
 		<div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-			<BgtTextStatistic title={t("stats.tiles.nights")} content={nights} hint={frequency()} textSize="6" />
+			<BgtTextStatistic title={t("stats.tiles.nights")} content={nights} caption={frequency()} textSize="6" />
 			<BgtTextStatistic
 				title={t("stats.tiles.games")}
 				content={gamesPlayed}
-				hint={t("stats.tiles.per-night", { value: format.decimal(perNight(gamesPlayed), 1) })}
+				caption={t("stats.tiles.per-night", { value: format.decimal(perNight(gamesPlayed), 1) })}
 				textSize="6"
 			/>
 			<BgtTextStatistic
 				title={t("stats.tiles.play-time")}
 				content={formatMinutesToDuration(totalMinutes, ["hours", "minutes"], uiLanguage) ?? format.integer(0)}
-				hint={t("stats.tiles.per-night", {
+				caption={t("stats.tiles.per-night", {
 					value: formatMinutesToDuration(perNight(totalMinutes), ["hours", "minutes"], uiLanguage) ?? format.integer(0),
 				})}
 				textSize="6"
@@ -46,7 +46,7 @@ export const NightStatsTiles = ({ statistics, uiLanguage }: Props) => {
 			<BgtTextStatistic
 				title={t("stats.tiles.table")}
 				content={format.decimal(averageTable, 1)}
-				hint={t("stats.tiles.table-hint")}
+				caption={t("stats.tiles.table-hint")}
 				textSize="6"
 			/>
 		</div>

@@ -40,6 +40,7 @@ public sealed class GameNightStatisticsSpec : Specification<GameNight, GameNight
                     GameId = s.GameId,
                     Start = s.Start,
                     End = s.End,
+                    IsCoop = s.IsCoop,
                     Results = s.PlayerSessions.Select(p => new NightResult(p.PlayerId, p.Won)).ToList()
                 })
                 .ToList()

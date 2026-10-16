@@ -42,6 +42,8 @@ public class NightHistoryDto
     public int MostWins { get; set; }
     public List<int> WinnerIds { get; set; } = [];
     public int WinnerStreak { get; set; }
+    public bool CoopOnly { get; set; }
+    public bool SharedThroughCoop { get; set; }
 }
 
 public class NightGameStatisticDto

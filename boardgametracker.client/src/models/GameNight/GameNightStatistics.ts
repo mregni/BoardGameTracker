@@ -21,6 +21,8 @@ export interface NightHistory {
 	mostWins: number;
 	winnerIds: number[];
 	winnerStreak: number;
+	coopOnly: boolean;
+	sharedThroughCoop: boolean;
 }
 
 export interface NightGameStatistic {

@@ -147,7 +147,11 @@ public class GameNightStatisticsService : IGameNightStatisticsService
                 GamesPlayed = x.Night.Sessions.Count,
                 MostWins = x.Winners.MostWins,
                 WinnerIds = x.Winners.WinnerIds,
-                WinnerStreak = streakPerNight.GetValueOrDefault(x.Night.Id)
+                WinnerStreak = streakPerNight.GetValueOrDefault(x.Night.Id),
+                CoopOnly = x.Night.Sessions.Count > 0 && x.Night.Sessions.All(s => s.IsCoop),
+                SharedThroughCoop = x.Winners.WinnerIds.Count > 0 && x.Night.Sessions
+                    .Where(s => s.Results.Any(r => r.Won))
+                    .All(s => s.IsCoop)
             })
             .ToList();
     }

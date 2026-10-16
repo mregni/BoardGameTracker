@@ -73,5 +73,13 @@
       "first-play": "Primera partida",
       "remove": "Quitar a {{name}}"
     }
+  },
+  "coop": {
+    "played": "Jugado en cooperativo",
+    "result": "Resultado del equipo",
+    "won": "Ganamos",
+    "lost": "Perdimos",
+    "team-score": "Puntuación del equipo",
+    "result-required": "Elige si el equipo ganó o perdió"
   }
 }

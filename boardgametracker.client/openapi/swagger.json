@@ -554,35 +554,6 @@
         }
       }
     },
-    "/api/changedetection/test": {
-      "get": {
-        "tags": [
-          "ChangeDetection"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangeDetectionConnectionTestDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangeDetectionConnectionTestDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangeDetectionConnectionTestDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/changedetection/watch/{watchId}": {
       "get": {
         "tags": [
@@ -2248,6 +2219,103 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/integrations/status": {
+      "get": {
+        "tags": [
+          "Integrations"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationStatusDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationStatusDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationStatusDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/integrations/{integration}/test": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "parameters": [
+          {
+            "name": "integration",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -5063,22 +5131,6 @@
         },
         "additionalProperties": false
       },
-      "ChangeDetectionConnectionTestDto": {
-        "type": "object",
-        "properties": {
-          "ok": {
-            "type": "boolean"
-          },
-          "status": {
-            "$ref": "#/components/schemas/ChangeDetectionStatus"
-          },
-          "version": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ChangeDetectionStatus": {
         "enum": [
           "ok",
@@ -5295,6 +5347,12 @@
             "$ref": "#/components/schemas/GameState"
           },
           "hasScoring": {
+            "type": "boolean"
+          },
+          "hasCoopMode": {
+            "type": "boolean"
+          },
+          "coopByDefault": {
             "type": "boolean"
           },
           "buyingPrice": {
@@ -5575,6 +5633,18 @@
             "format": "int32",
             "nullable": true
           },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "playerSessions": {
             "type": "array",
             "items": {
@@ -5809,6 +5879,18 @@
               "$ref": "#/components/schemas/CreatePlayerSessionCommand"
             }
           },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "start": {
             "type": "string",
             "format": "date-time",
@@ -5948,6 +6030,12 @@
             "$ref": "#/components/schemas/GameState"
           },
           "hasScoring": {
+            "type": "boolean"
+          },
+          "hasCoopMode": {
+            "type": "boolean"
+          },
+          "coopByDefault": {
             "type": "boolean"
           },
           "buyingPrice": {
@@ -6474,6 +6562,14 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "coopWinCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coopLossCount": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -6620,6 +6716,42 @@
           "value": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "IntegrationConnectionStatus": {
+        "enum": [
+          "ok",
+          "notConfigured",
+          "unauthorized",
+          "unreachable",
+          "rateLimited"
+        ],
+        "type": "string"
+      },
+      "IntegrationKind": {
+        "enum": [
+          "bgg",
+          "changeDetection"
+        ],
+        "type": "string"
+      },
+      "IntegrationStatusDto": {
+        "type": "object",
+        "properties": {
+          "integration": {
+            "$ref": "#/components/schemas/IntegrationKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/IntegrationConnectionStatus"
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "messageKey": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -7086,6 +7218,12 @@
           "winnerStreak": {
             "type": "integer",
             "format": "int32"
+          },
+          "coopOnly": {
+            "type": "boolean"
+          },
+          "sharedThroughCoop": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -7443,6 +7581,14 @@
             "type": "integer",
             "format": "int32"
           },
+          "coopWinCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coopLossCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "mostPlayedGames": {
             "type": "array",
             "items": {
@@ -7645,6 +7791,13 @@
           "winnerName": {
             "type": "string",
             "nullable": true
+          },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -7824,6 +7977,18 @@
           "gameId": {
             "type": "integer",
             "format": "int32"
+          },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
           },
           "start": {
             "type": "string",
@@ -8213,6 +8378,12 @@
           "hasScoring": {
             "type": "boolean"
           },
+          "hasCoopMode": {
+            "type": "boolean"
+          },
+          "coopByDefault": {
+            "type": "boolean"
+          },
           "buyingPrice": {
             "maximum": 1.7976931348623157E+308,
             "minimum": 0,
@@ -8573,6 +8744,18 @@
             "format": "int32",
             "nullable": true
           },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "playerSessions": {
             "type": "array",
             "items": {
@@ -8765,6 +8948,9 @@
     },
     {
       "name": "Image"
+    },
+    {
+      "name": "Integrations"
     },
     {
       "name": "Leaderboard"

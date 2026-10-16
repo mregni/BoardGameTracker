@@ -22,6 +22,14 @@ const Outcome = ({ night, lookup }: { night: NightHistory; lookup: StatsLookup }
 		return <span className="text-xs text-gray-400">{t("stats.history.no-sessions")}</span>;
 	}
 
+	if (night.sharedThroughCoop) {
+		return (
+			<span className="rounded-full bg-ok/15 px-2 py-0.5 text-xs font-semibold text-ok">
+				{t("stats.history.coop-shared", { count: night.winnerIds.length })}
+			</span>
+		);
+	}
+
 	if (night.winnerIds.length === 0) {
 		return (
 			<span className="rounded-full bg-card-light px-2 py-0.5 text-xs font-semibold text-gray-400">
@@ -85,7 +93,13 @@ export const NightWinnerHistoryCard = ({ history, lookup }: Props) => {
 									<span className="min-w-0">
 										<strong className="block truncate text-sm text-white">{night.title}</strong>
 										<span className="block text-xs text-gray-400">
-											{[t("stats.history.games", { count: night.gamesPlayed }), location].filter(Boolean).join(" · ")}
+											{[
+												t("stats.history.games", { count: night.gamesPlayed }),
+												night.coopOnly && t("stats.history.coop-only"),
+												location,
+											]
+												.filter(Boolean)
+												.join(" · ")}
 										</span>
 									</span>
 									<span className="col-start-2 flex flex-wrap items-center gap-1 @md:col-start-3 @md:max-w-[55cqw] @md:justify-end">
