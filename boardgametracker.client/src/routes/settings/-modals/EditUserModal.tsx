@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtInputField, BgtSelect } from "@/components/BgtForm";
@@ -117,14 +116,13 @@ export const EditUserModal = ({ open, close, user, players, users, onSubmit, isL
 						</form.Field>
 					</div>
 					{error && <div className="text-error text-sm mb-2">{error}</div>}
-					<BgtDialogClose>
-						<BgtButton variant="cancel" onClick={close} disabled={isLoading}>
-							{t("common:cancel")}
-						</BgtButton>
-						<BgtButton variant="primary" type="submit" disabled={isLoading}>
-							{t("common:save")}
-						</BgtButton>
-					</BgtDialogClose>
+					<BgtDialogFooter
+						onCancel={close}
+						confirmLabel={t("common:save")}
+						confirmType="submit"
+						disabled={isLoading}
+						cancelDisabled={isLoading}
+					/>
 				</form>
 			</BgtDialogContent>
 		</BgtDialog>

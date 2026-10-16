@@ -56,7 +56,9 @@
     "show-more": "Mostrar más filtros",
     "show-less": "Mostrar menos filtros",
     "no-match": "Ningún juego coincide con los filtros actuales.",
-    "clear": "Borrar filtros"
+    "clear": "Borrar filtros",
+    "state-any": "Estado: todos",
+    "language-any": "Idioma: todos"
   },
   "columns": {
     "title": "Título",

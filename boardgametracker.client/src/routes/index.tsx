@@ -16,7 +16,7 @@ import { getProfile } from "@/services/queries/auth";
 import { getDashboardStatistics } from "@/services/queries/dashboard";
 import { getPlayer, getPlayerStatistics } from "@/services/queries/players";
 import { formatMinutesToDuration } from "@/utils/dateUtils";
-import { formatPrice } from "@/utils/priceUtils";
+import { formatPrice } from "@/utils/numberUtils";
 import { GameStateChartCard } from "./-components/dashboard/GameStateChart";
 import { MostPlayedDashboardGamesCard } from "./-components/dashboard/MostPlayedDashboardGames";
 import { RecentActivityCard } from "./-components/dashboard/RecentActivity";

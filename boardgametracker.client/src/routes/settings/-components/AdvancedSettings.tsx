@@ -56,15 +56,16 @@ export const AdvancedSettings = withForm({
 								<BgtText size="2" weight="medium" color="white">
 									{t("advanced.version-track.label")}
 								</BgtText>
-								<div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-2" data-testid="version-tracks">
 									{VERSION_TRACKS.map((track) => (
 										<button
 											key={track.id}
 											type="button"
 											onClick={() => field.handleChange(track.id)}
 											disabled={disabled || !!overrides.versionTrack}
+											aria-pressed={field.state.value === track.id}
 											className={cx(
-												"p-3 rounded-lg border transition-all text-left",
+												"flex h-full flex-col items-start justify-start p-3 rounded-lg border transition-all text-left",
 												field.state.value === track.id
 													? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
 													: "bg-background border-white/10 hover:border-white/20",

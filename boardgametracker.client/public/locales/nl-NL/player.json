@@ -47,7 +47,8 @@
   "cards": {
     "games": "Spellen",
     "win-record": "Winst/verlies",
-    "most-played-games": "Meest gespeelde spellen"
+    "most-played-games": "Meest gespeelde spellen",
+    "win-record-summary": "Gewonnen: {{wins}}, verloren: {{losses}}, totaal: {{total}}"
   },
   "titles": {
     "achievements": "Prestaties"

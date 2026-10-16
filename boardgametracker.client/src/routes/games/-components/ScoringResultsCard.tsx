@@ -3,7 +3,7 @@ import Target from "@/assets/icons/target.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtProgressBar } from "@/components/BgtProgressBar/BgtProgressBar";
 import { BgtText } from "@/components/BgtText/BgtText";
-import { RoundDecimal } from "@/utils/numberUtils";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { usePlayerById } from "../../-hooks/usePlayerById";
 import { SCORING_COLORS } from "../-utils/gameColorMappings";
 
@@ -21,6 +21,7 @@ export const ScoringResultsCard = (props: Props) => {
 	const { scoreRankChart } = props;
 	const { t } = useTranslation("game");
 	const { playerById } = usePlayerById();
+	const { integer } = useNumberFormat();
 
 	if (scoreRankChart.length === 0) return null;
 
@@ -37,7 +38,7 @@ export const ScoringResultsCard = (props: Props) => {
 								<BgtText color="primary">{playerById(item.playerId)?.name}</BgtText>
 							</div>
 							<BgtText size="5" weight="bold" color="cyan">
-								{RoundDecimal(item.score)}
+								{integer(item.score)}
 							</BgtText>
 						</div>
 						<BgtProgressBar
@@ -47,7 +48,7 @@ export const ScoringResultsCard = (props: Props) => {
 							max={maxScore}
 							color={SCORING_COLORS[item.key]}
 							aria-label={t(`charts.top-scoring.${item.key}`)}
-							aria-valuetext={String(RoundDecimal(item.score))}
+							aria-valuetext={integer(item.score)}
 						/>
 					</div>
 				))}

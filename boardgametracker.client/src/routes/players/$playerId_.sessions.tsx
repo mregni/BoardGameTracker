@@ -18,7 +18,9 @@ import { getPlayer, getPlayerSessions, getPlayers } from "@/services/queries/pla
 import { getSettings } from "@/services/queries/settings";
 import { toDisplay } from "@/utils/dateUtils";
 import { playerIdParamSchema } from "@/utils/routeSchemas";
+import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
+import { SessionCardList } from "../sessions/-components/SessionCardList";
 import { SessionCommentCell } from "../sessions/-components/SessionCommentCell";
 import { usePlayerSessionData } from "./-hooks/usePlayerSessionData";
 
@@ -39,6 +41,7 @@ function RouteComponent() {
 	const { t } = useTranslation(["common", "sessions"]);
 	const navigate = useNavigate();
 	const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
+	const goBack = useBack(`/players/${playerId}`);
 	const { canWrite } = usePermissions();
 
 	const { sessions, deleteSession, settings, games, player, players, isLoading } = usePlayerSessionData({
@@ -148,7 +151,7 @@ function RouteComponent() {
 					return (
 						<>
 							<BgtPageHeader
-								backAction={() => navigate({ to: `/players/${playerId}` })}
+								backAction={goBack}
 								header={`${player.name} - ${t("sessions:title")}`}
 								actions={
 									canWrite
@@ -163,11 +166,26 @@ function RouteComponent() {
 								}
 							/>
 							<BgtCard className="p-4">
-								<BgtDataTable
-									columns={columns}
-									data={sessions}
-									noDataMessage={t("no-data-yet")}
-									widths={["w-[70px]", "w-[100px]", "w-[75px]"]}
+								<div className="hidden md:block">
+									<BgtDataTable
+										columns={columns}
+										data={sessions}
+										noDataMessage={t("no-data-yet")}
+										widths={["w-[70px]", "w-[100px]", "w-[75px]"]}
+									/>
+								</div>
+								<SessionCardList
+									className="md:hidden"
+									sessions={sessions}
+									players={players}
+									games={games}
+									dateFormat={settings.dateFormat}
+									timeFormat={settings.timeFormat}
+									uiLanguage={settings.uiLanguage}
+									showGame
+									canWrite={canWrite}
+									onEdit={(sessionId) => navigate({ to: `/sessions/update/${sessionId}` })}
+									onDelete={setSessionToDelete}
 								/>
 								<BgtDeleteModal
 									open={sessionToDelete !== null}

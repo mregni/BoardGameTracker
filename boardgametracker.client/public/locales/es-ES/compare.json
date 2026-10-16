@@ -30,8 +30,10 @@
     "most-won-game_one": "{{player}} ganó más veces a {{opponent}} en {{game}} ({{count}} vez)",
     "most-won-game_other": "{{player}} ganó más veces a {{opponent}} en {{game}} ({{count}} veces)",
     "last-session": "{{player}} ganó la última partida en {{game}}",
-    "most-played-together": "Más jugado juntos: {{game}} ({{count}} partidas)",
-    "closest-game": "{{player}} ganó por solo {{points}} puntos en {{game}}",
+    "most-played-together_one": "Más jugado juntos: {{game}} ({{count}} partida)",
+    "most-played-together_other": "Más jugado juntos: {{game}} ({{count}} partidas)",
+    "closest-game_one": "{{player}} ganó por solo {{count}} punto en {{game}}",
+    "closest-game_other": "{{player}} ganó por solo {{count}} puntos en {{game}}",
     "first-game-together": "Primera partida juntos: {{game}} el {{date}}"
   },
   "stats": {

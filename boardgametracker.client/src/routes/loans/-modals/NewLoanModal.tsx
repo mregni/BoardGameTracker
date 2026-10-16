@@ -4,13 +4,12 @@ import { cx } from "class-variance-authority";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ToggleButton, ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { Bars } from "react-loading-icons";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtDatePicker, BgtSelect } from "@/components/BgtForm";
@@ -239,22 +238,19 @@ const NewLoanModal = (props: ModalProps) => {
 							)}
 						</form.Subscribe>
 					</div>
-					<BgtDialogClose>
-						<BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={close}>
-							{t("common:cancel")}
-						</BgtButton>
-						<form.Subscribe selector={(state) => state.values.gameId}>
-							{(gameId) => {
-								const game = games.find((x) => x.id === Number(gameId));
-								return (
-									<BgtButton type="submit" disabled={isLoading} className="flex-1" variant="primary">
-										{isLoading && <Bars className="size-4" />}
-										{game ? t("new.lend-game", { game: game.title }) : t("new.save")}
-									</BgtButton>
-								);
-							}}
-						</form.Subscribe>
-					</BgtDialogClose>
+					<form.Subscribe selector={(state) => state.values.gameId}>
+						{(gameId) => {
+							const game = games.find((x) => x.id === Number(gameId));
+							return (
+								<BgtDialogFooter
+									onCancel={close}
+									confirmLabel={game ? t("new.lend-game", { game: game.title }) : t("new.save")}
+									confirmType="submit"
+									loading={isLoading}
+								/>
+							);
+						}}
+					</form.Subscribe>
 				</form>
 			</BgtDialogContent>
 

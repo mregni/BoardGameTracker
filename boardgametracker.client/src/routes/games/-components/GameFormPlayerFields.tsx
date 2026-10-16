@@ -41,7 +41,7 @@ export const GameFormPlayerFields = withForm({
 						<BgtInputField
 							field={field}
 							label={t("price.label")}
-							type="number"
+							type="decimal"
 							placeholder={t("price.placeholder")}
 							disabled={disabled}
 							prefixLabel={currency}

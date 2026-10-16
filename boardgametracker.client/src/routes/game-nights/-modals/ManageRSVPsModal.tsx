@@ -8,9 +8,9 @@ import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtSimpleInputField } from "@/components/BgtForm/BgtSimpleInputField";
@@ -238,11 +238,7 @@ const ManageRSVPsDialog = (props: Props & { gameNight: GameNight }) => {
 					</div>
 				</div>
 
-				<BgtDialogClose className="justify-end">
-					<BgtButton variant="primary" onClick={close}>
-						{t("common:done")}
-					</BgtButton>
-				</BgtDialogClose>
+				<BgtDialogFooter confirmLabel={t("common:done")} onConfirm={close} />
 			</BgtDialogContent>
 		</BgtDialog>
 	);

@@ -9,7 +9,7 @@ import type { RecentGame } from "@/models";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 import { toRelative } from "@/utils/dateUtils";
 import i18n from "@/utils/i18n";
-import { formatPrice } from "@/utils/priceUtils";
+import { formatPrice } from "@/utils/numberUtils";
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
 	games: RecentGame[];

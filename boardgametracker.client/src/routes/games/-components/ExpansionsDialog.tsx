@@ -3,7 +3,13 @@ import { useTranslation } from "react-i18next";
 import Package from "@/assets/icons/package.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtDialog, BgtDialogContent, BgtDialogDescription, BgtDialogTitle } from "@/components/BgtDialog/BgtDialog";
+import {
+	BgtDialog,
+	BgtDialogContent,
+	BgtDialogDescription,
+	BgtDialogFooter,
+	BgtDialogTitle,
+} from "@/components/BgtDialog";
 import { BgtSimpleInputField } from "@/components/BgtForm";
 import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtText } from "@/components/BgtText/BgtText";
@@ -110,11 +116,12 @@ export const ExpansionsDialog = (props: Props) => {
 						</div>
 					</form>
 				)}
-				{canWrite && bggEnabled && (
-					<div className="flex justify-end pt-2">
-						<BgtButton onClick={onAddExpansion}>{t("expansions.add")}</BgtButton>
-					</div>
-				)}
+				<BgtDialogFooter
+					onCancel={close}
+					cancelLabel={t("common:close")}
+					confirmLabel={canWrite && bggEnabled ? t("expansions.add") : undefined}
+					onConfirm={onAddExpansion}
+				/>
 			</BgtDialogContent>
 		</BgtDialog>
 	);

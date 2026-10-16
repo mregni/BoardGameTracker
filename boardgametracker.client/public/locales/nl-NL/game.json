@@ -118,6 +118,10 @@
       "description": {
         "label": "Spelbeschrijving"
       }
+    },
+    "bgg-missing": {
+      "description": "Om spellen te zoeken en te importeren van BoardGameGeek, voeg je een BGG-API-sleutel toe via Instellingen → Integraties of stel je de omgevingsvariabele BGG_API_KEY in.",
+      "link": "Open Instellingen → Integraties"
     }
   },
   "price": {
