@@ -1,4 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,7 +22,7 @@ import { useBggGameModal } from "./-hooks/useBggGameModal";
 export const Route = createFileRoute("/games/bgg")({
 	component: WriteRouteComponent,
 	loader: async ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getSettings());
+		queryClient.query(getSettings()).catch(noop);
 	},
 });
 

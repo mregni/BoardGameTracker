@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -35,8 +36,8 @@ export const Route = createFileRoute("/settings/")({
 	component: RouteComponent,
 	validateSearch: settingsSearchSchema,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getSettings());
-		queryClient.prefetchQuery(getLanguages());
+		queryClient.query(getSettings()).catch(noop);
+		queryClient.query(getLanguages()).catch(noop);
 	},
 });
 

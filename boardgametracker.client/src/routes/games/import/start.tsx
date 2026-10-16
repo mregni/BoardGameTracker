@@ -17,7 +17,7 @@ import { zodValidator } from "@/utils/zodValidator";
 export const Route = createFileRoute("/games/import/start")({
 	component: WriteRouteComponent,
 	beforeLoad: async ({ context: { queryClient } }) => {
-		const settings = await queryClient.ensureQueryData(getSettings());
+		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
 		if (!settings.bggStatus?.isConfigured) {
 			throw redirect({ to: "/games" });
 		}

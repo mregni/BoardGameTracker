@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { noop, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Calendar from "@/assets/icons/calendar.svg?react";
@@ -29,7 +29,7 @@ import { SessionCountChartCard } from "./games/-components/SessionCountChartCard
 export const Route = createFileRoute("/")({
 	component: RouteComponent,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getDashboardStatistics());
+		queryClient.query(getDashboardStatistics()).catch(noop);
 	},
 });
 

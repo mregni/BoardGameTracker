@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
@@ -52,15 +53,15 @@ const ImportPriceInput = ({ price, onChange, placeholder, disabled, currency }: 
 export const Route = createFileRoute("/games/import/list_/$username")({
 	component: WriteRouteComponent,
 	beforeLoad: async ({ context: { queryClient } }) => {
-		const settings = await queryClient.ensureQueryData(getSettings());
+		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
 		if (!settings.bggStatus?.isConfigured) {
 			throw redirect({ to: "/games" });
 		}
 	},
 	loader: async ({ params, context: { queryClient } }) => {
-		queryClient.prefetchQuery(getBggCollection(params.username));
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getSettings());
+		queryClient.query(getBggCollection(params.username)).catch(noop);
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getSettings()).catch(noop);
 	},
 });
 
