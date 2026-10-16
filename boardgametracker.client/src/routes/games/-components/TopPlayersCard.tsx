@@ -7,9 +7,9 @@ import Trophy from "@/assets/icons/trophy.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { type TopPlayer, Trend } from "@/models";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
-import { RoundDecimal } from "@/utils/numberUtils";
 
 interface Props {
 	topPlayers: TopPlayer[];
@@ -19,6 +19,7 @@ export const TopPlayersCard = (props: Props) => {
 	const { topPlayers } = props;
 	const { t } = useTranslation(["game", "common", "statistics"]);
 	const { playerById } = usePlayerById();
+	const { decimal, percent } = useNumberFormat();
 	const winners = topPlayers.filter((player) => player.wins > 0);
 
 	return (
@@ -33,7 +34,7 @@ export const TopPlayersCard = (props: Props) => {
 							t("common:win", { count: player.wins }),
 							t("common:game", { count: player.playCount }),
 							player.averageScore != null
-								? `${RoundDecimal(player.averageScore, 0.1)} ${t("statistics:average-abreviation")}`
+								? `${decimal(player.averageScore)} ${t("statistics:average-abreviation")}`
 								: null,
 						]
 							.filter(Boolean)
@@ -58,7 +59,7 @@ export const TopPlayersCard = (props: Props) => {
 									>
 										{player.trend === Trend.Up && <TrendUpIcon className="size-4" />}
 										{player.trend === Trend.Down && <TrendDownIcon className="size-4" />}
-										{RoundDecimal(player.winPercentage * 100, 0.1)}%
+										{percent(player.winPercentage, 1)}
 									</span>
 								</Link>
 							</li>

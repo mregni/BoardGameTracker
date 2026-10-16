@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GameManual } from "@/models";
-import { fireEvent, renderWithTheme, screen, userEvent } from "@/test/test-utils";
+import { fireEvent, renderWithTheme, screen, userEvent, within } from "@/test/test-utils";
 import { ManualsDialog } from "./ManualsDialog";
 
 const mockUseGameManuals = vi.fn();
@@ -86,6 +86,47 @@ describe("ManualsDialog", () => {
 			await user.click(screen.getByTestId("close-icon").closest("button") as HTMLButtonElement);
 
 			expect(defaultProps.close).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("Footer", () => {
+		const footer = () => document.querySelector("[data-slot='dialog-footer']") as HTMLElement;
+		const footerLabels = () =>
+			within(footer())
+				.getAllByRole("button")
+				.map((button) => button.textContent);
+
+		it("puts close on the left and add on the right when the user can write", () => {
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+
+			expect(footerLabels()).toEqual(["common:close", "manuals.add"]);
+			expect(within(footer()).getByRole("button", { name: "manuals.add" })).toHaveClass("bg-primary/60");
+		});
+
+		it("only shows close when the user cannot write", () => {
+			renderWithTheme(<ManualsDialog {...defaultProps} canWrite={false} />);
+
+			expect(footerLabels()).toEqual(["common:close"]);
+		});
+
+		it("closes from the footer close button", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+
+			await user.click(within(footer()).getByRole("button", { name: "common:close" }));
+
+			expect(defaultProps.close).toHaveBeenCalledTimes(1);
+		});
+
+		it("opens the file picker from the footer add button", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<ManualsDialog {...defaultProps} />);
+			const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+			const clickSpy = vi.spyOn(input, "click");
+
+			await user.click(within(footer()).getByRole("button", { name: "manuals.add" }));
+
+			expect(clickSpy).toHaveBeenCalledTimes(1);
 		});
 	});
 

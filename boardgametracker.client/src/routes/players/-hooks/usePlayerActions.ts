@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
+import { useBack } from "@/routes/-hooks/useBack";
 
 interface UsePlayerActionsProps {
 	playerId: number;
@@ -20,9 +21,7 @@ export const usePlayerActions = (props: UsePlayerActionsProps) => {
 		navigate({ to: `/players/${playerId}/sessions` });
 	}, [navigate, playerId]);
 
-	const handleBackToPlayers = useCallback(() => {
-		navigate({ to: "/players" });
-	}, [navigate]);
+	const handleBackToPlayers = useBack("/players");
 
 	return {
 		handleDelete,

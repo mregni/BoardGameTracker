@@ -47,7 +47,8 @@
   "cards": {
     "games": "Games",
     "win-record": "Win/Loss Record",
-    "most-played-games": "Most Played Games"
+    "most-played-games": "Most Played Games",
+    "win-record-summary": "Wins: {{wins}}, losses: {{losses}}, total: {{total}}"
   },
   "titles": {
     "achievements": "Achievements"

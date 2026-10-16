@@ -23,8 +23,7 @@ import { getSettings } from "@/services/queries/settings";
 import { toDisplay } from "@/utils/dateUtils";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { COMMON_LANGUAGE_CODES, getLanguageName, LANGUAGE_INDEPENDENT, LANGUAGE_NONE } from "@/utils/languageUtils";
-import { RoundDecimal } from "@/utils/numberUtils";
-import { formatPrice } from "@/utils/priceUtils";
+import { formatDecimal, formatPrice } from "@/utils/numberUtils";
 import { SafeHttpUrl } from "@/utils/stringUtils";
 import { EditableNumberCell } from "./-components/EditableNumberCell";
 import { EditableSelectCell } from "./-components/EditableSelectCell";
@@ -137,14 +136,14 @@ function RouteComponent() {
 
 	const stateItems = useMemo(
 		() => [
-			{ value: ANY, label: t("games:filters.any") },
+			{ value: ANY, label: t("games:filters.state-any") },
 			...Object.values(GameState).map((value) => ({ value, label: t(getItemStateTranslationKey(value, false)) })),
 		],
 		[t],
 	);
 	const languageItems = useMemo(
 		() => [
-			{ value: ANY, label: t("games:filters.any") },
+			{ value: ANY, label: t("games:filters.language-any") },
 			{ value: LANGUAGE_NONE, label: t("game:language.none") },
 			{ value: LANGUAGE_INDEPENDENT, label: t("game:language-independent") },
 			...COMMON_LANGUAGE_CODES.map((code) => ({ value: code, label: getLanguageName(code, i18n.language) })),
@@ -204,15 +203,13 @@ function RouteComponent() {
 				accessorKey: "weight",
 				header: t("games:columns.weight"),
 				cell: ({ row }) =>
-					row.original.weight != null && row.original.weight > 0
-						? (RoundDecimal(row.original.weight, 0.1) ?? "-")
-						: "-",
+					row.original.weight != null && row.original.weight > 0 ? formatDecimal(row.original.weight, uiLanguage) : "-",
 				meta: { hideOnMobile: true },
 			},
 			{
 				accessorKey: "rating",
 				header: t("games:columns.rating"),
-				cell: ({ row }) => (row.original.rating != null ? (RoundDecimal(row.original.rating, 0.1) ?? "-") : "-"),
+				cell: ({ row }) => formatDecimal(row.original.rating, uiLanguage),
 				meta: { hideOnMobile: true },
 			},
 			{
@@ -269,7 +266,6 @@ function RouteComponent() {
 					<EditableNumberCell
 						readOnly={!canWrite}
 						value={row.original.buyingPrice}
-						step={0.01}
 						min={0}
 						prefix={currency}
 						format={(price) => formatPrice(price, currency, uiLanguage)}

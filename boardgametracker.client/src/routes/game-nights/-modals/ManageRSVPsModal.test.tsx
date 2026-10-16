@@ -166,4 +166,18 @@ describe("ManageRSVPsModal", () => {
 		expect(writeText).toHaveBeenCalledWith("https://games.example.com/rsvp?linkId=abc-123");
 		expect(await screen.findByRole("button", { name: "card.copied" })).toBeInTheDocument();
 	});
+
+	it("has done as the single footer button and closes with it", async () => {
+		const user = userEvent.setup();
+		const { close } = renderModal();
+
+		const footer = document.querySelector("[data-slot='dialog-footer']") as HTMLElement;
+		const buttons = within(footer).getAllByRole("button");
+		expect(buttons.map((button) => button.textContent)).toEqual(["common:done"]);
+		expect(buttons[0]).toHaveClass("bg-primary/60");
+
+		await user.click(buttons[0]);
+
+		expect(close).toHaveBeenCalledTimes(1);
+	});
 });

@@ -2,6 +2,7 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { cx } from "class-variance-authority";
 import { format } from "date-fns";
 import { memo, useId } from "react";
+import { useDecimalInput } from "@/hooks/useDecimalInput";
 import { parseLocalDate } from "@/utils/localDate";
 
 import { BgtInputContainer } from "./BgtInputContainer";
@@ -9,7 +10,7 @@ import { FormFieldWrapper } from "./FormFieldWrapper";
 
 export interface BgtInputFieldProps {
 	field: AnyFieldApi;
-	type: "text" | "number" | "datetime-local" | "date" | "password";
+	type: "text" | "number" | "decimal" | "datetime-local" | "date" | "password";
 	placeholder?: string;
 	label?: string;
 	prefixLabel?: string;
@@ -27,10 +28,7 @@ const formatDateToLocalInput = (date: Date) => {
 	}
 };
 
-const formatInput = (
-	input: string | number | Date | undefined,
-	type: "text" | "number" | "datetime-local" | "date" | "password",
-) => {
+const formatInput = (input: string | number | Date | undefined, type: BgtInputFieldProps["type"]) => {
 	if (input === undefined || input === null || input === "") {
 		return "";
 	}
@@ -64,6 +62,22 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 
 	const id = useId();
 	const hasErrors = field.state.meta.errors.length > 0;
+	const isDecimal = type === "decimal";
+	const decimal = useDecimalInput(field.state.value, (value) => field.handleChange(value ?? undefined));
+	const displayValue = isDecimal ? decimal.value : formatInput(field.state.value, type);
+
+	const handleChange = (raw: string) => {
+		if (isDecimal) {
+			decimal.onChange(raw);
+			return;
+		}
+		field.handleChange(type === "number" ? (raw === "" ? undefined : Number(raw)) : raw);
+	};
+
+	const handleBlur = () => {
+		decimal.onBlur();
+		field.handleBlur();
+	};
 
 	return (
 		<FormFieldWrapper label={label} htmlFor={id} errors={field.state.meta.errors} className="w-full">
@@ -77,16 +91,13 @@ const BgtInputFieldComponent = (props: BgtInputFieldProps) => {
 				<input
 					id={id}
 					className="h-full w-full bg-transparent text-white focus:outline-none disabled:cursor-not-allowed"
-					value={formatInput(field.state.value, type)}
+					value={displayValue}
 					disabled={disabled}
-					type={type}
-					inputMode={inputMode}
-					onChange={(event) => {
-						const raw = event.target.value;
-						const value = type === "number" ? (raw === "" ? undefined : Number(raw)) : raw;
-						field.handleChange(value);
-					}}
-					onBlur={field.handleBlur}
+					type={isDecimal ? "text" : type}
+					inputMode={isDecimal ? (inputMode ?? "decimal") : inputMode}
+					autoComplete={isDecimal ? "off" : undefined}
+					onChange={(event) => handleChange(event.target.value)}
+					onBlur={handleBlur}
 					placeholder={placeholder}
 				/>
 			</BgtInputContainer>

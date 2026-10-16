@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 
@@ -34,14 +33,12 @@ export const TempPasswordModal = ({ open, close, username, tempPassword }: Props
 				<div className="my-4 rounded-lg bg-white/5 border border-white/10 p-4">
 					<code className="text-lg font-mono text-white break-all">{tempPassword}</code>
 				</div>
-				<BgtDialogClose>
-					<BgtButton variant="primary" onClick={handleCopy}>
-						{copied ? t("account.users.temp-password.copied") : t("account.users.temp-password.copy")}
-					</BgtButton>
-					<BgtButton variant="cancel" onClick={close}>
-						{t("common:close")}
-					</BgtButton>
-				</BgtDialogClose>
+				<BgtDialogFooter
+					onCancel={close}
+					cancelLabel={t("common:close")}
+					confirmLabel={copied ? t("account.users.temp-password.copied") : t("account.users.temp-password.copy")}
+					onConfirm={handleCopy}
+				/>
 			</BgtDialogContent>
 		</BgtDialog>
 	);

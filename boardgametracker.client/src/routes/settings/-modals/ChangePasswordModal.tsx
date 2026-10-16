@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtInputField } from "@/components/BgtForm";
@@ -104,14 +103,13 @@ export const ChangePasswordModal = ({ open, close, onSubmit, isLoading }: Props)
 						</form.Field>
 					</div>
 					{error && <div className="text-error text-sm mb-2">{error}</div>}
-					<BgtDialogClose>
-						<BgtButton variant="cancel" onClick={close} disabled={isLoading}>
-							{t("common:cancel")}
-						</BgtButton>
-						<BgtButton variant="primary" type="submit" disabled={isLoading}>
-							{t("account.password.save")}
-						</BgtButton>
-					</BgtDialogClose>
+					<BgtDialogFooter
+						onCancel={close}
+						confirmLabel={t("account.password.save")}
+						confirmType="submit"
+						disabled={isLoading}
+						cancelDisabled={isLoading}
+					/>
 				</form>
 			</BgtDialogContent>
 		</BgtDialog>

@@ -68,19 +68,19 @@
     },
     "location": {
       "label": "Locatie",
-      "placeholder": "Voer een locatie in"
+      "placeholder": "Locatie"
     },
     "host": {
       "label": "Gastheer",
-      "placeholder": "Kies de gastheer"
+      "placeholder": "Gastheer"
     },
     "invited-players": {
       "label": "Uitgenodigde spelers",
-      "description": "Kies de spelers die je wilt uitnodigen voor deze spelavond"
+      "description": "Kies spelers om uit te nodigen"
     },
     "suggested-games": {
       "label": "Voorgestelde spellen",
-      "description": "Kies spellen die je voorstelt om tijdens deze spelavond te spelen"
+      "description": "Kies spellen om voor te stellen"
     },
     "notes": {
       "label": "Notities"

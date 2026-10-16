@@ -1,5 +1,6 @@
-import { useNavigate, useRouter } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
+import { useBack } from "@/routes/-hooks/useBack";
 
 interface UseGameActionsProps {
 	gameId: number;
@@ -12,7 +13,6 @@ interface UseGameActionsProps {
 export const useGameActions = (props: UseGameActionsProps) => {
 	const { gameId, deleteGame, deleteExpansion, onDeleteModalClose, onExpansionModalOpen } = props;
 	const navigate = useNavigate();
-	const router = useRouter();
 
 	const handleAddSession = useCallback(() => {
 		navigate({ to: `/sessions/new/${gameId}` });
@@ -42,13 +42,7 @@ export const useGameActions = (props: UseGameActionsProps) => {
 		navigate({ to: `/games/${gameId}/sessions` });
 	}, [navigate, gameId]);
 
-	const handleBackToGames = useCallback(() => {
-		if (router.history.canGoBack()) {
-			router.history.back();
-			return;
-		}
-		navigate({ to: "/games" });
-	}, [navigate, router]);
+	const handleBackToGames = useBack("/games");
 
 	return {
 		handleAddSession,

@@ -4,6 +4,7 @@ import { cloneElement, isValidElement } from "react";
 import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
 import Plus from "@/assets/icons/plus.svg?react";
+import { formatNumber } from "@/utils/numberUtils";
 import { BgtCard } from "../BgtCard/BgtCard";
 import { BgtText } from "../BgtText/BgtText";
 
@@ -21,17 +22,8 @@ interface Props {
 	action?: React.ReactNode;
 }
 
-const formatContent = (content: string | number, language: string | undefined): string => {
-	if (typeof content !== "number") {
-		return content;
-	}
-
-	try {
-		return new Intl.NumberFormat(language || undefined).format(content);
-	} catch {
-		return content.toString();
-	}
-};
+const formatContent = (content: string | number, language: string | undefined): string =>
+	typeof content === "number" ? formatNumber(content, language) : content;
 
 export const BgtTextStatistic = (props: Props) => {
 	const {

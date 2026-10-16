@@ -2,7 +2,15 @@ import type { DefaultRawDatum } from "@nivo/pie";
 
 export interface PieChartDatum extends DefaultRawDatum {
 	label: string;
+	color?: string;
 }
+
+export const chartColors = {
+	win: "#34d399",
+	loss: "#f87171",
+	amber: "#f59e0b",
+	blue: "#3b82f6",
+} as const;
 
 export const pieColors: string[] = [
 	"#22d3ee",

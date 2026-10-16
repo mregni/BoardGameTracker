@@ -3,12 +3,11 @@ import i18next from "i18next";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtDatePicker } from "@/components/BgtForm";
@@ -80,14 +79,7 @@ export const ReturnLoanModal = (props: Props) => {
 							)}
 						</form.Field>
 					</div>
-					<BgtDialogClose>
-						<BgtButton type="button" variant="cancel" className="flex-1" onClick={close}>
-							{t("common:cancel")}
-						</BgtButton>
-						<BgtButton type="submit" className="flex-1" variant="primary">
-							{t("return.confirm")}
-						</BgtButton>
-					</BgtDialogClose>
+					<BgtDialogFooter onCancel={close} confirmLabel={t("return.confirm")} confirmType="submit" />
 				</form>
 			</BgtDialogContent>
 		</BgtDialog>

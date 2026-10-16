@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Bars } from "react-loading-icons";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtImageSelector, BgtInputField } from "@/components/BgtForm";
@@ -100,15 +98,12 @@ export const CreatePlayerModal = (props: Props) => {
 							</form.Field>
 						</div>
 					</div>
-					<BgtDialogClose>
-						<BgtButton variant="cancel" onClick={handleCancel} disabled={isLoading}>
-							{t("common:cancel")}
-						</BgtButton>
-						<BgtButton type="submit" variant="primary" disabled={isLoading} className="flex-1">
-							{isLoading && <Bars className="size-4" />}
-							{t("new.save")}
-						</BgtButton>
-					</BgtDialogClose>
+					<BgtDialogFooter
+						onCancel={handleCancel}
+						confirmLabel={t("new.save")}
+						confirmType="submit"
+						loading={isLoading}
+					/>
 				</form>
 			</BgtDialogContent>
 		</BgtDialog>

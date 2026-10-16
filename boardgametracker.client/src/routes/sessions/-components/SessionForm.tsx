@@ -1,5 +1,4 @@
 import { type AnyFieldApi, useSelector } from "@tanstack/react-form";
-import { useRouter } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,6 +8,7 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtTextArea } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import {
 	type CreateSession,
@@ -20,6 +20,7 @@ import {
 } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
+import { useBack } from "../../-hooks/useBack";
 import { useSessionForm } from "../-hooks/useSessionForm";
 import { useSessionFormState } from "../-hooks/useSessionFormState";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
@@ -38,6 +39,7 @@ interface Props {
 	onClick: (data: CreateSession) => Promise<void>;
 	buttonText: string;
 	title: string;
+	backTo: string;
 	disabled: boolean;
 }
 
@@ -53,11 +55,12 @@ export const SessionForm = (props: Props) => {
 		onClick,
 		buttonText,
 		title,
+		backTo,
 		disabled,
 	} = props;
 
 	const { t } = useTranslation();
-	const router = useRouter();
+	const goBack = useBack(backTo);
 	const { locations, games, players: playerList, suggestions } = useSessionForm();
 	const isNewSession = locationId === undefined;
 	const [initialStart] = useState(() => start ?? addMinutes(new Date(), -(minutes ?? 30)));
@@ -133,14 +136,11 @@ export const SessionForm = (props: Props) => {
 		form.setFieldValue("locationId", lastLocationId, { dontUpdateMeta: true });
 	}, [form, isNewSession, lastLocationId, locations]);
 
-	const handleCancel = useCallback(() => {
-		router.history.back();
-	}, [router]);
-
 	return (
 		<BgtPage>
-			<BgtPageContent className="flex-1 items-center">
-				<BgtCard title={title} titleAs="h1" className="w-full max-w-3xl my-auto">
+			<BgtPageHeader backAction={goBack} backText={t("back")} header={title} />
+			<BgtPageContent className="items-center">
+				<BgtCard className="w-full max-w-3xl">
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-4 w-full">
 							<SessionFormFields
@@ -181,13 +181,7 @@ export const SessionForm = (props: Props) => {
 							</form.Field>
 
 							<div className="sticky bottom-20 z-10 -mx-4 px-4 py-3 bg-background/95 backdrop-blur-sm flex flex-row gap-2 md:static md:mx-0 md:px-0 md:py-0 md:mt-2 md:bg-transparent md:backdrop-blur-none">
-								<BgtButton
-									variant="cancel"
-									type="button"
-									disabled={disabled}
-									className="flex-none"
-									onClick={handleCancel}
-								>
+								<BgtButton variant="cancel" type="button" disabled={disabled} className="flex-none" onClick={goBack}>
 									{t("cancel")}
 								</BgtButton>
 								<BgtButton type="submit" disabled={disabled} className="flex-1" variant="primary">

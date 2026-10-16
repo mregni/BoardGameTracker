@@ -1,6 +1,6 @@
 import { cx } from "class-variance-authority";
 import { format } from "date-fns";
-import { type ChangeEventHandler, type ReactNode, useId } from "react";
+import { type ChangeEventHandler, type FocusEventHandler, type HTMLAttributes, type ReactNode, useId } from "react";
 
 import { BgtText } from "../BgtText/BgtText";
 import { BgtFieldLabel } from "./BgtFieldLabel";
@@ -29,6 +29,8 @@ export interface Props {
 	disabled?: boolean;
 	ariaLabel?: string;
 	onChange: ChangeEventHandler<HTMLInputElement> | undefined;
+	onBlur?: FocusEventHandler<HTMLInputElement>;
+	inputMode?: HTMLAttributes<HTMLInputElement>["inputMode"];
 }
 
 export const BgtSimpleInputField = (props: Props) => {
@@ -44,6 +46,8 @@ export const BgtSimpleInputField = (props: Props) => {
 		disabled = false,
 		ariaLabel,
 		onChange,
+		onBlur,
+		inputMode,
 	} = props;
 	const labelId = useId();
 
@@ -66,6 +70,8 @@ export const BgtSimpleInputField = (props: Props) => {
 					disabled={disabled}
 					type={type}
 					onChange={onChange}
+					onBlur={onBlur}
+					inputMode={inputMode}
 					placeholder={placeholder}
 					aria-labelledby={label ? labelId : undefined}
 					aria-label={label ? undefined : ariaLabel}

@@ -5,6 +5,7 @@ import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { MostPlayedGame } from "@/models";
 
 interface Props {
@@ -37,6 +38,7 @@ interface MostPlayedGameItemProps {
 const MostPlayedGameItem = ({ game }: MostPlayedGameItemProps) => {
 	const navigate = useNavigate();
 	const { t } = useTranslation(["common", "player"]);
+	const { percent } = useNumberFormat();
 
 	return (
 		<BgtCard>
@@ -55,7 +57,7 @@ const MostPlayedGameItem = ({ game }: MostPlayedGameItemProps) => {
 						{t("sessions", { count: game.totalSessions ?? 0 })} • {t("win", { count: game.totalWins ?? 0 })}
 					</div>
 				</div>
-				<div className="text-cyan-400 font-bold">{game.winningPercentage}%</div>
+				<div className="text-cyan-400 font-bold">{percent(game.winningPercentage / 100)}</div>
 			</div>
 		</BgtCard>
 	);

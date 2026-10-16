@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Database from "@/assets/icons/database.svg?react";
 import Keyboard from "@/assets/icons/keyboard.svg?react";
@@ -8,8 +8,10 @@ import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
+import { useBack } from "@/routes/-hooks/useBack";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 
 export const Route = createFileRoute("/games/add")({
@@ -19,22 +21,34 @@ export const Route = createFileRoute("/games/add")({
 function RouteComponent() {
 	const { t } = useTranslation(["game", "common", "settings"]);
 	const navigate = useNavigate();
-	const router = useRouter();
+	const goBack = useBack("/games");
 	const { settings } = useSettingsData();
 
 	const bggEnabled = settings?.bggStatus?.isConfigured ?? false;
 
 	return (
 		<BgtPage>
-			<BgtPageContent className="flex-1 items-center">
-				<BgtCard title={t("game:new.title")} className="w-full max-w-xl my-auto">
+			<BgtPageHeader backAction={goBack} backText={t("common:back")} header={t("game:new.title")} />
+			<BgtPageContent className="items-center">
+				<BgtCard className="w-full max-w-xl">
 					<p className="text-cancel mb-4">{t("game:new.description")}</p>
 					<div className="flex flex-col gap-4 mb-6">
-						{!bggEnabled && (
+						{settings && !bggEnabled && (
 							<BgtStatus
 								variant="warning"
 								title={t("settings:bgg.status.not-configured")}
-								description={t("settings:bgg.status.not-configured-description")}
+								description={
+									<>
+										{t("game:new.bgg-missing.description")}{" "}
+										<Link
+											to="/settings"
+											search={{ tab: "bgg" }}
+											className="font-medium text-white underline hover:text-orange-300"
+										>
+											{t("game:new.bgg-missing.link")}
+										</Link>
+									</>
+								}
 							/>
 						)}
 
@@ -59,7 +73,7 @@ function RouteComponent() {
 							disabled={!bggEnabled}
 						/>
 					</div>
-					<BgtButton variant="cancel" className="w-full" onClick={() => router.history.back()}>
+					<BgtButton variant="cancel" className="w-full" onClick={goBack}>
 						{t("common:cancel")}
 					</BgtButton>
 				</BgtCard>

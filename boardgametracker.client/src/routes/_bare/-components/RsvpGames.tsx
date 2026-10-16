@@ -4,9 +4,9 @@ import Download from "@/assets/icons/download.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { Game, GameNightManuals } from "@/models";
 import { manualInviteDownloadUrl } from "@/services/manualService";
-import { formatFileSize } from "@/utils/numberUtils";
 
 interface Props {
 	linkId: string;
@@ -16,6 +16,7 @@ interface Props {
 
 export const RsvpGames = ({ linkId, games, manuals }: Props) => {
 	const { t } = useTranslation("rsvp");
+	const { fileSize } = useNumberFormat();
 	const manualCount = manuals.reduce((total, group) => total + group.manuals.length, 0);
 
 	if (games.length === 0 && manualCount === 0) {
@@ -62,7 +63,7 @@ export const RsvpGames = ({ linkId, games, manuals }: Props) => {
 												{manual.title}
 											</BgtText>
 											<BgtText size="1" color="gray">
-												{formatFileSize(manual.fileSizeBytes)}
+												{fileSize(manual.fileSizeBytes)}
 											</BgtText>
 										</div>
 									</a>
