@@ -105,6 +105,8 @@ public static class Constants
         public const string SessionStartInFuture = "error.session.start-in-future";
         public const string HostRsvpLocked = "error.game-night.host-rsvp-locked";
         public const string RsvpClosed = "error.game-night.rsvp-closed";
+        public const string GameNightOver = "error.game-night.already-over";
+        public const string SuggestedGameNotOwned = "error.game-night.suggested-game-not-owned";
         public const string GameNightGamesRunning = "error.game-night.games-running";
         public const string GameNightEnded = "error.game-night.ended";
         public const string CoopNotSupported = "error.session.coop-not-supported";

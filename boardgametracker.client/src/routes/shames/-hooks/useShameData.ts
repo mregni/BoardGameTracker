@@ -1,20 +1,65 @@
-import { useQueries } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQueries } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
+import type { Shame, ShameGameNight } from "@/models";
+import { useToasts } from "@/routes/-hooks/useToasts";
+import { addSuggestedGameCall, removeSuggestedGameCall } from "@/services/gameNightService";
 import { getShameStatistics, getShames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
+import { toShortDayDate } from "@/utils/dateUtils";
 
-export const useShameData = () => {
+interface PlanArgs {
+	shame: Shame;
+	night: ShameGameNight;
+}
+
+export const useShameData = (months?: number) => {
+	const { i18n } = useTranslation();
+	const invalidator = useQueryInvalidator();
+	const { successToast, errorToast } = useToasts();
+
 	const [shameQuery, shameStatisticsQuery, settingsQuery] = useQueries({
-		queries: [getShames(), getShameStatistics(), getSettings()],
+		queries: [
+			{ ...getShames(months), placeholderData: keepPreviousData },
+			{ ...getShameStatistics(months), placeholderData: keepPreviousData },
+			getSettings(),
+		],
 	});
 
-	const shames = shameQuery.data ?? [];
-	const statistics = shameStatisticsQuery.data;
-	const settings = settingsQuery.data;
+	const refresh = () => Promise.all([invalidator.invalidateShames(), invalidator.invalidateGameNights()]);
+
+	const undoMutation = useMutation({
+		mutationFn: ({ shame, night }: PlanArgs) => removeSuggestedGameCall(night.id, shame.id),
+		onSuccess: (_, { shame }) => {
+			successToast("shames:plan.removed", undefined, { game: shame.title });
+			return refresh();
+		},
+		onError: () => errorToast("shames:plan.undo-failed"),
+	});
+
+	const planMutation = useMutation({
+		mutationFn: ({ shame, night }: PlanArgs) => addSuggestedGameCall(night.id, shame.id),
+		onSuccess: (_, args) => {
+			successToast(
+				"shames:plan.added",
+				{ label: "shames:plan.undo", onClick: () => undoMutation.mutate(args) },
+				{
+					game: args.shame.title,
+					night: args.night.title,
+					date: toShortDayDate(args.night.startDate, i18n.language),
+				},
+			);
+			return refresh();
+		},
+		onError: () => errorToast("shames:plan.failed"),
+	});
 
 	return {
-		shames,
-		statistics,
-		settings,
+		shames: shameQuery.data ?? [],
+		statistics: shameStatisticsQuery.data,
+		settings: settingsQuery.data,
 		isLoading: shameQuery.isLoading || shameStatisticsQuery.isLoading || settingsQuery.isLoading,
+		plan: (shame: Shame, night: ShameGameNight) => planMutation.mutate({ shame, night }),
+		planningId: planMutation.isPending ? planMutation.variables?.shame.id : undefined,
 	};
 };

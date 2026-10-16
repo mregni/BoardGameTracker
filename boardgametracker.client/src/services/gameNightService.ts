@@ -36,6 +36,16 @@ export const deleteGameNightCall = (id: number): Promise<void> => {
 	return axiosInstance.delete(`${domain}/${id}`);
 };
 
+export const addSuggestedGameCall = (gameNightId: number, gameId: number): Promise<GameNight> => {
+	return axiosInstance
+		.put<GameNight>(`${domain}/${gameNightId}/suggestions/${gameId}`)
+		.then((response) => response.data);
+};
+
+export const removeSuggestedGameCall = (gameNightId: number, gameId: number): Promise<void> => {
+	return axiosInstance.delete(`${domain}/${gameNightId}/suggestions/${gameId}`).then(() => undefined);
+};
+
 export const sendInvitesCall = (id: number): Promise<SendInvitesResult> => {
 	return axiosInstance.post<SendInvitesResult>(`${domain}/${id}/send-invites`).then((response) => response.data);
 };

@@ -1356,7 +1356,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    months?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1404,7 +1406,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    months?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1701,6 +1705,110 @@ export interface paths {
             };
         };
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gamenight/{id}/suggestions/{gameId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                    gameId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GameNightDto"];
+                        "application/json": components["schemas"]["GameNightDto"];
+                        "text/json": components["schemas"]["GameNightDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                    gameId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -5269,6 +5377,27 @@ export interface components {
             price: number | null;
             /** Format: date-time */
             lastSessionDate: string | null;
+            /** Format: int32 */
+            playCount: number;
+            /** Format: int32 */
+            minPlayers: number | null;
+            /** Format: int32 */
+            maxPlayers: number | null;
+            /** Format: int32 */
+            minPlayTime: number | null;
+            /** Format: int32 */
+            maxPlayTime: number | null;
+            /** Format: int32 */
+            plannedGameNightId: number | null;
+            /** Format: date-time */
+            plannedFor: string | null;
+        };
+        ShameGameNightDto: {
+            /** Format: int32 */
+            id: number;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
         };
         ShameStatisticsDto: {
             /** Format: int32 */
@@ -5279,6 +5408,19 @@ export interface components {
             averageValue: number | null;
             /** Format: int32 */
             pricedGameCount: number;
+            /** Format: int32 */
+            months: number;
+            /** Format: int32 */
+            ownedCount: number;
+            /** Format: double */
+            collectionValue: number;
+            /** Format: int32 */
+            neverPlayedCount: number;
+            /** Format: double */
+            neverPlayedValue: number;
+            /** Format: int32 */
+            plannedCount: number;
+            nextGameNight: components["schemas"]["ShameGameNightDto"];
         };
         StartRunningGameCommand: {
             /** Format: int32 */

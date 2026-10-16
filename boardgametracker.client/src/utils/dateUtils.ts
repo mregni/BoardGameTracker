@@ -1,6 +1,7 @@
 import {
 	isValid as dateFnsIsValid,
 	differenceInDays,
+	differenceInMonths,
 	format,
 	formatDistanceToNow,
 	formatDuration,
@@ -249,4 +250,28 @@ export const getDaysSincePurchase = (date: Date | null): number => {
 	}
 
 	return differenceInDays(new Date(), date);
+};
+
+const toValidDate = (date: Date | string | undefined | null): Date | null => {
+	if (!date) {
+		return null;
+	}
+
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+	return dateFnsIsValid(dateObj) ? dateObj : null;
+};
+
+export const toMonthYear = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	const dateObj = toValidDate(date);
+	return dateObj ? format(dateObj, "LLL yyyy", { locale: getDateFnsLocale(uiLanguage) }) : "";
+};
+
+export const toShortDayDate = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	const dateObj = toValidDate(date);
+	return dateObj ? format(dateObj, "EEE d LLL", { locale: getDateFnsLocale(uiLanguage) }) : "";
+};
+
+export const monthsSince = (date: Date | string | undefined | null, now: Date = new Date()): number | null => {
+	const dateObj = toValidDate(date);
+	return dateObj ? Math.max(0, differenceInMonths(now, dateObj)) : null;
 };

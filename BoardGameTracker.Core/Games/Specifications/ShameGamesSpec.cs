@@ -26,7 +26,12 @@ public sealed class ShameGamesSpec : Specification<Game, ShameGame>
             LastSessionDate = g.Sessions
                 .OrderByDescending(s => s.Start)
                 .Select(s => (DateTime?)s.Start)
-                .FirstOrDefault()
+                .FirstOrDefault(),
+            PlayCount = g.Sessions.Count,
+            MinPlayers = g.PlayerCount != null ? g.PlayerCount.Min : null,
+            MaxPlayers = g.PlayerCount != null ? g.PlayerCount.Max : null,
+            MinPlayTime = g.PlayTime != null ? g.PlayTime.MinMinutes : null,
+            MaxPlayTime = g.PlayTime != null ? g.PlayTime.MaxMinutes : null
         });
     }
 }

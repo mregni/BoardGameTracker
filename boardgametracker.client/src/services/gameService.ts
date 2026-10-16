@@ -109,14 +109,18 @@ export const deleteExpansionCall = (id: number, gameId: number): Promise<void> =
 	return axiosInstance.delete(`${domain}/${gameId}/expansion/${id}`);
 };
 
-export const getShamesCall = (): Promise<Shame[]> => {
-	return axiosInstance.get<Shame[]>(`${domain}/shames`).then((response) => {
+const monthsParams = (months?: number) => (months === undefined ? undefined : { months });
+
+export const getShamesCall = (months?: number): Promise<Shame[]> => {
+	return axiosInstance.get<Shame[]>(`${domain}/shames`, { params: monthsParams(months) }).then((response) => {
 		return response.data;
 	});
 };
 
-export const getShameStatisticsCall = (): Promise<ShameStatistics> => {
-	return axiosInstance.get<ShameStatistics>(`${domain}/shames/statistics`).then((response) => {
-		return response.data;
-	});
+export const getShameStatisticsCall = (months?: number): Promise<ShameStatistics> => {
+	return axiosInstance
+		.get<ShameStatistics>(`${domain}/shames/statistics`, { params: monthsParams(months) })
+		.then((response) => {
+			return response.data;
+		});
 };
