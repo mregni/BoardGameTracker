@@ -1980,6 +1980,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/gamenight/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    period?: components["schemas"]["GameNightStatisticsPeriod"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GameNightStatisticsDto"];
+                        "application/json": components["schemas"]["GameNightStatisticsDto"];
+                        "text/json": components["schemas"]["GameNightStatisticsDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/image": {
         parameters: {
             query?: never;
@@ -4892,6 +4942,34 @@ export interface components {
             gameTitle: string;
             manuals: components["schemas"]["ManualDto"][];
         };
+        GameNightRecordDto: {
+            /** Format: int32 */
+            gameNightId: number;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
+            /** Format: int32 */
+            gamesPlayed: number;
+            /** Format: double */
+            value: number;
+            /** Format: int32 */
+            gameId: number | null;
+            /** Format: date-time */
+            at: string | null;
+        };
+        GameNightRecordsDto: {
+            longestNight: components["schemas"]["GameNightRecordDto"];
+            mostGames: components["schemas"]["GameNightRecordDto"];
+            biggestTable: components["schemas"]["GameNightRecordDto"];
+            latestFinish: components["schemas"]["GameNightRecordDto"];
+        };
+        GameNightReferenceDto: {
+            /** Format: int32 */
+            gameNightId: number;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
+        };
         GameNightRsvpDto: {
             /** Format: int32 */
             id: number;
@@ -4904,6 +4982,41 @@ export interface components {
         };
         /** @enum {string} */
         GameNightRsvpState: "accepted" | "declined" | "pending";
+        GameNightStatisticsDto: {
+            period: components["schemas"]["GameNightStatisticsPeriod"];
+            /** Format: int32 */
+            totalNights: number;
+            /** Format: int32 */
+            nightsWithSessions: number;
+            /** Format: int32 */
+            nights: number;
+            /** Format: int32 */
+            gamesPlayed: number;
+            /** Format: double */
+            totalMinutes: number;
+            /** Format: double */
+            averageTable: number;
+            /** Format: double */
+            averageDaysBetweenNights: number | null;
+            /** Format: int32 */
+            tiedNights: number;
+            winners: components["schemas"]["NightWinnerStatisticDto"][];
+            history: components["schemas"]["NightHistoryDto"][];
+            games: components["schemas"]["NightGameStatisticDto"][];
+            plannedNeverPlayed: components["schemas"]["PlannedGameStatisticDto"][];
+            streaks: components["schemas"]["GameNightStreaksDto"];
+            recentNights: components["schemas"]["GameNightReferenceDto"][];
+            attendance: components["schemas"]["NightAttendanceDto"][];
+            records: components["schemas"]["GameNightRecordsDto"];
+        };
+        /** @enum {string} */
+        GameNightStatisticsPeriod: "allTime" | "thisYear" | "last12Months";
+        GameNightStreaksDto: {
+            currentWinner: components["schemas"]["PlayerStreakDto"];
+            longestWinner: components["schemas"]["PlayerStreakDto"];
+            currentAttendance: components["schemas"]["PlayerStreakDto"];
+            longestGame: components["schemas"]["GameStreakDto"];
+        };
         GameNightSummaryDto: {
             /** Format: int32 */
             gamesPlayed: number;
@@ -4973,6 +5086,17 @@ export interface components {
             playerCountChart: components["schemas"]["PlayerCount"][];
             playerScoringChart?: components["schemas"]["PlayerScoringPoint"][] | null;
             scoreRankChart: components["schemas"]["ScoreRank"][];
+        };
+        GameStreakDto: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            length: number;
+            /** Format: date-time */
+            from: string;
+            /** Format: date-time */
+            to: string;
+            isCurrent: boolean;
         };
         ImportBggGamesCommand: {
             games: components["schemas"]["ImportGame"][];
@@ -5156,6 +5280,55 @@ export interface components {
             playerOne: components["schemas"]["MostWonGame"];
             playerTwo: components["schemas"]["MostWonGame"];
         };
+        NightAttendanceDto: {
+            /** Format: int32 */
+            playerId: number;
+            /** Format: int32 */
+            nightsAttended: number;
+            /** Format: int32 */
+            nightsHosted: number;
+            recentNights: boolean[];
+        };
+        NightGameStatisticDto: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            timesPlayed: number;
+            /** Format: int32 */
+            nights: number;
+            /** Format: int32 */
+            timesPlanned: number;
+        };
+        NightHistoryDto: {
+            /** Format: int32 */
+            gameNightId: number;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
+            /** Format: int32 */
+            locationId: number;
+            /** Format: int32 */
+            gamesPlayed: number;
+            /** Format: int32 */
+            mostWins: number;
+            winnerIds: number[];
+            /** Format: int32 */
+            winnerStreak: number;
+            coopOnly: boolean;
+            sharedThroughCoop: boolean;
+        };
+        NightWinnerStatisticDto: {
+            /** Format: int32 */
+            playerId: number;
+            /** Format: int32 */
+            rank: number;
+            /** Format: int32 */
+            nightsWon: number;
+            /** Format: int32 */
+            nightsAttended: number;
+            /** Format: int32 */
+            gamesWon: number;
+        };
         OidcDiscoveryResultDto: {
             issuer: string;
             authorizationEndpoint: string;
@@ -5206,6 +5379,12 @@ export interface components {
         };
         /** @enum {string} */
         PersonType: "designer" | "artist" | "publisher";
+        PlannedGameStatisticDto: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            timesPlanned: number;
+        };
         PlayByDay: {
             dayOfWeek: components["schemas"]["DayOfWeek"];
             /** Format: int32 */
@@ -5269,6 +5448,16 @@ export interface components {
             /** Format: int32 */
             coopLossCount: number;
             mostPlayedGames: components["schemas"]["MostPlayedGame"][];
+        };
+        PlayerStreakDto: {
+            /** Format: int32 */
+            playerId: number;
+            /** Format: int32 */
+            length: number;
+            /** Format: date-time */
+            from: string;
+            /** Format: date-time */
+            to: string;
         };
         PreferredGame: {
             /** Format: int32 */

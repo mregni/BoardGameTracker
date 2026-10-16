@@ -191,5 +191,116 @@
       "reopened": "Game night reopened",
       "reopen-failed": "Failed to reopen the game night"
     }
+  },
+  "view": {
+    "label": "View",
+    "nights": "Nights",
+    "stats": "Statistics"
+  },
+  "stats": {
+    "period": {
+      "label": "Period",
+      "allTime": "All time",
+      "thisYear": "This year",
+      "last12Months": "Last 12 months"
+    },
+    "logged_one": "{{count}} of {{total}} nights has sessions logged",
+    "logged_other": "{{count}} of {{total}} nights have sessions logged",
+    "empty": {
+      "title": "No game nights to count yet",
+      "description": "Statistics count the nights that have sessions logged or were ended. Log games from a night's page to see them here."
+    },
+    "tiles": {
+      "nights": "Game nights",
+      "every-week_one": "about one every week",
+      "every-week_other": "about one every {{count}} weeks",
+      "every-day_one": "about one every day",
+      "every-day_other": "about one every {{count}} days",
+      "games": "Games played",
+      "per-night": "{{value}} per night",
+      "play-time": "Play time",
+      "table": "Average table",
+      "table-hint": "players per night"
+    },
+    "winners": {
+      "title": "Night winners",
+      "subtitle": "most sessions won that night · ties share",
+      "nights_one": "{{count}} night",
+      "nights_other": "{{count}} nights",
+      "games-won_one": "{{count}} game won",
+      "games-won_other": "{{count}} games won",
+      "share": "{{value}} of nights",
+      "bar": "{{name}}: {{won}} of {{attended}} nights won",
+      "footer": "Ranked by nights won; the bar is the share of their nights they won.",
+      "ties_one": "{{count}} night ended in a tie and counts for every winner.",
+      "ties_other": "{{count}} nights ended in a tie and count for every winner.",
+      "empty": "Nobody has won a night yet."
+    },
+    "history": {
+      "title": "Night winner history",
+      "all_one": "All {{count}} night",
+      "all_other": "All {{count}} nights",
+      "less": "Show fewer",
+      "games_one": "{{count}} game",
+      "games_other": "{{count}} games",
+      "score": "{{wins}} of {{total}}",
+      "streak": "{{count}} in a row",
+      "no-winner": "No winner",
+      "no-sessions": "No sessions logged",
+      "coop-shared_one": "{{count}} shares the night",
+      "coop-shared_other": "All {{count}} share the night",
+      "coop-only": "co-op only"
+    },
+    "games": {
+      "title": "Most played at game nights",
+      "nights_one": "at {{count}} night",
+      "nights_other": "at {{count}} nights",
+      "planned": "planned {{count}}×",
+      "times": "{{count}}×",
+      "bar": "{{name}}: played {{count}} times",
+      "never-played": "Planned but never played:",
+      "empty": "No games played at game nights yet."
+    },
+    "streaks": {
+      "title": "Streaks",
+      "winner-current": "{{name}} won the last {{count}} nights",
+      "winner-current-hint": "Current streak",
+      "winner-record": "record is {{name}} with {{count}} ({{from}} – {{to}})",
+      "winner-longest": "{{name}} won {{count}} nights in a row",
+      "winner-longest-hint": "Longest streak · {{from}} – {{to}}",
+      "attendance": "{{name}} came to {{count}} nights in a row",
+      "attendance-hint": "Current attendance streak · since {{date}}",
+      "game": "{{name}} played at {{count}} nights in a row",
+      "game-current": "Current game streak · since {{date}}",
+      "game-longest": "Longest game streak · {{from}} – {{to}}",
+      "empty": "No streaks yet: a streak starts at two nights in a row."
+    },
+    "attendance": {
+      "title": "Attendance",
+      "of_one": "of {{count}} night",
+      "of_other": "of {{count}} nights",
+      "hosted": "host {{count}}×",
+      "bar": "{{name}} came to {{count}} of {{total}} nights",
+      "select": "Show the last nights of {{name}}",
+      "recent_one": "{{name}}, last night",
+      "recent_other": "{{name}}, last {{count}} nights",
+      "came": "came",
+      "absent": "not there",
+      "dot": "{{title}} · {{date}}: {{state}}",
+      "empty": "Nobody was marked at the table yet."
+    },
+    "records": {
+      "title": "Records",
+      "longest-night": "Longest night",
+      "most-games": "Most games in one night",
+      "biggest-table": "Biggest table",
+      "latest-finish": "Latest finish",
+      "night": "{{title}} · {{date}}",
+      "games_one": "{{count}} game",
+      "games_other": "{{count}} games",
+      "mostly": "mostly {{name}}",
+      "finish": "{{title}} · {{game}}, {{duration}}",
+      "empty": "No records yet."
+    }
   }
 }

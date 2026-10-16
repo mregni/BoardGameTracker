@@ -191,5 +191,116 @@
       "reopened": "Spelavond heropend",
       "reopen-failed": "Spelavond heropenen mislukt"
     }
+  },
+  "view": {
+    "label": "Weergave",
+    "nights": "Avonden",
+    "stats": "Statistieken"
+  },
+  "stats": {
+    "period": {
+      "label": "Periode",
+      "allTime": "Altijd",
+      "thisYear": "Dit jaar",
+      "last12Months": "Laatste 12 maanden"
+    },
+    "logged_one": "{{count}} van {{total}} avonden heeft gelogde sessies",
+    "logged_other": "{{count}} van {{total}} avonden hebben gelogde sessies",
+    "empty": {
+      "title": "Nog geen spelavonden om te tellen",
+      "description": "De statistieken tellen de avonden met gelogde sessies of die afgesloten zijn. Log spellen vanaf de pagina van een avond om ze hier te zien."
+    },
+    "tiles": {
+      "nights": "Spelavonden",
+      "every-week_one": "ongeveer één per week",
+      "every-week_other": "ongeveer één om de {{count}} weken",
+      "every-day_one": "ongeveer één per dag",
+      "every-day_other": "ongeveer één om de {{count}} dagen",
+      "games": "Gespeelde spellen",
+      "per-night": "{{value}} per avond",
+      "play-time": "Speeltijd",
+      "table": "Gemiddelde tafel",
+      "table-hint": "spelers per avond"
+    },
+    "winners": {
+      "title": "Winnaars van de avond",
+      "subtitle": "meeste sessies gewonnen die avond · gelijkspel wordt gedeeld",
+      "nights_one": "{{count}} avond",
+      "nights_other": "{{count}} avonden",
+      "games-won_one": "{{count}} spel gewonnen",
+      "games-won_other": "{{count}} spellen gewonnen",
+      "share": "{{value}} van de avonden",
+      "bar": "{{name}}: {{won}} van {{attended}} avonden gewonnen",
+      "footer": "Gerangschikt op gewonnen avonden; de balk is het deel van hun avonden dat ze wonnen.",
+      "ties_one": "{{count}} avond eindigde gelijk en telt voor elke winnaar.",
+      "ties_other": "{{count}} avonden eindigden gelijk en tellen voor elke winnaar.",
+      "empty": "Nog niemand heeft een avond gewonnen."
+    },
+    "history": {
+      "title": "Geschiedenis van de winnaars",
+      "all_one": "Alle {{count}} avond",
+      "all_other": "Alle {{count}} avonden",
+      "less": "Minder tonen",
+      "games_one": "{{count}} spel",
+      "games_other": "{{count}} spellen",
+      "score": "{{wins}} van {{total}}",
+      "streak": "{{count}} op rij",
+      "no-winner": "Geen winnaar",
+      "no-sessions": "Geen sessies gelogd",
+      "coop-shared_one": "{{count}} deelt de avond",
+      "coop-shared_other": "Alle {{count}} delen de avond",
+      "coop-only": "enkel co-op"
+    },
+    "games": {
+      "title": "Meest gespeeld op spelavonden",
+      "nights_one": "op {{count}} avond",
+      "nights_other": "op {{count}} avonden",
+      "planned": "{{count}}× gepland",
+      "times": "{{count}}×",
+      "bar": "{{name}}: {{count}} keer gespeeld",
+      "never-played": "Gepland maar nooit gespeeld:",
+      "empty": "Nog geen spellen gespeeld op spelavonden."
+    },
+    "streaks": {
+      "title": "Reeksen",
+      "winner-current": "{{name}} won de laatste {{count}} avonden",
+      "winner-current-hint": "Huidige reeks",
+      "winner-record": "record is {{name}} met {{count}} ({{from}} – {{to}})",
+      "winner-longest": "{{name}} won {{count}} avonden op rij",
+      "winner-longest-hint": "Langste reeks · {{from}} – {{to}}",
+      "attendance": "{{name}} kwam {{count}} avonden op rij",
+      "attendance-hint": "Huidige aanwezigheidsreeks · sinds {{date}}",
+      "game": "{{name}} gespeeld op {{count}} avonden op rij",
+      "game-current": "Huidige spelreeks · sinds {{date}}",
+      "game-longest": "Langste spelreeks · {{from}} – {{to}}",
+      "empty": "Nog geen reeksen: een reeks begint bij twee avonden op rij."
+    },
+    "attendance": {
+      "title": "Aanwezigheid",
+      "of_one": "van {{count}} avond",
+      "of_other": "van {{count}} avonden",
+      "hosted": "gastheer {{count}}×",
+      "bar": "{{name}} kwam naar {{count}} van {{total}} avonden",
+      "select": "Toon de laatste avonden van {{name}}",
+      "recent_one": "{{name}}, laatste avond",
+      "recent_other": "{{name}}, laatste {{count}} avonden",
+      "came": "aanwezig",
+      "absent": "niet aanwezig",
+      "dot": "{{title}} · {{date}}: {{state}}",
+      "empty": "Nog niemand stond aan tafel genoteerd."
+    },
+    "records": {
+      "title": "Records",
+      "longest-night": "Langste avond",
+      "most-games": "Meeste spellen op één avond",
+      "biggest-table": "Grootste tafel",
+      "latest-finish": "Laatste einde",
+      "night": "{{title}} · {{date}}",
+      "games_one": "{{count}} spel",
+      "games_other": "{{count}} spellen",
+      "mostly": "vooral {{name}}",
+      "finish": "{{title}} · {{game}}, {{duration}}",
+      "empty": "Nog geen records."
+    }
   }
 }

@@ -138,32 +138,18 @@ public class GameNight: HasId
 
     public int GetMostWins()
     {
-        var wins = CountWinsPerPlayer();
-        return wins.Count == 0 ? 0 : wins.Values.Max();
+        return DecideWinners().MostWins;
     }
 
     public List<int> GetNightWinnerIds()
     {
-        var wins = CountWinsPerPlayer();
-        if (wins.Count == 0)
-        {
-            return [];
-        }
-
-        var mostWins = wins.Values.Max();
-        return wins
-            .Where(x => x.Value == mostWins)
-            .Select(x => x.Key)
-            .Order()
-            .ToList();
+        return DecideWinners().WinnerIds;
     }
 
-    private Dictionary<int, int> CountWinsPerPlayer()
+    private NightWinners DecideWinners()
     {
-        return Sessions
+        return NightWinnerRule.Decide(Sessions
             .SelectMany(x => x.PlayerSessions)
-            .Where(x => x.Won)
-            .GroupBy(x => x.PlayerId)
-            .ToDictionary(x => x.Key, x => x.Count());
+            .Select(x => new NightResult(x.PlayerId, x.Won)));
     }
 }
