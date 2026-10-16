@@ -162,7 +162,7 @@ describe("Location detail page", () => {
 	it("shows the location name on one line with a tooltip", async () => {
 		renderPage();
 
-		const heading = await screen.findByRole("heading", { name: "Café De Spelerij Gent-Sint-Pieters" });
+		const heading = await screen.findByRole("heading", { level: 1, name: "Café De Spelerij Gent-Sint-Pieters" });
 		expect(heading).toHaveClass("truncate");
 		expect(heading).toHaveAttribute("title", "Café De Spelerij Gent-Sint-Pieters");
 	});

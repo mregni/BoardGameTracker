@@ -146,3 +146,17 @@ describe("BgtButton", () => {
 		});
 	});
 });
+
+describe("BgtButton focus colour", () => {
+	it("uses the bad colour for the focus ring of the error variant", () => {
+		render(<BgtButton variant="error">Delete</BgtButton>);
+
+		expect(screen.getByRole("button", { name: "Delete" })).toHaveClass("[--focus-color:var(--color-bad)]");
+	});
+
+	it.each(["primary", "cancel", "text"] as const)("keeps the default focus ring for the %s variant", (variant) => {
+		render(<BgtButton variant={variant}>Save</BgtButton>);
+
+		expect(screen.getByRole("button", { name: "Save" }).className).not.toContain("--focus-color");
+	});
+});

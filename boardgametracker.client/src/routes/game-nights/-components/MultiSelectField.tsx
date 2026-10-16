@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import Cross from "@/assets/icons/x.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtSelect } from "@/components/BgtForm/BgtSelect";
@@ -20,6 +21,7 @@ interface Props {
 
 export const MultiSelectField = (props: Props) => {
 	const { label, options, selected, onChange, placeholder, disabled } = props;
+	const { t } = useTranslation();
 
 	const available = useMemo(
 		() =>
@@ -55,6 +57,7 @@ export const MultiSelectField = (props: Props) => {
 								type="button"
 								onClick={() => onChange(selected.filter((value) => value !== item.value))}
 								disabled={disabled}
+								aria-label={t("common:remove-item", { name: item.label })}
 								className="text-primary cursor-pointer hover:text-white transition-colors py-2"
 							>
 								<Cross className="size-3" />

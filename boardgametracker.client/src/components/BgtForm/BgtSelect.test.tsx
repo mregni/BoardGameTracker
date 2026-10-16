@@ -241,6 +241,47 @@ describe("BgtSelect", () => {
 			expect(screen.getByRole("option", { name: "Carcassonne" })).toBeInTheDocument();
 			expect(screen.queryByRole("option", { name: "Azul" })).not.toBeInTheDocument();
 		});
+
+		it("names the search box", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSelect label="Game" hasSearch value={null} onValueChange={vi.fn()} items={mockItems} />);
+
+			await user.click(screen.getByRole("combobox", { name: "Game" }));
+
+			expect(await screen.findByRole("textbox", { name: "search" })).toBeInTheDocument();
+		});
+
+		it("returns focus to the field after picking an option with the keyboard", async () => {
+			const user = userEvent.setup();
+			const onValueChange = vi.fn();
+			renderWithTheme(
+				<BgtSelect label="Game" hasSearch value={null} onValueChange={onValueChange} items={mockItems} />,
+			);
+
+			const trigger = screen.getByRole("combobox", { name: "Game" });
+			trigger.focus();
+			await user.keyboard("{Enter}");
+			const search = await screen.findByRole("textbox", { name: "search" });
+			await user.click(search);
+			await user.keyboard("2");
+			await user.keyboard("{ArrowDown}");
+			await user.keyboard("{Enter}");
+
+			expect(onValueChange).toHaveBeenCalledWith("2");
+			expect(trigger).toHaveFocus();
+		});
+
+		it("keeps focus in the search box when nothing matches", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSelect label="Game" hasSearch value={null} onValueChange={vi.fn()} items={mockItems} />);
+
+			await user.click(screen.getByRole("combobox", { name: "Game" }));
+			const search = await screen.findByRole("textbox", { name: "search" });
+			await user.click(search);
+			await user.keyboard("zzz{ArrowDown}");
+
+			expect(search).toHaveFocus();
+		});
 	});
 
 	describe("Keyboard", () => {

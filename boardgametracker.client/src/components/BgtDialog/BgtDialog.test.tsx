@@ -1,6 +1,13 @@
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
-import { BgtDialog, BgtDialogContent, BgtDialogDescription, BgtDialogTitle } from "./BgtDialog";
+import {
+	BgtDialog,
+	BgtDialogContent,
+	BgtDialogDescription,
+	BgtDialogTitle,
+	useDialogPortalContainer,
+} from "./BgtDialog";
 
 describe("BgtDialog", () => {
 	describe("BgtDialog Root", () => {
@@ -161,6 +168,98 @@ describe("BgtDialog", () => {
 			);
 			const content = screen.getByTestId("dialog-content");
 			expect(content).toHaveClass("custom-content");
+		});
+	});
+
+	describe("Accessibility", () => {
+		const Opener = ({ onEscape }: { onEscape?: (event: KeyboardEvent) => void }) => {
+			const [open, setOpen] = useState(false);
+			return (
+				<>
+					<button type="button" onClick={() => setOpen(true)}>
+						Open
+					</button>
+					<BgtDialog open={open} onClose={() => setOpen(false)}>
+						<BgtDialogContent onEscapeKeyDown={onEscape}>
+							<BgtDialogTitle>Edit loan</BgtDialogTitle>
+							<BgtDialogDescription>Change the dates</BgtDialogDescription>
+							<button type="button">Save</button>
+						</BgtDialogContent>
+					</BgtDialog>
+				</>
+			);
+		};
+
+		it("names and describes the dialog", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<Opener />);
+
+			await user.click(screen.getByRole("button", { name: "Open" }));
+
+			const dialog = screen.getByRole("dialog", { name: "Edit loan" });
+			expect(dialog).toHaveAccessibleDescription("Change the dates");
+		});
+
+		it("gives focus back to the button that opened it after Escape", async () => {
+			const user = userEvent.setup();
+			const onEscape = vi.fn();
+			renderWithTheme(<Opener onEscape={onEscape} />);
+			const opener = screen.getByRole("button", { name: "Open" });
+
+			await user.click(opener);
+			expect(screen.getByRole("dialog")).toContainElement(document.activeElement as HTMLElement);
+			await user.keyboard("{Escape}");
+
+			expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+			expect(onEscape).toHaveBeenCalledTimes(1);
+			expect(opener).toHaveFocus();
+		});
+
+		it("gives focus back to the opener after the close button", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<Opener />);
+			const opener = screen.getByRole("button", { name: "Open" });
+
+			await user.click(opener);
+			await user.click(screen.getByRole("button", { name: "close" }));
+
+			expect(opener).toHaveFocus();
+		});
+
+		it("leaves Escape to a popover that is open inside the dialog", async () => {
+			const onClose = vi.fn();
+			renderWithTheme(
+				<BgtDialog open={true} onClose={onClose}>
+					<BgtDialogContent>
+						<BgtDialogTitle>Lend a game</BgtDialogTitle>
+						<div data-trigger="DatePicker">
+							<button type="button">16</button>
+						</div>
+					</BgtDialogContent>
+				</BgtDialog>,
+			);
+
+			screen.getByRole("button", { name: "16" }).focus();
+			await userEvent.keyboard("{Escape}");
+
+			expect(onClose).not.toHaveBeenCalled();
+		});
+
+		it("offers its own element as the place for popovers", () => {
+			const Probe = () => {
+				const container = useDialogPortalContainer();
+				return <span data-testid="probe">{container?.getAttribute("role")}</span>;
+			};
+			renderWithTheme(
+				<BgtDialog open={true} onClose={vi.fn()}>
+					<BgtDialogContent>
+						<BgtDialogTitle>Lend a game</BgtDialogTitle>
+						<Probe />
+					</BgtDialogContent>
+				</BgtDialog>,
+			);
+
+			expect(screen.getByTestId("probe")).toHaveTextContent("dialog");
 		});
 	});
 

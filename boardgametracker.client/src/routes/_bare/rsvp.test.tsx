@@ -157,7 +157,7 @@ describe("RsvpPage", () => {
 
 		renderPage();
 
-		expect(await screen.findByRole("heading", { name: "Strategy night" })).toBeInTheDocument();
+		expect(await screen.findByRole("heading", { level: 1, name: "Strategy night" })).toBeInTheDocument();
 		expect(screen.getByText("Home")).toBeInTheDocument();
 		expect(screen.getByText("Bring snacks")).toBeInTheDocument();
 		expect(screen.getByText("whos-coming")).toBeInTheDocument();
@@ -220,7 +220,7 @@ describe("RsvpPage", () => {
 
 		renderPage();
 
-		expect(await screen.findByRole("heading", { name: "past-title" })).toBeInTheDocument();
+		expect(await screen.findByRole("heading", { level: 1, name: "past-title" })).toBeInTheDocument();
 		expect(screen.getByText("Sunday, January 5th, 2020")).toBeInTheDocument();
 		expect(screen.getByText("past-description")).toBeInTheDocument();
 		expect(screen.queryByText("whos-coming")).not.toBeInTheDocument();

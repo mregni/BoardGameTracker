@@ -33,6 +33,11 @@ describe("BgtTextArea", () => {
 			expect(screen.getByText("Notes")).toBeInTheDocument();
 		});
 
+		it("should be named by its label", () => {
+			renderWithTheme(<BgtTextArea field={mockField} label="Notes" />);
+			expect(screen.getByRole("textbox", { name: "Notes" })).toBeInTheDocument();
+		});
+
 		it("should display field value", () => {
 			mockField = createMockField("Some text content");
 			renderWithTheme(<BgtTextArea field={mockField} label="Description" />);

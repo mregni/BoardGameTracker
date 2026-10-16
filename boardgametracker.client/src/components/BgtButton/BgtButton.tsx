@@ -6,7 +6,7 @@ const buttonVariants = cva("font-bold rounded-sm inline-flex flex-row gap-1 just
 		variant: {
 			primary: "bg-primary/60 hover:bg-primary/50 text-white",
 			cancel: "hover:bg-cancel/10 text-cancel border border-cancel/60",
-			error: "bg-error hover:bg-error/80 text-white",
+			error: "bg-error hover:bg-error/80 text-white [--focus-color:var(--color-bad)]",
 			text: "text-primary hover:text-primary/70",
 		},
 		size: {

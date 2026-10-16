@@ -117,3 +117,18 @@ describe("BgtDialogFooter", () => {
 		expect(footerOf(screen.getByRole("button", { name: "Done" }))).toHaveClass("mt-4");
 	});
 });
+
+describe("BgtDialogFooter focus colour", () => {
+	it("gives the destructive action the bad focus ring and leaves cancel on the default", () => {
+		renderWithTheme(<BgtDialogFooter onCancel={vi.fn()} confirmLabel="Delete" variant="destructive" />);
+
+		expect(screen.getByRole("button", { name: "Delete" })).toHaveClass("[--focus-color:var(--color-bad)]");
+		expect(screen.getByRole("button", { name: "common:cancel" }).className).not.toContain("--focus-color");
+	});
+
+	it("keeps the default focus ring on a primary action", () => {
+		renderWithTheme(<BgtDialogFooter confirmLabel="Save" />);
+
+		expect(screen.getByRole("button", { name: "Save" }).className).not.toContain("--focus-color");
+	});
+});

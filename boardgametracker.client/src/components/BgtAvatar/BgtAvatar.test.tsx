@@ -156,6 +156,18 @@ describe("BgtAvatar", () => {
 
 			expect(handleClick).toHaveBeenCalledTimes(1);
 		});
+
+		it("is a button named after the full title rather than the initial", () => {
+			renderWithTheme(<BgtAvatar title="John" image={null} onClick={vi.fn()} />);
+
+			expect(screen.getByRole("button", { name: "John" })).toBeInTheDocument();
+		});
+
+		it("keeps the initial readable when it is not clickable", () => {
+			renderWithTheme(<BgtAvatar title="John" image={null} />);
+
+			expect(screen.getByText("J").parentElement).not.toHaveAttribute("aria-hidden");
+		});
 	});
 
 	describe("Combined Props", () => {

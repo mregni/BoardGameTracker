@@ -24,9 +24,9 @@ export const LocationHeader = (props: Props) => {
 					<BgtText size="2" color="white" opacity={60}>
 						{t("detail.label")}
 					</BgtText>
-					<h3 className={cx(textSizeClasses["7"], "truncate font-bold")} title={name}>
+					<h1 className={cx(textSizeClasses["7"], "truncate font-bold")} title={name}>
 						{name}
-					</h3>
+					</h1>
 				</div>
 			</div>
 			{canWrite && (

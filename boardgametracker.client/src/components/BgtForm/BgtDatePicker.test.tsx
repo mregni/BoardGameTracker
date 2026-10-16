@@ -1,6 +1,7 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithProviders, screen, userEvent, waitFor } from "@/test/test-utils";
+import { BgtDialog, BgtDialogContent, BgtDialogTitle } from "../BgtDialog/BgtDialog";
 import { BgtDatePicker } from "./BgtDatePicker";
 
 const mockSettings = vi.hoisted(() => ({
@@ -218,6 +219,50 @@ describe("BgtDatePicker", () => {
 		it("should expose the input group with the label as an accessible name", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);
 			expect(screen.getByRole("group", { name: "Select Date" })).toBeInTheDocument();
+		});
+
+		it("should keep the default focus outline on its buttons", () => {
+			renderWithProviders(<BgtDatePicker {...defaultProps} field={createMockField("2024-06-15")} clearable />);
+
+			expect(screen.getByLabelText("common:open-calendar")).not.toHaveClass("outline-none");
+			expect(screen.getByRole("button", { name: "common:clear-date" })).not.toHaveClass("outline-none");
+		});
+
+		describe("inside a dialog", () => {
+			const renderInDialog = (onClose = vi.fn()) =>
+				renderWithProviders(
+					<BgtDialog open onClose={onClose}>
+						<BgtDialogContent>
+							<BgtDialogTitle>Lend a game</BgtDialogTitle>
+							<BgtDatePicker {...defaultProps} field={createMockField("2024-06-15")} />
+						</BgtDialogContent>
+					</BgtDialog>,
+				);
+
+			it("should open the calendar inside the dialog so it can take focus", async () => {
+				const user = userEvent.setup();
+				renderInDialog();
+
+				await user.click(screen.getByLabelText("common:open-calendar"));
+
+				const grid = await screen.findByRole("grid");
+				expect(screen.getByRole("dialog", { name: "Lend a game" })).toContainElement(grid);
+			});
+
+			it("should close only the calendar on Escape and give focus back to its button", async () => {
+				const user = userEvent.setup();
+				const onClose = vi.fn();
+				renderInDialog(onClose);
+				const calendarButton = screen.getByLabelText("common:open-calendar");
+
+				await user.click(calendarButton);
+				await screen.findByRole("grid");
+				await user.keyboard("{Escape}");
+
+				await waitFor(() => expect(screen.queryByRole("grid")).not.toBeInTheDocument());
+				expect(onClose).not.toHaveBeenCalled();
+				await waitFor(() => expect(calendarButton).toHaveFocus());
+			});
 		});
 	});
 });

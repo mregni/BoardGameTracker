@@ -131,3 +131,17 @@ describe("BgtIconButton", () => {
 		});
 	});
 });
+
+describe("BgtIconButton focus colour", () => {
+	it("uses the bad colour for the focus ring of the danger intent", () => {
+		render(<BgtIconButton intent="danger" icon={<svg />} aria-label="Delete" />);
+
+		expect(screen.getByRole("button", { name: "Delete" })).toHaveClass("[--focus-color:var(--color-bad)]");
+	});
+
+	it.each(["primary", "header", "subtile"] as const)("keeps the default focus ring for the %s intent", (intent) => {
+		render(<BgtIconButton intent={intent} icon={<svg />} aria-label="Edit" />);
+
+		expect(screen.getByRole("button", { name: "Edit" }).className).not.toContain("--focus-color");
+	});
+});

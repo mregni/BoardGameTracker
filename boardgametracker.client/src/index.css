@@ -77,7 +77,7 @@
 	}
 
 	:focus-visible {
-		outline: 2px solid var(--color-primary);
+		outline: 2px solid var(--focus-color, var(--color-primary));
 		outline-offset: 2px;
 	}
 }

@@ -11,10 +11,21 @@ interface Props extends ComponentPropsWithoutRef<"div"> {
 	icon?: ComponentType<SVGProps<SVGSVGElement>>;
 	actions?: Actions[];
 	description?: string;
+	titleAs?: "h1" | "h2";
 }
 
 export const BgtCard = (props: Props) => {
-	const { children, className, hide, title, icon: Icon, actions = [], description, ...rest } = props;
+	const {
+		children,
+		className,
+		hide,
+		title,
+		icon: Icon,
+		actions = [],
+		description,
+		titleAs: TitleTag = "h2",
+		...rest
+	} = props;
 	const { t } = useTranslation();
 
 	if (hide) {
@@ -26,10 +37,10 @@ export const BgtCard = (props: Props) => {
 			{title && (
 				<div className="mb-4">
 					<div className="flex justify-between items-start w-full">
-						<h2 className="text-white tracking-wide flex items-center gap-2">
+						<TitleTag className="text-white tracking-wide flex items-center gap-2">
 							{Icon && <Icon className="size-6 text-primary" />}
 							{title}
-						</h2>
+						</TitleTag>
 						<div className="flex flex-row gap-2">
 							{actions.map((action, index) => (
 								<BgtButton

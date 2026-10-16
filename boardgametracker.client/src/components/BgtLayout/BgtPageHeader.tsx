@@ -38,7 +38,7 @@ export const BgtPageHeader = (props: Props) => {
 						/>
 					)}
 					{Icon && <Icon className="text-primary size-7" />}
-					{header && <BgtHeading>{header}</BgtHeading>}
+					{header && <BgtHeading as="h1">{header}</BgtHeading>}
 				</div>
 				<div className="flex items-center flex-wrap gap-3">
 					<div className="hidden md:flex">{children}</div>
