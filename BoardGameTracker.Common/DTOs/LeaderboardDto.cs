@@ -13,6 +13,8 @@ public class LeaderboardDto
     public LeaderboardRankBy RankBy { get; set; }
     public bool ShowPodium { get; set; }
     public int RankedCount { get; set; }
+    public int WinCount { get; set; }
+    public int CoopWinCount { get; set; }
     public List<LeaderboardEntryDto> Players { get; set; } = [];
 }
 

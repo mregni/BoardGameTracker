@@ -63,9 +63,16 @@ const players = [
 	}),
 ];
 
-const renderRanking = (list: LeaderboardEntry[] = players) =>
+const renderRanking = (list: LeaderboardEntry[] = players, coopWinCount = 0) =>
 	renderWithTheme(
-		<LeaderboardRanking players={list} minimumSessions={5} minimumPlayersForPodium={4} label="Ranking" />,
+		<LeaderboardRanking
+			players={list}
+			minimumSessions={5}
+			minimumPlayersForPodium={4}
+			label="Ranking"
+			winCount={149}
+			coopWinCount={coopWinCount}
+		/>,
 	);
 
 describe("LeaderboardRanking", () => {
@@ -145,5 +152,23 @@ describe("LeaderboardRanking", () => {
 
 		expect(screen.getAllByRole("list")).toHaveLength(1);
 		expect(screen.getByRole("heading", { name: "ranking.not-ranked" })).toBeInTheDocument();
+	});
+
+	it("should explain co-op wins when some wins come from co-op sessions", () => {
+		renderRanking(players, 24);
+
+		expect(screen.getByText("ranking.coop ranking.ties")).toBeInTheDocument();
+	});
+
+	it("should leave out the co-op note without co-op wins", () => {
+		renderRanking(players, 0);
+
+		expect(screen.queryByText(/ranking\.coop/)).not.toBeInTheDocument();
+	});
+
+	it("should show the co-op note alone when there are no ties to explain", () => {
+		renderRanking(players.slice(0, 1), 3);
+
+		expect(screen.getByText("ranking.coop")).toBeInTheDocument();
 	});
 });

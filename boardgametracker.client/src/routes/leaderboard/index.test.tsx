@@ -88,6 +88,8 @@ const leaderboard = (players: LeaderboardEntry[], overrides: Partial<Leaderboard
 		rankBy: "wins",
 		showPodium: ranked.length >= 4,
 		rankedCount: ranked.length,
+		winCount: 0,
+		coopWinCount: 0,
 		players,
 		...overrides,
 	};

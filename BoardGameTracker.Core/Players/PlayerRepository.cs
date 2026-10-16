@@ -133,11 +133,12 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
                 PlayCount = g.Count(),
                 WinCount = g.Count(x => x.Won),
                 MinutesPlayed = g.Sum(x => (x.Session.End - x.Session.Start).TotalMinutes),
+                CoopWinCount = g.Count(x => x.Won && x.Session.IsCoop),
             })
             .ToListAsync(cancellationToken);
 
         var scored = await plays
-            .Where(x => x.Score != null && x.Session.Game.HasScoring)
+            .Where(x => x.Score != null && !x.Session.IsCoop && x.Session.Game.HasScoring)
             .Where(x => x.Session.PlayerSessions.Count(other => other.Score != null) >= LeaderboardService.MinimumPlayersForPodium)
             .Select(x => new ScoredPlay(x.SessionId, x.PlayerId, x.Won, x.Score!.Value))
             .ToListAsync(cancellationToken);
@@ -150,7 +151,7 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
             .ToDictionary(g => g.Key, g => g.Count());
 
         return totals
-            .Select(x => new LeaderboardRow(x.PlayerId, x.Name, x.Image, x.PlayCount, x.WinCount, podiums.GetValueOrDefault(x.PlayerId), x.MinutesPlayed))
+            .Select(x => new LeaderboardRow(x.PlayerId, x.Name, x.Image, x.PlayCount, x.WinCount, podiums.GetValueOrDefault(x.PlayerId), x.MinutesPlayed, x.CoopWinCount))
             .ToList();
     }
 

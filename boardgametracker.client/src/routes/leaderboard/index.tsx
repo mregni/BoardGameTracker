@@ -123,6 +123,8 @@ function RouteComponent() {
 									minimumSessions={leaderboard.minimumSessions}
 									minimumPlayersForPodium={leaderboard.minimumPlayersForPodium}
 									label={gameTitle ? `${t("ranking.label")} · ${gameTitle}` : t("ranking.label")}
+									winCount={leaderboard.winCount}
+									coopWinCount={leaderboard.coopWinCount}
 								/>
 							</>
 						)

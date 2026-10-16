@@ -14,6 +14,8 @@ interface Props {
 	minimumSessions: number;
 	minimumPlayersForPodium: number;
 	label: string;
+	winCount: number;
+	coopWinCount: number;
 }
 
 const columns =
@@ -84,7 +86,14 @@ const Row = ({ entry }: { entry: LeaderboardEntry }) => {
 	);
 };
 
-export const LeaderboardRanking = ({ players, minimumSessions, minimumPlayersForPodium, label }: Props) => {
+export const LeaderboardRanking = ({
+	players,
+	minimumSessions,
+	minimumPlayersForPodium,
+	label,
+	winCount,
+	coopWinCount,
+}: Props) => {
 	const { t } = useTranslation("leaderboard");
 	const ranked = players.filter((entry) => entry.isRanked);
 	const unranked = players.filter((entry) => !entry.isRanked);
@@ -132,7 +141,16 @@ export const LeaderboardRanking = ({ players, minimumSessions, minimumPlayersFor
 					</ul>
 				</>
 			)}
-			{ranked.length > 1 && <p className="pt-1 text-xs text-white/60">{t("ranking.ties")}</p>}
+			{(coopWinCount > 0 || ranked.length > 1) && (
+				<p className="pt-1 text-xs text-white/60">
+					{[
+						coopWinCount > 0 ? t("ranking.coop", { count: coopWinCount, total: winCount }) : null,
+						ranked.length > 1 ? t("ranking.ties") : null,
+					]
+						.filter(Boolean)
+						.join(" ")}
+				</p>
+			)}
 		</section>
 	);
 };

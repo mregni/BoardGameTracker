@@ -6628,6 +6628,14 @@
             "type": "integer",
             "format": "int32"
           },
+          "winCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coopWinCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "players": {
             "type": "array",
             "items": {

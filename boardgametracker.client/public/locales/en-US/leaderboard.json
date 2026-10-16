@@ -51,7 +51,9 @@
     "not-ranked-rank": "Not ranked",
     "not-ranked_one": "Fewer than {{count}} session · not ranked",
     "not-ranked_other": "Fewer than {{count}} sessions · not ranked",
-    "ties": "Ties share the rank."
+    "ties": "Ties share the rank.",
+    "coop_one": "Co-op wins and losses count: a team win is a win for everyone at the table, a team loss a loss ({{count}} of the {{total}} wins).",
+    "coop_other": "Co-op wins and losses count: a team win is a win for everyone at the table, a team loss a loss ({{count}} of the {{total}} wins)."
   },
   "no-podium": {
     "all_one": "No podium: only {{count}} player is ranked. A podium needs at least {{minimum}}, otherwise everyone is on it.",

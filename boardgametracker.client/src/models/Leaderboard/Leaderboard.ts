@@ -24,6 +24,8 @@ export interface Leaderboard {
 	rankBy: LeaderboardRankBy;
 	showPodium: boolean;
 	rankedCount: number;
+	winCount: number;
+	coopWinCount: number;
 	players: LeaderboardEntry[];
 }
 

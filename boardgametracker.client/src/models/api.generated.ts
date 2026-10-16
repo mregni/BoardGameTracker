@@ -4888,6 +4888,10 @@ export interface components {
             showPodium: boolean;
             /** Format: int32 */
             rankedCount: number;
+            /** Format: int32 */
+            winCount: number;
+            /** Format: int32 */
+            coopWinCount: number;
             players: components["schemas"]["LeaderboardEntryDto"][];
         };
         LeaderboardEntryDto: {

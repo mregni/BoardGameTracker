@@ -48,6 +48,8 @@ public class LeaderboardService : ILeaderboardService
             MinimumPlayersForPodium = MinimumPlayersForPodium,
             RankBy = filter.RankBy,
             RankedCount = ranked.Count,
+            WinCount = rows.Sum(x => x.WinCount),
+            CoopWinCount = rows.Sum(x => x.CoopWinCount),
             ShowPodium = ranked.Count >= MinimumPlayersForPodium,
             MostWins = entries
                 .Where(x => x.WinCount > 0)

@@ -115,6 +115,30 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetLeaderboardRows_ShouldCountCoopWins_AndNeverGivePodiumsForCoopSessions()
+    {
+        await using (var scope = _fixture.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+            var coop = new Session(_scoringId, Monday.AddDays(5), Monday.AddDays(5).AddMinutes(40), string.Empty);
+            coop.AddPlayerSession(_aliceId, 40, false, false);
+            coop.AddPlayerSession(_bobId, 30, false, false);
+            coop.AddPlayerSession(_caraId, 20, false, false);
+            coop.AddPlayerSession(_daveId, 10, false, false);
+            coop.MarkAsCoop(true, 100);
+            db.Add(coop);
+            await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        await using var readScope = _fixture.CreateScope();
+        var rows = await readScope.ServiceProvider.GetRequiredService<IPlayerRepository>().GetLeaderboardRows(new LeaderboardFilter(), TestContext.Current.CancellationToken);
+
+        rows.Single(x => x.PlayerId == _aliceId).Should().BeEquivalentTo(new { WinCount = 3, CoopWinCount = 1, PodiumCount = 1 });
+        rows.Single(x => x.PlayerId == _daveId).Should().BeEquivalentTo(new { WinCount = 1, CoopWinCount = 1, PodiumCount = 0 });
+        rows.Sum(x => x.CoopWinCount).Should().Be(4);
+    }
+
+    [Fact]
     public async Task GetLeaderboardRows_ShouldOnlyCountTheChosenGame()
     {
         await using var scope = _fixture.CreateScope();

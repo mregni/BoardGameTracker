@@ -37,6 +37,8 @@ const leaderboard = (overrides: Partial<Leaderboard> = {}): Leaderboard => ({
 	rankBy: "wins",
 	showPodium: true,
 	rankedCount: 4,
+	winCount: 20,
+	coopWinCount: 0,
 	players: [],
 	...overrides,
 });

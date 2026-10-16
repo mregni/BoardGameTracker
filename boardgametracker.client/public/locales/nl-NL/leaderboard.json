@@ -51,7 +51,9 @@
     "not-ranked-rank": "Niet gerangschikt",
     "not-ranked_one": "Minder dan {{count}} sessie · niet gerangschikt",
     "not-ranked_other": "Minder dan {{count}} sessies · niet gerangschikt",
-    "ties": "Bij gelijkstand delen spelers de rang."
+    "ties": "Bij gelijkstand delen spelers de rang.",
+    "coop_one": "Coöperatieve overwinningen en verliezen tellen mee: een teamoverwinning is een overwinning voor iedereen aan tafel, een teamverlies een verlies ({{count}} van de {{total}} overwinningen).",
+    "coop_other": "Coöperatieve overwinningen en verliezen tellen mee: een teamoverwinning is een overwinning voor iedereen aan tafel, een teamverlies een verlies ({{count}} van de {{total}} overwinningen)."
   },
   "no-podium": {
     "all_one": "Geen podium: slechts {{count}} speler is gerangschikt. Een podium vraagt er minstens {{minimum}}, anders staat iedereen erop.",

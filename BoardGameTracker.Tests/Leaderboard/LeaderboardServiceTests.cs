@@ -227,6 +227,24 @@ public class LeaderboardServiceTests
     }
 
     [Fact]
+    public async Task GetLeaderboardAsync_ShouldCountAllWinsAndTheCoopShare_IncludingUnrankedPlayers()
+    {
+        var filter = new LeaderboardFilter(MinSessions: 5);
+        SetupRows(filter,
+        [
+            new LeaderboardRow(1, "Alice", null, 10, 6, 0, 600, 2),
+            new LeaderboardRow(2, "Bob", null, 8, 3, 0, 300, 1),
+            new LeaderboardRow(3, "Cara", null, 2, 1, 0, 60, 1),
+        ]);
+
+        var result = await _service.GetLeaderboardAsync(filter, TestContext.Current.CancellationToken);
+
+        result.WinCount.Should().Be(10);
+        result.CoopWinCount.Should().Be(4);
+        VerifyRowsLoaded(filter);
+    }
+
+    [Fact]
     public async Task GetLeaderboardAsync_ShouldLeaveTheCardsEmpty_WhenNobodyPlayed()
     {
         var filter = new LeaderboardFilter();
