@@ -23,17 +23,20 @@ public class NextGameNightSpecTests
     }
 
     [Fact]
-    public void Evaluate_ShouldReturnUpcomingNightsInStartOrder_WithIdAsTieBreaker()
+    public void Evaluate_ShouldReturnUpcomingAndStillPlayingNightsInStartOrder_WithIdAsTieBreaker()
     {
-        var past = Night(1, "Past", From.AddMinutes(-1));
+        var past = Night(1, "Past", From - GameNight.PlayWindow - TimeSpan.FromMinutes(1));
         var later = Night(2, "Later", From.AddDays(5));
         var sameStartHigherId = Night(4, "Same start, higher id", From.AddDays(1));
         var next = Night(3, "Next", From.AddDays(1));
+        var playing = Night(5, "Playing", From.AddHours(-1));
+        var ended = Night(6, "Ended", From.AddHours(-1));
+        ended.End(From);
 
         var spec = new NextGameNightSpec(From);
-        var result = spec.Evaluate(new List<GameNight> { past, later, sameStartHigherId, next }).ToList();
+        var result = spec.Evaluate(new List<GameNight> { past, later, sameStartHigherId, next, playing, ended }).ToList();
 
-        result.Select(x => x.Id).Should().Equal(3, 4, 2);
+        result.Select(x => x.Id).Should().Equal(5, 3, 4, 2);
         spec.AsNoTracking.Should().BeTrue();
     }
 

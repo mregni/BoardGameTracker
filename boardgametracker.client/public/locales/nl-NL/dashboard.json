@@ -73,6 +73,7 @@
     "row_one": "{{name}}: {{wins}} keer gewonnen in {{total}} sessie",
     "row_other": "{{name}}: {{wins}} keer gewonnen in {{total}} sessies",
     "hint": "Gerangschikt op overwinningen. De balk is het winstpercentage.",
+    "hint-coop": "Overwinningen, co-op inbegrepen. De balk is het winstpercentage.",
     "empty": "Nog geen sessies gespeeld"
   },
   "most-played": {

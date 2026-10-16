@@ -85,6 +85,18 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
         return _playerSessionReadRepository.CountAsync(new WonPlayerSessionsByPlayerSpec(id));
     }
 
+    public async Task<(int Won, int Lost)> GetCoopResults(int id)
+    {
+        var results = await _dbContext.PlayerSessions
+            .AsNoTracking()
+            .Where(x => x.PlayerId == id && x.Session.IsCoop)
+            .GroupBy(x => x.Won)
+            .Select(x => new { Won = x.Key, Count = x.Count() })
+            .ToListAsync();
+
+        return (results.Where(x => x.Won).Sum(x => x.Count), results.Where(x => !x.Won).Sum(x => x.Count));
+    }
+
     public async Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopPlayers(int count, CancellationToken cancellationToken = default)
     {
         var result = await PlayerTotals()

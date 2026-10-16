@@ -65,7 +65,6 @@ public class DashboardService : IDashboardService
         _logger.LogDebug("Calculating dashboard statistics");
         var localNow = _dateTimeProvider.Now;
         var monthStart = _dateTimeProvider.ConvertToUtc(new DateTime(localNow.Year, localNow.Month, 1, 0, 0, 0, DateTimeKind.Unspecified));
-        var todayStart = _dateTimeProvider.ConvertToUtc(DateTime.SpecifyKind(localNow.Date, DateTimeKind.Unspecified));
 
         var totalGames = await _gameRepository.CountAsync(cancellationToken);
         var activePlayers = await _playerRepository.CountAsync(cancellationToken);
@@ -83,10 +82,11 @@ public class DashboardService : IDashboardService
         var mostPlayedGames = await _gameStatisticsRepository.GetMostPlayedGames(MostPlayedCount, cancellationToken);
         var mostPlayedThisMonth = await _gameStatisticsRepository.GetMostPlayedGamesSince(MostPlayedCount, monthStart, cancellationToken);
         var topPlayers = await _playerRepository.GetTopWinners(TopPlayerCount, cancellationToken);
+        var hasCoopWins = await _sessionRepository.AnyAsync(new WonCoopSessionsSpec(), cancellationToken);
         var recentlyAddedGames = await _gameRepository.GetRecentlyAddedGames(RecentlyAddedCount, cancellationToken);
 
         var linkedPlayer = await GetLinkedPlayer(userId, monthStart, cancellationToken);
-        var (nextGameNight, plannedGameNights) = await GetUpcomingGameNights(todayStart, cancellationToken);
+        var (nextGameNight, plannedGameNights) = await GetUpcomingGameNights(_dateTimeProvider.UtcNow, cancellationToken);
         var shelfOfShame = await _shameService.GetShameSummary(cancellationToken);
 
         return new DashboardStatisticsDto
@@ -111,6 +111,7 @@ public class DashboardService : IDashboardService
             MostPlayedGames = mostPlayedGames.ToListDto(),
             MostPlayedGamesThisMonth = mostPlayedThisMonth.ToListDto(),
             TopPlayers = topPlayers.ToListDto(),
+            TopPlayersIncludeCoopWins = hasCoopWins,
             RecentAddedGames = recentlyAddedGames.ToRecentAddedGameListDto()
         };
     }
@@ -134,7 +135,7 @@ public class DashboardService : IDashboardService
         return linkedPlayer;
     }
 
-    private async Task<(DashboardGameNightDto? Next, int Planned)> GetUpcomingGameNights(DateTime from, CancellationToken cancellationToken)
+    private async Task<(DashboardGameNightDto? Next, int Planned)> GetUpcomingGameNights(DateTime now, CancellationToken cancellationToken)
     {
         var enabled = await _configRepository.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true);
         if (!enabled)
@@ -142,13 +143,13 @@ public class DashboardService : IDashboardService
             return (null, 0);
         }
 
-        var next = await _gameNightRepository.FirstOrDefaultAsync(new NextGameNightSpec(from), cancellationToken);
+        var next = await _gameNightRepository.FirstOrDefaultAsync(new NextGameNightSpec(now), cancellationToken);
         if (next == null)
         {
             return (null, 0);
         }
 
-        var planned = await _gameNightRepository.CountAsync(new FutureGameNightsSpec(from), cancellationToken);
+        var planned = await _gameNightRepository.CountAsync(new FutureGameNightsSpec(now), cancellationToken);
         return (next, planned);
     }
 }

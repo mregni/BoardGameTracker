@@ -56,7 +56,8 @@
     "invites-sent": "Invitaciones enviadas: {{sent}}",
     "invites-failed": "No se pudieron enviar las invitaciones",
     "when": "{{when}} · {{time}}",
-    "host": "Anfitrión: {{host}}"
+    "host": "Anfitrión: {{host}}",
+    "open": "Abrir la noche"
   },
   "form": {
     "title": {
@@ -102,10 +103,93 @@
     "host-required": "El anfitrión es obligatorio"
   },
   "past-night": {
-    "summary": "{{location}} · {{attended}}",
     "attended-count_one": "{{count}} asistió",
     "attended-count_other": "{{count}} asistieron",
-    "attended": "Asistieron",
-    "nobody": "Nadie confirmó su asistencia"
+    "nobody": "Nadie confirmó su asistencia",
+    "nothing-logged": "aún no hay nada registrado",
+    "games-played_one": "{{count}} juego jugado",
+    "games-played_other": "{{count}} juegos jugados",
+    "winner": "ganador {{names}}"
+  },
+  "detail": {
+    "back": "Noches de juegos"
+  },
+  "play": {
+    "start": {
+      "button": "▶ Empezar un juego",
+      "title": "Empezar un juego",
+      "game": "Juego",
+      "players": "¿Quién juega?",
+      "save": "Empezar",
+      "coop-default": "Juego cooperativo: eliges “Ganamos” o “Perdimos” al terminarlo.",
+      "coop-optional": "Este juego se puede jugar en cooperativo: lo activas al terminarlo."
+    },
+    "log": {
+      "button": "Registrar un juego terminado",
+      "title": "Registrar un juego terminado"
+    },
+    "finish": {
+      "button": "Terminar",
+      "title": "Terminar {{game}}",
+      "subtitle": "Empezó a las {{time}} · {{duration}} · {{location}}"
+    },
+    "discard": {
+      "button": "Descartar {{game}}",
+      "title": "¿Descartar este juego?",
+      "description": "El juego en curso se elimina y no se guarda ninguna sesión."
+    },
+    "games": {
+      "tonight": "Esta noche y planificados"
+    },
+    "leave-out-hint": "Toca a un jugador para dejarlo fuera",
+    "leave-out": "Dejar fuera a {{name}}",
+    "save": "Guardar sesión",
+    "now-playing": "Jugando ahora: {{game}}",
+    "running": "Empezó a las {{time}} · {{duration}} · {{players}}",
+    "again": "Jugar otra vez:",
+    "again-game": "Jugar {{game}} otra vez",
+    "notifications": {
+      "started": "Juego empezado",
+      "start-failed": "No se pudo empezar el juego",
+      "discarded": "Juego en curso descartado",
+      "discard-failed": "No se pudo descartar el juego en curso"
+    }
+  },
+  "summary": {
+    "games-played": "Juegos jugados",
+    "play-time": "Tiempo de juego",
+    "leading": "Liderando esta noche",
+    "night-winner": "Ganador de la noche",
+    "no-winner": "Aún no hay ganador",
+    "wins_one": "{{count}} de {{total}} juegos ganados",
+    "wins_other": "{{count}} de {{total}} juegos ganados"
+  },
+  "played": {
+    "tonight": "Jugado esta noche",
+    "after": "Jugado",
+    "empty": "Aún no se ha jugado nada. Toca «Empezar un juego» cuando empiece una partida; la fecha, la hora, el lugar y los jugadores se rellenan solos.",
+    "empty-after": "No se registró nada para esta noche. Usa «Registrar un juego terminado» para añadir lo que se jugó."
+  },
+  "table": {
+    "title": "En la mesa",
+    "host": "· anfitrión",
+    "edit": "Editar quién está"
+  },
+  "planned": {
+    "title": "Planificados",
+    "played": "Jugado"
+  },
+  "end": {
+    "button": "Cerrar la noche",
+    "title": "¿Cerrar esta noche de juegos?",
+    "description": "No se puede empezar ni registrar nada en esta noche hasta que se vuelva a abrir.",
+    "running-hint": "Termina o descarta primero los juegos en curso",
+    "reopen": "Reabrir la noche",
+    "notifications": {
+      "ended": "Noche de juegos cerrada",
+      "end-failed": "No se pudo cerrar la noche de juegos",
+      "reopened": "Noche de juegos reabierta",
+      "reopen-failed": "No se pudo reabrir la noche de juegos"
+    }
   }
 }

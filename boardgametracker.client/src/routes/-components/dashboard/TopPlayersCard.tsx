@@ -11,10 +11,11 @@ import { cardLinkClasses } from "./dashboardStyles";
 
 interface Props {
 	players: DashboardTopPlayer[];
+	includesCoopWins: boolean;
 }
 
 export const TopPlayersCard = (props: Props) => {
-	const { players } = props;
+	const { players, includesCoopWins } = props;
 	const { t } = useTranslation("dashboard");
 	const { integer, percent } = useNumberFormat();
 
@@ -79,7 +80,9 @@ export const TopPlayersCard = (props: Props) => {
 								);
 							})}
 						</ol>
-						<p className="text-xs text-white/50">{t("top-players.hint")}</p>
+						<p className="text-xs text-white/50">
+							{includesCoopWins ? t("top-players.hint-coop") : t("top-players.hint")}
+						</p>
 					</>
 				)}
 			</section>

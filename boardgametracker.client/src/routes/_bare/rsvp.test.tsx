@@ -25,6 +25,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("@/services/gameNightService", () => ({
 	getGameNightsCall: vi.fn(),
+	getGameNightCall: vi.fn(),
 	getGameNightByLinkCall: (linkId: string) => mocks.getGameNightByLinkCall(linkId),
 	updateGameNightRsvpByLinkCall: (linkId: string, rsvp: unknown) => mocks.updateGameNightRsvpByLinkCall(linkId, rsvp),
 }));

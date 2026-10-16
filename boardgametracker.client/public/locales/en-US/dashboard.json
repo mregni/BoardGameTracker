@@ -73,6 +73,7 @@
     "row_one": "{{name}}: {{wins}} wins of {{total}} session",
     "row_other": "{{name}}: {{wins}} wins of {{total}} sessions",
     "hint": "Ranked by wins. The bar is the win rate.",
+    "hint-coop": "Wins, co-op included. The bar is the win rate.",
     "empty": "No sessions played yet"
   },
   "most-played": {

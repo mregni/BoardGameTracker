@@ -60,7 +60,7 @@ describe("NextGameNightCard", () => {
 
 		expect(screen.getByRole("link", { name: /Azul/ })).toHaveAttribute("href", "/games/11");
 		expect(screen.getByRole("link", { name: /Brass: Birmingham/ })).toHaveAttribute("href", "/games/12");
-		expect(screen.getByRole("link", { name: "night.open" })).toHaveAttribute("href", "/game-nights");
+		expect(screen.getByRole("link", { name: "night.open" })).toHaveAttribute("href", "/game-nights/3");
 	});
 
 	it("hides the suggestions without suggested games", () => {

@@ -73,6 +73,7 @@
     "row_one": "{{name}}: {{wins}} victorias en {{total}} partida",
     "row_other": "{{name}}: {{wins}} victorias en {{total}} partidas",
     "hint": "Ordenado por victorias. La barra es el porcentaje de victorias.",
+    "hint-coop": "Victorias, cooperativas incluidas. La barra es el porcentaje de victorias.",
     "empty": "Aún no se han jugado partidas"
   },
   "most-played": {

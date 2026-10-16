@@ -61,6 +61,7 @@ const statistics: DashboardStatistics = {
 	mostPlayedGames: [],
 	mostPlayedGamesThisMonth: [],
 	topPlayers: [],
+	topPlayersIncludeCoopWins: false,
 	recentAddedGames: [],
 };
 

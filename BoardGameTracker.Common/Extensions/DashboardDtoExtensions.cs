@@ -1,4 +1,4 @@
-﻿using BoardGameTracker.Common.DTOs;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models;
 
@@ -18,14 +18,16 @@ public static class DashboardDtoExtensions
             PlayerCount = session.PlayerSessions.Count,
             DurationInMinutes = session.GetDuration().TotalMinutes,
             Winners = session.PlayerSessions
-                .Where(ps => ps.Won)
+                .Where(ps => !session.IsCoop && ps.Won)
                 .Select(ps => new DashboardWinnerDto
                 {
                     Id = ps.PlayerId,
                     Name = ps.Player?.Name ?? string.Empty,
                     Image = ps.Player?.Image
                 })
-                .ToList()
+                .ToList(),
+            IsCoop = session.IsCoop,
+            TeamWon = session.TeamWon
         };
     }
 

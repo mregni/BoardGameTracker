@@ -7,10 +7,11 @@ namespace BoardGameTracker.Core.GameNights.Specifications;
 
 public sealed class NextGameNightSpec : Specification<GameNight, DashboardGameNightDto>
 {
-    public NextGameNightSpec(DateTime from)
+    public NextGameNightSpec(DateTime now)
     {
+        var playingSince = now - GameNight.PlayWindow;
         Query
-            .Where(x => x.StartDate >= from)
+            .Where(x => x.EndedAt == null && x.StartDate > playingSince)
             .OrderBy(x => x.StartDate)
             .ThenBy(x => x.Id)
             .AsNoTracking();

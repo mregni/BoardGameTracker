@@ -144,6 +144,29 @@ public class DashboardRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetTopWinners_ShouldCountCoopTeamWins_AndWonCoopSessionsSpecShouldFindThem()
+    {
+        await using var scope = _fixture.CreateScope();
+        var sessions = scope.ServiceProvider.GetRequiredService<ISessionRepository>();
+        var players = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+        (await sessions.AnyAsync(new WonCoopSessionsSpec(), TestContext.Current.CancellationToken)).Should().BeFalse();
+
+        var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+        var lost = new Session(_azulId, MonthStart.AddDays(8), MonthStart.AddDays(8).AddHours(1), string.Empty);
+        lost.AddPlayerSession(_caraId, null, false, false);
+        lost.MarkAsCoop(false, null);
+        var won = new Session(_azulId, MonthStart.AddDays(9), MonthStart.AddDays(9).AddHours(1), string.Empty);
+        won.AddPlayerSession(_caraId, null, false, false);
+        won.MarkAsCoop(true, null);
+        db.AddRange(lost, won);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        (await sessions.AnyAsync(new WonCoopSessionsSpec(), TestContext.Current.CancellationToken)).Should().BeTrue();
+        var top = await players.GetTopWinners(3, TestContext.Current.CancellationToken);
+        top.Should().Contain((_caraId, "Cara", (string?)null, 3, 1));
+    }
+
+    [Fact]
     public async Task GetMostPlayedGamesSince_ShouldOnlyCountSessionsSince()
     {
         await using var scope = _fixture.CreateScope();

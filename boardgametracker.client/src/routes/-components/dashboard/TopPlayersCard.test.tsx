@@ -13,13 +13,13 @@ const players = [
 
 describe("TopPlayersCard", () => {
 	it("links to the leaderboard", () => {
-		renderWithTheme(<TopPlayersCard players={players} />);
+		renderWithTheme(<TopPlayersCard players={players} includesCoopWins={false} />);
 
 		expect(screen.getByRole("link", { name: "top-players.leaderboard" })).toHaveAttribute("href", "/leaderboard");
 	});
 
 	it("ranks each player with wins and a link to the player", () => {
-		renderWithTheme(<TopPlayersCard players={players} />);
+		renderWithTheme(<TopPlayersCard players={players} includesCoopWins={false} />);
 
 		const rows = screen.getAllByRole("listitem");
 		expect(rows).toHaveLength(3);
@@ -33,8 +33,15 @@ describe("TopPlayersCard", () => {
 		expect(screen.getByText("top-players.hint")).toBeInTheDocument();
 	});
 
+	it("says co-op wins are included when there are co-op wins", () => {
+		renderWithTheme(<TopPlayersCard players={players} includesCoopWins />);
+
+		expect(screen.getByText("top-players.hint-coop")).toBeInTheDocument();
+		expect(screen.queryByText("top-players.hint")).not.toBeInTheDocument();
+	});
+
 	it("shows an empty state without players", () => {
-		renderWithTheme(<TopPlayersCard players={[]} />);
+		renderWithTheme(<TopPlayersCard players={[]} includesCoopWins={false} />);
 
 		expect(screen.getByText("top-players.empty")).toBeInTheDocument();
 		expect(screen.queryByRole("listitem")).not.toBeInTheDocument();

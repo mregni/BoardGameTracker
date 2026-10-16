@@ -124,7 +124,7 @@ function RouteComponent() {
 						)}
 					</div>
 					<div className="flex flex-col gap-4">
-						<TopPlayersCard players={statistics.topPlayers} />
+						<TopPlayersCard players={statistics.topPlayers} includesCoopWins={statistics.topPlayersIncludeCoopWins} />
 						<MostPlayedCard allTime={statistics.mostPlayedGames} thisMonth={statistics.mostPlayedGamesThisMonth} />
 						<CollectionCard
 							collection={statistics.collection}

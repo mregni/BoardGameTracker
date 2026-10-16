@@ -16,6 +16,8 @@ const sessions: RecentActivity[] = [
 		playerCount: 4,
 		durationInMinutes: 80,
 		winners: [{ id: 2, name: "Kathleen", image: null }],
+		isCoop: false,
+		teamWon: null,
 	},
 	{
 		id: 2,
@@ -26,8 +28,23 @@ const sessions: RecentActivity[] = [
 		playerCount: 2,
 		durationInMinutes: 45,
 		winners: [],
+		isCoop: false,
+		teamWon: null,
 	},
 ];
+
+const coopSession = (id: number, teamWon: boolean): RecentActivity => ({
+	id,
+	gameId: 30 + id,
+	gameTitle: "Spirit Island",
+	gameImage: null,
+	start: "2026-10-12T19:00:00",
+	playerCount: 3,
+	durationInMinutes: 120,
+	winners: [],
+	isCoop: true,
+	teamWon,
+});
 
 describe("LastSessionsCard", () => {
 	it("shows each session as a row that opens the game's sessions", () => {
@@ -48,6 +65,22 @@ describe("LastSessionsCard", () => {
 		expect(within(first).getByText("Kathleen")).toBeInTheDocument();
 		expect(within(first).getByRole("img", { name: "common:won" })).toBeInTheDocument();
 		expect(within(second).getByText("last-sessions.no-winner")).toBeInTheDocument();
+	});
+
+	it("shows the co-op team result instead of winners for co-op sessions", () => {
+		renderWithTheme(
+			<LastSessionsCard
+				sessions={[coopSession(5, true), coopSession(6, false)]}
+				dateFormat="dd-MM-yyyy"
+				uiLanguage="en-US"
+			/>,
+		);
+
+		const [won, lost] = screen.getAllByRole("link");
+		expect(within(won).getByText("coop.won")).toBeInTheDocument();
+		expect(within(lost).getByText("coop.lost")).toBeInTheDocument();
+		expect(screen.queryByText("last-sessions.no-winner")).not.toBeInTheDocument();
+		expect(screen.queryByRole("img", { name: "common:won" })).not.toBeInTheDocument();
 	});
 
 	it("shows an empty state without sessions", () => {

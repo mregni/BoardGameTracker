@@ -30,7 +30,7 @@ public class DashboardServiceTests
     private const string UserId = "user-1";
     private static readonly DateTime LocalNow = new(2026, 10, 16, 20, 30, 0, DateTimeKind.Unspecified);
     private static readonly DateTime MonthStartUtc = new(2026, 9, 30, 22, 0, 0, DateTimeKind.Utc);
-    private static readonly DateTime TodayStartUtc = new(2026, 10, 15, 22, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime UtcNow = new(2026, 10, 16, 18, 30, 0, DateTimeKind.Utc);
 
     private readonly Mock<IGameRepository> _gameRepositoryMock;
     private readonly Mock<IGameStatisticsRepository> _gameStatisticsRepositoryMock;
@@ -56,6 +56,7 @@ public class DashboardServiceTests
         _configRepositoryMock = new Mock<IConfigRepository>();
         _dateTimeProviderMock = new Mock<IDateTimeProvider>();
         _dateTimeProviderMock.Setup(x => x.Now).Returns(LocalNow);
+        _dateTimeProviderMock.Setup(x => x.UtcNow).Returns(UtcNow);
         _dateTimeProviderMock
             .Setup(x => x.ConvertToUtc(It.IsAny<DateTime>()))
             .Returns((DateTime local) => DateTime.SpecifyKind(local.AddHours(-2), DateTimeKind.Utc));
@@ -109,6 +110,7 @@ public class DashboardServiceTests
         _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGames(4), Times.Once);
         _gameStatisticsRepositoryMock.Verify(x => x.GetMostPlayedGamesSince(4, MonthStartUtc), Times.Once);
         _playerRepositoryMock.Verify(x => x.GetTopWinners(3), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<WonCoopSessionsSpec>(), default), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetRecentlyAddedGames(3), Times.Once);
         _shameServiceMock.Verify(x => x.GetShameSummary(default), Times.Once);
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true), Times.Once);
@@ -178,7 +180,6 @@ public class DashboardServiceTests
         await _sut.GetStatistics(null);
 
         _dateTimeProviderMock.Verify(x => x.ConvertToUtc(new DateTime(2026, 10, 1)), Times.Once);
-        _dateTimeProviderMock.Verify(x => x.ConvertToUtc(new DateTime(2026, 10, 16)), Times.Once);
         var sessions = new List<Session>
         {
             new SessionBuilder().Between(MonthStartUtc.AddMinutes(-1), MonthStartUtc.AddHours(1)).Build(),
@@ -245,6 +246,43 @@ public class DashboardServiceTests
         var result = await _sut.GetStatistics(null);
 
         result.RecentActivities.Should().ContainSingle().Which.Winners.Should().BeEmpty();
+
+        VerifyGetStatisticsCalls();
+    }
+
+    [Fact]
+    public async Task GetStatistics_ShouldReturnTheTeamResult_InsteadOfWinners_ForCoopSessions()
+    {
+        var session = new SessionBuilder()
+            .ForGame(new Game("Pandemic") { Id = 1 })
+            .EndingAt(DateTime.UtcNow)
+            .LastingMinutes(45)
+            .WithWinner(new Player("John Doe") { Id = 1 })
+            .Build();
+        session.MarkAsCoop(true, null);
+
+        _sessionRepositoryMock.Setup(x => x.GetRecentSessions(5)).ReturnsAsync([session]);
+
+        var result = await _sut.GetStatistics(null);
+
+        var activity = result.RecentActivities.Should().ContainSingle().Subject;
+        activity.IsCoop.Should().BeTrue();
+        activity.TeamWon.Should().BeTrue();
+        activity.Winners.Should().BeEmpty();
+
+        VerifyGetStatisticsCalls();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetStatistics_ShouldSayWhetherTopPlayerWinsIncludeCoopWins(bool hasCoopWins)
+    {
+        _sessionRepositoryMock.Setup(x => x.AnyAsync(It.IsAny<WonCoopSessionsSpec>(), default)).ReturnsAsync(hasCoopWins);
+
+        var result = await _sut.GetStatistics(null);
+
+        result.TopPlayersIncludeCoopWins.Should().Be(hasCoopWins);
 
         VerifyGetStatisticsCalls();
     }
@@ -416,10 +454,10 @@ public class DashboardServiceTests
 
         result.NextGameNight.Should().BeSameAs(night);
         result.PlannedGameNights.Should().Be(3);
-        var earlierToday = GameNight.Create("Earlier today", string.Empty, TodayStartUtc.AddHours(1), 1, 1);
-        var yesterday = GameNight.Create("Yesterday", string.Empty, TodayStartUtc.AddHours(-1), 1, 1);
-        captured!.IsSatisfiedBy(earlierToday).Should().BeTrue();
-        captured.IsSatisfiedBy(yesterday).Should().BeFalse();
+        var stillPlaying = GameNight.Create("Still playing", string.Empty, UtcNow.AddHours(-2), 1, 1);
+        var longAgo = GameNight.Create("Long ago", string.Empty, UtcNow - GameNight.PlayWindow - TimeSpan.FromMinutes(1), 1, 1);
+        captured!.IsSatisfiedBy(stillPlaying).Should().BeTrue();
+        captured.IsSatisfiedBy(longAgo).Should().BeFalse();
 
         VerifyGetStatisticsCalls(nightPlanned: true);
     }
@@ -492,6 +530,7 @@ public class DashboardServiceTests
         _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGames(4)).ReturnsAsync(new List<(int, string, string?, int)>());
         _gameStatisticsRepositoryMock.Setup(x => x.GetMostPlayedGamesSince(4, MonthStartUtc)).ReturnsAsync(new List<(int, string, string?, int)>());
         _playerRepositoryMock.Setup(x => x.GetTopWinners(3)).ReturnsAsync(new List<(int, string, string?, int, int)>());
+        _sessionRepositoryMock.Setup(x => x.AnyAsync(It.IsAny<WonCoopSessionsSpec>(), default)).ReturnsAsync(false);
         _gameRepositoryMock.Setup(x => x.GetRecentlyAddedGames(3)).ReturnsAsync([]);
 
         _configRepositoryMock

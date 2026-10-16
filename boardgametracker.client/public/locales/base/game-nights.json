@@ -56,7 +56,8 @@
     "invites-sent": "Invites sent: {{sent}} sent",
     "invites-failed": "Failed to send invites",
     "when": "{{when}} · {{time}}",
-    "host": "Host: {{host}}"
+    "host": "Host: {{host}}",
+    "open": "Open night"
   },
   "form": {
     "title": {
@@ -102,10 +103,93 @@
     "host-required": "Host is required"
   },
   "past-night": {
-    "summary": "{{location}} · {{attended}}",
     "attended-count_one": "{{count}} attended",
     "attended-count_other": "{{count}} attended",
-    "attended": "Attended",
-    "nobody": "Nobody confirmed they were coming"
+    "nobody": "Nobody confirmed they were coming",
+    "nothing-logged": "nothing logged yet",
+    "games-played_one": "{{count}} game played",
+    "games-played_other": "{{count}} games played",
+    "winner": "winner {{names}}"
+  },
+  "detail": {
+    "back": "Game nights"
+  },
+  "play": {
+    "start": {
+      "button": "▶ Start a game",
+      "title": "Start a game",
+      "game": "Game",
+      "players": "Who plays?",
+      "save": "Start",
+      "coop-default": "Co-op game: you pick “We won” or “We lost” when you finish it.",
+      "coop-optional": "This game can be played co-op: you can switch it on when you finish it."
+    },
+    "log": {
+      "button": "Log a finished game",
+      "title": "Log a finished game"
+    },
+    "finish": {
+      "button": "Finish",
+      "title": "Finish {{game}}",
+      "subtitle": "Started {{time}} · {{duration}} · {{location}}"
+    },
+    "discard": {
+      "button": "Discard {{game}}",
+      "title": "Discard this game?",
+      "description": "The running game is removed and no session is saved."
+    },
+    "games": {
+      "tonight": "Tonight & planned"
+    },
+    "leave-out-hint": "Tap a player to leave them out",
+    "leave-out": "Leave {{name}} out",
+    "save": "Save session",
+    "now-playing": "Now playing: {{game}}",
+    "running": "Started {{time}} · {{duration}} · {{players}}",
+    "again": "Play again:",
+    "again-game": "Play {{game}} again",
+    "notifications": {
+      "started": "Game started",
+      "start-failed": "Failed to start the game",
+      "discarded": "Running game discarded",
+      "discard-failed": "Failed to discard the running game"
+    }
+  },
+  "summary": {
+    "games-played": "Games played",
+    "play-time": "Play time",
+    "leading": "Leading tonight",
+    "night-winner": "Night winner",
+    "no-winner": "No winner yet",
+    "wins_one": "{{count}} of {{total}} games won",
+    "wins_other": "{{count}} of {{total}} games won"
+  },
+  "played": {
+    "tonight": "Played tonight",
+    "after": "Played",
+    "empty": "Nothing played yet. Tap “Start a game” when a game begins; date, time, location and players are filled in for you.",
+    "empty-after": "Nothing was logged for this night. Use “Log a finished game” to add what was played."
+  },
+  "table": {
+    "title": "At the table",
+    "host": "· host",
+    "edit": "Edit who's here"
+  },
+  "planned": {
+    "title": "Planned",
+    "played": "Played"
+  },
+  "end": {
+    "button": "End night",
+    "title": "End this game night?",
+    "description": "Nothing can be started or logged on this night until it is reopened.",
+    "running-hint": "Finish or discard the running games first",
+    "reopen": "Reopen night",
+    "notifications": {
+      "ended": "Game night ended",
+      "end-failed": "Failed to end the game night",
+      "reopened": "Game night reopened",
+      "reopen-failed": "Failed to reopen the game night"
+    }
   }
 }

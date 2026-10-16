@@ -554,35 +554,6 @@
         }
       }
     },
-    "/api/changedetection/test": {
-      "get": {
-        "tags": [
-          "ChangeDetection"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangeDetectionConnectionTestDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangeDetectionConnectionTestDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangeDetectionConnectionTestDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/changedetection/watch/{watchId}": {
       "get": {
         "tags": [
@@ -1788,6 +1759,173 @@
         }
       }
     },
+    "/api/gamenight/{id}": {
+      "get": {
+        "tags": [
+          "GameNight"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameNightDetailDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameNightDetailDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameNightDetailDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "GameNight"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/gamenight/{id}/end": {
+      "post": {
+        "tags": [
+          "GameNight"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gamenight/{id}/reopen": {
+      "post": {
+        "tags": [
+          "GameNight"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/gamenight/{id}/send-invites": {
       "post": {
         "tags": [
@@ -1824,29 +1962,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/gamenight/{id}": {
-      "delete": {
-        "tags": [
-          "GameNight"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
           }
         }
       }
@@ -2046,6 +2161,103 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/integrations/status": {
+      "get": {
+        "tags": [
+          "Integrations"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationStatusDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationStatusDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationStatusDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/integrations/{integration}/test": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "parameters": [
+          {
+            "name": "integration",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -3925,6 +4137,147 @@
         }
       }
     },
+    "/api/gamenight/{gameNightId}/running-games": {
+      "post": {
+        "tags": [
+          "RunningGame"
+        ],
+        "parameters": [
+          {
+            "name": "gameNightId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartRunningGameCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartRunningGameCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartRunningGameCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunningGameDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunningGameDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunningGameDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gamenight/running-games/{id}/finish": {
+      "post": {
+        "tags": [
+          "RunningGame"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinishRunningGameCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinishRunningGameCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinishRunningGameCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gamenight/running-games/{id}": {
+      "delete": {
+        "tags": [
+          "RunningGame"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/session/{id}": {
       "get": {
         "tags": [
@@ -4720,22 +5073,6 @@
         },
         "additionalProperties": false
       },
-      "ChangeDetectionConnectionTestDto": {
-        "type": "object",
-        "properties": {
-          "ok": {
-            "type": "boolean"
-          },
-          "status": {
-            "$ref": "#/components/schemas/ChangeDetectionStatus"
-          },
-          "version": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ChangeDetectionStatus": {
         "enum": [
           "ok",
@@ -4952,6 +5289,12 @@
             "$ref": "#/components/schemas/GameState"
           },
           "hasScoring": {
+            "type": "boolean"
+          },
+          "hasCoopMode": {
+            "type": "boolean"
+          },
+          "coopByDefault": {
             "type": "boolean"
           },
           "buyingPrice": {
@@ -5225,6 +5568,25 @@
             "format": "int32",
             "nullable": true
           },
+          "gameNightId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "playerSessions": {
             "type": "array",
             "items": {
@@ -5443,6 +5805,9 @@
               "$ref": "#/components/schemas/DashboardTopPlayerDto"
             }
           },
+          "topPlayersIncludeCoopWins": {
+            "type": "boolean"
+          },
           "recentAddedGames": {
             "type": "array",
             "items": {
@@ -5588,6 +5953,61 @@
         },
         "additionalProperties": false
       },
+      "FinishRunningGameCommand": {
+        "type": "object",
+        "properties": {
+          "playerSessions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreatePlayerSessionCommand"
+            }
+          },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "minutes": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "locationId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "expansionIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "FirstGameTogether": {
         "type": "object",
         "properties": {
@@ -5696,6 +6116,12 @@
           "hasScoring": {
             "type": "boolean"
           },
+          "hasCoopMode": {
+            "type": "boolean"
+          },
+          "coopByDefault": {
+            "type": "boolean"
+          },
           "buyingPrice": {
             "type": "number",
             "format": "double",
@@ -5755,6 +6181,27 @@
         },
         "additionalProperties": false
       },
+      "GameNightDetailDto": {
+        "type": "object",
+        "properties": {
+          "gameNight": {
+            "$ref": "#/components/schemas/GameNightDto"
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionDto"
+            }
+          },
+          "runningGames": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RunningGameDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "GameNightDto": {
         "type": "object",
         "properties": {
@@ -5771,6 +6218,11 @@
           "startDate": {
             "type": "string",
             "format": "date-time"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           },
           "hostId": {
             "type": "integer",
@@ -5801,6 +6253,9 @@
             "items": {
               "$ref": "#/components/schemas/GameNightRsvpDto"
             }
+          },
+          "summary": {
+            "$ref": "#/components/schemas/GameNightSummaryDto"
           }
         },
         "additionalProperties": false
@@ -5855,6 +6310,31 @@
           "pending"
         ],
         "type": "string"
+      },
+      "GameNightSummaryDto": {
+        "type": "object",
+        "properties": {
+          "gamesPlayed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalMinutes": {
+            "type": "number",
+            "format": "double"
+          },
+          "mostWins": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "winnerIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "GamePersonDto": {
         "type": "object",
@@ -5986,6 +6466,14 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "coopWinCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coopLossCount": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -6107,6 +6595,42 @@
           "value": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "IntegrationConnectionStatus": {
+        "enum": [
+          "ok",
+          "notConfigured",
+          "unauthorized",
+          "unreachable",
+          "rateLimited"
+        ],
+        "type": "string"
+      },
+      "IntegrationKind": {
+        "enum": [
+          "bgg",
+          "changeDetection"
+        ],
+        "type": "string"
+      },
+      "IntegrationStatusDto": {
+        "type": "object",
+        "properties": {
+          "integration": {
+            "$ref": "#/components/schemas/IntegrationKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/IntegrationConnectionStatus"
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "messageKey": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -6804,6 +7328,14 @@
             "type": "integer",
             "format": "int32"
           },
+          "coopWinCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coopLossCount": {
+            "type": "integer",
+            "format": "int32"
+          },
           "mostPlayedGames": {
             "type": "array",
             "items": {
@@ -6981,6 +7513,13 @@
             "items": {
               "$ref": "#/components/schemas/DashboardWinnerDto"
             }
+          },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -7088,6 +7627,35 @@
         },
         "additionalProperties": false
       },
+      "RunningGameDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gameNightId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "playerIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "ScoreRank": {
         "required": [
           "key"
@@ -7132,6 +7700,18 @@
             "type": "integer",
             "format": "int32"
           },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "start": {
             "type": "string",
             "format": "date-time"
@@ -7145,6 +7725,11 @@
             "format": "double"
           },
           "locationId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "gameNightId": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -7241,6 +7826,26 @@
           "pricedGameCount": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StartRunningGameCommand": {
+        "type": "object",
+        "properties": {
+          "gameId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         },
         "additionalProperties": false
@@ -7493,6 +8098,12 @@
             "$ref": "#/components/schemas/GameState"
           },
           "hasScoring": {
+            "type": "boolean"
+          },
+          "hasCoopMode": {
+            "type": "boolean"
+          },
+          "coopByDefault": {
             "type": "boolean"
           },
           "buyingPrice": {
@@ -7848,6 +8459,25 @@
             "format": "int32",
             "nullable": true
           },
+          "gameNightId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isCoop": {
+            "type": "boolean"
+          },
+          "teamWon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "teamScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "playerSessions": {
             "type": "array",
             "items": {
@@ -8039,6 +8669,9 @@
       "name": "Image"
     },
     {
+      "name": "Integrations"
+    },
+    {
       "name": "Leaderboard"
     },
     {
@@ -8064,6 +8697,9 @@
     },
     {
       "name": "Rag"
+    },
+    {
+      "name": "RunningGame"
     },
     {
       "name": "Session"

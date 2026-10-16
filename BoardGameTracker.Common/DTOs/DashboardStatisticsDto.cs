@@ -26,6 +26,7 @@ public class DashboardStatisticsDto
     public List<MostPlayedGameDto> MostPlayedGames { get; set; } = [];
     public List<MostPlayedGameDto> MostPlayedGamesThisMonth { get; set; } = [];
     public List<DashboardTopPlayerDto> TopPlayers { get; set; } = [];
+    public bool TopPlayersIncludeCoopWins { get; set; }
     public List<RecentGameDto> RecentAddedGames { get; set; } = [];
 }
 
@@ -82,6 +83,8 @@ public class RecentActivityDto
     public int PlayerCount { get; set; }
     public double DurationInMinutes { get; set; }
     public List<DashboardWinnerDto> Winners { get; set; } = [];
+    public bool IsCoop { get; set; }
+    public bool? TeamWon { get; set; }
 }
 
 public class MostPlayedGameDto

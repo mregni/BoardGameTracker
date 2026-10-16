@@ -94,7 +94,11 @@ export const NextGameNightCard = (props: Props) => {
 					)}
 				</div>
 				<div className="col-span-2 flex flex-col items-stretch gap-2 md:col-span-1 md:items-end">
-					<Link to="/game-nights" className={dashboardLinkClasses({ variant: "primary" })}>
+					<Link
+						to="/game-nights/$gameNightId"
+						params={{ gameNightId: gameNight.id }}
+						className={dashboardLinkClasses({ variant: "primary" })}
+					>
 						{t("night.open")}
 					</Link>
 					{morePlanned > 0 && (

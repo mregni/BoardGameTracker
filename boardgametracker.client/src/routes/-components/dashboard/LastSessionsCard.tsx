@@ -3,6 +3,7 @@ import { cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
+import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
 import type { RecentActivity } from "@/models";
 import { useShortDuration } from "@/routes/-hooks/useShortDuration";
@@ -53,15 +54,16 @@ export const LastSessionsCard = (props: Props) => {
 								</span>
 								<span className="text-sm tabular-nums text-white/70">{shortDuration(session.durationInMinutes)}</span>
 								<span className="col-span-2 flex flex-wrap gap-1.5">
-									{session.winners.length === 0 ? (
+									{session.isCoop && <CoopResultPill won={session.teamWon === true} />}
+									{!session.isCoop && session.winners.length === 0 && (
 										<span className={pillVariants({ tone: "neutral" })}>{t("last-sessions.no-winner")}</span>
-									) : (
+									)}
+									{!session.isCoop &&
 										session.winners.map((winner) => (
 											<AvatarChip key={winner.id} title={winner.name} image={winner.image} tone="winner">
 												<Crown className="size-3.5 text-yellow-400" role="img" aria-label={t("common:won")} />
 											</AvatarChip>
-										))
-									)}
+										))}
 								</span>
 							</Link>
 						</li>

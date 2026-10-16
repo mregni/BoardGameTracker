@@ -23,6 +23,7 @@ export interface DashboardStatistics {
 	mostPlayedGames: DashboardMostPlayedGame[];
 	mostPlayedGamesThisMonth: DashboardMostPlayedGame[];
 	topPlayers: DashboardTopPlayer[];
+	topPlayersIncludeCoopWins: boolean;
 	recentAddedGames: RecentGame[];
 }
 
@@ -85,6 +86,8 @@ export interface RecentActivity {
 	playerCount: number;
 	durationInMinutes: number;
 	winners: DashboardWinner[];
+	isCoop: boolean;
+	teamWon: boolean | null;
 }
 
 export interface DashboardTopPlayer {

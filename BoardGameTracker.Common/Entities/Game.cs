@@ -8,6 +8,8 @@ namespace BoardGameTracker.Common.Entities;
 public class Game : BaseGame
 {
     public bool HasScoring { get; private set; }
+    public bool HasCoopMode { get; private set; }
+    public bool CoopByDefault { get; private set; }
     public ICollection<Expansion> Expansions { get; private set; }
     public ICollection<GameAccessory> Accessories { get; private set; }
     public ICollection<GameCategory> Categories { get; private set; }
@@ -29,6 +31,12 @@ public class Game : BaseGame
     public void UpdateHasScoring(bool hasScoring)
     {
         HasScoring = hasScoring;
+    }
+
+    public void UpdateCoopMode(bool hasCoopMode, bool coopByDefault)
+    {
+        HasCoopMode = hasCoopMode;
+        CoopByDefault = hasCoopMode && coopByDefault;
     }
 
     public void AddCategory(GameCategory category)

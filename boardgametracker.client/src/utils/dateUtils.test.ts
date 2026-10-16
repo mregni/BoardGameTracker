@@ -8,6 +8,7 @@ import {
 	safeParseDate,
 	toDisplay,
 	toDisplayDateTime,
+	toDisplayTime,
 	toInputDate,
 	toInputDateTime,
 	toLongDisplay,
@@ -194,6 +195,25 @@ describe("dateUtils", () => {
 
 		it("should return empty string for invalid date", () => {
 			expect(toDisplayDateTime("invalid-date", "DD/MM/YYYY", "HH:mm", "en")).toBe("");
+		});
+	});
+
+	describe("toDisplayTime", () => {
+		it("should return empty string for a missing date", () => {
+			expect(toDisplayTime(null, "HH:mm", "en")).toBe("");
+		});
+
+		it("should format only the time with the user's time format", () => {
+			expect(toDisplayTime(new Date("2024-03-20T14:45:30"), "HH:mm", "en")).toBe("14:45");
+			expect(toDisplayTime("2024-03-20T14:45:30", "hh:mm", "en")).toBe("02:45");
+		});
+
+		it("should fall back to the default time format when the format is invalid", () => {
+			expect(toDisplayTime("2024-03-20T14:45:30", "", "en")).toBe("14:45");
+		});
+
+		it("should return empty string for an invalid date", () => {
+			expect(toDisplayTime("invalid-date", "HH:mm", "en")).toBe("");
 		});
 	});
 
