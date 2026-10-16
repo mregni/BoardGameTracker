@@ -432,7 +432,13 @@
 		"test": {
 			"button": "Probar conexión",
 			"success": "Conectado a changedetection.io {{version}}",
-			"failed": "No se pudo conectar con changedetection.io, comprueba la URL y la clave API"
+			"failed": "No se pudo conectar con changedetection.io, comprueba la URL y la clave API",
+			"reason": {
+				"unauthorized": "changedetection.io rechazó la clave API",
+				"unreachable": "No se pudo contactar con changedetection.io en esta URL",
+				"misconfigured": "La URL base o la clave API no son válidas",
+				"notConfigured": "Guarda primero una URL base y una clave API"
+			}
 		}
 	}
 }

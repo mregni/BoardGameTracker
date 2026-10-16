@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ApiError } from "@/models";
-import { classifyImportError } from "./importErrors";
+import { classifyImportError, needsIntegrationSettings } from "./importErrors";
 
 const apiError = (status: number | null, kind: ApiError["kind"] = "client"): ApiError => ({
 	kind,
@@ -30,5 +30,14 @@ describe("classifyImportError", () => {
 	it("falls back to unknown", () => {
 		expect(classifyImportError(apiError(500, "server"))).toBe("unknown");
 		expect(classifyImportError(new Error("boom"))).toBe("unknown");
+	});
+});
+
+describe("needsIntegrationSettings", () => {
+	it("points to the integration settings only for a rejected request", () => {
+		expect(needsIntegrationSettings("unauthorized")).toBe(true);
+		expect(needsIntegrationSettings("unknown")).toBe(false);
+		expect(needsIntegrationSettings("timeout")).toBe(false);
+		expect(needsIntegrationSettings(null)).toBe(false);
 	});
 });

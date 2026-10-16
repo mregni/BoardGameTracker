@@ -1,3 +1,5 @@
+import type { ChangeDetectionStatus } from "@/models/Games/GamePrice";
+
 export interface ChangeDetectionWatchInfo {
 	url: string;
 	title: string | null;
@@ -6,5 +8,6 @@ export interface ChangeDetectionWatchInfo {
 
 export interface ChangeDetectionConnectionTest {
 	ok: boolean;
+	status: ChangeDetectionStatus;
 	version: string | null;
 }

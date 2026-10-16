@@ -38,6 +38,21 @@ describe("useToasts", () => {
 		expect(toastError).toHaveBeenCalledWith("nl:settings:save.failed");
 	});
 
+	it("adds a translated action to an error toast when one is given", () => {
+		language.current = "en";
+		const onClick = vi.fn();
+		const { result } = renderHook(() => useToasts());
+
+		result.current.errorToast("games:import.failed-unauthorized", {
+			label: "common:open-integration-settings",
+			onClick,
+		});
+
+		expect(toastError).toHaveBeenCalledWith("en:games:import.failed-unauthorized", {
+			action: { label: "en:common:open-integration-settings", onClick },
+		});
+	});
+
 	it("translates info and warning toasts at call time as well", () => {
 		language.current = "en";
 		const { result } = renderHook(() => useToasts());

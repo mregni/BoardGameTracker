@@ -36,6 +36,18 @@ describe("LivePrice", () => {
 		renderWithTheme(<LivePrice />);
 		expect(screen.getByText("-")).toBeInTheDocument();
 	});
+
+	it("names the reason the price is unavailable", () => {
+		renderWithTheme(<LivePrice livePrice={price({ available: false, status: "parseError", price: null })} />);
+
+		expect(screen.getByRole("img", { name: "game:price.unavailable.parseError" })).toBeInTheDocument();
+	});
+
+	it("marks a watch that has not been checked yet as pending", () => {
+		renderWithTheme(<LivePrice livePrice={price({ available: false, status: "pending", price: null })} />);
+
+		expect(screen.getByTitle("games:tracked-pending")).toHaveTextContent("-");
+	});
 });
 
 describe("withStateChange", () => {

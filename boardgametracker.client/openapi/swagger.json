@@ -4726,6 +4726,9 @@
           "ok": {
             "type": "boolean"
           },
+          "status": {
+            "$ref": "#/components/schemas/ChangeDetectionStatus"
+          },
           "version": {
             "type": "string",
             "nullable": true

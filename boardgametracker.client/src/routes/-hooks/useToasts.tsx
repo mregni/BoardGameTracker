@@ -1,6 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+export interface ToastAction {
+	label: string;
+	onClick: () => void;
+}
+
 export const useToasts = () => {
 	const { i18n } = useTranslation();
 
@@ -8,7 +13,11 @@ export const useToasts = () => {
 		toast.success(i18n.t(message));
 	};
 
-	const errorToast = (message: string) => {
+	const errorToast = (message: string, action?: ToastAction) => {
+		if (action) {
+			toast.error(i18n.t(message), { action: { label: i18n.t(action.label), onClick: action.onClick } });
+			return;
+		}
 		toast.error(i18n.t(message));
 	};
 

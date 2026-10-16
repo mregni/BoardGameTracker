@@ -29,5 +29,5 @@ public interface IChangeDetectionClient
         string title,
         CancellationToken cancellationToken = default);
 
-    Task<(bool Ok, string? Version)> TestConnectionAsync(CancellationToken cancellationToken = default);
+    Task<(ChangeDetectionStatus Status, string? Version)> TestConnectionAsync(CancellationToken cancellationToken = default);
 }

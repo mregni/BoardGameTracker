@@ -4098,6 +4098,7 @@ export interface components {
         };
         ChangeDetectionConnectionTestDto: {
             ok: boolean;
+            status: components["schemas"]["ChangeDetectionStatus"];
             version: string | null;
         };
         /** @enum {string} */

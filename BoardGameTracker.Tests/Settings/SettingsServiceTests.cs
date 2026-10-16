@@ -471,6 +471,8 @@ public class SettingsServiceTests : IDisposable
     [InlineData("not-a-url")]
     [InlineData("ftp://changes.example.com")]
     [InlineData("changes.example.com")]
+    [InlineData("https://admin:secret@changes.example.com")]
+    [InlineData("http://admin@localhost:5000")]
     public async Task UpdateSettingsAsync_ShouldRejectInvalidChangeDetectionBaseUrl_BeforeWritingAnything(string baseUrl)
     {
         var model = new UIResourceDto { ChangeDetectionBaseUrl = baseUrl };
