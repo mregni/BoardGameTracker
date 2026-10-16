@@ -87,6 +87,30 @@ public class GameNightController : ControllerBase
         return Ok(gameNight.ToDto());
     }
 
+    [HttpPut]
+    [Route("{id:int}/suggestions/{gameId:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType<GameNightDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AddSuggestedGame(int id, int gameId)
+    {
+        var gameNight = await _gameNightService.AddSuggestedGame(new AddSuggestedGameCommand { GameNightId = id, GameId = gameId });
+        return Ok(gameNight.ToDto());
+    }
+
+    [HttpDelete]
+    [Route("{id:int}/suggestions/{gameId:int}")]
+    [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveSuggestedGame(int id, int gameId)
+    {
+        await _gameNightService.RemoveSuggestedGame(new RemoveSuggestedGameCommand { GameNightId = id, GameId = gameId });
+        return NoContent();
+    }
+
     [HttpPost]
     [Route("{id:int}/send-invites")]
     [Authorize(Roles = Constants.AuthRoles.UserOrAdmin)]

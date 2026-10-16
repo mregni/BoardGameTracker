@@ -1,19 +1,25 @@
-export interface CompareResult {
-	directWins: CompareRow<number>;
-	mostWonGame: CompareRow<MostWonGame | null>;
-	lastWonGame: LastWonGame | null;
+export type CompareOutcome = "playerOne" | "playerTwo" | "both" | "other" | "sameTeam";
 
-	totalDuration: CompareRow<number>;
+export type CompareSide = "playerOne" | "playerTwo";
+
+export interface CompareResult {
+	winCount: CompareRow<number>;
 	winPercentage: CompareRow<number>;
 	sessionCounts: CompareRow<number>;
-	winCount: CompareRow<number>;
+	totalDuration: CompareRow<number>;
+	directWins: CompareRow<number>;
+	wonByOthers: number;
+	sameTeam: CompareTeamRecord;
 	totalSessionsTogether: number;
 	minutesPlayed: number;
 	preferredGame: PreferredGame | null;
-
-	longestSessionTogether: number | null;
+	longestSessionTogether: LongestSession | null;
 	firstGameTogether: FirstGameTogether | null;
 	closestGame: ClosestGame | null;
+	streak: CompareStreak | null;
+	games: CompareGame[];
+	recentSessions: CompareSession[];
+	bestGames: CompareRow<number[]>;
 }
 
 export interface CompareRow<T> {
@@ -21,19 +27,14 @@ export interface CompareRow<T> {
 	playerTwo: T;
 }
 
-export interface MostWonGame {
-	gameId: number | null;
-	count: number;
-}
-
-export interface LastWonGame {
-	playerId: number | null;
-	gameId: number | null;
-}
-
 export interface PreferredGame {
 	gameId: number | null;
 	sessionCount: number;
+}
+
+export interface LongestSession {
+	gameId: number;
+	minutes: number;
 }
 
 export interface ClosestGame {
@@ -45,4 +46,48 @@ export interface ClosestGame {
 export interface FirstGameTogether {
 	gameId: number | null;
 	startDate: Date | null;
+}
+
+export interface CompareStreak {
+	side: CompareOutcome;
+	count: number;
+}
+
+export interface CompareGame {
+	gameId: number;
+	sessionCount: number;
+	playerOneWins: number;
+	playerTwoWins: number;
+	otherWins: number;
+	sameTeamCount: number;
+	sameTeamWins: number;
+	playerOneAverageScore: number | null;
+	playerTwoAverageScore: number | null;
+	lastPlayed: Date;
+	lastOutcome: CompareOutcome;
+	lastTeamWon: boolean | null;
+}
+
+export interface CompareSession {
+	sessionId: number;
+	gameId: number;
+	start: Date;
+	minutes: number;
+	playerOneScore: number | null;
+	playerTwoScore: number | null;
+	outcome: CompareOutcome;
+	otherWinnerId: number | null;
+	teamWon: boolean | null;
+}
+
+export interface CompareTeamRecord {
+	count: number;
+	won: number;
+	lost: number;
+}
+
+export interface ComparePair {
+	playerOneId: number;
+	playerTwoId: number;
+	sessionCount: number;
 }

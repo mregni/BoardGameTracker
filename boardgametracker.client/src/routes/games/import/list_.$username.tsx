@@ -170,7 +170,7 @@ function RouteComponent() {
 			},
 			{
 				accessorKey: "2",
-				cell: ({ row }) => <div className={cx(row.original.inCollection && "text-gray-500")}>{row.original.title}</div>,
+				cell: ({ row }) => <div className={cx(row.original.inCollection && "text-gray-400")}>{row.original.title}</div>,
 				header: t("name"),
 			},
 			{

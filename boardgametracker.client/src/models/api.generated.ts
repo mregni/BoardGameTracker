@@ -575,43 +575,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/changedetection/test": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ChangeDetectionConnectionTestDto"];
-                        "application/json": components["schemas"]["ChangeDetectionConnectionTestDto"];
-                        "text/json": components["schemas"]["ChangeDetectionConnectionTestDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/changedetection/watch/{watchId}": {
         parameters: {
             query?: never;
@@ -680,6 +643,61 @@ export interface paths {
                         "application/json": components["schemas"]["CompareResultDto"];
                         "text/json": components["schemas"]["CompareResultDto"];
                     };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/compare/default-pair": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ComparePairDto"];
+                        "application/json": components["schemas"]["ComparePairDto"];
+                        "text/json": components["schemas"]["ComparePairDto"];
+                    };
+                };
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
             };
         };
@@ -1393,7 +1411,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    months?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1441,7 +1461,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    months?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1743,6 +1765,110 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/gamenight/{id}/suggestions/{gameId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                    gameId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GameNightDto"];
+                        "application/json": components["schemas"]["GameNightDto"];
+                        "text/json": components["schemas"]["GameNightDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                    gameId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/gamenight/{id}/send-invites": {
         parameters: {
             query?: never;
@@ -1909,6 +2035,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/gamenight/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    period?: components["schemas"]["GameNightStatisticsPeriod"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GameNightStatisticsDto"];
+                        "application/json": components["schemas"]["GameNightStatisticsDto"];
+                        "text/json": components["schemas"]["GameNightStatisticsDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/image": {
         parameters: {
             query?: never;
@@ -1954,7 +2130,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/leaderboard": {
+    "/api/settings/integrations/status": {
         parameters: {
             query?: never;
             header?: never;
@@ -1976,9 +2152,113 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
+                        "text/plain": components["schemas"]["IntegrationStatusDto"][];
+                        "application/json": components["schemas"]["IntegrationStatusDto"][];
+                        "text/json": components["schemas"]["IntegrationStatusDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/integrations/{integration}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    integration: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["IntegrationStatusDto"];
+                        "application/json": components["schemas"]["IntegrationStatusDto"];
+                        "text/json": components["schemas"]["IntegrationStatusDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/leaderboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    from?: string;
+                    to?: string;
+                    gameId?: number;
+                    minSessions?: number;
+                    rankBy?: components["schemas"]["LeaderboardRankBy"];
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
                         "text/plain": components["schemas"]["LeaderboardDto"];
                         "application/json": components["schemas"]["LeaderboardDto"];
                         "text/json": components["schemas"]["LeaderboardDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -4347,11 +4627,6 @@ export interface components {
             source: string;
             isReadOnly: boolean;
         };
-        ChangeDetectionConnectionTestDto: {
-            ok: boolean;
-            status: components["schemas"]["ChangeDetectionStatus"];
-            version: string | null;
-        };
         /** @enum {string} */
         ChangeDetectionStatus: "ok" | "notConfigured" | "misconfigured" | "unauthorized" | "watchNotFound" | "unreachable" | "parseError" | "pending";
         ChangeDetectionWatchInfo: {
@@ -4372,23 +4647,92 @@ export interface components {
             /** Format: double */
             scoringDifference: number;
         };
+        CompareGame: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            sessionCount: number;
+            /** Format: int32 */
+            playerOneWins: number;
+            /** Format: int32 */
+            playerTwoWins: number;
+            /** Format: int32 */
+            otherWins: number;
+            /** Format: int32 */
+            sameTeamCount: number;
+            /** Format: int32 */
+            sameTeamWins: number;
+            /** Format: double */
+            playerOneAverageScore: number | null;
+            /** Format: double */
+            playerTwoAverageScore: number | null;
+            /** Format: date-time */
+            lastPlayed: string;
+            lastOutcome: components["schemas"]["CompareOutcome"];
+            lastTeamWon: boolean | null;
+        };
+        /** @enum {string} */
+        CompareOutcome: "playerOne" | "playerTwo" | "both" | "other" | "sameTeam";
+        ComparePairDto: {
+            /** Format: int32 */
+            playerOneId: number;
+            /** Format: int32 */
+            playerTwoId: number;
+            /** Format: int32 */
+            sessionCount: number;
+        };
         CompareResultDto: {
             winCount: components["schemas"]["Int32CompareRow"];
             winPercentage: components["schemas"]["DoubleCompareRow"];
             sessionCounts: components["schemas"]["Int32CompareRow"];
             totalDuration: components["schemas"]["DoubleCompareRow"];
             directWins: components["schemas"]["Int32CompareRow"];
-            mostWonGame: components["schemas"]["MostWonGameCompareRow"];
+            /** Format: int32 */
+            wonByOthers: number;
+            sameTeam: components["schemas"]["CompareTeamRecord"];
             /** Format: int32 */
             totalSessionsTogether: number;
             /** Format: int32 */
             minutesPlayed: number;
             preferredGame: components["schemas"]["PreferredGame"];
-            lastWonGame: components["schemas"]["LastWonGame"];
-            /** Format: int32 */
-            longestSessionTogether: number | null;
+            longestSessionTogether: components["schemas"]["LongestSession"];
             firstGameTogether: components["schemas"]["FirstGameTogether"];
             closestGame: components["schemas"]["ClosestGame"];
+            streak: components["schemas"]["CompareStreak"];
+            games: components["schemas"]["CompareGame"][];
+            recentSessions: components["schemas"]["CompareSession"][];
+            bestGames: components["schemas"]["Int32ListCompareRow"];
+        };
+        CompareSession: {
+            /** Format: int32 */
+            sessionId: number;
+            /** Format: int32 */
+            gameId: number;
+            /** Format: date-time */
+            start: string;
+            /** Format: int32 */
+            minutes: number;
+            /** Format: double */
+            playerOneScore: number | null;
+            /** Format: double */
+            playerTwoScore: number | null;
+            outcome: components["schemas"]["CompareOutcome"];
+            /** Format: int32 */
+            otherWinnerId: number | null;
+            teamWon: boolean | null;
+        };
+        CompareStreak: {
+            side: components["schemas"]["CompareOutcome"];
+            /** Format: int32 */
+            count: number;
+        };
+        CompareTeamRecord: {
+            /** Format: int32 */
+            count: number;
+            /** Format: int32 */
+            won: number;
+            /** Format: int32 */
+            lost: number;
         };
         CreateExpansionCommand: {
             title: string;
@@ -4509,9 +4853,52 @@ export interface components {
         CreateWatchCommand: {
             url: string;
         };
+        DashboardGameDto: {
+            /** Format: int32 */
+            id: number;
+            title: string;
+            image: string | null;
+        };
+        DashboardGameNightDto: {
+            /** Format: int32 */
+            id: number;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
+            locationName: string;
+            /** Format: int32 */
+            hostId: number;
+            hostName: string;
+            /** Format: int32 */
+            acceptedCount: number;
+            /** Format: int32 */
+            pendingCount: number;
+            /** Format: int32 */
+            declinedCount: number;
+            suggestedGames: components["schemas"]["DashboardGameDto"][];
+        };
+        DashboardLinkedPlayerDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            /** Format: int32 */
+            sessionsThisMonth: number;
+            /** Format: int32 */
+            winsThisMonth: number;
+        };
+        DashboardShelfOfShameDto: {
+            /** Format: int32 */
+            count: number;
+            /** Format: int32 */
+            neverPlayedCount: number;
+            /** Format: double */
+            totalValue: number | null;
+        };
         DashboardStatisticsDto: {
             /** Format: int32 */
             totalGames: number;
+            /** Format: int32 */
+            ownedGames: number;
             /** Format: int32 */
             activePlayers: number;
             /** Format: int32 */
@@ -4520,20 +4907,28 @@ export interface components {
             totalPlayedTime: number;
             /** Format: double */
             totalCollectionValue: number | null;
-            /** Format: double */
-            avgGamePrice: number | null;
             /** Format: int32 */
             pricedGameCount: number;
             /** Format: int32 */
             expansionsOwned: number;
             /** Format: double */
             avgSessionTime: number;
+            /** Format: int32 */
+            sessionsThisMonth: number;
+            /** Format: int32 */
+            activePlayersThisMonth: number;
+            linkedPlayer: components["schemas"]["DashboardLinkedPlayerDto"];
+            nextGameNight: components["schemas"]["DashboardGameNightDto"];
+            /** Format: int32 */
+            plannedGameNights: number;
+            shelfOfShame: components["schemas"]["DashboardShelfOfShameDto"];
             recentActivities: components["schemas"]["RecentActivityDto"][];
             collection: components["schemas"]["GameStateChart"][];
             mostPlayedGames: components["schemas"]["MostPlayedGameDto"][];
+            mostPlayedGamesThisMonth: components["schemas"]["MostPlayedGameDto"][];
             topPlayers: components["schemas"]["DashboardTopPlayerDto"][];
+            topPlayersIncludeCoopWins: boolean;
             recentAddedGames: components["schemas"]["RecentGameDto"][];
-            sessionsByDayOfWeek: components["schemas"]["PlayByDay"][];
         };
         DashboardTopPlayerDto: {
             /** Format: int32 */
@@ -4544,6 +4939,12 @@ export interface components {
             playCount: number;
             /** Format: int32 */
             winCount: number;
+        };
+        DashboardWinnerDto: {
+            /** Format: int32 */
+            id: number;
+            name: string;
+            image: string | null;
         };
         /** @enum {string} */
         DayOfWeek: "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";
@@ -4682,6 +5083,34 @@ export interface components {
             gameTitle: string;
             manuals: components["schemas"]["ManualDto"][];
         };
+        GameNightRecordDto: {
+            /** Format: int32 */
+            gameNightId: number;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
+            /** Format: int32 */
+            gamesPlayed: number;
+            /** Format: double */
+            value: number;
+            /** Format: int32 */
+            gameId: number | null;
+            /** Format: date-time */
+            at: string | null;
+        };
+        GameNightRecordsDto: {
+            longestNight: components["schemas"]["GameNightRecordDto"];
+            mostGames: components["schemas"]["GameNightRecordDto"];
+            biggestTable: components["schemas"]["GameNightRecordDto"];
+            latestFinish: components["schemas"]["GameNightRecordDto"];
+        };
+        GameNightReferenceDto: {
+            /** Format: int32 */
+            gameNightId: number;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
+        };
         GameNightRsvpDto: {
             /** Format: int32 */
             id: number;
@@ -4694,6 +5123,41 @@ export interface components {
         };
         /** @enum {string} */
         GameNightRsvpState: "accepted" | "declined" | "pending";
+        GameNightStatisticsDto: {
+            period: components["schemas"]["GameNightStatisticsPeriod"];
+            /** Format: int32 */
+            totalNights: number;
+            /** Format: int32 */
+            nightsWithSessions: number;
+            /** Format: int32 */
+            nights: number;
+            /** Format: int32 */
+            gamesPlayed: number;
+            /** Format: double */
+            totalMinutes: number;
+            /** Format: double */
+            averageTable: number;
+            /** Format: double */
+            averageDaysBetweenNights: number | null;
+            /** Format: int32 */
+            tiedNights: number;
+            winners: components["schemas"]["NightWinnerStatisticDto"][];
+            history: components["schemas"]["NightHistoryDto"][];
+            games: components["schemas"]["NightGameStatisticDto"][];
+            plannedNeverPlayed: components["schemas"]["PlannedGameStatisticDto"][];
+            streaks: components["schemas"]["GameNightStreaksDto"];
+            recentNights: components["schemas"]["GameNightReferenceDto"][];
+            attendance: components["schemas"]["NightAttendanceDto"][];
+            records: components["schemas"]["GameNightRecordsDto"];
+        };
+        /** @enum {string} */
+        GameNightStatisticsPeriod: "allTime" | "thisYear" | "last12Months";
+        GameNightStreaksDto: {
+            currentWinner: components["schemas"]["PlayerStreakDto"];
+            longestWinner: components["schemas"]["PlayerStreakDto"];
+            currentAttendance: components["schemas"]["PlayerStreakDto"];
+            longestGame: components["schemas"]["GameStreakDto"];
+        };
         GameNightSummaryDto: {
             /** Format: int32 */
             gamesPlayed: number;
@@ -4764,6 +5228,17 @@ export interface components {
             playerScoringChart?: components["schemas"]["PlayerScoringPoint"][] | null;
             scoreRankChart: components["schemas"]["ScoreRank"][];
         };
+        GameStreakDto: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            length: number;
+            /** Format: date-time */
+            from: string;
+            /** Format: date-time */
+            to: string;
+            isCurrent: boolean;
+        };
         ImportBggGamesCommand: {
             games: components["schemas"]["ImportGame"][];
         };
@@ -4790,17 +5265,26 @@ export interface components {
             /** Format: int32 */
             value: number;
         };
+        Int32ListCompareRow: {
+            playerOne: number[] | null;
+            playerTwo: number[] | null;
+        };
+        /** @enum {string} */
+        IntegrationConnectionStatus: "ok" | "notConfigured" | "unauthorized" | "unreachable" | "rateLimited";
+        /** @enum {string} */
+        IntegrationKind: "bgg" | "changeDetection";
+        IntegrationStatusDto: {
+            integration: components["schemas"]["IntegrationKind"];
+            status: components["schemas"]["IntegrationConnectionStatus"];
+            /** Format: date-time */
+            checkedAt: string;
+            messageKey: string;
+        };
         Language: {
             /** Format: int32 */
             id?: number;
             key: string;
             translationKey: string;
-        };
-        LastWonGame: {
-            /** Format: int32 */
-            playerId: number | null;
-            /** Format: int32 */
-            gameId: number | null;
         };
         LeaderboardDto: {
             mostPlays: components["schemas"]["LeaderboardEntryDto"];
@@ -4808,14 +5292,22 @@ export interface components {
             bestWinRate: components["schemas"]["LeaderboardEntryDto"];
             mostTimePlayed: components["schemas"]["LeaderboardEntryDto"];
             /** Format: int32 */
-            minimumPlaysForWinRate: number;
+            minimumSessions: number;
             /** Format: int32 */
             minimumPlayersForPodium: number;
+            rankBy: components["schemas"]["LeaderboardRankBy"];
+            showPodium: boolean;
+            /** Format: int32 */
+            rankedCount: number;
+            /** Format: int32 */
+            winCount: number;
+            /** Format: int32 */
+            coopWinCount: number;
             players: components["schemas"]["LeaderboardEntryDto"][];
         };
         LeaderboardEntryDto: {
             /** Format: int32 */
-            rank: number;
+            rank: number | null;
             /** Format: int32 */
             playerId: number;
             name: string;
@@ -4830,7 +5322,12 @@ export interface components {
             winPercentage: number;
             /** Format: double */
             minutesPlayed: number;
+            isRanked: boolean;
+            /** Format: int32 */
+            sessionsToRank: number;
         };
+        /** @enum {string} */
+        LeaderboardRankBy: "wins" | "winRate" | "sessions";
         LoanDto: {
             /** Format: int32 */
             id: number;
@@ -4876,6 +5373,12 @@ export interface components {
         };
         LogoutRequest: {
             refreshToken: string | null;
+        };
+        LongestSession: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            minutes: number;
         };
         ManualDto: {
             /** Format: int32 */
@@ -4925,15 +5428,54 @@ export interface components {
             /** Format: int32 */
             totalWins: number;
         };
-        MostWonGame: {
+        NightAttendanceDto: {
             /** Format: int32 */
-            gameId: number | null;
+            playerId: number;
             /** Format: int32 */
-            count: number;
+            nightsAttended: number;
+            /** Format: int32 */
+            nightsHosted: number;
+            recentNights: boolean[];
         };
-        MostWonGameCompareRow: {
-            playerOne: components["schemas"]["MostWonGame"];
-            playerTwo: components["schemas"]["MostWonGame"];
+        NightGameStatisticDto: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            timesPlayed: number;
+            /** Format: int32 */
+            nights: number;
+            /** Format: int32 */
+            timesPlanned: number;
+        };
+        NightHistoryDto: {
+            /** Format: int32 */
+            gameNightId: number;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
+            /** Format: int32 */
+            locationId: number;
+            /** Format: int32 */
+            gamesPlayed: number;
+            /** Format: int32 */
+            mostWins: number;
+            winnerIds: number[];
+            /** Format: int32 */
+            winnerStreak: number;
+            coopOnly: boolean;
+            sharedThroughCoop: boolean;
+        };
+        NightWinnerStatisticDto: {
+            /** Format: int32 */
+            playerId: number;
+            /** Format: int32 */
+            rank: number;
+            /** Format: int32 */
+            nightsWon: number;
+            /** Format: int32 */
+            nightsAttended: number;
+            /** Format: int32 */
+            gamesWon: number;
         };
         OidcDiscoveryResultDto: {
             issuer: string;
@@ -4985,6 +5527,12 @@ export interface components {
         };
         /** @enum {string} */
         PersonType: "designer" | "artist" | "publisher";
+        PlannedGameStatisticDto: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            timesPlanned: number;
+        };
         PlayByDay: {
             dayOfWeek: components["schemas"]["DayOfWeek"];
             /** Format: int32 */
@@ -5049,6 +5597,16 @@ export interface components {
             coopLossCount: number;
             mostPlayedGames: components["schemas"]["MostPlayedGame"][];
         };
+        PlayerStreakDto: {
+            /** Format: int32 */
+            playerId: number;
+            /** Format: int32 */
+            length: number;
+            /** Format: date-time */
+            from: string;
+            /** Format: date-time */
+            to: string;
+        };
         PreferredGame: {
             /** Format: int32 */
             gameId: number | null;
@@ -5109,9 +5667,7 @@ export interface components {
             playerCount: number;
             /** Format: double */
             durationInMinutes: number;
-            /** Format: int32 */
-            winnerId: number | null;
-            winnerName: string | null;
+            winners: components["schemas"]["DashboardWinnerDto"][];
             isCoop: boolean;
             teamWon: boolean | null;
         };
@@ -5213,6 +5769,27 @@ export interface components {
             price: number | null;
             /** Format: date-time */
             lastSessionDate: string | null;
+            /** Format: int32 */
+            playCount: number;
+            /** Format: int32 */
+            minPlayers: number | null;
+            /** Format: int32 */
+            maxPlayers: number | null;
+            /** Format: int32 */
+            minPlayTime: number | null;
+            /** Format: int32 */
+            maxPlayTime: number | null;
+            /** Format: int32 */
+            plannedGameNightId: number | null;
+            /** Format: date-time */
+            plannedFor: string | null;
+        };
+        ShameGameNightDto: {
+            /** Format: int32 */
+            id: number;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
         };
         ShameStatisticsDto: {
             /** Format: int32 */
@@ -5223,6 +5800,19 @@ export interface components {
             averageValue: number | null;
             /** Format: int32 */
             pricedGameCount: number;
+            /** Format: int32 */
+            months: number;
+            /** Format: int32 */
+            ownedCount: number;
+            /** Format: double */
+            collectionValue: number;
+            /** Format: int32 */
+            neverPlayedCount: number;
+            /** Format: double */
+            neverPlayedValue: number;
+            /** Format: int32 */
+            plannedCount: number;
+            nextGameNight: components["schemas"]["ShameGameNightDto"];
         };
         StartRunningGameCommand: {
             /** Format: int32 */

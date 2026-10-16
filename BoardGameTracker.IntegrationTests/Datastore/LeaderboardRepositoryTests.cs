@@ -1,5 +1,9 @@
+﻿using System.Net;
+using System.Net.Http.Json;
+using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;
+using BoardGameTracker.Common.Models;
 using BoardGameTracker.Core.Datastore;
 using BoardGameTracker.Core.Players.Interfaces;
 using BoardGameTracker.IntegrationTests.Infrastructure;
@@ -69,7 +73,7 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
         await using var scope = _fixture.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
 
-        var rows = await repository.GetLeaderboardRows();
+        var rows = await repository.GetLeaderboardRows(new LeaderboardFilter(), TestContext.Current.CancellationToken);
 
         rows.Should().HaveCount(4);
         var alice = rows.Single(x => x.PlayerId == _aliceId);
@@ -102,11 +106,119 @@ public class LeaderboardRepositoryTests : IAsyncLifetime
         }
 
         await using var readScope = _fixture.CreateScope();
-        var rows = await readScope.ServiceProvider.GetRequiredService<IPlayerRepository>().GetLeaderboardRows();
+        var rows = await readScope.ServiceProvider.GetRequiredService<IPlayerRepository>().GetLeaderboardRows(new LeaderboardFilter(), TestContext.Current.CancellationToken);
 
         rows.Single(x => x.PlayerId == _aliceId).PodiumCount.Should().Be(3);
         rows.Single(x => x.PlayerId == _bobId).PodiumCount.Should().Be(3);
         rows.Single(x => x.PlayerId == _caraId).PodiumCount.Should().Be(3);
         rows.Single(x => x.PlayerId == _daveId).PodiumCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetLeaderboardRows_ShouldCountCoopWins_AndNeverGivePodiumsForCoopSessions()
+    {
+        await using (var scope = _fixture.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+            var coop = new Session(_scoringId, Monday.AddDays(5), Monday.AddDays(5).AddMinutes(40), string.Empty);
+            coop.AddPlayerSession(_aliceId, 40, false, false);
+            coop.AddPlayerSession(_bobId, 30, false, false);
+            coop.AddPlayerSession(_caraId, 20, false, false);
+            coop.AddPlayerSession(_daveId, 10, false, false);
+            coop.MarkAsCoop(true, 100);
+            db.Add(coop);
+            await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        await using var readScope = _fixture.CreateScope();
+        var rows = await readScope.ServiceProvider.GetRequiredService<IPlayerRepository>().GetLeaderboardRows(new LeaderboardFilter(), TestContext.Current.CancellationToken);
+
+        rows.Single(x => x.PlayerId == _aliceId).Should().BeEquivalentTo(new { WinCount = 3, CoopWinCount = 1, PodiumCount = 1 });
+        rows.Single(x => x.PlayerId == _daveId).Should().BeEquivalentTo(new { WinCount = 1, CoopWinCount = 1, PodiumCount = 0 });
+        rows.Sum(x => x.CoopWinCount).Should().Be(4);
+    }
+
+    [Fact]
+    public async Task GetLeaderboardRows_ShouldOnlyCountTheChosenGame()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+
+        var rows = await repository.GetLeaderboardRows(new LeaderboardFilter(GameId: _scoringId), TestContext.Current.CancellationToken);
+
+        rows.Should().HaveCount(4);
+        rows.Single(x => x.PlayerId == _aliceId).Should().BeEquivalentTo(new { PlayCount = 2, WinCount = 1, MinutesPlayed = 150.0, PodiumCount = 1 });
+        rows.Single(x => x.PlayerId == _caraId).Should().BeEquivalentTo(new { PlayCount = 1, WinCount = 0, MinutesPlayed = 60.0, PodiumCount = 1 });
+    }
+
+    [Fact]
+    public async Task GetLeaderboardRows_ShouldOnlyCountSessionsInsideThePeriod_IncludingBothEndDays()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+        var day = DateOnly.FromDateTime(Monday.AddDays(1));
+
+        var rows = await repository.GetLeaderboardRows(new LeaderboardFilter(From: day, To: day), TestContext.Current.CancellationToken);
+
+        rows.Should().HaveCount(2);
+        rows.Single(x => x.PlayerId == _aliceId).Should().BeEquivalentTo(new { PlayCount = 1, WinCount = 0, MinutesPlayed = 90.0, PodiumCount = 0 });
+        rows.Single(x => x.PlayerId == _bobId).Should().BeEquivalentTo(new { PlayCount = 1, WinCount = 1, MinutesPlayed = 90.0, PodiumCount = 0 });
+    }
+
+    [Fact]
+    public async Task GetLeaderboardRows_ShouldCombineThePeriodAndTheGame()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+        var filter = new LeaderboardFilter(From: DateOnly.FromDateTime(Monday.AddDays(1)), GameId: _scoringId);
+
+        var rows = await repository.GetLeaderboardRows(filter, TestContext.Current.CancellationToken);
+
+        rows.Select(x => x.PlayerId).Should().BeEquivalentTo([_aliceId, _bobId]);
+    }
+
+    [Fact]
+    public async Task GetLeaderboardRows_ShouldReturnNothing_WhenNoSessionMatches()
+    {
+        await using var scope = _fixture.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+
+        var rows = await repository.GetLeaderboardRows(new LeaderboardFilter(To: DateOnly.FromDateTime(Monday.AddDays(-1))), TestContext.Current.CancellationToken);
+
+        rows.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task LeaderboardEndpoint_ShouldApplyTheFilters_AndRankAfterTheMinimum()
+    {
+        using var reader = await _fixture.CreateClientAsAsync("reader");
+
+        var leaderboard = await reader.GetFromJsonAsync<LeaderboardDto>(
+            $"/api/leaderboard?from=2026-03-01&to=2026-03-31&gameId={_scoringId}&minSessions=2&rankBy=winRate",
+            IntegrationFixture.Json,
+            TestContext.Current.CancellationToken);
+
+        leaderboard!.Players.Select(x => (x.Rank, x.PlayerId, x.SessionsToRank)).Should().Equal(
+            (1, _aliceId, 0),
+            (1, _bobId, 0),
+            (null, _caraId, 1),
+            (null, _daveId, 1));
+        leaderboard.RankBy.Should().Be(LeaderboardRankBy.WinRate);
+        leaderboard.MinimumSessions.Should().Be(2);
+        leaderboard.RankedCount.Should().Be(2);
+        leaderboard.ShowPodium.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("from=2026-05-01&to=2026-04-01")]
+    [InlineData("minSessions=0")]
+    [InlineData("gameId=0")]
+    public async Task LeaderboardEndpoint_ShouldRejectInvalidFilters(string query)
+    {
+        using var reader = await _fixture.CreateClientAsAsync("reader");
+
+        var response = await reader.GetAsync($"/api/leaderboard?{query}", TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

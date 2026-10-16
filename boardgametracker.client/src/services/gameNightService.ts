@@ -3,6 +3,8 @@ import type {
 	FinishRunningGame,
 	GameNight,
 	GameNightDetail,
+	GameNightStatistics,
+	GameNightStatisticsPeriod,
 	RunningGame,
 	SendInvitesResult,
 	Session,
@@ -34,6 +36,16 @@ export const updateGameNightCall = (gameNight: UpdateGameNight): Promise<GameNig
 
 export const deleteGameNightCall = (id: number): Promise<void> => {
 	return axiosInstance.delete(`${domain}/${id}`);
+};
+
+export const addSuggestedGameCall = (gameNightId: number, gameId: number): Promise<GameNight> => {
+	return axiosInstance
+		.put<GameNight>(`${domain}/${gameNightId}/suggestions/${gameId}`)
+		.then((response) => response.data);
+};
+
+export const removeSuggestedGameCall = (gameNightId: number, gameId: number): Promise<void> => {
+	return axiosInstance.delete(`${domain}/${gameNightId}/suggestions/${gameId}`).then(() => undefined);
 };
 
 export const sendInvitesCall = (id: number): Promise<SendInvitesResult> => {
@@ -82,4 +94,10 @@ export const reopenGameNightCall = (id: number): Promise<void> => {
 
 export const discardRunningGameCall = (id: number): Promise<void> => {
 	return axiosInstance.delete(`${domain}/running-games/${id}`);
+};
+
+export const getGameNightStatisticsCall = (period: GameNightStatisticsPeriod): Promise<GameNightStatistics> => {
+	return axiosInstance
+		.get<GameNightStatistics>(`${domain}/statistics`, { params: { period } })
+		.then((response) => response.data);
 };

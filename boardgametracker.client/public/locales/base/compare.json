@@ -1,47 +1,113 @@
 {
-  "title": "Compare players",
-  "select-player": "Select player to compare",
-  "total-games-played": "Total games together",
-  "minutes-played": "Minutes played",
-  "most-played-game": "Most played game",
-  "wins": {
-    "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
-    "loser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+  "title": "Player vs player",
+  "select-player": "Select a player",
+  "vs": "VS",
+  "swap": "Swap players",
+  "updating": "Updating the comparison",
+  "change-left": "Change left player, now {{player}}",
+  "change-right": "Change right player, now {{player}}",
+  "player-summary_one": "{{count}} game · {{rate}} won",
+  "player-summary_other": "{{count}} games · {{rate}} won",
+  "games_one": "{{count}} game",
+  "games_other": "{{count}} games",
+  "record": {
+    "label": "Record over all games together",
+    "wins_zero": "no wins yet for {{player}}",
+    "wins_one": "win for {{player}}",
+    "wins_other": "wins for {{player}}",
+    "together_one": "{{count}} game together",
+    "together_other": "{{count}} games together",
+    "leads": "{{player}} leads",
+    "won": "{{player}} won",
+    "someone-else": "someone else won",
+    "summary_one": "{{count}} game together: {{playerOne}} won {{one}}, someone else won {{others}}, {{playerTwo}} won {{two}}",
+    "summary_other": "{{count}} games together: {{playerOne}} won {{one}}, someone else won {{others}}, {{playerTwo}} won {{two}}",
+    "same-team": "same co-op team",
+    "same-team-value": "{{total}} (won {{won}}, lost {{lost}})",
+    "summary-team_one": "same co-op team {{total}} (won {{won}}, lost {{lost}})",
+    "summary-team_other": "same co-op team {{total}} (won {{won}}, lost {{lost}})"
   },
-  "best-game": {
-    "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
+  "form": {
+    "title_one": "Last game together",
+    "title_other": "Last {{count}} games together",
+    "order": "(oldest → newest)",
+    "label": "Last games together, oldest first: {{list}}",
+    "legend": "{{one}} or {{two}}: who won · –: someone else",
+    "legend-both": "+: both won",
+    "both": "both won",
+    "other": "someone else",
+    "streak_one": "{{player}} {{count}} in a row",
+    "streak_other": "{{player}} {{count}} in a row",
+    "legend-same-team": "=: same co-op team, doesn't break or extend a streak",
+    "same-team-won": "same team, won",
+    "same-team-lost": "same team, lost"
   },
-  "total-wins": {
-    "label": "{{player}} won in total {{count}} game sessions."
+  "tiles": {
+    "games-together": "Games together",
+    "since": "since {{date}}",
+    "time-together": "Time together",
+    "average": "avg {{duration}} a game",
+    "most-played": "Most played",
+    "closest": "Closest game",
+    "points_one": "{{value}} pt",
+    "points_other": "{{value}} pts",
+    "closest-winner": "{{game}} · {{player}} won",
+    "closest-other": "{{game}} · someone else won"
   },
-  "win-percentage": {
-    "label": "{{player}} has a win percentage of {{percentage}}%"
+  "per-game": {
+    "title": "Per game",
+    "sort": "Sort",
+    "most-played": "Most played",
+    "biggest-lead": "Biggest lead",
+    "game": "Game",
+    "wins": "Wins",
+    "last": "Last",
+    "average": "avg {{one}} – {{two}}",
+    "no-scores": "no scores",
+    "others_one": "+{{count}} other",
+    "others_other": "+{{count}} others",
+    "row_one": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, someone else {{count}}",
+    "row_other": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, someone else {{count}}",
+    "show-all_one": "Show all {{count}} game",
+    "show-all_other": "Show all {{count}} games",
+    "show-less": "Show less",
+    "coop": "co-op",
+    "same-team_one": "Same team · won {{won}} of {{count}}",
+    "same-team_other": "Same team · won {{won}} of {{count}}",
+    "same-team-extra_one": "+{{count}} same team",
+    "same-team-extra_other": "+{{count}} same team"
   },
-  "total-duration": {
-    "label": "{{player}} played a total of {{duration}} minutes."
+  "best-worst": {
+    "against": "{{player}} against {{opponent}}",
+    "best": "Best",
+    "worst": "Worst",
+    "none": "Nothing yet",
+    "note_one": "Only games played together at least {{count}} time.",
+    "note_other": "Only games played together at least {{count}} times."
   },
-  "total-sessions": {
-    "label": "{{player}} played a total of {{count}} game sessions."
+  "recent": {
+    "title": "Recent games together",
+    "both-won": "Both won",
+    "no-winner": "No winner",
+    "same-team": "same team"
   },
-  "head-to-head": {
-    "title": "Head to head",
-    "direct-wins_one": "{{player}} won {{count}} time against {{opponent}}",
-    "direct-wins_other": "{{player}} won {{count}} times against {{opponent}}",
-    "most-won-game_one": "{{player}} won most from {{opponent}} in {{game}} ({{count}} time)",
-    "most-won-game_other": "{{player}} won most from {{opponent}} in {{game}} ({{count}} times)",
-    "last-session": "Last session was won by {{player}} in {{game}}",
-    "most-played-together_one": "Most played together: {{game}} ({{count}} session)",
-    "most-played-together_other": "Most played together: {{game}} ({{count}} sessions)",
-    "closest-game_one": "{{player}} won by just {{count}} point in {{game}}",
-    "closest-game_other": "{{player}} won by just {{count}} points in {{game}}",
-    "first-game-together": "First game together: {{game}} on {{date}}"
+  "overall": {
+    "title": "Overall, not only together",
+    "wins": "Wins",
+    "win-rate": "Win rate",
+    "games": "Games",
+    "play-time": "Play time",
+    "higher": "higher",
+    "stat": "Stat"
   },
-  "stats": {
-    "total-wins": "Total wins",
-    "win-percentage": "Win percentage",
-    "sessions": "Sessions",
-    "total-duration": "Total gameplay time",
-    "player-stats": "{{player}}'s stats"
+  "highlights": {
+    "title": "Highlights",
+    "first-game": "first game together · {{date}}",
+    "longest-game": "longest game · {{duration}}"
+  },
+  "no-games-together": {
+    "title": "No games together yet",
+    "description": "{{playerOne}} and {{playerTwo}} haven't played a game together yet."
   },
   "empty": {
     "insufficient-players": {

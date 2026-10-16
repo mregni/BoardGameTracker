@@ -160,3 +160,21 @@ describe("BgtButton focus colour", () => {
 		expect(screen.getByRole("button", { name: "Save" }).className).not.toContain("--focus-color");
 	});
 });
+
+describe("BgtButton colours", () => {
+	it("uses the primary text token for the text variant", () => {
+		render(<BgtButton variant="text">Edit who's here</BgtButton>);
+
+		const button = screen.getByRole("button", { name: "Edit who's here" });
+		expect(button).toHaveClass("text-primary-text", "hover:text-indigo-300");
+		expect(button).not.toHaveClass("text-primary");
+	});
+
+	it("keeps the strong red fill for the error variant", () => {
+		render(<BgtButton variant="error">Delete</BgtButton>);
+
+		const button = screen.getByRole("button", { name: "Delete" });
+		expect(button).toHaveClass("bg-error-strong", "text-white");
+		expect(button).not.toHaveClass("bg-error");
+	});
+});

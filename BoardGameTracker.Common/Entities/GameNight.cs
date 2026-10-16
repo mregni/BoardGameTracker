@@ -97,6 +97,30 @@ public class GameNight: HasId
         }
     }
 
+    public bool AddSuggestedGame(Game game)
+    {
+        Guard.Against.Null(game);
+        if (SuggestedGames.Any(x => x.Id == game.Id))
+        {
+            return false;
+        }
+
+        SuggestedGames.Add(game);
+        return true;
+    }
+
+    public bool RemoveSuggestedGame(int gameId)
+    {
+        var game = SuggestedGames.FirstOrDefault(x => x.Id == gameId);
+        if (game == null)
+        {
+            return false;
+        }
+
+        SuggestedGames.Remove(game);
+        return true;
+    }
+
     public void End(DateTime endedAt)
     {
         EndedAt = Guard.Against.Default(endedAt);
@@ -114,32 +138,18 @@ public class GameNight: HasId
 
     public int GetMostWins()
     {
-        var wins = CountWinsPerPlayer();
-        return wins.Count == 0 ? 0 : wins.Values.Max();
+        return DecideWinners().MostWins;
     }
 
     public List<int> GetNightWinnerIds()
     {
-        var wins = CountWinsPerPlayer();
-        if (wins.Count == 0)
-        {
-            return [];
-        }
-
-        var mostWins = wins.Values.Max();
-        return wins
-            .Where(x => x.Value == mostWins)
-            .Select(x => x.Key)
-            .Order()
-            .ToList();
+        return DecideWinners().WinnerIds;
     }
 
-    private Dictionary<int, int> CountWinsPerPlayer()
+    private NightWinners DecideWinners()
     {
-        return Sessions
+        return NightWinnerRule.Decide(Sessions
             .SelectMany(x => x.PlayerSessions)
-            .Where(x => x.Won)
-            .GroupBy(x => x.PlayerId)
-            .ToDictionary(x => x.Key, x => x.Count());
+            .Select(x => new NightResult(x.PlayerId, x.Won)));
     }
 }

@@ -215,6 +215,41 @@ describe("BgtDatePicker", () => {
 		});
 	});
 
+	describe("Controlled", () => {
+		it("should report a picked date through onValueChange", async () => {
+			const user = userEvent.setup();
+			const onValueChange = vi.fn();
+			renderWithProviders(<BgtDatePicker label="From" value="2024-06-15" onValueChange={onValueChange} />);
+
+			await user.click(screen.getByLabelText("common:open-calendar"));
+			await waitFor(() => {
+				expect(screen.getByRole("grid")).toBeInTheDocument();
+			});
+			const cells = screen.getAllByRole("button").filter((el) => el.textContent?.trim() === "20");
+			await user.click(cells[0]);
+
+			expect(onValueChange).toHaveBeenCalledWith("2024-06-20");
+		});
+
+		it("should clear through onValueChange and show the given errors", async () => {
+			const onValueChange = vi.fn();
+			renderWithProviders(
+				<BgtDatePicker label="To" value="2024-06-15" onValueChange={onValueChange} clearable errors={["Too early"]} />,
+			);
+
+			await userEvent.click(screen.getByRole("button", { name: "common:clear-date" }));
+
+			expect(onValueChange).toHaveBeenCalledWith("");
+			expect(screen.getByText("Too early")).toBeInTheDocument();
+		});
+
+		it("should show no date when the value is empty", () => {
+			renderWithProviders(<BgtDatePicker label="To" value={null} onValueChange={vi.fn()} clearable />);
+
+			expect(screen.queryByRole("button", { name: "common:clear-date" })).not.toBeInTheDocument();
+		});
+	});
+
 	describe("Accessibility", () => {
 		it("should expose the input group with the label as an accessible name", () => {
 			renderWithProviders(<BgtDatePicker {...defaultProps} />);

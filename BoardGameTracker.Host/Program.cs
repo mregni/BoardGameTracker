@@ -184,6 +184,14 @@ builder.Services.AddRateLimiter(options =>
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
+    options.AddPolicy("integrations", context => RateLimitPartition.GetFixedWindowLimiter(
+        ClientAddressKey.From(context.Connection.RemoteIpAddress),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 20,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
     options.AddPolicy("gamenight-link", context => RateLimitPartition.GetFixedWindowLimiter(
         ClientAddressKey.From(context.Connection.RemoteIpAddress),
         _ => new FixedWindowRateLimiterOptions
@@ -230,6 +238,8 @@ builder.Services.AddHttpClient(BoardGameTracker.Core.ChangeDetection.ChangeDetec
         client.MaxResponseContentBufferSize = 1024 * 1024;
     })
     .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+builder.Services.AddHttpClient(BoardGameTracker.Core.Integrations.BggConnectionTester.HttpClientName)
+    .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddHttpClient(OidcService.HttpClientName)
     .ConfigureHttpClient(client => client.MaxResponseContentBufferSize = 1024 * 1024)
     .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
@@ -471,6 +481,7 @@ if (!app.Environment.IsDevelopment())
 
 RunDbMigrations(app.Services);
 await SeedConfig(app.Services);
+await ProtectIntegrationKeys(app.Services);
 if (authEnabled)
 {
     await SeedAuthData(app.Services, environmentProvider.AdminPassword);
@@ -602,6 +613,13 @@ static async Task SeedConfig(IServiceProvider serviceProvider)
     using var scope = serviceProvider.CreateScope();
     var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
     await configRepository.SeedConfigAsync(ConfigDefaults.All);
+}
+
+static async Task ProtectIntegrationKeys(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var migrator = scope.ServiceProvider.GetRequiredService<IIntegrationKeyMigrator>();
+    await migrator.ProtectLegacyKeysAsync();
 }
 
 static async Task SeedAuthData(IServiceProvider serviceProvider, string? adminPassword)

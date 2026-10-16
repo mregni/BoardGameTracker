@@ -153,6 +153,27 @@ describe("BgtSimpleSelect", () => {
 			renderWithTheme(<BgtSimpleSelect {...defaultProps} />);
 			expect(screen.getByTestId("caret-down-icon")).toBeInTheDocument();
 		});
+
+		it("should render a custom trigger with its own classes and name, and still open the list", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(
+				<BgtSimpleSelect
+					{...defaultProps}
+					value="2"
+					trigger={<span>Custom face</span>}
+					triggerClassName="custom-trigger"
+					aria-label="Change left player"
+				/>,
+			);
+
+			const trigger = screen.getByRole("combobox", { name: "Change left player" });
+			expect(trigger).toHaveClass("custom-trigger");
+			expect(trigger).toHaveTextContent("Custom face");
+			expect(screen.queryByTestId("caret-down-icon")).not.toBeInTheDocument();
+
+			await user.click(trigger);
+			expect(await screen.findByRole("option", { name: "Option 3" })).toBeInTheDocument();
+		});
 	});
 
 	describe("Selection Display", () => {

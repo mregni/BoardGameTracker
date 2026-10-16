@@ -20,6 +20,7 @@ interface Props {
 	addLabel?: string;
 	onClick?: () => void;
 	action?: React.ReactNode;
+	caption?: React.ReactNode;
 }
 
 const formatContent = (content: string | number, language: string | undefined): string =>
@@ -38,6 +39,7 @@ export const BgtTextStatistic = (props: Props) => {
 		addLabel,
 		onClick,
 		action,
+		caption,
 	} = props;
 	const { i18n } = useTranslation();
 
@@ -59,7 +61,7 @@ export const BgtTextStatistic = (props: Props) => {
 				isInteractive && "border-primary/25 transition-colors hover:border-primary/60 cursor-pointer",
 			)}
 		>
-			<div className="flex min-h-6 items-center gap-2 text-primary/70 mb-2">
+			<div className="flex min-h-6 items-center gap-2 text-stat-title mb-2">
 				{iconWithClasses}
 				<span className="line-clamp-2 break-words" title={title}>
 					{title}
@@ -75,6 +77,14 @@ export const BgtTextStatistic = (props: Props) => {
 				{suffix === "%" && "%"}
 				{suffix && suffix !== "%" && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
 			</BgtText>
+			{caption && (
+				<span
+					className="mt-1 block truncate text-xs text-white/50"
+					title={typeof caption === "string" ? caption : undefined}
+				>
+					{caption}
+				</span>
+			)}
 		</BgtCard>
 	);
 

@@ -69,6 +69,9 @@
     "name-required": "De naam van de locatie is verplicht",
     "name-already-exists": "Er bestaat al een locatie met deze naam"
   },
+  "compare": {
+    "same-player": "Kies twee verschillende spelers om te vergelijken"
+  },
   "player": {
     "hosts-game-nights": "Deze speler is gastheer van een of meer spelavonden",
     "name-required": "De naam van de speler is verplicht",
@@ -97,6 +100,8 @@
     "invites-cooldown": "De uitnodigingen voor deze spelavond zijn net verstuurd, probeer het over enkele minuten opnieuw",
     "host-rsvp-locked": "De gastheer is altijd aanwezig op de eigen spelavond",
     "rsvp-closed": "Deze spelavond heeft al plaatsgevonden",
+    "already-over": "Deze spelavond heeft al plaatsgevonden",
+    "suggested-game-not-owned": "Je kan enkel spellen in je bezit voorstellen voor een spelavond",
     "games-running": "Beëindig of gooi de lopende spellen weg voor je de avond afsluit",
     "ended": "Deze spelavond is afgesloten, heropen ze om spellen toe te voegen"
   },

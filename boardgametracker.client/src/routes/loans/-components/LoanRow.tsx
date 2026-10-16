@@ -31,7 +31,7 @@ export const LoanRow = ({ loan, game, player, dateFormat, onReturn, onEdit, onDe
 		<Link
 			to="/games/$gameId"
 			params={{ gameId: game.id }}
-			className="truncate font-semibold text-white hover:text-primary"
+			className="truncate font-semibold text-white hover:text-primary-text"
 		>
 			{gameTitle}
 		</Link>
@@ -43,7 +43,7 @@ export const LoanRow = ({ loan, game, player, dateFormat, onReturn, onEdit, onDe
 		<Link
 			to="/players/$playerId"
 			params={{ playerId: player.id }}
-			className="truncate text-sm text-white/80 hover:text-primary"
+			className="truncate text-sm text-white/80 hover:text-primary-text"
 		>
 			{playerName}
 		</Link>

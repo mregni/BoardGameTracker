@@ -283,6 +283,54 @@ public class GameNightControllerTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task AddSuggestedGame_ShouldReturnOkWithTheGameNight()
+    {
+        var gameNight = GameNight.Create("Game Night", "", new DateTime(2026, 10, 23, 19, 0, 0, DateTimeKind.Utc), 1, 1);
+        gameNight.AddSuggestedGame(new Game("Root") { Id = 9 });
+
+        _gameNightServiceMock
+            .Setup(x => x.AddSuggestedGame(It.Is<AddSuggestedGameCommand>(c => c.GameNightId == 4 && c.GameId == 9)))
+            .ReturnsAsync(gameNight);
+
+        var result = await _controller.AddSuggestedGame(4, 9);
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var dto = okResult.Value.Should().BeOfType<GameNightDto>().Subject;
+        dto.Title.Should().Be("Game Night");
+        dto.SuggestedGames.Should().ContainSingle(x => x.Id == 9);
+
+        _gameNightServiceMock.Verify(x => x.AddSuggestedGame(It.Is<AddSuggestedGameCommand>(c => c.GameNightId == 4 && c.GameId == 9)), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task RemoveSuggestedGame_ShouldReturnNoContent()
+    {
+        _gameNightServiceMock
+            .Setup(x => x.RemoveSuggestedGame(It.Is<RemoveSuggestedGameCommand>(c => c.GameNightId == 4 && c.GameId == 9)))
+            .Returns(Task.CompletedTask);
+
+        var result = await _controller.RemoveSuggestedGame(4, 9);
+
+        result.Should().BeOfType<NoContentResult>();
+
+        _gameNightServiceMock.Verify(x => x.RemoveSuggestedGame(It.Is<RemoveSuggestedGameCommand>(c => c.GameNightId == 4 && c.GameId == 9)), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(nameof(GameNightController.AddSuggestedGame))]
+    [InlineData(nameof(GameNightController.RemoveSuggestedGame))]
+    public void SuggestionEndpoints_ShouldOnlyAllowUsersAndAdmins(string action)
+    {
+        var method = typeof(GameNightController).GetMethod(action)!;
+
+        method.GetCustomAttributes<AuthorizeAttribute>().Should().ContainSingle(x => x.Roles == Constants.AuthRoles.UserOrAdmin);
+        method.GetCustomAttributes<AllowAnonymousAttribute>().Should().BeEmpty();
+        method.GetCustomAttributes<RouteAttribute>().Should().ContainSingle(x => x.Template == "{id:int}/suggestions/{gameId:int}");
+    }
+
     public static TheoryData<UpdateRsvpCommand> UpdateRsvpCommands => new()
     {
         new UpdateRsvpCommand { Id = 5, State = GameNightRsvpState.Accepted },

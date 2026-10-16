@@ -428,17 +428,35 @@
 			"clear-hint": "Guarda los ajustes para aplicar la eliminación."
 		},
 		"help-title": "Cómo funciona",
-		"help-description": "Añade un id de watch de changedetection.io a un juego para ver su precio y stock actuales. La clave API se encuentra en Ajustes de tu instancia de changedetection.io.",
-		"test": {
-			"button": "Probar conexión",
-			"success": "Conectado a changedetection.io {{version}}",
-			"failed": "No se pudo conectar con changedetection.io, comprueba la URL y la clave API",
-			"reason": {
-				"unauthorized": "changedetection.io rechazó la clave API",
-				"unreachable": "No se pudo contactar con changedetection.io en esta URL",
-				"misconfigured": "La URL base o la clave API no son válidas",
-				"notConfigured": "Guarda primero una URL base y una clave API"
-			}
+		"help-description": "Añade un id de watch de changedetection.io a un juego para ver su precio y stock actuales. La clave API se encuentra en Ajustes de tu instancia de changedetection.io."
+	},
+	"integrations": {
+		"name": {
+			"bgg": "BoardGameGeek",
+			"changeDetection": "changedetection.io"
+		},
+		"status": {
+			"ok": "Conectado",
+			"unauthorized": "Rechazada",
+			"unreachable": "Inaccesible",
+			"rateLimited": "Límite de solicitudes",
+			"notConfigured": "No configurado"
+		},
+		"checked-at": "comprobado a las {{time}}",
+		"checking": "Comprobando…",
+		"test": "Probar conexión",
+		"testing": "Probando…",
+		"test-failed": "No se pudo ejecutar la prueba de conexión",
+		"save-failed": "Ajustes guardados, pero {{name}} no está conectado",
+		"reason": {
+			"ok": "La conexión funciona",
+			"not-configured": "Todavía no hay ninguna clave API guardada",
+			"unauthorized": "La clave API fue rechazada",
+			"unreachable": "No se pudo acceder al servicio",
+			"timeout": "El servicio no respondió en 10 segundos",
+			"rate-limited": "Demasiadas solicitudes, inténtalo de nuevo en unos minutos",
+			"misconfigured": "La URL base o la clave API no son válidas",
+			"unexpected-response": "El servicio envió una respuesta inesperada"
 		}
 	}
 }

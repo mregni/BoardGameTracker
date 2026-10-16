@@ -1,6 +1,7 @@
 import {
 	isValid as dateFnsIsValid,
 	differenceInDays,
+	differenceInMonths,
 	format,
 	formatDistanceToNow,
 	formatDuration,
@@ -112,6 +113,11 @@ export const toLongDisplay = (date: Date | string | undefined | null, uiLanguage
 	return format(dateObj, "PPPP", { locale: getDateFnsLocale(uiLanguage) });
 };
 
+export const toShortDisplay = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	const dateObj = toValidDate(date);
+	return dateObj ? format(dateObj, "d MMM", { locale: getDateFnsLocale(uiLanguage) }) : "";
+};
+
 export const toDisplayDateTime = (
 	date: Date | string | undefined,
 	dateFormat: string,
@@ -133,6 +139,26 @@ export const toDisplayDateTime = (
 	const combinedFormat = `${dateFnsDateFormat} ${timeFormat}`;
 
 	return format(dateObj, combinedFormat, { locale });
+};
+
+export const toDisplayTime = (
+	date: Date | string | undefined | null,
+	timeFormat: string,
+	uiLanguage: string,
+): string => {
+	if (!date) {
+		return "";
+	}
+
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+
+	if (!dateFnsIsValid(dateObj)) {
+		return "";
+	}
+
+	return format(dateObj, normalizeDateFnsFormat(timeFormat, DEFAULT_TIME_FORMAT), {
+		locale: getDateFnsLocale(uiLanguage),
+	});
 };
 
 export const toRelative = (
@@ -229,4 +255,28 @@ export const getDaysSincePurchase = (date: Date | null): number => {
 	}
 
 	return differenceInDays(new Date(), date);
+};
+
+const toValidDate = (date: Date | string | undefined | null): Date | null => {
+	if (!date) {
+		return null;
+	}
+
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+	return dateFnsIsValid(dateObj) ? dateObj : null;
+};
+
+export const toMonthYear = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	const dateObj = toValidDate(date);
+	return dateObj ? format(dateObj, "LLL yyyy", { locale: getDateFnsLocale(uiLanguage) }) : "";
+};
+
+export const toShortDayDate = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	const dateObj = toValidDate(date);
+	return dateObj ? format(dateObj, "EEE d LLL", { locale: getDateFnsLocale(uiLanguage) }) : "";
+};
+
+export const monthsSince = (date: Date | string | undefined | null, now: Date = new Date()): number | null => {
+	const dateObj = toValidDate(date);
+	return dateObj ? Math.max(0, differenceInMonths(now, dateObj)) : null;
 };

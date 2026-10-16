@@ -99,18 +99,7 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
 
     public async Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopPlayers(int count, CancellationToken cancellationToken = default)
     {
-        var result = await _dbContext.PlayerSessions
-            .AsNoTracking()
-            .Include(x => x.Player)
-            .GroupBy(x => x.PlayerId)
-            .Select(g => new
-            {
-                Id = g.Key,
-                Name = g.First().Player.Name,
-                Image = g.First().Player.Image,
-                PlayCount = g.Count(),
-                WinCount = g.Count(x => x.Won)
-            })
+        var result = await PlayerTotals()
             .OrderByDescending(x => x.PlayCount)
             .ThenBy(x => x.Id)
             .Take(count)
@@ -119,39 +108,123 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
         return result.Select(x => (x.Id, x.Name, x.Image, x.PlayCount, x.WinCount)).ToList();
     }
 
-    public async Task<List<LeaderboardRow>> GetLeaderboardRows(CancellationToken cancellationToken = default)
+    public async Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopWinners(int count, CancellationToken cancellationToken = default)
     {
-        var totals = await _dbContext.PlayerSessions
+        var result = await PlayerTotals()
+            .OrderByDescending(x => x.WinCount)
+            .ThenByDescending(x => x.PlayCount)
+            .ThenBy(x => x.Id)
+            .Take(count)
+            .ToListAsync(cancellationToken);
+
+        return result.Select(x => (x.Id, x.Name, x.Image, x.PlayCount, x.WinCount)).ToList();
+    }
+
+    public Task<int> CountActivePlayersSince(DateTime since, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.PlayerSessions
+            .AsNoTracking()
+            .Where(x => x.Session.Start >= since)
+            .Select(x => x.PlayerId)
+            .Distinct()
+            .CountAsync(cancellationToken);
+    }
+
+    public async Task<(int PlayCount, int WinCount)> GetPlayCountsSince(int playerId, DateTime since, CancellationToken cancellationToken = default)
+    {
+        var counts = await _dbContext.PlayerSessions
+            .AsNoTracking()
+            .Where(x => x.PlayerId == playerId && x.Session.Start >= since)
+            .GroupBy(x => x.PlayerId)
+            .Select(g => new { PlayCount = g.Count(), WinCount = g.Count(x => x.Won) })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return counts == null ? (0, 0) : (counts.PlayCount, counts.WinCount);
+    }
+
+    private IQueryable<PlayerTotal> PlayerTotals()
+    {
+        return _dbContext.PlayerSessions
             .AsNoTracking()
             .GroupBy(x => x.PlayerId)
-            .Select(g => new
+            .Select(g => new PlayerTotal
             {
                 Id = g.Key,
                 Name = g.First().Player.Name,
                 Image = g.First().Player.Image,
                 PlayCount = g.Count(),
+                WinCount = g.Count(x => x.Won)
+            });
+    }
+
+    private sealed class PlayerTotal
+    {
+        public int Id { get; init; }
+        public string Name { get; init; } = string.Empty;
+        public string? Image { get; init; }
+        public int PlayCount { get; init; }
+        public int WinCount { get; init; }
+    }
+
+    public async Task<List<LeaderboardRow>> GetLeaderboardRows(LeaderboardFilter filter, CancellationToken cancellationToken = default)
+    {
+        var plays = FilteredPlays(filter);
+
+        var totals = await plays
+            .GroupBy(x => new { x.PlayerId, x.Player.Name, x.Player.Image })
+            .Select(g => new
+            {
+                g.Key.PlayerId,
+                g.Key.Name,
+                g.Key.Image,
+                PlayCount = g.Count(),
                 WinCount = g.Count(x => x.Won),
                 MinutesPlayed = g.Sum(x => (x.Session.End - x.Session.Start).TotalMinutes),
+                CoopWinCount = g.Count(x => x.Won && x.Session.IsCoop),
             })
             .ToListAsync(cancellationToken);
 
-        var scored = await _dbContext.PlayerSessions
-            .AsNoTracking()
-            .Where(x => x.Score != null && x.Session.Game.HasScoring)
+        var scored = await plays
+            .Where(x => x.Score != null && !x.Session.IsCoop && x.Session.Game.HasScoring)
+            .Where(x => x.Session.PlayerSessions.Count(other => other.Score != null) >= LeaderboardService.MinimumPlayersForPodium)
             .Select(x => new ScoredPlay(x.SessionId, x.PlayerId, x.Won, x.Score!.Value))
             .ToListAsync(cancellationToken);
 
         var podiums = scored
             .GroupBy(x => x.SessionId)
             .Select(session => session.ToList())
-            .Where(session => session.Count >= LeaderboardService.MinimumPlayersForPodium)
             .SelectMany(PodiumPlayers)
             .GroupBy(playerId => playerId)
             .ToDictionary(g => g.Key, g => g.Count());
 
         return totals
-            .Select(x => new LeaderboardRow(x.Id, x.Name, x.Image, x.PlayCount, x.WinCount, podiums.GetValueOrDefault(x.Id), x.MinutesPlayed))
+            .Select(x => new LeaderboardRow(x.PlayerId, x.Name, x.Image, x.PlayCount, x.WinCount, podiums.GetValueOrDefault(x.PlayerId), x.MinutesPlayed, x.CoopWinCount))
             .ToList();
+    }
+
+    private IQueryable<PlayerSession> FilteredPlays(LeaderboardFilter filter)
+    {
+        var plays = _dbContext.PlayerSessions.AsNoTracking();
+
+        if (filter.From.HasValue)
+        {
+            var from = filter.From.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            plays = plays.Where(x => x.Session.Start >= from);
+        }
+
+        if (filter.To.HasValue)
+        {
+            var until = filter.To.Value.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            plays = plays.Where(x => x.Session.Start < until);
+        }
+
+        if (filter.GameId.HasValue)
+        {
+            var gameId = filter.GameId.Value;
+            plays = plays.Where(x => x.Session.GameId == gameId);
+        }
+
+        return plays;
     }
 
     private static IEnumerable<int> PodiumPlayers(List<ScoredPlay> session)

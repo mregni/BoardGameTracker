@@ -6,8 +6,8 @@ const buttonVariants = cva("font-bold rounded-sm inline-flex flex-row gap-1 just
 		variant: {
 			primary: "bg-primary/60 hover:bg-primary/50 text-white",
 			cancel: "hover:bg-cancel/10 text-cancel border border-cancel/60",
-			error: "bg-error hover:bg-error/80 text-white [--focus-color:var(--color-bad)]",
-			text: "text-primary hover:text-primary/70",
+			error: "bg-error-strong hover:bg-error-strong/80 text-white [--focus-color:var(--color-bad)]",
+			text: "text-primary-text hover:text-indigo-300",
 		},
 		size: {
 			"1": "py-2 px-2 text-xs",
