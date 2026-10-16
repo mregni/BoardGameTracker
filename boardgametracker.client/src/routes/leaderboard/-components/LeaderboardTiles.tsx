@@ -68,7 +68,7 @@ export const LeaderboardTiles = ({ leaderboard }: Props) => {
 					title={tile.title}
 					content={tile.entry ? tile.value(tile.entry) : EMPTY_NUMBER}
 					link={tile.entry ? `/players/${tile.entry.playerId}` : undefined}
-					footer={
+					caption={
 						tile.entry ? (
 							<Holder entry={tile.entry} suffix={tile.suffix} />
 						) : (

@@ -87,10 +87,15 @@ describe("BgtTextStatistic", () => {
 		});
 	});
 
-	describe("Footer", () => {
-		it("should render the footer below the value", () => {
-			renderWithTheme(<BgtTextStatistic title="Most wins" content={54} footer={<span>Mikhaël</span>} />);
+	describe("Caption", () => {
+		it("should render the caption below the value", () => {
+			renderWithTheme(<BgtTextStatistic title="Most wins" content={54} caption={<span>Mikhaël</span>} />);
 			expect(screen.getByText("Mikhaël")).toBeInTheDocument();
+		});
+
+		it("should expose a text caption as a tooltip", () => {
+			renderWithTheme(<BgtTextStatistic title="Best win rate" content="41%" caption="Kathleen · min. 5" />);
+			expect(screen.getByText("Kathleen · min. 5")).toHaveAttribute("title", "Kathleen · min. 5");
 		});
 	});
 
