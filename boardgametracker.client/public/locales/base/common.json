@@ -140,5 +140,9 @@
     "sessions_other": "sessions",
     "wins": "wins",
     "no-sessions": "No sessions yet"
+  },
+  "coop": {
+    "won": "Co-op · won",
+    "lost": "Co-op · lost"
   }
 }

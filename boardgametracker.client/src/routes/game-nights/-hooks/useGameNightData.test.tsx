@@ -14,6 +14,7 @@ const { updateRsvpCall, updateCall, invalidateGameNights, successToast, errorToa
 
 vi.mock("@/services/gameNightService", () => ({
 	getGameNightsCall: vi.fn(() => new Promise(() => {})),
+	getGameNightCall: vi.fn(),
 	createGameNightCall: vi.fn(),
 	updateGameNightCall: updateCall,
 	deleteGameNightCall: vi.fn(),

@@ -79,7 +79,9 @@
   },
   "session": {
     "invalid-expansion": "Una de las expansiones seleccionadas no pertenece a este juego",
-    "start-in-future": "La fecha de inicio no puede estar en el futuro"
+    "start-in-future": "La fecha de inicio no puede estar en el futuro",
+    "coop-not-supported": "Este juego no se puede jugar en cooperativo",
+    "coop-result-required": "Una sesión cooperativa necesita un resultado del equipo"
   },
   "email": {
     "not-configured": "El correo electrónico no está configurado en este servidor",
@@ -97,7 +99,9 @@
   "game-night": {
     "invites-cooldown": "Las invitaciones de esta noche de juegos se enviaron hace poco, inténtalo de nuevo en unos minutos",
     "host-rsvp-locked": "El anfitrión siempre asiste a su propia noche de juegos",
-    "rsvp-closed": "Esta noche de juegos ya ha tenido lugar"
+    "rsvp-closed": "Esta noche de juegos ya ha tenido lugar",
+    "games-running": "Termina o descarta los juegos en curso antes de cerrar la noche",
+    "ended": "Esta noche de juegos está cerrada, reábrela para añadir juegos"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD no cumple las reglas de contraseña (al menos 8 caracteres). Cámbiala o elimínala antes de restablecer de fábrica."

@@ -36,6 +36,8 @@ export interface RecentActivity {
 	winnerName: string | null;
 	winnerId: number | null;
 	durationInMinutes: number;
+	isCoop: boolean;
+	teamWon: boolean | null;
 }
 
 export interface DashboardTopPlayer {

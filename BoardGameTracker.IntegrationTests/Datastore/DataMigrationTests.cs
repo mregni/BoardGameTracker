@@ -14,6 +14,8 @@ namespace BoardGameTracker.IntegrationTests.Datastore;
 public class DataMigrationTests : IAsyncLifetime
 {
     private const string BeforeDataRepairs = "20260827220101_AddChangeDetectionWatchIdToGame";
+    private const string AddLaterGameColumns = "ALTER TABLE \"Games\" ADD COLUMN \"HasCoopMode\" boolean NOT NULL DEFAULT false, ADD COLUMN \"CoopByDefault\" boolean NOT NULL DEFAULT false";
+    private const string DropLaterGameColumns = "ALTER TABLE \"Games\" DROP COLUMN \"HasCoopMode\", DROP COLUMN \"CoopByDefault\"";
 
     private readonly string _database = "migrations_" + Guid.NewGuid().ToString("N");
     private NpgsqlDataSource _dataSource = null!;
@@ -50,6 +52,7 @@ public class DataMigrationTests : IAsyncLifetime
         await using (var context = CreateContext())
         {
             await context.GetService<IMigrator>().MigrateAsync(BeforeDataRepairs, TestContext.Current.CancellationToken);
+            await context.Database.ExecuteSqlRawAsync(AddLaterGameColumns, TestContext.Current.CancellationToken);
 
             var a = new Game("Brass", true, GameState.Owned);
             var b = new Game("Ark Nova", true, GameState.Owned);
@@ -68,6 +71,7 @@ public class DataMigrationTests : IAsyncLifetime
             await context.Database.ExecuteSqlRawAsync("UPDATE \"Games\" SET \"MinAge\" = 0", TestContext.Current.CancellationToken);
             gameA = a.Id;
             gameB = b.Id;
+            await context.Database.ExecuteSqlRawAsync(DropLaterGameColumns, TestContext.Current.CancellationToken);
         }
 
         await using (var context = CreateContext())

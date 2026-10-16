@@ -24,3 +24,7 @@ export const sessionIdParamSchema = z.object({
 export const locationIdParamSchema = z.object({
 	locationId: numericIdSchema,
 });
+
+export const gameNightIdParamSchema = z.object({
+	gameNightId: numericIdSchema,
+});

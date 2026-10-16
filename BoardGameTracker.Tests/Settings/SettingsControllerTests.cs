@@ -6,6 +6,7 @@ using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models.Updates;
 using BoardGameTracker.Core.Configuration.Interfaces;
+using BoardGameTracker.Core.Integrations.Interfaces;
 using BoardGameTracker.Core.Languages.Interfaces;
 using BoardGameTracker.Core.Settings.Interfaces;
 using BoardGameTracker.Core.Updates.Interfaces;
@@ -24,6 +25,7 @@ public class SettingsControllerTests
     private readonly Mock<IEnvironmentProvider> _environmentProviderMock;
     private readonly Mock<ILanguageService> _languageServiceMock;
     private readonly Mock<IUpdateService> _updateServiceMock;
+    private readonly Mock<IIntegrationStatusService> _integrationStatusServiceMock;
     private readonly SettingsController _controller;
 
     public SettingsControllerTests()
@@ -32,12 +34,14 @@ public class SettingsControllerTests
         _environmentProviderMock = new Mock<IEnvironmentProvider>();
         _languageServiceMock = new Mock<ILanguageService>();
         _updateServiceMock = new Mock<IUpdateService>();
+        _integrationStatusServiceMock = new Mock<IIntegrationStatusService>();
 
         _controller = new SettingsController(
             _settingsServiceMock.Object,
             _environmentProviderMock.Object,
             _languageServiceMock.Object,
-            _updateServiceMock.Object);
+            _updateServiceMock.Object,
+            _integrationStatusServiceMock.Object);
     }
 
     private void VerifyNoOtherCalls()
@@ -46,6 +50,7 @@ public class SettingsControllerTests
         _environmentProviderMock.VerifyNoOtherCalls();
         _languageServiceMock.VerifyNoOtherCalls();
         _updateServiceMock.VerifyNoOtherCalls();
+        _integrationStatusServiceMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -111,6 +116,22 @@ public class SettingsControllerTests
 
         returnedModel.Should().BeSameAs(model);
 
+        _settingsServiceMock.Verify(x => x.UpdateSettingsAsync(model), Times.Once);
+        _integrationStatusServiceMock.Verify(x => x.Invalidate(), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Update_ShouldKeepTheIntegrationStatus_WhenSavingFails()
+    {
+        var model = new UIResourceDto();
+        _settingsServiceMock
+            .Setup(x => x.UpdateSettingsAsync(model))
+            .ThrowsAsync(new BoardGameTracker.Common.Exceptions.ValidationException("invalid"));
+
+        var act = () => _controller.Update(model);
+
+        await act.Should().ThrowAsync<BoardGameTracker.Common.Exceptions.ValidationException>();
         _settingsServiceMock.Verify(x => x.UpdateSettingsAsync(model), Times.Once);
         VerifyNoOtherCalls();
     }

@@ -46,6 +46,19 @@ public class PlayerStatisticsServiceTests
     }
 
     [Fact]
+    public async Task CalculateStatisticsAsync_ShouldReturnTheCoopResults()
+    {
+        _playerRepositoryMock.Setup(x => x.GetMostPlayedGames(1, 5)).ReturnsAsync([]);
+        _playerRepositoryMock.Setup(x => x.GetCoopResults(1)).ReturnsAsync((4, 2));
+
+        var result = await _service.CalculateStatisticsAsync(1);
+
+        result.CoopWinCount.Should().Be(4);
+        result.CoopLossCount.Should().Be(2);
+        _playerRepositoryMock.Verify(x => x.GetCoopResults(1), Times.Once);
+    }
+
+    [Fact]
     public async Task CalculateStatisticsAsync_ShouldReturnMostPlayedGames_WithWinningPercentage()
     {
         // Arrange

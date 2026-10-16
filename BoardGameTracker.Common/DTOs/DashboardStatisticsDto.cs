@@ -33,6 +33,8 @@ public class RecentActivityDto
     public double DurationInMinutes { get; set; }
     public int? WinnerId { get; set; }
     public string? WinnerName { get; set; }
+    public bool IsCoop { get; set; }
+    public bool? TeamWon { get; set; }
 }
 
 public class MostPlayedGameDto

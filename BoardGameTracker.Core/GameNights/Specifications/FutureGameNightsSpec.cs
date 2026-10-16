@@ -7,8 +7,9 @@ public sealed class FutureGameNightsSpec : Specification<GameNight>
 {
     public FutureGameNightsSpec(DateTime now)
     {
+        var playingSince = now - GameNight.PlayWindow;
         Query
-            .Where(x => x.StartDate >= now)
+            .Where(x => x.EndedAt == null && x.StartDate > playingSince)
             .AsNoTracking();
     }
 }

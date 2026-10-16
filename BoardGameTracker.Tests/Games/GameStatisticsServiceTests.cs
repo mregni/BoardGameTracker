@@ -109,6 +109,20 @@ public class GameStatisticsServiceTests
         result.MostWinsPlayer.TotalWins.Should().Be(20);
     }
 
+    [Fact]
+    public async Task CalculateStatisticsAsync_ShouldReturnTheCoopResults()
+    {
+        var gameId = 1;
+        SetupDefaultRepositoryMocks(gameId);
+        _gameStatisticsRepositoryMock.Setup(x => x.GetCoopResults(gameId, It.IsAny<CancellationToken>())).ReturnsAsync((3, 1));
+
+        var result = await _service.CalculateStatisticsAsync(gameId);
+
+        result.CoopWinCount.Should().Be(3);
+        result.CoopLossCount.Should().Be(1);
+        _gameStatisticsRepositoryMock.Verify(x => x.GetCoopResults(gameId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     #endregion
 
     #region Helper Methods

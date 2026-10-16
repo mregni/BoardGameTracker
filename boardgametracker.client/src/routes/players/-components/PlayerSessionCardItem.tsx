@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import type { Game, Session } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 
@@ -44,9 +45,13 @@ const PlayerSessionCardItemComponent = (props: Props) => {
 					<div className="text-white/50 text-sm">{toDisplay(session.start, dateFormat, uiLanguage)}</div>
 				</div>
 				<div className="text-right">
-					<BgtText color={playerSession?.won ? "green" : "red"} weight="bold">
-						{playerSession?.won ? t("won") : t("lost")}
-					</BgtText>
+					{session.isCoop ? (
+						<CoopResultPill won={session.teamWon === true} />
+					) : (
+						<BgtText color={playerSession?.won ? "green" : "red"} weight="bold">
+							{playerSession?.won ? t("won") : t("lost")}
+						</BgtText>
+					)}
 
 					{playerSession?.score != null && (
 						<BgtText color="cyan" weight="bold">
