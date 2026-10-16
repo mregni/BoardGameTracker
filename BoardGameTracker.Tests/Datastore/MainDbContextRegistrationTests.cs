@@ -15,7 +15,7 @@ public class MainDbContextRegistrationTests : IDisposable
 {
     private static readonly string[] Keys = ["ASPNETCORE_ENVIRONMENT", "ENVIRONMENT", "EF_SENSITIVE_LOGGING", "DB_HOST"];
 
-    private readonly Dictionary<string, string?> _originalEnvironmentVariables = new();
+    private readonly Dictionary<string, string?> _originalEnvironmentVariables = [];
 
     public MainDbContextRegistrationTests()
     {
