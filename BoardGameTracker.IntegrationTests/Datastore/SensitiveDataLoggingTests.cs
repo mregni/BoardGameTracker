@@ -18,8 +18,8 @@ namespace BoardGameTracker.IntegrationTests.Datastore;
 [Collection(IntegrationCollection.Name)]
 public class SensitiveDataLoggingTests
 {
-    private const string BggKey = "bgg-key-that-must-never-be-logged-7f3a";
-    private const string ChangeDetectionKey = "cd-key-that-must-never-be-logged-91c2";
+    private static readonly string BggKey = $"test-bgg-{Guid.NewGuid():N}";
+    private static readonly string ChangeDetectionKey = $"test-cd-{Guid.NewGuid():N}";
 
     private readonly IntegrationFixture _fixture;
 
