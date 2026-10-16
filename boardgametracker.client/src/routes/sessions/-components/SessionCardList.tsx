@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
+import { AvatarChip } from "@/components/GameNight/AvatarChip";
 import type { Game, Player, PlayerSession, Session } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 
@@ -82,21 +83,19 @@ export const SessionCardList = (props: Props) => {
 								{results.map((playerSession) => {
 									const player = players.find((x) => x.id === playerSession.playerId);
 									return (
-										<li
-											key={playerSession.playerId}
-											className={cx(
-												"inline-flex items-center gap-1.5 rounded-full border py-0.5 pr-2.5 pl-1 text-xs",
-												playerSession.won ? "border-yellow-400/50 bg-yellow-400/10" : "border-white/10 bg-white/5",
-											)}
-										>
-											<BgtAvatar image={player?.image} title={player?.name} size="small" />
-											<span>{player?.name}</span>
-											{playerSession.won && (
-												<Crown className="size-3.5 text-yellow-400" role="img" aria-label={t("won")} />
-											)}
-											{playerSession.score != null && (
-												<span className="font-semibold tabular-nums">{playerSession.score}</span>
-											)}
+										<li key={playerSession.playerId}>
+											<AvatarChip
+												title={player?.name ?? ""}
+												image={player?.image}
+												tone={playerSession.won ? "winner" : "neutral"}
+											>
+												{playerSession.won && (
+													<Crown className="size-3.5 text-yellow-400" role="img" aria-label={t("won")} />
+												)}
+												{playerSession.score != null && (
+													<span className="font-semibold tabular-nums">{playerSession.score}</span>
+												)}
+											</AvatarChip>
 										</li>
 									);
 								})}

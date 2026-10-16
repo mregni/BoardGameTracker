@@ -68,6 +68,16 @@ describe("SessionCardList", () => {
 		expect(within(pills[1]).queryByRole("img", { name: "won" })).not.toBeInTheDocument();
 	});
 
+	it("uses round avatars inside the player pills", () => {
+		renderList();
+
+		const pills = within(screen.getByRole("list", { name: "players" })).getAllByRole("listitem");
+		for (const pill of pills) {
+			const initial = within(pill).getByText(pill.textContent?.charAt(0) ?? "", { selector: "span" });
+			expect(initial.parentElement).toHaveClass("rounded-full");
+		}
+	});
+
 	it("shows the full trimmed comment", () => {
 		renderList();
 

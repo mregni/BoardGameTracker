@@ -97,6 +97,25 @@ describe("BgtAvatar", () => {
 		});
 	});
 
+	describe("Shape", () => {
+		it("keeps the rounded-square corners per size by default", () => {
+			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" size="small" />);
+			expect(screen.getByRole("img")).toHaveClass("rounded-xs");
+			expect(screen.getByRole("img")).not.toHaveClass("rounded-full");
+		});
+
+		it("keeps the medium rounded square by default", () => {
+			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" />);
+			expect(screen.getByRole("img")).toHaveClass("rounded-md");
+		});
+
+		it("renders a round avatar when asked to", () => {
+			renderWithTheme(<BgtAvatar title="A" image="/avatar.png" size="small" shape="round" />);
+			expect(screen.getByRole("img")).toHaveClass("rounded-full");
+			expect(screen.getByRole("img")).not.toHaveClass("rounded-xs");
+		});
+	});
+
 	describe("Text Size Mapping", () => {
 		it("should render initial for small avatar", () => {
 			renderWithTheme(<BgtAvatar title="John" image={null} size="small" />);
