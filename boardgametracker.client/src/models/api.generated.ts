@@ -644,6 +644,61 @@ export interface paths {
                         "text/json": components["schemas"]["CompareResultDto"];
                     };
                 };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/compare/default-pair": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ComparePairDto"];
+                        "application/json": components["schemas"]["ComparePairDto"];
+                        "text/json": components["schemas"]["ComparePairDto"];
+                    };
+                };
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
             };
         };
         put?: never;
@@ -4575,23 +4630,92 @@ export interface components {
             /** Format: double */
             scoringDifference: number;
         };
+        CompareGame: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            sessionCount: number;
+            /** Format: int32 */
+            playerOneWins: number;
+            /** Format: int32 */
+            playerTwoWins: number;
+            /** Format: int32 */
+            otherWins: number;
+            /** Format: int32 */
+            sameTeamCount: number;
+            /** Format: int32 */
+            sameTeamWins: number;
+            /** Format: double */
+            playerOneAverageScore: number | null;
+            /** Format: double */
+            playerTwoAverageScore: number | null;
+            /** Format: date-time */
+            lastPlayed: string;
+            lastOutcome: components["schemas"]["CompareOutcome"];
+            lastTeamWon: boolean | null;
+        };
+        /** @enum {string} */
+        CompareOutcome: "playerOne" | "playerTwo" | "both" | "other" | "sameTeam";
+        ComparePairDto: {
+            /** Format: int32 */
+            playerOneId: number;
+            /** Format: int32 */
+            playerTwoId: number;
+            /** Format: int32 */
+            sessionCount: number;
+        };
         CompareResultDto: {
             winCount: components["schemas"]["Int32CompareRow"];
             winPercentage: components["schemas"]["DoubleCompareRow"];
             sessionCounts: components["schemas"]["Int32CompareRow"];
             totalDuration: components["schemas"]["DoubleCompareRow"];
             directWins: components["schemas"]["Int32CompareRow"];
-            mostWonGame: components["schemas"]["MostWonGameCompareRow"];
+            /** Format: int32 */
+            wonByOthers: number;
+            sameTeam: components["schemas"]["CompareTeamRecord"];
             /** Format: int32 */
             totalSessionsTogether: number;
             /** Format: int32 */
             minutesPlayed: number;
             preferredGame: components["schemas"]["PreferredGame"];
-            lastWonGame: components["schemas"]["LastWonGame"];
-            /** Format: int32 */
-            longestSessionTogether: number | null;
+            longestSessionTogether: components["schemas"]["LongestSession"];
             firstGameTogether: components["schemas"]["FirstGameTogether"];
             closestGame: components["schemas"]["ClosestGame"];
+            streak: components["schemas"]["CompareStreak"];
+            games: components["schemas"]["CompareGame"][];
+            recentSessions: components["schemas"]["CompareSession"][];
+            bestGames: components["schemas"]["Int32ListCompareRow"];
+        };
+        CompareSession: {
+            /** Format: int32 */
+            sessionId: number;
+            /** Format: int32 */
+            gameId: number;
+            /** Format: date-time */
+            start: string;
+            /** Format: int32 */
+            minutes: number;
+            /** Format: double */
+            playerOneScore: number | null;
+            /** Format: double */
+            playerTwoScore: number | null;
+            outcome: components["schemas"]["CompareOutcome"];
+            /** Format: int32 */
+            otherWinnerId: number | null;
+            teamWon: boolean | null;
+        };
+        CompareStreak: {
+            side: components["schemas"]["CompareOutcome"];
+            /** Format: int32 */
+            count: number;
+        };
+        CompareTeamRecord: {
+            /** Format: int32 */
+            count: number;
+            /** Format: int32 */
+            won: number;
+            /** Format: int32 */
+            lost: number;
         };
         CreateExpansionCommand: {
             title: string;
@@ -5124,6 +5248,10 @@ export interface components {
             /** Format: int32 */
             value: number;
         };
+        Int32ListCompareRow: {
+            playerOne: number[] | null;
+            playerTwo: number[] | null;
+        };
         /** @enum {string} */
         IntegrationConnectionStatus: "ok" | "notConfigured" | "unauthorized" | "unreachable" | "rateLimited";
         /** @enum {string} */
@@ -5140,12 +5268,6 @@ export interface components {
             id?: number;
             key: string;
             translationKey: string;
-        };
-        LastWonGame: {
-            /** Format: int32 */
-            playerId: number | null;
-            /** Format: int32 */
-            gameId: number | null;
         };
         LeaderboardDto: {
             mostPlays: components["schemas"]["LeaderboardEntryDto"];
@@ -5222,6 +5344,12 @@ export interface components {
         LogoutRequest: {
             refreshToken: string | null;
         };
+        LongestSession: {
+            /** Format: int32 */
+            gameId: number;
+            /** Format: int32 */
+            minutes: number;
+        };
         ManualDto: {
             /** Format: int32 */
             id: number;
@@ -5269,16 +5397,6 @@ export interface components {
             image: string;
             /** Format: int32 */
             totalWins: number;
-        };
-        MostWonGame: {
-            /** Format: int32 */
-            gameId: number | null;
-            /** Format: int32 */
-            count: number;
-        };
-        MostWonGameCompareRow: {
-            playerOne: components["schemas"]["MostWonGame"];
-            playerTwo: components["schemas"]["MostWonGame"];
         };
         NightAttendanceDto: {
             /** Format: int32 */

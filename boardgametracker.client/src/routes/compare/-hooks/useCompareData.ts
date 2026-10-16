@@ -1,26 +1,55 @@
-import { useQueries } from "@tanstack/react-query";
-import { getCompare } from "@/services/queries/compare";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { getCompare, getDefaultComparePair } from "@/services/queries/compare";
 import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
+import { resolveComparePlayers } from "../-utils/compareUtils";
 
 interface Props {
-	playerLeft: number;
-	playerRight: number;
+	left: number | undefined;
+	right: number | undefined;
 }
 
-export const useCompareData = ({ playerLeft, playerRight }: Props) => {
-	const [playersQuery, compareQuery, settingsQuery] = useQueries({
-		queries: [getPlayers(), getCompare(playerLeft, playerRight), getSettings()],
-	});
+export const useCompareData = ({ left, right }: Props) => {
+	const playersQuery = useQuery(getPlayers());
+	const settingsQuery = useQuery(getSettings());
 
-	const players = playersQuery?.data ?? [];
-	const compare = compareQuery?.data;
-	const settings = settingsQuery?.data;
+	const players = useMemo(() => playersQuery.data ?? [], [playersQuery.data]);
+	const playerIds = useMemo(() => players.map((player) => player.id), [players]);
+	const hasValidPair =
+		left !== undefined &&
+		right !== undefined &&
+		left !== right &&
+		playerIds.includes(left) &&
+		playerIds.includes(right);
+
+	const pairQuery = useQuery(getDefaultComparePair(playerIds.length >= 2 && !hasValidPair));
+	const pairKnown = hasValidPair || pairQuery.isSuccess || pairQuery.isError;
+
+	const [leftId, rightId] = useMemo(() => {
+		if (!pairKnown) {
+			return [0, 0];
+		}
+
+		const preferred = pairQuery.data ? [pairQuery.data.playerOneId, pairQuery.data.playerTwoId] : [];
+		return resolveComparePlayers(playerIds, left, right, preferred);
+	}, [pairKnown, pairQuery.data, playerIds, left, right]);
+
+	const compareQuery = useQuery(getCompare(leftId, rightId));
 
 	return {
 		players,
-		compare,
-		settings,
-		isLoading: playersQuery.isLoading || compareQuery.isLoading || settingsQuery.isLoading,
+		leftId,
+		rightId,
+		compare: compareQuery.data?.result,
+		shownLeftId: compareQuery.data?.playerOneId ?? 0,
+		shownRightId: compareQuery.data?.playerTwoId ?? 0,
+		isUpdating: compareQuery.isPlaceholderData,
+		settings: settingsQuery.data,
+		isLoading:
+			playersQuery.isLoading ||
+			settingsQuery.isLoading ||
+			(playerIds.length >= 2 && !pairKnown) ||
+			compareQuery.isLoading,
 	};
 };

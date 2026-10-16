@@ -18,6 +18,18 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("of 41 owned games")).toHaveAttribute("title", "of 41 owned games");
 		});
 
+		it("should render a caption that is not plain text without a title", () => {
+			renderWithTheme(<BgtTextStatistic title="Games together" content={49} caption={<em>since 12-03-2025</em>} />);
+			const caption = screen.getByText("since 12-03-2025").parentElement;
+			expect(caption).toHaveClass("text-white/50");
+			expect(caption).not.toHaveAttribute("title");
+		});
+
+		it("should leave the caption out when there is none", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Games together" content={49} caption={null} />);
+			expect(container.querySelector("span.text-white\\/50")).toBeNull();
+		});
+
 		it("should render content as string", () => {
 			renderWithTheme(<BgtTextStatistic title="Best Game" content="Chess" />);
 			expect(screen.getByText("Chess")).toBeInTheDocument();

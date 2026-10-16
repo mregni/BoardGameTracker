@@ -98,6 +98,7 @@ public static class Constants
         public const string LoanAlreadyReturned = "error.loan.already-returned";
         public const string LocationUsedByGameNights = "error.location.used-by-game-nights";
         public const string PlayerHostsGameNights = "error.player.hosts-game-nights";
+        public const string CompareSamePlayer = "error.compare.same-player";
         public const string PlayerNameRequired = "error.player.name-required";
         public const string PlayerNameAlreadyExists = "error.player.name-already-exists";
         public const string LocationNameRequired = "error.location.name-required";
