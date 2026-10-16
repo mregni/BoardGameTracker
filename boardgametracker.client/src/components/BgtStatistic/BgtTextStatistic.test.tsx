@@ -13,6 +13,11 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("Total Games")).toBeInTheDocument();
 		});
 
+		it("should render a caption under the value when given", () => {
+			renderWithTheme(<BgtTextStatistic title="On the shelf" content={9} caption="of 41 owned games" />);
+			expect(screen.getByText("of 41 owned games")).toHaveAttribute("title", "of 41 owned games");
+		});
+
 		it("should render content as string", () => {
 			renderWithTheme(<BgtTextStatistic title="Best Game" content="Chess" />);
 			expect(screen.getByText("Chess")).toBeInTheDocument();

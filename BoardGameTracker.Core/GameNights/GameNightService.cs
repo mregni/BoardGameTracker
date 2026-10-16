@@ -152,6 +152,59 @@ public class GameNightService : IGameNightService
         _logger.LogInformation("Game night {GameNightId} deleted", id);
     }
 
+    public async Task<GameNight> AddSuggestedGame(AddSuggestedGameCommand command)
+    {
+        _logger.LogDebug("Adding game {GameId} to the suggestions of game night {GameNightId}", command.GameId, command.GameNightId);
+        var gameNight = await GetOpenGameNightAsync(command.GameNightId);
+
+        var game = await _gameRepository.GetByIdAsync(command.GameId);
+        if (game == null)
+        {
+            throw new EntityNotFoundException(nameof(Game), command.GameId);
+        }
+
+        if (game.State != GameState.Owned)
+        {
+            throw new ValidationException(Constants.Errors.SuggestedGameNotOwned);
+        }
+
+        if (gameNight.AddSuggestedGame(game))
+        {
+            await _unitOfWork.SaveChangesAsync();
+            _logger.LogInformation("Game {GameId} added to the suggestions of game night {GameNightId}", command.GameId, command.GameNightId);
+        }
+
+        return gameNight;
+    }
+
+    public async Task RemoveSuggestedGame(RemoveSuggestedGameCommand command)
+    {
+        _logger.LogDebug("Removing game {GameId} from the suggestions of game night {GameNightId}", command.GameId, command.GameNightId);
+        var gameNight = await GetOpenGameNightAsync(command.GameNightId);
+
+        if (gameNight.RemoveSuggestedGame(command.GameId))
+        {
+            await _unitOfWork.SaveChangesAsync();
+            _logger.LogInformation("Game {GameId} removed from the suggestions of game night {GameNightId}", command.GameId, command.GameNightId);
+        }
+    }
+
+    private async Task<GameNight> GetOpenGameNightAsync(int id)
+    {
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdWithDetailsSpec(id));
+        if (gameNight == null)
+        {
+            throw new EntityNotFoundException(nameof(GameNight), id);
+        }
+
+        if (gameNight.StartDate.ToUniversalTime() < _dateTimeProvider.UtcNow)
+        {
+            throw new ValidationException(Constants.Errors.GameNightOver);
+        }
+
+        return gameNight;
+    }
+
     public async Task<GameNightRsvp> UpdateRsvp(UpdateRsvpCommand command)
     {
         var rsvp = await FindRsvpAsync(command);

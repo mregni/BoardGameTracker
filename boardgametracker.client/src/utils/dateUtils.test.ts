@@ -4,6 +4,7 @@ import {
 	formatMinutesToDuration,
 	isValidDate,
 	minutesToDuration,
+	monthsSince,
 	normalizeDateFnsFormat,
 	safeParseDate,
 	toDisplay,
@@ -11,7 +12,9 @@ import {
 	toInputDate,
 	toInputDateTime,
 	toLongDisplay,
+	toMonthYear,
 	toRelative,
+	toShortDayDate,
 } from "./dateUtils";
 
 describe("dateUtils", () => {
@@ -382,6 +385,48 @@ describe("dateUtils", () => {
 			const result = formatMinutesToDuration(1590, ["days", "hours", "minutes"]);
 			expect(result).toContain("1");
 			expect(result).toContain("day");
+		});
+	});
+
+	describe("toMonthYear", () => {
+		it("shows the short month and the year", () => {
+			expect(toMonthYear(new Date(2023, 7, 14), "en-US")).toBe("Aug 2023");
+		});
+
+		it("accepts an ISO string", () => {
+			expect(toMonthYear("2023-08-14T10:00:00Z", "en-US")).toBe("Aug 2023");
+		});
+
+		it("returns an empty string for a missing or invalid date", () => {
+			expect(toMonthYear(null, "en-US")).toBe("");
+			expect(toMonthYear(new Date("nope"), "en-US")).toBe("");
+		});
+	});
+
+	describe("toShortDayDate", () => {
+		it("shows the weekday, day and month", () => {
+			expect(toShortDayDate(new Date(2026, 9, 23, 19, 0), "en-US")).toBe("Fri 23 Oct");
+		});
+
+		it("returns an empty string for a missing date", () => {
+			expect(toShortDayDate(undefined, "en-US")).toBe("");
+		});
+	});
+
+	describe("monthsSince", () => {
+		const now = new Date(2026, 9, 16);
+
+		it("counts whole months", () => {
+			expect(monthsSince(new Date(2025, 2, 10), now)).toBe(19);
+			expect(monthsSince(new Date(2026, 8, 20), now)).toBe(0);
+		});
+
+		it("never goes below zero", () => {
+			expect(monthsSince(new Date(2027, 0, 1), now)).toBe(0);
+		});
+
+		it("returns null without a date", () => {
+			expect(monthsSince(null, now)).toBeNull();
 		});
 	});
 });

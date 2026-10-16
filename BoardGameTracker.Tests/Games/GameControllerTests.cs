@@ -689,14 +689,27 @@ public class GameControllerTests
     [Fact]
     public async Task GetShameGames_ShouldReturnOkWithShameGames()
     {
+        var plannedFor = new DateTime(2026, 10, 23, 19, 0, 0, DateTimeKind.Utc);
         var shameGames = new List<ShameGame>
         {
-            new ShameGame { Id = 1, Title = "Dusty Game", Price = 40m },
+            new ShameGame
+            {
+                Id = 1,
+                Title = "Dusty Game",
+                Price = 40m,
+                PlayCount = 3,
+                MinPlayers = 2,
+                MaxPlayers = 4,
+                MinPlayTime = 60,
+                MaxPlayTime = 90,
+                PlannedGameNightId = 7,
+                PlannedFor = plannedFor
+            },
             new ShameGame { Id = 2, Title = "Forgotten Game" }
         };
 
         _shameServiceMock
-            .Setup(x => x.GetShameGames())
+            .Setup(x => x.GetShameGames(null))
             .ReturnsAsync(shameGames);
 
         var result = await _controller.GetShameGames();
@@ -708,28 +721,61 @@ public class GameControllerTests
         returnedGames[0].Id.Should().Be(1);
         returnedGames[0].Title.Should().Be("Dusty Game");
         returnedGames[0].Price.Should().Be(40m);
+        returnedGames[0].PlayCount.Should().Be(3);
+        returnedGames[0].MinPlayers.Should().Be(2);
+        returnedGames[0].MaxPlayers.Should().Be(4);
+        returnedGames[0].MinPlayTime.Should().Be(60);
+        returnedGames[0].MaxPlayTime.Should().Be(90);
+        returnedGames[0].PlannedGameNightId.Should().Be(7);
+        returnedGames[0].PlannedFor.Should().Be(plannedFor);
         returnedGames[1].Id.Should().Be(2);
         returnedGames[1].Title.Should().Be("Forgotten Game");
+        returnedGames[1].PlannedGameNightId.Should().BeNull();
 
-        _shameServiceMock.Verify(x => x.GetShameGames(), Times.Once);
+        _shameServiceMock.Verify(x => x.GetShameGames(null), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetShameGames_ShouldPassTheRequestedMonths()
+    {
+        _shameServiceMock
+            .Setup(x => x.GetShameGames(12))
+            .ReturnsAsync([]);
+
+        var result = await _controller.GetShameGames(12);
+
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        okResult.Value.Should().BeAssignableTo<List<ShameDto>>().Which.Should().BeEmpty();
+
+        _shameServiceMock.Verify(x => x.GetShameGames(12), Times.Once);
         VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task GetShameStatistics_ShouldReturnOkWithStatistics()
     {
+        var nightStart = new DateTime(2026, 10, 23, 19, 0, 0, DateTimeKind.Utc);
         var statistics = new ShameStatistics
         {
             Count = 3,
             TotalValue = 120m,
-            AverageValue = 40m
+            AverageValue = 40m,
+            PricedGameCount = 3,
+            Months = 12,
+            OwnedCount = 41,
+            CollectionValue = 1240m,
+            NeverPlayedCount = 2,
+            NeverPlayedValue = 80m,
+            PlannedCount = 1,
+            NextGameNight = new UpcomingGameNight { Id = 5, Title = "Friday", StartDate = nightStart, SuggestedGameIds = [1] }
         };
 
         _shameServiceMock
-            .Setup(x => x.GetShameStatistics())
+            .Setup(x => x.GetShameStatistics(12))
             .ReturnsAsync(statistics);
 
-        var result = await _controller.GetShameStatistics();
+        var result = await _controller.GetShameStatistics(12);
 
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var statisticsDto = okResult.Value.Should().BeOfType<ShameStatisticsDto>().Subject;
@@ -737,8 +783,33 @@ public class GameControllerTests
         statisticsDto.Count.Should().Be(3);
         statisticsDto.TotalValue.Should().Be(120m);
         statisticsDto.AverageValue.Should().Be(40m);
+        statisticsDto.PricedGameCount.Should().Be(3);
+        statisticsDto.Months.Should().Be(12);
+        statisticsDto.OwnedCount.Should().Be(41);
+        statisticsDto.CollectionValue.Should().Be(1240m);
+        statisticsDto.NeverPlayedCount.Should().Be(2);
+        statisticsDto.NeverPlayedValue.Should().Be(80m);
+        statisticsDto.PlannedCount.Should().Be(1);
+        statisticsDto.NextGameNight.Should().BeEquivalentTo(new ShameGameNightDto { Id = 5, Title = "Friday", StartDate = nightStart });
 
-        _shameServiceMock.Verify(x => x.GetShameStatistics(), Times.Once);
+        _shameServiceMock.Verify(x => x.GetShameStatistics(12), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetShameStatistics_ShouldReturnNoNextGameNight_WhenNoneIsPlanned()
+    {
+        _shameServiceMock
+            .Setup(x => x.GetShameStatistics(null))
+            .ReturnsAsync(new ShameStatistics { Count = 0, Months = 6 });
+
+        var result = await _controller.GetShameStatistics();
+
+        var statisticsDto = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeOfType<ShameStatisticsDto>().Subject;
+        statisticsDto.NextGameNight.Should().BeNull();
+        statisticsDto.Months.Should().Be(6);
+
+        _shameServiceMock.Verify(x => x.GetShameStatistics(null), Times.Once);
         VerifyNoOtherCalls();
     }
 

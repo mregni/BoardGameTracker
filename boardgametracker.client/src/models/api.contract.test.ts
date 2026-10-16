@@ -18,6 +18,9 @@ import type {
 	Session,
 	SessionSuggestions,
 	Settings,
+	Shame,
+	ShameGameNight,
+	ShameStatistics,
 } from "@/models";
 import type { LoginRequest, LoginResponse, OidcProvider, ProfileResponse, User } from "@/models/Auth/Auth";
 import type { ExternalLogin, OidcDiscoveryResult, OidcProviderConfig, OidcSetup } from "@/models/Auth/Oidc";
@@ -64,6 +67,9 @@ describe("API contract", () => {
 		sameKeys<Leaderboard, Schemas["LeaderboardDto"]>(true);
 		sameKeys<LeaderboardEntry, Schemas["LeaderboardEntryDto"]>(true);
 		sameKeys<Settings, Schemas["UIResourceDto"]>(true);
+		sameKeys<Shame, Schemas["ShameDto"]>(true);
+		sameKeys<ShameStatistics, Schemas["ShameStatisticsDto"]>(true);
+		sameKeys<ShameGameNight, Schemas["ShameGameNightDto"]>(true);
 		sameKeys<VersionInfo, Schemas["UpdateStatusDto"]>(true);
 		sameKeys<User, Schemas["UserInfo"]>(true);
 		sameKeys<LoginResponse, Schemas["LoginResponse"]>(true);

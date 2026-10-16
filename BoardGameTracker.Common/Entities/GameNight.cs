@@ -90,4 +90,28 @@ public class GameNight: HasId
             SuggestedGames.Add(suggestedGame);
         }
     }
+
+    public bool AddSuggestedGame(Game game)
+    {
+        Guard.Against.Null(game);
+        if (SuggestedGames.Any(x => x.Id == game.Id))
+        {
+            return false;
+        }
+
+        SuggestedGames.Add(game);
+        return true;
+    }
+
+    public bool RemoveSuggestedGame(int gameId)
+    {
+        var game = SuggestedGames.FirstOrDefault(x => x.Id == gameId);
+        if (game == null)
+        {
+            return false;
+        }
+
+        SuggestedGames.Remove(game);
+        return true;
+    }
 }

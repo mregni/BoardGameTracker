@@ -94,7 +94,9 @@
   "game-night": {
     "invites-cooldown": "Las invitaciones de esta noche de juegos se enviaron hace poco, inténtalo de nuevo en unos minutos",
     "host-rsvp-locked": "El anfitrión siempre asiste a su propia noche de juegos",
-    "rsvp-closed": "Esta noche de juegos ya ha tenido lugar"
+    "rsvp-closed": "Esta noche de juegos ya ha tenido lugar",
+    "already-over": "Esta noche de juegos ya ha tenido lugar",
+    "suggested-game-not-owned": "Solo puedes sugerir juegos que tengas para una noche de juegos"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD no cumple las reglas de contraseña (al menos 8 caracteres). Cámbiala o elimínala antes de restablecer de fábrica."
