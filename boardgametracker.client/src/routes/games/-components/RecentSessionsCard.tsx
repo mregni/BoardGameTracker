@@ -53,7 +53,7 @@ export const RecentSessionsCard = (props: Props) => {
 			<Link
 				to="/games/$gameId/sessions"
 				params={{ gameId }}
-				className="mt-2 self-end text-sm text-primary hover:underline"
+				className="mt-2 self-end text-sm text-primary-text hover:underline"
 			>
 				{t("sessions")}
 			</Link>

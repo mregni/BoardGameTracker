@@ -62,7 +62,7 @@ export const LocationSessionsCard = (props: Props) => {
 									<Link
 										to="/sessions/update/$sessionId"
 										params={{ sessionId: session.id }}
-										className={cx(rowClasses, "cursor-pointer hover:text-primary")}
+										className={cx(rowClasses, "cursor-pointer hover:text-primary-text")}
 									>
 										{row}
 									</Link>

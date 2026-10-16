@@ -81,7 +81,7 @@ function AuthCallbackPage() {
 							<BgtText size="2" color="red">
 								{failure}
 							</BgtText>
-							<Link to="/login" className="text-primary hover:underline">
+							<Link to="/login" className="text-primary-text hover:underline">
 								{t("back-to-login")}
 							</Link>
 						</div>

@@ -45,7 +45,7 @@ export const TopPlayersCard = (props: Props) => {
 								<Link
 									to="/players/$playerId"
 									params={{ playerId: player.playerId }}
-									className="flex items-center gap-2 py-2 hover:text-primary"
+									className="flex items-center gap-2 py-2 hover:text-primary-text"
 								>
 									<BgtAvatar image={info?.image} title={info?.name} size="medium" />
 									<span className="min-w-0 flex-1 truncate">{info?.name}</span>

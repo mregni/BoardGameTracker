@@ -59,7 +59,7 @@ export const BgtTextStatistic = (props: Props) => {
 				isInteractive && "border-primary/25 transition-colors hover:border-primary/60 cursor-pointer",
 			)}
 		>
-			<div className="flex min-h-6 items-center gap-2 text-primary/70 mb-2">
+			<div className="flex min-h-6 items-center gap-2 text-stat-title mb-2">
 				{iconWithClasses}
 				<span className="line-clamp-2 break-words" title={title}>
 					{title}
