@@ -34,6 +34,7 @@ public sealed class IntegrationFixture : IAsyncLifetime
 
     private WebApplicationFactory<Program> _factory = null!;
     private readonly Dictionary<string, string> _tokens = new();
+    private readonly Dictionary<string, string?> _originalEnvironmentVariables = new();
 
     private int _clients;
 
@@ -59,19 +60,19 @@ public sealed class IntegrationFixture : IAsyncLifetime
         await _postgres.StartAsync();
 
         WriteSpaStub();
-        Environment.SetEnvironmentVariable("DB_HOST", _postgres.Hostname);
-        Environment.SetEnvironmentVariable("DB_PORT", _postgres.GetMappedPublicPort(5432).ToString());
-        Environment.SetEnvironmentVariable("DB_USER", "bgt");
-        Environment.SetEnvironmentVariable("DB_PASSWORD", "bgt");
-        Environment.SetEnvironmentVariable("DB_NAME", "boardgametracker");
-        Environment.SetEnvironmentVariable("JWT_SECRET", "integration-test-secret-that-is-long-enough-for-the-guard");
-        Environment.SetEnvironmentVariable("ADMIN_PASSWORD", AdminPassword);
-        Environment.SetEnvironmentVariable("AUTH_ENABLED", "true");
-        Environment.SetEnvironmentVariable("RAG_ENABLED", "false");
-        Environment.SetEnvironmentVariable("UPDATE_CHECK_ENABLED", "false");
-        Environment.SetEnvironmentVariable("STATISTICS_ENABLED", "false");
-        Environment.SetEnvironmentVariable("LOGLEVEL", "warn");
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Production");
+        SetEnvironmentVariable("DB_HOST", _postgres.Hostname);
+        SetEnvironmentVariable("DB_PORT", _postgres.GetMappedPublicPort(5432).ToString());
+        SetEnvironmentVariable("DB_USER", "bgt");
+        SetEnvironmentVariable("DB_PASSWORD", "bgt");
+        SetEnvironmentVariable("DB_NAME", "boardgametracker");
+        SetEnvironmentVariable("JWT_SECRET", "integration-test-secret-that-is-long-enough-for-the-guard");
+        SetEnvironmentVariable("ADMIN_PASSWORD", AdminPassword);
+        SetEnvironmentVariable("AUTH_ENABLED", "true");
+        SetEnvironmentVariable("RAG_ENABLED", "false");
+        SetEnvironmentVariable("UPDATE_CHECK_ENABLED", "false");
+        SetEnvironmentVariable("STATISTICS_ENABLED", "false");
+        SetEnvironmentVariable("LOGLEVEL", "warn");
+        SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Production");
 
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
@@ -96,10 +97,20 @@ public sealed class IntegrationFixture : IAsyncLifetime
         File.WriteAllText(Path.Combine(root, "assets", "app.js"), AssetMarker);
     }
 
+    private void SetEnvironmentVariable(string name, string value)
+    {
+        _originalEnvironmentVariables.TryAdd(name, Environment.GetEnvironmentVariable(name));
+        Environment.SetEnvironmentVariable(name, value);
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _factory.DisposeAsync();
         await _postgres.DisposeAsync();
+        foreach (var kvp in _originalEnvironmentVariables)
+        {
+            Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
+        }
     }
 
     public async Task<HttpClient> CreateClientAsAsync(string username)
