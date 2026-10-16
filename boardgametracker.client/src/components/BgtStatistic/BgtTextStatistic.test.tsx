@@ -111,6 +111,18 @@ describe("BgtTextStatistic", () => {
 		});
 	});
 
+	describe("Caption", () => {
+		it("should render a caption under the value when given", () => {
+			renderWithTheme(<BgtTextStatistic title="Games" content={52} caption="41 owned · 4 expansions" />);
+			expect(screen.getByText("41 owned · 4 expansions")).toHaveAttribute("title", "41 owned · 4 expansions");
+		});
+
+		it("should not render a caption without one", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Games" content={52} />);
+			expect(container.querySelector("span[title='41 owned · 4 expansions']")).toBeNull();
+		});
+	});
+
 	describe("Edge Cases", () => {
 		it("should handle zero content", () => {
 			renderWithTheme(<BgtTextStatistic title="Losses" content={0} />);

@@ -65,14 +65,6 @@ public class SessionRepository : EfRepository<Session>, ISessionRepository
         return ListAsync(new RecentSessionsSpec(count), cancellationToken);
     }
 
-    public Task<List<DateTime>> GetSessionStartTimes(CancellationToken cancellationToken = default)
-    {
-        return _context.Sessions
-            .AsNoTracking()
-            .Select(x => x.Start)
-            .ToListAsync(cancellationToken);
-    }
-
     public Task<List<int>> GetRecentlyPlayedGameIds(int count, CancellationToken cancellationToken = default)
     {
         return _context.Sessions

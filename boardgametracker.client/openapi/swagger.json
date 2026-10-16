@@ -2348,6 +2348,64 @@
         }
       }
     },
+    "/api/gamenight/statistics": {
+      "get": {
+        "tags": [
+          "GameNightStatistics"
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/GameNightStatisticsPeriod"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameNightStatisticsDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameNightStatisticsDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameNightStatisticsDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/image": {
       "post": {
         "tags": [
@@ -6022,10 +6080,116 @@
         },
         "additionalProperties": false
       },
+      "DashboardGameDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DashboardGameNightDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "locationName": {
+            "type": "string"
+          },
+          "hostId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hostName": {
+            "type": "string"
+          },
+          "acceptedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pendingCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "declinedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "suggestedGames": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardGameDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "DashboardLinkedPlayerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sessionsThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "winsThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DashboardShelfOfShameDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "neverPlayedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalValue": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "DashboardStatisticsDto": {
         "type": "object",
         "properties": {
           "totalGames": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ownedGames": {
             "type": "integer",
             "format": "int32"
           },
@@ -6046,11 +6210,6 @@
             "format": "double",
             "nullable": true
           },
-          "avgGamePrice": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
           "pricedGameCount": {
             "type": "integer",
             "format": "int32"
@@ -6062,6 +6221,27 @@
           "avgSessionTime": {
             "type": "number",
             "format": "double"
+          },
+          "sessionsThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "activePlayersThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "linkedPlayer": {
+            "$ref": "#/components/schemas/DashboardLinkedPlayerDto"
+          },
+          "nextGameNight": {
+            "$ref": "#/components/schemas/DashboardGameNightDto"
+          },
+          "plannedGameNights": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "shelfOfShame": {
+            "$ref": "#/components/schemas/DashboardShelfOfShameDto"
           },
           "recentActivities": {
             "type": "array",
@@ -6081,22 +6261,25 @@
               "$ref": "#/components/schemas/MostPlayedGameDto"
             }
           },
+          "mostPlayedGamesThisMonth": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MostPlayedGameDto"
+            }
+          },
           "topPlayers": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DashboardTopPlayerDto"
             }
           },
+          "topPlayersIncludeCoopWins": {
+            "type": "boolean"
+          },
           "recentAddedGames": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RecentGameDto"
-            }
-          },
-          "sessionsByDayOfWeek": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PlayByDay"
             }
           }
         },
@@ -6123,6 +6306,23 @@
           "winCount": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DashboardWinnerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -6547,6 +6747,76 @@
         },
         "additionalProperties": false
       },
+      "GameNightRecordDto": {
+        "type": "object",
+        "properties": {
+          "gameNightId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gamesPlayed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          },
+          "gameId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GameNightRecordsDto": {
+        "type": "object",
+        "properties": {
+          "longestNight": {
+            "$ref": "#/components/schemas/GameNightRecordDto"
+          },
+          "mostGames": {
+            "$ref": "#/components/schemas/GameNightRecordDto"
+          },
+          "biggestTable": {
+            "$ref": "#/components/schemas/GameNightRecordDto"
+          },
+          "latestFinish": {
+            "$ref": "#/components/schemas/GameNightRecordDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GameNightReferenceDto": {
+        "type": "object",
+        "properties": {
+          "gameNightId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "GameNightRsvpDto": {
         "type": "object",
         "properties": {
@@ -6578,6 +6848,116 @@
           "pending"
         ],
         "type": "string"
+      },
+      "GameNightStatisticsDto": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/GameNightStatisticsPeriod"
+          },
+          "totalNights": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nightsWithSessions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nights": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gamesPlayed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalMinutes": {
+            "type": "number",
+            "format": "double"
+          },
+          "averageTable": {
+            "type": "number",
+            "format": "double"
+          },
+          "averageDaysBetweenNights": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "tiedNights": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "winners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NightWinnerStatisticDto"
+            }
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NightHistoryDto"
+            }
+          },
+          "games": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NightGameStatisticDto"
+            }
+          },
+          "plannedNeverPlayed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlannedGameStatisticDto"
+            }
+          },
+          "streaks": {
+            "$ref": "#/components/schemas/GameNightStreaksDto"
+          },
+          "recentNights": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GameNightReferenceDto"
+            }
+          },
+          "attendance": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NightAttendanceDto"
+            }
+          },
+          "records": {
+            "$ref": "#/components/schemas/GameNightRecordsDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GameNightStatisticsPeriod": {
+        "enum": [
+          "allTime",
+          "thisYear",
+          "last12Months"
+        ],
+        "type": "string"
+      },
+      "GameNightStreaksDto": {
+        "type": "object",
+        "properties": {
+          "currentWinner": {
+            "$ref": "#/components/schemas/PlayerStreakDto"
+          },
+          "longestWinner": {
+            "$ref": "#/components/schemas/PlayerStreakDto"
+          },
+          "currentAttendance": {
+            "$ref": "#/components/schemas/PlayerStreakDto"
+          },
+          "longestGame": {
+            "$ref": "#/components/schemas/GameStreakDto"
+          }
+        },
+        "additionalProperties": false
       },
       "GameNightSummaryDto": {
         "type": "object",
@@ -6789,6 +7169,31 @@
             "items": {
               "$ref": "#/components/schemas/ScoreRank"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "GameStreakDto": {
+        "type": "object",
+        "properties": {
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "length": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isCurrent": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -7276,6 +7681,124 @@
         },
         "additionalProperties": false
       },
+      "NightAttendanceDto": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nightsAttended": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nightsHosted": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "recentNights": {
+            "type": "array",
+            "items": {
+              "type": "boolean"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "NightGameStatisticDto": {
+        "type": "object",
+        "properties": {
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "timesPlayed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nights": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "timesPlanned": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NightHistoryDto": {
+        "type": "object",
+        "properties": {
+          "gameNightId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "locationId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gamesPlayed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "mostWins": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "winnerIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "winnerStreak": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coopOnly": {
+            "type": "boolean"
+          },
+          "sharedThroughCoop": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NightWinnerStatisticDto": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rank": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nightsWon": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nightsAttended": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gamesWon": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "OidcDiscoveryResultDto": {
         "type": "object",
         "properties": {
@@ -7435,6 +7958,20 @@
           "publisher"
         ],
         "type": "string"
+      },
+      "PlannedGameStatisticDto": {
+        "type": "object",
+        "properties": {
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "timesPlanned": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
       },
       "PlayByDay": {
         "type": "object",
@@ -7606,6 +8143,28 @@
         },
         "additionalProperties": false
       },
+      "PlayerStreakDto": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "length": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "PreferredGame": {
         "type": "object",
         "properties": {
@@ -7769,14 +8328,11 @@
             "type": "number",
             "format": "double"
           },
-          "winnerId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "winnerName": {
-            "type": "string",
-            "nullable": true
+          "winners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardWinnerDto"
+            }
           },
           "isCoop": {
             "type": "boolean"
@@ -9006,6 +9562,9 @@
     },
     {
       "name": "GameNight"
+    },
+    {
+      "name": "GameNightStatistics"
     },
     {
       "name": "Image"

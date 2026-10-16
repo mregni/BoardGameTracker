@@ -1,5 +1,6 @@
-using BoardGameTracker.Common.DTOs;
+﻿using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Models;
 
 namespace BoardGameTracker.Common.Extensions;
 
@@ -7,7 +8,6 @@ public static class DashboardDtoExtensions
 {
     private static RecentActivityDto ToRecentActivityDto(this Session session)
     {
-        var winner = session.IsCoop ? null : session.PlayerSessions.FirstOrDefault(ps => ps.Won);
         return new RecentActivityDto
         {
             Id = session.Id,
@@ -17,10 +17,27 @@ public static class DashboardDtoExtensions
             Start = session.Start,
             PlayerCount = session.PlayerSessions.Count,
             DurationInMinutes = session.GetDuration().TotalMinutes,
-            WinnerId = winner?.PlayerId,
-            WinnerName = winner?.Player?.Name,
+            Winners = session.PlayerSessions
+                .Where(ps => !session.IsCoop && ps.Won)
+                .Select(ps => new DashboardWinnerDto
+                {
+                    Id = ps.PlayerId,
+                    Name = ps.Player?.Name ?? string.Empty,
+                    Image = ps.Player?.Image
+                })
+                .ToList(),
             IsCoop = session.IsCoop,
             TeamWon = session.TeamWon
+        };
+    }
+
+    public static DashboardShelfOfShameDto ToDashboardDto(this ShameStatistics statistics)
+    {
+        return new DashboardShelfOfShameDto
+        {
+            Count = statistics.Count,
+            NeverPlayedCount = statistics.NeverPlayedCount,
+            TotalValue = statistics.TotalValue
         };
     }
 
