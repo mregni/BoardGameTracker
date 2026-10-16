@@ -115,6 +115,32 @@ public class CompareTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Compare_ShouldCountCoopSessionsAsSameTeam()
+    {
+        await using (var scope = _fixture.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+            var coop = new Session(_brassId, Day.AddDays(6), Day.AddDays(6).AddMinutes(50), string.Empty);
+            coop.MarkAsCoop(true, 40);
+            coop.AddPlayerSession(_aliceId, null, false, true);
+            coop.AddPlayerSession(_bobId, null, false, true);
+            db.Add(coop);
+            await db.SaveChangesAsync();
+        }
+
+        using var reader = await _fixture.CreateClientAsAsync("reader");
+        var result = await reader.GetFromJsonAsync<CompareResultDto>($"/api/compare/{_aliceId}/{_bobId}", IntegrationFixture.Json);
+
+        result!.TotalSessionsTogether.Should().Be(6);
+        result.DirectWins.PlayerOne.Should().Be(3);
+        result.DirectWins.PlayerTwo.Should().Be(2);
+        result.WonByOthers.Should().Be(1);
+        result.SameTeam.Should().BeEquivalentTo(new CompareTeamRecord { Count = 1, Won = 1, Lost = 0 });
+        result.RecentSessions[0].Should().BeEquivalentTo(new { Outcome = CompareOutcome.SameTeam, TeamWon = (bool?)true });
+        result.Games.Single(g => g.GameId == _brassId).Should().BeEquivalentTo(new { SameTeamCount = 1, SameTeamWins = 1, LastOutcome = CompareOutcome.SameTeam, LastTeamWon = (bool?)true });
+    }
+
+    [Fact]
     public async Task DefaultPair_ShouldBeThePlayersWithTheMostGamesTogether()
     {
         using var reader = await _fixture.CreateClientAsAsync("reader");

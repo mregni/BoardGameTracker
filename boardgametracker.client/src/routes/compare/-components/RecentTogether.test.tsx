@@ -87,6 +87,27 @@ describe("RecentTogether", () => {
 		expect(screen.queryByRole("link")).toBeNull();
 	});
 
+	it("shows the co-op result for games on the same team", () => {
+		render(
+			<RecentTogether
+				sessions={[
+					sessionRow({ sessionId: 9, gameId: 14, outcome: "sameTeam", teamWon: true }),
+					sessionRow({ sessionId: 8, gameId: 14, outcome: "sameTeam", teamWon: false }),
+				]}
+				playerOne={playerOne}
+				playerTwo={playerTwo}
+				dateFormat="dd-MM-yyyy"
+				uiLanguage="en-US"
+				canOpen={false}
+			/>,
+		);
+
+		const [won, lost] = screen.getAllByRole("listitem");
+		expect(won).toHaveTextContent("Pandemic · same team");
+		expect(won).toHaveTextContent("Co-op · won");
+		expect(lost).toHaveTextContent("Co-op · lost");
+	});
+
 	it("links each game to its session for people who can edit", () => {
 		renderRecent(true);
 

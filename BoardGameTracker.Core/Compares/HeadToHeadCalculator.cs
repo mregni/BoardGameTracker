@@ -11,20 +11,29 @@ public static class HeadToHeadCalculator
     public const int BestGameCount = 3;
     public const int MinimumStreak = 2;
 
-    public static CompareOutcome Outcome(SessionTogether session) => (session.PlayerOneWon, session.PlayerTwoWon) switch
-    {
-        (true, true) => CompareOutcome.Both,
-        (true, false) => CompareOutcome.PlayerOne,
-        (false, true) => CompareOutcome.PlayerTwo,
-        _ => CompareOutcome.Other
-    };
+    public static CompareOutcome Outcome(SessionTogether session) => session.IsCoop
+        ? CompareOutcome.SameTeam
+        : (session.PlayerOneWon, session.PlayerTwoWon) switch
+        {
+            (true, true) => CompareOutcome.Both,
+            (true, false) => CompareOutcome.PlayerOne,
+            (false, true) => CompareOutcome.PlayerTwo,
+            _ => CompareOutcome.Other
+        };
 
     public static void Fill(CompareResultDto result, IReadOnlyList<SessionTogether> sessions, int playerOne, int playerTwo)
     {
         var games = Games(sessions);
+        var sameTeam = sessions.Where(s => s.IsCoop).ToList();
 
-        result.DirectWins = new CompareRow<int>(sessions.Count(s => s.PlayerOneWon), sessions.Count(s => s.PlayerTwoWon));
+        result.DirectWins = new CompareRow<int>(sessions.Count(PlayerOneBeat), sessions.Count(PlayerTwoBeat));
         result.WonByOthers = sessions.Count(s => Outcome(s) == CompareOutcome.Other);
+        result.SameTeam = new CompareTeamRecord
+        {
+            Count = sameTeam.Count,
+            Won = sameTeam.Count(s => s.TeamWon == true),
+            Lost = sameTeam.Count(s => s.TeamWon != true)
+        };
         result.TotalSessionsTogether = sessions.Count;
         result.MinutesPlayed = (int)sessions.Sum(Minutes);
         result.Games = games;
@@ -50,13 +59,16 @@ public static class HeadToHeadCalculator
                 {
                     GameId = group.Key,
                     SessionCount = group.Count(),
-                    PlayerOneWins = group.Count(s => s.PlayerOneWon),
-                    PlayerTwoWins = group.Count(s => s.PlayerTwoWon),
+                    PlayerOneWins = group.Count(PlayerOneBeat),
+                    PlayerTwoWins = group.Count(PlayerTwoBeat),
                     OtherWins = group.Count(s => Outcome(s) == CompareOutcome.Other),
+                    SameTeamCount = group.Count(s => s.IsCoop),
+                    SameTeamWins = group.Count(s => s.IsCoop && s.TeamWon == true),
                     PlayerOneAverageScore = AverageScore(group, s => s.PlayerOneScore),
                     PlayerTwoAverageScore = AverageScore(group, s => s.PlayerTwoScore),
                     LastPlayed = last.Start,
-                    LastOutcome = Outcome(last)
+                    LastOutcome = Outcome(last),
+                    LastTeamWon = last.IsCoop ? last.TeamWon == true : null
                 };
             })
             .OrderByDescending(game => game.SessionCount)
@@ -73,8 +85,8 @@ public static class HeadToHeadCalculator
         }
 
         return games
+            .Select(game => new { game.GameId, SessionCount = game.SessionCount - game.SameTeamCount, Lead = Lead(game, side) })
             .Where(game => game.SessionCount >= MinimumSessionsForBestAndWorst)
-            .Select(game => new { game.GameId, game.SessionCount, Lead = Lead(game, side) })
             .Where(game => game.Lead > 0)
             .OrderByDescending(game => game.Lead)
             .ThenByDescending(game => game.SessionCount)
@@ -91,7 +103,7 @@ public static class HeadToHeadCalculator
 
         foreach (var outcome in sessionsNewestFirst.Select(Outcome))
         {
-            if (outcome == CompareOutcome.Both)
+            if (outcome is CompareOutcome.Both or CompareOutcome.SameTeam)
             {
                 continue;
             }
@@ -111,7 +123,7 @@ public static class HeadToHeadCalculator
     public static ClosestGame? Closest(IEnumerable<SessionTogether> sessions, int playerOne, int playerTwo)
     {
         var closest = sessions
-            .Where(s => s.HasScoring && s.PlayerOneScore.HasValue && s.PlayerTwoScore.HasValue)
+            .Where(s => !s.IsCoop && s.HasScoring && s.PlayerOneScore.HasValue && s.PlayerTwoScore.HasValue)
             .OrderBy(s => Math.Abs(s.PlayerOneScore!.Value - s.PlayerTwoScore!.Value))
             .ThenByDescending(s => s.Start)
             .FirstOrDefault();
@@ -142,7 +154,8 @@ public static class HeadToHeadCalculator
                 PlayerOneScore = s.PlayerOneScore,
                 PlayerTwoScore = s.PlayerTwoScore,
                 Outcome = Outcome(s),
-                OtherWinnerId = s.OtherWinnerId
+                OtherWinnerId = s.OtherWinnerId,
+                TeamWon = s.IsCoop ? s.TeamWon == true : null
             })
             .ToList();
     }
@@ -163,9 +176,13 @@ public static class HeadToHeadCalculator
         ? game.PlayerOneWins - game.PlayerTwoWins
         : game.PlayerTwoWins - game.PlayerOneWins;
 
+    private static bool PlayerOneBeat(SessionTogether session) => !session.IsCoop && session.PlayerOneWon;
+
+    private static bool PlayerTwoBeat(SessionTogether session) => !session.IsCoop && session.PlayerTwoWon;
+
     private static double? AverageScore(IEnumerable<SessionTogether> sessions, Func<SessionTogether, double?> score)
     {
-        var scores = sessions.Where(s => s.HasScoring).Select(score).OfType<double>().ToList();
+        var scores = sessions.Where(s => s.HasScoring && !s.IsCoop).Select(score).OfType<double>().ToList();
         return scores.Count == 0 ? null : Math.Round(scores.Average(), 1);
     }
 

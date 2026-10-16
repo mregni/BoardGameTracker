@@ -55,7 +55,11 @@ public class CompareRepositoryTests
         var caraAndDave = new Session(scoring.Id, Day.AddDays(4), Day.AddDays(4).AddMinutes(20), string.Empty);
         caraAndDave.AddPlayerSession(cara.Id, 1, false, true);
         caraAndDave.AddPlayerSession(dave.Id, 2, false, false);
-        context.AddRange(first, second, third, withoutBob, caraAndDave);
+        var coop = new Session(noScoring.Id, Day.AddDays(5), Day.AddDays(5).AddMinutes(45), string.Empty);
+        coop.MarkAsCoop(false, 12);
+        coop.AddPlayerSession(alice.Id, null, false, true);
+        coop.AddPlayerSession(bob.Id, null, false, true);
+        context.AddRange(first, second, third, withoutBob, caraAndDave, coop);
         await context.SaveChangesAsync();
 
         return new Seed(alice.Id, bob.Id, cara.Id, dave.Id, scoring.Id, noScoring.Id);
@@ -71,9 +75,11 @@ public class CompareRepositoryTests
 
         var sessions = await repository.GetSessionsTogether(seed.Alice, seed.Bob);
 
-        sessions.Should().HaveCount(3);
-        sessions.Select(s => s.Start).Should().Equal(Day.AddDays(2), Day.AddDays(1), Day);
-        sessions[0].Should().BeEquivalentTo(new
+        sessions.Should().HaveCount(4);
+        sessions.Select(s => s.Start).Should().Equal(Day.AddDays(5), Day.AddDays(2), Day.AddDays(1), Day);
+        sessions[0].Should().BeEquivalentTo(new { IsCoop = true, TeamWon = (bool?)false, PlayerOneWon = false, PlayerTwoWon = false });
+        sessions.Skip(1).Should().OnlyContain(s => !s.IsCoop && s.TeamWon == null);
+        sessions[1].Should().BeEquivalentTo(new
         {
             GameId = seed.Scoring,
             HasScoring = true,
@@ -84,7 +90,7 @@ public class CompareRepositoryTests
             PlayerTwoWon = true,
             OtherWinnerId = (int?)null
         });
-        sessions[1].Should().BeEquivalentTo(new
+        sessions[2].Should().BeEquivalentTo(new
         {
             GameId = seed.NoScoring,
             HasScoring = false,
@@ -93,7 +99,7 @@ public class CompareRepositoryTests
             PlayerTwoWon = false,
             OtherWinnerId = (int?)Math.Min(seed.Cara, seed.Dave)
         });
-        sessions[2].Should().BeEquivalentTo(new { PlayerOneScore = 40.0, PlayerOneWon = true, PlayerTwoScore = 30.0, PlayerTwoWon = false });
+        sessions[3].Should().BeEquivalentTo(new { PlayerOneScore = 40.0, PlayerOneWon = true, PlayerTwoScore = 30.0, PlayerTwoWon = false });
     }
 
     [Fact]
@@ -105,7 +111,7 @@ public class CompareRepositoryTests
 
         var sessions = await new CompareRepository(context).GetSessionsTogether(seed.Bob, seed.Alice);
 
-        sessions[2].Should().BeEquivalentTo(new { PlayerOneScore = 30.0, PlayerOneWon = false, PlayerTwoScore = 40.0, PlayerTwoWon = true });
+        sessions[3].Should().BeEquivalentTo(new { PlayerOneScore = 30.0, PlayerOneWon = false, PlayerTwoScore = 40.0, PlayerTwoWon = true });
     }
 
     [Fact]
@@ -129,7 +135,7 @@ public class CompareRepositoryTests
 
         var pair = await new CompareRepository(context).GetPairWithMostSessions();
 
-        pair.Should().BeEquivalentTo(new ComparePairDto { PlayerOneId = seed.Alice, PlayerTwoId = seed.Bob, SessionCount = 3 });
+        pair.Should().BeEquivalentTo(new ComparePairDto { PlayerOneId = seed.Alice, PlayerTwoId = seed.Bob, SessionCount = 4 });
     }
 
     [Fact]

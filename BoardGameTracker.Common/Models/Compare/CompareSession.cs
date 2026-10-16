@@ -12,4 +12,5 @@ public class CompareSession
     public double? PlayerTwoScore { get; set; }
     public CompareOutcome Outcome { get; set; }
     public int? OtherWinnerId { get; set; }
+    public bool? TeamWon { get; set; }
 }

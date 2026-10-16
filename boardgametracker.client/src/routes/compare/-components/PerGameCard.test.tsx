@@ -85,7 +85,57 @@ describe("PerGameCard", () => {
 		expect(brass).toHaveTextContent("+1 other");
 		expect(brass).toHaveTextContent("7 games · no scores");
 		expect(brass).toHaveTextContent("M · ");
-		expect(inventors).toHaveTextContent("= · ");
+		expect(inventors).toHaveTextContent("+ · ");
+	});
+
+	it("shows a co-op game as same team with a hatched bar and the co-op result", () => {
+		render(
+			<PerGameCard
+				games={[
+					gameRow({
+						gameId: 14,
+						sessionCount: 3,
+						sameTeamCount: 3,
+						sameTeamWins: 2,
+						lastOutcome: "sameTeam",
+						lastTeamWon: true,
+					}),
+					gameRow({ gameId: 10, sessionCount: 5, sameTeamCount: 2, playerOneWins: 2, playerTwoWins: 1 }),
+				]}
+				playerOne={playerOne}
+				playerTwo={playerTwo}
+				dateFormat="dd-MM-yyyy"
+				uiLanguage="en-US"
+			/>,
+		);
+
+		const [mixed, pandemic] = screen.getAllByTestId("per-game-row");
+		expect(pandemic).toHaveTextContent("3 games · co-op");
+		expect(pandemic).toHaveTextContent("Same team · won 2 of 3");
+		expect(pandemic).toHaveTextContent("Co-op · won");
+		const segments = within(pandemic)
+			.getAllByTestId("progress-segment")
+			.filter((s) => s.dataset.visible === "true");
+		expect(segments.map((segment) => segment.dataset.pattern)).toEqual(["hatch"]);
+		expect(within(pandemic).getByRole("img", { name: "Pandemic: Same team · won 2 of 3" })).toBeInTheDocument();
+		expect(mixed).toHaveTextContent("+2 same team");
+	});
+
+	it("shows a lost co-op game as the last result", () => {
+		render(
+			<PerGameCard
+				games={[
+					gameRow({ gameId: 14, sessionCount: 1, sameTeamCount: 1, lastOutcome: "sameTeam", lastTeamWon: false }),
+				]}
+				playerOne={playerOne}
+				playerTwo={playerTwo}
+				dateFormat="dd-MM-yyyy"
+				uiLanguage="en-US"
+			/>,
+		);
+
+		expect(screen.getByText("Co-op · lost")).toBeInTheDocument();
+		expect(screen.getByText("Same team · won 0 of 1")).toBeInTheDocument();
 	});
 
 	it("hides the sort and show-all controls it does not need", () => {

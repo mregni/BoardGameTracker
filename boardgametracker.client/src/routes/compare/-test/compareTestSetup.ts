@@ -46,6 +46,9 @@ export const gameRow = (overrides: Partial<CompareGame> & { gameId: number }): C
 	playerOneWins: 0,
 	playerTwoWins: 0,
 	otherWins: 0,
+	sameTeamCount: 0,
+	sameTeamWins: 0,
+	lastTeamWon: null,
 	playerOneAverageScore: null,
 	playerTwoAverageScore: null,
 	lastPlayed: new Date(2026, 9, 10),
@@ -61,6 +64,7 @@ export const sessionRow = (overrides: Partial<CompareSession> & { sessionId: num
 	playerTwoScore: null,
 	outcome: "other",
 	otherWinnerId: null,
+	teamWon: null,
 	...overrides,
 });
 
@@ -71,6 +75,7 @@ export const compareResult = (overrides: Partial<CompareResult> = {}): CompareRe
 	totalDuration: { playerOne: 7860, playerTwo: 6240 },
 	directWins: { playerOne: 23, playerTwo: 17 },
 	wonByOthers: 6,
+	sameTeam: { count: 0, won: 0, lost: 0 },
 	totalSessionsTogether: 46,
 	minutesPlayed: 2410,
 	preferredGame: { gameId: 10, sessionCount: 11 },

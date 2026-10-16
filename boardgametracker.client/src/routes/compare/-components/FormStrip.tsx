@@ -11,6 +11,7 @@ const tileVariants = cva("inline-grid size-6 place-items-center rounded-md text-
 			playerTwo: "bg-player-two text-white",
 			both: "bg-linear-to-br from-player-one from-50% to-player-two to-50% text-white",
 			other: "border border-card-border bg-card-light text-white/60",
+			sameTeam: "bg-hatch text-white",
 		},
 	},
 });
@@ -35,18 +36,21 @@ export const FormStrip = ({ sessions, streak, playerOne, playerTwo }: Props) => 
 		({
 			playerOne: initialOf(playerOne.name),
 			playerTwo: initialOf(playerTwo.name),
-			both: "=",
+			both: "+",
 			other: "–",
+			sameTeam: "=",
 		})[outcome];
-	const who = (outcome: CompareOutcome) =>
+	const who = (session: CompareSession) =>
 		({
 			playerOne: playerOne.name,
 			playerTwo: playerTwo.name,
 			both: t("form.both"),
 			other: t("form.other"),
-		})[outcome];
+			sameTeam: session.teamWon ? t("form.same-team-won") : t("form.same-team-lost"),
+		})[session.outcome];
 	const streakPlayer = streak?.side === "playerOne" ? playerOne : streak?.side === "playerTwo" ? playerTwo : null;
 	const hasBoth = sessions.some((session) => session.outcome === "both");
+	const hasSameTeam = sessions.some((session) => session.outcome === "sameTeam");
 
 	return (
 		<div className="flex flex-col gap-1">
@@ -57,7 +61,7 @@ export const FormStrip = ({ sessions, streak, playerOne, playerTwo }: Props) => 
 			<div className="flex flex-wrap items-center gap-1">
 				<div
 					role="img"
-					aria-label={t("form.label", { list: oldestFirst.map((session) => who(session.outcome)).join(", ") })}
+					aria-label={t("form.label", { list: oldestFirst.map(who).join(", ") })}
 					className="flex flex-wrap gap-1"
 				>
 					{oldestFirst.map((session) => (
@@ -65,7 +69,7 @@ export const FormStrip = ({ sessions, streak, playerOne, playerTwo }: Props) => 
 							key={session.sessionId}
 							data-testid="form-tile"
 							data-outcome={session.outcome}
-							title={`${gameById(session.gameId)?.title ?? ""} · ${who(session.outcome)}`}
+							title={`${gameById(session.gameId)?.title ?? ""} · ${who(session)}`}
 							className={tileVariants({ outcome: session.outcome })}
 						>
 							{letter(session.outcome)}
@@ -80,6 +84,7 @@ export const FormStrip = ({ sessions, streak, playerOne, playerTwo }: Props) => 
 			</div>
 			<span className="text-xs text-white/60">
 				{t("form.legend", { one: initialOf(playerOne.name), two: initialOf(playerTwo.name) })}
+				{hasSameTeam && ` · ${t("form.legend-same-team")}`}
 				{hasBoth && ` · ${t("form.legend-both")}`}
 			</span>
 		</div>

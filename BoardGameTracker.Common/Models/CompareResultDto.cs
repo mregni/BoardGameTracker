@@ -10,6 +10,7 @@ public class CompareResultDto
     public CompareRow<double> TotalDuration { get; set; }
     public CompareRow<int> DirectWins { get; set; }
     public int WonByOthers { get; set; }
+    public CompareTeamRecord SameTeam { get; set; }
     public int TotalSessionsTogether { get; set; }
     public int MinutesPlayed { get; set; }
     public PreferredGame? PreferredGame { get; set; }
@@ -28,6 +29,7 @@ public class CompareResultDto
         WinCount = new CompareRow<int>(0, 0);
         TotalDuration = new CompareRow<double>(0, 0);
         WinPercentage = new CompareRow<double>(0, 0);
+        SameTeam = new CompareTeamRecord();
         Games = [];
         RecentSessions = [];
         BestGames = new CompareRow<List<int>>([], []);

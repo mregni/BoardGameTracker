@@ -69,7 +69,7 @@ describe("RecordCard", () => {
 			}),
 		).toBeInTheDocument();
 		const segments = screen.getAllByTestId("progress-segment");
-		expect(segments.map((segment) => segment.dataset.tone)).toEqual(["playerOne", "muted", "playerTwo"]);
+		expect(segments.map((segment) => segment.dataset.tone)).toEqual(["playerOne", "muted", "subtle", "playerTwo"]);
 		const legend = screen.getAllByRole("listitem").map((item) => item.textContent);
 		expect(legend).toEqual(["Mikhaël won23", "someone else won6", "Kathleen won17"]);
 	});
@@ -90,6 +90,31 @@ describe("RecordCard", () => {
 		const bar = screen.getByRole("img", { name: /3 games together/ });
 		expect(bar).not.toHaveAttribute("data-overflow");
 		expect(screen.queryByText("someone else won")).toBeNull();
+	});
+
+	it("adds a hatched same co-op team part with its team result to the bar and the legend", () => {
+		render(
+			<RecordCard
+				compare={compareResult({ totalSessionsTogether: 49, sameTeam: { count: 3, won: 2, lost: 1 } })}
+				playerOne={playerOne}
+				playerTwo={playerTwo}
+			/>,
+		);
+
+		const bar = screen.getByRole("img", {
+			name: "49 games together: Mikhaël won 23, someone else won 6, Kathleen won 17, same co-op team 3 (won 2, lost 1)",
+		});
+		const team = bar.querySelector('[data-tone="subtle"]');
+		expect(team).toHaveAttribute("data-pattern", "hatch");
+		expect(team).toHaveAttribute("data-visible", "true");
+		const legend = screen.getAllByRole("listitem");
+		expect(legend.map((item) => item.textContent)).toEqual([
+			"Mikhaël won23",
+			"someone else won6",
+			"same co-op team3 (won 2, lost 1)",
+			"Kathleen won17",
+		]);
+		expect(within(legend[2]).getByTestId("progress-legend-swatch")).toHaveAttribute("data-pattern", "hatch");
 	});
 
 	it("shows the last games and the streak", () => {

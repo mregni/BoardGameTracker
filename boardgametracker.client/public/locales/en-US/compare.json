@@ -20,7 +20,11 @@
     "won": "{{player}} won",
     "someone-else": "someone else won",
     "summary_one": "{{count}} game together: {{playerOne}} won {{one}}, someone else won {{others}}, {{playerTwo}} won {{two}}",
-    "summary_other": "{{count}} games together: {{playerOne}} won {{one}}, someone else won {{others}}, {{playerTwo}} won {{two}}"
+    "summary_other": "{{count}} games together: {{playerOne}} won {{one}}, someone else won {{others}}, {{playerTwo}} won {{two}}",
+    "same-team": "same co-op team",
+    "same-team-value": "{{total}} (won {{won}}, lost {{lost}})",
+    "summary-team_one": "same co-op team {{total}} (won {{won}}, lost {{lost}})",
+    "summary-team_other": "same co-op team {{total}} (won {{won}}, lost {{lost}})"
   },
   "form": {
     "title_one": "Last game together",
@@ -28,11 +32,14 @@
     "order": "(oldest → newest)",
     "label": "Last games together, oldest first: {{list}}",
     "legend": "{{one}} or {{two}}: who won · –: someone else",
-    "legend-both": "=: both won",
+    "legend-both": "+: both won",
     "both": "both won",
     "other": "someone else",
     "streak_one": "{{player}} {{count}} in a row",
-    "streak_other": "{{player}} {{count}} in a row"
+    "streak_other": "{{player}} {{count}} in a row",
+    "legend-same-team": "=: same co-op team, doesn't break or extend a streak",
+    "same-team-won": "same team, won",
+    "same-team-lost": "same team, lost"
   },
   "tiles": {
     "games-together": "Games together",
@@ -62,7 +69,12 @@
     "row_other": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, someone else {{count}}",
     "show-all_one": "Show all {{count}} game",
     "show-all_other": "Show all {{count}} games",
-    "show-less": "Show less"
+    "show-less": "Show less",
+    "coop": "co-op",
+    "same-team_one": "Same team · won {{won}} of {{count}}",
+    "same-team_other": "Same team · won {{won}} of {{count}}",
+    "same-team-extra_one": "+{{count}} same team",
+    "same-team-extra_other": "+{{count}} same team"
   },
   "best-worst": {
     "against": "{{player}} against {{opponent}}",
@@ -75,7 +87,8 @@
   "recent": {
     "title": "Recent games together",
     "both-won": "Both won",
-    "no-winner": "No winner"
+    "no-winner": "No winner",
+    "same-team": "same team"
   },
   "overall": {
     "title": "Overall, not only together",

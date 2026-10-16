@@ -6,6 +6,7 @@ import type {
 	CompareResult,
 	CompareSession,
 	CompareStreak,
+	CompareTeamRecord,
 	CreateGame,
 	CreateLocation,
 	CreatePlayer,
@@ -93,6 +94,7 @@ describe("API contract", () => {
 		sameKeys<CompareSession, Schemas["CompareSession"]>(true);
 		sameKeys<CompareStreak, Schemas["CompareStreak"]>(true);
 		sameKeys<ComparePair, Schemas["ComparePairDto"]>(true);
+		sameKeys<CompareTeamRecord, Schemas["CompareTeamRecord"]>(true);
 	});
 
 	it("keeps the commands aligned with the generated request bodies", () => {

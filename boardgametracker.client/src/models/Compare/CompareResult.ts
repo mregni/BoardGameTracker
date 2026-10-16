@@ -1,4 +1,4 @@
-export type CompareOutcome = "playerOne" | "playerTwo" | "both" | "other";
+export type CompareOutcome = "playerOne" | "playerTwo" | "both" | "other" | "sameTeam";
 
 export type CompareSide = "playerOne" | "playerTwo";
 
@@ -9,6 +9,7 @@ export interface CompareResult {
 	totalDuration: CompareRow<number>;
 	directWins: CompareRow<number>;
 	wonByOthers: number;
+	sameTeam: CompareTeamRecord;
 	totalSessionsTogether: number;
 	minutesPlayed: number;
 	preferredGame: PreferredGame | null;
@@ -58,10 +59,13 @@ export interface CompareGame {
 	playerOneWins: number;
 	playerTwoWins: number;
 	otherWins: number;
+	sameTeamCount: number;
+	sameTeamWins: number;
 	playerOneAverageScore: number | null;
 	playerTwoAverageScore: number | null;
 	lastPlayed: Date;
 	lastOutcome: CompareOutcome;
+	lastTeamWon: boolean | null;
 }
 
 export interface CompareSession {
@@ -73,6 +77,13 @@ export interface CompareSession {
 	playerTwoScore: number | null;
 	outcome: CompareOutcome;
 	otherWinnerId: number | null;
+	teamWon: boolean | null;
+}
+
+export interface CompareTeamRecord {
+	count: number;
+	won: number;
+	lost: number;
 }
 
 export interface ComparePair {

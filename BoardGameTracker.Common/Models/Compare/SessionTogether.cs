@@ -12,4 +12,6 @@ public class SessionTogether
     public double? PlayerTwoScore { get; init; }
     public bool PlayerTwoWon { get; init; }
     public int? OtherWinnerId { get; init; }
+    public bool IsCoop { get; init; }
+    public bool? TeamWon { get; init; }
 }

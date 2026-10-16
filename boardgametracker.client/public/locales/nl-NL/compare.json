@@ -20,7 +20,11 @@
     "won": "{{player}} won",
     "someone-else": "iemand anders won",
     "summary_one": "{{count}} spel samen: {{playerOne}} won {{one}}, iemand anders won {{others}}, {{playerTwo}} won {{two}}",
-    "summary_other": "{{count}} spellen samen: {{playerOne}} won {{one}}, iemand anders won {{others}}, {{playerTwo}} won {{two}}"
+    "summary_other": "{{count}} spellen samen: {{playerOne}} won {{one}}, iemand anders won {{others}}, {{playerTwo}} won {{two}}",
+    "same-team": "zelfde co-op team",
+    "same-team-value": "{{total}} ({{won}} gewonnen, {{lost}} verloren)",
+    "summary-team_one": "zelfde co-op team {{total}} ({{won}} gewonnen, {{lost}} verloren)",
+    "summary-team_other": "zelfde co-op team {{total}} ({{won}} gewonnen, {{lost}} verloren)"
   },
   "form": {
     "title_one": "Laatste spel samen",
@@ -28,11 +32,14 @@
     "order": "(oudste → nieuwste)",
     "label": "Laatste spellen samen, oudste eerst: {{list}}",
     "legend": "{{one}} of {{two}}: wie won · –: iemand anders",
-    "legend-both": "=: allebei gewonnen",
+    "legend-both": "+: allebei gewonnen",
     "both": "allebei gewonnen",
     "other": "iemand anders",
     "streak_one": "{{player}} {{count}} op rij",
-    "streak_other": "{{player}} {{count}} op rij"
+    "streak_other": "{{player}} {{count}} op rij",
+    "legend-same-team": "=: zelfde co-op team, breekt of verlengt geen reeks",
+    "same-team-won": "zelfde team, gewonnen",
+    "same-team-lost": "zelfde team, verloren"
   },
   "tiles": {
     "games-together": "Spellen samen",
@@ -62,7 +69,12 @@
     "row_other": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, iemand anders {{count}}",
     "show-all_one": "Toon alle {{count}} spel",
     "show-all_other": "Toon alle {{count}} spellen",
-    "show-less": "Toon minder"
+    "show-less": "Toon minder",
+    "coop": "co-op",
+    "same-team_one": "Zelfde team · {{won}} van {{count}} gewonnen",
+    "same-team_other": "Zelfde team · {{won}} van {{count}} gewonnen",
+    "same-team-extra_one": "+{{count}} zelfde team",
+    "same-team-extra_other": "+{{count}} zelfde team"
   },
   "best-worst": {
     "against": "{{player}} tegen {{opponent}}",
@@ -75,7 +87,8 @@
   "recent": {
     "title": "Recente spellen samen",
     "both-won": "Allebei gewonnen",
-    "no-winner": "Geen winnaar"
+    "no-winner": "Geen winnaar",
+    "same-team": "zelfde team"
   },
   "overall": {
     "title": "Globaal, niet alleen samen",

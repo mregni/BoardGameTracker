@@ -26,11 +26,14 @@ public class HeadToHeadCalculatorTests
         double? twoScore = null,
         int minutes = 60,
         bool hasScoring = true,
-        int? otherWinner = null)
+        int? otherWinner = null,
+        bool? teamWon = null)
     {
         var start = Day.AddDays(-daysAgo);
         return new SessionTogether
         {
+            IsCoop = teamWon.HasValue,
+            TeamWon = teamWon,
             SessionId = _nextId++,
             GameId = gameId,
             HasScoring = hasScoring,
@@ -81,6 +84,101 @@ public class HeadToHeadCalculatorTests
             CompareOutcome.PlayerOne, CompareOutcome.PlayerTwo, CompareOutcome.Both,
             CompareOutcome.Other, CompareOutcome.Other, CompareOutcome.PlayerOne);
         result.RecentSessions[3].OtherWinnerId.Should().Be(9);
+    }
+
+    [Fact]
+    public void Outcome_ShouldBeSameTeam_ForACoopSession_WhateverTheWinFlags()
+    {
+        HeadToHeadCalculator.Outcome(Session(1, 0, oneWon: true, twoWon: true, teamWon: true)).Should().Be(CompareOutcome.SameTeam);
+        HeadToHeadCalculator.Outcome(Session(1, 0, teamWon: false)).Should().Be(CompareOutcome.SameTeam);
+    }
+
+    [Fact]
+    public void Fill_ShouldCountCoopSessionsAsSameTeam_NeverAsAWinOrAsSomeoneElse()
+    {
+        var sessions = new List<SessionTogether>
+        {
+            Session(5, 0, oneWon: true, twoWon: true, teamWon: true),
+            Session(5, 1, teamWon: false),
+            Session(5, 2, oneWon: true, twoWon: true, teamWon: true),
+            Session(1, 3, oneWon: true),
+            Session(1, 4)
+        };
+        var result = new CompareResultDto();
+
+        HeadToHeadCalculator.Fill(result, sessions, PlayerOne, PlayerTwo);
+
+        result.DirectWins.PlayerOne.Should().Be(1);
+        result.DirectWins.PlayerTwo.Should().Be(0);
+        result.WonByOthers.Should().Be(1);
+        result.SameTeam.Should().BeEquivalentTo(new CompareTeamRecord { Count = 3, Won = 2, Lost = 1 });
+        result.TotalSessionsTogether.Should().Be(5);
+        result.RecentSessions[0].Should().BeEquivalentTo(new { Outcome = CompareOutcome.SameTeam, TeamWon = (bool?)true });
+        result.RecentSessions[1].TeamWon.Should().BeFalse();
+        result.RecentSessions[3].TeamWon.Should().BeNull();
+    }
+
+    [Fact]
+    public void Games_ShouldCountSameTeamPerGame_WithTheTeamResultAsTheLastResult()
+    {
+        var sessions = new List<SessionTogether>
+        {
+            Session(5, 0, oneWon: true, twoWon: true, teamWon: true),
+            Session(5, 1, teamWon: false),
+            Session(5, 2, oneWon: true, twoWon: true, teamWon: true),
+            Session(5, 3, oneWon: true, oneScore: 10, twoScore: 5)
+        };
+
+        var game = HeadToHeadCalculator.Games(sessions).Single();
+
+        game.Should().BeEquivalentTo(new CompareGame
+        {
+            GameId = 5,
+            SessionCount = 4,
+            PlayerOneWins = 1,
+            PlayerTwoWins = 0,
+            OtherWins = 0,
+            SameTeamCount = 3,
+            SameTeamWins = 2,
+            PlayerOneAverageScore = 10,
+            PlayerTwoAverageScore = 5,
+            LastPlayed = Day,
+            LastOutcome = CompareOutcome.SameTeam,
+            LastTeamWon = true
+        });
+    }
+
+    [Fact]
+    public void BestGames_ShouldOnlyCountCompetitiveSessions()
+    {
+        var games = new List<CompareGame>
+        {
+            new() { GameId = 1, SessionCount = 5, SameTeamCount = 3, PlayerOneWins = 2 },
+            new() { GameId = 2, SessionCount = 6, SameTeamCount = 3, PlayerOneWins = 3 }
+        };
+
+        HeadToHeadCalculator.BestGames(games, CompareOutcome.PlayerOne).Should().Equal(2);
+    }
+
+    [Fact]
+    public void Streak_ShouldNeitherBreakNorExtend_OnSameTeamSessions()
+    {
+        var sessions = new List<SessionTogether>
+        {
+            Session(1, 0, oneWon: true),
+            Session(5, 1, oneWon: true, twoWon: true, teamWon: true),
+            Session(1, 2, oneWon: true),
+            Session(5, 3, teamWon: false),
+            Session(1, 4, twoWon: true)
+        };
+
+        HeadToHeadCalculator.Streak(sessions).Should().BeEquivalentTo(new CompareStreak { Side = CompareOutcome.PlayerOne, Count = 2 });
+    }
+
+    [Fact]
+    public void Closest_ShouldSkipCoopSessions()
+    {
+        HeadToHeadCalculator.Closest([Session(5, 0, teamWon: true, oneScore: 3, twoScore: 3)], PlayerOne, PlayerTwo).Should().BeNull();
     }
 
     [Fact]

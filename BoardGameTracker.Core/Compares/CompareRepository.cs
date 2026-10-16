@@ -43,7 +43,9 @@ public class CompareRepository : ICompareRepository
                     .Where(ps => ps.Won && ps.PlayerId != playerOne && ps.PlayerId != playerTwo)
                     .OrderBy(ps => ps.PlayerId)
                     .Select(ps => (int?)ps.PlayerId)
-                    .FirstOrDefault()
+                    .FirstOrDefault(),
+                IsCoop = s.IsCoop,
+                TeamWon = s.TeamWon
             })
             .ToListAsync();
     }

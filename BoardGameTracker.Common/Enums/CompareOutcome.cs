@@ -5,5 +5,6 @@ public enum CompareOutcome
     PlayerOne,
     PlayerTwo,
     Both,
-    Other
+    Other,
+    SameTeam
 }

@@ -31,7 +31,7 @@ describe("FormStrip", () => {
 		render(<FormStrip sessions={newestFirst} streak={null} playerOne={playerOne} playerTwo={playerTwo} />);
 
 		const tiles = screen.getAllByTestId("form-tile");
-		expect(tiles.map((tile) => tile.textContent)).toEqual(["M", "–", "=", "K", "K"]);
+		expect(tiles.map((tile) => tile.textContent)).toEqual(["M", "–", "+", "K", "K"]);
 		expect(tiles.map((tile) => tile.dataset.outcome)).toEqual(["playerOne", "other", "both", "playerTwo", "playerTwo"]);
 		expect(tiles[0]).toHaveAttribute("title", "Brass: Birmingham · Mikhaël");
 		expect(tiles[1]).toHaveAttribute("title", "Carcassonne · someone else");
@@ -59,7 +59,31 @@ describe("FormStrip", () => {
 		);
 
 		expect(screen.getByText("Kathleen 2 in a row")).toBeInTheDocument();
-		expect(screen.getByText("M or K: who won · –: someone else · =: both won")).toBeInTheDocument();
+		expect(screen.getByText("M or K: who won · –: someone else · +: both won")).toBeInTheDocument();
+	});
+
+	it("shows a hatched = for games on the same co-op team", () => {
+		render(
+			<FormStrip
+				sessions={[
+					sessionRow({ sessionId: 9, gameId: 14, outcome: "sameTeam", teamWon: true }),
+					sessionRow({ sessionId: 8, gameId: 14, outcome: "sameTeam", teamWon: false }),
+					sessionRow({ sessionId: 7, outcome: "playerOne" }),
+				]}
+				streak={null}
+				playerOne={playerOne}
+				playerTwo={playerTwo}
+			/>,
+		);
+
+		const tiles = screen.getAllByTestId("form-tile");
+		expect(tiles.map((tile) => tile.textContent)).toEqual(["M", "=", "="]);
+		expect(tiles[2]).toHaveClass("bg-hatch");
+		expect(tiles[2]).toHaveAttribute("title", "Pandemic · same team, won");
+		expect(tiles[1]).toHaveAttribute("title", "Pandemic · same team, lost");
+		expect(
+			screen.getByText("M or K: who won · –: someone else · =: same co-op team, doesn't break or extend a streak"),
+		).toBeInTheDocument();
 	});
 
 	it("leaves out the both-won hint and the streak when they do not apply", () => {

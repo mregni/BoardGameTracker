@@ -20,7 +20,11 @@
     "won": "Ganó {{player}}",
     "someone-else": "ganó otra persona",
     "summary_one": "{{count}} partida juntos: {{playerOne}} ganó {{one}}, otra persona ganó {{others}}, {{playerTwo}} ganó {{two}}",
-    "summary_other": "{{count}} partidas juntos: {{playerOne}} ganó {{one}}, otra persona ganó {{others}}, {{playerTwo}} ganó {{two}}"
+    "summary_other": "{{count}} partidas juntos: {{playerOne}} ganó {{one}}, otra persona ganó {{others}}, {{playerTwo}} ganó {{two}}",
+    "same-team": "mismo equipo cooperativo",
+    "same-team-value": "{{total}} ({{won}} ganadas, {{lost}} perdidas)",
+    "summary-team_one": "mismo equipo cooperativo {{total}} ({{won}} ganadas, {{lost}} perdidas)",
+    "summary-team_other": "mismo equipo cooperativo {{total}} ({{won}} ganadas, {{lost}} perdidas)"
   },
   "form": {
     "title_one": "Última partida juntos",
@@ -28,11 +32,14 @@
     "order": "(de la más antigua a la más reciente)",
     "label": "Últimas partidas juntos, la más antigua primero: {{list}}",
     "legend": "{{one}} o {{two}}: quién ganó · –: otra persona",
-    "legend-both": "=: ganaron los dos",
+    "legend-both": "+: ganaron los dos",
     "both": "ganaron los dos",
     "other": "otra persona",
     "streak_one": "{{player}} {{count}} seguida",
-    "streak_other": "{{player}} {{count}} seguidas"
+    "streak_other": "{{player}} {{count}} seguidas",
+    "legend-same-team": "=: mismo equipo cooperativo, no corta ni alarga una racha",
+    "same-team-won": "mismo equipo, ganada",
+    "same-team-lost": "mismo equipo, perdida"
   },
   "tiles": {
     "games-together": "Partidas juntos",
@@ -62,7 +69,12 @@
     "row_other": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, otras personas {{count}}",
     "show-all_one": "Mostrar el {{count}} juego",
     "show-all_other": "Mostrar los {{count}} juegos",
-    "show-less": "Mostrar menos"
+    "show-less": "Mostrar menos",
+    "coop": "cooperativo",
+    "same-team_one": "Mismo equipo · {{won}} de {{count}} ganada",
+    "same-team_other": "Mismo equipo · {{won}} de {{count}} ganadas",
+    "same-team-extra_one": "+{{count}} en equipo",
+    "same-team-extra_other": "+{{count}} en equipo"
   },
   "best-worst": {
     "against": "{{player}} contra {{opponent}}",
@@ -75,7 +87,8 @@
   "recent": {
     "title": "Partidas recientes juntos",
     "both-won": "Ganaron los dos",
-    "no-winner": "Sin ganador"
+    "no-winner": "Sin ganador",
+    "same-team": "mismo equipo"
   },
   "overall": {
     "title": "En general, no solo juntos",

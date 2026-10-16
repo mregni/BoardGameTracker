@@ -3,6 +3,7 @@ import { cva, cx } from "class-variance-authority";
 import { useTranslation } from "react-i18next";
 import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
+import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { CompareSession, Player } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
@@ -61,6 +62,10 @@ export const RecentTogether = ({ sessions, playerOne, playerTwo, dateFormat, uiL
 			);
 		}
 
+		if (session.outcome === "sameTeam") {
+			return <CoopResultPill won={session.teamWon === true} className="justify-self-end" />;
+		}
+
 		if (session.outcome === "both") {
 			return <span className={pillVariants({ tone: "ok" })}>{t("recent.both-won")}</span>;
 		}
@@ -81,9 +86,11 @@ export const RecentTogether = ({ sessions, playerOne, playerTwo, dateFormat, uiL
 				{sessions.slice(0, RECENT_ROWS).map((session) => {
 					const game = gameById(session.gameId);
 					const scores =
-						session.playerOneScore !== null && session.playerTwoScore !== null
-							? ` · ${number(session.playerOneScore)} – ${number(session.playerTwoScore)}`
-							: "";
+						session.outcome === "sameTeam"
+							? ` · ${t("recent.same-team")}`
+							: session.playerOneScore !== null && session.playerTwoScore !== null
+								? ` · ${number(session.playerOneScore)} – ${number(session.playerTwoScore)}`
+								: "";
 					const content = (
 						<>
 							<span className="col-start-2 row-start-2 whitespace-nowrap text-xs tabular-nums text-white/60 sm:col-start-1 sm:row-start-1">
