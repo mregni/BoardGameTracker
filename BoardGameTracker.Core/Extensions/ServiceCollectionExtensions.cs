@@ -134,6 +134,8 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IAuthService, AuthService>();
         serviceCollection.AddSingleton<ILoginAttemptTracker, LoginAttemptTracker>();
         serviceCollection.AddSingleton<ISecretProtector, SecretProtector>();
+        serviceCollection.AddSingleton<IIntegrationKeyProtector, IntegrationKeyProtector>();
+        serviceCollection.AddScoped<IIntegrationKeyMigrator, IntegrationKeyMigrator>();
         serviceCollection.AddSingleton<IProfileImageTicketService, ProfileImageTicketService>();
         serviceCollection.AddSingleton<IBackgroundEmailSender, BackgroundEmailSender>();
         serviceCollection.AddScoped<IOidcProviderService, OidcProviderService>();

@@ -475,6 +475,7 @@ if (!app.Environment.IsDevelopment())
 
 RunDbMigrations(app.Services);
 await SeedConfig(app.Services);
+await ProtectIntegrationKeys(app.Services);
 if (authEnabled)
 {
     await SeedAuthData(app.Services, environmentProvider.AdminPassword);
@@ -606,6 +607,13 @@ static async Task SeedConfig(IServiceProvider serviceProvider)
     using var scope = serviceProvider.CreateScope();
     var configRepository = scope.ServiceProvider.GetRequiredService<IConfigRepository>();
     await configRepository.SeedConfigAsync(ConfigDefaults.All);
+}
+
+static async Task ProtectIntegrationKeys(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var migrator = scope.ServiceProvider.GetRequiredService<IIntegrationKeyMigrator>();
+    await migrator.ProtectLegacyKeysAsync();
 }
 
 static async Task SeedAuthData(IServiceProvider serviceProvider, string? adminPassword)

@@ -77,6 +77,15 @@ public class ConfigRepository : IConfigRepository
         }
     }
 
+    public async Task<bool> ReplaceConfigValueAsync(string key, string expected, string value)
+    {
+        var normalizedKey = key.ToLowerInvariant();
+        var rowsAffected = await _context.Config
+            .Where(c => c.Key == normalizedKey && c.Value == expected)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(c => c.Value, value));
+        return rowsAffected > 0;
+    }
+
     public async Task<Dictionary<string, string>> GetAllConfigsAsync()
     {
         return await _context.Config
