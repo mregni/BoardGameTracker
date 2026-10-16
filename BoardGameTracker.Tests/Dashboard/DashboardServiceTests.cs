@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
@@ -93,7 +93,8 @@ public class DashboardServiceTests
         bool userLookedUp = false,
         bool playerLinked = false,
         bool gameNightsEnabled = true,
-        bool nightPlanned = false)
+        bool nightPlanned = false,
+        bool shelfOfShameEnabled = false)
     {
         _gameRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
         _playerRepositoryMock.Verify(x => x.CountAsync(), Times.Once);
@@ -112,7 +113,11 @@ public class DashboardServiceTests
         _playerRepositoryMock.Verify(x => x.GetTopWinners(3), Times.Once);
         _sessionRepositoryMock.Verify(x => x.AnyAsync(It.IsAny<WonCoopSessionsSpec>(), default), Times.Once);
         _gameRepositoryMock.Verify(x => x.GetRecentlyAddedGames(3), Times.Once);
-        _shameServiceMock.Verify(x => x.GetShameSummary(default), Times.Once);
+        _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false), Times.Once);
+        if (shelfOfShameEnabled)
+        {
+            _shameServiceMock.Verify(x => x.GetShameStatistics(null), Times.Once);
+        }
         _configRepositoryMock.Verify(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.GameNightsEnabled, true), Times.Once);
 
         if (userLookedUp)
@@ -492,14 +497,17 @@ public class DashboardServiceTests
     public async Task GetStatistics_ShouldReturnTheShelfOfShameSummary_WhenEnabled()
     {
         _shameServiceMock
-            .Setup(x => x.GetShameSummary(default))
-            .ReturnsAsync(new ShameSummary { Count = 9, NeverPlayedCount = 5, TotalValue = 365m });
+            .Setup(x => x.GetShameStatistics(null))
+            .ReturnsAsync(new ShameStatistics { Count = 9, NeverPlayedCount = 5, TotalValue = 365m, PlannedCount = 1 });
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false))
+            .ReturnsAsync(true);
 
         var result = await _sut.GetStatistics(null);
 
         result.ShelfOfShame.Should().BeEquivalentTo(new DashboardShelfOfShameDto { Count = 9, NeverPlayedCount = 5, TotalValue = 365m });
 
-        VerifyGetStatisticsCalls();
+        VerifyGetStatisticsCalls(shelfOfShameEnabled: true);
     }
 
     [Fact]
@@ -539,6 +547,8 @@ public class DashboardServiceTests
         _gameNightRepositoryMock
             .Setup(x => x.FirstOrDefaultAsync(It.IsAny<NextGameNightSpec>(), default))
             .ReturnsAsync((DashboardGameNightDto?)null);
-        _shameServiceMock.Setup(x => x.GetShameSummary(default)).ReturnsAsync((ShameSummary?)null);
+        _configRepositoryMock
+            .Setup(x => x.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false))
+            .ReturnsAsync(false);
     }
 }

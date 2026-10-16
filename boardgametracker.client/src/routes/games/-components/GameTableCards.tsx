@@ -85,7 +85,7 @@ export const GameTableCards = (props: Props) => {
 						<Link
 							to="/games/$gameId"
 							params={{ gameId: game.id }}
-							className="flex items-center gap-2 mb-1 underline-offset-2 hover:text-primary hover:underline"
+							className="flex items-center gap-2 mb-1 underline-offset-2 hover:text-primary-text hover:underline"
 						>
 							<BgtAvatar image={game.image} title={game.title} size="small" />
 							<span className="font-semibold truncate">{game.title}</span>
@@ -156,7 +156,7 @@ export const GameTableCards = (props: Props) => {
 										href={shopUrl}
 										target="_blank"
 										rel="noopener noreferrer"
-										className="inline-flex items-center gap-1 text-primary hover:text-primary/80"
+										className="inline-flex items-center gap-1 text-primary-text hover:text-indigo-300"
 									>
 										<SquareOutIcon className="size-4" />
 										{t("games:columns.shop")}
@@ -167,7 +167,7 @@ export const GameTableCards = (props: Props) => {
 										href={`https://boardgamegeek.com/boardgame/${game.bggId}`}
 										target="_blank"
 										rel="noopener noreferrer"
-										className="inline-flex items-center gap-1 text-primary hover:text-primary/80"
+										className="inline-flex items-center gap-1 text-primary-text hover:text-indigo-300"
 									>
 										<SquareOutIcon className="size-4" />
 										{t("games:columns.bgg")}

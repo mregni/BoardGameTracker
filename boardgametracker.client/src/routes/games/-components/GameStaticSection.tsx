@@ -60,7 +60,7 @@ export const GameStaticSection = (props: Props) => {
 						aria-expanded={expanded}
 						aria-controls={`game-description-${game.id}`}
 						onClick={() => setExpanded((value) => !value)}
-						className="text-sm text-primary hover:text-primary/80 cursor-pointer"
+						className="text-sm text-primary-text hover:text-indigo-300 cursor-pointer"
 					>
 						{expanded ? t("about.show-less") : t("about.show-more")}
 					</button>

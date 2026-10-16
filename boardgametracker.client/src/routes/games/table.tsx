@@ -176,7 +176,7 @@ function RouteComponent() {
 						<Link
 							to="/games/$gameId"
 							params={{ gameId: row.original.id }}
-							className="flex items-center gap-2 underline-offset-2 hover:text-primary hover:underline"
+							className="flex items-center gap-2 underline-offset-2 hover:text-primary-text hover:underline"
 						>
 							<BgtAvatar image={row.original.image} title={row.original.title} size="small" />
 							<span>{row.original.title}</span>
@@ -288,7 +288,7 @@ function RouteComponent() {
 							href={url}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="inline-flex items-center gap-1 text-primary hover:text-primary/80"
+							className="inline-flex items-center gap-1 text-primary-text hover:text-indigo-300"
 						>
 							<SquareOutIcon className="size-4" />
 							{t("games:columns.shop")}
@@ -308,7 +308,7 @@ function RouteComponent() {
 							href={`https://boardgamegeek.com/boardgame/${row.original.bggId}`}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="inline-flex items-center gap-1 text-primary hover:text-primary/80"
+							className="inline-flex items-center gap-1 text-primary-text hover:text-indigo-300"
 						>
 							<SquareOutIcon className="size-4" />
 							{t("games:columns.bgg")}

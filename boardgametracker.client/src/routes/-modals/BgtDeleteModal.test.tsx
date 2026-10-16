@@ -41,7 +41,7 @@ describe("BgtDeleteModal", () => {
 			const buttons = within(footer).getAllByRole("button");
 			expect(buttons.map((button) => button.textContent)).toEqual(["common:cancel", "delete.button"]);
 			expect(buttons[0]).toHaveAttribute("type", "button");
-			expect(buttons[1]).toHaveClass("bg-error");
+			expect(buttons[1]).toHaveClass("bg-error-strong");
 			expect(buttons[1]).not.toHaveClass("bg-primary/60");
 		});
 

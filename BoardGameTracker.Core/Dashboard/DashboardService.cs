@@ -1,4 +1,4 @@
-using BoardGameTracker.Common;
+﻿using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Auth;
@@ -87,7 +87,7 @@ public class DashboardService : IDashboardService
 
         var linkedPlayer = await GetLinkedPlayer(userId, monthStart, cancellationToken);
         var (nextGameNight, plannedGameNights) = await GetUpcomingGameNights(_dateTimeProvider.UtcNow, cancellationToken);
-        var shelfOfShame = await _shameService.GetShameSummary(cancellationToken);
+        var shelfOfShame = await GetShelfOfShame();
 
         return new DashboardStatisticsDto
         {
@@ -105,7 +105,7 @@ public class DashboardService : IDashboardService
             LinkedPlayer = linkedPlayer,
             NextGameNight = nextGameNight,
             PlannedGameNights = plannedGameNights,
-            ShelfOfShame = shelfOfShame?.ToDashboardDto(),
+            ShelfOfShame = shelfOfShame,
             RecentActivities = recentSessions.ToRecentActivityListDto(),
             Collection = gameStates,
             MostPlayedGames = mostPlayedGames.ToListDto(),
@@ -133,6 +133,18 @@ public class DashboardService : IDashboardService
         linkedPlayer.SessionsThisMonth = playCount;
         linkedPlayer.WinsThisMonth = winCount;
         return linkedPlayer;
+    }
+
+    private async Task<DashboardShelfOfShameDto?> GetShelfOfShame()
+    {
+        var enabled = await _configRepository.GetConfigValueOrDefaultAsync(Constants.AppConfig.ShelfOfShameEnabled, false);
+        if (!enabled)
+        {
+            return null;
+        }
+
+        var statistics = await _shameService.GetShameStatistics();
+        return statistics.ToDashboardDto();
     }
 
     private async Task<(DashboardGameNightDto? Next, int Planned)> GetUpcomingGameNights(DateTime now, CancellationToken cancellationToken)

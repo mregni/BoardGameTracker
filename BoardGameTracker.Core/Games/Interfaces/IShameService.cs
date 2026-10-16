@@ -1,11 +1,10 @@
-﻿using BoardGameTracker.Common.Models;
+using BoardGameTracker.Common.Models;
 
 namespace BoardGameTracker.Core.Games.Interfaces;
 
 public interface IShameService
 {
     Task<int> CountShelfOfShameGames(CancellationToken cancellationToken = default);
-    Task<ShameSummary?> GetShameSummary(CancellationToken cancellationToken = default);
-    Task<List<ShameGame>> GetShameGames();
-    Task<ShameStatistics> GetShameStatistics();
+    Task<List<ShameGame>> GetShameGames(int? months = null);
+    Task<ShameStatistics> GetShameStatistics(int? months = null);
 }

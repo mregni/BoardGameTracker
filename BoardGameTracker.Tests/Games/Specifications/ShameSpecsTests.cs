@@ -86,4 +86,31 @@ public class ShameSpecsTests
         zebra.Price.Should().BeNull();
         zebra.LastSessionDate.Should().BeNull();
     }
+
+    [Fact]
+    public void ShameGamesSpec_ShouldProjectPlayCountPlayersAndPlayTime()
+    {
+        var fixture = Fixture();
+        var alpha = fixture.Single(x => x.Id == 3);
+        alpha.UpdatePlayerCount(2, 4);
+        alpha.UpdatePlayTime(60, 90);
+
+        var result = new ShameGamesSpec(Cutoff).Evaluate(fixture).ToList();
+
+        var projected = result.Single(x => x.Id == 3);
+        projected.PlayCount.Should().Be(2);
+        projected.MinPlayers.Should().Be(2);
+        projected.MaxPlayers.Should().Be(4);
+        projected.MinPlayTime.Should().Be(60);
+        projected.MaxPlayTime.Should().Be(90);
+        projected.PlannedGameNightId.Should().BeNull();
+        projected.PlannedFor.Should().BeNull();
+
+        var zebra = result.Single(x => x.Id == 1);
+        zebra.PlayCount.Should().Be(0);
+        zebra.MinPlayers.Should().BeNull();
+        zebra.MaxPlayers.Should().BeNull();
+        zebra.MinPlayTime.Should().BeNull();
+        zebra.MaxPlayTime.Should().BeNull();
+    }
 }

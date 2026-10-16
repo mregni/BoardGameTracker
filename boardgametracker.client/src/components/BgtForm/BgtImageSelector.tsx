@@ -129,10 +129,10 @@ export const BgtImageSelector = (props: Props) => {
 							)}
 						>
 							<div className="flex flex-col items-center justify-center">
-								<p className="mb-2 text-sm text-gray-500 text-center">
+								<p className="mb-2 text-sm text-gray-400 text-center">
 									<span className="font-semibold">{t("upload")}</span>
 								</p>
-								<p className="text-xs text-gray-500">{t("types")}</p>
+								<p className="text-xs text-gray-400">{t("types")}</p>
 							</div>
 							<input
 								id="dropzone-file"

@@ -43,7 +43,7 @@ export const ShelfOfShameNudge = (props: Props) => {
 				</strong>
 				{details.length > 0 && <span className="text-sm text-white/60">{details.join(" · ")}</span>}
 			</span>
-			<CaretRight className="size-4 text-primary" aria-hidden="true" />
+			<CaretRight className="size-4 text-primary-text" aria-hidden="true" />
 		</Link>
 	);
 };

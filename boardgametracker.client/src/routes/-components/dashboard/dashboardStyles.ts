@@ -18,7 +18,7 @@ export const dashboardLinkClasses = cva(
 export const dashboardRowClasses =
 	"rounded-lg border border-primary/20 bg-primary/10 transition-colors hover:border-primary/60";
 
-export const cardLinkClasses = "inline-flex items-center gap-1 text-sm text-primary hover:text-primary/70";
+export const cardLinkClasses = "inline-flex items-center gap-1 text-sm text-primary-text hover:text-indigo-300";
 
 export const pillVariants = cva(
 	"inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap",

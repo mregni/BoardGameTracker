@@ -26,7 +26,7 @@ export const NextGameNightCard = (props: Props) => {
 				aria-label={t("night.label")}
 				className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm"
 			>
-				<Calendar className="size-4 text-primary" aria-hidden="true" />
+				<Calendar className="size-4 text-primary-text" aria-hidden="true" />
 				<span className="text-white/70">{t("night.none")}</span>
 				{canWrite && (
 					<>
@@ -52,7 +52,7 @@ export const NextGameNightCard = (props: Props) => {
 			data-testid="next-game-night"
 		>
 			<div className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-x-4 gap-y-3 md:grid-cols-[3.5rem_minmax(0,1fr)_auto]">
-				<GameNightDateBox date={start} uiLanguage={uiLanguage} className="self-start" />
+				<GameNightDateBox date={start} uiLanguage={uiLanguage} variant="highlight" className="self-start" />
 				<div className="flex min-w-0 flex-col gap-1.5">
 					<span className="text-xs text-white/60 first-letter:uppercase">
 						{t("night.when", { when: relativeDay(start, uiLanguage) })}

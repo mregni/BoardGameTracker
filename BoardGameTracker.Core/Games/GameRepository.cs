@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Ardalis.Specification.EntityFrameworkCore;
 using BoardGameTracker.Common.Entities;
+using BoardGameTracker.Common.Enums;
 using BoardGameTracker.Common.Models;
 using BoardGameTracker.Common.Models.ChangeDetection;
 using BoardGameTracker.Core.Datastore;
@@ -162,24 +163,23 @@ public class GameRepository : EfRepository<Game>, IGameRepository
         return CountAsync(new GamesWithNoRecentSessionsSpec(cutoffDate), cancellationToken);
     }
 
-    public async Task<ShameSummary> GetShameSummary(DateTime cutoffDate, CancellationToken cancellationToken = default)
-    {
-        var summary = await ApplySpecification(new GamesWithNoRecentSessionsSpec(cutoffDate), evaluateCriteriaOnly: true)
-            .GroupBy(_ => 1)
-            .Select(g => new ShameSummary
-            {
-                Count = g.Count(),
-                NeverPlayedCount = g.Count(x => x.Sessions.Count == 0),
-                TotalValue = g.Sum(x => x.BuyingPrice != null ? (decimal?)x.BuyingPrice.Amount : null)
-            })
-            .FirstOrDefaultAsync(cancellationToken);
-
-        return summary ?? new ShameSummary();
-    }
-
     public Task<List<ShameGame>> GetShameGames(DateTime cutoffDate)
     {
         return ListAsync(new ShameGamesSpec(cutoffDate));
+    }
+
+    public async Task<OwnedCollectionSummary> GetOwnedCollectionSummary(CancellationToken cancellationToken = default)
+    {
+        var owned = _context.Games
+            .AsNoTracking()
+            .Where(x => x.State == GameState.Owned);
+
+        var count = await owned.CountAsync(cancellationToken);
+        var value = await owned
+            .Where(x => x.BuyingPrice != null)
+            .SumAsync(x => (decimal?)x.BuyingPrice!.Amount, cancellationToken);
+
+        return new OwnedCollectionSummary(count, value ?? 0m);
     }
 
     public Task<List<Game>> GetByIdsAsync(IEnumerable<int> ids)

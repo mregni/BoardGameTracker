@@ -30,7 +30,7 @@ export const RsvpEventDetails = ({ gameNight, settings }: Props) => {
 					className="w-16 shrink-0 self-start md:w-20"
 				/>
 				<div className="flex min-w-0 flex-col items-start gap-1.5">
-					<span className="text-xs font-semibold uppercase tracking-widest text-primary">{t("invited")}</span>
+					<span className="text-xs font-semibold uppercase tracking-widest text-primary-text">{t("invited")}</span>
 					<span className="rounded-full bg-primary/20 px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-indigo-300 tabular-nums first-letter:uppercase">
 						{t("game-nights:card.when", {
 							when: relativeDay(startDate, uiLanguage),

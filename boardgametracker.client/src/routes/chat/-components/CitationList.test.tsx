@@ -34,6 +34,14 @@ describe("CitationList", () => {
 		expect(screen.getAllByText("top-match")).toHaveLength(1);
 	});
 
+	it("should style the top match as a selected chip", () => {
+		render(<CitationList citations={[buildCitation()]} onSelect={vi.fn()} />);
+
+		const chip = screen.getByText("top-match");
+		expect(chip).toHaveClass("bg-primary/20", "border", "border-primary", "text-chip-selected");
+		expect(chip).not.toHaveClass("text-primary");
+	});
+
 	it("should show unknown-page when the page is null", () => {
 		render(<CitationList citations={[buildCitation({ page: null })]} onSelect={vi.fn()} />);
 

@@ -39,11 +39,11 @@ const FactRow = (props: FactRowProps) => {
 	const { icon: Icon, label, onClick, children } = props;
 	const className = cx(
 		"flex w-full items-center justify-between gap-3 py-2 text-left border-b border-primary/10 last:border-b-0",
-		onClick && "cursor-pointer hover:text-primary",
+		onClick && "cursor-pointer hover:text-primary-text",
 	);
 	const content = (
 		<>
-			<span className="flex min-w-0 items-center gap-2 text-primary/70">
+			<span className="flex min-w-0 items-center gap-2 text-stat-title">
 				<Icon className="size-4 shrink-0" />
 				<span className="truncate">{label}</span>
 			</span>

@@ -97,6 +97,8 @@
     "invites-cooldown": "De uitnodigingen voor deze spelavond zijn net verstuurd, probeer het over een paar minuten opnieuw",
     "host-rsvp-locked": "De gastheer is altijd aanwezig op de eigen spelavond",
     "rsvp-closed": "Deze spelavond heeft al plaatsgevonden",
+    "already-over": "Deze spelavond heeft al plaatsgevonden",
+    "suggested-game-not-owned": "Je kunt alleen spellen in je bezit voorstellen voor een spelavond",
     "games-running": "Beëindig of gooi de lopende spellen weg voor je de avond afsluit",
     "ended": "Deze spelavond is afgesloten, heropen ze om spellen toe te voegen"
   },

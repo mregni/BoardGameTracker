@@ -179,32 +179,6 @@ public class DashboardRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetShameSummary_ShouldCountNeverPlayedAndSumPrices()
-    {
-        await using var scope = _fixture.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IGameRepository>();
-
-        var summary = await repository.GetShameSummary(Cutoff, TestContext.Current.CancellationToken);
-
-        summary.Count.Should().Be(2);
-        summary.NeverPlayedCount.Should().Be(1);
-        summary.TotalValue.Should().Be(50m);
-    }
-
-    [Fact]
-    public async Task GetShameSummary_ShouldReturnZeros_WhenNoGameQualifies()
-    {
-        await using var scope = _fixture.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IGameRepository>();
-
-        var summary = await repository.GetShameSummary(Cutoff.AddYears(-5), TestContext.Current.CancellationToken);
-
-        summary.Count.Should().Be(0);
-        summary.NeverPlayedCount.Should().Be(0);
-        summary.TotalValue.Should().BeNull();
-    }
-
-    [Fact]
     public async Task NextGameNightSpec_ShouldProjectTheFirstUpcomingNightWithRsvpCountsAndSuggestions()
     {
         await using var scope = _fixture.CreateScope();

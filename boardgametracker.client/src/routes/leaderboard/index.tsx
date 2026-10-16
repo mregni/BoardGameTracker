@@ -52,7 +52,7 @@ function RouteComponent() {
 					<Link
 						to="/players/$playerId"
 						params={{ playerId: row.original.playerId }}
-						className="flex items-center gap-2 hover:text-primary"
+						className="flex items-center gap-2 hover:text-primary-text"
 					>
 						<BgtAvatar image={row.original.image} title={row.original.name} size="small" />
 						<span>{row.original.name}</span>

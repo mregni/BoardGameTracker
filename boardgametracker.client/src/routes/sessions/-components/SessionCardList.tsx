@@ -65,7 +65,7 @@ export const SessionCardList = (props: Props) => {
 									<Link
 										to="/games/$gameId"
 										params={{ gameId: game.id }}
-										className="flex items-center gap-2 hover:text-primary"
+										className="flex items-center gap-2 hover:text-primary-text"
 									>
 										<BgtAvatar image={game.image} title={game.title} size="medium" />
 										<span className="font-semibold break-words">{game.title}</span>

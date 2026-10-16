@@ -1,4 +1,4 @@
-using BoardGameTracker.Common.DTOs;
+﻿using BoardGameTracker.Common.DTOs;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Models;
 
@@ -31,13 +31,13 @@ public static class DashboardDtoExtensions
         };
     }
 
-    public static DashboardShelfOfShameDto ToDashboardDto(this ShameSummary summary)
+    public static DashboardShelfOfShameDto ToDashboardDto(this ShameStatistics statistics)
     {
         return new DashboardShelfOfShameDto
         {
-            Count = summary.Count,
-            NeverPlayedCount = summary.NeverPlayedCount,
-            TotalValue = summary.TotalValue
+            Count = statistics.Count,
+            NeverPlayedCount = statistics.NeverPlayedCount,
+            TotalValue = statistics.TotalValue
         };
     }
 
