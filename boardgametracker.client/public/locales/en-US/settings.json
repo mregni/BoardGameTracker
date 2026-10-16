@@ -163,7 +163,7 @@
 		"status": {
 			"title": "Status",
 			"configured": "API key configured",
-			"not-configured": "API key not Configured",
+			"not-configured": "API key not configured",
 			"source-env": "BGG API key is set via environment variable (BGG_API_KEY)",
 			"source-db": "BGG API key is stored in the database.",
 			"not-configured-description": "To use BGG integration features, you need to provide a BGG API key. You can either set it via the BGG_API_KEY environment variable or enter it directly in the settings below."

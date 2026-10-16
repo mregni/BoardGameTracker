@@ -156,6 +156,15 @@ describe("RsvpAvatarStack", () => {
 		expect(within(stack).getByText("+2")).toHaveAttribute("title", "Player 8, Player 9");
 	});
 
+	it("spaces the avatars on phones instead of overlapping them", () => {
+		media.isDesktop = false;
+		renderWithProviders(<RsvpAvatarStack rsvps={rsvps} />);
+
+		const stack = screen.getByTestId("rsvp-avatar-stack");
+		expect(stack).toHaveClass("gap-1.5");
+		expect(stack.innerHTML).not.toMatch(/-ml-/);
+	});
+
 	it("shows no chip when everyone fits", () => {
 		renderWithProviders(<RsvpAvatarStack rsvps={rsvps.slice(0, 5)} />);
 

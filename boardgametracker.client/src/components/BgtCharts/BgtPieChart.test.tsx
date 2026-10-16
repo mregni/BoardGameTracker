@@ -110,6 +110,45 @@ describe("BgtPieChart", () => {
 		});
 	});
 
+	describe("Colours and labels", () => {
+		it("colours the legend from the palette by default", () => {
+			renderWithTheme(<BgtPieChart {...defaultProps} showLegend />);
+
+			expect(screen.getByTestId("legend-swatch-1")).toHaveStyle({ backgroundColor: "#ff0000" });
+			expect(screen.getByTestId("legend-swatch-3")).toHaveStyle({ backgroundColor: "#0000ff" });
+		});
+
+		it("uses the colour given with a slice", () => {
+			renderWithTheme(
+				<BgtPieChart
+					data={[
+						{ id: "win", label: "Wins", value: 4, color: "#123456" },
+						{ id: "loss", label: "Losses", value: 1 },
+					]}
+					showLegend
+					tooltipPrefix=""
+				/>,
+			);
+
+			expect(screen.getByTestId("legend-swatch-win")).toHaveStyle({ backgroundColor: "#123456" });
+			expect(screen.getByTestId("legend-swatch-loss")).toHaveStyle({ backgroundColor: "#00ff00" });
+		});
+
+		it("describes every slice and the total for screen readers", () => {
+			renderWithTheme(<BgtPieChart {...defaultProps} />);
+
+			expect(
+				screen.getByRole("img", { name: "Category A: 30, Category B: 50, Category C: 20, total: 100" }),
+			).toBeInTheDocument();
+		});
+
+		it("uses a given accessible label", () => {
+			renderWithTheme(<BgtPieChart {...defaultProps} ariaLabel="Wins 3, losses 1" />);
+
+			expect(screen.getByRole("img", { name: "Wins 3, losses 1" })).toBeInTheDocument();
+		});
+	});
+
 	describe("Combined Props", () => {
 		it("should handle all props together", () => {
 			renderWithTheme(
