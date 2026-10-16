@@ -21,6 +21,8 @@
         <PackageReference Include="PdfPig" />
         <PackageReference Include="Pgvector.EntityFrameworkCore" />
         <PackageReference Include="Refit" />
+        <PackageReference Include="Sentry.AspNetCore" />
+        <PackageReference Include="Serilog" />
         <PackageReference Include="SkiaSharp" />
         <PackageReference Include="System.Security.Cryptography.Pkcs" />
         <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
