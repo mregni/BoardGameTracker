@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using BoardGameTracker.Core.Configuration;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Npgsql;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Configuration;
 
-[Collection("EnvironmentVariables")]
+[Collection(EnvironmentVariablesCollection.Name)]
 public class DbConnectionProviderTests : IDisposable
 {
     private static readonly string[] Keys = ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_PORT"];
