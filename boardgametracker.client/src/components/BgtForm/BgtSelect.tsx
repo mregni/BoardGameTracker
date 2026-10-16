@@ -10,6 +10,7 @@ import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import type { BgtSelectImageItem, BgtSelectItem } from "@/models";
 import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
 import { FormFieldWrapper } from "./FormFieldWrapper";
+import { findSearchMatch, handleSelectSearchKeyDown } from "./selectSearch";
 import { useKeyboardResizeGuard } from "./useKeyboardResizeGuard";
 
 type SelectValue = number | string;
@@ -125,19 +126,19 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 		[isKeyboardResize],
 	);
 
+	const selectSearchMatch = useCallback(() => {
+		const match = findSearchMatch(items, searchTerm);
+		if (!match) {
+			return;
+		}
+		handleValueChange(match.value.toString());
+		setOpen(false);
+		setSearchTerm("");
+		requestAnimationFrame(() => triggerRef.current?.focus());
+	}, [items, searchTerm, handleValueChange]);
+
 	const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchTerm(e.target.value);
-	}, []);
-
-	const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === "ArrowDown") {
-			e.preventDefault();
-			e.currentTarget
-				.closest('[role="listbox"]')
-				?.querySelector<HTMLElement>('[role="option"]:not([data-disabled])')
-				?.focus();
-		}
-		e.stopPropagation();
 	}, []);
 
 	useEffect(() => {
@@ -195,7 +196,7 @@ const BgtSelectComponent = (props: BgtSelectProps) => {
 										aria-label={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										onClick={(e) => e.stopPropagation()}
-										onKeyDown={handleSearchKeyDown}
+										onKeyDown={(e) => handleSelectSearchKeyDown(e, selectSearchMatch)}
 									/>
 								</div>
 							</div>
