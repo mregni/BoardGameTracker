@@ -137,11 +137,11 @@
       },
       "Refit": {
         "type": "Direct",
-        "requested": "[15.2.0, )",
-        "resolved": "15.2.0",
-        "contentHash": "vJLEoFLzeCuAwnlTeKEwz218WR24W0cwMox3rV1bRlh/95SqtYMC6l3g/QPZ8ujBWmIbUD6Xko7alVia2mxNnA==",
+        "requested": "[16.3.0, )",
+        "resolved": "16.3.0",
+        "contentHash": "tQS8KnCqSrQPFIjYNglhU1heHSo0NOR82fLSqa4btzrtsvNs3JR8/VETFil2wFB+vncJ/vUpULhR4T0YxfZzTQ==",
         "dependencies": {
-          "ReactiveUI.Primitives": "7.1.1"
+          "ReactiveUI.Primitives": "8.2.0"
         }
       },
       "SkiaSharp": {
@@ -475,24 +475,24 @@
       },
       "ReactiveUI.Disposables": {
         "type": "Transitive",
-        "resolved": "7.1.1",
-        "contentHash": "bOTtTEY5F4DqDZGITklbMdfO1qWw8MCSiHHastJCN1yIQJImjKwyrbGobfSbBm05QN5yVtklaJxMPf7PTbF1Fg=="
+        "resolved": "8.2.0",
+        "contentHash": "vpNi3q3oyIyQYLHcUfnmYeV4dBlrCoWFgaFuJXvI+yaKOq/sFcN+cZiuUzV+8Pl6cVnOYPoWPIx2WNzVI/WzcQ=="
       },
       "ReactiveUI.Primitives": {
         "type": "Transitive",
-        "resolved": "7.1.1",
-        "contentHash": "tRSFVUSFdmoH3NIXHLFQwNcxKj5x2SNWGmlGgbAbfCF3SK/yBb4cQcqJaq8CIda+wuOV+fnZAVhKMn18lHTGWA==",
+        "resolved": "8.2.0",
+        "contentHash": "Hlog9ANgfh7tcHX0XXhojZPBXStCgqF7XCzcH+niN8eRLi+RE8CAUEf2ufrgLOOwQMTCKlUTy8wU2fvP5YjMqA==",
         "dependencies": {
-          "ReactiveUI.Disposables": "7.1.1",
-          "ReactiveUI.Primitives.Core": "7.1.1"
+          "ReactiveUI.Disposables": "8.2.0",
+          "ReactiveUI.Primitives.Core": "8.2.0"
         }
       },
       "ReactiveUI.Primitives.Core": {
         "type": "Transitive",
-        "resolved": "7.1.1",
-        "contentHash": "cM4eIYInI4gF39VRaErpN2vfuEAWQTehRYn5MqJvlVGoAJGuUcdtlr4TwyNTOJb5j8Vcs6rfVPoHgp87QbpW8A==",
+        "resolved": "8.2.0",
+        "contentHash": "PNBtwHrBFoR8IE8aMMQMZZSH/pH4l8gFqs2fwRERObBlapQf82vT833BYlW28oT1aJKm7sXamEWgf7TR25DPiQ==",
         "dependencies": {
-          "ReactiveUI.Disposables": "7.1.1"
+          "ReactiveUI.Disposables": "8.2.0"
         }
       },
       "Sentry": {

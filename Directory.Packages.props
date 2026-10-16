@@ -37,7 +37,7 @@
         <PackageVersion Include="PdfPig" Version="0.1.16" />
         <PackageVersion Include="Pgvector" Version="0.3.2" />
         <PackageVersion Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
-        <PackageVersion Include="Refit" Version="15.2.0" />
+        <PackageVersion Include="Refit" Version="16.3.0" />
         <PackageVersion Include="Refit.HttpClientFactory" Version="15.2.0" />
         <PackageVersion Include="Refit.Reflection" Version="15.2.0" />
         <PackageVersion Include="Sentry.AspNetCore" Version="6.11.0" />
