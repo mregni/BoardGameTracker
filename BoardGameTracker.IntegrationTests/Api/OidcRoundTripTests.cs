@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Web;
 using BoardGameTracker.Api.Controllers;
+using BoardGameTracker.Api.Infrastructure;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
 using BoardGameTracker.IntegrationTests.Infrastructure;
@@ -73,6 +74,8 @@ public class OidcRoundTripTests : IAsyncLifetime
 
         var adopt = await browser.PostAsync("/api/auth/oidc/adopt", null);
         adopt.StatusCode.Should().Be(HttpStatusCode.OK);
+        adopt.Headers.GetValues("Set-Cookie").Should().Contain(c => c.StartsWith($"{AuthSessionCookies.RefreshCookieName}=", StringComparison.Ordinal) && c.Contains("path=/api/auth;", StringComparison.Ordinal) && c.Contains("httponly", StringComparison.Ordinal) && c.Contains("samesite=lax", StringComparison.Ordinal));
+        (await adopt.Content.ReadAsStringAsync()).Should().NotContainEquivalentOf("refreshToken");
         var login = await adopt.Content.ReadFromJsonAsync<LoginResponse>(IntegrationFixture.Json);
         login!.User.Username.Should().Be("jane");
         login.User.DisplayName.Should().Be("Jane Doe");
@@ -86,6 +89,10 @@ public class OidcRoundTripTests : IAsyncLifetime
 
         var replay = await browser.PostAsync("/api/auth/oidc/adopt", null);
         replay.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        using var refresh = new HttpRequestMessage(HttpMethod.Post, "/api/auth/refresh");
+        refresh.Headers.Add(RequireSessionHeaderAttribute.HeaderName, RequireSessionHeaderAttribute.HeaderValue);
+        (await browser.SendAsync(refresh)).StatusCode.Should().Be(HttpStatusCode.OK, "the adopted session lives on in the refresh cookie");
     }
 
     [Fact]

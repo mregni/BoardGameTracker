@@ -21,13 +21,13 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IOidcService _oidcService;
-    private readonly IProfileImageTicketService _imageTickets;
+    private readonly AuthSessionCookies _sessionCookies;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService, IOidcService oidcService, IProfileImageTicketService imageTickets, ILogger<AuthController> logger)
+    public AuthController(IAuthService authService, IOidcService oidcService, AuthSessionCookies sessionCookies, ILogger<AuthController> logger)
     {
         _authService = authService;
-        _imageTickets = imageTickets;
+        _sessionCookies = sessionCookies;
         _oidcService = oidcService;
         _logger = logger;
     }
@@ -40,28 +40,36 @@ public class AuthController : ControllerBase
     {
         _logger.LogDebug("Login attempt received");
         var response = await _authService.LoginAsync(request, ClientAddressKey.From(HttpContext.Connection.RemoteIpAddress));
-        ProfileImageCookie.Issue(HttpContext, _imageTickets.Issue(), _imageTickets.Lifetime);
+        _sessionCookies.Issue(HttpContext, response.RefreshToken);
         return Ok(response);
     }
 
     [HttpPost("refresh")]
     [AllowAnonymous]
-    [EnableRateLimiting("auth")]
+    [EnableRateLimiting("refresh")]
+    [RequireSessionHeader]
     [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Refresh()
     {
-        var response = await _authService.RefreshAsync(request.RefreshToken);
-        ProfileImageCookie.Issue(HttpContext, _imageTickets.Issue(), _imageTickets.Lifetime);
+        var refreshToken = AuthSessionCookies.ReadRefreshToken(Request)
+            ?? throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+        var response = await _authService.RefreshAsync(refreshToken);
+        _sessionCookies.Issue(HttpContext, response.RefreshToken);
         return Ok(response);
     }
 
     [HttpPost("logout")]
+    [AllowAnonymous]
+    [RequireSessionHeader]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Logout()
     {
-        var userId = GetCurrentUserId();
-        await _authService.LogoutAsync(userId, request.RefreshToken);
-        ProfileImageCookie.Clear(HttpContext);
+        var userId = User.Identity?.IsAuthenticated == true ? User.FindFirstValue(ClaimTypes.NameIdentifier) : null;
+        await _authService.LogoutAsync(userId, AuthSessionCookies.ReadRefreshToken(Request));
+        AuthSessionCookies.Clear(HttpContext);
         return NoContent();
     }
 

@@ -26,14 +26,14 @@ public class OidcController : ControllerBase
 
     private readonly IOidcService _oidcService;
     private readonly IPublicUrlBuilder _publicUrlBuilder;
-    private readonly IProfileImageTicketService _imageTickets;
+    private readonly AuthSessionCookies _sessionCookies;
     private readonly ILogger<OidcController> _logger;
 
-    public OidcController(IOidcService oidcService, IPublicUrlBuilder publicUrlBuilder, IProfileImageTicketService imageTickets, ILogger<OidcController> logger)
+    public OidcController(IOidcService oidcService, IPublicUrlBuilder publicUrlBuilder, AuthSessionCookies sessionCookies, ILogger<OidcController> logger)
     {
         _oidcService = oidcService;
         _publicUrlBuilder = publicUrlBuilder;
-        _imageTickets = imageTickets;
+        _sessionCookies = sessionCookies;
         _logger = logger;
     }
 
@@ -108,7 +108,7 @@ public class OidcController : ControllerBase
             throw new AuthenticationFailedException(Constants.Errors.OidcHandoffExpired);
         }
 
-        ProfileImageCookie.Issue(HttpContext, _imageTickets.Issue(), _imageTickets.Lifetime);
+        _sessionCookies.Issue(HttpContext, login.RefreshToken);
         return Ok(login);
     }
 

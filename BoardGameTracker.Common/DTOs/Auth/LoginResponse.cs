@@ -1,8 +1,10 @@
+using System.Text.Json.Serialization;
+
 namespace BoardGameTracker.Common.DTOs.Auth;
 
 public record LoginResponse(
     string AccessToken,
-    string RefreshToken,
+    [property: JsonIgnore] string RefreshToken,
     DateTime ExpiresAt,
     UserInfo User);
 
