@@ -15,7 +15,7 @@
         <PackageVersion Include="coverlet.collector" Version="8.0.1" />
         <PackageVersion Include="FluentAssertions" Version="8.10.0" />
         <PackageVersion Include="MailKit" Version="4.17.0" />
-        <PackageVersion Include="MessagePack" Version="2.5.307" />
+        <PackageVersion Include="MessagePack" Version="3.1.12" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
         <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.13" />
         <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.13" />
