@@ -48,13 +48,11 @@ describe("Players overview", () => {
 	});
 
 	it("prefetches the players overview in the loader", () => {
-		const queryClient = { prefetchQuery: vi.fn() };
+		const queryClient = { query: vi.fn().mockResolvedValue(undefined) };
 
 		mocks.captured.config.loader({ context: { queryClient } });
 
-		expect(queryClient.prefetchQuery).toHaveBeenCalledWith(
-			expect.objectContaining({ queryKey: ["players", "overview"] }),
-		);
+		expect(queryClient.query).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ["players", "overview"] }));
 	});
 
 	it("shows a tile per player in the order the server returns", async () => {
