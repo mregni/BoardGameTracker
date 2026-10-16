@@ -6,6 +6,7 @@ using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
 using BoardGameTracker.Core.Configuration;
 using BoardGameTracker.Core.Datastore;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ using Xunit;
 
 namespace BoardGameTracker.Tests.Configuration;
 
-[Collection("EnvironmentVariables")]
+[Collection(EnvironmentVariablesCollection.Name)]
 public class ConfigRepositoryTests : IDisposable
 {
     private const string StringKey = "config_repository_string_key";
