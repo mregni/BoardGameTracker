@@ -554,35 +554,6 @@
         }
       }
     },
-    "/api/changedetection/test": {
-      "get": {
-        "tags": [
-          "ChangeDetection"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangeDetectionConnectionTestDto"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangeDetectionConnectionTestDto"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChangeDetectionConnectionTestDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/changedetection/watch/{watchId}": {
       "get": {
         "tags": [
@@ -2190,6 +2161,103 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/integrations/status": {
+      "get": {
+        "tags": [
+          "Integrations"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationStatusDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationStatusDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IntegrationStatusDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/integrations/{integration}/test": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "parameters": [
+          {
+            "name": "integration",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationStatusDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -5005,22 +5073,6 @@
         },
         "additionalProperties": false
       },
-      "ChangeDetectionConnectionTestDto": {
-        "type": "object",
-        "properties": {
-          "ok": {
-            "type": "boolean"
-          },
-          "status": {
-            "$ref": "#/components/schemas/ChangeDetectionStatus"
-          },
-          "version": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ChangeDetectionStatus": {
         "enum": [
           "ok",
@@ -6401,6 +6453,42 @@
           "value": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "IntegrationConnectionStatus": {
+        "enum": [
+          "ok",
+          "notConfigured",
+          "unauthorized",
+          "unreachable",
+          "rateLimited"
+        ],
+        "type": "string"
+      },
+      "IntegrationKind": {
+        "enum": [
+          "bgg",
+          "changeDetection"
+        ],
+        "type": "string"
+      },
+      "IntegrationStatusDto": {
+        "type": "object",
+        "properties": {
+          "integration": {
+            "$ref": "#/components/schemas/IntegrationKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/IntegrationConnectionStatus"
+          },
+          "checkedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "messageKey": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -8440,6 +8528,9 @@
     },
     {
       "name": "Image"
+    },
+    {
+      "name": "Integrations"
     },
     {
       "name": "Leaderboard"

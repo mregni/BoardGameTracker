@@ -66,22 +66,4 @@ public class ChangeDetectionControllerTests
         _clientMock.Verify(x => x.GetWatchInfoAsync(WatchId, It.IsAny<CancellationToken>()), Times.Once);
         _clientMock.VerifyNoOtherCalls();
     }
-
-    [Theory]
-    [InlineData(ChangeDetectionStatus.Ok, "0.50.1", true)]
-    [InlineData(ChangeDetectionStatus.Unauthorized, null, false)]
-    [InlineData(ChangeDetectionStatus.NotConfigured, null, false)]
-    public async Task TestConnection_ShouldReturnTheOutcomeAndItsReason(ChangeDetectionStatus status, string? version, bool ok)
-    {
-        _clientMock.Setup(x => x.TestConnectionAsync(It.IsAny<CancellationToken>())).ReturnsAsync((status, version));
-
-        var result = await _controller.TestConnection(CancellationToken.None);
-
-        var dto = result.Should().BeOfType<OkObjectResult>().Which.Value.Should().BeOfType<ChangeDetectionConnectionTestDto>().Subject;
-        dto.Ok.Should().Be(ok);
-        dto.Status.Should().Be(status);
-        dto.Version.Should().Be(version);
-        _clientMock.Verify(x => x.TestConnectionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _clientMock.VerifyNoOtherCalls();
-    }
 }

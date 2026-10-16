@@ -27,6 +27,7 @@ import type {
 import type { LoginRequest, LoginResponse, OidcProvider, ProfileResponse, User } from "@/models/Auth/Auth";
 import type { ExternalLogin, OidcDiscoveryResult, OidcProviderConfig, OidcSetup } from "@/models/Auth/Oidc";
 import type { Loan } from "@/models/Loan/Loan";
+import type { IntegrationStatus } from "@/models/Settings/IntegrationStatus";
 import type { VersionInfo } from "@/models/Settings/VersionInfo";
 import type { components } from "./api.generated";
 
@@ -73,6 +74,7 @@ describe("API contract", () => {
 		sameKeys<LeaderboardEntry, Schemas["LeaderboardEntryDto"]>(true);
 		sameKeys<Settings, Schemas["UIResourceDto"]>(true);
 		sameKeys<VersionInfo, Schemas["UpdateStatusDto"]>(true);
+		sameKeys<IntegrationStatus, Schemas["IntegrationStatusDto"]>(true);
 		sameKeys<User, Schemas["UserInfo"]>(true);
 		sameKeys<LoginResponse, Schemas["LoginResponse"]>(true);
 		sameKeys<ProfileResponse, Schemas["ProfileResponse"]>(true);
@@ -97,5 +99,7 @@ describe("API contract", () => {
 	it("keeps the string enums aligned", () => {
 		sameValues<Schemas["GameState"], `${Game["state"]}`>(true);
 		sameValues<Schemas["BadgeType"], `${Badge["type"]}`>(true);
+		sameValues<Schemas["IntegrationKind"], IntegrationStatus["integration"]>(true);
+		sameValues<Schemas["IntegrationConnectionStatus"], IntegrationStatus["status"]>(true);
 	});
 });
