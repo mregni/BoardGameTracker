@@ -93,7 +93,7 @@ describe("PlaySessionSheet", () => {
 		const { onSave } = renderSheet(runningGame);
 
 		expect(screen.queryByRole("button", { name: "play.finish.change" })).not.toBeInTheDocument();
-		const duration = screen.getByRole("spinbutton", { name: "player-session:new.duration.label" });
+		const duration = screen.getByRole("spinbutton", { name: "new.duration.label" });
 		await user.clear(duration);
 		await user.type(duration, "50");
 		await user.click(screen.getByRole("button", { name: "play.save" }));
@@ -164,5 +164,47 @@ describe("PlaySessionSheet", () => {
 
 		expect(close).toHaveBeenCalled();
 		expect(onSave).not.toHaveBeenCalled();
+	});
+
+	it("shows the finished game instead of a game picker and the same fields as the session page", () => {
+		renderSheet(runningGame);
+
+		expect(screen.queryByRole("combobox", { name: "new.game.label" })).not.toBeInTheDocument();
+		expect(screen.getByText("Azul")).toBeInTheDocument();
+		expect(screen.getByTestId("session-form-fields")).toHaveClass("lg:grid-cols-2");
+		expect(screen.getByRole("combobox", { name: "new.location.label" })).toHaveTextContent("Thuis");
+		expect(screen.getByText("expansions.title")).toBeInTheDocument();
+		expect(screen.getAllByTestId("session-player-row")).toHaveLength(2);
+	});
+
+	it("sends the comment and the chosen expansions when finishing", async () => {
+		const user = userEvent.setup();
+		const withExpansion = [
+			{ ...games[0], expansions: [{ id: 31, title: "Summer Pavilion" }] },
+			games[1],
+		] as unknown as Game[];
+		const onSave = vi.fn().mockResolvedValue(undefined);
+		renderWithProviders(
+			<PlaySessionSheet
+				close={vi.fn()}
+				gameNight={gameNight}
+				runningGame={runningGame}
+				games={withExpansion}
+				players={players}
+				locations={locations}
+				nightGameIds={[1]}
+				attendeeIds={[1, 2]}
+				settings={settings}
+				isPending={false}
+				onSave={onSave}
+			/>,
+		);
+
+		await user.click(screen.getByRole("checkbox", { name: "Summer Pavilion" }));
+		await user.type(screen.getByLabelText("new.comment.label"), "Close one");
+		await user.click(screen.getByRole("button", { name: "play.save" }));
+
+		await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+		expect(onSave.mock.calls[0][0]).toMatchObject({ comment: "Close one", expansionIds: [31], gameId: 1 });
 	});
 });

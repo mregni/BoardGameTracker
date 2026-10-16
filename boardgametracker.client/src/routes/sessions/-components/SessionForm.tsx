@@ -1,11 +1,9 @@
-import { type AnyFieldApi, useSelector } from "@tanstack/react-form";
+import { useSelector } from "@tanstack/react-form";
 import { addMinutes } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Bars } from "react-loading-icons";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
-import { BgtTextArea } from "@/components/BgtForm";
+import { BgtDialogFooter } from "@/components/BgtDialog";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -19,14 +17,11 @@ import {
 	type PlayerSession,
 } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
-import { zodValidator } from "@/utils/zodValidator";
 import { useBack } from "../../-hooks/useBack";
 import { useSessionForm } from "../-hooks/useSessionForm";
 import { useSessionFormState } from "../-hooks/useSessionFormState";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
-import { SessionExpansionSelector } from "./SessionExpansionSelector";
 import { SessionFormFields } from "./SessionFormFields";
-import { SessionPlayerManager } from "./SessionPlayerManager";
 
 interface Props {
 	game?: Game;
@@ -82,8 +77,8 @@ export const SessionForm = (props: Props) => {
 		onSubmit: async ({ value }) => {
 			const validatedData = CreateSessionSchema.parse({
 				...value,
-				playerSessions: value.playerSessions.map((x) => (hasScoring ? x : { ...x, score: null })),
-				expansionIds: selectedExpansionIds,
+				playerSessions: value.playerSessions.map((x) => (sessionState.hasScoring ? x : { ...x, score: null })),
+				expansionIds: sessionState.selectedExpansionIds,
 			});
 			await onClick(validatedData);
 		},
@@ -108,17 +103,7 @@ export const SessionForm = (props: Props) => {
 
 	const selectedGameId = useSelector(form.store, (state) => state.values.gameId);
 
-	const {
-		hasScoring,
-		expansionList,
-		selectedExpansionIds,
-		setSelectedExpansionIds,
-		addPlayer,
-		removePlayer,
-		setScore,
-		toggleWon,
-		toggleFirstPlay,
-	} = useSessionFormState({
+	const sessionState = useSessionFormState({
 		selectedGameId,
 		games,
 		initialGame: game,
@@ -140,56 +125,30 @@ export const SessionForm = (props: Props) => {
 		<BgtPage>
 			<BgtPageHeader backAction={goBack} backText={t("back")} header={title} />
 			<BgtPageContent className="items-center">
-				<BgtCard className="w-full max-w-3xl">
-					<form onSubmit={handleFormSubmit(form)} className="w-full">
-						<div className="flex flex-col gap-4 w-full">
-							<SessionFormFields
-								form={form}
-								games={games}
-								recentGameIds={suggestions?.recentGameIds ?? []}
-								recentGamesLabel={t("player-session:form.game.recent")}
-								locations={locations}
-								disabled={disabled}
-								onGameChange={handleGameChange}
-								onMinutesChange={syncStartWithDuration}
+				<BgtCard className="w-full max-w-3xl lg:max-w-5xl">
+					<form onSubmit={handleFormSubmit(form)} className="flex w-full flex-col gap-4">
+						<SessionFormFields
+							form={form}
+							games={games}
+							recentGameIds={suggestions?.recentGameIds ?? []}
+							recentGamesLabel={t("player-session:form.game.recent")}
+							locations={locations}
+							playerList={playerList}
+							frequentPlayerIds={suggestions?.frequentPlayerIds ?? []}
+							fixedGame={null}
+							state={sessionState}
+							disabled={disabled}
+							onGameChange={handleGameChange}
+							onMinutesChange={syncStartWithDuration}
+						/>
+						<div className="sticky bottom-20 z-10 -mx-4 bg-background/95 px-4 py-3 backdrop-blur-sm md:static md:mx-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+							<BgtDialogFooter
+								onCancel={goBack}
+								cancelDisabled={disabled}
+								confirmLabel={buttonText}
+								confirmType="submit"
+								loading={disabled}
 							/>
-
-							<SessionPlayerManager
-								form={form}
-								playerList={playerList}
-								frequentPlayerIds={suggestions?.frequentPlayerIds ?? []}
-								hasScoring={hasScoring}
-								disabled={disabled}
-								onAddPlayer={addPlayer}
-								onRemovePlayer={removePlayer}
-								onScoreChange={setScore}
-								onToggleWon={toggleWon}
-								onToggleFirstPlay={toggleFirstPlay}
-							/>
-
-							<SessionExpansionSelector
-								expansionList={expansionList}
-								selectedIds={selectedExpansionIds}
-								selectedGameId={selectedGameId}
-								disabled={disabled}
-								onSelectionChange={setSelectedExpansionIds}
-							/>
-
-							<form.Field name="comment" validators={zodValidator(CreateSessionSchema, "comment")}>
-								{(field: AnyFieldApi) => (
-									<BgtTextArea field={field} disabled={disabled} label={t("player-session:new.comment.label")} />
-								)}
-							</form.Field>
-
-							<div className="sticky bottom-20 z-10 -mx-4 px-4 py-3 bg-background/95 backdrop-blur-sm flex flex-row gap-2 md:static md:mx-0 md:px-0 md:py-0 md:mt-2 md:bg-transparent md:backdrop-blur-none">
-								<BgtButton variant="cancel" type="button" disabled={disabled} className="flex-none" onClick={goBack}>
-									{t("cancel")}
-								</BgtButton>
-								<BgtButton type="submit" disabled={disabled} className="flex-1" variant="primary">
-									{disabled && <Bars className="size-4" />}
-									{buttonText}
-								</BgtButton>
-							</div>
 						</div>
 					</form>
 				</BgtCard>
