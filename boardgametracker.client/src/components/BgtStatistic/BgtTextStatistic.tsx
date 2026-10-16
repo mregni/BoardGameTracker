@@ -20,6 +20,7 @@ interface Props {
 	addLabel?: string;
 	onClick?: () => void;
 	action?: React.ReactNode;
+	footer?: React.ReactNode;
 }
 
 const formatContent = (content: string | number, language: string | undefined): string =>
@@ -38,6 +39,7 @@ export const BgtTextStatistic = (props: Props) => {
 		addLabel,
 		onClick,
 		action,
+		footer,
 	} = props;
 	const { i18n } = useTranslation();
 
@@ -75,6 +77,7 @@ export const BgtTextStatistic = (props: Props) => {
 				{suffix === "%" && "%"}
 				{suffix && suffix !== "%" && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
 			</BgtText>
+			{footer && <div className="mt-1 min-w-0 text-xs text-white/60">{footer}</div>}
 		</BgtCard>
 	);
 

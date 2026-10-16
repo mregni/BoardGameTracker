@@ -1,92 +1,89 @@
 import { noop, useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import ClockIcon from "@/assets/icons/clock.svg?react";
-import CrownIcon from "@/assets/icons/crown.svg?react";
-import GamepadIcon from "@/assets/icons/gamepad.svg?react";
-import TargetIcon from "@/assets/icons/target.svg?react";
+import InfoIcon from "@/assets/icons/info.svg?react";
 import TrophyIcon from "@/assets/icons/trophy.svg?react";
-import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
+import { BgtEmptyState } from "@/components/BgtLayout/BgtEmptyState";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
-import { BgtDataTable } from "@/components/BgtTable/BgtDataTable";
-import type { LeaderboardEntry } from "@/models";
+import type { Leaderboard } from "@/models";
+import { getGames } from "@/services/queries/games";
 import { getLeaderboard } from "@/services/queries/leaderboard";
-import { formatMinutesToDuration } from "@/utils/dateUtils";
-import { formatPercent } from "@/utils/numberUtils";
-import { HeaderWithHint } from "./-components/HeaderWithHint";
-import { LeaderboardHighlight } from "./-components/LeaderboardHighlight";
+import { LeaderboardFilters } from "./-components/LeaderboardFilters";
+import { LeaderboardPodium } from "./-components/LeaderboardPodium";
+import { LeaderboardRanking } from "./-components/LeaderboardRanking";
+import { LeaderboardTiles } from "./-components/LeaderboardTiles";
+import {
+	hasActiveFilters,
+	type LeaderboardSearch,
+	leaderboardSearchSchema,
+	toLeaderboardParams,
+} from "./-utils/leaderboardSearch";
 
 export const Route = createFileRoute("/leaderboard/")({
 	component: RouteComponent,
-	loader: ({ context: { queryClient } }) => {
-		queryClient.query(getLeaderboard()).catch(noop);
+	validateSearch: leaderboardSearchSchema,
+	loaderDeps: ({ search }) => search,
+	loader: ({ context: { queryClient }, deps }) => {
+		queryClient.query(getLeaderboard(toLeaderboardParams(deps))).catch(noop);
+		queryClient.query(getGames()).catch(noop);
 	},
 });
 
-const formatMinutes = (minutes: number, uiLanguage: string) =>
-	formatMinutesToDuration(Math.round(minutes), ["weeks", "days", "hours", "minutes"], uiLanguage) ?? "0";
+const NoPodium = ({ leaderboard, gameTitle }: { leaderboard: Leaderboard; gameTitle?: string }) => {
+	const { t } = useTranslation("leaderboard");
+	const unranked = leaderboard.players.filter((entry) => !entry.isRanked);
+	const reason =
+		leaderboard.rankedCount === 0
+			? t(gameTitle ? "no-podium.none-game" : "no-podium.none", { game: gameTitle })
+			: t(gameTitle ? "no-podium.game" : "no-podium.all", {
+					count: leaderboard.rankedCount,
+					minimum: leaderboard.minimumPlayersForPodium,
+					game: gameTitle,
+				});
+	const hint =
+		unranked.length === 1
+			? t("no-podium.include-one", { name: unranked[0].name })
+			: unranked.length > 1
+				? t("no-podium.include-more")
+				: null;
+
+	return (
+		<p
+			role="note"
+			className="grid grid-cols-[1.375rem_minmax(0,1fr)] items-start gap-2 rounded-[10px] border border-card-border bg-card-light px-3 py-2.5 text-sm"
+		>
+			<InfoIcon aria-hidden="true" className="mt-0.5 size-4 text-primary" />
+			<span>
+				{reason}
+				{hint && ` ${hint}`}
+			</span>
+		</p>
+	);
+};
 
 function RouteComponent() {
-	const { t, i18n } = useTranslation(["leaderboard", "common"]);
-	const { data: leaderboard, isLoading } = useQuery(getLeaderboard());
-	const uiLanguage = i18n.language;
-	const minimumPlayersForPodium = leaderboard?.minimumPlayersForPodium ?? 4;
+	const { t } = useTranslation("leaderboard");
+	const search = Route.useSearch();
+	const navigate = useNavigate({ from: Route.fullPath });
+	const today = useMemo(() => new Date(), []);
+	const params = useMemo(() => toLeaderboardParams(search, today), [search, today]);
+	const { data: leaderboard, isLoading } = useQuery(getLeaderboard(params));
+	const { data: games = [] } = useQuery(getGames());
 
-	const columns: ColumnDef<LeaderboardEntry>[] = useMemo(
-		() => [
-			{
-				accessorKey: "rank",
-				header: t("columns.rank"),
-				enableSorting: false,
-				cell: ({ row }) => <span className="font-semibold">{row.original.rank}</span>,
-			},
-			{
-				accessorKey: "name",
-				header: t("columns.player"),
-				cell: ({ row }) => (
-					<Link
-						to="/players/$playerId"
-						params={{ playerId: row.original.playerId }}
-						className="flex items-center gap-2 hover:text-primary"
-					>
-						<BgtAvatar image={row.original.image} title={row.original.name} size="small" />
-						<span>{row.original.name}</span>
-					</Link>
-				),
-			},
-			{ accessorKey: "winCount", header: t("columns.wins") },
-			{ accessorKey: "playCount", header: t("columns.plays") },
-			{
-				accessorKey: "winPercentage",
-				header: t("columns.win-rate"),
-				cell: ({ row }) => formatPercent(row.original.winPercentage / 100, uiLanguage, 1),
-			},
-			{
-				accessorKey: "podiumCount",
-				header: () => (
-					<HeaderWithHint
-						label={t("columns.podiums")}
-						hint={t("columns.podiums-hint", { count: minimumPlayersForPodium })}
-					/>
-				),
-				meta: { hideOnMobile: true },
-			},
-			{
-				accessorKey: "minutesPlayed",
-				header: t("columns.time-played"),
-				cell: ({ row }) => formatMinutes(row.original.minutesPlayed, uiLanguage),
-				meta: { hideOnMobile: true },
-			},
-		],
-		[t, uiLanguage, minimumPlayersForPodium],
+	const updateSearch = useCallback(
+		(next: Partial<LeaderboardSearch>) => {
+			navigate({ search: (previous) => ({ ...previous, ...next }), replace: true });
+		},
+		[navigate],
 	);
 
-	if (!isLoading && leaderboard && leaderboard.players.length === 0) {
+	const gameTitle = search.game ? games.find((game) => game.id === search.game)?.title : undefined;
+
+	if (!isLoading && leaderboard && leaderboard.players.length === 0 && !hasActiveFilters(search)) {
 		return (
 			<BgtEmptyPage
 				header={t("title")}
@@ -100,43 +97,37 @@ function RouteComponent() {
 	return (
 		<BgtPage>
 			<BgtPageHeader header={t("title")} icon={TrophyIcon} />
-			<BgtPageContent isLoading={isLoading} data={{ leaderboard }}>
-				{({ leaderboard }) => (
-					<>
-						<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 xl:gap-6">
-							<LeaderboardHighlight
-								title={t("highlights.most-wins")}
-								entry={leaderboard.mostWins}
-								value={t("values.wins", { count: leaderboard.mostWins?.winCount ?? 0 })}
-								emptyText={t("highlights.nobody-yet")}
-								icon={CrownIcon}
+			<BgtPageContent>
+				<LeaderboardFilters search={search} games={games} today={today} onChange={updateSearch} />
+				<BgtPageContent isLoading={isLoading} data={{ leaderboard }}>
+					{({ leaderboard }) =>
+						leaderboard.players.length === 0 ? (
+							<BgtEmptyState
+								icon={TrophyIcon}
+								title={t("empty.filtered-title")}
+								description={t("empty.filtered-description")}
 							/>
-							<LeaderboardHighlight
-								title={t("highlights.most-plays")}
-								entry={leaderboard.mostPlays}
-								value={t("values.plays", { count: leaderboard.mostPlays?.playCount ?? 0 })}
-								emptyText={t("highlights.nobody-yet")}
-								icon={GamepadIcon}
-							/>
-							<LeaderboardHighlight
-								title={t("highlights.best-win-rate")}
-								entry={leaderboard.bestWinRate}
-								value={formatPercent((leaderboard.bestWinRate?.winPercentage ?? 0) / 100, uiLanguage, 1)}
-								emptyText={t("highlights.min-plays", { count: leaderboard.minimumPlaysForWinRate })}
-								hint={t("highlights.min-plays-hint", { count: leaderboard.minimumPlaysForWinRate })}
-								icon={TargetIcon}
-							/>
-							<LeaderboardHighlight
-								title={t("highlights.most-time")}
-								entry={leaderboard.mostTimePlayed}
-								value={formatMinutes(leaderboard.mostTimePlayed?.minutesPlayed ?? 0, uiLanguage)}
-								emptyText={t("highlights.nobody-yet")}
-								icon={ClockIcon}
-							/>
-						</div>
-						<BgtDataTable columns={columns} data={leaderboard.players} noDataMessage={t("empty.title")} />
-					</>
-				)}
+						) : (
+							<>
+								<LeaderboardTiles leaderboard={leaderboard} />
+								{leaderboard.showPodium ? (
+									<LeaderboardPodium
+										players={leaderboard.players.filter((entry) => entry.isRanked)}
+										rankBy={leaderboard.rankBy}
+									/>
+								) : (
+									<NoPodium leaderboard={leaderboard} gameTitle={gameTitle} />
+								)}
+								<LeaderboardRanking
+									players={leaderboard.players}
+									minimumSessions={leaderboard.minimumSessions}
+									minimumPlayersForPodium={leaderboard.minimumPlayersForPodium}
+									label={gameTitle ? `${t("ranking.label")} · ${gameTitle}` : t("ranking.label")}
+								/>
+							</>
+						)
+					}
+				</BgtPageContent>
 			</BgtPageContent>
 		</BgtPage>
 	);

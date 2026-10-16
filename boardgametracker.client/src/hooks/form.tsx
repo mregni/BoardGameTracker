@@ -1,5 +1,5 @@
 import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
-import { BgtDatePicker, type BgtDatePickerProps } from "@/components/BgtForm/BgtDatePicker";
+import { BgtDatePicker, type BgtDatePickerBaseProps } from "@/components/BgtForm/BgtDatePicker";
 import { BgtDateTimePicker, type BgtDateTimePickerProps } from "@/components/BgtForm/BgtDateTimePicker";
 import { BgtInputField, type BgtInputFieldProps } from "@/components/BgtForm/BgtInputField";
 import { BgtSelect, type BgtSelectBaseProps } from "@/components/BgtForm/BgtSelect";
@@ -18,7 +18,7 @@ function AppSelect(props: BgtSelectBaseProps) {
 	return <BgtSelect field={field} {...props} />;
 }
 
-function AppDatePicker(props: Omit<BgtDatePickerProps, "field">) {
+function AppDatePicker(props: BgtDatePickerBaseProps) {
 	const field = useFieldContext();
 	return <BgtDatePicker field={field} {...props} />;
 }

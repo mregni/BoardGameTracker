@@ -1,6 +1,6 @@
-import type { Leaderboard } from "@/models";
+import type { Leaderboard, LeaderboardParams } from "@/models";
 import { axiosInstance } from "@/utils/axiosInstance";
 
-export const getLeaderboardCall = (): Promise<Leaderboard> => {
-	return axiosInstance.get<Leaderboard>("leaderboard").then((response) => response.data);
+export const getLeaderboardCall = (params: LeaderboardParams): Promise<Leaderboard> => {
+	return axiosInstance.get<Leaderboard>("leaderboard", { params }).then((response) => response.data);
 };

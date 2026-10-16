@@ -87,6 +87,13 @@ describe("BgtTextStatistic", () => {
 		});
 	});
 
+	describe("Footer", () => {
+		it("should render the footer below the value", () => {
+			renderWithTheme(<BgtTextStatistic title="Most wins" content={54} footer={<span>Mikhaël</span>} />);
+			expect(screen.getByText("Mikhaël")).toBeInTheDocument();
+		});
+	});
+
 	describe("Edge Cases", () => {
 		it("should handle zero content", () => {
 			renderWithTheme(<BgtTextStatistic title="Losses" content={0} />);

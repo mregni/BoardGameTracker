@@ -29,8 +29,21 @@ import { useDialogPortalContainer } from "../BgtDialog/BgtDialog";
 import { BgtFieldLabel } from "./BgtFieldLabel";
 import { BgtFormErrors } from "./BgtFormErrors";
 
-export interface BgtDatePickerProps {
+interface FieldBinding {
 	field: AnyFieldApi;
+	value?: never;
+	onValueChange?: never;
+	errors?: never;
+}
+
+interface ControlledBinding {
+	field?: never;
+	value: string | null;
+	onValueChange: (value: string) => void;
+	errors?: string[];
+}
+
+export interface BgtDatePickerBaseProps {
 	label: string;
 	disabled?: boolean;
 	className?: string;
@@ -40,6 +53,8 @@ export interface BgtDatePickerProps {
 	minValue?: string | null;
 	maxValue?: string | null;
 }
+
+export type BgtDatePickerProps = (FieldBinding | ControlledBinding) & BgtDatePickerBaseProps;
 
 const safeParseDateValue = (iso: string | undefined | null): CalendarDate | null => {
 	if (!iso) return null;
@@ -51,7 +66,7 @@ const safeParseDateValue = (iso: string | undefined | null): CalendarDate | null
 };
 
 export const BgtDatePicker = (props: BgtDatePickerProps) => {
-	const { field, label, disabled = false, className = "", clearable = false, minValue, maxValue } = props;
+	const { label, disabled = false, className = "", clearable = false, minValue, maxValue } = props;
 	const { t } = useTranslation();
 	const { data: settings } = useQuery(getSettings());
 	const portalContainer = useDialogPortalContainer();
@@ -71,11 +86,20 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 	const separator = getDateSeparator(settings?.dateFormat);
 	const forceLeadingZeros = shouldForceLeadingZeros(settings?.dateFormat);
 
-	const hasErrors = field.state.meta.errors.length > 0;
-	const value = safeParseDateValue(field.state.value as string | undefined);
+	const errors: string[] = props.field ? props.field.state.meta.errors : (props.errors ?? []);
+	const hasErrors = errors.length > 0;
+	const value = safeParseDateValue((props.field ? props.field.state.value : props.value) as string | undefined | null);
+
+	const emit = (next: string) => {
+		if (props.field) {
+			props.field.handleChange(next);
+		} else {
+			props.onValueChange(next);
+		}
+	};
 
 	const handleChange = (date: DateValue | null) => {
-		field.handleChange(date ? date.toString() : "");
+		emit(date ? date.toString() : "");
 	};
 
 	return (
@@ -121,7 +145,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 						{clearable && value !== null && !disabled && (
 							<button
 								type="button"
-								onClick={() => field.handleChange("")}
+								onClick={() => emit("")}
 								className={cx(
 									"flex-none inline-flex size-6 -mx-1.5 items-center justify-center rounded text-gray-400 hover:text-white transition-colors",
 									"cursor-pointer bg-transparent border-none p-0 text-lg leading-none",
@@ -208,7 +232,7 @@ export const BgtDatePicker = (props: BgtDatePickerProps) => {
 					</I18nProvider>
 				</DatePicker>
 			</I18nProvider>
-			{label && <BgtFormErrors errors={field.state.meta.errors} />}
+			{label && <BgtFormErrors errors={errors} />}
 		</div>
 	);
 };

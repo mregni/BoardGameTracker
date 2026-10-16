@@ -1837,7 +1837,13 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    from?: string;
+                    to?: string;
+                    gameId?: number;
+                    minSessions?: number;
+                    rankBy?: components["schemas"]["LeaderboardRankBy"];
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1853,6 +1859,17 @@ export interface paths {
                         "text/plain": components["schemas"]["LeaderboardDto"];
                         "application/json": components["schemas"]["LeaderboardDto"];
                         "text/json": components["schemas"]["LeaderboardDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -4511,14 +4528,18 @@ export interface components {
             bestWinRate: components["schemas"]["LeaderboardEntryDto"];
             mostTimePlayed: components["schemas"]["LeaderboardEntryDto"];
             /** Format: int32 */
-            minimumPlaysForWinRate: number;
+            minimumSessions: number;
             /** Format: int32 */
             minimumPlayersForPodium: number;
+            rankBy: components["schemas"]["LeaderboardRankBy"];
+            showPodium: boolean;
+            /** Format: int32 */
+            rankedCount: number;
             players: components["schemas"]["LeaderboardEntryDto"][];
         };
         LeaderboardEntryDto: {
             /** Format: int32 */
-            rank: number;
+            rank: number | null;
             /** Format: int32 */
             playerId: number;
             name: string;
@@ -4533,7 +4554,12 @@ export interface components {
             winPercentage: number;
             /** Format: double */
             minutesPlayed: number;
+            isRanked: boolean;
+            /** Format: int32 */
+            sessionsToRank: number;
         };
+        /** @enum {string} */
+        LeaderboardRankBy: "wins" | "winRate" | "sessions";
         LoanDto: {
             /** Format: int32 */
             id: number;

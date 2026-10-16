@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+	formatCompactDuration,
 	formatMinutesToDuration,
 	isValidDate,
 	minutesToDuration,
@@ -352,6 +353,32 @@ describe("dateUtils", () => {
 				hours: 1,
 				minutes: 0,
 			});
+		});
+	});
+
+	describe("formatCompactDuration", () => {
+		it("should show minutes only below an hour", () => {
+			expect(formatCompactDuration(40, "en-US")).toBe("40m");
+		});
+
+		it("should show hours and padded minutes below ten hours", () => {
+			expect(formatCompactDuration(220, "en-US")).toBe("3h 40m");
+			expect(formatCompactDuration(365, "en-US")).toBe("6h 05m");
+		});
+
+		it("should show whole hours from ten hours or on the hour", () => {
+			expect(formatCompactDuration(7860, "en-US")).toBe("131h");
+			expect(formatCompactDuration(7889, "en-US")).toBe("131h");
+			expect(formatCompactDuration(120, "en-US")).toBe("2h");
+		});
+
+		it("should treat missing and negative values as zero minutes", () => {
+			expect(formatCompactDuration(null, "en-US")).toBe("0m");
+			expect(formatCompactDuration(-5, "en-US")).toBe("0m");
+		});
+
+		it("should use the unit names of the language", () => {
+			expect(formatCompactDuration(7860, "nl-BE")).toBe("131 u");
 		});
 	});
 

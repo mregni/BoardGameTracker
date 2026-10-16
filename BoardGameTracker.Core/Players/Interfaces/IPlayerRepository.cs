@@ -12,5 +12,5 @@ public interface IPlayerRepository: IRepository<Player>
     Task<int> GetTotalPlayCount(int id);
     Task<int> GetTotalWinCount(int id);
     Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopPlayers(int count, CancellationToken cancellationToken = default);
-    Task<List<LeaderboardRow>> GetLeaderboardRows(CancellationToken cancellationToken = default);
+    Task<List<LeaderboardRow>> GetLeaderboardRows(LeaderboardFilter filter, CancellationToken cancellationToken = default);
 }

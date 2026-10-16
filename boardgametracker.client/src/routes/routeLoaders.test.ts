@@ -27,7 +27,11 @@ interface FakeQueryClient {
 
 interface CapturedRoute {
 	beforeLoad?: (args: { context: { queryClient: FakeQueryClient } }) => Promise<void>;
-	loader?: (args: { params: Record<string, number | string>; context: { queryClient: FakeQueryClient } }) => unknown;
+	loader?: (args: {
+		params: Record<string, number | string>;
+		deps: Record<string, unknown>;
+		context: { queryClient: FakeQueryClient };
+	}) => unknown;
 }
 
 const mocks = vi.hoisted(() => ({
@@ -103,7 +107,7 @@ describe("route loaders", () => {
 		["/games/", {}, [getGames(), getSettings()]],
 		["/games/new", {}, [getSettings()]],
 		["/games/import/list_/$username", { username: "tester" }, [getBggCollection("tester"), getGames(), getSettings()]],
-		["/leaderboard/", {}, [getLeaderboard()]],
+		["/leaderboard/", {}, [getLeaderboard({ minSessions: 5, rankBy: "wins" }), getGames()]],
 		["/players/$playerId", { playerId: 2 }, [getPlayer(2), getPlayerStatistics(2), getBadges()]],
 		[
 			"/players/$playerId_/sessions",
@@ -115,7 +119,7 @@ describe("route loaders", () => {
 		["/settings/", {}, [getSettings(), getLanguages()]],
 		["/shames/", {}, [getShames(), getShameStatistics()]],
 	])("prefetches the queries of %s", async (path, params, expected) => {
-		await route(path).loader?.({ params, context: { queryClient } });
+		await route(path).loader?.({ params, deps: {}, context: { queryClient } });
 
 		expect(queriedKeys(queryClient)).toEqual(expected.map((options) => options.queryKey));
 		for (const [options] of queryClient.query.mock.calls) {
@@ -127,7 +131,7 @@ describe("route loaders", () => {
 		const swallow = vi.fn();
 		queryClient.query.mockReturnValue({ catch: swallow } as unknown as Promise<unknown>);
 
-		route("/games/").loader?.({ params: {}, context: { queryClient } });
+		route("/games/").loader?.({ params: {}, deps: {}, context: { queryClient } });
 
 		expect(swallow).toHaveBeenCalledTimes(2);
 		expect(swallow).toHaveBeenCalledWith(noop);
@@ -137,7 +141,11 @@ describe("route loaders", () => {
 		const sessionKey = getSession(3).queryKey;
 		queryClient = createQueryClient((options) => (options.queryKey[0] === sessionKey[0] ? { gameId: 9 } : undefined));
 
-		await route("/sessions/update_/$sessionId").loader?.({ params: { sessionId: 3 }, context: { queryClient } });
+		await route("/sessions/update_/$sessionId").loader?.({
+			params: { sessionId: 3 },
+			deps: {},
+			context: { queryClient },
+		});
 
 		expect(queriedKeys(queryClient)).toEqual([sessionKey, getGame(9).queryKey]);
 	});
