@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, renderWithTheme, screen, waitFor } from "@/test/test-utils";
+import { act, fireEvent, renderWithTheme, screen, userEvent, waitFor } from "@/test/test-utils";
 import { BgtSimpleSelect } from "./BgtSimpleSelect";
 
 // i18next is mocked globally in setup.ts
@@ -43,6 +43,46 @@ describe("BgtSimpleSelect", () => {
 		items: defaultItems,
 		onValueChange: vi.fn(),
 	};
+
+	describe("Keyboard", () => {
+		const games = [
+			{ value: 1, label: "Agricola" },
+			{ value: 12, label: "Carcassonne" },
+			{ value: 14, label: "Catan" },
+		];
+
+		it("should select the first search match with Enter and close the list", async () => {
+			const onValueChange = vi.fn();
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSimpleSelect items={games} onValueChange={onValueChange} hasSearch defaultOpen />);
+
+			await user.type(await screen.findByPlaceholderText("search"), "carc{Enter}");
+
+			expect(onValueChange).toHaveBeenCalledWith(12);
+			await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+		});
+
+		it("should keep the list open on Enter when nothing matches", async () => {
+			const onValueChange = vi.fn();
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSimpleSelect items={games} onValueChange={onValueChange} hasSearch defaultOpen />);
+
+			await user.type(await screen.findByPlaceholderText("search"), "brass{Enter}");
+
+			expect(onValueChange).not.toHaveBeenCalled();
+			expect(screen.getByRole("listbox")).toBeInTheDocument();
+		});
+
+		it("should move focus to the first matching option with ArrowDown", async () => {
+			const user = userEvent.setup();
+			renderWithTheme(<BgtSimpleSelect items={games} onValueChange={vi.fn()} hasSearch defaultOpen />);
+
+			await user.type(await screen.findByPlaceholderText("search"), "ca{ArrowDown}");
+
+			expect(document.activeElement).toHaveAttribute("role", "option");
+			expect(document.activeElement).toHaveTextContent("Carcassonne");
+		});
+	});
 
 	describe("Avatars", () => {
 		const players = [
