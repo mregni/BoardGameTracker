@@ -30,7 +30,7 @@
     "oidc-provisioning-disabled": "Je account is hier niet bekend en automatisch registreren is uitgeschakeld.",
     "oidc-provisioning-failed": "Je account kon niet worden aangemaakt.",
     "oidc-already-linked": "Dit externe account is al gekoppeld aan een andere gebruiker.",
-    "oidc-discovery-failed": "De identiteitsprovider is niet bereikbaar.",
+    "oidc-discovery-failed": "De identiteitsprovider is niet bereikbaar of heeft op dit adres geen discovery-document. Controleer de authority-URL.",
     "oidc-issuer-mismatch": "De identiteitsprovider meldt een andere issuer dan de ingestelde authority.",
     "oidc-exchange-failed": "De identiteitsprovider heeft de inlogcode geweigerd.",
     "oidc-userinfo-failed": "De identiteitsprovider heeft je profiel niet teruggegeven.",

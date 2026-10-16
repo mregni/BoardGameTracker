@@ -78,7 +78,7 @@ public class OidcProvidersController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [ProducesResponseType<OidcProviderDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType<OidcProviderDto>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateProvider(int id, [FromBody] UpdateOidcProviderRequest request)
     {
         var provider = await _service.UpdateAsync(
@@ -89,7 +89,7 @@ public class OidcProvidersController : ControllerBase
             request.RolesClaimType, request.AdminGroupValue,
             request.IconUrl, request.ButtonColor);
 
-        return CreatedAtAction(nameof(GetProvider), new { id = provider.Id }, provider.ToDto());
+        return Ok(provider.ToDto());
     }
 
     [HttpDelete("{id:int}")]

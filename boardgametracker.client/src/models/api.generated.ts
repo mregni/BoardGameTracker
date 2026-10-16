@@ -3530,8 +3530,8 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Created */
-                201: {
+                /** @description OK */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
