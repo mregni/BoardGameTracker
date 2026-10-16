@@ -9,6 +9,7 @@ import SearchIcon from "@/assets/icons/magnifying-glass.svg?react";
 import type { BgtSelectImageItem, BgtSelectItem } from "@/models";
 import { BgtAvatar } from "../BgtAvatar/BgtAvatar";
 import { BgtFieldLabel } from "./BgtFieldLabel";
+import { findSearchMatch, handleSelectSearchKeyDown } from "./selectSearch";
 import { useKeyboardResizeGuard } from "./useKeyboardResizeGuard";
 
 interface Props {
@@ -44,6 +45,7 @@ export const BgtSimpleSelect = (props: Props) => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [open, setOpen] = useState(defaultOpen);
 	const searchInputRef = useRef<HTMLInputElement>(null);
+	const triggerRef = useRef<HTMLButtonElement>(null);
 	const isKeyboardResize = useKeyboardResizeGuard(searchInputRef);
 
 	const currentValue = value?.toString();
@@ -56,6 +58,18 @@ export const BgtSimpleSelect = (props: Props) => {
 
 	const isSelectImageItem = (item: BgtSelectImageItem | BgtSelectItem): item is BgtSelectImageItem => {
 		return item && typeof item === "object" && "image" in item && (showAvatars || item.image !== null);
+	};
+
+	const selectSearchMatch = () => {
+		const match = findSearchMatch(items, searchTerm);
+		if (!match) {
+			return;
+		}
+		onValueChange?.(match.value);
+		setOpen(false);
+		onOpenChange?.(false);
+		setSearchTerm("");
+		requestAnimationFrame(() => triggerRef.current?.focus());
 	};
 
 	useEffect(() => {
@@ -89,6 +103,7 @@ export const BgtSimpleSelect = (props: Props) => {
 				}}
 			>
 				<Select.Trigger
+					ref={triggerRef}
 					className={cx(
 						"relative w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
 						"pl-4 pr-9 py-2 h-9 shadow-none flex items-center leading-none text-[12px]",
@@ -121,9 +136,7 @@ export const BgtSimpleSelect = (props: Props) => {
 										placeholder={t("search")}
 										className="bg-transparent border-none outline-hidden py-2 text-sm w-full"
 										onClick={(e) => e.stopPropagation()}
-										onKeyDown={(e) => {
-											e.stopPropagation();
-										}}
+										onKeyDown={(e) => handleSelectSearchKeyDown(e, selectSearchMatch)}
 									/>
 								</div>
 							</div>
