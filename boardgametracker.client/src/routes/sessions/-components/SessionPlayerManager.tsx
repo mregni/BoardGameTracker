@@ -30,6 +30,7 @@ export const SessionPlayerManager = withForm({
 		playerList: [] as Player[],
 		frequentPlayerIds: [] as number[],
 		hasScoring: true,
+		isCoop: false,
 		disabled: false,
 		onAddPlayer: (() => {}) as (playerId: number) => void,
 		onRemovePlayer: (() => {}) as (playerId: number) => void,
@@ -42,6 +43,7 @@ export const SessionPlayerManager = withForm({
 		playerList,
 		frequentPlayerIds,
 		hasScoring,
+		isCoop,
 		disabled,
 		onAddPlayer,
 		onRemovePlayer,
@@ -69,7 +71,7 @@ export const SessionPlayerManager = withForm({
 								showAvatars
 								items={toPlayerOptions(playerList, players, frequentPlayerIds)}
 								disabled={disabled}
-								label={hasScoring ? t("form.players.label") : t("form.players.label-no-scoring")}
+								label={hasScoring && !isCoop ? t("form.players.label") : t("form.players.label-no-scoring")}
 								placeholder={t("form.players.search")}
 							/>
 							<div>
@@ -94,6 +96,7 @@ export const SessionPlayerManager = withForm({
 											entry={entry}
 											player={playerList.find((x: Player) => x.id === entry.playerId) ?? null}
 											hasScoring={hasScoring}
+											isCoop={isCoop}
 											disabled={disabled}
 											onScoreChange={onScoreChange}
 											onToggleWon={onToggleWon}

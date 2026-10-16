@@ -115,6 +115,46 @@ public class SessionControllerTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task CreateSession_ShouldReturnTheTeamResult_WhenCoop()
+    {
+        var command = new CreateSessionCommand
+        {
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 60,
+            IsCoop = true,
+            TeamWon = true,
+            TeamScore = 18,
+            PlayerSessions =
+            [
+                new CreatePlayerSessionCommand { PlayerId = 1, FirstPlay = true },
+                new CreatePlayerSessionCommand { PlayerId = 2 }
+            ]
+        };
+
+        var createdSession = new Session(command.GameId, command.Start, command.Start.AddMinutes(command.Minutes), string.Empty) { Id = 3 };
+        createdSession.AddPlayerSession(1, null, true, false);
+        createdSession.AddPlayerSession(2, null, false, false);
+        createdSession.MarkAsCoop(true, 18);
+
+        _sessionServiceMock
+            .Setup(x => x.CreateFromCommand(command))
+            .ReturnsAsync(createdSession);
+
+        var result = await _controller.CreateSession(command);
+
+        var createdResult = result.Should().BeOfType<CreatedAtActionResult>().Subject;
+        var sessionDto = createdResult.Value.Should().BeAssignableTo<SessionDto>().Subject;
+        sessionDto.IsCoop.Should().BeTrue();
+        sessionDto.TeamWon.Should().BeTrue();
+        sessionDto.TeamScore.Should().Be(18);
+        sessionDto.PlayerSessions.Should().HaveCount(2).And.OnlyContain(ps => ps.Won);
+
+        _sessionServiceMock.Verify(x => x.CreateFromCommand(command), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region UpdateSession Tests

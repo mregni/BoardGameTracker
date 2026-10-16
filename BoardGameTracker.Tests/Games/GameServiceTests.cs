@@ -666,6 +666,8 @@ public class GameServiceTests
         {
             Title = "New Game",
             HasScoring = true,
+            HasCoopMode = true,
+            CoopByDefault = true,
             State = GameState.Owned,
             YearPublished = 2020,
             Image = "image.png",
@@ -698,6 +700,8 @@ public class GameServiceTests
         result.Should().NotBeNull();
         result.Title.Should().Be("New Game");
         result.HasScoring.Should().BeTrue();
+        result.HasCoopMode.Should().BeTrue();
+        result.CoopByDefault.Should().BeTrue();
         result.State.Should().Be(GameState.Owned);
         result.YearPublished.Should().Be(2020);
         result.Image.Should().Be("image.png");
@@ -814,6 +818,8 @@ public class GameServiceTests
             Id = 1,
             Title = "Updated Game",
             HasScoring = true,
+            HasCoopMode = false,
+            CoopByDefault = true,
             State = GameState.Owned,
             Description = "Updated description",
             ShopUrl = "https://shop.example.com/updated",
@@ -825,6 +831,7 @@ public class GameServiceTests
         };
 
         var existingGame = new Game("Original Game", false) { Id = 1 };
+        existingGame.UpdateCoopMode(true, true);
 
         _gameRepositoryMock
             .Setup(x => x.GetByIdAsync(1))
@@ -839,6 +846,8 @@ public class GameServiceTests
         result.Should().NotBeNull();
         result.Title.Should().Be("Updated Game");
         result.HasScoring.Should().BeTrue();
+        result.HasCoopMode.Should().BeFalse();
+        result.CoopByDefault.Should().BeFalse();
         result.State.Should().Be(GameState.Owned);
         result.Description.Should().Be("Updated description");
         result.ShopUrl.Should().BeNull();
@@ -1592,6 +1601,23 @@ public class GameServiceTests
         _gameRepositoryMock.Verify(
             x => x.AnyAsync(It.Is<GameByIdSpec>(spec => spec.IsSatisfiedBy(game)), It.IsAny<CancellationToken>()),
             Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    [InlineData(null)]
+    public async Task HasCoopModeAsync_ShouldAskTheRepositoryForThatGame(bool? hasCoopMode)
+    {
+        _gameRepositoryMock
+            .Setup(x => x.FirstOrDefaultAsync(It.IsAny<GameHasCoopModeSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(hasCoopMode);
+
+        var result = await _gameService.HasCoopModeAsync(5);
+
+        result.Should().Be(hasCoopMode);
+        _gameRepositoryMock.Verify(x => x.FirstOrDefaultAsync(It.IsAny<GameHasCoopModeSpec>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

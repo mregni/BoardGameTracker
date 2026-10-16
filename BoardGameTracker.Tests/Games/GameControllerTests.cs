@@ -177,6 +177,34 @@ public class GameControllerTests
         VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task UpdateGame_ShouldReturnTheCoopMode()
+    {
+        var command = new UpdateGameCommand
+        {
+            Id = 4,
+            Title = "Spirit Island",
+            HasCoopMode = true,
+            CoopByDefault = true,
+        };
+
+        var updatedGame = new Game(command.Title) { Id = command.Id };
+        updatedGame.UpdateCoopMode(true, true);
+
+        _gameServiceMock
+            .Setup(x => x.UpdateGame(command))
+            .ReturnsAsync(updatedGame);
+
+        var result = await _controller.UpdateGame(command);
+
+        var gameDto = result.Should().BeOfType<OkObjectResult>().Subject.Value.Should().BeAssignableTo<GameDto>().Subject;
+        gameDto.HasCoopMode.Should().BeTrue();
+        gameDto.CoopByDefault.Should().BeTrue();
+
+        _gameServiceMock.Verify(x => x.UpdateGame(command), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
     #endregion
 
     #region DeleteGameById Tests

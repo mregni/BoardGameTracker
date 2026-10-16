@@ -7,8 +7,10 @@ import { withForm } from "@/hooks/form";
 import { CreateSessionSchema, type Game, type Location, type Player } from "@/models";
 import { zodValidator } from "@/utils/zodValidator";
 import type { SessionFormState } from "../-hooks/useSessionFormState";
+import { coopDefaults } from "../-utils/coopSession";
 import { toGameSelectItems } from "../-utils/gameSelectItems";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
+import { SessionCoopSwitch, SessionTeamResult } from "./SessionCoopFields";
 import { SessionExpansionSelector } from "./SessionExpansionSelector";
 import { SessionPlayerManager } from "./SessionPlayerManager";
 
@@ -57,6 +59,16 @@ export const SessionFormFields = withForm({
 		);
 
 		const selectedGameId = useSelector(form.store, (formState) => formState.values.gameId);
+		const isCoop = useSelector(form.store, (formState) => formState.values.isCoop);
+		const showCoop = state.hasCoopMode || isCoop;
+
+		const handleGameChange = (gameId: number) => {
+			const playMode = coopDefaults(games.find((x) => x.id === gameId));
+			form.setFieldValue("isCoop", playMode.isCoop);
+			form.setFieldValue("teamWon", playMode.teamWon);
+			form.setFieldValue("teamScore", playMode.teamScore);
+			onGameChange(gameId);
+		};
 
 		return (
 			<div
@@ -76,7 +88,7 @@ export const SessionFormFields = withForm({
 						<form.Field
 							name="gameId"
 							validators={zodValidator(CreateSessionSchema, "gameId")}
-							listeners={{ onChange: ({ value }) => onGameChange(value) }}
+							listeners={{ onChange: ({ value }) => handleGameChange(value) }}
 						>
 							{(field: AnyFieldApi) => (
 								<BgtSelect
@@ -90,6 +102,7 @@ export const SessionFormFields = withForm({
 							)}
 						</form.Field>
 					)}
+					{showCoop && <SessionCoopSwitch form={form} disabled={disabled} />}
 					<div className="grid grid-cols-2 gap-3 @2xl:grid-cols-[minmax(0,1.6fr)_minmax(0,0.7fr)_minmax(0,1fr)]">
 						<div className="col-span-2 @2xl:col-span-1">
 							<form.Field name="start" validators={zodValidator(CreateSessionSchema, "start")}>
@@ -128,12 +141,14 @@ export const SessionFormFields = withForm({
 					</div>
 				</div>
 
-				<div className="min-w-0 lg:col-start-2 lg:row-span-3 lg:row-start-1">
+				<div className="flex min-w-0 flex-col gap-3 lg:col-start-2 lg:row-span-3 lg:row-start-1">
+					{isCoop && <SessionTeamResult form={form} hasScoring={state.hasScoring} disabled={disabled} />}
 					<SessionPlayerManager
 						form={form}
 						playerList={playerList}
 						frequentPlayerIds={frequentPlayerIds}
 						hasScoring={state.hasScoring}
+						isCoop={isCoop}
 						disabled={disabled}
 						onAddPlayer={state.addPlayer}
 						onRemovePlayer={state.removePlayer}

@@ -1040,4 +1040,243 @@ public class SessionServiceTests
     }
 
     #endregion
+
+    #region Co-op Tests
+
+    private void SetupSave()
+    {
+        _sessionRepositoryMock.Setup(x => x.CreateAsync(It.IsAny<Session>())).ReturnsAsync((Session s) => s);
+        _badgeServiceMock.Setup(x => x.AwardBadgesAsync(It.IsAny<Session>())).Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+    }
+
+    private static CreateSessionCommand CoopCommand(bool? teamWon, double? teamScore = null)
+    {
+        return new CreateSessionCommand
+        {
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 60,
+            IsCoop = true,
+            TeamWon = teamWon,
+            TeamScore = teamScore,
+            PlayerSessions =
+            [
+                new CreatePlayerSessionCommand { PlayerId = 1, Won = false, Score = 12, FirstPlay = true },
+                new CreatePlayerSessionCommand { PlayerId = 2, Won = false, Score = 8 },
+            ]
+        };
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldStoreTheTeamResultOnEveryPlayer_WhenCoop()
+    {
+        _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(true);
+        SetupSave();
+
+        var result = await _sessionService.CreateFromCommand(CoopCommand(true, 42));
+
+        result.IsCoop.Should().BeTrue();
+        result.TeamWon.Should().BeTrue();
+        result.TeamScore.Should().Be(42);
+        result.PlayerSessions.Should().HaveCount(2).And.OnlyContain(ps => ps.Won && ps.Score == null);
+        result.PlayerSessions.Single(ps => ps.PlayerId == 1).FirstPlay.Should().BeTrue();
+        result.PlayerSessions.Single(ps => ps.PlayerId == 2).FirstPlay.Should().BeFalse();
+
+        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
+        _gameServiceMock.Verify(x => x.HasCoopModeAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldMarkEveryPlayerAsLoser_WhenTheTeamLost()
+    {
+        _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(true);
+        SetupSave();
+
+        var result = await _sessionService.CreateFromCommand(CoopCommand(false));
+
+        result.TeamWon.Should().BeFalse();
+        result.TeamScore.Should().BeNull();
+        result.PlayerSessions.Should().OnlyContain(ps => !ps.Won);
+
+        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
+        _gameServiceMock.Verify(x => x.HasCoopModeAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldRefuseCoop_WhenTheGameHasNoCoopMode()
+    {
+        _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(false);
+
+        var action = async () => await _sessionService.CreateFromCommand(CoopCommand(true));
+
+        var exception = await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.CoopNotSupported);
+        exception.Which.Errors.Should().ContainKey(nameof(CreateSessionCommand.IsCoop));
+
+        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
+        _gameServiceMock.Verify(x => x.HasCoopModeAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldRequireATeamResult_WhenCoop()
+    {
+        var action = async () => await _sessionService.CreateFromCommand(CoopCommand(null));
+
+        var exception = await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.CoopResultRequired);
+        exception.Which.Errors.Should().ContainKey(nameof(CreateSessionCommand.TeamWon));
+
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CreateFromCommand_ShouldIgnoreTheTeamResult_WhenNotCoop()
+    {
+        SetupSave();
+        var command = CoopCommand(true, 42);
+        command.IsCoop = false;
+        command.PlayerSessions[1].Won = true;
+
+        var result = await _sessionService.CreateFromCommand(command);
+
+        result.IsCoop.Should().BeFalse();
+        result.TeamWon.Should().BeNull();
+        result.TeamScore.Should().BeNull();
+        result.PlayerSessions.Should().ContainSingle(ps => ps.Won && ps.PlayerId == 2 && ps.Score == 8);
+
+        _gameServiceMock.Verify(x => x.ExistsAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _sessionRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Session>()), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(It.IsAny<Session>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    private static UpdateSessionCommand CoopUpdateCommand(bool isCoop, bool? teamWon)
+    {
+        return new UpdateSessionCommand
+        {
+            Id = 1,
+            GameId = 1,
+            Start = DateTime.UtcNow.AddHours(-2),
+            Minutes = 60,
+            IsCoop = isCoop,
+            TeamWon = teamWon,
+            PlayerSessions =
+            [
+                new CreatePlayerSessionCommand { PlayerId = 1, Won = true, Score = 10 },
+                new CreatePlayerSessionCommand { PlayerId = 2, Won = false, Score = 5 },
+            ]
+        };
+    }
+
+    private Session ExistingSession(bool isCoop)
+    {
+        var session = new Session(1, DateTime.UtcNow.AddHours(-3), DateTime.UtcNow.AddHours(-1), "") { Id = 1 };
+        session.AddPlayerSession(1, null, false, false);
+        session.AddPlayerSession(2, null, false, false);
+        if (isCoop)
+        {
+            session.MarkAsCoop(false, null);
+        }
+
+        _sessionRepositoryMock.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(session);
+        _badgeServiceMock.Setup(x => x.AwardBadgesAsync(session)).Returns(Task.CompletedTask);
+        _unitOfWorkMock.Setup(x => x.SaveChangesAsync(default)).ReturnsAsync(1);
+        return session;
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldKeepCoop_WhenTheGameNoLongerHasCoopMode()
+    {
+        var session = ExistingSession(true);
+
+        var result = await _sessionService.UpdateFromCommand(CoopUpdateCommand(true, true));
+
+        result.IsCoop.Should().BeTrue();
+        result.TeamWon.Should().BeTrue();
+        result.PlayerSessions.Should().OnlyContain(ps => ps.Won && ps.Score == null);
+
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldCheckTheGame_WhenSwitchingToCoop()
+    {
+        ExistingSession(false);
+        _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(false);
+
+        var action = async () => await _sessionService.UpdateFromCommand(CoopUpdateCommand(true, false));
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.CoopNotSupported);
+
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _gameServiceMock.Verify(x => x.HasCoopModeAsync(1), Times.Once);
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldSwitchToCoop_WhenTheGameHasCoopMode()
+    {
+        var session = ExistingSession(false);
+        _gameServiceMock.Setup(x => x.HasCoopModeAsync(1)).ReturnsAsync(true);
+
+        var result = await _sessionService.UpdateFromCommand(CoopUpdateCommand(true, false));
+
+        result.IsCoop.Should().BeTrue();
+        result.PlayerSessions.Should().OnlyContain(ps => !ps.Won && ps.Score == null);
+
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _gameServiceMock.Verify(x => x.HasCoopModeAsync(1), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldBringBackPlayerResults_WhenSwitchingCoopOff()
+    {
+        var session = ExistingSession(true);
+
+        var result = await _sessionService.UpdateFromCommand(CoopUpdateCommand(false, null));
+
+        result.IsCoop.Should().BeFalse();
+        result.TeamWon.Should().BeNull();
+        result.PlayerSessions.Should().ContainSingle(ps => ps.Won && ps.PlayerId == 1 && ps.Score == 10);
+
+        _sessionRepositoryMock.Verify(x => x.GetByIdAsync(1), Times.Once);
+        _playerServiceMock.Verify(x => x.GetExistingIdsAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _badgeServiceMock.Verify(x => x.AwardBadgesAsync(session), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Exactly(2));
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UpdateFromCommand_ShouldRequireATeamResult_WhenCoop()
+    {
+        var action = async () => await _sessionService.UpdateFromCommand(CoopUpdateCommand(true, null));
+
+        await action.Should().ThrowAsync<ValidationException>().WithMessage(Constants.Errors.CoopResultRequired);
+
+        VerifyNoOtherCalls();
+    }
+
+    #endregion
 }

@@ -214,5 +214,14 @@
   "about": {
     "show-more": "Show more",
     "show-less": "Show less"
+  },
+  "coop": {
+    "mode": {
+      "label": "Can be played co-op"
+    },
+    "default": {
+      "label": "New sessions start as co-op"
+    },
+    "hint": "Only affects new sessions; logged sessions keep how they were played."
   }
 }

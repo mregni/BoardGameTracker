@@ -94,6 +94,7 @@ public class SessionService : ISessionService
     {
         _logger.LogDebug("Creating session from command for game {GameId}", command.GameId);
         EnsureStartNotInFuture(command.Start);
+        EnsureCoopResult(command);
 
         if (!await _gameService.ExistsAsync(command.GameId))
         {
@@ -102,6 +103,7 @@ public class SessionService : ISessionService
 
         await EnsurePlayersExistAsync(command.PlayerSessions.Select(ps => ps.PlayerId));
         await EnsureGameNightOpenAsync(command.GameNightId);
+        await EnsureCoopAllowedAsync(command.IsCoop, false, command.GameId);
 
         var end = command.Start.AddMinutes(command.Minutes);
         var session = new Session(command.GameId, command.Start, end, command.Comment ?? string.Empty);
@@ -121,6 +123,8 @@ public class SessionService : ISessionService
             session.AddPlayerSession(psCommand.PlayerId, psCommand.Score, psCommand.FirstPlay, psCommand.Won);
         }
 
+        ApplyPlayMode(session, command);
+
         if (command.LocationId.HasValue)
         {
             var location = await _locationService.GetByIdAsync(command.LocationId.Value);
@@ -139,6 +143,7 @@ public class SessionService : ISessionService
     {
         _logger.LogDebug("Updating session {SessionId} from command", command.Id);
         EnsureStartNotInFuture(command.Start);
+        EnsureCoopResult(command);
         var existingSession = await _sessionRepository.GetByIdAsync(command.Id);
         if (existingSession == null)
         {
@@ -147,6 +152,7 @@ public class SessionService : ISessionService
 
         await EnsurePlayersExistAsync(command.PlayerSessions.Select(ps => ps.PlayerId));
         await EnsureGameNightExistsAsync(command.GameNightId);
+        await EnsureCoopAllowedAsync(command.IsCoop, existingSession.IsCoop, existingSession.GameId);
 
         var end = command.Start.AddMinutes(command.Minutes);
         existingSession.UpdateTimes(command.Start, end);
@@ -155,6 +161,7 @@ public class SessionService : ISessionService
 
         await SyncExpansions(existingSession, command.ExpansionIds);
         SyncPlayerSessions(existingSession, command.PlayerSessions);
+        ApplyPlayMode(existingSession, command);
         await UpdateLocation(existingSession, command.LocationId);
 
         return await Update(existingSession);
@@ -216,6 +223,39 @@ public class SessionService : ISessionService
             {
                 existingSession.AddPlayerSession(psCommand.PlayerId, psCommand.Score, psCommand.FirstPlay, psCommand.Won);
             }
+        }
+    }
+
+    private static void EnsureCoopResult(CreateSessionCommand command)
+    {
+        if (command.IsCoop && !command.TeamWon.HasValue)
+        {
+            throw new ValidationException(nameof(CreateSessionCommand.TeamWon), Constants.Errors.CoopResultRequired);
+        }
+    }
+
+    private async Task EnsureCoopAllowedAsync(bool isCoop, bool wasCoop, int gameId)
+    {
+        if (!isCoop || wasCoop)
+        {
+            return;
+        }
+
+        if (await _gameService.HasCoopModeAsync(gameId) != true)
+        {
+            throw new ValidationException(nameof(CreateSessionCommand.IsCoop), Constants.Errors.CoopNotSupported);
+        }
+    }
+
+    private static void ApplyPlayMode(Session session, CreateSessionCommand command)
+    {
+        if (command.IsCoop)
+        {
+            session.MarkAsCoop(command.TeamWon!.Value, command.TeamScore);
+        }
+        else
+        {
+            session.MarkAsCompetitive();
         }
     }
 

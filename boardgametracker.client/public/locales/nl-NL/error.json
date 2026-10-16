@@ -76,7 +76,9 @@
   },
   "session": {
     "invalid-expansion": "Een van de gekozen uitbreidingen hoort niet bij dit spel",
-    "start-in-future": "De startdatum kan niet in de toekomst liggen"
+    "start-in-future": "De startdatum kan niet in de toekomst liggen",
+    "coop-not-supported": "Dit spel kan niet coöperatief gespeeld worden",
+    "coop-result-required": "Een coöperatieve sessie heeft een teamresultaat nodig"
   },
   "email": {
     "not-configured": "E-mail is niet geconfigureerd op deze server",

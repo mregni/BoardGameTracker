@@ -40,6 +40,9 @@ describe("gameNightService", () => {
 			locationId: 5,
 			comment: null,
 			expansionIds: [],
+			isCoop: false,
+			teamWon: null,
+			teamScore: null,
 		};
 
 		await expect(finishRunningGameCall(12, command)).resolves.toBe("created");

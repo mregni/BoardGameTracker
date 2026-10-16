@@ -154,4 +154,61 @@ public class SessionTests
         act.Should().Throw<ArgumentException>();
         session.GameNightId.Should().BeNull();
     }
+
+    [Fact]
+    public void Constructor_ShouldStartAsACompetitiveSession()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+
+        session.IsCoop.Should().BeFalse();
+        session.TeamWon.Should().BeNull();
+        session.TeamScore.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void MarkAsCoop_ShouldGiveEveryPlayerTheTeamResult_AndClearTheirScores(bool teamWon)
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+        session.AddPlayerSession(1, 10, true, !teamWon);
+        session.AddPlayerSession(2, 20, false, teamWon);
+
+        session.MarkAsCoop(teamWon, 55);
+
+        session.IsCoop.Should().BeTrue();
+        session.TeamWon.Should().Be(teamWon);
+        session.TeamScore.Should().Be(55);
+        session.PlayerSessions.Should().OnlyContain(ps => ps.Won == teamWon && ps.Score == null);
+        session.PlayerSessions.Single(ps => ps.PlayerId == 1).FirstPlay.Should().BeTrue();
+    }
+
+    [Fact]
+    public void AddPlayerSession_ShouldFollowTheTeamResult_WhenCoop()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+        session.MarkAsCoop(true, null);
+
+        session.AddPlayerSession(3, 12, true, false);
+
+        var playerSession = session.PlayerSessions.Single();
+        playerSession.Won.Should().BeTrue();
+        playerSession.Score.Should().BeNull();
+        playerSession.FirstPlay.Should().BeTrue();
+    }
+
+    [Fact]
+    public void MarkAsCompetitive_ShouldClearTheTeamResult_AndKeepThePlayerResults()
+    {
+        var session = new Session(1, Start, Start.AddHours(1), string.Empty);
+        session.AddPlayerSession(1, null, false, false);
+        session.MarkAsCoop(true, 30);
+
+        session.MarkAsCompetitive();
+
+        session.IsCoop.Should().BeFalse();
+        session.TeamWon.Should().BeNull();
+        session.TeamScore.Should().BeNull();
+        session.PlayerSessions.Single().Won.Should().BeTrue();
+    }
 }

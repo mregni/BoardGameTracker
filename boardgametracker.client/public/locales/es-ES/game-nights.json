@@ -120,7 +120,9 @@
       "title": "Empezar un juego",
       "game": "Juego",
       "players": "¿Quién juega?",
-      "save": "Empezar"
+      "save": "Empezar",
+      "coop-default": "Juego cooperativo: eliges “Ganamos” o “Perdimos” al terminarlo.",
+      "coop-optional": "Este juego se puede jugar en cooperativo: lo activas al terminarlo."
     },
     "log": {
       "button": "Registrar un juego terminado",

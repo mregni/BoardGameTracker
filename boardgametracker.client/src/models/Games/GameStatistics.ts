@@ -23,6 +23,8 @@ export interface GameStats {
 	mostWinsPlayer: MostWinner | null;
 	lastPlayed: string | null;
 	expansionCount: number | null;
+	coopWinCount: number;
+	coopLossCount: number;
 }
 
 export interface TopPlayer {
