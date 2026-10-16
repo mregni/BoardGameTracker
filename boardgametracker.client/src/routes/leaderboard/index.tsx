@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { noop, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
@@ -23,7 +23,7 @@ import { LeaderboardHighlight } from "./-components/LeaderboardHighlight";
 export const Route = createFileRoute("/leaderboard/")({
 	component: RouteComponent,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getLeaderboard());
+		queryClient.query(getLeaderboard()).catch(noop);
 	},
 });
 

@@ -145,7 +145,7 @@ beforeEach(() => {
 
 describe("chat route config", () => {
 	it("should redirect to home when rag is disabled", async () => {
-		const queryClient = { ensureQueryData: vi.fn().mockResolvedValue({ ragEnabled: false }) };
+		const queryClient = { query: vi.fn().mockResolvedValue({ ragEnabled: false }) };
 
 		await expect(mocks.captured.config.beforeLoad({ context: { queryClient } })).rejects.toEqual({
 			redirectTo: { to: "/" },
@@ -153,19 +153,20 @@ describe("chat route config", () => {
 	});
 
 	it("should allow the route when rag is enabled", async () => {
-		const queryClient = { ensureQueryData: vi.fn().mockResolvedValue({ ragEnabled: true }) };
+		const queryClient = { query: vi.fn().mockResolvedValue({ ragEnabled: true }) };
 
 		await expect(mocks.captured.config.beforeLoad({ context: { queryClient } })).resolves.toBeUndefined();
 		expect(mocks.redirect).not.toHaveBeenCalled();
+		expect(queryClient.query).toHaveBeenCalledWith(expect.objectContaining({ staleTime: "static" }));
 	});
 
 	it("should prefetch games and the games with rulebooks in the loader", () => {
-		const queryClient = { prefetchQuery: vi.fn() };
+		const queryClient = { query: vi.fn().mockResolvedValue(undefined) };
 
 		mocks.captured.config.loader({ context: { queryClient } });
 
-		expect(queryClient.prefetchQuery).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ["games"] }));
-		expect(queryClient.prefetchQuery).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ["games", "manuals"] }));
+		expect(queryClient.query).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ["games"] }));
+		expect(queryClient.query).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ["games", "manuals"] }));
 	});
 
 	it("should keep valid search ids", () => {
