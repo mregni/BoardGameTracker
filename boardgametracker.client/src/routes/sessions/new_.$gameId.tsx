@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -14,10 +15,10 @@ export const Route = createFileRoute("/sessions/new_/$gameId")({
 	component: RouteComponent,
 	params: gameIdParamSchema,
 	loader: async ({ params, context: { queryClient } }) => {
-		queryClient.prefetchQuery(getGame(params.gameId));
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getLocations());
-		queryClient.prefetchQuery(getPlayers());
+		queryClient.query(getGame(params.gameId)).catch(noop);
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getLocations()).catch(noop);
+		queryClient.query(getPlayers()).catch(noop);
 	},
 });
 
@@ -47,6 +48,7 @@ function RouteComponent() {
 			onClick={save}
 			disabled={isLoading || isPending}
 			title={t("title-new")}
+			backTo={`/games/${gameId}`}
 		/>
 	);
 }

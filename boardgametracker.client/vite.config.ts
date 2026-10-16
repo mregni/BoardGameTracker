@@ -14,6 +14,9 @@ export default defineConfig({
     sentryVitePlugin({
       org: "boardgametracker",
       project: "boardgametracker",
+      sourcemaps: {
+        filesToDeleteAfterUpload: ["./dist/**/*.map"],
+      },
     }),
     svgr(),
     react(),
@@ -46,6 +49,6 @@ export default defineConfig({
   },
 
   build: {
-    sourcemap: true,
+    sourcemap: "hidden",
   },
 });

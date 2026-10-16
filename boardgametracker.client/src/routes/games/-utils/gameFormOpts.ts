@@ -7,6 +7,8 @@ export const gameFormOpts = formOptions({
 		id: undefined as number | undefined,
 		title: "",
 		hasScoring: true,
+		hasCoopMode: false,
+		coopByDefault: false,
 		description: "",
 		state: GameState.Wanted as GameState,
 		yearPublished: undefined as number | undefined,
@@ -21,5 +23,8 @@ export const gameFormOpts = formOptions({
 		image: null as string | null,
 		changeDetectionWatchId: "",
 		language: LANGUAGE_NONE,
+		rating: undefined as number | undefined,
+		weight: undefined as number | undefined,
+		soldPrice: undefined as number | undefined,
 	},
 });

@@ -190,6 +190,4 @@ public abstract class BaseGame : HasId
     {
         AdditionDate = date;
     }
-
-    protected bool IsLoanedOn(DateTime date) => Loans.Any(l => l.IsActiveOn(date));
 }

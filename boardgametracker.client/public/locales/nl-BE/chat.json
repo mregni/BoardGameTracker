@@ -1,5 +1,5 @@
 {
-  "title": "Spelregelassistent",
+  "title": "Spelregelchat",
   "menu": "Spelregelchat",
   "ask-button": "Vraag de spelregels",
   "ask-button-disabled": "Upload eerst een handleiding voordat je de chat opent",
@@ -26,6 +26,10 @@
       "title": "Kies een spel om te beginnen",
       "description": "Kies hierboven een spel om vragen te stellen over de spelregels."
     },
+    "no-rulebooks": {
+      "title": "Nog geen handleidingen",
+      "description": "Upload een PDF-handleiding op de pagina van een spel om er hier vragen over te stellen."
+    },
     "no-manuals": {
       "title": "Nog geen handleiding",
       "description": "Dit spel heeft geen handleidingen. Upload eerst een handleiding op de spelpagina."
@@ -40,5 +44,6 @@
     "placeholder": "Stel een vraag over de regels…",
     "disabled-placeholder": "Kies een spel met een geïndexeerde handleiding om een vraag te stellen.",
     "send": "Versturen"
-  }
+  },
+  "rate-limited": "Je hebt veel vragen gesteld in korte tijd. Wacht een minuut en probeer het opnieuw."
 }

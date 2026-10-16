@@ -1,12 +1,15 @@
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.Entities.Auth;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Auth;
 
 public static class DbSeeder
 {
+    private const string AdminUsername = "admin";
+
     public static async Task SeedAuthData(
         RoleManager<IdentityRole> roleManager,
         UserManager<ApplicationUser> userManager,
@@ -31,38 +34,77 @@ public static class DbSeeder
         }
     }
 
+    public static async Task<IReadOnlyList<string>> GetAdminPasswordErrorsAsync(
+        UserManager<ApplicationUser> userManager,
+        string? adminPassword)
+    {
+        if (string.IsNullOrWhiteSpace(adminPassword))
+        {
+            return [];
+        }
+
+        var probe = new ApplicationUser(AdminUsername, null, "Administrator");
+        var errors = new List<string>();
+        foreach (var validator in userManager.PasswordValidators)
+        {
+            var result = await validator.ValidateAsync(userManager, probe, adminPassword);
+            errors.AddRange(result.Errors.Select(e => e.Description));
+        }
+
+        return errors;
+    }
+
     private static async Task SeedDefaultAdmin(
         UserManager<ApplicationUser> userManager,
         ILogger logger,
         string? adminPassword)
     {
-        const string adminUsername = "admin";
-        var existingAdmin = await userManager.FindByNameAsync(adminUsername);
-        if (existingAdmin != null)
+        if (await userManager.Users.AnyAsync())
         {
             return;
+        }
+
+        var passwordErrors = await GetAdminPasswordErrorsAsync(userManager, adminPassword);
+        if (passwordErrors.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"ADMIN_PASSWORD does not meet the password rules: {string.Join(" ", passwordErrors)} Choose a longer password or unset ADMIN_PASSWORD to start with admin/admin.");
         }
 
         const string defaultPassword = "admin";
         var useDefault = string.IsNullOrWhiteSpace(adminPassword);
         var password = useDefault ? defaultPassword : adminPassword!;
 
-        var admin = new ApplicationUser(adminUsername, null, "Administrator");
-        admin.PasswordHash = userManager.PasswordHasher.HashPassword(admin, password);
-        var result = await userManager.CreateAsync(admin);
+        var admin = new ApplicationUser(AdminUsername, null, "Administrator");
+        IdentityResult result;
+        if (useDefault)
+        {
+            admin.PasswordHash = userManager.PasswordHasher.HashPassword(admin, password);
+            result = await userManager.CreateAsync(admin);
+        }
+        else
+        {
+            result = await userManager.CreateAsync(admin, password);
+        }
 
         if (!result.Succeeded)
         {
-            logger.LogWarning("Failed to create default admin user: {Errors}",
+            logger.LogError("Failed to create default admin user: {Errors}",
                 string.Join(", ", result.Errors.Select(e => e.Description)));
             return;
         }
 
         await userManager.AddToRoleAsync(admin, Constants.AuthRoles.Admin);
 
-        if (!useDefault)
+        if (useDefault)
         {
-            logger.LogInformation("Created default admin user '{Username}' using ADMIN_PASSWORD", adminUsername);
+            logger.LogWarning(
+                "Created default admin user '{Username}' with the default password. Change it after the first login or set ADMIN_PASSWORD",
+                AdminUsername);
+        }
+        else
+        {
+            logger.LogInformation("Created default admin user '{Username}' using ADMIN_PASSWORD", AdminUsername);
         }
     }
 }

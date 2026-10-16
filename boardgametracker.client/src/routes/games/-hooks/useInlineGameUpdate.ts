@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { type Game, QUERY_KEYS } from "@/models";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { updateGameCall } from "@/services/gameService";
 
 export const useInlineGameUpdate = () => {
 	const queryClient = useQueryClient();
+	const invalidator = useQueryInvalidator();
 	const { errorToast } = useToasts();
 
 	const mutation = useMutation({
@@ -23,11 +25,8 @@ export const useInlineGameUpdate = () => {
 			}
 			errorToast("game:notifications.update-failed");
 		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.games] });
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.counts] });
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.shames] });
-			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.trackedPrices] });
+		onSettled: (_data, _error, updated) => {
+			void invalidator.invalidateGame(updated.id);
 		},
 	});
 

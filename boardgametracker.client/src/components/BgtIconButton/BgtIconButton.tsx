@@ -5,7 +5,7 @@ const iconButtonVariants = cva("rounded-lg inline-flex items-center justify-cent
 	variants: {
 		intent: {
 			primary: "text-primary bg-primary/20 hover:bg-primary/40 transition-colors",
-			danger: "text-error bg-error/20 hover:bg-error/40 transition-colors",
+			danger: "text-error bg-error/20 hover:bg-error/40 transition-colors [--focus-color:var(--color-bad)]",
 			header: "text-white hover:text-gray-400 transition-colors",
 			subtile: "text-white/40 hover:text-white/20 transition-colors",
 		},
@@ -27,6 +27,7 @@ const iconButtonVariants = cva("rounded-lg inline-flex items-center justify-cent
 
 interface Props extends ComponentPropsWithoutRef<"button">, Omit<VariantProps<typeof iconButtonVariants>, "disabled"> {
 	icon: ReactNode;
+	"aria-label": string;
 }
 
 export const BgtIconButton = (props: Props) => {
@@ -40,7 +41,14 @@ export const BgtIconButton = (props: Props) => {
 	});
 
 	return (
-		<button onClick={onClick} type="button" className={buttonClasses} disabled={disabled} {...rest}>
+		<button
+			onClick={onClick}
+			type="button"
+			className={buttonClasses}
+			disabled={disabled}
+			title={rest.title ?? rest["aria-label"]}
+			{...rest}
+		>
 			{icon}
 		</button>
 	);

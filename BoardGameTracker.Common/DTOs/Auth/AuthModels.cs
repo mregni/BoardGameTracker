@@ -6,7 +6,7 @@ public record RefreshTokenRequest(string RefreshToken);
 
 public record LogoutRequest(string? RefreshToken);
 
-public record UpdateProfileRequest(string? DisplayName, string? Email, int? PlayerId);
+public record UpdateProfileRequest(string? DisplayName, string? Email, int? PlayerId, string? CurrentPassword = null);
 
 public record ProfileResponse(
     string Id,

@@ -6,13 +6,15 @@ namespace BoardGameTracker.Core.Players.Interfaces;
 
 public interface IPlayerRepository: IRepository<Player>
 {
-    Task<Game?> GetBestGame(int id);
     Task<List<MostPlayedGame>> GetMostPlayedGames(int playerId, int count);
     Task<double> GetPlayLengthInMinutes(int id);
     Task<int> GetDistinctGameCount(int id);
-    Task<int> CountAsync();
     Task<int> GetTotalPlayCount(int id);
-    Task<int> GetWinCount(int id, int gameId);
     Task<int> GetTotalWinCount(int id);
-    Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopPlayers(int count);
+    Task<(int Won, int Lost)> GetCoopResults(int id);
+    Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopPlayers(int count, CancellationToken cancellationToken = default);
+    Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopWinners(int count, CancellationToken cancellationToken = default);
+    Task<int> CountActivePlayersSince(DateTime since, CancellationToken cancellationToken = default);
+    Task<(int PlayCount, int WinCount)> GetPlayCountsSince(int playerId, DateTime since, CancellationToken cancellationToken = default);
+    Task<List<LeaderboardRow>> GetLeaderboardRows(LeaderboardFilter filter, CancellationToken cancellationToken = default);
 }

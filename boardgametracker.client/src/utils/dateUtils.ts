@@ -1,6 +1,7 @@
 import {
 	isValid as dateFnsIsValid,
 	differenceInDays,
+	differenceInMonths,
 	format,
 	formatDistanceToNow,
 	formatDuration,
@@ -11,8 +12,39 @@ import { getDateFnsLocale } from "./localeUtils";
 
 type DateInput = Date | string | undefined;
 
+export const DEFAULT_DATE_FORMAT = "dd-MM-yyyy";
+export const DEFAULT_TIME_FORMAT = "HH:mm";
+
+const FORMAT_PROBE = new Date(2000, 0, 15, 13, 45, 30);
+
 const convertDateFormat = (userFormat: string): string => {
-	return userFormat.replace(/YYYY/g, "yyyy").replace(/DD/g, "dd");
+	return userFormat.replace(/Y/g, "y").replace(/D/g, "d");
+};
+
+const canFormat = (pattern: string): boolean => {
+	if (!pattern.trim()) {
+		return false;
+	}
+
+	try {
+		format(FORMAT_PROBE, pattern);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+export const normalizeDateFnsFormat = (pattern: string | null | undefined, fallback: string): string => {
+	if (!pattern) {
+		return fallback;
+	}
+
+	if (canFormat(pattern)) {
+		return pattern;
+	}
+
+	const converted = convertDateFormat(pattern);
+	return canFormat(converted) ? converted : fallback;
 };
 
 export const toInputDate = (date: DateInput, fallbackToToday = true): string => {
@@ -67,6 +99,25 @@ export const toDisplay = (date: Date | string | undefined | null, dateFormat: st
 	return format(dateObj, dateFnsFormat, { locale });
 };
 
+export const toLongDisplay = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	if (!date) {
+		return "";
+	}
+
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+
+	if (!dateFnsIsValid(dateObj)) {
+		return "";
+	}
+
+	return format(dateObj, "PPPP", { locale: getDateFnsLocale(uiLanguage) });
+};
+
+export const toShortDisplay = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	const dateObj = toValidDate(date);
+	return dateObj ? format(dateObj, "d MMM", { locale: getDateFnsLocale(uiLanguage) }) : "";
+};
+
 export const toDisplayDateTime = (
 	date: Date | string | undefined,
 	dateFormat: string,
@@ -90,10 +141,30 @@ export const toDisplayDateTime = (
 	return format(dateObj, combinedFormat, { locale });
 };
 
+export const toDisplayTime = (
+	date: Date | string | undefined | null,
+	timeFormat: string,
+	uiLanguage: string,
+): string => {
+	if (!date) {
+		return "";
+	}
+
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+
+	if (!dateFnsIsValid(dateObj)) {
+		return "";
+	}
+
+	return format(dateObj, normalizeDateFnsFormat(timeFormat, DEFAULT_TIME_FORMAT), {
+		locale: getDateFnsLocale(uiLanguage),
+	});
+};
+
 export const toRelative = (
 	date: Date | string | undefined,
 	uiLanguage: string,
-	options?: { addSuffix?: boolean; includeSeconds?: boolean },
+	options?: { includeSeconds?: boolean },
 ): string => {
 	if (!date) {
 		return "";
@@ -108,8 +179,8 @@ export const toRelative = (
 	const locale = getDateFnsLocale(uiLanguage);
 	return formatDistanceToNow(dateObj, {
 		locale,
+		includeSeconds: options?.includeSeconds,
 		addSuffix: true,
-		...options,
 	});
 };
 
@@ -184,4 +255,28 @@ export const getDaysSincePurchase = (date: Date | null): number => {
 	}
 
 	return differenceInDays(new Date(), date);
+};
+
+const toValidDate = (date: Date | string | undefined | null): Date | null => {
+	if (!date) {
+		return null;
+	}
+
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+	return dateFnsIsValid(dateObj) ? dateObj : null;
+};
+
+export const toMonthYear = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	const dateObj = toValidDate(date);
+	return dateObj ? format(dateObj, "LLL yyyy", { locale: getDateFnsLocale(uiLanguage) }) : "";
+};
+
+export const toShortDayDate = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	const dateObj = toValidDate(date);
+	return dateObj ? format(dateObj, "EEE d LLL", { locale: getDateFnsLocale(uiLanguage) }) : "";
+};
+
+export const monthsSince = (date: Date | string | undefined | null, now: Date = new Date()): number | null => {
+	const dateObj = toValidDate(date);
+	return dateObj ? Math.max(0, differenceInMonths(now, dateObj)) : null;
 };

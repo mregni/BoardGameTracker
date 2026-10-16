@@ -1,10 +1,28 @@
-import type { CreateLocation, Location } from "../models";
+import type { CreateLocation, Location, LocationStatistics, Session } from "../models";
 import { axiosInstance } from "../utils/axiosInstance";
 
 const domain = "location";
 
 export const getLocationsCall = (): Promise<Location[]> => {
 	return axiosInstance.get<Location[]>(domain).then((response) => {
+		return response.data;
+	});
+};
+
+export const getLocationCall = (id: number): Promise<Location> => {
+	return axiosInstance.get<Location>(`${domain}/${id}`).then((response) => {
+		return response.data;
+	});
+};
+
+export const getLocationStatisticsCall = (id: number): Promise<LocationStatistics> => {
+	return axiosInstance.get<LocationStatistics>(`${domain}/${id}/statistics`).then((response) => {
+		return response.data;
+	});
+};
+
+export const getLocationSessionsCall = (id: number): Promise<Session[]> => {
+	return axiosInstance.get<Session[]>(`${domain}/${id}/sessions`).then((response) => {
 		return response.data;
 	});
 };

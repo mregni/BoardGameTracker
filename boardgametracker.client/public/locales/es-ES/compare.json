@@ -1,53 +1,123 @@
 {
-  "title": "Compare players",
-  "select-player": "Select player to compare",
-  "total-games-played": "Total games together",
-  "minutes-played": "Minutes played",
-  "most-played-game": "Most played game",
-  "wins": {
-    "winner": "{{player}} won {{winCount}} times from {{otherPlayer}}",
-    "loser": "{{player}} won only {{winCount}} times from {{otherPlayer}}"
+  "title": "Jugador contra jugador",
+  "select-player": "Elige un jugador",
+  "vs": "VS",
+  "swap": "Intercambiar jugadores",
+  "updating": "Actualizando la comparación",
+  "change-left": "Cambiar jugador de la izquierda, ahora {{player}}",
+  "change-right": "Cambiar jugador de la derecha, ahora {{player}}",
+  "player-summary_one": "{{count}} partida · {{rate}} ganadas",
+  "player-summary_other": "{{count}} partidas · {{rate}} ganadas",
+  "games_one": "{{count}} partida",
+  "games_other": "{{count}} partidas",
+  "record": {
+    "label": "Balance de todas las partidas juntos",
+    "wins_zero": "aún sin victorias para {{player}}",
+    "wins_one": "victoria para {{player}}",
+    "wins_other": "victorias para {{player}}",
+    "together_one": "{{count}} partida juntos",
+    "together_other": "{{count}} partidas juntos",
+    "leads": "{{player}} va por delante",
+    "won": "Ganó {{player}}",
+    "someone-else": "ganó otra persona",
+    "summary_one": "{{count}} partida juntos: {{playerOne}} ganó {{one}}, otra persona ganó {{others}}, {{playerTwo}} ganó {{two}}",
+    "summary_other": "{{count}} partidas juntos: {{playerOne}} ganó {{one}}, otra persona ganó {{others}}, {{playerTwo}} ganó {{two}}",
+    "same-team": "mismo equipo cooperativo",
+    "same-team-value": "{{total}} ({{won}} ganadas, {{lost}} perdidas)",
+    "summary-team_one": "mismo equipo cooperativo {{total}} ({{won}} ganadas, {{lost}} perdidas)",
+    "summary-team_other": "mismo equipo cooperativo {{total}} ({{won}} ganadas, {{lost}} perdidas)"
   },
-  "best-game": {
-    "label": "{{player}}'s best game against {{otherPlayer}} is {{game}} with {{count}} wins"
+  "form": {
+    "title_one": "Última partida juntos",
+    "title_other": "Últimas {{count}} partidas juntos",
+    "order": "(de la más antigua a la más reciente)",
+    "label": "Últimas partidas juntos, la más antigua primero: {{list}}",
+    "legend": "{{one}} o {{two}}: quién ganó · –: otra persona",
+    "legend-both": "+: ganaron los dos",
+    "both": "ganaron los dos",
+    "other": "otra persona",
+    "streak_one": "{{player}} {{count}} seguida",
+    "streak_other": "{{player}} {{count}} seguidas",
+    "legend-same-team": "=: mismo equipo cooperativo, no corta ni alarga una racha",
+    "same-team-won": "mismo equipo, ganada",
+    "same-team-lost": "mismo equipo, perdida"
   },
-  "total-wins": {
-    "label": "{{player}} won in total {{count}} game sessions."
+  "tiles": {
+    "games-together": "Partidas juntos",
+    "since": "desde {{date}}",
+    "time-together": "Tiempo juntos",
+    "average": "media {{duration}} por partida",
+    "most-played": "Más jugado",
+    "closest": "Partida más reñida",
+    "points_one": "{{value}} pt",
+    "points_other": "{{value}} pts",
+    "closest-winner": "{{game}} · ganó {{player}}",
+    "closest-other": "{{game}} · ganó otra persona"
   },
-  "win-percentage": {
-    "label": "{{player}} has a win percentage of {{percentage}}%"
+  "per-game": {
+    "title": "Por juego",
+    "sort": "Ordenar",
+    "most-played": "Más jugado",
+    "biggest-lead": "Mayor ventaja",
+    "game": "Juego",
+    "wins": "Victorias",
+    "last": "Última",
+    "average": "media {{one}} – {{two}}",
+    "no-scores": "sin puntuaciones",
+    "others_one": "+{{count}} otra",
+    "others_other": "+{{count}} otras",
+    "row_one": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, otra persona {{count}}",
+    "row_other": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, otras personas {{count}}",
+    "show-all_one": "Mostrar el {{count}} juego",
+    "show-all_other": "Mostrar los {{count}} juegos",
+    "show-less": "Mostrar menos",
+    "coop": "cooperativo",
+    "same-team_one": "Mismo equipo · {{won}} de {{count}} ganada",
+    "same-team_other": "Mismo equipo · {{won}} de {{count}} ganadas",
+    "same-team-extra_one": "+{{count}} en equipo",
+    "same-team-extra_other": "+{{count}} en equipo"
   },
-  "total-duration": {
-    "label": "{{player}} played a total of {{duration}} minutes."
+  "best-worst": {
+    "against": "{{player}} contra {{opponent}}",
+    "best": "Mejores",
+    "worst": "Peores",
+    "none": "Nada todavía",
+    "note_one": "Solo juegos jugados juntos al menos {{count}} vez.",
+    "note_other": "Solo juegos jugados juntos al menos {{count}} veces."
   },
-  "total-sessions": {
-    "label": "{{player}} played a total of {{count}} game sessions."
+  "recent": {
+    "title": "Partidas recientes juntos",
+    "both-won": "Ganaron los dos",
+    "no-winner": "Sin ganador",
+    "same-team": "mismo equipo"
   },
-  "head-to-head": {
-    "title": "Head to Head",
-    "direct-wins": "{{player}} won {{count}} times against {{opponent}}",
-    "most-won-game": "{{player}} won most from {{opponent}} in {{game}} ({{count}} times)",
-    "last-session": "Last session was won by {{player}} in {{game}}",
-    "most-played-together": "Most played together: {{game}} ({{count}} sessions)",
-    "closest-game": "{{player}} won by just {{points}} points in {{game}}",
-    "first-game-together": "First game together: {{game}} on {{date}}"
+  "overall": {
+    "title": "En general, no solo juntos",
+    "wins": "Victorias",
+    "win-rate": "Porcentaje de victorias",
+    "games": "Partidas",
+    "play-time": "Tiempo de juego",
+    "higher": "más alto",
+    "stat": "Estadística"
   },
-  "stats": {
-    "total-wins": "Total wins",
-    "win-percentage": "Win Percentage",
-    "sessions": "Sessions",
-    "total-duration": "Total gameplay time",
-    "player-stats": "{{player}}'s Stats"
+  "highlights": {
+    "title": "Destacados",
+    "first-game": "primera partida juntos · {{date}}",
+    "longest-game": "partida más larga · {{duration}}"
+  },
+  "no-games-together": {
+    "title": "Todavía no hay partidas juntos",
+    "description": "{{playerOne}} y {{playerTwo}} todavía no han jugado ninguna partida juntos."
   },
   "empty": {
     "insufficient-players": {
-      "title": "Not enough players to compare",
-      "description": "Not enough players in your database to start comparing statistics and head-to-head performance."
+      "title": "No hay suficientes jugadores para comparar",
+      "description": "No hay suficientes jugadores en tu base de datos para empezar a comparar estadísticas y enfrentamientos directos."
     },
     "no-players": {
-      "title": "No players available to compare",
-      "description": "You currently have no players in the database. Please add players to use the compare feature."
+      "title": "No hay jugadores disponibles para comparar",
+      "description": "Ahora mismo no tienes jugadores en la base de datos. Añade jugadores para usar la función de comparación."
     },
-    "button": "Go to players page"
+    "button": "Ir a la página de jugadores"
   }
 }

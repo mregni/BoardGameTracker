@@ -3,6 +3,13 @@ import { renderWithTheme, screen } from "@/test/test-utils";
 import { BgtHeading } from "./BgtHeading";
 
 describe("BgtHeading", () => {
+	describe("Level", () => {
+		it("renders the heading level it is asked for", () => {
+			renderWithTheme(<BgtHeading as="h1">Loans</BgtHeading>);
+			expect(screen.getByRole("heading", { level: 1, name: "Loans" })).toHaveClass("font-bold");
+		});
+	});
+
 	describe("Rendering", () => {
 		it("should render children text content", () => {
 			renderWithTheme(<BgtHeading>Test Heading</BgtHeading>);
@@ -124,11 +131,13 @@ describe("BgtHeading", () => {
 		});
 
 		it("should handle long text content", () => {
-			const longText = "This is a very long heading text that should be truncated due to line-clamp-1 class";
+			const longText = "This is a very long heading text that should wrap onto at most two lines";
 			renderWithTheme(<BgtHeading>{longText}</BgtHeading>);
 			const headings = screen.getAllByRole("heading", { level: 3 });
 			const heading = headings[headings.length - 1];
 			expect(heading).toHaveTextContent(longText);
+			expect(heading).toHaveClass("line-clamp-2");
+			expect(heading).toHaveAttribute("title", longText);
 		});
 
 		it("should handle special characters", () => {

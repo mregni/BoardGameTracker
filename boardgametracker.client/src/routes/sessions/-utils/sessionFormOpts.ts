@@ -1,6 +1,6 @@
 import { formOptions } from "@tanstack/react-form";
 
-import type { CreatePlayerSessionNoScoring, CreateSessionPlayer } from "@/models";
+import type { CreateSessionPlayer } from "@/models";
 
 export const sessionFormOpts = formOptions({
 	defaultValues: {
@@ -9,6 +9,9 @@ export const sessionFormOpts = formOptions({
 		minutes: 30,
 		comment: "",
 		start: new Date(),
-		playerSessions: [] as (CreateSessionPlayer | CreatePlayerSessionNoScoring)[],
+		playerSessions: [] as CreateSessionPlayer[],
+		isCoop: false,
+		teamWon: null as boolean | null,
+		teamScore: null as number | null,
 	},
 });

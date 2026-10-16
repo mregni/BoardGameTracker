@@ -1,19 +1,19 @@
-using System;
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Serilog.Events;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Extensions;
 
-[Collection("EnvironmentVariables")]
+[Collection(EnvironmentVariablesCollection.Name)]
 public class LogLevelExtensionsTests : IDisposable
 {
-    private readonly string _originalLogLevel;
+    private readonly string? _originalLogLevel;
 
     public LogLevelExtensionsTests()
     {
-        _originalLogLevel = Environment.GetEnvironmentVariable("LOGLEVEL") ?? "DEBUG";
+        _originalLogLevel = Environment.GetEnvironmentVariable("LOGLEVEL");
     }
 
     public void Dispose()

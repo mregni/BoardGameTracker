@@ -14,6 +14,8 @@ import type {
 	UpdateProfileRequest,
 	UserDto,
 } from "@/models/Auth/Auth";
+import type { ExternalLogin } from "@/models/Auth/Oidc";
+import { isApiError } from "@/models/Common/ApiError";
 import { axiosInstance } from "../utils/axiosInstance";
 
 const domain = "auth";
@@ -38,10 +40,28 @@ export const getOidcProviderCall = (): Promise<OidcProvider | null> => {
 	return axiosInstance
 		.get<OidcProvider>(`${domain}/oidc/provider`)
 		.then((response) => response.data)
-		.catch((error) => {
-			if (error.response?.status === 404) return null;
+		.catch((error: unknown) => {
+			if (isApiError(error) && error.status === 404) return null;
 			throw error;
 		});
+};
+
+export const getExternalLoginsCall = (): Promise<ExternalLogin[]> => {
+	return axiosInstance.get<ExternalLogin[]>(`${domain}/external-logins`).then((response) => response.data);
+};
+
+export const unlinkExternalLoginCall = (id: number): Promise<void> => {
+	return axiosInstance.delete(`${domain}/external-logins/${id}`);
+};
+
+export const startOidcLinkCall = (provider: string): Promise<string> => {
+	return axiosInstance
+		.get<{ url: string }>(`${domain}/oidc/${encodeURIComponent(provider)}/link`)
+		.then((response) => response.data.url);
+};
+
+export const adoptOidcLoginCall = (): Promise<LoginResponse> => {
+	return axiosInstance.post<LoginResponse>(`${domain}/oidc/adopt`).then((response) => response.data);
 };
 
 export const getProfileCall = (): Promise<ProfileResponse> => {

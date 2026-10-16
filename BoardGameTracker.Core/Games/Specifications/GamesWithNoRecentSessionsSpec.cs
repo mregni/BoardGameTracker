@@ -9,7 +9,9 @@ public sealed class GamesWithNoRecentSessionsSpec : Specification<Game>
     public GamesWithNoRecentSessionsSpec(DateTime cutoffDate)
     {
         Query
-            .Where(g => g.State == GameState.Owned && !g.Sessions.Any(s => s.Start >= cutoffDate))
+            .Where(g => g.State == GameState.Owned &&
+                        (g.AdditionDate == null || g.AdditionDate <= cutoffDate) &&
+                        !g.Sessions.Any(s => s.Start >= cutoffDate))
             .OrderBy(g => g.Title)
             .AsNoTracking();
     }

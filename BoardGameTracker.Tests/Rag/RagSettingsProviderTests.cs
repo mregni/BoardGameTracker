@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using BoardGameTracker.Common;
 using BoardGameTracker.Core.Configuration.Interfaces;
 using BoardGameTracker.Core.Rag;
@@ -72,6 +71,19 @@ public class RagSettingsProviderTests
         var settings = await _provider.GetAsync();
 
         settings.ChatApiKey.Should().BeNull();
+        VerifyAllConfigValuesReadOnce();
+    }
+
+    [Fact]
+    public async Task GetAsync_ShouldReadConfigOnce_WhenCalledTwice()
+    {
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<string>(It.IsAny<string>())).ReturnsAsync("value");
+        _configRepositoryMock.Setup(x => x.GetConfigValueAsync<int>(It.IsAny<string>())).ReturnsAsync(1);
+
+        var first = await _provider.GetAsync();
+        var second = await _provider.GetAsync();
+
+        second.Should().BeSameAs(first);
         VerifyAllConfigValuesReadOnce();
     }
 }

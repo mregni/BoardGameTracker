@@ -3,57 +3,64 @@ import { useTranslation } from "react-i18next";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { getSettings } from "@/services/queries/settings";
 import { formatMinutesToDuration, toRelative } from "@/utils/dateUtils";
-import { RoundDecimal } from "@/utils/numberUtils";
+import { formatDecimal, formatPrice, formatRatio, type NumberValue } from "@/utils/numberUtils";
 
 interface GameStats {
+	playCount: number;
 	totalPlayedTime: number | null;
 	pricePerPlay: number | null;
 	highScore: number | null;
 	averageScore: number | null;
 	averagePlayTime: number | null;
 	lastPlayed: string | null;
+	coopWinCount: number;
+	coopLossCount: number;
 }
 
 interface Props {
 	gameStats: GameStats;
-	expansionCount: number;
 	currency: string;
 }
 
 export const GameStatisticsGrid = (props: Props) => {
-	const { gameStats, expansionCount, currency } = props;
+	const { gameStats, currency } = props;
 	const { t } = useTranslation("statistics");
 	const { data: settings } = useQuery(getSettings());
 
 	const lastPlayedRelative =
-		gameStats.lastPlayed && settings?.uiLanguage
-			? toRelative(gameStats.lastPlayed, settings.uiLanguage, {
-					addSuffix: false,
-				})
-			: null;
+		gameStats.lastPlayed && settings?.uiLanguage ? toRelative(gameStats.lastPlayed, settings.uiLanguage) : null;
+
+	const decimalOrNull = (value: NumberValue) => (value == null ? null : formatDecimal(value, settings?.uiLanguage));
 
 	const totalPlayedTime = formatMinutesToDuration(
 		gameStats.totalPlayedTime,
 		["weeks", "days", "hours", "minutes"],
 		settings?.uiLanguage,
 	);
-	const averagePlayTime = formatMinutesToDuration(
-		gameStats.averagePlayTime,
-		["hours", "minutes", "seconds"],
-		settings?.uiLanguage,
-	);
+
+	const coopPlayCount = gameStats.coopWinCount + gameStats.coopLossCount;
 
 	return (
-		<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:gap-6">
-			<BgtTextStatistic content={totalPlayedTime} title={t("total-play-time")} />
-			<BgtTextStatistic content={gameStats.pricePerPlay} title={t("price-per-play")} prefix={currency} />
-			<BgtTextStatistic content={RoundDecimal(gameStats.highScore)} title={t("high-score")} />
-			<BgtTextStatistic content={RoundDecimal(gameStats.averageScore)} title={t("average-score")} />
-			<BgtTextStatistic content={averagePlayTime} title={t("average-playtime")} />
-			<BgtTextStatistic content={lastPlayedRelative} title={t("last-played")} />
-			<BgtTextStatistic content={expansionCount} title={t("expansion-count")} />
+		<div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-6 gap-3 xl:gap-6">
+			<BgtTextStatistic content={gameStats.playCount} title={t("play-count")} textSize="4" />
+			<BgtTextStatistic content={totalPlayedTime} title={t("total-play-time")} textSize="4" />
+			<BgtTextStatistic
+				content={
+					gameStats.pricePerPlay != null ? formatPrice(gameStats.pricePerPlay, currency, settings?.uiLanguage) : null
+				}
+				title={t("price-per-play")}
+				textSize="4"
+			/>
+			<BgtTextStatistic content={decimalOrNull(gameStats.highScore)} title={t("high-score")} textSize="4" />
+			<BgtTextStatistic content={decimalOrNull(gameStats.averageScore)} title={t("average-score")} textSize="4" />
+			<BgtTextStatistic content={lastPlayedRelative} title={t("last-played")} textSize="4" />
+			{coopPlayCount > 0 && (
+				<BgtTextStatistic
+					content={formatRatio(gameStats.coopWinCount, coopPlayCount, settings?.uiLanguage)}
+					title={t("team-win-rate")}
+					textSize="4"
+				/>
+			)}
 		</div>
 	);
 };
-
-//locale: getDateFnsLocale(settings?.uiLanguage ?? ''),

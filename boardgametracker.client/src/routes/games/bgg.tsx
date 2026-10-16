@@ -1,5 +1,6 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { noop } from "@tanstack/react-query";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
@@ -8,8 +9,11 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtDatePicker, BgtInputField, BgtSelect, BgtSwitch } from "@/components/BgtForm";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
+import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import { BggSearchSchema, type Game, GameState } from "@/models";
+import { RequireWrite } from "@/routes/-components/RequireWrite";
+import { useBack } from "@/routes/-hooks/useBack";
 import { getSettings } from "@/services/queries/settings";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -18,16 +22,16 @@ import { zodValidator } from "@/utils/zodValidator";
 import { useBggGameModal } from "./-hooks/useBggGameModal";
 
 export const Route = createFileRoute("/games/bgg")({
-	component: RouteComponent,
+	component: WriteRouteComponent,
 	loader: async ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getSettings());
+		queryClient.query(getSettings()).catch(noop);
 	},
 });
 
 function RouteComponent() {
 	const { t } = useTranslation(["game", "common"]);
 	const navigate = useNavigate();
-	const router = useRouter();
+	const goBack = useBack("/games/add");
 
 	const onSuccess = useCallback(
 		(game: Game) => {
@@ -42,15 +46,11 @@ function RouteComponent() {
 		window.open("https://boardgamegeek.com/browse/boardgame", "_blank", "noopener,noreferrer");
 	}, []);
 
-	const handleCancel = useCallback(() => {
-		router.history.back();
-	}, [router]);
-
 	const form = useAppForm({
 		defaultValues: {
 			bggId: "",
-			price: 0,
-			date: toInputDate(undefined, true),
+			price: undefined as number | undefined,
+			additionDate: toInputDate(undefined, true),
 			state: GameState.Owned,
 			hasScoring: true,
 		},
@@ -60,10 +60,15 @@ function RouteComponent() {
 		},
 	});
 
+	if (settings && !settings.bggStatus?.isConfigured) {
+		return <Navigate to="/games/add" replace />;
+	}
+
 	return (
 		<BgtPage>
-			<BgtPageContent className="flex-1 items-center">
-				<BgtCard title={t("new.title")} className="w-full max-w-xl my-auto">
+			<BgtPageHeader backAction={goBack} backText={t("common:back")} header={t("new.title")} />
+			<BgtPageContent className="items-center">
+				<BgtCard className="w-full max-w-xl">
 					<p className="text-cancel mb-4">{t("new.bgg-description")}</p>
 					<form onSubmit={handleFormSubmit(form)} className="w-full">
 						<div className="flex flex-col gap-4 mb-6">
@@ -88,20 +93,15 @@ function RouteComponent() {
 										field={field}
 										disabled={isPending}
 										label={t("price.label")}
-										type="number"
+										type="decimal"
 										placeholder={t("price.placeholder")}
 										prefixLabel={settings?.currency}
 									/>
 								)}
 							</form.Field>
-							<form.Field name="date" validators={zodValidator(BggSearchSchema, "date")}>
+							<form.Field name="additionDate" validators={zodValidator(BggSearchSchema, "additionDate")}>
 								{(field: AnyFieldApi) => (
-									<BgtDatePicker
-										field={field}
-										disabled={isPending}
-										label={t("added-date.label")}
-										placeholder={t("added-date.placeholder")}
-									/>
+									<BgtDatePicker field={field} disabled={isPending} label={t("added-date.label")} />
 								)}
 							</form.Field>
 							<form.Field name="state" validators={zodValidator(BggSearchSchema, "state")}>
@@ -122,7 +122,7 @@ function RouteComponent() {
 							</form.Field>
 						</div>
 						<div className="flex justify-between gap-3">
-							<BgtButton variant="cancel" type="button" onClick={handleCancel} disabled={isPending}>
+							<BgtButton variant="cancel" type="button" onClick={goBack} disabled={isPending}>
 								{t("common:cancel")}
 							</BgtButton>
 							<BgtButton type="submit" variant="primary" disabled={isPending} className="flex-1">
@@ -133,5 +133,13 @@ function RouteComponent() {
 				</BgtCard>
 			</BgtPageContent>
 		</BgtPage>
+	);
+}
+
+function WriteRouteComponent() {
+	return (
+		<RequireWrite>
+			<RouteComponent />
+		</RequireWrite>
 	);
 }

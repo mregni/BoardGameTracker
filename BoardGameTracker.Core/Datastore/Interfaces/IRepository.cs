@@ -13,6 +13,5 @@ public interface IRepository<T> : IReadRepository<T> where T : HasId
     Task<List<T>> GetAllAsync();
     Task<T> CreateAsync(T entity);
     Task CreateRangeAsync(List<T> entities);
-    Task<T> Update(T entity);
     Task<bool> DeleteAsync(int id);
 }

@@ -1,5 +1,3 @@
-import { TextArea } from "@radix-ui/themes";
-import { cx } from "class-variance-authority";
 import { type KeyboardEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BgtButton } from "@/components/BgtButton/BgtButton";
@@ -35,15 +33,14 @@ export const ChatComposer = ({ disabled, pending, placeholder, onSend }: Props) 
 
 	return (
 		<div className="flex items-end gap-2 pt-2">
-			<TextArea
+			<textarea
 				ref={textAreaRef}
-				className={cx(
-					"flex-1 rounded-lg! border! border-primary/30! bg-background! shadow-none! focus:border-primary!",
-				)}
+				className="flex-1 rounded-lg border border-primary/30 bg-background px-3 py-2 text-[15px] text-white focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
 				rows={2}
 				value={value}
 				disabled={disabled}
 				placeholder={placeholder}
+				aria-label={placeholder}
 				onChange={(event) => setValue(event.target.value)}
 				onKeyDown={onKeyDown}
 			/>

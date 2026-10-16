@@ -32,6 +32,13 @@ describe("BgtImageSelector", () => {
 			expect(screen.getByText("types")).toBeInTheDocument();
 		});
 
+		it("should render the upload hints in a passing muted grey", () => {
+			renderWithTheme(<BgtImageSelector image={undefined} setImage={mockSetImage} />);
+			expect(screen.getByText("upload").closest("p")).toHaveClass("text-gray-400");
+			expect(screen.getByText("types")).toHaveClass("text-gray-400");
+			expect(screen.getByText("types")).not.toHaveClass("text-gray-500");
+		});
+
 		it("should render file input", () => {
 			renderWithTheme(<BgtImageSelector image={undefined} setImage={mockSetImage} />);
 			const input = document.querySelector('input[type="file"]');
@@ -43,7 +50,7 @@ describe("BgtImageSelector", () => {
 		it("should show preview when image is provided", () => {
 			const testFile = new File(["test"], "test.png", { type: "image/png" });
 			renderWithTheme(<BgtImageSelector image={testFile} setImage={mockSetImage} />);
-			const preview = screen.getByAltText("Selected preview");
+			const preview = screen.getByAltText("selected-image");
 			expect(preview).toBeInTheDocument();
 		});
 
@@ -71,7 +78,7 @@ describe("BgtImageSelector", () => {
 			renderWithTheme(
 				<BgtImageSelector image={undefined} setImage={mockSetImage} defaultImage="https://example.com/image.jpg" />,
 			);
-			const preview = screen.getByAltText("Selected preview");
+			const preview = screen.getByAltText("selected-image");
 			expect(preview).toHaveAttribute("src", "https://example.com/image.jpg");
 		});
 

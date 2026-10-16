@@ -10,7 +10,9 @@ public class ValidateIdFilter : IActionFilter
         foreach (var (key, value) in context.ActionArguments)
         {
             if (value is int id
-                && (key.Equals("id", StringComparison.OrdinalIgnoreCase) || key.EndsWith("Id", StringComparison.OrdinalIgnoreCase))
+                && (key.Equals("id", StringComparison.OrdinalIgnoreCase)
+                    || key.EndsWith("Id", StringComparison.OrdinalIgnoreCase)
+                    || key.Equals("page", StringComparison.OrdinalIgnoreCase))
                 && id <= 0)
             {
                 context.Result = new BadRequestObjectResult(new ProblemDetails

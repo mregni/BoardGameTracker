@@ -1,7 +1,6 @@
 using BoardGameTracker.Core.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Pgvector.EntityFrameworkCore;
 
 namespace BoardGameTracker.Core.Datastore;
 

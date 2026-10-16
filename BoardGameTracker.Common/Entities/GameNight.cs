@@ -6,10 +6,14 @@ namespace BoardGameTracker.Common.Entities;
 
 public class GameNight: HasId
 {
+    public static readonly TimeSpan PlayWindow = TimeSpan.FromHours(12);
+
+
     public string Title { get; private set; } = string.Empty;
     public string Notes { get; private set; } = string.Empty;
     public Guid LinkId { get; private set; }
     public DateTime StartDate { get; private set; }
+    public DateTime? EndedAt { get; private set; }
 
     public int HostId { get; private set; }
     public Player Host { get; private set; } = null!;
@@ -19,6 +23,8 @@ public class GameNight: HasId
 
     public ICollection<Game> SuggestedGames { get; private set; } = [];
     public ICollection<GameNightRsvp> InvitedPlayers { get; private set; } = [];
+    public ICollection<Session> Sessions { get; private set; } = [];
+    public ICollection<RunningGame> RunningGames { get; private set; } = [];
 
     public static GameNight Create(string title, string notes, DateTime startDate, int hostId, int locationId)
     {
@@ -89,5 +95,61 @@ public class GameNight: HasId
         
             SuggestedGames.Add(suggestedGame);
         }
+    }
+
+    public bool AddSuggestedGame(Game game)
+    {
+        Guard.Against.Null(game);
+        if (SuggestedGames.Any(x => x.Id == game.Id))
+        {
+            return false;
+        }
+
+        SuggestedGames.Add(game);
+        return true;
+    }
+
+    public bool RemoveSuggestedGame(int gameId)
+    {
+        var game = SuggestedGames.FirstOrDefault(x => x.Id == gameId);
+        if (game == null)
+        {
+            return false;
+        }
+
+        SuggestedGames.Remove(game);
+        return true;
+    }
+
+    public void End(DateTime endedAt)
+    {
+        EndedAt = Guard.Against.Default(endedAt);
+    }
+
+    public void Reopen()
+    {
+        EndedAt = null;
+    }
+
+    public double GetTotalPlayMinutes()
+    {
+        return Sessions.Sum(x => x.GetDuration().TotalMinutes);
+    }
+
+    public int GetMostWins()
+    {
+        return DecideWinners().MostWins;
+    }
+
+    public List<int> GetNightWinnerIds()
+    {
+        return DecideWinners().WinnerIds;
+    }
+
+    private NightWinners DecideWinners()
+    {
+        return NightWinnerRule.Decide(Sessions
+            .SelectMany(x => x.PlayerSessions)
+            .Select(x => new NightResult(x.PlayerId, x.Won)));
     }
 }

@@ -1,4 +1,4 @@
-using System;
+using System.Globalization;
 using BoardGameTracker.Common.ValueObjects;
 using FluentAssertions;
 using Xunit;
@@ -84,7 +84,7 @@ public class RatingTests
     {
         var rating = new Rating(value);
 
-        rating.ToString().Should().Be(value.ToString("F2"));
+        rating.ToString().Should().Be(value.ToString("F2", CultureInfo.InvariantCulture));
     }
 
     #endregion

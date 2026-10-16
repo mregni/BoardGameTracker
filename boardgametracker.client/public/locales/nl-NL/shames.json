@@ -1,11 +1,89 @@
 {
-  "total-shames": "Total games",
-  "total-value": "Total value of games",
-  "average-value": "Average value of games",
+  "subtitle_one": "Spellen in je bezit die je {{count}}+ maand niet speelde",
+  "subtitle_other": "Spellen in je bezit die je {{count}}+ maanden niet speelde",
+  "change-in-settings": "aanpassen in Instellingen",
   "none": {
-    "title": "No Games on the Shelf of Shame!",
-    "description": "Congratulations! You have no games on your Shelf of Shame. Keep up the great work of playing and enjoying your collection."
+    "title": "Geen spellen op de Shelf of Shame!",
+    "description": "Gefeliciteerd! Je hebt geen spellen op je Shelf of Shame. Blijf zo doorspelen en geniet van je collectie."
   },
-  "days-not-played": "Days not played",
-  "last-session": "Last session"
+  "no-matches": "Geen spellen op de plank voor deze filters.",
+  "tiles": {
+    "on-shelf": "Op de plank",
+    "of-owned_one": "van {{total}} spel in bezit",
+    "of-owned_other": "van {{total}} spellen in bezit",
+    "never-played": "Nooit gespeeld",
+    "oldest": "oudste: {{title}}",
+    "oldest-since": "oudste: {{title}}, sinds {{date}}",
+    "paid-not-played": "Betaald, niet gespeeld",
+    "priced_one": "{{priced}} van {{total}} met prijs",
+    "priced_other": "{{priced}} van {{total}} met prijs",
+    "share": "{{share}} van {{total}}",
+    "no-prices": "geen prijzen ingevuld",
+    "planned": "Gepland",
+    "planned-for": "voor {{date}}",
+    "no-night": "geen spelavond gepland"
+  },
+  "filters": {
+    "show": "Toon",
+    "all": "Alle",
+    "never": "Nooit gespeeld",
+    "played": "Al gespeeld",
+    "not-played-in": "Niet gespeeld in",
+    "months_one": "{{count}}+ maand",
+    "months_other": "{{count}}+ maanden",
+    "owned": "In bezit",
+    "owned-any": "maakt niet uit",
+    "owned-1y": "meer dan 1 jaar",
+    "owned-2y": "meer dan 2 jaar",
+    "sort": "Sorteer",
+    "sort-unplayed": "Langst niet gespeeld",
+    "sort-price": "Betaalde prijs",
+    "sort-owned": "In bezit sinds",
+    "sort-title": "Titel"
+  },
+  "list": {
+    "label": "Spellen op de plank",
+    "game": "Spel",
+    "last-played": "Laatst gespeeld",
+    "paid": "Betaald"
+  },
+  "row": {
+    "owned-since": "in bezit sinds {{date}}",
+    "plays_one": "{{count}} keer gespeeld",
+    "plays_other": "{{count}} keer gespeeld",
+    "players_one": "{{range}} speler",
+    "players_other": "{{range}} spelers",
+    "minutes": "{{range}} min",
+    "never-played": "Nooit gespeeld",
+    "months-ago_one": "{{count}} maand geleden",
+    "months-ago_other": "{{count}} maanden geleden",
+    "no-price": "Geen prijs",
+    "planned": "Gepland · {{date}}",
+    "plan": "Plan",
+    "plan-label": "Plan {{title}} voor {{night}}",
+    "log-play": "Partij noteren",
+    "log-play-label": "Partij van {{title}} noteren"
+  },
+  "plan": {
+    "added": "{{game}} toegevoegd aan de suggesties voor {{night}} · {{date}}",
+    "undo": "Ongedaan maken",
+    "removed": "{{game}} is niet langer voorgesteld",
+    "failed": "Het spel kon niet aan de spelavond worden toegevoegd",
+    "undo-failed": "Ongedaan maken lukte niet, verwijder het spel op de spelavond zelf",
+    "no-night": "Er is nog geen spelavond gepland, dus je kunt nog geen spellen inplannen.",
+    "plan-night": "Plan een spelavond"
+  },
+  "money": {
+    "title": "Geld op de plank",
+    "subtitle": "alleen spellen in bezit, met prijs",
+    "never-played": "Nooit gespeeld",
+    "not-played_one": "Niet gespeeld in {{count}}+ maand",
+    "not-played_other": "Niet gespeeld in {{count}}+ maanden",
+    "rest": "Recent gespeeld of gekocht",
+    "label": "Van {{total}} betaald voor spellen in bezit: {{parts}}",
+    "unpriced-one": "{{title}} heeft geen prijs en telt dus niet mee.",
+    "unpriced_one": "{{count}} spel op de plank heeft geen prijs en telt dus niet mee.",
+    "unpriced_other": "{{count}} spellen op de plank hebben geen prijs en tellen dus niet mee.",
+    "sort-by-price": "Sorteer op betaalde prijs"
+  }
 }

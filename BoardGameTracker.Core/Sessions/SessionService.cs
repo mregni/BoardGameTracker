@@ -1,8 +1,11 @@
 ﻿using BoardGameTracker.Common.DTOs.Commands;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Exceptions;
+using BoardGameTracker.Common;
 using BoardGameTracker.Core.Badges.Interfaces;
+using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
@@ -18,17 +21,21 @@ public class SessionService : ISessionService
     private readonly IGameService _gameService;
     private readonly ILocationService _locationService;
     private readonly IPlayerService _playerService;
+    private readonly IReadRepository<GameNight> _gameNightRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<SessionService> _logger;
 
-    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IPlayerService playerService, IUnitOfWork unitOfWork, ILogger<SessionService> logger)
+    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IPlayerService playerService, IReadRepository<GameNight> gameNightRepository, IUnitOfWork unitOfWork, IDateTimeProvider dateTimeProvider, ILogger<SessionService> logger)
     {
         _sessionRepository = sessionRepository;
         _badgeService = badgeService;
         _gameService = gameService;
         _locationService = locationService;
         _playerService = playerService;
+        _gameNightRepository = gameNightRepository;
         _unitOfWork = unitOfWork;
+        _dateTimeProvider = dateTimeProvider;
         _logger = logger;
     }
 
@@ -36,8 +43,8 @@ public class SessionService : ISessionService
     {
         _logger.LogDebug("Creating session for game {GameId}", session.GameId);
         session = await _sessionRepository.CreateAsync(session);
-        await _badgeService.AwardBadgesAsync(session);
         await _unitOfWork.SaveChangesAsync();
+        await AwardBadgesAfterSaveAsync(session);
         _logger.LogInformation("Session {SessionId} created for game {GameId}", session.Id, session.GameId);
 
         return session;
@@ -54,32 +61,57 @@ public class SessionService : ISessionService
     public async Task<Session> Update(Session session)
     {
         _logger.LogDebug("Updating session {SessionId}", session.Id);
-        session = await _sessionRepository.Update(session);
-        await _badgeService.AwardBadgesAsync(session);
         await _unitOfWork.SaveChangesAsync();
+        await AwardBadgesAfterSaveAsync(session);
         _logger.LogInformation("Session {SessionId} updated", session.Id);
 
         return session;
     }
 
+    private void EnsureStartNotInFuture(DateTime start)
+    {
+        if (start.ToUniversalTime() > _dateTimeProvider.UtcNow.AddDays(1))
+        {
+            throw new ValidationException(nameof(CreateSessionCommand.Start), Constants.Errors.SessionStartInFuture);
+        }
+    }
+
+    private async Task AwardBadgesAfterSaveAsync(Session session)
+    {
+        try
+        {
+            await _badgeService.AwardBadgesAsync(session);
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _unitOfWork.DiscardPendingInserts();
+            _logger.LogWarning(ex, "Session {SessionId} was saved, but awarding badges failed; they are evaluated again on the next save", session.Id);
+        }
+    }
+
     public async Task<Session> CreateFromCommand(CreateSessionCommand command)
     {
         _logger.LogDebug("Creating session from command for game {GameId}", command.GameId);
+        EnsureStartNotInFuture(command.Start);
+        EnsureCoopResult(command);
 
-        var game = await _gameService.GetGameById(command.GameId);
-        if (game == null)
+        if (!await _gameService.ExistsAsync(command.GameId))
         {
             throw new EntityNotFoundException(nameof(Game), command.GameId);
         }
 
         await EnsurePlayersExistAsync(command.PlayerSessions.Select(ps => ps.PlayerId));
+        await EnsureGameNightOpenAsync(command.GameNightId);
+        await EnsureCoopAllowedAsync(command.IsCoop, false, command.GameId);
 
         var end = command.Start.AddMinutes(command.Minutes);
         var session = new Session(command.GameId, command.Start, end, command.Comment ?? string.Empty);
+        session.SetGameNight(command.GameNightId);
 
         if (command.ExpansionIds.Count > 0)
         {
-            var expansions = await _gameService.GetGameExpansions(command.ExpansionIds);
+            var expansions = await _gameService.GetGameExpansions(command.GameId, command.ExpansionIds);
             foreach (var expansion in expansions)
             {
                 session.AddExpansion(expansion);
@@ -90,6 +122,8 @@ public class SessionService : ISessionService
         {
             session.AddPlayerSession(psCommand.PlayerId, psCommand.Score, psCommand.FirstPlay, psCommand.Won);
         }
+
+        ApplyPlayMode(session, command);
 
         if (command.LocationId.HasValue)
         {
@@ -108,6 +142,8 @@ public class SessionService : ISessionService
     public async Task<Session> UpdateFromCommand(UpdateSessionCommand command)
     {
         _logger.LogDebug("Updating session {SessionId} from command", command.Id);
+        EnsureStartNotInFuture(command.Start);
+        EnsureCoopResult(command);
         var existingSession = await _sessionRepository.GetByIdAsync(command.Id);
         if (existingSession == null)
         {
@@ -115,13 +151,17 @@ public class SessionService : ISessionService
         }
 
         await EnsurePlayersExistAsync(command.PlayerSessions.Select(ps => ps.PlayerId));
+        await EnsureGameNightExistsAsync(command.GameNightId);
+        await EnsureCoopAllowedAsync(command.IsCoop, existingSession.IsCoop, existingSession.GameId);
 
         var end = command.Start.AddMinutes(command.Minutes);
         existingSession.UpdateTimes(command.Start, end);
         existingSession.UpdateComment(command.Comment ?? string.Empty);
+        existingSession.SetGameNight(command.GameNightId);
 
         await SyncExpansions(existingSession, command.ExpansionIds);
         SyncPlayerSessions(existingSession, command.PlayerSessions);
+        ApplyPlayMode(existingSession, command);
         await UpdateLocation(existingSession, command.LocationId);
 
         return await Update(existingSession);
@@ -142,7 +182,7 @@ public class SessionService : ISessionService
         var expansionIdsToAdd = newExpansionIds.Except(currentExpansionIds).ToList();
         if (expansionIdsToAdd.Count > 0)
         {
-            var expansionsToAdd = await _gameService.GetGameExpansions(expansionIdsToAdd);
+            var expansionsToAdd = await _gameService.GetGameExpansions(existingSession.GameId, expansionIdsToAdd);
             foreach (var expansion in expansionsToAdd)
             {
                 existingSession.AddExpansion(expansion);
@@ -186,6 +226,39 @@ public class SessionService : ISessionService
         }
     }
 
+    private static void EnsureCoopResult(CreateSessionCommand command)
+    {
+        if (command.IsCoop && !command.TeamWon.HasValue)
+        {
+            throw new ValidationException(nameof(CreateSessionCommand.TeamWon), Constants.Errors.CoopResultRequired);
+        }
+    }
+
+    private async Task EnsureCoopAllowedAsync(bool isCoop, bool wasCoop, int gameId)
+    {
+        if (!isCoop || wasCoop)
+        {
+            return;
+        }
+
+        if (await _gameService.HasCoopModeAsync(gameId) != true)
+        {
+            throw new ValidationException(nameof(CreateSessionCommand.IsCoop), Constants.Errors.CoopNotSupported);
+        }
+    }
+
+    private static void ApplyPlayMode(Session session, CreateSessionCommand command)
+    {
+        if (command.IsCoop)
+        {
+            session.MarkAsCoop(command.TeamWon!.Value, command.TeamScore);
+        }
+        else
+        {
+            session.MarkAsCompetitive();
+        }
+    }
+
     private async Task UpdateLocation(Session existingSession, int? locationId)
     {
         if (locationId.HasValue)
@@ -206,13 +279,44 @@ public class SessionService : ISessionService
 
     private async Task EnsurePlayersExistAsync(IEnumerable<int> playerIds)
     {
-        foreach (var playerId in playerIds.Distinct())
+        var ids = playerIds.Distinct().ToList();
+        if (ids.Count == 0)
         {
-            var player = await _playerService.Get(playerId);
-            if (player == null)
-            {
-                throw new EntityNotFoundException(nameof(Player), playerId);
-            }
+            return;
+        }
+
+        var existing = await _playerService.GetExistingIdsAsync(ids);
+        var missing = ids.Except(existing).ToList();
+        if (missing.Count > 0)
+        {
+            throw new EntityNotFoundException(nameof(Player), missing[0]);
+        }
+    }
+
+    private async Task EnsureGameNightOpenAsync(int? gameNightId)
+    {
+        if (!gameNightId.HasValue)
+        {
+            return;
+        }
+
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdSpec(gameNightId.Value));
+        if (gameNight == null)
+        {
+            throw new EntityNotFoundException(nameof(GameNight), gameNightId.Value);
+        }
+
+        if (gameNight.EndedAt.HasValue)
+        {
+            throw new ValidationException(nameof(CreateSessionCommand.GameNightId), Constants.Errors.GameNightEnded);
+        }
+    }
+
+    private async Task EnsureGameNightExistsAsync(int? gameNightId)
+    {
+        if (gameNightId.HasValue && !await _gameNightRepository.AnyAsync(new GameNightByIdSpec(gameNightId.Value)))
+        {
+            throw new EntityNotFoundException(nameof(GameNight), gameNightId.Value);
         }
     }
 

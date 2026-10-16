@@ -20,8 +20,17 @@ interface Props {
 }
 
 export const GameHeader = (props: Props) => {
-	const { gameTitle, gameState, isLoaned, hasPriceWatch = false, livePrice, canWrite, onAddSession, onEdit, onDelete } =
-		props;
+	const {
+		gameTitle,
+		gameState,
+		isLoaned,
+		hasPriceWatch = false,
+		livePrice,
+		canWrite,
+		onAddSession,
+		onEdit,
+		onDelete,
+	} = props;
 	const { t } = useTranslation("game");
 
 	return (

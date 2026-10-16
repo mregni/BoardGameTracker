@@ -7,6 +7,9 @@ public class Session : HasId
 {
     public string Comment { get; private set; }
     public int GameId { get; private set; }
+    public bool IsCoop { get; private set; }
+    public bool? TeamWon { get; private set; }
+    public double? TeamScore { get; private set; }
 
     private DateTime _start;
     private DateTime _end;
@@ -23,7 +26,10 @@ public class Session : HasId
         private set
         {
             if (value < _start)
+            {
                 throw new ArgumentException("End time cannot be before start time.");
+            }
+
             _end = value;
         }
     }
@@ -32,6 +38,8 @@ public class Session : HasId
     public ICollection<Expansion> Expansions { get; private set; }
     public int? LocationId { get; private set; }
     public Location? Location { get; private set; }
+    public int? GameNightId { get; private set; }
+    public GameNight? GameNight { get; private set; }
     public ICollection<Image> ExtraImages { get; private set; }
     public ICollection<PlayerSession> PlayerSessions { get; private set; }
 
@@ -57,7 +65,9 @@ public class Session : HasId
     public void UpdateTimes(DateTime start, DateTime end)
     {
         if (end < start)
+        {
             throw new ArgumentException("End time cannot be before start time.");
+        }
 
         _start = start;
         _end = end;
@@ -67,6 +77,16 @@ public class Session : HasId
     {
         Location = location;
         LocationId = location?.Id;
+    }
+
+    public void SetGameNight(int? gameNightId)
+    {
+        if (gameNightId.HasValue)
+        {
+            Guard.Against.NegativeOrZero(gameNightId.Value);
+        }
+
+        GameNightId = gameNightId;
     }
 
     public void AddExpansion(Expansion expansion)
@@ -88,7 +108,9 @@ public class Session : HasId
     {
         Guard.Against.NegativeOrZero(playerId);
 
-        var playerSession = new PlayerSession(playerId, score, firstPlay, won);
+        var playerSession = IsCoop
+            ? new PlayerSession(playerId, null, firstPlay, TeamWon == true)
+            : new PlayerSession(playerId, score, firstPlay, won);
         if (PlayerSessions.All(ps => ps.PlayerId != playerSession.PlayerId))
         {
             PlayerSessions.Add(playerSession);
@@ -104,6 +126,32 @@ public class Session : HasId
         }
     }
 
+    public void MarkAsCoop(bool teamWon, double? teamScore)
+    {
+        IsCoop = true;
+        TeamWon = teamWon;
+        TeamScore = teamScore;
+        foreach (var playerSession in PlayerSessions)
+        {
+            playerSession.UpdateScore(null);
+            if (teamWon)
+            {
+                playerSession.MarkAsWinner();
+            }
+            else
+            {
+                playerSession.MarkAsLoser();
+            }
+        }
+    }
+
+    public void MarkAsCompetitive()
+    {
+        IsCoop = false;
+        TeamWon = null;
+        TeamScore = null;
+    }
+
     public void AddImage(Image image)
     {
         Guard.Against.Null(image);
@@ -113,51 +161,4 @@ public class Session : HasId
     public TimeSpan GetDuration() => End - Start;
 
     public int GetPlayerCount() => PlayerSessions.Count;
-
-    public Player? GetWinner()
-    {
-        return PlayerSessions
-            .FirstOrDefault(ps => ps.Won)
-            ?.Player;
-    }
-
-    public IEnumerable<Player> GetPlayers()
-    {
-        return PlayerSessions.Select(ps => ps.Player);
-    }
-
-    public bool HasFirstTimePlayers() => PlayerSessions.Any(ps => ps.FirstPlay);
-
-    public double? GetHighestScore()
-    {
-        if (!Game.HasScoring)
-            return null;
-
-        return PlayerSessions
-            .Where(ps => ps.Score.HasValue)
-            .Max(ps => ps.Score);
-    }
-
-    public double? GetLowestScore()
-    {
-        if (!Game.HasScoring)
-            return null;
-
-        return PlayerSessions
-            .Where(ps => ps.Score.HasValue)
-            .Min(ps => ps.Score);
-    }
-
-    public double? GetAverageScore()
-    {
-        if (!Game.HasScoring)
-            return null;
-
-        var scores = PlayerSessions
-            .Where(ps => ps.Score.HasValue)
-            .Select(ps => ps.Score!.Value)
-            .ToList();
-
-        return scores.Any() ? scores.Average() : null;
-    }
 }

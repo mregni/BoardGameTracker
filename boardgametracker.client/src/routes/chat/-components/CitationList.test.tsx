@@ -22,26 +22,24 @@ describe("CitationList", () => {
 	});
 
 	it("should render one chip per citation", () => {
-		render(
-			<CitationList
-				citations={[buildCitation(), buildCitation({ manualId: 2, page: 9 })]}
-				onSelect={vi.fn()}
-			/>,
-		);
+		render(<CitationList citations={[buildCitation(), buildCitation({ manualId: 2, page: 9 })]} onSelect={vi.fn()} />);
 
 		expect(screen.getAllByRole("button")).toHaveLength(2);
 		expect(screen.getAllByText("page")).toHaveLength(2);
 	});
 
 	it("should flag only the first citation as the top match", () => {
-		render(
-			<CitationList
-				citations={[buildCitation(), buildCitation({ manualId: 2, page: 9 })]}
-				onSelect={vi.fn()}
-			/>,
-		);
+		render(<CitationList citations={[buildCitation(), buildCitation({ manualId: 2, page: 9 })]} onSelect={vi.fn()} />);
 
 		expect(screen.getAllByText("top-match")).toHaveLength(1);
+	});
+
+	it("should style the top match as a selected chip", () => {
+		render(<CitationList citations={[buildCitation()]} onSelect={vi.fn()} />);
+
+		const chip = screen.getByText("top-match");
+		expect(chip).toHaveClass("bg-primary/20", "border", "border-primary", "text-chip-selected");
+		expect(chip).not.toHaveClass("text-primary");
 	});
 
 	it("should show unknown-page when the page is null", () => {
@@ -53,12 +51,7 @@ describe("CitationList", () => {
 	it("should call onSelect with the citation index when a chip is clicked", async () => {
 		const user = userEvent.setup();
 		const onSelect = vi.fn();
-		render(
-			<CitationList
-				citations={[buildCitation(), buildCitation({ manualId: 2, page: 9 })]}
-				onSelect={onSelect}
-			/>,
-		);
+		render(<CitationList citations={[buildCitation(), buildCitation({ manualId: 2, page: 9 })]} onSelect={onSelect} />);
 
 		await user.click(screen.getAllByRole("button")[1]);
 

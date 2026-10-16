@@ -1,4 +1,4 @@
-import type { Player } from "..";
+import type { Player } from "../Player/Player";
 
 export interface MostWinner extends Player {
 	totalWins: number;
@@ -23,6 +23,8 @@ export interface GameStats {
 	mostWinsPlayer: MostWinner | null;
 	lastPlayed: string | null;
 	expansionCount: number | null;
+	coopWinCount: number;
+	coopLossCount: number;
 }
 
 export interface TopPlayer {
@@ -56,8 +58,8 @@ export interface ScoreRankChartData {
 }
 
 export interface XValue {
-	id: string;
-	value: number;
+	id: number;
+	value: number | null;
 }
 
 export enum Trend {

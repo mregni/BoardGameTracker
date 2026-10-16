@@ -2,7 +2,7 @@ import { cx } from "class-variance-authority";
 import type { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from "react";
 
 export const BgtTable = ({ className, ...props }: HTMLAttributes<HTMLTableElement>) => (
-	<div>
+	<div className="w-full overflow-x-auto">
 		<table className={cx("min-w-full divide-y divide-gray-200 table-fixed", className)} {...props} />
 	</div>
 );

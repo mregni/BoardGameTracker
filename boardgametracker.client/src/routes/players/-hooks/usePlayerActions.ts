@@ -1,9 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
+import { useBack } from "@/routes/-hooks/useBack";
 
 interface UsePlayerActionsProps {
 	playerId: number;
-	deletePlayer: (playerId: number) => Promise<void>;
+	deletePlayer: (playerId: number, onDeleted?: () => Promise<unknown>) => Promise<void>;
 	onDeleteModalClose: () => void;
 }
 
@@ -12,8 +13,7 @@ export const usePlayerActions = (props: UsePlayerActionsProps) => {
 	const navigate = useNavigate();
 
 	const handleDelete = useCallback(async () => {
-		await deletePlayer(playerId);
-		navigate({ to: "/players" });
+		await deletePlayer(playerId, () => navigate({ to: "/players" }));
 		onDeleteModalClose();
 	}, [deletePlayer, playerId, navigate, onDeleteModalClose]);
 
@@ -21,9 +21,7 @@ export const usePlayerActions = (props: UsePlayerActionsProps) => {
 		navigate({ to: `/players/${playerId}/sessions` });
 	}, [navigate, playerId]);
 
-	const handleBackToPlayers = useCallback(() => {
-		navigate({ to: "/players" });
-	}, [navigate]);
+	const handleBackToPlayers = useBack("/players");
 
 	return {
 		handleDelete,

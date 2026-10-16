@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { cloneElement, isValidElement } from "react";
+import { useTranslation } from "react-i18next";
 import CaretRight from "@/assets/icons/caret-right.svg?react";
 import Plus from "@/assets/icons/plus.svg?react";
+import { formatNumber } from "@/utils/numberUtils";
 import { BgtCard } from "../BgtCard/BgtCard";
 import { BgtText } from "../BgtText/BgtText";
 
@@ -10,7 +12,6 @@ interface Props {
 	title: string;
 	content: string | number | null;
 	suffix?: string | number | null;
-	prefix?: string | number | null;
 	icon?: React.ReactNode;
 	iconClassName?: string;
 	textSize?: "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
@@ -19,14 +20,17 @@ interface Props {
 	addLabel?: string;
 	onClick?: () => void;
 	action?: React.ReactNode;
+	caption?: React.ReactNode;
 }
+
+const formatContent = (content: string | number, language: string | undefined): string =>
+	typeof content === "number" ? formatNumber(content, language) : content;
 
 export const BgtTextStatistic = (props: Props) => {
 	const {
 		title,
 		content,
 		suffix,
-		prefix,
 		icon,
 		iconClassName,
 		textSize = "5",
@@ -35,7 +39,9 @@ export const BgtTextStatistic = (props: Props) => {
 		addLabel,
 		onClick,
 		action,
+		caption,
 	} = props;
+	const { i18n } = useTranslation();
 
 	if (content === null || content === undefined) return null;
 
@@ -55,20 +61,30 @@ export const BgtTextStatistic = (props: Props) => {
 				isInteractive && "border-primary/25 transition-colors hover:border-primary/60 cursor-pointer",
 			)}
 		>
-			<div className="flex items-center gap-2 text-primary/70 mb-2">
+			<div className="flex min-h-6 items-center gap-2 text-stat-title mb-2">
 				{iconWithClasses}
-				<span>{title}</span>
+				<span className="line-clamp-2 break-words" title={title}>
+					{title}
+				</span>
 				{action ? (
-					<span className="ml-auto shrink-0">{action}</span>
+					<span className="ml-auto flex shrink-0 items-center">{action}</span>
 				) : (
 					isInteractive && <CaretRight className="size-4 ml-auto shrink-0 text-primary" />
 				)}
 			</div>
 			<BgtText size={textSize} color="cyan" weight="bold">
-				{prefix && <span>{prefix}&nbsp;</span>}
-				{content.toLocaleString()}
-				{suffix && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
+				{formatContent(content, i18n.language)}
+				{suffix === "%" && "%"}
+				{suffix && suffix !== "%" && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
 			</BgtText>
+			{caption && (
+				<span
+					className="mt-1 block truncate text-xs text-white/50"
+					title={typeof caption === "string" ? caption : undefined}
+				>
+					{caption}
+				</span>
+			)}
 		</BgtCard>
 	);
 

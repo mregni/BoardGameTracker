@@ -5,6 +5,7 @@ export const CreateLocationSchema = z.object({
 		.string({
 			error: "location:new.name.required",
 		})
+		.trim()
 		.min(1, { message: "location:new.name.required" }),
 });
 

@@ -5,4 +5,5 @@ export interface MenuItem {
 	path: string;
 	icon: FunctionComponent<SVGProps<SVGSVGElement>>;
 	mobileVisible: boolean;
+	countLabel?: string;
 }

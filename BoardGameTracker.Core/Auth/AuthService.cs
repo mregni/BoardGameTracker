@@ -13,12 +13,15 @@ using BoardGameTracker.Core.Email.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace BoardGameTracker.Core.Auth;
 
 public class AuthService : IAuthService
 {
+    private static readonly TimeSpan RotationGracePeriod = TimeSpan.FromSeconds(30);
+
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ITokenService _tokenService;
@@ -26,8 +29,16 @@ public class AuthService : IAuthService
     private readonly IPlayerService _playerService;
     private readonly IEmailService _emailService;
     private readonly IPublicUrlBuilder _publicUrlBuilder;
+    private readonly IBackgroundEmailSender _backgroundEmailSender;
+    private readonly ILoginAttemptTracker _loginAttempts;
     private readonly MainDbContext _context;
+    private readonly IMemoryCache _cache;
     private readonly ILogger<AuthService> _logger;
+    private static readonly TimeSpan PasswordResetCooldown = TimeSpan.FromMinutes(5);
+
+    private static readonly PasswordHasher<ApplicationUser> DummyPasswordHasher = new();
+    private static readonly ApplicationUser DummyUser = new("timing-dummy", "timing-dummy@localhost");
+    private static readonly string DummyPasswordHash = DummyPasswordHasher.HashPassword(DummyUser, Guid.NewGuid().ToString("N"));
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
@@ -37,9 +48,13 @@ public class AuthService : IAuthService
         IPlayerService playerService,
         IEmailService emailService,
         IPublicUrlBuilder publicUrlBuilder,
+        IBackgroundEmailSender backgroundEmailSender,
+        ILoginAttemptTracker loginAttempts,
         MainDbContext context,
+        IMemoryCache cache,
         ILogger<AuthService> logger)
     {
+        _cache = cache;
         _userManager = userManager;
         _signInManager = signInManager;
         _tokenService = tokenService;
@@ -47,32 +62,44 @@ public class AuthService : IAuthService
         _playerService = playerService;
         _emailService = emailService;
         _publicUrlBuilder = publicUrlBuilder;
+        _backgroundEmailSender = backgroundEmailSender;
+        _loginAttempts = loginAttempts;
         _context = context;
         _logger = logger;
     }
 
-    public async Task<LoginResponse> LoginAsync(LoginRequest request)
+    public async Task<LoginResponse> LoginAsync(LoginRequest request, string clientAddress)
     {
+        if (_loginAttempts.IsLockedOut(request.Username, clientAddress))
+        {
+            _logger.LogWarning("Login attempt from {ClientAddress} rejected: too many failures for this account", clientAddress);
+            throw new AuthenticationFailedException(Constants.Errors.AccountLockedOut);
+        }
+
         var user = await _userManager.FindByNameAsync(request.Username);
         if (user == null)
         {
-            _logger.LogWarning("Failed login attempt for unknown username {Username}", request.Username);
-            throw new UnauthorizedAccessException(Constants.Errors.InvalidCredentials);
+            DummyPasswordHasher.VerifyHashedPassword(DummyUser, DummyPasswordHash, request.Password);
+            _loginAttempts.RecordFailure(request.Username, clientAddress);
+            _logger.LogWarning("Failed login attempt for an unknown username from {ClientAddress}", clientAddress);
+            throw new AuthenticationFailedException(Constants.Errors.InvalidCredentials);
         }
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
         if (result.IsLockedOut)
         {
-            _logger.LogWarning("Login attempt for locked out user {Username}", request.Username);
-            throw new UnauthorizedAccessException(Constants.Errors.AccountLockedOut);
+            _logger.LogWarning("Login attempt for locked out user {UserId}", user.Id);
+            throw new AuthenticationFailedException(Constants.Errors.AccountLockedOut);
         }
 
         if (!result.Succeeded)
         {
-            _logger.LogWarning("Failed login attempt for user {Username}: invalid password", request.Username);
-            throw new UnauthorizedAccessException(Constants.Errors.InvalidCredentials);
+            _loginAttempts.RecordFailure(request.Username, clientAddress);
+            _logger.LogWarning("Failed login attempt for user {UserId} from {ClientAddress}: invalid password", user.Id, clientAddress);
+            throw new AuthenticationFailedException(Constants.Errors.InvalidCredentials);
         }
 
+        _loginAttempts.Reset(request.Username, clientAddress);
         user.UpdateLastLogin();
         await _userManager.UpdateAsync(user);
 
@@ -84,7 +111,7 @@ public class AuthService : IAuthService
 
         return new LoginResponse(
             accessToken,
-            refreshToken.Token,
+            refreshToken.PlainTextToken!,
             _tokenService.GetAccessTokenExpiry(),
             user.ToUserInfo(roles));
     }
@@ -92,22 +119,48 @@ public class AuthService : IAuthService
     public async Task<LoginResponse> RefreshAsync(string refreshToken)
     {
         var existingToken = await _tokenService.GetRefreshTokenAsync(refreshToken);
-        if (existingToken == null || !existingToken.IsActive)
+        if (existingToken == null)
         {
-            throw new UnauthorizedAccessException(Constants.Errors.InvalidRefreshToken);
+            throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+        }
+
+        if (existingToken.IsRevoked && existingToken.ReplacedByToken != null)
+        {
+            if (existingToken.WasRotatedWithin(RotationGracePeriod))
+            {
+                _logger.LogInformation("A refresh token rotated moments ago was presented again for user {UserId}; treating it as a concurrent refresh", existingToken.UserId);
+                throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+            }
+
+            _logger.LogWarning("A rotated refresh token was presented again for user {UserId}; revoking every session", existingToken.UserId);
+            await _tokenService.RevokeAllUserTokensAsync(existingToken.UserId, "Refresh token reuse detected");
+            throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+        }
+
+        if (!existingToken.IsActive)
+        {
+            throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
         }
 
         var user = existingToken.User!;
         var roles = await _userManager.GetRolesAsync(user);
 
-        var newRefreshToken = await _tokenService.GenerateRefreshTokenAsync(user.Id);
-        await _tokenService.RevokeRefreshTokenAsync(existingToken, "Replaced by new token", newRefreshToken.Token);
+        RefreshToken newRefreshToken;
+        try
+        {
+            newRefreshToken = await _tokenService.RotateRefreshTokenAsync(existingToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            _logger.LogWarning("Two refreshes raced on one refresh token for user {UserId}; only the first got a new token", existingToken.UserId);
+            throw new AuthenticationFailedException(Constants.Errors.InvalidRefreshToken);
+        }
 
         var accessToken = _tokenService.GenerateAccessToken(user, roles);
 
         return new LoginResponse(
             accessToken,
-            newRefreshToken.Token,
+            newRefreshToken.PlainTextToken!,
             _tokenService.GetAccessTokenExpiry(),
             user.ToUserInfo(roles));
     }
@@ -132,12 +185,6 @@ public class AuthService : IAuthService
 
     public async Task<UserDto> RegisterAsync(RegisterRequest request)
     {
-        var hasOidcProvider = await _context.OidcProviders.AnyAsync(p => p.Enabled);
-        if (hasOidcProvider)
-        {
-            throw new DomainException(Constants.Errors.OidcNoLocalUsers);
-        }
-
         var existingUser = await _userManager.FindByNameAsync(request.Username);
         if (existingUser != null)
         {
@@ -201,8 +248,11 @@ public class AuthService : IAuthService
             ?? throw new EntityNotFoundException(nameof(ApplicationUser), userId);
 
         user.UpdateDisplayName(request.DisplayName);
-        if (request.Email != null)
+        string? previousEmail = null;
+        if (request.Email != null && !string.Equals(request.Email, user.Email, StringComparison.OrdinalIgnoreCase))
         {
+            await EnsureEmailChangeAllowedAsync(user, request.CurrentPassword);
+            previousEmail = user.Email;
             user.UpdateEmail(request.Email);
         }
 
@@ -222,9 +272,45 @@ public class AuthService : IAuthService
         await _userManager.UpdateAsync(user);
 
         _logger.LogInformation("User {UserId} updated their profile", userId);
+        NotifyPreviousEmail(user, previousEmail);
 
         var roles = await _userManager.GetRolesAsync(user);
         return user.ToProfileDto(roles);
+    }
+
+    private async Task EnsureEmailChangeAllowedAsync(ApplicationUser user, string? currentPassword)
+    {
+        if (!await _userManager.HasPasswordAsync(user))
+        {
+            throw new DomainException(Constants.Errors.EmailChangeNeedsPassword);
+        }
+
+        if (string.IsNullOrEmpty(currentPassword) || !await _userManager.CheckPasswordAsync(user, currentPassword))
+        {
+            _logger.LogWarning("Email change for user {UserId} refused: current password missing or wrong", user.Id);
+            throw new ValidationException(Constants.Errors.CurrentPasswordRequired);
+        }
+    }
+
+    private void NotifyPreviousEmail(ApplicationUser user, string? previousEmail)
+    {
+        if (string.IsNullOrWhiteSpace(previousEmail) || !_emailService.IsConfigured)
+        {
+            return;
+        }
+
+        var username = WebUtility.HtmlEncode(user.UserName);
+        var newEmail = WebUtility.HtmlEncode(user.Email);
+        const string subject = "Your BoardGameTracker email address was changed";
+        var body = $"<p>The email address of your account <strong>{username}</strong> was changed to {newEmail}.</p><p>If you did not do this, change your password and contact your administrator.</p>";
+        try
+        {
+            _backgroundEmailSender.Queue(previousEmail, subject, body);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to queue the email-change notice for user {UserId}", user.Id);
+        }
     }
 
     public async Task<List<PlayerLinkDto>> GetLinkablePlayersAsync(string currentUserId)
@@ -302,6 +388,13 @@ public class AuthService : IAuthService
             return;
         }
 
+        var cooldownKey = $"password-reset:{user.Id}";
+        if (_cache.TryGetValue(cooldownKey, out _))
+        {
+            _logger.LogInformation("Forgot-password requested again for user {UserId} within the cooldown; no email sent", user.Id);
+            return;
+        }
+
         try
         {
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -309,12 +402,17 @@ public class AuthService : IAuthService
             const string subject = "Reset your BoardGameTracker password";
             var htmlUrl = WebUtility.HtmlEncode(resetUrl);
             var body = $"<p>A password reset was requested for your account.</p><p><a href=\"{htmlUrl}\">Reset your password</a></p><p>If you didn't request this, you can safely ignore this email.</p>";
-            await _emailService.SendAsync(user.Email, subject, body);
-            _logger.LogInformation("Sent password reset email to user {UserId}", user.Id);
+            _backgroundEmailSender.Queue(user.Email, subject, body);
+            _cache.Set(cooldownKey, true, PasswordResetCooldown);
+            _logger.LogInformation("Queued password reset email for user {UserId}", user.Id);
+        }
+        catch (DomainException ex) when (ex.Message == Constants.Errors.PublicUrlNotConfigured)
+        {
+            _logger.LogWarning("Password reset email not sent because no public URL is configured");
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to send password reset email");
+            _logger.LogWarning(ex, "Failed to queue password reset email");
         }
     }
 

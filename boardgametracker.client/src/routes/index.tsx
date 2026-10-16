@@ -1,53 +1,39 @@
-import { useQuery } from "@tanstack/react-query";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import Calendar from "@/assets/icons/calendar.svg?react";
-import Coins from "@/assets/icons/coins.svg?react";
 import Game from "@/assets/icons/gamepad.svg?react";
 import Home from "@/assets/icons/home.svg?react";
-import Players from "@/assets/icons/users.svg?react";
-import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtEmptyPage } from "@/components/BgtLayout/BgtEmptyPage";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
-import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
-import { BgtText } from "@/components/BgtText/BgtText";
-import { useAuth } from "@/hooks/useAuth";
-import { getProfile } from "@/services/queries/auth";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
+import { usePermissions } from "@/hooks/usePermissions";
 import { getDashboardStatistics } from "@/services/queries/dashboard";
-import { getPlayerStatistics } from "@/services/queries/players";
-import { formatMinutesToDuration } from "@/utils/dateUtils";
-import { GameStateChartCard } from "./-components/dashboard/GameStateChart";
-import { MostPlayedDashboardGamesCard } from "./-components/dashboard/MostPlayedDashboardGames";
-import { RecentActivityCard } from "./-components/dashboard/RecentActivity";
-import { RecentAddedGamesCard } from "./-components/dashboard/RecentAddedGames";
-import { TopPlayersCard } from "./-components/dashboard/TopPlayers";
+import { CollectionCard } from "./-components/dashboard/CollectionCard";
+import { DashboardHeader } from "./-components/dashboard/DashboardHeader";
+import { LastSessionsCard } from "./-components/dashboard/LastSessionsCard";
+import { MostPlayedCard } from "./-components/dashboard/MostPlayedCard";
+import { NextGameNightCard } from "./-components/dashboard/NextGameNightCard";
+import { ShelfOfShameNudge } from "./-components/dashboard/ShelfOfShameNudge";
+import { TopPlayersCard } from "./-components/dashboard/TopPlayersCard";
 import { useDashboardData } from "./-hooks/useDashboardData";
-import { SessionCountChartCard } from "./games/-components/SessionCountChartCard";
+import { useShortDuration } from "./-hooks/useShortDuration";
 
 export const Route = createFileRoute("/")({
 	component: RouteComponent,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getDashboardStatistics());
+		queryClient.query(getDashboardStatistics()).catch(noop);
 	},
 });
 
 function RouteComponent() {
 	const { statistics, settings } = useDashboardData();
 	const navigate = useNavigate();
-	const { t } = useTranslation(["statistics", "common", "dashboard"]);
-
-	const authStatus = useAuth((s) => s.authStatus);
-	const isAuthenticated = useAuth((s) => s.isAuthenticated);
-	const username = useAuth((s) => s.user?.username);
-	const canPersonalize = !!authStatus?.authEnabled && isAuthenticated;
-
-	const { data: profile } = useQuery({ ...getProfile(), enabled: canPersonalize });
-	const { data: personalStats } = useQuery({
-		...getPlayerStatistics(profile?.playerId ?? 0),
-		enabled: profile?.playerId != null,
-	});
+	const { t } = useTranslation(["dashboard", "common"]);
+	const { canWrite } = usePermissions();
+	const shortDuration = useShortDuration();
+	const { integer } = useNumberFormat();
 
 	if (statistics === undefined || settings === undefined) return null;
 
@@ -57,97 +43,100 @@ function RouteComponent() {
 				header={t("common:dashboard")}
 				icon={Home}
 				emptyIcon={Game}
-				title={t("dashboard:empty.title")}
-				description={t("dashboard:empty.description")}
+				title={t("empty.title")}
+				description={t("empty.description")}
 				action={{
-					label: t("dashboard:empty.button"),
+					label: t("empty.button"),
 					onClick: () => navigate({ to: "/games" }),
 				}}
 			/>
 		);
 	}
 
-	const totalPlayedTime = formatMinutesToDuration(
-		statistics.totalPlayedTime,
-		["weeks", "days", "hours", "minutes"],
-		settings?.uiLanguage,
-	);
-
-	const avgSessionTime = formatMinutesToDuration(statistics.avgSessionTime, ["hours", "minutes"], settings?.uiLanguage);
-
 	return (
 		<BgtPage>
-			<BgtPageHeader header={t("common:dashboard")} icon={Home} />
 			<BgtPageContent>
-				{profile?.playerId != null && personalStats && (
-					<BgtCard className="gap-1">
-						<BgtText size="5" weight="bold" color="white">
-							{t("dashboard:welcome-back-title", { name: username ?? "" })}
-						</BgtText>
-						<BgtText color="gray">{t("dashboard:welcome-back", { count: personalStats.playCount })}</BgtText>
-					</BgtCard>
+				<DashboardHeader
+					linkedPlayer={statistics.linkedPlayer}
+					sessionsThisMonth={statistics.sessionsThisMonth}
+					canWrite={canWrite}
+				/>
+				{settings.gameNightsEnabled && (
+					<NextGameNightCard
+						gameNight={statistics.nextGameNight}
+						plannedGameNights={statistics.plannedGameNights}
+						uiLanguage={settings.uiLanguage}
+						timeFormat={settings.timeFormat}
+						canWrite={canWrite}
+					/>
 				)}
-				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+				<div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
 					<BgtTextStatistic
+						title={t("tiles.games")}
 						content={statistics.totalGames}
-						title={t("game-count")}
-						icon={<Game />}
-						textSize="8"
-						iconClassName="size-9"
+						textSize="7"
 						link="/games"
-						addLink="/games/add"
-						addLabel={t("common:add-game")}
+						caption={t("tiles.games-detail", {
+							owned: integer(statistics.ownedGames),
+							expansions: integer(statistics.expansionsOwned),
+							count: statistics.expansionsOwned,
+						})}
 					/>
 					<BgtTextStatistic
+						title={t("tiles.players")}
 						content={statistics.activePlayers}
-						title={t("player-count")}
-						icon={<Players />}
-						textSize="8"
-						iconClassName="size-9"
+						textSize="7"
 						link="/players"
-						addLink="/players/new"
-						addLabel={t("common:add-player")}
+						caption={t("tiles.players-detail", {
+							count: statistics.activePlayersThisMonth,
+							value: integer(statistics.activePlayersThisMonth),
+						})}
 					/>
 					<BgtTextStatistic
+						title={t("tiles.sessions")}
 						content={statistics.sessionsPlayed}
-						title={t("session-count")}
-						icon={<Calendar />}
-						textSize="8"
-						iconClassName="size-9"
-						addLink="/sessions/new"
-						addLabel={t("common:new-session")}
+						textSize="7"
+						caption={t("tiles.sessions-detail", {
+							count: statistics.sessionsThisMonth,
+							value: integer(statistics.sessionsThisMonth),
+						})}
 					/>
 					<BgtTextStatistic
-						content={statistics.totalCollectionValue}
-						title={t("collection-value")}
-						prefix={settings.currency}
-						icon={<Coins />}
-						textSize="8"
-						iconClassName="size-9"
+						title={t("tiles.play-time")}
+						content={shortDuration(statistics.totalPlayedTime)}
+						textSize="7"
+						caption={
+							statistics.sessionsPlayed > 0
+								? t("tiles.play-time-detail", { duration: shortDuration(statistics.avgSessionTime) })
+								: undefined
+						}
 					/>
 				</div>
-				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-					<BgtTextStatistic content={totalPlayedTime} title={t("total-playtime")} />
-					<BgtTextStatistic
-						content={Math.round(statistics.avgGamePrice ?? 0)}
-						title={t("average-cost")}
-						prefix={settings.currency}
-					/>
-					<BgtTextStatistic content={statistics.expansionsOwned} title={t("expansion-count")} />
-					<BgtTextStatistic content={avgSessionTime} title={t("average-playtime")} />
+				<div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+					<div className="flex flex-col gap-4">
+						<LastSessionsCard
+							sessions={statistics.recentActivities}
+							dateFormat={settings.dateFormat}
+							uiLanguage={settings.uiLanguage}
+						/>
+						{settings.shelfOfShameEnabled && (
+							<ShelfOfShameNudge shelfOfShame={statistics.shelfOfShame} currency={settings.currency} />
+						)}
+					</div>
+					<div className="flex flex-col gap-4">
+						<TopPlayersCard players={statistics.topPlayers} includesCoopWins={statistics.topPlayersIncludeCoopWins} />
+						<MostPlayedCard allTime={statistics.mostPlayedGames} thisMonth={statistics.mostPlayedGamesThisMonth} />
+						<CollectionCard
+							collection={statistics.collection}
+							ownedGames={statistics.ownedGames}
+							totalCollectionValue={statistics.totalCollectionValue}
+							pricedGameCount={statistics.pricedGameCount}
+							recentAddedGames={statistics.recentAddedGames}
+							currency={settings.currency}
+							uiLanguage={settings.uiLanguage}
+						/>
+					</div>
 				</div>
-				<div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-6 gap-4">
-					<RecentActivityCard activities={statistics.recentActivities} className="col-span-1 2xl:col-span-2" />
-					<MostPlayedDashboardGamesCard games={statistics.mostPlayedGames} className="col-span-1 2xl:col-span-2" />
-					<GameStateChartCard data={statistics.collection} className="col-span-1 2xl:col-span-2" />
-					<TopPlayersCard topPlayers={statistics.topPlayers} className="col-span-1 2xl:col-span-3" />
-					<RecentAddedGamesCard games={statistics.recentAddedGames} className="col-span-1 2xl:col-span-3" />
-					<SessionCountChartCard
-						playByDayChart={statistics.sessionsByDayOfWeek}
-						className="col-span-1 2xl:col-span-6"
-					/>
-				</div>
-				<div className="grid grid-cols-1 "></div>
 			</BgtPageContent>
 		</BgtPage>
 	);

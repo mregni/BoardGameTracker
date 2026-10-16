@@ -25,6 +25,4 @@ public class GameMechanic : HasId
     {
         Name = name;
     }
-
-    public int GetGameCount() => Games.Count;
 }

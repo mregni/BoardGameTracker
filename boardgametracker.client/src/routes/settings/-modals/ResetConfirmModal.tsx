@@ -1,13 +1,11 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
-} from "@/components/BgtDialog/BgtDialog";
+} from "@/components/BgtDialog";
 import { BgtSimpleInputField } from "@/components/BgtForm";
 
 interface Props {
@@ -24,11 +22,10 @@ interface Props {
 
 export const ResetConfirmModal = (props: Props) => {
 	const { open, close, onConfirm, isLoading = false, title, description, keyword, inputLabel, confirmLabel } = props;
-	const { t } = useTranslation();
 	const [value, setValue] = useState("");
 
 	return (
-		<BgtDialog open={open}>
+		<BgtDialog open={open} onClose={close}>
 			<BgtDialogContent>
 				<BgtDialogTitle>{title}</BgtDialogTitle>
 				<BgtDialogDescription>{description}</BgtDialogDescription>
@@ -38,14 +35,13 @@ export const ResetConfirmModal = (props: Props) => {
 					value={value}
 					onChange={(event) => setValue(event.target.value)}
 				/>
-				<BgtDialogClose>
-					<BgtButton variant="cancel" onClick={close}>
-						{t("cancel")}
-					</BgtButton>
-					<BgtButton variant="error" disabled={value !== keyword || isLoading} onClick={onConfirm}>
-						{confirmLabel}
-					</BgtButton>
-				</BgtDialogClose>
+				<BgtDialogFooter
+					onCancel={close}
+					confirmLabel={confirmLabel}
+					onConfirm={onConfirm}
+					variant="destructive"
+					disabled={value !== keyword || isLoading}
+				/>
 			</BgtDialogContent>
 		</BgtDialog>
 	);

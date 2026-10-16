@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithTheme, screen, userEvent } from "@/test/test-utils";
 import { BgtCheckboxList } from "./BgtCheckboxList";
@@ -5,6 +6,23 @@ import { BgtCheckboxList } from "./BgtCheckboxList";
 vi.mock("@/assets/icons/check.svg?react", () => ({
 	default: (props: React.SVGProps<SVGSVGElement>) => <svg data-testid="check-icon" {...props} />,
 }));
+
+const ControlledList = (props: {
+	items: { id: number; value: string }[];
+	onSelectionChange?: (ids: number[]) => void;
+}) => {
+	const [selectedIds, setSelectedIds] = useState<number[]>([]);
+	return (
+		<BgtCheckboxList
+			items={props.items}
+			selectedIds={selectedIds}
+			onSelectionChange={(ids) => {
+				setSelectedIds(ids);
+				props.onSelectionChange?.(ids);
+			}}
+		/>
+	);
+};
 
 describe("BgtCheckboxList", () => {
 	const defaultItems = [
@@ -53,7 +71,7 @@ describe("BgtCheckboxList", () => {
 	describe("User Interactions", () => {
 		it("should check an item when clicked", async () => {
 			const user = userEvent.setup();
-			renderWithTheme(<BgtCheckboxList items={defaultItems} />);
+			renderWithTheme(<ControlledList items={defaultItems} />);
 
 			const checkboxes = screen.getAllByRole("checkbox");
 			await user.click(checkboxes[0]);
@@ -63,7 +81,7 @@ describe("BgtCheckboxList", () => {
 
 		it("should uncheck an item when clicked twice", async () => {
 			const user = userEvent.setup();
-			renderWithTheme(<BgtCheckboxList items={defaultItems} />);
+			renderWithTheme(<ControlledList items={defaultItems} />);
 
 			const checkboxes = screen.getAllByRole("checkbox");
 			await user.click(checkboxes[0]);
@@ -96,10 +114,21 @@ describe("BgtCheckboxList", () => {
 			expect(onSelectionChange).toHaveBeenCalledWith([2]);
 		});
 
+		it("should reflect a selectedIds change from the parent", () => {
+			const { rerender } = renderWithTheme(<BgtCheckboxList items={defaultItems} selectedIds={[1]} />);
+
+			rerender(<BgtCheckboxList items={defaultItems} selectedIds={[2, 3]} />);
+
+			const checkboxes = screen.getAllByRole("checkbox");
+			expect(checkboxes[0]).not.toBeChecked();
+			expect(checkboxes[1]).toBeChecked();
+			expect(checkboxes[2]).toBeChecked();
+		});
+
 		it("should allow multiple selections", async () => {
 			const user = userEvent.setup();
 			const onSelectionChange = vi.fn();
-			renderWithTheme(<BgtCheckboxList items={defaultItems} onSelectionChange={onSelectionChange} />);
+			renderWithTheme(<ControlledList items={defaultItems} onSelectionChange={onSelectionChange} />);
 
 			const checkboxes = screen.getAllByRole("checkbox");
 			await user.click(checkboxes[0]);
@@ -176,14 +205,15 @@ describe("BgtCheckboxList", () => {
 			});
 		});
 
-		it("should work without onSelectionChange callback", async () => {
+		it("should stay controlled by selectedIds without onSelectionChange callback", async () => {
 			const user = userEvent.setup();
-			renderWithTheme(<BgtCheckboxList items={defaultItems} />);
+			renderWithTheme(<BgtCheckboxList items={defaultItems} selectedIds={[2]} />);
 
 			const checkboxes = screen.getAllByRole("checkbox");
 			await user.click(checkboxes[0]);
 
-			expect(checkboxes[0]).toBeChecked();
+			expect(checkboxes[0]).not.toBeChecked();
+			expect(checkboxes[1]).toBeChecked();
 		});
 	});
 });

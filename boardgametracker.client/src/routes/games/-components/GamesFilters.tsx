@@ -13,6 +13,7 @@ export interface GameFilterState {
 }
 
 export interface GamesFilterSearch {
+	q?: string;
 	category?: string;
 	players?: number;
 	playTime?: number;

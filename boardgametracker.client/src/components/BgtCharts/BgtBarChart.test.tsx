@@ -8,13 +8,20 @@ vi.mock("@nivo/bar", () => ({
 		keys,
 		indexBy,
 		tooltip,
+		axisLeft,
 	}: {
 		data: unknown[];
 		keys: string[];
 		indexBy: string;
 		tooltip: (props: { value: number; indexValue: string }) => React.ReactNode;
+		axisLeft: { tickValues: number[] };
 	}) => (
-		<div data-testid="responsive-bar" data-keys={keys.join(",")} data-index={indexBy}>
+		<div
+			data-testid="responsive-bar"
+			data-keys={keys.join(",")}
+			data-index={indexBy}
+			data-ticks={axisLeft.tickValues.join(",")}
+		>
 			{data.map((item, i) => (
 				<div key={i} data-testid={`bar-item-${i}`}>
 					{JSON.stringify(item)}
@@ -88,6 +95,20 @@ describe("BgtBarChart", () => {
 			expect(screen.getByTestId("bar-item-1")).toBeInTheDocument();
 			expect(screen.getByTestId("bar-item-2")).toBeInTheDocument();
 		});
+
+		it("should only use whole numbers on the value axis", () => {
+			renderWithTheme(
+				<BgtBarChart
+					data={[
+						{ day: "monday", sessions: 1 },
+						{ day: "tuesday", sessions: 2 },
+					]}
+					index="day"
+					keys={["sessions"]}
+				/>,
+			);
+			expect(screen.getByTestId("responsive-bar")).toHaveAttribute("data-ticks", "0,1,2");
+		});
 	});
 
 	describe("Null/Empty Data", () => {
@@ -105,7 +126,7 @@ describe("BgtBarChart", () => {
 	describe("Tooltip", () => {
 		it("should render tooltip with value", () => {
 			renderWithTheme(<BgtBarChart {...defaultProps} />);
-			expect(screen.getByText("10 sessions")).toBeInTheDocument();
+			expect(screen.getByText("common:sessions-count")).toBeInTheDocument();
 		});
 
 		it("should render tooltip with index value", () => {

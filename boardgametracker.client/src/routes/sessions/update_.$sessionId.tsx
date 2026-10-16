@@ -1,11 +1,13 @@
-import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
+import { noop } from "@tanstack/react-query";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { BgtDataGuard } from "@/components/BgtDataGuard/BgtDataGuard";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { CreateSession, Session } from "@/models";
 import { getGame } from "@/services/queries/games";
-
 import { getSession } from "@/services/queries/sessions";
 import { sessionIdParamSchema } from "@/utils/routeSchemas";
+import { useBackTo } from "../-hooks/useBack";
 import { SessionForm } from "./-components/SessionForm";
 import { useUpdateSessionData } from "./-hooks/useUpdateSessionData";
 
@@ -13,47 +15,53 @@ export const Route = createFileRoute("/sessions/update_/$sessionId")({
 	component: RouteComponent,
 	params: sessionIdParamSchema,
 	loader: async ({ params, context: { queryClient } }) => {
-		const data = await queryClient.fetchQuery(getSession(params.sessionId));
-		queryClient.prefetchQuery(getGame(data.gameId));
+		const data = await queryClient.query(getSession(params.sessionId));
+		queryClient.query(getGame(data.gameId)).catch(noop);
 	},
 });
+
+const parentOf = (session: Session) =>
+	session.gameNightId ? `/game-nights/${session.gameNightId}` : `/games/${session.gameId}/sessions`;
 
 function RouteComponent() {
 	const { sessionId } = Route.useParams();
 	const { t } = useTranslation("player-session");
-	const navigate = useNavigate();
+	const backTo = useBackTo();
 	const { canWrite } = usePermissions();
 
-	const { game, session, updateSession, isPending } = useUpdateSessionData({
+	const { game, session, updateSession, isPending, isLoading } = useUpdateSessionData({
 		sessionId,
 	});
 
 	if (!canWrite) return <Navigate to="/" />;
 
-	if (session === undefined) return null;
-
 	const save = async (data: CreateSession) => {
-		const updatedSession = { ...data } as Session;
+		if (session === undefined) return;
+		const updatedSession = { ...data, gameNightId: session.gameNightId } as Session;
 		updatedSession.id = session.id;
 		const result = await updateSession(updatedSession);
-		navigate({ to: `/games/${result.gameId}/sessions` });
+		backTo(parentOf(result));
 	};
 
-	if (game === undefined || session === undefined) return null;
-
 	return (
-		<SessionForm
-			game={game}
-			minutes={session.minutes}
-			start={session.start}
-			comment={session.comment}
-			locationId={session.locationId}
-			playerSessions={session.playerSessions}
-			expansions={session.expansions}
-			buttonText={t("save-update")}
-			onClick={save}
-			disabled={isPending}
-			title={t("title-update")}
-		/>
+		<BgtDataGuard isLoading={isLoading} data={{ game, session }}>
+			{({ game, session }) => (
+				<SessionForm
+					game={game}
+					minutes={session.minutes}
+					start={session.start}
+					comment={session.comment}
+					locationId={session.locationId}
+					playerSessions={session.playerSessions}
+					coop={{ isCoop: session.isCoop, teamWon: session.teamWon, teamScore: session.teamScore }}
+					expansions={session.expansions}
+					buttonText={t("save-update")}
+					onClick={save}
+					disabled={isPending}
+					title={t("title-update")}
+					backTo={parentOf(session)}
+				/>
+			)}
+		</BgtDataGuard>
 	);
 }
