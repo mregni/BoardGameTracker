@@ -26,15 +26,21 @@ describe("ScoringResultsCard", () => {
 		renderWithTheme(<ScoringResultsCard scoreRankChart={chart} />);
 
 		const top = screen.getByRole("progressbar", { name: "charts.top-scoring.top-score" });
-		expect(top).toHaveAttribute("aria-valuenow", "120");
-		expect(top).toHaveAttribute("aria-valuemax", "120");
+		expect(top).toHaveAttribute("value", "120");
+		expect(top).toHaveAttribute("max", "120");
 		expect(top).toHaveAttribute("aria-valuetext", "120");
-		expect(top).toHaveClass("h-2", "bg-primary/10");
-		expect(within(top).getByTestId("progress-fill")).toHaveStyle({ width: "100%", backgroundColor: "#10b981" });
+		expect(top.parentElement).toHaveClass("h-2", "bg-primary/10");
+		expect(within(top.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({
+			width: "100%",
+			backgroundColor: "#10b981",
+		});
 
 		const average = screen.getByRole("progressbar", { name: "charts.top-scoring.average" });
 		expect(average).toHaveAttribute("aria-valuetext", "90");
-		expect(within(average).getByTestId("progress-fill")).toHaveStyle({ width: "75.38%", backgroundColor: "#f59e0b" });
+		expect(within(average.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({
+			width: "75.38%",
+			backgroundColor: "#f59e0b",
+		});
 	});
 
 	it("shows the player and the rounded score", () => {
@@ -49,7 +55,7 @@ describe("ScoringResultsCard", () => {
 		renderWithTheme(<ScoringResultsCard scoreRankChart={chart} />);
 
 		const lowest = screen.getByRole("progressbar", { name: "charts.top-scoring.lowest" });
-		expect(lowest).toHaveAttribute("aria-valuenow", "0");
-		expect(within(lowest).getByTestId("progress-fill")).toHaveStyle({ width: "0%" });
+		expect(lowest).toHaveAttribute("value", "0");
+		expect(within(lowest.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({ width: "0%" });
 	});
 });

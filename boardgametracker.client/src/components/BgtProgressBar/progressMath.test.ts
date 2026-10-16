@@ -81,7 +81,7 @@ describe("computeSegments", () => {
 		expect(result.overflow).toBe(false);
 	});
 
-	it("skips zero, negative and invalid segments but keeps their index", () => {
+	it("keeps zero, negative and invalid segments as hidden zero-width items", () => {
 		const result = computeSegments([
 			segment("a", 0),
 			segment("b", 2),
@@ -90,8 +90,10 @@ describe("computeSegments", () => {
 			segment("e", 2),
 		]);
 
-		expect(result.items.map((item) => item.segment.label)).toEqual(["b", "e"]);
-		expect(result.items.map((item) => item.index)).toEqual([1, 4]);
+		expect(result.items.map((item) => item.segment.label)).toEqual(["a", "b", "c", "d", "e"]);
+		expect(result.items.map((item) => item.visible)).toEqual([false, true, false, false, true]);
+		expect(result.items.map((item) => item.percent)).toEqual([0, 50, 0, 0, 50]);
+		expect(result.items.map((item) => item.value)).toEqual([0, 2, 0, 0, 2]);
 		expect(result.total).toBe(4);
 	});
 
@@ -106,10 +108,12 @@ describe("computeSegments", () => {
 		expect(result.rest).toBe(0);
 	});
 
-	it("drops segments that start after max", () => {
+	it("hides segments that start after max", () => {
 		const result = computeSegments([segment("a", 100), segment("b", 20)], 100);
 
-		expect(result.items.map((item) => item.segment.label)).toEqual(["a"]);
+		expect(result.items.map((item) => item.visible)).toEqual([true, false]);
+		expect(result.items.map((item) => item.shown)).toEqual([100, 0]);
+		expect(result.items.map((item) => item.value)).toEqual([100, 20]);
 		expect(result.overflow).toBe(true);
 	});
 
@@ -118,10 +122,10 @@ describe("computeSegments", () => {
 		expect(computeSegments([segment("a", 2)], -10).overflow).toBe(false);
 	});
 
-	it("returns no items when everything is zero", () => {
+	it("returns only hidden items when everything is zero", () => {
 		const result = computeSegments([segment("a", 0)]);
 
-		expect(result.items).toEqual([]);
+		expect(result.items.map((item) => [item.visible, item.percent])).toEqual([[false, 0]]);
 		expect(result.max).toBe(0);
 		expect(result.rest).toBe(0);
 	});
@@ -129,7 +133,7 @@ describe("computeSegments", () => {
 	it("returns a full rest when there is a max but nothing to show", () => {
 		const result = computeSegments([segment("a", 0)], 10);
 
-		expect(result.items).toEqual([]);
+		expect(result.items.map((item) => item.visible)).toEqual([false]);
 		expect(result.rest).toBe(100);
 	});
 

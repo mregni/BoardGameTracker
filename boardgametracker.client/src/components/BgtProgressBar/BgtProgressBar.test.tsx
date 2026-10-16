@@ -9,17 +9,27 @@ const rsvpSegments: BgtProgressSegment[] = [
 ];
 
 const fill = () => screen.getByTestId("progress-fill");
+const trackEl = () => screen.getByTestId("progress-track");
 const segmentsOf = () => screen.queryAllByTestId("progress-segment");
 
 describe("BgtProgressBar single value", () => {
-	it("renders a progressbar with its value, range and label", () => {
+	it("renders a native progress element with its value, max and label", () => {
 		render(<BgtProgressBar value={38} aria-label="Win rate" />);
 
 		const bar = screen.getByRole("progressbar", { name: "Win rate" });
-		expect(bar).toHaveAttribute("aria-valuenow", "38");
-		expect(bar).toHaveAttribute("aria-valuemin", "0");
-		expect(bar).toHaveAttribute("aria-valuemax", "100");
+		expect(bar.tagName).toBe("PROGRESS");
+		expect(bar).toHaveAttribute("value", "38");
+		expect(bar).toHaveAttribute("max", "100");
+		expect(bar).toHaveClass("sr-only");
 		expect(fill()).toHaveStyle({ width: "38%" });
+	});
+
+	it("hides the visual fill from assistive technology", () => {
+		render(<BgtProgressBar value={38} aria-label="Win rate" />);
+
+		expect(fill()).toHaveAttribute("aria-hidden", "true");
+		expect(screen.getAllByRole("progressbar")).toHaveLength(1);
+		expect(trackEl()).toContainElement(screen.getByRole("progressbar"));
 	});
 
 	it("supports aria-labelledby and aria-valuetext", () => {
@@ -32,21 +42,22 @@ describe("BgtProgressBar single value", () => {
 
 		const bar = screen.getByRole("progressbar", { name: "Achievements" });
 		expect(bar).toHaveAttribute("aria-valuetext", "2 of 4");
-		expect(bar).toHaveAttribute("aria-valuemax", "4");
+		expect(bar).toHaveAttribute("value", "2");
+		expect(bar).toHaveAttribute("max", "4");
 		expect(fill()).toHaveStyle({ width: "50%" });
 	});
 
 	it("clamps a value above max", () => {
 		render(<BgtProgressBar value={140} max={100} aria-label="bar" />);
 
-		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
+		expect(screen.getByRole("progressbar")).toHaveAttribute("value", "100");
 		expect(fill()).toHaveStyle({ width: "100%" });
 	});
 
 	it("clamps a negative value to zero without a minimum width", () => {
 		render(<BgtProgressBar value={-5} max={10} aria-label="bar" />);
 
-		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
+		expect(screen.getByRole("progressbar")).toHaveAttribute("value", "0");
 		expect(fill()).toHaveStyle({ width: "0%" });
 		expect(fill()).not.toHaveClass("min-w-1");
 	});
@@ -55,8 +66,8 @@ describe("BgtProgressBar single value", () => {
 		render(<BgtProgressBar value={3} max={0} aria-label="bar" />);
 
 		const bar = screen.getByRole("progressbar");
-		expect(bar).toHaveAttribute("aria-valuemax", "0");
-		expect(bar).toHaveAttribute("aria-valuenow", "0");
+		expect(bar).toHaveAttribute("max", "1");
+		expect(bar).toHaveAttribute("value", "0");
 		expect(fill()).toHaveStyle({ width: "0%" });
 	});
 
@@ -112,7 +123,7 @@ describe("BgtProgressBar single value", () => {
 	] as const)("applies the %s size", (size, className) => {
 		render(<BgtProgressBar value={1} size={size} aria-label="bar" />);
 
-		expect(screen.getByRole("progressbar")).toHaveClass(className);
+		expect(trackEl()).toHaveClass(className);
 	});
 
 	it.each([
@@ -123,20 +134,25 @@ describe("BgtProgressBar single value", () => {
 	] as const)("applies the %s track", (track, className) => {
 		render(<BgtProgressBar value={1} track={track} aria-label="bar" />);
 
-		expect(screen.getByRole("progressbar")).toHaveClass(className);
+		expect(trackEl()).toHaveClass(className);
 	});
 
 	it("uses the default size and track", () => {
 		render(<BgtProgressBar value={1} aria-label="bar" />);
 
-		expect(screen.getByRole("progressbar")).toHaveClass("h-2.5", "bg-white/10", "overflow-hidden");
+		expect(trackEl()).toHaveClass("h-2.5", "bg-white/10", "overflow-hidden");
 	});
 
-	it("only animates the width when motion is allowed", () => {
+	it("only animates the width and colour when motion is allowed", () => {
 		render(<BgtProgressBar value={1} aria-label="bar" />);
 
-		expect(fill().className).toContain("motion-safe:transition-[width,flex-grow]");
-		expect(fill().className).not.toMatch(/(^|\s)transition/);
+		expect(fill()).toHaveClass(
+			"motion-safe:transition-[width,flex-grow,margin,background-color]",
+			"motion-safe:duration-300",
+			"motion-safe:ease-out",
+			"motion-reduce:transition-none",
+		);
+		expect(fill().className).not.toMatch(/(^|\s)(transition|duration)/);
 	});
 
 	it("passes id, title and className", () => {
@@ -144,9 +160,8 @@ describe("BgtProgressBar single value", () => {
 			<BgtProgressBar id="bar-id" title="38% won" className="grid-area-bar" value={38} aria-label="bar" />,
 		);
 
-		const bar = screen.getByRole("progressbar");
-		expect(bar).toHaveAttribute("id", "bar-id");
-		expect(bar).toHaveAttribute("title", "38% won");
+		expect(screen.getByRole("progressbar")).toHaveAttribute("id", "bar-id");
+		expect(trackEl()).toHaveAttribute("title", "38% won");
 		expect(container.firstElementChild).toHaveClass("grid-area-bar");
 	});
 
@@ -239,9 +254,10 @@ describe("BgtProgressBar segmented", () => {
 		expect(segments[1]).toHaveStyle({ flexGrow: "66.67" });
 	});
 
-	it("skips segments with a value of zero", () => {
+	it("keeps zero segments at width 0 without tooltip, min width or label entry", () => {
 		render(
 			<BgtProgressBar
+				legend
 				segments={[
 					{ key: "coming", label: "Coming", value: 2, tone: "ok" },
 					{ key: "maybe", label: "Maybe", value: 0, tone: "warn" },
@@ -250,10 +266,73 @@ describe("BgtProgressBar segmented", () => {
 			/>,
 		);
 
-		const segments = segmentsOf();
-		expect(segments).toHaveLength(1);
-		expect(segments[0]).toHaveAttribute("title", "Coming · 2");
+		const [coming, maybe, declined] = segmentsOf();
+		expect(coming).toHaveAttribute("title", "Coming · 2");
+		expect(coming).toHaveAttribute("data-visible", "true");
+		expect(coming).toHaveClass("min-w-1");
+		expect(coming).not.toHaveAttribute("aria-hidden");
+		for (const hidden of [maybe, declined]) {
+			expect(hidden).toHaveStyle({ flexGrow: "0" });
+			expect(hidden).toHaveClass("min-w-0", "basis-0", "ml-0");
+			expect(hidden).not.toHaveClass("min-w-1");
+			expect(hidden).not.toHaveAttribute("title");
+			expect(hidden).toHaveAttribute("aria-hidden", "true");
+			expect(hidden).toHaveAttribute("data-visible", "false");
+		}
 		expect(screen.getByRole("img", { name: "Coming 2 of 2" })).toBeInTheDocument();
+		expect(screen.getAllByRole("listitem").map((item) => item.textContent)).toEqual(["Coming2"]);
+	});
+
+	it("keeps the same element per key while values change, including from and to zero", () => {
+		const segmentsFor = (coming: number, maybe: number, declined: number): BgtProgressSegment[] => [
+			{ key: "coming", label: "Coming", value: coming, tone: "ok" },
+			{ key: "maybe", label: "Maybe", value: maybe, tone: "warn" },
+			{ key: "declined", label: "Declined", value: declined, tone: "bad" },
+		];
+		const { rerender } = render(<BgtProgressBar max={4} segments={segmentsFor(1, 0, 3)} />);
+		const [coming, maybe, declined] = segmentsOf();
+		expect(maybe).toHaveStyle({ flexGrow: "0" });
+
+		rerender(<BgtProgressBar max={4} segments={segmentsFor(1, 3, 0)} />);
+		let current = segmentsOf();
+		expect(current[0]).toBe(coming);
+		expect(current[1]).toBe(maybe);
+		expect(current[2]).toBe(declined);
+		expect(maybe).toHaveStyle({ flexGrow: "75" });
+		expect(maybe).toHaveAttribute("data-visible", "true");
+		expect(declined).toHaveStyle({ flexGrow: "0" });
+		expect(declined).toHaveAttribute("data-visible", "false");
+
+		rerender(<BgtProgressBar max={4} segments={segmentsFor(0, 0, 4)} />);
+		current = segmentsOf();
+		expect(current).toEqual([coming, maybe, declined]);
+		expect(declined).toHaveStyle({ flexGrow: "100" });
+		expect(screen.getByRole("img", { name: "Declined 4 of 4" })).toBeInTheDocument();
+	});
+
+	it("keeps the same element when a segment changes tone", () => {
+		const { rerender } = render(<BgtProgressBar segments={[{ key: "rsvp", label: "Coming", value: 1, tone: "ok" }]} />);
+		const segment = segmentsOf()[0];
+
+		rerender(<BgtProgressBar segments={[{ key: "rsvp", label: "Declined", value: 1, tone: "bad" }]} />);
+
+		expect(segmentsOf()[0]).toBe(segment);
+		expect(segment).toHaveClass("bg-bad");
+		expect(segment).not.toHaveClass("bg-ok");
+	});
+
+	it("animates width, gaps and colour only when motion is allowed", () => {
+		render(<BgtProgressBar segments={rsvpSegments} max={8} />);
+
+		for (const element of [...segmentsOf(), screen.getByTestId("progress-rest")]) {
+			expect(element).toHaveClass(
+				"motion-safe:transition-[width,flex-grow,margin,background-color]",
+				"motion-safe:duration-300",
+				"motion-safe:ease-out",
+				"motion-reduce:transition-none",
+			);
+			expect(element.className).not.toMatch(/(^|\s)(transition|duration)/);
+		}
 	});
 
 	it("gives every visible segment a minimum width and a flexible basis", () => {
@@ -275,8 +354,9 @@ describe("BgtProgressBar segmented", () => {
 		render(<BgtProgressBar segments={[{ label: "Coming", value: 0 }]} formatLabel={() => "nobody yet"} />);
 
 		expect(screen.getByRole("img", { name: "nobody yet" })).toBeInTheDocument();
-		expect(segmentsOf()).toHaveLength(0);
-		expect(screen.queryByTestId("progress-rest")).not.toBeInTheDocument();
+		expect(segmentsOf()).toHaveLength(1);
+		expect(segmentsOf()[0]).toHaveStyle({ flexGrow: "0" });
+		expect(screen.getByTestId("progress-rest")).toHaveStyle({ flexGrow: "0" });
 	});
 
 	it("fills the remaining space when the total is below max", () => {
@@ -355,22 +435,69 @@ describe("BgtProgressBar segmented", () => {
 		expect(bar).toHaveAttribute("data-overflow", "true");
 		expect(formatLabel).toHaveBeenCalledWith(expect.objectContaining({ total: 300, max: 240, overflow: true }));
 		const segments = segmentsOf();
-		expect(segments).toHaveLength(2);
+		expect(segments).toHaveLength(3);
 		expect(segments[0]).toHaveStyle({ flexGrow: "75" });
 		expect(segments[1]).toHaveStyle({ flexGrow: "25" });
 		expect(segments[1]).toHaveAttribute("title", "Azul · 60");
+		expect(segments[2]).toHaveStyle({ flexGrow: "0" });
+		expect(segments[2]).toHaveAttribute("data-visible", "false");
+		expect(segments[2]).not.toHaveAttribute("title");
 		const marker = within(bar).getByTestId("progress-overflow");
 		expect(marker).toHaveAttribute("aria-hidden", "true");
 		expect(marker).toHaveClass("border-dashed", "border-warn", "bg-overflow-stripes", "right-0");
-		expect(screen.queryByTestId("progress-rest")).not.toBeInTheDocument();
+		expect(screen.getByTestId("progress-rest")).toHaveStyle({ flexGrow: "0" });
 	});
 
-	it("adds 2px gaps only when asked", () => {
+	it("adds 2px gaps between visible segments only when asked", () => {
 		const { rerender } = render(<BgtProgressBar segments={rsvpSegments} />);
 		expect(screen.getByRole("img")).not.toHaveClass("gap-0.5");
+		for (const segment of segmentsOf()) {
+			expect(segment).toHaveClass("ml-0");
+		}
 
 		rerender(<BgtProgressBar segments={rsvpSegments} gapped />);
-		expect(screen.getByRole("img")).toHaveClass("gap-0.5");
+		expect(screen.getByRole("img")).not.toHaveClass("gap-0.5");
+		expect(segmentsOf().map((segment) => segment.classList.contains("ml-0.5"))).toEqual([false, true, true]);
+	});
+
+	it.each([
+		["first", [0, 2, 3, 1], [false, false, true, true]],
+		["last", [2, 3, 1, 0], [false, true, true, false]],
+		["both ends", [0, 2, 3, 0], [false, false, true, false]],
+		["middle", [2, 0, 3, 1], [false, false, true, true]],
+	])("keeps single gaps when the %s segment is zero", (_, values, gaps) => {
+		render(
+			<BgtProgressBar
+				gapped
+				segments={values.map((value, index) => ({ key: String(index), label: String(index), value }))}
+			/>,
+		);
+
+		const segments = segmentsOf();
+		expect(segments.map((segment) => segment.classList.contains("ml-0.5"))).toEqual(gaps);
+		segments.forEach((segment, index) => {
+			if (values[index] === 0) {
+				expect(segment).toHaveClass("ml-0", "min-w-0");
+			}
+		});
+	});
+
+	it.each([
+		["first", [0, 2, 3]],
+		["last", [2, 3, 0]],
+	])("rounds only the outer ends of the track when the %s segment is zero", (_, values) => {
+		render(
+			<BgtProgressBar
+				gapped
+				size="thin"
+				segments={values.map((value, index) => ({ key: String(index), label: String(index), value }))}
+			/>,
+		);
+
+		expect(screen.getByRole("img")).toHaveClass("rounded", "overflow-hidden");
+		for (const segment of segmentsOf()) {
+			expect(segment.className).not.toMatch(/rounded/);
+		}
 	});
 
 	it("rounds the outer ends only", () => {
@@ -398,7 +525,7 @@ describe("BgtProgressBar legend", () => {
 		expect(screen.queryByRole("list")).not.toBeInTheDocument();
 	});
 
-	it("lists every segment with a swatch, label and formatted value", () => {
+	it("lists every non-zero segment with a swatch, label and formatted value", () => {
 		render(
 			<BgtProgressBar
 				legend
@@ -413,18 +540,12 @@ describe("BgtProgressBar legend", () => {
 		);
 
 		const items = within(screen.getByRole("list")).getAllByRole("listitem");
-		expect(items.map((item) => item.textContent)).toEqual([
-			"Never played€200",
-			"Not lately€0",
-			"Same team€3",
-			"Azul€30",
-		]);
+		expect(items.map((item) => item.textContent)).toEqual(["Never played€200", "Same team€3", "Azul€30"]);
 		const swatches = screen.getAllByTestId("progress-legend-swatch");
 		expect(swatches[0]).toHaveClass("bg-bad");
-		expect(swatches[1]).toHaveClass("bg-warn");
-		expect(swatches[2]).toHaveClass("bg-hatch");
-		expect(swatches[2]).toHaveAttribute("data-pattern", "hatch");
-		expect(swatches[3]).toHaveStyle({ backgroundColor: "rgb(165, 13, 34)" });
+		expect(swatches[1]).toHaveClass("bg-hatch");
+		expect(swatches[1]).toHaveAttribute("data-pattern", "hatch");
+		expect(swatches[2]).toHaveStyle({ backgroundColor: "rgb(165, 13, 34)" });
 		for (const swatch of swatches) {
 			expect(swatch).toHaveAttribute("aria-hidden", "true");
 		}

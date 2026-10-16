@@ -38,13 +38,33 @@ describe("RsvpProgress", () => {
 		);
 
 		expect(screen.getByRole("img", { name: "rsvp.summary.coming · rsvp.summary.pending" })).toBeInTheDocument();
-		expect(segments().map((segment) => segment.dataset.tone)).toEqual(["ok", "warn"]);
+		expect(segments().map((segment) => segment.dataset.tone)).toEqual(["ok", "warn", "bad"]);
+		expect(segments().map((segment) => segment.dataset.visible)).toEqual(["true", "true", "false"]);
+		expect(segments()[2]).toHaveStyle({ flexGrow: "0" });
+	});
+
+	it("keeps one element per answer so status switches animate", () => {
+		const { rerender } = renderWithTheme(
+			<RsvpProgress rsvps={[rsvp(1, GameNightRsvpState.Accepted), rsvp(2, GameNightRsvpState.Accepted)]} />,
+		);
+		const [coming, pending, declined] = segments();
+		expect(pending).toHaveStyle({ flexGrow: "0" });
+
+		rerender(<RsvpProgress rsvps={[rsvp(1, GameNightRsvpState.Accepted), rsvp(2, GameNightRsvpState.Pending)]} />);
+		expect(segments()).toEqual([coming, pending, declined]);
+		expect(pending).toHaveStyle({ flexGrow: "50" });
+
+		rerender(<RsvpProgress rsvps={[rsvp(1, GameNightRsvpState.Accepted), rsvp(2, GameNightRsvpState.Declined)]} />);
+		expect(segments()).toEqual([coming, pending, declined]);
+		expect(pending).toHaveStyle({ flexGrow: "0" });
+		expect(declined).toHaveStyle({ flexGrow: "50" });
+		expect(coming).toHaveStyle({ flexGrow: "50" });
 	});
 
 	it("renders an empty bar without invites", () => {
 		renderWithTheme(<RsvpProgress rsvps={[]} />);
 
 		expect(screen.getByTestId("rsvp-summary")).toBeEmptyDOMElement();
-		expect(segments()).toHaveLength(0);
+		expect(segments().map((segment) => segment.dataset.visible)).toEqual(["false", "false", "false"]);
 	});
 });

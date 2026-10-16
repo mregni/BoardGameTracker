@@ -38,10 +38,9 @@ describe("PlayerAchievementsSummary", () => {
 
 		expect(screen.getByText("titles.achievements (2/4)")).toBeInTheDocument();
 		const progress = screen.getByRole("progressbar", { name: "titles.achievements" });
-		expect(progress).toHaveAttribute("aria-valuenow", "2");
-		expect(progress).toHaveAttribute("aria-valuemin", "0");
-		expect(progress).toHaveAttribute("aria-valuemax", "4");
-		expect(within(progress).getByTestId("progress-fill")).toHaveStyle({ width: "50%" });
+		expect(progress).toHaveAttribute("value", "2");
+		expect(progress).toHaveAttribute("max", "4");
+		expect(within(progress.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({ width: "50%" });
 		const icons = screen.getAllByRole("img");
 		expect(icons.map((icon) => icon.getAttribute("src"))).toEqual([
 			"/images/badges/sessions-blue.png",
@@ -53,8 +52,8 @@ describe("PlayerAchievementsSummary", () => {
 		renderWithTheme(<PlayerAchievementsSummary badges={[]} playerBadges={[]} />);
 
 		const progress = screen.getByRole("progressbar", { name: "titles.achievements" });
-		expect(progress).toHaveAttribute("aria-valuenow", "0");
-		expect(progress).toHaveAttribute("aria-valuemax", "0");
-		expect(within(progress).getByTestId("progress-fill")).toHaveStyle({ width: "0%" });
+		expect(progress).toHaveAttribute("value", "0");
+		expect(progress).toHaveAttribute("max", "1");
+		expect(within(progress.parentElement as HTMLElement).getByTestId("progress-fill")).toHaveStyle({ width: "0%" });
 	});
 });

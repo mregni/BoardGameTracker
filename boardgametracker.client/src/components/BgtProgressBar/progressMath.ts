@@ -16,6 +16,7 @@ export interface ComputedSegment<T extends ProgressSegmentValue> {
 	value: number;
 	shown: number;
 	percent: number;
+	visible: boolean;
 }
 
 export interface ComputedSegments<T extends ProgressSegmentValue> {
@@ -48,9 +49,8 @@ export const computeSegments = <T extends ProgressSegmentValue>(segments: T[], m
 	segments.forEach((segment, index) => {
 		const value = values[index];
 		const shown = Math.min(value, remaining);
-		if (shown <= 0) return;
 		remaining -= shown;
-		items.push({ segment, index, value, shown, percent: toPercent(shown, effectiveMax) });
+		items.push({ segment, index, value, shown, percent: toPercent(shown, effectiveMax), visible: shown > 0 });
 	});
 
 	return {
