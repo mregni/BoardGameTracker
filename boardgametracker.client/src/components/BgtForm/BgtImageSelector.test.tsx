@@ -32,6 +32,13 @@ describe("BgtImageSelector", () => {
 			expect(screen.getByText("types")).toBeInTheDocument();
 		});
 
+		it("should render the upload hints in a passing muted grey", () => {
+			renderWithTheme(<BgtImageSelector image={undefined} setImage={mockSetImage} />);
+			expect(screen.getByText("upload").closest("p")).toHaveClass("text-gray-400");
+			expect(screen.getByText("types")).toHaveClass("text-gray-400");
+			expect(screen.getByText("types")).not.toHaveClass("text-gray-500");
+		});
+
 		it("should render file input", () => {
 			renderWithTheme(<BgtImageSelector image={undefined} setImage={mockSetImage} />);
 			const input = document.querySelector('input[type="file"]');

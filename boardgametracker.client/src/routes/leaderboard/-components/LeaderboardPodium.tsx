@@ -45,7 +45,7 @@ export const LeaderboardPodium = ({ players, rankBy }: Props) => {
 							>
 								{index === 0 && <CrownIcon aria-hidden="true" className="size-5 text-yellow-400" />}
 								<BgtAvatar image={entry.image} title={entry.name} size="large" shape="round" />
-								<strong className="max-w-full truncate group-hover:text-primary group-hover:underline">
+								<strong className="max-w-full truncate group-hover:text-primary-text group-hover:underline">
 									{entry.name}
 								</strong>
 								<small className="text-xs text-white/60">{summary(entry)}</small>

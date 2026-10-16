@@ -56,7 +56,7 @@ const NoPodium = ({ leaderboard, gameTitle }: { leaderboard: Leaderboard; gameTi
 			role="note"
 			className="grid grid-cols-[1.375rem_minmax(0,1fr)] items-start gap-2 rounded-[10px] border border-card-border bg-card-light px-3 py-2.5 text-sm"
 		>
-			<InfoIcon aria-hidden="true" className="mt-0.5 size-4 text-primary" />
+			<InfoIcon aria-hidden="true" className="mt-0.5 size-4 text-primary-text" />
 			<span>
 				{reason}
 				{hint && ` ${hint}`}

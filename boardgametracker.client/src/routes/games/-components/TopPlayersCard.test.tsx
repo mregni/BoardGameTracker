@@ -45,6 +45,14 @@ describe("TopPlayersCard", () => {
 		expect(screen.queryByText("0%")).not.toBeInTheDocument();
 	});
 
+	it("colours a downward trend with the bad token", () => {
+		renderWithTheme(<TopPlayersCard topPlayers={[topPlayer({ trend: Trend.Down })]} />);
+
+		const rate = screen.getByText("100%").closest("span");
+		expect(rate).toHaveClass("text-bad");
+		expect(rate).not.toHaveClass("text-red-500");
+	});
+
 	it("shows the empty state when nobody has won yet", () => {
 		renderWithTheme(<TopPlayersCard topPlayers={[topPlayer({ wins: 0, winPercentage: 0 })]} />);
 

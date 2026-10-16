@@ -244,9 +244,9 @@ public class GameController : ControllerBase
     [Route("shames")]
     [ProducesResponseType<List<ShameDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetShameGames()
+    public async Task<IActionResult> GetShameGames([FromQuery, Range(1, 1200)] int? months = null)
     {
-        var games = await _shameService.GetShameGames();
+        var games = await _shameService.GetShameGames(months);
         return Ok(games.ToListDto());
     }
 
@@ -254,9 +254,9 @@ public class GameController : ControllerBase
     [Route("shames/statistics")]
     [ProducesResponseType<ShameStatisticsDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetShameStatistics()
+    public async Task<IActionResult> GetShameStatistics([FromQuery, Range(1, 1200)] int? months = null)
     {
-        var statistics = await _shameService.GetShameStatistics();
+        var statistics = await _shameService.GetShameStatistics(months);
         return Ok(statistics.ToDto());
     }
 }

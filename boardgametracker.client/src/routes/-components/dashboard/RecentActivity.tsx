@@ -61,12 +61,12 @@ const ActivityItem = ({ activity }: ItemProps) => {
 									winner: (
 										<Link className="font-bold" to="/players/$playerId" params={{ playerId: activity.winnerId }} />
 									),
-									game: <Link className="text-primary" to="/games/$gameId" params={{ gameId: activity.gameId }} />,
+									game: <Link className="text-primary-text" to="/games/$gameId" params={{ gameId: activity.gameId }} />,
 								}}
 							/>
 						) : (
 							<span className="inline-flex flex-wrap items-center gap-2">
-								<Link className="text-primary" to="/games/$gameId" params={{ gameId: activity.gameId }}>
+								<Link className="text-primary-text" to="/games/$gameId" params={{ gameId: activity.gameId }}>
 									{activity.gameTitle}
 								</Link>
 								{activity.isCoop && <CoopResultPill won={activity.teamWon === true} />}

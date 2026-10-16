@@ -13,6 +13,11 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("Total Games")).toBeInTheDocument();
 		});
 
+		it("should render a caption under the value when given", () => {
+			renderWithTheme(<BgtTextStatistic title="On the shelf" content={9} caption="of 41 owned games" />);
+			expect(screen.getByText("of 41 owned games")).toHaveAttribute("title", "of 41 owned games");
+		});
+
 		it("should render content as string", () => {
 			renderWithTheme(<BgtTextStatistic title="Best Game" content="Chess" />);
 			expect(screen.getByText("Chess")).toBeInTheDocument();
@@ -76,6 +81,13 @@ describe("BgtTextStatistic", () => {
 		it("should expose the full title as a tooltip", () => {
 			renderWithTheme(<BgtTextStatistic title="Average session duration" content={5} />);
 			expect(screen.getByText("Average session duration")).toHaveAttribute("title", "Average session duration");
+		});
+
+		it("should colour the title row with the stat title token", () => {
+			renderWithTheme(<BgtTextStatistic title="Sessions" content={5} />);
+			const row = screen.getByText("Sessions").closest("div");
+			expect(row).toHaveClass("text-stat-title");
+			expect(row?.className).not.toContain("text-primary/70");
 		});
 	});
 
