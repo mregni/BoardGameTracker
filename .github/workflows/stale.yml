@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2
         with:
           egress-policy: audit
 
@@ -85,7 +85,7 @@ jobs:
           echo "Done. Newly labeled: $LABELED | Already labeled: $SKIPPED"
 
       - name: Process stale issues and PRs
-        uses: actions/stale@1e223db275d687790206a7acac4d1a11bd6fe629 # v10
+        uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
         with:
           stale-issue-label: stale
           stale-issue-message: >
