@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { isPast } from "date-fns";
 import { type ReactNode, useMemo, useState } from "react";
@@ -28,16 +29,16 @@ import { ManageRSVPsModal } from "./-modals/ManageRSVPsModal";
 export const Route = createFileRoute("/game-nights/")({
 	component: RouteComponent,
 	beforeLoad: async ({ context: { queryClient } }) => {
-		const settings = await queryClient.ensureQueryData(getSettings());
+		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
 		if (!settings.gameNightsEnabled) {
 			throw redirect({ to: "/" });
 		}
 	},
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getGameNights());
-		queryClient.prefetchQuery(getPlayers());
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getLocations());
+		queryClient.query(getGameNights()).catch(noop);
+		queryClient.query(getPlayers()).catch(noop);
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getLocations()).catch(noop);
 	},
 });
 

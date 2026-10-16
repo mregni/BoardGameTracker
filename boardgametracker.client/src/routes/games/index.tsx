@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { noop, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useCallback, useMemo, useState } from "react";
@@ -28,8 +28,8 @@ import { filterByTitle, hasGridFilters, parseGamesSearch, withoutUndefined } fro
 export const Route = createFileRoute("/games/")({
 	component: RouteComponent,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getSettings());
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getSettings()).catch(noop);
 	},
 	validateSearch: (search: Record<string, unknown>): GamesFilterSearch => parseGamesSearch(search),
 });

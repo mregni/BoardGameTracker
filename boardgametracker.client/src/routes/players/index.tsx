@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Users from "@/assets/icons/users.svg?react";
@@ -17,7 +18,7 @@ import { usePlayersData } from "./-hooks/usePlayersData";
 export const Route = createFileRoute("/players/")({
 	component: RouteComponent,
 	loader: ({ context: { queryClient } }) => {
-		queryClient.prefetchQuery(getPlayersOverview());
+		queryClient.query(getPlayersOverview()).catch(noop);
 	},
 });
 
