@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import Target from "@/assets/icons/target.svg?react";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
+import { BgtProgressBar } from "@/components/BgtProgressBar/BgtProgressBar";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { RoundDecimal } from "@/utils/numberUtils";
 import { usePlayerById } from "../../-hooks/usePlayerById";
@@ -39,15 +40,15 @@ export const ScoringResultsCard = (props: Props) => {
 								{RoundDecimal(item.score)}
 							</BgtText>
 						</div>
-						<div className="w-full bg-primary/10 rounded-full h-2 overflow-hidden">
-							<div
-								className="h-full rounded-full transition-all"
-								style={{
-									width: `${(item.score / maxScore) * 100}%`,
-									backgroundColor: SCORING_COLORS[item.key],
-								}}
-							/>
-						</div>
+						<BgtProgressBar
+							size="thin"
+							track="primary"
+							value={item.score}
+							max={maxScore}
+							color={SCORING_COLORS[item.key]}
+							aria-label={t(`charts.top-scoring.${item.key}`)}
+							aria-valuetext={String(RoundDecimal(item.score))}
+						/>
 					</div>
 				))}
 			</div>
