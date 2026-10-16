@@ -6,7 +6,7 @@ import { renderWithProviders, screen, userEvent, within } from "@/test/test-util
 
 interface CapturedRoute {
 	component: FC;
-	loader: (args: { context: { queryClient: { prefetchQuery: (options: unknown) => void } } }) => void;
+	loader: (args: { context: { queryClient: { query: (options: unknown) => Promise<unknown> } } }) => void;
 }
 
 const mocks = vi.hoisted(() => ({
@@ -180,11 +180,11 @@ describe("loans page", () => {
 	});
 
 	it("prefetches the loans in the loader", () => {
-		const prefetchQuery = vi.fn();
+		const query = vi.fn().mockResolvedValue(undefined);
 
-		mocks.captured.config.loader({ context: { queryClient: { prefetchQuery } } });
+		mocks.captured.config.loader({ context: { queryClient: { query } } });
 
-		expect(prefetchQuery).toHaveBeenCalledWith({ queryKey: ["loans"] });
+		expect(query).toHaveBeenCalledWith({ queryKey: ["loans"] });
 	});
 
 	it("shows the loan statistics", () => {

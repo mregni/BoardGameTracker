@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { BgtDetailLayout } from "@/components/BgtLayout/BgtDetailLayout";
@@ -26,9 +27,9 @@ export const Route = createFileRoute("/players/$playerId")({
 	component: RouteComponent,
 	params: playerIdParamSchema,
 	loader: ({ params, context: { queryClient } }) => {
-		queryClient.prefetchQuery(getPlayer(params.playerId));
-		queryClient.prefetchQuery(getPlayerStatistics(params.playerId));
-		queryClient.prefetchQuery(getBadges());
+		queryClient.query(getPlayer(params.playerId)).catch(noop);
+		queryClient.query(getPlayerStatistics(params.playerId)).catch(noop);
+		queryClient.query(getBadges()).catch(noop);
 	},
 });
 
