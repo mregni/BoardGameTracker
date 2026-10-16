@@ -1,5 +1,6 @@
 import { ResponsivePie } from "@nivo/pie";
 import { useTranslation } from "react-i18next";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { type PieChartDatum, pieColors } from "@/models/Charts/PieChartDatum";
 import { BgtText } from "../BgtText/BgtText";
 
@@ -26,6 +27,7 @@ interface Props {
 export const BgtPieChart = (props: Props) => {
 	const { data, showLegend = false, tooltipPrefix, ariaLabel } = props;
 	const { t } = useTranslation();
+	const { percent, integer } = useNumberFormat();
 
 	if (!data || data.length === 0) return null;
 
@@ -58,12 +60,12 @@ export const BgtPieChart = (props: Props) => {
 						}}
 						theme={theme}
 						tooltip={({ datum }) => {
-							const percentage = ((datum.value / total) * 100).toFixed(1);
+							const percentage = percent(total === 0 ? 0 : datum.value / total, 1);
 							return (
 								<div className="bg-background border border-primary/30 rounded-lg p-3 shadow-lg min-w-40">
 									<BgtText color="white">{datum.label}</BgtText>
 									<BgtText color="cyan">
-										{t(tooltipPrefix, { count: datum.value })} ({percentage}%)
+										{t(tooltipPrefix, { count: datum.value })} ({percentage})
 									</BgtText>
 								</div>
 							);
@@ -71,7 +73,7 @@ export const BgtPieChart = (props: Props) => {
 					/>
 					<div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
 						<BgtText color="cyan" size="8">
-							{total}
+							{integer(total)}
 						</BgtText>
 						<div className="text-white/50 text-xs">{t("total")}</div>
 					</div>
@@ -89,7 +91,7 @@ export const BgtPieChart = (props: Props) => {
 								/>
 								<span className="text-white/70 text-sm">{item.label}</span>
 							</div>
-							<BgtText color="white">{item.value}</BgtText>
+							<BgtText color="white">{integer(item.value)}</BgtText>
 						</div>
 					))}
 				</div>

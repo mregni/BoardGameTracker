@@ -171,6 +171,27 @@ describe("NewLoanModal", () => {
 		await waitFor(() => expect(preset(/^new\.due\.two-weeks · /)).toHaveTextContent("2026-10-29"));
 	});
 
+	it("puts cancel on the left and the save submit on the right", () => {
+		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
+
+		const footer = document.querySelector("[data-slot='dialog-footer']") as HTMLElement;
+		const buttons = within(footer).getAllByRole("button");
+		expect(buttons.map((button) => button.textContent)).toEqual(["common:cancel", "new.save"]);
+		expect(buttons[1]).toHaveAttribute("type", "submit");
+		expect(buttons[1]).toHaveClass("bg-primary/60");
+	});
+
+	it("closes from cancel without saving", async () => {
+		const close = vi.fn();
+		renderWithProviders(<NewLoanModal open close={close} />);
+
+		const footer = document.querySelector("[data-slot='dialog-footer']") as HTMLElement;
+		await userEvent.click(within(footer).getByRole("button", { name: "common:cancel" }));
+
+		expect(close).toHaveBeenCalled();
+		expect(saveLoan).not.toHaveBeenCalled();
+	});
+
 	it("does not save without a game and a borrower", async () => {
 		renderWithProviders(<NewLoanModal open close={vi.fn()} />);
 

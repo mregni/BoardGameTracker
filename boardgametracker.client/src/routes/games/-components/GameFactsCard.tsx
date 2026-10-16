@@ -14,8 +14,7 @@ import User from "@/assets/icons/user.svg?react";
 import Users from "@/assets/icons/users.svg?react";
 import type { Game, GamePrice } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
-import { RoundDecimal } from "@/utils/numberUtils";
-import { formatPrice } from "@/utils/priceUtils";
+import { formatDecimal, formatPrice } from "@/utils/numberUtils";
 import { PriceRefreshButton } from "./PriceRefreshButton";
 
 const formatMinMax = (min: number | null, max: number | null): string | null => {
@@ -120,12 +119,12 @@ export const GameFactsCard = (props: Props) => {
 			)}
 			{game.rating != null && game.rating > 0 && (
 				<FactRow icon={Award} label={t("rating")}>
-					{RoundDecimal(game.rating, 0.1)} / 10
+					{formatDecimal(game.rating, uiLanguage)} / 10
 				</FactRow>
 			)}
 			{game.weight != null && game.weight > 0 && (
 				<FactRow icon={BarChart} label={t("weight")}>
-					{RoundDecimal(game.weight, 0.1)} / 5
+					{formatDecimal(game.weight, uiLanguage)} / 5
 				</FactRow>
 			)}
 			{game.buyingPrice != null && (

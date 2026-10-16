@@ -1,12 +1,11 @@
 import { useTranslation } from "react-i18next";
-import BgtButton from "../../components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
-} from "../../components/BgtDialog/BgtDialog";
+} from "../../components/BgtDialog";
 
 interface Props {
 	open: boolean;
@@ -26,14 +25,12 @@ export const BgtDeleteModal = (props: Props) => {
 			<BgtDialogContent>
 				<BgtDialogTitle>{heading ?? t("delete.title", { title: title })}</BgtDialogTitle>
 				<BgtDialogDescription>{description}</BgtDialogDescription>
-				<BgtDialogClose>
-					<BgtButton variant="cancel" onClick={() => close()}>
-						{t("cancel")}
-					</BgtButton>
-					<BgtButton variant="error" onClick={onDelete}>
-						{t("delete.button")}
-					</BgtButton>
-				</BgtDialogClose>
+				<BgtDialogFooter
+					onCancel={close}
+					confirmLabel={t("delete.button")}
+					onConfirm={onDelete}
+					variant="destructive"
+				/>
 			</BgtDialogContent>
 		</BgtDialog>
 	);

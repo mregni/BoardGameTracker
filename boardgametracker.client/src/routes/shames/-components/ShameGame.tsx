@@ -6,7 +6,7 @@ import { BgtFallbackImage } from "@/components/BgtImage/BgtFallbackImage";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { Shame } from "@/models";
 import { getDaysSincePurchase, toDisplay } from "@/utils/dateUtils";
-import { formatPrice } from "@/utils/priceUtils";
+import { formatPrice } from "@/utils/numberUtils";
 
 interface Props {
 	shame: Shame;

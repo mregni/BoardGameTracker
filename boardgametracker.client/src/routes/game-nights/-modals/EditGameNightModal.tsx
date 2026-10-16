@@ -1,11 +1,9 @@
 import { useTranslation } from "react-i18next";
-import { Bars } from "react-loading-icons";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import type { Game, GameNight, Location, ModalProps, Player, UpdateGameNight } from "@/models";
@@ -46,15 +44,13 @@ export const EditGameNightModal = (props: Props) => {
 					<BgtDialogTitle>{t("edit.title")}</BgtDialogTitle>
 					<BgtDialogDescription>{t("edit.description")}</BgtDialogDescription>
 				</GameNightForm>
-				<BgtDialogClose>
-					<BgtButton disabled={isLoading} variant="cancel" className="flex-1" onClick={close}>
-						{t("common:cancel")}
-					</BgtButton>
-					<BgtButton type="submit" form="game-night-form" disabled={isLoading} className="flex-1" variant="primary">
-						{isLoading && <Bars className="size-4" />}
-						{t("edit.save")}
-					</BgtButton>
-				</BgtDialogClose>
+				<BgtDialogFooter
+					onCancel={close}
+					confirmLabel={t("edit.save")}
+					confirmType="submit"
+					form="game-night-form"
+					loading={isLoading}
+				/>
 			</BgtDialogContent>
 		</BgtDialog>
 	);

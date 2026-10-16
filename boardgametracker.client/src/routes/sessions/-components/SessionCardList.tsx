@@ -6,6 +6,7 @@ import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { Game, Player, PlayerSession, Session } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 
@@ -43,6 +44,7 @@ export const SessionCardList = (props: Props) => {
 		className,
 	} = props;
 	const { t } = useTranslation("common");
+	const { decimal } = useNumberFormat();
 
 	if (sessions.length === 0) {
 		return <p className={cx("py-4 text-center text-white/60", className)}>{t("no-data-yet")}</p>;
@@ -93,7 +95,7 @@ export const SessionCardList = (props: Props) => {
 													<Crown className="size-3.5 text-yellow-400" role="img" aria-label={t("won")} />
 												)}
 												{playerSession.score != null && (
-													<span className="font-semibold tabular-nums">{playerSession.score}</span>
+													<span className="font-semibold tabular-nums">{decimal(playerSession.score)}</span>
 												)}
 											</AvatarChip>
 										</li>

@@ -110,14 +110,3 @@ export const BgtDialogDescription = (props: BgtDialogDescriptionProps) => {
 		</Dialog.Description>
 	);
 };
-
-interface BgtDialogCloseProps {
-	className?: string;
-	children: ReactNode;
-}
-
-export const BgtDialogClose = (props: BgtDialogCloseProps) => {
-	const { className, children } = props;
-
-	return <div className={cx("flex justify-between pt-2 gap-3", className)}>{children}</div>;
-};

@@ -21,6 +21,44 @@ const loan = (dueDate: Date | null): Loan => ({
 });
 
 describe("EditLoanModal", () => {
+	const footer = () => document.querySelector("[data-slot='dialog-footer']") as HTMLElement;
+
+	it("puts cancel on the left and the save submit on the right", () => {
+		renderWithProviders(<EditLoanModal loan={loan(null)} open close={vi.fn()} onSave={vi.fn()} />);
+
+		const buttons = within(footer()).getAllByRole("button");
+		expect(buttons.map((button) => button.textContent)).toEqual(["common:cancel", "edit.save"]);
+		expect(buttons[1]).toHaveAttribute("type", "submit");
+		expect(buttons[1]).toHaveClass("bg-primary/60");
+	});
+
+	it("closes from cancel without saving", async () => {
+		const close = vi.fn();
+		const onSave = vi.fn();
+		renderWithProviders(<EditLoanModal loan={loan(null)} open close={close} onSave={onSave} />);
+
+		await userEvent.click(within(footer()).getByRole("button", { name: "common:cancel" }));
+
+		expect(close).toHaveBeenCalledTimes(1);
+		expect(onSave).not.toHaveBeenCalled();
+	});
+
+	it("closes after the footer submit saved the loan", async () => {
+		const close = vi.fn();
+		renderWithProviders(<EditLoanModal loan={loan(null)} open close={close} onSave={() => Promise.resolve()} />);
+
+		await userEvent.click(within(footer()).getByRole("button", { name: "edit.save" }));
+
+		await waitFor(() => expect(close).toHaveBeenCalledTimes(1));
+	});
+
+	it("disables both footer buttons when the dialog is disabled", () => {
+		renderWithProviders(<EditLoanModal loan={loan(null)} open disabled close={vi.fn()} onSave={vi.fn()} />);
+
+		expect(within(footer()).getByRole("button", { name: "common:cancel" })).toBeDisabled();
+		expect(within(footer()).getByRole("button", { name: "edit.save" })).toBeDisabled();
+	});
+
 	it("keeps a loan without a due date open-ended when it is saved", async () => {
 		const onSave = vi.fn(() => Promise.resolve());
 		renderWithProviders(<EditLoanModal loan={loan(null)} open close={vi.fn()} onSave={onSave} />);
