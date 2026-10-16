@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => ({
 	gamesList: null as unknown as Promise<unknown>,
 	locationsList: null as unknown as Promise<unknown>,
 	playersList: null as unknown as Promise<unknown>,
+	gameNightId: null as number | null,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -84,10 +85,14 @@ const session: Session = {
 		{ sessionId: 9, playerId: 8, won: true, firstPlay: false, score: 48 },
 	],
 	expansions: [],
+	gameNightId: null,
 };
 
 vi.mock("@/services/queries/sessions", () => ({
-	getSession: (id: number) => ({ queryKey: ["sessions", id], queryFn: () => Promise.resolve(session) }),
+	getSession: (id: number) => ({
+		queryKey: ["sessions", id],
+		queryFn: () => Promise.resolve({ ...session, gameNightId: mocks.gameNightId }),
+	}),
 	getSessionSuggestions: () => ({
 		queryKey: ["sessions", "suggestions"],
 		queryFn: () => Promise.resolve({ recentGameIds: [], frequentPlayerIds: [], lastLocationId: 2 }),
@@ -146,6 +151,7 @@ describe("Update session page", () => {
 		mocks.navigate.mockReset().mockResolvedValue(undefined);
 		mocks.invalidateSession.mockReset().mockResolvedValue(undefined);
 		mocks.updateSessionCall.mockReset().mockImplementation((value: Session) => Promise.resolve(value));
+		mocks.gameNightId = null;
 	});
 
 	it("shows the game, location, players and times of the session once the lists load", async () => {
@@ -182,11 +188,25 @@ describe("Update session page", () => {
 			comment: "Close game",
 			start: new Date(2026, 9, 10, 20, 15),
 			expansionIds: [],
+			gameNightId: null,
 			playerSessions: [
 				{ playerId: 7, won: false, firstPlay: true, score: 31 },
 				{ playerId: 8, won: true, firstPlay: false, score: 48 },
 			],
 		});
 		await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/4/sessions", replace: true }));
+	});
+
+	it("keeps the game night of the session and returns to the night", async () => {
+		const user = userEvent.setup();
+		mocks.gameNightId = 3;
+		await renderPage();
+		await waitFor(() => expect(screen.getByRole("combobox", { name: "new.game.label" })).toHaveTextContent("Azul"));
+
+		await user.click(screen.getByRole("button", { name: "save-update" }));
+
+		await waitFor(() => expect(mocks.updateSessionCall).toHaveBeenCalledTimes(1));
+		expect(mocks.updateSessionCall.mock.calls[0][0]).toMatchObject({ id: 9, gameNightId: 3 });
+		await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/game-nights/3", replace: true }));
 	});
 });

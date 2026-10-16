@@ -5,6 +5,7 @@ using BoardGameTracker.Common;
 using BoardGameTracker.Core.Badges.Interfaces;
 using BoardGameTracker.Core.Common;
 using BoardGameTracker.Core.Datastore.Interfaces;
+using BoardGameTracker.Core.GameNights.Specifications;
 using BoardGameTracker.Core.Games.Interfaces;
 using BoardGameTracker.Core.Locations.Interfaces;
 using BoardGameTracker.Core.Players.Interfaces;
@@ -20,17 +21,19 @@ public class SessionService : ISessionService
     private readonly IGameService _gameService;
     private readonly ILocationService _locationService;
     private readonly IPlayerService _playerService;
+    private readonly IReadRepository<GameNight> _gameNightRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ILogger<SessionService> _logger;
 
-    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IPlayerService playerService, IUnitOfWork unitOfWork, IDateTimeProvider dateTimeProvider, ILogger<SessionService> logger)
+    public SessionService(ISessionRepository sessionRepository, IBadgeService badgeService, IGameService gameService, ILocationService locationService, IPlayerService playerService, IReadRepository<GameNight> gameNightRepository, IUnitOfWork unitOfWork, IDateTimeProvider dateTimeProvider, ILogger<SessionService> logger)
     {
         _sessionRepository = sessionRepository;
         _badgeService = badgeService;
         _gameService = gameService;
         _locationService = locationService;
         _playerService = playerService;
+        _gameNightRepository = gameNightRepository;
         _unitOfWork = unitOfWork;
         _dateTimeProvider = dateTimeProvider;
         _logger = logger;
@@ -98,9 +101,11 @@ public class SessionService : ISessionService
         }
 
         await EnsurePlayersExistAsync(command.PlayerSessions.Select(ps => ps.PlayerId));
+        await EnsureGameNightOpenAsync(command.GameNightId);
 
         var end = command.Start.AddMinutes(command.Minutes);
         var session = new Session(command.GameId, command.Start, end, command.Comment ?? string.Empty);
+        session.SetGameNight(command.GameNightId);
 
         if (command.ExpansionIds.Count > 0)
         {
@@ -141,10 +146,12 @@ public class SessionService : ISessionService
         }
 
         await EnsurePlayersExistAsync(command.PlayerSessions.Select(ps => ps.PlayerId));
+        await EnsureGameNightExistsAsync(command.GameNightId);
 
         var end = command.Start.AddMinutes(command.Minutes);
         existingSession.UpdateTimes(command.Start, end);
         existingSession.UpdateComment(command.Comment ?? string.Empty);
+        existingSession.SetGameNight(command.GameNightId);
 
         await SyncExpansions(existingSession, command.ExpansionIds);
         SyncPlayerSessions(existingSession, command.PlayerSessions);
@@ -243,6 +250,33 @@ public class SessionService : ISessionService
         if (missing.Count > 0)
         {
             throw new EntityNotFoundException(nameof(Player), missing[0]);
+        }
+    }
+
+    private async Task EnsureGameNightOpenAsync(int? gameNightId)
+    {
+        if (!gameNightId.HasValue)
+        {
+            return;
+        }
+
+        var gameNight = await _gameNightRepository.SingleOrDefaultAsync(new GameNightByIdSpec(gameNightId.Value));
+        if (gameNight == null)
+        {
+            throw new EntityNotFoundException(nameof(GameNight), gameNightId.Value);
+        }
+
+        if (gameNight.EndedAt.HasValue)
+        {
+            throw new ValidationException(nameof(CreateSessionCommand.GameNightId), Constants.Errors.GameNightEnded);
+        }
+    }
+
+    private async Task EnsureGameNightExistsAsync(int? gameNightId)
+    {
+        if (gameNightId.HasValue && !await _gameNightRepository.AnyAsync(new GameNightByIdSpec(gameNightId.Value)))
+        {
+            throw new EntityNotFoundException(nameof(GameNight), gameNightId.Value);
         }
     }
 

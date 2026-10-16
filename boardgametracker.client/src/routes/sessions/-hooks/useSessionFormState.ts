@@ -106,3 +106,5 @@ export const useSessionFormState = ({
 		toggleFirstPlay,
 	};
 };
+
+export type SessionFormState = ReturnType<typeof useSessionFormState>;

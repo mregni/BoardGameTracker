@@ -39,10 +39,13 @@ export const SessionPlayerRow = (props: Props) => {
 	};
 
 	return (
-		<li className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] @xl:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto] items-center gap-x-2.5 gap-y-1.5 rounded-lg border border-primary/30 bg-background px-2.5 py-1.5">
+		<li
+			data-testid="session-player-row"
+			className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] @md:grid-cols-[1.75rem_minmax(0,1fr)_auto_auto] items-center gap-x-2.5 gap-y-1.5 rounded-lg border border-primary/30 bg-background px-2.5 py-1.5"
+		>
 			<BgtAvatar size="medium" title={name} image={player?.image} />
 			<span className="min-w-0 break-words text-sm font-medium">{name}</span>
-			<div className="col-span-3 row-start-2 flex items-center justify-between gap-2 @xl:col-span-1 @xl:col-start-3 @xl:row-start-1 @xl:justify-end">
+			<div className="col-span-3 row-start-2 flex items-center justify-between gap-2 @md:col-span-1 @md:col-start-3 @md:row-start-1 @md:justify-end">
 				{hasScoring ? (
 					<BgtInputContainer disabled={disabled} className="h-9 w-20 shrink-0 px-2! text-sm">
 						<input
@@ -99,7 +102,7 @@ export const SessionPlayerRow = (props: Props) => {
 				disabled={disabled}
 				aria-label={t("form.player.remove", { name })}
 				onClick={() => onRemove(entry.playerId)}
-				className="col-start-3 row-start-1 @xl:col-start-4 justify-self-end"
+				className="col-start-3 row-start-1 @md:col-start-4 justify-self-end"
 			/>
 		</li>
 	);

@@ -12,4 +12,5 @@ export interface Session {
 	playerSessions: PlayerSession[];
 	expansions: Expansion[];
 	locationId: number | null;
+	gameNightId: number | null;
 }
