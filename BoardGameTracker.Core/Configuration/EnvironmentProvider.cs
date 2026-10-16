@@ -48,6 +48,11 @@ public class EnvironmentProvider : IEnvironmentProvider
 
     public IReadOnlyList<string> CorsOrigins => SplitList(Environment.GetEnvironmentVariable("CORS_ORIGINS"));
 
+    public bool EfSensitiveDataLogging => IsEfSensitiveDataLoggingEnabled();
+
+    public static bool IsEfSensitiveDataLoggingEnabled() =>
+        bool.TryParse(Environment.GetEnvironmentVariable("EF_SENSITIVE_LOGGING"), out var sensitiveLogging) && sensitiveLogging;
+
     public bool SwaggerEnabled =>
         bool.TryParse(Environment.GetEnvironmentVariable("SWAGGER_ENABLED"), out var swaggerEnabled)
             ? swaggerEnabled

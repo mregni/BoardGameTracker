@@ -16,7 +16,7 @@ public class EnvironmentProviderTests : IDisposable
     [
         "ASPNETCORE_ENVIRONMENT", "ENVIRONMENT", "RAG_ENABLED", "ADMIN_PASSWORD", "TRUSTED_PROXIES", "CORS_ORIGINS",
         "SWAGGER_ENABLED", "SMTP_HOST", "SMTP_PORT", "SMTP_USERNAME", "SMTP_PASSWORD", "SMTP_USE_SSL",
-        "SMTP_FROM_ADDRESS", "SMTP_FROM_NAME"
+        "SMTP_FROM_ADDRESS", "SMTP_FROM_NAME", "EF_SENSITIVE_LOGGING"
     ];
 
     public EnvironmentProviderTests()
@@ -291,6 +291,31 @@ public class EnvironmentProviderTests : IDisposable
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", environmentName);
 
         _environmentProvider.SwaggerEnabled.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("development")]
+    [InlineData("production")]
+    public void EfSensitiveDataLogging_ShouldBeOff_WhenNotSet(string environmentName)
+    {
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", environmentName);
+
+        _environmentProvider.EfSensitiveDataLogging.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("TRUE", true)]
+    [InlineData("false", false)]
+    [InlineData("1", false)]
+    [InlineData("yes", false)]
+    [InlineData("", false)]
+    public void EfSensitiveDataLogging_ShouldOnlyBeOn_WhenExplicitlyTrue(string value, bool expected)
+    {
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "development");
+        Environment.SetEnvironmentVariable("EF_SENSITIVE_LOGGING", value);
+
+        _environmentProvider.EfSensitiveDataLogging.Should().Be(expected);
     }
 
     [Fact]

@@ -10,7 +10,7 @@ namespace BoardGameTracker.Tests.Configuration;
 [Collection(EnvironmentVariablesCollection.Name)]
 public class DbConnectionProviderTests : IDisposable
 {
-    private static readonly string[] Keys = ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_PORT"];
+    private static readonly string[] Keys = ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_PORT", "EF_SENSITIVE_LOGGING"];
 
     private readonly DbConnectionProvider _provider = new();
     private readonly Dictionary<string, string?> _originalEnvironmentVariables = new();
@@ -118,7 +118,7 @@ public class DbConnectionProviderTests : IDisposable
     }
 
     [Fact]
-    public void GetPostgresConnectionString_ShouldDisableEnlistAndIncludeErrorDetail()
+    public void GetPostgresConnectionString_ShouldDisableEnlistAndErrorDetail_ByDefault()
     {
         Environment.SetEnvironmentVariable("DB_HOST", "db.internal");
 
@@ -126,7 +126,23 @@ public class DbConnectionProviderTests : IDisposable
 
         var builder = new NpgsqlConnectionStringBuilder(connectionString);
         builder.Enlist.Should().BeFalse();
-        builder.IncludeErrorDetail.Should().BeTrue();
+        builder.IncludeErrorDetail.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("TRUE", true)]
+    [InlineData("false", false)]
+    [InlineData("yes", false)]
+    [InlineData("", false)]
+    public void GetPostgresConnectionString_ShouldIncludeErrorDetail_OnlyWhenSensitiveLoggingIsOptedIn(string value, bool expected)
+    {
+        Environment.SetEnvironmentVariable("DB_HOST", "db.internal");
+        Environment.SetEnvironmentVariable("EF_SENSITIVE_LOGGING", value);
+
+        var connectionString = _provider.GetPostgresConnectionString("tracker");
+
+        new NpgsqlConnectionStringBuilder(connectionString).IncludeErrorDetail.Should().Be(expected);
     }
 
     [Fact]

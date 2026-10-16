@@ -21,7 +21,7 @@ public class DbConnectionProvider : IDbConnectionProvider
             Password = PostgresPassword,
             Port = PostgresPort,
             Enlist = false,
-            IncludeErrorDetail = true
+            IncludeErrorDetail = EnvironmentProvider.IsEfSensitiveDataLoggingEnabled()
         };
 
         return connectionBuilder.ConnectionString;

@@ -1,7 +1,9 @@
 using BoardGameTracker.Common.Extensions;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Moq;
 using Sentry;
+using Sentry.AspNetCore;
 using Sentry.Extensibility;
 using System.Text;
 using System.Text.Json;
@@ -10,6 +12,7 @@ using Xunit;
 
 namespace BoardGameTracker.Tests.Extensions;
 
+[Collection(EnvironmentVariablesCollection.Name)]
 public class WebHostBuilderExtensionsTests
 {
     private readonly Mock<ITransport> _transportMock;
@@ -95,6 +98,37 @@ public class WebHostBuilderExtensionsTests
         await client.FlushAsync(TimeSpan.FromSeconds(5));
 
         _envelopes.Should().BeEmpty();
+        VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ConfigureSentry_ShouldNeverCaptureRequestBodiesOrPersonalData_AndScrubEvents()
+    {
+        var options = new SentryAspNetCoreOptions
+        {
+            MaxRequestBodySize = RequestSize.Always,
+            SendDefaultPii = true
+        };
+
+        WebHostBuilderExtensions.ConfigureSentry(options);
+        options.Dsn = "https://public@sentry.invalid/1";
+        options.Transport = _transportMock.Object;
+        options.AutoSessionTracking = false;
+        options.SendClientReports = false;
+
+        options.MaxRequestBodySize.Should().Be(RequestSize.None);
+        options.SendDefaultPii.Should().BeFalse();
+
+        var client = new SentryClient(options);
+        var scope = new Scope(options);
+        scope.Request.Url = "https://bgt.example.com/api/auth/oidc/x/callback?code=abc&lang=en";
+        client.CaptureEvent(new SentryEvent { Message = "boom" }, scope);
+        await client.FlushAsync(TimeSpan.FromSeconds(5));
+
+        var @event = await SingleItem("event");
+        @event.GetProperty("request").GetProperty("url").GetString().Should().Be("https://bgt.example.com/api/auth/oidc/x/callback?code=[Filtered]&lang=en");
+
+        _transportMock.Verify(x => x.SendEnvelopeAsync(It.IsAny<Envelope>(), It.IsAny<CancellationToken>()), Times.Once);
         VerifyNoOtherCalls();
     }
 

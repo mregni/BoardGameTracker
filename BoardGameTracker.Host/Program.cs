@@ -465,6 +465,12 @@ if (!authEnabled)
         "AUTH_ENABLED=false: every request is treated as an administrator. Anyone who can reach this port can change settings, store API keys, upload files, import games and use the AI assistant. Only use this on a trusted network or behind a proxy that authenticates for you");
 }
 
+if (environmentProvider.EfSensitiveDataLogging)
+{
+    logger.LogWarning(
+        "EF_SENSITIVE_LOGGING=true: database parameter values are written to the logs, including API keys, passwords, password hashes and tokens. Only use this for local debugging and remove it afterwards");
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseStaticFiles(new StaticFileOptions { OnPrepareResponse = SetStaticAssetCacheHeaders });
