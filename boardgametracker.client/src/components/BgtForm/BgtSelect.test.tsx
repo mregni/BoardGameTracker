@@ -142,6 +142,44 @@ describe("BgtSelect", () => {
 		});
 	});
 
+	describe("Items arriving after the value", () => {
+		it("keeps the field value and shows it once the items load inside a form", () => {
+			const field = createMockField("2");
+			const { rerender } = renderWithTheme(
+				<form>
+					<BgtSelect field={field} label="Game" items={[]} placeholder="Choose game" />
+				</form>,
+			);
+			expect(screen.getByText("Choose game")).toBeInTheDocument();
+
+			rerender(
+				<form>
+					<BgtSelect field={field} label="Game" items={mockItems} placeholder="Choose game" />
+				</form>,
+			);
+
+			expect(field.handleChange).not.toHaveBeenCalled();
+			expect(screen.getByRole("combobox", { name: "Game" })).toHaveTextContent("Option 2");
+		});
+
+		it("keeps the controlled value when the items load inside a form", () => {
+			const onValueChange = vi.fn();
+			const { rerender } = renderWithTheme(
+				<form>
+					<BgtSelect label="Location" items={[]} value={3} onValueChange={onValueChange} />
+				</form>,
+			);
+
+			rerender(
+				<form>
+					<BgtSelect label="Location" items={mockItems} value={3} onValueChange={onValueChange} />
+				</form>,
+			);
+
+			expect(onValueChange).not.toHaveBeenCalled();
+		});
+	});
+
 	describe("Controlled", () => {
 		beforeAll(() => {
 			Element.prototype.hasPointerCapture = vi.fn(() => false);
