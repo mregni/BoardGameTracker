@@ -10,8 +10,8 @@ vi.mock("@tanstack/react-router", () => ({
 	useNavigate: () => mockNavigate,
 }));
 
-vi.mock("@/routes/-hooks/useGoUp", () => ({
-	useGoUp: (parent: string) => mockUseGoUp(parent),
+vi.mock("@/routes/-hooks/useBack", () => ({
+	useBack: (parent: string) => mockUseGoUp(parent),
 }));
 
 const renderActions = () =>

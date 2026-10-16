@@ -16,7 +16,7 @@ import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
 import { toDisplay } from "@/utils/dateUtils";
 import { gameIdParamSchema } from "@/utils/routeSchemas";
-import { useGoUp } from "../-hooks/useGoUp";
+import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { SessionCardList } from "../sessions/-components/SessionCardList";
 import { SessionCommentCell } from "../sessions/-components/SessionCommentCell";
@@ -39,7 +39,7 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const { canWrite } = usePermissions();
 	const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
-	const goUp = useGoUp(`/games/${gameId}`);
+	const goBack = useBack(`/games/${gameId}`);
 
 	const { settings, game, sessions, deleteSession, players, isLoading } = useGameSessionsData({
 		gameId,
@@ -129,7 +129,7 @@ function RouteComponent() {
 					return (
 						<>
 							<BgtPageHeader
-								backAction={goUp}
+								backAction={goBack}
 								header={`${game.title} - ${t("sessions:title")}`}
 								actions={
 									canWrite

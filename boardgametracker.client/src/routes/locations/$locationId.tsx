@@ -8,7 +8,7 @@ import { getGames } from "@/services/queries/games";
 import { getLocation, getLocationSessions, getLocationStatistics } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
 import { locationIdParamSchema } from "@/utils/routeSchemas";
-import { useGoUp } from "../-hooks/useGoUp";
+import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { LocationHeader } from "./-components/LocationHeader";
 import { LocationSessionsCard } from "./-components/LocationSessionsCard";
@@ -34,7 +34,7 @@ function RouteComponent() {
 	const { t } = useTranslation("location");
 	const { canWrite } = usePermissions();
 	const modals = useLocationModals();
-	const goUp = useGoUp("/locations");
+	const goBack = useBack("/locations");
 
 	const { location, statistics, sessions, settings, isLoading, deleteLocation } = useLocationData({ locationId });
 
@@ -45,7 +45,7 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageHeader backAction={goUp} backText={t("detail.back")} />
+			<BgtPageHeader backAction={goBack} backText={t("detail.back")} />
 			<BgtPageContent isLoading={isLoading} data={{ location, statistics, settings }}>
 				{({ location, statistics, settings }) => (
 					<>

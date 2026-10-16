@@ -17,7 +17,7 @@ import { getPlayer, getPlayerSessions, getPlayers } from "@/services/queries/pla
 import { getSettings } from "@/services/queries/settings";
 import { toDisplay } from "@/utils/dateUtils";
 import { playerIdParamSchema } from "@/utils/routeSchemas";
-import { useGoUp } from "../-hooks/useGoUp";
+import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { SessionCardList } from "../sessions/-components/SessionCardList";
 import { SessionCommentCell } from "../sessions/-components/SessionCommentCell";
@@ -40,7 +40,7 @@ function RouteComponent() {
 	const { t } = useTranslation(["common", "sessions"]);
 	const navigate = useNavigate();
 	const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
-	const goUp = useGoUp(`/players/${playerId}`);
+	const goBack = useBack(`/players/${playerId}`);
 	const { canWrite } = usePermissions();
 
 	const { sessions, deleteSession, settings, games, player, players, isLoading } = usePlayerSessionData({
@@ -150,7 +150,7 @@ function RouteComponent() {
 					return (
 						<>
 							<BgtPageHeader
-								backAction={goUp}
+								backAction={goBack}
 								header={`${player.name} - ${t("sessions:title")}`}
 								actions={
 									canWrite

@@ -12,7 +12,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import { BggSearchSchema, type Game, GameState } from "@/models";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
-import { useGoUp } from "@/routes/-hooks/useGoUp";
+import { useBack } from "@/routes/-hooks/useBack";
 import { getSettings } from "@/services/queries/settings";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/games/bgg")({
 function RouteComponent() {
 	const { t } = useTranslation(["game", "common"]);
 	const navigate = useNavigate();
-	const goBack = useGoUp("/games/add");
+	const goBack = useBack("/games/add");
 
 	const onSuccess = useCallback(
 		(game: Game) => {

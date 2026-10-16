@@ -11,7 +11,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import { CreatePlayerSchema, type Player } from "@/models";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
-import { useGoUp } from "@/routes/-hooks/useGoUp";
+import { useBack } from "@/routes/-hooks/useBack";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { usePlayerModal } from "./-hooks/usePlayerModal";
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/players/new")({
 function RouteComponent() {
 	const { t } = useTranslation(["player", "common"]);
 	const navigate = useNavigate();
-	const goBack = useGoUp("/players");
+	const goBack = useBack("/players");
 	const [image, setImage] = useState<File | undefined | null>(undefined);
 
 	const { savePlayer, uploadImage, isLoading } = usePlayerModal({});

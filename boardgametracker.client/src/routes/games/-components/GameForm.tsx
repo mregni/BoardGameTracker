@@ -14,7 +14,7 @@ import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { zodValidator } from "@/utils/zodValidator";
-import { useGoUp } from "../../-hooks/useGoUp";
+import { useBack } from "../../-hooks/useBack";
 import { useGameForm } from "../-hooks/useGameForm";
 import { useImageUpload } from "../-hooks/useImageUpload";
 import { gameFormOpts } from "../-utils/gameFormOpts";
@@ -37,7 +37,7 @@ export const GameForm = (props: Props) => {
 	const { onClick, buttonText, disabled, game, livePrice, title, backTo } = props;
 	const { settings } = useGameForm();
 	const { t } = useTranslation(["game", "common"]);
-	const goBack = useGoUp(backTo);
+	const goBack = useBack(backTo);
 	const { poster, setPoster, uploadPoster } = useImageUpload(game?.image);
 
 	const form = useAppForm({

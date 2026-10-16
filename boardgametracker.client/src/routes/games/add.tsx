@@ -11,7 +11,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
-import { useGoUp } from "@/routes/-hooks/useGoUp";
+import { useBack } from "@/routes/-hooks/useBack";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 
 export const Route = createFileRoute("/games/add")({
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/games/add")({
 function RouteComponent() {
 	const { t } = useTranslation(["game", "common", "settings"]);
 	const navigate = useNavigate();
-	const goBack = useGoUp("/games");
+	const goBack = useBack("/games");
 	const { settings } = useSettingsData();
 
 	const bggEnabled = settings?.bggStatus?.isConfigured ?? false;

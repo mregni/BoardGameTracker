@@ -20,7 +20,7 @@ import {
 } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
-import { useGoUp } from "../../-hooks/useGoUp";
+import { useBack } from "../../-hooks/useBack";
 import { useSessionForm } from "../-hooks/useSessionForm";
 import { useSessionFormState } from "../-hooks/useSessionFormState";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
@@ -40,7 +40,6 @@ interface Props {
 	buttonText: string;
 	title: string;
 	backTo: string;
-	isBackTarget?: (pathname: string) => boolean;
 	disabled: boolean;
 }
 
@@ -57,12 +56,11 @@ export const SessionForm = (props: Props) => {
 		buttonText,
 		title,
 		backTo,
-		isBackTarget,
 		disabled,
 	} = props;
 
 	const { t } = useTranslation();
-	const goBack = useGoUp(backTo, isBackTarget);
+	const goBack = useBack(backTo);
 	const { locations, games, players: playerList, suggestions } = useSessionForm();
 	const isNewSession = locationId === undefined;
 	const [initialStart] = useState(() => start ?? addMinutes(new Date(), -(minutes ?? 30)));
