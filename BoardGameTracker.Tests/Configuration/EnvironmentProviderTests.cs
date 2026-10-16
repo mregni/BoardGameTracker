@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using BoardGameTracker.Core.Configuration;
+using BoardGameTracker.Tests.Support;
 using FluentAssertions;
 using Xunit;
 
 namespace BoardGameTracker.Tests.Configuration;
 
-[Collection("EnvironmentVariables")]
+[Collection(EnvironmentVariablesCollection.Name)]
 public class EnvironmentProviderTests : IDisposable
 {
     private readonly EnvironmentProvider _environmentProvider;
