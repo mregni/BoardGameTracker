@@ -29,6 +29,7 @@ function AuthCallbackPage() {
 	const { t } = useTranslation("auth");
 	const { successToast } = useToasts();
 	const setTokens = useAuth((s) => s.setTokens);
+	const isAuthenticated = useAuth((s) => s.isAuthenticated);
 	const { error, redirect, linked } = Route.useSearch();
 	const [failure, setFailure] = useState<string | null>(null);
 	const adoption = useRef<Promise<LoginResponse> | null>(null);
@@ -81,8 +82,8 @@ function AuthCallbackPage() {
 							<BgtText size="2" color="red">
 								{failure}
 							</BgtText>
-							<Link to="/login" className="text-primary-text hover:underline">
-								{t("back-to-login")}
+							<Link to={isAuthenticated ? "/settings" : "/login"} className="text-primary-text hover:underline">
+								{t(isAuthenticated ? "back-to-settings" : "back-to-login")}
 							</Link>
 						</div>
 					</BgtCard>

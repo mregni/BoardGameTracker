@@ -30,7 +30,7 @@
     "oidc-provisioning-disabled": "Your account is not known here and automatic sign-up is disabled.",
     "oidc-provisioning-failed": "Your account could not be created.",
     "oidc-already-linked": "This external account is already linked to another user.",
-    "oidc-discovery-failed": "The identity provider could not be reached.",
+    "oidc-discovery-failed": "The identity provider could not be reached or has no discovery document at this address. Check the authority URL.",
     "oidc-issuer-mismatch": "The identity provider reports a different issuer than the configured authority.",
     "oidc-exchange-failed": "The identity provider rejected the sign-in code.",
     "oidc-userinfo-failed": "The identity provider did not return your profile.",

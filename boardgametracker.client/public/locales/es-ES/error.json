@@ -30,7 +30,7 @@
     "oidc-provisioning-disabled": "Tu cuenta no existe aquí y el registro automático está desactivado.",
     "oidc-provisioning-failed": "No se pudo crear tu cuenta.",
     "oidc-already-linked": "Esta cuenta externa ya está vinculada a otro usuario.",
-    "oidc-discovery-failed": "No se pudo conectar con el proveedor de identidad.",
+    "oidc-discovery-failed": "No se pudo conectar con el proveedor de identidad o no hay ningún documento de descubrimiento en esta dirección. Comprueba la URL de la autoridad.",
     "oidc-issuer-mismatch": "El proveedor de identidad indica un emisor distinto de la autoridad configurada.",
     "oidc-exchange-failed": "El proveedor de identidad rechazó el código de inicio de sesión.",
     "oidc-userinfo-failed": "El proveedor de identidad no devolvió tu perfil.",

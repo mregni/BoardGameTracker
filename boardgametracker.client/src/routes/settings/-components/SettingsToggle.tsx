@@ -26,6 +26,7 @@ export const SettingsToggle = ({ field, label, description, disabled = false }: 
 			className={`flex items-center justify-between p-3 bg-background rounded-lg border border-white/10 gap-3 ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
 		>
 			<Switch.Root
+				aria-label={label}
 				onCheckedChange={handleCheckedChange}
 				disabled={disabled}
 				checked={checked}

@@ -96,7 +96,7 @@ public class OidcRoundTripTests : IAsyncLifetime
             var update = await admin.PutAsJsonAsync($"/api/admin/oidc-providers/{_providerId}", new UpdateOidcProviderRequest(
                 _providerId, "Fake IdP renamed", _idp.Authority, _idp.ClientId, null, true, "openid profile email", true,
                 null, null, null, null, null, null, null, null, null, null));
-            update.IsSuccessStatusCode.Should().BeTrue(await update.Content.ReadAsStringAsync());
+            update.StatusCode.Should().Be(HttpStatusCode.OK, await update.Content.ReadAsStringAsync());
         }
 
         _idp.User["sub"] = "fake-sub-secret";

@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
 	search: {} as { error?: string; redirect?: string; linked?: string },
 	adoptOidcLoginCall: vi.fn(),
 	setTokens: vi.fn(),
+	isAuthenticated: false,
 	successToast: vi.fn(),
 	captured: {} as { Page: FC },
 }));
@@ -25,8 +26,8 @@ vi.mock("@/services/authService", () => ({
 }));
 
 vi.mock("@/hooks/useAuth", () => ({
-	useAuth: (selector: (state: { setTokens: typeof mocks.setTokens }) => unknown) =>
-		selector({ setTokens: mocks.setTokens }),
+	useAuth: (selector: (state: { setTokens: typeof mocks.setTokens; isAuthenticated: boolean }) => unknown) =>
+		selector({ setTokens: mocks.setTokens, isAuthenticated: mocks.isAuthenticated }),
 }));
 
 vi.mock("@/routes/-hooks/useToasts", () => ({
@@ -58,6 +59,7 @@ describe("AuthCallbackPage", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		mocks.search = {};
+		mocks.isAuthenticated = false;
 	});
 
 	it("adopts the handed-off login and continues to the requested page", async () => {
@@ -107,6 +109,18 @@ describe("AuthCallbackPage", () => {
 		expect(screen.getByRole("link")).toHaveAttribute("href", "/login");
 		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
 		expect(mocks.navigate).not.toHaveBeenCalled();
+	});
+
+	it("sends a signed-in user back to the settings when linking a provider failed", async () => {
+		mocks.search = { error: "error.auth.oidc-already-linked" };
+		mocks.isAuthenticated = true;
+
+		renderWithTheme(<mocks.captured.Page />);
+
+		const link = await screen.findByRole("link");
+		expect(link).toHaveAttribute("href", "/settings");
+		expect(link).toHaveTextContent("back-to-settings");
+		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
 	});
 
 	it("explains an expired handoff instead of looping back to login", async () => {
