@@ -85,6 +85,9 @@ export interface UserDto {
 	createdAt: Date;
 	lastLoginAt: Date | null;
 	playerId: number | null;
+	isDisabled: boolean;
+	roleManagedByIdentityProvider: boolean;
+	externalLoginCount: number;
 }
 
 export interface ResetPasswordResponse {

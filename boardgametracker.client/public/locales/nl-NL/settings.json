@@ -282,7 +282,27 @@
 				"description": "Weet je zeker dat je \"{{username}}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
 			},
 			"never-logged-in": "Nooit",
-			"no-users": "Nog geen gebruikers"
+			"no-users": "Nog geen gebruikers",
+			"access": {
+				"button": "Toegang",
+				"title": "Toegang tot inloggen",
+				"description": "Instellingen voor inloggen en single sign-on van \"{{username}}\".",
+				"enabled": "Kan inloggen",
+				"disabled": "Uitgeschakeld",
+				"enable": "Inschakelen",
+				"disable": "Uitschakelen",
+				"disable-hint": "Uitschakelen beëindigt elke sessie en blokkeert inloggen met een wachtwoord en via single sign-on. Iemand verwijderen bij de identiteitsprovider doet dit niet voor jou.",
+				"sso-title": "Single sign-on-identiteiten",
+				"sso-none": "Er is geen account van de identiteitsprovider gekoppeld.",
+				"sso-linked": "subject {{subject}} · gekoppeld op {{date}}",
+				"unlink": "Ontkoppelen",
+				"unlink-confirm": "Dit account van de identiteitsprovider kan niet meer als \"{{username}}\" inloggen tot het opnieuw gekoppeld wordt.",
+				"role-managed": "De rol volgt bij elke login de groepen van de identiteitsprovider.",
+				"role-local": "De rol is hier ingesteld en de identiteitsprovider wijzigt die niet.",
+				"manage-role": "Laat de identiteitsprovider de rol beheren",
+				"disabled-badge": "Uitgeschakeld",
+				"sso-badge": "SSO"
+			}
 		},
 		"notifications": {
 			"profile-updated": "Profiel bijgewerkt",
@@ -297,7 +317,15 @@
 			"role-update-failed": "Gebruikersrol bijwerken mislukt",
 			"user-updated": "Gebruiker bijgewerkt",
 			"user-update-failed": "Gebruiker bijwerken mislukt",
-			"password-reset-failed": "Wachtwoord resetten mislukt"
+			"password-reset-failed": "Wachtwoord resetten mislukt",
+			"user-disabled": "Gebruiker uitgeschakeld",
+			"user-disable-failed": "Gebruiker uitschakelen is mislukt",
+			"user-enabled": "Gebruiker ingeschakeld",
+			"user-enable-failed": "Gebruiker inschakelen is mislukt",
+			"external-login-unlinked": "Account van de identiteitsprovider ontkoppeld",
+			"external-login-unlink-failed": "Account van de identiteitsprovider ontkoppelen is mislukt",
+			"role-managed": "De identiteitsprovider beheert deze rol nu",
+			"role-manage-failed": "De rol aan de identiteitsprovider overdragen is mislukt"
 		},
 		"external-logins": {
 			"title": "Externe logins",
@@ -324,7 +352,8 @@
 		"fields": {
 			"name": {
 				"label": "Korte naam",
-				"placeholder": "keycloak"
+				"placeholder": "keycloak",
+				"rename-warning": "Als je de korte naam wijzigt, veranderen de redirect-URI's hieronder. Registreer de nieuwe bij je provider; gekoppelde accounts blijven werken."
 			},
 			"display-name": {
 				"label": "Knoptekst",
@@ -364,12 +393,16 @@
 			},
 			"auto-provision": {
 				"label": "Accounts aanmaken bij eerste keer inloggen",
-				"description": "Nieuwe mensen krijgen automatisch een account met de rol Gebruiker. Als dit uit staat, kunnen alleen gekoppelde accounts inloggen."
+				"description": "Nieuwe mensen krijgen automatisch een account met de standaardrol. Als dit uit staat, kunnen alleen gekoppelde accounts inloggen."
 			},
 			"enabled": {
 				"label": "Ingeschakeld",
 				"description": "Toon de inlogknop op de inlogpagina."
-			}
+			},
+			"default-role": {
+				"label": "Standaardrol"
+			},
+			"role-sync": "Met een groepen-claim en beheerdersgroep krijgen accounts die via de provider zijn aangemaakt bij elke login de rol Beheerder als ze in die groep zitten, en anders de standaardrol. De laatste beheerder verliest die rol nooit."
 		},
 		"discovery": {
 			"button": "Discovery testen",
@@ -379,7 +412,9 @@
 			"failed": "De provider is niet bereikbaar of gaf geen discovery-document terug.",
 			"authorization": "Autorisatie",
 			"token": "Token",
-			"userinfo": "Gebruikersinfo"
+			"userinfo": "Gebruikersinfo",
+			"end-session": "Uitloggen",
+			"none": "niet aangeboden"
 		},
 		"setup": {
 			"title": "Registreren bij de provider",
@@ -387,7 +422,8 @@
 			"public-url-warning": "Er is geen publieke URL ingesteld, dus de redirect-URI's worden afgeleid van de huidige aanvraag ({{url}}). Stel de publieke URL in onder Algemeen als dat niet het adres is dat mensen gebruiken.",
 			"redirect-uri": "Redirect-URI voor inloggen",
 			"link-redirect-uri": "Redirect-URI voor accountkoppeling",
-			"copy": "Kopiëren"
+			"copy": "Kopiëren",
+			"post-logout-redirect-uri": "Redirect-URI na uitloggen"
 		},
 		"validation": {
 			"name": "Gebruik kleine letters, cijfers en streepjes (1–100 tekens)",

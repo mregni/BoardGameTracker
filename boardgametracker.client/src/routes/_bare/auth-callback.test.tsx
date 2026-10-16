@@ -38,6 +38,10 @@ const translations: Record<string, string> = {
 	"error:auth.oidc-provider-rejected": "The identity provider refused the sign-in.",
 	"error:auth.oidc-handoff-expired": "The sign-in took too long to complete. Please try again.",
 	"error:auth.oidc-failed": "Signing in with the identity provider failed.",
+	"error:auth.oidc-username-taken":
+		"An account with this username already exists. Sign in with your password and link SSO under Settings → Account.",
+	"error:auth.oidc-id-token-invalid": "The identity provider's sign-in token could not be verified.",
+	"error:auth.account-disabled": "This account is disabled. Ask your administrator to enable it.",
 };
 
 vi.mock("@/utils/i18n", () => ({
@@ -140,5 +144,44 @@ describe("AuthCallbackPage", () => {
 		await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/settings", replace: true }));
 		expect(mocks.successToast).toHaveBeenCalledWith("auth:oidc.linked");
 		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
+	});
+
+	it("explains a username clash and sends the user to sign in with their password", async () => {
+		mocks.search = { error: "error.auth.oidc-username-taken" };
+		mocks.isAuthenticated = true;
+
+		renderWithTheme(<mocks.captured.Page />);
+
+		expect(
+			await screen.findByText(
+				"An account with this username already exists. Sign in with your password and link SSO under Settings → Account.",
+			),
+		).toBeInTheDocument();
+		const link = screen.getByRole("link");
+		expect(link).toHaveAttribute("href", "/login");
+		expect(link).toHaveTextContent("oidc.sign-in-with-password");
+		expect(mocks.adoptOidcLoginCall).not.toHaveBeenCalled();
+	});
+
+	it("also sends an email clash to the password sign-in", async () => {
+		mocks.search = { error: "error.auth.oidc-email-exists" };
+
+		renderWithTheme(<mocks.captured.Page />);
+
+		const link = await screen.findByRole("link");
+		expect(link).toHaveAttribute("href", "/login");
+		expect(link).toHaveTextContent("oidc.sign-in-with-password");
+	});
+
+	it.each([
+		["error.auth.oidc-id-token-invalid", "The identity provider's sign-in token could not be verified."],
+		["error.auth.account-disabled", "This account is disabled. Ask your administrator to enable it."],
+	])("shows the message for %s with the usual way back", async (error, message) => {
+		mocks.search = { error };
+
+		renderWithTheme(<mocks.captured.Page />);
+
+		expect(await screen.findByText(message)).toBeInTheDocument();
+		expect(screen.getByRole("link")).toHaveTextContent("back-to-login");
 	});
 });
