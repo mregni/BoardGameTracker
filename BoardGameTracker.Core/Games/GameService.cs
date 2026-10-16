@@ -75,6 +75,11 @@ public class GameService : IGameService
         return _gameRepository.AnyAsync(new GameByIdSpec(id));
     }
 
+    public Task<bool?> HasCoopModeAsync(int id)
+    {
+        return _gameRepository.FirstOrDefaultAsync(new GameHasCoopModeSpec(id));
+    }
+
     public async Task Delete(int id)
     {
         _logger.LogDebug("Deleting game {GameId}", id);
@@ -102,6 +107,7 @@ public class GameService : IGameService
     {
         _logger.LogDebug("Creating game {Title}", command.Title);
         var game = new Game(command.Title, command.HasScoring, command.State);
+        game.UpdateCoopMode(command.HasCoopMode, command.CoopByDefault);
         game.UpdateYearPublished(command.YearPublished);
         game.UpdateImage(command.Image);
         game.UpdateShopUrl(command.ShopUrl);
@@ -157,6 +163,7 @@ public class GameService : IGameService
         var previousImage = game.Image;
         game.UpdateTitle(command.Title);
         game.UpdateHasScoring(command.HasScoring);
+        game.UpdateCoopMode(command.HasCoopMode, command.CoopByDefault);
         game.UpdateState(command.State);
         game.UpdateYearPublished(command.YearPublished);
         game.UpdateImage(command.Image);

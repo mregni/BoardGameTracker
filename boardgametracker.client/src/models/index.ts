@@ -47,5 +47,6 @@ export * from "./Session/SessionSuggestions";
 export * from "./Settings/BggConfigStatus";
 export * from "./Settings/ChangeDetectionConfigStatus";
 export * from "./Settings/Environment";
+export * from "./Settings/IntegrationStatus";
 export * from "./Settings/Language";
 export * from "./Settings/Settings";

@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -57,7 +57,13 @@ export const GameNightCard = (props: Props) => {
 							})}
 						</span>
 						<BgtHeading size="5" className="wrap-anywhere">
-							{gameNight.title}
+							<Link
+								to="/game-nights/$gameNightId"
+								params={{ gameNightId: gameNight.id }}
+								className="hover:text-primary hover:underline"
+							>
+								{gameNight.title}
+							</Link>
 						</BgtHeading>
 					</div>
 				</div>
@@ -82,11 +88,20 @@ export const GameNightCard = (props: Props) => {
 						<RsvpProgress rsvps={gameNight.invitedPlayers} />
 						<div className="flex flex-wrap items-center justify-between gap-2">
 							<RsvpAvatarStack rsvps={rsvps} />
-							{canWrite && (
-								<BgtButton variant="cancel" size="1" onClick={() => onManageRsvps(gameNight)}>
-									{t("card.manage-rsvps")}
+							<div className="flex flex-wrap items-center gap-2">
+								{canWrite && (
+									<BgtButton variant="cancel" size="1" onClick={() => onManageRsvps(gameNight)}>
+										{t("card.manage-rsvps")}
+									</BgtButton>
+								)}
+								<BgtButton
+									variant={highlight ? "primary" : "cancel"}
+									size="1"
+									onClick={() => navigate({ to: "/game-nights/$gameNightId", params: { gameNightId: gameNight.id } })}
+								>
+									{t("card.open")}
 								</BgtButton>
-							)}
+							</div>
 						</div>
 					</div>
 

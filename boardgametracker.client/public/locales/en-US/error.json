@@ -76,7 +76,9 @@
   },
   "session": {
     "invalid-expansion": "One of the selected expansions does not belong to this game",
-    "start-in-future": "The start date cannot be in the future"
+    "start-in-future": "The start date cannot be in the future",
+    "coop-not-supported": "This game cannot be played co-op",
+    "coop-result-required": "A co-op session needs a team result"
   },
   "email": {
     "not-configured": "Email is not configured on this server",
@@ -94,7 +96,9 @@
   "game-night": {
     "invites-cooldown": "Invitations for this game night were sent recently, try again in a few minutes",
     "host-rsvp-locked": "The host always attends their own game night",
-    "rsvp-closed": "This game night has already taken place"
+    "rsvp-closed": "This game night has already taken place",
+    "games-running": "Finish or discard the running games before ending the night",
+    "ended": "This game night has ended, reopen it to add games"
   },
   "maintenance": {
     "admin-password-rejected": "ADMIN_PASSWORD does not meet the password rules (at least 8 characters). Change it or remove it before a factory reset."

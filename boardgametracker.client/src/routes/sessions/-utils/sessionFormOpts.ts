@@ -10,5 +10,8 @@ export const sessionFormOpts = formOptions({
 		comment: "",
 		start: new Date(),
 		playerSessions: [] as CreateSessionPlayer[],
+		isCoop: false,
+		teamWon: null as boolean | null,
+		teamScore: null as number | null,
 	},
 });

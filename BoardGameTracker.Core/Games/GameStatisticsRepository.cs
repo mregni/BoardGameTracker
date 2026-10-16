@@ -73,6 +73,18 @@ public class GameStatisticsRepository : IGameStatisticsRepository
             .AverageAsync(x => x.Score, cancellationToken);
     }
 
+    public async Task<(int Won, int Lost)> GetCoopResults(int gameId, CancellationToken cancellationToken = default)
+    {
+        var results = await _context.Sessions
+            .AsNoTracking()
+            .Where(x => x.GameId == gameId && x.IsCoop)
+            .GroupBy(x => x.TeamWon == true)
+            .Select(x => new { Won = x.Key, Count = x.Count() })
+            .ToListAsync(cancellationToken);
+
+        return (results.Where(x => x.Won).Sum(x => x.Count), results.Where(x => !x.Won).Sum(x => x.Count));
+    }
+
     public async Task<int?> GetExpansionCount(int gameId, CancellationToken cancellationToken = default)
     {
         var count = await _context.Expansions

@@ -575,43 +575,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/changedetection/test": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["ChangeDetectionConnectionTestDto"];
-                        "application/json": components["schemas"]["ChangeDetectionConnectionTestDto"];
-                        "text/json": components["schemas"]["ChangeDetectionConnectionTestDto"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/changedetection/watch/{watchId}": {
         parameters: {
             query?: never;
@@ -1582,6 +1545,167 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/gamenight/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["GameNightDetailDto"];
+                        "application/json": components["schemas"]["GameNightDetailDto"];
+                        "text/json": components["schemas"]["GameNightDetailDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gamenight/{id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gamenight/{id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/gamenight/{id}/send-invites": {
         parameters: {
             query?: never;
@@ -1616,41 +1740,6 @@ export interface paths {
             };
         };
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/gamenight/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
         options?: never;
         head?: never;
         patch?: never;
@@ -1818,6 +1907,93 @@ export interface paths {
                         "text/plain": string;
                         "application/json": string;
                         "text/json": string;
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/integrations/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["IntegrationStatusDto"][];
+                        "application/json": components["schemas"]["IntegrationStatusDto"][];
+                        "text/json": components["schemas"]["IntegrationStatusDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/integrations/{integration}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    integration: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["IntegrationStatusDto"];
+                        "application/json": components["schemas"]["IntegrationStatusDto"];
+                        "text/json": components["schemas"]["IntegrationStatusDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProblemDetails"];
+                        "application/json": components["schemas"]["ProblemDetails"];
+                        "text/json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -3502,6 +3678,131 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/gamenight/{gameNightId}/running-games": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    gameNightId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["StartRunningGameCommand"];
+                    "text/json": components["schemas"]["StartRunningGameCommand"];
+                    "application/*+json": components["schemas"]["StartRunningGameCommand"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["RunningGameDto"];
+                        "application/json": components["schemas"]["RunningGameDto"];
+                        "text/json": components["schemas"]["RunningGameDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gamenight/running-games/{id}/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["FinishRunningGameCommand"];
+                    "text/json": components["schemas"]["FinishRunningGameCommand"];
+                    "application/*+json": components["schemas"]["FinishRunningGameCommand"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SessionDto"];
+                        "application/json": components["schemas"]["SessionDto"];
+                        "text/json": components["schemas"]["SessionDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gamenight/running-games/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/session/{id}": {
         parameters: {
             query?: never;
@@ -4113,11 +4414,6 @@ export interface components {
             source: string;
             isReadOnly: boolean;
         };
-        ChangeDetectionConnectionTestDto: {
-            ok: boolean;
-            status: components["schemas"]["ChangeDetectionStatus"];
-            version: string | null;
-        };
         /** @enum {string} */
         ChangeDetectionStatus: "ok" | "notConfigured" | "misconfigured" | "unauthorized" | "watchNotFound" | "unreachable" | "parseError" | "pending";
         ChangeDetectionWatchInfo: {
@@ -4182,6 +4478,8 @@ export interface components {
             bggId?: number | null;
             state?: components["schemas"]["GameState"];
             hasScoring?: boolean;
+            hasCoopMode?: boolean;
+            coopByDefault?: boolean;
             /** Format: double */
             buyingPrice?: number | null;
             /** Format: double */
@@ -4261,6 +4559,12 @@ export interface components {
             minutes?: number;
             /** Format: int32 */
             locationId?: number | null;
+            /** Format: int32 */
+            gameNightId?: number | null;
+            isCoop?: boolean;
+            teamWon?: boolean | null;
+            /** Format: double */
+            teamScore?: number | null;
             playerSessions?: components["schemas"]["CreatePlayerSessionCommand"][];
             expansionIds?: number[];
         };
@@ -4336,6 +4640,21 @@ export interface components {
             /** Format: date-time */
             lastUsedAt: string | null;
         };
+        FinishRunningGameCommand: {
+            playerSessions: components["schemas"]["CreatePlayerSessionCommand"][];
+            isCoop: boolean;
+            teamWon: boolean | null;
+            /** Format: double */
+            teamScore: number | null;
+            /** Format: date-time */
+            start: string | null;
+            /** Format: int32 */
+            minutes: number | null;
+            /** Format: int32 */
+            locationId: number | null;
+            comment: string | null;
+            expansionIds: number[];
+        };
         FirstGameTogether: {
             /** Format: int32 */
             gameId: number | null;
@@ -4375,6 +4694,8 @@ export interface components {
             bggId: number | null;
             state: components["schemas"]["GameState"];
             hasScoring: boolean;
+            hasCoopMode: boolean;
+            coopByDefault: boolean;
             /** Format: double */
             buyingPrice: number | null;
             /** Format: double */
@@ -4391,6 +4712,11 @@ export interface components {
             id: number;
             name: string;
         };
+        GameNightDetailDto: {
+            gameNight: components["schemas"]["GameNightDto"];
+            sessions: components["schemas"]["SessionDto"][];
+            runningGames: components["schemas"]["RunningGameDto"][];
+        };
         GameNightDto: {
             /** Format: int32 */
             id: number;
@@ -4398,6 +4724,8 @@ export interface components {
             notes: string;
             /** Format: date-time */
             startDate: string;
+            /** Format: date-time */
+            endedAt: string | null;
             /** Format: int32 */
             hostId: number;
             host: components["schemas"]["PlayerDto"];
@@ -4408,6 +4736,7 @@ export interface components {
             location: components["schemas"]["LocationDto"];
             suggestedGames: components["schemas"]["GameDto"][];
             invitedPlayers: components["schemas"]["GameNightRsvpDto"][];
+            summary: components["schemas"]["GameNightSummaryDto"];
         };
         GameNightManualsDto: {
             /** Format: int32 */
@@ -4427,6 +4756,15 @@ export interface components {
         };
         /** @enum {string} */
         GameNightRsvpState: "accepted" | "declined" | "pending";
+        GameNightSummaryDto: {
+            /** Format: int32 */
+            gamesPlayed: number;
+            /** Format: double */
+            totalMinutes: number;
+            /** Format: int32 */
+            mostWins: number;
+            winnerIds: number[];
+        };
         GamePersonDto: {
             /** Format: int32 */
             id: number;
@@ -4475,6 +4813,10 @@ export interface components {
             lastPlayed: string | null;
             /** Format: int32 */
             expansionCount: number | null;
+            /** Format: int32 */
+            coopWinCount: number;
+            /** Format: int32 */
+            coopLossCount: number;
         };
         GameStatisticsResponse: {
             gameStats: components["schemas"]["GameStatistics"];
@@ -4509,6 +4851,17 @@ export interface components {
             key: string;
             /** Format: int32 */
             value: number;
+        };
+        /** @enum {string} */
+        IntegrationConnectionStatus: "ok" | "notConfigured" | "unauthorized" | "unreachable" | "rateLimited";
+        /** @enum {string} */
+        IntegrationKind: "bgg" | "changeDetection";
+        IntegrationStatusDto: {
+            integration: components["schemas"]["IntegrationKind"];
+            status: components["schemas"]["IntegrationConnectionStatus"];
+            /** Format: date-time */
+            checkedAt: string;
+            messageKey: string;
         };
         Language: {
             /** Format: int32 */
@@ -4772,6 +5125,10 @@ export interface components {
             totalPlayedTime: number;
             /** Format: int32 */
             distinctGameCount: number;
+            /** Format: int32 */
+            coopWinCount: number;
+            /** Format: int32 */
+            coopLossCount: number;
             mostPlayedGames: components["schemas"]["MostPlayedGame"][];
         };
         PreferredGame: {
@@ -4837,6 +5194,8 @@ export interface components {
             /** Format: int32 */
             winnerId: number | null;
             winnerName: string | null;
+            isCoop: boolean;
+            teamWon: boolean | null;
         };
         RecentGameDto: {
             /** Format: int32 */
@@ -4874,6 +5233,17 @@ export interface components {
             /** Format: date-time */
             returnDate: string;
         };
+        RunningGameDto: {
+            /** Format: int32 */
+            id: number;
+            /** Format: int32 */
+            gameNightId: number;
+            /** Format: int32 */
+            gameId: number;
+            /** Format: date-time */
+            start: string;
+            playerIds: number[];
+        };
         ScoreRank: {
             key: string;
             /** Format: double */
@@ -4891,6 +5261,10 @@ export interface components {
             comment: string;
             /** Format: int32 */
             gameId: number;
+            isCoop: boolean;
+            teamWon: boolean | null;
+            /** Format: double */
+            teamScore: number | null;
             /** Format: date-time */
             start: string;
             /** Format: date-time */
@@ -4899,6 +5273,8 @@ export interface components {
             minutes: number;
             /** Format: int32 */
             locationId: number | null;
+            /** Format: int32 */
+            gameNightId: number | null;
             playerSessions: components["schemas"]["PlayerSessionDto"][];
             expansions: components["schemas"]["ExpansionDto"][];
         };
@@ -4929,6 +5305,11 @@ export interface components {
             averageValue: number | null;
             /** Format: int32 */
             pricedGameCount: number;
+        };
+        StartRunningGameCommand: {
+            /** Format: int32 */
+            gameId: number;
+            playerIds: number[];
         };
         TestOidcDiscoveryRequest: {
             authority: string;
@@ -5004,6 +5385,8 @@ export interface components {
             bggId?: number | null;
             state?: components["schemas"]["GameState"];
             hasScoring?: boolean;
+            hasCoopMode?: boolean;
+            coopByDefault?: boolean;
             /** Format: double */
             buyingPrice?: number | null;
             /** Format: double */
@@ -5108,6 +5491,12 @@ export interface components {
             minutes?: number;
             /** Format: int32 */
             locationId?: number | null;
+            /** Format: int32 */
+            gameNightId?: number | null;
+            isCoop?: boolean;
+            teamWon?: boolean | null;
+            /** Format: double */
+            teamScore?: number | null;
             playerSessions?: components["schemas"]["CreatePlayerSessionCommand"][];
             expansionIds?: number[];
             /** Format: int32 */

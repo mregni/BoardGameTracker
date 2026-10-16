@@ -26,5 +26,8 @@
   "in-collection": "En la colección",
   "collection-value": "Valor de la colección",
   "average-price-paid-priced_one": "Precio medio pagado · {{count}} juego con precio",
-  "average-price-paid-priced_other": "Precio medio pagado · {{count}} juegos con precio"
+  "average-price-paid-priced_other": "Precio medio pagado · {{count}} juegos con precio",
+  "coop-won-lost": "Cooperativo ganado · perdido",
+  "coop-results": "{{won}} · {{lost}}",
+  "team-win-rate": "Porcentaje de victorias del equipo"
 }

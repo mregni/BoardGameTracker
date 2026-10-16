@@ -26,6 +26,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
             DistinctGameCount = await _playerRepository.GetDistinctGameCount(playerId)
         };
 
+        (stats.CoopWinCount, stats.CoopLossCount) = await _playerRepository.GetCoopResults(playerId);
         stats.MostPlayedGames = await _playerRepository.GetMostPlayedGames(playerId, 5);
 
         return stats;

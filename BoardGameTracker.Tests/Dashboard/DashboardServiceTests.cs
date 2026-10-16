@@ -163,6 +163,26 @@ public class DashboardServiceTests
     }
 
     [Fact]
+    public async Task GetStatistics_ShouldReturnTheTeamResult_InsteadOfAWinner_ForCoopSessions()
+    {
+        var session = CreateSessionWithWinner(gameId: 1, gameTitle: "Pandemic", gameImage: null, winnerId: 1, winnerName: "John Doe", durationMinutes: 45);
+        session.MarkAsCoop(true, null);
+
+        _sessionRepositoryMock.Setup(x => x.GetRecentSessions(4))
+            .ReturnsAsync([session]);
+
+        var result = await _sut.GetStatistics();
+
+        var activity = result.RecentActivities.Should().ContainSingle().Subject;
+        activity.IsCoop.Should().BeTrue();
+        activity.TeamWon.Should().BeTrue();
+        activity.WinnerId.Should().BeNull();
+        activity.WinnerName.Should().BeNull();
+
+        VerifyGetStatisticsCalls();
+    }
+
+    [Fact]
     public async Task GetStatistics_ShouldReturnCollection()
     {
         var groupedGames = new List<GameStateChart>

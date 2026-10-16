@@ -45,6 +45,8 @@ public static class GameDtoExtensions
             BggId = game.BggId,
             State = game.State,
             HasScoring = game.HasScoring,
+            HasCoopMode = game.HasCoopMode,
+            CoopByDefault = game.CoopByDefault,
             BuyingPrice = game.BuyingPrice?.Amount,
             SoldPrice = game.SoldPrice?.Amount,
             AdditionDate = game.AdditionDate,

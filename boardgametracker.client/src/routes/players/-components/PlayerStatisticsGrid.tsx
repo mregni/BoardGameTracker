@@ -2,13 +2,15 @@ import { useTranslation } from "react-i18next";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import type { Settings } from "@/models";
 import { formatMinutesToDuration } from "@/utils/dateUtils";
-import { formatRatio } from "@/utils/numberUtils";
+import { formatInteger, formatRatio } from "@/utils/numberUtils";
 
 interface PlayerStatistics {
 	playCount: number;
 	totalPlayedTime: number | null;
 	winCount: number;
 	distinctGameCount: number;
+	coopWinCount: number;
+	coopLossCount: number;
 }
 
 interface Props {
@@ -26,6 +28,8 @@ export const PlayerStatisticsGrid = (props: Props) => {
 		settings?.uiLanguage,
 	);
 
+	const hasCoopPlays = statistics.coopWinCount + statistics.coopLossCount > 0;
+
 	return (
 		<div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-5 gap-3 xl:gap-6">
 			<BgtTextStatistic content={statistics.playCount} title={t("play-count")} textSize="4" />
@@ -37,6 +41,16 @@ export const PlayerStatisticsGrid = (props: Props) => {
 				textSize="4"
 			/>
 			<BgtTextStatistic content={statistics.distinctGameCount} title={t("distinct-game-count")} textSize="4" />
+			{hasCoopPlays && (
+				<BgtTextStatistic
+					content={t("coop-results", {
+						won: formatInteger(statistics.coopWinCount, settings?.uiLanguage),
+						lost: formatInteger(statistics.coopLossCount, settings?.uiLanguage),
+					})}
+					title={t("coop-won-lost")}
+					textSize="4"
+				/>
+			)}
 		</div>
 	);
 };

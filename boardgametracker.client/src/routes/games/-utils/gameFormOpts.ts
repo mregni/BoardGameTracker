@@ -7,6 +7,8 @@ export const gameFormOpts = formOptions({
 		id: undefined as number | undefined,
 		title: "",
 		hasScoring: true,
+		hasCoopMode: false,
+		coopByDefault: false,
 		description: "",
 		state: GameState.Wanted as GameState,
 		yearPublished: undefined as number | undefined,

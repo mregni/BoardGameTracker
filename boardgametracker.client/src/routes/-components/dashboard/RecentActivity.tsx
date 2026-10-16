@@ -6,6 +6,7 @@ import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtNoData } from "@/components/BgtNoData/BgtNoData";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import type { RecentActivity } from "@/models";
 import { toRelative } from "@/utils/dateUtils";
 
@@ -64,9 +65,12 @@ const ActivityItem = ({ activity }: ItemProps) => {
 								}}
 							/>
 						) : (
-							<Link className="text-primary" to="/games/$gameId" params={{ gameId: activity.gameId }}>
-								{activity.gameTitle}
-							</Link>
+							<span className="inline-flex flex-wrap items-center gap-2">
+								<Link className="text-primary" to="/games/$gameId" params={{ gameId: activity.gameId }}>
+									{activity.gameTitle}
+								</Link>
+								{activity.isCoop && <CoopResultPill won={activity.teamWon === true} />}
+							</span>
 						)}
 					</BgtText>
 					<BgtText color="white" size="2" opacity={50}>

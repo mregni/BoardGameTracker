@@ -30,6 +30,7 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
     public DbSet<Badge> Badges { get; set; }
     public DbSet<Loan> Loans { get; set; }
     public DbSet<GameNight> GameNights { get; set; }
+    public DbSet<RunningGame> RunningGames { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<OidcProvider> OidcProviders { get; set; }
     public DbSet<ExternalLogin> ExternalLogins { get; set; }
@@ -162,6 +163,41 @@ public class MainDbContext : IdentityDbContext<ApplicationUser>, IDataProtection
             .WithMany()
             .HasForeignKey(x => x.LocationId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<GameNight>()
+            .HasMany(x => x.Sessions)
+            .WithOne(x => x.GameNight)
+            .HasForeignKey(x => x.GameNightId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<GameNight>()
+            .HasMany(x => x.RunningGames)
+            .WithOne(x => x.GameNight)
+            .HasForeignKey(x => x.GameNightId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<RunningGame>()
+            .HasOne(x => x.Game)
+            .WithMany()
+            .HasForeignKey(x => x.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<RunningGame>()
+            .HasMany(x => x.Players)
+            .WithOne(x => x.RunningGame)
+            .HasForeignKey(x => x.RunningGameId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<RunningGamePlayer>()
+            .HasKey(x => new { x.RunningGameId, x.PlayerId });
+
+        builder.Entity<RunningGamePlayer>()
+            .HasOne(x => x.Player)
+            .WithMany()
+            .HasForeignKey(x => x.PlayerId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<GameNightRsvp>()
             .Property(x => x.State)
