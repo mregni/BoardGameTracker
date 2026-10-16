@@ -95,6 +95,9 @@ const session = (id: number, day: number): Session => ({
 	expansions: [],
 	locationId: 3,
 	gameNightId: null,
+	isCoop: false,
+	teamWon: null,
+	teamScore: null,
 });
 
 mocks.sessions = Array.from({ length: 12 }, (_, index) => session(index + 1, 20 - index));

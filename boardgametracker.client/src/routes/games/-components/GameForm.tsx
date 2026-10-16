@@ -19,6 +19,7 @@ import { useGameForm } from "../-hooks/useGameForm";
 import { useImageUpload } from "../-hooks/useImageUpload";
 import { gameFormOpts } from "../-utils/gameFormOpts";
 import { GameFormBasicFields } from "./GameFormBasicFields";
+import { GameFormCoopFields } from "./GameFormCoopFields";
 import { GameFormPlayerFields } from "./GameFormPlayerFields";
 import { GameFormTimeFields } from "./GameFormTimeFields";
 import { GameFormUpdateFields } from "./GameFormUpdateFields";
@@ -46,6 +47,8 @@ export const GameForm = (props: Props) => {
 			id: game?.id ?? undefined,
 			title: game?.title ?? "",
 			hasScoring: game?.hasScoring ?? true,
+			hasCoopMode: game?.hasCoopMode ?? false,
+			coopByDefault: game?.coopByDefault ?? false,
 			description: game?.description ?? "",
 			state: game?.state ?? GameState.Wanted,
 			yearPublished: game?.yearPublished ?? undefined,
@@ -65,7 +68,10 @@ export const GameForm = (props: Props) => {
 			soldPrice: game?.soldPrice ?? undefined,
 		},
 		onSubmit: async ({ value }) => {
-			const validatedData = CreateGameSchema.parse(value);
+			const validatedData = CreateGameSchema.parse({
+				...value,
+				coopByDefault: value.hasCoopMode && value.coopByDefault,
+			});
 			validatedData.image = await uploadPoster(poster);
 			await onClick(validatedData);
 		},
@@ -105,11 +111,12 @@ export const GameForm = (props: Props) => {
 								</div>
 							</div>
 
-							<form.Field name="hasScoring" validators={zodValidator(CreateGameSchema, "hasScoring")}>
-								{(field: AnyFieldApi) => (
-									<BgtSwitch field={field} label={t("scoring.label")} className="pt-3" disabled={disabled} />
-								)}
-							</form.Field>
+							<div className="flex flex-col gap-3 pt-3">
+								<form.Field name="hasScoring" validators={zodValidator(CreateGameSchema, "hasScoring")}>
+									{(field: AnyFieldApi) => <BgtSwitch field={field} label={t("scoring.label")} disabled={disabled} />}
+								</form.Field>
+								<GameFormCoopFields form={form} disabled={disabled} />
+							</div>
 
 							<div className="flex flex-row gap-2 mt-2">
 								<BgtButton variant="cancel" type="button" className="flex-none" onClick={goBack} disabled={disabled}>

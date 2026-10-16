@@ -63,6 +63,8 @@ export const CreateGameSchema = z.object({
 		.optional()
 		.transform((value) => (!value || value === LANGUAGE_NONE ? null : value)),
 	hasScoring: z.boolean(),
+	hasCoopMode: z.boolean(),
+	coopByDefault: z.boolean(),
 	rating: z
 		.number({ error: "game:validation.rating" })
 		.min(0, { message: "game:validation.rating" })

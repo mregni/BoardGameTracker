@@ -7,7 +7,7 @@ public static class DashboardDtoExtensions
 {
     private static RecentActivityDto ToRecentActivityDto(this Session session)
     {
-        var winner = session.PlayerSessions.FirstOrDefault(ps => ps.Won);
+        var winner = session.IsCoop ? null : session.PlayerSessions.FirstOrDefault(ps => ps.Won);
         return new RecentActivityDto
         {
             Id = session.Id,
@@ -18,7 +18,9 @@ public static class DashboardDtoExtensions
             PlayerCount = session.PlayerSessions.Count,
             DurationInMinutes = session.GetDuration().TotalMinutes,
             WinnerId = winner?.PlayerId,
-            WinnerName = winner?.Player?.Name
+            WinnerName = winner?.Player?.Name,
+            IsCoop = session.IsCoop,
+            TeamWon = session.TeamWon
         };
     }
 

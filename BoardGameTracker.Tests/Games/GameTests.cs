@@ -345,4 +345,32 @@ public class GameTests
     }
 
     #endregion
+
+    #region UpdateCoopMode
+
+    [Fact]
+    public void Constructor_ShouldStartWithoutCoopMode()
+    {
+        var game = new Game("Pandemic");
+
+        game.HasCoopMode.Should().BeFalse();
+        game.CoopByDefault.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(true, true, true, true)]
+    [InlineData(true, false, true, false)]
+    [InlineData(false, true, false, false)]
+    [InlineData(false, false, false, false)]
+    public void UpdateCoopMode_ShouldOnlyDefaultToCoop_WhenTheGameHasCoopMode(bool hasCoopMode, bool coopByDefault, bool expectedCoopMode, bool expectedDefault)
+    {
+        var game = new Game("Pandemic");
+
+        game.UpdateCoopMode(hasCoopMode, coopByDefault);
+
+        game.HasCoopMode.Should().Be(expectedCoopMode);
+        game.CoopByDefault.Should().Be(expectedDefault);
+    }
+
+    #endregion
 }

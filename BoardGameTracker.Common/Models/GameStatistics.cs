@@ -11,6 +11,8 @@ public class GameStatistics
     public double AveragePlayTime { get; set; }
     public DateTime? LastPlayed { get; set; }
     public int? ExpansionCount { get; set; }
+    public int CoopWinCount { get; set; }
+    public int CoopLossCount { get; set; }
 }
 
 public class MostWinningPlayer

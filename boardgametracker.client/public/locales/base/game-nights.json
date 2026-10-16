@@ -120,7 +120,9 @@
       "title": "Start a game",
       "game": "Game",
       "players": "Who plays?",
-      "save": "Start"
+      "save": "Start",
+      "coop-default": "Co-op game: you pick “We won” or “We lost” when you finish it.",
+      "coop-optional": "This game can be played co-op: you can switch it on when you finish it."
     },
     "log": {
       "button": "Log a finished game",

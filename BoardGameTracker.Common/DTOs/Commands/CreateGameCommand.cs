@@ -45,6 +45,8 @@ public class CreateGameCommand : IValidatableObject
 
     public GameState State { get; set; }
     public bool HasScoring { get; set; }
+    public bool HasCoopMode { get; set; }
+    public bool CoopByDefault { get; set; }
 
     [Range(0, double.MaxValue)]
     public decimal? BuyingPrice { get; set; }

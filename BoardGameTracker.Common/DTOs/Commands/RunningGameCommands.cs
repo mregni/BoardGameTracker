@@ -16,6 +16,12 @@ public class FinishRunningGameCommand
     [MinLength(1)]
     public List<CreatePlayerSessionCommand> PlayerSessions { get; set; } = [];
 
+    public bool IsCoop { get; set; }
+
+    public bool? TeamWon { get; set; }
+
+    public double? TeamScore { get; set; }
+
     public DateTime? Start { get; set; }
 
     [Range(1, int.MaxValue)]

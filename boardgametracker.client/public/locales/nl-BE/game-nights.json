@@ -120,7 +120,9 @@
       "title": "Start een spel",
       "game": "Spel",
       "players": "Wie speelt er mee?",
-      "save": "Starten"
+      "save": "Starten",
+      "coop-default": "Coöperatief spel: je kiest “We wonnen” of “We verloren” bij het afronden.",
+      "coop-optional": "Dit spel kan coöperatief gespeeld worden: je zet het aan bij het afronden."
     },
     "log": {
       "button": "Gespeeld spel toevoegen",

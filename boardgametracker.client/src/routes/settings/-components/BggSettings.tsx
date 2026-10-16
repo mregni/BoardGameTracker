@@ -1,7 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
 import { Trans, useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import Info from "@/assets/icons/info.svg?react";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtInputField } from "@/components/BgtForm";
@@ -9,15 +7,17 @@ import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { withForm } from "@/hooks/form";
 import { type BggConfigStatus, type ChangeDetectionConfigStatus, SettingsSchema } from "@/models";
-import { testChangeDetectionConnectionCall } from "@/services/changeDetectionService";
 import { zodValidator } from "@/utils/zodValidator";
+import { useIntegrationStatus } from "../-hooks/useIntegrationStatus";
 import { settingsFormOpts } from "../-utils/settingsFormOpts";
+import { IntegrationStatusRow } from "./IntegrationStatusRow";
 import { SettingsSection } from "./SettingsSection";
 
 export const BggSettings = withForm({
 	...settingsFormOpts,
 	props: {
 		disabled: false,
+		timeFormat: "HH:mm",
 		bggStatus: {
 			isConfigured: false,
 			isReadOnly: false,
@@ -29,22 +29,9 @@ export const BggSettings = withForm({
 			source: "db",
 		} as ChangeDetectionConfigStatus,
 	},
-	render: function Render({ form, disabled, bggStatus, changeDetectionStatus }) {
+	render: function Render({ form, disabled, timeFormat, bggStatus, changeDetectionStatus }) {
 		const { t } = useTranslation("settings");
-
-		const testConnection = useMutation({
-			mutationFn: testChangeDetectionConnectionCall,
-			onSuccess: (result) => {
-				if (result.ok) {
-					toast.success(t("changedetection.test.success", { version: result.version ?? "" }));
-				} else {
-					toast.error(t("changedetection.test.failed"), {
-						description: t(`changedetection.test.reason.${result.status}`),
-					});
-				}
-			},
-			onError: () => toast.error(t("changedetection.test.failed")),
-		});
+		const { statusFor, isChecking, testIntegration, testingIntegration } = useIntegrationStatus();
 
 		return (
 			<div className="space-y-6">
@@ -59,6 +46,15 @@ export const BggSettings = withForm({
 									: t("bgg.status.source-db")
 								: t("bgg.status.not-configured-description")
 						}
+					/>
+					<IntegrationStatusRow
+						integration="bgg"
+						status={statusFor("bgg")}
+						isChecking={isChecking}
+						isTesting={testingIntegration === "bgg"}
+						canTest={bggStatus.isConfigured}
+						timeFormat={timeFormat}
+						onTest={testIntegration}
 					/>
 					{!bggStatus.isReadOnly && bggStatus.isConfigured && (
 						<div className="flex flex-row gap-4 items-center">
@@ -137,18 +133,15 @@ export const BggSettings = withForm({
 						}
 					/>
 
-					{changeDetectionStatus.isConfigured && (
-						<div className="flex flex-row gap-4 items-center">
-							<BgtButton
-								variant="cancel"
-								type="button"
-								disabled={testConnection.isPending}
-								onClick={() => testConnection.mutate()}
-							>
-								{t("changedetection.test.button")}
-							</BgtButton>
-						</div>
-					)}
+					<IntegrationStatusRow
+						integration="changeDetection"
+						status={statusFor("changeDetection")}
+						isChecking={isChecking}
+						isTesting={testingIntegration === "changeDetection"}
+						canTest={changeDetectionStatus.isConfigured}
+						timeFormat={timeFormat}
+						onTest={testIntegration}
+					/>
 
 					<div className="flex-1">
 						<form.Field

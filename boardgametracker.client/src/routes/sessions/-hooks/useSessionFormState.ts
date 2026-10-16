@@ -96,6 +96,7 @@ export const useSessionFormState = ({
 
 	return {
 		hasScoring: selectedGame?.hasScoring ?? true,
+		hasCoopMode: selectedGame?.hasCoopMode ?? false,
 		expansionList: selectedGame?.expansions ?? [],
 		selectedExpansionIds: expansionSelection.gameId === selectedGameId ? expansionSelection.ids : [],
 		setSelectedExpansionIds,

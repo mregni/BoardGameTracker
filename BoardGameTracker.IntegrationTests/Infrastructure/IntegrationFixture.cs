@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using BoardGameTracker.Common;
 using BoardGameTracker.Common.DTOs.Auth;
+using BoardGameTracker.Core.Integrations;
 using BoardGameTracker.Core.Maintenance.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -77,7 +78,12 @@ public sealed class IntegrationFixture : IAsyncLifetime
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.UseContentRoot(Directory.GetCurrentDirectory());
-            builder.ConfigureServices(services => services.AddTransient<IStartupFilter, TestClientAddressStartupFilter>());
+            builder.ConfigureServices(services =>
+            {
+                services.AddTransient<IStartupFilter, TestClientAddressStartupFilter>();
+                services.AddHttpClient(BggConnectionTester.HttpClientName)
+                    .ConfigurePrimaryHttpMessageHandler(() => new FakeBggHandler());
+            });
         });
         using var client = _factory.CreateClient();
         var status = await client.GetAsync("/api/health");

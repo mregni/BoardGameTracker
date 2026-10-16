@@ -719,9 +719,15 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<string>("ChangeDetectionWatchId")
                         .HasColumnType("text");
 
+                    b.Property<bool>("CoopByDefault")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("HasCoopMode")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("HasScoring")
                         .HasColumnType("boolean");
@@ -1239,11 +1245,20 @@ namespace BoardGameTracker.Core.DataStore.Migrations.Postgres
                     b.Property<int?>("GameNightId")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsCoop")
+                        .HasColumnType("boolean");
+
                     b.Property<int?>("LocationId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("Start")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<double?>("TeamScore")
+                        .HasColumnType("double precision");
+
+                    b.Property<bool?>("TeamWon")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 

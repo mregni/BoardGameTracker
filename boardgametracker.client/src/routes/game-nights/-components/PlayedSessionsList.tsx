@@ -4,6 +4,7 @@ import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { Game, Player, Session } from "@/models";
 import { formatMinutesToDuration } from "@/utils/dateUtils";
@@ -54,7 +55,8 @@ export const PlayedSessionsList = (props: Props) => {
 						<span className="flex min-w-0 flex-1 flex-col gap-0.5">
 							<span className="flex flex-wrap items-center gap-x-2 gap-y-1">
 								<span className="font-semibold wrap-anywhere">{game?.title}</span>
-								{winners.length > 0 && (
+								{session.isCoop && <CoopResultPill won={session.teamWon === true} />}
+								{!session.isCoop && winners.length > 0 && (
 									<span className="inline-flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-semibold text-green-300">
 										<Crown className="size-3.5" />
 										{winners.join(", ")}

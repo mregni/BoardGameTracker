@@ -73,5 +73,13 @@
       "first-play": "First play",
       "remove": "Remove {{name}}"
     }
+  },
+  "coop": {
+    "played": "Played co-op",
+    "result": "Team result",
+    "won": "We won",
+    "lost": "We lost",
+    "team-score": "Team score",
+    "result-required": "Pick whether the team won or lost"
   }
 }

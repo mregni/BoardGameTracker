@@ -76,7 +76,9 @@
   },
   "session": {
     "invalid-expansion": "Una de las expansiones seleccionadas no pertenece a este juego",
-    "start-in-future": "La fecha de inicio no puede estar en el futuro"
+    "start-in-future": "La fecha de inicio no puede estar en el futuro",
+    "coop-not-supported": "Este juego no se puede jugar en cooperativo",
+    "coop-result-required": "Una sesión cooperativa necesita un resultado del equipo"
   },
   "email": {
     "not-configured": "El correo electrónico no está configurado en este servidor",

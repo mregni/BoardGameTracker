@@ -10,6 +10,7 @@ public interface IGameService
     Task<List<Game>> GetGames();
     Task<Game?> GetGameById(int id);
     Task<bool> ExistsAsync(int id);
+    Task<bool?> HasCoopModeAsync(int id);
     Task Delete(int id);
     Task<int> CountAsync(CancellationToken cancellationToken = default);
     Task<Game> CreateGameFromCommand(CreateGameCommand command);

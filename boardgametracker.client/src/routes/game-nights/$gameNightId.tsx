@@ -121,6 +121,9 @@ function RouteComponent() {
 										locationId: session.locationId,
 										comment: session.comment,
 										expansionIds: session.expansionIds ?? [],
+										isCoop: session.isCoop,
+										teamWon: session.teamWon,
+										teamScore: session.teamScore,
 									},
 								})
 							: saveSession(session);

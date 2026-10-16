@@ -140,5 +140,9 @@
     "sessions_other": "partidas",
     "wins": "victorias",
     "no-sessions": "Aún no hay partidas"
+  },
+  "coop": {
+    "won": "Cooperativo · ganado",
+    "lost": "Cooperativo · perdido"
   }
 }
