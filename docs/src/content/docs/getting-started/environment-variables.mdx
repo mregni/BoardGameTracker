@@ -22,6 +22,7 @@ With the provided compose files you can put any of these variables in a `.env` f
 | File owner | `PUID` / `PGID` | `1654` | User and group id that own the mounted `images`, `logs` and `manuals` folders. When the container itself runs as a non-root user these are ignored and the folders must already be writable by that user. |
 | BGG API key | `BGG_API_KEY` | | Personal BoardGameGeek API key. Can also be entered under *Settings → BoardGameGeek*; the environment variable wins and makes the setting read-only. |
 | Log level | `LOGLEVEL` | `warn` | Sets the logging level for the application. Possible values are `debug`, `info`, `warn`, `error`. |
+| Sensitive database logging | `EF_SENSITIVE_LOGGING` | `false` | Local debugging only. Set to `true` to write database parameter values and full PostgreSQL error details to the logs. These include API keys, password hashes and tokens, so never enable it on a server you care about. Off in every environment, including development; a warning is logged at startup while it is on. |
 | Enable Sentry logging | `STATISTICS_ENABLED` | `false` | Enables or disables the collection of usage statistics. Set to `true` to enable, `false` to disable. |
 | Sentry DSN | `SENTRY_DSN` | | Overrides the built-in Sentry project when `STATISTICS_ENABLED=true`, so error reports go to your own Sentry instead of the maintainer's. |
 | Enable authentication | `AUTH_ENABLED` | `true` | Set to `false` to disable authentication and allow anyone to access the application. |

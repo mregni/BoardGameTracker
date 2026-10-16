@@ -17,6 +17,7 @@ public interface IEnvironmentProvider
     IReadOnlyList<string> TrustedProxies { get; }
     IReadOnlyList<string> CorsOrigins { get; }
     bool SwaggerEnabled { get; }
+    bool EfSensitiveDataLogging { get; }
     string? SmtpHost { get; }
     int SmtpPort { get; }
     string? SmtpUsername { get; }

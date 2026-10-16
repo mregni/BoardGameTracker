@@ -183,9 +183,7 @@ public static class ServiceCollectionExtensions
                 throw new ServiceNotResolvedException("environmentProvider could not be resolved");
             }
 
-            options
-                .EnableSensitiveDataLogging(environmentProvider.IsDevelopment)
-                .UseNpgsql(dataSource, o => o.UseVector().UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            MainDbContextOptions.Configure(options, dataSource, environmentProvider);
         });
 
         return serviceCollection;
