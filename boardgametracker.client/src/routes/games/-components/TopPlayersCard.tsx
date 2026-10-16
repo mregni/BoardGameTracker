@@ -53,7 +53,7 @@ export const TopPlayersCard = (props: Props) => {
 										className={cx(
 											"flex shrink-0 items-center gap-1 text-sm font-semibold",
 											player.trend === Trend.Up && "text-green-400",
-											player.trend === Trend.Down && "text-red-500",
+											player.trend === Trend.Down && "text-bad",
 											player.trend === Trend.Equal && "text-orange-400",
 										)}
 									>
