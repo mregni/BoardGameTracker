@@ -57,7 +57,7 @@ describe("useShameData", () => {
 		vi.clearAllMocks();
 		mocks.getShamesCall.mockResolvedValue([shame]);
 		mocks.getShameStatisticsCall.mockResolvedValue({ count: 1, nextGameNight: night });
-		mocks.getSettingsCall.mockResolvedValue({ currency: "€" });
+		mocks.getSettingsCall.mockResolvedValue({ currency: "€", dateFormat: "dd-MM-yyyy" });
 	});
 
 	it("loads the shelf for the requested months", async () => {
@@ -84,7 +84,7 @@ describe("useShameData", () => {
 		const [message, action, values] = mocks.successToast.mock.calls[0];
 		expect(message).toBe("shames:plan.added");
 		expect(action.label).toBe("shames:plan.undo");
-		expect(values).toEqual({ game: "Spirit Island", night: "Friday-ish Strategy Night", date: "Fri 23 Oct" });
+		expect(values).toEqual({ game: "Spirit Island", night: "Friday-ish Strategy Night", date: "23-10-2026" });
 		expect(mocks.invalidateShames).toHaveBeenCalled();
 		expect(mocks.invalidateGameNights).toHaveBeenCalled();
 

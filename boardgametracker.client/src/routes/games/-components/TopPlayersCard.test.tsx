@@ -48,7 +48,7 @@ describe("TopPlayersCard", () => {
 	it("colours a downward trend with the bad token", () => {
 		renderWithTheme(<TopPlayersCard topPlayers={[topPlayer({ trend: Trend.Down })]} />);
 
-		const rate = screen.getByText("100%").closest("span");
+		const rate = screen.getByText(/100%/);
 		expect(rate).toHaveClass("text-bad");
 		expect(rate).not.toHaveClass("text-red-500");
 	});
@@ -59,14 +59,37 @@ describe("TopPlayersCard", () => {
 		expect(screen.queryByText("Kathleen")).not.toBeInTheDocument();
 	});
 
-	it("keeps wins, games and the average score out of the row and in its tooltip", () => {
+	it("shows the wins next to the win rate so the ranking by wins reads in order", () => {
+		renderWithTheme(<TopPlayersCard topPlayers={[topPlayer({ wins: 7, winPercentage: 0.5 })]} />);
+
+		const row = screen.getByText("Kathleen").closest("a");
+		expect(row).toHaveTextContent("common:win");
+		expect(row).toHaveTextContent("50%");
+	});
+
+	it("keeps the sessions and the average score in the tooltip", () => {
 		renderWithTheme(<TopPlayersCard topPlayers={[topPlayer()]} />);
 
-		expect(screen.queryByText(/common:win/)).not.toBeInTheDocument();
 		expect(screen.getByText("Kathleen").closest("li")).toHaveAttribute(
 			"title",
-			"common:win • common:game • 20 statistics:average-abreviation",
+			"common:sessions • 20 statistics:average-abreviation",
 		);
+	});
+
+	it("explains the trend arrow", () => {
+		renderWithTheme(
+			<TopPlayersCard
+				topPlayers={[
+					topPlayer(),
+					topPlayer({ playerId: 2, trend: Trend.Down }),
+					topPlayer({ playerId: 3, trend: Trend.Equal }),
+				]}
+			/>,
+		);
+
+		expect(screen.getByRole("img", { name: "top-players.trend-up" })).toBeInTheDocument();
+		expect(screen.getByRole("img", { name: "top-players.trend-down" })).toBeInTheDocument();
+		expect(screen.getAllByRole("img")).toHaveLength(2);
 	});
 
 	it("shows the empty state without players", () => {

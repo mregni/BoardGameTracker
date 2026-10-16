@@ -3,7 +3,7 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import Game from "@/assets/icons/gamepad.svg?react";
+import ArchiveIcon from "@/assets/icons/archive.svg?react";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
@@ -44,7 +44,7 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageHeader header={t("common:shame")} icon={Game} />
+			<BgtPageHeader header={t("common:shame")} icon={ArchiveIcon} />
 			<BgtPageContent isLoading={isLoading} data={{ statistics, settings }}>
 				{({ statistics, settings }) => {
 					const configuredMonths = settings.shelfOfShameMonthsLimit;
@@ -64,7 +64,12 @@ function RouteComponent() {
 									</>
 								)}
 							</p>
-							<ShameTiles statistics={statistics} shames={shames} currency={settings.currency} />
+							<ShameTiles
+								statistics={statistics}
+								shames={shames}
+								currency={settings.currency}
+								dateFormat={settings.dateFormat}
+							/>
 							<ShameFilters
 								filters={filters}
 								counts={counts}
@@ -108,6 +113,7 @@ function RouteComponent() {
 												key={shame.id}
 												shame={shame}
 												currency={settings.currency}
+												dateFormat={settings.dateFormat}
 												canWrite={canWrite}
 												nextNight={nextNight}
 												planning={planningId === shame.id}

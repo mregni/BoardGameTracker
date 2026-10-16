@@ -11,6 +11,7 @@ import {
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { useAppForm } from "@/hooks/form";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import {
 	type CreateSession,
 	type CreateSessionPlayer,
@@ -26,7 +27,6 @@ import { SessionFormFields } from "@/routes/sessions/-components/SessionFormFiel
 import { useSessionFormState } from "@/routes/sessions/-hooks/useSessionFormState";
 import { applyPlayMode, coopDefaults } from "@/routes/sessions/-utils/coopSession";
 import { sessionFormOpts } from "@/routes/sessions/-utils/sessionFormOpts";
-import { formatMinutesToDuration } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 
 const DEFAULT_MINUTES = 30;
@@ -65,6 +65,7 @@ export const PlaySessionSheet = (props: Props) => {
 		onSave,
 	} = props;
 	const { t } = useTranslation(["game-nights", "player-session", "common"]);
+	const shortDuration = useShortDuration();
 	const [initialPlayers] = useState(() => toPlayers(runningGame?.playerIds ?? attendeeIds));
 	const [defaults] = useState(() => {
 		const gameId = runningGame?.gameId ?? 0;
@@ -135,7 +136,7 @@ export const PlaySessionSheet = (props: Props) => {
 							<BgtDialogDescription className="text-sm">
 								{t("play.finish.subtitle", {
 									time: format(defaults.start, settings.timeFormat),
-									duration: formatMinutesToDuration(defaults.minutes, ["hours", "minutes"], settings.uiLanguage),
+									duration: shortDuration(defaults.minutes),
 									location: gameNight.location.name,
 								})}
 							</BgtDialogDescription>

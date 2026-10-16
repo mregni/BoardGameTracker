@@ -52,7 +52,7 @@ describe("TogetherTiles", () => {
 		expect(screen.getByText("46")).toBeInTheDocument();
 		expect(screen.getByText("since 12-03-2025")).toBeInTheDocument();
 		expect(screen.getByText("40h 10m")).toBeInTheDocument();
-		expect(screen.getByText("avg 52m a game")).toBeInTheDocument();
+		expect(screen.getByText("avg 52 min a game")).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: /Most played/ })).toHaveAttribute("href", "/games/10");
 		expect(screen.getByText("11 games")).toBeInTheDocument();
 		expect(screen.getByText("1 pt")).toBeInTheDocument();

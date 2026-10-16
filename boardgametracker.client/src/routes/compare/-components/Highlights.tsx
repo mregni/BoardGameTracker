@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
 import { AvatarChip } from "@/components/GameNight/AvatarChip";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { CompareResult } from "@/models";
 import { useGameById } from "@/routes/-hooks/useGameById";
 import { toDisplay } from "@/utils/dateUtils";
-import { useShortDuration } from "../-hooks/useShortDuration";
 import { SectionTitle } from "./SectionTitle";
 
 interface Props {

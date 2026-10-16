@@ -109,14 +109,7 @@ export const GameNightDetailView = (props: Props) => {
 				</div>
 			)}
 
-			{sessions.length > 0 && (
-				<NightSummaryStats
-					summary={gameNight.summary}
-					players={players}
-					isOver={isOver}
-					uiLanguage={settings.uiLanguage}
-				/>
-			)}
+			{sessions.length > 0 && <NightSummaryStats summary={gameNight.summary} players={players} isOver={isOver} />}
 
 			<div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:gap-6">
 				<section className="flex flex-col gap-2" aria-labelledby="played-games">

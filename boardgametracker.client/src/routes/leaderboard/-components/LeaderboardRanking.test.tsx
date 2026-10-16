@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
-import type { LeaderboardEntry } from "@/models";
+import type { LeaderboardEntry, LeaderboardRankBy } from "@/models";
 import { renderWithTheme, screen, within } from "@/test/test-utils";
 import { LeaderboardRanking } from "./LeaderboardRanking";
 
@@ -63,10 +63,11 @@ const players = [
 	}),
 ];
 
-const renderRanking = (list: LeaderboardEntry[] = players, coopWinCount = 0) =>
+const renderRanking = (list: LeaderboardEntry[] = players, coopWinCount = 0, rankBy: LeaderboardRankBy = "wins") =>
 	renderWithTheme(
 		<LeaderboardRanking
 			players={list}
+			rankBy={rankBy}
 			minimumSessions={5}
 			minimumPlayersForPodium={4}
 			label="Ranking"
@@ -120,7 +121,7 @@ describe("LeaderboardRanking", () => {
 	it("should show the details line with podiums for ranked players", () => {
 		renderRanking([players[0]]);
 
-		expect(screen.getByRole("link")).toHaveTextContent("values.wins · values.sessions · values.podiums");
+		expect(screen.getByRole("link")).toHaveTextContent("38% · values.sessions · values.podiums");
 	});
 
 	it("should show culture-aware numbers, the win rate and one duration format", () => {
@@ -129,8 +130,8 @@ describe("LeaderboardRanking", () => {
 		const [first, second] = screen.getAllByTestId("leaderboard-row");
 		expect(first).toHaveTextContent("142");
 		expect(first).toHaveTextContent("38%");
-		expect(first).toHaveTextContent("duration.hours");
-		expect(second).toHaveTextContent("duration.hours-minutes");
+		expect(first).toHaveTextContent("short-duration.hours");
+		expect(second).toHaveTextContent("short-duration.hours-minutes");
 	});
 
 	it("should explain the podium column and that ties share the rank", () => {
@@ -171,4 +172,19 @@ describe("LeaderboardRanking", () => {
 
 		expect(screen.getByText("ranking.coop")).toBeInTheDocument();
 	});
+
+	it.each([
+		["wins", "values.wins", "38% · values.sessions · values.podiums"],
+		["winRate", "38%", "values.wins · values.sessions · values.podiums"],
+		["sessions", "values.sessions", "values.wins · 38% · values.podiums"],
+	] as const)(
+		"should show the rank-by metric as the prominent mobile value when ranking by %s",
+		(rankBy, value, details) => {
+			renderRanking([players[0]], 0, rankBy);
+
+			expect(screen.getByTestId("leaderboard-mobile-value")).toHaveTextContent(value);
+			expect(screen.getByTestId("leaderboard-mobile-value")).toHaveClass("md:hidden");
+			expect(screen.getByRole("link")).toHaveTextContent(details);
+		},
+	);
 });

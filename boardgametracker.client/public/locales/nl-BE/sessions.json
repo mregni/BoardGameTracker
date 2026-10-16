@@ -1,5 +1,6 @@
 {
   "new": "Nieuwe sessie toevoegen",
+  "title-of": "Sessies van {{name}}",
   "title": "Sessies",
   "notifications": {
     "deleted": "Sessie is verwijderd",

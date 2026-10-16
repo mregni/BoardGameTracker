@@ -7,7 +7,7 @@ import { BgtHeading } from "@/components/BgtHeading/BgtHeading";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { GameNightDateBox } from "@/components/GameNight/GameNightDateBox";
 import type { GameNight, Settings } from "@/models";
-import { toLongDisplay } from "@/utils/dateUtils";
+import { toWeekdayDisplay } from "@/utils/dateUtils";
 import { relativeDay } from "@/utils/relativeDay";
 
 interface Props {
@@ -41,7 +41,7 @@ export const RsvpEventDetails = ({ gameNight, settings }: Props) => {
 						{gameNight.title}
 					</BgtHeading>
 					<BgtText size="2" color="gray" className="first-letter:uppercase">
-						{toLongDisplay(startDate, uiLanguage)}
+						{toWeekdayDisplay(startDate, settings.dateFormat, uiLanguage)}
 					</BgtText>
 				</div>
 			</div>

@@ -21,6 +21,9 @@
     "no-prices": "no prices entered",
     "planned": "Planned",
     "planned-for": "for {{date}}",
+    "planned-next": "next on {{date}}",
+    "planned-across_one": "across {{count}} game night",
+    "planned-across_other": "across {{count}} game nights",
     "no-night": "no game night coming up"
   },
   "filters": {

@@ -6,8 +6,8 @@ import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { CoopResultPill } from "@/components/CoopResultPill/CoopResultPill";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { Game, Player, Session } from "@/models";
-import { formatMinutesToDuration } from "@/utils/dateUtils";
 
 interface Props {
 	sessions: Session[];
@@ -25,6 +25,7 @@ export const PlayedSessionsList = (props: Props) => {
 	const { sessions, games, players, uiLanguage, canOpen, emptyText } = props;
 
 	const { number } = useNumberFormat(uiLanguage);
+	const shortDuration = useShortDuration();
 	const nameOf = (playerId: number) => players.find((player) => player.id === playerId)?.name ?? "";
 
 	if (sessions.length === 0) {
@@ -65,9 +66,7 @@ export const PlayedSessionsList = (props: Props) => {
 							</span>
 							<span className="text-xs text-gray-400 wrap-anywhere">{scores}</span>
 						</span>
-						<span className="shrink-0 text-sm tabular-nums text-gray-400">
-							{formatMinutesToDuration(session.minutes, ["hours", "minutes"], uiLanguage)}
-						</span>
+						<span className="shrink-0 text-sm tabular-nums text-gray-400">{shortDuration(session.minutes)}</span>
 					</>
 				);
 				const rowClasses = "flex items-center gap-2.5 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2";

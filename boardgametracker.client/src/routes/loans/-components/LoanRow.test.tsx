@@ -78,11 +78,29 @@ describe("LoanRow", () => {
 
 		await userEvent.click(screen.getByRole("button", { name: "edit.button" }));
 		await userEvent.click(screen.getByRole("button", { name: "delete.button" }));
-		await userEvent.click(screen.getByRole("button", { name: "returned-button" }));
+		await userEvent.click(screen.getByRole("button", { name: "mark-returned-button" }));
 
 		expect(onEdit).toHaveBeenCalledWith(activeLoan);
 		expect(onDelete).toHaveBeenCalledWith(activeLoan);
 		expect(onReturn).toHaveBeenCalledWith(activeLoan);
+	});
+
+	it("labels the row button as an action and keeps the status in the pill", () => {
+		render(
+			<LoanRow
+				loan={activeLoan}
+				game={game}
+				player={player}
+				dateFormat="dd-MM-yyyy"
+				onReturn={vi.fn()}
+				onEdit={vi.fn()}
+				onDelete={vi.fn()}
+			/>,
+		);
+
+		const button = screen.getByRole("button", { name: "mark-returned-button" });
+		expect(button).toHaveTextContent(/^mark-returned-button$/);
+		expect(screen.queryByText("status.returned")).not.toBeInTheDocument();
 	});
 
 	it("offers no returned button for a returned loan", () => {
@@ -99,7 +117,7 @@ describe("LoanRow", () => {
 
 		expect(screen.getByText("status.returned")).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "edit.button" })).toBeInTheDocument();
-		expect(screen.queryByRole("button", { name: "returned-button" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "mark-returned-button" })).not.toBeInTheDocument();
 	});
 
 	it("shows no actions without write access", () => {

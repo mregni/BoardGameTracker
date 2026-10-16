@@ -11,6 +11,8 @@ import { useNumberFormat } from "@/hooks/useNumberFormat";
 import { type TopPlayer, Trend } from "@/models";
 import { usePlayerById } from "@/routes/-hooks/usePlayerById";
 
+const TREND_WINDOW = 5;
+
 interface Props {
 	topPlayers: TopPlayer[];
 }
@@ -31,14 +33,19 @@ export const TopPlayersCard = (props: Props) => {
 					{winners.map((player) => {
 						const info = playerById(player.playerId);
 						const details = [
-							t("common:win", { count: player.wins }),
-							t("common:game", { count: player.playCount }),
+							t("common:sessions", { count: player.playCount }),
 							player.averageScore != null
 								? `${decimal(player.averageScore)} ${t("statistics:average-abreviation")}`
 								: null,
 						]
 							.filter(Boolean)
 							.join(" • ");
+						const trendLabel =
+							player.trend === Trend.Up
+								? t("top-players.trend-up", { sessions: TREND_WINDOW })
+								: player.trend === Trend.Down
+									? t("top-players.trend-down", { sessions: TREND_WINDOW })
+									: null;
 
 						return (
 							<li key={player.playerId} title={details}>
@@ -49,16 +56,26 @@ export const TopPlayersCard = (props: Props) => {
 								>
 									<BgtAvatar image={info?.image} title={info?.name} size="medium" />
 									<span className="min-w-0 flex-1 truncate">{info?.name}</span>
+									<span className="shrink-0 text-sm font-semibold tabular-nums">
+										{t("common:win", { count: player.wins })}
+									</span>
 									<span
 										className={cx(
-											"flex shrink-0 items-center gap-1 text-sm font-semibold",
+											"flex w-16 shrink-0 items-center justify-end gap-1 text-xs tabular-nums",
 											player.trend === Trend.Up && "text-green-400",
 											player.trend === Trend.Down && "text-bad",
-											player.trend === Trend.Equal && "text-orange-400",
+											player.trend === Trend.Equal && "text-white/60",
 										)}
 									>
-										{player.trend === Trend.Up && <TrendUpIcon className="size-4" />}
-										{player.trend === Trend.Down && <TrendDownIcon className="size-4" />}
+										{trendLabel && (
+											<span role="img" aria-label={trendLabel} title={trendLabel} className="inline-flex">
+												{player.trend === Trend.Up ? (
+													<TrendUpIcon className="size-4" aria-hidden="true" />
+												) : (
+													<TrendDownIcon className="size-4" aria-hidden="true" />
+												)}
+											</span>
+										)}
 										{percent(player.winPercentage, 1)}
 									</span>
 								</Link>

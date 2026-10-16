@@ -19,29 +19,24 @@ const statistics = buildStatistics();
 
 describe("NightStatsTiles", () => {
 	it("shows the four tiles with a per night hint", () => {
-		render(<NightStatsTiles statistics={statistics} uiLanguage="en-us" />);
+		render(<NightStatsTiles statistics={statistics} />);
 
 		expect(screen.getByText("stats.tiles.nights")).toBeInTheDocument();
 		expect(screen.getByText("7")).toBeInTheDocument();
 		expect(screen.getByText("stats.tiles.every-week")).toBeInTheDocument();
 		expect(screen.getByText("21")).toBeInTheDocument();
-		expect(screen.getByText("22 hours 30 minutes")).toBeInTheDocument();
+		expect(screen.getByText("short-duration.hours-minutes")).toBeInTheDocument();
 		expect(screen.getByText("4.3")).toBeInTheDocument();
 		expect(screen.getByText("stats.tiles.table-hint")).toBeInTheDocument();
 		expect(screen.getAllByText("stats.tiles.per-night")).toHaveLength(2);
 	});
 
 	it("counts in days when nights are less than a week apart, and has no rhythm for a single night", () => {
-		const { rerender } = render(
-			<NightStatsTiles statistics={{ ...statistics, averageDaysBetweenNights: 3.4 }} uiLanguage="en-us" />,
-		);
+		const { rerender } = render(<NightStatsTiles statistics={{ ...statistics, averageDaysBetweenNights: 3.4 }} />);
 		expect(screen.getByText("stats.tiles.every-day")).toBeInTheDocument();
 
 		rerender(
-			<NightStatsTiles
-				statistics={{ ...statistics, nights: 0, totalMinutes: 0, averageDaysBetweenNights: null }}
-				uiLanguage="en-us"
-			/>,
+			<NightStatsTiles statistics={{ ...statistics, nights: 0, totalMinutes: 0, averageDaysBetweenNights: null }} />,
 		);
 		expect(screen.queryByText(/stats.tiles.every/)).not.toBeInTheDocument();
 		expect(screen.getAllByText("0").length).toBeGreaterThan(0);
@@ -258,7 +253,7 @@ describe("NightRecordsCard", () => {
 	it("shows the four records with the night they belong to", () => {
 		render(<NightRecordsCard records={statistics.records} lookup={lookup} />);
 
-		expect(screen.getByText("5 hours 40 minutes")).toBeInTheDocument();
+		expect(screen.getByText("short-duration.hours-minutes")).toBeInTheDocument();
 		expect(screen.getByText("stats.records.night · stats.records.games")).toBeInTheDocument();
 		expect(screen.getByText("stats.records.night · stats.records.mostly")).toBeInTheDocument();
 		expect(screen.getByText("6")).toBeInTheDocument();

@@ -5,8 +5,9 @@ import HistoryIcon from "@/assets/icons/history.svg?react";
 import ListIcon from "@/assets/icons/list.svg?react";
 import UsersIcon from "@/assets/icons/users.svg?react";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { GameNightRecord, GameNightRecords } from "@/models";
-import { formatMinutesToDuration, toDisplay } from "@/utils/dateUtils";
+import { toDisplay } from "@/utils/dateUtils";
 import { StatFact, StatsCard, StatsEmpty, type StatsLookup } from "./StatsParts";
 
 interface Props {
@@ -18,7 +19,7 @@ export const NightRecordsCard = ({ records, lookup }: Props) => {
 	const { t } = useTranslation("game-nights");
 	const numbers = useNumberFormat();
 	const { longestNight, mostGames, biggestTable, latestFinish } = records;
-	const duration = (minutes: number) => formatMinutesToDuration(minutes, ["hours", "minutes"], lookup.uiLanguage) ?? "";
+	const duration = useShortDuration();
 	const gameTitle = (id: number | null) => (id === null ? undefined : lookup.games.get(id)?.title);
 	const night = (record: GameNightRecord) =>
 		t("stats.records.night", {

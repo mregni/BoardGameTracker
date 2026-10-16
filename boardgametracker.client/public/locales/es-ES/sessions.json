@@ -1,5 +1,6 @@
 {
   "new": "Añadir nueva partida",
+  "title-of": "Partidas de {{name}}",
   "title": "Partidas",
   "notifications": {
     "deleted": "Partida eliminada correctamente",

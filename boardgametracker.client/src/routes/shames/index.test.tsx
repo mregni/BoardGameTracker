@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
 	statistics: undefined as ShameStatistics | undefined,
 	settings: {
 		currency: "€",
+		dateFormat: "dd-MM-yyyy",
 		shelfOfShameMonthsLimit: 6,
 		gameNightsEnabled: true,
 		shelfOfShameEnabled: true,
@@ -165,7 +166,13 @@ describe("Shelf of shame page", () => {
 		mocks.canManageSettings = true;
 		mocks.shames = [root, everdell, wingspan];
 		mocks.statistics = baseStatistics;
-		mocks.settings = { currency: "€", shelfOfShameMonthsLimit: 6, gameNightsEnabled: true, shelfOfShameEnabled: true };
+		mocks.settings = {
+			currency: "€",
+			dateFormat: "dd-MM-yyyy",
+			shelfOfShameMonthsLimit: 6,
+			gameNightsEnabled: true,
+			shelfOfShameEnabled: true,
+		};
 	});
 
 	it("shows the tiles, the rows and the money bar", () => {

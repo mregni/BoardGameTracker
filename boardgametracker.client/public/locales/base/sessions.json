@@ -1,5 +1,6 @@
 {
   "new": "Add new session",
+  "title-of": "{{name}} sessions",
   "title": "Sessions",
   "notifications": {
     "deleted": "Session is successfully deleted",

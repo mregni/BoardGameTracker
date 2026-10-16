@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { gameRow } from "../-test/compareTestSetup";
-import { formatShortDuration, initialOf, isSide, leaderOf, resolveComparePlayers, sortGames } from "./compareUtils";
+import { initialOf, isSide, leaderOf, resolveComparePlayers, sortGames } from "./compareUtils";
 
 describe("resolveComparePlayers", () => {
 	const ids = [1, 2, 3, 4];
@@ -36,27 +36,6 @@ describe("resolveComparePlayers", () => {
 	it("returns no pair with fewer than two players", () => {
 		expect(resolveComparePlayers([1], 1, undefined, [])).toEqual([0, 0]);
 		expect(resolveComparePlayers([], undefined, undefined, [])).toEqual([0, 0]);
-	});
-});
-
-describe("formatShortDuration", () => {
-	const units = { hour: "h", minute: "m" };
-
-	it.each([
-		[0, "0m"],
-		[25, "25m"],
-		[49.4, "49m"],
-		[60, "1h"],
-		[80, "1h 20m"],
-		[2410, "40h 10m"],
-		[7860, "131h"],
-		[-5, "0m"],
-	])("formats %s minutes as %s", (minutes, expected) => {
-		expect(formatShortDuration(minutes, units, "en-US")).toBe(expected);
-	});
-
-	it("groups large hour counts for the locale", () => {
-		expect(formatShortDuration(1234 * 60, { hour: "u", minute: "m" }, "nl-BE")).toBe("1.234u");
 	});
 });
 

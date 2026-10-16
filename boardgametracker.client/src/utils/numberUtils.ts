@@ -2,6 +2,8 @@ export type NumberValue = number | null | undefined;
 
 export const EMPTY_NUMBER = "-";
 
+export const EMPTY_PRICE = "–";
+
 const DEFAULT_MAX_FRACTION_DIGITS = 3;
 
 const formatterCache = new Map<string, Intl.NumberFormat>();

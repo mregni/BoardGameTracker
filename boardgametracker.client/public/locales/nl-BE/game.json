@@ -169,6 +169,10 @@
       "lowest": "Laagste"
     }
   },
+  "top-players": {
+    "trend-up": "Won meer van de laatste {{sessions}} sessies dan daarvoor",
+    "trend-down": "Won minder van de laatste {{sessions}} sessies dan daarvoor"
+  },
   "titles": {
     "top-players": "Topspelers",
     "scoring-results": "Scoreresultaten",

@@ -89,10 +89,3 @@ export const lastPlayedTone = (shame: Shame, now: Date = new Date()): LastPlayed
 
 export const oldestNeverPlayed = (shames: Shame[]): Shame | null =>
 	shames.filter(isNeverPlayed).sort(comparators.owned)[0] ?? null;
-
-export const formatRange = (min: number | null, max: number | null): string | null => {
-	const low = min ?? max;
-	const high = max ?? min;
-	if (low === null || high === null) return null;
-	return low === high ? `${low}` : `${low}–${high}`;
-};

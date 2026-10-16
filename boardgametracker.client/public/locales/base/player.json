@@ -46,8 +46,8 @@
   },
   "cards": {
     "games": "Games",
-    "win-record": "Win/Loss Record",
-    "most-played-games": "Most Played Games",
+    "win-record": "Win/loss record",
+    "most-played-games": "Most played games",
     "win-record-summary": "Wins: {{wins}}, losses: {{losses}}, total: {{total}}"
   },
   "titles": {

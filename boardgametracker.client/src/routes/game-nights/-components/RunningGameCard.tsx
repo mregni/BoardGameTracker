@@ -7,8 +7,8 @@ import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { Game, Player, RunningGame, Settings } from "@/models";
-import { formatMinutesToDuration } from "@/utils/dateUtils";
 
 const TICK_MS = 30_000;
 
@@ -25,6 +25,7 @@ interface Props {
 export const RunningGameCard = (props: Props) => {
 	const { runningGame, game, players, settings, canWrite, onFinish, onDiscard } = props;
 	const { t } = useTranslation("game-nights");
+	const shortDuration = useShortDuration();
 	const [now, setNow] = useState(() => new Date());
 
 	useEffect(() => {
@@ -48,11 +49,7 @@ export const RunningGameCard = (props: Props) => {
 					<BgtText size="2" color="gray">
 						{t("play.running", {
 							time: format(runningGame.start, settings.timeFormat),
-							duration: formatMinutesToDuration(
-								Math.max(1, differenceInMinutes(now, runningGame.start)),
-								["hours", "minutes"],
-								settings.uiLanguage,
-							),
+							duration: shortDuration(Math.max(1, differenceInMinutes(now, runningGame.start))),
 							players: names,
 						})}
 					</BgtText>

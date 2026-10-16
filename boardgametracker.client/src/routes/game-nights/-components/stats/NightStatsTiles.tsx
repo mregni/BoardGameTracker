@@ -1,19 +1,19 @@
 import { useTranslation } from "react-i18next";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
+import { useShortDuration } from "@/hooks/useShortDuration";
 import type { GameNightStatistics } from "@/models";
-import { formatMinutesToDuration } from "@/utils/dateUtils";
 
 const DAYS_PER_WEEK = 7;
 
 interface Props {
 	statistics: GameNightStatistics;
-	uiLanguage: string;
 }
 
-export const NightStatsTiles = ({ statistics, uiLanguage }: Props) => {
+export const NightStatsTiles = ({ statistics }: Props) => {
 	const { t } = useTranslation("game-nights");
 	const format = useNumberFormat();
+	const shortDuration = useShortDuration();
 	const { nights, gamesPlayed, totalMinutes, averageTable, averageDaysBetweenNights } = statistics;
 
 	const frequency = () => {
@@ -37,9 +37,9 @@ export const NightStatsTiles = ({ statistics, uiLanguage }: Props) => {
 			/>
 			<BgtTextStatistic
 				title={t("stats.tiles.play-time")}
-				content={formatMinutesToDuration(totalMinutes, ["hours", "minutes"], uiLanguage) ?? format.integer(0)}
+				content={shortDuration(totalMinutes)}
 				caption={t("stats.tiles.per-night", {
-					value: formatMinutesToDuration(perNight(totalMinutes), ["hours", "minutes"], uiLanguage) ?? format.integer(0),
+					value: shortDuration(perNight(totalMinutes)),
 				})}
 				textSize="6"
 			/>

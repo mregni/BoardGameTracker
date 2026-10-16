@@ -45,11 +45,6 @@
     "play-time": "Play time",
     "play-time-detail": "avg {{duration}} a session"
   },
-  "duration": {
-    "minutes": "{{minutes}} min",
-    "hours": "{{hours}}h",
-    "hours-minutes": "{{hours}}h {{minutes}}m"
-  },
   "last-sessions": {
     "title": "Last sessions",
     "players_one": "{{count}} player",

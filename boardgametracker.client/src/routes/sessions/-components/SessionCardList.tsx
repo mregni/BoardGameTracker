@@ -2,13 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { cx } from "class-variance-authority";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtEditDeleteButtons } from "@/components/BgtButton/BgtEditDeleteButtons";
-import { AvatarChip } from "@/components/GameNight/AvatarChip";
-import { useNumberFormat } from "@/hooks/useNumberFormat";
-import type { Game, Player, PlayerSession, Session } from "@/models";
+import { useShortDuration } from "@/hooks/useShortDuration";
+import type { Game, Player, Session } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
+import { SessionPlayerPills } from "./SessionPlayerPills";
 
 interface Props {
 	sessions: Session[];
@@ -23,11 +22,6 @@ interface Props {
 	onDelete: (sessionId: number) => void;
 	className?: string;
 }
-
-const byResult = (a: PlayerSession, b: PlayerSession) => {
-	if (a.won !== b.won) return a.won ? -1 : 1;
-	return (b.score ?? Number.NEGATIVE_INFINITY) - (a.score ?? Number.NEGATIVE_INFINITY);
-};
 
 export const SessionCardList = (props: Props) => {
 	const {
@@ -44,7 +38,7 @@ export const SessionCardList = (props: Props) => {
 		className,
 	} = props;
 	const { t } = useTranslation("common");
-	const { decimal } = useNumberFormat();
+	const shortDuration = useShortDuration();
 
 	if (sessions.length === 0) {
 		return <p className={cx("py-4 text-center text-white/60", className)}>{t("no-data-yet")}</p>;
@@ -54,7 +48,6 @@ export const SessionCardList = (props: Props) => {
 		<ul className={cx("flex flex-col divide-y divide-primary/10", className)} data-testid="session-card-list">
 			{sessions.map((session) => {
 				const game = games.find((x) => x.id === session.gameId);
-				const results = [...session.playerSessions].sort(byResult);
 				const comment = session.comment?.trim();
 
 				return (
@@ -73,36 +66,14 @@ export const SessionCardList = (props: Props) => {
 								)}
 								<span className="text-sm tabular-nums text-white/60">
 									{toDisplay(session.start, dateFormat, uiLanguage)} · {format(new Date(session.start), timeFormat)} ·{" "}
-									{session.minutes} {t("minutes", { count: session.minutes })}
+									{shortDuration(session.minutes)}
 								</span>
 							</div>
 							{canWrite && (
 								<BgtEditDeleteButtons onEdit={() => onEdit(session.id)} onDelete={() => onDelete(session.id)} />
 							)}
 						</div>
-						{results.length > 0 && (
-							<ul className="flex flex-wrap gap-1.5" aria-label={t("players")}>
-								{results.map((playerSession) => {
-									const player = players.find((x) => x.id === playerSession.playerId);
-									return (
-										<li key={playerSession.playerId}>
-											<AvatarChip
-												title={player?.name ?? ""}
-												image={player?.image}
-												tone={playerSession.won ? "winner" : "neutral"}
-											>
-												{playerSession.won && (
-													<Crown className="size-3.5 text-yellow-400" role="img" aria-label={t("won")} />
-												)}
-												{playerSession.score != null && (
-													<span className="font-semibold tabular-nums">{decimal(playerSession.score)}</span>
-												)}
-											</AvatarChip>
-										</li>
-									);
-								})}
-							</ul>
-						)}
+						<SessionPlayerPills playerSessions={session.playerSessions} players={players} />
 						{comment && <p className="text-sm text-white/70 break-words">{comment}</p>}
 					</li>
 				);

@@ -45,11 +45,6 @@
     "play-time": "Tiempo de juego",
     "play-time-detail": "media de {{duration}} por partida"
   },
-  "duration": {
-    "minutes": "{{minutes}} min",
-    "hours": "{{hours}} h",
-    "hours-minutes": "{{hours}} h {{minutes}} min"
-  },
   "last-sessions": {
     "title": "Últimas partidas",
     "players_one": "{{count}} jugador",

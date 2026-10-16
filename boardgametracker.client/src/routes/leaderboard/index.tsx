@@ -120,6 +120,7 @@ function RouteComponent() {
 								)}
 								<LeaderboardRanking
 									players={leaderboard.players}
+									rankBy={leaderboard.rankBy}
 									minimumSessions={leaderboard.minimumSessions}
 									minimumPlayersForPodium={leaderboard.minimumPlayersForPodium}
 									label={gameTitle ? `${t("ranking.label")} · ${gameTitle}` : t("ranking.label")}

@@ -21,6 +21,9 @@
     "no-prices": "sin precios",
     "planned": "Planificados",
     "planned-for": "para el {{date}}",
+    "planned-next": "la próxima el {{date}}",
+    "planned-across_one": "en {{count}} noche de juegos",
+    "planned-across_other": "en {{count}} noches de juegos",
     "no-night": "no hay noche de juegos prevista"
   },
   "filters": {

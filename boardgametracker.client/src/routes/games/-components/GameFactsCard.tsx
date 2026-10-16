@@ -15,18 +15,9 @@ import Users from "@/assets/icons/users.svg?react";
 import type { Game, GamePrice } from "@/models";
 import { toDisplay } from "@/utils/dateUtils";
 import { formatDecimal, formatPrice } from "@/utils/numberUtils";
+import { formatRange } from "@/utils/rangeUtils";
 import { LivePrice } from "./LivePrice";
 import { PriceRefreshButton } from "./PriceRefreshButton";
-
-const formatMinMax = (min: number | null, max: number | null): string | null => {
-	if (min == null && max == null) {
-		return null;
-	}
-	if (min != null && max != null) {
-		return `${min} - ${max}`;
-	}
-	return `${min ?? max}`;
-};
 
 interface FactRowProps {
 	icon: ComponentType<SVGProps<SVGSVGElement>>;
@@ -93,8 +84,8 @@ export const GameFactsCard = (props: Props) => {
 	} = props;
 	const { t } = useTranslation(["common", "statistics", "game"]);
 
-	const players = formatMinMax(game.minPlayers, game.maxPlayers);
-	const duration = formatMinMax(game.minPlayTime, game.maxPlayTime);
+	const players = formatRange(game.minPlayers, game.maxPlayers);
+	const duration = formatRange(game.minPlayTime, game.maxPlayTime);
 
 	return (
 		<div className="rounded-lg border border-primary/20 bg-primary/10 px-4 py-1">

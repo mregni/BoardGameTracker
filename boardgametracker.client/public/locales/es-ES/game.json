@@ -169,6 +169,10 @@
       "lowest": "Mínima"
     }
   },
+  "top-players": {
+    "trend-up": "Ganó más de las últimas {{sessions}} partidas que antes",
+    "trend-down": "Ganó menos de las últimas {{sessions}} partidas que antes"
+  },
   "titles": {
     "top-players": "Mejores jugadores",
     "scoring-results": "Resultados de puntuación",

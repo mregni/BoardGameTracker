@@ -79,7 +79,7 @@
     "returned": "Returned {{date}}"
   },
   "since": "since {{date}}",
-  "returned-button": "Returned",
+  "mark-returned-button": "Mark returned",
   "history": {
     "summary_one": "{{count}} returned loan",
     "summary_other": "{{count}} returned loans",

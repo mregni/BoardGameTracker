@@ -55,6 +55,7 @@ const renderRow = (props: Partial<Parameters<typeof ShameRow>[0]> = {}) => {
 			<ShameRow
 				shame={root}
 				currency="€"
+				dateFormat="dd-MM-yyyy"
 				canWrite
 				nextNight={night}
 				planning={false}

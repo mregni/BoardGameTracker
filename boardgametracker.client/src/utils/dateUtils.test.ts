@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-	formatMinutesToDuration,
 	isValidDate,
-	minutesToDuration,
 	monthsSince,
 	normalizeDateFnsFormat,
 	safeParseDate,
@@ -12,11 +10,9 @@ import {
 	toDisplayTime,
 	toInputDate,
 	toInputDateTime,
-	toLongDisplay,
 	toMonthYear,
 	toRelative,
-	toShortDayDate,
-	toShortDisplay,
+	toWeekdayDisplay,
 } from "./dateUtils";
 
 describe("dateUtils", () => {
@@ -116,34 +112,19 @@ describe("dateUtils", () => {
 		});
 	});
 
-	describe("toShortDisplay", () => {
-		it("shows the day and the short month in the app language", () => {
-			expect(toShortDisplay(new Date(2026, 9, 4), "en-us")).toBe("4 Oct");
-			expect(toShortDisplay("2026-09-21T10:00:00", "nl-be")).toBe("21 sep.");
+	describe("toWeekdayDisplay", () => {
+		it("adds the weekday to the configured date format", () => {
+			expect(toWeekdayDisplay(new Date(2026, 9, 11), "dd-MM-yyyy", "en-us")).toBe("Sunday 11-10-2026");
+			expect(toWeekdayDisplay("2026-10-11T19:30:00", "DD/MM/YYYY", "nl-be")).toBe("zondag 11/10/2026");
+		});
+
+		it("falls back to the default format for an unusable pattern", () => {
+			expect(toWeekdayDisplay(new Date(2026, 9, 11), "", "en-us")).toBe("Sunday 11-10-2026");
 		});
 
 		it("returns an empty string without a valid date", () => {
-			expect(toShortDisplay(null, "en-us")).toBe("");
-			expect(toShortDisplay("not a date", "en-us")).toBe("");
-		});
-	});
-
-	describe("toLongDisplay", () => {
-		it("writes out the weekday and month in the app language", () => {
-			expect(toLongDisplay(new Date(2026, 9, 11), "en-us")).toContain("Sunday");
-			expect(toLongDisplay(new Date(2026, 9, 11), "nl-be")).toBe("zondag 11 oktober 2026");
-		});
-
-		it("returns an empty string without a date", () => {
-			expect(toLongDisplay(null, "en-us")).toBe("");
-		});
-
-		it("parses ISO strings", () => {
-			expect(toLongDisplay("2026-10-11T19:30:00", "nl-be")).toBe("zondag 11 oktober 2026");
-		});
-
-		it("returns an empty string for an invalid date", () => {
-			expect(toLongDisplay("not-a-date", "en-us")).toBe("");
+			expect(toWeekdayDisplay(null, "dd-MM-yyyy", "en-us")).toBe("");
+			expect(toWeekdayDisplay("not-a-date", "dd-MM-yyyy", "en-us")).toBe("");
 		});
 	});
 
@@ -315,112 +296,6 @@ describe("dateUtils", () => {
 		});
 	});
 
-	describe("minutesToDuration", () => {
-		it("should convert 0 minutes correctly", () => {
-			expect(minutesToDuration(0)).toEqual({
-				weeks: 0,
-				days: 0,
-				hours: 0,
-				minutes: 0,
-			});
-		});
-
-		it("should convert minutes only", () => {
-			expect(minutesToDuration(45)).toEqual({
-				weeks: 0,
-				days: 0,
-				hours: 0,
-				minutes: 45,
-			});
-		});
-
-		it("should convert hours and minutes", () => {
-			expect(minutesToDuration(90)).toEqual({
-				weeks: 0,
-				days: 0,
-				hours: 1,
-				minutes: 30,
-			});
-		});
-
-		it("should convert days, hours, and minutes", () => {
-			// 1 day = 1440 minutes, 2 hours = 120 minutes, 30 minutes
-			expect(minutesToDuration(1590)).toEqual({
-				weeks: 0,
-				days: 1,
-				hours: 2,
-				minutes: 30,
-			});
-		});
-
-		it("should convert weeks, days, hours, and minutes", () => {
-			// 1 week = 10080 minutes, 2 days = 2880 minutes, 3 hours = 180 minutes, 15 minutes
-			expect(minutesToDuration(13155)).toEqual({
-				weeks: 1,
-				days: 2,
-				hours: 3,
-				minutes: 15,
-			});
-		});
-
-		it("should handle exact week boundary", () => {
-			expect(minutesToDuration(10080)).toEqual({
-				weeks: 1,
-				days: 0,
-				hours: 0,
-				minutes: 0,
-			});
-		});
-
-		it("should handle exact day boundary", () => {
-			expect(minutesToDuration(1440)).toEqual({
-				weeks: 0,
-				days: 1,
-				hours: 0,
-				minutes: 0,
-			});
-		});
-
-		it("should handle exact hour boundary", () => {
-			expect(minutesToDuration(60)).toEqual({
-				weeks: 0,
-				days: 0,
-				hours: 1,
-				minutes: 0,
-			});
-		});
-	});
-
-	describe("formatMinutesToDuration", () => {
-		it("should return null for null input", () => {
-			expect(formatMinutesToDuration(null, ["hours", "minutes"])).toBeNull();
-		});
-
-		it("should return null for 0 input", () => {
-			expect(formatMinutesToDuration(0, ["hours", "minutes"])).toBeNull();
-		});
-
-		it("should format minutes to hours and minutes", () => {
-			const result = formatMinutesToDuration(90, ["hours", "minutes"]);
-			expect(result).toContain("1");
-			expect(result).toContain("hour");
-			expect(result).toContain("30");
-			expect(result).toContain("minute");
-		});
-
-		it("should format using only specified units", () => {
-			const result = formatMinutesToDuration(90, ["minutes"]);
-			// Should only show minutes if hours is not in format
-			expect(result).toBeDefined();
-		});
-
-		it("should handle days in format", () => {
-			const result = formatMinutesToDuration(1590, ["days", "hours", "minutes"]);
-			expect(result).toContain("1");
-			expect(result).toContain("day");
-		});
-	});
-
 	describe("toMonthYear", () => {
 		it("shows the short month and the year", () => {
 			expect(toMonthYear(new Date(2023, 7, 14), "en-US")).toBe("Aug 2023");
@@ -433,16 +308,6 @@ describe("dateUtils", () => {
 		it("returns an empty string for a missing or invalid date", () => {
 			expect(toMonthYear(null, "en-US")).toBe("");
 			expect(toMonthYear(new Date("nope"), "en-US")).toBe("");
-		});
-	});
-
-	describe("toShortDayDate", () => {
-		it("shows the weekday, day and month", () => {
-			expect(toShortDayDate(new Date(2026, 9, 23, 19, 0), "en-US")).toBe("Fri 23 Oct");
-		});
-
-		it("returns an empty string for a missing date", () => {
-			expect(toShortDayDate(undefined, "en-US")).toBe("");
 		});
 	});
 

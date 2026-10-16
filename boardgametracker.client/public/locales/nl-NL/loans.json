@@ -79,7 +79,7 @@
     "returned": "Teruggebracht {{date}}"
   },
   "since": "sinds {{date}}",
-  "returned-button": "Teruggebracht",
+  "mark-returned-button": "Terugbrengen",
   "history": {
     "summary_one": "{{count}} keer teruggebracht",
     "summary_other": "{{count}} keer teruggebracht",

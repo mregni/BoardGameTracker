@@ -46,7 +46,7 @@ describe("RecentSessionsCard", () => {
 		expect(row).toHaveTextContent("Kathleen");
 		expect(row).toHaveTextContent("20");
 		expect(row).not.toHaveTextContent("Mikhaël");
-		expect(row).toHaveAttribute("title", "common:player • 80common:minutes-abbreviation");
+		expect(row).toHaveAttribute("title", "common:player • short-duration.hours-minutes");
 	});
 
 	it("leaves out the score for a game without scoring", () => {
