@@ -667,6 +667,58 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/compare/default-pair": {
+      "get": {
+        "tags": [
+          "Compare"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparePairDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparePairDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparePairDto"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
           }
         }
       }
@@ -4799,6 +4851,76 @@
         },
         "additionalProperties": false
       },
+      "CompareGame": {
+        "type": "object",
+        "properties": {
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sessionCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerOneWins": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerTwoWins": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "otherWins": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerOneAverageScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "playerTwoAverageScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "lastPlayed": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastOutcome": {
+            "$ref": "#/components/schemas/CompareOutcome"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompareOutcome": {
+        "enum": [
+          "playerOne",
+          "playerTwo",
+          "both",
+          "other"
+        ],
+        "type": "string"
+      },
+      "ComparePairDto": {
+        "type": "object",
+        "properties": {
+          "playerOneId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerTwoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sessionCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "CompareResultDto": {
         "type": "object",
         "properties": {
@@ -4817,8 +4939,9 @@
           "directWins": {
             "$ref": "#/components/schemas/Int32CompareRow"
           },
-          "mostWonGame": {
-            "$ref": "#/components/schemas/MostWonGameCompareRow"
+          "wonByOthers": {
+            "type": "integer",
+            "format": "int32"
           },
           "totalSessionsTogether": {
             "type": "integer",
@@ -4831,19 +4954,85 @@
           "preferredGame": {
             "$ref": "#/components/schemas/PreferredGame"
           },
-          "lastWonGame": {
-            "$ref": "#/components/schemas/LastWonGame"
-          },
           "longestSessionTogether": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "$ref": "#/components/schemas/LongestSession"
           },
           "firstGameTogether": {
             "$ref": "#/components/schemas/FirstGameTogether"
           },
           "closestGame": {
             "$ref": "#/components/schemas/ClosestGame"
+          },
+          "streak": {
+            "$ref": "#/components/schemas/CompareStreak"
+          },
+          "games": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompareGame"
+            }
+          },
+          "recentSessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompareSession"
+            }
+          },
+          "bestGames": {
+            "$ref": "#/components/schemas/Int32ListCompareRow"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompareSession": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "minutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerOneScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "playerTwoScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/CompareOutcome"
+          },
+          "otherWinnerId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompareStreak": {
+        "type": "object",
+        "properties": {
+          "side": {
+            "$ref": "#/components/schemas/CompareOutcome"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -5972,6 +6161,28 @@
         },
         "additionalProperties": false
       },
+      "Int32ListCompareRow": {
+        "type": "object",
+        "properties": {
+          "playerOne": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "playerTwo": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Language": {
         "required": [
           "key",
@@ -5988,22 +6199,6 @@
           },
           "translationKey": {
             "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LastWonGame": {
-        "type": "object",
-        "properties": {
-          "playerId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "gameId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -6203,6 +6398,20 @@
         },
         "additionalProperties": false
       },
+      "LongestSession": {
+        "type": "object",
+        "properties": {
+          "gameId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "minutes": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "ManualDto": {
         "type": "object",
         "properties": {
@@ -6321,33 +6530,6 @@
           "totalWins": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "MostWonGame": {
-        "type": "object",
-        "properties": {
-          "gameId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "count": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "MostWonGameCompareRow": {
-        "type": "object",
-        "properties": {
-          "playerOne": {
-            "$ref": "#/components/schemas/MostWonGame"
-          },
-          "playerTwo": {
-            "$ref": "#/components/schemas/MostWonGame"
           }
         },
         "additionalProperties": false

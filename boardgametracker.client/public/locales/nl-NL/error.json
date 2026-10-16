@@ -69,6 +69,9 @@
     "name-required": "De naam van de locatie is verplicht",
     "name-already-exists": "Er bestaat al een locatie met deze naam"
   },
+  "compare": {
+    "same-player": "Kies twee verschillende spelers om te vergelijken"
+  },
   "player": {
     "hosts-game-nights": "Deze speler is gastheer van een of meer spelavonden",
     "name-required": "De naam van de speler is verplicht",

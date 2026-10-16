@@ -1,6 +1,11 @@
 import { describe, it } from "vitest";
 import type {
 	Badge,
+	CompareGame,
+	ComparePair,
+	CompareResult,
+	CompareSession,
+	CompareStreak,
 	CreateGame,
 	CreateLocation,
 	CreatePlayer,
@@ -73,6 +78,11 @@ describe("API contract", () => {
 		sameKeys<OidcSetup, Schemas["OidcSetupDto"]>(true);
 		sameKeys<OidcDiscoveryResult, Schemas["OidcDiscoveryResultDto"]>(true);
 		sameKeys<ExternalLogin, Schemas["ExternalLoginDto"]>(true);
+		sameKeys<CompareResult, Schemas["CompareResultDto"]>(true);
+		sameKeys<CompareGame, Schemas["CompareGame"]>(true);
+		sameKeys<CompareSession, Schemas["CompareSession"]>(true);
+		sameKeys<CompareStreak, Schemas["CompareStreak"]>(true);
+		sameKeys<ComparePair, Schemas["ComparePairDto"]>(true);
 	});
 
 	it("keeps the commands aligned with the generated request bodies", () => {
@@ -87,5 +97,6 @@ describe("API contract", () => {
 	it("keeps the string enums aligned", () => {
 		sameValues<Schemas["GameState"], `${Game["state"]}`>(true);
 		sameValues<Schemas["BadgeType"], `${Badge["type"]}`>(true);
+		sameValues<Schemas["CompareOutcome"], CompareGame["lastOutcome"]>(true);
 	});
 });

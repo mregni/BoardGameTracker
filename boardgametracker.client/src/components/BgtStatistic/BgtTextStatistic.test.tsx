@@ -23,6 +23,16 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("100")).toBeInTheDocument();
 		});
 
+		it("should render a description under the value", () => {
+			renderWithTheme(<BgtTextStatistic title="Games together" content={49} description="since 12-03-2025" />);
+			expect(screen.getByText("since 12-03-2025")).toHaveClass("text-xs");
+		});
+
+		it("should leave the description out when there is none", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Games together" content={49} />);
+			expect(container.querySelector("p")).toBeNull();
+		});
+
 		it("should format large numbers with locale", () => {
 			const { container } = renderWithTheme(<BgtTextStatistic title="Points" content={1234567} />);
 			// toLocaleString format varies by locale (1,234,567 or 1.234.567)

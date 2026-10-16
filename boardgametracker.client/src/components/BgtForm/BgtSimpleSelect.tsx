@@ -1,6 +1,6 @@
 import * as Select from "@radix-ui/react-select";
 import { cx } from "class-variance-authority";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CaretDownIcon from "@/assets/icons/caret-down.svg?react";
 import CaretUpIcon from "@/assets/icons/caret-up.svg?react";
@@ -25,6 +25,9 @@ interface Props {
 	onOpenChange?: (open: boolean) => void;
 	className?: string;
 	showAvatars?: boolean;
+	trigger?: ReactNode;
+	triggerClassName?: string;
+	"aria-label"?: string;
 }
 
 export const BgtSimpleSelect = (props: Props) => {
@@ -40,6 +43,9 @@ export const BgtSimpleSelect = (props: Props) => {
 		onOpenChange,
 		className = "",
 		showAvatars = false,
+		trigger,
+		triggerClassName,
+		"aria-label": ariaLabel,
 	} = props;
 
 	const { t } = useTranslation();
@@ -108,15 +114,24 @@ export const BgtSimpleSelect = (props: Props) => {
 					ref={triggerRef}
 					onPointerDown={onTriggerPointerDown}
 					onClick={onTriggerClick}
-					className={cx(
-						"relative w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
-						"pl-4 pr-9 py-2 h-9 shadow-none flex items-center leading-none text-[12px]",
-					)}
+					aria-label={ariaLabel}
+					className={
+						trigger
+							? triggerClassName
+							: cx(
+									"relative w-full bg-background text-white rounded-lg border border-primary/30 focus:border-primary focus:outline-none",
+									"pl-4 pr-9 py-2 h-9 shadow-none flex items-center leading-none text-[12px]",
+								)
+					}
 				>
-					<Select.Value placeholder={placeholder} className="min-w-0 flex-1 truncate text-left" />
-					<Select.Icon className="absolute right-3 top-1/2 -translate-y-1/2">
-						{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
-					</Select.Icon>
+					{trigger ?? (
+						<>
+							<Select.Value placeholder={placeholder} className="min-w-0 flex-1 truncate text-left" />
+							<Select.Icon className="absolute right-3 top-1/2 -translate-y-1/2">
+								{open ? <CaretUpIcon className="size-5" /> : <CaretDownIcon className="size-5" />}
+							</Select.Icon>
+						</>
+					)}
 				</Select.Trigger>
 				<Select.Portal>
 					<Select.Content

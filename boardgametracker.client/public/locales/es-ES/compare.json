@@ -1,47 +1,99 @@
 {
-  "title": "Comparar jugadores",
-  "select-player": "Selecciona un jugador para comparar",
-  "total-games-played": "Partidas jugadas juntos",
-  "minutes-played": "Minutos jugados",
-  "most-played-game": "Juego más jugado",
-  "wins": {
-    "winner": "{{player}} ganó {{winCount}} veces a {{otherPlayer}}",
-    "loser": "{{player}} solo ganó {{winCount}} veces a {{otherPlayer}}"
+  "title": "Jugador contra jugador",
+  "select-player": "Elige un jugador",
+  "vs": "VS",
+  "swap": "Intercambiar jugadores",
+  "change-left": "Cambiar jugador de la izquierda, ahora {{player}}",
+  "change-right": "Cambiar jugador de la derecha, ahora {{player}}",
+  "player-summary_one": "{{count}} partida · {{rate}} ganadas",
+  "player-summary_other": "{{count}} partidas · {{rate}} ganadas",
+  "games_one": "{{count}} partida",
+  "games_other": "{{count}} partidas",
+  "record": {
+    "label": "Balance de todas las partidas juntos",
+    "wins_zero": "aún sin victorias para {{player}}",
+    "wins_one": "victoria para {{player}}",
+    "wins_other": "victorias para {{player}}",
+    "together_one": "{{count}} partida juntos",
+    "together_other": "{{count}} partidas juntos",
+    "leads": "{{player}} va por delante",
+    "won": "Ganó {{player}}",
+    "someone-else": "ganó otra persona",
+    "summary_one": "{{count}} partida juntos: {{playerOne}} ganó {{one}}, otra persona ganó {{others}}, {{playerTwo}} ganó {{two}}",
+    "summary_other": "{{count}} partidas juntos: {{playerOne}} ganó {{one}}, otra persona ganó {{others}}, {{playerTwo}} ganó {{two}}"
   },
-  "best-game": {
-    "label": "El mejor juego de {{player}} contra {{otherPlayer}} es {{game}}, con {{count}} victorias"
+  "form": {
+    "title_one": "Última partida juntos",
+    "title_other": "Últimas {{count}} partidas juntos",
+    "order": "(de la más antigua a la más reciente)",
+    "label": "Últimas partidas juntos, la más antigua primero: {{list}}",
+    "legend": "{{one}} o {{two}}: quién ganó · –: otra persona",
+    "legend-both": "=: ganaron los dos",
+    "both": "ganaron los dos",
+    "other": "otra persona",
+    "streak_one": "{{player}} {{count}} seguida",
+    "streak_other": "{{player}} {{count}} seguidas"
   },
-  "total-wins": {
-    "label": "{{player}} ganó un total de {{count}} partidas."
+  "tiles": {
+    "games-together": "Partidas juntos",
+    "since": "desde {{date}}",
+    "time-together": "Tiempo juntos",
+    "average": "media {{duration}} por partida",
+    "most-played": "Más jugado",
+    "closest": "Partida más reñida",
+    "points_one": "{{value}} pt",
+    "points_other": "{{value}} pts",
+    "closest-winner": "{{game}} · ganó {{player}}",
+    "closest-other": "{{game}} · ganó otra persona"
   },
-  "win-percentage": {
-    "label": "{{player}} tiene un porcentaje de victorias del {{percentage}} %"
+  "per-game": {
+    "title": "Por juego",
+    "sort": "Ordenar",
+    "most-played": "Más jugado",
+    "biggest-lead": "Mayor ventaja",
+    "game": "Juego",
+    "wins": "Victorias",
+    "last": "Última",
+    "average": "media {{one}} – {{two}}",
+    "no-scores": "sin puntuaciones",
+    "others_one": "+{{count}} otra",
+    "others_other": "+{{count}} otras",
+    "row_one": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, otra persona {{count}}",
+    "row_other": "{{game}}: {{playerOne}} {{one}}, {{playerTwo}} {{two}}, otras personas {{count}}",
+    "show-all_one": "Mostrar el {{count}} juego",
+    "show-all_other": "Mostrar los {{count}} juegos",
+    "show-less": "Mostrar menos"
   },
-  "total-duration": {
-    "label": "{{player}} jugó un total de {{duration}} minutos."
+  "best-worst": {
+    "against": "{{player}} contra {{opponent}}",
+    "best": "Mejores",
+    "worst": "Peores",
+    "none": "Nada todavía",
+    "note_one": "Solo juegos jugados juntos al menos {{count}} vez.",
+    "note_other": "Solo juegos jugados juntos al menos {{count}} veces."
   },
-  "total-sessions": {
-    "label": "{{player}} jugó un total de {{count}} partidas."
+  "recent": {
+    "title": "Partidas recientes juntos",
+    "both-won": "Ganaron los dos",
+    "no-winner": "Sin ganador"
   },
-  "head-to-head": {
-    "title": "Cara a cara",
-    "direct-wins_one": "{{player}} ganó {{count}} vez contra {{opponent}}",
-    "direct-wins_other": "{{player}} ganó {{count}} veces contra {{opponent}}",
-    "most-won-game_one": "{{player}} ganó más veces a {{opponent}} en {{game}} ({{count}} vez)",
-    "most-won-game_other": "{{player}} ganó más veces a {{opponent}} en {{game}} ({{count}} veces)",
-    "last-session": "{{player}} ganó la última partida en {{game}}",
-    "most-played-together_one": "Más jugado juntos: {{game}} ({{count}} partida)",
-    "most-played-together_other": "Más jugado juntos: {{game}} ({{count}} partidas)",
-    "closest-game_one": "{{player}} ganó por solo {{count}} punto en {{game}}",
-    "closest-game_other": "{{player}} ganó por solo {{count}} puntos en {{game}}",
-    "first-game-together": "Primera partida juntos: {{game}} el {{date}}"
+  "overall": {
+    "title": "En general, no solo juntos",
+    "wins": "Victorias",
+    "win-rate": "Porcentaje de victorias",
+    "games": "Partidas",
+    "play-time": "Tiempo de juego",
+    "higher": "más alto",
+    "stat": "Estadística"
   },
-  "stats": {
-    "total-wins": "Victorias totales",
-    "win-percentage": "Porcentaje de victorias",
-    "sessions": "Partidas",
-    "total-duration": "Tiempo total de juego",
-    "player-stats": "Estadísticas de {{player}}"
+  "highlights": {
+    "title": "Destacados",
+    "first-game": "primera partida juntos · {{date}}",
+    "longest-game": "partida más larga · {{duration}}"
+  },
+  "no-games-together": {
+    "title": "Todavía no hay partidas juntos",
+    "description": "{{playerOne}} y {{playerTwo}} todavía no han jugado ninguna partida juntos."
   },
   "empty": {
     "insufficient-players": {
