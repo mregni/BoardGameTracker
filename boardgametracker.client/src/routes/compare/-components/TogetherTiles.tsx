@@ -37,7 +37,7 @@ export const TogetherTiles = ({ compare, playerOne, playerTwo, dateFormat, uiLan
 				title={t("tiles.games-together")}
 				icon={<Users />}
 				content={count}
-				description={
+				caption={
 					compare.firstGameTogether?.startDate
 						? t("tiles.since", { date: toDisplay(compare.firstGameTogether.startDate, dateFormat, uiLanguage) })
 						: null
@@ -47,7 +47,7 @@ export const TogetherTiles = ({ compare, playerOne, playerTwo, dateFormat, uiLan
 				title={t("tiles.time-together")}
 				icon={<Clock />}
 				content={duration(compare.minutesPlayed)}
-				description={count > 0 ? t("tiles.average", { duration: duration(compare.minutesPlayed / count) }) : null}
+				caption={count > 0 ? t("tiles.average", { duration: duration(compare.minutesPlayed / count) }) : null}
 			/>
 			{mostPlayed && compare.preferredGame && (
 				<BgtTextStatistic
@@ -55,7 +55,7 @@ export const TogetherTiles = ({ compare, playerOne, playerTwo, dateFormat, uiLan
 					icon={<GamePad />}
 					content={mostPlayed.title}
 					link={`/games/${mostPlayed.id}`}
-					description={t("games", { count: compare.preferredGame.sessionCount })}
+					caption={t("games", { count: compare.preferredGame.sessionCount })}
 				/>
 			)}
 			{closest && closestGame && (
@@ -63,7 +63,7 @@ export const TogetherTiles = ({ compare, playerOne, playerTwo, dateFormat, uiLan
 					title={t("tiles.closest")}
 					icon={<Target />}
 					content={t("tiles.points", { count: closest.scoringDifference, value: number(closest.scoringDifference) })}
-					description={
+					caption={
 						closestWinner
 							? t("tiles.closest-winner", { game: closestGame.title, player: closestWinner.name })
 							: t("tiles.closest-other", { game: closestGame.title })

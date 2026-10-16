@@ -12,7 +12,6 @@ interface Props {
 	title: string;
 	content: string | number | null;
 	suffix?: string | number | null;
-	description?: string | null;
 	icon?: React.ReactNode;
 	iconClassName?: string;
 	textSize?: "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
@@ -21,6 +20,7 @@ interface Props {
 	addLabel?: string;
 	onClick?: () => void;
 	action?: React.ReactNode;
+	caption?: React.ReactNode;
 }
 
 const formatContent = (content: string | number, language: string | undefined): string =>
@@ -31,7 +31,6 @@ export const BgtTextStatistic = (props: Props) => {
 		title,
 		content,
 		suffix,
-		description,
 		icon,
 		iconClassName,
 		textSize = "5",
@@ -40,6 +39,7 @@ export const BgtTextStatistic = (props: Props) => {
 		addLabel,
 		onClick,
 		action,
+		caption,
 	} = props;
 	const { i18n } = useTranslation();
 
@@ -77,7 +77,14 @@ export const BgtTextStatistic = (props: Props) => {
 				{suffix === "%" && "%"}
 				{suffix && suffix !== "%" && <span className="text-sm lowercase">&nbsp;{suffix}</span>}
 			</BgtText>
-			{description && <p className="mt-1 truncate text-xs text-white/60">{description}</p>}
+			{caption && (
+				<span
+					className="mt-1 block truncate text-xs text-white/50"
+					title={typeof caption === "string" ? caption : undefined}
+				>
+					{caption}
+				</span>
+			)}
 		</BgtCard>
 	);
 

@@ -13,6 +13,23 @@ describe("BgtTextStatistic", () => {
 			expect(screen.getByText("Total Games")).toBeInTheDocument();
 		});
 
+		it("should render a caption under the value when given", () => {
+			renderWithTheme(<BgtTextStatistic title="On the shelf" content={9} caption="of 41 owned games" />);
+			expect(screen.getByText("of 41 owned games")).toHaveAttribute("title", "of 41 owned games");
+		});
+
+		it("should render a caption that is not plain text without a title", () => {
+			renderWithTheme(<BgtTextStatistic title="Games together" content={49} caption={<em>since 12-03-2025</em>} />);
+			const caption = screen.getByText("since 12-03-2025").parentElement;
+			expect(caption).toHaveClass("text-white/50");
+			expect(caption).not.toHaveAttribute("title");
+		});
+
+		it("should leave the caption out when there is none", () => {
+			const { container } = renderWithTheme(<BgtTextStatistic title="Games together" content={49} caption={null} />);
+			expect(container.querySelector("span.text-white\\/50")).toBeNull();
+		});
+
 		it("should render content as string", () => {
 			renderWithTheme(<BgtTextStatistic title="Best Game" content="Chess" />);
 			expect(screen.getByText("Chess")).toBeInTheDocument();
@@ -21,16 +38,6 @@ describe("BgtTextStatistic", () => {
 		it("should render content as number", () => {
 			renderWithTheme(<BgtTextStatistic title="Wins" content={100} />);
 			expect(screen.getByText("100")).toBeInTheDocument();
-		});
-
-		it("should render a description under the value", () => {
-			renderWithTheme(<BgtTextStatistic title="Games together" content={49} description="since 12-03-2025" />);
-			expect(screen.getByText("since 12-03-2025")).toHaveClass("text-xs");
-		});
-
-		it("should leave the description out when there is none", () => {
-			const { container } = renderWithTheme(<BgtTextStatistic title="Games together" content={49} />);
-			expect(container.querySelector("p")).toBeNull();
 		});
 
 		it("should format large numbers with locale", () => {
