@@ -2,7 +2,8 @@ import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/rea
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import { useTimeouts } from "@/hooks/useTimeouts";
 import { QUERY_KEYS } from "@/models";
-import { isPriceError, priceErrorKey } from "@/models/Games/GamePrice";
+import { isPriceError, isPriceSettingsError, priceErrorKey } from "@/models/Games/GamePrice";
+import { useIntegrationSettings } from "@/routes/-hooks/useIntegrationSettings";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import {
 	addManualExpansionCall,
@@ -26,6 +27,7 @@ export const useGameData = (props: UseGameDataProps) => {
 	const queryClient = useQueryClient();
 	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
+	const { integrationSettingsAction } = useIntegrationSettings();
 
 	const [gameQuery, settingsQuery, statisticsQuery, sessionsQuery] = useQueries({
 		queries: [getGame(gameId), getSettings(), getGameStatistics(gameId), getGameSessionsShortList(gameId, 5)],
@@ -63,7 +65,10 @@ export const useGameData = (props: UseGameDataProps) => {
 		onSuccess: (data) => {
 			queryClient.setQueryData([QUERY_KEYS.game, gameId, QUERY_KEYS.price], data);
 			if (data && !data.available && isPriceError(data.status)) {
-				errorToast(priceErrorKey(data.status));
+				errorToast(
+					priceErrorKey(data.status),
+					isPriceSettingsError(data.status) ? integrationSettingsAction : undefined,
+				);
 			}
 			if (data?.recheckQueued) {
 				successToast("game:price.recheck-queued");

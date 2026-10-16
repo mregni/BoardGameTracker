@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 	invalidateDashboard: vi.fn(),
 	successToast: vi.fn(),
 	errorToast: vi.fn(),
+	navigate: vi.fn(),
 	importGamesCall: vi.fn((_games: unknown[]) => Promise.resolve(true)),
 }));
 
@@ -61,6 +62,10 @@ vi.mock("@/hooks/useQueryInvalidator", () => ({
 		invalidateCounts: mocks.invalidateCounts,
 		invalidateDashboard: mocks.invalidateDashboard,
 	}),
+}));
+
+vi.mock("@tanstack/react-router", () => ({
+	useNavigate: () => mocks.navigate,
 }));
 
 vi.mock("@/routes/-hooks/useToasts", () => ({
@@ -185,5 +190,30 @@ describe("useList", () => {
 		expect(mocks.invalidateCounts).toHaveBeenCalled();
 		expect(mocks.invalidateDashboard).toHaveBeenCalled();
 		expect(mocks.successToast).not.toHaveBeenCalled();
+	});
+
+	it("offers the integration settings in the toast when BGG rejects the import", async () => {
+		mocks.importGamesCall.mockImplementationOnce(() =>
+			Promise.reject({ kind: "client", status: 401, message: "x", url: "game/bgg/import" }),
+		);
+		const { result } = await renderUseList();
+
+		act(() => result.current.startImport([importGame(100)]));
+
+		await waitFor(() => expect(mocks.errorToast).toHaveBeenCalled());
+		const [message, action] = mocks.errorToast.mock.calls[0];
+		expect(message).toBe("games:import.failed-unauthorized");
+		expect(action.label).toBe("common:open-integration-settings");
+		action.onClick();
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/settings", search: { tab: "bgg" } });
+	});
+
+	it("shows a plain error toast for a generic import failure", async () => {
+		mocks.importGamesCall.mockImplementationOnce(() => Promise.reject(new Error("Network Error")));
+		const { result } = await renderUseList();
+
+		act(() => result.current.startImport([importGame(100)]));
+
+		await waitFor(() => expect(mocks.errorToast).toHaveBeenCalledWith("games:import.failed-unknown", undefined));
 	});
 });

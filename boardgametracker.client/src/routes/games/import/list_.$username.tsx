@@ -17,12 +17,14 @@ import { BgtDataTable, type DataTableProps } from "@/components/BgtTable/BgtData
 import { BgtPaging } from "@/components/BgtTable/BgtPaging";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { GameState, type ImportGame } from "@/models";
+import { IntegrationSettingsButton } from "@/routes/-components/IntegrationSettingsButton";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
 import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
 import { getItemStateTranslationKey } from "@/utils/ItemStateUtils";
 import { parseLocalDate } from "@/utils/localDate";
 import { useList } from "./-hooks/useList";
+import { needsIntegrationSettings } from "./-utils/importErrors";
 
 export const Route = createFileRoute("/games/import/list_/$username")({
 	component: WriteRouteComponent,
@@ -246,10 +248,11 @@ function RouteComponent() {
 							title={t("games:import.error-title")}
 							description={t(`games:import.error-${bggErrorKind}`)}
 						/>
-						<div>
+						<div className="flex flex-wrap gap-2">
 							<BgtButton type="button" variant="primary" onClick={() => void retryCollection()}>
 								{t("common:retry")}
 							</BgtButton>
+							{needsIntegrationSettings(bggErrorKind) && <IntegrationSettingsButton />}
 						</div>
 					</div>
 				) : isLoading ? (

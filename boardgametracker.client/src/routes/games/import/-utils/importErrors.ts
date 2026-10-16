@@ -24,3 +24,5 @@ export const classifyImportError = (error: unknown): ImportErrorKind => {
 			return "unknown";
 	}
 };
+
+export const needsIntegrationSettings = (kind: ImportErrorKind | null): boolean => kind === "unauthorized";

@@ -2,11 +2,12 @@ import { useMutation, useQueries } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { useQueryInvalidator } from "@/hooks/useQueryInvalidator";
 import type { ImportGame } from "@/models";
+import { useIntegrationSettings } from "@/routes/-hooks/useIntegrationSettings";
 import { useToasts } from "@/routes/-hooks/useToasts";
 import { importGamesCall } from "@/services/gameService";
 import { getBggCollection, getGames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
-import { classifyImportError } from "../-utils/importErrors";
+import { classifyImportError, needsIntegrationSettings } from "../-utils/importErrors";
 
 export const IMPORT_BATCH_SIZE = 5;
 
@@ -17,6 +18,7 @@ interface Props {
 export const useList = ({ username }: Props) => {
 	const invalidator = useQueryInvalidator();
 	const { successToast, errorToast } = useToasts();
+	const { integrationSettingsAction } = useIntegrationSettings();
 
 	const [bggCollectionQuery, gamesQuery, settingsQuery] = useQueries({
 		queries: [getBggCollection(username), getGames(), getSettings()],
@@ -114,7 +116,8 @@ export const useList = ({ username }: Props) => {
 			successToast("games:import.success");
 		},
 		onError(error) {
-			errorToast(`games:import.failed-${classifyImportError(error)}`);
+			const kind = classifyImportError(error);
+			errorToast(`games:import.failed-${kind}`, needsIntegrationSettings(kind) ? integrationSettingsAction : undefined);
 		},
 	});
 
