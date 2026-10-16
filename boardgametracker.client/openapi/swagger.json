@@ -5795,10 +5795,116 @@
         },
         "additionalProperties": false
       },
+      "DashboardGameDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DashboardGameNightDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "locationName": {
+            "type": "string"
+          },
+          "hostId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hostName": {
+            "type": "string"
+          },
+          "acceptedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pendingCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "declinedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "suggestedGames": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardGameDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "DashboardLinkedPlayerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sessionsThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "winsThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DashboardShelfOfShameDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "neverPlayedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalValue": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "DashboardStatisticsDto": {
         "type": "object",
         "properties": {
           "totalGames": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ownedGames": {
             "type": "integer",
             "format": "int32"
           },
@@ -5819,11 +5925,6 @@
             "format": "double",
             "nullable": true
           },
-          "avgGamePrice": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
           "pricedGameCount": {
             "type": "integer",
             "format": "int32"
@@ -5835,6 +5936,27 @@
           "avgSessionTime": {
             "type": "number",
             "format": "double"
+          },
+          "sessionsThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "activePlayersThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "linkedPlayer": {
+            "$ref": "#/components/schemas/DashboardLinkedPlayerDto"
+          },
+          "nextGameNight": {
+            "$ref": "#/components/schemas/DashboardGameNightDto"
+          },
+          "plannedGameNights": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "shelfOfShame": {
+            "$ref": "#/components/schemas/DashboardShelfOfShameDto"
           },
           "recentActivities": {
             "type": "array",
@@ -5854,22 +5976,25 @@
               "$ref": "#/components/schemas/MostPlayedGameDto"
             }
           },
+          "mostPlayedGamesThisMonth": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MostPlayedGameDto"
+            }
+          },
           "topPlayers": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DashboardTopPlayerDto"
             }
           },
+          "topPlayersIncludeCoopWins": {
+            "type": "boolean"
+          },
           "recentAddedGames": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RecentGameDto"
-            }
-          },
-          "sessionsByDayOfWeek": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PlayByDay"
             }
           }
         },
@@ -5896,6 +6021,23 @@
           "winCount": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DashboardWinnerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -7549,14 +7691,11 @@
             "type": "number",
             "format": "double"
           },
-          "winnerId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "winnerName": {
-            "type": "string",
-            "nullable": true
+          "winners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardWinnerDto"
+            }
           },
           "isCoop": {
             "type": "boolean"

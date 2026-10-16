@@ -113,6 +113,11 @@ export const toLongDisplay = (date: Date | string | undefined | null, uiLanguage
 	return format(dateObj, "PPPP", { locale: getDateFnsLocale(uiLanguage) });
 };
 
+export const toShortDisplay = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	const dateObj = toValidDate(date);
+	return dateObj ? format(dateObj, "d MMM", { locale: getDateFnsLocale(uiLanguage) }) : "";
+};
+
 export const toDisplayDateTime = (
 	date: Date | string | undefined,
 	dateFormat: string,

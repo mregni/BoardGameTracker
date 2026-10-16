@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Game, Player, RecentActivity, Session } from "@/models";
-import { RecentActivityCard } from "@/routes/-components/dashboard/RecentActivity";
+import { LastSessionsCard } from "@/routes/-components/dashboard/LastSessionsCard";
 import { PlayedSessionsList } from "@/routes/game-nights/-components/PlayedSessionsList";
 import { LocationSessionsCard } from "@/routes/locations/-components/LocationSessionsCard";
 import { PlayerSessionCardItem } from "@/routes/players/-components/PlayerSessionCardItem";
@@ -88,22 +88,21 @@ describe("co-op sessions in session lists", () => {
 		expect(screen.queryByText("won")).not.toBeInTheDocument();
 	});
 
-	it("shows the team result in the recent activity", () => {
-		const activity = {
+	it("shows the team result in the last sessions", () => {
+		const activity: RecentActivity = {
 			id: 1,
 			gameId: 3,
 			gameTitle: "Pandemic",
 			gameImage: null,
 			start: new Date(2026, 9, 5, 20, 0),
 			playerCount: 2,
-			winnerName: null,
-			winnerId: null,
 			durationInMinutes: 60,
+			winners: [],
 			isCoop: true,
 			teamWon: false,
-		} as RecentActivity;
+		};
 
-		renderWithTheme(<RecentActivityCard activities={[activity]} />);
+		renderWithTheme(<LastSessionsCard sessions={[activity]} dateFormat="yy-MM-dd" uiLanguage="en-US" />);
 
 		expect(screen.getByText("Pandemic")).toBeInTheDocument();
 		expect(screen.getByText("coop.lost")).toBeInTheDocument();

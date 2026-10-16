@@ -5,6 +5,7 @@ import type {
 	CreateLocation,
 	CreatePlayer,
 	CreateSession,
+	DashboardStatistics,
 	Expansion,
 	FinishRunningGame,
 	Game,
@@ -73,6 +74,11 @@ describe("API contract", () => {
 		sameKeys<GameNightDetail, Schemas["GameNightDetailDto"]>(true);
 		sameKeys<RunningGame, Schemas["RunningGameDto"]>(true);
 		sameKeys<Badge, Schemas["BadgeDto"]>(true);
+		sameKeys<DashboardStatistics, Schemas["DashboardStatisticsDto"]>(true);
+		sameKeys<DashboardStatistics["nextGameNight"] & object, Schemas["DashboardGameNightDto"]>(true);
+		sameKeys<DashboardStatistics["linkedPlayer"] & object, Schemas["DashboardLinkedPlayerDto"]>(true);
+		sameKeys<DashboardStatistics["shelfOfShame"] & object, Schemas["DashboardShelfOfShameDto"]>(true);
+		sameKeys<DashboardStatistics["recentActivities"][number], Schemas["RecentActivityDto"]>(true);
 		sameKeys<Leaderboard, Schemas["LeaderboardDto"]>(true);
 		sameKeys<LeaderboardEntry, Schemas["LeaderboardEntryDto"]>(true);
 		sameKeys<Settings, Schemas["UIResourceDto"]>(true);
