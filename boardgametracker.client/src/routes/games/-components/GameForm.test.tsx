@@ -6,6 +6,7 @@ import { GameForm } from "./GameForm";
 const mocks = vi.hoisted(() => ({
 	language: "nl-BE",
 	back: vi.fn(),
+	navigate: vi.fn(),
 }));
 
 vi.mock("react-i18next", () => ({
@@ -16,7 +17,8 @@ vi.mock("react-i18next", () => ({
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-	useRouter: () => ({ history: { back: mocks.back } }),
+	useRouter: () => ({ history: { back: mocks.back, canGoBack: () => false } }),
+	useNavigate: () => mocks.navigate,
 }));
 
 vi.mock("../-hooks/useGameForm", () => ({
@@ -55,7 +57,9 @@ const createGame = (overrides: Partial<Game> = {}): Game => ({
 
 const renderForm = (game: Game = createGame()) => {
 	const onClick = vi.fn().mockResolvedValue(undefined);
-	renderWithProviders(<GameForm onClick={onClick} buttonText="Save" disabled={false} game={game} title="Edit" />);
+	renderWithProviders(
+		<GameForm onClick={onClick} buttonText="Save" disabled={false} game={game} title="Edit" backTo="/games/3" />,
+	);
 	return { onClick };
 };
 
@@ -67,6 +71,20 @@ const replace = async (input: HTMLElement, value: string) => {
 	}
 	await user.tab();
 };
+
+describe("GameForm", () => {
+	it("shows the page title and a back link above the form", async () => {
+		const user = userEvent.setup();
+		renderWithProviders(
+			<GameForm title="Edit game" buttonText="Save" backTo="/games/3" onClick={vi.fn()} disabled={false} />,
+		);
+
+		expect(screen.getByRole("heading", { name: "Edit game" })).toBeInTheDocument();
+		await user.click(screen.getByRole("button", { name: /common:back/ }));
+
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/3", replace: true });
+	});
+});
 
 describe("GameForm culture decimals", () => {
 	beforeEach(() => {

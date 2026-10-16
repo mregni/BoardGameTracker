@@ -1,5 +1,5 @@
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { BgtDataGuard } from "@/components/BgtDataGuard/BgtDataGuard";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -7,6 +7,7 @@ import type { CreateSession, Session } from "@/models";
 import { getGame } from "@/services/queries/games";
 import { getSession } from "@/services/queries/sessions";
 import { sessionIdParamSchema } from "@/utils/routeSchemas";
+import { useBackTo } from "../-hooks/useBack";
 import { SessionForm } from "./-components/SessionForm";
 import { useUpdateSessionData } from "./-hooks/useUpdateSessionData";
 
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/sessions/update_/$sessionId")({
 function RouteComponent() {
 	const { sessionId } = Route.useParams();
 	const { t } = useTranslation("player-session");
-	const navigate = useNavigate();
+	const backTo = useBackTo();
 	const { canWrite } = usePermissions();
 
 	const { game, session, updateSession, isPending, isLoading } = useUpdateSessionData({
@@ -36,7 +37,7 @@ function RouteComponent() {
 		const updatedSession = { ...data } as Session;
 		updatedSession.id = session.id;
 		const result = await updateSession(updatedSession);
-		navigate({ to: `/games/${result.gameId}/sessions` });
+		backTo(`/games/${result.gameId}/sessions`);
 	};
 
 	return (
@@ -54,6 +55,7 @@ function RouteComponent() {
 					onClick={save}
 					disabled={isPending}
 					title={t("title-update")}
+					backTo={`/games/${session.gameId}/sessions`}
 				/>
 			)}
 		</BgtDataGuard>

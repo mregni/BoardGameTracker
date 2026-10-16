@@ -54,6 +54,7 @@ function RouteComponent() {
 			livePrice={priceQuery.data}
 			buttonText={t("update.save")}
 			title={t("update.title")}
+			backTo={`/games/${gameId}`}
 			onClick={save}
 			disabled={isLoading}
 		/>

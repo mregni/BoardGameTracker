@@ -88,7 +88,7 @@ const HeadToHeadComponent = ({ playerOne, playerTwo, compare, dateFormat, uiLang
 				() =>
 					t("head-to-head.closest-game", {
 						player: compare.closestGame!.playerId === playerOne.id ? playerOne.name : playerTwo.name,
-						points: compare.closestGame!.scoringDifference,
+						count: compare.closestGame!.scoringDifference,
 						game: gameById(compare.closestGame!.gameId!)?.title,
 					}),
 			),

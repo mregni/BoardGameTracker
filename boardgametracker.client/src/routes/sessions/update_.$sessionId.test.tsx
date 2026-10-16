@@ -187,6 +187,6 @@ describe("Update session page", () => {
 				{ playerId: 8, won: true, firstPlay: false, score: 48 },
 			],
 		});
-		await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/4/sessions" }));
+		await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/4/sessions", replace: true }));
 	});
 });

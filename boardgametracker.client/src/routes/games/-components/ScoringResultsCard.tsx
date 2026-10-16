@@ -21,7 +21,7 @@ export const ScoringResultsCard = (props: Props) => {
 	const { scoreRankChart } = props;
 	const { t } = useTranslation("game");
 	const { playerById } = usePlayerById();
-	const { decimal } = useNumberFormat();
+	const { integer } = useNumberFormat();
 
 	if (scoreRankChart.length === 0) return null;
 
@@ -38,7 +38,7 @@ export const ScoringResultsCard = (props: Props) => {
 								<BgtText color="primary">{playerById(item.playerId)?.name}</BgtText>
 							</div>
 							<BgtText size="5" weight="bold" color="cyan">
-								{decimal(item.score)}
+								{integer(item.score)}
 							</BgtText>
 						</div>
 						<BgtProgressBar
@@ -48,7 +48,7 @@ export const ScoringResultsCard = (props: Props) => {
 							max={maxScore}
 							color={SCORING_COLORS[item.key]}
 							aria-label={t(`charts.top-scoring.${item.key}`)}
-							aria-valuetext={String(RoundDecimal(item.score))}
+							aria-valuetext={integer(item.score)}
 						/>
 					</div>
 				))}

@@ -56,7 +56,9 @@
     "show-more": "Show more filters",
     "show-less": "Show less filters",
     "no-match": "No games match the current filters.",
-    "clear": "Clear filters"
+    "clear": "Clear filters",
+    "state-any": "State: Any",
+    "language-any": "Language: Any"
   },
   "columns": {
     "title": "Title",

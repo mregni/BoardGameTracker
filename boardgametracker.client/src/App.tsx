@@ -10,6 +10,7 @@ import { isApiError } from "./models";
 import { routeTree } from "./routeTree.gen";
 import { getSettings } from "./services/queries/settings";
 import { translateApiError } from "./utils/errorUtils";
+import { trackHistory } from "./utils/historyTrail";
 import i18n from "./utils/i18n";
 
 const TanStackQueryDevtools = import.meta.env.PROD
@@ -82,6 +83,7 @@ const router = createRouter({
 	defaultPendingMinMs: 200,
 	context: { queryClient },
 });
+trackHistory(router.history);
 
 declare module "@tanstack/react-router" {
 	interface Register {

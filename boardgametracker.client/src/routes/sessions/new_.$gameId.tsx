@@ -48,6 +48,7 @@ function RouteComponent() {
 			onClick={save}
 			disabled={isLoading || isPending}
 			title={t("title-new")}
+			backTo={`/games/${gameId}`}
 		/>
 	);
 }
