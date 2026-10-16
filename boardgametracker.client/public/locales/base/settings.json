@@ -428,17 +428,35 @@
 			"clear-hint": "Save settings to apply the removal."
 		},
 		"help-title": "How it works",
-		"help-description": "Add a changedetection.io watch id to a game to see its current price and stock. The API key is found under Settings in your changedetection.io instance.",
-		"test": {
-			"button": "Test connection",
-			"success": "Connected to changedetection.io {{version}}",
-			"failed": "Couldn't connect to changedetection.io, check the URL and API key",
-			"reason": {
-				"unauthorized": "changedetection.io rejected the API key",
-				"unreachable": "Couldn't reach changedetection.io at this URL",
-				"misconfigured": "The base URL or API key is not valid",
-				"notConfigured": "Save a base URL and API key first"
-			}
+		"help-description": "Add a changedetection.io watch id to a game to see its current price and stock. The API key is found under Settings in your changedetection.io instance."
+	},
+	"integrations": {
+		"name": {
+			"bgg": "BoardGameGeek",
+			"changeDetection": "changedetection.io"
+		},
+		"status": {
+			"ok": "Connected",
+			"unauthorized": "Rejected",
+			"unreachable": "Unreachable",
+			"rateLimited": "Rate limited",
+			"notConfigured": "Not configured"
+		},
+		"checked-at": "checked {{time}}",
+		"checking": "Checking…",
+		"test": "Test connection",
+		"testing": "Testing…",
+		"test-failed": "Couldn't run the connection test",
+		"save-failed": "Settings saved, but {{name}} isn't connected",
+		"reason": {
+			"ok": "The connection works",
+			"not-configured": "No API key saved yet",
+			"unauthorized": "The API key was rejected",
+			"unreachable": "The service could not be reached",
+			"timeout": "The service did not answer within 10 seconds",
+			"rate-limited": "Too many requests, try again in a few minutes",
+			"misconfigured": "The base URL or API key is not valid",
+			"unexpected-response": "The service sent an unexpected response"
 		}
 	}
 }

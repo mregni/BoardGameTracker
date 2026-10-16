@@ -135,6 +135,26 @@ export const toDisplayDateTime = (
 	return format(dateObj, combinedFormat, { locale });
 };
 
+export const toDisplayTime = (
+	date: Date | string | undefined | null,
+	timeFormat: string,
+	uiLanguage: string,
+): string => {
+	if (!date) {
+		return "";
+	}
+
+	const dateObj = typeof date === "string" ? parseISO(date) : date;
+
+	if (!dateFnsIsValid(dateObj)) {
+		return "";
+	}
+
+	return format(dateObj, normalizeDateFnsFormat(timeFormat, DEFAULT_TIME_FORMAT), {
+		locale: getDateFnsLocale(uiLanguage),
+	});
+};
+
 export const toRelative = (
 	date: Date | string | undefined,
 	uiLanguage: string,

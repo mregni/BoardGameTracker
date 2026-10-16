@@ -22,6 +22,7 @@ import { GeneralSettings } from "./-components/GeneralSettings";
 import { type SettingsCategory, SettingsSidebar } from "./-components/SettingsSidebar";
 import { ShelfOfShameSettings } from "./-components/ShelfOfShameSettings";
 import { SsoSettings } from "./-components/SsoSettings";
+import { useRefreshIntegrationStatus } from "./-hooks/useIntegrationStatus";
 import { useSettingsData } from "./-hooks/useSettingsData";
 import { resolveSettingsCategory } from "./-utils/settingsCategory";
 import { settingsFormOpts } from "./-utils/settingsFormOpts";
@@ -72,6 +73,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 	const setActiveCategory = (category: SettingsCategory) =>
 		navigate({ to: "/settings", search: { tab: category }, replace: true });
 	const { t } = useTranslation("settings");
+	const refreshIntegrationStatus = useRefreshIntegrationStatus();
 
 	const form = useAppForm({
 		...settingsFormOpts,
@@ -102,6 +104,9 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 				ragEnabled: settings.ragEnabled,
 				environmentOverrides: settings.environmentOverrides,
 			});
+			if (activeCategory === "bgg") {
+				void refreshIntegrationStatus();
+			}
 		},
 	});
 
@@ -120,6 +125,7 @@ function SettingsPageContent({ settings, languages, isSaving, saveSettings }: Se
 					<BggSettings
 						form={form}
 						disabled={isSaving}
+						timeFormat={settings.timeFormat}
 						bggStatus={settings.bggStatus}
 						changeDetectionStatus={settings.changeDetectionStatus}
 					/>
