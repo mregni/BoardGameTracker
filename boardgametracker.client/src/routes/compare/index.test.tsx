@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { i18n as I18n } from "i18next";
 import type { FC, ReactNode } from "react";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -8,6 +9,7 @@ import { render, renderWithProviders, screen, userEvent, waitFor } from "@/test/
 import {
 	compareResult,
 	createCompareI18n,
+	gameRow,
 	games,
 	playerOne,
 	playerTwo,
@@ -190,5 +192,113 @@ describe("Compare page", () => {
 		expect(await screen.findByText("Not enough players to compare")).toBeInTheDocument();
 		expect(mocks.getDefaultPairCall).not.toHaveBeenCalled();
 		expect(mocks.getCompareCall).not.toHaveBeenCalled();
+	});
+
+	describe("changing players", () => {
+		const renderStable = () => {
+			const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+			const Component = mocks.captured.config.component;
+			const view = render(
+				<QueryClientProvider client={client}>
+					<Component />
+				</QueryClientProvider>,
+			);
+			return {
+				rerender: () =>
+					view.rerender(
+						<QueryClientProvider client={client}>
+							<Component />
+						</QueryClientProvider>,
+					),
+			};
+		};
+
+		const rowFor = (title: string) =>
+			screen.getAllByTestId("per-game-row").find((row) => row.querySelector("strong")?.textContent === title);
+
+		it("keeps the previous comparison on screen, dimmed, while the next one loads", async () => {
+			mocks.search = { left: 1, right: 2 };
+			const next = deferred<CompareResult>();
+			mocks.getCompareCall.mockImplementation((one: number, two: number) =>
+				one === 1 && two === 2 ? Promise.resolve(compareResult()) : next.promise,
+			);
+			const { rerender } = renderStable();
+			await screen.findByTestId("record-playerOne");
+
+			mocks.search = { left: 1, right: 3 };
+			rerender();
+
+			await waitFor(() => expect(mocks.getCompareCall).toHaveBeenCalledWith(1, 3));
+			expect(screen.getByTestId("record-playerOne")).toHaveTextContent("23");
+			expect(screen.getByTestId("compare-content")).toHaveAttribute("aria-busy", "true");
+			expect(screen.getByTestId("compare-content")).toHaveClass("opacity-60");
+			expect(screen.getByRole("status", { name: "Updating the comparison" })).toBeInTheDocument();
+			expect(screen.getByRole("combobox", { name: "Change right player, now reggi" })).toBeInTheDocument();
+			expect(screen.getByText("wins for Kathleen")).toBeInTheDocument();
+
+			next.resolve(compareResult({ directWins: { playerOne: 5, playerTwo: 2 } }));
+
+			await waitFor(() => expect(screen.getByTestId("record-playerOne")).toHaveTextContent("5"));
+			expect(screen.getByTestId("compare-content")).toHaveAttribute("aria-busy", "false");
+			expect(screen.getByText("wins for reggi")).toBeInTheDocument();
+		});
+
+		it("keeps the same bar elements for a game both pairs played, and grows new games from zero", async () => {
+			mocks.search = { left: 1, right: 2 };
+			mocks.getCompareCall.mockImplementation((one: number, two: number) =>
+				Promise.resolve(
+					one === 1 && two === 2
+						? compareResult()
+						: compareResult({
+								games: [
+									gameRow({ gameId: 10, sessionCount: 4, playerOneWins: 3, playerTwoWins: 1 }),
+									gameRow({ gameId: 15, sessionCount: 2, playerOneWins: 1, playerTwoWins: 1 }),
+								],
+							}),
+				),
+			);
+			const { rerender } = renderStable();
+			await screen.findByTestId("record-playerOne");
+			const azulBefore = rowFor("Azul")?.querySelector('[data-testid="progress-segment"]');
+			const recordBefore = screen.getByRole("region", { name: "Record over all games together" });
+			await waitFor(() => expect(azulBefore).toHaveStyle({ flexGrow: "36.36" }));
+
+			mocks.search = { left: 1, right: 3 };
+			rerender();
+
+			await waitFor(() => expect(rowFor("Cascadia")).toBeDefined());
+			const azulAfter = rowFor("Azul")?.querySelector('[data-testid="progress-segment"]');
+			expect(azulAfter).toBe(azulBefore);
+			expect(azulAfter).toHaveStyle({ flexGrow: "75" });
+			expect(screen.getByRole("region", { name: "Record over all games together" })).toBe(recordBefore);
+			const cascadia = rowFor("Cascadia")?.querySelector('[data-testid="progress-segment"]');
+			expect(cascadia).toHaveStyle({ flexGrow: "0" });
+			await waitFor(() => expect(cascadia).toHaveStyle({ flexGrow: "50" }));
+		});
+
+		it("mirrors the same rows when the players are swapped", async () => {
+			mocks.search = { left: 1, right: 2 };
+			mocks.getCompareCall.mockImplementation((one: number) =>
+				Promise.resolve(
+					one === 1
+						? compareResult()
+						: compareResult({
+								directWins: { playerOne: 17, playerTwo: 23 },
+								games: [gameRow({ gameId: 10, sessionCount: 11, playerOneWins: 7, playerTwoWins: 4 })],
+							}),
+				),
+			);
+			const { rerender } = renderStable();
+			await screen.findByTestId("record-playerOne");
+			const first = rowFor("Azul")?.querySelector('[data-testid="progress-segment"]');
+
+			mocks.search = { left: 2, right: 1 };
+			rerender();
+
+			await waitFor(() => expect(screen.getByTestId("record-playerOne")).toHaveTextContent("17"));
+			const after = rowFor("Azul")?.querySelector('[data-testid="progress-segment"]');
+			expect(after).toBe(first);
+			expect(after).toHaveStyle({ flexGrow: "63.64" });
+		});
 	});
 });

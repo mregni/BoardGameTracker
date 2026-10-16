@@ -3,6 +3,7 @@
   "select-player": "Elige un jugador",
   "vs": "VS",
   "swap": "Intercambiar jugadores",
+  "updating": "Actualizando la comparación",
   "change-left": "Cambiar jugador de la izquierda, ahora {{player}}",
   "change-right": "Cambiar jugador de la derecha, ahora {{player}}",
   "player-summary_one": "{{count}} partida · {{rate}} ganadas",

@@ -140,6 +140,7 @@ export const PerGameCard = ({ games, playerOne, playerTwo, dateFormat, uiLanguag
 								)}
 								<BgtProgressBar
 									size="thin"
+									animateOnMount
 									gapped
 									formatValue={integer}
 									formatLabel={() =>

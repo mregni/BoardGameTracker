@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@/test/test-utils";
+import { render, screen, waitFor, within } from "@/test/test-utils";
 import { BgtProgressBar, type BgtProgressSegment } from "./BgtProgressBar";
 
 const rsvpSegments: BgtProgressSegment[] = [
@@ -584,5 +584,46 @@ describe("BgtProgressBar ticks", () => {
 		render(<BgtProgressBar value={50} aria-label="bar" ticks={[]} />);
 
 		expect(screen.queryByTestId("progress-ticks")).not.toBeInTheDocument();
+	});
+});
+
+describe("BgtProgressBar animate on mount", () => {
+	const growth = () => segmentsOf().map((segment) => segment.style.flexGrow);
+
+	it("starts every segment at zero and grows to its value after the first frames", async () => {
+		render(<BgtProgressBar animateOnMount segments={rsvpSegments} />);
+
+		expect(growth()).toEqual(["0", "0", "0"]);
+		expect(screen.getByTestId("progress-rest").style.flexGrow).toBe("100");
+		expect(segmentsOf()[0]).toHaveClass("min-w-0");
+
+		await waitFor(() => expect(growth()).toEqual(["60", "20", "20"]));
+		expect(screen.getByTestId("progress-rest").style.flexGrow).toBe("0");
+		expect(segmentsOf()[0]).toHaveClass("min-w-1");
+	});
+
+	it("shows the values straight away without animateOnMount", () => {
+		render(<BgtProgressBar segments={rsvpSegments} />);
+
+		expect(growth()).toEqual(["60", "20", "20"]);
+	});
+
+	it("skips the growth and the transition when the user prefers reduced motion", () => {
+		const original = window.matchMedia;
+		window.matchMedia = ((query: string) => ({
+			matches: query === "(prefers-reduced-motion: reduce)",
+			media: query,
+			addEventListener: vi.fn(),
+			removeEventListener: vi.fn(),
+		})) as unknown as typeof window.matchMedia;
+
+		try {
+			render(<BgtProgressBar animateOnMount segments={rsvpSegments} />);
+
+			expect(growth()).toEqual(["60", "20", "20"]);
+			expect(segmentsOf()[0]).toHaveClass("motion-reduce:transition-none");
+		} finally {
+			window.matchMedia = original;
+		}
 	});
 });

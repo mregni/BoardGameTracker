@@ -1,5 +1,6 @@
 import { cva, cx, type VariantProps } from "class-variance-authority";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { BgtProgressLegend } from "./BgtProgressLegend";
 import {
 	clampValue,
@@ -60,6 +61,7 @@ interface SegmentedBarProps extends TrackVariants {
 	gapped?: boolean;
 	formatLabel?: (summary: ProgressSummary) => string;
 	formatValue?: (value: number) => string;
+	animateOnMount?: boolean;
 }
 
 interface FrameProps {
@@ -129,8 +131,41 @@ const SingleBar = (props: SingleBarProps) => {
 	);
 };
 
+const useGrownOnMount = (animateOnMount: boolean): boolean => {
+	const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+	const [grown, setGrown] = useState(!animateOnMount);
+
+	useEffect(() => {
+		if (grown) return;
+		let second = 0;
+		const grow = () => setGrown(true);
+		const first = requestAnimationFrame(() => {
+			second = requestAnimationFrame(grow);
+		});
+		const fallback = setTimeout(grow, 100);
+		return () => {
+			cancelAnimationFrame(first);
+			cancelAnimationFrame(second);
+			clearTimeout(fallback);
+		};
+	}, [grown]);
+
+	return grown || reduceMotion;
+};
+
 const SegmentedBar = (props: SegmentedBarProps) => {
-	const { segments, max, size, track, gapped = false, id, formatLabel, formatValue = defaultFormatValue } = props;
+	const {
+		segments,
+		max,
+		size,
+		track,
+		gapped = false,
+		id,
+		formatLabel,
+		formatValue = defaultFormatValue,
+		animateOnMount = false,
+	} = props;
+	const grown = useGrownOnMount(animateOnMount);
 	const computed = computeSegments(segments, max);
 	const firstVisible = computed.items.findIndex((item) => item.visible);
 	const summary: ProgressSummary = {
@@ -165,19 +200,19 @@ const SegmentedBar = (props: SegmentedBarProps) => {
 						"primary",
 						cx(
 							"block h-full shrink-0 basis-0",
-							item.visible ? "min-w-1" : "min-w-0",
+							item.visible && grown ? "min-w-1" : "min-w-0",
 							gapped && item.visible && position > firstVisible ? "ml-0.5" : "ml-0",
 							motion,
 						),
 					)}
-					style={{ ...paintStyle(item.segment), flexGrow: item.percent }}
+					style={{ ...paintStyle(item.segment), flexGrow: grown ? item.percent : 0 }}
 				/>
 			))}
 			<span
 				aria-hidden="true"
 				data-testid="progress-rest"
 				className={cx("block h-full shrink-0 basis-0", motion)}
-				style={{ flexGrow: computed.rest }}
+				style={{ flexGrow: grown ? computed.rest : 100 }}
 			/>
 			{computed.overflow && (
 				<span

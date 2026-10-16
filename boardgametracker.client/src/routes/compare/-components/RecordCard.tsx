@@ -70,6 +70,7 @@ export const RecordCard = ({ compare, playerOne, playerTwo }: Props) => {
 			</div>
 			<BgtProgressBar
 				size="lg"
+				animateOnMount
 				gapped
 				formatValue={integer}
 				formatLabel={() =>

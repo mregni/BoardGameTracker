@@ -3,6 +3,7 @@
   "select-player": "Kies een speler",
   "vs": "VS",
   "swap": "Spelers wisselen",
+  "updating": "Vergelijking wordt bijgewerkt",
   "change-left": "Linkse speler wijzigen, nu {{player}}",
   "change-right": "Rechtse speler wijzigen, nu {{player}}",
   "player-summary_one": "{{count}} spel · {{rate}} gewonnen",

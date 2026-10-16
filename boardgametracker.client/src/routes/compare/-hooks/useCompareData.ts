@@ -41,7 +41,10 @@ export const useCompareData = ({ left, right }: Props) => {
 		players,
 		leftId,
 		rightId,
-		compare: compareQuery.data,
+		compare: compareQuery.data?.result,
+		shownLeftId: compareQuery.data?.playerOneId ?? 0,
+		shownRightId: compareQuery.data?.playerTwoId ?? 0,
+		isUpdating: compareQuery.isPlaceholderData,
 		settings: settingsQuery.data,
 		isLoading:
 			playersQuery.isLoading ||
