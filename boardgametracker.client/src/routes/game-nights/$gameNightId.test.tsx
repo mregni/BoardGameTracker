@@ -31,6 +31,7 @@ vi.mock("@tanstack/react-router", () => ({
 	},
 	redirect: (options: unknown) => ({ redirect: options }),
 	useNavigate: () => mocks.navigate,
+	useRouter: () => ({ history: { back: vi.fn() } }),
 	Link: ({ children }: { children: React.ReactNode }) => <a href="/session">{children}</a>,
 }));
 
@@ -155,11 +156,11 @@ describe("Game night detail page", () => {
 	});
 
 	it("prefetches the night, players, games and locations", () => {
-		const queryClient = { prefetchQuery: vi.fn() };
+		const queryClient = { query: vi.fn().mockResolvedValue(undefined) };
 
 		mocks.captured.config.loader({ params: { gameNightId: 4 }, context: { queryClient } });
 
-		expect(queryClient.prefetchQuery.mock.calls.map(([options]) => options.queryKey)).toEqual([
+		expect(queryClient.query.mock.calls.map(([options]) => options.queryKey)).toEqual([
 			["gameNights", 4],
 			["players"],
 			["games"],
@@ -168,7 +169,7 @@ describe("Game night detail page", () => {
 	});
 
 	it("sends the visitor home when game nights are turned off", async () => {
-		const queryClient = { ensureQueryData: vi.fn().mockResolvedValue({ gameNightsEnabled: false }) };
+		const queryClient = { query: vi.fn().mockResolvedValue({ gameNightsEnabled: false }) };
 
 		await expect(mocks.captured.config.beforeLoad({ context: { queryClient } })).rejects.toEqual({
 			redirect: { to: "/" },
@@ -181,7 +182,7 @@ describe("Game night detail page", () => {
 
 		await user.click(screen.getByRole("button", { name: /detail.back/ }));
 
-		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/game-nights" });
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/game-nights", replace: true });
 	});
 
 	it("starts a game from the start sheet", async () => {

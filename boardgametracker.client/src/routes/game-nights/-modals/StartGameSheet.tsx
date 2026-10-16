@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import XIcon from "@/assets/icons/x.svg?react";
-import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtDialog, BgtDialogClose, BgtDialogContent, BgtDialogTitle } from "@/components/BgtDialog";
+import { BgtDialog, BgtDialogContent, BgtDialogFooter, BgtDialogTitle } from "@/components/BgtDialog";
 import { BgtSelect } from "@/components/BgtForm";
 import { BgtText } from "@/components/BgtText/BgtText";
 import { AvatarChipButton } from "@/components/GameNight/AvatarChip";
@@ -93,19 +92,13 @@ export const StartGameSheet = (props: Props) => {
 						</div>
 					)}
 				</div>
-				<BgtDialogClose>
-					<BgtButton variant="cancel" onClick={close}>
-						{t("common:cancel")}
-					</BgtButton>
-					<BgtButton
-						variant="primary"
-						className="flex-1"
-						disabled={gameId === null || playerIds.length === 0 || isPending}
-						onClick={handleStart}
-					>
-						{t("play.start.save")}
-					</BgtButton>
-				</BgtDialogClose>
+				<BgtDialogFooter
+					onCancel={close}
+					confirmLabel={t("play.start.save")}
+					onConfirm={handleStart}
+					disabled={gameId === null || playerIds.length === 0}
+					loading={isPending}
+				/>
 			</BgtDialogContent>
 		</BgtDialog>
 	);

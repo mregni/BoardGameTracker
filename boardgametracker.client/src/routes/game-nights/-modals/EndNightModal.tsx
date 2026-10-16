@@ -1,10 +1,9 @@
 import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import type { ModalProps } from "@/models";
@@ -28,14 +27,12 @@ export const EndNightModal = (props: Props) => {
 			<BgtDialogContent>
 				<BgtDialogTitle>{t("end.title")}</BgtDialogTitle>
 				<BgtDialogDescription>{t("end.description")}</BgtDialogDescription>
-				<BgtDialogClose>
-					<BgtButton variant="cancel" onClick={close} disabled={isPending}>
-						{t("common:cancel")}
-					</BgtButton>
-					<BgtButton variant="primary" onClick={handleConfirm} disabled={isPending}>
-						{t("end.button")}
-					</BgtButton>
-				</BgtDialogClose>
+				<BgtDialogFooter
+					onCancel={close}
+					confirmLabel={t("end.button")}
+					onConfirm={handleConfirm}
+					loading={isPending}
+				/>
 			</BgtDialogContent>
 		</BgtDialog>
 	);

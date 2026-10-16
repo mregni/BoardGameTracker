@@ -4,6 +4,7 @@ import Crown from "@/assets/icons/crown.svg?react";
 import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
 import { BgtText } from "@/components/BgtText/BgtText";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { Game, Player, Session } from "@/models";
 import { formatMinutesToDuration } from "@/utils/dateUtils";
 
@@ -22,6 +23,7 @@ const byScore = (a: Session["playerSessions"][number], b: Session["playerSession
 export const PlayedSessionsList = (props: Props) => {
 	const { sessions, games, players, uiLanguage, canOpen, emptyText } = props;
 
+	const { number } = useNumberFormat(uiLanguage);
 	const nameOf = (playerId: number) => players.find((player) => player.id === playerId)?.name ?? "";
 
 	if (sessions.length === 0) {
@@ -42,7 +44,7 @@ export const PlayedSessionsList = (props: Props) => {
 				const scores = [...session.playerSessions]
 					.sort(byScore)
 					.map((x) =>
-						x.score === null || x.score === undefined ? nameOf(x.playerId) : `${nameOf(x.playerId)} ${x.score}`,
+						x.score === null || x.score === undefined ? nameOf(x.playerId) : `${nameOf(x.playerId)} ${number(x.score)}`,
 					)
 					.join(" · ");
 				const row = (

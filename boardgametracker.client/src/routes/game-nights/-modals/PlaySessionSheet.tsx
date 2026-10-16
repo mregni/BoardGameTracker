@@ -1,13 +1,12 @@
-import { type AnyFieldApi, useStore } from "@tanstack/react-form";
+import { type AnyFieldApi, useSelector } from "@tanstack/react-form";
 import { differenceInMinutes, format, startOfMinute, subMinutes } from "date-fns";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtDateTimePicker, BgtInputField } from "@/components/BgtForm";
@@ -98,7 +97,7 @@ export const PlaySessionSheet = (props: Props) => {
 		},
 	});
 
-	const selectedGameId = useStore(form.store, (state) => state.values.gameId);
+	const selectedGameId = useSelector(form.store, (state) => state.values.gameId);
 	const { hasScoring, addPlayer, removePlayer, setScore, toggleWon, toggleFirstPlay } = useSessionFormState({
 		selectedGameId,
 		games,
@@ -194,14 +193,13 @@ export const PlaySessionSheet = (props: Props) => {
 						/>
 					</div>
 
-					<BgtDialogClose className="lg:col-span-2 lg:row-start-3">
-						<BgtButton variant="cancel" onClick={close} disabled={isPending}>
-							{t("common:cancel")}
-						</BgtButton>
-						<BgtButton type="submit" variant="primary" className="flex-1" disabled={isPending}>
-							{t("play.save")}
-						</BgtButton>
-					</BgtDialogClose>
+					<BgtDialogFooter
+						className="lg:col-span-2 lg:row-start-3"
+						onCancel={close}
+						confirmLabel={t("play.save")}
+						confirmType="submit"
+						loading={isPending}
+					/>
 				</form>
 			</BgtDialogContent>
 		</BgtDialog>

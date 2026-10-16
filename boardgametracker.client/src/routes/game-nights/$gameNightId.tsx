@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,6 +16,7 @@ import { getLocations } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
 import { getSettings } from "@/services/queries/settings";
 import { gameNightIdParamSchema } from "@/utils/routeSchemas";
+import { useBack } from "../-hooks/useBack";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { GameNightDetailView } from "./-components/GameNightDetailView";
 import { useGameNightData } from "./-hooks/useGameNightData";
@@ -31,16 +33,16 @@ export const Route = createFileRoute("/game-nights/$gameNightId")({
 	component: RouteComponent,
 	params: gameNightIdParamSchema,
 	beforeLoad: async ({ context: { queryClient } }) => {
-		const settings = await queryClient.ensureQueryData(getSettings());
+		const settings = await queryClient.query({ ...getSettings(), staleTime: "static" });
 		if (!settings.gameNightsEnabled) {
 			throw redirect({ to: "/" });
 		}
 	},
 	loader: ({ params, context: { queryClient } }) => {
-		queryClient.prefetchQuery(getGameNight(params.gameNightId));
-		queryClient.prefetchQuery(getPlayers());
-		queryClient.prefetchQuery(getGames());
-		queryClient.prefetchQuery(getLocations());
+		queryClient.query(getGameNight(params.gameNightId)).catch(noop);
+		queryClient.query(getPlayers()).catch(noop);
+		queryClient.query(getGames()).catch(noop);
+		queryClient.query(getLocations()).catch(noop);
 	},
 });
 
@@ -54,6 +56,7 @@ function RouteComponent() {
 	const { t } = useTranslation("game-nights");
 	const { canWrite } = usePermissions();
 	const navigate = useNavigate();
+	const goBack = useBack("/game-nights");
 	const invalidator = useQueryInvalidator();
 	const modals = useGameNightModals();
 	const [sheet, setSheet] = useState<Sheet | null>(null);
@@ -101,7 +104,7 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageHeader backAction={() => navigate({ to: "/game-nights" })} backText={t("detail.back")} />
+			<BgtPageHeader backAction={goBack} backText={t("detail.back")} />
 			<BgtPageContent isLoading={isLoading || isDetailLoading} data={{ detail, settings }}>
 				{({ detail, settings }) => {
 					const attendees = attendeeIds(detail.gameNight);
