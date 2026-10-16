@@ -13,7 +13,7 @@ export type LeaderboardPeriod = (typeof PERIODS)[number];
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
 export const leaderboardSearchSchema = z.object({
-	period: z.enum(PERIODS).optional().catch(undefined),
+	range: z.enum(PERIODS).optional().catch(undefined),
 	from: isoDate.optional().catch(undefined),
 	to: isoDate.optional().catch(undefined),
 	game: z.number().int().positive().optional().catch(undefined),
@@ -26,7 +26,7 @@ export type LeaderboardSearch = z.infer<typeof leaderboardSearchSchema>;
 const toIso = (date: Date) => format(date, "yyyy-MM-dd");
 
 export const periodRange = (search: LeaderboardSearch, today: Date): { from?: string; to?: string } => {
-	switch (search.period) {
+	switch (search.range) {
 		case "year":
 			return { from: toIso(startOfYear(today)) };
 		case "12m":
@@ -53,4 +53,4 @@ export const toLeaderboardParams = (search: LeaderboardSearch, today: Date = new
 };
 
 export const hasActiveFilters = (search: LeaderboardSearch): boolean =>
-	(search.period !== undefined && search.period !== "all") || search.game !== undefined;
+	(search.range !== undefined && search.range !== "all") || search.game !== undefined;

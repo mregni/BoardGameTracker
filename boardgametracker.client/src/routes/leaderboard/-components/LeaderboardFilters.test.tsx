@@ -46,13 +46,13 @@ describe("LeaderboardFilters", () => {
 	});
 
 	it("should switch the period and clear custom dates", async () => {
-		const onChange = renderFilters({ period: "custom", from: "2026-01-01", to: "2026-02-01" });
+		const onChange = renderFilters({ range: "custom", from: "2026-01-01", to: "2026-02-01" });
 
 		await userEvent.click(screen.getByRole("button", { name: "filters.last-12-months" }));
-		expect(onChange).toHaveBeenLastCalledWith({ period: "12m", from: undefined, to: undefined });
+		expect(onChange).toHaveBeenLastCalledWith({ range: "12m", from: undefined, to: undefined });
 
 		await userEvent.click(screen.getByRole("button", { name: "filters.all-time" }));
-		expect(onChange).toHaveBeenLastCalledWith({ period: undefined, from: undefined, to: undefined });
+		expect(onChange).toHaveBeenLastCalledWith({ range: undefined, from: undefined, to: undefined });
 	});
 
 	it("should keep the custom dates when choosing custom again", async () => {
@@ -60,11 +60,11 @@ describe("LeaderboardFilters", () => {
 
 		await userEvent.click(screen.getByRole("button", { name: "filters.custom" }));
 
-		expect(onChange).toHaveBeenCalledWith({ period: "custom", from: "2026-01-01", to: "2026-02-01" });
+		expect(onChange).toHaveBeenCalledWith({ range: "custom", from: "2026-01-01", to: "2026-02-01" });
 	});
 
 	it("should show two date pickers for a custom period and clear a date", async () => {
-		const onChange = renderFilters({ period: "custom", from: "2026-01-01", to: "2026-02-01" });
+		const onChange = renderFilters({ range: "custom", from: "2026-01-01", to: "2026-02-01" });
 
 		expect(screen.getByRole("group", { name: "filters.from" })).toBeInTheDocument();
 		expect(screen.getByRole("group", { name: "filters.to" })).toBeInTheDocument();

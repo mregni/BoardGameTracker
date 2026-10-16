@@ -2,22 +2,25 @@ import { addDays, addHours } from "date-fns";
 import type { FC } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type GameNight, GameNightRsvpState } from "@/models";
-import { renderWithProviders, screen, within } from "@/test/test-utils";
+import { renderWithProviders, screen, userEvent, within } from "@/test/test-utils";
 
 interface CapturedRoute {
 	component: FC;
+	validateSearch: { parse: (input: unknown) => unknown };
 }
 
 const mocks = vi.hoisted(() => ({
 	captured: {} as { config: CapturedRoute },
 	gameNights: [] as GameNight[],
 	navigate: vi.fn(),
+	search: {} as { view?: string; period?: string },
+	statsView: vi.fn(),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
 	createFileRoute: () => (config: CapturedRoute) => {
 		mocks.captured.config = config;
-		return config;
+		return { ...config, useSearch: () => mocks.search };
 	},
 	redirect: vi.fn(),
 	useNavigate: () => mocks.navigate,
@@ -52,6 +55,16 @@ vi.mock("./-modals/CreateGameNightModal", () => ({ CreateGameNightModal: () => n
 vi.mock("./-modals/EditGameNightModal", () => ({ EditGameNightModal: () => null }));
 vi.mock("./-modals/ManageRSVPsModal", () => ({ ManageRSVPsModal: () => null }));
 vi.mock("./-components/GameNightActions", () => ({ GameNightActions: () => null }));
+vi.mock("./-components/stats/GameNightStatsView", () => ({
+	GameNightStatsView: (props: { period: string; onPeriodChange: (period: string) => void }) => {
+		mocks.statsView(props.period);
+		return (
+			<button type="button" onClick={() => props.onPeriodChange("thisYear")}>
+				stats-view
+			</button>
+		);
+	},
+}));
 
 await import("./index");
 
@@ -82,6 +95,8 @@ const renderPage = () => {
 describe("Game nights overview", () => {
 	beforeEach(() => {
 		mocks.navigate.mockReset();
+		mocks.statsView.mockReset();
+		mocks.search = {};
 	});
 
 	it("keeps a night that is being played under upcoming and lists ended and old nights as past", () => {
@@ -112,5 +127,55 @@ describe("Game nights overview", () => {
 		renderPage();
 
 		expect(screen.getByText("empty.upcoming")).toBeInTheDocument();
+	});
+
+	it("accepts only the known views and periods in the address", () => {
+		const { parse } = mocks.captured.config.validateSearch;
+
+		expect(parse({ view: "stats", period: "last12Months" })).toEqual({ view: "stats", period: "last12Months" });
+		expect(parse({})).toEqual({});
+		expect(() => parse({ view: "chart" })).toThrow();
+		expect(() => parse({ period: "forever" })).toThrow();
+	});
+
+	it("shows the nights by default and switches to the statistics in the address", async () => {
+		mocks.gameNights = [night(1, "Last month", addDays(new Date(), -30))];
+
+		renderPage();
+
+		const [nightsButton] = screen.getAllByRole("button", { name: "view.nights" });
+		expect(nightsButton).toHaveAttribute("aria-pressed", "true");
+		expect(screen.queryByText("stats-view")).not.toBeInTheDocument();
+
+		await userEvent.click(screen.getAllByRole("button", { name: "view.stats" })[0]);
+
+		expect(mocks.navigate).toHaveBeenCalledWith(expect.objectContaining({ to: "/game-nights", replace: true }));
+		const { search } = mocks.navigate.mock.calls[0][0] as { search: (previous: object) => object };
+		expect(search({ period: "thisYear" })).toEqual({ period: "thisYear", view: "stats" });
+	});
+
+	it("shows the statistics for the period in the address and keeps the view when the period changes", async () => {
+		mocks.gameNights = [night(1, "Last month", addDays(new Date(), -30))];
+		mocks.search = { view: "stats", period: "last12Months" };
+
+		renderPage();
+
+		expect(screen.queryByRole("region", { name: "past" })).not.toBeInTheDocument();
+		expect(mocks.statsView).toHaveBeenCalledWith("last12Months");
+		expect(screen.getAllByRole("button", { name: "view.stats" })[0]).toHaveAttribute("aria-pressed", "true");
+
+		await userEvent.click(screen.getByText("stats-view"));
+
+		const { search } = mocks.navigate.mock.calls[0][0] as { search: (previous: object) => object };
+		expect(search({ view: "stats" })).toEqual({ view: "stats", period: "thisYear" });
+	});
+
+	it("starts the statistics on all time", () => {
+		mocks.gameNights = [night(1, "Last month", addDays(new Date(), -30))];
+		mocks.search = { view: "stats" };
+
+		renderPage();
+
+		expect(mocks.statsView).toHaveBeenCalledWith("allTime");
 	});
 });

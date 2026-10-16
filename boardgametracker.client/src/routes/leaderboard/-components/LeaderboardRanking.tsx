@@ -6,7 +6,7 @@ import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtProgressBar } from "@/components/BgtProgressBar/BgtProgressBar";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { LeaderboardEntry } from "@/models";
-import { formatCompactDuration } from "@/utils/dateUtils";
+import { useShortDuration } from "@/routes/-hooks/useShortDuration";
 import { HeaderWithHint } from "./HeaderWithHint";
 
 interface Props {
@@ -26,6 +26,7 @@ const desktopOnly = "hidden md:block";
 const Row = ({ entry }: { entry: LeaderboardEntry }) => {
 	const { t } = useTranslation("leaderboard");
 	const format = useNumberFormat();
+	const duration = useShortDuration();
 	const rate = format.percent(entry.winPercentage / 100, 1);
 	const isTop = entry.rank !== null && entry.rank <= 3;
 
@@ -77,9 +78,7 @@ const Row = ({ entry }: { entry: LeaderboardEntry }) => {
 					<b className={cx("text-right", entry.isRanked ? "text-card-value" : "text-white/60")}>{rate}</b>
 				</span>
 				<span className={cx(desktopOnly, "text-right")}>{format.integer(entry.podiumCount)}</span>
-				<span className={cx(desktopOnly, "text-right text-sm text-white/60")}>
-					{formatCompactDuration(entry.minutesPlayed, format.locale)}
-				</span>
+				<span className={cx(desktopOnly, "text-right text-sm text-white/60")}>{duration(entry.minutesPlayed)}</span>
 				<CaretRight aria-hidden="true" className="size-3.5 text-white/60 md:size-4" />
 			</Link>
 		</li>

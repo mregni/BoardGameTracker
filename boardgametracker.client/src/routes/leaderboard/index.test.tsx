@@ -145,7 +145,7 @@ describe("Leaderboard page", () => {
 	});
 
 	it("should explain why there is no podium with fewer than four ranked players for a game", async () => {
-		mocks.search = { game: 12, period: "custom", from: "2026-01-01", to: "2026-06-30", min: 3 };
+		mocks.search = { game: 12, range: "custom", from: "2026-01-01", to: "2026-06-30", min: 3 };
 		mocks.getLeaderboardCall.mockResolvedValue(
 			leaderboard([
 				...byWins.slice(0, 3),
@@ -214,7 +214,7 @@ describe("Leaderboard page", () => {
 
 		expect(mocks.navigate).toHaveBeenCalledWith({ search: expect.any(Function), replace: true });
 		const [{ search }] = mocks.navigate.mock.calls[0];
-		expect(search({ game: 12 })).toEqual({ game: 12, period: "12m", from: undefined, to: undefined });
+		expect(search({ game: 12 })).toEqual({ game: 12, range: "12m", from: undefined, to: undefined });
 	});
 
 	it("should show the empty page when nothing was played yet", async () => {
@@ -227,7 +227,7 @@ describe("Leaderboard page", () => {
 	});
 
 	it("should keep the filters when nothing matches them", async () => {
-		mocks.search = { period: "year" };
+		mocks.search = { range: "year" };
 		mocks.getLeaderboardCall.mockResolvedValue(leaderboard([]));
 
 		renderPage();

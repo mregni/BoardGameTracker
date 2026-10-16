@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using Ardalis.Specification.EntityFrameworkCore;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Enums;

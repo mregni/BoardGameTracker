@@ -5,19 +5,33 @@ import type {
 	CreateLocation,
 	CreatePlayer,
 	CreateSession,
+	DashboardStatistics,
 	Expansion,
 	FinishRunningGame,
 	Game,
 	GameNight,
 	GameNightDetail,
+	GameNightRecord,
+	GameNightRecords,
+	GameNightReference,
+	GameNightStatistics,
+	GameNightStatisticsPeriod,
+	GameNightStreaks,
 	GameNightSummary,
+	GameStreak,
 	Leaderboard,
 	LeaderboardEntry,
 	Location,
 	LocationStatistics,
+	NightAttendance,
+	NightGameStatistic,
+	NightHistory,
+	NightWinnerStatistic,
+	PlannedGameStatistic,
 	Player,
 	PlayerOverview,
 	PlayerSession,
+	PlayerStreak,
 	RunningGame,
 	Session,
 	SessionSuggestions,
@@ -71,8 +85,25 @@ describe("API contract", () => {
 		sameKeys<GameNight, Schemas["GameNightDto"]>(true);
 		sameKeys<GameNightSummary, Schemas["GameNightSummaryDto"]>(true);
 		sameKeys<GameNightDetail, Schemas["GameNightDetailDto"]>(true);
+		sameKeys<GameNightStatistics, Schemas["GameNightStatisticsDto"]>(true);
+		sameKeys<NightWinnerStatistic, Schemas["NightWinnerStatisticDto"]>(true);
+		sameKeys<NightHistory, Schemas["NightHistoryDto"]>(true);
+		sameKeys<NightGameStatistic, Schemas["NightGameStatisticDto"]>(true);
+		sameKeys<PlannedGameStatistic, Schemas["PlannedGameStatisticDto"]>(true);
+		sameKeys<GameNightStreaks, Schemas["GameNightStreaksDto"]>(true);
+		sameKeys<PlayerStreak, Schemas["PlayerStreakDto"]>(true);
+		sameKeys<GameStreak, Schemas["GameStreakDto"]>(true);
+		sameKeys<GameNightReference, Schemas["GameNightReferenceDto"]>(true);
+		sameKeys<NightAttendance, Schemas["NightAttendanceDto"]>(true);
+		sameKeys<GameNightRecords, Schemas["GameNightRecordsDto"]>(true);
+		sameKeys<GameNightRecord, Schemas["GameNightRecordDto"]>(true);
 		sameKeys<RunningGame, Schemas["RunningGameDto"]>(true);
 		sameKeys<Badge, Schemas["BadgeDto"]>(true);
+		sameKeys<DashboardStatistics, Schemas["DashboardStatisticsDto"]>(true);
+		sameKeys<DashboardStatistics["nextGameNight"] & object, Schemas["DashboardGameNightDto"]>(true);
+		sameKeys<DashboardStatistics["linkedPlayer"] & object, Schemas["DashboardLinkedPlayerDto"]>(true);
+		sameKeys<DashboardStatistics["shelfOfShame"] & object, Schemas["DashboardShelfOfShameDto"]>(true);
+		sameKeys<DashboardStatistics["recentActivities"][number], Schemas["RecentActivityDto"]>(true);
 		sameKeys<Leaderboard, Schemas["LeaderboardDto"]>(true);
 		sameKeys<LeaderboardEntry, Schemas["LeaderboardEntryDto"]>(true);
 		sameKeys<Settings, Schemas["UIResourceDto"]>(true);
@@ -105,6 +136,7 @@ describe("API contract", () => {
 	it("keeps the string enums aligned", () => {
 		sameValues<Schemas["GameState"], `${Game["state"]}`>(true);
 		sameValues<Schemas["BadgeType"], `${Badge["type"]}`>(true);
+		sameValues<Schemas["GameNightStatisticsPeriod"], `${GameNightStatisticsPeriod}`>(true);
 		sameValues<Schemas["IntegrationKind"], IntegrationStatus["integration"]>(true);
 		sameValues<Schemas["IntegrationConnectionStatus"], IntegrationStatus["status"]>(true);
 	});

@@ -1,20 +1,98 @@
 {
-  "welcome-back-title": "¡Hola de nuevo, {{name}}!",
-  "welcome-back_one": "Has jugado {{count}} partida.",
-  "welcome-back_other": "Has jugado {{count}} partidas.",
   "empty": {
     "title": "No hay juegos en tu colección",
     "description": "Aún no has añadido ningún juego a tu colección. Empieza añadiendo tu primer juego para registrar tus partidas y estadísticas.",
     "button": "Añade tu primer juego"
   },
-  "charts": {
-    "collection": "Colección"
+  "welcome": {
+    "title": "Hola de nuevo, {{name}}",
+    "linked_one": "Este mes jugaste {{played}} de {{total}} partida del grupo y ganaste {{wins}}.",
+    "linked_other": "Este mes jugaste {{played}} de las {{total}} partidas del grupo y ganaste {{wins}}.",
+    "group_one": "Este mes el grupo jugó {{total}} partida.",
+    "group_other": "Este mes el grupo jugó {{total}} partidas."
   },
-  "recent-activity": "Actividad reciente",
-  "recent-added-games": "Juegos añadidos recientemente",
-  "welcome-back-linked_one": "Como {{player}}, has jugado {{played}} de {{count}} partida.",
-  "welcome-back-linked_other": "Como {{player}}, has jugado {{played}} de {{count}} partidas.",
-  "activity": {
-    "won": "<winner>{{winner}}</winner> ganó <game>{{game}}</game>"
+  "actions": {
+    "add-game": "Añadir juego",
+    "log-session": "Registrar partida"
+  },
+  "night": {
+    "label": "Próxima noche de juego",
+    "when": "Próxima noche de juego · {{when}}",
+    "details": "{{time}} · {{location}} · anfitrión {{host}}",
+    "coming_one": "{{count}} viene",
+    "coming_other": "{{count}} vienen",
+    "pending_one": "{{count}} sin respuesta",
+    "pending_other": "{{count}} sin respuesta",
+    "declined_one": "{{count}} no viene",
+    "declined_other": "{{count}} no vienen",
+    "suggested": "Sugeridos:",
+    "open": "Abrir noche",
+    "more_one": "{{count}} más planificada",
+    "more_other": "{{count}} más planificadas",
+    "none": "No hay ninguna noche de juego planificada",
+    "plan": "Planifica una"
+  },
+  "tiles": {
+    "games": "Juegos",
+    "games-detail_one": "{{owned}} en propiedad · {{expansions}} expansión",
+    "games-detail_other": "{{owned}} en propiedad · {{expansions}} expansiones",
+    "players": "Jugadores",
+    "players-detail_one": "{{value}} jugó este mes",
+    "players-detail_other": "{{value}} jugaron este mes",
+    "sessions": "Partidas",
+    "sessions-detail_one": "{{value}} este mes",
+    "sessions-detail_other": "{{value}} este mes",
+    "play-time": "Tiempo de juego",
+    "play-time-detail": "media de {{duration}} por partida"
+  },
+  "duration": {
+    "minutes": "{{minutes}} min",
+    "hours": "{{hours}} h",
+    "hours-minutes": "{{hours}} h {{minutes}} min"
+  },
+  "last-sessions": {
+    "title": "Últimas partidas",
+    "players_one": "{{count}} jugador",
+    "players_other": "{{count}} jugadores",
+    "no-winner": "Sin ganador",
+    "empty": "Aún no hay partidas registradas"
+  },
+  "shame": {
+    "title_one": "{{value}} juego en la estantería de la vergüenza",
+    "title_other": "{{value}} juegos en la estantería de la vergüenza",
+    "never-played_one": "{{value}} nunca jugado",
+    "never-played_other": "{{value}} nunca jugados",
+    "paid": "{{value}} pagados"
+  },
+  "top-players": {
+    "title": "Mejores jugadores",
+    "leaderboard": "Clasificación",
+    "sessions_one": "{{value}} partida",
+    "sessions_other": "{{value}} partidas",
+    "won": "{{percent}} ganadas",
+    "row_one": "{{name}}: {{wins}} victorias en {{total}} partida",
+    "row_other": "{{name}}: {{wins}} victorias en {{total}} partidas",
+    "hint": "Ordenado por victorias. La barra es el porcentaje de victorias.",
+    "hint-coop": "Victorias, cooperativas incluidas. La barra es el porcentaje de victorias.",
+    "empty": "Aún no se han jugado partidas"
+  },
+  "most-played": {
+    "title": "Más jugados",
+    "period": "Periodo",
+    "this-month": "Este mes",
+    "all-time": "Siempre",
+    "times": "{{value}}×",
+    "empty": "Aún no se han jugado partidas",
+    "empty-month": "Aún no se ha jugado nada este mes"
+  },
+  "collection": {
+    "title": "Colección",
+    "games": "Juegos",
+    "summary_one": "{{total}} juego: {{parts}}",
+    "summary_other": "{{total}} juegos: {{parts}}",
+    "paid": "Pagado por juegos en propiedad",
+    "priced": "{{priced}} de {{owned}} con precio",
+    "no-prices": "Aún no hay precios",
+    "recently-added": "Añadidos recientemente"
   }
 }

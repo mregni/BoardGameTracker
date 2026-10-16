@@ -10,7 +10,7 @@ describe("leaderboardSearch", () => {
 		});
 
 		it("should start this year on the first of January", () => {
-			expect(toLeaderboardParams({ period: "year" }, today)).toEqual({
+			expect(toLeaderboardParams({ range: "year" }, today)).toEqual({
 				from: "2026-01-01",
 				minSessions: 5,
 				rankBy: "wins",
@@ -18,7 +18,7 @@ describe("leaderboardSearch", () => {
 		});
 
 		it("should go back twelve months for the last 12 months", () => {
-			expect(toLeaderboardParams({ period: "12m", game: 4, min: 10, rank: "winRate" }, today)).toEqual({
+			expect(toLeaderboardParams({ range: "12m", game: 4, min: 10, rank: "winRate" }, today)).toEqual({
 				from: "2025-10-16",
 				gameId: 4,
 				minSessions: 10,
@@ -27,7 +27,7 @@ describe("leaderboardSearch", () => {
 		});
 
 		it("should pass the custom dates and ignore them for other periods", () => {
-			expect(toLeaderboardParams({ period: "custom", from: "2026-02-01", to: "2026-03-01" }, today)).toMatchObject({
+			expect(toLeaderboardParams({ range: "custom", from: "2026-02-01", to: "2026-03-01" }, today)).toMatchObject({
 				from: "2026-02-01",
 				to: "2026-03-01",
 			});
@@ -38,20 +38,20 @@ describe("leaderboardSearch", () => {
 		});
 
 		it("should use the current date when no date is given", () => {
-			expect(toLeaderboardParams({ period: "year" }).from).toMatch(/^\d{4}-01-01$/);
+			expect(toLeaderboardParams({ range: "year" }).from).toMatch(/^\d{4}-01-01$/);
 		});
 	});
 
 	describe("periodRange", () => {
 		it("should swap custom dates that are the wrong way round", () => {
-			expect(periodRange({ period: "custom", from: "2026-05-01", to: "2026-04-01" }, today)).toEqual({
+			expect(periodRange({ range: "custom", from: "2026-05-01", to: "2026-04-01" }, today)).toEqual({
 				from: "2026-04-01",
 				to: "2026-05-01",
 			});
 		});
 
 		it("should allow an open-ended custom period", () => {
-			expect(periodRange({ period: "custom", from: "2026-05-01" }, today)).toEqual({
+			expect(periodRange({ range: "custom", from: "2026-05-01" }, today)).toEqual({
 				from: "2026-05-01",
 				to: undefined,
 			});
@@ -61,12 +61,12 @@ describe("leaderboardSearch", () => {
 	describe("leaderboardSearchSchema", () => {
 		it("should drop values it does not understand", () => {
 			expect(
-				leaderboardSearchSchema.parse({ period: "week", from: "yesterday", game: -1, min: 0, rank: "podiums" }),
+				leaderboardSearchSchema.parse({ range: "week", from: "yesterday", game: -1, min: 0, rank: "podiums" }),
 			).toEqual({});
 		});
 
 		it("should keep valid values", () => {
-			const search = { period: "custom", from: "2026-01-01", to: "2026-02-01", game: 3, min: 3, rank: "sessions" };
+			const search = { range: "custom", from: "2026-01-01", to: "2026-02-01", game: 3, min: 3, rank: "sessions" };
 			expect(leaderboardSearchSchema.parse(search)).toEqual(search);
 		});
 	});
@@ -74,8 +74,8 @@ describe("leaderboardSearch", () => {
 	describe("hasActiveFilters", () => {
 		it("should only count the period and the game", () => {
 			expect(hasActiveFilters({})).toBe(false);
-			expect(hasActiveFilters({ period: "all", min: 10, rank: "sessions" })).toBe(false);
-			expect(hasActiveFilters({ period: "year" })).toBe(true);
+			expect(hasActiveFilters({ range: "all", min: 10, rank: "sessions" })).toBe(false);
+			expect(hasActiveFilters({ range: "year" })).toBe(true);
 			expect(hasActiveFilters({ game: 2 })).toBe(true);
 		});
 	});

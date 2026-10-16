@@ -31,7 +31,7 @@ interface Props {
 
 export const LeaderboardFilters = ({ search, games, today, onChange }: Props) => {
 	const { t } = useTranslation("leaderboard");
-	const period: LeaderboardPeriod = search.period ?? "all";
+	const period: LeaderboardPeriod = search.range ?? "all";
 
 	const periodLabels: Record<LeaderboardPeriod, string> = {
 		all: t("filters.all-time"),
@@ -59,7 +59,7 @@ export const LeaderboardFilters = ({ search, games, today, onChange }: Props) =>
 
 	const selectPeriod = (next: LeaderboardPeriod) => {
 		onChange({
-			period: next === "all" ? undefined : next,
+			range: next === "all" ? undefined : next,
 			from: next === "custom" ? search.from : undefined,
 			to: next === "custom" ? search.to : undefined,
 		});

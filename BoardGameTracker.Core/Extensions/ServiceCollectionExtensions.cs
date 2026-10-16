@@ -111,6 +111,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddScoped<IUpdateService, UpdateService>();
         serviceCollection.AddScoped<IGameNightService, GameNightService>();
         serviceCollection.AddScoped<IRunningGameService, RunningGameService>();
+        serviceCollection.AddScoped<IGameNightStatisticsService, GameNightStatisticsService>();
         serviceCollection.AddScoped<ISettingsService, SettingsService>();
         serviceCollection.AddScoped<IMaintenanceRepository, MaintenanceRepository>();
         serviceCollection.AddScoped<IMaintenanceSeeder, MaintenanceSeeder>();

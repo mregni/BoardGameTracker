@@ -9,7 +9,6 @@ import {
 } from "date-fns";
 
 import { getDateFnsLocale } from "./localeUtils";
-import { formatNumber } from "./numberUtils";
 
 type DateInput = Date | string | undefined;
 
@@ -112,6 +111,11 @@ export const toLongDisplay = (date: Date | string | undefined | null, uiLanguage
 	}
 
 	return format(dateObj, "PPPP", { locale: getDateFnsLocale(uiLanguage) });
+};
+
+export const toShortDisplay = (date: Date | string | undefined | null, uiLanguage: string): string => {
+	const dateObj = toValidDate(date);
+	return dateObj ? format(dateObj, "d MMM", { locale: getDateFnsLocale(uiLanguage) }) : "";
 };
 
 export const toDisplayDateTime = (
@@ -243,19 +247,6 @@ export const formatMinutesToDuration = (
 		format: formatUnits,
 		locale,
 	});
-};
-
-const formatUnit = (value: number, unit: "hour" | "minute", locale: string | undefined, minimumIntegerDigits = 1) =>
-	formatNumber(value, locale, { style: "unit", unit, unitDisplay: "narrow", minimumIntegerDigits });
-
-export const formatCompactDuration = (minutes: number | null | undefined, uiLanguage?: string): string => {
-	const total = Math.max(0, Math.round(minutes ?? 0));
-	const hours = Math.floor(total / 60);
-	const rest = total % 60;
-
-	if (hours === 0) return formatUnit(rest, "minute", uiLanguage);
-	if (hours >= 10 || rest === 0) return formatUnit(Math.round(total / 60), "hour", uiLanguage);
-	return `${formatUnit(hours, "hour", uiLanguage)} ${formatUnit(rest, "minute", uiLanguage, 2)}`;
 };
 
 export const getDaysSincePurchase = (date: Date | null): number => {

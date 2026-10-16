@@ -99,24 +99,71 @@ public class PlayerRepository : EfRepository<Player>, IPlayerRepository
 
     public async Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopPlayers(int count, CancellationToken cancellationToken = default)
     {
-        var result = await _dbContext.PlayerSessions
-            .AsNoTracking()
-            .Include(x => x.Player)
-            .GroupBy(x => x.PlayerId)
-            .Select(g => new
-            {
-                Id = g.Key,
-                Name = g.First().Player.Name,
-                Image = g.First().Player.Image,
-                PlayCount = g.Count(),
-                WinCount = g.Count(x => x.Won)
-            })
+        var result = await PlayerTotals()
             .OrderByDescending(x => x.PlayCount)
             .ThenBy(x => x.Id)
             .Take(count)
             .ToListAsync(cancellationToken);
 
         return result.Select(x => (x.Id, x.Name, x.Image, x.PlayCount, x.WinCount)).ToList();
+    }
+
+    public async Task<List<(int Id, string Name, string? Image, int PlayCount, int WinCount)>> GetTopWinners(int count, CancellationToken cancellationToken = default)
+    {
+        var result = await PlayerTotals()
+            .OrderByDescending(x => x.WinCount)
+            .ThenByDescending(x => x.PlayCount)
+            .ThenBy(x => x.Id)
+            .Take(count)
+            .ToListAsync(cancellationToken);
+
+        return result.Select(x => (x.Id, x.Name, x.Image, x.PlayCount, x.WinCount)).ToList();
+    }
+
+    public Task<int> CountActivePlayersSince(DateTime since, CancellationToken cancellationToken = default)
+    {
+        return _dbContext.PlayerSessions
+            .AsNoTracking()
+            .Where(x => x.Session.Start >= since)
+            .Select(x => x.PlayerId)
+            .Distinct()
+            .CountAsync(cancellationToken);
+    }
+
+    public async Task<(int PlayCount, int WinCount)> GetPlayCountsSince(int playerId, DateTime since, CancellationToken cancellationToken = default)
+    {
+        var counts = await _dbContext.PlayerSessions
+            .AsNoTracking()
+            .Where(x => x.PlayerId == playerId && x.Session.Start >= since)
+            .GroupBy(x => x.PlayerId)
+            .Select(g => new { PlayCount = g.Count(), WinCount = g.Count(x => x.Won) })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return counts == null ? (0, 0) : (counts.PlayCount, counts.WinCount);
+    }
+
+    private IQueryable<PlayerTotal> PlayerTotals()
+    {
+        return _dbContext.PlayerSessions
+            .AsNoTracking()
+            .GroupBy(x => x.PlayerId)
+            .Select(g => new PlayerTotal
+            {
+                Id = g.Key,
+                Name = g.First().Player.Name,
+                Image = g.First().Player.Image,
+                PlayCount = g.Count(),
+                WinCount = g.Count(x => x.Won)
+            });
+    }
+
+    private sealed class PlayerTotal
+    {
+        public int Id { get; init; }
+        public string Name { get; init; } = string.Empty;
+        public string? Image { get; init; }
+        public int PlayCount { get; init; }
+        public int WinCount { get; init; }
     }
 
     public async Task<List<LeaderboardRow>> GetLeaderboardRows(LeaderboardFilter filter, CancellationToken cancellationToken = default)

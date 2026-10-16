@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-	formatCompactDuration,
 	formatMinutesToDuration,
 	isValidDate,
 	minutesToDuration,
@@ -17,6 +16,7 @@ import {
 	toMonthYear,
 	toRelative,
 	toShortDayDate,
+	toShortDisplay,
 } from "./dateUtils";
 
 describe("dateUtils", () => {
@@ -113,6 +113,18 @@ describe("dateUtils", () => {
 			expect(normalizeDateFnsFormat("not a format", "yy-MM-dd")).toBe("yy-MM-dd");
 			expect(normalizeDateFnsFormat("", "HH:mm")).toBe("HH:mm");
 			expect(normalizeDateFnsFormat(null, "HH:mm")).toBe("HH:mm");
+		});
+	});
+
+	describe("toShortDisplay", () => {
+		it("shows the day and the short month in the app language", () => {
+			expect(toShortDisplay(new Date(2026, 9, 4), "en-us")).toBe("4 Oct");
+			expect(toShortDisplay("2026-09-21T10:00:00", "nl-be")).toBe("21 sep.");
+		});
+
+		it("returns an empty string without a valid date", () => {
+			expect(toShortDisplay(null, "en-us")).toBe("");
+			expect(toShortDisplay("not a date", "en-us")).toBe("");
 		});
 	});
 
@@ -376,32 +388,6 @@ describe("dateUtils", () => {
 				hours: 1,
 				minutes: 0,
 			});
-		});
-	});
-
-	describe("formatCompactDuration", () => {
-		it("should show minutes only below an hour", () => {
-			expect(formatCompactDuration(40, "en-US")).toBe("40m");
-		});
-
-		it("should show hours and padded minutes below ten hours", () => {
-			expect(formatCompactDuration(220, "en-US")).toBe("3h 40m");
-			expect(formatCompactDuration(365, "en-US")).toBe("6h 05m");
-		});
-
-		it("should show whole hours from ten hours or on the hour", () => {
-			expect(formatCompactDuration(7860, "en-US")).toBe("131h");
-			expect(formatCompactDuration(7889, "en-US")).toBe("131h");
-			expect(formatCompactDuration(120, "en-US")).toBe("2h");
-		});
-
-		it("should treat missing and negative values as zero minutes", () => {
-			expect(formatCompactDuration(null, "en-US")).toBe("0m");
-			expect(formatCompactDuration(-5, "en-US")).toBe("0m");
-		});
-
-		it("should use the unit names of the language", () => {
-			expect(formatCompactDuration(7860, "nl-BE")).toBe("131 u");
 		});
 	});
 

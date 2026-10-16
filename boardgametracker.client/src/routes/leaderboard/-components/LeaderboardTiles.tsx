@@ -3,7 +3,7 @@ import { BgtAvatar } from "@/components/BgtAvatar/BgtAvatar";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { Leaderboard, LeaderboardEntry } from "@/models";
-import { formatCompactDuration } from "@/utils/dateUtils";
+import { useShortDuration } from "@/routes/-hooks/useShortDuration";
 import { EMPTY_NUMBER } from "@/utils/numberUtils";
 
 interface Props {
@@ -31,6 +31,7 @@ const Holder = ({ entry, suffix }: { entry: LeaderboardEntry; suffix?: string })
 export const LeaderboardTiles = ({ leaderboard }: Props) => {
 	const { t } = useTranslation("leaderboard");
 	const format = useNumberFormat();
+	const duration = useShortDuration();
 
 	const tiles: Tile[] = [
 		{
@@ -56,7 +57,7 @@ export const LeaderboardTiles = ({ leaderboard }: Props) => {
 			key: "most-time",
 			title: t("highlights.most-time"),
 			entry: leaderboard.mostTimePlayed,
-			value: (entry) => formatCompactDuration(entry.minutesPlayed, format.locale),
+			value: (entry) => duration(entry.minutesPlayed),
 		},
 	];
 

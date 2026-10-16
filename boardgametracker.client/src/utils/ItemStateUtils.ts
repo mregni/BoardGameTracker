@@ -1,12 +1,4 @@
 import { GameState } from "../models";
-import { chartColors } from "../models/Charts/PieChartDatum";
-
-export const gameStateChartColors: Record<GameState, string> = {
-	[GameState.Wanted]: chartColors.amber,
-	[GameState.Owned]: chartColors.win,
-	[GameState.PreviouslyOwned]: chartColors.loss,
-	[GameState.ForTrade]: chartColors.blue,
-};
 
 export const getItemStateTranslationKey = (value: GameState, isLoaned: boolean): string => {
 	if (isLoaned) {

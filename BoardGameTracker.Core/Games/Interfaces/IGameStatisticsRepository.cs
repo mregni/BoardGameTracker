@@ -1,4 +1,4 @@
-using BoardGameTracker.Common.Models.Charts;
+﻿using BoardGameTracker.Common.Models.Charts;
 using BoardGameTracker.Common.Entities;
 using BoardGameTracker.Common.Entities.Helpers;
 
@@ -14,7 +14,6 @@ public interface IGameStatisticsRepository
     Task<int?> GetExpansionCount(int gameId, CancellationToken cancellationToken = default);
     Task<double> GetAveragePlayTime(int gameId, CancellationToken cancellationToken = default);
     Task<double> GetTotalPlayedTime(int gameId, CancellationToken cancellationToken = default);
-    Task<decimal?> GetMeanPayedAsync(CancellationToken cancellationToken = default);
     Task<decimal?> GetTotalPayedAsync(CancellationToken cancellationToken = default);
     Task<int> CountPricedOwnedGamesAsync(CancellationToken cancellationToken = default);
     Task<List<GameStateChart>> GetGameStateCounts(CancellationToken cancellationToken = default);
@@ -25,4 +24,5 @@ public interface IGameStatisticsRepository
     Task<PlayerSession?> GetLowestWinning(int gameId, CancellationToken cancellationToken = default);
     Task<PlayerSession?> GetLowestScoringPlayer(int gameId, CancellationToken cancellationToken = default);
     Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGames(int count, CancellationToken cancellationToken = default);
+    Task<List<(int GameId, string Title, string? Image, int PlayCount)>> GetMostPlayedGamesSince(int count, DateTime since, CancellationToken cancellationToken = default);
 }

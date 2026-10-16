@@ -129,8 +129,8 @@ describe("LeaderboardRanking", () => {
 		const [first, second] = screen.getAllByTestId("leaderboard-row");
 		expect(first).toHaveTextContent("142");
 		expect(first).toHaveTextContent("38%");
-		expect(first).toHaveTextContent("131h");
-		expect(second).toHaveTextContent("3h 40m");
+		expect(first).toHaveTextContent("duration.hours");
+		expect(second).toHaveTextContent("duration.hours-minutes");
 	});
 
 	it("should explain the podium column and that ties share the rank", () => {
