@@ -1,7 +1,7 @@
 export {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
 	BgtDialogTitle,
 } from "./BgtDialog";
+export { BgtDialogFooter } from "./BgtDialogFooter";

@@ -93,7 +93,7 @@ function RouteComponent() {
 										field={field}
 										disabled={isPending}
 										label={t("price.label")}
-										type="number"
+										type="decimal"
 										placeholder={t("price.placeholder")}
 										prefixLabel={settings?.currency}
 									/>

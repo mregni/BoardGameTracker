@@ -10,7 +10,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { getShameStatistics, getShames } from "@/services/queries/games";
 import { getSettings } from "@/services/queries/settings";
-import { formatPrice } from "@/utils/priceUtils";
+import { formatPrice } from "@/utils/numberUtils";
 import { NoShames } from "./-components/NoShames";
 import { ShameGame } from "./-components/ShameGame";
 import { useShameData } from "./-hooks/useShameData";

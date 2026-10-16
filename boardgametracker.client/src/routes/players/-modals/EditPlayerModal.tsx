@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtImageSelector, BgtInputField } from "@/components/BgtForm";
@@ -87,14 +86,13 @@ export const EditPlayerModal = (props: Props) => {
 							</form.Field>
 						</div>
 					</div>
-					<BgtDialogClose>
-						<BgtButton variant="cancel" onClick={close} disabled={isLoading}>
-							{t("common:cancel")}
-						</BgtButton>
-						<BgtButton type="submit" variant="primary" disabled={isLoading}>
-							{t("update.save")}
-						</BgtButton>
-					</BgtDialogClose>
+					<BgtDialogFooter
+						onCancel={close}
+						confirmLabel={t("update.save")}
+						confirmType="submit"
+						disabled={isLoading}
+						cancelDisabled={isLoading}
+					/>
 				</form>
 			</BgtDialogContent>
 		</BgtDialog>

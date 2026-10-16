@@ -68,19 +68,19 @@
     },
     "location": {
       "label": "Ubicación",
-      "placeholder": "Introduce la ubicación"
+      "placeholder": "Ubicación"
     },
     "host": {
       "label": "Anfitrión",
-      "placeholder": "Introduce el jugador anfitrión"
+      "placeholder": "Anfitrión"
     },
     "invited-players": {
       "label": "Jugadores invitados",
-      "description": "Selecciona los jugadores que quieres invitar a esta noche de juego"
+      "description": "Elige jugadores para invitar"
     },
     "suggested-games": {
       "label": "Juegos sugeridos",
-      "description": "Selecciona los juegos que propones jugar durante esta noche de juego"
+      "description": "Elige juegos para proponer"
     },
     "notes": {
       "label": "Notas"

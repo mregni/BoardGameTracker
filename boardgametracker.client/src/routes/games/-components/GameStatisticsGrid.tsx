@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next";
 import { BgtTextStatistic } from "@/components/BgtStatistic/BgtTextStatistic";
 import { getSettings } from "@/services/queries/settings";
 import { formatMinutesToDuration, toRelative } from "@/utils/dateUtils";
-import { RoundDecimal } from "@/utils/numberUtils";
-import { formatPrice } from "@/utils/priceUtils";
+import { formatDecimal, formatPrice, type NumberValue } from "@/utils/numberUtils";
 
 interface GameStats {
 	playCount: number;
@@ -29,6 +28,8 @@ export const GameStatisticsGrid = (props: Props) => {
 	const lastPlayedRelative =
 		gameStats.lastPlayed && settings?.uiLanguage ? toRelative(gameStats.lastPlayed, settings.uiLanguage) : null;
 
+	const decimalOrNull = (value: NumberValue) => (value == null ? null : formatDecimal(value, settings?.uiLanguage));
+
 	const totalPlayedTime = formatMinutesToDuration(
 		gameStats.totalPlayedTime,
 		["weeks", "days", "hours", "minutes"],
@@ -46,8 +47,8 @@ export const GameStatisticsGrid = (props: Props) => {
 				title={t("price-per-play")}
 				textSize="4"
 			/>
-			<BgtTextStatistic content={RoundDecimal(gameStats.highScore)} title={t("high-score")} textSize="4" />
-			<BgtTextStatistic content={RoundDecimal(gameStats.averageScore)} title={t("average-score")} textSize="4" />
+			<BgtTextStatistic content={decimalOrNull(gameStats.highScore)} title={t("high-score")} textSize="4" />
+			<BgtTextStatistic content={decimalOrNull(gameStats.averageScore)} title={t("average-score")} textSize="4" />
 			<BgtTextStatistic content={lastPlayedRelative} title={t("last-played")} textSize="4" />
 		</div>
 	);

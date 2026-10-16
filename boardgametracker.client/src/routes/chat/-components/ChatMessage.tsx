@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
 import { BgtButton } from "@/components/BgtButton/BgtButton";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
 import type { ApiError } from "@/models";
 import type { ChatExchange } from "../-hooks/useRagChat";
 import { CitationList } from "./CitationList";
@@ -14,6 +15,7 @@ interface Props {
 
 export const ChatMessage = ({ exchange, onRetry, onSelectSource, activeSourceIndex }: Props) => {
 	const { t } = useTranslation(["chat", "error"]);
+	const { decimal } = useNumberFormat();
 
 	const renderError = (error?: ApiError): string => {
 		if (!error) {
@@ -68,7 +70,7 @@ export const ChatMessage = ({ exchange, onRetry, onSelectSource, activeSourceInd
 							<span className="whitespace-pre-wrap break-words">{exchange.answer.answer}</span>
 							{exchange.answer.durationMs > 0 && (
 								<span className="text-xs text-white/40">
-									{t("response-time", { seconds: (exchange.answer.durationMs / 1000).toFixed(1) })}
+									{t("response-time", { seconds: decimal(exchange.answer.durationMs / 1000, 1, 1) })}
 								</span>
 							)}
 							{exchange.answer.citations.length > 0 && (

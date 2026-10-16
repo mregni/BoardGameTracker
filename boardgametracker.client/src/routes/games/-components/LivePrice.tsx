@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { type Game, GameState } from "@/models";
 import { type GamePrice, isPriceError, priceErrorKey } from "@/models/Games/GamePrice";
-import { formatPrice } from "@/utils/priceUtils";
+import { formatPrice } from "@/utils/numberUtils";
 
 interface Props {
 	livePrice?: GamePrice;

@@ -68,19 +68,19 @@
     },
     "location": {
       "label": "Location",
-      "placeholder": "Enter location"
+      "placeholder": "Location"
     },
     "host": {
       "label": "Host",
-      "placeholder": "Enter host player"
+      "placeholder": "Choose host"
     },
     "invited-players": {
       "label": "Invited players",
-      "description": "Select players to invite to this game night"
+      "description": "Choose players to invite"
     },
     "suggested-games": {
       "label": "Suggested games",
-      "description": "Select games that you suggest to play during this game night"
+      "description": "Choose games to suggest"
     },
     "notes": {
       "label": "Notes"

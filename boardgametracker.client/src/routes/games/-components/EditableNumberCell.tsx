@@ -1,5 +1,7 @@
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { BgtInputContainer } from "@/components/BgtForm";
+import { useNumberFormat } from "@/hooks/useNumberFormat";
+import { parseDecimal } from "@/utils/numberUtils";
 import { EditableCellButton } from "./EditableCellButton";
 
 interface Props {
@@ -8,7 +10,6 @@ interface Props {
 	onStartEdit: () => void;
 	onStopEdit: () => void;
 	onChange: (value: number | null) => void;
-	step?: number;
 	min?: number;
 	max?: number;
 	prefix?: string;
@@ -22,8 +23,12 @@ interface Props {
 
 type EditorProps = Omit<Props, "editing" | "onStartEdit" | "align" | "readOnly" | "format">;
 
-const NumberEditor = ({ value, onStopEdit, onChange, step = 1, min, max, prefix, suffix, className }: EditorProps) => {
-	const [draft, setDraft] = useState(value?.toString() ?? "");
+const isOutOfRange = (value: number, min?: number, max?: number) =>
+	(min !== undefined && value < min) || (max !== undefined && value > max);
+
+const NumberEditor = ({ value, onStopEdit, onChange, min, max, prefix, suffix, className }: EditorProps) => {
+	const { input } = useNumberFormat();
+	const [draft, setDraft] = useState(() => input(value));
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
@@ -32,8 +37,9 @@ const NumberEditor = ({ value, onStopEdit, onChange, step = 1, min, max, prefix,
 
 	const commit = () => {
 		const trimmed = draft.trim();
-		const parsed = trimmed === "" ? null : Number(trimmed);
-		if (parsed !== value && !(parsed !== null && Number.isNaN(parsed))) {
+		const parsed = parseDecimal(trimmed);
+		const invalid = trimmed !== "" && (parsed === null || isOutOfRange(parsed, min, max));
+		if (!invalid && parsed !== value) {
 			onChange(parsed);
 		}
 		onStopEdit();
@@ -52,11 +58,10 @@ const NumberEditor = ({ value, onStopEdit, onChange, step = 1, min, max, prefix,
 		<BgtInputContainer prefix={prefix} suffix={suffix} className={className ?? "h-9 w-24 text-[12px]"}>
 			<input
 				ref={inputRef}
-				type="number"
+				type="text"
+				inputMode="decimal"
+				autoComplete="off"
 				value={draft}
-				step={step}
-				min={min}
-				max={max}
 				onChange={(event) => setDraft(event.target.value)}
 				onBlur={commit}
 				onKeyDown={onKeyDown}
@@ -68,6 +73,7 @@ const NumberEditor = ({ value, onStopEdit, onChange, step = 1, min, max, prefix,
 
 export const EditableNumberCell = (props: Props) => {
 	const { value, editing, onStartEdit, prefix, suffix, format, className, align, readOnly, size } = props;
+	const { decimal } = useNumberFormat();
 
 	if (!editing || readOnly) {
 		return (
@@ -76,7 +82,7 @@ export const EditableNumberCell = (props: Props) => {
 					? "-"
 					: format
 						? format(value)
-						: [prefix, value, suffix].filter((part) => part != null && part !== "").join(" ")}
+						: [prefix, decimal(value, 2), suffix].filter((part) => part != null && part !== "").join(" ")}
 			</EditableCellButton>
 		);
 	}

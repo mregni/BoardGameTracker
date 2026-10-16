@@ -1,12 +1,11 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
-import BgtButton from "@/components/BgtButton/BgtButton";
 import {
 	BgtDialog,
-	BgtDialogClose,
 	BgtDialogContent,
 	BgtDialogDescription,
+	BgtDialogFooter,
 	BgtDialogTitle,
 } from "@/components/BgtDialog";
 import { BgtDatePicker } from "@/components/BgtForm";
@@ -130,14 +129,13 @@ const EditLoanForm = ({ loan, close, disabled, onSave }: FormProps) => {
 					</form.Field>
 				)}
 			</div>
-			<BgtDialogClose>
-				<BgtButton type="button" disabled={disabled} variant="cancel" className="flex-1" onClick={close}>
-					{t("common:cancel")}
-				</BgtButton>
-				<BgtButton type="submit" disabled={disabled} className="flex-1" variant="primary">
-					{t("edit.save")}
-				</BgtButton>
-			</BgtDialogClose>
+			<BgtDialogFooter
+				onCancel={close}
+				confirmLabel={t("edit.save")}
+				confirmType="submit"
+				disabled={disabled}
+				cancelDisabled={disabled}
+			/>
 		</form>
 	);
 };

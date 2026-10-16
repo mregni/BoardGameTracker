@@ -5,8 +5,13 @@ import FileText from "@/assets/icons/file-text.svg?react";
 import List from "@/assets/icons/list.svg?react";
 import Refresh from "@/assets/icons/refresh.svg?react";
 import Trash from "@/assets/icons/trash.svg?react";
-import BgtButton from "@/components/BgtButton/BgtButton";
-import { BgtDialog, BgtDialogContent, BgtDialogDescription, BgtDialogTitle } from "@/components/BgtDialog/BgtDialog";
+import {
+	BgtDialog,
+	BgtDialogContent,
+	BgtDialogDescription,
+	BgtDialogFooter,
+	BgtDialogTitle,
+} from "@/components/BgtDialog";
 import { BgtIconButton } from "@/components/BgtIconButton/BgtIconButton";
 import { BgtText } from "@/components/BgtText/BgtText";
 import type { GameManual, ManualIndexStatus } from "@/models";
@@ -101,7 +106,8 @@ export const ManualsDialog = ({ gameId, open, close, canWrite, ragEnabled, dateF
 									</BgtText>
 									<div className="flex items-center gap-2 flex-wrap">
 										<BgtText size="1" color="gray">
-											{formatFileSize(manual.fileSizeBytes)} · {toDisplay(manual.uploadDate, dateFormat, uiLanguage)}
+											{formatFileSize(manual.fileSizeBytes, uiLanguage)} ·{" "}
+											{toDisplay(manual.uploadDate, dateFormat, uiLanguage)}
 										</BgtText>
 										{ragEnabled && <ManualStatusBadge manual={manual} />}
 									</div>
@@ -135,11 +141,12 @@ export const ManualsDialog = ({ gameId, open, close, canWrite, ragEnabled, dateF
 						))}
 					</div>
 				)}
-				{canWrite && (
-					<div className="flex justify-end pt-2">
-						<BgtButton onClick={openFilePicker}>{t("manuals.add")}</BgtButton>
-					</div>
-				)}
+				<BgtDialogFooter
+					onCancel={close}
+					cancelLabel={t("common:close")}
+					confirmLabel={canWrite ? t("manuals.add") : undefined}
+					onConfirm={openFilePicker}
+				/>
 			</BgtDialogContent>
 		</BgtDialog>
 	);
