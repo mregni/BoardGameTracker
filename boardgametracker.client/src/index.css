@@ -15,10 +15,15 @@
   --color-card-border: #243044;
   --color-input: #1b2535;
   --color-primary: #6366f1;
+  --color-primary-text: #818cf8;
+  --color-primary-strong: #4f46e5;
+  --color-stat-title: #a5b4fc;
+  --color-chip-selected: #a5b4fc;
   --color-dialog: #141c2b;
   --color-card: #141c2b;
   --color-cancel: #94a3b8;
-  --color-error: #dc2626;
+  --color-error: #f87171;
+  --color-error-strong: #dc2626;
   --color-card-value: #22d3ee;
   --color-lime-green: #34d399;
   --color-error-dark: #ef44441a;

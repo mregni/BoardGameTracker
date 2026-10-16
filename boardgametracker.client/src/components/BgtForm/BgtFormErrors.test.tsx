@@ -25,6 +25,11 @@ describe("BgtFormErrors", () => {
 			expect(screen.getByText("Error 2")).toBeInTheDocument();
 			expect(screen.getByText("Error 3")).toBeInTheDocument();
 		});
+
+		it("should render errors with the error text colour", () => {
+			render(<BgtFormErrors errors={["Name is required"]} />);
+			expect(screen.getByText("Name is required")).toHaveClass("text-error");
+		});
 	});
 
 	describe("Edge Cases", () => {

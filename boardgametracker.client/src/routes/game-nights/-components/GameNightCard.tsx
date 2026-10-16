@@ -60,7 +60,7 @@ export const GameNightCard = (props: Props) => {
 							<Link
 								to="/game-nights/$gameNightId"
 								params={{ gameNightId: gameNight.id }}
-								className="hover:text-primary hover:underline"
+								className="hover:text-primary-text hover:underline"
 							>
 								{gameNight.title}
 							</Link>

@@ -31,7 +31,7 @@ export const LeaderboardHighlight = ({ title, value, entry, emptyText, hint, ico
 			<Link
 				to="/players/$playerId"
 				params={{ playerId: entry.playerId }}
-				className="flex items-center gap-3 hover:text-primary"
+				className="flex items-center gap-3 hover:text-primary-text"
 			>
 				<BgtAvatar image={entry.image} title={entry.name} size="medium" />
 				<div className="flex flex-col min-w-0">
