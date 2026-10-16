@@ -21,6 +21,7 @@ vi.mock("@tanstack/react-router", () => ({
 		return { ...config, useParams: () => ({ locationId: 3 }) };
 	},
 	useNavigate: () => mocks.navigate,
+	useRouter: () => ({ history: { back: vi.fn() } }),
 	Link: ({ children, to, params }: { children: React.ReactNode; to: string; params?: { sessionId: number } }) => (
 		<a href={params ? to.replace("$sessionId", String(params.sessionId)) : to}>{children}</a>
 	),
@@ -133,7 +134,7 @@ describe("Location detail page", () => {
 
 		await user.click(await screen.findByRole("button", { name: /detail.back/ }));
 
-		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/locations" });
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/locations", replace: true });
 	});
 
 	it("opens the edit dialog with the location name", async () => {

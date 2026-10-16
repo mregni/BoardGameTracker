@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import Database from "@/assets/icons/database.svg?react";
 import Keyboard from "@/assets/icons/keyboard.svg?react";
@@ -11,7 +11,7 @@ import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
 import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { BgtStatus } from "@/components/BgtStatus/BgtStatus";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
-import { useGoBack } from "@/routes/-hooks/useGoBack";
+import { useGoUp } from "@/routes/-hooks/useGoUp";
 import { useSettingsData } from "@/routes/settings/-hooks/useSettingsData";
 
 export const Route = createFileRoute("/games/add")({
@@ -21,8 +21,7 @@ export const Route = createFileRoute("/games/add")({
 function RouteComponent() {
 	const { t } = useTranslation(["game", "common", "settings"]);
 	const navigate = useNavigate();
-	const router = useRouter();
-	const goBack = useGoBack("/games");
+	const goBack = useGoUp("/games");
 	const { settings } = useSettingsData();
 
 	const bggEnabled = settings?.bggStatus?.isConfigured ?? false;
@@ -74,7 +73,7 @@ function RouteComponent() {
 							disabled={!bggEnabled}
 						/>
 					</div>
-					<BgtButton variant="cancel" className="w-full" onClick={() => router.history.back()}>
+					<BgtButton variant="cancel" className="w-full" onClick={goBack}>
 						{t("common:cancel")}
 					</BgtButton>
 				</BgtCard>

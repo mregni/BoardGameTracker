@@ -49,7 +49,7 @@ describe("Add game page", () => {
 		expect(screen.getByRole("heading", { name: "game:new.title" })).toBeInTheDocument();
 		await user.click(screen.getByRole("button", { name: /common:back/ }));
 
-		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games" });
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games", replace: true });
 	});
 
 	it("points to Settings → Integrations when the BGG key is missing", () => {

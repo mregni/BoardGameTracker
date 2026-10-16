@@ -1,5 +1,4 @@
 import { type AnyFieldApi, useStore } from "@tanstack/react-form";
-import { useRouter } from "@tanstack/react-router";
 import { addMinutes } from "date-fns";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,7 +20,7 @@ import {
 } from "@/models";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
-import { useGoBack } from "../../-hooks/useGoBack";
+import { useGoUp } from "../../-hooks/useGoUp";
 import { useSessionForm } from "../-hooks/useSessionForm";
 import { useSessionFormState } from "../-hooks/useSessionFormState";
 import { sessionFormOpts } from "../-utils/sessionFormOpts";
@@ -41,6 +40,7 @@ interface Props {
 	buttonText: string;
 	title: string;
 	backTo: string;
+	isBackTarget?: (pathname: string) => boolean;
 	disabled: boolean;
 }
 
@@ -57,12 +57,12 @@ export const SessionForm = (props: Props) => {
 		buttonText,
 		title,
 		backTo,
+		isBackTarget,
 		disabled,
 	} = props;
 
 	const { t } = useTranslation();
-	const router = useRouter();
-	const goBack = useGoBack(backTo);
+	const goBack = useGoUp(backTo, isBackTarget);
 	const { locations, games, players: playerList, suggestions } = useSessionForm();
 	const isNewSession = locationId === undefined;
 	const [initialStart] = useState(() => start ?? addMinutes(new Date(), -(minutes ?? 30)));
@@ -138,10 +138,6 @@ export const SessionForm = (props: Props) => {
 		form.setFieldValue("locationId", lastLocationId, { dontUpdateMeta: true });
 	}, [form, isNewSession, lastLocationId, locations]);
 
-	const handleCancel = useCallback(() => {
-		router.history.back();
-	}, [router]);
-
 	return (
 		<BgtPage>
 			<BgtPageHeader backAction={goBack} backText={t("back")} header={title} />
@@ -187,13 +183,7 @@ export const SessionForm = (props: Props) => {
 							</form.Field>
 
 							<div className="sticky bottom-20 z-10 -mx-4 px-4 py-3 bg-background/95 backdrop-blur-sm flex flex-row gap-2 md:static md:mx-0 md:px-0 md:py-0 md:mt-2 md:bg-transparent md:backdrop-blur-none">
-								<BgtButton
-									variant="cancel"
-									type="button"
-									disabled={disabled}
-									className="flex-none"
-									onClick={handleCancel}
-								>
+								<BgtButton variant="cancel" type="button" disabled={disabled} className="flex-none" onClick={goBack}>
 									{t("cancel")}
 								</BgtButton>
 								<BgtButton type="submit" disabled={disabled} className="flex-1" variant="primary">

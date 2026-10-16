@@ -3,12 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useGameActions } from "./useGameActions";
 
 const mockNavigate = vi.fn();
-const mockBack = vi.fn();
-const mockCanGoBack = vi.fn();
+const mockGoUp = vi.fn();
+const mockUseGoUp = vi.fn((_parent: string) => mockGoUp);
 
 vi.mock("@tanstack/react-router", () => ({
 	useNavigate: () => mockNavigate,
-	useRouter: () => ({ history: { back: mockBack, canGoBack: mockCanGoBack } }),
+}));
+
+vi.mock("@/routes/-hooks/useGoUp", () => ({
+	useGoUp: (parent: string) => mockUseGoUp(parent),
 }));
 
 const renderActions = () =>
@@ -27,22 +30,11 @@ describe("useGameActions handleBackToGames", () => {
 		vi.clearAllMocks();
 	});
 
-	it("returns to the previous page when there is one", () => {
-		mockCanGoBack.mockReturnValue(true);
-
+	it("goes up to the games list", () => {
 		renderActions().result.current.handleBackToGames();
 
-		expect(mockBack).toHaveBeenCalledTimes(1);
-		expect(mockNavigate).not.toHaveBeenCalled();
-	});
-
-	it("falls back to the games list without history", () => {
-		mockCanGoBack.mockReturnValue(false);
-
-		renderActions().result.current.handleBackToGames();
-
-		expect(mockNavigate).toHaveBeenCalledWith({ to: "/games" });
-		expect(mockBack).not.toHaveBeenCalled();
+		expect(mockUseGoUp).toHaveBeenCalledWith("/games");
+		expect(mockGoUp).toHaveBeenCalledTimes(1);
 	});
 });
 

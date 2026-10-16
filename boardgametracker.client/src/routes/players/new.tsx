@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Bars } from "react-loading-icons";
@@ -11,7 +11,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import { CreatePlayerSchema, type Player } from "@/models";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
-import { useGoBack } from "@/routes/-hooks/useGoBack";
+import { useGoUp } from "@/routes/-hooks/useGoUp";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { zodValidator } from "@/utils/zodValidator";
 import { usePlayerModal } from "./-hooks/usePlayerModal";
@@ -23,8 +23,7 @@ export const Route = createFileRoute("/players/new")({
 function RouteComponent() {
 	const { t } = useTranslation(["player", "common"]);
 	const navigate = useNavigate();
-	const router = useRouter();
-	const goBack = useGoBack("/players");
+	const goBack = useGoUp("/players");
 	const [image, setImage] = useState<File | undefined | null>(undefined);
 
 	const { savePlayer, uploadImage, isLoading } = usePlayerModal({});
@@ -54,10 +53,6 @@ function RouteComponent() {
 			navigate({ to: `/players/${savedPlayer.id}` });
 		},
 	});
-
-	const handleCancel = () => {
-		router.history.back();
-	};
 
 	return (
 		<BgtPage>
@@ -96,7 +91,7 @@ function RouteComponent() {
 							</div>
 						</div>
 						<div className="flex flex-row gap-2">
-							<BgtButton variant="cancel" type="button" onClick={handleCancel} disabled={isLoading}>
+							<BgtButton variant="cancel" type="button" onClick={goBack} disabled={isLoading}>
 								{t("common:cancel")}
 							</BgtButton>
 							<BgtButton type="submit" variant="primary" disabled={isLoading} className="flex-1">

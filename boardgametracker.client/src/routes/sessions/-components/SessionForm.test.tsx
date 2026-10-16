@@ -127,7 +127,7 @@ describe("SessionForm", () => {
 		expect(screen.getByRole("heading", { name: "Log a session" })).toBeInTheDocument();
 		await user.click(screen.getByRole("button", { name: /back/ }));
 
-		expect(router.navigate).toHaveBeenCalledWith({ to: "/games/1" });
+		expect(router.navigate).toHaveBeenCalledWith({ to: "/games/1", replace: true });
 	});
 
 	it("hides the player error until the first submit in StrictMode", async () => {

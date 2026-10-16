@@ -23,6 +23,6 @@ describe("GameForm", () => {
 		expect(screen.getByRole("heading", { name: "Edit game" })).toBeInTheDocument();
 		await user.click(screen.getByRole("button", { name: /common:back/ }));
 
-		expect(router.navigate).toHaveBeenCalledWith({ to: "/games/3" });
+		expect(router.navigate).toHaveBeenCalledWith({ to: "/games/3", replace: true });
 	});
 });

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { BgtPage } from "@/components/BgtLayout/BgtPage";
 import { BgtPageContent } from "@/components/BgtLayout/BgtPageContent";
@@ -8,6 +8,7 @@ import { getGames } from "@/services/queries/games";
 import { getLocation, getLocationSessions, getLocationStatistics } from "@/services/queries/locations";
 import { getPlayers } from "@/services/queries/players";
 import { locationIdParamSchema } from "@/utils/routeSchemas";
+import { useGoUp } from "../-hooks/useGoUp";
 import { BgtDeleteModal } from "../-modals/BgtDeleteModal";
 import { LocationHeader } from "./-components/LocationHeader";
 import { LocationSessionsCard } from "./-components/LocationSessionsCard";
@@ -32,8 +33,8 @@ function RouteComponent() {
 	const { locationId } = Route.useParams();
 	const { t } = useTranslation("location");
 	const { canWrite } = usePermissions();
-	const navigate = useNavigate();
 	const modals = useLocationModals();
+	const goUp = useGoUp("/locations");
 
 	const { location, statistics, sessions, settings, isLoading, deleteLocation } = useLocationData({ locationId });
 
@@ -44,7 +45,7 @@ function RouteComponent() {
 
 	return (
 		<BgtPage>
-			<BgtPageHeader backAction={() => navigate({ to: "/locations" })} backText={t("detail.back")} />
+			<BgtPageHeader backAction={goUp} backText={t("detail.back")} />
 			<BgtPageContent isLoading={isLoading} data={{ location, statistics, settings }}>
 				{({ location, statistics, settings }) => (
 					<>

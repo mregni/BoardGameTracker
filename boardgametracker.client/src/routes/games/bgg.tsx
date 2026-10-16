@@ -1,5 +1,5 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { createFileRoute, Navigate, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import SquareOutIcon from "@/assets/icons/square-out.svg?react";
@@ -12,7 +12,7 @@ import BgtPageHeader from "@/components/BgtLayout/BgtPageHeader";
 import { useAppForm } from "@/hooks/form";
 import { BggSearchSchema, type Game, GameState } from "@/models";
 import { RequireWrite } from "@/routes/-components/RequireWrite";
-import { useGoBack } from "@/routes/-hooks/useGoBack";
+import { useGoUp } from "@/routes/-hooks/useGoUp";
 import { getSettings } from "@/services/queries/settings";
 import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
@@ -30,8 +30,7 @@ export const Route = createFileRoute("/games/bgg")({
 function RouteComponent() {
 	const { t } = useTranslation(["game", "common"]);
 	const navigate = useNavigate();
-	const router = useRouter();
-	const goBack = useGoBack("/games/add");
+	const goBack = useGoUp("/games/add");
 
 	const onSuccess = useCallback(
 		(game: Game) => {
@@ -45,10 +44,6 @@ function RouteComponent() {
 	const openBgg = useCallback(() => {
 		window.open("https://boardgamegeek.com/browse/boardgame", "_blank", "noopener,noreferrer");
 	}, []);
-
-	const handleCancel = useCallback(() => {
-		router.history.back();
-	}, [router]);
 
 	const form = useAppForm({
 		defaultValues: {
@@ -126,7 +121,7 @@ function RouteComponent() {
 							</form.Field>
 						</div>
 						<div className="flex justify-between gap-3">
-							<BgtButton variant="cancel" type="button" onClick={handleCancel} disabled={isPending}>
+							<BgtButton variant="cancel" type="button" onClick={goBack} disabled={isPending}>
 								{t("common:cancel")}
 							</BgtButton>
 							<BgtButton type="submit" variant="primary" disabled={isPending} className="flex-1">

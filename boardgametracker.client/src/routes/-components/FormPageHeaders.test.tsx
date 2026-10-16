@@ -43,8 +43,23 @@ vi.mock("@/routes/games/-components/GameForm", () => ({
 }));
 
 vi.mock("@/routes/sessions/-components/SessionForm", () => ({
-	SessionForm: ({ title, backTo }: { title: string; backTo: string }) => (
-		<div data-testid="session-form" data-title={title} data-back-to={backTo} />
+	SessionForm: ({
+		title,
+		backTo,
+		isBackTarget,
+	}: {
+		title: string;
+		backTo: string;
+		isBackTarget?: (pathname: string) => boolean;
+	}) => (
+		<div
+			data-testid="session-form"
+			data-title={title}
+			data-back-to={backTo}
+			data-back-targets={["/games/3/sessions", "/players/1/sessions", "/locations/2", "/game-nights", "/games/3", "/"]
+				.filter((pathname) => isBackTarget?.(pathname))
+				.join(",")}
+		/>
 	),
 }));
 
@@ -114,6 +129,15 @@ describe("form page headers", () => {
 		expect(form).toHaveAttribute("data-back-to", backTo);
 	});
 
+	it("edit session goes back to the session list it came from", async () => {
+		renderRoute("/sessions/update_/$sessionId");
+
+		expect(await screen.findByTestId("session-form")).toHaveAttribute(
+			"data-back-targets",
+			"/games/3/sessions,/players/1/sessions,/locations/2,/game-nights",
+		);
+	});
+
 	it("new player shows a page title and a back link to the players", async () => {
 		const user = userEvent.setup();
 		renderRoute("/players/new");
@@ -121,6 +145,6 @@ describe("form page headers", () => {
 		expect(screen.getByRole("heading", { name: "new.title" })).toBeInTheDocument();
 		await user.click(screen.getByRole("button", { name: /common:back/ }));
 
-		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/players" });
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/players", replace: true });
 	});
 });

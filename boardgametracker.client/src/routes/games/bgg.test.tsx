@@ -60,7 +60,7 @@ describe("Add game from BGG page", () => {
 		expect(screen.getByRole("heading", { name: "new.title" })).toBeInTheDocument();
 		await user.click(screen.getByRole("button", { name: /common:back/ }));
 
-		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/add" });
+		expect(mocks.navigate).toHaveBeenCalledWith({ to: "/games/add", replace: true });
 	});
 
 	it("waits for the settings before deciding", () => {

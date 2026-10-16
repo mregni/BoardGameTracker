@@ -9,6 +9,9 @@ import { sessionIdParamSchema } from "@/utils/routeSchemas";
 import { SessionForm } from "./-components/SessionForm";
 import { useUpdateSessionData } from "./-hooks/useUpdateSessionData";
 
+const sessionListPage = /^\/(games\/\d+\/sessions|players\/\d+\/sessions|locations\/\d+|game-nights)$/;
+const isSessionListPage = (pathname: string) => sessionListPage.test(pathname);
+
 export const Route = createFileRoute("/sessions/update_/$sessionId")({
 	component: RouteComponent,
 	params: sessionIdParamSchema,
@@ -54,6 +57,7 @@ function RouteComponent() {
 					disabled={isPending}
 					title={t("title-update")}
 					backTo={`/games/${session.gameId}/sessions`}
+					isBackTarget={isSessionListPage}
 				/>
 			)}
 		</BgtDataGuard>

@@ -1,6 +1,4 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { useRouter } from "@tanstack/react-router";
-import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import BgtButton from "@/components/BgtButton/BgtButton";
 import { BgtCard } from "@/components/BgtCard/BgtCard";
@@ -16,7 +14,7 @@ import { toInputDate } from "@/utils/dateUtils";
 import { handleFormSubmit } from "@/utils/formUtils";
 import { LANGUAGE_NONE } from "@/utils/languageUtils";
 import { zodValidator } from "@/utils/zodValidator";
-import { useGoBack } from "../../-hooks/useGoBack";
+import { useGoUp } from "../../-hooks/useGoUp";
 import { useGameForm } from "../-hooks/useGameForm";
 import { useImageUpload } from "../-hooks/useImageUpload";
 import { gameFormOpts } from "../-utils/gameFormOpts";
@@ -39,8 +37,7 @@ export const GameForm = (props: Props) => {
 	const { onClick, buttonText, disabled, game, livePrice, title, backTo } = props;
 	const { settings } = useGameForm();
 	const { t } = useTranslation(["game", "common"]);
-	const router = useRouter();
-	const goBack = useGoBack(backTo);
+	const goBack = useGoUp(backTo);
 	const { poster, setPoster, uploadPoster } = useImageUpload(game?.image);
 
 	const form = useAppForm({
@@ -73,10 +70,6 @@ export const GameForm = (props: Props) => {
 			await onClick(validatedData);
 		},
 	});
-
-	const handleCancel = useCallback(() => {
-		router.history.back();
-	}, [router]);
 
 	return (
 		<BgtPage>
@@ -119,13 +112,7 @@ export const GameForm = (props: Props) => {
 							</form.Field>
 
 							<div className="flex flex-row gap-2 mt-2">
-								<BgtButton
-									variant="cancel"
-									type="button"
-									className="flex-none"
-									onClick={handleCancel}
-									disabled={disabled}
-								>
+								<BgtButton variant="cancel" type="button" className="flex-none" onClick={goBack} disabled={disabled}>
 									{t("common:cancel")}
 								</BgtButton>
 								<BgtButton type="submit" className="flex-1" variant="primary" disabled={disabled}>
